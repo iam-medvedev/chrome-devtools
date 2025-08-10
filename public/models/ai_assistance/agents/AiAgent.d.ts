@@ -67,6 +67,8 @@ export interface SideEffectResponse {
     code?: string;
     confirm: (confirm: boolean) => void;
 }
+interface SerializedSideEffectResponse extends Omit<SideEffectResponse, 'confirm'> {
+}
 export interface ActionResponse {
     type: ResponseType.ACTION;
     code?: string;
@@ -83,6 +85,7 @@ export interface UserQuery {
     imageId?: string;
 }
 export type ResponseData = AnswerResponse | SuggestionsResponse | ErrorResponse | ActionResponse | SideEffectResponse | ThoughtResponse | TitleResponse | QueryingResponse | ContextResponse | UserQuery;
+export type SerializedResponseData = AnswerResponse | SuggestionsResponse | ErrorResponse | ActionResponse | SerializedSideEffectResponse | ThoughtResponse | TitleResponse | QueryingResponse | ContextResponse | UserQuery;
 export type FunctionCallResponseData = TitleResponse | ThoughtResponse | ActionResponse | SideEffectResponse | SuggestionsResponse;
 export interface BuildRequestOptions {
     text: string;
@@ -238,8 +241,8 @@ export declare abstract class AiAgent<T> {
     parseTextResponse(response: string): ParsedResponse;
     /**
      * Declare a function that the AI model can call.
-     * @param name - The name of the function
-     * @param declaration - the function declaration. Currently functions must:
+     * @param name The name of the function
+     * @param declaration the function declaration. Currently functions must:
      * 1. Return an object of serializable key/value pairs. You cannot return
      *    anything other than a plain JavaScript object that can be serialized.
      * 2. Take one parameter which is an object that can have
@@ -261,3 +264,4 @@ export declare abstract class AiAgent<T> {
         signal?: AbortSignal;
     }, multimodalInput?: MultimodalInput): AsyncGenerator<ResponseData, void, void>;
 }
+export {};

@@ -1,5 +1,5 @@
 import '../../ui/legacy/legacy.js';
-import type * as Platform from '../../core/platform/platform.js';
+import * as Platform from '../../core/platform/platform.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { ExtensionServer } from './ExtensionServer.js';
 export declare class ExtensionPanel extends UI.Panel.Panel implements UI.SearchableView.Searchable {

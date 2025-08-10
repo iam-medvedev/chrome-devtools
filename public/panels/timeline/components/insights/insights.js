@@ -575,7 +575,8 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!this.#selected) {
       return Lit2.nothing;
     }
-    const ariaLabel = `Ask AI about ${insightModel.title} insight`;
+    const aiLabel = Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled || Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled ? "Debug with AI" : "Ask AI";
+    const ariaLabel = `${aiLabel} about ${insightModel.title} insight`;
     const content = this.renderContent();
     return html2`
       <div class="insight-body">
@@ -590,7 +591,7 @@ var BaseInsightComponent = class extends HTMLElement {
               jslog=${VisualLogging.action(`timeline.insight-ask-ai.${this.internalName}`).track({ click: true })}
               @click=${this.#askAIButtonClick}
               aria-label=${ariaLabel}
-            >Ask AI</devtools-button>
+            >${aiLabel}</devtools-button>
           </div>
         ` : Lit2.nothing}
       </div>`;
@@ -1140,13 +1141,13 @@ ul {
 // gen/front_end/panels/timeline/components/insights/Checklist.js
 var UIStrings4 = {
   /**
-   *@description Text for a screen-reader label to tell the user that the icon represents a successful insight check
-   *@example {Server response time} PH1
+   * @description Text for a screen-reader label to tell the user that the icon represents a successful insight check
+   * @example {Server response time} PH1
    */
   successAriaLabel: "Insight check passed: {PH1}",
   /**
-   *@description Text for a screen-reader label to tell the user that the icon represents an unsuccessful insight check
-   *@example {Server response time} PH1
+   * @description Text for a screen-reader label to tell the user that the icon represents an unsuccessful insight check
+   * @example {Server response time} PH1
    */
   failedAriaLabel: "Insight check failed: {PH1}"
 };

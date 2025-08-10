@@ -8,11 +8,11 @@ import * as Menus from '../../ui/components/menus/menus.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Text to show an item is empty
+     * @description Text to show an item is empty
      */
     empty: '(empty)',
     /**
-     *@description Text in isolate selector in Performance panel
+     * @description Text in isolate selector in Performance panel
      */
     selectJavascriptVmInstance: 'Select JavaScript VM instance',
 };

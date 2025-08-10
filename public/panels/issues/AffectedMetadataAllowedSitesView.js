@@ -7,7 +7,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { AffectedResourcesView } from './AffectedResourcesView.js';
 const UIStrings = {
     /**
-     *@description Label for the the number of affected `Allowed Sites` associated with a
+     * @description Label for the the number of affected `Allowed Sites` associated with a
      *DevTools issue. In this context, `Allowed` refers to permission to access cookies
      *via the third-party cookie deprecation global metadata, and `Site` is equivalent
      *to eTLD+1.

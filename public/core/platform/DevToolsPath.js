@@ -19,7 +19,7 @@ export const EmptyUrlString = '';
  *
  * @param strings the string parts of the template.
  * @param values the dynamic values of the template.
- * @return the string constructed from `strings` and `values` casted to an
+ * @returns the string constructed from `strings` and `values` casted to an
  *         `UrlString`.
  */
 export const urlString = (strings, ...values) => String.raw({ raw: strings }, ...values);

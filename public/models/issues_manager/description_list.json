@@ -177,5 +177,9 @@
   "placeholderDescriptionForInvisibleIssues.md",
   "fetchingPartitionedBlobURL.md",
   "navigatingPartitionedBlobURL.md",
+  "unencodedDigestIncorrectDigestLength.md",
+  "unencodedDigestIncorrectDigestType.md",
+  "unencodedDigestMalformedDictionary.md",
+  "unencodedDigestUnknownAlgorithm.md",
   "userReidentificationBlocked.md"
 ]

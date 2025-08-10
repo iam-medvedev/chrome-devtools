@@ -8,71 +8,71 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description Command for showing the 'Event Listener Breakpoints' tool
+   * @description Command for showing the 'Event Listener Breakpoints' tool
    */
   showEventListenerBreakpoints: "Show Event Listener Breakpoints",
   /**
-   *@description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   eventListenerBreakpoints: "Event Listener Breakpoints",
   /**
-   *@description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
+   * @description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
    */
   showCspViolationBreakpoints: "Show CSP Violation Breakpoints",
   /**
-   *@description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   cspViolationBreakpoints: "CSP Violation Breakpoints",
   /**
-   *@description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
+   * @description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
    */
   showXhrfetchBreakpoints: "Show XHR/fetch Breakpoints",
   /**
-   *@description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   xhrfetchBreakpoints: "XHR/fetch Breakpoints",
   /**
-   *@description Command for showing the 'DOM Breakpoints' tool in the Elements panel
+   * @description Command for showing the 'DOM Breakpoints' tool in the Elements panel
    */
   showDomBreakpoints: "Show DOM Breakpoints",
   /**
-   *@description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   domBreakpoints: "DOM Breakpoints",
   /**
-   *@description Command for showing the 'Global Listeners' tool in the sources panel
+   * @description Command for showing the 'Global Listeners' tool in the sources panel
    */
   showGlobalListeners: "Show Global Listeners",
   /**
-   *@description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
    */
   globalListeners: "Global Listeners",
   /**
-   *@description Text that refers to one or a group of webpages
+   * @description Text that refers to one or a group of webpages
    */
   page: "Page",
   /**
-   *@description Command for showing the 'Page' tab in the Sources panel
+   * @description Command for showing the 'Page' tab in the Sources panel
    */
   showPage: "Show Page",
   /**
-   *@description Title as part of a tool to override existing configurations
+   * @description Title as part of a tool to override existing configurations
    */
   overrides: "Overrides",
   /**
-   *@description Command for showing the 'Overrides' tool in the Sources panel
+   * @description Command for showing the 'Overrides' tool in the Sources panel
    */
   showOverrides: "Show Overrides",
   /**
-   *@description Title for a type of source files
+   * @description Title for a type of source files
    */
   contentScripts: "Content scripts",
   /**
-   *@description Command for showing the 'Content scripts' tool in the sources panel
+   * @description Command for showing the 'Content scripts' tool in the sources panel
    */
   showContentScripts: "Show Content scripts",
   /**
-   *@description Label for a button in the sources panel that refreshes the list of global event listeners.
+   * @description Label for a button in the sources panel that refreshes the list of global event listeners.
    */
   refreshGlobalListeners: "Refresh global listeners"
 };
@@ -309,11 +309,11 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   *@description Label for the issues pane
+   * @description Label for the issues pane
    */
   issues: "Issues",
   /**
-   *@description Command for showing the 'Issues' tool
+   * @description Command for showing the 'Issues' tool
    */
   showIssues: "Show Issues"
 };
@@ -356,39 +356,39 @@ import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings4 = {
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
    */
   resetView: "Reset view",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers Panel)
    */
   switchToPanMode: "Switch to pan mode",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers Panel)
    */
   switchToRotateMode: "Switch to rotate mode",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
    */
   zoomIn: "Zoom in",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
    */
   zoomOut: "Zoom out",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer up
+   * @description Description of a shortcut that pans or rotates the layer viewer up
    */
   panOrRotateUp: "Pan or rotate up",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer down
+   * @description Description of a shortcut that pans or rotates the layer viewer down
    */
   panOrRotateDown: "Pan or rotate down",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer left
+   * @description Description of a shortcut that pans or rotates the layer viewer left
    */
   panOrRotateLeft: "Pan or rotate left",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer right
+   * @description Description of a shortcut that pans or rotates the layer viewer right
    */
   panOrRotateRight: "Pan or rotate right"
 };
@@ -509,23 +509,23 @@ import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
-   *@description Text for throttling the network
+   * @description Text for throttling the network
    */
   throttling: "Throttling",
   /**
-   *@description Command for showing the Mobile Throttling tool.
+   * @description Command for showing the Mobile Throttling tool.
    */
   showThrottling: "Show Throttling",
   /**
-   *@description Title of an action in the network conditions tool to network offline
+   * @description Title of an action in the network conditions tool to network offline
    */
   goOffline: "Go offline",
   /**
-   *@description A tag of Mobile related settings that can be searched in the command menu
+   * @description A tag of Mobile related settings that can be searched in the command menu
    */
   device: "device",
   /**
-   *@description A tag of Network related actions that can be searched in the command menu
+   * @description A tag of Network related actions that can be searched in the command menu
    */
   throttlingTag: "throttling",
   /**
@@ -539,7 +539,7 @@ var UIStrings5 = {
    */
   enableFastGThrottling: "Enable fast `3G` throttling",
   /**
-   *@description Title of an action in the network conditions tool to network online
+   * @description Title of an action in the network conditions tool to network online
    */
   goOnline: "Go online"
 };
@@ -638,111 +638,111 @@ import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings6 = {
   /**
-   *@description Command for showing the 'Network' tool
+   * @description Command for showing the 'Network' tool
    */
   showNetwork: "Show Network",
   /**
-   *@description Title of the Network tool
+   * @description Title of the Network tool
    */
   network: "Network",
   /**
-   *@description Command for showing the 'Network request blocking' tool
+   * @description Command for showing the 'Network request blocking' tool
    */
   showNetworkRequestBlocking: "Show Network request blocking",
   /**
-   *@description Title of the 'Network request blocking' tool in the bottom drawer
+   * @description Title of the 'Network request blocking' tool in the bottom drawer
    */
   networkRequestBlocking: "Network request blocking",
   /**
-   *@description Command for showing the 'Network conditions' tool
+   * @description Command for showing the 'Network conditions' tool
    */
   showNetworkConditions: "Show Network conditions",
   /**
-   *@description Title of the 'Network conditions' tool in the bottom drawer
+   * @description Title of the 'Network conditions' tool in the bottom drawer
    */
   networkConditions: "Network conditions",
   /**
-   *@description A tag of Network Conditions tool that can be searched in the command menu
+   * @description A tag of Network Conditions tool that can be searched in the command menu
    */
   diskCache: "disk cache",
   /**
-   *@description A tag of Network Conditions tool that can be searched in the command menu
+   * @description A tag of Network Conditions tool that can be searched in the command menu
    */
   networkThrottling: "network throttling",
   /**
-   *@description Command for showing the 'Search' tool
+   * @description Command for showing the 'Search' tool
    */
   showSearch: "Show Search",
   /**
-   *@description Title of a search bar or tool
+   * @description Title of a search bar or tool
    */
   search: "Search",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   recordNetworkLog: "Record network log",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   stopRecordingNetworkLog: "Stop recording network log",
   /**
-   *@description Title of an action that hides network request details
+   * @description Title of an action that hides network request details
    */
   hideRequestDetails: "Hide request details",
   /**
-   *@description Title of a setting under the Network category in Settings
+   * @description Title of a setting under the Network category in Settings
    */
   colorcodeResourceTypes: "Color-code resource types",
   /**
-   *@description A tag of Network color-code resource types that can be searched in the command menu
+   * @description A tag of Network color-code resource types that can be searched in the command menu
    */
   colorCode: "color code",
   /**
-   *@description A tag of Network color-code resource types that can be searched in the command menu
+   * @description A tag of Network color-code resource types that can be searched in the command menu
    */
   resourceType: "resource type",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   colorCodeByResourceType: "Color code by resource type",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   useDefaultColors: "Use default colors",
   /**
-   *@description Title of a setting under the Network category in Settings
+   * @description Title of a setting under the Network category in Settings
    */
   groupNetworkLogByFrame: "Group network log by frame",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   netWork: "network",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   frame: "frame",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   group: "group",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   groupNetworkLogItemsByFrame: "Group network log items by frame",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   dontGroupNetworkLogItemsByFrame: "Don't group network log items by frame",
   /**
-   *@description Title of a button for clearing the network log
+   * @description Title of a button for clearing the network log
    */
   clear: "Clear network log",
   /**
-   *@description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
    */
   addNetworkRequestBlockingPattern: "Add network request blocking pattern",
   /**
-   *@description Title of an action in the Network request blocking panel to clear all URL patterns.
+   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
    */
   removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
   /**
@@ -1105,31 +1105,31 @@ import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as PreloadingHelper from "./../../panels/application/preloading/helper/helper.js";
 var UIStrings7 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   application: "Application",
   /**
-   *@description Command for showing the 'Application' tool
+   * @description Command for showing the 'Application' tool
    */
   showApplication: "Show Application",
   /**
-   *@description A tag of Application Panel that can be searched in the command menu
+   * @description A tag of Application Panel that can be searched in the command menu
    */
   pwa: "pwa",
   /**
-   *@description Text of button in Clear Storage View of the Application panel
+   * @description Text of button in Clear Storage View of the Application panel
    */
   clearSiteData: "Clear site data",
   /**
-   *@description Title of an action that clears all site data including 3rd party cookies
+   * @description Title of an action that clears all site data including 3rd party cookies
    */
   clearSiteDataIncludingThirdparty: "Clear site data (including third-party cookies)",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   startRecordingEvents: "Start recording events",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   stopRecordingEvents: "Stop recording events"
 };
@@ -1265,55 +1265,55 @@ import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 var UIStrings8 = {
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Command for showing the 'Performance' tool
+   * @description Command for showing the 'Performance' tool
    */
   showPerformance: "Show Performance",
   /**
-   *@description Text to record a series of actions for analysis
+   * @description Text to record a series of actions for analysis
    */
   record: "Record",
   /**
-   *@description Text of an item that stops the running task
+   * @description Text of an item that stops the running task
    */
   stop: "Stop",
   /**
-   *@description Title of an action in the timeline tool to record reload
+   * @description Title of an action in the timeline tool to record reload
    */
   recordAndReload: "Record and reload",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button
+   * @description Tooltip text that appears when hovering over the largeicon download button
    */
   saveProfile: "Save profile\u2026",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon load button
+   * @description Tooltip text that appears when hovering over the largeicon load button
    */
   loadProfile: "Load profile\u2026",
   /**
-   *@description Prev button title in Film Strip View of the Performance panel
+   * @description Prev button title in Film Strip View of the Performance panel
    */
   previousFrame: "Previous frame",
   /**
-   *@description Next button title in Film Strip View of the Performance panel
+   * @description Next button title in Film Strip View of the Performance panel
    */
   nextFrame: "Next frame",
   /**
-   *@description Title of an action in the timeline tool to show history
+   * @description Title of an action in the timeline tool to show history
    */
   showRecentTimelineSessions: "Show recent timeline sessions",
   /**
-   *@description Title of an action that opens the previous recording in the performance panel
+   * @description Title of an action that opens the previous recording in the performance panel
    */
   previousRecording: "Previous recording",
   /**
-   *@description Title of an action that opens the next recording in the performance panel
+   * @description Title of an action that opens the next recording in the performance panel
    */
   nextRecording: "Next recording",
   /**
-   *@description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings
    */
   hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
 };
@@ -1618,7 +1618,7 @@ import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throt
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 var UIStrings9 = {
   /**
-   *@description Text that refers to the main target.
+   * @description Text that refers to the main target.
    */
   main: "Main"
 };

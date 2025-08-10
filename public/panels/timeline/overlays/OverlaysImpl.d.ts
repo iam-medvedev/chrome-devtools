@@ -188,20 +188,18 @@ export declare class Overlays extends EventTarget {
     entryIsVisibleOnChart(entry: Trace.Types.Overlays.OverlayEntry): boolean;
     /**
      * Calculate the X pixel position for an event start on the timeline.
-     * @param chartName - the chart that the event is on. It is expected that both
+     * @param chartName the chart that the event is on. It is expected that both
      * charts have the same width so this doesn't make a difference - but it might
      * in the future if the UI changes, hence asking for it.
-     *
-     * @param event - the trace event you want to get the pixel position of
+     * @param event the trace event you want to get the pixel position of
      */
     xPixelForEventStartOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**
      * Calculate the X pixel position for an event end on the timeline.
-     * @param chartName - the chart that the event is on. It is expected that both
+     * @param chartName the chart that the event is on. It is expected that both
      * charts have the same width so this doesn't make a difference - but it might
      * in the future if the UI changes, hence asking for it.
-     *
-     * @param event - the trace event you want to get the pixel position of
+     * @param event the trace event you want to get the pixel position of
      */
     xPixelForEventEndOnChart(event: Trace.Types.Overlays.OverlayEntry): number | null;
     /**

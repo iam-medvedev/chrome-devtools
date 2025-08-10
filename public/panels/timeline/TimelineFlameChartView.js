@@ -32,9 +32,9 @@ import { keyForTraceConfig } from './TrackConfiguration.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
-     *@description Text in Timeline Flame Chart View of the Performance panel
-     *@example {Frame} PH1
-     *@example {10ms} PH2
+     * @description Text in Timeline Flame Chart View of the Performance panel
+     * @example {Frame} PH1
+     * @example {10ms} PH2
      */
     sAtS: '{PH1} at {PH2}',
 };
@@ -144,7 +144,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #networkPersistedGroupConfigSetting;
     #mainPersistedGroupConfigSetting;
     constructor(delegate) {
-        super();
+        super({ jslog: `${VisualLogging.section('timeline.flame-chart-view')}` });
         this.registerRequiredCSS(timelineFlameChartViewStyles);
         this.element.classList.add('timeline-flamechart');
         this.delegate = delegate;
@@ -283,7 +283,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
              */
             this.focus();
         });
-        this.element.setAttribute('jslog', `${VisualLogging.section('timeline.flame-chart-view')}`);
         this.networkPane = new UI.Widget.VBox();
         this.networkPane.setMinimumSize(23, 23);
         this.networkFlameChart.show(this.networkPane.element);
@@ -313,6 +312,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#onMainEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.mainDataProvider, event.data.entryFromIndex);
         this.#onNetworkEntriesLinkAnnotationCreated = event => this.onEntriesLinkAnnotationCreate(this.networkDataProvider, event.data.entryFromIndex);
         this.mainFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
+        this.mainDataProvider.addEventListener("EntryLabelAnnotationAdded" /* TimelineFlameChartDataProviderEvents.ENTRY_LABEL_ANNOTATION_ADDED */, this.onMainAddEntryLabelAnnotation, this);
         this.networkFlameChart.addEventListener("EntryLabelAnnotationAdded" /* PerfUI.FlameChart.Events.ENTRY_LABEL_ANNOTATION_ADDED */, this.onNetworkAddEntryLabelAnnotation, this);
         this.mainFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onMainEntriesLinkAnnotationCreated, this);
         this.networkFlameChart.addEventListener("EntriesLinkAnnotationCreated" /* PerfUI.FlameChart.Events.ENTRIES_LINK_ANNOTATION_CREATED */, this.#onNetworkEntriesLinkAnnotationCreated, this);
@@ -916,8 +916,8 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(Trace.Helpers.Timing.traceWindowFromMilliSeconds(Trace.Types.Timing.Milli(windowStartTime), Trace.Types.Timing.Milli(windowEndTime)), { shouldAnimate: animate });
     }
     /**
-     * @param startTime - the start time of the selection in MilliSeconds
-     * @param endTime - the end time of the selection in MilliSeconds
+     * @param startTime the start time of the selection in MilliSeconds
+     * @param endTime the end time of the selection in MilliSeconds
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     updateRangeSelection(startTime, endTime) {

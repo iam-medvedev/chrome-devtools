@@ -133,14 +133,14 @@ export class LayoutShiftDetails extends UI.Widget.Widget {
 }
 export const DEFAULT_VIEW = (input, _output, target) => {
     if (!input.event || !input.parsedTrace) {
-        render(html ``, target, { host: input });
+        render(html ``, target);
         return;
     }
     const title = Utils.EntryName.nameForEntry(input.event);
     // clang-format off
     render(html `
-        <style>${layoutShiftDetailsStyles}</style>
-        <style>${Buttons.textButtonStyles}</style>
+        <style>${UI.Widget.widgetScoped(layoutShiftDetailsStyles)}</style>
+        <style>${UI.Widget.widgetScoped(Buttons.textButtonStyles)}</style>
 
       <div class="layout-shift-summary-details">
         <div
@@ -156,7 +156,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
         </div>
       </div>
-      `, target, { host: input });
+      `, target);
     // clang-format on
 };
 function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording, onEventClick) {

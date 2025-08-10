@@ -1195,7 +1195,7 @@ var colorSwatch_css_default = `/*
 var { html: html2 } = Lit2;
 var UIStrings = {
   /**
-   *@description Icon element title in Color Swatch of the inline editor in the Styles tab
+   * @description Icon element title in Color Swatch of the inline editor in the Styles tab
    */
   shiftclickToChangeColorFormat: "Shift-click to change color format"
 };
@@ -2123,15 +2123,15 @@ var cssShadowEditor_css_default = `/*
 // gen/front_end/ui/legacy/components/inline_editor/CSSShadowEditor.js
 var UIStrings2 = {
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+   * @description Text in CSSShadow Editor of the inline editor in the Styles tab
    */
   xOffset: "X offset",
   /**
-   *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+   * @description Text in CSSShadow Editor of the inline editor in the Styles tab
    */
   yOffset: "Y offset",
   /**
@@ -2140,7 +2140,7 @@ var UIStrings2 = {
    */
   blur: "Blur",
   /**
-   *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+   * @description Text in CSSShadow Editor of the inline editor in the Styles tab
    */
   spread: "Spread"
 };
@@ -3145,47 +3145,47 @@ function getRoundingPrecision(step) {
 // gen/front_end/ui/legacy/components/inline_editor/FontEditor.js
 var UIStrings3 = {
   /**
-   *@description Font editor label for font family selector
+   * @description Font editor label for font family selector
    */
   fontFamily: "Font Family",
   /**
-   *@description Section header for CSS property inputs
+   * @description Section header for CSS property inputs
    */
   cssProperties: "CSS Properties",
   /**
-   *@description Font size slider label for Font Editor
+   * @description Font size slider label for Font Editor
    */
   fontSize: "Font Size",
   /**
-   *@description Line height slider label for Font Editor
+   * @description Line height slider label for Font Editor
    */
   lineHeight: "Line Height",
   /**
-   *@description Font weight slider label for Font Editor
+   * @description Font weight slider label for Font Editor
    */
   fontWeight: "Font Weight",
   /**
-   *@description Label for letter-spacing labels
+   * @description Label for letter-spacing labels
    */
   spacing: "Spacing",
   /**
-   *@description Label for numbered fallback selectors
-   *@example {2} PH1
+   * @description Label for numbered fallback selectors
+   * @example {2} PH1
    */
   fallbackS: "Fallback {PH1}",
   /**
-   *@description Announcement for deleting an empty font family selector in the Font Editor
-   *@example {2} PH1
+   * @description Announcement for deleting an empty font family selector in the Font Editor
+   * @example {2} PH1
    */
   thereIsNoValueToDeleteAtIndexS: "There is no value to delete at index: {PH1}",
   /**
-   *@description Announcement when deleting a font selector in the Font Editor
-   *@example {2} PH1
+   * @description Announcement when deleting a font selector in the Font Editor
+   * @example {2} PH1
    */
   fontSelectorDeletedAtIndexS: "Font Selector deleted at index: {PH1}",
   /**
-   *@description Label for Font Editor button to delete font family/fallback selectors
-   *@example {Fallback 1} PH1
+   * @description Label for Font Editor button to delete font family/fallback selectors
+   * @example {Fallback 1} PH1
    */
   deleteS: "Delete {PH1}",
   /**
@@ -3195,22 +3195,22 @@ var UIStrings3 = {
    */
   PleaseEnterAValidValueForSText: "* Please enter a valid value for {PH1} text input",
   /**
-   *@description Error text in Font Editor
-   *@example {font-size} PH1
+   * @description Error text in Font Editor
+   * @example {font-size} PH1
    */
   thisPropertyIsSetToContainUnits: "This property is set to contain units but does not have a defined corresponding unitsArray: {PH1}",
   /**
-   *@description Label for slider input in the Font Editor.
-   *@example {font-size} PH1
+   * @description Label for slider input in the Font Editor.
+   * @example {font-size} PH1
    */
   sSliderInput: "{PH1} Slider Input",
   /**
-   *@description Accessible label for a text input for a property in the Font Editor.
-   *@example {font-size} PH1
+   * @description Accessible label for a text input for a property in the Font Editor.
+   * @example {font-size} PH1
    */
   sTextInput: "{PH1} Text Input",
   /**
-   *@description Font Editor units text box label
+   * @description Font Editor units text box label
    */
   units: "Units",
   /**
@@ -3220,8 +3220,8 @@ var UIStrings3 = {
    */
   sUnitInput: "{PH1} Unit Input",
   /**
-   *@description Text used in the Font Editor for the key values selector
-   *@example {font-size} PH1
+   * @description Text used in the Font Editor for the key values selector
+   * @example {font-size} PH1
    */
   sKeyValueSelector: "{PH1} Key Value Selector",
   /**
@@ -3234,11 +3234,11 @@ var UIStrings3 = {
    */
   sToggleInputType: "{PH1} toggle input type",
   /**
-   *@description Label for Font Editor alert in CSS Properties section when toggling inputs
+   * @description Label for Font Editor alert in CSS Properties section when toggling inputs
    */
   selectorInputMode: "Selector Input Mode",
   /**
-   *@description Label for Font Editor alert in CSS Properties section when toggling inputs
+   * @description Label for Font Editor alert in CSS Properties section when toggling inputs
    */
   sliderInputMode: "Slider Input Mode"
 };

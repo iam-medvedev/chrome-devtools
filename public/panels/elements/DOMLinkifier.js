@@ -22,7 +22,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `${(input.tagName || input.pseudo) ? html `
-    <style>${domLinkifierStyles}</style>
+    <style>${UI.Widget.widgetScoped(domLinkifierStyles)}</style>
     <span class="monospace">
       <button class="node-link text-button link-style ${classMap({
         'dynamic-link': Boolean(input.dynamic),
@@ -44,7 +44,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
         ...input.classes.map(className => html `<span class="extra node-label-class">.${className}</span>`),
         input.pseudo ? html `<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing,
     ]}</button>
-    </span>` : i18nString(UIStrings.node)}`, target, { host: input });
+    </span>` : i18nString(UIStrings.node)}`, target);
     // clang-format on
 };
 export class DOMNodeLink extends UI.Widget.Widget {
@@ -147,14 +147,14 @@ export class DOMNodeLink extends UI.Widget.Widget {
 const DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-      <style>${domLinkifierStyles}</style>
+      <style>${UI.Widget.widgetScoped(domLinkifierStyles)}</style>
       <button class="node-link text-button link-style"
           jslog=${VisualLogging.link('node').track({ click: true })}
           tabindex=${input.preventKeyboardFocus ? -1 : 0}
           @click=${input.onClick}
           @mousedown=${(e) => e.consume()}>
         <slot></slot>
-      </button>`, target, { host: input });
+      </button>`, target);
     // clang-format on
 };
 export class DeferredDOMNodeLink extends UI.Widget.Widget {

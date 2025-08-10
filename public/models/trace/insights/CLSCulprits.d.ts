@@ -12,7 +12,7 @@ export declare const UIStrings: {
      */
     readonly description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.";
     /**
-     *@description Text indicating the worst layout shift cluster.
+     * @description Text indicating the worst layout shift cluster.
      */
     readonly worstLayoutShiftCluster: "Worst layout shift cluster";
     /**
@@ -25,7 +25,7 @@ export declare const UIStrings: {
      */
     readonly layoutShiftCluster: "Layout shift cluster @ {PH1}";
     /**
-     *@description Text indicating the biggest reasons for the layout shifts.
+     * @description Text indicating the biggest reasons for the layout shifts.
      */
     readonly topCulprits: "Top layout shift culprits";
     /**

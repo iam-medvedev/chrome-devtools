@@ -36,7 +36,7 @@ export declare class Event {
     /**
      * set an event to be "live" where it's ended time is always the chart maximum
      * or to be a fixed time.
-     * @param {number} time
+     * @param time
      */
     set endTime(time: number);
     get id(): number;

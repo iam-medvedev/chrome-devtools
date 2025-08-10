@@ -5,7 +5,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Command for showing the 'Lighthouse' tool
+     * @description Command for showing the 'Lighthouse' tool
      */
     showLighthouse: 'Show `Lighthouse`',
 };

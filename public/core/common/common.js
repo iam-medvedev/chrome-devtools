@@ -3551,43 +3551,43 @@ __export(Revealer_exports, {
 import * as i18n from "./../i18n/i18n.js";
 var UIStrings = {
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   elementsPanel: "Elements panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   stylesSidebar: "styles sidebar",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   changesDrawer: "Changes drawer",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   issuesView: "Issues view",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   networkPanel: "Network panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   applicationPanel: "Application panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   securityPanel: "Security panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   sourcesPanel: "Sources panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   timelinePanel: "Performance panel",
   /**
-   *@description The UI destination when right clicking an item that can be revealed
+   * @description The UI destination when right clicking an item that can be revealed
    */
   memoryInspectorPanel: "Memory inspector panel",
   /**
@@ -4650,119 +4650,119 @@ __export(ResourceType_exports, {
 import * as i18n3 from "./../i18n/i18n.js";
 var UIStrings2 = {
   /**
-   *@description Text that appears in a tooltip the fetch and xhr resource types filter.
+   * @description Text that appears in a tooltip the fetch and xhr resource types filter.
    */
   fetchAndXHR: "`Fetch` and `XHR`",
   /**
-   *@description Text that appears in a tooltip for the JavaScript types filter.
+   * @description Text that appears in a tooltip for the JavaScript types filter.
    */
   javascript: "JavaScript",
   /**
-   *@description Text that appears on a button for the JavaScript resource type filter.
+   * @description Text that appears on a button for the JavaScript resource type filter.
    */
   js: "JS",
   /**
-   *@description Text that appears on a button for the css resource type filter.
+   * @description Text that appears on a button for the css resource type filter.
    */
   css: "CSS",
   /**
-   *@description Text that appears on a button for the image resource type filter.
+   * @description Text that appears on a button for the image resource type filter.
    */
   img: "Img",
   /**
-   *@description Text that appears on a button for the media resource type filter.
+   * @description Text that appears on a button for the media resource type filter.
    */
   media: "Media",
   /**
-   *@description Text that appears on a button for the font resource type filter.
+   * @description Text that appears on a button for the font resource type filter.
    */
   font: "Font",
   /**
-   *@description Text that appears on a button for the document resource type filter.
+   * @description Text that appears on a button for the document resource type filter.
    */
   doc: "Doc",
   /**
-   *@description Text that appears on a button for the websocket, webtransport, directsocket resource type filter.
+   * @description Text that appears on a button for the websocket, webtransport, directsocket resource type filter.
    */
   socketShort: "Socket",
   /**
-   *@description Text that appears in a tooltip for the WebAssembly types filter.
+   * @description Text that appears in a tooltip for the WebAssembly types filter.
    */
   webassembly: "WebAssembly",
   /**
-   *@description Text that appears on a button for the WebAssembly resource type filter.
+   * @description Text that appears on a button for the WebAssembly resource type filter.
    */
   wasm: "Wasm",
   /**
-   *@description Text that appears on a button for the manifest resource type filter.
+   * @description Text that appears on a button for the manifest resource type filter.
    */
   manifest: "Manifest",
   /**
-   *@description Text for other types of items
+   * @description Text for other types of items
    */
   other: "Other",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   document: "Document",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   stylesheet: "Stylesheet",
   /**
-   *@description Text in Image View of the Sources panel
+   * @description Text in Image View of the Sources panel
    */
   image: "Image",
   /**
-   *@description Label for a group of JavaScript files
+   * @description Label for a group of JavaScript files
    */
   script: "Script",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   texttrack: "TextTrack",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   fetch: "Fetch",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   eventsource: "EventSource",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   websocket: "WebSocket",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   webtransport: "WebTransport",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   directsocket: "DirectSocket",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   signedexchange: "SignedExchange",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   ping: "Ping",
   /**
-   *@description Name of a network resource type
+   * @description Name of a network resource type
    */
   cspviolationreport: "CSPViolationReport",
   /**
-   *@description Name of a network initiator type
+   * @description Name of a network initiator type
    */
   preflight: "Preflight",
   /**
-   *@description Name of a network initiator type
+   * @description Name of a network initiator type
    */
   webbundle: "WebBundle",
   /**
-   *@description Name of a network initiator type for FedCM requests
+   * @description Name of a network initiator type for FedCM requests
    */
   fedcm: "FedCM"
 };
@@ -5232,67 +5232,67 @@ import * as i18n5 from "./../i18n/i18n.js";
 import * as Root2 from "./../root/root.js";
 var UIStrings3 = {
   /**
-   *@description Title of the Elements Panel
+   * @description Title of the Elements Panel
    */
   elements: "Elements",
   /**
-   *@description Text for DevTools AI
+   * @description Text for DevTools AI
    */
   ai: "AI",
   /**
-   *@description Text for DevTools appearance
+   * @description Text for DevTools appearance
    */
   appearance: "Appearance",
   /**
-   *@description Name of the Sources panel
+   * @description Name of the Sources panel
    */
   sources: "Sources",
   /**
-   *@description Title of the Network tool
+   * @description Title of the Network tool
    */
   network: "Network",
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Title of the Console tool
+   * @description Title of the Console tool
    */
   console: "Console",
   /**
-   *@description A title of the 'Persistence' setting category
+   * @description A title of the 'Persistence' setting category
    */
   persistence: "Persistence",
   /**
-   *@description Text that refers to the debugger
+   * @description Text that refers to the debugger
    */
   debugger: "Debugger",
   /**
-   *@description Text describing global shortcuts and settings that are available throughout the DevTools
+   * @description Text describing global shortcuts and settings that are available throughout the DevTools
    */
   global: "Global",
   /**
-   *@description Title of the Rendering tool
+   * @description Title of the Rendering tool
    */
   rendering: "Rendering",
   /**
-   *@description Title of a section on CSS Grid tooling
+   * @description Title of a section on CSS Grid tooling
    */
   grid: "Grid",
   /**
-   *@description Text for the mobile platform, as opposed to desktop
+   * @description Text for the mobile platform, as opposed to desktop
    */
   mobile: "Mobile",
   /**
-   *@description Text for the memory of the page
+   * @description Text for the memory of the page
    */
   memory: "Memory",
   /**
-   *@description Text for the extension of the page
+   * @description Text for the extension of the page
    */
   extension: "Extension",
   /**
-   *@description Text for the adorner of the page
+   * @description Text for the adorner of the page
    */
   adorner: "Adorner",
   /**
@@ -5515,9 +5515,9 @@ var Settings = class _Settings {
   }
   /**
    * Get setting via key, and create a new setting if the requested setting does not exist.
-   * @param {string} key kebab-case string ID
-   * @param {T} defaultValue
-   * @param {SettingStorageType=} storageType If not specified, SettingStorageType.GLOBAL is used.
+   * @param key kebab-case string ID
+   * @param defaultValue
+   * @param storageType If not specified, SettingStorageType.GLOBAL is used.
    */
   createSetting(key, defaultValue, storageType) {
     const storage = this.storageFromType(storageType);

@@ -105,87 +105,87 @@ function getRegisteredListeners() {
 // gen/front_end/ui/legacy/ActionRegistration.js
 var UIStrings = {
   /**
-   *@description Title of the keybind category 'Elements' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Elements' in Settings' Shortcuts pannel.
    */
   elements: "Elements",
   /**
-   *@description Title of the keybind category 'Screenshot' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Screenshot' in Settings' Shortcuts pannel.
    */
   screenshot: "Screenshot",
   /**
-   *@description Title of the keybind category 'Network' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Network' in Settings' Shortcuts pannel.
    */
   network: "Network",
   /**
-   *@description Title of the keybind category 'Memory' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Memory' in Settings' Shortcuts pannel.
    */
   memory: "Memory",
   /**
-   *@description Title of the keybind category 'JavaScript Profiler' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'JavaScript Profiler' in Settings' Shortcuts pannel.
    */
   javascript_profiler: "JavaScript Profiler",
   /**
-   *@description Title of the keybind category 'Console' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Console' in Settings' Shortcuts pannel.
    */
   console: "Console",
   /**
-   *@description Title of the keybind category 'Performance' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Performance' in Settings' Shortcuts pannel.
    */
   performance: "Performance",
   /**
-   *@description Title of the keybind category 'Mobile' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Mobile' in Settings' Shortcuts pannel.
    */
   mobile: "Mobile",
   /**
-   *@description Title of the keybind category 'Help' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Help' in Settings' Shortcuts pannel.
    */
   help: "Help",
   /**
-   *@description Title of the keybind category 'Layers' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Layers' in Settings' Shortcuts pannel.
    */
   layers: "Layers",
   /**
-   *@description Title of the keybind category 'Navigation' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Navigation' in Settings' Shortcuts pannel.
    */
   navigation: "Navigation",
   /**
-   *@description Title of the keybind category 'Drawer' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Drawer' in Settings' Shortcuts pannel.
    */
   drawer: "Drawer",
   /**
-   *@description Title of the keybind category 'Global' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Global' in Settings' Shortcuts pannel.
    */
   global: "Global",
   /**
-   *@description Title of the keybind category 'Resources' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Resources' in Settings' Shortcuts pannel.
    */
   resources: "Resources",
   /**
-   *@description Title of the keybind category 'Background Services' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Background Services' in Settings' Shortcuts pannel.
    */
   background_services: "Background Services",
   /**
-   *@description Title of the keybind category 'Settings' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Settings' in Settings' Shortcuts pannel.
    */
   settings: "Settings",
   /**
-   *@description Title of the keybind category 'Debugger' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Debugger' in Settings' Shortcuts pannel.
    */
   debugger: "Debugger",
   /**
-   *@description Title of the keybind category 'Sources' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Sources' in Settings' Shortcuts pannel.
    */
   sources: "Sources",
   /**
-   *@description Title of the keybind category 'Rendering' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Rendering' in Settings' Shortcuts pannel.
    */
   rendering: "Rendering",
   /**
-   *@description Title of the keybind category 'Recorder' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Recorder' in Settings' Shortcuts pannel.
    */
   recorder: "Recorder",
   /**
-   *@description Title of the keybind category 'Changes' in Settings' Shortcuts pannel.
+   * @description Title of the keybind category 'Changes' in Settings' Shortcuts pannel.
    */
   changes: "Changes"
 };
@@ -715,7 +715,7 @@ __export(Toolbar_exports, {
 import * as Common14 from "./../../core/common/common.js";
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform14 from "./../../core/platform/platform.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root6 from "./../../core/root/root.js";
 import * as Buttons5 from "./../components/buttons/buttons.js";
 import * as VisualLogging14 from "./../visual_logging/visual_logging.js";
 import * as IconButton6 from "./../components/icon_button/icon_button.js";
@@ -733,7 +733,7 @@ __export(ContextMenu_exports, {
   registerProvider: () => registerProvider
 });
 import * as Host6 from "./../../core/host/host.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as Buttons4 from "./../components/buttons/buttons.js";
 import { html, render } from "./../lit/lit.js";
 import * as VisualLogging9 from "./../visual_logging/visual_logging.js";
@@ -1512,7 +1512,7 @@ __export(InspectorView_exports, {
 import * as Common10 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Root3 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Buttons3 from "./../components/buttons/buttons.js";
 import * as IconButton4 from "./../components/icon_button/icon_button.js";
@@ -1531,16 +1531,16 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as VisualLogging2 from "./../visual_logging/visual_logging.js";
 var UIStrings2 = {
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close",
   /**
-   *@description Text announced when the DevTools are undocked
+   * @description Text announced when the DevTools are undocked
    */
   devtoolsUndocked: "DevTools is undocked",
   /**
-   *@description Text announced when the DevTools are docked to the left, right, or bottom of the browser tab
-   *@example {bottom} PH1
+   * @description Text announced when the DevTools are docked to the left, right, or bottom of the browser tab
+   * @example {bottom} PH1
    */
   devToolsDockedTo: "DevTools is docked to {PH1}"
 };
@@ -1605,7 +1605,8 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   dockSide() {
     return this.dockSideInternal;
   }
-  /** Whether the DevTools can be docked, used to determine if we show docking UI.
+  /**
+   * Whether the DevTools can be docked, used to determine if we show docking UI.
    * Set via `Root.Runtime.Runtime.queryParam('can_dock')`. See https://cs.chromium.org/can_dock+f:window
    *
    * Shouldn't be used as a heuristic for target connection state.
@@ -1874,11 +1875,11 @@ details {
 // gen/front_end/ui/legacy/Infobar.js
 var UIStrings3 = {
   /**
-   *@description Text on a button to close the infobar and never show the infobar in the future
+   * @description Text on a button to close the infobar and never show the infobar in the future
    */
   dontShowAgain: "Don't show again",
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close"
 };
@@ -3029,7 +3030,7 @@ function widgetRef(type, callback) {
   });
 }
 function widgetScoped(styles) {
-  return `@scope to (devtools-widget) { ${styles} }`;
+  return `@scope to (devtools-widget > *) { ${styles} }`;
 }
 var widgetCounterMap = /* @__PURE__ */ new WeakMap();
 var widgetMap = /* @__PURE__ */ new WeakMap();
@@ -3092,6 +3093,9 @@ var Widget = class _Widget {
       this.#shadowRoot.appendChild(this.contentElement);
     } else {
       this.contentElement = this.element;
+    }
+    if (options?.jslog) {
+      this.contentElement.setAttribute("jslog", options.jslog);
     }
     this.contentElement.classList.add("widget");
     widgetMap.set(this.element, this);
@@ -3533,7 +3537,7 @@ var Widget = class _Widget {
    * the `requestAnimationFrame` and executed with the animation frame. Instead,
    * use the `requestUpdate()` method to schedule an asynchronous update.
    *
-   * @return can either return nothing or a promise; in that latter case, the
+   * @returns can either return nothing or a promise; in that latter case, the
    *         update logic will await the resolution of the returned promise
    *         before proceeding.
    */
@@ -5062,32 +5066,32 @@ var Tooltip = class {
 // gen/front_end/ui/legacy/TabbedPane.js
 var UIStrings4 = {
   /**
-   *@description The aria label for the button to open more tabs at the right tabbed pane in Elements tools
+   * @description The aria label for the button to open more tabs at the right tabbed pane in Elements tools
    */
   moreTabs: "More tabs",
   /**
-   *@description Text in Tabbed Pane
-   *@example {tab} PH1
+   * @description Text in Tabbed Pane
+   * @example {tab} PH1
    */
   closeS: "Close {PH1}",
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close",
   /**
-   *@description Text on a menu option to close other drawers when right click on a drawer title
+   * @description Text on a menu option to close other drawers when right click on a drawer title
    */
   closeOthers: "Close others",
   /**
-   *@description Text on a menu option to close the drawer to the right when right click on a drawer title
+   * @description Text on a menu option to close the drawer to the right when right click on a drawer title
    */
   closeTabsToTheRight: "Close tabs to the right",
   /**
-   *@description Text on a menu option to close all the drawers except Console when right click on a drawer title
+   * @description Text on a menu option to close all the drawers except Console when right click on a drawer title
    */
   closeAll: "Close all",
   /**
-   *@description Indicates that a tab contains a preview feature (i.e., a beta / experimental feature).
+   * @description Indicates that a tab contains a preview feature (i.e., a beta / experimental feature).
    */
   previewFeature: "Preview feature",
   /**
@@ -6268,6 +6272,7 @@ import * as Common9 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as IconButton3 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging6 from "./../visual_logging/visual_logging.js";
 
@@ -6361,31 +6366,31 @@ import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 var UIStrings5 = {
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Elements' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Elements' panel.
    */
   elements: "Elements",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer' panel.
    */
   drawer: "Drawer",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer sidebar' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Drawer sidebar' panel.
    */
   drawer_sidebar: "Drawer sidebar",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Panel'.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Panel'.
    */
   panel: "Panel",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Network' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Network' panel.
    */
   network: "Network",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Settings' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Settings' panel.
    */
   settings: "Settings",
   /**
-   *@description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Sources' panel.
+   * @description Badge label for an entry in the Quick Open menu. Selecting the entry opens the 'Sources' panel.
    */
   sources: "Sources"
 };
@@ -6458,8 +6463,8 @@ function getLocalizedViewLocationCategory(category) {
 // gen/front_end/ui/legacy/ViewManager.js
 var UIStrings6 = {
   /**
-   *@description Aria label for the tab panel view container
-   *@example {Sensors} PH1
+   * @description Aria label for the tab panel view container
+   * @example {Sensors} PH1
    */
   sPanel: "{PH1} panel"
 };
@@ -7031,6 +7036,26 @@ var TabbedLocation = class _TabbedLocation extends Location {
   appendTabsToMenu(contextMenu) {
     const views = Array.from(this.views.values());
     views.sort((viewa, viewb) => viewa.title().localeCompare(viewb.title()));
+    const freestylerView = views.find((view) => view.viewId() === "freestyler");
+    if (freestylerView) {
+      const featureName = Root3.Runtime.hostConfig.devToolsFreestyler?.featureName;
+      const promotionId = freestylerView instanceof PreRegisteredView ? freestylerView.featurePromotionId() : void 0;
+      const handler = () => {
+        void this.showView(freestylerView, void 0, true);
+        if (promotionId) {
+          PromotionManager.instance().recordFeatureInteraction(promotionId);
+        }
+      };
+      contextMenu.defaultSection().appendItem(freestylerView.title(), handler, {
+        isPreviewFeature: freestylerView.isPreviewFeature(),
+        jslogContext: freestylerView.viewId(),
+        // Request to show a new badge in the native context menu only if:
+        // 1. The promotion manager agrees that we may show it, or 2. the promotion manager doesn't track this badge.
+        // Note that this is only a request to show the new badge, the back-end will decide whether
+        // or not it will show it depending on the user education service.
+        featureName: !promotionId || PromotionManager.instance().maybeShowPromotion(promotionId) ? featureName : void 0
+      });
+    }
     for (const view of views) {
       const title = view.title();
       if (view.viewId() === "issues-pane") {
@@ -7041,6 +7066,9 @@ var TabbedLocation = class _TabbedLocation extends Location {
           );
           void this.showView(view, void 0, true);
         }, { jslogContext: "issues-pane" });
+        continue;
+      }
+      if (view.viewId() === "freestyler") {
         continue;
       }
       const isPreviewFeature = view.isPreviewFeature();
@@ -7171,9 +7199,6 @@ var TabbedLocation = class _TabbedLocation extends Location {
     }
     this.tabOrderSetting.set(tabOrders);
   }
-  getCloseableTabSetting() {
-    return this.closeableTabSetting.get();
-  }
   static orderStep = 10;
   // Keep in sync with descriptors.
 };
@@ -7240,31 +7265,31 @@ var StackLocation = class extends Location {
 // gen/front_end/ui/legacy/InspectorView.js
 var UIStrings7 = {
   /**
-   *@description Title of more tabs button in inspector view
+   * @description Title of more tabs button in inspector view
    */
   moreTools: "More Tools",
   /**
-   *@description Text that appears when hovor over the close button on the drawer view
+   * @description Text that appears when hovor over the close button on the drawer view
    */
   closeDrawer: "Close drawer",
   /**
-   *@description The aria label for main tabbed pane that contains Panels
+   * @description The aria label for main tabbed pane that contains Panels
    */
   panels: "Panels",
   /**
-   *@description Title of an action that reloads the tab currently being debugged by DevTools
+   * @description Title of an action that reloads the tab currently being debugged by DevTools
    */
   reloadDebuggedTab: "Reload page",
   /**
-   *@description Title of an action that reloads the DevTools
+   * @description Title of an action that reloads the DevTools
    */
   reloadDevtools: "Reload DevTools",
   /**
-   *@description Text for context menu action to move a tab to the main panel
+   * @description Text for context menu action to move a tab to the main panel
    */
   moveToTop: "Move to top",
   /**
-   *@description Text for context menu action to move a tab to the drawer
+   * @description Text for context menu action to move a tab to the drawer
    */
   moveToBottom: "Move to bottom",
   /**
@@ -7288,19 +7313,19 @@ var UIStrings7 = {
    */
   setToSpecificLanguage: "Switch DevTools to {PH1}",
   /**
-   *@description The aria label for main toolbar
+   * @description The aria label for main toolbar
    */
   mainToolbar: "Main toolbar",
   /**
-   *@description The aria label for the drawer.
+   * @description The aria label for the drawer.
    */
   drawer: "Tool drawer",
   /**
-   *@description The aria label for the drawer shown.
+   * @description The aria label for the drawer shown.
    */
   drawerShown: "Drawer shown",
   /**
-   *@description The aria label for the drawer hidden.
+   * @description The aria label for the drawer hidden.
    */
   drawerHidden: "Drawer hidden",
   /**
@@ -7309,11 +7334,11 @@ var UIStrings7 = {
    */
   selectOverrideFolder: "Select a folder to store override files in",
   /**
-   *@description Label for a button which opens a file picker.
+   * @description Label for a button which opens a file picker.
    */
   selectFolder: "Select folder",
   /**
-   *@description Text that appears when hover the toggle orientation button
+   * @description Text that appears when hover the toggle orientation button
    */
   toggleDrawerOrientation: "Toggle drawer orientation"
 };
@@ -7373,7 +7398,7 @@ var InspectorView = class _InspectorView extends VBox {
     setLabel(drawerElement, i18nString7(UIStrings7.drawer));
     this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
     this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
-    if (Root3.Runtime.experiments.isEnabled(
+    if (Root4.Runtime.experiments.isEnabled(
       "vertical-drawer"
       /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
     )) {
@@ -7384,10 +7409,10 @@ var InspectorView = class _InspectorView extends VBox {
       drag: true,
       keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space"
     })}`);
-    this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host5.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host5.InspectorFrontendHost.InspectorFrontendHostInstance), "panel", true, true, Root3.Runtime.Runtime.queryParam("panel"));
+    this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host5.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host5.InspectorFrontendHost.InspectorFrontendHostInstance), "panel", true, true, Root4.Runtime.Runtime.queryParam("panel"));
     this.tabbedPane = this.tabbedLocation.tabbedPane();
     this.tabbedPane.element.classList.add("main-tabbed-pane");
-    const allocatedSpace = Root3.Runtime.conditions.canDock() ? "69px" : "41px";
+    const allocatedSpace = Root4.Runtime.conditions.canDock() ? "69px" : "41px";
     this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
     this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPane_css_default);
     this.tabbedPane.addEventListener(Events.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
@@ -7775,7 +7800,7 @@ var ActionDelegate = class {
         }
         return true;
       case "main.toggle-drawer-orientation":
-        if (Root3.Runtime.experiments.isEnabled(
+        if (Root4.Runtime.experiments.isEnabled(
           "vertical-drawer"
           /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
         )) {
@@ -7975,24 +8000,24 @@ var softContextMenu_css_default = `/*
 // gen/front_end/ui/legacy/SoftContextMenu.js
 var UIStrings8 = {
   /**
-   *@description Text exposed to screen readers on checked items.
+   * @description Text exposed to screen readers on checked items.
    */
   checked: "checked",
   /**
-   *@description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
+   * @description Accessible text exposed to screen readers when the screen reader encounters an unchecked checkbox.
    */
   unchecked: "unchecked",
   /**
-   *@description Accessibility label for checkable SoftContextMenuItems with shortcuts
-   *@example {Open File} PH1
-   *@example {Ctrl + P} PH2
-   *@example {checked} PH3
+   * @description Accessibility label for checkable SoftContextMenuItems with shortcuts
+   * @example {Open File} PH1
+   * @example {Ctrl + P} PH2
+   * @example {checked} PH3
    */
   sSS: "{PH1}, {PH2}, {PH3}",
   /**
-   *@description Generic text with two placeholders separated by a comma
-   *@example {1 613 680} PH1
-   *@example {44 %} PH2
+   * @description Generic text with two placeholders separated by a comma
+   * @example {1 613 680} PH1
+   * @example {44 %} PH2
    */
   sS: "{PH1}, {PH2}"
 };
@@ -8211,6 +8236,10 @@ var SoftContextMenu = class _SoftContextMenu {
       accessibleName = i18nString8(UIStrings8.sS, { PH1: String(item8.label), PH2: item8.shortcut });
     }
     setLabel(menuItemElement, accessibleName);
+    if (item8.isExperimentalFeature) {
+      const experimentIcon = IconButton5.Icon.create("experiment");
+      menuItemElement.appendChild(experimentIcon);
+    }
     this.detailsForElementMap.set(menuItemElement, detailsForElement);
     return menuItemElement;
   }
@@ -8793,7 +8822,7 @@ var SubMenu = class extends Item {
       return order1 - order2;
     });
     for (const item8 of items) {
-      if (item8.experiment && !Root4.Runtime.experiments.isEnabled(item8.experiment)) {
+      if (item8.experiment && !Root5.Runtime.experiments.isEnabled(item8.experiment)) {
         continue;
       }
       const itemLocation = item8.location;
@@ -8972,14 +9001,21 @@ var ContextMenu = class _ContextMenu extends SubMenu {
   }
   itemSelected(id2) {
     this.invokeHandler(id2);
+    const featuresUsed = [];
     if (this.openHostedMenu) {
       const itemWithId = (items, id3) => {
         for (const item9 of items) {
           if (item9.id === id3) {
+            if (item9.featureName) {
+              featuresUsed.push(item9.featureName);
+            }
             return item9;
           }
           const subitem = item9.subItems && itemWithId(item9.subItems, id3);
           if (subitem) {
+            if (item9.featureName) {
+              featuresUsed.push(item9.featureName);
+            }
             return subitem;
           }
         }
@@ -8988,6 +9024,9 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       const item8 = itemWithId(this.openHostedMenu, id2);
       if (item8?.jslogContext) {
         void VisualLogging9.logClick(item8, new MouseEvent("click"));
+      }
+      if (item8 && featuresUsed.length > 0) {
+        featuresUsed.map((feature) => Host6.InspectorFrontendHost.InspectorFrontendHostInstance.recordNewBadgeUsage(feature));
       }
     }
     this.menuCleared();
@@ -9045,7 +9084,7 @@ var MenuButton = class extends HTMLElement {
   #populateMenuCall;
   /**
    * Sets the callback function used to populate the context menu when the button is clicked.
-   * @param {Function} populateCall - A function that takes a `ContextMenu` instance and adds items to it.
+   * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
    */
   set populateMenuCall(populateCall) {
     this.#populateMenuCall = populateCall;
@@ -9102,7 +9141,7 @@ var MenuButton = class extends HTMLElement {
    * Creates and shows the `ContextMenu`. It calls the `populateMenuCall`
    * callback to fill the menu with items before displaying it relative to the button.
    * Manages the `aria-expanded` state.
-   * @param {Event} event - The event that triggered the menu
+   * @param event The event that triggered the menu
    */
   #openMenu(event) {
     this.#triggerTimeoutId = void 0;
@@ -9126,7 +9165,7 @@ var MenuButton = class extends HTMLElement {
   /**
    * Handles the click event on the button. It clears any pending trigger timeout
    * and immediately calls the `openMenu` method to show the context menu.
-   * @param {Event} event - The click event.
+   * @param event The click event.
    */
   #triggerContextMenu(event) {
     const triggerTimeout = 50;
@@ -9164,7 +9203,7 @@ function registerProvider(registration) {
 async function loadApplicableRegisteredProviders(target) {
   const providers = [];
   for (const providerRegistration of registeredProviders) {
-    if (!Root4.Runtime.Runtime.isDescriptorEnabled({ experiment: providerRegistration.experiment, condition: void 0 })) {
+    if (!Root5.Runtime.Runtime.isDescriptorEnabled({ experiment: providerRegistration.experiment, condition: void 0 })) {
       continue;
     }
     if (providerRegistration.contextTypes) {
@@ -9211,11 +9250,11 @@ import { Directives as Directives2 } from "./../lit/lit.js";
 import * as VisualLogging10 from "./../visual_logging/visual_logging.js";
 var UIStrings9 = {
   /**
-   *@description Note when a setting change will require the user to reload DevTools
+   * @description Note when a setting change will require the user to reload DevTools
    */
   srequiresReload: "*Requires reload",
   /**
-   *@description Message to display if a setting change requires a reload of DevTools
+   * @description Message to display if a setting change requires a reload of DevTools
    */
   oneOrMoreSettingsHaveChanged: "One or more settings have changed which requires a reload to take effect"
 };
@@ -10170,15 +10209,15 @@ var suggestBox_css_default = `/*
 // gen/front_end/ui/legacy/SuggestBox.js
 var UIStrings10 = {
   /**
-   *@description Aria alert to read the suggestion for the suggestion box when typing in text editor
-   *@example {name} PH1
-   *@example {2} PH2
-   *@example {5} PH3
+   * @description Aria alert to read the suggestion for the suggestion box when typing in text editor
+   * @example {name} PH1
+   * @example {2} PH2
+   * @example {5} PH3
    */
   sSuggestionSOfS: "{PH1}, suggestion {PH2} of {PH3}",
   /**
-   *@description Aria alert to confirm the suggestion when it is selected from the suggestion box
-   *@example {name} PH1
+   * @description Aria alert to confirm the suggestion when it is selected from the suggestion box
+   * @example {name} PH1
    */
   sSuggestionSSelected: "{PH1}, suggestion selected"
 };
@@ -11088,7 +11127,8 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
       selection.addRange(selectionRange);
     }
   }
-  /** -1 if no caret can be found in text prompt
+  /**
+   * -1 if no caret can be found in text prompt
    */
   getCaretPosition() {
     if (!this.element().hasFocus()) {
@@ -11191,19 +11231,19 @@ devtools-toolbar-input {
 // gen/front_end/ui/legacy/Toolbar.js
 var UIStrings11 = {
   /**
-   *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
+   * @description Announced screen reader message for ToolbarSettingToggle when the setting is toggled on.
    */
   pressed: "pressed",
   /**
-   *@description Announced screen reader message for ToolbarSettingToggle when the setting is toggled off.
+   * @description Announced screen reader message for ToolbarSettingToggle when the setting is toggled off.
    */
   notPressed: "not pressed",
   /**
-   *@description Tooltip shown when the user hovers over the clear icon to empty the text input.
+   * @description Tooltip shown when the user hovers over the clear icon to empty the text input.
    */
   clearInput: "Clear",
   /**
-   *@description Placeholder for filter bars that shows before the user types in a filter keyword.
+   * @description Placeholder for filter bars that shows before the user types in a filter keyword.
    */
   filter: "Filter"
 };
@@ -11263,7 +11303,7 @@ var Toolbar = class _Toolbar extends HTMLElement {
   /**
    * Returns whether this toolbar is floating.
    *
-   * @return `true` if the `"floating"` attribute is present on this toolbar,
+   * @returns `true` if the `"floating"` attribute is present on this toolbar,
    *         otherwise `false`.
    */
   get floating() {
@@ -11280,7 +11320,7 @@ var Toolbar = class _Toolbar extends HTMLElement {
   /**
    * Returns whether this toolbar is wrappable.
    *
-   * @return `true` if the `"wrappable"` attribute is present on this toolbar,
+   * @returns `true` if the `"wrappable"` attribute is present on this toolbar,
    *         otherwise `false`.
    */
   get wrappable() {
@@ -11601,6 +11641,12 @@ var ToolbarItem = class extends Common14.ObjectWrapper.ObjectWrapper {
     }
   }
   setCompactLayout(_enable) {
+  }
+  setMaxWidth(width) {
+    this.element.style.maxWidth = width + "px";
+  }
+  setMinWidth(width) {
+    this.element.style.minWidth = width + "px";
   }
 };
 var ToolbarItemWithCompactLayout = class extends ToolbarItem {
@@ -12145,12 +12191,6 @@ var ToolbarComboBox = class extends ToolbarItem {
   selectedIndex() {
     return this.element.selectedIndex;
   }
-  setMaxWidth(width) {
-    this.element.style.maxWidth = width + "px";
-  }
-  setMinWidth(width) {
-    this.element.style.minWidth = width + "px";
-  }
 };
 var ToolbarSettingComboBox = class extends ToolbarComboBox {
   optionsInternal;
@@ -12269,14 +12309,14 @@ function registerToolbarItem(registration) {
   registeredToolbarItems.push(registration);
 }
 function getRegisteredToolbarItems() {
-  return registeredToolbarItems.filter((item8) => Root5.Runtime.Runtime.isDescriptorEnabled({ experiment: item8.experiment, condition: item8.condition }));
+  return registeredToolbarItems.filter((item8) => Root6.Runtime.Runtime.isDescriptorEnabled({ experiment: item8.experiment, condition: item8.condition }));
 }
 
 // gen/front_end/ui/legacy/UIUtils.js
 import * as Host8 from "./../../core/host/host.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as Platform16 from "./../../core/platform/platform.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root7 from "./../../core/root/root.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Buttons6 from "./../components/buttons/buttons.js";
 import * as IconButton7 from "./../components/icon_button/icon_button.js";
@@ -13810,51 +13850,51 @@ div.error {
 // gen/front_end/ui/legacy/UIUtils.js
 var UIStrings12 = {
   /**
-   *@description label to open link externally
+   * @description label to open link externally
    */
   openInNewTab: "Open in new tab",
   /**
-   *@description label to copy link address
+   * @description label to copy link address
    */
   copyLinkAddress: "Copy link address",
   /**
-   *@description label to copy file name
+   * @description label to copy file name
    */
   copyFileName: "Copy file name",
   /**
-   *@description label for the profiler control button
+   * @description label for the profiler control button
    */
   anotherProfilerIsAlreadyActive: "Another profiler is already active",
   /**
-   *@description Text in UIUtils
+   * @description Text in UIUtils
    */
   promiseResolvedAsync: "Promise resolved (async)",
   /**
-   *@description Text in UIUtils
+   * @description Text in UIUtils
    */
   promiseRejectedAsync: "Promise rejected (async)",
   /**
-   *@description Text for the title of asynchronous function calls group in Call Stack
+   * @description Text for the title of asynchronous function calls group in Call Stack
    */
   asyncCall: "Async Call",
   /**
-   *@description Text for the name of anonymous functions
+   * @description Text for the name of anonymous functions
    */
   anonymous: "(anonymous)",
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close",
   /**
-   *@description Text on a button for message dialog
+   * @description Text on a button for message dialog
    */
   ok: "OK",
   /**
-   *@description Text to cancel something
+   * @description Text to cancel something
    */
   cancel: "Cancel",
   /**
-   *@description Text for the new badge appearing next to some menu items
+   * @description Text for the new badge appearing next to some menu items
    */
   new: "NEW"
 };
@@ -15359,7 +15399,7 @@ function openInNewTab(url) {
     if (!url.searchParams.has("utm_source")) {
       url.searchParams.append("utm_source", "devtools");
     }
-    const { channel } = Root6.Runtime.hostConfig;
+    const { channel } = Root7.Runtime.hostConfig;
     if (!url.searchParams.has("utm_campaign") && typeof channel === "string") {
       url.searchParams.append("utm_campaign", channel);
     }
@@ -15441,7 +15481,7 @@ function maybeCreateNewBadge(promotionId) {
 
 // gen/front_end/ui/legacy/GlassPane.js
 var GlassPane = class _GlassPane {
-  widgetInternal = new Widget({ useShadowDom: true });
+  widgetInternal;
   element;
   contentElement;
   onMouseDownBound;
@@ -15456,12 +15496,10 @@ var GlassPane = class _GlassPane {
   marginBehavior = "DefaultMargin";
   #ignoreLeftMargin = false;
   constructor(jslog) {
+    this.widgetInternal = new Widget({ jslog, useShadowDom: true });
     this.widgetInternal.markAsRoot();
     this.element = this.widgetInternal.element;
     this.contentElement = this.widgetInternal.contentElement;
-    if (jslog) {
-      this.contentElement.setAttribute("jslog", jslog);
-    }
     this.registerRequiredCSS(glassPane_css_default);
     this.setPointerEventsBehavior(
       "PierceGlassPane"
@@ -16679,7 +16717,7 @@ var sample = html3`<p>Hello, <x-link>world!</x-link></p>`;
 // gen/front_end/ui/legacy/EmptyWidget.js
 var UIStrings13 = {
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more"
 };
@@ -16947,20 +16985,20 @@ var filter_css_default = `/*
 // gen/front_end/ui/legacy/FilterBar.js
 var UIStrings14 = {
   /**
-   *@description Text to filter result items
+   * @description Text to filter result items
    */
   filter: "Filter",
   /**
-   *@description Text that appears when hover over the filter bar in the Network tool
+   * @description Text that appears when hover over the filter bar in the Network tool
    */
   egSmalldUrlacomb: "e.g. `/small[d]+/ url:a.com/b`",
   /**
-   *@description Text that appears when hover over the All button in the Network tool
-   *@example {Ctrl + } PH1
+   * @description Text that appears when hover over the All button in the Network tool
+   * @example {Ctrl + } PH1
    */
   sclickToSelectMultipleTypes: "{PH1}Click to select multiple types",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   allStrings: "All"
 };
@@ -17803,23 +17841,23 @@ var listWidget_css_default = `/*
 // gen/front_end/ui/legacy/ListWidget.js
 var UIStrings15 = {
   /**
-   *@description Text on a button to start editing text
+   * @description Text on a button to start editing text
    */
   editString: "Edit",
   /**
-   *@description Label for an item to remove something
+   * @description Label for an item to remove something
    */
   removeString: "Remove",
   /**
-   *@description Text to save something
+   * @description Text to save something
    */
   saveString: "Save",
   /**
-   *@description Text to add something
+   * @description Text to add something
    */
   addString: "Add",
   /**
-   *@description Text to cancel something
+   * @description Text to cancel something
    */
   cancelString: "Cancel",
   /**
@@ -18666,8 +18704,8 @@ var UIStrings16 = {
    */
   debuggingConnectionWasClosed: "Debugging connection was closed",
   /**
-   *@description Text in a dialog box in DevTools stating the reason for remote debugging being terminated.
-   *@example {target_closed} PH1
+   * @description Text in a dialog box in DevTools stating the reason for remote debugging being terminated.
+   * @example {target_closed} PH1
    */
   connectionClosedReason: "Reason: {PH1}.",
   /**
@@ -18689,7 +18727,7 @@ var str_16 = i18n31.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedS
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var DEFAULT_VIEW = (input, _output, target) => {
   render3(html5`
-    <style>${remoteDebuggingTerminatedScreen_css_default}</style>
+    <style>${widgetScoped(remoteDebuggingTerminatedScreen_css_default)}</style>
     <div class="header">${i18nString16(UIStrings16.debuggingConnectionWasClosed)}</div>
     <div class="content">
       <div class="reason">${i18nString16(UIStrings16.connectionClosedReason, { PH1: input.reason })}</div>
@@ -18700,7 +18738,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
         <devtools-button @click=${input.onReconnect} .jslogContext=${"reconnect"}
             .variant=${"outlined"}>${i18nString16(UIStrings16.reconnectDevtools)}</devtools-button>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var RemoteDebuggingTerminatedScreen = class _RemoteDebuggingTerminatedScreen extends VBox {
   constructor(reason, view = DEFAULT_VIEW) {
@@ -19326,76 +19364,76 @@ var searchableView_css_default = `/*
 // gen/front_end/ui/legacy/SearchableView.js
 var UIStrings17 = {
   /**
-   *@description Text on a button to replace one instance with input text for the ctrl+F search bar
+   * @description Text on a button to replace one instance with input text for the ctrl+F search bar
    */
   replace: "Replace",
   /**
-   *@description Tooltip text on a toggle to enable replacing one instance with input text for the ctrl+F search bar
+   * @description Tooltip text on a toggle to enable replacing one instance with input text for the ctrl+F search bar
    */
   enableFindAndReplace: "Find and replace",
   /**
-   *@description Tooltip text on a toggle to disable replacing one instance with input text for the ctrl+F search bar
+   * @description Tooltip text on a toggle to disable replacing one instance with input text for the ctrl+F search bar
    */
   disableFindAndReplace: "Disable find and replace",
   /**
-   *@description Text to find an item
+   * @description Text to find an item
    */
   findString: "Find",
   /**
-   *@description Tooltip text on a button to search previous instance for the ctrl+F search bar
+   * @description Tooltip text on a button to search previous instance for the ctrl+F search bar
    */
   searchPrevious: "Show previous result",
   /**
-   *@description Tooltip text on a button to search next instance for the ctrl+F search bar
+   * @description Tooltip text on a button to search next instance for the ctrl+F search bar
    */
   searchNext: "Show next result",
   /**
-   *@description Tooltip text on a toggle to enable search by matching case of the input
+   * @description Tooltip text on a toggle to enable search by matching case of the input
    */
   enableCaseSensitive: "Enable case sensitive search",
   /**
-   *@description Tooltip text on a toggle to disable search by matching case of the input
+   * @description Tooltip text on a toggle to disable search by matching case of the input
    */
   disableCaseSensitive: "Disable case sensitive search",
   /**
-   *@description Tooltip text on a toggle to enable searching with regular expression
+   * @description Tooltip text on a toggle to enable searching with regular expression
    */
   enableRegularExpression: "Enable regular expressions",
   /**
-   *@description Tooltip text on a toggle to disable searching with regular expression
+   * @description Tooltip text on a toggle to disable searching with regular expression
    */
   disableRegularExpression: "Disable regular expressions",
   /**
-   *@description Tooltip text on a button to close the search bar
+   * @description Tooltip text on a button to close the search bar
    */
   closeSearchBar: "Close search bar",
   /**
-   *@description Text on a button to replace all instances with input text for the ctrl+F search bar
+   * @description Text on a button to replace all instances with input text for the ctrl+F search bar
    */
   replaceAll: "Replace all",
   /**
-   *@description Text to indicate the current match index and the total number of matches for the ctrl+F search bar
-   *@example {2} PH1
-   *@example {3} PH2
+   * @description Text to indicate the current match index and the total number of matches for the ctrl+F search bar
+   * @example {2} PH1
+   * @example {3} PH2
    */
   dOfD: "{PH1} of {PH2}",
   /**
-   *@description Tooltip text to indicate the current match index and the total number of matches for the ctrl+F search bar
-   *@example {2} PH1
-   *@example {3} PH2
+   * @description Tooltip text to indicate the current match index and the total number of matches for the ctrl+F search bar
+   * @example {2} PH1
+   * @example {3} PH2
    */
   accessibledOfD: "Shows result {PH1} of {PH2}",
   /**
-   *@description Text to indicate search result for the ctrl+F search bar
+   * @description Text to indicate search result for the ctrl+F search bar
    */
   matchString: "1 match",
   /**
-   *@description Text to indicate search result for the ctrl+F search bar
-   *@example {2} PH1
+   * @description Text to indicate search result for the ctrl+F search bar
+   * @example {2} PH1
    */
   dMatches: "{PH1} matches",
   /**
-   *@description Text on a button to search previous instance for the ctrl+F search bar
+   * @description Text on a button to search previous instance for the ctrl+F search bar
    */
   clearInput: "Clear"
 };
@@ -19999,7 +20037,7 @@ button.soft-dropdown:hover:not(:active) > .title {
 // gen/front_end/ui/legacy/SoftDropDown.js
 var UIStrings18 = {
   /**
-   *@description Placeholder text in Soft Drop Down
+   * @description Placeholder text in Soft Drop Down
    */
   noItemSelected: "(no item selected)"
 };
@@ -20292,7 +20330,7 @@ var targetCrashedScreen_css_default = `/*
  * found in the LICENSE file.
  */
 
-.widget {
+:scope {
   padding: 25px;
 }
 
@@ -20307,11 +20345,11 @@ var targetCrashedScreen_css_default = `/*
 // gen/front_end/ui/legacy/TargetCrashedScreen.js
 var UIStrings19 = {
   /**
-   *@description Text in dialog box when the target page crashed
+   * @description Text in dialog box when the target page crashed
    */
   devtoolsWasDisconnectedFromThe: "DevTools was disconnected from the page.",
   /**
-   *@description Text content of content element
+   * @description Text content of content element
    */
   oncePageIsReloadedDevtoolsWill: "Once page is reloaded, DevTools will automatically reconnect."
 };
@@ -20319,9 +20357,9 @@ var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", U
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render4(html6`
-    <style>${targetCrashedScreen_css_default}</style>
+    <style>${widgetScoped(targetCrashedScreen_css_default)}</style>
     <div class="message">${i18nString19(UIStrings19.devtoolsWasDisconnectedFromThe)}</div>
-    <div class="message">${i18nString19(UIStrings19.oncePageIsReloadedDevtoolsWill)}</div>`, target, { host: input });
+    <div class="message">${i18nString19(UIStrings19.oncePageIsReloadedDevtoolsWill)}</div>`, target);
 };
 var TargetCrashedScreen = class extends VBox {
   hideCallback;
@@ -21825,15 +21863,19 @@ import * as Platform27 from "./../../core/platform/platform.js";
 var SimpleView = class extends VBox {
   #title;
   #viewId;
-  constructor(title, useShadowDom, viewId) {
-    super({ useShadowDom });
-    this.#title = title;
-    if (viewId) {
-      if (!Platform27.StringUtilities.isExtendedKebabCase(viewId)) {
-        throw new Error(`Invalid view ID '${viewId}'`);
-      }
+  /**
+   * Constructs a new `SimpleView` with the given `options`.
+   *
+   * @param options the settings for the resulting view.
+   * @throws TypeError - if `options.viewId` is not in extended kebab case.
+   */
+  constructor(options) {
+    super(options);
+    this.#title = options.title;
+    this.#viewId = options.viewId;
+    if (!Platform27.StringUtilities.isExtendedKebabCase(this.#viewId)) {
+      throw new TypeError(`Invalid view ID '${this.#viewId}'`);
     }
-    this.#viewId = viewId ?? Platform27.StringUtilities.toKebabCase(title);
   }
   viewId() {
     return this.#viewId;

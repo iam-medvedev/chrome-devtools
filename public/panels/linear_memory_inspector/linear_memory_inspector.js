@@ -30,17 +30,17 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as LinearMemoryInspectorComponents from "./components/components.js";
 var UIStrings = {
   /**
-   *@description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
+   * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
    *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
    */
   noOpenInspections: "No open inspections",
   /**
-   *@description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
+   * @description Label in the Linear Memory inspector tool that serves as a placeholder if no inspections are open (i.e. nothing to see here).
    *             Inspection hereby refers to viewing, navigating and understanding the memory through this tool.
    */
   memoryInspectorExplanation: "On this page you can inspect binary data.",
   /**
-   *@description Label in the Linear Memory inspector tool for a link.
+   * @description Label in the Linear Memory inspector tool for a link.
    */
   learnMore: "Learn more"
 };
@@ -51,8 +51,7 @@ var MEMORY_INSPECTOR_EXPLANATION_URL = "https://developer.chrome.com/docs/devtoo
 var LinearMemoryInspectorPane = class _LinearMemoryInspectorPane extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   #tabbedPane;
   constructor() {
-    super();
-    this.element.setAttribute("jslog", `${VisualLogging.panel("linear-memory-inspector").track({ resize: true })}`);
+    super({ jslog: `${VisualLogging.panel("linear-memory-inspector").track({ resize: true })}` });
     this.#tabbedPane = new UI.TabbedPane.TabbedPane();
     this.#tabbedPane.setPlaceholderElement(this.createPlaceholder());
     this.#tabbedPane.setCloseableTabs(true);
@@ -213,11 +212,11 @@ var LinearMemoryInspectorView = class extends UI.Widget.VBox {
 // gen/front_end/panels/linear_memory_inspector/LinearMemoryInspectorController.js
 var UIStrings2 = {
   /**
-   *@description Error message that shows up in the console if a buffer to be opened in the linear memory inspector cannot be found.
+   * @description Error message that shows up in the console if a buffer to be opened in the linear memory inspector cannot be found.
    */
   couldNotOpenLinearMemory: "Could not open linear memory inspector: failed locating buffer.",
   /**
-   *@description A context menu item in the Scope View of the Sources Panel
+   * @description A context menu item in the Scope View of the Sources Panel
    */
   openInMemoryInspectorPanel: "Open in Memory inspector panel"
 };

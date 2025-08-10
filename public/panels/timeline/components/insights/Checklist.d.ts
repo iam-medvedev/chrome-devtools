@@ -1,5 +1,5 @@
 /**
- * @fileoverview A list of pass/fail conditions for an insight.
+ * @file A list of pass/fail conditions for an insight.
  */
 import '../../../../ui/components/icon_button/icon_button.js';
 import type * as Trace from '../../../../models/trace/trace.js';

@@ -10,15 +10,15 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
-     *@description Tooltip text that appears when hovering over largeicon pan button in Transform Controller of the Layers panel
+     * @description Tooltip text that appears when hovering over largeicon pan button in Transform Controller of the Layers panel
      */
     panModeX: 'Pan mode (X)',
     /**
-     *@description Tooltip text that appears when hovering over largeicon rotate button in Transform Controller of the Layers panel
+     * @description Tooltip text that appears when hovering over largeicon rotate button in Transform Controller of the Layers panel
      */
     rotateModeV: 'Rotate mode (V)',
     /**
-     *@description Tooltip text that appears when hovering over the largeicon center button in the Transform Controller of the Layers panel
+     * @description Tooltip text that appears when hovering over the largeicon center button in the Transform Controller of the Layers panel
      */
     resetTransform: 'Reset transform (0)',
 };
@@ -197,9 +197,9 @@ export class TransformController extends Common.ObjectWrapper.ObjectWrapper {
         return true;
     }
     onMouseWheel(event) {
-        /** @const */
+        /** @constant */
         const zoomFactor = 1.1;
-        /** @const */
+        /** @constant */
         const wheelZoomSpeed = 1 / 53;
         const mouseEvent = event;
         const scaleFactor = Math.pow(zoomFactor, -mouseEvent.deltaY * wheelZoomSpeed);

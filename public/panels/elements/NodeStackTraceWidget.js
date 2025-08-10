@@ -9,7 +9,7 @@ import { html, render } from '../../ui/lit/lit.js';
 import nodeStackTraceWidgetStyles from './nodeStackTraceWidget.css.js';
 const UIStrings = {
     /**
-     *@description Message displayed when no JavaScript stack trace is available for the DOM node in the Stack Trace widget of the Elements panel
+     * @description Message displayed when no JavaScript stack trace is available for the DOM node in the Stack Trace widget of the Elements panel
      */
     noStackTraceAvailable: 'No stack trace available',
 };
@@ -19,13 +19,13 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const { target: sdkTarget, linkifier, options } = input;
     // clang-format off
     render(html `
-    <style>${nodeStackTraceWidgetStyles}</style>
+    <style>${UI.Widget.widgetScoped(nodeStackTraceWidgetStyles)}</style>
     ${target && options.stackTrace ?
         html `<devtools-widget
                 class="stack-trace"
                 .widgetConfig=${UI.Widget.widgetConfig(Components.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
               </devtools-widget>` :
-        html `<div class="gray-info-message">${i18nString(UIStrings.noStackTraceAvailable)}</div>`}`, target, { host: input });
+        html `<div class="gray-info-message">${i18nString(UIStrings.noStackTraceAvailable)}</div>`}`, target);
     // clang-format on
 };
 export class NodeStackTraceWidget extends UI.ThrottledWidget.ThrottledWidget {

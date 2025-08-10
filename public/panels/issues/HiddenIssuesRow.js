@@ -44,7 +44,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
                      @click=${input.onUnhideAllIssues}
                      @keydown=${stopPropagationForEnter}
                      .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.unhideAll)}</devtools-button>
-  </div>`, target, { host: input });
+  </div>`, target);
     // clang-format on
 };
 export class HiddenIssuesRow extends UI.TreeOutline.TreeElement {

@@ -25,11 +25,13 @@ export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper
     onTextChanged: (...args: any[]) => void;
 }
 export declare const enum Events {
-    CITATIONS_UPDATED = "CitationsUpdated"
+    RESPONSE_RECEIVED = "ResponseReceived",
+    REQUEST_TRIGGERED = "RequestTriggered"
 }
-export interface CitationsUpdatedEvent {
-    citations: Host.AidaClient.Citation[];
+export interface ResponseReceivedEvent {
+    citations?: Host.AidaClient.Citation[];
 }
 export interface EventTypes {
-    [Events.CITATIONS_UPDATED]: CitationsUpdatedEvent;
+    [Events.RESPONSE_RECEIVED]: ResponseReceivedEvent;
+    [Events.REQUEST_TRIGGERED]: {};
 }

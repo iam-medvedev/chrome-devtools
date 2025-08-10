@@ -55,51 +55,51 @@ import { Tooltip } from './Tooltip.js';
 import { Widget } from './Widget.js';
 const UIStrings = {
     /**
-     *@description label to open link externally
+     * @description label to open link externally
      */
     openInNewTab: 'Open in new tab',
     /**
-     *@description label to copy link address
+     * @description label to copy link address
      */
     copyLinkAddress: 'Copy link address',
     /**
-     *@description label to copy file name
+     * @description label to copy file name
      */
     copyFileName: 'Copy file name',
     /**
-     *@description label for the profiler control button
+     * @description label for the profiler control button
      */
     anotherProfilerIsAlreadyActive: 'Another profiler is already active',
     /**
-     *@description Text in UIUtils
+     * @description Text in UIUtils
      */
     promiseResolvedAsync: 'Promise resolved (async)',
     /**
-     *@description Text in UIUtils
+     * @description Text in UIUtils
      */
     promiseRejectedAsync: 'Promise rejected (async)',
     /**
-     *@description Text for the title of asynchronous function calls group in Call Stack
+     * @description Text for the title of asynchronous function calls group in Call Stack
      */
     asyncCall: 'Async Call',
     /**
-     *@description Text for the name of anonymous functions
+     * @description Text for the name of anonymous functions
      */
     anonymous: '(anonymous)',
     /**
-     *@description Text to close something
+     * @description Text to close something
      */
     close: 'Close',
     /**
-     *@description Text on a button for message dialog
+     * @description Text on a button for message dialog
      */
     ok: 'OK',
     /**
-     *@description Text to cancel something
+     * @description Text to cancel something
      */
     cancel: 'Cancel',
     /**
-     *@description Text for the new badge appearing next to some menu items
+     * @description Text for the new badge appearing next to some menu items
      */
     new: 'NEW',
 };
@@ -1436,8 +1436,8 @@ export function loadImage(url) {
 }
 /**
  * Creates a file selector element.
- * @param callback - the function that will be called with the file the user selected
- * @param accept - optionally used to set the [`accept`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) parameter to limit file-types the user can pick.
+ * @param callback the function that will be called with the file the user selected
+ * @param accept optionally used to set the [`accept`](https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept) parameter to limit file-types the user can pick.
  */
 export function createFileSelectorElement(callback, accept) {
     const fileSelectorElement = document.createElement('input');

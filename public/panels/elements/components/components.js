@@ -54,7 +54,7 @@ span {
 // gen/front_end/panels/elements/components/AccessibilityTreeNode.js
 var UIStrings = {
   /**
-   *@description Ignored node element text content in Accessibility Tree View of the Elements panel
+   * @description Ignored node element text content in Accessibility Tree View of the Elements panel
    */
   ignored: "Ignored"
 };
@@ -648,7 +648,7 @@ code {
 // gen/front_end/panels/elements/components/CSSHintDetailsView.js
 var UIStrings2 = {
   /**
-   *@description Text for button that redirects to CSS property documentation.
+   * @description Text for button that redirects to CSS property documentation.
    */
   learnMore: "Learn More"
 };
@@ -751,43 +751,43 @@ var cssPropertyDocsView_css_default = `/*
 // gen/front_end/panels/elements/components/CSSPropertyDocsView.js
 var UIStrings3 = {
   /**
-   *@description Text for button that redirects to CSS property documentation.
+   * @description Text for button that redirects to CSS property documentation.
    */
   learnMore: "Learn more",
   /**
-   *@description Text for a checkbox to turn off the CSS property documentation.
+   * @description Text for a checkbox to turn off the CSS property documentation.
    */
   dontShow: "Don't show",
   /**
-   *@description Text indicating that the CSS property has limited availability across major browsers.
+   * @description Text indicating that the CSS property has limited availability across major browsers.
    */
   limitedAvailability: "Limited availability across major browsers",
   /**
-   *@description Text indicating that the CSS property has limited availability across major browsers, with a list of unsupported browsers.
-   *@example {Firefox} PH1
-   *@example {Safari on iOS} PH1
-   *@example {Chrome, Firefox on Android, or Safari} PH1
+   * @description Text indicating that the CSS property has limited availability across major browsers, with a list of unsupported browsers.
+   * @example {Firefox} PH1
+   * @example {Safari on iOS} PH1
+   * @example {Chrome, Firefox on Android, or Safari} PH1
    */
   limitedAvailabilityInBrowsers: "Limited availability across major browsers (not fully implemented in {PH1})",
   /**
-   *@description Text to display a combination of browser name and platform name.
-   *@example {Safari} PH1
-   *@example {iOS} PH2
+   * @description Text to display a combination of browser name and platform name.
+   * @example {Safari} PH1
+   * @example {iOS} PH2
    */
   browserOnPlatform: "{PH1} on {PH2}",
   /**
-   *@description Text indicating that the CSS property is newly available across major browsers since a certain time.
-   *@example {September 2015} PH1
+   * @description Text indicating that the CSS property is newly available across major browsers since a certain time.
+   * @example {September 2015} PH1
    */
   newlyAvailableSince: "Newly available across major browsers (`Baseline` since {PH1})",
   /**
-   *@description Text indicating that the CSS property is widely available across major browsers since a certain time.
-   *@example {September 2015} PH1
-   *@example {an unknown date} PH1
+   * @description Text indicating that the CSS property is widely available across major browsers since a certain time.
+   * @example {September 2015} PH1
+   * @example {an unknown date} PH1
    */
   widelyAvailableSince: "Widely available across major browsers (`Baseline` since {PH1})",
   /**
-   *@description Text indicating that a specific date is not known.
+   * @description Text indicating that a specific date is not known.
    */
   unknownDate: "an unknown date"
 };
@@ -1484,19 +1484,19 @@ var cssVariableValueView_css_default = `/*
 // gen/front_end/panels/elements/components/CSSVariableValueView.js
 var UIStrings4 = {
   /**
-   *@description Text for a link from custom property to its defining registration
+   * @description Text for a link from custom property to its defining registration
    */
   registeredPropertyLinkTitle: "View registered property",
   /**
-   *@description Error message for a property value that failed to parse because it had an incorrect type. The message
+   * @description Error message for a property value that failed to parse because it had an incorrect type. The message
    * is shown in a popover when hovering the property value. The `type` placeholder will be rendered as an HTML element
    * to apply some styling (color and monospace font)
-   *@example {<color>} type
+   * @example {<color>} type
    */
   invalidPropertyValue: "Invalid property value, expected type {type}",
   /**
-   *@description Text displayed in a tooltip shown when hovering over a var() CSS function in the Styles pane when the custom property in this function does not exist. The parameter is the name of the property.
-   *@example {--my-custom-property-name} PH1
+   * @description Text displayed in a tooltip shown when hovering over a var() CSS function in the Styles pane when the custom property in this function does not exist. The parameter is the name of the property.
+   * @example {--my-custom-property-name} PH1
    */
   sIsNotDefined: "{PH1} is not defined"
 };
@@ -2083,7 +2083,7 @@ var elementsTreeExpandButton_css_default = `/*
 // gen/front_end/panels/elements/components/ElementsTreeExpandButton.js
 var UIStrings7 = {
   /**
-   *@description Aria label for a button expanding collapsed subtree
+   * @description Aria label for a button expanding collapsed subtree
    */
   expand: "Expand"
 };

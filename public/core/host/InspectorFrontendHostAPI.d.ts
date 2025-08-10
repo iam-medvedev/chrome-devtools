@@ -240,6 +240,7 @@ export interface InspectorFrontendHostAPI {
     recordEnumeratedHistogram(actionName: EnumeratedHistogram, actionCode: number, bucketSize: number): void;
     recordPerformanceHistogram(histogramName: string, duration: number): void;
     recordUserMetricsAction(umaName: string): void;
+    recordNewBadgeUsage(featureName: string): void;
     sendMessageToBackend(message: string): void;
     setDevicesDiscoveryConfig(config: Adb.Config): void;
     setDevicesUpdatesEnabled(enabled: boolean): void;

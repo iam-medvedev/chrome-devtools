@@ -45,7 +45,8 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
             .show(dialog.contentElement);
         dialog.show();
     }
-    /** ;
+    /**
+     * ;
      */
     targetReloadedAfterCrash() {
         void this.target().runtimeAgent().invoke_runIfWaitingForDebugger();

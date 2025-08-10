@@ -7,11 +7,11 @@ import * as WindowBounds from '../../../../services/window_bounds/window_bounds.
 import * as ThemeSupport from '../../theme_support/theme_support.js';
 const UIStrings = {
     /**
-     *@description Message congratulating the user for having won a game.
+     * @description Message congratulating the user for having won a game.
      */
     congrats: 'Congrats, you win!',
     /**
-     *@description A Postscript hinting the user the possibility to open the game using a keycombo.
+     * @description A Postscript hinting the user the possibility to open the game using a keycombo.
      */
     ps: 'PS: You can also open the game by typing `fixme`',
 };

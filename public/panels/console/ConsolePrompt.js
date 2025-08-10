@@ -22,16 +22,16 @@ import consolePromptStyles from './consolePrompt.css.js';
 const { Direction } = TextEditor.TextEditorHistory;
 const UIStrings = {
     /**
-     *@description Text in Console Prompt of the Console panel
+     * @description Text in Console Prompt of the Console panel
      */
     consolePrompt: 'Console prompt',
     /**
-     *@description Warning shown to users when pasting text into the DevTools console.
-     *@example {allow pasting} PH1
+     * @description Warning shown to users when pasting text into the DevTools console.
+     * @example {allow pasting} PH1
      */
     selfXssWarning: 'Warning: Don’t paste code into the DevTools Console that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type ‘{PH1}’ below and press Enter to allow pasting.',
     /**
-     *@description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
+     * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
      */
     allowPasting: 'allow pasting',
 };
@@ -64,7 +64,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     aiCodeCompletion;
     placeholderCompartment = new CodeMirror.Compartment();
     teaserContainer;
-    aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
+    aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
+    aiCodeCompletionCitations = [];
     #getJavaScriptCompletionExtensions() {
         if (this.#selfXssWarningShown) {
             // No (JavaScript) completions at all while showing the self-XSS warning.
@@ -84,7 +85,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.editor.dispatch({ effects });
     }
     constructor() {
-        super();
+        super({
+            jslog: `${VisualLogging.textField('console-prompt').track({
+                change: true,
+                keydown: 'Enter|ArrowUp|ArrowDown|PageUp',
+            })}`,
+        });
         this.registerRequiredCSS(consolePromptStyles);
         this.addCompletionsFromHistory = true;
         this.historyInternal = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('console-history', []));
@@ -157,10 +163,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.editorSetForTest();
         // Record the console tool load time after the console prompt constructor is complete.
         Host.userMetrics.panelLoaded('console', 'DevTools.Launch.Console');
-        this.element.setAttribute('jslog', `${VisualLogging.textField('console-prompt').track({
-            change: true,
-            keydown: 'Enter|ArrowUp|ArrowDown|PageUp',
-        })}`);
         if (this.isAiCodeCompletionEnabled()) {
             this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
             this.onAiCodeCompletionSettingChanged();
@@ -307,7 +309,11 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             keymap.push({
                 key: 'Tab',
                 run: () => {
-                    return TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+                    const accepted = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+                    if (accepted) {
+                        this.dispatchEventToListeners("AiCodeCompletionSuggestionAccepted" /* Events.AI_CODE_COMPLETION_SUGGESTION_ACCEPTED */, { citations: this.aiCodeCompletionCitations });
+                    }
+                    return accepted;
                 },
             });
         }
@@ -431,13 +437,21 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     focus() {
         this.editor.focus();
     }
+    // TODO(b/435654172): Refactor and move aiCodeCompletion model one level up to avoid
+    // defining additional listeners and events.
     setAiCodeCompletion() {
         if (!this.aidaClient) {
             this.aidaClient = new Host.AidaClient.AidaClient();
         }
         this.aiCodeCompletion =
             new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
-        this.aiCodeCompletion.addEventListener("CitationsUpdated" /* AiCodeCompletion.AiCodeCompletion.Events.CITATIONS_UPDATED */, event => this.dispatchEventToListeners("CitationsUpdated" /* Events.CITATIONS_UPDATED */, event.data));
+        this.aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, event => {
+            this.aiCodeCompletionCitations = event.data.citations;
+            this.dispatchEventToListeners("AiCodeCompletionResponseReceived" /* Events.AI_CODE_COMPLETION_RESPONSE_RECEIVED */, event.data);
+        });
+        this.aiCodeCompletion.addEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, event => {
+            this.dispatchEventToListeners("AiCodeCompletionRequestTriggered" /* Events.AI_CODE_COMPLETION_REQUEST_TRIGGERED */, event.data);
+        });
     }
     onAiCodeCompletionSettingChanged() {
         if (this.aiCodeCompletionSetting.get() && this.isAiCodeCompletionEnabled()) {

@@ -209,55 +209,55 @@ summary devtools-checkbox {
 var { render, html } = Lit;
 var UIStrings = {
   /**
-   *@description Section header for a list of the main aspects of a direct socket connection
+   * @description Section header for a list of the main aspects of a direct socket connection
    */
   general: "General",
   /**
-   *@description Section header for a list of the main aspects of a direct socket connection
+   * @description Section header for a list of the main aspects of a direct socket connection
    */
   options: "Options",
   /**
-   *@description Section header for a list of the main aspects of a direct socket connection
+   * @description Section header for a list of the main aspects of a direct socket connection
    */
   openInfo: "Open Info",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   type: "DirectSocket Type",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   errorMessage: "Error message",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   status: "Status",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketTypeTcp: "TCP",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketTypeUdpConnected: "UDP (connected)",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketTypeUdpBound: "UDP (bound)",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketStatusOpening: "Opening",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketStatusOpen: "Open",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketStatusClosed: "Closed",
   /**
-   *@description Text in Connection info View of the Network panel
+   * @description Text in Connection info View of the Network panel
    */
   directSocketStatusAborted: "Aborted"
 };
@@ -371,10 +371,12 @@ var DirectSocketConnectionView = class extends UI.Widget.Widget {
   #request;
   #view;
   constructor(request, view = DEFAULT_VIEW) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging.pane("connection-info").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.#request = request;
     this.#view = view;
-    this.element.setAttribute("jslog", `${VisualLogging.pane("connection-info").track({ resize: true })}`);
     this.performUpdate();
   }
   wasShown() {
@@ -778,39 +780,39 @@ x-link .inline-icon {
 var { render: render3, html: html3 } = Lit2;
 var UIStrings2 = {
   /**
-   *@description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
+   * @description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
    */
   activeClientExperimentVariation: "Active `client experiment variation IDs`.",
   /**
-   *@description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
+   * @description Comment used in decoded X-Client-Data HTTP header output in Headers View of the Network panel
    */
   activeClientExperimentVariationIds: "Active `client experiment variation IDs` that trigger server-side behavior.",
   /**
-   *@description Text in Headers View of the Network panel for X-Client-Data HTTP headers
+   * @description Text in Headers View of the Network panel for X-Client-Data HTTP headers
    */
   decoded: "Decoded:",
   /**
-   *@description The title of a button to enable overriding a HTTP header.
+   * @description The title of a button to enable overriding a HTTP header.
    */
   editHeader: "Override header",
   /**
-   *@description Description of which letters the name of an HTTP header may contain (a-z, A-Z, 0-9, '-', or '_').
+   * @description Description of which letters the name of an HTTP header may contain (a-z, A-Z, 0-9, '-', or '_').
    */
   headerNamesOnlyLetters: "Header names should contain only letters, digits, hyphens or underscores",
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Text for a link to the issues panel
+   * @description Text for a link to the issues panel
    */
   learnMoreInTheIssuesTab: "Learn more in the issues tab",
   /**
-   *@description Hover text prompting the user to reload the whole page or refresh the particular request, so that the changes they made take effect.
+   * @description Hover text prompting the user to reload the whole page or refresh the particular request, so that the changes they made take effect.
    */
   reloadPrompt: "Refresh the page/request for these changes to take effect",
   /**
-   *@description The title of a button which removes a HTTP header override.
+   * @description The title of a button which removes a HTTP header override.
    */
   removeOverride: "Remove this header override"
 };
@@ -1250,19 +1252,19 @@ devtools-header-section-row:first-of-type {
 var { render: render4, html: html4 } = Lit3;
 var UIStrings3 = {
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Message to explain lack of raw headers for a particular network request
+   * @description Message to explain lack of raw headers for a particular network request
    */
   provisionalHeadersAreShownDisableCache: "Provisional headers are shown. Disable cache to see full headers.",
   /**
-   *@description Tooltip to explain lack of raw headers for a particular network request
+   * @description Tooltip to explain lack of raw headers for a particular network request
    */
   onlyProvisionalHeadersAre: "Only provisional headers are available because this request was not sent over the network and instead was served from a local cache, which doesn\u2019t store the original request headers. Disable cache to see full request headers.",
   /**
-   *@description Message to explain lack of raw headers for a particular network request
+   * @description Message to explain lack of raw headers for a particular network request
    */
   provisionalHeadersAreShown: "Provisional headers are shown."
 };
@@ -1408,35 +1410,35 @@ devtools-header-section-row:first-of-type {
 // gen/front_end/panels/network/components/ResponseHeaderSection.js
 var UIStrings4 = {
   /**
-   *@description Label for a button which allows adding an HTTP header.
+   * @description Label for a button which allows adding an HTTP header.
    */
   addHeader: "Add header",
   /**
-   *@description Explanation text for which cross-origin policy to set.
+   * @description Explanation text for which cross-origin policy to set.
    */
   chooseThisOptionIfTheResourceAnd: "Choose this option if the resource and the document are served from the same site.",
   /**
-   *@description Explanation text for which cross-origin policy to set.
+   * @description Explanation text for which cross-origin policy to set.
    */
   onlyChooseThisOptionIfAn: "Only choose this option if an arbitrary website including this resource does not impose a security risk.",
   /**
-   *@description Message in the Headers View of the Network panel when a cross-origin opener policy blocked loading a sandbox iframe.
+   * @description Message in the Headers View of the Network panel when a cross-origin opener policy blocked loading a sandbox iframe.
    */
   thisDocumentWasBlockedFrom: "The document was blocked from loading in a popup opened by a sandboxed iframe because this document specified a cross-origin opener policy.",
   /**
-   *@description Message in the Headers View of the Network panel when a cross-origin embedder policy header needs to be set.
+   * @description Message in the Headers View of the Network panel when a cross-origin embedder policy header needs to be set.
    */
   toEmbedThisFrameInYourDocument: "To embed this frame in your document, the response needs to enable the cross-origin embedder policy by specifying the following response header:",
   /**
-   *@description Message in the Headers View of the Network panel when a cross-origin resource policy header needs to be set.
+   * @description Message in the Headers View of the Network panel when a cross-origin resource policy header needs to be set.
    */
   toUseThisResourceFromADifferent: "To use this resource from a different origin, the server needs to specify a cross-origin resource policy in the response headers:",
   /**
-   *@description Message in the Headers View of the Network panel when the cross-origin resource policy header is too strict.
+   * @description Message in the Headers View of the Network panel when the cross-origin resource policy header is too strict.
    */
   toUseThisResourceFromADifferentOrigin: "To use this resource from a different origin, the server may relax the cross-origin resource policy response header:",
   /**
-   *@description Message in the Headers View of the Network panel when the cross-origin resource policy header is too strict.
+   * @description Message in the Headers View of the Network panel when the cross-origin resource policy header is too strict.
    */
   toUseThisResourceFromADifferentSite: "To use this resource from a different site, the server may relax the cross-origin resource policy response header:"
 };
@@ -1928,79 +1930,79 @@ var RAW_HEADER_CUTOFF = 3e3;
 var { render: render6, html: html6 } = Lit4;
 var UIStrings5 = {
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromDiskCache: "(from disk cache)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromMemoryCache: "(from memory cache)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromEarlyHints: "(from early hints)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromPrefetchCache: "(from prefetch cache)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromServiceWorker: "(from `service worker`)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromSignedexchange: "(from signed-exchange)",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   fromWebBundle: "(from Web Bundle)",
   /**
-   *@description Section header for a list of the main aspects of a http request
+   * @description Section header for a list of the main aspects of a http request
    */
   general: "General",
   /**
-   *@description Label for a checkbox to switch between raw and parsed headers
+   * @description Label for a checkbox to switch between raw and parsed headers
    */
   raw: "Raw",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   referrerPolicy: "Referrer Policy",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   remoteAddress: "Remote Address",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   requestHeaders: "Request Headers",
   /**
-   *@description The HTTP method of a request
+   * @description The HTTP method of a request
    */
   requestMethod: "Request Method",
   /**
-   *@description The URL of a request
+   * @description The URL of a request
    */
   requestUrl: "Request URL",
   /**
-   *@description A context menu item in the Network Log View Columns of the Network panel
+   * @description A context menu item in the Network Log View Columns of the Network panel
    */
   responseHeaders: "Response Headers",
   /**
-   *@description A context menu item in the Network Log View Columns of the Network panel
+   * @description A context menu item in the Network Log View Columns of the Network panel
    */
   earlyHintsHeaders: "Early Hints Headers",
   /**
-   *@description Title text for a link to the Sources panel to the file containing the header override definitions
+   * @description Title text for a link to the Sources panel to the file containing the header override definitions
    */
   revealHeaderOverrides: "Reveal header override definitions",
   /**
-   *@description Text to show more content
+   * @description Text to show more content
    */
   showMore: "Show more",
   /**
-   *@description HTTP response code
+   * @description HTTP response code
    */
   statusCode: "Status Code"
 };
@@ -2452,39 +2454,39 @@ var RequestTrustTokensView_css_default = `/*
 var { html: html7 } = Lit5;
 var UIStrings6 = {
   /**
-   *@description Section heading in the Trust Token tab
+   * @description Section heading in the Trust Token tab
    */
   parameters: "Parameters",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Label for a Trust Token parameter
+   * @description Label for a Trust Token parameter
    */
   refreshPolicy: "Refresh policy",
   /**
-   *@description Label for a list if origins in the Trust Token tab
+   * @description Label for a list if origins in the Trust Token tab
    */
   issuers: "Issuers",
   /**
-   *@description Label for a report field in the Network panel
+   * @description Label for a report field in the Network panel
    */
   topLevelOrigin: "Top level origin",
   /**
-   *@description Text for the issuer of an item
+   * @description Text for the issuer of an item
    */
   issuer: "Issuer",
   /**
-   *@description Heading of a report section in the Network panel
+   * @description Heading of a report section in the Network panel
    */
   result: "Result",
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Label for a field in the Network panel
+   * @description Label for a field in the Network panel
    */
   numberOfIssuedTokens: "Number of issued tokens",
   /**
@@ -2493,39 +2495,39 @@ var UIStrings6 = {
    */
   success: "Success",
   /**
-   *@description Text in the network panel for an error status
+   * @description Text in the network panel for an error status
    */
   failure: "Failure",
   /**
-   *@description Detailed text for a success status in the Network panel
+   * @description Detailed text for a success status in the Network panel
    */
   theOperationsResultWasServedFrom: "The operations result was served from cache.",
   /**
-   *@description Detailed text for a success status in the Network panel
+   * @description Detailed text for a success status in the Network panel
    */
   theOperationWasFulfilledLocally: "The operation was fulfilled locally, no request was sent.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   theKeysForThisPSTIssuerAreUnavailable: "The keys for this PST issuer are unavailable. The issuer may need to be registered via the Chrome registration process.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   aClientprovidedArgumentWas: "A client-provided argument was malformed or otherwise invalid.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   eitherNoInputsForThisOperation: "Either no inputs for this operation are available or the output exceeds the operations quota.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   theServersResponseWasMalformedOr: "The servers response was malformed or otherwise invalid.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   theOperationFailedForAnUnknown: "The operation failed for an unknown reason.",
   /**
-   *@description Text for an error status in the Network panel
+   * @description Text for an error status in the Network panel
    */
   perSiteLimit: "Per-site issuer limit reached."
 };
@@ -2746,7 +2748,7 @@ var { mimeFromURL, fromMimeTypeOverride, fromMimeType } = Common4.ResourceType.R
 var { iconDataForResourceType } = PanelUtils;
 var UIStrings7 = {
   /**
-   *@description Header for the column that contains URL of the resource in a web bundle.
+   * @description Header for the column that contains URL of the resource in a web bundle.
    */
   bundledResource: "Bundled resource"
 };

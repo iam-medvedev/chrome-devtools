@@ -10,7 +10,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { html, nothing, render } from '../../ui/lit/lit.js';
+import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as TimelineComponents from './components/components.js';
 import { EventsTimelineTreeView } from './EventsTimelineTreeView.js';
@@ -28,31 +28,31 @@ import { TracingFrameLayerTree } from './TracingLayerTree.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
-     *@description Text for the summary view
+     * @description Text for the summary view
      */
     summary: 'Summary',
     /**
-     *@description Text in Timeline Details View of the Performance panel
+     * @description Text in Timeline Details View of the Performance panel
      */
     bottomup: 'Bottom-up',
     /**
-     *@description Text in Timeline Details View of the Performance panel
+     * @description Text in Timeline Details View of the Performance panel
      */
     callTree: 'Call tree',
     /**
-     *@description Text in Timeline Details View of the Performance panel
+     * @description Text in Timeline Details View of the Performance panel
      */
     eventLog: 'Event log',
     /**
-     *@description Title of the paint profiler, old name of the performance pane
+     * @description Title of the paint profiler, old name of the performance pane
      */
     paintProfiler: 'Paint profiler',
     /**
-     *@description Title of the Layers tool
+     * @description Title of the Layers tool
      */
     layers: 'Layers',
     /**
-     *@description Title of the selector stats tab
+     * @description Title of the selector stats tab
      */
     selectorStats: 'Selector stats',
 };
@@ -74,8 +74,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
     #parsedTrace = null;
     #traceInsightsSets = null;
     #eventToRelatedInsightsMap = null;
-    #filmStrip = null;
-    #networkRequestDetails;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #thirdPartyTree = new ThirdPartyTreeViewWidget();
     #entityMapper = null;
@@ -128,8 +126,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             // Re-dispatch through 3P event to get 3P dimmer.
             this.dispatchEventToListeners("TreeRowClicked" /* TimelineTreeView.Events.TREE_ROW_CLICKED */, { node: node.data.node, events: node.data.events ?? undefined });
         });
-        this.#networkRequestDetails =
-            new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(this.detailsLinkifier);
         this.tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, this.tabSelected, this);
         TraceBounds.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
         this.lazySelectorStatsView = null;
@@ -229,7 +225,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             this.#parsedTrace = data.parsedTrace;
         }
         if (data.parsedTrace) {
-            this.#filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
+            this.#summaryContent.filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
             this.#entityMapper = new Utils.EntityMapper.EntityMapper(data.parsedTrace);
         }
         this.#selectedEvents = data.selectedEvents;
@@ -238,6 +234,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
         this.#summaryContent.traceInsightsSets = this.#traceInsightsSets;
         this.#summaryContent.parsedTrace = this.#parsedTrace;
+        this.#summaryContent.entityMapper = this.#entityMapper;
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
         for (const view of this.rangeDetailViews.values()) {
             view.setModelWithEvents(data.selectedEvents, data.parsedTrace, data.entityMapper);
@@ -249,7 +246,14 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.lazyLayersView = null;
         await this.setSelection(null);
     }
-    async setSummaryContent(node) {
+    /**
+     * Updates the UI shown in the Summary tab, and updates the UI to select the
+     * summary tab.
+     * @param node this is passed as an additional piece of DOM that will be
+     *     rendered in the summary view. This is a temporary ability to allow
+     *     incremental migration to the UI Eng vision.
+     */
+    async updateSummaryAndSelectTab(node) {
         const allTabs = this.tabbedPane.otherTabs(Tab.Details);
         for (let i = 0; i < allTabs.length; ++i) {
             if (!this.rangeDetailViews.has(allTabs[i])) {
@@ -295,7 +299,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
         if (!this.#parsedTrace) {
-            void this.setSummaryContent(UI.Fragment.html `<div/>`);
+            void this.updateSummaryAndSelectTab(null);
             return;
         }
         if (forceImmediateUpdate) {
@@ -323,22 +327,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         this.updateSelectedRangeStats(visibleWindow.min, visibleWindow.max);
         this.updateContents();
     }
-    #getFilmStripFrame(frame) {
-        if (!this.#filmStrip) {
-            return null;
-        }
-        const screenshotTime = (frame.idle ? frame.startTime : frame.endTime);
-        const filmStripFrame = Trace.Extras.FilmStrip.frameClosestToTimestamp(this.#filmStrip, screenshotTime);
-        if (!filmStripFrame) {
-            return null;
-        }
-        const frameTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
-        const frameEndTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(frame.endTime);
-        return frameTimeMilliSeconds - frameEndTimeMilliSeconds < 10 ? filmStripFrame : null;
-    }
-    #setSelectionForTimelineFrame(frame) {
-        const matchedFilmStripFrame = this.#getFilmStripFrame(frame);
-        void this.setSummaryContent(TimelineUIUtils.generateDetailsContentForFrame(frame, this.#filmStrip, matchedFilmStripFrame));
+    #addLayerTreeForSelectedFrame(frame) {
         const target = SDK.TargetManager.TargetManager.instance().rootTarget();
         if (frame.layerTree && target) {
             const layerTreeForFrame = new TracingFrameLayerTree(target, frame.layerTree);
@@ -349,32 +338,16 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             }
         }
     }
-    async #setSelectionForNetworkEvent(networkRequest) {
-        if (!this.#parsedTrace) {
-            return;
-        }
-        const maybeTarget = targetForEvent(this.#parsedTrace, networkRequest);
-        await this.#networkRequestDetails.setData(this.#parsedTrace, networkRequest, maybeTarget, this.#entityMapper);
-        this.#summaryContent.selectedEvent = networkRequest;
-        this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-        await this.setSummaryContent(this.#networkRequestDetails);
-    }
     async #setSelectionForTraceEvent(event) {
         if (!this.#parsedTrace) {
             return;
         }
         this.#summaryContent.selectedEvent = event;
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-        this.#summaryContent.requestUpdate();
-        // Special case: if the user selects a layout shift or a layout shift cluster,
-        // That component is rendered within the summary content component, so we don't have to do anything.
-        // TODO: once we push more of the rendering into the Summary component, this special case can be removed.
-        if (Trace.Types.Events.isSyntheticLayoutShift(event) || Trace.Types.Events.isSyntheticLayoutShiftCluster(event)) {
-            return await this.setSummaryContent();
-        }
-        // Otherwise, build the generic trace event details UI.
-        const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(this.#parsedTrace, event, this.detailsLinkifier, true, this.#entityMapper);
-        this.appendDetailsTabsForTraceEventAndShowDetails(event, traceEventDetails);
+        this.#summaryContent.linkifier = this.detailsLinkifier;
+        this.#summaryContent.target = targetForEvent(this.#parsedTrace, event);
+        await this.updateSummaryAndSelectTab(null);
+        this.appendExtraDetailsTabsForTraceEvent(event);
     }
     async setSelection(selection) {
         if (!this.#parsedTrace) {
@@ -393,15 +366,10 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (selectionIsEvent(selection)) {
             // Cancel any pending debounced range stats update
             this.updateContentsScheduled = false;
-            if (Trace.Types.Events.isSyntheticNetworkRequest(selection.event)) {
-                await this.#setSelectionForNetworkEvent(selection.event);
+            if (Trace.Types.Events.isLegacyTimelineFrame(selection.event)) {
+                this.#addLayerTreeForSelectedFrame(selection.event);
             }
-            else if (Trace.Types.Events.isLegacyTimelineFrame(selection.event)) {
-                this.#setSelectionForTimelineFrame(selection.event);
-            }
-            else {
-                await this.#setSelectionForTraceEvent(selection.event);
-            }
+            await this.#setSelectionForTraceEvent(selection.event);
         }
         else if (selectionIsRange(selection)) {
             const timings = Trace.Helpers.Timing.traceWindowMicroSecondsToMilliSeconds(selection.bounds);
@@ -454,8 +422,12 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             this.appendTab(Tab.SelectorStats, i18nString(UIStrings.selectorStats), selectorStatsView);
         }
     }
-    appendDetailsTabsForTraceEventAndShowDetails(event, content) {
-        void this.setSummaryContent(content);
+    /**
+     * When some events are selected, we show extra tabs. E.g. paint events get
+     * the Paint Profiler, and layout events might get CSS Selector Stats if
+     * they are available in the trace.
+     */
+    appendExtraDetailsTabsForTraceEvent(event) {
         if (Trace.Types.Events.isPaint(event) || Trace.Types.Events.isRasterTask(event)) {
             this.showEventInPaintProfiler(event);
         }
@@ -497,7 +469,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         // (so the 3P Tree View is attached to the DOM) and then we tell it to
         // update.
         // This will be fixed once we migrate this component fully to the new vision (b/407751379)
-        void this.setSummaryContent(summaryDetailElem).then(() => {
+        void this.updateSummaryAndSelectTab(summaryDetailElem).then(() => {
             this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
         });
         // Find all recalculate style events data from range
@@ -522,31 +494,17 @@ export var Tab;
     Tab["SelectorStats"] = "selector-stats";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Tab || (Tab = {}));
-function eventIsLayoutShiftRelated(e) {
-    if (e === null) {
-        return false;
-    }
-    return Trace.Types.Events.isSyntheticLayoutShift(e) || Trace.Types.Events.isSyntheticLayoutShiftCluster(e);
-}
 const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
-    const traceRecordingIsFresh = input.parsedTrace ? Tracker.instance().recordingIsFresh(input.parsedTrace) : false;
     // clang-format off
     render(html `
-        <style>${detailsViewStyles}</style>
+        <style>${UI.Widget.widgetScoped(detailsViewStyles)}</style>
         ${input.node ?? nothing}
-        ${eventIsLayoutShiftRelated(input.selectedEvent) ? html `
-          <devtools-widget data-layout-shift-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
-        event: input.selectedEvent,
-        traceInsightsSets: input.traceInsightsSets,
-        parsedTrace: input.parsedTrace,
-        isFreshRecording: traceRecordingIsFresh,
-    })}></devtools-widget>
-          ` : nothing}
+        ${Directives.until(renderSelectedEventDetails(input))}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
         activeEvent: input.selectedEvent,
         eventToInsightsMap: input.eventToRelatedInsightsMap,
     })}></devtools-widget>
-      `, target, { host: input });
+      `, target);
     // clang-format on
 };
 class SummaryView extends UI.Widget.Widget {
@@ -556,6 +514,10 @@ class SummaryView extends UI.Widget.Widget {
     eventToRelatedInsightsMap = null;
     parsedTrace = null;
     traceInsightsSets = null;
+    entityMapper = null;
+    target = null;
+    linkifier = null;
+    filmStrip = null;
     constructor(element, view = SUMMARY_DEFAULT_VIEW) {
         super(element);
         this.#view = view;
@@ -567,7 +529,75 @@ class SummaryView extends UI.Widget.Widget {
             eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
             parsedTrace: this.parsedTrace,
             traceInsightsSets: this.traceInsightsSets,
+            entityMapper: this.entityMapper,
+            target: this.target,
+            linkifier: this.linkifier,
+            filmStrip: this.filmStrip
         }, {}, this.contentElement);
     }
+}
+async function renderSelectedEventDetails(input) {
+    const { selectedEvent, parsedTrace, linkifier } = input;
+    if (!selectedEvent || !parsedTrace || !linkifier) {
+        return nothing;
+    }
+    const traceRecordingIsFresh = parsedTrace ? Tracker.instance().recordingIsFresh(parsedTrace) : false;
+    if (Trace.Types.Events.isSyntheticLayoutShift(selectedEvent) ||
+        Trace.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
+        // clang-format off
+        return html `
+      <devtools-widget data-layout-shift-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
+            event: selectedEvent,
+            traceInsightsSets: input.traceInsightsSets,
+            parsedTrace: input.parsedTrace,
+            isFreshRecording: traceRecordingIsFresh,
+        })}
+      ></devtools-widget>`;
+        // clang-format on
+    }
+    if (Trace.Types.Events.isSyntheticNetworkRequest(selectedEvent)) {
+        // clang-format off
+        return html `
+      <devtools-widget data-network-request-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.NetworkRequestDetails.NetworkRequestDetails, {
+            request: selectedEvent,
+            entityMapper: input.entityMapper,
+            target: input.target,
+            linkifier: input.linkifier,
+            parsedTrace: input.parsedTrace,
+        })}
+      ></devtools-widget>
+    `;
+        // clang-format on
+    }
+    if (Trace.Types.Events.isLegacyTimelineFrame(selectedEvent) && input.filmStrip) {
+        const matchedFilmStripFrame = getFilmStripFrame(input.filmStrip, selectedEvent);
+        const content = TimelineUIUtils.generateDetailsContentForFrame(selectedEvent, input.filmStrip, matchedFilmStripFrame);
+        return html `${content}`;
+    }
+    // Fall back to the default trace event details. Long term this needs to use
+    // the UI Eng Vision.
+    const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(parsedTrace, selectedEvent, linkifier, true, input.entityMapper);
+    return html `${traceEventDetails}`;
+}
+const filmStripFrameCache = new WeakMap();
+function getFilmStripFrame(filmStrip, frame) {
+    const fromCache = filmStripFrameCache.get(frame);
+    if (typeof fromCache !== 'undefined') {
+        return fromCache;
+    }
+    const screenshotTime = (frame.idle ? frame.startTime : frame.endTime);
+    const filmStripFrame = Trace.Extras.FilmStrip.frameClosestToTimestamp(filmStrip, screenshotTime);
+    if (!filmStripFrame) {
+        filmStripFrameCache.set(frame, null);
+        return null;
+    }
+    const frameTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(filmStripFrame.screenshotEvent.ts);
+    const frameEndTimeMilliSeconds = Trace.Helpers.Timing.microToMilli(frame.endTime);
+    if (frameTimeMilliSeconds - frameEndTimeMilliSeconds < 10) {
+        filmStripFrameCache.set(frame, filmStripFrame);
+        return filmStripFrame;
+    }
+    filmStripFrameCache.set(frame, null);
+    return null;
 }
 //# sourceMappingURL=TimelineDetailsView.js.map

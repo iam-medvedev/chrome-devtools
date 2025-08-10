@@ -6,7 +6,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import { html, render } from '../../ui/lit/lit.js';
 import { Dialog } from './Dialog.js';
 import remoteDebuggingTerminatedScreenStyles from './remoteDebuggingTerminatedScreen.css.js';
-import { VBox } from './Widget.js';
+import { VBox, widgetScoped } from './Widget.js';
 const UIStrings = {
     /**
      * @description Text in a dialog box in DevTools stating that remote debugging has been terminated.
@@ -15,8 +15,8 @@ const UIStrings = {
      */
     debuggingConnectionWasClosed: 'Debugging connection was closed',
     /**
-     *@description Text in a dialog box in DevTools stating the reason for remote debugging being terminated.
-     *@example {target_closed} PH1
+     * @description Text in a dialog box in DevTools stating the reason for remote debugging being terminated.
+     * @example {target_closed} PH1
      */
     connectionClosedReason: 'Reason: {PH1}.',
     /**
@@ -39,7 +39,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${remoteDebuggingTerminatedScreenStyles}</style>
+    <style>${widgetScoped(remoteDebuggingTerminatedScreenStyles)}</style>
     <div class="header">${i18nString(UIStrings.debuggingConnectionWasClosed)}</div>
     <div class="content">
       <div class="reason">${i18nString(UIStrings.connectionClosedReason, { PH1: input.reason })}</div>
@@ -50,7 +50,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         <devtools-button @click=${input.onReconnect} .jslogContext=${'reconnect'}
             .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}>${i18nString(UIStrings.reconnectDevtools)}</devtools-button>
       </div>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class RemoteDebuggingTerminatedScreen extends VBox {

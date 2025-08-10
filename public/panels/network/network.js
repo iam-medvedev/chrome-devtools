@@ -51,7 +51,7 @@ var UIStrings = {
    */
   copiedAsBase: "Copied as `Base64`",
   /**
-   *@description Text in Binary Resource View of the Network panel
+   * @description Text in Binary Resource View of the Network panel
    */
   hexViewer: "`Hex` Viewer",
   /**
@@ -61,16 +61,16 @@ var UIStrings = {
    */
   copiedAsHex: "Copied as `Hex`",
   /**
-   *@description Text in Binary Resource View of the Network panel. Shown to the user as a status
+   * @description Text in Binary Resource View of the Network panel. Shown to the user as a status
    * message after the current text has been copied to the clipboard. UTF-8 is a format for encoding data.
    */
   copiedAsUtf: "Copied as `UTF-8`",
   /**
-   *@description Screen reader label for a select box that chooses how to display binary data in the Network panel
+   * @description Screen reader label for a select box that chooses how to display binary data in the Network panel
    */
   binaryViewType: "Binary view type",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon copy button in the Binary Resource View of the Network panel
+   * @description Tooltip text that appears when hovering over the largeicon copy button in the Binary Resource View of the Network panel
    */
   copyToClipboard: "Copy to clipboard",
   /**
@@ -79,12 +79,12 @@ var UIStrings = {
    */
   copyAsBase: "Copy as `Base64`",
   /**
-   *@description A context menu command in the Binary Resource View of the Network panel, for copying
+   * @description A context menu command in the Binary Resource View of the Network panel, for copying
    * to the clipboard. Hex is short for hexadecimal, and is a format for encoding data.
    */
   copyAsHex: "Copy as `Hex`",
   /**
-   *@description A context menu command in the Binary Resource View of the Network panel, for copying
+   * @description A context menu command in the Binary Resource View of the Network panel, for copying
    *to the clipboard. UTF-8 is a format for encoding data.
    */
   copyAsUtf: "Copy as `UTF-8`"
@@ -317,49 +317,49 @@ var blockedURLsPane_css_default = `/*
 // gen/front_end/panels/network/BlockedURLsPane.js
 var UIStrings2 = {
   /**
-   *@description Text to enable blocking of network requests
+   * @description Text to enable blocking of network requests
    */
   enableNetworkRequestBlocking: "Enable network request blocking",
   /**
-   *@description Tooltip text that appears when hovering over the plus button in the Blocked URLs Pane of the Network panel
+   * @description Tooltip text that appears when hovering over the plus button in the Blocked URLs Pane of the Network panel
    */
   addPattern: "Add pattern",
   /**
-   *@description Accessible label for the button to add request blocking patterns in the network request blocking tool
+   * @description Accessible label for the button to add request blocking patterns in the network request blocking tool
    */
   addNetworkRequestBlockingPattern: "Add network request blocking pattern",
   /**
-   *@description Text that shows in the network request blocking panel if no pattern has yet been added.
+   * @description Text that shows in the network request blocking panel if no pattern has yet been added.
    */
   noNetworkRequestsBlocked: "No blocked network requests",
   /**
-   *@description Text that shows  in the network request blocking panel if no pattern has yet been added.
-   *@example {Add pattern} PH1
+   * @description Text that shows  in the network request blocking panel if no pattern has yet been added.
+   * @example {Add pattern} PH1
    */
   addPatternToBlock: 'Add a pattern to block network requests by clicking on the "{PH1}" button.',
   /**
-   *@description Text in Blocked URLs Pane of the Network panel
-   *@example {4} PH1
+   * @description Text in Blocked URLs Pane of the Network panel
+   * @example {4} PH1
    */
   dBlocked: "{PH1} blocked",
   /**
-   *@description Text in Blocked URLs Pane of the Network panel
+   * @description Text in Blocked URLs Pane of the Network panel
    */
   textPatternToBlockMatching: "Text pattern to block matching requests; use * for wildcard",
   /**
-   *@description Error text for empty list widget input in Request Blocking tool
+   * @description Error text for empty list widget input in Request Blocking tool
    */
   patternInputCannotBeEmpty: "Pattern input cannot be empty.",
   /**
-   *@description Error text for duplicate list widget input in Request Blocking tool
+   * @description Error text for duplicate list widget input in Request Blocking tool
    */
   patternAlreadyExists: "Pattern already exists.",
   /**
-   *@description Message to be announced for a when list item is removed from list widget
+   * @description Message to be announced for a when list item is removed from list widget
    */
   itemDeleted: "Item successfully deleted",
   /**
-   *@description Message to be announced for a when list item is removed from list widget
+   * @description Message to be announced for a when list item is removed from list widget
    */
   learnMore: "Learn more"
 };
@@ -374,9 +374,11 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
   editor;
   blockedCountForUrl;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging.panel("network.blocked-urls").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(blockedURLsPane_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.panel("network.blocked-urls").track({ resize: true })}`);
     this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
     this.manager.addEventListener("BlockedPatternsChanged", this.update, this);
     this.toolbar = this.contentElement.createChild("devtools-toolbar");
@@ -604,35 +606,35 @@ var eventSourceMessagesView_css_default = `/*
 // gen/front_end/panels/network/EventSourceMessagesView.js
 var UIStrings3 = {
   /**
-   *@description Text in Event Source Messages View of the Network panel
+   * @description Text in Event Source Messages View of the Network panel
    */
   id: "Id",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Text in Event Source Messages View of the Network panel
+   * @description Text in Event Source Messages View of the Network panel
    */
   data: "Data",
   /**
-   *@description Text that refers to the time
+   * @description Text that refers to the time
    */
   time: "Time",
   /**
-   *@description Data grid name for Event Source data grids
+   * @description Data grid name for Event Source data grids
    */
   eventSource: "Event Source",
   /**
-   *@description A context menu item in the Resource Web Socket Frame View of the Network panel
+   * @description A context menu item in the Resource Web Socket Frame View of the Network panel
    */
   copyMessage: "Copy message",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAll: "Clear all",
   /**
-   *@description Example for placeholder text
+   * @description Example for placeholder text
    */
   filterByRegex: "Filter using regex (example: https?)"
 };
@@ -647,10 +649,9 @@ var EventSourceMessagesView = class extends UI3.Widget.VBox {
   filterRegex;
   messageFilterSetting = Common2.Settings.Settings.instance().createSetting("network-event-source-message-filter", "");
   constructor(request) {
-    super();
+    super({ jslog: `${VisualLogging2.pane("event-stream").track({ resize: true })}` });
     this.registerRequiredCSS(eventSourceMessagesView_css_default);
     this.element.classList.add("event-source-messages-view");
-    this.element.setAttribute("jslog", `${VisualLogging2.pane("event-stream").track({ resize: true })}`);
     this.request = request;
     this.mainToolbar = this.element.createChild("devtools-toolbar");
     this.clearAllButton = new UI3.Toolbar.ToolbarButton(i18nString3(UIStrings3.clearAll), "clear");
@@ -912,35 +913,35 @@ devtools-user-agent-client-hints-form {
 // gen/front_end/panels/network/NetworkConfigView.js
 var UIStrings4 = {
   /**
-   *@description Text in the Network conditions panel shown in the dropdown where the user chooses the user agent.
+   * @description Text in the Network conditions panel shown in the dropdown where the user chooses the user agent.
    */
   custom: "Custom\u2026",
   /**
-   *@description Placeholder text shown in the input box where a user is expected to add a custom user agent.
+   * @description Placeholder text shown in the input box where a user is expected to add a custom user agent.
    */
   enterACustomUserAgent: "Enter a custom user agent",
   /**
-   *@description Error message when the custom user agent field is empty.
+   * @description Error message when the custom user agent field is empty.
    */
   customUserAgentFieldIsRequired: "Custom user agent field is required",
   /**
-   *@description Header for the caching settings within the network conditions panel.
+   * @description Header for the caching settings within the network conditions panel.
    */
   caching: "Caching",
   /**
-   *@description Option in the network conditions panel to disable the cache.
+   * @description Option in the network conditions panel to disable the cache.
    */
   disableCache: "Disable cache",
   /**
-   *@description Header in Network conditions panel for the network throttling and emulation settings.
+   * @description Header in Network conditions panel for the network throttling and emulation settings.
    */
   networkThrottling: "Network",
   /**
-   *@description Header in the network conditions panel for the user agent settings.
+   * @description Header in the network conditions panel for the user agent settings.
    */
   userAgent: "User agent",
   /**
-   *@description User agent setting in the network conditions panel to use the browser's default value.
+   * @description User agent setting in the network conditions panel to use the browser's default value.
    */
   selectAutomatically: "Use browser default",
   /**
@@ -962,9 +963,11 @@ var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var networkConfigViewInstance;
 var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging3.panel("network-conditions").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(networkConfigView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging3.panel("network-conditions").track({ resize: true })}`);
     this.contentElement.classList.add("network-config");
     this.createCacheSection();
     this.contentElement.createChild("div").classList.add("panel-section-separator");
@@ -1075,9 +1078,7 @@ var NetworkConfigView = class _NetworkConfigView extends UI4.Widget.VBox {
   createNetworkThrottlingSection() {
     const title = i18nString4(UIStrings4.networkThrottling);
     const section4 = this.createSection(title, "network-config-throttling");
-    const networkThrottlingSelect = section4.createChild("select");
-    MobileThrottling.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(networkThrottlingSelect);
-    UI4.ARIAUtils.setLabel(networkThrottlingSelect, title);
+    MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(section4, title);
     const saveDataSelect = MobileThrottling.ThrottlingManager.throttlingManager().createSaveDataOverrideSelector("chrome-select").element;
     section4.appendChild(saveDataSelect);
   }
@@ -1669,28 +1670,28 @@ import { render } from "./../../ui/lit/lit.js";
 import { PanelUtils } from "./../utils/utils.js";
 var UIStrings5 = {
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   redirect: "Redirect",
   /**
-   *@description Content of the request method column in the network log view. Some requests require an additional request to check permissions, and this additional request is called 'Preflight Request', see https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request. In the request method column we use, for example, 'POST + Preflight' to indicate that the request method was 'POST' and the request was accompanied by a preflight request. Since the column is short, the translation for Preflight in this context should ideally also be short.
-   *@example {GET} PH1
+   * @description Content of the request method column in the network log view. Some requests require an additional request to check permissions, and this additional request is called 'Preflight Request', see https://developer.mozilla.org/en-US/docs/Glossary/Preflight_request. In the request method column we use, for example, 'POST + Preflight' to indicate that the request method was 'POST' and the request was accompanied by a preflight request. Since the column is short, the translation for Preflight in this context should ideally also be short.
+   * @example {GET} PH1
    */
   sPreflight: "{PH1} + Preflight",
   /**
-   *@description Name of a network initiator type
+   * @description Name of a network initiator type
    */
   preflight: "Preflight",
   /**
-   *@description Title for a link element in the network log view
+   * @description Title for a link element in the network log view
    */
   selectPreflightRequest: "Select preflight request",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   failed: "(failed)",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   data: "(data)",
   /**
@@ -1699,15 +1700,15 @@ var UIStrings5 = {
    */
   canceled: "(canceled)",
   /**
-   *@description Reason in Network Data Grid Node of the Network panel
+   * @description Reason in Network Data Grid Node of the Network panel
    */
   other: "other",
   /**
-   *@description Reason in Network Data Grid Node of the Network panel
+   * @description Reason in Network Data Grid Node of the Network panel
    */
   csp: "csp",
   /**
-   *@description Reason in Network Data Grid Node of the Network panel
+   * @description Reason in Network Data Grid Node of the Network panel
    */
   origin: "origin",
   /**
@@ -1731,33 +1732,33 @@ var UIStrings5 = {
    */
   corpNotSameOriginAfterDefaultedToSameOriginByCoep: 'CORP not "same-origin" after defaulted to "same-origin" by COEP',
   /**
-   *@description Noun. Shown in a table cell as the reason why a network request failed. "integrity" here refers to the integrity of the network request itself in a cryptographic sense: signature verification might have failed, for instance.
+   * @description Noun. Shown in a table cell as the reason why a network request failed. "integrity" here refers to the integrity of the network request itself in a cryptographic sense: signature verification might have failed, for instance.
    */
   integrity: "integrity",
   /**
-   *@description Reason in Network Data Grid Node of the Network panel
+   * @description Reason in Network Data Grid Node of the Network panel
    */
   devtools: "devtools",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
-   *@example {mixed-content} PH1
+   * @description Text in Network Data Grid Node of the Network panel
+   * @example {mixed-content} PH1
    */
   blockeds: "(blocked:{PH1})",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   blockedTooltip: "This request was blocked due to misconfigured response headers, click to view the headers",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   corsError: "CORS error",
   /**
-   *@description Tooltip providing the cors error code
-   *@example {PreflightDisallowedRedirect} PH1
+   * @description Tooltip providing the cors error code
+   * @example {PreflightDisallowedRedirect} PH1
    */
   crossoriginResourceSharingErrorS: "Cross-Origin Resource Sharing error: {PH1}",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   finished: "Finished",
   /**
@@ -1779,164 +1780,168 @@ var UIStrings5 = {
    */
   push: "Push / ",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   parser: "Parser",
   /**
-   *@description Label for a group of JavaScript files
+   * @description Label for a group of JavaScript files
    */
   script: "Script",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
+   * @description Cell title in Network Data Grid Node of the Network panel
    */
   preload: "Preload",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
+   * @description Cell title in Network Data Grid Node of the Network panel
    */
   earlyHints: "early-hints",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   signedexchange: "signed-exchange",
   /**
-   *@description Title for a link element in the network log view
+   * @description Title for a link element in the network log view
    */
   selectTheRequestThatTriggered: "Select the request that triggered this preflight",
   /**
-   *@description Text for other types of items
+   * @description Text for other types of items
    */
   otherC: "Other",
   /**
-   *@description Text of a DOM element in Network Data Grid Node of the Network panel
+   * @description Text of a DOM element in Network Data Grid Node of the Network panel
    */
   memoryCache: "(memory cache)",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from memory cache.
-   *@example {50 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from memory cache.
+   * @example {50 B} PH1
    */
   servedFromMemoryCacheResource: "Served from memory cache, resource size: {PH1}",
   /**
-   *@description Text of a DOM element in Network Data Grid Node of the Network panel
+   * @description Text of a DOM element in Network Data Grid Node of the Network panel
    */
   serviceWorker: "(`ServiceWorker`)",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {4 B} PH1
-   *@example {10 B} PH2
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {4 B} PH1
+   * @example {10 B} PH2
    */
   servedFromNetwork: "{PH1} transferred over network, resource size: {PH2}",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {4 B} PH1
-   *@example {10 B} PH2
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {4 B} PH1
+   * @example {10 B} PH2
    */
   servedFromNetworkMissingServiceWorkerRoute: "{PH1} transferred over network, resource size: {PH2}, no matching ServiceWorker routes",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {4 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {4 B} PH1
    */
   servedFromServiceWorkerResource: "Served from `ServiceWorker`, resource size: {PH1}",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {4 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {4 B} PH1
    */
   servedFromSignedHttpExchange: "Served from Signed HTTP Exchange, resource size: {PH1}",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
-   *@example {4 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
+   * @example {4 B} PH1
    */
   servedFromWebBundle: "Served from Web Bundle, resource size: {PH1}",
   /**
-   *@description Text of a DOM element in Network Data Grid Node of the Network panel
+   * @description Text of a DOM element in Network Data Grid Node of the Network panel
    */
   prefetchCache: "(prefetch cache)",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {4 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {4 B} PH1
    */
   servedFromPrefetchCacheResource: "Served from prefetch cache, resource size: {PH1}",
   /**
-   *@description Text of a DOM element in Network Data Grid Node of the Network panel
+   * @description Text of a DOM element in Network Data Grid Node of the Network panel
    */
   diskCache: "(disk cache)",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {10 B} PH1
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {10 B} PH1
    */
   servedFromDiskCacheResourceSizeS: "Served from disk cache, resource size: {PH1}",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {1} PH1
-   *@example {4 B} PH2
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {1} PH1
+   * @example {4 B} PH2
    */
   matchedToServiceWorkerRouter: "Matched to `ServiceWorker router`#{PH1}, resource size: {PH2}",
   /**
-   *@description Cell title in Network Data Grid Node of the Network panel
-   *@example {1} PH1
-   *@example {4 B} PH2
-   *@example {12 B} PH3
+   * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {1} PH1
+   * @example {4 B} PH2
+   * @example {12 B} PH3
    */
   matchedToServiceWorkerRouterWithNetworkSource: "Matched to `ServiceWorker router`#{PH1}, {PH2} transferred over network, resource size: {PH3}",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   pending: "Pending",
   /**
-   *@description Text describing the depth of a top level node in the network datagrid
+   * @description Text describing the depth of a top level node in the network datagrid
    */
   level: "level 1",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   webBundleError: "Web Bundle error",
   /**
-   *@description Alternative text for the web bundle inner request icon in Network Data Grid Node of the Network panel
+   * @description Alternative text for the web bundle inner request icon in Network Data Grid Node of the Network panel
    * Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
    */
   webBundleInnerRequest: "Served from Web Bundle",
   /**
-   *@description Text in Network Data Grid Node of the Network panel
+   * @description Text in Network Data Grid Node of the Network panel
    */
   webBundle: "(Web Bundle)",
   /**
-   *@description Tooltip text for subtitles of Time cells in Network request rows. Latency is the time difference
+   * @description Tooltip text for subtitles of Time cells in Network request rows. Latency is the time difference
    * between the time a response to a network request is received and the time the request is started.
    */
   timeSubtitleTooltipText: "Latency (response received time - start time)",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   alternativeJobWonWithoutRace: "`Chrome` used a `HTTP/3` connection induced by an '`Alt-Svc`' header without racing against establishing a connection using a different `HTTP` version.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   alternativeJobWonRace: "`Chrome` used a `HTTP/3` connection induced by an '`Alt-Svc`' header because it won a race against establishing a connection using a different `HTTP` version.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   mainJobWonRace: "`Chrome` used this protocol because it won a race against establishing a `HTTP/3` connection.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   mappingMissing: "`Chrome` did not use an alternative `HTTP` version because no alternative protocol information was available when the request was issued, but an '`Alt-Svc`' header was present in the response.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   broken: "`Chrome` did not try to establish a `HTTP/3` connection because it was marked as broken.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   dnsAlpnH3JobWonWithoutRace: "`Chrome` used a `HTTP/3` connection due to the `DNS record` indicating `HTTP/3` support. There was no race against establishing a connection using a different `HTTP` version.",
   /**
-   *@description Tooltip text giving the reason why a specific HTTP transport protocol has been used
+   * @description Tooltip text giving the reason why a specific HTTP transport protocol has been used
    */
   dnsAlpnH3JobWonRace: "`Chrome` used a `HTTP/3` connection due to the `DNS record` indicating `HTTP/3` support, which won a race against establishing a connection using a different `HTTP` version.",
   /**
-   *@description Tooltip to explain the resource's initial priority
-   *@example {High} PH1
-   *@example {Low} PH2
+   * @description Tooltip to explain the resource's initial priority
+   * @example {High} PH1
+   * @example {Low} PH2
    */
-  initialPriorityToolTip: "{PH1}, Initial priority: {PH2}"
+  initialPriorityToolTip: "{PH1}, Initial priority: {PH2}",
+  /**
+   * @description Tooltip to explain why the request has an IPP icon
+   */
+  responseIsIpProtectedToolTip: "This request was sent through IP Protection proxies."
 };
 var str_5 = i18n9.i18n.registerUIStrings("panels/network/NetworkDataGridNode.ts", UIStrings5);
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
@@ -2584,6 +2589,12 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
         this.parentView().dispatchEventToListeners("RequestActivated", { showPanel: true });
       });
       cell.addEventListener("focus", () => this.parentView().resetFocus());
+      if (this.requestInternal.isIpProtectionUsed()) {
+        const ippIcon = IconButton.Icon.create("shield", "icon");
+        ippIcon.title = i18nString5(UIStrings5.responseIsIpProtectedToolTip);
+        ippIcon.style.color = "var(--sys-color-on-surface-subtle);";
+        cell.appendChild(ippIcon);
+      }
       const iconElement = PanelUtils.getIconForNetworkRequest(this.requestInternal);
       render(iconElement, cell);
       const aiButtonContainer = this.createAiButtonIfAvailable();
@@ -3021,7 +3032,7 @@ var requestCookiesView_css_default = `/*
 // gen/front_end/panels/network/RequestCookiesView.js
 var UIStrings6 = {
   /**
-   *@description Text in Request Cookies View of the Network panel
+   * @description Text in Request Cookies View of the Network panel
    */
   thisRequestHasNoCookies: "This request has no cookies.",
   /**
@@ -3030,27 +3041,27 @@ var UIStrings6 = {
    */
   requestCookies: "Request Cookies",
   /**
-   *@description Tooltip to explain what request cookies are
+   * @description Tooltip to explain what request cookies are
    */
   cookiesThatWereSentToTheServerIn: "Cookies that were sent to the server in the 'cookie' header of the request",
   /**
-   *@description Label for showing request cookies that were not actually sent
+   * @description Label for showing request cookies that were not actually sent
    */
   showFilteredOutRequestCookies: "show filtered out request cookies",
   /**
-   *@description Text in Request Headers View of the Network Panel
+   * @description Text in Request Headers View of the Network Panel
    */
   noRequestCookiesWereSent: "No request cookies were sent.",
   /**
-   *@description Text in Request Cookies View of the Network panel
+   * @description Text in Request Cookies View of the Network panel
    */
   responseCookies: "Response Cookies",
   /**
-   *@description Tooltip to explain what response cookies are
+   * @description Tooltip to explain what response cookies are
    */
   cookiesThatWereReceivedFromThe: "Cookies that were received from the server in the '`set-cookie`' header of the response",
   /**
-   *@description Label for response cookies with invalid syntax
+   * @description Label for response cookies with invalid syntax
    */
   malformedResponseCookies: "Malformed Response Cookies",
   /**
@@ -3085,10 +3096,9 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
   malformedResponseCookiesTitle;
   malformedResponseCookiesList;
   constructor(request) {
-    super();
+    super({ jslog: `${VisualLogging4.pane("cookies").track({ resize: true })}` });
     this.registerRequiredCSS(requestCookiesView_css_default);
     this.element.classList.add("request-cookies-view");
-    this.element.setAttribute("jslog", `${VisualLogging4.pane("cookies").track({ resize: true })}`);
     this.request = request;
     this.showFilteredOutCookiesSetting = Common5.Settings.Settings.instance().createSetting(
       "show-filtered-out-request-cookies",
@@ -3345,15 +3355,15 @@ var requestInitiatorViewTree_css_default = `/*
 // gen/front_end/panels/network/RequestInitiatorView.js
 var UIStrings7 = {
   /**
-   *@description Text in Request Initiator View of the Network panel if the request has no initiator data
+   * @description Text in Request Initiator View of the Network panel if the request has no initiator data
    */
   noInitiator: "No initiator data",
   /**
-   *@description Title of a section in Request Initiator view of the Network Panel
+   * @description Title of a section in Request Initiator view of the Network Panel
    */
   requestCallStack: "Request call stack",
   /**
-   *@description Title of a section in Request Initiator view of the Network Panel
+   * @description Title of a section in Request Initiator view of the Network Panel
    */
   requestInitiatorChain: "Request initiator chain"
 };
@@ -3365,9 +3375,8 @@ var RequestInitiatorView = class _RequestInitiatorView extends UI7.Widget.VBox {
   emptyWidget;
   hasShown;
   constructor(request) {
-    super();
+    super({ jslog: `${VisualLogging5.pane("initiator").track({ resize: true })}` });
     this.element.classList.add("request-initiator-view");
-    this.element.setAttribute("jslog", `${VisualLogging5.pane("initiator").track({ resize: true })}`);
     this.linkifier = new Components2.Linkifier.Linkifier();
     this.request = request;
     this.emptyWidget = new UI7.EmptyWidget.EmptyWidget(i18nString7(UIStrings7.noInitiator), "");
@@ -3868,11 +3877,11 @@ var requestPayloadView_css_default = `/*
 // gen/front_end/panels/network/RequestPayloadView.js
 var UIStrings8 = {
   /**
-   *@description A context menu item Payload View of the Network panel to copy a parsed value.
+   * @description A context menu item Payload View of the Network panel to copy a parsed value.
    */
   copyValue: "Copy value",
   /**
-   *@description A context menu item Payload View of the Network panel to copy the payload.
+   * @description A context menu item Payload View of the Network panel to copy the payload.
    */
   copyPayload: "Copy",
   /**
@@ -3881,31 +3890,31 @@ var UIStrings8 = {
    */
   requestPayload: "Request Payload",
   /**
-   *@description Text in Request Payload View of the Network panel
+   * @description Text in Request Payload View of the Network panel
    */
   unableToDecodeValue: "(unable to decode value)",
   /**
-   *@description Text in Request Payload View of the Network panel
+   * @description Text in Request Payload View of the Network panel
    */
   queryStringParameters: "Query String Parameters",
   /**
-   *@description Text in Request Payload View of the Network panel
+   * @description Text in Request Payload View of the Network panel
    */
   formData: "Form Data",
   /**
-   *@description Text to show more content
+   * @description Text to show more content
    */
   showMore: "Show more",
   /**
-   *@description Text for toggling the view of payload data (e.g. query string parameters) from source to parsed in the payload tab
+   * @description Text for toggling the view of payload data (e.g. query string parameters) from source to parsed in the payload tab
    */
   viewParsed: "View parsed",
   /**
-   *@description Text to show an item is empty
+   * @description Text to show an item is empty
    */
   empty: "(empty)",
   /**
-   *@description Text for toggling the view of payload data (e.g. query string parameters) from parsed to source in the payload tab
+   * @description Text for toggling the view of payload data (e.g. query string parameters) from parsed to source in the payload tab
    */
   viewSource: "View source",
   /**
@@ -3915,7 +3924,7 @@ var UIStrings8 = {
    */
   viewUrlEncoded: "View URL-encoded",
   /**
-   *@description Text for toggling payload data (e.g. query string parameters) from encoded to decoded in the payload tab or in the cookies preview
+   * @description Text for toggling payload data (e.g. query string parameters) from encoded to decoded in the payload tab or in the cookies preview
    */
   viewDecoded: "View decoded"
 };
@@ -3928,10 +3937,9 @@ var RequestPayloadView = class _RequestPayloadView extends UI8.Widget.VBox {
   formDataCategory;
   requestPayloadCategory;
   constructor(request) {
-    super();
+    super({ jslog: `${VisualLogging6.pane("payload").track({ resize: true })}` });
     this.registerRequiredCSS(requestPayloadView_css_default);
     this.element.classList.add("request-payload-view");
-    this.element.setAttribute("jslog", `${VisualLogging6.pane("payload").track({ resize: true })}`);
     this.request = request;
     this.decodeRequestParameters = true;
     const contentType = request.requestContentType();
@@ -4306,14 +4314,14 @@ var requestHTMLView_css_default = `/*
 // gen/front_end/panels/network/RequestHTMLView.js
 var DEFAULT_VIEW = (input, _output, target) => {
   render2(html`
-    <style>${requestHTMLView_css_default}</style>
+    <style>${UI9.Widget.widgetScoped(requestHTMLView_css_default)}</style>
     <div class="html request-view widget vbox">
       ${input.dataURL ? html`
         <!-- @ts-ignore -->
         <iframe class="html-preview-frame" sandbox
           csp="default-src 'none';img-src data:;style-src 'unsafe-inline'" src=${input.dataURL}
           tabindex="-1" role="presentation"></iframe>` : nothing}
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var RequestHTMLView = class _RequestHTMLView extends UI9.Widget.VBox {
   #dataURL;
@@ -4473,87 +4481,87 @@ var signedExchangeInfoView_css_default = `/*
 // gen/front_end/panels/network/SignedExchangeInfoView.js
 var UIStrings9 = {
   /**
-   *@description Text for errors
+   * @description Text for errors
    */
   errors: "Errors",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   signedHttpExchange: "Signed HTTP exchange",
   /**
-   *@description Text for an option to learn more about something
+   * @description Text for an option to learn more about something
    */
   learnmore: "Learn\xA0more",
   /**
-   *@description Text in Request Headers View of the Network panel
+   * @description Text in Request Headers View of the Network panel
    */
   requestUrl: "Request URL",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   responseCode: "Response code",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   headerIntegrityHash: "Header integrity hash",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   responseHeaders: "Response headers",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   signature: "Signature",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   label: "Label",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   certificateUrl: "Certificate URL",
   /**
-   *@description Text to view a security certificate
+   * @description Text to view a security certificate
    */
   viewCertificate: "View certificate",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   integrity: "Integrity",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   certificateSha: "Certificate SHA256",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   validityUrl: "Validity URL",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   date: "Date",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   expires: "Expires",
   /**
-   *@description Text for a security certificate
+   * @description Text for a security certificate
    */
   certificate: "Certificate",
   /**
-   *@description Text that refers to the subject of a security certificate
+   * @description Text that refers to the subject of a security certificate
    */
   subject: "Subject",
   /**
-   *@description Text to show since when an item is valid
+   * @description Text to show since when an item is valid
    */
   validFrom: "Valid from",
   /**
-   *@description Text to indicate the expiry date
+   * @description Text to indicate the expiry date
    */
   validUntil: "Valid until",
   /**
-   *@description Text for the issuer of an item
+   * @description Text for the issuer of an item
    */
   issuer: "Issuer"
 };
@@ -4722,11 +4730,11 @@ var Category2 = class extends UI10.TreeOutline.TreeElement {
 // gen/front_end/panels/network/RequestPreviewView.js
 var UIStrings10 = {
   /**
-   *@description Text in Request Preview View of the Network panel
+   * @description Text in Request Preview View of the Network panel
    */
   failedToLoadResponseData: "Failed to load response data",
   /**
-   *@description Text in Request Preview View of the Network panel
+   * @description Text in Request Preview View of the Network panel
    */
   previewNotAvailable: "Preview not available"
 };
@@ -4736,11 +4744,10 @@ var RequestPreviewView = class extends UI11.Widget.VBox {
   request;
   contentViewPromise;
   constructor(request) {
-    super();
+    super({ jslog: `${VisualLogging7.pane("preview").track({ resize: true })}` });
     this.element.classList.add("request-view");
     this.request = request;
     this.contentViewPromise = null;
-    this.element.setAttribute("jslog", `${VisualLogging7.pane("preview").track({ resize: true })}`);
   }
   async showPreview() {
     const view = await this.createPreview();
@@ -4814,15 +4821,15 @@ import * as UI12 from "./../../ui/legacy/legacy.js";
 var { html: html2, render: render3 } = Lit;
 var UIStrings11 = {
   /**
-   *@description Text in Request Response View of the Network panel if no preview can be shown
+   * @description Text in Request Response View of the Network panel if no preview can be shown
    */
   noPreview: "Nothing to preview",
   /**
-   *@description Text in Request Response View of the Network panel
+   * @description Text in Request Response View of the Network panel
    */
   thisRequestHasNoResponseData: "This request has no response data available",
   /**
-   *@description Text in Request Preview View of the Network panel
+   * @description Text in Request Preview View of the Network panel
    */
   failedToLoadResponseData: "Failed to load response data"
 };
@@ -4848,7 +4855,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     widget = html2`<devtools-widget
                     .widgetConfig=${widgetConfig((element) => new BinaryResourceView(input.contentData, input.request.url(), input.request.resourceType(), element))}></devtools-widget>`;
   }
-  render3(widget, target, { host: input });
+  render3(widget, target);
 };
 var RequestResponseView = class extends UI12.Widget.VBox {
   request;
@@ -5165,195 +5172,195 @@ tr.synthetic {
 // gen/front_end/panels/network/RequestTimingView.js
 var UIStrings12 = {
   /**
-   *@description Text used to label the time taken to receive an HTTP/2 Push message.
+   * @description Text used to label the time taken to receive an HTTP/2 Push message.
    */
   receivingPush: "Receiving `Push`",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   queueing: "Queueing",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   stalled: "Stalled",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   initialConnection: "Initial connection",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   dnsLookup: "DNS Lookup",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   proxyNegotiation: "Proxy negotiation",
   /**
-   *@description Text used to label the time taken to read an HTTP/2 Push message.
+   * @description Text used to label the time taken to read an HTTP/2 Push message.
    */
   readingPush: "Reading `Push`",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   contentDownload: "Content Download",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   requestSent: "Request sent",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   requestToServiceworker: "Request to `ServiceWorker`",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   startup: "Startup",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   respondwith: "respondWith",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   ssl: "SSL",
   /**
-   *@description Text for sum
+   * @description Text for sum
    */
   total: "Total",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   waitingTtfb: "Waiting for server response",
   /**
-   *@description Text in Signed Exchange Info View of the Network panel
+   * @description Text in Signed Exchange Info View of the Network panel
    */
   label: "Label",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   routerEvaluation: "Router Evaluation",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   routerCacheLookup: "Cache Lookup",
   /**
-   *@description Inner element text content in Network Log View Columns of the Network panel
+   * @description Inner element text content in Network Log View Columns of the Network panel
    */
   waterfall: "Waterfall",
   /**
-   *@description Text for the duration of something
+   * @description Text for the duration of something
    */
   duration: "Duration",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
-   *@example {120.39ms} PH1
+   * @description Text of a DOM element in Request Timing View of the Network panel
+   * @example {120.39ms} PH1
    */
   queuedAtS: "Queued at {PH1}",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
-   *@example {120.39ms} PH1
+   * @description Text of a DOM element in Request Timing View of the Network panel
+   * @example {120.39ms} PH1
    */
   startedAtS: "Started at {PH1}",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   serverPush: "Server Push",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
+   * @description Text of a DOM element in Request Timing View of the Network panel
    */
   resourceScheduling: "Resource Scheduling",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   connectionStart: "Connection Start",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   requestresponse: "Request/Response",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
+   * @description Text of a DOM element in Request Timing View of the Network panel
    */
   cautionRequestIsNotFinishedYet: "CAUTION: request is not finished yet!",
   /**
-   *@description Text in Request Timing View of the Network panel
+   * @description Text in Request Timing View of the Network panel
    */
   explanation: "Explanation",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
+   * @description Text of a DOM element in Request Timing View of the Network panel
    */
   serverTiming: "Server Timing",
   /**
-   *@description Text of a DOM element in Request Timing View of the Network panel
+   * @description Text of a DOM element in Request Timing View of the Network panel
    */
   time: "TIME",
   /**
-   *@description Label for the Server Timing API
+   * @description Label for the Server Timing API
    */
   theServerTimingApi: "the Server Timing API",
   /**
-   *@description Text to inform about the ServerTiming API, which can be used to report timing information to DevTools about the substeps that the server performed to answer the requests. Timing information is, e.g., the duration of the substep.
-   *@example {https://web.dev/custom-metrics/#server-timing-api} PH1
+   * @description Text to inform about the ServerTiming API, which can be used to report timing information to DevTools about the substeps that the server performed to answer the requests. Timing information is, e.g., the duration of the substep.
+   * @example {https://web.dev/custom-metrics/#server-timing-api} PH1
    */
   duringDevelopmentYouCanUseSToAdd: "During development, you can use {PH1} to add insights into the server-side timing of this request.",
   /**
-   *@description Header for last column of network timing tab.
+   * @description Header for last column of network timing tab.
    */
   durationC: "DURATION",
   /**
-   *@description Description for treeitem in ServiceWorker Fetch Details
+   * @description Description for treeitem in ServiceWorker Fetch Details
    */
   originalRequest: "Original Request",
   /**
-   *@description Description for treeitem in ServiceWorker Fetch Details
+   * @description Description for treeitem in ServiceWorker Fetch Details
    */
   responseReceived: "Response Received",
   /**
-   *@description Text for an unspecified service worker response source
+   * @description Text for an unspecified service worker response source
    */
   unknown: "Unknown",
   /**
-   *@description Displays how a particular response was fetched
-   *@example {Network fetch} PH1
+   * @description Displays how a particular response was fetched
+   * @example {Network fetch} PH1
    */
   sourceOfResponseS: "Source of response: {PH1}",
   /**
-   *@description Name of storage cache from which a response was fetched
-   *@example {v1} PH1
+   * @description Name of storage cache from which a response was fetched
+   * @example {v1} PH1
    */
   cacheStorageCacheNameS: "Cache storage cache name: {PH1}",
   /**
-   *@description Text for unknown cache storage name
+   * @description Text for unknown cache storage name
    */
   cacheStorageCacheNameUnknown: "Cache storage cache name: Unknown",
   /**
-   *@description Time at which a response was retrieved
-   *@example {Fri Apr 10 2020 17:20:27 GMT-0700 (Pacific Daylight Time)} PH1
+   * @description Time at which a response was retrieved
+   * @example {Fri Apr 10 2020 17:20:27 GMT-0700 (Pacific Daylight Time)} PH1
    */
   retrievalTimeS: "Retrieval Time: {PH1}",
   /**
-   *@description Text used to show that serviceworker fetch response source is ServiceWorker Cache Storage
+   * @description Text used to show that serviceworker fetch response source is ServiceWorker Cache Storage
    */
   serviceworkerCacheStorage: "`ServiceWorker` cache storage",
   /**
-   *@description Text used to show that serviceworker fetch response source is HTTP cache
+   * @description Text used to show that serviceworker fetch response source is HTTP cache
    */
   fromHttpCache: "From HTTP cache",
   /**
-   *@description Text used to show that data was retrieved via a Network fetch
+   * @description Text used to show that data was retrieved via a Network fetch
    */
   networkFetch: "Network fetch",
   /**
-   *@description Text used to show that data was retrieved using ServiceWorker fallback code
+   * @description Text used to show that data was retrieved using ServiceWorker fallback code
    */
   fallbackCode: "Fallback code",
   /**
-   *@description Name of the specified source for SW static routing API.
-   *@example {network} PH1
+   * @description Name of the specified source for SW static routing API.
+   * @example {network} PH1
    */
   routerMatchedSource: "Matched source: {PH1}",
   /**
-   *@description Name of the actually used source for SW static routing API.
-   *@example {network} PH1
+   * @description Name of the actually used source for SW static routing API.
+   * @example {network} PH1
    */
   routerActualSource: "Actual source: {PH1}"
 };
@@ -5910,55 +5917,55 @@ var resourceChunkView_css_default = `/*
 // gen/front_end/panels/network/ResourceChunkView.js
 var UIStrings13 = {
   /**
-   *@description Text in Event Source Messages View of the Network panel
+   * @description Text in Event Source Messages View of the Network panel
    */
   data: "Data",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   length: "Length",
   /**
-   *@description Text that refers to the time
+   * @description Text that refers to the time
    */
   time: "Time",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAll: "Clear All",
   /**
-   *@description Text to filter result items
+   * @description Text to filter result items
    */
   filter: "Filter",
   /**
-   *@description Text in Messages View of the Network panel that shows if no message is selected for viewing its content
+   * @description Text in Messages View of the Network panel that shows if no message is selected for viewing its content
    */
   noMessageSelected: "No message selected",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   selectMessageToBrowseItsContent: "Select message to browse its content.",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   copyMessageD: "Copy message\u2026",
   /**
-   *@description A context menu item in the Messages View of the Network panel
+   * @description A context menu item in the Messages View of the Network panel
    */
   copyMessage: "Copy message",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAllL: "Clear all",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   send: "Send",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   receive: "Receive"
 };
@@ -6149,31 +6156,31 @@ var clearChunkOffsets = /* @__PURE__ */ new WeakMap();
 // gen/front_end/panels/network/ResourceDirectSocketChunkView.js
 var UIStrings14 = {
   /**
-   *@description Text in Event Source Messages View of the Network panel
+   * @description Text in Event Source Messages View of the Network panel
    */
   data: "Data",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   length: "Length",
   /**
-   *@description Text that refers to the time
+   * @description Text that refers to the time
    */
   time: "Time",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   address: "Address",
   /**
-   *@description Text in Messages View of the Network panel
+   * @description Text in Messages View of the Network panel
    */
   port: "Port",
   /**
-   *@description Data grid name for Direct Socket Chunk data grids
+   * @description Data grid name for Direct Socket Chunk data grids
    */
   directSocketChunk: "Direct Socket Chunk",
   /**
-   *@description Example for placeholder text. Note: "(direct)?socket)" is an example code and should not be translated.
+   * @description Example for placeholder text. Note: "(direct)?socket)" is an example code and should not be translated.
    */
   filterUsingRegex: "Filter using regex (example: `(direct)?socket)`"
 };
@@ -6327,39 +6334,39 @@ var UIStrings15 = {
    */
   sOpcodeS: "{PH1} (Opcode {PH2})",
   /**
-   *@description Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel
+   * @description Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel
    */
   continuationFrame: "Continuation Frame",
   /**
-   *@description Op codes text frame of map in Resource Web Socket Frame View of the Network panel
+   * @description Op codes text frame of map in Resource Web Socket Frame View of the Network panel
    */
   textMessage: "Text Message",
   /**
-   *@description Op codes binary frame of map in Resource Web Socket Frame View of the Network panel
+   * @description Op codes binary frame of map in Resource Web Socket Frame View of the Network panel
    */
   binaryMessage: "Binary Message",
   /**
-   *@description Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel indicating that the web socket connection has been closed.
+   * @description Op codes continuation frame of map in Resource Web Socket Frame View of the Network panel indicating that the web socket connection has been closed.
    */
   connectionCloseMessage: "Connection Close Message",
   /**
-   *@description Op codes ping frame of map in Resource Web Socket Frame View of the Network panel
+   * @description Op codes ping frame of map in Resource Web Socket Frame View of the Network panel
    */
   pingMessage: "Ping Message",
   /**
-   *@description Op codes pong frame of map in Resource Web Socket Frame View of the Network panel
+   * @description Op codes pong frame of map in Resource Web Socket Frame View of the Network panel
    */
   pongMessage: "Pong Message",
   /**
-   *@description Data grid name for Web Socket Frame data grids
+   * @description Data grid name for Web Socket Frame data grids
    */
   webSocketFrame: "Web Socket Frame",
   /**
-   *@description Text for something not available
+   * @description Text for something not available
    */
   na: "N/A",
   /**
-   *@description Example for placeholder text
+   * @description Example for placeholder text
    */
   filterUsingRegex: "Filter using regex (example: (web)?socket)"
 };
@@ -6493,56 +6500,56 @@ var ResourceFrameNode = class extends DataGridItem {
 // gen/front_end/panels/network/NetworkItemView.js
 var UIStrings16 = {
   /**
-   *@description Text for network request headers
+   * @description Text for network request headers
    */
   headers: "Headers",
   /**
-   *@description Text for network connection info. In case the request is not made over http.
+   * @description Text for network connection info. In case the request is not made over http.
    */
   connectionInfo: "Connection Info",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   payload: "Payload",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   messages: "Messages",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   websocketMessages: "WebSocket messages",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   directsocketMessages: "DirectSocket messages",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   eventstream: "EventStream",
   /**
-   *@description Text for previewing items
+   * @description Text for previewing items
    */
   preview: "Preview",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   responsePreview: "Response preview",
   /**
-   *@description Icon title in Network Item View of the Network panel
+   * @description Icon title in Network Item View of the Network panel
    */
   signedexchangeError: "SignedExchange error",
   /**
-   *@description Title of a tab in the Network panel. A Network response refers to the act of acknowledging a
-  network request. Should not be confused with answer.
+   * @description Title of a tab in the Network panel. A Network response refers to the act of acknowledging a
+   * network request. Should not be confused with answer.
    */
   response: "Response",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   rawResponseData: "Raw response data",
   /**
-   *@description Text for the initiator of something
+   * @description Text for the initiator of something
    */
   initiator: "Initiator",
   /**
@@ -6552,40 +6559,40 @@ var UIStrings16 = {
    */
   requestInitiatorCallStack: "Request initiator call stack",
   /**
-   *@description Title of a tab in Network Item View of the Network panel.
+   * @description Title of a tab in Network Item View of the Network panel.
    *The tab displays the duration breakdown of a network request.
    */
   timing: "Timing",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   requestAndResponseTimeline: "Request and response timeline",
   /**
-   *@description Tooltip to explain the warning icon of the Cookies panel
+   * @description Tooltip to explain the warning icon of the Cookies panel
    */
   thirdPartyPhaseout: "Cookies blocked due to third-party cookie phaseout.",
   /**
-   *@description Label of a tab in the network panel. Previously known as 'Trust Tokens'.
+   * @description Label of a tab in the network panel. Previously known as 'Trust Tokens'.
    */
   trustTokens: "Private state tokens",
   /**
-   *@description Title of the Private State Token tab in the Network panel. Previously known as 'Trust Token tab'.
+   * @description Title of the Private State Token tab in the Network panel. Previously known as 'Trust Token tab'.
    */
   trustTokenOperationDetails: "Private State Token operation details",
   /**
-   *@description Text for web cookies
+   * @description Text for web cookies
    */
   cookies: "Cookies",
   /**
-   *@description Text in Network Item View of the Network panel
+   * @description Text in Network Item View of the Network panel
    */
   requestAndResponseCookies: "Request and response cookies",
   /**
-   *@description Tooltip text explaining that DevTools has overridden the response's headers
+   * @description Tooltip text explaining that DevTools has overridden the response's headers
    */
   containsOverriddenHeaders: "This response contains headers which are overridden by DevTools",
   /**
-   *@description Tooltip text explaining that DevTools has overridden the response
+   * @description Tooltip text explaining that DevTools has overridden the response
    */
   responseIsOverridden: "This response is overridden by DevTools"
 };
@@ -6779,15 +6786,15 @@ import * as Common13 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 var UIStrings17 = {
   /**
-   *@description Latency download total format in Network Time Calculator of the Network panel
-   *@example {20ms} PH1
-   *@example {20ms} PH2
-   *@example {40ms} PH3
+   * @description Latency download total format in Network Time Calculator of the Network panel
+   * @example {20ms} PH1
+   * @example {20ms} PH2
+   * @example {40ms} PH3
    */
   sLatencySDownloadSTotal: "{PH1} latency, {PH2} download ({PH3} total)",
   /**
-   *@description Latency format in Network Time Calculator of the Network panel
-   *@example {20ms} PH1
+   * @description Latency format in Network Time Calculator of the Network panel
+   * @example {20ms} PH1
    */
   sLatency: "{PH1} latency",
   /**
@@ -6796,13 +6803,13 @@ var UIStrings17 = {
    */
   sDownload: "{PH1} download",
   /**
-   *@description From service worker format in Network Time Calculator of the Network panel
-   *@example {20ms latency} PH1
+   * @description From service worker format in Network Time Calculator of the Network panel
+   * @example {20ms latency} PH1
    */
   sFromServiceworker: "{PH1} (from `ServiceWorker`)",
   /**
-   *@description From cache format in Network Time Calculator of the Network panel
-   *@example {20ms latency} PH1
+   * @description From cache format in Network Time Calculator of the Network panel
+   * @example {20ms latency} PH1
    */
   sFromCache: "{PH1} (from cache)"
 };
@@ -7623,19 +7630,19 @@ var networkManageCustomHeadersView_css_default = `/*
 // gen/front_end/panels/network/NetworkManageCustomHeadersView.js
 var UIStrings18 = {
   /**
-   *@description Text in Network Manage Custom Headers View of the Network panel
+   * @description Text in Network Manage Custom Headers View of the Network panel
    */
   manageHeaderColumns: "Manage Header Columns",
   /**
-   *@description Placeholder text content in Network Manage Custom Headers View of the Network panel
+   * @description Placeholder text content in Network Manage Custom Headers View of the Network panel
    */
   noCustomHeaders: "No custom headers",
   /**
-   *@description Text of add button in Network Manage Custom Headers View of the Network panel
+   * @description Text of add button in Network Manage Custom Headers View of the Network panel
    */
   addCustomHeader: "Add custom header\u2026",
   /**
-   *@description Text in Network Manage Custom Headers View of the Network panel
+   * @description Text in Network Manage Custom Headers View of the Network panel
    */
   headerName: "Header Name"
 };
@@ -8698,131 +8705,131 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
 // gen/front_end/panels/network/NetworkLogViewColumns.js
 var UIStrings19 = {
   /**
-   *@description Data grid name for Network Log data grids
+   * @description Data grid name for Network Log data grids
    */
   networkLog: "Network Log",
   /**
-   *@description Inner element text content in Network Log View Columns of the Network panel
+   * @description Inner element text content in Network Log View Columns of the Network panel
    */
   waterfall: "Waterfall",
   /**
-   *@description A context menu item in the Network Log View Columns of the Network panel
+   * @description A context menu item in the Network Log View Columns of the Network panel
    */
   responseHeaders: "Response Headers",
   /**
-   *@description A context menu item in the Network Log View Columns of the Network panel
+   * @description A context menu item in the Network Log View Columns of the Network panel
    */
   requestHeaders: "Request Headers",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   manageHeaderColumns: "Manage Header Columns\u2026",
   /**
-   *@description Text for the start time of an activity
+   * @description Text for the start time of an activity
    */
   startTime: "Start Time",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   responseTime: "Response Time",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   endTime: "End Time",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   totalDuration: "Total Duration",
   /**
-   *@description Text for the latency of a task
+   * @description Text for the latency of a task
    */
   latency: "Latency",
   /**
-   *@description Text for the name of something
+   * @description Text for the name of something
    */
   name: "Name",
   /**
-   *@description Text that refers to a file path
+   * @description Text that refers to a file path
    */
   path: "Path",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   url: "Url",
   /**
-   *@description Text for one or a group of functions
+   * @description Text for one or a group of functions
    */
   method: "Method",
   /**
-   *@description Text for the status of something
+   * @description Text for the status of something
    */
   status: "Status",
   /**
-   *@description Generic label for any text
+   * @description Generic label for any text
    */
   text: "Text",
   /**
-   *@description Text for security or network protocol
+   * @description Text for security or network protocol
    */
   protocol: "Protocol",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   scheme: "Scheme",
   /**
-   *@description Text for the domain of a website
+   * @description Text for the domain of a website
    */
   domain: "Domain",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   remoteAddress: "Remote Address",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Text for the initiator of something
+   * @description Text for the initiator of something
    */
   initiator: "Initiator",
   /**
-   *@description Column header in the Network log view of the Network panel
+   * @description Column header in the Network log view of the Network panel
    */
   hasOverrides: "Has overrides",
   /**
-   *@description Column header in the Network log view of the Network panel
+   * @description Column header in the Network log view of the Network panel
    */
   initiatorAddressSpace: "Initiator Address Space",
   /**
-   *@description Text for web cookies
+   * @description Text for web cookies
    */
   cookies: "Cookies",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   setCookies: "Set Cookies",
   /**
-   *@description Text for the size of something
+   * @description Text for the size of something
    */
   size: "Size",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   content: "Content",
   /**
-   *@description Noun that refers to a duration in milliseconds.
+   * @description Noun that refers to a duration in milliseconds.
    */
   time: "Time",
   /**
-   *@description Text to show the priority of an item
+   * @description Text to show the priority of an item
    */
   priority: "Priority",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   connectionId: "Connection ID",
   /**
-   *@description Text in Network Log View Columns of the Network panel
+   * @description Text in Network Log View Columns of the Network panel
    */
   remoteAddressSpace: "Remote Address Space"
 };
@@ -9713,19 +9720,19 @@ var WaterfallSortIds;
 // gen/front_end/panels/network/NetworkLogView.js
 var UIStrings20 = {
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   invertFilter: "Invert",
   /**
-   *@description Tooltip for the 'invert' checkbox in the Network panel.
+   * @description Tooltip for the 'invert' checkbox in the Network panel.
    */
   invertsFilter: "Inverts the search filter",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   hideDataUrls: "Hide data URLs",
   /**
-   *@description Data urlfilter ui element title in Network Log View of the Network panel
+   * @description Data urlfilter ui element title in Network Log View of the Network panel
    */
   hidesDataAndBlobUrls: "Hide 'data:' and 'blob:' URLs",
   /**
@@ -9737,62 +9744,62 @@ var UIStrings20 = {
    */
   hideChromeExtension: "Hide 'chrome-extension://' URLs",
   /**
-   *@description Aria accessible name in Network Log View of the Network panel
+   * @description Aria accessible name in Network Log View of the Network panel
    */
   requestTypesToInclude: "Request types to include",
   /**
-   *@description Label for a checkbox in the Network panel. When checked, only requests with
+   * @description Label for a checkbox in the Network panel. When checked, only requests with
    *             blocked response cookies are shown.
    */
   hasBlockedCookies: "Blocked response cookies",
   /**
-   *@description Tooltip for a checkbox in the Network panel. The response to a network request may include a
+   * @description Tooltip for a checkbox in the Network panel. The response to a network request may include a
    *             cookie (https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies). Such response cookies can
    *             be malformed or otherwise invalid and the browser may choose to ignore or not accept invalid cookies.
    */
   onlyShowRequestsWithBlockedCookies: "Show only requests with blocked response cookies",
   /**
-   *@description Label for a filter in the Network panel
+   * @description Label for a filter in the Network panel
    */
   blockedRequests: "Blocked requests",
   /**
-   *@description Tooltip for a filter in the Network panel
+   * @description Tooltip for a filter in the Network panel
    */
   onlyShowBlockedRequests: "Show only blocked requests",
   /**
-   *@description Label for a filter in the Network panel
+   * @description Label for a filter in the Network panel
    */
   thirdParty: "3rd-party requests",
   /**
-   *@description Tooltip for a filter in the Network panel
+   * @description Tooltip for a filter in the Network panel
    */
   onlyShowThirdPartyRequests: "Show only requests with origin different from page origin",
   /**
-   *@description Label for a filter in the Network panel
+   * @description Label for a filter in the Network panel
    */
   ippRequests: "IP Protected requests",
   /**
-   *@description Tooltip for a filter in the Network panel
+   * @description Tooltip for a filter in the Network panel
    */
   onlyShowIPProtectedRequests: "(Incognito Only) Show only requests sent to IP Protection proxies",
   /**
-   *@description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
+   * @description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
    */
   dropHarFilesHere: "Drop HAR files here",
   /**
-   *@description Recording text content in Network Log View of the Network panel
+   * @description Recording text content in Network Log View of the Network panel
    */
   recordingNetworkActivity: "Currently recording network activity",
   /**
-   *@description Shown in the Network Log View of the Network panel when the user has not yet
+   * @description Shown in the Network Log View of the Network panel when the user has not yet
    *             recorded any network activity. This is an instruction to the user to reload the page in order to
    *             show network activity in the current UI.
-   *@example {Reload page} PH1
-   *@example {Ctrl + R} PH2
+   * @example {Reload page} PH1
+   * @example {Ctrl + R} PH2
    */
   performARequestOrHitSToRecordThe: 'Perform a request or reload the page by using the "{PH1}" button or by pressing {PH2}.',
   /**
-   *@description Shown in the Network Log View of the Network panel when the user has not yet
+   * @description Shown in the Network Log View of the Network panel when the user has not yet
    * recorded any network activity. This is an instruction to the user to start recording in order to
    * show network activity in the current UI.
    * @example {Start recording} PH1
@@ -9800,41 +9807,41 @@ var UIStrings20 = {
    */
   recordToDisplayNetworkActivity: 'Record network log to display network activity by using the "{PH1}" button or by pressing {PH2}.',
   /**
-   *@description Label of a button in the Network Log View of the Network panel.
+   * @description Label of a button in the Network Log View of the Network panel.
    */
   reloadPage: "Reload page",
   /**
-   *@description Label of a button in the Network Log View of the Network panel.
+   * @description Label of a button in the Network Log View of the Network panel.
    */
   startRecording: "Start recording",
   /**
-   *@description Shown in the Network Log View of the Network panel when the user has not yet
+   * @description Shown in the Network Log View of the Network panel when the user has not yet
    *             recorded any network activity.
    */
   noNetworkActivityRecorded: "No network activity recorded",
   /**
-   *@description Text to announce to screen readers that network data is available.
+   * @description Text to announce to screen readers that network data is available.
    */
   networkDataAvailable: "Network Data Available",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {3} PH1
-   *@example {5} PH2
+   * @description Text in Network Log View of the Network panel
+   * @example {3} PH1
+   * @example {5} PH2
    */
   sSRequests: "{PH1} / {PH2} requests",
   /**
-   *@description Message in the summary toolbar at the bottom of the Network log that shows the compressed size of the
+   * @description Message in the summary toolbar at the bottom of the Network log that shows the compressed size of the
    * resources transferred during a selected time frame over the compressed size of all resources transferred during
    * the whole network log.
-   *@example {5 B} PH1
-   *@example {10 B} PH2
+   * @example {5 B} PH1
+   * @example {10 B} PH2
    */
   sSTransferred: "{PH1} / {PH2} transferred",
   /**
-   *@description Message in a tooltip that shows the compressed size of the resources transferred during a selected
+   * @description Message in a tooltip that shows the compressed size of the resources transferred during a selected
    * time frame over the compressed size of all resources transferred during the whole network log.
-   *@example {10} PH1
-   *@example {15} PH2
+   * @example {10} PH1
+   * @example {15} PH2
    */
   sBSBTransferredOverNetwork: "{PH1} B / {PH2} B transferred over network",
   /**
@@ -9846,75 +9853,75 @@ var UIStrings20 = {
    */
   sSResources: "{PH1} / {PH2} resources",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {40} PH1
-   *@example {50} PH2
+   * @description Text in Network Log View of the Network panel
+   * @example {40} PH1
+   * @example {50} PH2
    */
   sBSBResourcesLoadedByThePage: "{PH1} B / {PH2} B resources loaded by the page",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {6} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {6} PH1
    */
   sRequests: "{PH1} requests",
   /**
-   *@description Message in the summary toolbar at the bottom of the Network log that shows the compressed size of
+   * @description Message in the summary toolbar at the bottom of the Network log that shows the compressed size of
    * all resources transferred over network during a network activity log.
-   *@example {4 B} PH1
+   * @example {4 B} PH1
    */
   sTransferred: "{PH1} transferred",
   /**
-   *@description Message in a tooltip that shows the compressed size of all resources transferred over network during
+   * @description Message in a tooltip that shows the compressed size of all resources transferred over network during
    * a network activity log.
-   *@example {4} PH1
+   * @example {4} PH1
    */
   sBTransferredOverNetwork: "{PH1} B transferred over network",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {4} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {4} PH1
    */
   sResources: "{PH1} resources",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {10} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {10} PH1
    */
   sBResourcesLoadedByThePage: "{PH1} B resources loaded by the page",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {120ms} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {120ms} PH1
    */
   finishS: "Finish: {PH1}",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {3000ms} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {3000ms} PH1
    */
   domcontentloadedS: "DOMContentLoaded: {PH1}",
   /**
-   *@description Text in Network Log View of the Network panel
-   *@example {40ms} PH1
+   * @description Text in Network Log View of the Network panel
+   * @example {40ms} PH1
    */
   loadS: "Load: {PH1}",
   /**
-   *@description Text for copying
+   * @description Text for copying
    */
   copy: "Copy",
   /**
-   *@description A context menu command in the Network panel, for copying the URL of the selected request to the clipboard.
+   * @description A context menu command in the Network panel, for copying the URL of the selected request to the clipboard.
    */
   copyURL: "Copy URL",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   copyRequestHeaders: "Copy request headers",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   copyResponseHeaders: "Copy response headers",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   copyResponse: "Copy response",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   copyStacktrace: "Copy stack trace",
   /**
@@ -9923,7 +9930,7 @@ var UIStrings20 = {
    */
   copyAsPowershell: "Copy as `PowerShell`",
   /**
-   *@description A context menu command in the Network panel, for copying to the clipboard. 'fetch'
+   * @description A context menu command in the Network panel, for copying to the clipboard. 'fetch'
    * refers to the format the data will be copied as, which is compatible with the fetch web API.
    */
   copyAsFetch: "Copy as `fetch`",
@@ -9935,100 +9942,100 @@ var UIStrings20 = {
    */
   copyAsNodejsFetch: "Copy as `fetch` (`Node.js`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable).
    */
   copyAsCurlCmd: "Copy as `cURL` (`cmd`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a Bash script.
    */
   copyAsCurlBash: "Copy as `cURL` (`bash`)",
   /**
-   *@description A context menu command in the Network panel, for copying the URLs of all requestes to the clipboard.
+   * @description A context menu command in the Network panel, for copying the URLs of all requestes to the clipboard.
    */
   copyAllURLs: "Copy all URLs",
   /**
-   *@description A context menu command in the Network panel, for copying the URLs of all requestes
-   (after applying the Network filter) to the clipboard.
+   * @description A context menu command in the Network panel, for copying the URLs of all requestes
+   * (after applying the Network filter) to the clipboard.
    */
   copyAllListedURLs: "Copy all listed URLs",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a PowerShell script to
    *represent all network requests.
    */
   copyAllAsPowershell: "Copy all as `PowerShell`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a PowerShell script to
    *represent all network requests (after applying the Network filter).
    */
   copyAllListedAsPowershell: "Copy all listed as `PowerShell`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a 'fetch' command (fetch
    *should not be translated) to represent all network requests.
    */
   copyAllAsFetch: "Copy all as `fetch`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a 'fetch' command (fetch
    *should not be translated) to represent all network requests (after applying the Network filter).
    */
   copyAllListedAsFetch: "Copy all listed as `fetch`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a Node.js 'fetch' command
    *(fetch and Node.js should not be translated) to represent all network requests.
    */
   copyAllAsNodejsFetch: "Copy all as `fetch` (`Node.js`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a Node.js 'fetch' command
    *(fetch and Node.js should not be translated) to represent all network requests (after applying
    *the Network filter).
    */
   copyAllListedAsNodejsFetch: "Copy all listed as `fetch` (`Node.js`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable) to represent all network requests.
    */
   copyAllAsCurlCmd: "Copy all as `cURL` (`cmd`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable) to represent all network requests (after applying the Network filter).
    */
   copyAllListedAsCurlCmd: "Copy all listed as `cURL` (`cmd`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a Bash script to represent
    *all network requests.
    */
   copyAllAsCurlBash: "Copy all as `cURL` (`bash`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with a Bash script to represent
    *all network requests (after applying the Network filter).
    */
   copyAllListedAsCurlBash: "Copy all listed as `cURL` (`bash`)",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable).
    */
   copyAsCurl: "Copy as `cURL`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable) to represent all network requests.
    */
   copyAllAsCurl: "Copy all as `cURL`",
   /**
-   *@description Text in Network Log View of the Network panel. An action that copies a command to
+   * @description Text in Network Log View of the Network panel. An action that copies a command to
    *the clipboard. It will copy the command in the format compatible with cURL (a program, not
    *translatable) to represent all network requests (after applying the Network filter).
    */
@@ -10062,40 +10069,40 @@ var UIStrings20 = {
    */
   copyAllListedAsHarWithSensitiveData: "Copy all listed as `HAR` (with sensitive data)",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
+   * @description A context menu item in the Network Log View of the Network panel
    */
   clearBrowserCache: "Clear browser cache",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
+   * @description A context menu item in the Network Log View of the Network panel
    */
   clearBrowserCookies: "Clear browser cookies",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
+   * @description A context menu item in the Network Log View of the Network panel
    */
   blockRequestUrl: "Block request URL",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
-   *@example {example.com} PH1
+   * @description A context menu item in the Network Log View of the Network panel
+   * @example {example.com} PH1
    */
   unblockS: "Unblock {PH1}",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
+   * @description A context menu item in the Network Log View of the Network panel
    */
   blockRequestDomain: "Block request domain",
   /**
-   *@description Text to replay an XHR request
+   * @description Text to replay an XHR request
    */
   replayXhr: "Replay XHR",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   areYouSureYouWantToClearBrowser: "Are you sure you want to clear browser cache?",
   /**
-   *@description Text in Network Log View of the Network panel
+   * @description Text in Network Log View of the Network panel
    */
   areYouSureYouWantToClearBrowserCookies: "Are you sure you want to clear browser cookies?",
   /**
-   *@description A context menu item in the Network Log View of the Network panel
+   * @description A context menu item in the Network Log View of the Network panel
    * for creating a header override
    */
   overrideHeaders: "Override headers",
@@ -10106,7 +10113,27 @@ var UIStrings20 = {
   /**
    * @description Text for the Show only/Hide requests dropdown button of the filterbar
    */
-  moreFilters: "More filters"
+  moreFilters: "More filters",
+  /**
+   * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Context menu item in Network panel to explain the purpose of a request via AI.
+   */
+  explainPurpose: "Explain purpose",
+  /**
+   * @description Context menu item in Network panel to explain why a request is slow via AI.
+   */
+  explainSlowness: "Explain slowness",
+  /**
+   * @description Context menu item in Network panel to explain why a request is failing via AI.
+   */
+  explainFailures: "Explain failures",
+  /**
+   * @description Context menu item in Network panel to assess security headers of a request via AI.
+   */
+  assessSecurityHeaders: "Assess security headers"
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/network/NetworkLogView.ts", UIStrings20);
 var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
@@ -11086,9 +11113,25 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     const filtered = this.filterBar.hasActiveFilter();
     const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString20(UIStrings20.copy), false, "copy");
     if (request) {
-      if (UI22.ActionRegistry.ActionRegistry.instance().hasAction("drjones.network-panel-context")) {
+      const openAiAssistanceId = "drjones.network-panel-context";
+      if (UI22.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+        let appendSubmenuPromptAction = function(submenu, action, label, prompt, jslogContext) {
+          submenu.defaultSection().appendItem(label, () => action.execute({ prompt }), { disabled: !action.enabled(), jslogContext });
+        };
         UI22.Context.Context.instance().setFlavor(SDK14.NetworkRequest.NetworkRequest, request);
-        contextMenu.footerSection().appendAction("drjones.network-panel-context");
+        if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+          const action = UI22.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+          const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
+          submenu.defaultSection().appendAction(openAiAssistanceId, i18nString20(UIStrings20.startAChat));
+          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainPurpose), "What is the purpose of this request?", openAiAssistanceId + ".purpose");
+          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainSlowness), "Why is this request taking so long?", openAiAssistanceId + ".slowness");
+          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainFailures), "Why is the request failing?", openAiAssistanceId + ".failures");
+          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.assessSecurityHeaders), "Are there any security headers present?", openAiAssistanceId + ".security");
+        } else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
+          contextMenu.footerSection().appendAction(openAiAssistanceId, void 0, false, void 0, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
+        } else {
+          contextMenu.footerSection().appendAction(openAiAssistanceId);
+        }
       }
       copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyURL), Host9.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host9.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: "copy-url" });
       copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedURLs) : i18nString20(UIStrings20.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: "copy-all-urls" });
@@ -11887,7 +11930,7 @@ import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
 import * as NetworkForward4 from "./forward/forward.js";
 var UIStrings21 = {
   /**
-   *@description Text for web URLs
+   * @description Text for web URLs
    */
   url: "URL"
 };
@@ -12252,63 +12295,63 @@ devtools-request-headers {
 // gen/front_end/panels/network/NetworkPanel.js
 var UIStrings22 = {
   /**
-   *@description Text to close something
+   * @description Text to close something
    */
   close: "Close",
   /**
-   *@description Title of a search bar or tool
+   * @description Title of a search bar or tool
    */
   search: "Search",
   /**
-   *@description Tooltip text that appears on the setting to preserve log when hovering over the item
+   * @description Tooltip text that appears on the setting to preserve log when hovering over the item
    */
   doNotClearLogOnPageReload: "Do not clear log on page reload / navigation",
   /**
-   *@description Text to preserve the log after refreshing
+   * @description Text to preserve the log after refreshing
    */
   preserveLog: "Preserve log",
   /**
-   *@description Text to disable cache while DevTools is open
+   * @description Text to disable cache while DevTools is open
    */
   disableCacheWhileDevtoolsIsOpen: "Disable cache while DevTools is open",
   /**
-   *@description Text in Network Config View of the Network panel
+   * @description Text in Network Config View of the Network panel
    */
   disableCache: "Disable cache",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in network panel of the network panel
+   * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in network panel of the network panel
    */
   networkSettings: "Network settings",
   /**
-   *@description Tooltip for expanding network request row setting
+   * @description Tooltip for expanding network request row setting
    */
   showMoreInformationInRequestRows: "Show more information in request rows",
   /**
-   *@description Text in Network Panel used to toggle the "big request rows" setting.
+   * @description Text in Network Panel used to toggle the "big request rows" setting.
    */
   useLargeRequestRows: "Big request rows",
   /**
-   *@description Tooltip text for network request overview setting
+   * @description Tooltip text for network request overview setting
    */
   showOverviewOfNetworkRequests: "Show overview of network requests",
   /**
-   *@description Text in Network Panel used to show the overview for a given network request.
+   * @description Text in Network Panel used to show the overview for a given network request.
    */
   showOverview: "Overview",
   /**
-   *@description Tooltip for group by frame network setting
+   * @description Tooltip for group by frame network setting
    */
   groupRequestsByTopLevelRequest: "Group requests by top level request frame",
   /**
-   *@description Text for group by frame network setting
+   * @description Text for group by frame network setting
    */
   groupByFrame: "Group by frame",
   /**
-   *@description Tooltip for capture screenshot network setting
+   * @description Tooltip for capture screenshot network setting
    */
   captureScreenshotsWhenLoadingA: "Capture screenshots when loading a page",
   /**
-   *@description Text to take screenshots
+   * @description Text to take screenshots
    */
   captureScreenshots: "Screenshots",
   /**
@@ -12343,12 +12386,12 @@ var UIStrings22 = {
    */
   exportHarWithSensitiveData: "Export `HAR` (with sensitive data)\u2026",
   /**
-   *@description Text for throttling the network
+   * @description Text for throttling the network
    */
   throttling: "Throttling",
   /**
-   *@description Text in Network Panel to tell the user to reload the page to capture screenshots.
-   *@example {Ctrl + R} PH1
+   * @description Text in Network Panel to tell the user to reload the page to capture screenshots.
+   * @example {Ctrl + R} PH1
    */
   hitSToReloadAndCaptureFilmstrip: "Press {PH1} to reload and capture filmstrip.",
   /**
@@ -12365,11 +12408,11 @@ var UIStrings22 = {
    */
   openInNetworkPanelMissingRequest: "Open in Network panel (missing request)",
   /**
-   *@description Text in Network Panel that is displayed whilst the recording is in progress.
+   * @description Text in Network Panel that is displayed whilst the recording is in progress.
    */
   recordingFrames: "Recording frames\u2026",
   /**
-   *@description Text in Network Panel that is displayed when frames are being fetched.
+   * @description Text in Network Panel that is displayed when frames are being fetched.
    */
   fetchingFrames: "Fetching frames\u2026",
   /**
@@ -12614,9 +12657,9 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     updateShowOptionsToGenerateHarWithSensitiveData();
   }
   createThrottlingConditionsSelect() {
-    const toolbarItem = new UI23.Toolbar.ToolbarComboBox(null, i18nString22(UIStrings22.throttling));
+    const toolbarItem = new UI23.Toolbar.ToolbarItem(document.createElement("div"));
     toolbarItem.setMaxWidth(160);
-    MobileThrottling2.ThrottlingManager.throttlingManager().createNetworkThrottlingSelector(toolbarItem.element);
+    MobileThrottling2.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString22(UIStrings22.throttling));
     return toolbarItem;
   }
   toggleRecord(toggled) {

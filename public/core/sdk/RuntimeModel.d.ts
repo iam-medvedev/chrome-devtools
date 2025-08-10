@@ -15,7 +15,8 @@ export declare class RuntimeModel extends SDKModel<EventTypes> {
     heapProfilerModel(): HeapProfilerModel;
     executionContexts(): ExecutionContext[];
     setExecutionContextComparator(comparator: (arg0: ExecutionContext, arg1: ExecutionContext) => number): void;
-    /** comparator
+    /**
+     * comparator
      */
     executionContextComparator(): (arg0: ExecutionContext, arg1: ExecutionContext) => number;
     defaultExecutionContext(): ExecutionContext | null;

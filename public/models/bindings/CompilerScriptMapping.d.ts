@@ -67,7 +67,7 @@ export declare class CompilerScriptMapping implements DebuggerSourceMapping {
      * given {@link uiSourceCode}.
      *
      * @param uiSourceCode the source mapped entity.
-     * @return a set of source-mapped line numbers or `null` if the {@link uiSourceCode}
+     * @returns a set of source-mapped line numbers or `null` if the {@link uiSourceCode}
      *         is not provided by this {@link CompilerScriptMapping} instance.
      */
     getMappedLines(uiSourceCode: Workspace.UISourceCode.UISourceCode): Set<number> | null;

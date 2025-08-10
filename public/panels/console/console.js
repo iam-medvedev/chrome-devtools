@@ -62,16 +62,16 @@ var consoleContextSelector_css_default = `/*
 // gen/front_end/panels/console/ConsoleContextSelector.js
 var UIStrings = {
   /**
-   *@description Title of toolbar item in console context selector of the console panel
+   * @description Title of toolbar item in console context selector of the console panel
    */
   javascriptContextNotSelected: "JavaScript context: Not selected",
   /**
-   *@description Text in Console Context Selector of the Console panel
+   * @description Text in Console Context Selector of the Console panel
    */
   extension: "Extension",
   /**
-   *@description Text in Console Context Selector of the Console panel
-   *@example {top} PH1
+   * @description Text in Console Context Selector of the Console panel
+   * @example {top} PH1
    */
   javascriptContextS: "JavaScript context: {PH1}"
 };
@@ -836,36 +836,36 @@ var consolePinPane_css_default = `/*
 // gen/front_end/panels/console/ConsolePinPane.js
 var UIStrings2 = {
   /**
-   *@description A context menu item in the Console Pin Pane of the Console panel
+   * @description A context menu item in the Console Pin Pane of the Console panel
    */
   removeExpression: "Remove expression",
   /**
-   *@description A context menu item in the Console Pin Pane of the Console panel
+   * @description A context menu item in the Console Pin Pane of the Console panel
    */
   removeAllExpressions: "Remove all expressions",
   /**
-   *@description Screen reader label for delete button on a non-blank live expression
-   *@example {document} PH1
+   * @description Screen reader label for delete button on a non-blank live expression
+   * @example {document} PH1
    */
   removeExpressionS: "Remove expression: {PH1}",
   /**
-   *@description Screen reader label for delete button on a blank live expression
+   * @description Screen reader label for delete button on a blank live expression
    */
   removeBlankExpression: "Remove blank expression",
   /**
-   *@description Text in Console Pin Pane of the Console panel
+   * @description Text in Console Pin Pane of the Console panel
    */
   liveExpressionEditor: "Live expression editor",
   /**
-   *@description Text in Console Pin Pane of the Console panel
+   * @description Text in Console Pin Pane of the Console panel
    */
   expression: "Expression",
   /**
-   *@description Side effect label title in Console Pin Pane of the Console panel
+   * @description Side effect label title in Console Pin Pane of the Console panel
    */
   evaluateAllowingSideEffects: "Evaluate, allowing side effects",
   /**
-   *@description Text of a DOM element in Console Pin Pane of the Console panel
+   * @description Text of a DOM element in Console Pin Pane of the Console panel
    */
   notAvailable: "not available"
 };
@@ -1262,27 +1262,27 @@ var UIStrings3 = {
    */
   other: "<other>",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many user messages exist.
+   * @description Text in Console Sidebar of the Console panel to show how many user messages exist.
    */
   dUserMessages: "{n, plural, =0 {No user messages} =1 {# user message} other {# user messages}}",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many messages exist.
+   * @description Text in Console Sidebar of the Console panel to show how many messages exist.
    */
   dMessages: "{n, plural, =0 {No messages} =1 {# message} other {# messages}}",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many errors exist.
+   * @description Text in Console Sidebar of the Console panel to show how many errors exist.
    */
   dErrors: "{n, plural, =0 {No errors} =1 {# error} other {# errors}}",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many warnings exist.
+   * @description Text in Console Sidebar of the Console panel to show how many warnings exist.
    */
   dWarnings: "{n, plural, =0 {No warnings} =1 {# warning} other {# warnings}}",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many info messages exist.
+   * @description Text in Console Sidebar of the Console panel to show how many info messages exist.
    */
   dInfo: "{n, plural, =0 {No info} =1 {# info} other {# info}}",
   /**
-   *@description Text in Console Sidebar of the Console panel to show how many verbose messages exist.
+   * @description Text in Console Sidebar of the Console panel to show how many verbose messages exist.
    */
   dVerbose: "{n, plural, =0 {No verbose} =1 {# verbose} other {# verbose}}"
 };
@@ -1293,7 +1293,10 @@ var ConsoleSidebar = class extends Common4.ObjectWrapper.eventMixin(UI3.Widget.V
   selectedTreeElement;
   treeElements;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging2.pane("sidebar").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.setMinimumSize(125, 0);
     this.tree = new UI3.TreeOutline.TreeOutlineInShadow(
       "NavigationTree"
@@ -1302,7 +1305,6 @@ var ConsoleSidebar = class extends Common4.ObjectWrapper.eventMixin(UI3.Widget.V
     this.tree.addEventListener(UI3.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
     this.tree.registerRequiredCSS(consoleSidebar_css_default);
     this.tree.hideOverflow();
-    this.contentElement.setAttribute("jslog", `${VisualLogging2.pane("sidebar").track({ resize: true })}`);
     this.contentElement.appendChild(this.tree.element);
     this.selectedTreeElement = null;
     this.treeElements = [];
@@ -1915,20 +1917,25 @@ var consoleView_css_default = `/*
     word-break: break-all;
   }
 
-  .formatted-stack-frame:has(.ignore-list-link) {
-    display: var(--display-ignored-formatted-stack-frame);
-    opacity: 60%;
+  .formatted-stack-frame {
+    display: var(--display-formatted-stack-frame-default);
 
-    /* Subsequent builtin stack frames are also treated as ignored */
-    & + .formatted-builtin-stack-frame {
+    &:has(.ignore-list-link) {
       display: var(--display-ignored-formatted-stack-frame);
       opacity: 60%;
+
+      /* Subsequent builtin stack frames are also treated as ignored */
+      & + .formatted-builtin-stack-frame {
+        display: var(--display-ignored-formatted-stack-frame);
+        opacity: 60%;
+      }
     }
   }
 }
 
 .console-message-stack-trace-wrapper {
   --override-display-stack-preview-toggle-link: none;
+  --display-formatted-stack-frame-default: block;
 
   flex: 1 1 auto;
   display: flex;
@@ -1936,7 +1943,7 @@ var consoleView_css_default = `/*
   align-items: stretch;
 
   &:has(div > .stack-preview-container.show-hidden-rows) {
-    --display-ignored-formatted-stack-frame: inherit;
+    --display-ignored-formatted-stack-frame: var(--display-formatted-stack-frame-default);
   }
 
   &:has(.formatted-stack-frame .ignore-list-link):has(.formatted-stack-frame .devtools-link:not(.ignore-list-link)) {
@@ -2309,39 +2316,39 @@ var UIStrings4 = {
    */
   consoleWasCleared: "Console was cleared",
   /**
-   *@description Message element title in Console View Message of the Console panel
-   *@example {Ctrl+L} PH1
+   * @description Message element title in Console View Message of the Console panel
+   * @example {Ctrl+L} PH1
    */
   clearAllMessagesWithS: "Clear all messages with {PH1}",
   /**
-   *@description Message prefix in Console View Message of the Console panel
+   * @description Message prefix in Console View Message of the Console panel
    */
   assertionFailed: "Assertion failed: ",
   /**
-   *@description Message text in Console View Message of the Console panel
-   *@example {console.log(1)} PH1
+   * @description Message text in Console View Message of the Console panel
+   * @example {console.log(1)} PH1
    */
   violationS: "`[Violation]` {PH1}",
   /**
-   *@description Message text in Console View Message of the Console panel
-   *@example {console.log(1)} PH1
+   * @description Message text in Console View Message of the Console panel
+   * @example {console.log(1)} PH1
    */
   interventionS: "`[Intervention]` {PH1}",
   /**
-   *@description Message text in Console View Message of the Console panel
-   *@example {console.log(1)} PH1
+   * @description Message text in Console View Message of the Console panel
+   * @example {console.log(1)} PH1
    */
   deprecationS: "`[Deprecation]` {PH1}",
   /**
-   *@description Note title in Console View Message of the Console panel
+   * @description Note title in Console View Message of the Console panel
    */
   thisValueWillNotBeCollectedUntil: "This value will not be collected until console is cleared.",
   /**
-   *@description Note title in Console View Message of the Console panel
+   * @description Note title in Console View Message of the Console panel
    */
   thisValueWasEvaluatedUponFirst: "This value was evaluated upon first expanding. It may have changed since then.",
   /**
-   *@description Note title in Console View Message of the Console panel
+   * @description Note title in Console View Message of the Console panel
    */
   functionWasResolvedFromBound: "Function was resolved from bound function.",
   /**
@@ -2350,11 +2357,11 @@ var UIStrings4 = {
    */
   exception: "<exception>",
   /**
-   *@description Text to indicate an item is a warning
+   * @description Text to indicate an item is a warning
    */
   warning: "Warning",
   /**
-   *@description Text for errors
+   * @description Text for errors
    */
   error: "Error",
   /**
@@ -2384,71 +2391,71 @@ var UIStrings4 = {
    */
   errorS: "{n, plural, =1 {Error, Repeated # time} other {Error, Repeated # times}}",
   /**
-   *@description Text appended to grouped console messages that are related to URL requests
+   * @description Text appended to grouped console messages that are related to URL requests
    */
   url: "<URL>",
   /**
-   *@description Text appended to grouped console messages about tasks that took longer than N ms
+   * @description Text appended to grouped console messages about tasks that took longer than N ms
    */
   tookNms: "took <N>ms",
   /**
-   *@description Text appended to grouped console messages about tasks that are related to some DOM event
+   * @description Text appended to grouped console messages about tasks that are related to some DOM event
    */
   someEvent: "<some> event",
   /**
-   *@description Text appended to grouped console messages about tasks that are related to a particular milestone
+   * @description Text appended to grouped console messages about tasks that are related to a particular milestone
    */
   Mxx: " M<XX>",
   /**
-   *@description Text appended to grouped console messages about tasks that are related to autofill completions
+   * @description Text appended to grouped console messages about tasks that are related to autofill completions
    */
   attribute: "<attribute>",
   /**
-   *@description Text for the index of something
+   * @description Text for the index of something
    */
   index: "(index)",
   /**
-   *@description Text for the value of something
+   * @description Text for the value of something
    */
   value: "Value",
   /**
-   *@description Title of the Console tool
+   * @description Title of the Console tool
    */
   console: "Console",
   /**
-   *@description Message to indicate a console message with a stack table is expanded
+   * @description Message to indicate a console message with a stack table is expanded
    */
   stackMessageExpanded: "Stack table expanded",
   /**
-   *@description Message to indicate a console message with a stack table is collapsed
+   * @description Message to indicate a console message with a stack table is collapsed
    */
   stackMessageCollapsed: "Stack table collapsed",
   /**
-   *@description Message to offer insights for a console error message
+   * @description Message to offer insights for a console error message
    */
   explainThisError: "Understand this error",
   /**
-   *@description Message to offer insights for a console warning message
+   * @description Message to offer insights for a console warning message
    */
   explainThisWarning: "Understand this warning",
   /**
-   *@description Message to offer insights for a console message
+   * @description Message to offer insights for a console message
    */
   explainThisMessage: "Understand this message",
   /**
-   *@description Message to offer insights for a console error message
+   * @description Message to offer insights for a console error message
    */
   explainThisErrorWithAI: "Understand this error. Powered by AI.",
   /**
-   *@description Message to offer insights for a console warning message
+   * @description Message to offer insights for a console warning message
    */
   explainThisWarningWithAI: "Understand this warning. Powered by AI.",
   /**
-   *@description Message to offer insights for a console message
+   * @description Message to offer insights for a console message
    */
   explainThisMessageWithAI: "Understand this message. Powered by AI",
   /**
-   *@description Tooltip shown when user hovers over the cookie icon to explain that the button will bring the user to the cookie report
+   * @description Tooltip shown when user hovers over the cookie icon to explain that the button will bring the user to the cookie report
    */
   SeeIssueInCookieReport: "Click to open privacy and security panel and show third-party cookie report"
 };
@@ -4846,11 +4853,11 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 import { AiCodeCompletionSummaryToolbar } from "./../common/common.js";
 var UIStrings5 = {
   /**
-   *@description Label for button which links to Issues tab, specifying how many issues there are.
+   * @description Label for button which links to Issues tab, specifying how many issues there are.
    */
   issuesWithColon: "{n, plural, =0 {No Issues} =1 {# Issue:} other {# Issues:}}",
   /**
-   *@description Text for the tooltip of the issue counter toolbar item
+   * @description Text for the tooltip of the issue counter toolbar item
    */
   issueToolbarTooltipGeneral: "Some problems no longer generate console messages, but are surfaced in the issues tab.",
   /**
@@ -4865,19 +4872,19 @@ var UIStrings5 = {
    */
   issueToolbarClickToGoToTheIssuesTab: "Click to go to the issues tab",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   findStringInLogs: "Find string in logs",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in console view of the console panel
+   * @description Tooltip text that appears when hovering over the largeicon settings gear in show settings pane setting in console view of the console panel
    */
   consoleSettings: "Console settings",
   /**
-   *@description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
   groupSimilarMessagesInConsole: "Group similar messages in console",
   /**
-   *@description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
   showCorsErrorsInConsole: "Show `CORS` errors in console",
   /**
@@ -4899,39 +4906,39 @@ var UIStrings5 = {
    */
   consoleSidebarHidden: "Console sidebar hidden",
   /**
-   *@description Tooltip text that appears on the setting to preserve log when hovering over the item
+   * @description Tooltip text that appears on the setting to preserve log when hovering over the item
    */
   doNotClearLogOnPageReload: "Do not clear log on page reload / navigation",
   /**
-   *@description Text to preserve the log after refreshing
+   * @description Text to preserve the log after refreshing
    */
   preserveLog: "Preserve log",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   hideNetwork: "Hide network",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
+   * @description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
    */
   onlyShowMessagesFromTheCurrentContext: "Only show messages from the current context (`top`, `iframe`, `worker`, extension)",
   /**
-   *@description Alternative title text of a setting in Console View of the Console panel
+   * @description Alternative title text of a setting in Console View of the Console panel
    */
   selectedContextOnly: "Selected context only",
   /**
-   *@description Description of a setting that controls whether XMLHttpRequests are logged in the console.
+   * @description Description of a setting that controls whether XMLHttpRequests are logged in the console.
    */
   logXMLHttpRequests: "Log XMLHttpRequests",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
+   * @description Tooltip text that appears on the setting when hovering over it in Console View of the Console panel
    */
   eagerlyEvaluateTextInThePrompt: "Eagerly evaluate text in the prompt",
   /**
-   *@description Description of a setting that controls whether text typed in the console should be autocompleted from commands executed in the local console history.
+   * @description Description of a setting that controls whether text typed in the console should be autocompleted from commands executed in the local console history.
    */
   autocompleteFromHistory: "Autocomplete from history",
   /**
-   *@description Description of a setting that controls whether user activation is triggered by evaluation'.
+   * @description Description of a setting that controls whether user activation is triggered by evaluation'.
    */
   treatEvaluationAsUserActivation: "Treat evaluation as user activation",
   /**
@@ -4940,56 +4947,56 @@ var UIStrings5 = {
    */
   sHidden: "{n, plural, =1 {# hidden} other {# hidden}}",
   /**
-   *@description Alert message for screen readers when the console is cleared
+   * @description Alert message for screen readers when the console is cleared
    */
   consoleCleared: "Console cleared",
   /**
-   *@description Text in Console View of the Console panel
-   *@example {index.js} PH1
+   * @description Text in Console View of the Console panel
+   * @example {index.js} PH1
    */
   hideMessagesFromS: "Hide messages from {PH1}",
   /**
-   *@description Text to save content as a specific file type
+   * @description Text to save content as a specific file type
    */
   saveAs: "Save as\u2026",
   /**
-   *@description Text to copy Console log to clipboard
+   * @description Text to copy Console log to clipboard
    */
   copyConsole: "Copy console",
   /**
-   *@description A context menu item in the Console View of the Console panel
+   * @description A context menu item in the Console View of the Console panel
    */
   copyVisibleStyledSelection: "Copy visible styled selection",
   /**
-   *@description Text to replay an XHR request
+   * @description Text to replay an XHR request
    */
   replayXhr: "Replay XHR",
   /**
-   *@description Text to indicate DevTools is writing to a file
+   * @description Text to indicate DevTools is writing to a file
    */
   writingFile: "Writing file\u2026",
   /**
-   *@description Text to indicate the searching is in progress
+   * @description Text to indicate the searching is in progress
    */
   searching: "Searching\u2026",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   egEventdCdnUrlacom: "e.g. `/eventd/ -cdn url:a.com`",
   /**
-   *@description Sdk console message message level verbose of level Labels in Console View of the Console panel
+   * @description Sdk console message message level verbose of level Labels in Console View of the Console panel
    */
   verbose: "Verbose",
   /**
-   *@description Sdk console message message level info of level Labels in Console View of the Console panel
+   * @description Sdk console message message level info of level Labels in Console View of the Console panel
    */
   info: "Info",
   /**
-   *@description Sdk console message message level warning of level Labels in Console View of the Console panel
+   * @description Sdk console message message level warning of level Labels in Console View of the Console panel
    */
   warnings: "Warnings",
   /**
-   *@description Text for errors
+   * @description Text for errors
    */
   errors: "Errors",
   /**
@@ -4998,38 +5005,38 @@ var UIStrings5 = {
    */
   overriddenByFilterSidebar: "Log levels are controlled by the console sidebar.",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   customLevels: "Custom levels",
   /**
-   *@description Text in Console View of the Console panel
-   *@example {Warnings} PH1
+   * @description Text in Console View of the Console panel
+   * @example {Warnings} PH1
    */
   sOnly: "{PH1} only",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   allLevels: "All levels",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   defaultLevels: "Default levels",
   /**
-   *@description Text in Console View of the Console panel
+   * @description Text in Console View of the Console panel
    */
   hideAll: "Hide all",
   /**
-   *@description Title of level menu button in console view of the console panel
-   *@example {All levels} PH1
+   * @description Title of level menu button in console view of the console panel
+   * @example {All levels} PH1
    */
   logLevelS: "Log level: {PH1}",
   /**
-   *@description A context menu item in the Console View of the Console panel
+   * @description A context menu item in the Console View of the Console panel
    */
   default: "Default",
   /**
-   *@description Text summary to indicate total number of messages in console for accessibility/screen readers.
-   *@example {5} PH1
+   * @description Text summary to indicate total number of messages in console for accessibility/screen readers.
+   * @example {5} PH1
    */
   filteredMessagesInConsole: "{PH1} messages in console"
 };
@@ -5097,7 +5104,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   issueResolver = new IssuesManager.IssueResolver.IssueResolver();
   #isDetached = false;
   #onIssuesCountUpdateBound = this.#onIssuesCountUpdate.bind(this);
-  aiCodeCompletionSetting = Common7.Settings.Settings.instance().createSetting("ai-code-completion-fre-completed", false);
+  aiCodeCompletionSetting = Common7.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
   aiCodeCompletionSummaryToolbarContainer;
   aiCodeCompletionSummaryToolbar;
   constructor(viewportThrottlerTimeout) {
@@ -5255,7 +5262,9 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     if (this.isAiCodeCompletionEnabled()) {
       this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
       this.onAiCodeCompletionSettingChanged();
-      this.prompt.addEventListener("CitationsUpdated", this.#onAiCodeCompletionCitationsUpdated, this);
+      this.prompt.addEventListener("AiCodeCompletionSuggestionAccepted", this.#onAiCodeCompletionSuggestionAccepted, this);
+      this.prompt.addEventListener("AiCodeCompletionRequestTriggered", this.#onAiCodeCompletionRequestTriggered, this);
+      this.prompt.addEventListener("AiCodeCompletionResponseReceived", this.#onAiCodeCompletionResponseReceived, this);
     }
     this.messagesElement.addEventListener("keydown", this.messagesKeyDown.bind(this), false);
     this.prompt.element.addEventListener("focusin", () => {
@@ -5296,8 +5305,8 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild("div");
     this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, void 0, true);
   }
-  #onAiCodeCompletionCitationsUpdated(event) {
-    if (!this.aiCodeCompletionSummaryToolbar) {
+  #onAiCodeCompletionSuggestionAccepted(event) {
+    if (!this.aiCodeCompletionSummaryToolbar || !event.data.citations || event.data.citations.length === 0) {
       return;
     }
     const citations = [];
@@ -5307,7 +5316,13 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
         citations.push(uri);
       }
     });
-    this.aiCodeCompletionSummaryToolbar?.updateCitations(citations);
+    this.aiCodeCompletionSummaryToolbar.updateCitations(citations);
+  }
+  #onAiCodeCompletionRequestTriggered() {
+    this.aiCodeCompletionSummaryToolbar?.setLoading(true);
+  }
+  #onAiCodeCompletionResponseReceived() {
+    this.aiCodeCompletionSummaryToolbar?.setLoading(false);
   }
   static clearConsole() {
     SDK6.ConsoleModel.ConsoleModel.requestClearMessages();
@@ -6382,9 +6397,8 @@ var wrapperViewInstance = null;
 var WrapperView = class _WrapperView extends UI7.Widget.VBox {
   view;
   constructor() {
-    super();
+    super({ jslog: `${VisualLogging5.panel("console").track({ resize: true })}` });
     this.view = ConsoleView.instance();
-    this.element.setAttribute("jslog", `${VisualLogging5.panel("console").track({ resize: true })}`);
   }
   static instance() {
     if (!wrapperViewInstance) {
@@ -6480,16 +6494,16 @@ var consolePrompt_css_default = `/*
 var { Direction } = TextEditor3.TextEditorHistory;
 var UIStrings6 = {
   /**
-   *@description Text in Console Prompt of the Console panel
+   * @description Text in Console Prompt of the Console panel
    */
   consolePrompt: "Console prompt",
   /**
-   *@description Warning shown to users when pasting text into the DevTools console.
-   *@example {allow pasting} PH1
+   * @description Warning shown to users when pasting text into the DevTools console.
+   * @example {allow pasting} PH1
    */
   selfXssWarning: "Warning: Don\u2019t paste code into the DevTools Console that you don\u2019t understand or haven\u2019t reviewed yourself. This could allow attackers to steal your identity or take control of your computer. Please type \u2018{PH1}\u2019 below and press Enter to allow pasting.",
   /**
-   *@description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
+   * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
    */
   allowPasting: "allow pasting"
 };
@@ -6522,7 +6536,8 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   aiCodeCompletion;
   placeholderCompartment = new CodeMirror2.Compartment();
   teaserContainer;
-  aiCodeCompletionSetting = Common8.Settings.Settings.instance().createSetting("ai-code-completion-fre-completed", false);
+  aiCodeCompletionSetting = Common8.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
+  aiCodeCompletionCitations = [];
   #getJavaScriptCompletionExtensions() {
     if (this.#selfXssWarningShown) {
       return [];
@@ -6541,7 +6556,12 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     this.editor.dispatch({ effects });
   }
   constructor() {
-    super();
+    super({
+      jslog: `${VisualLogging6.textField("console-prompt").track({
+        change: true,
+        keydown: "Enter|ArrowUp|ArrowDown|PageUp"
+      })}`
+    });
     this.registerRequiredCSS(consolePrompt_css_default);
     this.addCompletionsFromHistory = true;
     this.historyInternal = new TextEditor3.AutocompleteHistory.AutocompleteHistory(Common8.Settings.Settings.instance().createLocalSetting("console-history", []));
@@ -6613,10 +6633,6 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     this.element.removeAttribute("tabindex");
     this.editorSetForTest();
     Host3.userMetrics.panelLoaded("console", "DevTools.Launch.Console");
-    this.element.setAttribute("jslog", `${VisualLogging6.textField("console-prompt").track({
-      change: true,
-      keydown: "Enter|ArrowUp|ArrowDown|PageUp"
-    })}`);
     if (this.isAiCodeCompletionEnabled()) {
       this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
       this.onAiCodeCompletionSettingChanged();
@@ -6780,7 +6796,11 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       keymap3.push({
         key: "Tab",
         run: () => {
-          return TextEditor3.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+          const accepted = TextEditor3.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+          if (accepted) {
+            this.dispatchEventToListeners("AiCodeCompletionSuggestionAccepted", { citations: this.aiCodeCompletionCitations });
+          }
+          return accepted;
         }
       });
     }
@@ -6899,12 +6919,20 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   focus() {
     this.editor.focus();
   }
+  // TODO(b/435654172): Refactor and move aiCodeCompletion model one level up to avoid
+  // defining additional listeners and events.
   setAiCodeCompletion() {
     if (!this.aidaClient) {
       this.aidaClient = new Host3.AidaClient.AidaClient();
     }
     this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
-    this.aiCodeCompletion.addEventListener("CitationsUpdated", (event) => this.dispatchEventToListeners("CitationsUpdated", event.data));
+    this.aiCodeCompletion.addEventListener("ResponseReceived", (event) => {
+      this.aiCodeCompletionCitations = event.data.citations;
+      this.dispatchEventToListeners("AiCodeCompletionResponseReceived", event.data);
+    });
+    this.aiCodeCompletion.addEventListener("RequestTriggered", (event) => {
+      this.dispatchEventToListeners("AiCodeCompletionRequestTriggered", event.data);
+    });
   }
   onAiCodeCompletionSettingChanged() {
     if (this.aiCodeCompletionSetting.get() && this.isAiCodeCompletionEnabled()) {

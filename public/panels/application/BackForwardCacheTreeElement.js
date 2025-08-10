@@ -10,7 +10,7 @@ import { ApplicationPanelTreeElement } from './ApplicationPanelTreeElement.js';
 import * as ApplicationComponents from './components/components.js';
 const UIStrings = {
     /**
-     *@description Text in Application Panel Sidebar of the Application panel
+     * @description Text in Application Panel Sidebar of the Application panel
      */
     backForwardCache: 'Back/forward cache',
 };

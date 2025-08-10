@@ -91,6 +91,17 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private onSetThemeChangeHandler;
     private handleOpenURL;
     private extensionAllowedOnURL;
+    /**
+     * Slightly more permissive as {@link extensionAllowedOnURL}: This method also permits
+     * UISourceCodes that originate from a {@link SDK.Script.Script} with a sourceURL magic comment as
+     * long as the corresponding target is permitted.
+     */
+    private extensionAllowedOnContentProvider;
+    /**
+     * This method prefers returning 'Permission denied' errors if restricted resources are not found,
+     * rather then NOTFOUND. This prevents extensions from being able to fish for restricted resources.
+     */
+    private lookupAllowedUISourceCode;
     private extensionAllowedOnTarget;
     private onReload;
     private onEvaluateOnInspectedPage;

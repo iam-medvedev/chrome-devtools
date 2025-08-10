@@ -1,14 +1,15 @@
 // Copyright (c) 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Lit from '../../third_party/lit/lit.js';
 import * as TreeOutline from '../../ui/components/tree_outline/tree_outline.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import layersWidgetStyles from './layersWidget.css.js';
+const { render, html, Directives: { ref } } = Lit;
 const UIStrings = {
     /**
      * @description Title of a section in the Element State Pane Widget of the Elements panel.
@@ -23,80 +24,100 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/elements/LayersWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const DEFAULT_VIEW = (input, output, target) => {
+    const makeTreeNode = (parentId) => (layer) => {
+        const subLayers = layer.subLayers;
+        const name = SDK.CSSModel.CSSModel.readableLayerName(layer.name);
+        const treeNodeData = layer.order + ': ' + name;
+        const id = parentId ? parentId + '.' + name : name;
+        if (!subLayers) {
+            return { treeNodeData, id };
+        }
+        return {
+            treeNodeData,
+            id,
+            children: async () => subLayers.sort((layer1, layer2) => layer1.order - layer2.order).map(makeTreeNode(id)),
+        };
+    };
+    const { defaultRenderer } = TreeOutline.TreeOutline;
+    const tree = [makeTreeNode('')(input.rootLayer)];
+    const data = {
+        defaultRenderer,
+        tree,
+    };
+    const captureTreeOutline = (e) => {
+        output.treeOutline = e;
+    };
+    const template = html `
+  <style>${layersWidgetStyles}</style>
+  <div class="layers-widget">
+    <div class="layers-widget-title">${UIStrings.cssLayersTitle}</div>
+    <devtools-tree-outline ${ref(captureTreeOutline)}
+                           .data=${data}></devtools-tree-outline>
+  </div>
+  `;
+    render(template, target);
+};
 let layersWidgetInstance;
 export class LayersWidget extends UI.Widget.Widget {
-    cssModel;
-    layerTreeComponent = new TreeOutline.TreeOutline.TreeOutline();
-    constructor() {
-        super({ useShadowDom: true });
-        this.registerRequiredCSS(layersWidgetStyles);
-        this.contentElement.className = 'styles-layers-pane';
-        this.contentElement.setAttribute('jslog', `${VisualLogging.pane('css-layers')}`);
-        UI.UIUtils.createTextChild(this.contentElement.createChild('div'), i18nString(UIStrings.cssLayersTitle));
-        this.contentElement.appendChild(this.layerTreeComponent);
-        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
-    }
-    updateModel(cssModel) {
-        if (this.cssModel === cssModel) {
-            return;
-        }
-        if (this.cssModel) {
-            this.cssModel.removeEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.update, this);
-        }
-        this.cssModel = cssModel;
-        if (this.cssModel) {
-            this.cssModel.addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.update, this);
-        }
+    #node = null;
+    #view;
+    #layerToReveal = null;
+    constructor(view = DEFAULT_VIEW) {
+        super({ jslog: `${VisualLogging.pane('css-layers')}` });
+        this.#view = view;
     }
     wasShown() {
         super.wasShown();
-        return this.update();
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+        this.#onDOMNodeChanged({ data: UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode) });
     }
-    async update() {
-        if (!this.isShowing()) {
+    wasHidden() {
+        UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+        this.#onDOMNodeChanged({ data: null });
+        super.wasHidden();
+    }
+    #onDOMNodeChanged(event) {
+        const node = event.data?.enclosingElementOrSelf();
+        if (this.#node === node) {
             return;
         }
-        let node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
-        if (node) {
-            node = node.enclosingElementOrSelf();
+        if (this.#node) {
+            this.#node.domModel().cssModel().removeEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.requestUpdate, this);
         }
-        if (!node) {
-            // do something meaningful?
+        this.#node = event.data;
+        if (this.#node) {
+            this.#node.domModel().cssModel().addEventListener(SDK.CSSModel.Events.StyleSheetChanged, this.requestUpdate, this);
+        }
+        if (this.isShowing()) {
+            this.requestUpdate();
+        }
+    }
+    async performUpdate() {
+        if (!this.#node) {
             return;
         }
-        this.updateModel(node.domModel().cssModel());
-        if (!this.cssModel) {
-            return;
-        }
-        const makeTreeNode = (parentId) => (layer) => {
-            const subLayers = layer.subLayers;
-            const name = SDK.CSSModel.CSSModel.readableLayerName(layer.name);
-            const treeNodeData = layer.order + ': ' + name;
-            const id = parentId ? parentId + '.' + name : name;
-            if (!subLayers) {
-                return { treeNodeData, id };
+        const rootLayer = await this.#node.domModel().cssModel().getRootLayer(this.#node.id);
+        const input = { rootLayer };
+        const output = { treeOutline: undefined };
+        this.#view(input, output, this.contentElement);
+        if (output.treeOutline) {
+            // We only expand the first 5 user-defined layers to not make the
+            // view too overwhelming.
+            await output.treeOutline.expandRecursively(5);
+            if (this.#layerToReveal) {
+                await output.treeOutline.expandToAndSelectTreeNodeId(this.#layerToReveal);
+                this.#layerToReveal = null;
             }
-            return {
-                treeNodeData,
-                id,
-                children: () => Promise.resolve(subLayers.sort((layer1, layer2) => layer1.order - layer2.order).map(makeTreeNode(id))),
-            };
-        };
-        const rootLayer = await this.cssModel.getRootLayer(node.id);
-        this.layerTreeComponent.data = {
-            defaultRenderer: TreeOutline.TreeOutline.defaultRenderer,
-            tree: [makeTreeNode('')(rootLayer)],
-        };
-        // We only expand the first 5 user-defined layers to not make the
-        // view too overwhelming.
-        await this.layerTreeComponent.expandRecursively(5);
+        }
     }
     async revealLayer(layerName) {
         if (!this.isShowing()) {
             ElementsPanel.instance().showToolbarPane(this, ButtonProvider.instance().item());
         }
-        await this.update();
-        return await this.layerTreeComponent.expandToAndSelectTreeNodeId('implicit outer layer.' + layerName);
+        this.#layerToReveal = `implicit outer layer.${layerName}`;
+        this.requestUpdate();
+        await this.updateComplete;
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

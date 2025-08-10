@@ -1,7 +1,6 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
@@ -14,55 +13,55 @@ import requestHeadersViewStyles from './RequestHeadersView.css.js';
 const { render, html } = Lit;
 const UIStrings = {
     /**
-     *@description Section header for a list of the main aspects of a direct socket connection
+     * @description Section header for a list of the main aspects of a direct socket connection
      */
     general: 'General',
     /**
-     *@description Section header for a list of the main aspects of a direct socket connection
+     * @description Section header for a list of the main aspects of a direct socket connection
      */
     options: 'Options',
     /**
-     *@description Section header for a list of the main aspects of a direct socket connection
+     * @description Section header for a list of the main aspects of a direct socket connection
      */
     openInfo: 'Open Info',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     type: 'DirectSocket Type',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     errorMessage: 'Error message',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     status: 'Status',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketTypeTcp: 'TCP',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketTypeUdpConnected: 'UDP (connected)',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketTypeUdpBound: 'UDP (bound)',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketStatusOpening: 'Opening',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketStatusOpen: 'Open',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketStatusClosed: 'Closed',
     /**
-     *@description Text in Connection info View of the Network panel
+     * @description Text in Connection info View of the Network panel
      */
     directSocketStatusAborted: 'Aborted',
 };
@@ -180,10 +179,12 @@ export class DirectSocketConnectionView extends UI.Widget.Widget {
     #request;
     #view;
     constructor(request, view = DEFAULT_VIEW) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.pane('connection-info').track({ resize: true })}`,
+            useShadowDom: true,
+        });
         this.#request = request;
         this.#view = view;
-        this.element.setAttribute('jslog', `${VisualLogging.pane('connection-info').track({ resize: true })}`);
         this.performUpdate();
     }
     wasShown() {

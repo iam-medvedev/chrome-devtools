@@ -133,25 +133,25 @@ export declare class ContextMenu extends SubMenu {
     static readonly groupWeights: string[];
 }
 /**
- * @attr soft-menu - Whether to use the soft menu implementation.
- * @attr keep-open - Whether the menu should stay open after an item is clicked.
- * @attr icon-name - Name of the icon to display on the button.
- * @attr disabled - Whether the menu button is disabled
- * @attr jslogContext - The jslog context for the button.
+ * @property jslogContext - Reflects the `"jslogContext"` attribute.
+ * @property populateMenuCall - Callback function to populate the menu.
+ * @property softMenu - Reflects the `"soft-menu"` attribute.
+ * @property keepOpen -Reflects the `"keep-open"` attribute.
+ * @property iconName - Reflects the `"icon-name"` attribute.
+ * @property disabled - Reflects the `"disabled"` attribute.
+ * @attribute soft-menu - Whether to use the soft menu implementation.
+ * @attribute keep-open - Whether the menu should stay open after an item is clicked.
+ * @attribute icon-name - Name of the icon to display on the button.
+ * @attribute disabled - Whether the menu button is disabled
+ * @attribute jslogContext - The jslog context for the button.
  *
- * @prop {Function} populateMenuCall - Callback function to populate the menu.
- * @prop {Boolean} softMenu - Reflects the `"soft-menu"` attribute.
- * @prop {Boolean} keepOpen -Reflects the `"keep-open"` attribute.
- * @prop {String} iconName - Reflects the `"icon-name"` attribute.
- * @prop {Boolean} disabled - Reflects the `"disabled"` attribute.
- * @prop {String} jslogContext - Reflects the `"jslogContext"` attribute.
  */
 export declare class MenuButton extends HTMLElement {
     #private;
     static readonly observedAttributes: string[];
     /**
      * Sets the callback function used to populate the context menu when the button is clicked.
-     * @param {Function} populateCall - A function that takes a `ContextMenu` instance and adds items to it.
+     * @param populateCall A function that takes a `ContextMenu` instance and adds items to it.
      */
     set populateMenuCall(populateCall: (arg0: ContextMenu) => void);
     /**

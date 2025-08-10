@@ -198,19 +198,19 @@ var freDialog_css_default = `/*
 var { html, Directives: { ifDefined } } = Lit;
 var UIStrings = {
   /**
-   *@description Header text for the feature reminder dialog.
+   * @description Header text for the feature reminder dialog.
    */
   thingsToConsider: "Things to consider",
   /**
-   *@description Text for the learn more button in the feature reminder dialog.
+   * @description Text for the learn more button in the feature reminder dialog.
    */
   learnMore: "Learn more",
   /**
-   *@description Text for the cancel button in the feature reminder dialog.
+   * @description Text for the cancel button in the feature reminder dialog.
    */
   cancel: "Cancel",
   /**
-   *@description Text for the got it button in the feature reminder dialog.
+   * @description Text for the got it button in the feature reminder dialog.
    */
   gotIt: "Got it"
 };
@@ -298,56 +298,56 @@ var FreDialog = class {
 // gen/front_end/panels/common/AiCodeCompletionTeaser.js
 var UIStringsNotTranslate = {
   /**
-   *@description Text for `ctrl` key.
+   * @description Text for `ctrl` key.
    */
   ctrl: "ctrl",
   /**
-   *@description Text for `cmd` key.
+   * @description Text for `cmd` key.
    */
   cmd: "cmd",
   /**
-   *@description Text for `i` key.
+   * @description Text for `i` key.
    */
   i: "i",
   /**
-   *@description Text for dismissing teaser.
+   * @description Text for dismissing teaser.
    */
   dontShowAgain: "Don't show again",
   /**
-   *@description Text for teaser to turn on code suggestions.
+   * @description Text for teaser to turn on code suggestions.
    */
   toTurnOnCodeSuggestions: "to turn on code suggestions.",
   /**
-   *@description Text for snackbar notification on dismissing the teaser.
+   * @description Text for snackbar notification on dismissing the teaser.
    */
   turnOnCodeSuggestionsAtAnyTimeInSettings: "Turn on code suggestions at any time in Settings",
   /**
-   *@description Text for snackbar action button to manage settings.
+   * @description Text for snackbar action button to manage settings.
    */
   manage: "Manage",
   /**
-   *@description The footer disclaimer that links to more information
+   * @description The footer disclaimer that links to more information
    * about the AI feature.
    */
   learnMore: "Learn more about AI code completion",
   /**
-   *@description Header text for the AI-powered suggestions disclaimer dialog.
+   * @description Header text for the AI-powered suggestions disclaimer dialog.
    */
   freDisclaimerHeader: "Code faster with AI-powered suggestions",
   /**
-   *@description First disclaimer item text for the fre dialog.
+   * @description First disclaimer item text for the fre dialog.
    */
   freDisclaimerTextAiWontAlwaysGetItRight: "This feature uses AI and won\u2019t always get it right",
   /**
-   *@description Second disclaimer item text for the fre dialog.
+   * @description Second disclaimer item text for the fre dialog.
    */
-  freDisclaimerTextPrivacy: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
+  freDisclaimerTextPrivacy: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
   /**
-   *@description Second disclaimer item text for the fre dialog when enterprise logging is off.
+   * @description Second disclaimer item text for the fre dialog when enterprise logging is off.
    */
-  freDisclaimerTextPrivacyNoLogging: "To generate code suggestions, your console input, the history of your current console session, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  freDisclaimerTextPrivacyNoLogging: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
-   *@description Third disclaimer item text for the fre dialog.
+   * @description Third disclaimer item text for the fre dialog.
    */
   freDisclaimerTextUseWithCaution: "Use generated code snippets with caution"
 };
@@ -355,12 +355,12 @@ var lockedString = i18n3.i18n.lockedString;
 var CODE_SNIPPET_WARNING_URL = "https://support.google.com/legal/answer/13505487";
 var DEFAULT_VIEW = (input, _output, target) => {
   if (input.aidaAvailability !== "available") {
-    render2(nothing, target, { host: input });
+    render2(nothing, target);
     return;
   }
   const cmdOrCtrl = Host.Platform.isMac() ? lockedString(UIStringsNotTranslate.cmd) : lockedString(UIStringsNotTranslate.ctrl);
   render2(html2`
-          <style>${aiCodeCompletionTeaser_css_default}</style>
+          <style>${UI2.Widget.widgetScoped(aiCodeCompletionTeaser_css_default)}</style>
           <div class="ai-code-completion-teaser">
             <span class="ai-code-completion-teaser-action">
               <span>${cmdOrCtrl}</span>
@@ -372,7 +372,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 ${lockedString(UIStringsNotTranslate.dontShowAgain)}
             </span>
           </div>
-        `, target, { host: input });
+        `, target);
 };
 var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
   #view;
@@ -380,7 +380,7 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
   #boundOnAidaAvailabilityChange;
   #onDetach;
   // Whether the user completed first run experience dialog or not.
-  #aiCodeCompletionFreCompletedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-fre-completed", false);
+  #aiCodeCompletionFreCompletedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
   // Whether the user dismissed the teaser or not.
   #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
   #noLogging;
@@ -495,6 +495,7 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
 };
 
 // gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
+import "./../../ui/components/spinners/spinners.js";
 import "./../../ui/components/tooltips/tooltips.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
@@ -521,14 +522,30 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
 
   span.link {
     color: var(--sys-color-on-surface-subtle);
+
+    &:focus-visible {
+      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+      outline-offset: 0;
+      border-radius: var(--sys-shape-corner-extra-small);
+    }
   }
 
   .ai-code-completion-disclaimer {
-    border-right: var(--sys-size-1) solid var(--sys-color-divider);
     padding-right: var(--sys-size-5);
+    gap: 5px;
+    display: flex;
+
+    devtools-spinner {
+      margin-top: var(--sys-size-2);
+      padding: var(--sys-size-1);
+      height: var(--sys-size-6);
+      width: var(--sys-size-6);
+    }
   }
 
   .ai-code-completion-recitation-notice {
+    border-left: var(--sys-size-1) solid var(--sys-color-divider);
+
     span.link {
       padding-left: var(--sys-size-3);
     }
@@ -550,6 +567,12 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
         x-link {
             color: var(--sys-color-primary);
             text-decoration: underline;
+
+            &:focus-visible {
+              outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+              outline-offset: 0;
+              border-radius: var(--sys-shape-corner-extra-small);
+            }
         }
     }
 
@@ -565,7 +588,8 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
       }
 
       .link {
-        padding: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
+        margin: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
+        display: inline-block;
       }
     }
   }
@@ -576,7 +600,7 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
 // gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
 var UIStrings2 = {
   /**
-   *@description Disclaimer text for AI code completion
+   * @description Disclaimer text for AI code completion
    */
   relevantData: "Relevant data",
   /**
@@ -584,81 +608,102 @@ var UIStrings2 = {
    */
   isSentToGoogle: "is sent to Google",
   /**
-   *@description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
+   * @description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
    */
   tooltipDisclaimerTextForAiCodeCompletion: "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data may be seen by human reviewers to improve this feature.",
   /**
-   *@description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
+   * @description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
    */
   tooltipDisclaimerTextForAiCodeCompletionNoLogging: "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data will not be used to improve Google\u2019s AI models.",
   /**
-   *@description Text for tooltip button which redirects to AI settings
+   * @description Text for tooltip button which redirects to AI settings
    */
   manageInSettings: "Manage in settings",
   /**
-   *@description Text for recitation notice
+   * @description Text for recitation notice
    */
   generatedCodeMayBeSubjectToALicense: "Generated code may be subject to a license.",
   /**
-   *@description Text for citations
+   * @description Text for citations
    */
   viewSources: "View Sources"
 };
 var lockedString2 = i18n5.i18n.lockedString;
 var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-  output.tooltipRef = output.tooltipRef ?? Directives.createRef();
-  const viewSourcesSpan = input.citations && input.citations.length > 0 ? html3`<span class="link" role="link" aria-details=${input.citationsTooltipId}>
-            ${lockedString2(UIStrings2.viewSources)}&nbsp;${lockedString2("(" + input.citations.length + ")")}</span>` : nothing2;
-  const viewSourcesTooltip = input.citations && input.citations.length > 0 ? html3`<devtools-tooltip
-                id=${input.citationsTooltipId}
-                variant=${"rich"}
-                jslogContext=${input.panelName + ".ai-code-completion-citations"}
-            ><div class="citations-tooltip-container">
-                ${Directives.repeat(input.citations, (citation) => html3`<x-link
-                    href=${citation}
-                    jslog=${VisualLogging2.link(input.panelName + ".ai-code-completion-citations.citation-link").track({
+  const recitationNotice = input.citations && input.citations.length > 0 ? html3`<div class="ai-code-completion-recitation-notice">${lockedString2(UIStrings2.generatedCodeMayBeSubjectToALicense)}
+                <span class="link"
+                    role="link"
+                    aria-details=${input.citationsTooltipId}
+                    aria-describedby=${input.citationsTooltipId}
+                    tabIndex="0">
+                  ${lockedString2(UIStrings2.viewSources)}&nbsp;${lockedString2("(" + input.citations.length + ")")}</span>
+                <devtools-tooltip
+                    id=${input.citationsTooltipId}
+                    variant=${"rich"}
+                    jslogContext=${input.panelName + ".ai-code-completion-citations"}
+                ><div class="citations-tooltip-container">
+                    ${Directives.repeat(input.citations, (citation) => html3`<x-link
+                        tabIndex="0"
+                        href=${citation}
+                        jslog=${VisualLogging2.link(input.panelName + ".ai-code-completion-citations.citation-link").track({
     click: true
-  })}>${citation}</x-link>`)}</div></devtools-tooltip>` : nothing2;
+  })}>${citation}</x-link>`)}</div></devtools-tooltip>
+            </div>` : nothing2;
   render3(html3`
-        <style>${aiCodeCompletionSummaryToolbar_css_default}</style>
+        <style>${UI3.Widget.widgetScoped(aiCodeCompletionSummaryToolbar_css_default)}</style>
         <div class="ai-code-completion-summary-toolbar">
             <div class="ai-code-completion-disclaimer">
+                <devtools-spinner
+                  .active=${false}
+                  ${Directives.ref((el) => {
+    if (el instanceof HTMLElement) {
+      output.setLoading = (isLoading) => {
+        el.toggleAttribute("active", isLoading);
+      };
+    }
+  })}></devtools-spinner>
                 <span
+                    tabIndex="0"
                     class="link"
                     role="link"
                     jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
                     aria-details=${input.disclaimerTooltipId}
+                    aria-describedby=${input.disclaimerTooltipId}
                     @click=${() => {
     void UI3.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
-                >${lockedString2(UIStrings2.relevantData)}</span>&nbsp;${lockedString2(UIStrings2.isSentToGoogle)}
+                >${lockedString2(UIStrings2.relevantData)}</span>${lockedString2(UIStrings2.isSentToGoogle)}
                 <devtools-tooltip
                     id=${input.disclaimerTooltipId}
                     variant=${"rich"}
                     jslogContext=${input.panelName + ".ai-code-completion-disclaimer"}
-                    ${Directives.ref(output.tooltipRef)}
+                    ${Directives.ref((el) => {
+    if (el instanceof HTMLElement) {
+      output.hideTooltip = () => {
+        el.hidePopover();
+      };
+    }
+  })}
                 ><div class="disclaimer-tooltip-container">
                     <div class="tooltip-text">
                       ${input.noLogging ? lockedString2(UIStrings2.tooltipDisclaimerTextForAiCodeCompletionNoLogging) : lockedString2(UIStrings2.tooltipDisclaimerTextForAiCodeCompletion)}
                     </div>
-                    <div
+                    <span
                         class="link"
                         role="link"
                         jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
                         @click=${input.onManageInSettingsTooltipClick}
-                    >${lockedString2(UIStrings2.manageInSettings)}</div></div></devtools-tooltip>
+                    >${lockedString2(UIStrings2.manageInSettings)}</span></div></devtools-tooltip>
             </div>
-            <div class="ai-code-completion-recitation-notice">${lockedString2(UIStrings2.generatedCodeMayBeSubjectToALicense)}
-                ${viewSourcesSpan}
-                ${viewSourcesTooltip}
-            </div>
+            ${recitationNotice}
         </div>
-        `, target, { host: input });
+        `, target);
 };
+var MINIMUM_LOADING_STATE_TIMEOUT = 1e3;
 var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
   #view;
   #viewOutput = {};
@@ -668,6 +713,9 @@ var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
   #citations = [];
   #noLogging;
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
+  #loading = false;
+  #loadingStartTime = 0;
+  #spinnerLoadingTimeout;
   constructor(disclaimerTooltipId, citationsTooltipId, panelName, view) {
     super();
     this.#disclaimerTooltipId = disclaimerTooltipId;
@@ -678,8 +726,32 @@ var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
     this.requestUpdate();
   }
   #onManageInSettingsTooltipClick() {
-    this.#viewOutput.tooltipRef?.value?.hidePopover();
+    this.#viewOutput.hideTooltip?.();
     void UI3.ViewManager.ViewManager.instance().showView("chrome-ai");
+  }
+  setLoading(loading) {
+    if (!loading && !this.#loading) {
+      return;
+    }
+    if (loading) {
+      if (!this.#loading) {
+        this.#viewOutput.setLoading?.(true);
+      }
+      if (this.#spinnerLoadingTimeout) {
+        clearTimeout(this.#spinnerLoadingTimeout);
+        this.#spinnerLoadingTimeout = void 0;
+      }
+      this.#loadingStartTime = performance.now();
+      this.#loading = true;
+    } else {
+      this.#loading = false;
+      const duration = performance.now() - this.#loadingStartTime;
+      const remainingTime = Math.max(MINIMUM_LOADING_STATE_TIMEOUT - duration, 0);
+      this.#spinnerLoadingTimeout = window.setTimeout(() => {
+        this.#viewOutput.setLoading?.(false);
+        this.#spinnerLoadingTimeout = void 0;
+      }, remainingTime);
+    }
   }
   updateCitations(citations) {
     citations.forEach((citation) => {
@@ -708,11 +780,11 @@ var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
 // gen/front_end/panels/common/common.prebundle.js
 var UIStrings3 = {
   /**
-   *@description Text for the cancel button in the dialog.
+   * @description Text for the cancel button in the dialog.
    */
   cancel: "Cancel",
   /**
-   *@description Text for the allow button in the "type to allow" dialog.
+   * @description Text for the allow button in the "type to allow" dialog.
    */
   allow: "Allow"
 };

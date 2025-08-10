@@ -874,6 +874,7 @@ __export(ExtensionPanel_exports, {
   ExtensionSidebarPane: () => ExtensionSidebarPane
 });
 import "./../../ui/legacy/legacy.js";
+import * as Platform from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 
@@ -893,7 +894,7 @@ var DEFAULT_VIEW = (input, output, target) => {
   })}
     src=${input.src}
     class=${input.className}
-    @load=${input.onLoad}></iframe>`, target, { host: input });
+    @load=${input.onLoad}></iframe>`, target);
 };
 var ExtensionView = class extends UI.Widget.Widget {
   #server;
@@ -1050,7 +1051,8 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
   extensionView;
   objectPropertiesView;
   constructor(server, panelName, title, id) {
-    super(title);
+    const viewId = Platform.StringUtilities.toKebabCase(title);
+    super({ title, viewId });
     this.element.classList.add("fill");
     this.panelNameInternal = panelName;
     this.server = server;
@@ -1140,7 +1142,7 @@ __export(ExtensionServer_exports, {
 import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
+import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Logs from "./../logs/logs.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -1378,7 +1380,8 @@ var LanguageExtensionEndpoint = class {
       initiatorUrl: this.extensionOrigin
     };
   }
-  /** Notify the plugin about a new script
+  /**
+   * Notify the plugin about a new script
    */
   addRawModule(rawModuleId, symbolsURL, rawModule) {
     if (!this.canAccessURL(symbolsURL) || !this.canAccessURL(rawModule.url)) {
@@ -1392,12 +1395,14 @@ var LanguageExtensionEndpoint = class {
   removeRawModule(rawModuleId) {
     return this.endpoint.sendRequest("removeRawModule", { rawModuleId });
   }
-  /** Find locations in raw modules from a location in a source file
+  /**
+   * Find locations in raw modules from a location in a source file
    */
   sourceLocationToRawLocation(sourceLocation) {
     return this.endpoint.sendRequest("sourceLocationToRawLocation", { sourceLocation });
   }
-  /** Find locations in source files from a location in a raw module
+  /**
+   * Find locations in source files from a location in a raw module
    */
   rawLocationToSourceLocation(rawLocation) {
     return this.endpoint.sendRequest("rawLocationToSourceLocation", { rawLocation });
@@ -1405,23 +1410,27 @@ var LanguageExtensionEndpoint = class {
   getScopeInfo(type) {
     return this.endpoint.sendRequest("getScopeInfo", { type });
   }
-  /** List all variables in lexical scope at a given location in a raw module
+  /**
+   * List all variables in lexical scope at a given location in a raw module
    */
   listVariablesInScope(rawLocation) {
     return this.endpoint.sendRequest("listVariablesInScope", { rawLocation });
   }
-  /** List all function names (including inlined frames) at location
+  /**
+   * List all function names (including inlined frames) at location
    */
   getFunctionInfo(rawLocation) {
     return this.endpoint.sendRequest("getFunctionInfo", { rawLocation });
   }
-  /** Find locations in raw modules corresponding to the inline function
+  /**
+   * Find locations in raw modules corresponding to the inline function
    *  that rawLocation is in.
    */
   getInlinedFunctionRanges(rawLocation) {
     return this.endpoint.sendRequest("getInlinedFunctionRanges", { rawLocation });
   }
-  /** Find locations in raw modules corresponding to inline functions
+  /**
+   * Find locations in raw modules corresponding to inline functions
    *  called by the function or inline frame that rawLocation is in.
    */
   getInlinedCalleesRanges(rawLocation) {
@@ -1890,13 +1899,11 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     if (!scriptUrl || !ranges?.length) {
       return this.status.E_BADARG("command", "expected valid scriptUrl and non-empty NamedFunctionRanges");
     }
-    if (!this.extensionAllowedOnURL(scriptUrl, port)) {
-      return this.status.E_FAILED("Permission denied");
+    const resource = this.lookupAllowedUISourceCode(scriptUrl, port);
+    if ("error" in resource) {
+      return resource.error;
     }
-    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(scriptUrl);
-    if (!uiSourceCode) {
-      return this.status.E_NOTFOUND(scriptUrl);
-    }
+    const { uiSourceCode } = resource;
     if (!uiSourceCode.contentType().isScript() || !uiSourceCode.contentType().isFromSourceMap()) {
       return this.status.E_BADARG("command", `expected a source map script resource for url: ${scriptUrl}`);
     }
@@ -2244,16 +2251,17 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     return void 0;
   }
   handleOpenURL(port, contentProviderOrUrl, lineNumber, columnNumber) {
-    let url;
     let resource;
+    let isAllowed;
     if (typeof contentProviderOrUrl !== "string") {
-      url = contentProviderOrUrl.contentURL();
       resource = this.makeResource(contentProviderOrUrl);
+      isAllowed = this.extensionAllowedOnContentProvider(contentProviderOrUrl, port);
     } else {
-      url = contentProviderOrUrl;
+      const url = contentProviderOrUrl;
       resource = { url, type: Common2.ResourceType.resourceTypes.Other.name() };
+      isAllowed = this.extensionAllowedOnURL(url, port);
     }
-    if (this.extensionAllowedOnURL(url, port)) {
+    if (isAllowed) {
       port.postMessage({
         command: "open-resource",
         resource,
@@ -2266,6 +2274,46 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     const origin = extensionOrigins.get(port);
     const extension = origin && this.registeredExtensions.get(origin);
     return Boolean(extension?.isAllowedOnTarget(url));
+  }
+  /**
+   * Slightly more permissive as {@link extensionAllowedOnURL}: This method also permits
+   * UISourceCodes that originate from a {@link SDK.Script.Script} with a sourceURL magic comment as
+   * long as the corresponding target is permitted.
+   */
+  extensionAllowedOnContentProvider(contentProvider, port) {
+    if (!(contentProvider instanceof Workspace.UISourceCode.UISourceCode)) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    if (contentProvider.contentType() !== Common2.ResourceType.resourceTypes.Script) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    const scripts = Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider);
+    if (scripts.length === 0) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    return scripts.every((script) => {
+      if (script.hasSourceURL) {
+        return this.extensionAllowedOnTarget(script.target(), port);
+      }
+      return this.extensionAllowedOnURL(script.contentURL(), port);
+    });
+  }
+  /**
+   * This method prefers returning 'Permission denied' errors if restricted resources are not found,
+   * rather then NOTFOUND. This prevents extensions from being able to fish for restricted resources.
+   */
+  lookupAllowedUISourceCode(url, port) {
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+    if (!uiSourceCode && !this.extensionAllowedOnURL(url, port)) {
+      return { error: this.status.E_FAILED("Permission denied") };
+    }
+    if (!uiSourceCode) {
+      return { error: this.status.E_NOTFOUND(url) };
+    }
+    if (!this.extensionAllowedOnContentProvider(uiSourceCode, port)) {
+      return { error: this.status.E_FAILED("Permission denied") };
+    }
+    return { uiSourceCode };
   }
   extensionAllowedOnTarget(target, port) {
     return this.extensionAllowedOnURL(target.inspectedURL(), port);
@@ -2330,7 +2378,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
   onGetPageResources(_message, port) {
     const resources = /* @__PURE__ */ new Map();
     function pushResourceData(contentProvider) {
-      if (!resources.has(contentProvider.contentURL()) && this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+      if (!resources.has(contentProvider.contentURL()) && this.extensionAllowedOnContentProvider(contentProvider, port)) {
         resources.set(contentProvider.contentURL(), this.makeResource(contentProvider));
       }
       return false;
@@ -2346,7 +2394,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     return [...resources.values()];
   }
   async getResourceContent(contentProvider, message, port) {
-    if (!this.extensionAllowedOnURL(contentProvider.contentURL(), port)) {
+    if (!this.extensionAllowedOnContentProvider(contentProvider, port)) {
       this.dispatchCallback(message.requestId, port, this.status.E_FAILED("Permission denied"));
       return void 0;
     }
@@ -2389,19 +2437,15 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     if (!message.sourceMapURL) {
       return this.status.E_FAILED("Expected a source map URL but got null");
     }
-    const url = message.contentUrl;
-    if (!this.extensionAllowedOnURL(url, port)) {
-      return this.status.E_FAILED("Permission denied");
-    }
-    const contentProvider = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-    if (!contentProvider) {
-      return this.status.E_NOTFOUND(url);
+    const resource = this.lookupAllowedUISourceCode(message.contentUrl, port);
+    if ("error" in resource) {
+      return resource.error;
     }
     const debuggerBindingsInstance = Bindings2.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-    const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(contentProvider);
+    const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(resource.uiSourceCode);
     if (scriptFiles.length > 0) {
       for (const script of scriptFiles) {
-        const resourceFile = debuggerBindingsInstance.scriptFile(contentProvider, script.debuggerModel);
+        const resourceFile = debuggerBindingsInstance.scriptFile(resource.uiSourceCode, script.debuggerModel);
         resourceFile?.addSourceMapURL(message.sourceMapURL);
       }
     }
@@ -2416,13 +2460,14 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
       const response = error ? this.status.E_FAILED(error) : this.status.OK();
       this.dispatchCallback(requestId, port, response);
     }
-    if (!this.extensionAllowedOnURL(url, port)) {
-      return this.status.E_FAILED("Permission denied");
+    const resource = this.lookupAllowedUISourceCode(url, port);
+    if ("error" in resource) {
+      return resource.error;
     }
-    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
-    if (!uiSourceCode?.contentType().isDocumentOrScriptOrStyleSheet()) {
-      const resource = SDK2.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
-      if (!resource) {
+    const { uiSourceCode } = resource;
+    if (!uiSourceCode.contentType().isDocumentOrScriptOrStyleSheet()) {
+      const resource2 = SDK2.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+      if (!resource2) {
         return this.status.E_NOTFOUND(url);
       }
       return this.status.E_NOTSUPPORTED("Resource is not editable");
@@ -2469,7 +2514,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     function keyCodeForEntry(entry) {
       let keyCode = entry.keyCode;
       if (!keyCode) {
-        if (entry.key === Platform.KeyboardUtilities.ESCAPE_KEY) {
+        if (entry.key === Platform2.KeyboardUtilities.ESCAPE_KEY) {
           keyCode = 27;
         }
       }
@@ -2787,7 +2832,8 @@ var ExtensionServerPanelView = class extends UI3.View.SimpleView {
   name;
   panel;
   constructor(name, title, panel) {
-    super(title);
+    const viewId = Platform2.StringUtilities.toKebabCase(title);
+    super({ title, viewId });
     this.name = name;
     this.panel = panel;
   }
@@ -2812,7 +2858,7 @@ var ExtensionStatus = class {
       const status = { code, description, details };
       if (code !== "OK") {
         status.isError = true;
-        console.error("Extension server error: " + Platform.StringUtilities.sprintf(description, ...details));
+        console.error("Extension server error: " + Platform2.StringUtilities.sprintf(description, ...details));
       }
       return status;
     }

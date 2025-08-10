@@ -260,6 +260,7 @@ style.setProperty('--image-file-search', 'url(\"' + new URL(new URL('search.svg'
 style.setProperty('--image-file-select-element', 'url(\"' + new URL(new URL('select-element.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-send', 'url(\"' + new URL(new URL('send.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-shadow', 'url(\"' + new URL(new URL('shadow.svg', import.meta.url).href).toString() + '\")');
+style.setProperty('--image-file-shield', 'url(\"' + new URL(new URL('shield.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-small-status-dot', 'url(\"' + new URL(new URL('small-status-dot.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-smart-assistant', 'url(\"' + new URL(new URL('smart-assistant.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-snippet', 'url(\"' + new URL(new URL('snippet.svg', import.meta.url).href).toString() + '\")');

@@ -7,15 +7,19 @@ import { VBox } from './Widget.js';
 export class SimpleView extends VBox {
     #title;
     #viewId;
-    constructor(title, useShadowDom, viewId) {
-        super({ useShadowDom });
-        this.#title = title;
-        if (viewId) {
-            if (!Platform.StringUtilities.isExtendedKebabCase(viewId)) {
-                throw new Error(`Invalid view ID '${viewId}'`);
-            }
+    /**
+     * Constructs a new `SimpleView` with the given `options`.
+     *
+     * @param options the settings for the resulting view.
+     * @throws TypeError - if `options.viewId` is not in extended kebab case.
+     */
+    constructor(options) {
+        super(options);
+        this.#title = options.title;
+        this.#viewId = options.viewId;
+        if (!Platform.StringUtilities.isExtendedKebabCase(this.#viewId)) {
+            throw new TypeError(`Invalid view ID '${this.#viewId}'`);
         }
-        this.#viewId = viewId ?? Platform.StringUtilities.toKebabCase(title);
     }
     viewId() {
         return this.#viewId;

@@ -590,7 +590,7 @@ var UIStrings2 = {
    */
   description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.",
   /**
-   *@description Text indicating the worst layout shift cluster.
+   * @description Text indicating the worst layout shift cluster.
    */
   worstLayoutShiftCluster: "Worst layout shift cluster",
   /**
@@ -603,7 +603,7 @@ var UIStrings2 = {
    */
   layoutShiftCluster: "Layout shift cluster @ {PH1}",
   /**
-   *@description Text indicating the biggest reasons for the layout shifts.
+   * @description Text indicating the biggest reasons for the layout shifts.
    */
   topCulprits: "Top layout shift culprits",
   /**
@@ -1007,11 +1007,11 @@ import * as Helpers4 from "./../helpers/helpers.js";
 import * as Types3 from "./../types/types.js";
 var UIStrings3 = {
   /**
-   *@description Title of an insight that provides a breakdown for how long it took to download the main document.
+   * @description Title of an insight that provides a breakdown for how long it took to download the main document.
    */
   title: "Document request latency",
   /**
-   *@description Description of an insight that provides a breakdown for how long it took to download the main document.
+   * @description Description of an insight that provides a breakdown for how long it took to download the main document.
    */
   description: "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.",
   /**
@@ -1281,7 +1281,7 @@ var UIStrings4 = {
    */
   topUpdatesDescription: "These are the largest layout and style recalculation events. Their performance impact may be reduced by making the DOM simpler.",
   /**
-   *@description Label used for a time duration.
+   * @description Label used for a time duration.
    */
   duration: "Duration",
   /**
@@ -1595,7 +1595,7 @@ import * as Helpers8 from "./../helpers/helpers.js";
 import * as Types6 from "./../types/types.js";
 var UIStrings7 = {
   /**
-   *@description Title of an insight that provides details about Forced reflow.
+   * @description Title of an insight that provides details about Forced reflow.
    */
   title: "Forced reflow",
   /**
@@ -1603,11 +1603,11 @@ var UIStrings7 = {
    */
   description: "A forced reflow occurs when JavaScript queries geometric properties (such as `offsetWidth`) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about [forced reflows](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and possible mitigations.",
   /**
-   *@description Title of a list to provide related stack trace data
+   * @description Title of a list to provide related stack trace data
    */
   relatedStackTrace: "Stack trace",
   /**
-   *@description Text to describe the top time-consuming function call
+   * @description Text to describe the top time-consuming function call
    */
   topTimeConsumingFunctionCall: "Top function call",
   /**
@@ -1986,24 +1986,24 @@ var UIStrings9 = {
    */
   title: "INP breakdown",
   /**
-   *@description Label used for the subpart/component/stage/section of a larger duration.
+   * @description Label used for the subpart/component/stage/section of a larger duration.
    */
   subpart: "Subpart",
   /**
-   *@description Label used for a time duration.
+   * @description Label used for a time duration.
    */
   duration: "Duration",
   // TODO: these are repeated in InteractionBreakdown. Add a place for common strings?
   /**
-   *@description Text shown next to the interaction event's input delay time in the detail view.
+   * @description Text shown next to the interaction event's input delay time in the detail view.
    */
   inputDelay: "Input delay",
   /**
-   *@description Text shown next to the interaction event's thread processing duration in the detail view.
+   * @description Text shown next to the interaction event's thread processing duration in the detail view.
    */
   processingDuration: "Processing duration",
   /**
-   *@description Text shown next to the interaction event's presentation delay time in the detail view.
+   * @description Text shown next to the interaction event's presentation delay time in the detail view.
    */
   presentationDelay: "Presentation delay",
   /**
@@ -2095,7 +2095,7 @@ import * as Helpers11 from "./../helpers/helpers.js";
 import * as Types7 from "./../types/types.js";
 var UIStrings10 = {
   /**
-   *@description Title of an insight that provides details about the LCP metric, broken down by parts.
+   * @description Title of an insight that provides details about the LCP metric, broken down by parts.
    */
   title: "LCP breakdown",
   /**
@@ -2104,23 +2104,23 @@ var UIStrings10 = {
    */
   description: "Each [subpart has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays.",
   /**
-   *@description Time to first byte title for the Largest Contentful Paint's subparts timespan breakdown.
+   * @description Time to first byte title for the Largest Contentful Paint's subparts timespan breakdown.
    */
   timeToFirstByte: "Time to first byte",
   /**
-   *@description Resource load delay title for the Largest Contentful Paint subparts timespan breakdown.
+   * @description Resource load delay title for the Largest Contentful Paint subparts timespan breakdown.
    */
   resourceLoadDelay: "Resource load delay",
   /**
-   *@description Resource load duration title for the Largest Contentful Paint subparts timespan breakdown.
+   * @description Resource load duration title for the Largest Contentful Paint subparts timespan breakdown.
    */
   resourceLoadDuration: "Resource load duration",
   /**
-   *@description Element render delay title for the Largest Contentful Paint subparts timespan breakdown.
+   * @description Element render delay title for the Largest Contentful Paint subparts timespan breakdown.
    */
   elementRenderDelay: "Element render delay",
   /**
-   *@description Label used for the subpart (section) of a larger duration.
+   * @description Label used for the subpart (section) of a larger duration.
    */
   subpart: "Subpart",
   /**
@@ -2267,11 +2267,11 @@ import * as Helpers12 from "./../helpers/helpers.js";
 import * as Types8 from "./../types/types.js";
 var UIStrings11 = {
   /**
-   *@description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
+   * @description Title of an insight that provides details about the LCP metric, and the network requests necessary to load it. Details how the LCP request was discoverable - in other words, the path necessary to load it (ex: network requests, JavaScript)
    */
   title: "LCP request discovery",
   /**
-   *@description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
+   * @description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
    */
   description: "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)",
   /**
@@ -2672,7 +2672,7 @@ function generateInsight13(parsedTrace, context) {
   const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
   const entityMappings = parsedTrace.NetworkRequests.entityMappings;
   const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
-  const firstPartyEntity = Handlers5.Helpers.getEntityForUrl(firstPartyUrl, entityMappings.createdEntityCache);
+  const firstPartyEntity = Handlers5.Helpers.getEntityForUrl(firstPartyUrl, entityMappings);
   const http1Requests = determineHttp1Requests(contextRequests, entityMappings, firstPartyEntity ?? null);
   return finalize13({
     http1Requests,
@@ -3206,7 +3206,7 @@ var UIStrings15 = {
    */
   renderBlockingRequest: "Request",
   /**
-   *@description Label used for a time duration.
+   * @description Label used for a time duration.
    */
   duration: "Duration",
   /**
@@ -3416,7 +3416,7 @@ function isNavigationStart(event) {
 import * as Types10 from "./../types/types.js";
 var UIStrings16 = {
   /**
-   *@description Title of an insight that provides details about slow CSS selectors.
+   * @description Title of an insight that provides details about slow CSS selectors.
    */
   title: "CSS Selector costs",
   /**
@@ -3424,23 +3424,23 @@ var UIStrings16 = {
    */
   description: "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs.",
   /**
-   *@description Column name for count of elements that the engine attempted to match against a style rule
+   * @description Column name for count of elements that the engine attempted to match against a style rule
    */
   matchAttempts: "Match attempts",
   /**
-   *@description Column name for count of elements that matched a style rule
+   * @description Column name for count of elements that matched a style rule
    */
   matchCount: "Match count",
   /**
-   *@description Column name for elapsed time spent computing a style rule
+   * @description Column name for elapsed time spent computing a style rule
    */
   elapsed: "Elapsed time",
   /**
-   *@description Column name for the selectors that took the longest amount of time/effort.
+   * @description Column name for the selectors that took the longest amount of time/effort.
    */
   topSelectors: "Top selectors",
   /**
-   *@description Column name for a total sum.
+   * @description Column name for a total sum.
    */
   total: "Total",
   /**
@@ -3448,11 +3448,11 @@ var UIStrings16 = {
    */
   enableSelectorData: "No CSS selector data was found. CSS selector stats need to be enabled in the performance panel settings.",
   /**
-   *@description top CSS selector when ranked by elapsed time in ms
+   * @description top CSS selector when ranked by elapsed time in ms
    */
   topSelectorElapsedTime: "Top selector elaspsed time",
   /**
-   *@description top CSS selector when ranked by match attempt
+   * @description top CSS selector when ranked by match attempt
    */
   topSelectorMatchAttempt: "Top selector match attempt"
 };

@@ -1,14 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { NetworkThrottlingSelector } from './NetworkThrottlingSelector.js';
 export interface CPUThrottlingSelectorWrapper {
     control: UI.Toolbar.ToolbarComboBox;
     updateRecommendedOption(recommendedOption: SDK.CPUThrottlingManager.CPUThrottlingOption | null): void;
-}
-export interface NetworkThrottlingSelectorWrapper {
-    selector: NetworkThrottlingSelector;
-    updateRecommendedConditions(recommendedConditions: SDK.NetworkManager.Conditions | null): void;
 }
 export declare class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper<ThrottlingManager.EventTypes> {
     #private;
@@ -29,7 +24,6 @@ export declare class ThrottlingManager extends Common.ObjectWrapper.ObjectWrappe
     private updatePanelIcon;
     setCPUThrottlingOption(option: SDK.CPUThrottlingManager.CPUThrottlingOption): void;
     onCPUThrottlingRateChangedOnSDK(rate: number): void;
-    createNetworkThrottlingSelector(selectElement: HTMLSelectElement): NetworkThrottlingSelectorWrapper;
     createCPUThrottlingSelector(): CPUThrottlingSelectorWrapper;
     createSaveDataOverrideSelector(className?: string): UI.Toolbar.ToolbarComboBox;
     /** Hardware Concurrency doesn't store state in a setting. */

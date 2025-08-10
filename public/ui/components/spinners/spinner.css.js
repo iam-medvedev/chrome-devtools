@@ -17,6 +17,9 @@ export default `/*
   font-size: 0;
   letter-spacing: 0;
   white-space: nowrap;
+}
+
+:host([active]) {
   animation: spinner-container-animation 1.5s linear infinite;
 }
 
@@ -89,7 +92,13 @@ export default `/*
   }
 }
 
-circle {
+.inactive-spinner circle {
+  stroke: var(--sys-color-state-disabled);
+  stroke-width: var(--sys-size-6);
+  fill: transparent;
+}
+
+.indeterminate-spinner circle {
   stroke: var(--sys-color-primary);
   stroke-width: var(--sys-size-6);
   fill: transparent;

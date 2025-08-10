@@ -11,7 +11,7 @@ var UIStrings = {
    */
   protocolMonitor: "Protocol monitor",
   /**
-   *@description Command for showing the 'Protocol monitor' tool in the bottom drawer
+   * @description Command for showing the 'Protocol monitor' tool in the bottom drawer
    */
   showProtocolMonitor: "Show Protocol monitor"
 };

@@ -3,11 +3,11 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
+   * @description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
    */
   devices: "Devices",
   /**
-   *@description Command that opens the device emulation view.
+   * @description Command that opens the device emulation view.
    */
   showDevices: "Show Devices"
 };
@@ -45,51 +45,51 @@ import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrap
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   *@description Text for keyboard shortcuts
+   * @description Text for keyboard shortcuts
    */
   shortcuts: "Shortcuts",
   /**
-   *@description Text in Settings Screen of the Settings
+   * @description Text in Settings Screen of the Settings
    */
   preferences: "Preferences",
   /**
-   *@description Text in Settings Screen of the Settings
+   * @description Text in Settings Screen of the Settings
    */
   experiments: "Experiments",
   /**
-   *@description Title of Ignore list settings
+   * @description Title of Ignore list settings
    */
   ignoreList: "Ignore list",
   /**
-   *@description Command for showing the keyboard shortcuts in Settings
+   * @description Command for showing the keyboard shortcuts in Settings
    */
   showShortcuts: "Show Shortcuts",
   /**
-   *@description Command for showing the preference tab in the Settings Screen
+   * @description Command for showing the preference tab in the Settings Screen
    */
   showPreferences: "Show Preferences",
   /**
-   *@description Command for showing the experiments tab in the Settings Screen
+   * @description Command for showing the experiments tab in the Settings Screen
    */
   showExperiments: "Show Experiments",
   /**
-   *@description Command for showing the Ignore list settings
+   * @description Command for showing the Ignore list settings
    */
   showIgnoreList: "Show Ignore list",
   /**
-   *@description Name of the Settings view
+   * @description Name of the Settings view
    */
   settings: "Settings",
   /**
-   *@description Text for the documentation of something
+   * @description Text for the documentation of something
    */
   documentation: "Documentation",
   /**
-   *@description Text for AI innovation settings
+   * @description Text for AI innovation settings
    */
   aiInnovations: "AI innovations",
   /**
-   *@description Command for showing the AI innovation settings
+   * @description Command for showing the AI innovation settings
    */
   showAiInnovations: "Show AI innovations"
 };

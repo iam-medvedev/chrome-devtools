@@ -19,10 +19,10 @@ const collect = (iter, max = Infinity) => {
 /**
  * Computes the text selector for a node.
  *
- * @param node - The node to compute.
+ * @internal
+ * @param node The node to compute.
  * @returns The computed text selector.
  *
- * @internal
  */
 export const computeTextSelector = (node) => {
     const content = createTextContent(node).full.trim();

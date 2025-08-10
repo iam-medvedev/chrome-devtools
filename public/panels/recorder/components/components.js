@@ -548,6 +548,7 @@ customElements.define("devtools-create-recording-view", CreateRecordingView);
 var RecordingListView_exports = {};
 __export(RecordingListView_exports, {
   CreateRecordingEvent: () => CreateRecordingEvent,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   DeleteRecordingEvent: () => DeleteRecordingEvent,
   OpenRecordingEvent: () => OpenRecordingEvent,
   PlayRecordingEvent: () => PlayRecordingEvent,
@@ -556,7 +557,7 @@ __export(RecordingListView_exports, {
 import "./../../../ui/components/icon_button/icon_button.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
+import * as UI from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Models2 from "./../models/models.js";
@@ -663,7 +664,7 @@ h1 {
 var { html: html3 } = Lit3;
 var UIStrings2 = {
   /**
-   *@description The title of the page that contains a list of saved recordings that the user has..
+   * @description The title of the page that contains a list of saved recordings that the user has..
    */
   savedRecordings: "Saved recordings",
   /**
@@ -688,14 +689,14 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var CreateRecordingEvent = class _CreateRecordingEvent extends Event {
   static eventName = "createrecording";
   constructor() {
-    super(_CreateRecordingEvent.eventName);
+    super(_CreateRecordingEvent.eventName, { composed: true, bubbles: true });
   }
 };
 var DeleteRecordingEvent = class _DeleteRecordingEvent extends Event {
   storageName;
   static eventName = "deleterecording";
   constructor(storageName) {
-    super(_DeleteRecordingEvent.eventName);
+    super(_DeleteRecordingEvent.eventName, { composed: true, bubbles: true });
     this.storageName = storageName;
   }
 };
@@ -703,7 +704,7 @@ var OpenRecordingEvent = class _OpenRecordingEvent extends Event {
   storageName;
   static eventName = "openrecording";
   constructor(storageName) {
-    super(_OpenRecordingEvent.eventName);
+    super(_OpenRecordingEvent.eventName, { composed: true, bubbles: true });
     this.storageName = storageName;
   }
 };
@@ -711,41 +712,108 @@ var PlayRecordingEvent = class _PlayRecordingEvent extends Event {
   storageName;
   static eventName = "playrecording";
   constructor(storageName) {
-    super(_PlayRecordingEvent.eventName);
+    super(_PlayRecordingEvent.eventName, { composed: true, bubbles: true });
     this.storageName = storageName;
   }
 };
-var RecordingListView = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #props = {
-    recordings: [],
-    replayAllowed: true
-  };
-  connectedCallback() {
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+var DEFAULT_VIEW = (input, _output, target) => {
+  const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown } = input;
+  Lit3.render(html3`
+      <style>${UI.Widget.widgetScoped(recordingListView_css_default)}</style>
+      <div class="wrapper">
+        <div class="header">
+          <h1>${i18nString2(UIStrings2.savedRecordings)}</h1>
+          <devtools-button
+            .variant=${"primary"}
+            @click=${onCreateClick}
+            title=${Models2.Tooltip.getTooltipForActions(
+    i18nString2(UIStrings2.createRecording),
+    "chrome-recorder.create-recording"
+    /* Actions.RecorderActions.CREATE_RECORDING */
+  )}
+            .jslogContext=${"create-recording"}
+          >
+            ${i18nString2(UIStrings2.createRecording)}
+          </devtools-button>
+        </div>
+        <div class="table">
+          ${recordings.map((recording) => {
+    return html3`
+                <div
+                  role="button"
+                  tabindex="0"
+                  aria-label=${i18nString2(UIStrings2.openRecording)}
+                  class="row"
+                  @keydown=${(event) => onKeyDown(recording.storageName, event)}
+                  @click=${(event) => onOpenClick(recording.storageName, event)}
+                  jslog=${VisualLogging2.item().track({ click: true }).context("recording")}>
+                  <div class="icon">
+                    <devtools-icon name="flow">
+                    </devtools-icon>
+                  </div>
+                  <div class="title">${recording.name}</div>
+                  <div class="actions">
+                    ${replayAllowed ? html3`
+                              <devtools-button
+                                title=${i18nString2(UIStrings2.playRecording)}
+                                .data=${{
+      variant: "icon",
+      iconName: "play",
+      jslogContext: "play-recording"
+    }}
+                                @click=${(event) => onPlayRecordingClick(recording.storageName, event)}
+                                @keydown=${(event) => event.stopPropagation()}
+                              ></devtools-button>
+                              <div class="divider"></div>` : ""}
+                    <devtools-button
+                      class="delete-recording-button"
+                      title=${i18nString2(UIStrings2.deleteRecording)}
+                      .data=${{
+      variant: "icon",
+      iconName: "bin",
+      jslogContext: "delete-recording"
+    }}
+                      @click=${(event) => onDeleteClick(recording.storageName, event)}
+                      @keydown=${(event) => event.stopPropagation()}
+                    ></devtools-button>
+                  </div>
+                </div>
+              `;
+  })}
+        </div>
+      </div>
+    `, target);
+};
+var RecordingListView = class extends UI.Widget.Widget {
+  #recordings = [];
+  #replayAllowed = true;
+  #view;
+  constructor(element, view) {
+    super(element, { useShadowDom: true });
+    this.#view = view || DEFAULT_VIEW;
   }
   set recordings(recordings) {
-    this.#props.recordings = recordings;
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    this.#recordings = recordings;
+    this.performUpdate();
   }
   set replayAllowed(value2) {
-    this.#props.replayAllowed = value2;
-    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    this.#replayAllowed = value2;
+    this.performUpdate();
   }
   #onCreateClick() {
-    this.dispatchEvent(new CreateRecordingEvent());
+    this.contentElement.dispatchEvent(new CreateRecordingEvent());
   }
   #onDeleteClick(storageName, event) {
     event.stopPropagation();
-    this.dispatchEvent(new DeleteRecordingEvent(storageName));
+    this.contentElement.dispatchEvent(new DeleteRecordingEvent(storageName));
   }
   #onOpenClick(storageName, event) {
     event.stopPropagation();
-    this.dispatchEvent(new OpenRecordingEvent(storageName));
+    this.contentElement.dispatchEvent(new OpenRecordingEvent(storageName));
   }
   #onPlayRecordingClick(storageName, event) {
     event.stopPropagation();
-    this.dispatchEvent(new PlayRecordingEvent(storageName));
+    this.contentElement.dispatchEvent(new PlayRecordingEvent(storageName));
   }
   #onKeyDown(storageName, event) {
     if (event.key !== "Enter") {
@@ -753,83 +821,27 @@ var RecordingListView = class extends HTMLElement {
     }
     this.#onOpenClick(storageName, event);
   }
-  #stopPropagation(event) {
-    event.stopPropagation();
+  performUpdate() {
+    this.#view({
+      recordings: this.#recordings,
+      replayAllowed: this.#replayAllowed,
+      onCreateClick: this.#onCreateClick.bind(this),
+      onDeleteClick: this.#onDeleteClick.bind(this),
+      onOpenClick: this.#onOpenClick.bind(this),
+      onPlayRecordingClick: this.#onPlayRecordingClick.bind(this),
+      onKeyDown: this.#onKeyDown.bind(this)
+    }, {}, this.contentElement);
   }
-  #render = () => {
-    Lit3.render(html3`
-        <style>${recordingListView_css_default}</style>
-        <div class="wrapper">
-          <div class="header">
-            <h1>${i18nString2(UIStrings2.savedRecordings)}</h1>
-            <devtools-button
-              .variant=${"primary"}
-              @click=${this.#onCreateClick}
-              title=${Models2.Tooltip.getTooltipForActions(
-      i18nString2(UIStrings2.createRecording),
-      "chrome-recorder.create-recording"
-      /* Actions.RecorderActions.CREATE_RECORDING */
-    )}
-              .jslogContext=${"create-recording"}
-            >
-              ${i18nString2(UIStrings2.createRecording)}
-            </devtools-button>
-          </div>
-          <div class="table">
-            ${this.#props.recordings.map((recording) => {
-      return html3`
-                  <div
-                    role="button"
-                    tabindex="0"
-                    aria-label=${i18nString2(UIStrings2.openRecording)}
-                    class="row"
-                    @keydown=${this.#onKeyDown.bind(this, recording.storageName)}
-                    @click=${this.#onOpenClick.bind(this, recording.storageName)}
-                    jslog=${VisualLogging2.item().track({ click: true }).context("recording")}>
-                    <div class="icon">
-                      <devtools-icon name="flow">
-                      </devtools-icon>
-                    </div>
-                    <div class="title">${recording.name}</div>
-                    <div class="actions">
-                      ${this.#props.replayAllowed ? html3`
-                              <devtools-button
-                                title=${i18nString2(UIStrings2.playRecording)}
-                                .data=${{
-        variant: "icon",
-        iconName: "play",
-        jslogContext: "play-recording"
-      }}
-                                @click=${this.#onPlayRecordingClick.bind(this, recording.storageName)}
-                                @keydown=${this.#stopPropagation}
-                              ></devtools-button>
-                              <div class="divider"></div>` : ""}
-                      <devtools-button
-                        class="delete-recording-button"
-                        title=${i18nString2(UIStrings2.deleteRecording)}
-                        .data=${{
-        variant: "icon",
-        iconName: "bin",
-        jslogContext: "delete-recording"
-      }}
-                        @click=${this.#onDeleteClick.bind(this, recording.storageName)}
-                        @keydown=${this.#stopPropagation}
-                      ></devtools-button>
-                    </div>
-                  </div>
-                `;
-    })}
-          </div>
-        </div>
-      `, this.#shadow, { host: this });
-  };
+  wasShown() {
+    super.wasShown();
+    this.performUpdate();
+  }
 };
-customElements.define("devtools-recording-list-view", RecordingListView);
 
 // gen/front_end/panels/recorder/components/RecordingView.js
 var RecordingView_exports = {};
 __export(RecordingView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RecordingView: () => RecordingView
 });
 import "./../../../ui/components/icon_button/icon_button.js";
@@ -992,7 +1004,7 @@ __export(ReplaySection_exports, {
 });
 import * as Host from "./../../../core/host/host.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
-import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 var { html: html5 } = Lit5;
@@ -1113,10 +1125,10 @@ var ReplaySection = class extends HTMLElement {
   }
   set disabled(disabled) {
     this.#props.disabled = disabled;
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   #handleSelectMenuSelected(event) {
     const speed = event.value;
@@ -1125,7 +1137,7 @@ var ReplaySection = class extends HTMLElement {
       this.#settings.replayExtension = "";
     }
     Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   #handleSelectButtonClick(event) {
     event.stopPropagation();
@@ -1135,14 +1147,14 @@ var ReplaySection = class extends HTMLElement {
       }
       const extensionIdx = Number(event.value.substring(REPLAY_EXTENSION_PREFIX.length));
       this.dispatchEvent(new StartReplayEvent("normal", this.#replayExtensions[extensionIdx]));
-      void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+      void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
       return;
     }
     this.dispatchEvent(new StartReplayEvent(
       this.#settings ? this.#settings.speed : "normal"
       /* PlayRecordingSpeed.NORMAL */
     ));
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   #render() {
     const groups = [{ name: i18nString4(UIStrings4.speedGroup), items }];
@@ -1190,7 +1202,7 @@ import * as CodeHighlighter from "./../../../ui/components/code_highlighter/code
 import * as Dialogs from "./../../../ui/components/dialogs/dialogs.js";
 import * as Input2 from "./../../../ui/components/input/input.js";
 import * as TextEditor from "./../../../ui/components/text_editor/text_editor.js";
-import * as UI from "./../../../ui/legacy/legacy.js";
+import * as UI2 from "./../../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Models3 from "./../models/models.js";
@@ -2095,7 +2107,7 @@ function renderHeader(input) {
             </div>` : Lit6.nothing}
     </div>`;
 }
-var DEFAULT_VIEW = (input, output, target) => {
+var DEFAULT_VIEW2 = (input, output, target) => {
   const classNames = {
     wrapper: true,
     "is-recording": input.isRecording,
@@ -2105,9 +2117,9 @@ var DEFAULT_VIEW = (input, output, target) => {
   };
   const footerButtonTitle = input.recordingTogglingInProgress ? i18nString5(UIStrings5.recordingIsBeingStopped) : i18nString5(UIStrings5.endRecording);
   Lit6.render(html6`
-    <style>${UI.inspectorCommonStyles}</style>
-    <style>${recordingView_css_default}</style>
-    <style>${Input2.textInputStyles}</style>
+    <style>${UI2.Widget.widgetScoped(UI2.inspectorCommonStyles)}</style>
+    <style>${UI2.Widget.widgetScoped(recordingView_css_default)}</style>
+    <style>${UI2.Widget.widgetScoped(Input2.textInputStyles)}</style>
     <div @click=${input.onWrapperClick} class=${Lit6.Directives.classMap(classNames)}>
       <div class="recording-view main">
         ${renderHeader(input)}
@@ -2135,9 +2147,9 @@ var DEFAULT_VIEW = (input, output, target) => {
         </div>` : Lit6.nothing}
       </div>
     </div>
-  `, target, { host: input });
+  `, target);
 };
-var RecordingView = class extends UI.Widget.Widget {
+var RecordingView = class extends UI2.Widget.Widget {
   replayState = { isPlaying: false, isPausedOnBreakpoint: false };
   isRecording = false;
   recordingTogglingInProgress = false;
@@ -2193,7 +2205,7 @@ var RecordingView = class extends UI.Widget.Widget {
   #viewOutput = {};
   constructor(element, view) {
     super(element, { useShadowDom: true });
-    this.#view = view || DEFAULT_VIEW;
+    this.#view = view || DEFAULT_VIEW2;
   }
   performUpdate() {
     const converter = [
@@ -2518,8 +2530,8 @@ __export(SelectButton_exports, {
 import "./../../../ui/components/menus/menus.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers3 from "./../../../ui/components/helpers/helpers.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
+import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
 import * as Lit7 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Models4 from "./../models/models.js";
@@ -2582,46 +2594,46 @@ var SelectButton = class extends HTMLElement {
     variant: "primary"
   };
   connectedCallback() {
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   get disabled() {
     return this.#props.disabled;
   }
   set disabled(disabled) {
     this.#props.disabled = disabled;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   get items() {
     return this.#props.items;
   }
   set items(items2) {
     this.#props.items = items2;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   set buttonLabel(buttonLabel) {
     this.#props.buttonLabel = buttonLabel;
   }
   set groups(groups) {
     this.#props.groups = groups;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   get value() {
     return this.#props.value;
   }
   set value(value2) {
     this.#props.value = value2;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   get variant() {
     return this.#props.variant;
   }
   set variant(variant) {
     this.#props.variant = variant;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   set action(value2) {
     this.#props.action = value2;
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   #handleClick(ev) {
     ev.stopPropagation();
@@ -2630,7 +2642,7 @@ var SelectButton = class extends HTMLElement {
   #handleSelectMenuSelect(evt) {
     if (evt.target instanceof HTMLSelectElement) {
       this.dispatchEvent(new SelectMenuSelectedEvent(evt.target.value));
-      void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+      void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
     }
   }
   #renderSelectItem(item4, selectedItem) {
@@ -2668,7 +2680,7 @@ var SelectButton = class extends HTMLElement {
     const buttonVariant = this.#props.variant === "outlined" ? "outlined" : "primary";
     const menuLabel = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
     Lit7.render(html7`
-      <style>${UI2.inspectorCommonStyles}</style>
+      <style>${UI3.inspectorCommonStyles}</style>
       <style>${selectButton_css_default}</style>
       <div class="select-button" title=${ifDefined2(this.#getTitle(menuLabel))}>
       <select
@@ -3061,49 +3073,49 @@ var attributesByType = deepFreeze({
 });
 var UIStrings6 = {
   /**
-   *@description The text that is disabled when the steps were not saved due to an error. The error message itself is always in English and not translated.
-   *@example {Saving failed} error
+   * @description The text that is disabled when the steps were not saved due to an error. The error message itself is always in English and not translated.
+   * @example {Saving failed} error
    */
   notSaved: "Not saved: {error}",
   /**
-   *@description The button title that adds a new attribute to the form.
-   *@example {timeout} attributeName
+   * @description The button title that adds a new attribute to the form.
+   * @example {timeout} attributeName
    */
   addAttribute: "Add {attributeName}",
   /**
-   *@description The title of a button that deletes an attribute from the form.
+   * @description The title of a button that deletes an attribute from the form.
    */
   deleteRow: "Delete row",
   /**
-   *@description The title of a button that allows you to select an element on the page and update CSS/ARIA selectors.
+   * @description The title of a button that allows you to select an element on the page and update CSS/ARIA selectors.
    */
   selectorPicker: "Select an element in the page to update selectors",
   /**
-   *@description The title of a button that adds a new input field for the entry of the frame index. Frame index is the number of the frame within the page's frame tree.
+   * @description The title of a button that adds a new input field for the entry of the frame index. Frame index is the number of the frame within the page's frame tree.
    */
   addFrameIndex: "Add frame index within the frame tree",
   /**
-   *@description The title of a button that removes a frame index field from the form.
+   * @description The title of a button that removes a frame index field from the form.
    */
   removeFrameIndex: "Remove frame index",
   /**
-   *@description The title of a button that adds a field to input a part of a selector in the editor form.
+   * @description The title of a button that adds a field to input a part of a selector in the editor form.
    */
   addSelectorPart: "Add a selector part",
   /**
-   *@description The title of a button that removes a field to input a part of a selector in the editor form.
+   * @description The title of a button that removes a field to input a part of a selector in the editor form.
    */
   removeSelectorPart: "Remove a selector part",
   /**
-   *@description The title of a button that adds a field to input a selector in the editor form.
+   * @description The title of a button that adds a field to input a selector in the editor form.
    */
   addSelector: "Add a selector",
   /**
-   *@description The title of a button that removes a field to input a selector in the editor form.
+   * @description The title of a button that removes a field to input a selector in the editor form.
    */
   removeSelector: "Remove a selector",
   /**
-   *@description The error message display when a user enters a type in the input not associates with any existing types.
+   * @description The error message display when a user enters a type in the input not associates with any existing types.
    */
   unknownActionType: "Unknown action type."
 };
@@ -4097,7 +4109,7 @@ customElements.define("devtools-timeline-section", TimelineSection);
 import * as i18n13 from "./../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../core/platform/platform.js";
 import * as Menus from "./../../../ui/components/menus/menus.js";
-import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
 import * as Lit10 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Models6 from "./../models/models.js";
@@ -4358,95 +4370,95 @@ devtools-recorder-step-editor.is-selected {
 var { html: html10 } = Lit10;
 var UIStrings7 = {
   /**
-   *@description Title for the step type that configures the viewport
+   * @description Title for the step type that configures the viewport
    */
   setViewportClickTitle: "Set viewport",
   /**
-   *@description Title for the customStep step type
+   * @description Title for the customStep step type
    */
   customStepTitle: "Custom step",
   /**
-   *@description Title for the click step type
+   * @description Title for the click step type
    */
   clickStepTitle: "Click",
   /**
-   *@description Title for the double click step type
+   * @description Title for the double click step type
    */
   doubleClickStepTitle: "Double click",
   /**
-   *@description Title for the hover step type
+   * @description Title for the hover step type
    */
   hoverStepTitle: "Hover",
   /**
-   *@description Title for the emulateNetworkConditions step type
+   * @description Title for the emulateNetworkConditions step type
    */
   emulateNetworkConditionsStepTitle: "Emulate network conditions",
   /**
-   *@description Title for the change step type
+   * @description Title for the change step type
    */
   changeStepTitle: "Change",
   /**
-   *@description Title for the close step type
+   * @description Title for the close step type
    */
   closeStepTitle: "Close",
   /**
-   *@description Title for the scroll step type
+   * @description Title for the scroll step type
    */
   scrollStepTitle: "Scroll",
   /**
-   *@description Title for the key up step type. `up` refers to the state of the keyboard key: it's released, i.e., up. It does not refer to the down arrow key specifically.
+   * @description Title for the key up step type. `up` refers to the state of the keyboard key: it's released, i.e., up. It does not refer to the down arrow key specifically.
    */
   keyUpStepTitle: "Key up",
   /**
-   *@description Title for the navigate step type
+   * @description Title for the navigate step type
    */
   navigateStepTitle: "Navigate",
   /**
-   *@description Title for the key down step type. `down` refers to the state of the keyboard key: it's pressed, i.e., down. It does not refer to the down arrow key specifically.
+   * @description Title for the key down step type. `down` refers to the state of the keyboard key: it's pressed, i.e., down. It does not refer to the down arrow key specifically.
    */
   keyDownStepTitle: "Key down",
   /**
-   *@description Title for the waitForElement step type
+   * @description Title for the waitForElement step type
    */
   waitForElementStepTitle: "Wait for element",
   /**
-   *@description Title for the waitForExpression step type
+   * @description Title for the waitForExpression step type
    */
   waitForExpressionStepTitle: "Wait for expression",
   /**
-   *@description Title for elements with role button
+   * @description Title for elements with role button
    */
   elementRoleButton: "Button",
   /**
-   *@description Title for elements with role input
+   * @description Title for elements with role input
    */
   elementRoleInput: "Input",
   /**
-   *@description Default title for elements without a specific role
+   * @description Default title for elements without a specific role
    */
   elementRoleFallback: "Element",
   /**
-   *@description The title of the button in the step's context menu that adds a new step before the current one.
+   * @description The title of the button in the step's context menu that adds a new step before the current one.
    */
   addStepBefore: "Add step before",
   /**
-   *@description The title of the button in the step's context menu that adds a new step after the current one.
+   * @description The title of the button in the step's context menu that adds a new step after the current one.
    */
   addStepAfter: "Add step after",
   /**
-   *@description The title of the button in the step's context menu that removes the step.
+   * @description The title of the button in the step's context menu that removes the step.
    */
   removeStep: "Remove step",
   /**
-   *@description The title of the button that open the step's context menu.
+   * @description The title of the button that open the step's context menu.
    */
   openStepActions: "Open step actions",
   /**
-   *@description The title of the button in the step's context menu that adds a breakpoint.
+   * @description The title of the button in the step's context menu that adds a breakpoint.
    */
   addBreakpoint: "Add breakpoint",
   /**
-   *@description The title of the button in the step's context menu that removes a breakpoint.
+   * @description The title of the button in the step's context menu that removes a breakpoint.
    */
   removeBreakpoint: "Remove breakpoint",
   /**
@@ -4642,7 +4654,7 @@ function viewFunction(input, _output, target) {
   });
   const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
   Lit10.render(html10`
-    <style>${stepView_css_default}</style>
+    <style>${UI4.Widget.widgetScoped(stepView_css_default)}</style>
     <devtools-timeline-section .data=${{
     isFirstSection: input.isFirstSection,
     isLastSection: input.isLastSection,
@@ -4650,7 +4662,7 @@ function viewFunction(input, _output, target) {
     isEndOfGroup: input.isEndOfGroup,
     isSelected: input.isSelected
   }} @contextmenu=${(e) => {
-    const menu = new UI3.ContextMenu.ContextMenu(e);
+    const menu = new UI4.ContextMenu.ContextMenu(e);
     input.populateStepContextMenu(menu);
     void menu.show();
   }}

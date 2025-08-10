@@ -447,7 +447,7 @@ var CompilerScriptMapping = class {
    * given {@link uiSourceCode}.
    *
    * @param uiSourceCode the source mapped entity.
-   * @return a set of source-mapped line numbers or `null` if the {@link uiSourceCode}
+   * @returns a set of source-mapped line numbers or `null` if the {@link uiSourceCode}
    *         is not provided by this {@link CompilerScriptMapping} instance.
    */
   getMappedLines(uiSourceCode) {
@@ -1477,52 +1477,52 @@ import * as TextUtils5 from "./../text_utils/text_utils.js";
 import * as Workspace11 from "./../workspace/workspace.js";
 var UIStrings2 = {
   /**
-   *@description Error message that is displayed in the Console when language #plugins report errors
-   *@example {File not found} PH1
+   * @description Error message that is displayed in the Console when language #plugins report errors
+   * @example {File not found} PH1
    */
   errorInDebuggerLanguagePlugin: "Error in debugger language plugin: {PH1}",
   /**
-   *@description Status message that is shown in the Console when debugging information is being
+   * @description Status message that is shown in the Console when debugging information is being
    *loaded. The 2nd and 3rd placeholders are URLs.
-   *@example {C/C++ DevTools Support (DWARF)} PH1
-   *@example {http://web.dev/file.wasm} PH2
-   *@example {http://web.dev/file.wasm.debug.wasm} PH3
+   * @example {C/C++ DevTools Support (DWARF)} PH1
+   * @example {http://web.dev/file.wasm} PH2
+   * @example {http://web.dev/file.wasm.debug.wasm} PH3
    */
   loadingDebugSymbolsForVia: "[{PH1}] Loading debug symbols for {PH2} (via {PH3})\u2026",
   /**
-   *@description Status message that is shown in the Console when debugging information is being loaded
-   *@example {C/C++ DevTools Support (DWARF)} PH1
-   *@example {http://web.dev/file.wasm} PH2
+   * @description Status message that is shown in the Console when debugging information is being loaded
+   * @example {C/C++ DevTools Support (DWARF)} PH1
+   * @example {http://web.dev/file.wasm} PH2
    */
   loadingDebugSymbolsFor: "[{PH1}] Loading debug symbols for {PH2}\u2026",
   /**
-   *@description Warning message that is displayed in the Console when debugging information was loaded, but no source files were found
-   *@example {C/C++ DevTools Support (DWARF)} PH1
-   *@example {http://web.dev/file.wasm} PH2
+   * @description Warning message that is displayed in the Console when debugging information was loaded, but no source files were found
+   * @example {C/C++ DevTools Support (DWARF)} PH1
+   * @example {http://web.dev/file.wasm} PH2
    */
   loadedDebugSymbolsForButDidnt: "[{PH1}] Loaded debug symbols for {PH2}, but didn't find any source files",
   /**
-   *@description Status message that is shown in the Console when debugging information is successfully loaded
-   *@example {C/C++ DevTools Support (DWARF)} PH1
-   *@example {http://web.dev/file.wasm} PH2
-   *@example {42} PH3
+   * @description Status message that is shown in the Console when debugging information is successfully loaded
+   * @example {C/C++ DevTools Support (DWARF)} PH1
+   * @example {http://web.dev/file.wasm} PH2
+   * @example {42} PH3
    */
   loadedDebugSymbolsForFound: "[{PH1}] Loaded debug symbols for {PH2}, found {PH3} source file(s)",
   /**
-   *@description Error message that is displayed in the Console when debugging information cannot be loaded
-   *@example {C/C++ DevTools Support (DWARF)} PH1
-   *@example {http://web.dev/file.wasm} PH2
-   *@example {File not found} PH3
+   * @description Error message that is displayed in the Console when debugging information cannot be loaded
+   * @example {C/C++ DevTools Support (DWARF)} PH1
+   * @example {http://web.dev/file.wasm} PH2
+   * @example {File not found} PH3
    */
   failedToLoadDebugSymbolsFor: "[{PH1}] Failed to load debug symbols for {PH2} ({PH3})",
   /**
-   *@description Error message that is displayed in UI debugging information cannot be found for a call frame
-   *@example {main} PH1
+   * @description Error message that is displayed in UI debugging information cannot be found for a call frame
+   * @example {main} PH1
    */
   failedToLoadDebugSymbolsForFunction: 'No debug information for function "{PH1}"',
   /**
-   *@description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
-   *@example {mainp.debug.wasm.dwp} PH1
+   * @description Error message that is displayed in UI when a file needed for debugging information for a call frame is missing
+   * @example {mainp.debug.wasm.dwp} PH1
    */
   debugSymbolsIncomplete: "The debug information for function {PH1} is incomplete"
 };
@@ -2528,15 +2528,15 @@ import * as TextUtils6 from "./../text_utils/text_utils.js";
 import * as Workspace15 from "./../workspace/workspace.js";
 var UIStrings3 = {
   /**
-   *@description Error text displayed in the console when editing a live script fails. LiveEdit is
+   * @description Error text displayed in the console when editing a live script fails. LiveEdit is
    *the name of the feature for editing code that is already running.
-   *@example {warning} PH1
+   * @example {warning} PH1
    */
   liveEditFailed: "`LiveEdit` failed: {PH1}",
   /**
-   *@description Error text displayed in the console when compiling a live-edited script fails. LiveEdit is
+   * @description Error text displayed in the console when compiling a live-edited script fails. LiveEdit is
    *the name of the feature for editing code that is already running.
-   *@example {connection lost} PH1
+   * @example {connection lost} PH1
    */
   liveEditCompileFailed: "`LiveEdit` compile failed: {PH1}"
 };

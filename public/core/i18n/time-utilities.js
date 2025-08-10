@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
- * @fileoverview Uses Intl.NumberFormat.
+ * @file Uses Intl.NumberFormat.
  * @see go/cpq:i18n-units-design
  */
 import * as Platform from '../platform/platform.js';

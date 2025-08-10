@@ -19,74 +19,74 @@ import animationTimelineStyles from './animationTimeline.css.js';
 import { AnimationUI } from './AnimationUI.js';
 const UIStrings = {
     /**
-     *@description Timeline hint text content in Animation Timeline of the Animation Inspector if no effect
+     * @description Timeline hint text content in Animation Timeline of the Animation Inspector if no effect
      * is shown.
      * Animation effects are the visual effects of an animation on the page.
      */
     noEffectSelected: 'No animation effect selected',
     /**
-     *@description Timeline hint text content in Animation Timeline of the Animation Inspector that instructs
+     * @description Timeline hint text content in Animation Timeline of the Animation Inspector that instructs
      * users to select an effect.
      * Animation effects are the visual effects of an animation on the page.
      */
     selectAnEffectAboveToInspectAnd: 'Select an effect above to inspect and modify',
     /**
-     *@description Text to clear everything
+     * @description Text to clear everything
      */
     clearAll: 'Clear all',
     /**
-     *@description Tooltip text that appears when hovering over largeicon pause button in Animation Timeline of the Animation Inspector
+     * @description Tooltip text that appears when hovering over largeicon pause button in Animation Timeline of the Animation Inspector
      */
     pauseAll: 'Pause all',
     /**
-     *@description Title of the playback rate button listbox
+     * @description Title of the playback rate button listbox
      */
     playbackRates: 'Playback rates',
     /**
-     *@description Text in Animation Timeline of the Animation Inspector
-     *@example {50} PH1
+     * @description Text in Animation Timeline of the Animation Inspector
+     * @example {50} PH1
      */
     playbackRatePlaceholder: '{PH1}%',
     /**
-     *@description Text of an item that pause the running task
+     * @description Text of an item that pause the running task
      */
     pause: 'Pause',
     /**
-     *@description Button title in Animation Timeline of the Animation Inspector
-     *@example {50%} PH1
+     * @description Button title in Animation Timeline of the Animation Inspector
+     * @example {50%} PH1
      */
     setSpeedToS: 'Set speed to {PH1}',
     /**
-     *@description Title of Animation Previews listbox
+     * @description Title of Animation Previews listbox
      */
     animationPreviews: 'Animation previews',
     /**
-     *@description Empty buffer hint text content in Animation Timeline of the Animation Inspector.
+     * @description Empty buffer hint text content in Animation Timeline of the Animation Inspector.
      */
     waitingForAnimations: 'Currently waiting for animations',
     /**
-     *@description Empty buffer hint text content in Animation Timeline of the Animation Inspector that explains the panel.
+     * @description Empty buffer hint text content in Animation Timeline of the Animation Inspector that explains the panel.
      */
     animationDescription: 'On this page you can inspect and modify animations.',
     /**
-     *@description Tooltip text that appears when hovering over largeicon replay animation button in Animation Timeline of the Animation Inspector
+     * @description Tooltip text that appears when hovering over largeicon replay animation button in Animation Timeline of the Animation Inspector
      */
     replayTimeline: 'Replay timeline',
     /**
-     *@description Text in Animation Timeline of the Animation Inspector
+     * @description Text in Animation Timeline of the Animation Inspector
      */
     resumeAll: 'Resume all',
     /**
-     *@description Title of control button in animation timeline of the animation inspector
+     * @description Title of control button in animation timeline of the animation inspector
      */
     playTimeline: 'Play timeline',
     /**
-     *@description Title of control button in animation timeline of the animation inspector
+     * @description Title of control button in animation timeline of the animation inspector
      */
     pauseTimeline: 'Pause timeline',
     /**
-     *@description Title of a specific Animation Preview
-     *@example {1} PH1
+     * @description Title of a specific Animation Preview
+     * @example {1} PH1
      */
     animationPreviewS: 'Animation Preview {PH1}',
 };
@@ -235,11 +235,13 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #toolbarView;
     #playbackRateButtonsDisabled = false;
     constructor(toolbarView = DEFAULT_TOOLBAR_VIEW) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.panel('animations').track({ resize: true })}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(animationTimelineStyles);
         this.#toolbarView = toolbarView;
         this.element.classList.add('animations-timeline');
-        this.element.setAttribute('jslog', `${VisualLogging.panel('animations').track({ resize: true })}`);
         this.#timelineControlsResizer = this.contentElement.createChild('div', 'timeline-controls-resizer');
         this.#gridWrapper = this.contentElement.createChild('div', 'grid-overflow-wrapper');
         this.#grid = UI.UIUtils.createSVGChild(this.#gridWrapper, 'svg', 'animation-timeline-grid');
@@ -257,7 +259,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const timelineHint = this.contentElement.createChild('div', 'animation-timeline-rows-hint');
         const noEffectSelectedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEffectSelected), i18nString(UIStrings.selectAnEffectAboveToInspectAnd));
         noEffectSelectedPlaceholder.show(timelineHint);
-        /** @const */ this.#defaultDuration = 100;
+        /** @constant */ this.#defaultDuration = 100;
         this.#durationInternal = this.#defaultDuration;
         this.#nodesMap = new Map();
         this.#uiAnimations = [];

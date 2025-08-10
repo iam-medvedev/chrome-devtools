@@ -50,9 +50,8 @@ let wrapperViewInstance = null;
 export class WrapperView extends UI.Widget.VBox {
     view;
     constructor() {
-        super();
+        super({ jslog: `${VisualLogging.panel('console').track({ resize: true })}` });
         this.view = ConsoleView.instance();
-        this.element.setAttribute('jslog', `${VisualLogging.panel('console').track({ resize: true })}`);
     }
     static instance() {
         if (!wrapperViewInstance) {

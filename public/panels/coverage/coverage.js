@@ -969,91 +969,91 @@ var coverageListView_css_default = `/*
 // gen/front_end/panels/coverage/CoverageListView.js
 var UIStrings = {
   /**
-   *@description Text that appears on a button for the css resource type filter.
+   * @description Text that appears on a button for the css resource type filter.
    */
   css: "CSS",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   jsPerFunction: "JS (per function)",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   jsPerBlock: "JS (per block)",
   /**
-   *@description Text for web URLs
+   * @description Text for web URLs
    */
   url: "URL",
   /**
-   *@description Text that refers to some types
+   * @description Text that refers to some types
    */
   type: "Type",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   totalBytes: "Total Bytes",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   unusedBytes: "Unused Bytes",
   /**
-   *@description Text in the Coverage List View of the Coverage Tab
+   * @description Text in the Coverage List View of the Coverage Tab
    */
   usageVisualization: "Usage Visualization",
   /**
-   *@description Data grid name for Coverage data grids
+   * @description Data grid name for Coverage data grids
    */
   codeCoverage: "Code Coverage",
   /**
-   *@description Cell title in Coverage List View of the Coverage tab. The coverage tool tells
+   * @description Cell title in Coverage List View of the Coverage tab. The coverage tool tells
    *developers which functions (logical groups of lines of code) were actually run/executed. If a
    *function does get run, then it is marked in the UI to indicate that it was covered.
    */
   jsCoverageWithPerFunction: "JS coverage with per function granularity: Once a function was executed, the whole function is marked as covered.",
   /**
-   *@description Cell title in Coverage List View of the Coverage tab. The coverage tool tells
+   * @description Cell title in Coverage List View of the Coverage tab. The coverage tool tells
    *developers which blocks (logical groups of lines of code, smaller than a function) were actually
    *run/executed. If a block does get run, then it is marked in the UI to indicate that it was
    *covered.
    */
   jsCoverageWithPerBlock: "JS coverage with per block granularity: Once a block of JavaScript was executed, that block is marked as covered.",
   /**
-   *@description Accessible text for the value in bytes in memory allocation or coverage view.
+   * @description Accessible text for the value in bytes in memory allocation or coverage view.
    */
   sBytes: "{n, plural, =1 {# byte} other {# bytes}}",
   /**
-   *@description Accessible text for the unused bytes column in the coverage tool that describes the total unused bytes and percentage of the file unused.
-   *@example {88%} percentage
+   * @description Accessible text for the unused bytes column in the coverage tool that describes the total unused bytes and percentage of the file unused.
+   * @example {88%} percentage
    */
   sBytesS: "{n, plural, =1 {# byte, {percentage}} other {# bytes, {percentage}}}",
   /**
-   *@description Tooltip text for the bar in the coverage list view of the coverage tool that illustrates the relation between used and unused bytes.
-   *@example {1000} PH1
-   *@example {12.34} PH2
+   * @description Tooltip text for the bar in the coverage list view of the coverage tool that illustrates the relation between used and unused bytes.
+   * @example {1000} PH1
+   * @example {12.34} PH2
    */
   sBytesSBelongToFunctionsThatHave: "{PH1} bytes ({PH2}) belong to functions that have not (yet) been executed.",
   /**
-   *@description Tooltip text for the bar in the coverage list view of the coverage tool that illustrates the relation between used and unused bytes.
-   *@example {1000} PH1
-   *@example {12.34} PH2
+   * @description Tooltip text for the bar in the coverage list view of the coverage tool that illustrates the relation between used and unused bytes.
+   * @example {1000} PH1
+   * @example {12.34} PH2
    */
   sBytesSBelongToBlocksOf: "{PH1} bytes ({PH2}) belong to blocks of JavaScript that have not (yet) been executed.",
   /**
-   *@description Message in Coverage View of the Coverage tab
-   *@example {1000} PH1
-   *@example {12.34} PH2
+   * @description Message in Coverage View of the Coverage tab
+   * @example {1000} PH1
+   * @example {12.34} PH2
    */
   sBytesSBelongToFunctionsThatHaveExecuted: "{PH1} bytes ({PH2}) belong to functions that have executed at least once.",
   /**
-   *@description Message in Coverage View of the Coverage tab
-   *@example {1000} PH1
-   *@example {12.34} PH2
+   * @description Message in Coverage View of the Coverage tab
+   * @example {1000} PH1
+   * @example {12.34} PH2
    */
   sBytesSBelongToBlocksOfJavascript: "{PH1} bytes ({PH2}) belong to blocks of JavaScript that have executed at least once.",
   /**
-   *@description Accessible text for the visualization column of coverage tool. Contains percentage of unused bytes to used bytes.
-   *@example {12.3} PH1
-   *@example {12.3} PH2
+   * @description Accessible text for the visualization column of coverage tool. Contains percentage of unused bytes to used bytes.
+   * @example {12.3} PH1
+   * @example {12.3} PH2
    */
   sOfFileUnusedSOfFileUsed: "{PH1} % of file unused, {PH2} % of file used"
 };
@@ -1667,92 +1667,92 @@ var coverageView_css_default = `/*
 // gen/front_end/panels/coverage/CoverageView.js
 var UIStrings2 = {
   /**
-   *@description Tooltip in Coverage List View of the Coverage tab for selecting JavaScript coverage mode
+   * @description Tooltip in Coverage List View of the Coverage tab for selecting JavaScript coverage mode
    */
   chooseCoverageGranularityPer: "Choose coverage granularity: Per function has low overhead, per block has significant overhead.",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   perFunction: "Per function",
   /**
-   *@description Text in Coverage List View of the Coverage tab
+   * @description Text in Coverage List View of the Coverage tab
    */
   perBlock: "Per block",
   /**
-   *@description Text in Coverage View of the Coverage tab
+   * @description Text in Coverage View of the Coverage tab
    */
   filterByUrl: "Filter by URL",
   /**
-   *@description Label for the type filter in the Coverage Panel
+   * @description Label for the type filter in the Coverage Panel
    */
   filterCoverageByType: "Filter coverage by type",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All",
   /**
-   *@description Text that appears on a button for the css resource type filter.
+   * @description Text that appears on a button for the css resource type filter.
    */
   css: "CSS",
   /**
-   *@description Text in Timeline Tree View of the Performance panel
+   * @description Text in Timeline Tree View of the Performance panel
    */
   javascript: "JavaScript",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Coverage View of the Coverage tab
+   * @description Tooltip text that appears on the setting when hovering over it in Coverage View of the Coverage tab
    */
   includeExtensionContentScripts: "Include extension content scripts",
   /**
-   *@description Title for a type of source files
+   * @description Title for a type of source files
    */
   contentScripts: "Content scripts",
   /**
-   *@description Message in Coverage View of the Coverage tab
+   * @description Message in Coverage View of the Coverage tab
    */
   noCoverageData: "No coverage data",
   /**
-   *@description Message in Coverage View of the Coverage tab
+   * @description Message in Coverage View of the Coverage tab
    */
   reloadPage: "Reload page",
   /**
-   *@description Message in Coverage View of the Coverage tab
+   * @description Message in Coverage View of the Coverage tab
    */
   startRecording: "Start recording",
   /**
-   *@description Message in Coverage View of the Coverage tab
-   *@example {Reload page} PH1
+   * @description Message in Coverage View of the Coverage tab
+   * @example {Reload page} PH1
    */
   clickTheReloadButtonSToReloadAnd: 'Click the "{PH1}" button to reload and start capturing coverage.',
   /**
-   *@description Message in Coverage View of the Coverage tab
-   *@example {Start recording} PH1
+   * @description Message in Coverage View of the Coverage tab
+   * @example {Start recording} PH1
    */
   clickTheRecordButtonSToStart: 'Click the "{PH1}" button to start capturing coverage.',
   /**
-   *@description Message in the Coverage View explaining that DevTools could not capture coverage.
+   * @description Message in the Coverage View explaining that DevTools could not capture coverage.
    */
   bfcacheNoCapture: "Could not capture coverage info because the page was served from the back/forward cache.",
   /**
-   *@description  Message in the Coverage View explaining that DevTools could not capture coverage.
+   * @description  Message in the Coverage View explaining that DevTools could not capture coverage.
    */
   activationNoCapture: "Could not capture coverage info because the page was prerendered in the background.",
   /**
-   *@description  Message in the Coverage View prompting the user to reload the page.
-   *@example {reload button icon} PH1
+   * @description  Message in the Coverage View prompting the user to reload the page.
+   * @example {reload button icon} PH1
    */
   reloadPrompt: "Click the reload button {PH1} to reload and get coverage.",
   /**
-   *@description Footer message in Coverage View of the Coverage tab
-   *@example {300k used, 600k unused} PH1
-   *@example {500k used, 800k unused} PH2
+   * @description Footer message in Coverage View of the Coverage tab
+   * @example {300k used, 600k unused} PH1
+   * @example {500k used, 800k unused} PH2
    */
   filteredSTotalS: "Filtered: {PH1}  Total: {PH2}",
   /**
-   *@description Footer message in Coverage View of the Coverage tab
-   *@example {1.5 MB} PH1
-   *@example {2.1 MB} PH2
-   *@example {71%} PH3
-   *@example {29%} PH4
+   * @description Footer message in Coverage View of the Coverage tab
+   * @example {1.5 MB} PH1
+   * @example {2.1 MB} PH2
+   * @example {71%} PH3
+   * @example {29%} PH4
    */
   sOfSSUsedSoFarSUnused: "{PH1} of {PH2} ({PH3}%) used so far, {PH4} unused."
 };
@@ -1784,9 +1784,11 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
   statusToolbarElement;
   statusMessageElement;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging.panel("coverage").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(coverageView_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.panel("coverage").track({ resize: true })}`);
     this.model = null;
     this.decorationManager = null;
     const toolbarContainer = this.contentElement.createChild("div", "coverage-toolbar-container");

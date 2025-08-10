@@ -53,16 +53,16 @@ import { ShortcutTreeElement } from './ShortcutTreeElement.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
 const UIStrings = {
     /**
-     *@description ARIA accessible name in Elements Tree Outline of the Elements panel
+     * @description ARIA accessible name in Elements Tree Outline of the Elements panel
      */
     pageDom: 'Page DOM',
     /**
-     *@description A context menu item to store a value as a global variable the Elements Panel
+     * @description A context menu item to store a value as a global variable the Elements Panel
      */
     storeAsGlobalVariable: 'Store as global variable',
     /**
-     *@description Tree element expand all button element button text content in Elements Tree Outline of the Elements panel
-     *@example {3} PH1
+     * @description Tree element expand all button element button text content in Elements Tree Outline of the Elements panel
+     * @example {3} PH1
      */
     showAllNodesDMore: 'Show all nodes ({PH1} more)',
     /**
@@ -727,12 +727,17 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         }
     }
     contextMenuEventFired(event) {
+        // The context menu construction may be async. In order to
+        // make sure that no other (default) context menu shows up, we need
+        // to stop propagating and prevent the default action.
+        event.stopPropagation();
+        event.preventDefault();
         const treeElement = this.treeElementFromEventInternal(event);
         if (treeElement instanceof ElementsTreeElement) {
-            this.showContextMenu(treeElement, event);
+            void this.showContextMenu(treeElement, event);
         }
     }
-    showContextMenu(treeElement, event) {
+    async showContextMenu(treeElement, event) {
         if (UI.UIUtils.isEditing()) {
             return;
         }
@@ -750,13 +755,13 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         const commentNode = node.enclosingNodeOrSelfWithClass('webkit-html-comment');
         contextMenu.saveSection().appendItem(i18nString(UIStrings.storeAsGlobalVariable), this.saveNodeToTempVariable.bind(this, treeElement.node()), { jslogContext: 'store-as-global-variable' });
         if (textNode) {
-            treeElement.populateTextContextMenu(contextMenu, textNode);
+            await treeElement.populateTextContextMenu(contextMenu, textNode);
         }
         else if (isTag) {
-            treeElement.populateTagContextMenu(contextMenu, event);
+            await treeElement.populateTagContextMenu(contextMenu, event);
         }
         else if (commentNode) {
-            treeElement.populateNodeContextMenu(contextMenu);
+            await treeElement.populateNodeContextMenu(contextMenu);
         }
         else if (isPseudoElement) {
             treeElement.populatePseudoElementContextMenu(contextMenu);

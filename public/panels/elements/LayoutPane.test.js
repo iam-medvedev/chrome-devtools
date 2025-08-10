@@ -79,7 +79,12 @@ describeWithMockConnection('LayoutPane', () => {
     const ID_2 = 2;
     const ID_3 = 3;
     it('renders grid elements', async () => {
-        getNodesByStyle.withArgs([{ name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' }]).resolves([
+        getNodesByStyle
+            .withArgs([
+            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'masonry' }, { name: 'display', value: 'inline-masonry' }
+        ])
+            .resolves([
             ID_1,
             ID_2,
             ID_3,
@@ -111,7 +116,12 @@ describeWithMockConnection('LayoutPane', () => {
         assert.lengthOf(component.contentElement.querySelectorAll('[data-element]'), 3);
     });
     it('send an event when an element overlay is toggled', async () => {
-        getNodesByStyle.withArgs([{ name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' }]).resolves([
+        getNodesByStyle
+            .withArgs([
+            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'masonry' }, { name: 'display', value: 'inline-masonry' }
+        ])
+            .resolves([
             ID_1,
         ]);
         sinon.stub(domModel, 'nodeForId').withArgs(ID_1).returns(makeNode(ID_1));
@@ -123,7 +133,12 @@ describeWithMockConnection('LayoutPane', () => {
         assert.isTrue(highlightGrid.calledOnceWith(ID_1));
     });
     it('send an event when an element’s Show element button is pressed', async () => {
-        getNodesByStyle.withArgs([{ name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' }]).resolves([
+        getNodesByStyle
+            .withArgs([
+            { name: 'display', value: 'grid' }, { name: 'display', value: 'inline-grid' },
+            { name: 'display', value: 'masonry' }, { name: 'display', value: 'inline-masonry' }
+        ])
+            .resolves([
             ID_1,
         ]);
         const node = makeNode(ID_1);

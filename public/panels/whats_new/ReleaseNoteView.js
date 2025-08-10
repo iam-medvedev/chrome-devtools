@@ -12,7 +12,7 @@ import { getReleaseNote } from './ReleaseNoteText.js';
 import releaseNoteViewStyles from './releaseNoteView.css.js';
 const UIStrings = {
     /**
-     *@description Text that is usually a hyperlink to more documentation
+     * @description Text that is usually a hyperlink to more documentation
      */
     seeFeatures: 'See all new features',
 };
@@ -50,7 +50,7 @@ export class ReleaseNoteView extends UI.Panel.Panel {
         const markdownContent = input.markdownContent;
         // clang-format off
         render(html `
-      <style>${releaseNoteViewStyles}</style>
+      <style>${UI.Widget.widgetScoped(releaseNoteViewStyles)}</style>
       <div class="whatsnew" jslog=${VisualLogging.section().context('release-notes')}>
         <div class="whatsnew-content">
           <div class="header">
@@ -89,7 +89,7 @@ export class ReleaseNoteView extends UI.Panel.Panel {
           </div>
         </div>
       </div>
-    `, target, { host: input });
+    `, target);
         // clang-format on
     }) {
         super('whats-new', true);

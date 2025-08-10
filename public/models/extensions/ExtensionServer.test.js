@@ -542,10 +542,10 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         const result = await new Promise(r => context.chrome.devtools?.inspectedWindow.eval('4', { frameURL: childFrameUrl }, (result, error) => r({ result, error })));
         assert.deepEqual(result.error?.details, ['Permission denied']);
     });
-    async function createUISourceCode(project, url) {
+    async function createUISourceCode(project, url, contentType = Common.ResourceType.resourceTypes.Document) {
         const mimeType = 'text/html';
         const dataProvider = () => Promise.resolve(new TextUtils.ContentData.ContentData('content', /* isBase64 */ false, mimeType));
-        project.addUISourceCodeWithProvider(new Workspace.UISourceCode.UISourceCode(project, url, Common.ResourceType.resourceTypes.Document), new TextUtils.StaticContentProvider.StaticContentProvider(url, Common.ResourceType.resourceTypes.Document, dataProvider), null, mimeType);
+        project.addUISourceCodeWithProvider(new Workspace.UISourceCode.UISourceCode(project, url, contentType), new TextUtils.StaticContentProvider.StaticContentProvider(url, contentType, dataProvider), null, mimeType);
         await project.uiSourceCodeForURL(url)?.requestContentData();
     }
     it('blocks getting resource contents on blocked urls', async () => {
@@ -563,6 +563,26 @@ describeWithDevtoolsExtension('Runtime hosts policy', { hostsPolicy }, context =
         assert.deepEqual(resourceContents, [
             { url: allowedUrl, content: 'content', encoding: '' },
         ]);
+    });
+    it('allows arbitrary schemes in sourceURL comments, as long as the inspected target is allowed', async () => {
+        const target = createTarget({ id: 'target' });
+        target.setInspectedURL(allowedUrl);
+        const script = sinon.createStubInstance(SDK.Script.Script, { target, contentURL: blockedUrl });
+        script.hasSourceURL = true;
+        const workspaceBinding = sinon.createStubInstance(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding);
+        workspaceBinding.scriptsForUISourceCode.callsFake(uiSourceCode => {
+            if (uiSourceCode.contentURL() === blockedUrl) {
+                return [script];
+            }
+            return [];
+        });
+        sinon.stub(Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding, 'instance').returns(workspaceBinding);
+        const project = new Bindings.ContentProviderBasedProject.ContentProviderBasedProject(Workspace.Workspace.WorkspaceImpl.instance(), target.id(), Workspace.Workspace.projectTypes.Network, '', false /* isServiceProject */);
+        await createUISourceCode(project, blockedUrl, Common.ResourceType.resourceTypes.Script);
+        await createUISourceCode(project, allowedUrl, Common.ResourceType.resourceTypes.Script);
+        assert.exists(context.chrome.devtools);
+        const resources = await new Promise(r => context.chrome.devtools?.inspectedWindow.getResources(r));
+        assert.deepEqual(resources.map(r => r.url), [blockedUrl, allowedUrl]);
     });
     function createRequest(networkManager, frameId, requestId, url) {
         const request = SDK.NetworkRequest.NetworkRequest.create(requestId, url, url, frameId, null, null, undefined);

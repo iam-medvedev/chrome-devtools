@@ -36,11 +36,11 @@ import { IgnoreListManager } from './IgnoreListManager.js';
 import { Events as WorkspaceImplEvents } from './WorkspaceImpl.js';
 const UIStrings = {
     /**
-     *@description Text for the index of something
+     * @description Text for the index of something
      */
     index: '(index)',
     /**
-     *@description Text in UISource Code of the DevTools local workspace
+     * @description Text in UISource Code of the DevTools local workspace
      */
     thisFileWasChangedExternally: 'This file was changed externally. Would you like to reload it?',
 };

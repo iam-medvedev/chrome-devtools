@@ -5,11 +5,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of the CSS overview panel
+     * @description Title of the CSS overview panel
      */
     cssOverview: 'CSS overview',
     /**
-     *@description Title of the CSS overview panel
+     * @description Title of the CSS overview panel
      */
     showCssOverview: 'Show CSS overview',
 };

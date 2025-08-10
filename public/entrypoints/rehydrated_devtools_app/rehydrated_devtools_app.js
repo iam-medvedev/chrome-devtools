@@ -9,163 +9,163 @@ import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description Text in Main
+   * @description Text in Main
    */
   focusDebuggee: "Focus page",
   /**
-   *@description Text in the Shortcuts page in settings to explain a keyboard shortcut
+   * @description Text in the Shortcuts page in settings to explain a keyboard shortcut
    */
   toggleDrawer: "Toggle drawer",
   /**
-   *@description Title of an action that navigates to the next panel
+   * @description Title of an action that navigates to the next panel
    */
   nextPanel: "Next panel",
   /**
-   *@description Title of an action that navigates to the previous panel
+   * @description Title of an action that navigates to the previous panel
    */
   previousPanel: "Previous panel",
   /**
-   *@description Title of an action that reloads the DevTools
+   * @description Title of an action that reloads the DevTools
    */
   reloadDevtools: "Reload DevTools",
   /**
-   *@description Title of an action in the main tool to toggle dock
+   * @description Title of an action in the main tool to toggle dock
    */
   restoreLastDockPosition: "Restore last dock position",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
    */
   zoomIn: "Zoom in",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
    */
   zoomOut: "Zoom out",
   /**
-   *@description Title of an action that reset the zoom level to its default
+   * @description Title of an action that reset the zoom level to its default
    */
   resetZoomLevel: "Reset zoom level",
   /**
-   *@description Title of an action to search in panel
+   * @description Title of an action to search in panel
    */
   searchInPanel: "Search in panel",
   /**
-   *@description Title of an action that cancels the current search
+   * @description Title of an action that cancels the current search
    */
   cancelSearch: "Cancel search",
   /**
-   *@description Title of an action that finds the next search result
+   * @description Title of an action that finds the next search result
    */
   findNextResult: "Find next result",
   /**
-   *@description Title of an action to find the previous search result
+   * @description Title of an action to find the previous search result
    */
   findPreviousResult: "Find previous result",
   /**
-   *@description Title of a setting under the Appearance category in Settings
+   * @description Title of a setting under the Appearance category in Settings
    */
   theme: "Theme:",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   switchToBrowserPreferredTheme: "Switch to browser's preferred theme",
   /**
-   *@description A drop-down menu option to switch to the same (light or dark) theme as the browser
+   * @description A drop-down menu option to switch to the same (light or dark) theme as the browser
    */
   autoTheme: "Auto",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   switchToLightTheme: "Switch to light theme",
   /**
-   *@description A drop-down menu option to switch to light theme
+   * @description A drop-down menu option to switch to light theme
    */
   lightCapital: "Light",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   switchToDarkTheme: "Switch to dark theme",
   /**
-   *@description A drop-down menu option to switch to dark theme
+   * @description A drop-down menu option to switch to dark theme
    */
   darkCapital: "Dark",
   /**
-   *@description A tag of theme preference settings that can be searched in the command menu
+   * @description A tag of theme preference settings that can be searched in the command menu
    */
   darkLower: "dark",
   /**
-   *@description A tag of theme preference settings that can be searched in the command menu
+   * @description A tag of theme preference settings that can be searched in the command menu
    */
   lightLower: "light",
   /**
-   *@description Title of a setting under the Appearance category in Settings
+   * @description Title of a setting under the Appearance category in Settings
    */
   panelLayout: "Panel layout:",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   useHorizontalPanelLayout: "Use horizontal panel layout",
   /**
-   *@description A drop-down menu option to use horizontal panel layout
+   * @description A drop-down menu option to use horizontal panel layout
    */
   horizontal: "horizontal",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   useVerticalPanelLayout: "Use vertical panel layout",
   /**
-   *@description A drop-down menu option to use vertical panel layout
+   * @description A drop-down menu option to use vertical panel layout
    */
   vertical: "vertical",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   useAutomaticPanelLayout: "Use automatic panel layout",
   /**
-   *@description Text short for automatic
+   * @description Text short for automatic
    */
   auto: "auto",
   /**
-   *@description Title of a setting under the Appearance category in Settings
+   * @description Title of a setting under the Appearance category in Settings
    */
   enableCtrlShortcutToSwitchPanels: "Enable Ctrl + 1-9 shortcut to switch panels",
   /**
-   *@description (Mac only) Title of a setting under the Appearance category in Settings
+   * @description (Mac only) Title of a setting under the Appearance category in Settings
    */
   enableShortcutToSwitchPanels: "Enable \u2318 + 1-9 shortcut to switch panels",
   /**
-   *@description A drop-down menu option to dock to right
+   * @description A drop-down menu option to dock to right
    */
   right: "Right",
   /**
-   *@description Text to dock the DevTools to the right of the browser tab
+   * @description Text to dock the DevTools to the right of the browser tab
    */
   dockToRight: "Dock to right",
   /**
-   *@description A drop-down menu option to dock to bottom
+   * @description A drop-down menu option to dock to bottom
    */
   bottom: "Bottom",
   /**
-   *@description Text to dock the DevTools to the bottom of the browser tab
+   * @description Text to dock the DevTools to the bottom of the browser tab
    */
   dockToBottom: "Dock to bottom",
   /**
-   *@description A drop-down menu option to dock to left
+   * @description A drop-down menu option to dock to left
    */
   left: "Left",
   /**
-   *@description Text to dock the DevTools to the left of the browser tab
+   * @description Text to dock the DevTools to the left of the browser tab
    */
   dockToLeft: "Dock to left",
   /**
-   *@description A drop-down menu option to undock into separate window
+   * @description A drop-down menu option to undock into separate window
    */
   undocked: "Undocked",
   /**
-   *@description Text to undock the DevTools
+   * @description Text to undock the DevTools
    */
   undockIntoSeparateWindow: "Undock into separate window",
   /**
-   *@description Name of the default set of DevTools keyboard shortcuts
+   * @description Name of the default set of DevTools keyboard shortcuts
    */
   devtoolsDefault: "DevTools (Default)",
   /**
@@ -1132,338 +1132,338 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 var UIStrings3 = {
   /**
-   *@description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
   preserveLogUponNavigation: "Preserve log upon navigation",
   /**
-   *@description Title of a setting under the Console category that can be invoked through the Command Menu
+   * @description Title of a setting under the Console category that can be invoked through the Command Menu
    */
   doNotPreserveLogUponNavigation: "Do not preserve log upon navigation",
   /**
-   *@description Text for pausing the debugger on exceptions
+   * @description Text for pausing the debugger on exceptions
    */
   pauseOnExceptions: "Pause on exceptions",
   /**
-   *@description Title of a setting under the Debugger category that can be invoked through the Command Menu
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu
    */
   doNotPauseOnExceptions: "Do not pause on exceptions",
   /**
-   *@description Title of a setting under the Debugger category that can be invoked through the Command Menu
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu
    */
   disableJavascript: "Disable JavaScript",
   /**
-   *@description Title of a setting under the Debugger category that can be invoked through the Command Menu
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu
    */
   enableJavascript: "Enable JavaScript",
   /**
-   *@description Title of a setting under the Debugger category in Settings
+   * @description Title of a setting under the Debugger category in Settings
    */
   disableAsyncStackTraces: "Disable async stack traces",
   /**
-   *@description Title of a setting under the Debugger category that can be invoked through the Command Menu
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu
    */
   doNotCaptureAsyncStackTraces: "Do not capture async stack traces",
   /**
-   *@description Title of a setting under the Debugger category that can be invoked through the Command Menu
+   * @description Title of a setting under the Debugger category that can be invoked through the Command Menu
    */
   captureAsyncStackTraces: "Capture async stack traces",
   /**
-   *@description Text of a setting that  turn on the measuring rulers when hover over a target
+   * @description Text of a setting that  turn on the measuring rulers when hover over a target
    */
   showRulersOnHover: "Show rulers on hover",
   /**
-   *@description Text of a setting that do turn off the measuring rulers when hover over a target
+   * @description Text of a setting that do turn off the measuring rulers when hover over a target
    */
   doNotShowRulersOnHover: "Do not show rulers on hover",
   /**
-   *@description Title of a setting that turns on grid area name labels
+   * @description Title of a setting that turns on grid area name labels
    */
   showAreaNames: "Show area names",
   /**
-   *@description Title of a setting under the Grid category that turns CSS Grid Area highlighting on
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting on
    */
   showGridNamedAreas: "Show grid named areas",
   /**
-   *@description Title of a setting under the Grid category that turns CSS Grid Area highlighting off
+   * @description Title of a setting under the Grid category that turns CSS Grid Area highlighting off
    */
   doNotShowGridNamedAreas: "Do not show grid named areas",
   /**
-   *@description Title of a setting that turns on grid track size labels
+   * @description Title of a setting that turns on grid track size labels
    */
   showTrackSizes: "Show track sizes",
   /**
-   *@description Title for CSS Grid tooling option
+   * @description Title for CSS Grid tooling option
    */
   showGridTrackSizes: "Show grid track sizes",
   /**
-   *@description Title for CSS Grid tooling option
+   * @description Title for CSS Grid tooling option
    */
   doNotShowGridTrackSizes: "Do not show grid track sizes",
   /**
-   *@description Title of a setting that turns on grid extension lines
+   * @description Title of a setting that turns on grid extension lines
    */
   extendGridLines: "Extend grid lines",
   /**
-   *@description Title of a setting that turns off the grid extension lines
+   * @description Title of a setting that turns off the grid extension lines
    */
   doNotExtendGridLines: "Do not extend grid lines",
   /**
-   *@description Title of a setting that turns on grid line labels
+   * @description Title of a setting that turns on grid line labels
    */
   showLineLabels: "Show line labels",
   /**
-   *@description Title of a setting that turns off the grid line labels
+   * @description Title of a setting that turns off the grid line labels
    */
   hideLineLabels: "Hide line labels",
   /**
-   *@description Title of a setting that turns on grid line number labels
+   * @description Title of a setting that turns on grid line number labels
    */
   showLineNumbers: "Show line numbers",
   /**
-   *@description Title of a setting that turns on grid line name labels
+   * @description Title of a setting that turns on grid line name labels
    */
   showLineNames: "Show line names",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   showPaintFlashingRectangles: "Show paint flashing rectangles",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   hidePaintFlashingRectangles: "Hide paint flashing rectangles",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   showLayoutShiftRegions: "Show layout shift regions",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   hideLayoutShiftRegions: "Hide layout shift regions",
   /**
-   *@description Text to highlight the rendering frames for ads
+   * @description Text to highlight the rendering frames for ads
    */
   highlightAdFrames: "Highlight ad frames",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   doNotHighlightAdFrames: "Do not highlight ad frames",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   showLayerBorders: "Show layer borders",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   hideLayerBorders: "Hide layer borders",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   showFramesPerSecondFpsMeter: "Show frames per second (FPS) meter",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   hideFramesPerSecondFpsMeter: "Hide frames per second (FPS) meter",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   showScrollPerformanceBottlenecks: "Show scroll performance bottlenecks",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   hideScrollPerformanceBottlenecks: "Hide scroll performance bottlenecks",
   /**
-   *@description Title of a Rendering setting that can be invoked through the Command Menu
+   * @description Title of a Rendering setting that can be invoked through the Command Menu
    */
   emulateAFocusedPage: "Emulate a focused page",
   /**
-   *@description Title of a Rendering setting that can be invoked through the Command Menu
+   * @description Title of a Rendering setting that can be invoked through the Command Menu
    */
   doNotEmulateAFocusedPage: "Do not emulate a focused page",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   doNotEmulateCssMediaType: "Do not emulate CSS media type",
   /**
-   *@description A drop-down menu option to do not emulate css media type
+   * @description A drop-down menu option to do not emulate css media type
    */
   noEmulation: "No emulation",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   emulateCssPrintMediaType: "Emulate CSS print media type",
   /**
-   *@description A drop-down menu option to emulate css print media type
+   * @description A drop-down menu option to emulate css print media type
    */
   print: "print",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   emulateCssScreenMediaType: "Emulate CSS screen media type",
   /**
-   *@description A drop-down menu option to emulate css screen media type
+   * @description A drop-down menu option to emulate css screen media type
    */
   screen: "screen",
   /**
-   *@description A tag of Emulate CSS screen media type setting that can be searched in the command menu
+   * @description A tag of Emulate CSS screen media type setting that can be searched in the command menu
    */
   query: "query",
   /**
-   *@description Title of a setting under the Rendering drawer
+   * @description Title of a setting under the Rendering drawer
    */
   emulateCssMediaType: "Emulate CSS media type",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
-   *@example {prefers-color-scheme} PH1
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @example {prefers-color-scheme} PH1
    */
   doNotEmulateCss: "Do not emulate CSS {PH1}",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
-   *@example {prefers-color-scheme: light} PH1
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @example {prefers-color-scheme: light} PH1
    */
   emulateCss: "Emulate CSS {PH1}",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
-   *@example {prefers-color-scheme} PH1
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @example {prefers-color-scheme} PH1
    */
   emulateCssMediaFeature: "Emulate CSS media feature {PH1}",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   doNotEmulateAnyVisionDeficiency: "Do not emulate any vision deficiency",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateBlurredVision: "Emulate blurred vision",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateReducedContrast: "Emulate reduced contrast",
   /**
-   *@description Name of a vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a vision deficiency that can be emulated via the Rendering drawer
    */
   blurredVision: "Blurred vision",
   /**
-   *@description Name of a vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a vision deficiency that can be emulated via the Rendering drawer
    */
   reducedContrast: "Reduced contrast",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateProtanopia: "Emulate protanopia (no red)",
   /**
-   *@description Name of a color vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer
    */
   protanopia: "Protanopia (no red)",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateDeuteranopia: "Emulate deuteranopia (no green)",
   /**
-   *@description Name of a color vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer
    */
   deuteranopia: "Deuteranopia (no green)",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateTritanopia: "Emulate tritanopia (no blue)",
   /**
-   *@description Name of a color vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer
    */
   tritanopia: "Tritanopia (no blue)",
   /**
-   *@description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering drawer that can be invoked through the Command Menu
    */
   emulateAchromatopsia: "Emulate achromatopsia (no color)",
   /**
-   *@description Name of a color vision deficiency that can be emulated via the Rendering drawer
+   * @description Name of a color vision deficiency that can be emulated via the Rendering drawer
    */
   achromatopsia: "Achromatopsia (no color)",
   /**
-   *@description Title of a setting under the Rendering drawer
+   * @description Title of a setting under the Rendering drawer
    */
   emulateVisionDeficiencies: "Emulate vision deficiencies",
   /**
-   *@description Title of a setting under the Rendering drawer
+   * @description Title of a setting under the Rendering drawer
    */
   emulateOsTextScale: "Emulate OS text scale",
   /**
-   *@description Title of a setting under the Rendering category that can be invoked through the Command Menu
+   * @description Title of a setting under the Rendering category that can be invoked through the Command Menu
    */
   doNotEmulateOsTextScale: "Do not emulate OS text scale",
   /**
-   *@description A drop-down menu option to not emulate OS text scale
+   * @description A drop-down menu option to not emulate OS text scale
    */
   osTextScaleEmulationNone: "No emulation",
   /**
-   *@description A drop-down menu option to emulate an OS text scale 85%
+   * @description A drop-down menu option to emulate an OS text scale 85%
    */
   osTextScaleEmulation85: "85%",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 100%
+   * @description A drop-down menu option to emulate an OS text scale of 100%
    */
   osTextScaleEmulation100: "100% (default)",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 115%
+   * @description A drop-down menu option to emulate an OS text scale of 115%
    */
   osTextScaleEmulation115: "115%",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 130%
+   * @description A drop-down menu option to emulate an OS text scale of 130%
    */
   osTextScaleEmulation130: "130%",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 150%
+   * @description A drop-down menu option to emulate an OS text scale of 150%
    */
   osTextScaleEmulation150: "150%",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 180%
+   * @description A drop-down menu option to emulate an OS text scale of 180%
    */
   osTextScaleEmulation180: "180%",
   /**
-   *@description A drop-down menu option to emulate an OS text scale of 200%
+   * @description A drop-down menu option to emulate an OS text scale of 200%
    */
   osTextScaleEmulation200: "200%",
   /**
-   *@description Text that refers to disabling local fonts
+   * @description Text that refers to disabling local fonts
    */
   disableLocalFonts: "Disable local fonts",
   /**
-   *@description Text that refers to enabling local fonts
+   * @description Text that refers to enabling local fonts
    */
   enableLocalFonts: "Enable local fonts",
   /**
-   *@description Title of a setting that disables AVIF format
+   * @description Title of a setting that disables AVIF format
    */
   disableAvifFormat: "Disable `AVIF` format",
   /**
-   *@description Title of a setting that enables AVIF format
+   * @description Title of a setting that enables AVIF format
    */
   enableAvifFormat: "Enable `AVIF` format",
   /**
-   *@description Title of a setting that disables WebP format
+   * @description Title of a setting that disables WebP format
    */
   disableWebpFormat: "Disable `WebP` format",
   /**
-   *@description Title of a setting that enables WebP format
+   * @description Title of a setting that enables WebP format
    */
   enableWebpFormat: "Enable `WebP` format",
   /**
-   *@description Title of a setting under the Console category in Settings
+   * @description Title of a setting under the Console category in Settings
    */
   customFormatters: "Custom formatters",
   /**
-   *@description Title of a setting under the Network category
+   * @description Title of a setting under the Network category
    */
   networkRequestBlocking: "Network request blocking",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   enableNetworkRequestBlocking: "Enable network request blocking",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   disableNetworkRequestBlocking: "Disable network request blocking",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   enableCache: "Enable cache",
   /**
@@ -2251,7 +2251,7 @@ import * as Common4 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 var UIStrings4 = {
   /**
-   *@description Text to preserve the log after refreshing
+   * @description Text to preserve the log after refreshing
    */
   preserveLog: "Preserve log",
   /**
@@ -2273,15 +2273,15 @@ var UIStrings4 = {
    */
   reset: "reset",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   preserveLogOnPageReload: "Preserve log on page reload / navigation",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   doNotPreserveLogOnPageReload: "Do not preserve log on page reload / navigation",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   recordNetworkLog: "Record network log"
 };
@@ -2326,44 +2326,44 @@ import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
-   *@description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
    */
   workspace: "Workspace",
   /**
-   *@description Command for showing the Workspace tool in Settings
+   * @description Command for showing the Workspace tool in Settings
    */
   showWorkspace: "Show Workspace settings",
   /**
-   *@description Title of a setting under the Persistence category in Settings
+   * @description Title of a setting under the Persistence category in Settings
    */
   enableLocalOverrides: "Enable Local Overrides",
   /**
-   *@description A tag of Enable Local Overrides setting that can be searched in the command menu
+   * @description A tag of Enable Local Overrides setting that can be searched in the command menu
    */
   interception: "interception",
   /**
-   *@description A tag of Enable Local Overrides setting that can be searched in the command menu
+   * @description A tag of Enable Local Overrides setting that can be searched in the command menu
    */
   override: "override",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   network: "network",
   /**
-   *@description A tag of Enable Local Overrides setting that can be searched in the command menu
+   * @description A tag of Enable Local Overrides setting that can be searched in the command menu
    */
   rewrite: "rewrite",
   /**
-   *@description A tag of Enable Local Overrides setting that can be searched in the command menu.
+   * @description A tag of Enable Local Overrides setting that can be searched in the command menu.
    *Noun for network request.
    */
   request: "request",
   /**
-   *@description Title of a setting under the Persistence category that can be invoked through the Command Menu
+   * @description Title of a setting under the Persistence category that can be invoked through the Command Menu
    */
   enableOverrideNetworkRequests: "Enable override network requests",
   /**
-   *@description Title of a setting under the Persistence category that can be invoked through the Command Menu
+   * @description Title of a setting under the Persistence category that can be invoked through the Command Menu
    */
   disableOverrideNetworkRequests: "Disable override network requests"
 };
@@ -2434,71 +2434,71 @@ import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
   /**
-   *@description Command for showing the 'Event Listener Breakpoints' tool
+   * @description Command for showing the 'Event Listener Breakpoints' tool
    */
   showEventListenerBreakpoints: "Show Event Listener Breakpoints",
   /**
-   *@description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   eventListenerBreakpoints: "Event Listener Breakpoints",
   /**
-   *@description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
+   * @description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
    */
   showCspViolationBreakpoints: "Show CSP Violation Breakpoints",
   /**
-   *@description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   cspViolationBreakpoints: "CSP Violation Breakpoints",
   /**
-   *@description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
+   * @description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
    */
   showXhrfetchBreakpoints: "Show XHR/fetch Breakpoints",
   /**
-   *@description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   xhrfetchBreakpoints: "XHR/fetch Breakpoints",
   /**
-   *@description Command for showing the 'DOM Breakpoints' tool in the Elements panel
+   * @description Command for showing the 'DOM Breakpoints' tool in the Elements panel
    */
   showDomBreakpoints: "Show DOM Breakpoints",
   /**
-   *@description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   domBreakpoints: "DOM Breakpoints",
   /**
-   *@description Command for showing the 'Global Listeners' tool in the sources panel
+   * @description Command for showing the 'Global Listeners' tool in the sources panel
    */
   showGlobalListeners: "Show Global Listeners",
   /**
-   *@description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
    */
   globalListeners: "Global Listeners",
   /**
-   *@description Text that refers to one or a group of webpages
+   * @description Text that refers to one or a group of webpages
    */
   page: "Page",
   /**
-   *@description Command for showing the 'Page' tab in the Sources panel
+   * @description Command for showing the 'Page' tab in the Sources panel
    */
   showPage: "Show Page",
   /**
-   *@description Title as part of a tool to override existing configurations
+   * @description Title as part of a tool to override existing configurations
    */
   overrides: "Overrides",
   /**
-   *@description Command for showing the 'Overrides' tool in the Sources panel
+   * @description Command for showing the 'Overrides' tool in the Sources panel
    */
   showOverrides: "Show Overrides",
   /**
-   *@description Title for a type of source files
+   * @description Title for a type of source files
    */
   contentScripts: "Content scripts",
   /**
-   *@description Command for showing the 'Content scripts' tool in the sources panel
+   * @description Command for showing the 'Content scripts' tool in the sources panel
    */
   showContentScripts: "Show Content scripts",
   /**
-   *@description Label for a button in the sources panel that refreshes the list of global event listeners.
+   * @description Label for a button in the sources panel that refreshes the list of global event listeners.
    */
   refreshGlobalListeners: "Refresh global listeners"
 };
@@ -2687,23 +2687,23 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 var UIStrings7 = {
   /**
-   *@description Text for throttling the network
+   * @description Text for throttling the network
    */
   throttling: "Throttling",
   /**
-   *@description Command for showing the Mobile Throttling tool.
+   * @description Command for showing the Mobile Throttling tool.
    */
   showThrottling: "Show Throttling",
   /**
-   *@description Title of an action in the network conditions tool to network offline
+   * @description Title of an action in the network conditions tool to network offline
    */
   goOffline: "Go offline",
   /**
-   *@description A tag of Mobile related settings that can be searched in the command menu
+   * @description A tag of Mobile related settings that can be searched in the command menu
    */
   device: "device",
   /**
-   *@description A tag of Network related actions that can be searched in the command menu
+   * @description A tag of Network related actions that can be searched in the command menu
    */
   throttlingTag: "throttling",
   /**
@@ -2717,7 +2717,7 @@ var UIStrings7 = {
    */
   enableFastGThrottling: "Enable fast `3G` throttling",
   /**
-   *@description Title of an action in the network conditions tool to network online
+   * @description Title of an action in the network conditions tool to network online
    */
   goOnline: "Go online"
 };
@@ -2818,7 +2818,7 @@ var UIStrings8 = {
    */
   protocolMonitor: "Protocol monitor",
   /**
-   *@description Command for showing the 'Protocol monitor' tool in the bottom drawer
+   * @description Command for showing the 'Protocol monitor' tool in the bottom drawer
    */
   showProtocolMonitor: "Show Protocol monitor"
 };
@@ -2855,11 +2855,11 @@ import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrap
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
-   *@description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
+   * @description Title of the Devices tab/tool. Devices refers to e.g. phones/tablets.
    */
   devices: "Devices",
   /**
-   *@description Command that opens the device emulation view.
+   * @description Command that opens the device emulation view.
    */
   showDevices: "Show Devices"
 };
@@ -2890,51 +2890,51 @@ UI7.ViewManager.registerViewExtension({
 });
 var UIStrings22 = {
   /**
-   *@description Text for keyboard shortcuts
+   * @description Text for keyboard shortcuts
    */
   shortcuts: "Shortcuts",
   /**
-   *@description Text in Settings Screen of the Settings
+   * @description Text in Settings Screen of the Settings
    */
   preferences: "Preferences",
   /**
-   *@description Text in Settings Screen of the Settings
+   * @description Text in Settings Screen of the Settings
    */
   experiments: "Experiments",
   /**
-   *@description Title of Ignore list settings
+   * @description Title of Ignore list settings
    */
   ignoreList: "Ignore list",
   /**
-   *@description Command for showing the keyboard shortcuts in Settings
+   * @description Command for showing the keyboard shortcuts in Settings
    */
   showShortcuts: "Show Shortcuts",
   /**
-   *@description Command for showing the preference tab in the Settings Screen
+   * @description Command for showing the preference tab in the Settings Screen
    */
   showPreferences: "Show Preferences",
   /**
-   *@description Command for showing the experiments tab in the Settings Screen
+   * @description Command for showing the experiments tab in the Settings Screen
    */
   showExperiments: "Show Experiments",
   /**
-   *@description Command for showing the Ignore list settings
+   * @description Command for showing the Ignore list settings
    */
   showIgnoreList: "Show Ignore list",
   /**
-   *@description Name of the Settings view
+   * @description Name of the Settings view
    */
   settings: "Settings",
   /**
-   *@description Text for the documentation of something
+   * @description Text for the documentation of something
    */
   documentation: "Documentation",
   /**
-   *@description Text for AI innovation settings
+   * @description Text for AI innovation settings
    */
   aiInnovations: "AI innovations",
   /**
-   *@description Command for showing the AI innovation settings
+   * @description Command for showing the AI innovation settings
    */
   showAiInnovations: "Show AI innovations"
 };
@@ -3125,175 +3125,175 @@ import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.j
 import * as UI8 from "./../../ui/legacy/legacy.js";
 var UIStrings10 = {
   /**
-   *@description Command for showing the 'Sources' tool
+   * @description Command for showing the 'Sources' tool
    */
   showSources: "Show Sources",
   /**
-   *@description Name of the Sources panel
+   * @description Name of the Sources panel
    */
   sources: "Sources",
   /**
-   *@description Command for showing the 'Workspace' tool
+   * @description Command for showing the 'Workspace' tool
    */
   showWorkspace: "Show Workspace",
   /**
-   *@description Title of the 'Filesystem' tool in the Files Navigator View, which is part of the Sources tool
+   * @description Title of the 'Filesystem' tool in the Files Navigator View, which is part of the Sources tool
    */
   workspace: "Workspace",
   /**
-   *@description Command for showing the 'Snippets' tool
+   * @description Command for showing the 'Snippets' tool
    */
   showSnippets: "Show Snippets",
   /**
-   *@description Title of the 'Snippets' tool in the Snippets Navigator View, which is part of the Sources tool
+   * @description Title of the 'Snippets' tool in the Snippets Navigator View, which is part of the Sources tool
    */
   snippets: "Snippets",
   /**
-   *@description Command for showing the 'Search' tool
+   * @description Command for showing the 'Search' tool
    */
   showSearch: "Show Search",
   /**
-   *@description Title of a search bar or tool
+   * @description Title of a search bar or tool
    */
   search: "Search",
   /**
-   *@description Command for showing the 'Quick source' tool
+   * @description Command for showing the 'Quick source' tool
    */
   showQuickSource: "Show Quick source",
   /**
-   *@description Title of the 'Quick source' tool in the bottom drawer
+   * @description Title of the 'Quick source' tool in the bottom drawer
    */
   quickSource: "Quick source",
   /**
-   *@description Command for showing the 'Threads' tool
+   * @description Command for showing the 'Threads' tool
    */
   showThreads: "Show Threads",
   /**
-   *@description Title of the sources threads
+   * @description Title of the sources threads
    */
   threads: "Threads",
   /**
-   *@description Command for showing the 'Scope' tool
+   * @description Command for showing the 'Scope' tool
    */
   showScope: "Show Scope",
   /**
-   *@description Title of the sources scopeChain
+   * @description Title of the sources scopeChain
    */
   scope: "Scope",
   /**
-   *@description Command for showing the 'Watch' tool
+   * @description Command for showing the 'Watch' tool
    */
   showWatch: "Show Watch",
   /**
-   *@description Title of the sources watch
+   * @description Title of the sources watch
    */
   watch: "Watch",
   /**
-   *@description Command for showing the 'Breakpoints' tool
+   * @description Command for showing the 'Breakpoints' tool
    */
   showBreakpoints: "Show Breakpoints",
   /**
-   *@description Title of the sources jsBreakpoints
+   * @description Title of the sources jsBreakpoints
    */
   breakpoints: "Breakpoints",
   /**
-   *@description Title of an action under the Debugger category that can be invoked through the Command Menu
+   * @description Title of an action under the Debugger category that can be invoked through the Command Menu
    */
   pauseScriptExecution: "Pause script execution",
   /**
-   *@description Title of an action under the Debugger category that can be invoked through the Command Menu
+   * @description Title of an action under the Debugger category that can be invoked through the Command Menu
    */
   resumeScriptExecution: "Resume script execution",
   /**
-   *@description Title of an action in the debugger tool to step over
+   * @description Title of an action in the debugger tool to step over
    */
   stepOverNextFunctionCall: "Step over next function call",
   /**
-   *@description Title of an action in the debugger tool to step into
+   * @description Title of an action in the debugger tool to step into
    */
   stepIntoNextFunctionCall: "Step into next function call",
   /**
-   *@description Title of an action in the debugger tool to step
+   * @description Title of an action in the debugger tool to step
    */
   step: "Step",
   /**
-   *@description Title of an action in the debugger tool to step out
+   * @description Title of an action in the debugger tool to step out
    */
   stepOutOfCurrentFunction: "Step out of current function",
   /**
-   *@description Text to run a code snippet
+   * @description Text to run a code snippet
    */
   runSnippet: "Run snippet",
   /**
-   *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+   * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
    */
   deactivateBreakpoints: "Deactivate breakpoints",
   /**
-   *@description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
+   * @description Text in Java Script Breakpoints Sidebar Pane of the Sources panel
    */
   activateBreakpoints: "Activate breakpoints",
   /**
-   *@description Title of an action in the sources tool to add to watch
+   * @description Title of an action in the sources tool to add to watch
    */
   addSelectedTextToWatches: "Add selected text to watches",
   /**
-   *@description Title of an action in the debugger tool to evaluate selection
+   * @description Title of an action in the debugger tool to evaluate selection
    */
   evaluateSelectedTextInConsole: "Evaluate selected text in console",
   /**
-   *@description Title of an action that switches files in the Sources panel
+   * @description Title of an action that switches files in the Sources panel
    */
   switchFile: "Switch file",
   /**
-   *@description Title of a sources panel action that renames a file
+   * @description Title of a sources panel action that renames a file
    */
   rename: "Rename",
   /**
-   *@description Title of an action in the sources tool to close all
+   * @description Title of an action in the sources tool to close all
    */
   closeAll: "Close all",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to previous editing location in text editor)
    */
   jumpToPreviousEditingLocation: "Jump to previous editing location",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (jump to next editing location in text editor)
    */
   jumpToNextEditingLocation: "Jump to next editing location",
   /**
-   *@description Title of an action that closes the active editor tab in the Sources panel
+   * @description Title of an action that closes the active editor tab in the Sources panel
    */
   closeTheActiveTab: "Close the active tab",
   /**
-   *@description Text to go to a given line
+   * @description Text to go to a given line
    */
   goToLine: "Go to line",
   /**
-   *@description Title of an action that opens the go to member menu
+   * @description Title of an action that opens the go to member menu
    */
   goToAFunctionDeclarationruleSet: "Go to a function declaration/rule set",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (toggle breakpoint in debugger)
    */
   toggleBreakpoint: "Toggle breakpoint",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (enable toggle breakpoint shortcut in debugger)
    */
   toggleBreakpointEnabled: "Toggle breakpoint enabled",
   /**
-   *@description Title of a sources panel action that opens the breakpoint input window
+   * @description Title of a sources panel action that opens the breakpoint input window
    */
   toggleBreakpointInputWindow: "Toggle breakpoint input window",
   /**
-   *@description Text to save something
+   * @description Text to save something
    */
   save: "Save",
   /**
-   *@description Title of an action to save all files in the Sources panel
+   * @description Title of an action to save all files in the Sources panel
    */
   saveAll: "Save all",
   /**
-   *@description Title of an action in the sources tool to create snippet
+   * @description Title of an action in the sources tool to create snippet
    */
   createNewSnippet: "Create new snippet",
   /**
@@ -3307,53 +3307,53 @@ var UIStrings10 = {
    */
   addFolderToWorkspace: "Add folder to workspace",
   /**
-   *@description Title of an action in the debugger tool to previous call frame
+   * @description Title of an action in the debugger tool to previous call frame
    */
   previousCallFrame: "Previous call frame",
   /**
-   *@description Title of an action in the debugger tool to next call frame
+   * @description Title of an action in the debugger tool to next call frame
    */
   nextCallFrame: "Next call frame",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane)
-   *@example {10} PH1
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (increment CSS unit by the amount passed in the placeholder in Styles pane)
+   * @example {10} PH1
    */
   incrementCssUnitBy: "Increment CSS unit by {PH1}",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane)
-   *@example {10} PH1
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (decrement CSS unit by the amount passed in the placeholder in Styles pane)
+   * @example {10} PH1
    */
   decrementCssUnitBy: "Decrement CSS unit by {PH1}",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   searchInAnonymousAndContent: "Search in anonymous and content scripts",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotSearchInAnonymousAndContent: "Do not search in anonymous and content scripts",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   automaticallyRevealFilesIn: "Automatically reveal files in sidebar",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotAutomaticallyRevealFilesIn: "Do not automatically reveal files in sidebar",
   /**
-   *@description Setting under the Sources category to toggle usage of JavaScript source maps.
+   * @description Setting under the Sources category to toggle usage of JavaScript source maps.
    */
   javaScriptSourceMaps: "JavaScript source maps",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableJavaScriptSourceMaps: "Enable JavaScript source maps",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableJavaScriptSourceMaps: "Disable JavaScript source maps",
   /**
-   *@description Title of a setting under the Sources category.
+   * @description Title of a setting under the Sources category.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
    *text editor, as opposed to inserting a tab character into the text in the
@@ -3361,7 +3361,7 @@ var UIStrings10 = {
    */
   tabMovesFocus: "Tab moves focus",
   /**
-   *@description Title of a setting that can be invoked through the Command Menu.
+   * @description Title of a setting that can be invoked through the Command Menu.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
    *text editor, as opposed to inserting a tab character into the text in the
@@ -3369,7 +3369,7 @@ var UIStrings10 = {
    */
   enableTabMovesFocus: "Enable tab moves focus",
   /**
-   *@description Title of a setting that can be invoked through the Command Menu.
+   * @description Title of a setting that can be invoked through the Command Menu.
    *'tab moves focus' is the name of the setting, which means that when the user
    *hits the tab key, the focus in the UI will be moved to the next part of the
    *text editor, as opposed to inserting a tab character into the text in the
@@ -3377,79 +3377,79 @@ var UIStrings10 = {
    */
   disableTabMovesFocus: "Disable tab moves focus",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   detectIndentation: "Detect indentation",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotDetectIndentation: "Do not detect indentation",
   /**
-   *@description Title of a setting under Sources category that can be invoked through the Command Menu.
+   * @description Title of a setting under Sources category that can be invoked through the Command Menu.
    *This setting turns on the automatic formatting of source files in the Sources panel that are detected
    *to be minified.
    */
   automaticallyPrettyPrintMinifiedSources: "Automatically pretty print minified sources",
   /**
-   *@description Title of a setting under Sources category that can be invoked through the Command Menu.
+   * @description Title of a setting under Sources category that can be invoked through the Command Menu.
    *This setting turns off the automatic formatting of source files in the Sources panel that are detected
    *to be minified.
    */
   doNotAutomaticallyPrettyPrintMinifiedSources: "Do not automatically pretty print minified sources",
   /**
-   *@description Text for autocompletion
+   * @description Text for autocompletion
    */
   autocompletion: "Autocompletion",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableAutocompletion: "Enable autocompletion",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableAutocompletion: "Disable autocompletion",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   bracketClosing: "Auto closing brackets",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableBracketClosing: "Enable auto closing brackets",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableBracketClosing: "Disable auto closing brackets",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   bracketMatching: "Bracket matching",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableBracketMatching: "Enable bracket matching",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableBracketMatching: "Disable bracket matching",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   codeFolding: "Code folding",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableCodeFolding: "Enable code folding",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableCodeFolding: "Disable code folding",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   showWhitespaceCharacters: "Show whitespace characters:",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotShowWhitespaceCharacters: "Do not show whitespace characters",
   /**
@@ -3458,87 +3458,87 @@ var UIStrings10 = {
    */
   none: "None",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   showAllWhitespaceCharacters: "Show all whitespace characters",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   showTrailingWhitespaceCharacters: "Show trailing whitespace characters",
   /**
-   *@description A drop-down menu option to show trailing whitespace characters
+   * @description A drop-down menu option to show trailing whitespace characters
    */
   trailing: "Trailing",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   displayVariableValuesInlineWhile: "Display variable values inline while debugging",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   doNotDisplayVariableValuesInline: "Do not display variable values inline while debugging",
   /**
-   *@description Title of a setting under the Sources category
+   * @description Title of a setting under the Sources category
    */
   cssSourceMaps: "CSS source maps",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   enableCssSourceMaps: "Enable CSS source maps",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   disableCssSourceMaps: "Disable CSS source maps",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   allowScrollingPastEndOfFile: "Allow scrolling past end of file",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   disallowScrollingPastEndOfFile: "Disallow scrolling past end of file",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   wasmAutoStepping: "When debugging Wasm with debug information, do not pause on wasm bytecode if possible",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   enableWasmAutoStepping: "Enable Wasm auto-stepping",
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   disableWasmAutoStepping: "Disable Wasm auto-stepping",
   /**
-   *@description Text for command prefix of go to a given line or symbol
+   * @description Text for command prefix of go to a given line or symbol
    */
   goTo: "Go to",
   /**
-   *@description Text for command suggestion of go to a given line
+   * @description Text for command suggestion of go to a given line
    */
   line: "Line",
   /**
-   *@description Text for command suggestion of go to a given symbol
+   * @description Text for command suggestion of go to a given symbol
    */
   symbol: "Symbol",
   /**
-   *@description Text for help title of go to symbol menu
+   * @description Text for help title of go to symbol menu
    */
   goToSymbol: "Go to symbol",
   /**
-   *@description Text for command prefix of open a file
+   * @description Text for command prefix of open a file
    */
   open: "Open",
   /**
-   *@description Text for command suggestion of open a file
+   * @description Text for command suggestion of open a file
    */
   file: "File",
   /**
-   *@description Text for help title of open file menu
+   * @description Text for help title of open file menu
    */
   openFile: "Open file",
   /**
@@ -3554,7 +3554,7 @@ var UIStrings10 = {
    */
   enableAutoFocusOnDebuggerPaused: "Focus Sources panel when triggering a breakpoint",
   /**
-   *@description Title of an action to reveal the active file in the navigator sidebar of the Sources panel
+   * @description Title of an action to reveal the active file in the navigator sidebar of the Sources panel
    */
   revealActiveFileInSidebar: "Reveal active file in navigator sidebar",
   /**
@@ -5124,23 +5124,23 @@ var UIStrings11 = {
    */
   sensors: "Sensors",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   geolocation: "geolocation",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   timezones: "timezones",
   /**
-   *@description Text in Sensors View of the Device Toolbar
+   * @description Text in Sensors View of the Device Toolbar
    */
   locale: "locale",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   locales: "locales",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   accelerometer: "accelerometer",
   /**
@@ -5149,7 +5149,7 @@ var UIStrings11 = {
    */
   deviceOrientation: "device orientation",
   /**
-   *@description Title of Locations settings. Refers to geographic locations for GPS.
+   * @description Title of Locations settings. Refers to geographic locations for GPS.
    */
   locations: "Locations",
   /**
@@ -5158,39 +5158,39 @@ var UIStrings11 = {
    */
   touch: "Touch",
   /**
-   *@description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
+   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
    *which means the input type will be 'touch' only if the device normally has touch input e.g. a
    *phone or tablet.
    */
   devicebased: "Device-based",
   /**
-   *@description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
+   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
    *on, even if the device type e.g. desktop computer does not normally have touch input.
    */
   forceEnabled: "Force enabled",
   /**
-   *@description Title of a section option in Sensors tab for idle emulation. This is a command, to
+   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
    *emulate the state of the 'Idle Detector'.
    */
   emulateIdleDetectorState: "Emulate Idle Detector state",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
+   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
    */
   noIdleEmulation: "No idle emulation",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userActiveScreenUnlocked: "User active, screen unlocked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userActiveScreenLocked: "User active, screen locked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userIdleScreenUnlocked: "User idle, screen unlocked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userIdleScreenLocked: "User idle, screen locked",
   /**
@@ -5199,7 +5199,7 @@ var UIStrings11 = {
    */
   showSensors: "Show Sensors",
   /**
-   *@description Command that shows geographic locations.
+   * @description Command that shows geographic locations.
    */
   showLocations: "Show Locations",
   /**
@@ -5207,23 +5207,23 @@ var UIStrings11 = {
    */
   cpuPressure: "CPU Pressure",
   /**
-   *@description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
+   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
    */
   noPressureEmulation: "No override",
   /**
-   *@description An option that appears in a drop-down that represents the nominal state.
+   * @description An option that appears in a drop-down that represents the nominal state.
    */
   nominal: "Nominal",
   /**
-   *@description An option that appears in a drop-down that represents the fair state.
+   * @description An option that appears in a drop-down that represents the fair state.
    */
   fair: "Fair",
   /**
-   *@description An option that appears in a drop-down that represents the serious state.
+   * @description An option that appears in a drop-down that represents the serious state.
    */
   serious: "Serious",
   /**
-   *@description An option that appears in a drop-down that represents the critical state.
+   * @description An option that appears in a drop-down that represents the critical state.
    */
   critical: "Critical"
 };
@@ -5446,55 +5446,55 @@ import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Command for showing the 'Performance' tool
+   * @description Command for showing the 'Performance' tool
    */
   showPerformance: "Show Performance",
   /**
-   *@description Text to record a series of actions for analysis
+   * @description Text to record a series of actions for analysis
    */
   record: "Record",
   /**
-   *@description Text of an item that stops the running task
+   * @description Text of an item that stops the running task
    */
   stop: "Stop",
   /**
-   *@description Title of an action in the timeline tool to record reload
+   * @description Title of an action in the timeline tool to record reload
    */
   recordAndReload: "Record and reload",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button
+   * @description Tooltip text that appears when hovering over the largeicon download button
    */
   saveProfile: "Save profile\u2026",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon load button
+   * @description Tooltip text that appears when hovering over the largeicon load button
    */
   loadProfile: "Load profile\u2026",
   /**
-   *@description Prev button title in Film Strip View of the Performance panel
+   * @description Prev button title in Film Strip View of the Performance panel
    */
   previousFrame: "Previous frame",
   /**
-   *@description Next button title in Film Strip View of the Performance panel
+   * @description Next button title in Film Strip View of the Performance panel
    */
   nextFrame: "Next frame",
   /**
-   *@description Title of an action in the timeline tool to show history
+   * @description Title of an action in the timeline tool to show history
    */
   showRecentTimelineSessions: "Show recent timeline sessions",
   /**
-   *@description Title of an action that opens the previous recording in the performance panel
+   * @description Title of an action that opens the previous recording in the performance panel
    */
   previousRecording: "Previous recording",
   /**
-   *@description Title of an action that opens the next recording in the performance panel
+   * @description Title of an action that opens the next recording in the performance panel
    */
   nextRecording: "Next recording",
   /**
-   *@description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings
    */
   hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
 };
@@ -5798,17 +5798,17 @@ import * as Root5 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings13 = {
   /**
-   *@description Title of a setting under the Performance category in Settings.
+   * @description Title of a setting under the Performance category in Settings.
    * Selected navigation allows switching between 2 different sets of shortcuts
    * and actions (like zoom on scroll or crtl/cmd + scroll) for navigating the performance panel.
    */
   flamechartSelectedNavigation: "Flamechart navigation:",
   /**
-   *@description Modern navigation option in the Performance Panel.
+   * @description Modern navigation option in the Performance Panel.
    */
   modern: "Modern",
   /**
-   *@description Classic navigation option in the Performance Panel.
+   * @description Classic navigation option in the Performance Panel.
    */
   classic: "Classic",
   /**
@@ -5819,15 +5819,15 @@ var UIStrings13 = {
    */
   liveMemoryAllocationAnnotations: "Live memory allocation annotations",
   /**
-   *@description Title of a setting under the Memory category that can be invoked through the Command Menu
+   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
    */
   showLiveMemoryAllocation: "Show live memory allocation annotations",
   /**
-   *@description Title of a setting under the Memory category that can be invoked through the Command Menu
+   * @description Title of a setting under the Memory category that can be invoked through the Command Menu
    */
   hideLiveMemoryAllocation: "Hide live memory allocation annotations",
   /**
-   *@description Title of an action in the components tool to collect garbage
+   * @description Title of an action in the components tool to collect garbage
    */
   collectGarbage: "Collect garbage"
 };
@@ -5894,11 +5894,11 @@ import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
-   *@description Title of action that opens a file
+   * @description Title of action that opens a file
    */
   openFile: "Open file",
   /**
-   *@description Title of command that runs a Quick Open command
+   * @description Title of command that runs a Quick Open command
    */
   runCommand: "Run command"
 };
@@ -6004,39 +6004,39 @@ import * as Common12 from "./../../core/common/common.js";
 import * as i18n30 from "./../../core/i18n/i18n.js";
 var UIStrings15 = {
   /**
-   *@description Title of a setting under the Sources category in Settings
+   * @description Title of a setting under the Sources category in Settings
    */
   defaultIndentation: "Default indentation:",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   setIndentationToSpaces: "Set indentation to 2 spaces",
   /**
-   *@description A drop-down menu option to set indentation to 2 spaces
+   * @description A drop-down menu option to set indentation to 2 spaces
    */
   Spaces: "2 spaces",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   setIndentationToFSpaces: "Set indentation to 4 spaces",
   /**
-   *@description A drop-down menu option to set indentation to 4 spaces
+   * @description A drop-down menu option to set indentation to 4 spaces
    */
   fSpaces: "4 spaces",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   setIndentationToESpaces: "Set indentation to 8 spaces",
   /**
-   *@description A drop-down menu option to set indentation to 8 spaces
+   * @description A drop-down menu option to set indentation to 8 spaces
    */
   eSpaces: "8 spaces",
   /**
-   *@description Title of a setting under the Sources category that can be invoked through the Command Menu
+   * @description Title of a setting under the Sources category that can be invoked through the Command Menu
    */
   setIndentationToTabCharacter: "Set indentation to tab character",
   /**
-   *@description A drop-down menu option to set indentation to tab character
+   * @description A drop-down menu option to set indentation to tab character
    */
   tabCharacter: "Tab character"
 };

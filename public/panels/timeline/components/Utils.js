@@ -8,17 +8,17 @@ import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 const UIStrings = {
     /**
-     *@description ms is the short form of milli-seconds and the placeholder is a decimal number.
+     * @description ms is the short form of milli-seconds and the placeholder is a decimal number.
      * The shortest form or abbreviation of milliseconds should be used, as there is
      * limited room in this UI.
-     *@example {2.14} PH1
+     * @example {2.14} PH1
      */
     fms: '{PH1}[ms]()',
     /**
-     *@description s is short for seconds and the placeholder is a decimal number
+     * @description s is short for seconds and the placeholder is a decimal number
      * The shortest form or abbreviation of seconds should be used, as there is
      * limited room in this UI.
-     *@example {2.14} PH1
+     * @example {2.14} PH1
      */
     fs: '{PH1}[s]()',
 };
@@ -154,11 +154,11 @@ export function renderMetricValue(jslogContext, value, thresholds, format, optio
  *
  * As of this writing, our only locale where the unit comes before the number is `sw`, ex: `Sek {PH1}`.
  *
-    new Intl.NumberFormat('sw', {
-      style: 'unit',
-      unit: 'millisecond',
-      unitDisplay: 'narrow'
-    }).format(10); // 'ms 10'
+ * new Intl.NumberFormat('sw', {
+ * style: 'unit',
+ * unit: 'millisecond',
+ * unitDisplay: 'narrow'
+ * }).format(10); // 'ms 10'
  *
  */
 export var NumberWithUnit;

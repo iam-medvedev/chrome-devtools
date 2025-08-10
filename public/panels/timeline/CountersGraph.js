@@ -38,29 +38,29 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Text for a heap profile type
+     * @description Text for a heap profile type
      */
     jsHeap: 'JS heap',
     /**
-     *@description Text for documents, a type of resources
+     * @description Text for documents, a type of resources
      */
     documents: 'Documents',
     /**
-     *@description Text in Counters Graph of the Performance panel
+     * @description Text in Counters Graph of the Performance panel
      */
     nodes: 'Nodes',
     /**
-     *@description Text in Counters Graph of the Performance panel
+     * @description Text in Counters Graph of the Performance panel
      */
     listeners: 'Listeners',
     /**
-     *@description Text in Counters Graph of the Performance panel
+     * @description Text in Counters Graph of the Performance panel
      */
     gpuMemory: 'GPU memory',
     /**
-     *@description Range text content in Counters Graph of the Performance panel
-     *@example {2} PH1
-     *@example {10} PH2
+     * @description Range text content in Counters Graph of the Performance panel
+     * @example {2} PH1
+     * @example {10} PH2
      */
     ss: '[{PH1} – {PH2}]',
     /**

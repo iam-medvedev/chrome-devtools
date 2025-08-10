@@ -1,6 +1,7 @@
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.prebundle.js
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
@@ -17,12 +18,12 @@ var UIStrings = {
    */
   enableAiAssistance: "Enable AI assistance",
   /**
-   *@description Text of a tooltip to redirect to the AI assistance panel with
+   * @description Text of a tooltip to redirect to the AI assistance panel with
    * the current element as context
    */
   askAi: "Ask AI",
   /**
-   *@description Text of a context menu item to redirect to the AI assistance panel with
+   * @description Text of a context menu item to redirect to the AI assistance panel with
    * the current context
    */
   debugWithAi: "Debug with AI",
@@ -81,6 +82,12 @@ function isFileAgentFeatureAvailable(config) {
 function isAnyFeatureAvailable(config) {
   return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config);
 }
+function titleForAiAssistanceActions() {
+  if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled || Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+    return i18nLazyString(UIStrings.debugWithAi)();
+  }
+  return i18nLazyString(UIStrings.askAi)();
+}
 UI.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "freestyler",
@@ -128,7 +135,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -141,7 +148,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -154,7 +161,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -167,7 +174,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -180,7 +187,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -193,7 +200,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -208,7 +215,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.askAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -221,7 +228,7 @@ UI.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString(UIStrings.debugWithAi),
+  title: () => titleForAiAssistanceActions(),
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();

@@ -120,53 +120,53 @@ __export(AccessibilityStrings_exports, {
 import * as i18n from "./../../core/i18n/i18n.js";
 var UIStrings = {
   /**
-   *@description Text to indicate something is not enabled
+   * @description Text to indicate something is not enabled
    */
   disabled: "Disabled",
   /**
-   *@description Tooltip text that appears when hovering over the 'Disabled' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Disabled' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifTrueThisElementCurrentlyCannot: "If true, this element currently cannot be interacted with.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   invalidUserEntry: "Invalid user entry",
   /**
-   *@description Tooltip text that appears when hovering over the 'Invalid user entry' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Invalid user entry' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifTrueThisElementsUserentered: "If true, this element's user-entered value does not conform to validation requirement.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   editable: "Editable",
   /**
-   *@description Tooltip text that appears when hovering over the 'Editable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Editable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifAndHowThisElementCanBeEdited: "If and how this element can be edited.",
   /**
-   *@description Adjective. Describes whether the currently selected HTML element of the page can receive focus at all (e.g. can the selected element receive user keyboard input).
+   * @description Adjective. Describes whether the currently selected HTML element of the page can receive focus at all (e.g. can the selected element receive user keyboard input).
    *             Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   focusable: "Focusable",
   /**
-   *@description Tooltip text that appears when hovering over the 'Focusable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Focusable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifTrueThisElementCanReceiveFocus: "If true, this element can receive focus.",
   /**
-   *@description Adjective. Describes whether the currently selected HTML element of the page is focused (e.g. the selected element receives user keyboard input).
+   * @description Adjective. Describes whether the currently selected HTML element of the page is focused (e.g. the selected element receives user keyboard input).
    *             Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane.
    */
   focused: "Focused",
   /**
-   *@description Tooltip text that appears when hovering over the 'Focused' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Focused' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifTrueThisElementCurrentlyHas: "If `true`, this element currently has focus.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   canSetValue: "Can set value",
   /**
-   *@description Tooltip text that appears when hovering over the 'Can set value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Can set value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherTheValueOfThisElementCan: "Whether the value of this element can be set.",
   /**
@@ -176,7 +176,7 @@ var UIStrings = {
    */
   liveRegion: "Live region",
   /**
-   *@description Tooltip text that appears when hovering over the 'Live region' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Live region' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherAndWhatPriorityOfLive: "Whether and what priority of live updates may be expected for this element.",
   /**
@@ -197,7 +197,7 @@ var UIStrings = {
    */
   relevantLiveRegions: "Relevant (live regions)",
   /**
-   *@description Tooltip text that appears when hovering over the 'Relevant (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Relevant (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifThisElementMayReceiveLiveUpdates: "If this element may receive live updates, what type of updates should trigger a notification.",
   /**
@@ -208,7 +208,7 @@ var UIStrings = {
    */
   busyLiveRegions: "`Busy` (live regions)",
   /**
-   *@description Tooltip text that appears when hovering over the 'Busy (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Busy (live regions)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisElementOrItsSubtree: "Whether this element or its subtree are currently being updated (and thus may be in an inconsistent state).",
   /**
@@ -220,211 +220,211 @@ var UIStrings = {
    */
   liveRegionRoot: "Live region root",
   /**
-   *@description Tooltip text that appears when hovering over the 'Live region root' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Live region root' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifThisElementMayReceiveLiveUpdatesThe: "If this element may receive live updates, the root element of the containing live region.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   hasAutocomplete: "Has autocomplete",
   /**
-   *@description Tooltip text that appears when hovering over the 'Has autocomplete' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Has autocomplete' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherAndWhatTypeOfAutocomplete: "Whether and what type of autocomplete suggestions are currently provided by this element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   hasPopup: "Has popup",
   /**
-   *@description Tooltip text that appears when hovering over the 'Has popup' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Has popup' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisElementHasCausedSome: "Whether this element has caused some kind of pop-up (such as a menu) to appear.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   level: "Level",
   /**
-   *@description Tooltip text that appears when hovering over the 'Level' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Level' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theHierarchicalLevelOfThis: "The hierarchical level of this element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   multiselectable: "Multi-selectable",
   /**
-   *@description Tooltip text that appears when hovering over the 'Multi-selectable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Multi-selectable' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherAUserMaySelectMoreThanOne: "Whether a user may select more than one option from this widget.",
   /**
-   *@description Text for the orientation of something
+   * @description Text for the orientation of something
    */
   orientation: "Orientation",
   /**
-   *@description Tooltip text that appears when hovering over the 'Orientation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Orientation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisLinearElements: "Whether this linear element's orientation is horizontal or vertical.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   multiline: "Multi-line",
   /**
-   *@description Tooltip text that appears when hovering over the 'Multi-line' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Multi-line' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisTextBoxMayHaveMore: "Whether this text box may have more than one line.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   readonlyString: "Read-only",
   /**
-   *@description Tooltip text that appears when hovering over the 'Read-only' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Read-only' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   ifTrueThisElementMayBeInteracted: "If true, this element may be interacted with, but its value cannot be changed.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   requiredString: "Required",
   /**
-   *@description Tooltip text that appears when hovering over the 'Required' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Required' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisElementIsARequired: "Whether this element is a required field in a form.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   minimumValue: "Minimum value",
   /**
-   *@description Tooltip text that appears when hovering over the 'Minimum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Minimum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   forARangeWidgetTheMinimumAllowed: "For a range widget, the minimum allowed value.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   maximumValue: "Maximum value",
   /**
-   *@description Tooltip text that appears when hovering over the 'Maximum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Maximum value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   forARangeWidgetTheMaximumAllowed: "For a range widget, the maximum allowed value.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueDescription: "Value description",
   /**
-   *@description Tooltip text that appears when hovering over the 'Value description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Value description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   aHumanreadableVersionOfTheValue: "A human-readable version of the value of a range widget (where necessary).",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   checked: "Checked",
   /**
-   *@description Tooltip text that appears when hovering over the 'Checked' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Checked' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisCheckboxRadioButtonOr: "Whether this checkbox, radio button or tree item is checked, unchecked, or mixed (e.g. has both checked and un-checked children).",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   expanded: "Expanded",
   /**
-   *@description Tooltip text that appears when hovering over the 'Expanded' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Expanded' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisElementOrAnother: "Whether this element, or another grouping element it controls, is expanded.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   pressed: "Pressed",
   /**
-   *@description Tooltip text that appears when hovering over the 'Pressed' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Pressed' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherThisToggleButtonIs: "Whether this toggle button is currently in a pressed state.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   selectedString: "Selected",
   /**
-   *@description Tooltip text that appears when hovering over the 'Selected' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Selected' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   whetherTheOptionRepresentedBy: "Whether the option represented by this element is currently selected.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   activeDescendant: "Active descendant",
   /**
-   *@description Tooltip text that appears when hovering over the 'Active descendant' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Active descendant' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theDescendantOfThisElementWhich: "The descendant of this element which is active; i.e. the element to which focus should be delegated.",
   /**
-   *@description Tooltip text that appears when hovering over the 'Flows to' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Flows to' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   elementToWhichTheUserMayChooseTo: "Element to which the user may choose to navigate after this one, instead of the next element in the DOM order.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   controls: "Controls",
   /**
-   *@description Tooltip text that appears when hovering over the 'Controls' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Controls' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   elementOrElementsWhoseContentOr: "Element or elements whose content or presence is/are controlled by this widget.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   describedBy: "Described by",
   /**
-   *@description Tooltip text that appears when hovering over the 'Described by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Described by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   elementOrElementsWhichFormThe: "Element or elements which form the description of this element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   labeledBy: "Labeled by",
   /**
-   *@description Tooltip text that appears when hovering over the 'Labeled by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Labeled by' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   elementOrElementsWhichMayFormThe: "Element or elements which may form the name of this element.",
   /**
-   *@description Tooltip text that appears when hovering over the 'Owns' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Owns' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   elementOrElementsWhichShouldBe: "Element or elements which should be considered descendants of this element, despite not being descendants in the DOM.",
   /**
-   *@description Tooltip text that appears when hovering over the 'Name' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Name' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theComputedNameOfThisElement: "The computed name of this element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   role: "Role",
   /**
-   *@description Tooltip text that appears when hovering over the 'Role' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Role' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   indicatesThePurposeOfThisElement: "Indicates the purpose of this element, such as a user interface idiom for a widget, or structural role within a document.",
   /**
-   *@description Text for the value of something
+   * @description Text for the value of something
    */
   value: "Value",
   /**
-   *@description Tooltip text that appears when hovering over the 'Value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Value' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theValueOfThisElementThisMayBe: "The value of this element; this may be user-provided or developer-provided, depending on the element.",
   /**
-   *@description Text for the viewing the help options
+   * @description Text for the viewing the help options
    */
   help: "Help",
   /**
-   *@description Tooltip text that appears when hovering over the 'Help' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Help' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theComputedHelpTextForThis: "The computed help text for this element.",
   /**
-   *@description Text for the description of something
+   * @description Text for the description of something
    */
   description: "Description",
   /**
-   *@description Tooltip text that appears when hovering over the 'Description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   theAccessibleDescriptionForThis: "The accessible description for this element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   fromAttribute: "From attribute",
   /**
-   *@description Tooltip text that appears when hovering over the 'From attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromAttribute: "Value from attribute.",
   /**
@@ -434,39 +434,39 @@ var UIStrings = {
    */
   implicit: "Implicit",
   /**
-   *@description Tooltip text that appears when hovering over the 'Implicit' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Implicit' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   implicitValue: "Implicit value.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   fromStyle: "From style",
   /**
-   *@description Tooltip text that appears when hovering over the 'From style' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From style' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromStyle: "Value from style.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   contents: "Contents",
   /**
-   *@description Tooltip text that appears when hovering over the 'Contents' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Contents' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromElementContents: "Value from element contents.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   fromPlaceholderAttribute: "From placeholder attribute",
   /**
-   *@description Tooltip text that appears when hovering over the 'From placeholder attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From placeholder attribute' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromPlaceholderAttribute: "Value from placeholder attribute.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   relatedElement: "Related element",
   /**
-   *@description Tooltip text that appears when hovering over the 'Related element' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'Related element' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromRelatedElement: "Value from related element.",
   /**
@@ -477,7 +477,7 @@ var UIStrings = {
    */
   fromCaption: "From `caption`",
   /**
-   *@description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromFigcaptionElement: "Value from `figcaption` element.",
   /**
@@ -488,7 +488,7 @@ var UIStrings = {
    */
   fromDescription: "From `description`",
   /**
-   *@description Tooltip text that appears when hovering over the 'From description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From description' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromDescriptionElement: "Value from `description` element.",
   /**
@@ -499,7 +499,7 @@ var UIStrings = {
    */
   fromLabel: "From `label`",
   /**
-   *@description Tooltip text that appears when hovering over the 'From label' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From label' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromLabelElement: "Value from `label` element.",
   /**
@@ -511,7 +511,7 @@ var UIStrings = {
    */
   fromLabelFor: "From `label` (`for=` attribute)",
   /**
-   *@description Tooltip text that appears when hovering over the 'From label (for)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From label (for)' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromLabelElementWithFor: "Value from `label` element with `for=` attribute.",
   /**
@@ -536,19 +536,19 @@ var UIStrings = {
    */
   fromLegend: "From `legend`",
   /**
-   *@description Tooltip text that appears when hovering over the 'From legend' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From legend' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromLegendElement: "Value from `legend` element.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   fromRubyAnnotation: "From ruby annotation",
   /**
-   *@description Tooltip text that appears when hovering over the 'From ruby annotation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane. Indicates that the value was taken from a plain HTML ruby tag (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby).
+   * @description Tooltip text that appears when hovering over the 'From ruby annotation' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane. Indicates that the value was taken from a plain HTML ruby tag (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/ruby).
    */
   valueFromNativeHtmlRuby: "Value from plain HTML ruby annotation.",
   /**
-   *@description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From caption' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromTableCaption: "Value from `table` `caption`.",
   /**
@@ -557,15 +557,15 @@ var UIStrings = {
    */
   fromTitle: "From title",
   /**
-   *@description Tooltip text that appears when hovering over the 'From title' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From title' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromTitleAttribute: "Value from title attribute.",
   /**
-   *@description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Accessibility attribute name that appears under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   fromNativeHtml: "From native HTML",
   /**
-   *@description Tooltip text that appears when hovering over the 'From native HTML' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
+   * @description Tooltip text that appears when hovering over the 'From native HTML' attribute name under the Computed Properties section in the Accessibility pane of the Elements pane
    */
   valueFromNativeHtmlUnknownSource: "Value from native HTML (unknown source)."
 };
@@ -955,8 +955,8 @@ span.ax-internal-role {
 var AccessibilitySubPane = class extends UI.View.SimpleView {
   axNode;
   nodeInternal;
-  constructor(name) {
-    super(name);
+  constructor(options) {
+    super(options);
     this.registerRequiredCSS(accessibilityProperties_css_default);
     this.axNode = null;
   }
@@ -987,97 +987,97 @@ var AccessibilitySubPane = class extends UI.View.SimpleView {
 // gen/front_end/panels/accessibility/AccessibilityNodeView.js
 var UIStrings2 = {
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   computedProperties: "Computed Properties",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   noAccessibilityNode: "No accessibility node",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   accessibilityNodeNotExposed: "Accessibility node not exposed",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   invalidSource: "Invalid source.",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   notSpecified: "Not specified",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   noNodeWithThisId: "No node with this ID.",
   /**
-   *@description Text which appears in the Accessibility Node View of the Accessibility panel when an element is covered by a modal/popup window
+   * @description Text which appears in the Accessibility Node View of the Accessibility panel when an element is covered by a modal/popup window
    */
   elementIsHiddenBy: "Element is hidden by active modal dialog:\xA0",
   /**
-   *@description Text which appears in the Accessibility Node View of the Accessibility panel when an element is hidden by another accessibility tree.
+   * @description Text which appears in the Accessibility Node View of the Accessibility panel when an element is hidden by another accessibility tree.
    */
   elementIsHiddenByChildTree: "Element is hidden by child tree:\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   ancestorChildrenAreAll: "Ancestor's children are all presentational:\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
-  @example {aria-hidden} PH1
+   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @example {aria-hidden} PH1
    */
   elementIsPlaceholder: "Element is {PH1}.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
-   *@example {aria-hidden} PH1
-   *@example {true} PH2
+   * @description Reason element in Accessibility Node View of the Accessibility panel
+   * @example {aria-hidden} PH1
+   * @example {true} PH2
    */
   placeholderIsPlaceholderOnAncestor: "{PH1} is {PH2} on ancestor:\xA0",
   /**
-   *@description Text in Accessibility Node View of the Accessibility panel
+   * @description Text in Accessibility Node View of the Accessibility panel
    */
   elementHasEmptyAltText: "Element has empty alt text.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   noTextContent: "No text content.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementIsInert: "Element is `inert`.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementIsInAnInertSubTree: "Element is in an `inert` subtree from\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementsInheritsPresentational: "Element inherits presentational role from\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   partOfLabelElement: "Part of label element:\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   labelFor: "Label for\xA0",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementIsNotRendered: "Element is not rendered.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementIsNotVisible: "Element is not visible.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel. Indicates the
+   * @description Reason element in Accessibility Node View of the Accessibility panel. Indicates the
    *ARIA role for this element, which will always have the format 'role=', but with different roles
    *(which are not translated). https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Roles
-   *@example {role=link} PH1
+   * @example {role=link} PH1
    */
   elementHasPlaceholder: "Element has {PH1}.",
   /**
-   *@description Reason element in Accessibility Node View of the Accessibility panel
+   * @description Reason element in Accessibility Node View of the Accessibility panel
    */
   elementIsPresentational: "Element is presentational.",
   /**
@@ -1096,11 +1096,14 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
   treeOutline;
   ignoredReasonsTree;
   constructor() {
-    super(i18nString(UIStrings2.computedProperties));
+    super({
+      title: i18nString(UIStrings2.computedProperties),
+      viewId: "computed-properties",
+      jslog: `${VisualLogging.section("computed-properties")}`
+    });
     this.registerRequiredCSS(accessibilityNode_css_default);
     this.axNode = null;
     this.contentElement.classList.add("ax-subpane");
-    this.contentElement.setAttribute("jslog", `${VisualLogging.section("computed-properties")}`);
     this.noNodeInfo = this.createInfo(i18nString(UIStrings2.noAccessibilityNode));
     this.ignoredInfo = this.createInfo(i18nString(UIStrings2.accessibilityNodeNotExposed), "ax-ignored-info hidden");
     this.treeOutline = this.createTreeOutline();
@@ -3167,11 +3170,11 @@ var Attribute = class {
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
 var UIStrings3 = {
   /**
-   *@description Text in ARIAAttributes View of the Accessibility panel
+   * @description Text in ARIAAttributes View of the Accessibility panel
    */
   ariaAttributes: "ARIA Attributes",
   /**
-   *@description Text in ARIAAttributes View of the Accessibility panel
+   * @description Text in ARIAAttributes View of the Accessibility panel
    */
   noAriaAttributes: "No ARIA attributes"
 };
@@ -3181,10 +3184,13 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
   noPropertiesInfo;
   treeOutline;
   constructor() {
-    super(i18nString2(UIStrings3.ariaAttributes));
+    super({
+      title: i18nString2(UIStrings3.ariaAttributes),
+      viewId: "aria-attributes",
+      jslog: `${VisualLogging2.section("aria-attributes")}`
+    });
     this.noPropertiesInfo = this.createInfo(i18nString2(UIStrings3.noAriaAttributes));
     this.treeOutline = this.createTreeOutline();
-    this.element.setAttribute("jslog", `${VisualLogging2.section("aria-attributes")}`);
   }
   setNode(node) {
     super.setNode(node);
@@ -3573,27 +3579,27 @@ var axBreadcrumbs_css_default = `/*
 // gen/front_end/panels/accessibility/AXBreadcrumbsPane.js
 var UIStrings4 = {
   /**
-   *@description Text in AXBreadcrumbs Pane of the Accessibility panel
+   * @description Text in AXBreadcrumbs Pane of the Accessibility panel
    */
   accessibilityTree: "Accessibility Tree",
   /**
-   *@description Text to scroll the displayed content into view
+   * @description Text to scroll the displayed content into view
    */
   scrollIntoView: "Scroll into view",
   /**
-   *@description Ignored node element text content in AXBreadcrumbs Pane of the Accessibility panel
+   * @description Ignored node element text content in AXBreadcrumbs Pane of the Accessibility panel
    */
   ignored: "Ignored",
   /**
-   *@description Name for experimental tree toggle.
+   * @description Name for experimental tree toggle.
    */
   fullTreeExperimentName: "Enable full-page accessibility tree",
   /**
-   *@description Description text for experimental tree toggle.
+   * @description Description text for experimental tree toggle.
    */
   fullTreeExperimentDescription: "The accessibility tree moved to the top right corner of the DOM tree.",
   /**
-   *@description Message saying that DevTools must be restarted before the experiment is enabled.
+   * @description Message saying that DevTools must be restarted before the experiment is enabled.
    */
   reloadRequired: "Reload required before the change takes effect"
 };
@@ -3608,11 +3614,14 @@ var AXBreadcrumbsPane = class extends AccessibilitySubPane {
   rootElement;
   #legacyTreeDisabled = false;
   constructor(axSidebarView) {
-    super(i18nString3(UIStrings4.accessibilityTree));
+    super({
+      title: i18nString3(UIStrings4.accessibilityTree),
+      viewId: "accessibility-tree",
+      jslog: `${VisualLogging3.section("accessibility-tree")}`
+    });
     this.registerRequiredCSS(axBreadcrumbs_css_default);
     this.element.classList.add("ax-subpane");
     this.element.tabIndex = -1;
-    this.element.setAttribute("jslog", `${VisualLogging3.section("accessibility-tree")}`);
     this.axSidebarView = axSidebarView;
     this.preselectedBreadcrumb = null;
     this.inspectedNodeBreadcrumb = null;
@@ -4131,11 +4140,11 @@ var UIStrings5 = {
    */
   sourceOrderViewer: "Source Order Viewer",
   /**
-   *@description Text in Source Order Viewer of the Accessibility panel shown when the selected node has no child elements
+   * @description Text in Source Order Viewer of the Accessibility panel shown when the selected node has no child elements
    */
   noSourceOrderInformation: "No source order information available",
   /**
-   *@description Text in Source Order Viewer of the Accessibility panel shown when the selected node has many child elements
+   * @description Text in Source Order Viewer of the Accessibility panel shown when the selected node has many child elements
    */
   thereMayBeADelayInDisplaying: "There may be a delay in displaying source order for elements with many children",
   /**
@@ -4154,34 +4163,36 @@ var DEFAULT_VIEW = (input, _output, target) => {
     event.consume();
   }
   render(html`
-    <div jslog=${VisualLogging4.section("source-order-viewer")}>
-      ${input.showSourceOrder === void 0 ? html`
-          <div class="gray-info-message info-message-overflow">
-            ${i18nString4(UIStrings5.noSourceOrderInformation)}
+    ${input.showSourceOrder === void 0 ? html`
+        <div class="gray-info-message info-message-overflow">
+          ${i18nString4(UIStrings5.noSourceOrderInformation)}
+        </div>
+      ` : html`
+      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html`
+          <div class="gray-info-message info-message-overflow"
+                id="source-order-warning">
+            ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
           </div>
-        ` : html`
-        ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html`
-            <div class="gray-info-message info-message-overflow"
-                 id="source-order-warning">
-              ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
-            </div>
-          ` : nothing}
-        <devtools-checkbox class="source-order-checkbox"
-                           jslog=${VisualLogging4.toggle().track({ click: true })}
-                           ?checked=${input.showSourceOrder}
-                           @change=${onShowSourceOrderChanged}>
-          ${i18nString4(UIStrings5.showSourceOrder)}
-        </devtools-checkbox>
-        `}
-    </div>
-  `, target, { host: input });
+        ` : nothing}
+      <devtools-checkbox class="source-order-checkbox"
+                          jslog=${VisualLogging4.toggle().track({ click: true })}
+                          ?checked=${input.showSourceOrder}
+                          @change=${onShowSourceOrderChanged}>
+        ${i18nString4(UIStrings5.showSourceOrder)}
+      </devtools-checkbox>
+      `}
+  `, target);
 };
 var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
   #showSourceOrder = void 0;
   #view;
   constructor(view = DEFAULT_VIEW) {
-    super(i18nString4(UIStrings5.sourceOrderViewer));
+    super({
+      title: i18nString4(UIStrings5.sourceOrderViewer),
+      viewId: "source-order-viewer",
+      jslog: `${VisualLogging4.section("source-order-viewer")}`
+    });
     this.#view = view;
   }
   async setNodeAsync(node) {

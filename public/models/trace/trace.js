@@ -897,7 +897,6 @@ var Model = class _Model extends EventTarget {
    * // Awaiting the parse method() to block until parsing complete
    * await this.traceModel.parse(events);
    * const data = this.traceModel.parsedTrace(0)
-   *
    * @example
    * // Using an event listener to be notified when tracing is complete.
    * this.traceModel.addEventListener(Trace.ModelUpdateEvent.eventName, (event) => {

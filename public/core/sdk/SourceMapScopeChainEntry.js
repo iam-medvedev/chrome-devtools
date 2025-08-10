@@ -6,23 +6,23 @@ import { RemoteObjectImpl, RemoteObjectProperty } from './RemoteObject.js';
 import { contains } from './SourceMapScopesInfo.js';
 const UIStrings = {
     /**
-     *@description Title of a section in the debugger showing local JavaScript variables.
+     * @description Title of a section in the debugger showing local JavaScript variables.
      */
     local: 'Local',
     /**
-     *@description Text that refers to closure as a programming term
+     * @description Text that refers to closure as a programming term
      */
     closure: 'Closure',
     /**
-     *@description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
+     * @description Noun that represents a section or block of code in the Debugger Model. Shown in the Sources tab, while paused on a breakpoint.
      */
     block: 'Block',
     /**
-     *@description Title of a section in the debugger showing JavaScript variables from the global scope.
+     * @description Title of a section in the debugger showing JavaScript variables from the global scope.
      */
     global: 'Global',
     /**
-     *@description Text in Scope Chain Sidebar Pane of the Sources panel
+     * @description Text in Scope Chain Sidebar Pane of the Sources panel
      */
     returnValue: 'Return value',
 };

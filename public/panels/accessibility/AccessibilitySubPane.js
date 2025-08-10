@@ -10,8 +10,8 @@ import accessibilityPropertiesStyles from './accessibilityProperties.css.js';
 export class AccessibilitySubPane extends UI.View.SimpleView {
     axNode;
     nodeInternal;
-    constructor(name) {
-        super(name);
+    constructor(options) {
+        super(options);
         this.registerRequiredCSS(accessibilityPropertiesStyles);
         this.axNode = null;
     }

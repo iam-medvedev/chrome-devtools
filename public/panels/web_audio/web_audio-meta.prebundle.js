@@ -5,15 +5,15 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Title of the WebAudio tool
+     * @description Title of the WebAudio tool
      */
     webaudio: 'WebAudio',
     /**
-     *@description A tags of WebAudio tool that can be searched in the command menu
+     * @description A tags of WebAudio tool that can be searched in the command menu
      */
     audio: 'audio',
     /**
-     *@description Command for showing the WebAudio tool
+     * @description Command for showing the WebAudio tool
      */
     showWebaudio: 'Show WebAudio',
 };

@@ -32,6 +32,7 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     private placeholderCompartment;
     private teaserContainer?;
     private aiCodeCompletionSetting;
+    private aiCodeCompletionCitations?;
     constructor();
     private eagerSettingChanged;
     belowEditorElement(): Element;
@@ -65,10 +66,14 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
 }
 export declare const enum Events {
     TEXT_CHANGED = "TextChanged",
-    CITATIONS_UPDATED = "CitationsUpdated"
+    AI_CODE_COMPLETION_SUGGESTION_ACCEPTED = "AiCodeCompletionSuggestionAccepted",
+    AI_CODE_COMPLETION_RESPONSE_RECEIVED = "AiCodeCompletionResponseReceived",
+    AI_CODE_COMPLETION_REQUEST_TRIGGERED = "AiCodeCompletionRequestTriggered"
 }
 export interface EventTypes {
     [Events.TEXT_CHANGED]: void;
-    [Events.CITATIONS_UPDATED]: AiCodeCompletion.AiCodeCompletion.CitationsUpdatedEvent;
+    [Events.AI_CODE_COMPLETION_SUGGESTION_ACCEPTED]: AiCodeCompletion.AiCodeCompletion.ResponseReceivedEvent;
+    [Events.AI_CODE_COMPLETION_RESPONSE_RECEIVED]: AiCodeCompletion.AiCodeCompletion.ResponseReceivedEvent;
+    [Events.AI_CODE_COMPLETION_REQUEST_TRIGGERED]: {};
 }
 export {};

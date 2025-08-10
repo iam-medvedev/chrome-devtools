@@ -106,24 +106,24 @@ var diffView_css_default = `/*
 var { html } = Lit;
 var UIStrings = {
   /**
-   *@description Text prepended to a removed line in a diff in the Changes tool, viewable only by screen reader.
+   * @description Text prepended to a removed line in a diff in the Changes tool, viewable only by screen reader.
    */
   deletions: "Deletion:",
   /**
-   *@description Text prepended to a new line in a diff in the Changes tool, viewable only by screen reader.
+   * @description Text prepended to a new line in a diff in the Changes tool, viewable only by screen reader.
    */
   additions: "Addition:",
   /**
-   *@description Screen-reader accessible name for the code editor in the Changes tool showing the user's changes.
+   * @description Screen-reader accessible name for the code editor in the Changes tool showing the user's changes.
    */
   changesDiffViewer: "Changes diff viewer",
   /**
-   *@description Text in Changes View of the Changes tab
-   *@example {2} PH1
+   * @description Text in Changes View of the Changes tab
+   * @example {2} PH1
    */
   SkippingDMatchingLines: "( \u2026 Skipping {PH1} matching lines \u2026 )",
   /**
-   *@description Text in Changes View for the case where the modified file contents are the same with its unmodified state
+   * @description Text in Changes View for the case where the modified file contents are the same with its unmodified state
    * e.g. the file contents changed from A -> B then B -> A and not saved yet.
    */
   noDiff: "File is identical to its unmodified state"

@@ -11,18 +11,18 @@ import * as UI from '../../ui/legacy/legacy.js';
 import searchResultsPaneStyles from './searchResultsPane.css.js';
 const UIStrings = {
     /**
-     *@description Accessibility label for number of matches in each file in search results pane
-     *@example {2} PH1
+     * @description Accessibility label for number of matches in each file in search results pane
+     * @example {2} PH1
      */
     matchesCountS: 'Matches Count {PH1}',
     /**
-     *@description Search result label for results in the Search tool
-     *@example {2} PH1
+     * @description Search result label for results in the Search tool
+     * @example {2} PH1
      */
     lineS: 'Line {PH1}',
     /**
-     *@description Text in Search Results Pane of the Search tab
-     *@example {2} PH1
+     * @description Text in Search Results Pane of the Search tab
+     * @example {2} PH1
      */
     showDMore: 'Show {PH1} more',
 };

@@ -19,7 +19,7 @@ export class BezierUI {
     static drawVelocityChart(bezier, path, width) {
         const height = Height;
         let pathBuilder = ['M', 0, height];
-        /** @const */ const sampleSize = 1 / 40;
+        /** @constant */ const sampleSize = 1 / 40;
         let prev = bezier.evaluateAt(0);
         for (let t = sampleSize; t < 1 + sampleSize; t += sampleSize) {
             const current = bezier.evaluateAt(t);

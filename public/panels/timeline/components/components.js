@@ -141,12 +141,12 @@ var breadcrumbsUI_css_default = `/*
 var { render, html } = Lit;
 var UIStrings = {
   /**
-   *@description A context menu item in the Minimap Breadcrumb context menu.
+   * @description A context menu item in the Minimap Breadcrumb context menu.
    * This context menu option activates the breadcrumb that the context menu was opened on.
    */
   activateBreadcrumb: "Activate breadcrumb",
   /**
-   *@description A context menu item in the Minimap Breadcrumb context menu.
+   * @description A context menu item in the Minimap Breadcrumb context menu.
    * This context menu option removed all the child breadcrumbs and activates
    * the breadcrumb that the context menu was opened on.
    */
@@ -456,44 +456,44 @@ import * as Trace2 from "./../../../models/trace/trace.js";
 import * as UI2 from "./../../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   *@description Text in the Performance panel for a forced style and layout calculation of elements
+   * @description Text in the Performance panel for a forced style and layout calculation of elements
    * in a page. See https://developer.mozilla.org/en-US/docs/Glossary/Reflow
    */
   forcedReflow: "Forced reflow",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
-   *@example {Forced reflow} PH1
+   * @description Text in Timeline UIUtils of the Performance panel
+   * @example {Forced reflow} PH1
    */
   sIsALikelyPerformanceBottleneck: "{PH1} is a likely performance bottleneck.",
   /**
-   *@description Text in the Performance panel for a function called during a time the browser was
+   * @description Text in the Performance panel for a function called during a time the browser was
    * idle (inactive), which to longer to execute than a predefined deadline.
-   *@example {10ms} PH1
+   * @example {10ms} PH1
    */
   idleCallbackExecutionExtended: "Idle callback execution extended beyond deadline by {PH1}",
   /**
-   *@description Text in the Performance panel which describes how long a task took.
-   *@example {task} PH1
-   *@example {10ms} PH2
+   * @description Text in the Performance panel which describes how long a task took.
+   * @example {task} PH1
+   * @example {10ms} PH2
    */
   sTookS: "{PH1} took {PH2}.",
   /**
-   *@description Text in the Performance panel for a task that took long. See
+   * @description Text in the Performance panel for a task that took long. See
    * https://developer.mozilla.org/en-US/docs/Glossary/Long_task
    */
   longTask: "Long task",
   /**
-   *@description Text used to highlight a long interaction and link to web.dev/inp
+   * @description Text used to highlight a long interaction and link to web.dev/inp
    */
   longInteractionINP: "Long interaction",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel when the
+   * @description Text in Timeline UIUtils of the Performance panel when the
    *             user clicks on a long interaction.
-   *@example {Long interaction} PH1
+   * @example {Long interaction} PH1
    */
   sIsLikelyPoorPageResponsiveness: "{PH1} is indicating poor page responsiveness.",
   /**
-   *@description Text in Timeline UIUtils of the Performance panel
+   * @description Text in Timeline UIUtils of the Performance panel
    */
   websocketProtocol: "WebSocket protocol",
   /**
@@ -1473,17 +1473,17 @@ var UIStrings6 = {
    */
   ignoreListDescription: "Add regular expression rules to remove matching scripts from the flame chart.",
   /**
-   *@description Pattern title in Framework Ignore List Settings Tab of the Settings
-   *@example {ad.*?} regex
+   * @description Pattern title in Framework Ignore List Settings Tab of the Settings
+   * @example {ad.*?} regex
    */
   ignoreScriptsWhoseNamesMatchS: "Ignore scripts whose names match ''{regex}''",
   /**
-   *@description Label for the button to remove an regex
-   *@example {ad.*?} regex
+   * @description Label for the button to remove an regex
+   * @example {ad.*?} regex
    */
   removeRegex: "Remove the regex: ''{regex}''",
   /**
-   *@description Aria accessible name in Ignore List Settings Dialog in Performance panel. It labels the input
+   * @description Aria accessible name in Ignore List Settings Dialog in Performance panel. It labels the input
    * field used to add new or edit existing regular expressions that match file names to ignore in the debugger.
    */
   addNewRegex: "Add a regular expression rule for the script's URL",
@@ -1733,15 +1733,15 @@ var interactionBreakdown_css_default = `/*
 var { html: html6 } = Lit6;
 var UIStrings7 = {
   /**
-   *@description Text shown next to the interaction event's input delay time in the detail view.
+   * @description Text shown next to the interaction event's input delay time in the detail view.
    */
   inputDelay: "Input delay",
   /**
-   *@description Text shown next to the interaction event's thread processing duration in the detail view.
+   * @description Text shown next to the interaction event's thread processing duration in the detail view.
    */
   processingDuration: "Processing duration",
   /**
-   *@description Text shown next to the interaction event's presentation delay time in the detail view.
+   * @description Text shown next to the interaction event's presentation delay time in the detail view.
    */
   presentationDelay: "Presentation delay"
 };
@@ -2036,13 +2036,13 @@ var LayoutShiftDetails = class extends UI6.Widget.Widget {
 };
 var DEFAULT_VIEW = (input, _output, target) => {
   if (!input.event || !input.parsedTrace) {
-    render7(html7``, target, { host: input });
+    render7(html7``, target);
     return;
   }
   const title = Utils.EntryName.nameForEntry(input.event);
   render7(html7`
-        <style>${layoutShiftDetails_css_default}</style>
-        <style>${Buttons3.textButtonStyles}</style>
+        <style>${UI6.Widget.widgetScoped(layoutShiftDetails_css_default)}</style>
+        <style>${UI6.Widget.widgetScoped(Buttons3.textButtonStyles)}</style>
 
       <div class="layout-shift-summary-details">
         <div
@@ -2057,7 +2057,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${Trace3.Types.Events.isSyntheticLayoutShift(input.event) ? renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
         </div>
       </div>
-      `, target, { host: input });
+      `, target);
 };
 function renderLayoutShiftDetails(layoutShift, traceInsightsSets, parsedTrace, isFreshRecording, onEventClick) {
   if (!traceInsightsSets) {
@@ -3030,17 +3030,17 @@ import * as ThemeSupport from "./../../../ui/legacy/theme_support/theme_support.
 import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js";
 var UIStrings11 = {
   /**
-   *@description ms is the short form of milli-seconds and the placeholder is a decimal number.
+   * @description ms is the short form of milli-seconds and the placeholder is a decimal number.
    * The shortest form or abbreviation of milliseconds should be used, as there is
    * limited room in this UI.
-   *@example {2.14} PH1
+   * @example {2.14} PH1
    */
   fms: "{PH1}[ms]()",
   /**
-   *@description s is short for seconds and the placeholder is a decimal number
+   * @description s is short for seconds and the placeholder is a decimal number
    * The shortest form or abbreviation of seconds should be used, as there is
    * limited room in this UI.
-   *@example {2.14} PH1
+   * @example {2.14} PH1
    */
   fs: "{PH1}[s]()"
 };
@@ -5210,6 +5210,7 @@ customElements.define("devtools-live-metrics-logs", LiveMetricsLogs);
 // gen/front_end/panels/timeline/components/NetworkRequestDetails.js
 var NetworkRequestDetails_exports = {};
 __export(NetworkRequestDetails_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   NetworkRequestDetails: () => NetworkRequestDetails
 });
 import "./../../../ui/components/request_link_icon/request_link_icon.js";
@@ -5425,28 +5426,31 @@ devtools-icon.priority {
 
 .indicator {
   display: inline-block;
-  width: 10px;
-  height: 4px;
+  width: 12px;
+  height: 6px;
   margin-right: 5px;
   border: 1px solid var(--sys-color-on-surface-subtle);
+  box-sizing: border-box;
 }
 
 .whisker-left {
   align-self: center;
   display: inline-flex;
-  width: 10px;
+  width: 11px;
   height: 6px;
   margin-right: 5px;
   border-left: 1px solid var(--sys-color-on-surface-subtle);
+  box-sizing: border-box;
 }
 
 .whisker-right {
   align-self: center;
   display: inline-flex;
-  width: 10px;
+  width: 11px;
   height: 6px;
   margin-right: 5px;
   border-right: 1px solid var(--sys-color-on-surface-subtle);
+  box-sizing: border-box;
 }
 
 .horizontal {
@@ -5495,31 +5499,31 @@ var { html: html12 } = Lit12;
 var MAX_URL_LENGTH2 = 60;
 var UIStrings14 = {
   /**
-   *@description Text that refers to the priority of network request
+   * @description Text that refers to the priority of network request
    */
   priority: "Priority",
   /**
-   *@description Text for the duration of a network request
+   * @description Text for the duration of a network request
    */
   duration: "Duration",
   /**
-   *@description Text that refers to the queueing and connecting time of a network request
+   * @description Text that refers to the queueing and connecting time of a network request
    */
   queuingAndConnecting: "Queuing and connecting",
   /**
-   *@description Text that refers to the request sent and waiting time of a network request
+   * @description Text that refers to the request sent and waiting time of a network request
    */
   requestSentAndWaiting: "Request sent and waiting",
   /**
-   *@description Text that refers to the content downloading time of a network request
+   * @description Text that refers to the content downloading time of a network request
    */
   contentDownloading: "Content downloading",
   /**
-   *@description Text that refers to the waiting on main thread time of a network request
+   * @description Text that refers to the waiting on main thread time of a network request
    */
   waitingOnMainThread: "Waiting on main thread",
   /**
-   *@description Text that refers to a network request is render blocking
+   * @description Text that refers to a network request is render blocking
    */
   renderBlocking: "Render blocking",
   /**
@@ -5651,79 +5655,79 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
 customElements.define("devtools-performance-network-request-tooltip", NetworkRequestTooltip);
 
 // gen/front_end/panels/timeline/components/NetworkRequestDetails.js
-var { html: html13 } = Lit13;
+var { html: html13, render: render12 } = Lit13;
 var MAX_URL_LENGTH3 = 100;
 var UIStrings15 = {
   /**
-   *@description Text that refers to the network request method
+   * @description Text that refers to the network request method
    */
   requestMethod: "Request method",
   /**
-   *@description Text that refers to the network request protocol
+   * @description Text that refers to the network request protocol
    */
   protocol: "Protocol",
   /**
-   *@description Text to show the priority of an item
+   * @description Text to show the priority of an item
    */
   priority: "Priority",
   /**
-   *@description Text used when referring to the data sent in a network request that is encoded as a particular file format.
+   * @description Text used when referring to the data sent in a network request that is encoded as a particular file format.
    */
   encodedData: "Encoded data",
   /**
-   *@description Text used to refer to the data sent in a network request that has been decoded.
+   * @description Text used to refer to the data sent in a network request that has been decoded.
    */
   decodedBody: "Decoded body",
   /**
-   *@description Text in Timeline indicating that input has happened recently
+   * @description Text in Timeline indicating that input has happened recently
    */
   yes: "Yes",
   /**
-   *@description Text in Timeline indicating that input has not happened recently
+   * @description Text in Timeline indicating that input has not happened recently
    */
   no: "No",
   /**
-   *@description Text to indicate to the user they are viewing an event representing a network request.
+   * @description Text to indicate to the user they are viewing an event representing a network request.
    */
   networkRequest: "Network request",
   /**
-   *@description Text for the data source of a network request.
+   * @description Text for the data source of a network request.
    */
   fromCache: "From cache",
   /**
-   *@description Text used to show the mime-type of the data transferred with a network request (e.g. "application/json").
+   * @description Text used to show the mime-type of the data transferred with a network request (e.g. "application/json").
    */
   mimeType: "MIME type",
   /**
-   *@description Text used to show the user that a request was served from the browser's in-memory cache.
+   * @description Text used to show the user that a request was served from the browser's in-memory cache.
    */
   FromMemoryCache: " (from memory cache)",
   /**
-   *@description Text used to show the user that a request was served from the browser's file cache.
+   * @description Text used to show the user that a request was served from the browser's file cache.
    */
   FromCache: " (from cache)",
   /**
-   *@description Label for a network request indicating that it was a HTTP2 server push instead of a regular network request, in the Performance panel
+   * @description Label for a network request indicating that it was a HTTP2 server push instead of a regular network request, in the Performance panel
    */
   FromPush: " (from push)",
   /**
-   *@description Text used to show a user that a request was served from an installed, active service worker.
+   * @description Text used to show a user that a request was served from an installed, active service worker.
    */
   FromServiceWorker: " (from `service worker`)",
   /**
-   *@description Text for the event initiated by another one
+   * @description Text for the event initiated by another one
    */
   initiatedBy: "Initiated by",
   /**
-   *@description Text that refers to if the network request is blocking
+   * @description Text that refers to if the network request is blocking
    */
   blocking: "Blocking",
   /**
-   *@description Text that refers to if the network request is in-body parser render blocking
+   * @description Text that refers to if the network request is in-body parser render blocking
    */
   inBodyParserBlocking: "In-body parser blocking",
   /**
-   *@description Text that refers to if the network request is render blocking
+   * @description Text that refers to if the network request is render blocking
    */
   renderBlocking: "Render blocking",
   /**
@@ -5745,29 +5749,35 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/components/NetworkRequestDetails.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var NetworkRequestDetails = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #networkRequest = null;
-  #maybeTarget = null;
+var NetworkRequestDetails = class extends UI9.Widget.Widget {
+  #view;
+  #request = null;
   #requestPreviewElements = /* @__PURE__ */ new WeakMap();
-  #linkifier;
-  #parsedTrace = null;
   #entityMapper = null;
+  #target = null;
+  #linkifier = null;
   #serverTimings = null;
-  constructor(linkifier) {
-    super();
-    this.#linkifier = linkifier;
+  #parsedTrace = null;
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
+    this.requestUpdate();
   }
-  async setData(parsedTrace, networkRequest, maybeTarget, entityMapper) {
-    if (this.#networkRequest === networkRequest && parsedTrace === this.#parsedTrace) {
-      return;
-    }
+  set linkifier(linkifier) {
+    this.#linkifier = linkifier;
+    this.requestUpdate();
+  }
+  set parsedTrace(parsedTrace) {
     this.#parsedTrace = parsedTrace;
-    this.#networkRequest = networkRequest;
-    this.#maybeTarget = maybeTarget;
-    this.#entityMapper = entityMapper;
-    this.#serverTimings = null;
-    for (const header of networkRequest.args.data.responseHeaders ?? []) {
+    this.requestUpdate();
+  }
+  set target(maybeTarget) {
+    this.#target = maybeTarget;
+    this.requestUpdate();
+  }
+  set request(event) {
+    this.#request = event;
+    for (const header of event.args.data.responseHeaders ?? []) {
       const headerName = header.name.toLocaleLowerCase();
       if (headerName === "server-timing" || headerName === "server-timing-test") {
         header.name = "server-timing";
@@ -5775,247 +5785,252 @@ var NetworkRequestDetails = class extends HTMLElement {
         break;
       }
     }
-    await this.#render();
+    this.requestUpdate();
   }
-  #renderTitle() {
-    if (!this.#networkRequest) {
-      return null;
-    }
-    const style = {
-      backgroundColor: `${colorForNetworkRequest(this.#networkRequest)}`
-    };
-    return html13`
-      <div class="network-request-details-title">
-        <div style=${Lit13.Directives.styleMap(style)}></div>
-        ${i18nString14(UIStrings15.networkRequest)}
-      </div>
-    `;
+  set entityMapper(mapper) {
+    this.#entityMapper = mapper;
+    this.requestUpdate();
   }
-  #renderRow(title, value) {
-    if (!value) {
-      return null;
-    }
-    return html13`
-      <div class="network-request-details-row">
-        <div class="title">${title}</div>
-        <div class="value">${value}</div>
-      </div>`;
+  performUpdate() {
+    this.#view({
+      request: this.#request,
+      previewElementsCache: this.#requestPreviewElements,
+      target: this.#target,
+      entityMapper: this.#entityMapper,
+      serverTimings: this.#serverTimings,
+      linkifier: this.#linkifier,
+      parsedTrace: this.#parsedTrace
+    }, {}, this.contentElement);
   }
-  #renderServerTimings() {
-    if (!this.#serverTimings) {
-      return Lit13.nothing;
-    }
-    return html13`
-      <div class="column-divider"></div>
-      <div class="network-request-details-col server-timings">
-          <div class="server-timing-column-header">${i18nString14(UIStrings15.serverTiming)}</div>
-          <div class="server-timing-column-header">${i18nString14(UIStrings15.description)}</div>
-          <div class="server-timing-column-header">${i18nString14(UIStrings15.time)}</div>
-        ${this.#serverTimings.map((timing) => {
-      const classes = timing.metric.startsWith("(c") ? "synthetic value" : "value";
-      return html13`
-              <div class=${classes}>${timing.metric || "-"}</div>
-              <div class=${classes}>${timing.description || "-"}</div>
-              <div class=${classes}>${timing.value || "-"}</div>
-          `;
-    })}
-      </div>`;
+};
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  if (!input.request) {
+    render12(html13``, target);
+    return;
   }
-  #renderURL() {
-    if (!this.#networkRequest) {
-      return null;
-    }
-    const options = {
-      tabStop: true,
-      showColumnNumber: false,
-      inlineFrameIndex: 0,
-      maxLength: MAX_URL_LENGTH3
-    };
-    const linkifiedURL = LegacyComponents2.Linkifier.Linkifier.linkifyURL(this.#networkRequest.args.data.url, options);
-    const networkRequest = SDK6.TraceObject.RevealableNetworkRequest.create(this.#networkRequest);
-    if (networkRequest) {
-      linkifiedURL.addEventListener("contextmenu", (event) => {
-        if (!this.#networkRequest) {
-          return;
-        }
-        const contextMenu = new UI9.ContextMenu.ContextMenu(event);
-        contextMenu.appendApplicableItems(networkRequest);
-        void contextMenu.show();
-      });
-      const urlElement = html13`
+  const { request } = input;
+  const { data } = request.args;
+  const redirectsHtml = NetworkRequestTooltip.renderRedirects(request);
+  render12(html13`
+        <style>${UI9.Widget.widgetScoped(networkRequestDetails_css_default)}</style>
+        <style>${UI9.Widget.widgetScoped(networkRequestTooltip_css_default)}</style>
+
+        <div class="network-request-details-content">
+          ${renderTitle(input.request)}
+          ${renderURL(input.request)}
+          <div class="network-request-details-cols">
+            ${Lit13.Directives.until(renderPreviewElement(input.request, input.target, input.previewElementsCache))}
+            <div class="network-request-details-col">
+              ${renderRow(i18nString14(UIStrings15.requestMethod), data.requestMethod)}
+              ${renderRow(i18nString14(UIStrings15.protocol), data.protocol)}
+              ${renderRow(i18nString14(UIStrings15.priority), NetworkRequestTooltip.renderPriorityValue(request))}
+              ${renderRow(i18nString14(UIStrings15.mimeType), data.mimeType)}
+              ${renderEncodedDataLength(request)}
+              ${renderRow(i18nString14(UIStrings15.decodedBody), i18n29.ByteUtilities.bytesToString(request.args.data.decodedBodyLength))}
+              ${renderBlockingRow(request)}
+              ${renderFromCache(request)}
+              ${renderThirdPartyEntity(request, input.entityMapper)}
+            </div>
+            <div class="column-divider"></div>
+            <div class="network-request-details-col">
+              <div class="timing-rows">
+                ${NetworkRequestTooltip.renderTimings(request)}
+              </div>
+            </div>
+            ${renderServerTimings(input.serverTimings)}
+            ${redirectsHtml ? html13`
+              <div class="column-divider"></div>
+              <div class="network-request-details-col redirect-details">
+                ${redirectsHtml}
+              </div>
+            ` : Lit13.nothing}
+            </div>
+            ${renderInitiatedBy(request, input.parsedTrace, input.target, input.linkifier)}
+          </div>
+        </div>
+     `, target);
+};
+function renderTitle(request) {
+  const style = {
+    backgroundColor: `${colorForNetworkRequest(request)}`
+  };
+  return html13`
+    <div class="network-request-details-title">
+      <div style=${Lit13.Directives.styleMap(style)}></div>
+      ${i18nString14(UIStrings15.networkRequest)}
+    </div>
+  `;
+}
+function renderURL(request) {
+  const options = {
+    tabStop: true,
+    showColumnNumber: false,
+    inlineFrameIndex: 0,
+    maxLength: MAX_URL_LENGTH3
+  };
+  const linkifiedURL = LegacyComponents2.Linkifier.Linkifier.linkifyURL(request.args.data.url, options);
+  const networkRequest = SDK6.TraceObject.RevealableNetworkRequest.create(request);
+  if (networkRequest) {
+    linkifiedURL.addEventListener("contextmenu", (event) => {
+      const contextMenu = new UI9.ContextMenu.ContextMenu(event);
+      contextMenu.appendApplicableItems(networkRequest);
+      void contextMenu.show();
+    });
+    const urlElement = html13`
         ${linkifiedURL}
         <devtools-request-link-icon .data=${{ request: networkRequest.networkRequest }}>
         </devtools-request-link-icon>
       `;
-      return html13`<div class="network-request-details-item">${urlElement}</div>`;
-    }
-    return html13`<div class="network-request-details-item">${linkifiedURL}</div>`;
+    return html13`<div class="network-request-details-item">${urlElement}</div>`;
   }
-  #renderFromCache() {
-    if (!this.#networkRequest) {
-      return null;
-    }
-    const cached = this.#networkRequest.args.data.syntheticData.isMemoryCached || this.#networkRequest.args.data.syntheticData.isDiskCached;
-    return this.#renderRow(i18nString14(UIStrings15.fromCache), cached ? i18nString14(UIStrings15.yes) : i18nString14(UIStrings15.no));
+  return html13`<div class="network-request-details-item">${linkifiedURL}</div>`;
+}
+async function renderPreviewElement(request, target, previewElementsCache) {
+  if (!request.args.data.url || !target) {
+    return Lit13.nothing;
   }
-  #renderThirdPartyEntity() {
-    if (!this.#entityMapper || !this.#networkRequest) {
-      return null;
-    }
-    const entity = this.#entityMapper.entityForEvent(this.#networkRequest);
-    if (!entity) {
-      return null;
-    }
-    return this.#renderRow(i18nString14(UIStrings15.entity), entity.name);
-  }
-  #renderEncodedDataLength() {
-    if (!this.#networkRequest) {
-      return null;
-    }
-    let lengthText = "";
-    if (this.#networkRequest.args.data.syntheticData.isMemoryCached) {
-      lengthText += i18nString14(UIStrings15.FromMemoryCache);
-    } else if (this.#networkRequest.args.data.syntheticData.isDiskCached) {
-      lengthText += i18nString14(UIStrings15.FromCache);
-    } else if (this.#networkRequest.args.data.timing?.pushStart) {
-      lengthText += i18nString14(UIStrings15.FromPush);
-    }
-    if (this.#networkRequest.args.data.fromServiceWorker) {
-      lengthText += i18nString14(UIStrings15.FromServiceWorker);
-    }
-    if (this.#networkRequest.args.data.encodedDataLength || !lengthText) {
-      lengthText = `${i18n29.ByteUtilities.bytesToString(this.#networkRequest.args.data.encodedDataLength)}${lengthText}`;
-    }
-    return this.#renderRow(i18nString14(UIStrings15.encodedData), lengthText);
-  }
-  #renderInitiatedBy() {
-    if (!this.#networkRequest) {
-      return null;
-    }
-    const hasStackTrace = Trace6.Helpers.Trace.stackTraceInEvent(this.#networkRequest) !== null;
-    let link = null;
-    const options = {
-      tabStop: true,
-      showColumnNumber: true,
-      inlineFrameIndex: 0
+  const url = request.args.data.url;
+  if (!previewElementsCache.get(request)) {
+    const previewOpts = {
+      imageAltText: LegacyComponents2.ImagePreview.ImagePreview.defaultAltTextForImageURL(url),
+      precomputedFeatures: void 0,
+      align: "start",
+      hideFileData: true
     };
-    if (hasStackTrace) {
-      const topFrame = Trace6.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(this.#networkRequest)?.at(0) ?? null;
-      if (topFrame) {
-        link = this.#linkifier.maybeLinkifyConsoleCallFrame(this.#maybeTarget, topFrame, options);
-      }
+    const previewElement = await LegacyComponents2.ImagePreview.ImagePreview.build(url, false, previewOpts);
+    if (previewElement) {
+      previewElementsCache.set(request, previewElement);
     }
-    const initiator = this.#parsedTrace?.NetworkRequests.eventToInitiator.get(this.#networkRequest);
-    if (initiator) {
-      link = this.#linkifier.maybeLinkifyScriptLocation(
-        this.#maybeTarget,
-        null,
-        // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
-        initiator.args.data.url,
-        void 0,
-        // line number
-        options
-      );
-    }
-    if (!link) {
-      return null;
-    }
+  }
+  const requestPreviewElement = previewElementsCache.get(request);
+  if (requestPreviewElement) {
     return html13`
+      <div class="network-request-details-col">${requestPreviewElement}</div>
+      <div class="column-divider"></div>`;
+  }
+  return Lit13.nothing;
+}
+function renderRow(title, value) {
+  if (!value) {
+    return Lit13.nothing;
+  }
+  return html13`
+      <div class="network-request-details-row">
+        <div class="title">${title}</div>
+        <div class="value">${value}</div>
+      </div>`;
+}
+function renderEncodedDataLength(request) {
+  let lengthText = "";
+  if (request.args.data.syntheticData.isMemoryCached) {
+    lengthText += i18nString14(UIStrings15.FromMemoryCache);
+  } else if (request.args.data.syntheticData.isDiskCached) {
+    lengthText += i18nString14(UIStrings15.FromCache);
+  } else if (request.args.data.timing?.pushStart) {
+    lengthText += i18nString14(UIStrings15.FromPush);
+  }
+  if (request.args.data.fromServiceWorker) {
+    lengthText += i18nString14(UIStrings15.FromServiceWorker);
+  }
+  if (request.args.data.encodedDataLength || !lengthText) {
+    lengthText = `${i18n29.ByteUtilities.bytesToString(request.args.data.encodedDataLength)}${lengthText}`;
+  }
+  return renderRow(i18nString14(UIStrings15.encodedData), lengthText);
+}
+function renderBlockingRow(request) {
+  if (!Helpers6.Network.isSyntheticNetworkRequestEventRenderBlocking(request)) {
+    return Lit13.nothing;
+  }
+  let renderBlockingText;
+  switch (request.args.data.renderBlocking) {
+    case "blocking":
+      renderBlockingText = UIStrings15.renderBlocking;
+      break;
+    case "in_body_parser_blocking":
+      renderBlockingText = UIStrings15.inBodyParserBlocking;
+      break;
+    default:
+      return Lit13.nothing;
+  }
+  return renderRow(i18nString14(UIStrings15.blocking), renderBlockingText);
+}
+function renderFromCache(request) {
+  const cached = request.args.data.syntheticData.isMemoryCached || request.args.data.syntheticData.isDiskCached;
+  return renderRow(i18nString14(UIStrings15.fromCache), cached ? i18nString14(UIStrings15.yes) : i18nString14(UIStrings15.no));
+}
+function renderThirdPartyEntity(request, entityMapper) {
+  if (!entityMapper) {
+    return Lit13.nothing;
+  }
+  const entity = entityMapper.entityForEvent(request);
+  if (!entity) {
+    return Lit13.nothing;
+  }
+  return renderRow(i18nString14(UIStrings15.entity), entity.name);
+}
+function renderServerTimings(timings) {
+  if (!timings || timings.length === 0) {
+    return Lit13.nothing;
+  }
+  return html13`
+    <div class="column-divider"></div>
+    <div class="network-request-details-col server-timings">
+      <div class="server-timing-column-header">${i18nString14(UIStrings15.serverTiming)}</div>
+      <div class="server-timing-column-header">${i18nString14(UIStrings15.description)}</div>
+      <div class="server-timing-column-header">${i18nString14(UIStrings15.time)}</div>
+      ${timings.map((timing) => {
+    const classes = timing.metric.startsWith("(c") ? "synthetic value" : "value";
+    return html13`
+          <div class=${classes}>${timing.metric || "-"}</div>
+          <div class=${classes}>${timing.description || "-"}</div>
+          <div class=${classes}>${timing.value || "-"}</div>
+        `;
+  })}
+    </div>`;
+}
+function renderInitiatedBy(request, parsedTrace, target, linkifier) {
+  if (!linkifier) {
+    return Lit13.nothing;
+  }
+  const hasStackTrace = Trace6.Helpers.Trace.stackTraceInEvent(request) !== null;
+  let link = null;
+  const options = {
+    tabStop: true,
+    showColumnNumber: true,
+    inlineFrameIndex: 0
+  };
+  if (hasStackTrace) {
+    const topFrame = Trace6.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(request)?.at(0) ?? null;
+    if (topFrame) {
+      link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, options);
+    }
+  }
+  const initiator = parsedTrace?.NetworkRequests.eventToInitiator.get(request);
+  if (initiator) {
+    link = linkifier.maybeLinkifyScriptLocation(
+      target,
+      null,
+      // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
+      initiator.args.data.url,
+      void 0,
+      // line number
+      options
+    );
+  }
+  if (!link) {
+    return Lit13.nothing;
+  }
+  return html13`
       <div class="network-request-details-item">
         <div class="title">${i18nString14(UIStrings15.initiatedBy)}</div>
         <div class="value focusable-outline">${link}</div>
       </div>`;
-  }
-  #renderBlockingRow() {
-    if (!this.#networkRequest || !Helpers6.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#networkRequest)) {
-      return null;
-    }
-    let renderBlockingText;
-    switch (this.#networkRequest.args.data.renderBlocking) {
-      case "blocking":
-        renderBlockingText = UIStrings15.renderBlocking;
-        break;
-      case "in_body_parser_blocking":
-        renderBlockingText = UIStrings15.inBodyParserBlocking;
-        break;
-      default:
-        return null;
-    }
-    return this.#renderRow(i18nString14(UIStrings15.blocking), renderBlockingText);
-  }
-  async #renderPreviewElement() {
-    if (!this.#networkRequest || !this.#networkRequest.args.data.url || !this.#maybeTarget) {
-      return null;
-    }
-    if (!this.#requestPreviewElements.get(this.#networkRequest)) {
-      const previewOpts = {
-        imageAltText: LegacyComponents2.ImagePreview.ImagePreview.defaultAltTextForImageURL(this.#networkRequest.args.data.url),
-        precomputedFeatures: void 0,
-        align: "start",
-        hideFileData: true
-      };
-      const previewElement = await LegacyComponents2.ImagePreview.ImagePreview.build(this.#networkRequest.args.data.url, false, previewOpts);
-      previewElement && this.#requestPreviewElements.set(this.#networkRequest, previewElement);
-    }
-    const requestPreviewElement = this.#requestPreviewElements.get(this.#networkRequest);
-    if (requestPreviewElement) {
-      return html13`
-        <div class="network-request-details-col">${requestPreviewElement}</div>
-        <div class="column-divider"></div>`;
-    }
-    return null;
-  }
-  async #render() {
-    if (!this.#networkRequest) {
-      return;
-    }
-    const networkData = this.#networkRequest.args.data;
-    const redirectsHtml = NetworkRequestTooltip.renderRedirects(this.#networkRequest);
-    const output = html13`
-      <style>${networkRequestDetails_css_default}</style>
-      <style>${networkRequestTooltip_css_default}</style>
-      <div class="network-request-details-content">
-        ${this.#renderTitle()}
-        ${this.#renderURL()}
-        <div class="network-request-details-cols">
-          ${await this.#renderPreviewElement()}
-          <div class="network-request-details-col">
-            ${this.#renderRow(i18nString14(UIStrings15.requestMethod), networkData.requestMethod)}
-            ${this.#renderRow(i18nString14(UIStrings15.protocol), networkData.protocol)}
-            ${this.#renderRow(i18nString14(UIStrings15.priority), NetworkRequestTooltip.renderPriorityValue(this.#networkRequest))}
-            ${this.#renderRow(i18nString14(UIStrings15.mimeType), networkData.mimeType)}
-            ${this.#renderEncodedDataLength()}
-            ${this.#renderRow(i18nString14(UIStrings15.decodedBody), i18n29.ByteUtilities.bytesToString(this.#networkRequest.args.data.decodedBodyLength))}
-            ${this.#renderBlockingRow()}
-            ${this.#renderFromCache()}
-            ${this.#renderThirdPartyEntity()}
-          </div>
-          <div class="column-divider"></div>
-          <div class="network-request-details-col">
-            <div class="timing-rows">
-              ${NetworkRequestTooltip.renderTimings(this.#networkRequest)}
-            </div>
-          </div>
-          ${this.#renderServerTimings()}
-          ${redirectsHtml ? html13`
-            <div class="column-divider"></div>
-            <div class="network-request-details-col redirect-details">
-              ${redirectsHtml}
-            </div>
-          ` : Lit13.nothing}
-        </div>
-        ${this.#renderInitiatedBy()}
-      </div>
-    `;
-    Lit13.render(output, this.#shadow, { host: this });
-  }
-};
-customElements.define("devtools-performance-network-request-details", NetworkRequestDetails);
+}
 
 // gen/front_end/panels/timeline/components/RelatedInsightChips.js
 var RelatedInsightChips_exports = {};
 __export(RelatedInsightChips_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RelatedInsightChips: () => RelatedInsightChips
 });
 import * as i18n31 from "./../../../core/i18n/i18n.js";
@@ -6029,7 +6044,7 @@ var relatedInsightChips_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   display: block;
   border-bottom: 1px solid var(--sys-color-divider);
   flex: none;
@@ -6106,7 +6121,7 @@ ul {
 var { html: html14, render: render13 } = Lit14;
 var UIStrings16 = {
   /**
-   *@description prefix shown next to related insight chips
+   * @description prefix shown next to related insight chips
    */
   insightKeyword: "Insight",
   /**
@@ -6121,7 +6136,7 @@ var RelatedInsightChips = class extends UI10.Widget.Widget {
   #view;
   #activeEvent = null;
   #eventToInsightsMap = /* @__PURE__ */ new Map();
-  constructor(element, view = DEFAULT_VIEW2) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element);
     this.#view = view;
   }
@@ -6147,11 +6162,11 @@ var RelatedInsightChips = class extends UI10.Widget.Widget {
     this.#view(input, {}, this.contentElement);
   }
 };
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   const { activeEvent, eventToInsightsMap } = input;
   const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
   if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
-    render13(html14``, target, { host: input });
+    render13(html14``, target);
     return;
   }
   const insightMessages = relatedInsights.flatMap((insight) => {
@@ -6182,9 +6197,9 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
           </li>
         `];
   });
-  render13(html14`<style>${relatedInsightChips_css_default}</style>
+  render13(html14`<style>${UI10.Widget.widgetScoped(relatedInsightChips_css_default)}</style>
         <ul>${insightMessages}</ul>
-        <ul>${insightChips}</ul>`, target, { host: input });
+        <ul>${insightChips}</ul>`, target);
 };
 
 // gen/front_end/panels/timeline/components/Sidebar.js
@@ -6222,7 +6237,7 @@ var InsightDeactivated = class _InsightDeactivated extends Event {
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
 var SidebarAnnotationsTab_exports = {};
 __export(SidebarAnnotationsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
 import * as Common5 from "./../../../core/common/common.js";
@@ -6243,7 +6258,7 @@ var sidebarAnnotationsTab_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   display: block;
   height: 100%;
 }
@@ -6395,20 +6410,20 @@ var UIStrings17 = {
   deleteButton: "Delete annotation: {PH1}",
   /**
    * @description label used to describe an annotation on an entry
-   *@example {Paint} PH1
-   *@example {"Hello world"} PH2
+   * @example {Paint} PH1
+   * @example {"Hello world"} PH2
    */
   entryLabelDescriptionLabel: 'A "{PH1}" event annotated with the text "{PH2}"',
   /**
    * @description label used to describe a time range annotation
-   *@example {2.5 milliseconds} PH1
-   *@example {13.5 milliseconds} PH2
+   * @example {2.5 milliseconds} PH1
+   * @example {13.5 milliseconds} PH2
    */
   timeRangeDescriptionLabel: "A time range starting at {PH1} and ending at {PH2}",
   /**
    * @description label used to describe a link from one entry to another.
-   *@example {Paint} PH1
-   *@example {Recalculate styles} PH2
+   * @example {Paint} PH1
+   * @example {Recalculate styles} PH2
    */
   entryLinkDescriptionLabel: 'A link between a "{PH1}" event and a "{PH2}" event'
 };
@@ -6421,7 +6436,7 @@ var SidebarAnnotationsTab = class extends UI11.Widget.Widget {
   #annotationEntryToColorMap = /* @__PURE__ */ new Map();
   #annotationsHiddenSetting;
   #view;
-  constructor(view = DEFAULT_VIEW3) {
+  constructor(view = DEFAULT_VIEW4) {
     super();
     this.#view = view;
     this.#annotationsHiddenSetting = Common5.Settings.Settings.instance().moduleSetting("annotations-hidden");
@@ -6651,9 +6666,9 @@ function renderTutorial() {
       </div>
     </div>`;
 }
-var DEFAULT_VIEW3 = (input, _output, target) => {
+var DEFAULT_VIEW4 = (input, _output, target) => {
   render14(html15`
-      <style>${sidebarAnnotationsTab_css_default}</style>
+      <style>${UI11.Widget.widgetScoped(sidebarAnnotationsTab_css_default)}</style>
       <span class="annotations">
         ${input.annotations.length === 0 ? renderTutorial() : html15`
             ${input.annotations.map((annotation) => {
@@ -6854,15 +6869,15 @@ var sidebarSingleInsightSet_css_default = `/*
 var { html: html16 } = Lit16.StaticHtml;
 var UIStrings18 = {
   /**
-   *@description title used for a metric value to tell the user about its score classification
-   *@example {INP} PH1
-   *@example {1.2s} PH2
-   *@example {poor} PH3
+   * @description title used for a metric value to tell the user about its score classification
+   * @example {INP} PH1
+   * @example {1.2s} PH2
+   * @example {poor} PH3
    */
   metricScore: "{PH1}: {PH2} {PH3} score",
   /**
-   *@description title used for a metric value to tell the user that the data is unavailable
-   *@example {INP} PH1
+   * @description title used for a metric value to tell the user that the data is unavailable
+   * @example {INP} PH1
    */
   metricScoreUnavailable: "{PH1}: unavailable",
   /**
@@ -7693,13 +7708,13 @@ var timelineSummary_css_default = `/*
 var { render: render17, html: html18 } = Lit18;
 var UIStrings19 = {
   /**
-   *@description Text for total
+   * @description Text for total
    */
   total: "Total",
   /**
-   *@description Range in Timeline Details View's Summary
-   *@example {1ms} PH1
-   *@example {10ms} PH2
+   * @description Range in Timeline Details View's Summary
+   * @example {1ms} PH1
+   * @example {10ms} PH2
    */
   rangeSS: "Range:  {PH1} \u2013 {PH2}"
 };

@@ -5,11 +5,11 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const UIStrings = {
     /**
-     *@description Label for the autofill pane
+     * @description Label for the autofill pane
      */
     autofill: 'Autofill',
     /**
-     *@description Command for showing the 'Autofill' pane
+     * @description Command for showing the 'Autofill' pane
      */
     showAutofill: 'Show Autofill',
 };

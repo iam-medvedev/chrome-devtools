@@ -216,7 +216,7 @@ export function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
  * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
  * account for that.
  *
- * @returns {Map<string, MatchingPairableAsyncEvents>} Map of the animation's ID to it's matching events.
+ * @returns Map of the animation's ID to it's matching events.
  */
 export function matchEvents(unpairedEvents) {
     // map to store begin and end of the event

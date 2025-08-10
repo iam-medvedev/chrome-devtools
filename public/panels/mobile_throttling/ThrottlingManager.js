@@ -5,30 +5,13 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { MobileThrottlingSelector } from './MobileThrottlingSelector.js';
-import { NetworkThrottlingSelector } from './NetworkThrottlingSelector.js';
 import { ThrottlingPresets, } from './ThrottlingPresets.js';
 const UIStrings = {
-    /**
-     *@description Text with two placeholders separated by a colon
-     *@example {Node removed} PH1
-     *@example {div#id1} PH2
-     */
-    sS: '{PH1}: {PH2}',
-    /**
-     *@description Text in Throttling Manager of the Network panel
-     */
-    add: 'Add…',
-    /**
-     *@description Accessibility label for custom add network throttling option
-     *@example {Custom} PH1
-     */
-    addS: 'Add {PH1}',
     /**
      *@description Text to indicate the network connectivity is offline
      */
@@ -38,31 +21,31 @@ const UIStrings = {
      */
     forceDisconnectedFromNetwork: 'Force disconnected from network',
     /**
-     *@description Text for throttling the network
+     * @description Text for throttling the network
      */
     throttling: 'Throttling',
     /**
-     *@description Icon title in Throttling Manager of the Network panel
+     * @description Icon title in Throttling Manager of the Network panel
      */
     cpuThrottlingIsEnabled: 'CPU throttling is enabled',
     /**
-     *@description Screen reader label for a select box that chooses the CPU throttling speed in the Performance panel
+     * @description Screen reader label for a select box that chooses the CPU throttling speed in the Performance panel
      */
     cpuThrottling: 'CPU throttling',
     /**
-     *@description Tooltip text in Throttling Manager of the Performance panel
+     * @description Tooltip text in Throttling Manager of the Performance panel
      */
     excessConcurrency: 'Exceeding the default value may degrade system performance.',
     /**
-     *@description Tooltip text in Throttling Manager of the Performance panel
+     * @description Tooltip text in Throttling Manager of the Performance panel
      */
     resetConcurrency: 'Reset to the default value',
     /**
-     *@description Label for an check box that neables overriding navigator.hardwareConcurrency
+     * @description Label for an check box that neables overriding navigator.hardwareConcurrency
      */
     hardwareConcurrency: 'Hardware concurrency',
     /**
-     *@description Tooltip text for an input box that overrides navigator.hardwareConcurrency on the page
+     * @description Tooltip text for an input box that overrides navigator.hardwareConcurrency on the page
      */
     hardwareConcurrencySettingLabel: 'Override the value reported by navigator.hardwareConcurrency',
     /**
@@ -80,19 +63,19 @@ const UIStrings = {
      */
     recalibrate: 'Recalibrate…',
     /**
-     *@description Text to indicate Save-Data override is not set.
+     * @description Text to indicate Save-Data override is not set.
      */
     noSaveDataOverride: '\'Save-Data\': default',
     /**
-     *@description Text to indicate Save-Data override is set to Enabled.
+     * @description Text to indicate Save-Data override is set to Enabled.
      */
     saveDataOn: '\'Save-Data\': force on',
     /**
-     *@description Text to indicate Save-Data override is set to Disabled.
+     * @description Text to indicate Save-Data override is set to Disabled.
      */
     saveDataOff: '\'Save-Data\': force off',
     /**
-     *@description Tooltip text for an select element that overrides navigator.connection.saveData on the page
+     * @description Tooltip text for an select element that overrides navigator.connection.saveData on the page
      */
     saveDataSettingTooltip: 'Override the value reported by navigator.connection.saveData on the page',
 };
@@ -237,79 +220,6 @@ export class ThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
             control.setSelectedIndex(index);
         }
         this.updatePanelIcon();
-    }
-    createNetworkThrottlingSelector(selectElement) {
-        let options = [];
-        let titles = [];
-        let optionEls = [];
-        const selector = new NetworkThrottlingSelector(populate, select, this.customNetworkConditionsSetting);
-        selectElement.setAttribute('jslog', `${VisualLogging.dropDown()
-            .track({ change: true })
-            .context(this.currentNetworkThrottlingConditionKeySetting.name)}`);
-        selectElement.addEventListener('change', optionSelected, false);
-        function populate(groups) {
-            selectElement.removeChildren();
-            options = [];
-            titles = [];
-            optionEls = [];
-            for (let i = 0; i < groups.length; ++i) {
-                const group = groups[i];
-                const groupElement = selectElement.createChild('optgroup');
-                groupElement.label = group.title;
-                for (const conditions of group.items) {
-                    // The title is usually an i18nLazyString except for custom values that are stored in the local storage in the form of a string.
-                    const title = typeof conditions.title === 'function' ? conditions.title() : conditions.title;
-                    const option = new Option(title, title);
-                    UI.ARIAUtils.setLabel(option, i18nString(UIStrings.sS, { PH1: group.title, PH2: title }));
-                    const jslogContext = i === groups.length - 1 ?
-                        'custom-network-throttling-item' :
-                        Platform.StringUtilities.toKebabCase(conditions.i18nTitleKey || title);
-                    option.setAttribute('jslog', `${VisualLogging.item(jslogContext).track({
-                        click: true,
-                    })}`);
-                    groupElement.appendChild(option);
-                    options.push(conditions);
-                    titles.push(title);
-                    optionEls.push(option);
-                }
-                if (i === groups.length - 1) {
-                    const option = new Option(i18nString(UIStrings.add), i18nString(UIStrings.add));
-                    UI.ARIAUtils.setLabel(option, i18nString(UIStrings.addS, { PH1: group.title }));
-                    option.setAttribute('jslog', `${VisualLogging.action('add').track({ click: true })}`);
-                    groupElement.appendChild(option);
-                    options.push(null);
-                }
-            }
-            return options;
-        }
-        function optionSelected() {
-            if (selectElement.selectedIndex === selectElement.options.length - 1) {
-                selector.revealAndUpdate();
-            }
-            else {
-                const option = options[selectElement.selectedIndex];
-                if (option) {
-                    selector.optionSelected(option);
-                }
-            }
-        }
-        function select(index) {
-            if (selectElement.selectedIndex !== index) {
-                selectElement.selectedIndex = index;
-            }
-        }
-        return {
-            selector,
-            updateRecommendedConditions(recommendedConditions) {
-                for (let i = 0; i < optionEls.length; i++) {
-                    let title = titles[i];
-                    if (options[i] === recommendedConditions) {
-                        title = i18nString(UIStrings.recommendedThrottling, { PH1: title });
-                    }
-                    optionEls[i].text = title;
-                }
-            },
-        };
     }
     createCPUThrottlingSelector() {
         const getCalibrationString = () => {

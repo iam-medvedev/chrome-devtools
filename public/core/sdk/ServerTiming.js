@@ -5,33 +5,33 @@ import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
 const UIStrings = {
     /**
-     *@description Text in Server Timing
-     *@example {sql-lookup} PH1
+     * @description Text in Server Timing
+     * @example {sql-lookup} PH1
      */
     deprecatedSyntaxFoundPleaseUse: 'Deprecated syntax found for metric "{PH1}". Please use: <name>;dur=<duration>;desc=<description>',
     /**
-     *@description Text in Server Timing
-     *@example {https} PH1
+     * @description Text in Server Timing
+     * @example {https} PH1
      */
     duplicateParameterSIgnored: 'Duplicate parameter "{PH1}" ignored.',
     /**
-     *@description Text in Server Timing
-     *@example {https} PH1
+     * @description Text in Server Timing
+     * @example {https} PH1
      */
     noValueFoundForParameterS: 'No value found for parameter "{PH1}".',
     /**
-     *@description Text in Server Timing
-     *@example {https} PH1
+     * @description Text in Server Timing
+     * @example {https} PH1
      */
     unrecognizedParameterS: 'Unrecognized parameter "{PH1}".',
     /**
-     *@description Text in Server Timing
+     * @description Text in Server Timing
      */
     extraneousTrailingCharacters: 'Extraneous trailing characters.',
     /**
-     *@description Text in Server Timing
-     *@example {https} PH1
-     *@example {2.0} PH2
+     * @description Text in Server Timing
+     * @example {https} PH1
+     * @example {2.0} PH2
      */
     unableToParseSValueS: 'Unable to parse "{PH1}" value "{PH2}".',
 };

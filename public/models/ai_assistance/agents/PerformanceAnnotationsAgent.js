@@ -9,7 +9,7 @@ import { callTreePreamble, PerformanceTraceContext } from './PerformanceAgent.js
 const UIStringsNotTranslated = {
     analyzingCallTree: 'Analyzing call tree',
     /**
-     *@description Shown when the agent is investigating network activity
+     * @description Shown when the agent is investigating network activity
      */
 };
 const lockedString = i18n.i18n.lockedString;

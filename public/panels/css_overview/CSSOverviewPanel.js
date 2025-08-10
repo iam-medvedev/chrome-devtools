@@ -21,7 +21,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 onReset: input.onReset,
                 overviewData: input.overviewData,
                 target: input.target,
-            })}></devtools-widget>`, target, { host: input });
+            })}></devtools-widget>`, target);
     // clang-format on
 };
 export class CSSOverviewPanel extends UI.Panel.Panel {

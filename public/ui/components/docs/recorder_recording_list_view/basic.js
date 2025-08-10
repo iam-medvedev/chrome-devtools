@@ -17,5 +17,8 @@ component.recordings = [
         name: 'Title 2',
     },
 ];
-document.getElementById('container')?.appendChild(component);
+const container = document.getElementById('container');
+if (container) {
+    component.show(container);
+}
 //# sourceMappingURL=basic.js.map

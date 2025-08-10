@@ -146,33 +146,33 @@ var HeadersView_css_default = `/*
 var { html } = Lit;
 var UIStrings = {
   /**
-   *@description The title of a button that adds a field to input a header in the editor form.
+   * @description The title of a button that adds a field to input a header in the editor form.
    */
   addHeader: "Add a header",
   /**
-   *@description The title of a button that removes a field to input a header in the editor form.
+   * @description The title of a button that removes a field to input a header in the editor form.
    */
   removeHeader: "Remove this header",
   /**
-   *@description The title of a button that removes a section for defining header overrides in the editor form.
+   * @description The title of a button that removes a section for defining header overrides in the editor form.
    */
   removeBlock: "Remove this '`ApplyTo`'-section",
   /**
-   *@description Error message for files which cannot not be parsed.
-   *@example {.headers} PH1
+   * @description Error message for files which cannot not be parsed.
+   * @example {.headers} PH1
    */
   errorWhenParsing: "Error when parsing ''{PH1}''.",
   /**
-   *@description Explainer for files which cannot be parsed.
-   *@example {.headers} PH1
+   * @description Explainer for files which cannot be parsed.
+   * @example {.headers} PH1
    */
   parsingErrorExplainer: "This is most likely due to a syntax error in ''{PH1}''. Try opening this file in an external editor to fix the error or delete the file and re-create the override.",
   /**
-   *@description Button text for a button which adds an additional header override rule.
+   * @description Button text for a button which adds an additional header override rule.
    */
   addOverrideRule: "Add override rule",
   /**
-   *@description Text which is a hyperlink to more documentation
+   * @description Text which is a hyperlink to more documentation
    */
   learnMore: "Learn more"
 };
@@ -184,8 +184,11 @@ var HeadersView = class extends UI.View.SimpleView {
   #headersViewComponent = new HeadersViewComponent();
   #uiSourceCode;
   constructor(uiSourceCode) {
-    super(i18n.i18n.lockedString("HeadersView"));
-    this.element.setAttribute("jslog", `${VisualLogging.pane("headers-view")}`);
+    super({
+      title: i18n.i18n.lockedString("HeadersView"),
+      viewId: "headers-view",
+      jslog: `${VisualLogging.pane("headers-view")}`
+    });
     this.#uiSourceCode = uiSourceCode;
     this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.#onWorkingCopyChanged, this);
     this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.#onWorkingCopyCommitted, this);

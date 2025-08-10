@@ -13,12 +13,12 @@ import breadcrumbsUIStyles from './breadcrumbsUI.css.js';
 const { render, html } = Lit;
 const UIStrings = {
     /**
-     *@description A context menu item in the Minimap Breadcrumb context menu.
+     * @description A context menu item in the Minimap Breadcrumb context menu.
      * This context menu option activates the breadcrumb that the context menu was opened on.
      */
     activateBreadcrumb: 'Activate breadcrumb',
     /**
-     *@description A context menu item in the Minimap Breadcrumb context menu.
+     * @description A context menu item in the Minimap Breadcrumb context menu.
      * This context menu option removed all the child breadcrumbs and activates
      * the breadcrumb that the context menu was opened on.
      */

@@ -152,19 +152,19 @@ x-link.quick-start-link {
 // gen/front_end/ui/components/panel_feedback/PanelFeedback.js
 var UIStrings2 = {
   /**
-   *@description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
+   * @description Introduction sentence to convey the feature is being actively worked on and we are looking for feedback.
    */
   previewText: "Our team is actively working on this feature and we would love to know what you think.",
   /**
-   *@description Link text the user can click to provide feedback to the team.
+   * @description Link text the user can click to provide feedback to the team.
    */
   previewTextFeedbackLink: "Send us your feedback.",
   /**
-   *@description Title of the UI section that shows the user that this feature is in preview. Used as the main heading. Not a verb.
+   * @description Title of the UI section that shows the user that this feature is in preview. Used as the main heading. Not a verb.
    */
   previewFeature: "Preview feature",
   /**
-   *@description Title of the section to the quick start video and documentation on experimental panels.
+   * @description Title of the section to the quick start video and documentation on experimental panels.
    */
   videoAndDocumentation: "Video and documentation"
 };
@@ -272,15 +272,15 @@ var previewToggle_css_default = `/*
 // gen/front_end/ui/components/panel_feedback/PreviewToggle.js
 var UIStrings3 = {
   /**
-   *@description Link text the user can click to provide feedback to the team.
+   * @description Link text the user can click to provide feedback to the team.
    */
   previewTextFeedbackLink: "Send us your feedback.",
   /**
-   *@description Link text the user can click to provide feedback to the team.
+   * @description Link text the user can click to provide feedback to the team.
    */
   shortFeedbackLink: "Send feedback",
   /**
-   *@description Link text the user can click to see documentation.
+   * @description Link text the user can click to see documentation.
    */
   learnMoreLink: "Learn More"
 };

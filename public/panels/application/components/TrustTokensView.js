@@ -17,15 +17,15 @@ const PRIVATE_STATE_TOKENS_EXPLANATION_URL = 'https://developers.google.com/priv
 const { html } = Lit;
 const UIStrings = {
     /**
-     *@description Text for the issuer of an item
+     * @description Text for the issuer of an item
      */
     issuer: 'Issuer',
     /**
-     *@description Column header for Trust Token table
+     * @description Column header for Trust Token table
      */
     storedTokenCount: 'Stored token count',
     /**
-     *@description Hover text for an info icon in the Private State Token panel
+     * @description Hover text for an info icon in the Private State Token panel
      */
     allStoredTrustTokensAvailableIn: 'All stored private state tokens available in this browser instance.',
     /**

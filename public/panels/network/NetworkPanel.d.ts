@@ -52,7 +52,7 @@ export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMe
         filterType: NetworkForward.UIFilter.FilterType | null;
         filterValue: string;
     }>): Promise<void>;
-    throttlingSelectForTest(): UI.Toolbar.ToolbarComboBox;
+    throttlingSelectForTest(): UI.Toolbar.ToolbarItem;
     private onWindowChanged;
     private searchToggleClick;
     private setupToolbarButtons;

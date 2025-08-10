@@ -42,7 +42,7 @@ import { ElementsTreeElement } from './ElementsTreeElement.js';
 import { ElementsTreeOutline } from './ElementsTreeOutline.js';
 const UIStrings = {
     /**
-     *@description Link text content in Elements Tree Outline of the Elements panel
+     * @description Link text content in Elements Tree Outline of the Elements panel
      */
     reveal: 'reveal',
 };

@@ -8,7 +8,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { Plugin } from './Plugin.js';
 const UIStrings = {
     /**
-     *@description Infobar text announcing that the file contents have been changed by AI
+     * @description Infobar text announcing that the file contents have been changed by AI
      */
     aiContentWarning: 'This file contains AI-generated content',
 };

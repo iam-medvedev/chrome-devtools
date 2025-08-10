@@ -922,11 +922,17 @@ export class ElementsPanel extends UI.Panel.Panel {
         const contentElement = tabbedPane.tabbedPaneContentElement();
         UI.ARIAUtils.markAsComplementary(contentElement);
         UI.ARIAUtils.setLabel(contentElement, i18nString(UIStrings.sidePanelContent));
-        const stylesView = new UI.View.SimpleView(i18nString(UIStrings.styles), /* useShadowDom */ undefined, "styles" /* SidebarPaneTabId.STYLES */);
+        const stylesView = new UI.View.SimpleView({
+            title: i18nString(UIStrings.styles),
+            viewId: "styles" /* SidebarPaneTabId.STYLES */,
+        });
         this.sidebarPaneView.appendView(stylesView);
         stylesView.element.classList.add('flex-auto');
         stylesSplitWidget.show(stylesView.element);
-        const computedView = new UI.View.SimpleView(i18nString(UIStrings.computed), /* useShadowDom */ undefined, "computed" /* SidebarPaneTabId.COMPUTED */);
+        const computedView = new UI.View.SimpleView({
+            title: i18nString(UIStrings.computed),
+            viewId: "computed" /* SidebarPaneTabId.COMPUTED */,
+        });
         computedView.element.classList.add('composite', 'fill');
         tabbedPane.addEventListener(UI.TabbedPane.Events.TabSelected, tabSelected, this);
         this.sidebarPaneView.appendView(computedView);

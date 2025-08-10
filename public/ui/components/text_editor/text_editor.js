@@ -335,14 +335,14 @@ var LINES_TO_SCAN_FOR_INDENTATION_GUESSING = 1e3;
 var RECOMPUTE_INDENT_MAX_SIZE = 200;
 var UIStrings = {
   /**
-   *@description Label text for the editor
+   * @description Label text for the editor
    */
   codeEditor: "Code editor",
   /**
-   *@description Aria alert to read the suggestion for the suggestion box when typing in text editor
-   *@example {name} PH1
-   *@example {2} PH2
-   *@example {5} PH3
+   * @description Aria alert to read the suggestion for the suggestion box when typing in text editor
+   * @example {name} PH1
+   * @example {2} PH2
+   * @example {5} PH3
    */
   sSuggestionSOfS: "{PH1}, suggestion {PH2} of {PH3}"
 };
@@ -726,11 +726,14 @@ var aiAutoCompleteSuggestionState = CM2.StateField.define({
     if (!value) {
       return value;
     }
-    const from = tr.changes.mapPos(value.from);
-    const { head } = tr.state.selection.main;
-    if (from === head && tr.docChanged && tr.state.doc.length < tr.startState.doc.length) {
+    if (value.from > tr.startState.doc.length) {
       return null;
     }
+    if (tr.docChanged && tr.state.doc.length < tr.startState.doc.length) {
+      return null;
+    }
+    const from = tr.changes.mapPos(value.from);
+    const { head } = tr.state.selection.main;
     if (tr.changes.touchesRange(0, from - 1) || head < from) {
       return null;
     }

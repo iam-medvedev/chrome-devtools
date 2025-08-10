@@ -12,23 +12,23 @@ export declare const UIStrings: {
      */
     readonly title: "INP breakdown";
     /**
-     *@description Label used for the subpart/component/stage/section of a larger duration.
+     * @description Label used for the subpart/component/stage/section of a larger duration.
      */
     readonly subpart: "Subpart";
     /**
-     *@description Label used for a time duration.
+     * @description Label used for a time duration.
      */
     readonly duration: "Duration";
     /**
-     *@description Text shown next to the interaction event's input delay time in the detail view.
+     * @description Text shown next to the interaction event's input delay time in the detail view.
      */
     readonly inputDelay: "Input delay";
     /**
-     *@description Text shown next to the interaction event's thread processing duration in the detail view.
+     * @description Text shown next to the interaction event's thread processing duration in the detail view.
      */
     readonly processingDuration: "Processing duration";
     /**
-     *@description Text shown next to the interaction event's presentation delay time in the detail view.
+     * @description Text shown next to the interaction event's presentation delay time in the detail view.
      */
     readonly presentationDelay: "Presentation delay";
     /**

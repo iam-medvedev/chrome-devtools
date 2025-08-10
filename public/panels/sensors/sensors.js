@@ -111,98 +111,98 @@ var locationsSettingsTab_css_default = `/*
 // gen/front_end/panels/sensors/LocationsSettingsTab.js
 var UIStrings = {
   /**
-   *@description Title in the Locations Settings Tab, where custom geographic locations that the user
+   * @description Title in the Locations Settings Tab, where custom geographic locations that the user
    *has entered are stored.
    */
   locations: "Locations",
   /**
-   *@description Label for the name of a geographic location that the user has entered.
+   * @description Label for the name of a geographic location that the user has entered.
    */
   locationName: "Location name",
   /**
-   *@description Abbreviation of latitude in Locations Settings Tab of the Device Toolbar
+   * @description Abbreviation of latitude in Locations Settings Tab of the Device Toolbar
    */
   lat: "Lat",
   /**
-   *@description Abbreviation of longitude in Locations Settings Tab of the Device Toolbar
+   * @description Abbreviation of longitude in Locations Settings Tab of the Device Toolbar
    */
   long: "Long",
   /**
-   *@description Text in Sensors View of the Device Toolbar
+   * @description Text in Sensors View of the Device Toolbar
    */
   timezoneId: "Timezone ID",
   /**
-   *@description Label for text input for the locale of a particular location.
+   * @description Label for text input for the locale of a particular location.
    */
   locale: "Locale",
   /**
-   *@description Label for text input for the latitude of a GPS position.
+   * @description Label for text input for the latitude of a GPS position.
    */
   latitude: "Latitude",
   /**
-   *@description Label for text input for the longitude of a GPS position.
+   * @description Label for text input for the longitude of a GPS position.
    */
   longitude: "Longitude",
   /**
-   *@description Label for text input for the accuracy of a GPS position.
+   * @description Label for text input for the accuracy of a GPS position.
    */
   accuracy: "Accuracy",
   /**
-   *@description Error message in the Locations settings pane that declares the location name input must not be empty
+   * @description Error message in the Locations settings pane that declares the location name input must not be empty
    */
   locationNameCannotBeEmpty: "Location name cannot be empty",
   /**
-   *@description Error message in the Locations settings pane that declares the maximum length of the location name
-   *@example {50} PH1
+   * @description Error message in the Locations settings pane that declares the maximum length of the location name
+   * @example {50} PH1
    */
   locationNameMustBeLessThanS: "Location name must be less than {PH1} characters",
   /**
-   *@description Error message in the Locations settings pane that declares that the value for the latitude input must be a number
+   * @description Error message in the Locations settings pane that declares that the value for the latitude input must be a number
    */
   latitudeMustBeANumber: "Latitude must be a number",
   /**
-   *@description Error message in the Locations settings pane that declares the minimum value for the latitude input
-   *@example {-90} PH1
+   * @description Error message in the Locations settings pane that declares the minimum value for the latitude input
+   * @example {-90} PH1
    */
   latitudeMustBeGreaterThanOrEqual: "Latitude must be greater than or equal to {PH1}",
   /**
-   *@description Error message in the Locations settings pane that declares the maximum value for the latitude input
-   *@example {90} PH1
+   * @description Error message in the Locations settings pane that declares the maximum value for the latitude input
+   * @example {90} PH1
    */
   latitudeMustBeLessThanOrEqualToS: "Latitude must be less than or equal to {PH1}",
   /**
-   *@description Error message in the Locations settings pane that declares that the value for the longitude input must be a number
+   * @description Error message in the Locations settings pane that declares that the value for the longitude input must be a number
    */
   longitudeMustBeANumber: "Longitude must be a number",
   /**
-   *@description Error message in the Locations settings pane that declares the minimum value for the longitude input
-   *@example {-180} PH1
+   * @description Error message in the Locations settings pane that declares the minimum value for the longitude input
+   * @example {-180} PH1
    */
   longitudeMustBeGreaterThanOr: "Longitude must be greater than or equal to {PH1}",
   /**
-   *@description Error message in the Locations settings pane that declares the maximum value for the longitude input
-   *@example {180} PH1
+   * @description Error message in the Locations settings pane that declares the maximum value for the longitude input
+   * @example {180} PH1
    */
   longitudeMustBeLessThanOrEqualTo: "Longitude must be less than or equal to {PH1}",
   /**
-   *@description Error message in the Locations settings pane that declares timezone ID input invalid
+   * @description Error message in the Locations settings pane that declares timezone ID input invalid
    */
   timezoneIdMustContainAlphabetic: "Timezone ID must contain alphabetic characters",
   /**
-   *@description Error message in the Locations settings pane that declares locale input invalid
+   * @description Error message in the Locations settings pane that declares locale input invalid
    */
   localeMustContainAlphabetic: "Locale must contain alphabetic characters",
   /**
-   *@description Error message in the Locations settings pane that declares that the value for the accuracy input must be a number
+   * @description Error message in the Locations settings pane that declares that the value for the accuracy input must be a number
    */
   accuracyMustBeANumber: "Accuracy must be a number",
   /**
-   *@description Error message in the Locations settings pane that declares the minimum value for the accuracy input
-   *@example {0} PH1
+   * @description Error message in the Locations settings pane that declares the minimum value for the accuracy input
+   * @example {0} PH1
    */
   accuracyMustBeGreaterThanOrEqual: "Accuracy must be greater than or equal to {PH1}",
   /**
-   *@description Text of add locations button in Locations Settings Tab of the Device Toolbar
+   * @description Text of add locations button in Locations Settings Tab of the Device Toolbar
    */
   addLocation: "Add location"
 };
@@ -213,9 +213,11 @@ var LocationsSettingsTab = class extends UI.Widget.VBox {
   customSetting;
   editor;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging.pane("emulation-locations")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(locationsSettingsTab_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.pane("emulation-locations")}`);
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
     settingsContent.classList.add("settings-card-container");
     const locationsCard = settingsContent.createChild("devtools-card");
@@ -814,158 +816,158 @@ button.text-button {
 // gen/front_end/panels/sensors/SensorsView.js
 var UIStrings2 = {
   /**
-   *@description Title for a group of cities
+   * @description Title for a group of cities
    */
   location: "Location",
   /**
-   *@description An option that appears in a drop-down to prevent the GPS location of the user from being overridden.
+   * @description An option that appears in a drop-down to prevent the GPS location of the user from being overridden.
    */
   noOverride: "No override",
   /**
-   *@description Title of a section that contains overrides for the user's GPS location.
+   * @description Title of a section that contains overrides for the user's GPS location.
    */
   overrides: "Overrides",
   /**
-   *@description Text of button in Sensors View, takes the user to the custom location setting screen
+   * @description Text of button in Sensors View, takes the user to the custom location setting screen
    *where they can enter/edit custom locations.
    */
   manage: "Manage",
   /**
-   *@description Aria-label for location manage button in Sensors View
+   * @description Aria-label for location manage button in Sensors View
    */
   manageTheListOfLocations: "Manage the list of locations",
   /**
-   *@description Option in a drop-down input for selecting the GPS location of the user. As an
+   * @description Option in a drop-down input for selecting the GPS location of the user. As an
    *alternative to selecting a location from the list, the user can select this option and they are
    *prompted to enter the details for a new custom location.
    */
   other: "Other\u2026",
   /**
-   *@description Title of a section in a drop-down input that contains error locations, e.g. to select
+   * @description Title of a section in a drop-down input that contains error locations, e.g. to select
    *a location override that says 'the location is not available'. A noun.
    */
   error: "Error",
   /**
-   *@description A type of override where the geographic location of the user is not available.
+   * @description A type of override where the geographic location of the user is not available.
    */
   locationUnavailable: "Location unavailable",
   /**
-   *@description Tooltip text telling the user how to change the value of a latitude/longitude input
+   * @description Tooltip text telling the user how to change the value of a latitude/longitude input
    *text box. several shortcuts are provided for convenience. The placeholder can be different
    *keyboard keys, depending on the user's settings.
-   *@example {Ctrl} PH1
+   * @example {Ctrl} PH1
    */
   adjustWithMousewheelOrUpdownKeys: "Adjust with mousewheel or up/down keys. {PH1}: \xB110, Shift: \xB11, Alt: \xB10.01",
   /**
-   *@description Label for latitude of a GPS location.
+   * @description Label for latitude of a GPS location.
    */
   latitude: "Latitude",
   /**
-   *@description Label for Longitude of a GPS location.
+   * @description Label for Longitude of a GPS location.
    */
   longitude: "Longitude",
   /**
-   *@description Label for the ID of a timezone for a particular location.
+   * @description Label for the ID of a timezone for a particular location.
    */
   timezoneId: "Timezone ID",
   /**
-   *@description Label for the locale relevant to a custom location.
+   * @description Label for the locale relevant to a custom location.
    */
   locale: "Locale",
   /**
-   *@description Label for Accuracy of a GPS location.
+   * @description Label for Accuracy of a GPS location.
    */
   accuracy: "Accuracy",
   /**
-   *@description Label the orientation of a user's device e.g. tilt in 3D-space.
+   * @description Label the orientation of a user's device e.g. tilt in 3D-space.
    */
   orientation: "Orientation",
   /**
-   *@description Option that when chosen, turns off device orientation override.
+   * @description Option that when chosen, turns off device orientation override.
    */
   off: "Off",
   /**
-   *@description Option that when chosen, allows the user to enter a custom orientation for the device e.g. tilt in 3D-space.
+   * @description Option that when chosen, allows the user to enter a custom orientation for the device e.g. tilt in 3D-space.
    */
   customOrientation: "Custom orientation",
   /**
-   *@description Warning to the user they should enable the device orientation override, in order to
+   * @description Warning to the user they should enable the device orientation override, in order to
    *enable this input which allows them to interactively select orientation by dragging a 3D phone
    *model.
    */
   enableOrientationToRotate: "Enable orientation to rotate",
   /**
-   *@description Text telling the user how to use an input which allows them to interactively select
+   * @description Text telling the user how to use an input which allows them to interactively select
    *orientation by dragging a 3D phone model.
    */
   shiftdragHorizontallyToRotate: "Shift+drag horizontally to rotate around the y-axis",
   /**
-   *@description Message in the Sensors tool that is alerted (for screen readers) when the device orientation setting is changed
-   *@example {180} PH1
-   *@example {-90} PH2
-   *@example {0} PH3
+   * @description Message in the Sensors tool that is alerted (for screen readers) when the device orientation setting is changed
+   * @example {180} PH1
+   * @example {-90} PH2
+   * @example {0} PH3
    */
   deviceOrientationSetToAlphaSBeta: "Device orientation set to alpha: {PH1}, beta: {PH2}, gamma: {PH3}",
   /**
-   *@description Text of orientation reset button in Sensors View of the Device Toolbar
+   * @description Text of orientation reset button in Sensors View of the Device Toolbar
    */
   reset: "Reset",
   /**
-   *@description Aria-label for orientation reset button in Sensors View. Command.
+   * @description Aria-label for orientation reset button in Sensors View. Command.
    */
   resetDeviceOrientation: "Reset device orientation",
   /**
-   *@description Description of the Touch select in Sensors tab
+   * @description Description of the Touch select in Sensors tab
    */
   forcesTouchInsteadOfClick: "Forces touch instead of click",
   /**
-   *@description Description of the Emulate Idle State select in Sensors tab
+   * @description Description of the Emulate Idle State select in Sensors tab
    */
   forcesSelectedIdleStateEmulation: "Forces selected idle state emulation",
   /**
-   *@description Description of the Emulate CPU Pressure State select in Sensors tab
+   * @description Description of the Emulate CPU Pressure State select in Sensors tab
    */
   forcesSelectedPressureStateEmulation: "Forces selected pressure state emulation",
   /**
-   *@description Title for a group of configuration options in a drop-down input.
+   * @description Title for a group of configuration options in a drop-down input.
    */
   presets: "Presets",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space.
+   * @description Drop-down input option for the orientation of a device in 3D space.
    */
   portrait: "Portrait",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space.
+   * @description Drop-down input option for the orientation of a device in 3D space.
    */
   portraitUpsideDown: "Portrait upside down",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space.
+   * @description Drop-down input option for the orientation of a device in 3D space.
    */
   landscapeLeft: "Landscape left",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space.
+   * @description Drop-down input option for the orientation of a device in 3D space.
    */
   landscapeRight: "Landscape right",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space. Noun indicating
+   * @description Drop-down input option for the orientation of a device in 3D space. Noun indicating
    *the display of the device is pointing up.
    */
   displayUp: "Display up",
   /**
-   *@description Drop-down input option for the orientation of a device in 3D space. Noun indicating
+   * @description Drop-down input option for the orientation of a device in 3D space. Noun indicating
    *the display of the device is pointing down.
    */
   displayDown: "Display down",
   /**
-   *@description Label for one dimension of device orientation that the user can override.
+   * @description Label for one dimension of device orientation that the user can override.
    */
   alpha: "\u03B1 (alpha)",
   /**
-   *@description Label for one dimension of device orientation that the user can override.
+   * @description Label for one dimension of device orientation that the user can override.
    */
   beta: "\u03B2 (beta)",
   /**
-   *@description Label for one dimension of device orientation that the user can override.
+   * @description Label for one dimension of device orientation that the user can override.
    */
   gamma: "\u03B3 (gamma)"
 };
@@ -1009,9 +1011,11 @@ var SensorsView = class extends UI2.Widget.VBox {
   mouseDownVector;
   originalBoxMatrix;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging2.panel("sensors").track({ resize: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(sensors_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging2.panel("sensors").track({ resize: true })}`);
     this.contentElement.classList.add("sensors-view");
     this.#locationSetting = Common2.Settings.Settings.instance().createSetting("emulation.location-override", "");
     this.#location = SDK2.EmulationModel.Location.parseSetting(this.#locationSetting.get());

@@ -293,49 +293,49 @@ import * as IconButton from "./../../../components/icon_button/icon_button.js";
 import * as UI from "./../../legacy.js";
 var UIStrings = {
   /**
-   *@description Label for when no contrast information is available in the color picker
+   * @description Label for when no contrast information is available in the color picker
    */
   noContrastInformationAvailable: "No contrast information available",
   /**
-   *@description Text of a DOM element in Contrast Details of the Color Picker
+   * @description Text of a DOM element in Contrast Details of the Color Picker
    */
   contrastRatio: "Contrast ratio",
   /**
-   *@description Text to show more content
+   * @description Text to show more content
    */
   showMore: "Show more",
   /**
-   *@description Choose bg color text content in Contrast Details of the Color Picker
+   * @description Choose bg color text content in Contrast Details of the Color Picker
    */
   pickBackgroundColor: "Pick background color",
   /**
-   *@description Tooltip text that appears when hovering over largeicon eyedropper button in Contrast Details of the Color Picker
+   * @description Tooltip text that appears when hovering over largeicon eyedropper button in Contrast Details of the Color Picker
    */
   toggleBackgroundColorPicker: "Toggle background color picker",
   /**
-   *@description Text of a button in Contrast Details of the Color Picker
-   *@example {rgba(0 0 0 / 100%) } PH1
+   * @description Text of a button in Contrast Details of the Color Picker
+   * @example {rgba(0 0 0 / 100%) } PH1
    */
   useSuggestedColorStoFixLow: "Use suggested color {PH1}to fix low contrast",
   /**
-   *@description Label for the APCA contrast in Color Picker
+   * @description Label for the APCA contrast in Color Picker
    */
   apca: "APCA",
   /**
-   *@description Label aa text content in Contrast Details of the Color Picker
+   * @description Label aa text content in Contrast Details of the Color Picker
    */
   aa: "AA",
   /**
-   *@description Text that starts with a colon and includes a placeholder
-   *@example {3.0} PH1
+   * @description Text that starts with a colon and includes a placeholder
+   * @example {3.0} PH1
    */
   placeholderWithColon: ": {PH1}",
   /**
-   *@description Label aaa text content in Contrast Details of the Color Picker
+   * @description Label aaa text content in Contrast Details of the Color Picker
    */
   aaa: "AAA",
   /**
-   *@description Text to show less content
+   * @description Text to show less content
    */
   showLess: "Show less"
 };
@@ -959,8 +959,8 @@ import * as IconButton2 from "./../../../components/icon_button/icon_button.js";
 import * as UI3 from "./../../legacy.js";
 var UIStrings2 = {
   /**
-   *@description Tooltip text describing that a color was clipped after conversion to match the target gamut
-   *@example {rgb(255 255 255)} PH1
+   * @description Tooltip text describing that a color was clipped after conversion to match the target gamut
+   * @example {rgb(255 255 255)} PH1
    */
   colorClippedTooltipText: "This color was clipped to match the format's gamut. The actual result was {PH1}"
 };
@@ -1814,12 +1814,12 @@ div.palette-preview {
 // gen/front_end/ui/legacy/components/color_picker/Spectrum.js
 var UIStrings3 = {
   /**
-   *@description Tooltip text that appears when hovering over largeicon eyedropper button in Spectrum of the Color Picker
+   * @description Tooltip text that appears when hovering over largeicon eyedropper button in Spectrum of the Color Picker
    * @example {c} PH1
    */
   toggleColorPicker: "Eye dropper [{PH1}]",
   /**
-   *@description Aria label for hue slider in Color Picker
+   * @description Aria label for hue slider in Color Picker
    */
   changeHue: "Change hue",
   /**
@@ -1828,63 +1828,63 @@ var UIStrings3 = {
    */
   changeAlpha: "Change alpha",
   /**
-   *@description Aria label for HEX color format input
+   * @description Aria label for HEX color format input
    */
   hex: "HEX",
   /**
-   *@description Aria label for color format switcher button in Color Picker
+   * @description Aria label for color format switcher button in Color Picker
    */
   changeColorFormat: "Change color format",
   /**
-   *@description Screen reader reads this text when palette switcher button receives focus
+   * @description Screen reader reads this text when palette switcher button receives focus
    */
   previewPalettes: "Preview palettes",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon add button in the Spectrum of the Color Picker
+   * @description Tooltip text that appears when hovering over the largeicon add button in the Spectrum of the Color Picker
    */
   addToPalette: "Add to palette",
   /**
-   *@description Title text content in Spectrum of the Color Picker
+   * @description Title text content in Spectrum of the Color Picker
    */
   colorPalettes: "Color Palettes",
   /**
-   *@description Label for close button in Color Picker
+   * @description Label for close button in Color Picker
    */
   returnToColorPicker: "Return to color picker",
   /**
-   *@description Aria label which declares hex value of a swatch in the Color Picker
-   *@example {#969696} PH1
+   * @description Aria label which declares hex value of a swatch in the Color Picker
+   * @example {#969696} PH1
    */
   colorS: "Color {PH1}",
   /**
-   *@description Color element title in Spectrum of the Color Picker
-   *@example {#9c1724} PH1
+   * @description Color element title in Spectrum of the Color Picker
+   * @example {#9c1724} PH1
    */
   longclickOrLongpressSpaceToShow: "Long-click or long-press space to show alternate shades of {PH1}",
   /**
-   *@description A context menu item in the Color Picker to organize the user-defined color palette (removes the user-defined color to which this action is performed)"
+   * @description A context menu item in the Color Picker to organize the user-defined color palette (removes the user-defined color to which this action is performed)"
    */
   removeColor: "Remove color",
   /**
-   *@description A context menu item in the Color Picker to organize the user-defined color palette (removes all user-defined colors to the right of the color to which this action is performed)"
+   * @description A context menu item in the Color Picker to organize the user-defined color palette (removes all user-defined colors to the right of the color to which this action is performed)"
    */
   removeAllToTheRight: "Remove all to the right",
   /**
-   *@description A context menu item in the Color Picker to organize the user-defined color palette (removes all user-defined colors)"
+   * @description A context menu item in the Color Picker to organize the user-defined color palette (removes all user-defined colors)"
    */
   clearPalette: "Clear palette",
   /**
-   *@description Aria label for RGBA and HSLA color format inputs in Color Picker
-   *@example {R} PH1
-   *@example {RGBA} PH2
+   * @description Aria label for RGBA and HSLA color format inputs in Color Picker
+   * @example {R} PH1
+   * @example {RGBA} PH2
    */
   sInS: "{PH1} in {PH2}",
   /**
-   *@description Swatch copy icon title in Spectrum of the Color Picker
+   * @description Swatch copy icon title in Spectrum of the Color Picker
    */
   copyColorToClipboard: "Copy color to clipboard",
   /**
-   *@description Aria text for the swatch position. Swatch is the color picker spectrum tool.
+   * @description Aria text for the swatch position. Swatch is the color picker spectrum tool.
    */
   pressArrowKeysMessage: "Press arrow keys with or without modifiers to move swatch position. Arrow key with Shift key moves position largely, with Ctrl key it is less and with Alt key it is even less"
 };

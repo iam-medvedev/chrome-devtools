@@ -44,7 +44,7 @@ import { TimelineGrid } from './TimelineGrid.js';
 /**
  * Set as the `details` value on the fake context menu event we dispatch to
  * trigger a context menu on an event on a keyboard space key press.
- {@see onContextMenu} for more details and explanation.
+ * {@see onContextMenu} for more details and explanation.
  */
 const KEYBOARD_FAKED_CONTEXT_MENU_DETAIL = -1;
 /**
@@ -53,50 +53,50 @@ const KEYBOARD_FAKED_CONTEXT_MENU_DETAIL = -1;
 const SUBTITLE_FONT_SIZE_AND_STYLE = 'italic 10px';
 const UIStrings = {
     /**
-     *@description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
-     *@example {Paint} PH1
-     *@example {Main thread} PH2
+     * @description Aria alert used to notify the user when an event has been selected because they tabbed into a group.
+     * @example {Paint} PH1
+     * @example {Main thread} PH2
      *
      */
     eventSelectedFromGroup: 'Selected a {PH1} event within {PH2}. Press "enter" to focus this event.',
     /**
-     *@description Aria accessible name in Flame Chart of the Performance panel
+     * @description Aria accessible name in Flame Chart of the Performance panel
      */
     flameChart: 'Flame Chart',
     /**
-     *@description Text for the screen reader to announce a hovered group
-     *@example {Network} PH1
+     * @description Text for the screen reader to announce a hovered group
+     * @example {Network} PH1
      */
     sHovered: '{PH1} hovered',
     /**
-     *@description Text for screen reader to announce a selected group.
-     *@example {Network} PH1
+     * @description Text for screen reader to announce a selected group.
+     * @example {Network} PH1
      */
     sSelected: '{PH1} selected',
     /**
-     *@description Text for screen reader to announce an expanded group
-     *@example {Network} PH1
+     * @description Text for screen reader to announce an expanded group
+     * @example {Network} PH1
      */
     sExpanded: '{PH1} expanded',
     /**
-     *@description Text for screen reader to announce a collapsed group
-     *@example {Network} PH1
+     * @description Text for screen reader to announce a collapsed group
+     * @example {Network} PH1
      */
     sCollapsed: '{PH1} collapsed',
     /**
-     *@description Text for an action that adds a label annotation to an entry in the Flame Chart
+     * @description Text for an action that adds a label annotation to an entry in the Flame Chart
      */
     labelEntry: 'Label entry',
     /**
-     *@description Text for an action that adds link annotation between entries in the Flame Chart
+     * @description Text for an action that adds link annotation between entries in the Flame Chart
      */
     linkEntries: 'Link entries',
     /**
-     *@description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
+     * @description Shown in the context menu when right clicking on a track header to enable the user to enter the track configuration mode.
      */
     enterTrackConfigurationMode: 'Configure tracks',
     /**
-     *@description Shown in the context menu when right clicking on a track header to allow the user to exit track configuration mode.
+     * @description Shown in the context menu when right clicking on a track header to allow the user to exit track configuration mode.
      */
     exitTrackConfigurationMode: 'Finish configuring tracks',
 };
@@ -956,7 +956,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     /**
      * Toggle a group's expanded state.
-     * @param groupIndex - the index of this group in the timelineData.groups
+     * @param groupIndex the index of this group in the timelineData.groups
      * array. Note that this is the array index, and not the startLevel of the
      * group.
      */
@@ -2545,7 +2545,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
      */
     /**
      * Process the pixels of start and end, and other data of each group, which are used in drawing the group.
-     * @param {GroupCallback} callback
+     * @param callback
      */
     forEachGroup(callback) {
         if (!this.rawTimelineData) {

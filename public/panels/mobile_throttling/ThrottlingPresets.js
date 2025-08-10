@@ -5,19 +5,19 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 const UIStrings = {
     /**
-     *@description Text for no network throttling
+     * @description Text for no network throttling
      */
     noThrottling: 'No CPU and no network throttling',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     noInternetConnectivity: 'No internet connectivity',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     lowTierMobile: 'Low-tier mobile',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     slowGXCpuSlowdown: 'Slow 3G & 6x CPU slowdown',
     /**
@@ -26,11 +26,11 @@ const UIStrings = {
      */
     slowGXCpuSlowdownCalibrated: 'Slow 3G & {PH1}x CPU slowdown',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     midtierMobile: 'Mid-tier mobile',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     fastGXCpuSlowdown: 'Fast 3G & 4x CPU slowdown',
     /**
@@ -39,11 +39,11 @@ const UIStrings = {
      */
     fastGXCpuSlowdownCalibrated: 'Fast 3G & {PH1}x CPU slowdown',
     /**
-     *@description Text in Network Throttling Selector of the Network panel
+     * @description Text in Network Throttling Selector of the Network panel
      */
     custom: 'Custom',
     /**
-     *@description Text in Throttling Presets of the Network panel
+     * @description Text in Throttling Presets of the Network panel
      */
     checkNetworkAndPerformancePanels: 'Check Network and Performance panels',
 };

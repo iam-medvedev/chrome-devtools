@@ -35,7 +35,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         const targetContext = createExecutionContext(target);
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, targetContext);
         evaluateOnTarget = sinon.stub(target.runtimeAgent(), 'invoke_evaluate');
-        Common.Settings.Settings.instance().createSetting('ai-code-completion-fre-completed', false);
+        Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
     });
     afterEach(async () => {
         sinon.restore();
@@ -117,7 +117,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
     });
     it('updates aiCodeCompletion when FRE setting is updated', () => {
         assert.isUndefined(consolePrompt['aiCodeCompletion']);
-        const setting = Common.Settings.Settings.instance().settingForTest('ai-code-completion-fre-completed');
+        const setting = Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled');
         setting.set(true);
         assert.exists(consolePrompt['aiCodeCompletion']);
         setting.set(false);
@@ -128,7 +128,7 @@ describeWithMockConnection('ConsoleContextSelector', () => {
             completeCode: Promise.resolve(null),
         });
         consolePrompt.setAidaClientForTest(mockAidaClient);
-        Common.Settings.Settings.instance().settingForTest('ai-code-completion-fre-completed').set(true);
+        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
         const onTextChangedSpy = sinon.spy(consolePrompt['aiCodeCompletion'], 'onTextChanged');
         const consoleModel = target.model(SDK.ConsoleModel.ConsoleModel);
         assert.exists(consoleModel);

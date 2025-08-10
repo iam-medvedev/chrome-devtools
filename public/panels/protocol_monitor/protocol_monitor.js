@@ -134,19 +134,19 @@ var { html, render, Directives, nothing } = Lit;
 var { live, classMap, repeat } = Directives;
 var UIStrings = {
   /**
-   *@description The title of a button that deletes a parameter.
+   * @description The title of a button that deletes a parameter.
    */
   deleteParameter: "Delete parameter",
   /**
-   *@description The title of a button that adds a parameter.
+   * @description The title of a button that adds a parameter.
    */
   addParameter: "Add a parameter",
   /**
-   *@description The title of a button that reset the value of a parameters to its default value.
+   * @description The title of a button that reset the value of a parameters to its default value.
    */
   resetDefaultValue: "Reset to default value",
   /**
-   *@description The title of a button to add custom key/value pairs to object parameters with no keys defined
+   * @description The title of a button to add custom key/value pairs to object parameters with no keys defined
    */
   addCustomProperty: "Add custom property",
   /**
@@ -1152,7 +1152,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
                         .variant=${"primary_toolbar"}
                         @click=${input.onCommandSend}></devtools-button>
       </devtools-toolbar>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 
 // gen/front_end/panels/protocol_monitor/ProtocolMonitor.js
@@ -1211,7 +1211,7 @@ var { styleMap } = Directives2;
 var { widgetConfig, widgetRef } = UI2.Widget;
 var UIStrings2 = {
   /**
-   *@description Text for one or a group of functions
+   * @description Text for one or a group of functions
    */
   method: "Method",
   /**
@@ -1225,65 +1225,65 @@ var UIStrings2 = {
    */
   request: "Request",
   /**
-   *@description Title of a cell content in protocol monitor. A Network response refers to the act of acknowledging a
-  network request. Should not be confused with answer.
+   * @description Title of a cell content in protocol monitor. A Network response refers to the act of acknowledging a
+   * network request. Should not be confused with answer.
    */
   response: "Response",
   /**
-   *@description Text for timestamps of items
+   * @description Text for timestamps of items
    */
   timestamp: "Timestamp",
   /**
-   *@description Title of a cell content in protocol monitor. It describes the time between sending a request and receiving a response.
+   * @description Title of a cell content in protocol monitor. It describes the time between sending a request and receiving a response.
    */
   elapsedTime: "Elapsed time",
   /**
-   *@description Text in Protocol Monitor of the Protocol Monitor tab
+   * @description Text in Protocol Monitor of the Protocol Monitor tab
    */
   target: "Target",
   /**
-   *@description Text to record a series of actions for analysis
+   * @description Text to record a series of actions for analysis
    */
   record: "Record",
   /**
-   *@description Text to clear everything
+   * @description Text to clear everything
    */
   clearAll: "Clear all",
   /**
-   *@description Text to filter result items
+   * @description Text to filter result items
    */
   filter: "Filter",
   /**
-   *@description Text for the documentation of something
+   * @description Text for the documentation of something
    */
   documentation: "Documentation",
   /**
-   *@description Text to open the CDP editor with the selected command
+   * @description Text to open the CDP editor with the selected command
    */
   editAndResend: "Edit and resend",
   /**
-   *@description Cell text content in Protocol Monitor of the Protocol Monitor tab
-   *@example {30} PH1
+   * @description Cell text content in Protocol Monitor of the Protocol Monitor tab
+   * @example {30} PH1
    */
   sMs: "{PH1} ms",
   /**
-   *@description Text in Protocol Monitor of the Protocol Monitor tab
+   * @description Text in Protocol Monitor of the Protocol Monitor tab
    */
   noMessageSelected: "No message selected",
   /**
-   *@description Text in Protocol Monitor of the Protocol Monitor tab if no message is selected
+   * @description Text in Protocol Monitor of the Protocol Monitor tab if no message is selected
    */
   selectAMessageToView: "Select a message to see its details",
   /**
-   *@description Text in Protocol Monitor for the save button
+   * @description Text in Protocol Monitor for the save button
    */
   save: "Save",
   /**
-   *@description Text in Protocol Monitor to describe the sessions column
+   * @description Text in Protocol Monitor to describe the sessions column
    */
   session: "Session",
   /**
-   *@description A placeholder for an input in Protocol Monitor. The input accepts commands that are sent to the backend on Enter. CDP stands for Chrome DevTools Protocol.
+   * @description A placeholder for an input in Protocol Monitor. The input accepts commands that are sent to the backend on Enter. CDP stands for Chrome DevTools Protocol.
    */
   sendRawCDPCommand: "Send a raw `CDP` command",
   /**
@@ -1322,7 +1322,7 @@ var enumsByName = ProtocolClient.InspectorBackend.inspectorBackend.enumMap;
 var DEFAULT_VIEW2 = (input, output, target) => {
   render2(html2`
         <style>${UI2.inspectorCommonStyles}</style>
-        <style>${protocolMonitor_css_default}</style>
+        <style>${UI2.Widget.widgetScoped(protocolMonitor_css_default)}</style>
         <devtools-split-view name="protocol-monitor-split-container"
                              direction="column"
                              sidebar-initial-size="400"
@@ -1472,7 +1472,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
     output.editorWidget = e;
   })}>
           </devtools-widget>
-        </devtools-split-view>`, target, { host: input });
+        </devtools-split-view>`, target);
 };
 var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
   started;

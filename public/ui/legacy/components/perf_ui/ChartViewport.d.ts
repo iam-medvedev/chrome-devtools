@@ -57,7 +57,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private updateContentElementSize;
     setContentHeight(totalHeight: number): void;
     /**
-     * @param centered - If true, scrolls offset to where it is centered on the chart,
+     * @param centered If true, scrolls offset to where it is centered on the chart,
      * based on current the this.offsetHeight value.
      */
     setScrollOffset(offset: number, height?: number, centered?: boolean): void;
@@ -86,8 +86,8 @@ export declare class ChartViewport extends UI.Widget.VBox {
     private endRangeSelection;
     hideRangeSelection(): void;
     /**
-     * @param startTime - the start time of the selection in MilliSeconds
-     * @param endTime - the end time of the selection in MilliSeconds
+     * @param startTime the start time of the selection in MilliSeconds
+     * @param endTime the end time of the selection in MilliSeconds
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     setRangeSelection(startTime: number, endTime: number): void;

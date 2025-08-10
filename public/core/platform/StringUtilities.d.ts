@@ -31,7 +31,7 @@ export declare const stripLineBreaks: (inputStr: string) => string;
  * for `'Another.AmazingLiteral'` or '`another_amazing_literal'`.
  *
  * @param inputStr the input string to test.
- * @return `true` if the `inputStr` follows the extended Kebab Case convention.
+ * @returns `true` if the `inputStr` follows the extended Kebab Case convention.
  */
 export declare const isExtendedKebabCase: (inputStr: string) => boolean;
 export declare const toTitleCase: (inputStr: string) => string;
@@ -55,7 +55,7 @@ export declare const createPlainTextSearchRegex: (query: string, flags?: string)
 export type LowerCaseString = Brand<string, 'lowerCaseStringTag'>;
 export declare const toLowerCaseString: (input: string) => LowerCaseString;
 export declare const toKebabCase: (input: string) => Lowercase<string>;
-export declare function toKebabCaseKeys(settingValue: Record<string, any>): Record<string, any>;
+export declare function toKebabCaseKeys<T>(settingValue: Record<string, T>): Record<string, T>;
 export declare const replaceLast: (input: string, search: string, replacement: string) => string;
 export declare const stringifyWithPrecision: (s: number, precision?: number) => string;
 /**

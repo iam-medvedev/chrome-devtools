@@ -54,18 +54,27 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
   }
   async #requestAidaSuggestion(request, cursor) {
     const startTime = performance.now();
-    const response = await this.#aidaClient.completeCode(request);
-    if (response && response.generatedSamples.length > 0 && response.generatedSamples[0].generationString) {
-      const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
-      setTimeout(() => {
-        this.#editor.dispatch({
-          effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: response.generatedSamples[0].generationString, from: cursor })
-        });
-        const citations = response.generatedSamples[0].attributionMetadata?.citations;
-        if (citations) {
-          this.dispatchEventToListeners("CitationsUpdated", { citations });
+    this.dispatchEventToListeners("RequestTriggered", {});
+    try {
+      const response = await this.#aidaClient.completeCode(request);
+      if (response && response.generatedSamples.length > 0 && response.generatedSamples[0].generationString) {
+        if (response.generatedSamples[0].attributionMetadata?.attributionAction === Host.AidaClient.RecitationAction.BLOCK) {
+          this.dispatchEventToListeners("ResponseReceived", {});
+          return;
         }
-      }, remainderDelay);
+        const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
+        setTimeout(() => {
+          this.#editor.dispatch({
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: response.generatedSamples[0].generationString, from: cursor })
+          });
+          const citations = response.generatedSamples[0].attributionMetadata?.citations;
+          this.dispatchEventToListeners("ResponseReceived", { citations });
+        }, remainderDelay);
+      } else {
+        this.dispatchEventToListeners("ResponseReceived", {});
+      }
+    } catch {
+      this.dispatchEventToListeners("ResponseReceived", {});
     }
   }
   get #userTier() {

@@ -10,7 +10,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import threadsSidebarPaneStyles from './threadsSidebarPane.css.js';
 const UIStrings = {
     /**
-     *@description Text in Threads Sidebar Pane of the Sources panel
+     * @description Text in Threads Sidebar Pane of the Sources panel
      */
     paused: 'paused',
 };
@@ -21,9 +21,11 @@ export class ThreadsSidebarPane extends UI.Widget.VBox {
     list;
     selectedModel;
     constructor() {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.section('sources.threads')}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(threadsSidebarPaneStyles);
-        this.contentElement.setAttribute('jslog', `${VisualLogging.section('sources.threads')}`);
         this.items = new UI.ListModel.ListModel();
         this.list = new UI.ListControl.ListControl(this.items, this, UI.ListControl.ListMode.NonViewport);
         const currentTarget = UI.Context.Context.instance().flavor(SDK.Target.Target);

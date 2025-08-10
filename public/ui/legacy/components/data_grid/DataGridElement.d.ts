@@ -23,9 +23,9 @@ import { type ColumnDescriptor } from './DataGrid.js';
  * Under the hood it uses SortableDataGrid, which extends ViewportDataGrid so only
  * visible rows are layed out and sorting is provided out of the box.
  *
- * @attr striped
- * @attr displayName
- * @prop filters
+ * @property filters
+ * @attribute striped
+ * @attribute displayName
  */
 declare class DataGridElement extends HTMLElement {
     #private;

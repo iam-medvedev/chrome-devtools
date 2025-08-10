@@ -1,7 +1,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import type { TabbedPane } from './TabbedPane.js';
 import type { ToolbarItem, ToolbarMenuButton } from './Toolbar.js';
-import { VBox, type Widget } from './Widget.js';
+import { VBox, type Widget, type WidgetOptions } from './Widget.js';
 export interface View {
     viewId(): string;
     title(): Platform.UIString.LocalizedString;
@@ -13,9 +13,32 @@ export interface View {
     widget(): Promise<Widget>;
     disposeView(): void | Promise<void>;
 }
+/**
+ * Settings to control the behavior of `SimpleView` subclasses.
+ */
+export interface SimpleViewOptions extends WidgetOptions {
+    /**
+     * User visible title for the view.
+     */
+    title: Platform.UIString.LocalizedString;
+    /**
+     * Internal ID used to refer to the view.
+     *
+     * Note that this is also used to construct VE contexts in some places.
+     *
+     * Must be in extended kebab case.
+     */
+    viewId: Lowercase<string>;
+}
 export declare class SimpleView extends VBox implements View {
     #private;
-    constructor(title: Platform.UIString.LocalizedString, useShadowDom?: boolean, viewId?: Lowercase<string>);
+    /**
+     * Constructs a new `SimpleView` with the given `options`.
+     *
+     * @param options the settings for the resulting view.
+     * @throws TypeError - if `options.viewId` is not in extended kebab case.
+     */
+    constructor(options: SimpleViewOptions);
     viewId(): string;
     title(): Platform.UIString.LocalizedString;
     isCloseable(): boolean;

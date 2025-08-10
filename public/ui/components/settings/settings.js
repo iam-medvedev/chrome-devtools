@@ -122,7 +122,7 @@ p {
 var { html: html2, Directives: { ifDefined } } = Lit2;
 var UIStrings = {
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more"
 };

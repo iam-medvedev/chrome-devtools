@@ -10,15 +10,15 @@ import * as UI from '../../legacy.js';
 import cssShadowEditorStyles from './cssShadowEditor.css.js';
 const UIStrings = {
     /**
-     *@description Text that refers to some types
+     * @description Text that refers to some types
      */
     type: 'Type',
     /**
-     *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+     * @description Text in CSSShadow Editor of the inline editor in the Styles tab
      */
     xOffset: 'X offset',
     /**
-     *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+     * @description Text in CSSShadow Editor of the inline editor in the Styles tab
      */
     yOffset: 'Y offset',
     /**
@@ -27,7 +27,7 @@ const UIStrings = {
      */
     blur: 'Blur',
     /**
-     *@description Text in CSSShadow Editor of the inline editor in the Styles tab
+     * @description Text in CSSShadow Editor of the inline editor in the Styles tab
      */
     spread: 'Spread',
 };

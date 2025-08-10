@@ -40,7 +40,7 @@ import resourceSourceFrameStyles from './resourceSourceFrame.css.js';
 import { SourceFrameImpl } from './SourceFrame.js';
 const UIStrings = {
     /**
-     *@description Text to find an item
+     * @description Text to find an item
      */
     find: 'Find',
 };

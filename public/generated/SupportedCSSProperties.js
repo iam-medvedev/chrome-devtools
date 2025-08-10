@@ -4113,7 +4113,8 @@ export const generatedProperties = [
             "-webkit-right",
             "-webkit-center",
             "start",
-            "end"
+            "end",
+            "match-parent"
         ],
         "name": "text-align"
     },
@@ -4126,7 +4127,8 @@ export const generatedProperties = [
             "left",
             "right",
             "center",
-            "justify"
+            "justify",
+            "match-parent"
         ],
         "name": "text-align-last"
     },
@@ -6602,7 +6604,8 @@ export const generatedPropertyValues = {
             "-webkit-right",
             "-webkit-center",
             "start",
-            "end"
+            "end",
+            "match-parent"
         ]
     },
     "text-align-last": {
@@ -6613,7 +6616,8 @@ export const generatedPropertyValues = {
             "left",
             "right",
             "center",
-            "justify"
+            "justify",
+            "match-parent"
         ]
     },
     "text-anchor": {

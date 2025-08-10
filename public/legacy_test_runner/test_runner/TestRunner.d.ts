@@ -1,8 +1,8 @@
 /**
- * @fileoverview using private properties isn't a Closure violation in tests.
+ * @file using private properties isn't a Closure violation in tests.
  */
 /**
- * @return {boolean}
+ * @returns {boolean}
  */
 export function isDebugTest(): boolean;
 /**
@@ -36,19 +36,19 @@ export function addSniffer(receiver: Object, methodName: string, override: Funct
 /**
  * @param {!Object} receiver
  * @param {string} methodName
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function addSnifferPromise(receiver: Object, methodName: string): Promise<any>;
 /**
  * @param {Text} textNode
  * @param {number=} start
  * @param {number=} end
- * @return {Text}
+ * @returns {Text}
  */
 export function selectTextInTextNode(textNode: Text, start?: number | undefined, end?: number | undefined): Text;
 /**
  * @param {string} panel
- * @return {!Promise.<?UI.Panel.Panel>}
+ * @returns {!Promise.<?UI.Panel.Panel>}
  */
 export function showPanel(panel: string): Promise<UI.Panel.Panel | null>;
 /**
@@ -57,7 +57,7 @@ export function showPanel(panel: string): Promise<UI.Panel.Panel | null>;
  * @param {boolean=} altKey
  * @param {boolean=} shiftKey
  * @param {boolean=} metaKey
- * @return {!KeyboardEvent}
+ * @returns {!KeyboardEvent}
  */
 export function createKeyEvent(key: string, ctrlKey?: boolean | undefined, altKey?: boolean | undefined, shiftKey?: boolean | undefined, metaKey?: boolean | undefined): KeyboardEvent;
 /**
@@ -65,27 +65,27 @@ export function createKeyEvent(key: string, ctrlKey?: boolean | undefined, altKe
  * correctly for async functions; use safeAsyncWrap instead.
  * @param {!Function|undefined} func
  * @param {!Function=} onexception
- * @return {!Function}
+ * @returns {!Function}
  */
 export function safeWrap(func: Function | undefined, onexception?: Function | undefined): Function;
 /**
  * @param {!Node} node
- * @return {string}
+ * @returns {string}
  */
 export function textContentWithLineBreaks(node: Node): string;
 /**
  * @param {!Node} node
- * @return {string}
+ * @returns {string}
  */
 export function textContentWithLineBreaksTrimmed(node: Node): string;
 /**
  * @param {!Node} node
- * @return {string}
+ * @returns {string}
  */
 export function textContentWithoutStyles(node: Node): string;
 /**
  * @param {string} code
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function evaluateInPageRemoteObject(code: string): Promise<any>;
 /**
@@ -95,7 +95,7 @@ export function evaluateInPageRemoteObject(code: string): Promise<any>;
 export function evaluateInPage(code: string, callback: (arg0: any, arg1: Protocol.Runtime.ExceptionDetails | undefined) => void): Promise<void>;
 /**
  * @param {string} code
- * @return {!Promise<undefined|{response: (!SDK.RuntimeModel.RemoteObject|undefined),
+ * @returns {!Promise<undefined|{response: (!SDK.RuntimeModel.RemoteObject|undefined),
  *   exceptionDetails: (!Protocol.Runtime.ExceptionDetails|undefined)}>}
  */
 export function _evaluateInPage(code: string): Promise<undefined | {
@@ -107,23 +107,23 @@ export function _evaluateInPage(code: string): Promise<undefined | {
  * to avoid churning test expectations
  * @param {string} code
  * @param {boolean=} userGesture
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function evaluateInPageAnonymously(code: string, userGesture?: boolean | undefined): Promise<any>;
 /**
  * @param {string} code
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function evaluateInPagePromise(code: string): Promise<any>;
 /**
  * @param {string} code
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function evaluateInPageAsync(code: string): Promise<any>;
 /**
  * @param {string} name
  * @param {!Array<*>} args
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function callFunctionInPageAsync(name: string, args: Array<any>): Promise<any>;
 /**
@@ -150,17 +150,17 @@ export function deprecatedRunAfterPendingDispatches(callback: Function): void;
  * are relative to the test file and not the inspected page
  * (i.e. http/tests/devtools/resources/inspected-page.html).
  * @param {string} html
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function loadHTML(html: string): Promise<any>;
 /**
  * @param {string} path
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function addScriptTag(path: string): Promise<any>;
 /**
  * @param {string} path
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function addStylesheetTag(path: string): Promise<any>;
 /**
@@ -169,7 +169,7 @@ export function addStylesheetTag(path: string): Promise<any>;
  * in line with the standard (crbug 365457).
  * @param {string} path
  * @param {!Object|undefined} options
- * @return {!Promise<*>}
+ * @returns {!Promise<*>}
  */
 export function addIframe(path: string, options?: Object | undefined): Promise<any>;
 /**
@@ -218,7 +218,7 @@ export function addArray(array: any[], customFormatters?: TestRunner.CustomForma
 export function dumpDeepInnerHTML(node: Node): void;
 /**
  * @param {!Node} node
- * @return {string}
+ * @returns {string}
  */
 export function deepTextContent(node: Node): string;
 /**
@@ -232,27 +232,27 @@ export function dump(value: any, customFormatters?: TestRunner.CustomFormatters 
  * @param {symbol} eventName
  * @param {!Common.ObjectWrapper.ObjectWrapper} obj
  * @param {function(?):boolean=} condition
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function waitForEvent(eventName: symbol, obj: Common.ObjectWrapper.ObjectWrapper<any>, condition?: ((arg0: unknown) => boolean) | undefined): Promise<any>;
 /**
  * @param {function(!SDK.Target.Target):boolean} filter
- * @return {!Promise<!SDK.Target.Target>}
+ * @returns {!Promise<!SDK.Target.Target>}
  */
 export function waitForTarget(filter: (arg0: SDK.Target.Target) => boolean): Promise<SDK.Target.Target>;
 /**
  * @param {!SDK.Target.Target} targetToRemove
- * @return {!Promise<!SDK.Target.Target>}
+ * @returns {!Promise<!SDK.Target.Target>}
  */
 export function waitForTargetRemoved(targetToRemove: SDK.Target.Target): Promise<SDK.Target.Target>;
 /**
  * @param {!SDK.RuntimeModel.RuntimeModel} runtimeModel
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function waitForExecutionContext(runtimeModel: SDK.RuntimeModel.RuntimeModel): Promise<any>;
 /**
  * @param {!SDK.RuntimeModel.ExecutionContext} context
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function waitForExecutionContextDestroyed(context: SDK.RuntimeModel.ExecutionContext): Promise<any>;
 /**
@@ -267,7 +267,7 @@ export function assertGreaterOrEqual(a: number, b: number, message?: string | un
  */
 export function navigate(url: string, callback: () => void): void;
 /**
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function navigatePromise(url: any): Promise<any>;
 export function _pageNavigated(): void;
@@ -285,7 +285,7 @@ export function reloadPage(callback: () => void): void;
  */
 export function reloadPageWithInjectedScript(injectedScript: (string | undefined), callback: () => void): void;
 /**
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function reloadPagePromise(): Promise<any>;
 /**
@@ -328,23 +328,23 @@ export function assertTrue(found: any, message: string): void;
  * @param {string} methodName
  * @param {!Function} override
  * @param {boolean=} opt_sticky
- * @return {!Function}
+ * @returns {!Function}
  */
 export function override(receiver: Object, methodName: string, override: Function, opt_sticky?: boolean | undefined): Function;
 /**
  * @param {string} text
- * @return {string}
+ * @returns {string}
  */
 export function clearSpecificInfoFromStackFrames(text: string): string;
 export function hideInspectorView(): void;
 /**
- * @return {?SDK.ResourceTreeModel.ResourceTreeFrame}
+ * @returns {?SDK.ResourceTreeModel.ResourceTreeFrame}
  */
 export function mainFrame(): SDK.ResourceTreeModel.ResourceTreeFrame | null;
 /**
  * @param {string} urlSuffix
  * @param {!Workspace.Workspace.projectTypes=} projectType
- * @return {!Promise}
+ * @returns {!Promise}
  */
 export function waitForUISourceCode(urlSuffix: string, projectType?: Workspace.Workspace.projectTypes | undefined): Promise<any>;
 /**
@@ -353,13 +353,13 @@ export function waitForUISourceCode(urlSuffix: string, projectType?: Workspace.W
 export function waitForUISourceCodeRemoved(callback: Function): void;
 /**
  * @param {string=} url
- * @return {string}
+ * @returns {string}
  */
 export function url(url?: string | undefined): string;
 /**
  * @param {string} str
  * @param {string} mimeType
- * @return {!Promise.<undefined>}
+ * @returns {!Promise.<undefined>}
  */
 export function dumpSyntaxHighlight(str: string, mimeType: string): Promise<undefined>;
 /**
@@ -379,27 +379,27 @@ export function waitForPendingLiveLocationUpdates(): Promise<void>;
 export namespace formatters {
     /**
      * @param {*} value
-     * @return {string}
+     * @returns {string}
      */
     function formatAsTypeName(value: any): string;
     /**
      * @param {*} value
-     * @return {string}
+     * @returns {string}
      */
     function formatAsTypeNameOrNull(value: any): string;
     /**
      * @param {*} value
-     * @return {string|!Date}
+     * @returns {string|!Date}
      */
     function formatAsRecentTime(value: any): string | Date;
     /**
      * @param {string} value
-     * @return {string}
+     * @returns {string}
      */
     function formatAsURL(value: string): string;
     /**
      * @param {string} value
-     * @return {string}
+     * @returns {string}
      */
     function formatAsDescription(value: string): string;
 }
@@ -412,7 +412,7 @@ export class StringOutputStream {
     buffer: string;
     /**
      * @param {string} fileName
-     * @return {!Promise<boolean>}
+     * @returns {!Promise<boolean>}
      */
     open(fileName: string): Promise<boolean>;
     /**
@@ -431,7 +431,7 @@ export class MockSetting<V> {
     constructor(value: V);
     value: V;
     /**
-     * @return {V}
+     * @returns {V}
      */
     get(): V;
     /**

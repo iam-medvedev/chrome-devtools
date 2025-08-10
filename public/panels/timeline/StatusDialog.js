@@ -13,23 +13,23 @@ import { traceJsonGenerator } from './SaveFileFormatter.js';
 import timelineStatusDialogStyles from './timelineStatusDialog.css.js';
 const UIStrings = {
     /**
-     *@description Text to download the trace file after an error
+     * @description Text to download the trace file after an error
      */
     downloadAfterError: 'Download trace',
     /**
-     *@description Text for the status of something
+     * @description Text for the status of something
      */
     status: 'Status',
     /**
-     *@description Text that refers to the time
+     * @description Text that refers to the time
      */
     time: 'Time',
     /**
-     *@description Text for the description of something
+     * @description Text for the description of something
      */
     description: 'Description',
     /**
-     *@description Text of an item that stops the running task
+     * @description Text of an item that stops the running task
      */
     stop: 'Stop',
 };
@@ -50,9 +50,11 @@ export class StatusDialog extends UI.Widget.VBox {
     timeUpdateTimer;
     #rawEvents;
     constructor(options, onButtonClickCallback) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.dialog('timeline-status').track({ resize: true })}`,
+            useShadowDom: true,
+        });
         this.contentElement.classList.add('timeline-status-dialog');
-        this.contentElement.setAttribute('jslog', `${VisualLogging.dialog('timeline-status').track({ resize: true })}`);
         const statusLine = this.contentElement.createChild('div', 'status-dialog-line status');
         statusLine.createChild('div', 'label').textContent = i18nString(UIStrings.status);
         this.status = statusLine.createChild('div', 'content');

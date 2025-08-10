@@ -9,14 +9,14 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ReportingApiReportsView } from './ReportingApiReportsView.js';
 const UIStrings = {
     /**
-     *@description Placeholder text that shows if no report or endpoint was detected.
+     * @description Placeholder text that shows if no report or endpoint was detected.
      *             A report contains information on issues or events that were encountered by a web browser.
      *             An endpoint is a URL where the report is sent to.
      *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)
      */
     noReportOrEndpoint: 'No report or endpoint',
     /**
-     *@description Placeholder text that shows if no report or endpoint was detected.
+     * @description Placeholder text that shows if no report or endpoint was detected.
      *             A report contains information on issues or events that were encountered by a web browser.
      *             An endpoint is a URL where the report is sent to.
      *             (https://developer.chrome.com/docs/capabilities/web-apis/reporting-api)

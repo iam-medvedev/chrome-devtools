@@ -13,43 +13,43 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import performanceMonitorStyles from './performanceMonitor.css.js';
 const UIStrings = {
     /**
-     *@description Aria accessible name in Performance Monitor of the Performance monitor tab
+     * @description Aria accessible name in Performance Monitor of the Performance monitor tab
      */
     graphsDisplayingARealtimeViewOf: 'Graphs displaying a real-time view of performance metrics',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     paused: 'Paused',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     cpuUsage: 'CPU usage',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     jsHeapSize: 'JS heap size',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     domNodes: 'DOM Nodes',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     jsEventListeners: 'JS event listeners',
     /**
-     *@description Text for documents, a type of resources
+     * @description Text for documents, a type of resources
      */
     documents: 'Documents',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     documentFrames: 'Document Frames',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     layoutsSec: 'Layouts / sec',
     /**
-     *@description Text in Performance Monitor of the Performance monitor tab
+     * @description Text in Performance Monitor of the Performance monitor tab
      */
     styleRecalcsSec: 'Style recalcs / sec',
 };
@@ -70,18 +70,20 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
     model;
     pollTimer;
     constructor(pollIntervalMs = 500) {
-        super({ useShadowDom: true });
+        super({
+            jslog: `${VisualLogging.panel('performance.monitor').track({ resize: true })}`,
+            useShadowDom: true,
+        });
         this.registerRequiredCSS(performanceMonitorStyles);
-        this.element.setAttribute('jslog', `${VisualLogging.panel('performance.monitor').track({ resize: true })}`);
         this.contentElement.classList.add('perfmon-pane');
         this.metricsBuffer = [];
-        /** @const */
+        /** @constant */
         this.pixelsPerMs = 10 / 1000;
-        /** @const */
+        /** @constant */
         this.pollIntervalMs = pollIntervalMs;
-        /** @const */
+        /** @constant */
         this.scaleHeight = 16;
-        /** @const */
+        /** @constant */
         this.graphHeight = 90;
         this.gridColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--divider-line');
         this.controlPane = new ControlPane(this.contentElement);

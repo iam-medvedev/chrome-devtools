@@ -4,7 +4,7 @@ import * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';
 export declare const UIStrings: {
     /**
-     *@description Title of an insight that provides details about the LCP metric, broken down by parts.
+     * @description Title of an insight that provides details about the LCP metric, broken down by parts.
      */
     readonly title: "LCP breakdown";
     /**
@@ -13,23 +13,23 @@ export declare const UIStrings: {
      */
     readonly description: "Each [subpart has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays.";
     /**
-     *@description Time to first byte title for the Largest Contentful Paint's subparts timespan breakdown.
+     * @description Time to first byte title for the Largest Contentful Paint's subparts timespan breakdown.
      */
     readonly timeToFirstByte: "Time to first byte";
     /**
-     *@description Resource load delay title for the Largest Contentful Paint subparts timespan breakdown.
+     * @description Resource load delay title for the Largest Contentful Paint subparts timespan breakdown.
      */
     readonly resourceLoadDelay: "Resource load delay";
     /**
-     *@description Resource load duration title for the Largest Contentful Paint subparts timespan breakdown.
+     * @description Resource load duration title for the Largest Contentful Paint subparts timespan breakdown.
      */
     readonly resourceLoadDuration: "Resource load duration";
     /**
-     *@description Element render delay title for the Largest Contentful Paint subparts timespan breakdown.
+     * @description Element render delay title for the Largest Contentful Paint subparts timespan breakdown.
      */
     readonly elementRenderDelay: "Element render delay";
     /**
-     *@description Label used for the subpart (section) of a larger duration.
+     * @description Label used for the subpart (section) of a larger duration.
      */
     readonly subpart: "Subpart";
     /**

@@ -38,15 +38,15 @@ import overviewGridStyles from './overviewGrid.css.js';
 import { TimelineGrid } from './TimelineGrid.js';
 const UIStrings = {
     /**
-     *@description Label for the window for Overview grids
+     * @description Label for the window for Overview grids
      */
     overviewGridWindow: 'Overview grid window',
     /**
-     *@description Label for left window resizer for Overview grids
+     * @description Label for left window resizer for Overview grids
      */
     leftResizer: 'Left Resizer',
     /**
-     *@description Label for right window resizer for Overview grids
+     * @description Label for right window resizer for Overview grids
      */
     rightResizer: 'Right Resizer',
 };

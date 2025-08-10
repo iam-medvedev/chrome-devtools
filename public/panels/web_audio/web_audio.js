@@ -14,15 +14,15 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description The current state of an item
+   * @description The current state of an item
    */
   state: "State",
   /**
-   *@description Text in Audio Context Content Builder
+   * @description Text in Audio Context Content Builder
    */
   sampleRate: "Sample Rate",
   /**
-   *@description Text in Audio Context Content Builder
+   * @description Text in Audio Context Content Builder
    */
   callbackBufferSize: "Callback Buffer Size",
   /**
@@ -31,15 +31,15 @@ var UIStrings = {
    */
   maxOutputChannels: "Max Output Channels",
   /**
-   *@description Text in Audio Context Content Builder
+   * @description Text in Audio Context Content Builder
    */
   currentTime: "Current Time",
   /**
-   *@description Text in Audio Context Content Builder
+   * @description Text in Audio Context Content Builder
    */
   callbackInterval: "Callback Interval",
   /**
-   *@description Text in Audio Context Content Builder
+   * @description Text in Audio Context Content Builder
    */
   renderCapacity: "Render Capacity"
 };
@@ -119,12 +119,12 @@ import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
-   *@description Text that shows there is no recording
+   * @description Text that shows there is no recording
    */
   noRecordings: "(no recordings)",
   /**
-   *@description Label prefix for an audio context selection
-   *@example {realtime (1e03ec)} PH1
+   * @description Label prefix for an audio context selection
+   * @example {realtime (1e03ec)} PH1
    */
   audioContextS: "Audio context: {PH1}"
 };
@@ -434,12 +434,12 @@ var webAudio_css_default = `/*
 // gen/front_end/panels/web_audio/WebAudioView.js
 var UIStrings3 = {
   /**
-   *@description Text in Web Audio View if there is nothing to show.
+   * @description Text in Web Audio View if there is nothing to show.
    * Web Audio API is an API for controlling audio on the web.
    */
   noWebAudio: "No Web Audio API usage detected",
   /**
-   *@description Text in Web Audio View
+   * @description Text in Web Audio View
    */
   openAPageThatUsesWebAudioApiTo: "Open a page that uses Web Audio API to start monitoring."
 };

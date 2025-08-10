@@ -863,7 +863,7 @@ import * as TreeOutline6 from "./../../ui/components/tree_outline/tree_outline.j
 import * as InlineEditor4 from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
-import * as Lit4 from "./../../ui/lit/lit.js";
+import * as Lit5 from "./../../ui/lit/lit.js";
 import * as ElementsComponents4 from "./components/components.js";
 
 // gen/front_end/panels/elements/computedStyleSidebarPane.css.js
@@ -1005,31 +1005,31 @@ var platformFontsWidget_css_default = `/**
 // gen/front_end/panels/elements/PlatformFontsWidget.js
 var UIStrings2 = {
   /**
-   *@description Section title text content in Platform Fonts Widget of the Elements panel
+   * @description Section title text content in Platform Fonts Widget of the Elements panel
    */
   renderedFonts: "Rendered Fonts",
   /**
-   *@description Font property title text content in Platform Fonts Widget of the Elements panel
+   * @description Font property title text content in Platform Fonts Widget of the Elements panel
    */
   familyName: "Family name",
   /**
-   *@description Font property title text content in Platform Fonts Widget of the Elements panel
+   * @description Font property title text content in Platform Fonts Widget of the Elements panel
    */
   postScriptName: "PostScript name",
   /**
-   *@description Font property title text content in Platform Fonts Widget of the Elements panel
+   * @description Font property title text content in Platform Fonts Widget of the Elements panel
    */
   fontOrigin: "Font origin",
   /**
-   *@description Text in Platform Fonts Widget of the Elements panel
+   * @description Text in Platform Fonts Widget of the Elements panel
    */
   networkResource: "Network resource",
   /**
-   *@description Text in Platform Fonts Widget of the Elements panel
+   * @description Text in Platform Fonts Widget of the Elements panel
    */
   localFile: "Local file",
   /**
-   *@description Text in Platform Fonts Widget of the Elements panel. Indicates a number of glyphs (characters) .
+   * @description Text in Platform Fonts Widget of the Elements panel. Indicates a number of glyphs (characters) .
    */
   dGlyphs: "{n, plural, =1 {(# glyph)} other {(# glyphs)}}"
 };
@@ -1038,7 +1038,7 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var DEFAULT_VIEW = (input, _output, target) => {
   const isEmptySection = !input.platformFonts?.length;
   render(html2`
-    <style>${platformFontsWidget_css_default}</style>
+    <style>${UI4.Widget.widgetScoped(platformFontsWidget_css_default)}</style>
     <div class="platform-fonts">
       ${isEmptySection ? "" : html2`
         <div class="title">${i18nString2(UIStrings2.renderedFonts)}</div>
@@ -1056,7 +1056,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
   })}
         </div>
       `}
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var PlatformFontsWidget = class extends UI4.ThrottledWidget.ThrottledWidget {
   sharedModel;
@@ -1413,6 +1413,7 @@ __export(LayersWidget_exports, {
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as Lit2 from "./../../third_party/lit/lit.js";
 import * as TreeOutline2 from "./../../ui/components/tree_outline/tree_outline.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
@@ -1424,7 +1425,7 @@ var layersWidget_css_default = `/**
  * found in the LICENSE file.
  */
 
-.styles-layers-pane {
+.layers-widget {
   overflow: hidden;
   padding-left: 2px;
   background-color: var(--sys-color-cdt-base-container);
@@ -1433,23 +1434,15 @@ var layersWidget_css_default = `/**
   padding-bottom: 2px;
 }
 
-.styles-layers-pane > div {
+.layers-widget > .layers-widget-title {
   font-weight: bold;
   margin: 8px 4px 6px;
-}
-
-.styles-layers-pane > table {
-  width: 100%;
-  border-spacing: 0;
-}
-
-.styles-layers-pane td {
-  padding: 0;
 }
 
 /*# sourceURL=${import.meta.resolve("./layersWidget.css")} */`;
 
 // gen/front_end/panels/elements/LayersWidget.js
+var { render: render2, html: html3, Directives: { ref } } = Lit2;
 var UIStrings3 = {
   /**
    * @description Title of a section in the Element State Pane Widget of the Elements panel.
@@ -1464,77 +1457,98 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/elements/LayersWidget.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var DEFAULT_VIEW2 = (input, output, target) => {
+  const makeTreeNode = (parentId) => (layer) => {
+    const subLayers = layer.subLayers;
+    const name = SDK4.CSSModel.CSSModel.readableLayerName(layer.name);
+    const treeNodeData = layer.order + ": " + name;
+    const id = parentId ? parentId + "." + name : name;
+    if (!subLayers) {
+      return { treeNodeData, id };
+    }
+    return {
+      treeNodeData,
+      id,
+      children: async () => subLayers.sort((layer1, layer2) => layer1.order - layer2.order).map(makeTreeNode(id))
+    };
+  };
+  const { defaultRenderer } = TreeOutline2.TreeOutline;
+  const tree3 = [makeTreeNode("")(input.rootLayer)];
+  const data = {
+    defaultRenderer,
+    tree: tree3
+  };
+  const captureTreeOutline = (e) => {
+    output.treeOutline = e;
+  };
+  const template = html3`
+  <style>${layersWidget_css_default}</style>
+  <div class="layers-widget">
+    <div class="layers-widget-title">${UIStrings3.cssLayersTitle}</div>
+    <devtools-tree-outline ${ref(captureTreeOutline)}
+                           .data=${data}></devtools-tree-outline>
+  </div>
+  `;
+  render2(template, target);
+};
 var layersWidgetInstance;
 var LayersWidget = class _LayersWidget extends UI6.Widget.Widget {
-  cssModel;
-  layerTreeComponent = new TreeOutline2.TreeOutline.TreeOutline();
-  constructor() {
-    super({ useShadowDom: true });
-    this.registerRequiredCSS(layersWidget_css_default);
-    this.contentElement.className = "styles-layers-pane";
-    this.contentElement.setAttribute("jslog", `${VisualLogging2.pane("css-layers")}`);
-    UI6.UIUtils.createTextChild(this.contentElement.createChild("div"), i18nString3(UIStrings3.cssLayersTitle));
-    this.contentElement.appendChild(this.layerTreeComponent);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.update, this);
-  }
-  updateModel(cssModel) {
-    if (this.cssModel === cssModel) {
-      return;
-    }
-    if (this.cssModel) {
-      this.cssModel.removeEventListener(SDK4.CSSModel.Events.StyleSheetChanged, this.update, this);
-    }
-    this.cssModel = cssModel;
-    if (this.cssModel) {
-      this.cssModel.addEventListener(SDK4.CSSModel.Events.StyleSheetChanged, this.update, this);
-    }
+  #node = null;
+  #view;
+  #layerToReveal = null;
+  constructor(view = DEFAULT_VIEW2) {
+    super({ jslog: `${VisualLogging2.pane("css-layers")}` });
+    this.#view = view;
   }
   wasShown() {
     super.wasShown();
-    return this.update();
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+    this.#onDOMNodeChanged({ data: UI6.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode) });
   }
-  async update() {
-    if (!this.isShowing()) {
+  wasHidden() {
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.#onDOMNodeChanged, this);
+    this.#onDOMNodeChanged({ data: null });
+    super.wasHidden();
+  }
+  #onDOMNodeChanged(event) {
+    const node = event.data?.enclosingElementOrSelf();
+    if (this.#node === node) {
       return;
     }
-    let node = UI6.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode);
-    if (node) {
-      node = node.enclosingElementOrSelf();
+    if (this.#node) {
+      this.#node.domModel().cssModel().removeEventListener(SDK4.CSSModel.Events.StyleSheetChanged, this.requestUpdate, this);
     }
-    if (!node) {
+    this.#node = event.data;
+    if (this.#node) {
+      this.#node.domModel().cssModel().addEventListener(SDK4.CSSModel.Events.StyleSheetChanged, this.requestUpdate, this);
+    }
+    if (this.isShowing()) {
+      this.requestUpdate();
+    }
+  }
+  async performUpdate() {
+    if (!this.#node) {
       return;
     }
-    this.updateModel(node.domModel().cssModel());
-    if (!this.cssModel) {
-      return;
-    }
-    const makeTreeNode = (parentId) => (layer) => {
-      const subLayers = layer.subLayers;
-      const name = SDK4.CSSModel.CSSModel.readableLayerName(layer.name);
-      const treeNodeData = layer.order + ": " + name;
-      const id = parentId ? parentId + "." + name : name;
-      if (!subLayers) {
-        return { treeNodeData, id };
+    const rootLayer = await this.#node.domModel().cssModel().getRootLayer(this.#node.id);
+    const input = { rootLayer };
+    const output = { treeOutline: void 0 };
+    this.#view(input, output, this.contentElement);
+    if (output.treeOutline) {
+      await output.treeOutline.expandRecursively(5);
+      if (this.#layerToReveal) {
+        await output.treeOutline.expandToAndSelectTreeNodeId(this.#layerToReveal);
+        this.#layerToReveal = null;
       }
-      return {
-        treeNodeData,
-        id,
-        children: () => Promise.resolve(subLayers.sort((layer1, layer2) => layer1.order - layer2.order).map(makeTreeNode(id)))
-      };
-    };
-    const rootLayer = await this.cssModel.getRootLayer(node.id);
-    this.layerTreeComponent.data = {
-      defaultRenderer: TreeOutline2.TreeOutline.defaultRenderer,
-      tree: [makeTreeNode("")(rootLayer)]
-    };
-    await this.layerTreeComponent.expandRecursively(5);
+    }
   }
   async revealLayer(layerName) {
     if (!this.isShowing()) {
       ElementsPanel.instance().showToolbarPane(this, ButtonProvider.instance().item());
     }
-    await this.update();
-    return await this.layerTreeComponent.expandToAndSelectTreeNodeId("implicit outer layer." + layerName);
+    this.#layerToReveal = `implicit outer layer.${layerName}`;
+    this.requestUpdate();
+    await this.updateComplete;
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -1620,7 +1634,7 @@ import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
 import * as ColorPicker2 from "./../../ui/legacy/components/color_picker/color_picker.js";
 import * as InlineEditor2 from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
+import * as Lit4 from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 import * as ElementsComponents from "./components/components.js";
 
@@ -1744,60 +1758,60 @@ var isMulticolContainer = (computedStyles) => {
 // gen/front_end/panels/elements/CSSRuleValidator.js
 var UIStrings4 = {
   /**
-   *@description The message shown in the Style pane when the user hovers over a property that has no effect due to some other property.
-   *@example {flex-wrap: nowrap} REASON_PROPERTY_DECLARATION_CODE
-   *@example {align-content} AFFECTED_PROPERTY_DECLARATION_CODE
+   * @description The message shown in the Style pane when the user hovers over a property that has no effect due to some other property.
+   * @example {flex-wrap: nowrap} REASON_PROPERTY_DECLARATION_CODE
+   * @example {align-content} AFFECTED_PROPERTY_DECLARATION_CODE
    */
   ruleViolatedBySameElementRuleReason: "The {REASON_PROPERTY_DECLARATION_CODE} property prevents {AFFECTED_PROPERTY_DECLARATION_CODE} from having an effect.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to some other property.
-   *@example {flex-wrap} PROPERTY_NAME
-    @example {nowrap} PROPERTY_VALUE
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to some other property.
+   * @example {flex-wrap} PROPERTY_NAME
+   * @example {nowrap} PROPERTY_VALUE
    */
   ruleViolatedBySameElementRuleFix: "Try setting {PROPERTY_NAME} to something other than {PROPERTY_VALUE}.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to not being a flex or grid container.
-   *@example {display: grid} DISPLAY_GRID_RULE
-   *@example {display: flex} DISPLAY_FLEX_RULE
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to not being a flex or grid container.
+   * @example {display: grid} DISPLAY_GRID_RULE
+   * @example {display: flex} DISPLAY_FLEX_RULE
    */
   ruleViolatedBySameElementRuleChangeFlexOrGrid: "Try adding {DISPLAY_GRID_RULE} or {DISPLAY_FLEX_RULE} to make this element into a container.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to the current property value.
-   *@example {display: block} EXISTING_PROPERTY_DECLARATION
-   *@example {display: flex} TARGET_PROPERTY_DECLARATION
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to the current property value.
+   * @example {display: block} EXISTING_PROPERTY_DECLARATION
+   * @example {display: flex} TARGET_PROPERTY_DECLARATION
    */
   ruleViolatedBySameElementRuleChangeSuggestion: "Try setting the {EXISTING_PROPERTY_DECLARATION} property to {TARGET_PROPERTY_DECLARATION}.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to properties of the parent element.
-   *@example {display: block} REASON_PROPERTY_DECLARATION_CODE
-   *@example {flex} AFFECTED_PROPERTY_DECLARATION_CODE
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to properties of the parent element.
+   * @example {display: block} REASON_PROPERTY_DECLARATION_CODE
+   * @example {flex} AFFECTED_PROPERTY_DECLARATION_CODE
    */
   ruleViolatedByParentElementRuleReason: "The {REASON_PROPERTY_DECLARATION_CODE} property on the parent element prevents {AFFECTED_PROPERTY_DECLARATION_CODE} from having an effect.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to the properties of the parent element.
-   *@example {display: block} EXISTING_PARENT_ELEMENT_RULE
-   *@example {display: flex} TARGET_PARENT_ELEMENT_RULE
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect due to the properties of the parent element.
+   * @example {display: block} EXISTING_PARENT_ELEMENT_RULE
+   * @example {display: flex} TARGET_PARENT_ELEMENT_RULE
    */
   ruleViolatedByParentElementRuleFix: "Try setting the {EXISTING_PARENT_ELEMENT_RULE} property on the parent to {TARGET_PARENT_ELEMENT_RULE}.",
   /**
-   *@description The warning text shown in Elements panel when font-variation-settings don't match allowed values
-   *@example {wdth} PH1
-   *@example {100} PH2
-   *@example {10} PH3
-   *@example {20} PH4
-   *@example {Arial} PH5
+   * @description The warning text shown in Elements panel when font-variation-settings don't match allowed values
+   * @example {wdth} PH1
+   * @example {100} PH2
+   * @example {10} PH3
+   * @example {20} PH4
+   * @example {Arial} PH5
    */
   fontVariationSettingsWarning: "Value for setting \u201C{PH1}\u201D {PH2} is outside the supported range [{PH3}, {PH4}] for font-family \u201C{PH5}\u201D.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect on flex or grid child items.
-   *@example {flex} CONTAINER_DISPLAY_NAME
-   *@example {align-contents} PROPERTY_NAME
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect on flex or grid child items.
+   * @example {flex} CONTAINER_DISPLAY_NAME
+   * @example {align-contents} PROPERTY_NAME
    */
   flexGridContainerPropertyRuleReason: "This element is a {CONTAINER_DISPLAY_NAME} item, i.e. a child of a {CONTAINER_DISPLAY_NAME} container, but {PROPERTY_NAME} only applies to containers.",
   /**
-   *@description The message shown in the Style pane when the user hovers over a property declaration that has no effect on flex or grid child items.
-   *@example {align-contents} PROPERTY_NAME
-   *@example {align-self} ALTERNATIVE_PROPERTY_NAME
+   * @description The message shown in the Style pane when the user hovers over a property declaration that has no effect on flex or grid child items.
+   * @example {align-contents} PROPERTY_NAME
+   * @example {align-self} ALTERNATIVE_PROPERTY_NAME
    */
   flexGridContainerPropertyRuleFix: "Try setting the {PROPERTY_NAME} on the container element or use {ALTERNATIVE_PROPERTY_NAME} instead."
 };
@@ -2303,7 +2317,7 @@ var CSSValueTraceView_exports = {};
 __export(CSSValueTraceView_exports, {
   CSSValueTraceView: () => CSSValueTraceView
 });
-import * as Lit2 from "./../../third_party/lit/lit.js";
+import * as Lit3 from "./../../third_party/lit/lit.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/elements/cssValueTraceView.css.js
@@ -2709,7 +2723,7 @@ devtools-icon.open-in-animations-panel {
 /*# sourceURL=${import.meta.resolve("./stylePropertiesTreeOutline.css")} */`;
 
 // gen/front_end/panels/elements/CSSValueTraceView.js
-var { html: html3, render: render2, Directives: { classMap, ifDefined } } = Lit2;
+var { html: html4, render: render3, Directives: { classMap, ifDefined } } = Lit3;
 function defaultView(input, output, target) {
   const substitutions = [...input.substitutions];
   const evaluations = [...input.evaluations];
@@ -2718,14 +2732,14 @@ function defaultView(input, output, target) {
   const hiddenSummary = !firstEvaluation || intermediateEvaluations.length === 0;
   const summaryTabIndex = hiddenSummary ? void 0 : 0;
   const singleResult = evaluations.length === 0 && substitutions.length === 0;
-  render2(html3`
+  render3(html4`
       <div role=dialog class="css-value-trace monospace" @keydown=${onKeyDown}>
-        ${substitutions.map((line) => html3`
+        ${substitutions.map((line) => html4`
           <span class="trace-line-icon" aria-label="is equal to">↳</span>
           <span class="trace-line">${line}</span>`)}
-        ${firstEvaluation && intermediateEvaluations.length === 0 ? html3`
+        ${firstEvaluation && intermediateEvaluations.length === 0 ? html4`
           <span class="trace-line-icon" aria-label="is equal to">↳</span>
-          <span class="trace-line">${firstEvaluation}</span>` : html3`
+          <span class="trace-line">${firstEvaluation}</span>` : html4`
           <details @toggle=${input.onToggle} ?hidden=${hiddenSummary}>
             <summary tabindex=${ifDefined(summaryTabIndex)}>
               <span class="trace-line-icon" aria-label="is equal to">↳</span>
@@ -2733,12 +2747,12 @@ function defaultView(input, output, target) {
               <span class="trace-line">${firstEvaluation}</span>
             </summary>
             <div>
-              ${intermediateEvaluations.map((evaluation) => html3`
+              ${intermediateEvaluations.map((evaluation) => html4`
                   <span class="trace-line-icon" aria-label="is equal to" >↳</span>
                   <span class="trace-line">${evaluation}</span>`)}
             </div>
           </details>`}
-        ${finalResult ? html3`
+        ${finalResult ? html4`
           <span class="trace-line-icon" aria-label="is equal to" ?hidden=${singleResult}>↳</span>
           <span class=${classMap({ "trace-line": true, "full-row": singleResult })}>
             ${finalResult}
@@ -2870,50 +2884,50 @@ function getCssDeclarationAsJavascriptProperty(declaration) {
 }
 
 // gen/front_end/panels/elements/StylePropertyTreeElement.js
-var { html: html4, nothing, render: render3, Directives: { classMap: classMap2 } } = Lit3;
+var { html: html5, nothing, render: render4, Directives: { classMap: classMap2 } } = Lit4;
 var ASTUtils = SDK6.CSSPropertyParser.ASTUtils;
 var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 var GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
 var UIStrings5 = {
   /**
-   *@description Text in Color Swatch Popover Icon of the Elements panel
+   * @description Text in Color Swatch Popover Icon of the Elements panel
    */
   shiftClickToChangeColorFormat: "Shift + Click to change color format.",
   /**
-   *@description Swatch icon element title in Color Swatch Popover Icon of the Elements panel
-   *@example {Shift + Click to change color format.} PH1
+   * @description Swatch icon element title in Color Swatch Popover Icon of the Elements panel
+   * @example {Shift + Click to change color format.} PH1
    */
   openColorPickerS: "Open color picker. {PH1}",
   /**
-   *@description Context menu item for style property in edit mode
+   * @description Context menu item for style property in edit mode
    */
   togglePropertyAndContinueEditing: "Toggle property and continue editing",
   /**
-   *@description Context menu item for style property in edit mode
+   * @description Context menu item for style property in edit mode
    */
   openInSourcesPanel: "Open in Sources panel",
   /**
-   *@description A context menu item in Styles panel to copy CSS declaration
+   * @description A context menu item in Styles panel to copy CSS declaration
    */
   copyDeclaration: "Copy declaration",
   /**
-   *@description A context menu item in Styles panel to copy CSS property
+   * @description A context menu item in Styles panel to copy CSS property
    */
   copyProperty: "Copy property",
   /**
-   *@description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
+   * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel and Network pane request.
    */
   copyValue: "Copy value",
   /**
-   *@description A context menu item in Styles panel to copy CSS rule
+   * @description A context menu item in Styles panel to copy CSS rule
    */
   copyRule: "Copy rule",
   /**
-   *@description A context menu item in Styles panel to copy all CSS declarations
+   * @description A context menu item in Styles panel to copy all CSS declarations
    */
   copyAllDeclarations: "Copy all declarations",
   /**
-   *@description A context menu item in Styles panel to view the computed CSS property value.
+   * @description A context menu item in Styles panel to view the computed CSS property value.
    */
   viewComputedValue: "View computed value",
   /**
@@ -2925,40 +2939,40 @@ var UIStrings5 = {
    */
   gridEditorButton: "Open `grid` editor",
   /**
-   *@description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
+   * @description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
    */
   copyCssDeclarationAsJs: "Copy declaration as JS",
   /**
-   *@description A context menu item in Styles panel to copy all declarations of CSS rule as JavaScript properties.
+   * @description A context menu item in Styles panel to copy all declarations of CSS rule as JavaScript properties.
    */
   copyAllCssDeclarationsAsJs: "Copy all declarations as JS",
   /**
-   *@description Title of the link in Styles panel to jump to the Animations panel.
+   * @description Title of the link in Styles panel to jump to the Animations panel.
    */
   jumpToAnimationsPanel: "Jump to Animations panel",
   /**
-   *@description Text displayed in a tooltip shown when hovering over a CSS property value references a name that's not
+   * @description Text displayed in a tooltip shown when hovering over a CSS property value references a name that's not
    *             defined and can't be linked to.
-   *@example {--my-linkable-name} PH1
+   * @example {--my-linkable-name} PH1
    */
   sIsNotDefined: "{PH1} is not defined",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   invalidPropertyValue: "Invalid property value",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   unknownPropertyName: "Unknown property name",
   /**
-   *@description Announcement string for invalid properties.
-   *@example {Invalid property value} PH1
-   *@example {font-size} PH2
-   *@example {invalidValue} PH3
+   * @description Announcement string for invalid properties.
+   * @example {Invalid property value} PH1
+   * @example {font-size} PH2
+   * @example {invalidValue} PH3
    */
   invalidString: "{PH1}, property name: {PH2}, property value: {PH3}",
   /**
-   *@description Title in the styles tab for the icon button for jumping to the anchor node.
+   * @description Title in the styles tab for the icon button for jumping to the anchor node.
    */
   jumpToAnchorNode: "Jump to anchor node"
 };
@@ -2991,7 +3005,7 @@ var EnvFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatch
     const func = this.treeElement?.getTracingTooltip("env", match.node, this.matchedStyles, this.computedStyles, context) ?? "env";
     const valueClass = classMap2({ "inactive-value": !match.varNameIsValid });
     const fallbackClass = classMap2({ "inactive-value": match.varNameIsValid });
-    render3(html4`${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ? html4`, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` : nothing})`, span, { host: span });
+    render4(html5`${func}(<span class=${valueClass}>${match.varName}</span>${fallbackNodes ? html5`, <span class=${fallbackClass}>${Renderer.render(fallbackNodes, context).nodes}</span>` : nothing})`, span, { host: span });
     return [span];
   }
 };
@@ -3096,7 +3110,7 @@ var VariableRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
     const tooltipContents = this.#stylesPane.getVariablePopoverContents(this.#matchedStyles, match.name, variableValue ?? null);
     const tooltipId = this.#treeElement?.getTooltipId("custom-property-var");
     const tooltip = tooltipId ? { tooltipId } : void 0;
-    render3(html4`
+    render4(html5`
         <span data-title=${computedValue || ""}
               jslog=${VisualLogging3.link("css-variable").track({ click: true, hover: true })}>
           ${varCall ?? "var"}(
@@ -3107,9 +3121,9 @@ var VariableRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
       onLinkActivate
     }}>
            </devtools-link-swatch>
-           ${renderedFallback ? html4`, ${renderedFallback.nodes}` : nothing})
+           ${renderedFallback ? html5`, ${renderedFallback.nodes}` : nothing})
         </span>
-        ${tooltipId ? html4`
+        ${tooltipId ? html5`
           <devtools-tooltip
             id=${tooltipId}
             variant=rich
@@ -3225,7 +3239,7 @@ var ColorRenderer = class _ColorRenderer extends rendererBase(SDK6.CSSPropertyPa
     const childTracingContexts = context.tracing?.evaluation([args], { match, context }) ?? void 0;
     const renderingContext = childTracingContexts?.at(0)?.renderingContext(context) ?? context;
     const { nodes, cssControls } = Renderer.renderInto(args, renderingContext, valueChild);
-    render3(html4`${this.#treeElement?.getTracingTooltip(func, match.node, this.#treeElement.matchedStyles(), this.#treeElement.getComputedStyles() ?? /* @__PURE__ */ new Map(), renderingContext) ?? func}${nodes}`, valueChild);
+    render4(html5`${this.#treeElement?.getTracingTooltip(func, match.node, this.#treeElement.matchedStyles(), this.#treeElement.getComputedStyles() ?? /* @__PURE__ */ new Map(), renderingContext) ?? func}${nodes}`, valueChild);
     return { valueChild, cssControls, childTracingContexts };
   }
   render(match, context) {
@@ -3458,7 +3472,7 @@ var ColorMixRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers
     const contentChild = document.createElement("span");
     const color1 = Renderer.renderInto(match.color1, childRenderingContexts[1], contentChild);
     const color2 = Renderer.renderInto(match.color2, childRenderingContexts[2], contentChild);
-    render3(html4`${this.#treeElement?.getTracingTooltip("color-mix", match.node, this.#matchedStyles, this.#computedStyles, context) ?? "color-mix"}(${Renderer.render(match.space, childRenderingContexts[0]).nodes}, ${color1.nodes}, ${color2.nodes})`, contentChild);
+    render4(html5`${this.#treeElement?.getTracingTooltip("color-mix", match.node, this.#matchedStyles, this.#computedStyles, context) ?? "color-mix"}(${Renderer.render(match.space, childRenderingContexts[0]).nodes}, ${color1.nodes}, ${color2.nodes})`, contentChild);
     const color1Controls = color1.cssControls.get("color") ?? [];
     const color2Controls = color2.cssControls.get("color") ?? [];
     if (context.matchedResult.hasUnresolvedVars(match.node) || color1Controls.length !== 1 || color2Controls.length !== 1) {
@@ -4123,7 +4137,7 @@ var MathFunctionRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatc
       return span2;
     });
     const span = document.createElement("span");
-    render3(html4`${this.#treeElement?.getTracingTooltip(match.func, match.node, this.#matchedStyles, this.#computedStyles, context) ?? match.func}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html4`, `, arg]).flat()})`, span);
+    render4(html5`${this.#treeElement?.getTracingTooltip(match.func, match.node, this.#matchedStyles, this.#computedStyles, context) ?? match.func}(${renderedArgs.map((arg, idx) => idx === 0 ? [arg] : [html5`, `, arg]).flat()})`, span);
     if (childTracingContexts) {
       const evaluation = context.tracing?.applyEvaluation(childTracingContexts, () => ({ placeholder: [span], asyncEvalCallback: () => this.applyEvaluation(span, match, context) }));
       if (evaluation) {
@@ -4172,7 +4186,7 @@ var AnchorFunctionRenderer = class _AnchorFunctionRenderer extends rendererBase(
   #stylesPane;
   static async decorateAnchorForAnchorLink(stylesPane, container, { identifier, needsSpace }) {
     if (identifier) {
-      render3(html4`${identifier}`, container, { host: container });
+      render4(html5`${identifier}`, container, { host: container });
     }
     const anchorNode = await stylesPane.node()?.getAnchorBySpecifier(identifier) ?? void 0;
     if (!identifier && !anchorNode) {
@@ -4195,9 +4209,9 @@ var AnchorFunctionRenderer = class _AnchorFunctionRenderer extends rendererBase(
       SDK6.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     };
     if (identifier) {
-      render3(
+      render4(
         // clang-format off
-        html4`<devtools-link-swatch
+        html5`<devtools-link-swatch
                 @mouseenter=${onMouseEnter}
                 @mouseleave=${onMouseLeave}
                 .data=${{
@@ -4213,7 +4227,7 @@ var AnchorFunctionRenderer = class _AnchorFunctionRenderer extends rendererBase(
         { host: container }
       );
     } else {
-      render3(html4`<devtools-icon
+      render4(html5`<devtools-icon
                    role='button'
                    title=${i18nString5(UIStrings5.jumpToAnchorNode)}
                    class='icon-link'
@@ -4784,7 +4798,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
   }
   getTracingTooltip(functionName, node, matchedStyles, computedStyles, context) {
     if (context.tracing || !context.property) {
-      return html4`${functionName}`;
+      return html5`${functionName}`;
     }
     const text = context.ast.text(node);
     const expandPercentagesInShorthands = context.matchedResult.getLonghandValuesCount() > 1;
@@ -4792,7 +4806,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     const { property } = context;
     const stylesPane = this.parentPane();
     const tooltipId = this.getTooltipId(`${functionName}-trace`);
-    return html4`
+    return html5`
         <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName}</span>
         <devtools-tooltip
             id=${tooltipId}
@@ -5656,7 +5670,7 @@ import * as Common4 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html5, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
+import { Directives, html as html6, nothing as nothing2, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/domLinkifier.css.js
@@ -5666,8 +5680,7 @@ var domLinkifier_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host,
-.widget {
+:scope {
   display: inline;
 }
 
@@ -5728,9 +5741,9 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/elements/DOMLinkifier.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  render4(html5`${input.tagName || input.pseudo ? html5`
-    <style>${domLinkifier_css_default}</style>
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render5(html6`${input.tagName || input.pseudo ? html6`
+    <style>${UI10.Widget.widgetScoped(domLinkifier_css_default)}</style>
     <span class="monospace">
       <button class="node-link text-button link-style ${classMap3({
     "dynamic-link": Boolean(input.dynamic),
@@ -5747,18 +5760,18 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
     ...input.classes.map((c) => `.${c}`),
     input.pseudo ? `::${input.pseudo}` : ""
   ].join(" ")}>${[
-    input.tagName ? html5`<span class="node-label-name">${input.tagName}</span>` : nothing2,
-    input.id ? html5`<span class="node-label-id">#${input.id}</span>` : nothing2,
-    ...input.classes.map((className) => html5`<span class="extra node-label-class">.${className}</span>`),
-    input.pseudo ? html5`<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing2
+    input.tagName ? html6`<span class="node-label-name">${input.tagName}</span>` : nothing2,
+    input.id ? html6`<span class="node-label-id">#${input.id}</span>` : nothing2,
+    ...input.classes.map((className) => html6`<span class="extra node-label-class">.${className}</span>`),
+    input.pseudo ? html6`<span class="extra node-label-pseudo">${input.pseudo}</span>` : nothing2
   ]}</button>
-    </span>` : i18nString6(UIStrings6.node)}`, target, { host: input });
+    </span>` : i18nString6(UIStrings6.node)}`, target);
 };
 var DOMNodeLink = class extends UI10.Widget.Widget {
   #node = void 0;
   #options = void 0;
   #view;
-  constructor(element, node, options, view = DEFAULT_VIEW2) {
+  constructor(element, node, options, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: true });
     this.element.classList.remove("vbox");
     this.#node = node;
@@ -5849,15 +5862,15 @@ var DOMNodeLink = class extends UI10.Widget.Widget {
   }
 };
 var DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
-  render4(html5`
-      <style>${domLinkifier_css_default}</style>
+  render5(html6`
+      <style>${UI10.Widget.widgetScoped(domLinkifier_css_default)}</style>
       <button class="node-link text-button link-style"
           jslog=${VisualLogging4.link("node").track({ click: true })}
           tabindex=${input.preventKeyboardFocus ? -1 : 0}
           @click=${input.onClick}
           @mousedown=${(e) => e.consume()}>
         <slot></slot>
-      </button>`, target, { host: input });
+      </button>`, target);
 };
 var DeferredDOMNodeLink = class extends UI10.Widget.Widget {
   #deferredNode = void 0;
@@ -5911,58 +5924,58 @@ var Linkifier = class _Linkifier {
 // gen/front_end/panels/elements/StylePropertiesSection.js
 var UIStrings7 = {
   /**
-   *@description Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel
+   * @description Tooltip text that appears when hovering over the largeicon add button in the Styles Sidebar Pane of the Elements panel
    */
   insertStyleRuleBelow: "Insert style rule below",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   constructedStylesheet: "constructed stylesheet",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   userAgentStylesheet: "user agent stylesheet",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   injectedStylesheet: "injected stylesheet",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   viaInspector: "via inspector",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
+   * @description Text in Styles Sidebar Pane of the Elements panel
    */
   styleAttribute: "`style` attribute",
   /**
-   *@description Text in Styles Sidebar Pane of the Elements panel
-   *@example {html} PH1
+   * @description Text in Styles Sidebar Pane of the Elements panel
+   * @example {html} PH1
    */
   sattributesStyle: "{PH1}[Attributes Style]",
   /**
-   *@description Show all button text content in Styles Sidebar Pane of the Elements panel
-   *@example {3} PH1
+   * @description Show all button text content in Styles Sidebar Pane of the Elements panel
+   * @example {3} PH1
    */
   showAllPropertiesSMore: "Show all properties ({PH1} more)",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copySelector: "Copy `selector`",
   /**
-   *@description A context menu item in Styles panel to copy CSS rule
+   * @description A context menu item in Styles panel to copy CSS rule
    */
   copyRule: "Copy rule",
   /**
-   *@description A context menu item in Styles panel to copy all CSS declarations
+   * @description A context menu item in Styles panel to copy all CSS declarations
    */
   copyAllDeclarations: "Copy all declarations",
   /**
-   *@description Text that is announced by the screen reader when the user focuses on an input field for editing the name of a CSS selector in the Styles panel
+   * @description Text that is announced by the screen reader when the user focuses on an input field for editing the name of a CSS selector in the Styles panel
    */
   cssSelector: "`CSS` selector",
   /**
-   *@description Text displayed in tooltip that shows specificity information.
-   *@example {(0,0,1)} PH1
+   * @description Text displayed in tooltip that shows specificity information.
+   * @example {(0,0,1)} PH1
    */
   specificity: "Specificity: {PH1}"
 };
@@ -7724,6 +7737,7 @@ var stylesSidebarPane_css_default = `/**
 
   &.layer-separator {
     display: flex;
+    align-items: baseline;
   }
 
   &.empty-section {
@@ -7861,54 +7875,54 @@ var WebCustomData = class _WebCustomData {
 // gen/front_end/panels/elements/StylesSidebarPane.js
 var UIStrings8 = {
   /**
-   *@description No matches element text content in Styles Sidebar Pane of the Elements panel
+   * @description No matches element text content in Styles Sidebar Pane of the Elements panel
    */
   noMatchingSelectorOrStyle: "No matching selector or style",
   /**
-  /**
-   *@description Text to announce the result of the filter input in the Styles Sidebar Pane of the Elements panel
+   * /**
+   * @description Text to announce the result of the filter input in the Styles Sidebar Pane of the Elements panel
    */
   visibleSelectors: "{n, plural, =1 {# visible selector listed below} other {# visible selectors listed below}}",
   /**
-   *@description Separator element text content in Styles Sidebar Pane of the Elements panel
-   *@example {scrollbar-corner} PH1
+   * @description Separator element text content in Styles Sidebar Pane of the Elements panel
+   * @example {scrollbar-corner} PH1
    */
   pseudoSElement: "Pseudo ::{PH1} element",
   /**
-   *@description Text of a DOM element in Styles Sidebar Pane of the Elements panel
+   * @description Text of a DOM element in Styles Sidebar Pane of the Elements panel
    */
   inheritedFroms: "Inherited from ",
   /**
-   *@description Text of an inherited pseudo element in Styles Sidebar Pane of the Elements panel
-   *@example {highlight} PH1
+   * @description Text of an inherited pseudo element in Styles Sidebar Pane of the Elements panel
+   * @example {highlight} PH1
    */
   inheritedFromSPseudoOf: "Inherited from ::{PH1} pseudo of ",
   /**
-   *@description Title of  in styles sidebar pane of the elements panel
-   *@example {Ctrl} PH1
-   *@example {Alt} PH2
+   * @description Title of  in styles sidebar pane of the elements panel
+   * @example {Ctrl} PH1
+   * @example {Alt} PH2
    */
   incrementdecrementWithMousewheelOne: "Increment/decrement with mousewheel or up/down keys. {PH1}: R \xB11, Shift: G \xB11, {PH2}: B \xB11",
   /**
-   *@description Title of  in styles sidebar pane of the elements panel
-   *@example {Ctrl} PH1
-   *@example {Alt} PH2
+   * @description Title of  in styles sidebar pane of the elements panel
+   * @example {Ctrl} PH1
+   * @example {Alt} PH2
    */
   incrementdecrementWithMousewheelHundred: "Increment/decrement with mousewheel or up/down keys. {PH1}: \xB1100, Shift: \xB110, {PH2}: \xB10.1",
   /**
-   *@description Tooltip text that appears when hovering over the rendering button in the Styles Sidebar Pane of the Elements panel
+   * @description Tooltip text that appears when hovering over the rendering button in the Styles Sidebar Pane of the Elements panel
    */
   toggleRenderingEmulations: "Toggle common rendering emulations",
   /**
-   *@description Rendering emulation option for toggling the automatic dark mode
+   * @description Rendering emulation option for toggling the automatic dark mode
    */
   automaticDarkMode: "Automatic dark mode",
   /**
-   *@description Text displayed on layer separators in the styles sidebar pane.
+   * @description Text displayed on layer separators in the styles sidebar pane.
    */
   layer: "Layer",
   /**
-   *@description Tooltip text for the link in the sidebar pane layer separators that reveals the layer in the layer tree view.
+   * @description Tooltip text for the link in the sidebar pane layer separators that reveals the layer in the layer tree view.
    */
   clickToRevealLayer: "Click to reveal layer in layer tree"
 };
@@ -9495,13 +9509,13 @@ var ButtonProvider2 = class _ButtonProvider {
 // gen/front_end/panels/elements/PropertyRenderer.js
 var UIStrings9 = {
   /**
-   *@description Text that is announced by the screen reader when the user focuses on an input field for entering the name of a CSS property in the Styles panel
-   *@example {margin} PH1
+   * @description Text that is announced by the screen reader when the user focuses on an input field for entering the name of a CSS property in the Styles panel
+   * @example {margin} PH1
    */
   cssPropertyName: "`CSS` property name: {PH1}",
   /**
-   *@description Text that is announced by the screen reader when the user focuses on an input field for entering the value of a CSS property in the Styles panel
-   *@example {10px} PH1
+   * @description Text that is announced by the screen reader when the user focuses on an input field for entering the value of a CSS property in the Styles panel
+   * @example {10px} PH1
    */
   cssPropertyValue: "`CSS` property value: {PH1}"
 };
@@ -9944,7 +9958,7 @@ var BinOpRenderer = class extends rendererBase(SDK10.CSSPropertyParserMatchers.B
 };
 
 // gen/front_end/panels/elements/ComputedStyleWidget.js
-var { html: html6 } = Lit4;
+var { html: html7 } = Lit5;
 var UIStrings10 = {
   /**
    * @description Text for a checkbox setting that controls whether the user-supplied filter text
@@ -9957,7 +9971,8 @@ var UIStrings10 = {
    * grouped together or not. In Computed Style Widget of the Elements panel.
    */
   group: "Group",
-  /** [
+  /**
+   * [
    * @description Text shown to the user when a filter is applied to the computed CSS properties, but
    * no properties matched the filter and thus no results were returned.
    */
@@ -9998,7 +10013,7 @@ function renderPropertyContents(node, propertyName, propertyValue) {
 }
 var createPropertyElement = (node, propertyName, propertyValue, traceable, inherited, activeProperty, onContextMenu) => {
   const { name, value: value4 } = renderPropertyContents(node, propertyName, propertyValue);
-  return html6`<devtools-computed-style-property
+  return html7`<devtools-computed-style-property
         .traceable=${traceable}
         .inherited=${inherited}
         @oncontextmenu=${onContextMenu}
@@ -10288,9 +10303,9 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidge
         const isPropertyOverloaded = matchedStyles.propertyState(data.property) === "Overloaded";
         const traceElement = createTraceElement(domNode, data.property, isPropertyOverloaded, matchedStyles, this.linkifier);
         traceElement.addEventListener("contextmenu", this.handleContextMenuEvent.bind(this, matchedStyles, data.property));
-        return html6`${traceElement}`;
+        return html7`${traceElement}`;
       }
-      return html6`<span style="cursor: text; color: var(--sys-color-on-surface-subtle);">${data.name}</span>`;
+      return html7`<span style="cursor: text; color: var(--sys-color-on-surface-subtle);">${data.name}</span>`;
     };
   }
   buildTreeNode(propertyTraces, propertyName, propertyValue, isInherited) {
@@ -11120,7 +11135,7 @@ import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_hi
 import * as CopyToClipboard from "./../../ui/components/copy_to_clipboard/copy_to_clipboard.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
-import { html as html7, nothing as nothing3, render as render5 } from "./../../ui/lit/lit.js";
+import { html as html8, nothing as nothing3, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/elementsTreeOutline.css.js
@@ -11511,7 +11526,7 @@ import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as ElementsComponents5 from "./components/components.js";
 var UIStrings12 = {
   /**
-   *@description Link text content in Elements Tree Outline of the Elements panel
+   * @description Link text content in Elements Tree Outline of the Elements panel
    */
   reveal: "reveal"
 };
@@ -11620,7 +11635,7 @@ import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as ElementsComponents6 from "./components/components.js";
 var UIStrings13 = {
   /**
-   *@description Link text content in Elements Tree Outline of the Elements panel. When clicked, it "reveals" the true location of an element.
+   * @description Link text content in Elements Tree Outline of the Elements panel. When clicked, it "reveals" the true location of an element.
    */
   reveal: "reveal"
 };
@@ -11707,16 +11722,16 @@ var TopLayerContainer = class extends UI17.TreeOutline.TreeElement {
 // gen/front_end/panels/elements/ElementsTreeOutline.js
 var UIStrings14 = {
   /**
-   *@description ARIA accessible name in Elements Tree Outline of the Elements panel
+   * @description ARIA accessible name in Elements Tree Outline of the Elements panel
    */
   pageDom: "Page DOM",
   /**
-   *@description A context menu item to store a value as a global variable the Elements Panel
+   * @description A context menu item to store a value as a global variable the Elements Panel
    */
   storeAsGlobalVariable: "Store as global variable",
   /**
-   *@description Tree element expand all button element button text content in Elements Tree Outline of the Elements panel
-   *@example {3} PH1
+   * @description Tree element expand all button element button text content in Elements Tree Outline of the Elements panel
+   * @example {3} PH1
    */
   showAllNodesDMore: "Show all nodes ({PH1} more)",
   /**
@@ -11837,7 +11852,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common12.ObjectWrap
           box: hoveredNode.boxInWindow(),
           show: async (popover) => {
             popover.setIgnoreLeftMargin(true);
-            render5(html7`
+            render6(html8`
               <div class="squiggles-content">
                 ${issues.map((issue) => {
               const elementIssueDetails = getElementIssueDetails(issue);
@@ -11846,7 +11861,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common12.ObjectWrap
               }
               const issueKindIconData = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
               const openIssueEvent = () => Common12.Revealer.reveal(issue);
-              return html7`
+              return html8`
                     <div class="squiggles-content-item">
                     <devtools-icon .data=${issueKindIconData} @click=${openIssueEvent}></devtools-icon>
                     <x-link class="link" @click=${openIssueEvent}>${i18nString14(UIStrings14.viewIssue)}</x-link>
@@ -12362,12 +12377,14 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common12.ObjectWrap
     }
   }
   contextMenuEventFired(event) {
+    event.stopPropagation();
+    event.preventDefault();
     const treeElement = this.treeElementFromEventInternal(event);
     if (treeElement instanceof ElementsTreeElement) {
-      this.showContextMenu(treeElement, event);
+      void this.showContextMenu(treeElement, event);
     }
   }
-  showContextMenu(treeElement, event) {
+  async showContextMenu(treeElement, event) {
     if (UI18.UIUtils.isEditing()) {
       return;
     }
@@ -12385,11 +12402,11 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common12.ObjectWrap
     const commentNode = node.enclosingNodeOrSelfWithClass("webkit-html-comment");
     contextMenu.saveSection().appendItem(i18nString14(UIStrings14.storeAsGlobalVariable), this.saveNodeToTempVariable.bind(this, treeElement.node()), { jslogContext: "store-as-global-variable" });
     if (textNode) {
-      treeElement.populateTextContextMenu(contextMenu, textNode);
+      await treeElement.populateTextContextMenu(contextMenu, textNode);
     } else if (isTag) {
-      treeElement.populateTagContextMenu(contextMenu, event);
+      await treeElement.populateTagContextMenu(contextMenu, event);
     } else if (commentNode) {
-      treeElement.populateNodeContextMenu(contextMenu);
+      await treeElement.populateNodeContextMenu(contextMenu);
     } else if (isPseudoElement) {
       treeElement.populatePseudoElementContextMenu(contextMenu);
     }
@@ -13010,11 +13027,11 @@ __export(MarkerDecorator_exports, {
 import * as i18n29 from "./../../core/i18n/i18n.js";
 var UIStrings15 = {
   /**
-   *@description Title of the Marker Decorator of Elements
+   * @description Title of the Marker Decorator of Elements
    */
   domBreakpoint: "DOM Breakpoint",
   /**
-   *@description Title of the Marker Decorator of Elements
+   * @description Title of the Marker Decorator of Elements
    */
   elementIsHidden: "Element is hidden"
 };
@@ -13066,124 +13083,124 @@ function getRegisteredDecorators() {
 // gen/front_end/panels/elements/ElementsTreeElement.js
 var UIStrings16 = {
   /**
-   *@description Title for Ad adorner. This iframe is marked as advertisement frame.
+   * @description Title for Ad adorner. This iframe is marked as advertisement frame.
    */
   thisFrameWasIdentifiedAsAnAd: "This frame was identified as an ad frame",
   /**
-   *@description A context menu item in the Elements panel. Force is used as a verb, indicating intention to make the state change.
+   * @description A context menu item in the Elements panel. Force is used as a verb, indicating intention to make the state change.
    */
   forceState: "Force state",
   /**
-   *@description Hint element title in Elements Tree Element of the Elements panel
-   *@example {0} PH1
+   * @description Hint element title in Elements Tree Element of the Elements panel
+   * @example {0} PH1
    */
   useSInTheConsoleToReferToThis: "Use {PH1} in the console to refer to this element.",
   /**
-   *@description A context menu item in the Elements Tree Element of the Elements panel
+   * @description A context menu item in the Elements Tree Element of the Elements panel
    */
   addAttribute: "Add attribute",
   /**
-   *@description Text to modify the attribute of an item
+   * @description Text to modify the attribute of an item
    */
   editAttribute: "Edit attribute",
   /**
-   *@description Text to focus on something
+   * @description Text to focus on something
    */
   focus: "Focus",
   /**
-   *@description Text to scroll the displayed content into view
+   * @description Text to scroll the displayed content into view
    */
   scrollIntoView: "Scroll into view",
   /**
-   *@description A context menu item in the Elements Tree Element of the Elements panel
+   * @description A context menu item in the Elements Tree Element of the Elements panel
    */
   editText: "Edit text",
   /**
-   *@description A context menu item in the Elements Tree Element of the Elements panel
+   * @description A context menu item in the Elements Tree Element of the Elements panel
    */
   editAsHtml: "Edit as HTML",
   /**
-   *@description Text to cut an element, cut should be used as a verb
+   * @description Text to cut an element, cut should be used as a verb
    */
   cut: "Cut",
   /**
-   *@description Text for copying, copy should be used as a verb
+   * @description Text for copying, copy should be used as a verb
    */
   copy: "Copy",
   /**
-   *@description Text to paste an element, paste should be used as a verb
+   * @description Text to paste an element, paste should be used as a verb
    */
   paste: "Paste",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copyOuterhtml: "Copy outerHTML",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copySelector: "Copy `selector`",
   /**
-   *@description Text in Elements Tree Element of the Elements panel
+   * @description Text in Elements Tree Element of the Elements panel
    */
   copyJsPath: "Copy JS path",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copyStyles: "Copy styles",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copyXpath: "Copy XPath",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copyFullXpath: "Copy full XPath",
   /**
-   *@description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
+   * @description Text in Elements Tree Element of the Elements panel, copy should be used as a verb
    */
   copyElement: "Copy element",
   /**
-   *@description A context menu item in the Elements Tree Element of the Elements panel
+   * @description A context menu item in the Elements Tree Element of the Elements panel
    */
   duplicateElement: "Duplicate element",
   /**
-   *@description Text to hide an element
+   * @description Text to hide an element
    */
   hideElement: "Hide element",
   /**
-   *@description A context menu item in the Elements Tree Element of the Elements panel
+   * @description A context menu item in the Elements Tree Element of the Elements panel
    */
   deleteElement: "Delete element",
   /**
-   *@description Text to expand something recursively
+   * @description Text to expand something recursively
    */
   expandRecursively: "Expand recursively",
   /**
-   *@description Text to collapse children of a parent group
+   * @description Text to collapse children of a parent group
    */
   collapseChildren: "Collapse children",
   /**
-   *@description Title of an action in the emulation tool to capture node screenshot
+   * @description Title of an action in the emulation tool to capture node screenshot
    */
   captureNodeScreenshot: "Capture node screenshot",
   /**
-   *@description Title of a context menu item. When clicked DevTools goes to the Application panel and shows this specific iframe's details
+   * @description Title of a context menu item. When clicked DevTools goes to the Application panel and shows this specific iframe's details
    */
   showFrameDetails: "Show `iframe` details",
   /**
-   *@description Text in Elements Tree Element of the Elements panel
+   * @description Text in Elements Tree Element of the Elements panel
    */
   valueIsTooLargeToEdit: "<value is too large to edit>",
   /**
-   *@description Element text content in Elements Tree Element of the Elements panel
+   * @description Element text content in Elements Tree Element of the Elements panel
    */
   children: "Children:",
   /**
-   *@description ARIA label for Elements Tree adorners
+   * @description ARIA label for Elements Tree adorners
    */
   enableGridMode: "Enable grid mode",
   /**
-   *@description ARIA label for Elements Tree adorners
+   * @description ARIA label for Elements Tree adorners
    */
   disableGridMode: "Disable grid mode",
   /**
@@ -13195,44 +13212,116 @@ var UIStrings16 = {
    */
   stopForceOpenPopover: "Stop keeping this popover open",
   /**
-   *@description Label of the adorner for flex elements in the Elements panel
+   * @description Label of the adorner for flex elements in the Elements panel
    */
   enableFlexMode: "Enable flex mode",
   /**
-   *@description Label of the adorner for flex elements in the Elements panel
+   * @description Label of the adorner for flex elements in the Elements panel
    */
   disableFlexMode: "Disable flex mode",
   /**
-   *@description Label of an adorner in the Elements panel. When clicked, it enables
+   * @description Label of an adorner in the Elements panel. When clicked, it enables
    * the overlay showing CSS scroll snapping for the current element.
    */
   enableScrollSnap: "Enable scroll-snap overlay",
   /**
-   *@description Label of an adorner in the Elements panel. When clicked, it disables
+   * @description Label of an adorner in the Elements panel. When clicked, it disables
    * the overlay showing CSS scroll snapping for the current element.
    */
   disableScrollSnap: "Disable scroll-snap overlay",
   /**
-   *@description Label of an adorner in the Elements panel. When clicked, it redirects
+   * @description Label of an adorner in the Elements panel. When clicked, it redirects
    * to the Media Panel.
    */
   openMediaPanel: "Jump to Media panel",
   /**
-   *@description Text of a tooltip to redirect to another element in the Elements panel
+   * @description Text of a tooltip to redirect to another element in the Elements panel
    */
   showPopoverTarget: "Show element associated with the `popovertarget` attribute",
   /**
-   *@description Text of a tooltip to redirect to another element in the Elements panel, associated with the `interesttarget` attribute
+   * @description Text of a tooltip to redirect to another element in the Elements panel, associated with the `interesttarget` attribute
    */
   showInterestTarget: "Show element associated with the `interesttarget` attribute",
   /**
-   *@description Text of a tooltip to redirect to another element in the Elements panel, associated with the `commandfor` attribute
+   * @description Text of a tooltip to redirect to another element in the Elements panel, associated with the `commandfor` attribute
    */
   showCommandForTarget: "Show element associated with the `commandfor` attribute",
   /**
-   *@description Text of the tooltip for scroll adorner.
+   * @description Text of the tooltip for scroll adorner.
    */
-  elementHasScrollableOverflow: "This element has a scrollable overflow"
+  elementHasScrollableOverflow: "This element has a scrollable overflow",
+  /**
+   * @description Text of a context menu item to redirect to the AI assistance panel and to start a chat.
+   */
+  startAChat: "Start a chat",
+  /**
+   * @description Context menu item in Elements panel to assess visibility of an element via AI.
+   */
+  assessVisibility: "Assess visibility",
+  /**
+   * @description Context menu item in Elements panel to center an element via AI.
+   */
+  centerElement: "Center element",
+  /**
+   * @description Context menu item in Elements panel to wrap flex items via AI.
+   */
+  wrapTheseItems: "Wrap these items",
+  /**
+   * @description Context menu item in Elements panel to distribute flex items evenly via AI.
+   */
+  distributeItemsEvenly: "Distribute items evenly",
+  /**
+   * @description Context menu item in Elements panel to explain flexbox via AI.
+   */
+  explainFlexbox: "Explain flexbox",
+  /**
+   * @description Context menu item in Elements panel to align grid items via AI.
+   */
+  alignItems: "Align items",
+  /**
+   * @description Context menu item in Elements panel to add padding/gap to grid via AI.
+   */
+  addPadding: "Add padding",
+  /**
+   * @description Context menu item in Elements panel to explain grid layout via AI.
+   */
+  explainGridLayout: "Explain grid layout",
+  /**
+   * @description Context menu item in Elements panel to find grid definition for a subgrid item via AI.
+   */
+  findGridDefinition: "Find grid definition",
+  /**
+   * @description Context menu item in Elements panel to change parent grid properties for a subgrid item via AI.
+   */
+  changeParentProperties: "Change parent properties",
+  /**
+   * @description Context menu item in Elements panel to explain subgrids via AI.
+   */
+  explainSubgrids: "Explain subgrids",
+  /**
+   * @description Context menu item in Elements panel to remove scrollbars via AI.
+   */
+  removeScrollbars: "Remove scrollbars",
+  /**
+   * @description Context menu item in Elements panel to style scrollbars via AI.
+   */
+  styleScrollbars: "Style scrollbars",
+  /**
+   * @description Context menu item in Elements panel to explain scrollbars via AI.
+   */
+  explainScrollbars: "Explain scrollbars",
+  /**
+   * @description Context menu item in Elements panel to explain container queries via AI.
+   */
+  explainContainerQueries: "Explain container queries",
+  /**
+   * @description Context menu item in Elements panel to explain container types via AI.
+   */
+  explainContainerTypes: "Explain container types",
+  /**
+   * @description Context menu item in Elements panel to explain container context via AI.
+   */
+  explainContainerContext: "Explain container context"
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/elements/ElementsTreeElement.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
@@ -13649,9 +13738,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
     return false;
   }
   showContextMenu(event) {
-    this.treeOutline && this.treeOutline.showContextMenu(this, event);
+    this.treeOutline && void this.treeOutline.showContextMenu(this, event);
   }
-  populateTagContextMenu(contextMenu, event) {
+  async populateTagContextMenu(contextMenu, event) {
     const treeElement = this.isClosingTag() && this.treeOutline ? this.treeOutline.findTreeElement(this.nodeInternal) : this;
     if (!treeElement) {
       return;
@@ -13663,7 +13752,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
     if (attribute && !newAttribute) {
       contextMenu.editSection().appendItem(i18nString15(UIStrings16.editAttribute), this.startEditingAttribute.bind(this, attribute, target), { jslogContext: "edit-attribute" });
     }
-    this.populateNodeContextMenu(contextMenu);
+    await this.populateNodeContextMenu(contextMenu);
     _ElementsTreeElement.populateForcedPseudoStateItems(contextMenu, treeElement.node());
     this.populateScrollIntoView(contextMenu);
     contextMenu.viewSection().appendItem(i18nString15(UIStrings16.focus), async () => {
@@ -13682,13 +13771,13 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
   populateScrollIntoView(contextMenu) {
     contextMenu.viewSection().appendItem(i18nString15(UIStrings16.scrollIntoView), () => this.nodeInternal.scrollIntoView(), { jslogContext: "scroll-into-view" });
   }
-  populateTextContextMenu(contextMenu, textNode) {
+  async populateTextContextMenu(contextMenu, textNode) {
     if (!this.editing) {
       contextMenu.editSection().appendItem(i18nString15(UIStrings16.editText), this.startEditingTextNode.bind(this, textNode), { jslogContext: "edit-text" });
     }
-    this.populateNodeContextMenu(contextMenu);
+    return await this.populateNodeContextMenu(contextMenu);
   }
-  populateNodeContextMenu(contextMenu) {
+  async populateNodeContextMenu(contextMenu) {
     const isEditable = this.hasEditableNode();
     if (isEditable && !this.editing) {
       contextMenu.editSection().appendItem(i18nString15(UIStrings16.editAsHtml), this.editAsHTML.bind(this), { jslogContext: "elements.edit-as-html" });
@@ -13701,8 +13790,146 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI19.TreeOutline.Tr
       return;
     }
     let menuItem;
-    if (UI19.ActionRegistry.ActionRegistry.instance().hasAction("freestyler.element-panel-context")) {
-      contextMenu.footerSection().appendAction("freestyler.element-panel-context");
+    const openAiAssistanceId = "freestyler.element-panel-context";
+    if (UI19.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
+      let appendSubmenuPromptAction = function(submenu, action2, label, prompt, jslogContext) {
+        submenu.defaultSection().appendItem(label, () => action2.execute({ prompt }), { disabled: !action2.enabled(), jslogContext });
+      };
+      UI19.Context.Context.instance().setFlavor(SDK16.DOMModel.DOMNode, this.nodeInternal);
+      if (Root7.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+        const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+        const submenu = contextMenu.footerSection().appendSubMenuItem(action2.title(), false, Root7.Runtime.hostConfig.devToolsAiSubmenuPrompts?.featureName);
+        submenu.defaultSection().appendAction(openAiAssistanceId, i18nString15(UIStrings16.startAChat));
+        const submenuConfigs = [
+          {
+            condition: (props) => Boolean(props?.isFlex),
+            items: [
+              {
+                label: i18nString15(UIStrings16.wrapTheseItems),
+                prompt: "How can I make flex items wrap?",
+                jslogContextSuffix: ".flex-wrap"
+              },
+              {
+                label: i18nString15(UIStrings16.distributeItemsEvenly),
+                prompt: "How do I distribute flex items evenly?",
+                jslogContextSuffix: ".flex-distribute"
+              },
+              {
+                label: i18nString15(UIStrings16.explainFlexbox),
+                prompt: "What is flexbox?",
+                jslogContextSuffix: ".flex-what"
+              }
+            ]
+          },
+          {
+            condition: (props) => Boolean(props?.isGrid),
+            items: [
+              {
+                label: i18nString15(UIStrings16.alignItems),
+                prompt: "How do I align items in a grid?",
+                jslogContextSuffix: ".grid-align"
+              },
+              {
+                label: i18nString15(UIStrings16.addPadding),
+                prompt: "How to add spacing between grid items?",
+                jslogContextSuffix: ".grid-gap"
+              },
+              {
+                label: i18nString15(UIStrings16.explainGridLayout),
+                prompt: "How does grid layout work?",
+                jslogContextSuffix: ".grid-how"
+              }
+            ]
+          },
+          {
+            condition: (props) => Boolean(props?.isSubgrid),
+            items: [
+              {
+                label: i18nString15(UIStrings16.findGridDefinition),
+                prompt: "Where is this grid defined?",
+                jslogContextSuffix: ".subgrid-where"
+              },
+              {
+                label: i18nString15(UIStrings16.changeParentProperties),
+                prompt: "How to overwrite parent grid properties?",
+                jslogContextSuffix: ".subgrid-override"
+              },
+              {
+                label: i18nString15(UIStrings16.explainSubgrids),
+                prompt: "How do subgrids work?",
+                jslogContextSuffix: ".subgrid-how"
+              }
+            ]
+          },
+          {
+            condition: (props) => Boolean(props?.hasScroll),
+            items: [
+              {
+                label: i18nString15(UIStrings16.removeScrollbars),
+                prompt: "How do I remove scrollbars for this element?",
+                jslogContextSuffix: ".scroll-remove"
+              },
+              {
+                label: i18nString15(UIStrings16.styleScrollbars),
+                prompt: "How can I style a scrollbar?",
+                jslogContextSuffix: ".scroll-style"
+              },
+              {
+                label: i18nString15(UIStrings16.explainScrollbars),
+                prompt: "Why does this element scroll?",
+                jslogContextSuffix: ".scroll-why"
+              }
+            ]
+          },
+          {
+            condition: (props) => Boolean(props?.isContainer),
+            items: [
+              {
+                label: i18nString15(UIStrings16.explainContainerQueries),
+                prompt: "What are container queries?",
+                jslogContextSuffix: ".container-what"
+              },
+              {
+                label: i18nString15(UIStrings16.explainContainerTypes),
+                prompt: "How do I use container-type?",
+                jslogContextSuffix: ".container-how"
+              },
+              {
+                label: i18nString15(UIStrings16.explainContainerContext),
+                prompt: "What's the container context for this element?",
+                jslogContextSuffix: ".container-context"
+              }
+            ]
+          },
+          {
+            // Default items
+            condition: () => true,
+            items: [
+              {
+                label: i18nString15(UIStrings16.assessVisibility),
+                prompt: "Why isn\u2019t this element visible?",
+                jslogContextSuffix: ".visibility"
+              },
+              {
+                label: i18nString15(UIStrings16.centerElement),
+                prompt: "How do I center this element?",
+                jslogContextSuffix: ".center"
+              }
+            ]
+          }
+        ];
+        const layoutProps = await this.nodeInternal.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.nodeInternal.id);
+        const config = submenuConfigs.find((c) => c.condition(layoutProps));
+        if (config) {
+          for (const item2 of config.items) {
+            appendSubmenuPromptAction(submenu, action2, item2.label, item2.prompt, openAiAssistanceId + item2.jslogContextSuffix);
+          }
+        }
+      } else if (Root7.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
+        contextMenu.footerSection().appendAction(openAiAssistanceId, void 0, false, void 0, Root7.Runtime.hostConfig.devToolsAiDebugWithAi?.featureName);
+      } else {
+        contextMenu.footerSection().appendAction(openAiAssistanceId);
+      }
     }
     menuItem = contextMenu.clipboardSection().appendItem(i18nString15(UIStrings16.cut), treeOutline.performCopyOrCut.bind(treeOutline, true, this.nodeInternal), { disabled: !this.hasEditableNode(), jslogContext: "cut" });
     menuItem.setShortcut(createShortcut("X", modifier));
@@ -15202,7 +15429,7 @@ import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK18 from "./../../core/sdk/sdk.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
-import * as Lit5 from "./../../ui/lit/lit.js";
+import * as Lit6 from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/layoutPane.css.js
@@ -15354,49 +15581,49 @@ that uses the dimensions to draw an outline around the element. */
 // gen/front_end/panels/elements/LayoutPane.js
 var UIStrings17 = {
   /**
-   *@description Title of the input to select the overlay color for an element using the color picker
+   * @description Title of the input to select the overlay color for an element using the color picker
    */
   chooseElementOverlayColor: "Choose the overlay color for this element",
   /**
-   *@description Title of the show element button in the Layout pane of the Elements panel
+   * @description Title of the show element button in the Layout pane of the Elements panel
    */
   showElementInTheElementsPanel: "Show element in the Elements panel",
   /**
-   *@description Title of a section on CSS Grid tooling
+   * @description Title of a section on CSS Grid/Masonry tooling
    */
-  grid: "Grid",
+  gridOrMasonry: "Grid / Masonry",
   /**
-   *@description Title of a section in the Layout Sidebar pane of the Elements panel
+   * @description Title of a section in the Layout Sidebar pane of the Elements panel
    */
   overlayDisplaySettings: "Overlay display settings",
   /**
-   *@description Title of a section in Layout sidebar pane
+   * @description Title of a section in Layout sidebar pane
    */
-  gridOverlays: "Grid overlays",
+  gridOrMasonryOverlays: "Grid / Masonry overlays",
   /**
-   *@description Message in the Layout panel informing users that no CSS Grid layouts were found on the page
+   * @description Message in the Layout panel informing users that no CSS Grid/Masonry layouts were found on the page
    */
-  noGridLayoutsFoundOnThisPage: "No grid layouts found on this page",
+  noGridOrMasonryLayoutsFoundOnThisPage: "No grid or masonry layouts found on this page",
   /**
-   *@description Title of the Flexbox section in the Layout panel
+   * @description Title of the Flexbox section in the Layout panel
    */
   flexbox: "Flexbox",
   /**
-   *@description Title of a section in the Layout panel
+   * @description Title of a section in the Layout panel
    */
   flexboxOverlays: "Flexbox overlays",
   /**
-   *@description Text in the Layout panel, when no flexbox elements are found
+   * @description Text in the Layout panel, when no flexbox elements are found
    */
   noFlexboxLayoutsFoundOnThisPage: "No flexbox layouts found on this page",
   /**
-   *@description Screen reader announcement when opening color picker tool.
+   * @description Screen reader announcement when opening color picker tool.
    */
   colorPickerOpened: "Color picker opened."
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/elements/LayoutPane.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var { render: render6, html: html9 } = Lit5;
+var { render: render7, html: html10 } = Lit6;
 var nodeToLayoutElement = (node) => {
   const className = node.getAttribute("class");
   const nodeId = node.id;
@@ -15476,7 +15703,7 @@ function isBooleanSetting(setting) {
   return setting.type === "boolean";
 }
 var layoutPaneInstance;
-var DEFAULT_VIEW3 = (input, output, target) => {
+var DEFAULT_VIEW4 = (input, output, target) => {
   const onColorLabelKeyUp = (event) => {
     if (event.key !== "Enter" && event.key !== " ") {
       return;
@@ -15492,7 +15719,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
       event.preventDefault();
     }
   };
-  const renderElement = (element) => html9`<div
+  const renderElement = (element) => html10`<div
           class="element"
           jslog=${VisualLogging10.item()}>
         <devtools-checkbox
@@ -15542,8 +15769,8 @@ var DEFAULT_VIEW3 = (input, output, target) => {
            @click=${(e) => input.onElementClick(element, e)}
            ></devtools-button>
       </div>`;
-  render6(
-    html9`
+  render7(
+    html10`
       <div style="min-width: min-content;" jslog=${VisualLogging10.pane("layout").track({ resize: true })}>
         <style>${UI21.Widget.widgetScoped(layoutPane_css_default)}</style>
         <style>${UI21.Widget.widgetScoped(UI21.inspectorCommonStyles)}</style>
@@ -15551,17 +15778,17 @@ var DEFAULT_VIEW3 = (input, output, target) => {
           <summary class="header"
             @keydown=${input.onSummaryKeyDown}
             jslog=${VisualLogging10.sectionHeader("grid-settings").track({ click: true })}>
-            ${i18nString16(UIStrings17.grid)}
+            ${i18nString16(UIStrings17.gridOrMasonry)}
           </summary>
           <div class="content-section" jslog=${VisualLogging10.section("grid-settings")}>
             <h3 class="content-section-title">${i18nString16(UIStrings17.overlayDisplaySettings)}</h3>
             <div class="select-settings">
-              ${input.enumSettings.map((setting) => html9`<label data-enum-setting="true" class="select-label" title=${setting.title}>
+              ${input.enumSettings.map((setting) => html10`<label data-enum-setting="true" class="select-label" title=${setting.title}>
                       <select
                         data-input="true"
                         jslog=${VisualLogging10.dropDown().track({ change: true }).context(setting.name)}
                         @change=${(e) => input.onEnumSettingChange(setting, e)}>
-                        ${setting.options.map((opt) => html9`<option
+                        ${setting.options.map((opt) => html10`<option
                                 value=${opt.value}
                                 .selected=${setting.value === opt.value}
                                 jslog=${VisualLogging10.item(Platform8.StringUtilities.toKebabCase(opt.value)).track({
@@ -15571,7 +15798,7 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                     </label>`)}
             </div>
             <div class="checkbox-settings">
-              ${input.booleanSettings.map((setting) => html9`<devtools-checkbox
+              ${input.booleanSettings.map((setting) => html10`<devtools-checkbox
                       data-boolean-setting="true"
                       class="checkbox-label"
                       title=${setting.title}
@@ -15582,14 +15809,14 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                   </devtools-checkbox>`)}
             </div>
           </div>
-          ${input.gridElements ? html9`<div class="content-section" jslog=${VisualLogging10.section("grid-overlays")}>
+          ${input.gridElements ? html10`<div class="content-section" jslog=${VisualLogging10.section("grid-overlays")}>
               <h3 class="content-section-title">
-                ${input.gridElements.length ? i18nString16(UIStrings17.gridOverlays) : i18nString16(UIStrings17.noGridLayoutsFoundOnThisPage)}
+                ${input.gridElements.length ? i18nString16(UIStrings17.gridOrMasonryOverlays) : i18nString16(UIStrings17.noGridOrMasonryLayoutsFoundOnThisPage)}
               </h3>
-              ${input.gridElements.length ? html9`<div class="elements">${input.gridElements.map(renderElement)}</div>` : ""}
+              ${input.gridElements.length ? html10`<div class="elements">${input.gridElements.map(renderElement)}</div>` : ""}
             </div>` : ""}
         </details>
-        ${input.flexContainerElements !== void 0 ? html9`
+        ${input.flexContainerElements !== void 0 ? html10`
           <details open>
             <summary
                 class="header"
@@ -15597,17 +15824,16 @@ var DEFAULT_VIEW3 = (input, output, target) => {
                 jslog=${VisualLogging10.sectionHeader("flexbox-overlays").track({ click: true })}>
               ${i18nString16(UIStrings17.flexbox)}
             </summary>
-            ${input.flexContainerElements ? html9`<div class="content-section" jslog=${VisualLogging10.section("flexbox-overlays")}>
+            ${input.flexContainerElements ? html10`<div class="content-section" jslog=${VisualLogging10.section("flexbox-overlays")}>
                 <h3 class="content-section-title">
                   ${input.flexContainerElements.length ? i18nString16(UIStrings17.flexboxOverlays) : i18nString16(UIStrings17.noFlexboxLayoutsFoundOnThisPage)}
                 </h3>
-                ${input.flexContainerElements.length ? html9`<div class="elements">${input.flexContainerElements.map(renderElement)}</div>` : ""}
+                ${input.flexContainerElements.length ? html10`<div class="elements">${input.flexContainerElements.map(renderElement)}</div>` : ""}
               </div>` : ""}
           </details>` : ""}
       </div>`,
     // clang-format on
-    target,
-    { host: input }
+    target
   );
 };
 var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
@@ -15615,7 +15841,7 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
   #uaShadowDOMSetting;
   #domModels;
   #view;
-  constructor(element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW4) {
     super(element);
     this.#settings = this.#makeSettings();
     this.#uaShadowDOMSetting = Common15.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom");
@@ -15663,7 +15889,12 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
     return nodes;
   }
   async #fetchGridNodes() {
-    return await this.#fetchNodesByStyle([{ name: "display", value: "grid" }, { name: "display", value: "inline-grid" }]);
+    return await this.#fetchNodesByStyle([
+      { name: "display", value: "grid" },
+      { name: "display", value: "inline-grid" },
+      { name: "display", value: "masonry" },
+      { name: "display", value: "inline-masonry" }
+    ]);
   }
   async #fetchFlexContainerNodes() {
     return await this.#fetchNodesByStyle([{ name: "display", value: "flex" }, { name: "display", value: "inline-flex" }]);
@@ -17186,23 +17417,17 @@ ${node.simpleSelector()} {}`, false);
     const contentElement = tabbedPane.tabbedPaneContentElement();
     UI23.ARIAUtils.markAsComplementary(contentElement);
     UI23.ARIAUtils.setLabel(contentElement, i18nString17(UIStrings18.sidePanelContent));
-    const stylesView = new UI23.View.SimpleView(
-      i18nString17(UIStrings18.styles),
-      /* useShadowDom */
-      void 0,
-      "styles"
-      /* SidebarPaneTabId.STYLES */
-    );
+    const stylesView = new UI23.View.SimpleView({
+      title: i18nString17(UIStrings18.styles),
+      viewId: "styles"
+    });
     this.sidebarPaneView.appendView(stylesView);
     stylesView.element.classList.add("flex-auto");
     stylesSplitWidget.show(stylesView.element);
-    const computedView = new UI23.View.SimpleView(
-      i18nString17(UIStrings18.computed),
-      /* useShadowDom */
-      void 0,
-      "computed"
-      /* SidebarPaneTabId.COMPUTED */
-    );
+    const computedView = new UI23.View.SimpleView({
+      title: i18nString17(UIStrings18.computed),
+      viewId: "computed"
+    });
     computedView.element.classList.add("composite", "fill");
     tabbedPane.addEventListener(UI23.TabbedPane.Events.TabSelected, tabSelected, this);
     this.sidebarPaneView.appendView(computedView);
@@ -17647,35 +17872,35 @@ import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "./../event_listeners/event_listeners.js";
 var UIStrings19 = {
   /**
-   *@description Title of show framework listeners setting in event listeners widget of the elements panel
+   * @description Title of show framework listeners setting in event listeners widget of the elements panel
    */
   frameworkListeners: "`Framework` listeners",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Event Listeners Widget of the Elements panel
+   * @description Tooltip text that appears on the setting when hovering over it in Event Listeners Widget of the Elements panel
    */
   showListenersOnTheAncestors: "Show listeners on the ancestors",
   /**
-   *@description Alternative title text of a setting in Event Listeners Widget of the Elements panel
+   * @description Alternative title text of a setting in Event Listeners Widget of the Elements panel
    */
   ancestors: "Ancestors",
   /**
-   *@description Title of dispatch filter in event listeners widget of the elements panel
+   * @description Title of dispatch filter in event listeners widget of the elements panel
    */
   eventListenersCategory: "Event listeners category",
   /**
-   *@description Text for everything
+   * @description Text for everything
    */
   all: "All",
   /**
-   *@description Text in Event Listeners Widget of the Elements panel
+   * @description Text in Event Listeners Widget of the Elements panel
    */
   passive: "Passive",
   /**
-   *@description Text in Event Listeners Widget of the Elements panel
+   * @description Text in Event Listeners Widget of the Elements panel
    */
   blocking: "Blocking",
   /**
-   *@description Tooltip text that appears on the setting when hovering over it in Event Listeners Widget of the Elements panel
+   * @description Tooltip text that appears on the setting when hovering over it in Event Listeners Widget of the Elements panel
    */
   resolveEventListenersBoundWith: "Resolve event listeners bound with framework"
 };
@@ -17829,7 +18054,7 @@ var ActionDelegate2 = class {
 // gen/front_end/panels/elements/PropertiesWidget.js
 var PropertiesWidget_exports = {};
 __export(PropertiesWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   PropertiesWidget: () => PropertiesWidget
 });
 import "./../../ui/legacy/legacy.js";
@@ -17840,7 +18065,7 @@ import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK23 from "./../../core/sdk/sdk.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI26 from "./../../ui/legacy/legacy.js";
-import { html as html10, nothing as nothing4, render as render7 } from "./../../ui/lit/lit.js";
+import { html as html11, nothing as nothing4, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/propertiesWidget.css.js
@@ -17890,8 +18115,8 @@ var UIStrings20 = {
 };
 var str_20 = i18n39.i18n.registerUIStrings("panels/elements/PropertiesWidget.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
-var DEFAULT_VIEW4 = (input, _output, target) => {
-  render7(html10`
+var DEFAULT_VIEW5 = (input, _output, target) => {
+  render8(html11`
     <div jslog=${VisualLogging15.pane("element-properties").track({ resize: true })}>
       <div class="hbox properties-widget-toolbar">
         <devtools-toolbar class="styles-pane-toolbar" role="presentation">
@@ -17902,11 +18127,11 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
           </devtools-checkbox>
         </devtools-toolbar>
       </div>
-      ${input.displayNoMatchingPropertyMessage ? html10`
+      ${input.displayNoMatchingPropertyMessage ? html11`
         <div class="gray-info-message">${i18nString19(UIStrings20.noMatchingProperty)}</div>
       ` : nothing4}
       ${input.treeOutlineElement}
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var getShowAllPropertiesSetting = () => Common20.Settings.Settings.instance().createSetting(
   "show-all-properties",
@@ -17921,7 +18146,7 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
   lastRequestedNode;
   #view;
   #displayNoMatchingPropertyMessage = false;
-  constructor(throttlingTimeout, view = DEFAULT_VIEW4) {
+  constructor(throttlingTimeout, view = DEFAULT_VIEW5) {
     super(true, throttlingTimeout);
     this.registerRequiredCSS(propertiesWidget_css_default);
     this.showAllPropertiesSetting = getShowAllPropertiesSetting();
@@ -18021,7 +18246,7 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
 // gen/front_end/panels/elements/NodeStackTraceWidget.js
 var NodeStackTraceWidget_exports = {};
 __export(NodeStackTraceWidget_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW5,
+  DEFAULT_VIEW: () => DEFAULT_VIEW6,
   MaxLengthForLinks: () => MaxLengthForLinks,
   NodeStackTraceWidget: () => NodeStackTraceWidget
 });
@@ -18029,7 +18254,7 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as SDK24 from "./../../core/sdk/sdk.js";
 import * as Components6 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI27 from "./../../ui/legacy/legacy.js";
-import { html as html11, render as render8 } from "./../../ui/lit/lit.js";
+import { html as html12, render as render9 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/nodeStackTraceWidget.css.js
 var nodeStackTraceWidget_css_default = `/*
@@ -18048,25 +18273,25 @@ var nodeStackTraceWidget_css_default = `/*
 // gen/front_end/panels/elements/NodeStackTraceWidget.js
 var UIStrings21 = {
   /**
-   *@description Message displayed when no JavaScript stack trace is available for the DOM node in the Stack Trace widget of the Elements panel
+   * @description Message displayed when no JavaScript stack trace is available for the DOM node in the Stack Trace widget of the Elements panel
    */
   noStackTraceAvailable: "No stack trace available"
 };
 var str_21 = i18n41.i18n.registerUIStrings("panels/elements/NodeStackTraceWidget.ts", UIStrings21);
 var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
-var DEFAULT_VIEW5 = (input, _output, target) => {
+var DEFAULT_VIEW6 = (input, _output, target) => {
   const { target: sdkTarget, linkifier, options } = input;
-  render8(html11`
-    <style>${nodeStackTraceWidget_css_default}</style>
-    ${target && options.stackTrace ? html11`<devtools-widget
+  render9(html12`
+    <style>${UI27.Widget.widgetScoped(nodeStackTraceWidget_css_default)}</style>
+    ${target && options.stackTrace ? html12`<devtools-widget
                 class="stack-trace"
                 .widgetConfig=${UI27.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
-              </devtools-widget>` : html11`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target, { host: input });
+              </devtools-widget>` : html12`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target);
 };
 var NodeStackTraceWidget = class extends UI27.ThrottledWidget.ThrottledWidget {
   #linkifier = new Components6.Linkifier.Linkifier(MaxLengthForLinks);
   #view;
-  constructor(view = DEFAULT_VIEW5) {
+  constructor(view = DEFAULT_VIEW6) {
     super(
       true
       /* isWebComponent */
@@ -18188,10 +18413,12 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
   updateNodeThrottler;
   previousTarget;
   constructor() {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging16.pane("elements-classes")}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(classesPaneWidget_css_default);
     this.contentElement.className = "styles-element-classes-pane";
-    this.contentElement.setAttribute("jslog", `${VisualLogging16.pane("elements-classes")}`);
     const container = this.contentElement.createChild("div", "title-container");
     this.input = container.createChild("div", "new-class-input monospace");
     this.setDefaultFocusedElement(this.input);
@@ -18466,14 +18693,14 @@ var ClassNamePrompt = class extends UI28.TextPrompt.TextPrompt {
 var ElementStatePaneWidget_exports = {};
 __export(ElementStatePaneWidget_exports, {
   ButtonProvider: () => ButtonProvider4,
-  DEFAULT_VIEW: () => DEFAULT_VIEW6,
+  DEFAULT_VIEW: () => DEFAULT_VIEW7,
   ElementStatePaneWidget: () => ElementStatePaneWidget
 });
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK26 from "./../../core/sdk/sdk.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI29 from "./../../ui/legacy/legacy.js";
-import { html as html12, render as render9 } from "./../../ui/lit/lit.js";
+import { html as html13, render as render10 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/elementStatePaneWidget.css.js
@@ -18559,7 +18786,7 @@ var UIStrings23 = {
    */
   forceElementSpecificStates: "Force specific element state",
   /**
-   *@description Text that is usually a hyperlink to more documentation
+   * @description Text that is usually a hyperlink to more documentation
    */
   learnMore: "Learn more"
 };
@@ -18587,9 +18814,9 @@ var SpecificPseudoStates;
   SpecificPseudoStates2["AUTOFILL"] = "autofill";
   SpecificPseudoStates2["OPEN"] = "open";
 })(SpecificPseudoStates || (SpecificPseudoStates = {}));
-var DEFAULT_VIEW6 = (input, _output, target) => {
+var DEFAULT_VIEW7 = (input, _output, target) => {
   const createElementStateCheckbox = (state) => {
-    return html12`
+    return html13`
         <div id=${state.state}>
           <devtools-checkbox class="small" @click=${input.onStateCheckboxClicked}
               jslog=${VisualLogging17.toggle(state.state).track({ change: true })} ?checked=${state.checked} ?disabled=${state.disabled}
@@ -18598,8 +18825,8 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
         </devtools-checkbox>
         </div>`;
   };
-  render9(html12`
-    <style>${elementStatePaneWidget_css_default}</style>
+  render10(html13`
+    <style>${UI29.Widget.widgetScoped(elementStatePaneWidget_css_default)}</style>
     <div class="styles-element-state-pane"
         jslog=${VisualLogging17.pane("element-states")}>
       <div class="page-state-checkbox">
@@ -18629,14 +18856,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           ${input.states.filter(({ type, hidden }) => type === "specific" && !hidden).map((state) => createElementStateCheckbox(state))}
         </div>
       </details>
-    </div>`, target, { host: input });
+    </div>`, target);
 };
 var ElementStatePaneWidget = class extends UI29.Widget.Widget {
   #duals;
   #cssModel;
   #states = /* @__PURE__ */ new Map();
   #view;
-  constructor(view = DEFAULT_VIEW6) {
+  constructor(view = DEFAULT_VIEW7) {
     super({ useShadowDom: true });
     this.#view = view;
     this.#duals = /* @__PURE__ */ new Map();

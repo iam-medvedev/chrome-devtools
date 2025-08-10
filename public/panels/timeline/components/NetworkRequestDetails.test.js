@@ -1,13 +1,24 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { cleanTextContent } from '../../../testing/DOMHelpers.js';
+import { cleanTextContent, renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Components from '../../../ui/legacy/components/utils/utils.js';
 import * as Timeline from '../timeline.js';
 import * as TimelineComponents from './components.js';
 describeWithMockConnection('NetworkRequestDetails', () => {
+    async function makeDetailsComponent(parsedTrace, request, entityMapper) {
+        const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails();
+        details.parsedTrace = parsedTrace;
+        details.request = request;
+        details.target = Timeline.TargetForEvent.targetForEvent(parsedTrace, request);
+        details.entityMapper = entityMapper;
+        details.linkifier = new Components.Linkifier.Linkifier();
+        renderElementIntoDOM(details);
+        await details.updateComplete;
+        return details;
+    }
     it('renders the right details for a network event from Trace', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
         const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
@@ -18,20 +29,16 @@ describeWithMockConnection('NetworkRequestDetails', () => {
         if (!cssRequest) {
             throw new Error('Could not find expected network request.');
         }
-        const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(new Components.Linkifier.Linkifier());
-        await details.setData(parsedTrace, cssRequest, Timeline.TargetForEvent.targetForEvent(parsedTrace, cssRequest), entityMapper);
-        if (!details.shadowRoot) {
-            throw new Error('Could not find expected element to test.');
-        }
-        const titleSwatch = details.shadowRoot.querySelector('.network-request-details-title div');
+        const details = await makeDetailsComponent(parsedTrace, cssRequest, entityMapper);
+        const titleSwatch = details.contentElement.querySelector('.network-request-details-title div');
         // css request is in 'Css' category, which will use `--app-color-css: var(--ref-palette-purple60)` colour
         assert.strictEqual(titleSwatch?.style.backgroundColor, 'rgb(191, 103, 255)');
-        const rowData = getRowDataForDetailsElement(details.shadowRoot);
-        const durationInnerText = 'Duration 12.58 ms ' +
-            'Queuing and connecting 1.83 ms ' +
-            'Request sent and waiting 4.80 ms ' +
-            'Content downloading 1.66 ms ' +
-            'Waiting on main thread 4.29 ms';
+        const rowData = getRowDataForDetailsElement(details.contentElement);
+        const durationInnerText = 'Duration\n12.58 ms\n' +
+            'Queuing and connecting\n1.83 ms\n' +
+            'Request sent and waiting\n4.80 ms\n' +
+            'Content downloading\n1.66 ms\n' +
+            'Waiting on main thread\n4.29 ms';
         assert.deepEqual(rowData, [
             { title: undefined, value: 'chromedevtools.github.io/performance-stories/lcp-web-font/app.css' },
             { title: 'Request method', value: 'GET' },
@@ -63,14 +70,10 @@ describeWithMockConnection('NetworkRequestDetails', () => {
         if (!htmlRequest) {
             throw new Error('Could not find expected network request.');
         }
-        const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(new Components.Linkifier.Linkifier());
-        await details.setData(parsedTrace, htmlRequest, Timeline.TargetForEvent.targetForEvent(parsedTrace, htmlRequest), entityMapper);
-        if (!details.shadowRoot) {
-            throw new Error('Could not find expected element to test.');
-        }
-        const titleSwatch = details.shadowRoot.querySelector('.network-request-details-title div');
+        const details = await makeDetailsComponent(parsedTrace, htmlRequest, entityMapper);
+        const titleSwatch = details.contentElement.querySelector('.network-request-details-title div');
         assert.strictEqual(titleSwatch?.style.backgroundColor, 'rgb(76, 141, 246)');
-        const rowData = getServerTimingDataDetailsElement(details.shadowRoot);
+        const rowData = getServerTimingDataDetailsElement(details.contentElement);
         assert.deepEqual(rowData, [
             [
                 'Server timing',
@@ -104,18 +107,14 @@ describeWithMockConnection('NetworkRequestDetails', () => {
         if (!htmlRequest) {
             throw new Error('Could not find expected network request.');
         }
-        const details = new TimelineComponents.NetworkRequestDetails.NetworkRequestDetails(new Components.Linkifier.Linkifier());
-        await details.setData(parsedTrace, htmlRequest, Timeline.TargetForEvent.targetForEvent(parsedTrace, htmlRequest), entityMapper);
-        if (!details.shadowRoot) {
-            throw new Error('Could not find expected element to test.');
-        }
-        const titleSwatch = details.shadowRoot.querySelector('.network-request-details-title div');
+        const details = await makeDetailsComponent(parsedTrace, htmlRequest, entityMapper);
+        const titleSwatch = details.contentElement.querySelector('.network-request-details-title div');
         assert.strictEqual(titleSwatch?.style.backgroundColor, 'rgb(76, 141, 246)');
-        const rowData = getRedirectDetailsElement(details.shadowRoot);
+        const rowData = getRedirectDetailsElement(details.contentElement);
         assert.deepEqual(rowData, [
-            'Redirects ' +
-                'http://localhost:10200/online-only.html?delay=1000&redirect_count=3&redirect=%2Fredirects-final.html ' +
-                'http://localhost:10200/online-only.html?delay=1000&redirect_count=2&redirect=%2Fredirects-final.html ' +
+            'Redirects\n' +
+                'http://localhost:10200/online-only.html?delay=1000&redirect_count=3&redirect=%2Fredirects-final.html\n' +
+                'http://localhost:10200/online-only.html?delay=1000&redirect_count=2&redirect=%2Fredirects-final.html\n' +
                 'http://localhost:10200/online-only.html?delay=1000&redirect_count=1&redirect=%2Fredirects-final.html',
         ]);
     });

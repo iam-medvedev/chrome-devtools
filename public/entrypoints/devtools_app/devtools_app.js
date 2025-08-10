@@ -6,11 +6,11 @@ import * as i18n from "./../../core/i18n/i18n.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   *@description Title of the CSS overview panel
+   * @description Title of the CSS overview panel
    */
   cssOverview: "CSS overview",
   /**
-   *@description Title of the CSS overview panel
+   * @description Title of the CSS overview panel
    */
   showCssOverview: "Show CSS overview"
 };
@@ -121,7 +121,7 @@ var UIStrings2 = {
    */
   selectAnElementInThePageTo: "Select an element in the page to inspect it",
   /**
-   *@description Title/tooltip of an action in the elements panel to add a new style rule.
+   * @description Title/tooltip of an action in the elements panel to add a new style rule.
    */
   newStyleRule: "New Style Rule",
   /**
@@ -707,71 +707,71 @@ import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
-   *@description Command for showing the 'Event Listener Breakpoints' tool
+   * @description Command for showing the 'Event Listener Breakpoints' tool
    */
   showEventListenerBreakpoints: "Show Event Listener Breakpoints",
   /**
-   *@description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Event Listener Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   eventListenerBreakpoints: "Event Listener Breakpoints",
   /**
-   *@description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
+   * @description Title for showing the 'CSP Violation Breakpoints' tool in the Sources panel
    */
   showCspViolationBreakpoints: "Show CSP Violation Breakpoints",
   /**
-   *@description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'CSP Violation Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   cspViolationBreakpoints: "CSP Violation Breakpoints",
   /**
-   *@description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
+   * @description Command for showing the 'XHR/fetch Breakpoints' in the sources panel
    */
   showXhrfetchBreakpoints: "Show XHR/fetch Breakpoints",
   /**
-   *@description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'XHR/fetch Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   xhrfetchBreakpoints: "XHR/fetch Breakpoints",
   /**
-   *@description Command for showing the 'DOM Breakpoints' tool in the Elements panel
+   * @description Command for showing the 'DOM Breakpoints' tool in the Elements panel
    */
   showDomBreakpoints: "Show DOM Breakpoints",
   /**
-   *@description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'DOM Breakpoints' tool in the bottom sidebar of the Sources tool
    */
   domBreakpoints: "DOM Breakpoints",
   /**
-   *@description Command for showing the 'Global Listeners' tool in the sources panel
+   * @description Command for showing the 'Global Listeners' tool in the sources panel
    */
   showGlobalListeners: "Show Global Listeners",
   /**
-   *@description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
+   * @description Title of the 'Global Listeners' tool in the bottom sidebar of the Sources tool
    */
   globalListeners: "Global Listeners",
   /**
-   *@description Text that refers to one or a group of webpages
+   * @description Text that refers to one or a group of webpages
    */
   page: "Page",
   /**
-   *@description Command for showing the 'Page' tab in the Sources panel
+   * @description Command for showing the 'Page' tab in the Sources panel
    */
   showPage: "Show Page",
   /**
-   *@description Title as part of a tool to override existing configurations
+   * @description Title as part of a tool to override existing configurations
    */
   overrides: "Overrides",
   /**
-   *@description Command for showing the 'Overrides' tool in the Sources panel
+   * @description Command for showing the 'Overrides' tool in the Sources panel
    */
   showOverrides: "Show Overrides",
   /**
-   *@description Title for a type of source files
+   * @description Title for a type of source files
    */
   contentScripts: "Content scripts",
   /**
-   *@description Command for showing the 'Content scripts' tool in the sources panel
+   * @description Command for showing the 'Content scripts' tool in the sources panel
    */
   showContentScripts: "Show Content scripts",
   /**
-   *@description Label for a button in the sources panel that refreshes the list of global event listeners.
+   * @description Label for a button in the sources panel that refreshes the list of global event listeners.
    */
   refreshGlobalListeners: "Refresh global listeners"
 };
@@ -965,111 +965,111 @@ import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings4 = {
   /**
-   *@description Command for showing the 'Network' tool
+   * @description Command for showing the 'Network' tool
    */
   showNetwork: "Show Network",
   /**
-   *@description Title of the Network tool
+   * @description Title of the Network tool
    */
   network: "Network",
   /**
-   *@description Command for showing the 'Network request blocking' tool
+   * @description Command for showing the 'Network request blocking' tool
    */
   showNetworkRequestBlocking: "Show Network request blocking",
   /**
-   *@description Title of the 'Network request blocking' tool in the bottom drawer
+   * @description Title of the 'Network request blocking' tool in the bottom drawer
    */
   networkRequestBlocking: "Network request blocking",
   /**
-   *@description Command for showing the 'Network conditions' tool
+   * @description Command for showing the 'Network conditions' tool
    */
   showNetworkConditions: "Show Network conditions",
   /**
-   *@description Title of the 'Network conditions' tool in the bottom drawer
+   * @description Title of the 'Network conditions' tool in the bottom drawer
    */
   networkConditions: "Network conditions",
   /**
-   *@description A tag of Network Conditions tool that can be searched in the command menu
+   * @description A tag of Network Conditions tool that can be searched in the command menu
    */
   diskCache: "disk cache",
   /**
-   *@description A tag of Network Conditions tool that can be searched in the command menu
+   * @description A tag of Network Conditions tool that can be searched in the command menu
    */
   networkThrottling: "network throttling",
   /**
-   *@description Command for showing the 'Search' tool
+   * @description Command for showing the 'Search' tool
    */
   showSearch: "Show Search",
   /**
-   *@description Title of a search bar or tool
+   * @description Title of a search bar or tool
    */
   search: "Search",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   recordNetworkLog: "Record network log",
   /**
-   *@description Title of an action in the network tool to toggle recording
+   * @description Title of an action in the network tool to toggle recording
    */
   stopRecordingNetworkLog: "Stop recording network log",
   /**
-   *@description Title of an action that hides network request details
+   * @description Title of an action that hides network request details
    */
   hideRequestDetails: "Hide request details",
   /**
-   *@description Title of a setting under the Network category in Settings
+   * @description Title of a setting under the Network category in Settings
    */
   colorcodeResourceTypes: "Color-code resource types",
   /**
-   *@description A tag of Network color-code resource types that can be searched in the command menu
+   * @description A tag of Network color-code resource types that can be searched in the command menu
    */
   colorCode: "color code",
   /**
-   *@description A tag of Network color-code resource types that can be searched in the command menu
+   * @description A tag of Network color-code resource types that can be searched in the command menu
    */
   resourceType: "resource type",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   colorCodeByResourceType: "Color code by resource type",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   useDefaultColors: "Use default colors",
   /**
-   *@description Title of a setting under the Network category in Settings
+   * @description Title of a setting under the Network category in Settings
    */
   groupNetworkLogByFrame: "Group network log by frame",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   netWork: "network",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   frame: "frame",
   /**
-   *@description A tag of Group Network by frame setting that can be searched in the command menu
+   * @description A tag of Group Network by frame setting that can be searched in the command menu
    */
   group: "group",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   groupNetworkLogItemsByFrame: "Group network log items by frame",
   /**
-   *@description Title of a setting under the Network category that can be invoked through the Command Menu
+   * @description Title of a setting under the Network category that can be invoked through the Command Menu
    */
   dontGroupNetworkLogItemsByFrame: "Don't group network log items by frame",
   /**
-   *@description Title of a button for clearing the network log
+   * @description Title of a button for clearing the network log
    */
   clear: "Clear network log",
   /**
-   *@description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
    */
   addNetworkRequestBlockingPattern: "Add network request blocking pattern",
   /**
-   *@description Title of an action in the Network request blocking panel to clear all URL patterns.
+   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
    */
   removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
   /**
@@ -1432,19 +1432,19 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as Security from "./../../panels/security/security.js";
 var UIStrings5 = {
   /**
-   *@description Default Title of the security panel
+   * @description Default Title of the security panel
    */
   security: "Security",
   /**
-   *@description Title of privacy and security panel. This is used when the kDevToolsPrivacyUI feature flag is enabled.
+   * @description Title of privacy and security panel. This is used when the kDevToolsPrivacyUI feature flag is enabled.
    */
   PrivacyAndSecurity: "Privacy and security",
   /**
-   *@description Default command to open the security panel
+   * @description Default command to open the security panel
    */
   showSecurity: "Show Security",
   /**
-   *@description Command to open the privacy and security panel. This is used when the kDevToolPrivacyUI feature flag is enabled
+   * @description Command to open the privacy and security panel. This is used when the kDevToolPrivacyUI feature flag is enabled
    */
   showPrivacyAndSecurity: "Show Privacy and security"
 };
@@ -1489,11 +1489,11 @@ import * as Root5 from "./../../core/root/root.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
   /**
-   *@description Title of an action in the emulation tool to toggle device mode
+   * @description Title of an action in the emulation tool to toggle device mode
    */
   toggleDeviceToolbar: "Toggle device toolbar",
   /**
-   *@description Title of an action in the emulation tool to capture screenshot
+   * @description Title of an action in the emulation tool to capture screenshot
    */
   captureScreenshot: "Capture screenshot",
   /**
@@ -1517,24 +1517,24 @@ var UIStrings6 = {
    */
   device: "device",
   /**
-   *@description Command in the Device Mode Toolbar, to hide media query boundaries in the UI.
+   * @description Command in the Device Mode Toolbar, to hide media query boundaries in the UI.
    * https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries
    */
   hideMediaQueries: "Hide media queries",
   /**
-   *@description Command that shows measuring rulers next to the emulated device.
+   * @description Command that shows measuring rulers next to the emulated device.
    */
   showRulers: "Show rulers in the Device Mode toolbar",
   /**
-   *@description Command that hides measuring rulers next to the emulated device.
+   * @description Command that hides measuring rulers next to the emulated device.
    */
   hideRulers: "Hide rulers in the Device Mode toolbar",
   /**
-   *@description Command that shows a frame (like a picture frame) around the emulated device.
+   * @description Command that shows a frame (like a picture frame) around the emulated device.
    */
   showDeviceFrame: "Show device frame",
   /**
-   *@description Command that hides a frame (like a picture frame) around the emulated device.
+   * @description Command that hides a frame (like a picture frame) around the emulated device.
    */
   hideDeviceFrame: "Hide device frame"
 };
@@ -1688,23 +1688,23 @@ var UIStrings7 = {
    */
   sensors: "Sensors",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   geolocation: "geolocation",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   timezones: "timezones",
   /**
-   *@description Text in Sensors View of the Device Toolbar
+   * @description Text in Sensors View of the Device Toolbar
    */
   locale: "locale",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   locales: "locales",
   /**
-   *@description A tag of Sensors tool that can be searched in the command menu
+   * @description A tag of Sensors tool that can be searched in the command menu
    */
   accelerometer: "accelerometer",
   /**
@@ -1713,7 +1713,7 @@ var UIStrings7 = {
    */
   deviceOrientation: "device orientation",
   /**
-   *@description Title of Locations settings. Refers to geographic locations for GPS.
+   * @description Title of Locations settings. Refers to geographic locations for GPS.
    */
   locations: "Locations",
   /**
@@ -1722,39 +1722,39 @@ var UIStrings7 = {
    */
   touch: "Touch",
   /**
-   *@description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
+   * @description Text in Sensors View of the Device Toolbar. Refers to device-based touch input,
    *which means the input type will be 'touch' only if the device normally has touch input e.g. a
    *phone or tablet.
    */
   devicebased: "Device-based",
   /**
-   *@description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
+   * @description Text in Sensors View of the Device Toolbar. Means that touch input will be forced
    *on, even if the device type e.g. desktop computer does not normally have touch input.
    */
   forceEnabled: "Force enabled",
   /**
-   *@description Title of a section option in Sensors tab for idle emulation. This is a command, to
+   * @description Title of a section option in Sensors tab for idle emulation. This is a command, to
    *emulate the state of the 'Idle Detector'.
    */
   emulateIdleDetectorState: "Emulate Idle Detector state",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
+   * @description Title of an option in Sensors tab idle emulation drop-down. Turns off emulation of idle state.
    */
   noIdleEmulation: "No idle emulation",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userActiveScreenUnlocked: "User active, screen unlocked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userActiveScreenLocked: "User active, screen locked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userIdleScreenUnlocked: "User idle, screen unlocked",
   /**
-   *@description Title of an option in Sensors tab idle emulation drop-down.
+   * @description Title of an option in Sensors tab idle emulation drop-down.
    */
   userIdleScreenLocked: "User idle, screen locked",
   /**
@@ -1763,7 +1763,7 @@ var UIStrings7 = {
    */
   showSensors: "Show Sensors",
   /**
-   *@description Command that shows geographic locations.
+   * @description Command that shows geographic locations.
    */
   showLocations: "Show Locations",
   /**
@@ -1771,23 +1771,23 @@ var UIStrings7 = {
    */
   cpuPressure: "CPU Pressure",
   /**
-   *@description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
+   * @description Title of an option in Sensors tab cpu pressure emulation drop-down. Turns off emulation of cpu pressure state.
    */
   noPressureEmulation: "No override",
   /**
-   *@description An option that appears in a drop-down that represents the nominal state.
+   * @description An option that appears in a drop-down that represents the nominal state.
    */
   nominal: "Nominal",
   /**
-   *@description An option that appears in a drop-down that represents the fair state.
+   * @description An option that appears in a drop-down that represents the fair state.
    */
   fair: "Fair",
   /**
-   *@description An option that appears in a drop-down that represents the serious state.
+   * @description An option that appears in a drop-down that represents the serious state.
    */
   serious: "Serious",
   /**
-   *@description An option that appears in a drop-down that represents the critical state.
+   * @description An option that appears in a drop-down that represents the critical state.
    */
   critical: "Critical"
 };
@@ -2139,11 +2139,11 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings11 = {
   /**
-   *@description Label for the autofill pane
+   * @description Label for the autofill pane
    */
   autofill: "Autofill",
   /**
-   *@description Command for showing the 'Autofill' pane
+   * @description Command for showing the 'Autofill' pane
    */
   showAutofill: "Show Autofill"
 };
@@ -2434,31 +2434,31 @@ import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as PreloadingHelper from "./../../panels/application/preloading/helper/helper.js";
 var UIStrings13 = {
   /**
-   *@description Text in Application Panel Sidebar of the Application panel
+   * @description Text in Application Panel Sidebar of the Application panel
    */
   application: "Application",
   /**
-   *@description Command for showing the 'Application' tool
+   * @description Command for showing the 'Application' tool
    */
   showApplication: "Show Application",
   /**
-   *@description A tag of Application Panel that can be searched in the command menu
+   * @description A tag of Application Panel that can be searched in the command menu
    */
   pwa: "pwa",
   /**
-   *@description Text of button in Clear Storage View of the Application panel
+   * @description Text of button in Clear Storage View of the Application panel
    */
   clearSiteData: "Clear site data",
   /**
-   *@description Title of an action that clears all site data including 3rd party cookies
+   * @description Title of an action that clears all site data including 3rd party cookies
    */
   clearSiteDataIncludingThirdparty: "Clear site data (including third-party cookies)",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   startRecordingEvents: "Start recording events",
   /**
-   *@description Title of an action under the Background Services category that can be invoked through the Command Menu
+   * @description Title of an action under the Background Services category that can be invoked through the Command Menu
    */
   stopRecordingEvents: "Stop recording events"
 };
@@ -2594,11 +2594,11 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as UI14 from "./../../ui/legacy/legacy.js";
 var UIStrings14 = {
   /**
-   *@description Label for the issues pane
+   * @description Label for the issues pane
    */
   issues: "Issues",
   /**
-   *@description Command for showing the 'Issues' tool
+   * @description Command for showing the 'Issues' tool
    */
   showIssues: "Show Issues"
 };
@@ -2641,11 +2641,11 @@ import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 var UIStrings15 = {
   /**
-   *@description Title of the Layers tool
+   * @description Title of the Layers tool
    */
   layers: "Layers",
   /**
-   *@description Command for showing the Layers tool
+   * @description Command for showing the Layers tool
    */
   showLayers: "Show Layers"
 };
@@ -2676,7 +2676,7 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
 var UIStrings16 = {
   /**
-   *@description Command for showing the 'Lighthouse' tool
+   * @description Command for showing the 'Lighthouse' tool
    */
   showLighthouse: "Show `Lighthouse`"
 };
@@ -2710,15 +2710,15 @@ import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 var UIStrings17 = {
   /**
-   *@description Text that appears on a button for the media resource type filter.
+   * @description Text that appears on a button for the media resource type filter.
    */
   media: "Media",
   /**
-   *@description The type of media. Lower case.
+   * @description The type of media. Lower case.
    */
   video: "video",
   /**
-   *@description Command for showing the media tool.
+   * @description Command for showing the media tool.
    */
   showMedia: "Show Media"
 };
@@ -2754,23 +2754,23 @@ import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 var UIStrings18 = {
   /**
-   *@description Text for throttling the network
+   * @description Text for throttling the network
    */
   throttling: "Throttling",
   /**
-   *@description Command for showing the Mobile Throttling tool.
+   * @description Command for showing the Mobile Throttling tool.
    */
   showThrottling: "Show Throttling",
   /**
-   *@description Title of an action in the network conditions tool to network offline
+   * @description Title of an action in the network conditions tool to network offline
    */
   goOffline: "Go offline",
   /**
-   *@description A tag of Mobile related settings that can be searched in the command menu
+   * @description A tag of Mobile related settings that can be searched in the command menu
    */
   device: "device",
   /**
-   *@description A tag of Network related actions that can be searched in the command menu
+   * @description A tag of Network related actions that can be searched in the command menu
    */
   throttlingTag: "throttling",
   /**
@@ -2784,7 +2784,7 @@ var UIStrings18 = {
    */
   enableFastGThrottling: "Enable fast `3G` throttling",
   /**
-   *@description Title of an action in the network conditions tool to network online
+   * @description Title of an action in the network conditions tool to network online
    */
   goOnline: "Go online"
 };
@@ -2877,31 +2877,31 @@ import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 var UIStrings19 = {
   /**
-   *@description Title of the 'Performance monitor' tool in the bottom drawer
+   * @description Title of the 'Performance monitor' tool in the bottom drawer
    */
   performanceMonitor: "Performance monitor",
   /**
-   *@description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance Monitor that can be searched in the command menu
    */
   performance: "performance",
   /**
-   *@description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance Monitor that can be searched in the command menu
    */
   systemMonitor: "system monitor",
   /**
-   *@description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance Monitor that can be searched in the command menu
    */
   monitor: "monitor",
   /**
-   *@description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance Monitor that can be searched in the command menu
    */
   activity: "activity",
   /**
-   *@description A tag of Performance Monitor that can be searched in the command menu
+   * @description A tag of Performance Monitor that can be searched in the command menu
    */
   metrics: "metrics",
   /**
-   *@description Command for showing the 'Performance monitor' tool in the bottom drawer
+   * @description Command for showing the 'Performance monitor' tool in the bottom drawer
    */
   showPerformanceMonitor: "Show Performance monitor"
 };
@@ -2941,55 +2941,55 @@ import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
 var UIStrings20 = {
   /**
-   *@description Text for the performance of something
+   * @description Text for the performance of something
    */
   performance: "Performance",
   /**
-   *@description Command for showing the 'Performance' tool
+   * @description Command for showing the 'Performance' tool
    */
   showPerformance: "Show Performance",
   /**
-   *@description Text to record a series of actions for analysis
+   * @description Text to record a series of actions for analysis
    */
   record: "Record",
   /**
-   *@description Text of an item that stops the running task
+   * @description Text of an item that stops the running task
    */
   stop: "Stop",
   /**
-   *@description Title of an action in the timeline tool to record reload
+   * @description Title of an action in the timeline tool to record reload
    */
   recordAndReload: "Record and reload",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon download button
+   * @description Tooltip text that appears when hovering over the largeicon download button
    */
   saveProfile: "Save profile\u2026",
   /**
-   *@description Tooltip text that appears when hovering over the largeicon load button
+   * @description Tooltip text that appears when hovering over the largeicon load button
    */
   loadProfile: "Load profile\u2026",
   /**
-   *@description Prev button title in Film Strip View of the Performance panel
+   * @description Prev button title in Film Strip View of the Performance panel
    */
   previousFrame: "Previous frame",
   /**
-   *@description Next button title in Film Strip View of the Performance panel
+   * @description Next button title in Film Strip View of the Performance panel
    */
   nextFrame: "Next frame",
   /**
-   *@description Title of an action in the timeline tool to show history
+   * @description Title of an action in the timeline tool to show history
    */
   showRecentTimelineSessions: "Show recent timeline sessions",
   /**
-   *@description Title of an action that opens the previous recording in the performance panel
+   * @description Title of an action that opens the previous recording in the performance panel
    */
   previousRecording: "Previous recording",
   /**
-   *@description Title of an action that opens the next recording in the performance panel
+   * @description Title of an action that opens the next recording in the performance panel
    */
   nextRecording: "Next recording",
   /**
-   *@description Title of a setting under the Performance category in Settings
+   * @description Title of a setting under the Performance category in Settings
    */
   hideChromeFrameInLayersView: "Hide `chrome` frame in Layers view"
 };
@@ -3291,15 +3291,15 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
 var UIStrings21 = {
   /**
-   *@description Title of the WebAudio tool
+   * @description Title of the WebAudio tool
    */
   webaudio: "WebAudio",
   /**
-   *@description A tags of WebAudio tool that can be searched in the command menu
+   * @description A tags of WebAudio tool that can be searched in the command menu
    */
   audio: "audio",
   /**
-   *@description Command for showing the WebAudio tool
+   * @description Command for showing the WebAudio tool
    */
   showWebaudio: "Show WebAudio"
 };
@@ -3331,11 +3331,11 @@ import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings22 = {
   /**
-   *@description Title of WebAuthn tab in bottom drawer.
+   * @description Title of WebAuthn tab in bottom drawer.
    */
   webauthn: "WebAuthn",
   /**
-   *@description Command for showing the WebAuthn tab in bottom drawer.
+   * @description Command for showing the WebAuthn tab in bottom drawer.
    */
   showWebauthn: "Show WebAuthn"
 };
@@ -3366,39 +3366,39 @@ import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
 var UIStrings23 = {
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (reset view in Layers Panel)
    */
   resetView: "Reset view",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to pan in Layers Panel)
    */
   switchToPanMode: "Switch to pan mode",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers Panel)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (switch to rotate mode in Layers Panel)
    */
   switchToRotateMode: "Switch to rotate mode",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom in)
    */
   zoomIn: "Zoom in",
   /**
-   *@description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
+   * @description Text in the Shortcuts page to explain a keyboard shortcut (zoom out)
    */
   zoomOut: "Zoom out",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer up
+   * @description Description of a shortcut that pans or rotates the layer viewer up
    */
   panOrRotateUp: "Pan or rotate up",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer down
+   * @description Description of a shortcut that pans or rotates the layer viewer down
    */
   panOrRotateDown: "Pan or rotate down",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer left
+   * @description Description of a shortcut that pans or rotates the layer viewer left
    */
   panOrRotateLeft: "Pan or rotate left",
   /**
-   *@description Description of a shortcut that pans or rotates the layer viewer right
+   * @description Description of a shortcut that pans or rotates the layer viewer right
    */
   panOrRotateRight: "Pan or rotate right"
 };
@@ -3518,23 +3518,23 @@ import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as UI24 from "./../../ui/legacy/legacy.js";
 var UIStrings24 = {
   /**
-   *@description Title of the Recorder Panel
+   * @description Title of the Recorder Panel
    */
   recorder: "Recorder",
   /**
-   *@description Title of the Recorder Panel
+   * @description Title of the Recorder Panel
    */
   showRecorder: "Show Recorder",
   /**
-   *@description Title of start/stop recording action in command menu
+   * @description Title of start/stop recording action in command menu
    */
   startStopRecording: "Start/Stop recording",
   /**
-   *@description Title of create a new recording action in command menu
+   * @description Title of create a new recording action in command menu
    */
   createRecording: "Create a new recording",
   /**
-   *@description Title of start a new recording action in command menu
+   * @description Title of start a new recording action in command menu
    */
   replayRecording: "Replay recording",
   /**
@@ -3671,31 +3671,31 @@ import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as UI25 from "./../../ui/legacy/legacy.js";
 var UIStrings25 = {
   /**
-   *@description Title of the 'What's New' tool in the bottom drawer
+   * @description Title of the 'What's New' tool in the bottom drawer
    */
   whatsNew: "What's new",
   /**
-   *@description Command for showing the 'What's New' tool in the bottom drawer
+   * @description Command for showing the 'What's New' tool in the bottom drawer
    */
   showWhatsNew: "Show what's new",
   /**
-   *@description Title of an action in the 'What's New' tool to release notes
+   * @description Title of an action in the 'What's New' tool to release notes
    */
   releaseNotes: "Release notes",
   /**
-   *@description Title of an action in the 'What's New' tool to file an issue
+   * @description Title of an action in the 'What's New' tool to file an issue
    */
   reportADevtoolsIssue: "Report a DevTools issue",
   /**
-   *@description A search term referring to a software defect (i.e. bug) that can be entered in the command menu
+   * @description A search term referring to a software defect (i.e. bug) that can be entered in the command menu
    */
   bug: "bug",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   showWhatsNewAfterEachUpdate: "Show what's new after each update",
   /**
-   *@description Title of a setting under the Appearance category that can be invoked through the Command Menu
+   * @description Title of a setting under the Appearance category that can be invoked through the Command Menu
    */
   doNotShowWhatsNewAfterEachUpdate: "Don't show what's new after each update"
 };

@@ -4,6 +4,15 @@
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from './legacy.js';
 describe('View', () => {
+    describe('SimpleView', () => {
+        const { SimpleView } = UI.View;
+        describe('constructor', () => {
+            assert.throws(() => new SimpleView({
+                title: 'Some title',
+                viewId: 'foo_bar',
+            }), TypeError);
+        });
+    });
     describeWithEnvironment('TabbedViewLocation', () => {
         let tabbedLocation;
         let viewManager;

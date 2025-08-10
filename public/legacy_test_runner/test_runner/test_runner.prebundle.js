@@ -71,8 +71,8 @@ let _startedTest = false;
  */
 export class _TestObserver {
     /**
-     * @param {!SDK.Target.Target} target
      * @override
+     * @param {!SDK.Target.Target} target
      */
     targetAdded(target) {
         if (target.id() === 'main' && target.type() === 'frame' ||
@@ -93,8 +93,8 @@ export class _TestObserver {
         }
     }
     /**
-     * @param {!SDK.Target.Target} target
      * @override
+     * @param {!SDK.Target.Target} target
      */
     targetRemoved(target) {
     }

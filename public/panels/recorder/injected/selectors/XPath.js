@@ -99,12 +99,12 @@ const getXPathIndexInParent = (node) => {
 /**
  * Computes the XPath for a node.
  *
- * @param node - The node to compute.
- * @param optimized - Whether to optimize the XPath for the node. Does not imply
+ * @internal
+ * @param node The node to compute.
+ * @param optimized Whether to optimize the XPath for the node. Does not imply
  * the XPath is shorter; implies the XPath will be highly-scoped to the node.
  * @returns The computed XPath.
  *
- * @internal
  */
 export const computeXPath = (node, optimized, attributes) => {
     if (node.nodeType === Node.DOCUMENT_NODE) {

@@ -240,8 +240,7 @@ export class BalancedJSONTokenizer {
  * of code.
  *
  * @param lines The input document lines.
- * @return The indentation detected for the lines as string or `null` if it's inconclusive.
- *
+ * @returns The indentation detected for the lines as string or `null` if it's inconclusive.
  * @see https://heathermoor.medium.com/detecting-code-indentation-eff3ed0fb56b
  */
 export const detectIndentation = function (lines) {

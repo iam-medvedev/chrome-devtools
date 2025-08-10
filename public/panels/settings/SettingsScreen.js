@@ -45,35 +45,35 @@ import * as PanelComponents from './components/components.js';
 import settingsScreenStyles from './settingsScreen.css.js';
 const UIStrings = {
     /**
-     *@description Card header in Experiments settings tab that list all available unstable experiments that can be turned on or off.
+     * @description Card header in Experiments settings tab that list all available unstable experiments that can be turned on or off.
      */
     unstableExperiments: 'Unstable experiments',
     /**
-     *@description Name of the Settings view
+     * @description Name of the Settings view
      */
     settings: 'Settings',
     /**
-     *@description Text for keyboard shortcuts
+     * @description Text for keyboard shortcuts
      */
     shortcuts: 'Shortcuts',
     /**
-     *@description Text of button in Settings Screen of the Settings
+     * @description Text of button in Settings Screen of the Settings
      */
     restoreDefaultsAndReload: 'Restore defaults and reload',
     /**
-     *@description Card header in Experiments settings tab that list all available stable experiments that can be turned on or off.
+     * @description Card header in Experiments settings tab that list all available stable experiments that can be turned on or off.
      */
     experiments: 'Experiments',
     /**
-     *@description Message shown in the experiments panel to warn users about any possible unstable features.
+     * @description Message shown in the experiments panel to warn users about any possible unstable features.
      */
     theseExperimentsCouldBeUnstable: 'Warning: These experiments could be unstable or unreliable.',
     /**
-     *@description Message text content in Settings Screen of the Settings
+     * @description Message text content in Settings Screen of the Settings
      */
     theseExperimentsAreParticularly: 'Warning: These experiments are particularly unstable. Enable at your own risk.',
     /**
-     *@description Message to display if a setting change requires a reload of DevTools
+     * @description Message to display if a setting change requires a reload of DevTools
      */
     oneOrMoreSettingsHaveChanged: 'One or more settings have changed which requires a reload to take effect',
     /**
@@ -82,15 +82,15 @@ const UIStrings = {
      */
     noResults: 'No experiments match the filter',
     /**
-     *@description Text that is usually a hyperlink to more documentation
+     * @description Text that is usually a hyperlink to more documentation
      */
     learnMore: 'Learn more',
     /**
-     *@description Text that is usually a hyperlink to a feedback form
+     * @description Text that is usually a hyperlink to a feedback form
      */
     sendFeedback: 'Send feedback',
     /**
-     *@description Placeholder text in search bar
+     * @description Placeholder text in search bar
      */
     searchExperiments: 'Search experiments',
 };
@@ -213,12 +213,11 @@ export class GenericSettingsTab extends UI.Widget.VBox {
     containerElement;
     #updateSyncSectionTimerId = -1;
     constructor() {
-        super();
+        super({ jslog: `${VisualLogging.pane('preferences')}` });
         this.element.classList.add('settings-tab-container');
         this.element.id = 'preferences-tab-content';
         this.containerElement =
             this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('preferences')}`);
         this.containerElement.classList.add('settings-multicolumn-card-container');
         // AI, GRID, MOBILE, EMULATION, and RENDERING are intentionally excluded from this list.
         // AI settings are displayed in their own tab.
@@ -345,13 +344,12 @@ export class ExperimentsSettingsTab extends UI.Widget.VBox {
     experimentToControl = new Map();
     containerElement;
     constructor() {
-        super();
+        super({ jslog: `${VisualLogging.pane('experiments')}` });
         this.element.classList.add('settings-tab-container');
         this.element.id = 'experiments-tab-content';
         this.containerElement =
             this.contentElement.createChild('div', 'settings-card-container-wrapper').createChild('div');
         this.containerElement.classList.add('settings-card-container');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('experiments')}`);
         const filterSection = this.containerElement.createChild('div');
         filterSection.classList.add('experiments-filter');
         render(html `

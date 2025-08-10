@@ -424,22 +424,22 @@ var dataGrid_css_default = `/*
 // gen/front_end/ui/legacy/components/data_grid/DataGrid.js
 var UIStrings = {
   /**
-   *@description Accessible text label for expandible nodes in datagrids
+   * @description Accessible text label for expandible nodes in datagrids
    */
   expanded: "expanded",
   /**
-   *@description accessible name for expandible nodes in datagrids
+   * @description accessible name for expandible nodes in datagrids
    */
   collapsed: "collapsed",
   /**
-   *@description Accessible text for datagrid
-   *@example {Coverage grid} PH1
-   *@example {expanded} PH2
+   * @description Accessible text for datagrid
+   * @example {Coverage grid} PH1
+   * @example {expanded} PH2
    */
   sRowS: "{PH1} Row {PH2}",
   /**
-   *@description Number of rows in a grid
-   *@example {1} PH1
+   * @description Number of rows in a grid
+   * @example {1} PH1
    */
   rowsS: "Rows: {PH1}",
   /**
@@ -451,54 +451,54 @@ var UIStrings = {
    */
   sSUseTheUpAndDownArrowKeysTo: "{PH1} {PH2}, use the up and down arrow keys to navigate and interact with the rows of the table; Use browse mode to read cell by cell.",
   /**
-   *@description A context menu item in the Data Grid of a data grid
+   * @description A context menu item in the Data Grid of a data grid
    */
   sortByString: "Sort By",
   /**
-   *@description A context menu item in data grids to reset the columns to their default weight
+   * @description A context menu item in data grids to reset the columns to their default weight
    */
   resetColumns: "Reset Columns",
   /**
-   *@description A context menu item in data grids to list header options.
+   * @description A context menu item in data grids to list header options.
    */
   headerOptions: "Header Options",
   /**
-   *@description Text to refresh the page
+   * @description Text to refresh the page
    */
   refresh: "Refresh",
   /**
-   *@description A context menu item in the Data Grid of a data grid
+   * @description A context menu item in the Data Grid of a data grid
    */
   addNew: "Add new",
   /**
-   *@description A context menu item in the Data Grid of a data grid
-   *@example {pattern} PH1
+   * @description A context menu item in the Data Grid of a data grid
+   * @example {pattern} PH1
    */
   editS: 'Edit "{PH1}"',
   /**
-   *@description Text to delete something
+   * @description Text to delete something
    */
   delete: "Delete",
   /**
-   *@description Depth of a node in the datagrid
-   *@example {1} PH1
+   * @description Depth of a node in the datagrid
+   * @example {1} PH1
    */
   levelS: "level {PH1}",
   /**
-   *@description Text exposed to screen readers on checked items.
+   * @description Text exposed to screen readers on checked items.
    */
   checked: "checked",
   /**
-   *@description Accessible text indicating an empty row is created.
+   * @description Accessible text indicating an empty row is created.
    */
   emptyRowCreated: "An empty table row has been created. You may double click or use context menu to edit.",
   /**
-   *@description Text for screen reader to announce when focusing on a sortable column in data grid.
-   *@example {ascending} PH1
+   * @description Text for screen reader to announce when focusing on a sortable column in data grid.
+   * @example {ascending} PH1
    */
   enterToSort: "Column sort state: {PH1}. Press enter to apply sorting filter",
   /**
-   *@description Label for sortable column headers.
+   * @description Label for sortable column headers.
    */
   sortableColumn: "Sortable column. Press enter to apply sorting filter"
 };
@@ -2470,14 +2470,17 @@ var nextId = 0;
 var ViewportDataGrid = class extends Common2.ObjectWrapper.eventMixin(DataGridImpl) {
   onScrollBound;
   visibleNodes;
-  /** A datagrid preference to express that the grid represents an updating log of rows (eg Network panel request log, websocket messages).
+  /**
+   * A datagrid preference to express that the grid represents an updating log of rows (eg Network panel request log, websocket messages).
    * If `true`, the datagrid will mostly keep the scroll at the bottom, so new items are visible.
    * If the data is sorted descending (eg Performance Call Tree, heap snapshot), keep the default of `false`.
    */
   enableAutoScrollToBottom = false;
-  /** When true, the datagrid will manipulate the scrollTop to focus on the bottom, mostly so new additions are visible.
+  /**
+   * When true, the datagrid will manipulate the scrollTop to focus on the bottom, mostly so new additions are visible.
    * Some actions will unset this, like revealing or expanding a particular node.
-   * Only matters if enableAutoScrollToBottom is true. */
+   * Only matters if enableAutoScrollToBottom is true.
+   */
   keepScrollingToBottom = false;
   updateIsFromUser;
   lastScrollTop;
@@ -3054,8 +3057,8 @@ var UIStrings2 = {
    */
   showDAfter: "Show {PH1} after",
   /**
-   *@description In a data grid, for a list of items with omitted items, display all omitted items
-   *@example {50} PH1
+   * @description In a data grid, for a list of items with omitted items, display all omitted items
+   * @example {50} PH1
    */
   showAllD: "Show all {PH1}"
 };

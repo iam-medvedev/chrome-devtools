@@ -85,7 +85,7 @@ export declare function extensionDataInPerformanceTiming(timing: Types.Events.Sy
  * `ExtensionUI::extensionEntryColor`).
  *
  * @param timeStamp The `ConsoleTimeStamp` event to extract data from.
- * @return An `ExtensionTrackEntryPayload` object if the event contains
+ * @returns An `ExtensionTrackEntryPayload` object if the event contains
  *         valid extension data for a track entry, or `null` otherwise.
  */
 export declare function extensionDataInConsoleTimeStamp(timeStamp: Types.Events.ConsoleTimeStamp): Types.Extensions.ExtensionTrackEntryPayload | null;

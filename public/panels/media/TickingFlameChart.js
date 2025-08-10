@@ -91,7 +91,7 @@ export class Event {
     /**
      * set an event to be "live" where it's ended time is always the chart maximum
      * or to be a fixed time.
-     * @param {number} time
+     * @param time
      */
     set endTime(time) {
         // Setting end time to -1 signals that an event becomes live
@@ -368,7 +368,8 @@ class TickingFlameChartDataProvider {
     timelineData() {
         return this.timelineDataInternal;
     }
-    /** time in milliseconds
+    /**
+     * time in milliseconds
      */
     minimumBoundary() {
         return this.bounds.low;

@@ -34,14 +34,14 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // Forbid to run JavaScript and set unique origin.
     // clang-format off
     render(html `
-    <style>${requestHTMLViewStyles}</style>
+    <style>${UI.Widget.widgetScoped(requestHTMLViewStyles)}</style>
     <div class="html request-view widget vbox">
       ${input.dataURL ? html `
         <!-- @ts-ignore -->
         <iframe class="html-preview-frame" sandbox
           csp="default-src 'none';img-src data:;style-src 'unsafe-inline'" src=${input.dataURL}
           tabindex="-1" role="presentation"></iframe>` : nothing}
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class RequestHTMLView extends UI.Widget.VBox {

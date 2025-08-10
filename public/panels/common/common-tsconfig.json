@@ -57,6 +57,9 @@
       "path": "../../ui/components/snackbars/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/spinners/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/tooltips/bundle-tsconfig.json"
     },
     {

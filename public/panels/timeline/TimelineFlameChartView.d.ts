@@ -75,8 +75,8 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     refreshMainFlameChart(): void;
     windowChanged(windowStartTime: Trace.Types.Timing.Milli, windowEndTime: Trace.Types.Timing.Milli, animate: boolean): void;
     /**
-     * @param startTime - the start time of the selection in MilliSeconds
-     * @param endTime - the end time of the selection in MilliSeconds
+     * @param startTime the start time of the selection in MilliSeconds
+     * @param endTime the end time of the selection in MilliSeconds
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     updateRangeSelection(startTime: number, endTime: number): void;

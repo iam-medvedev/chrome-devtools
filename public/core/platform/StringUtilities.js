@@ -241,7 +241,7 @@ const EXTENDED_KEBAB_CASE_REGEXP = /^([a-z0-9]+(?:-[a-z0-9]+)*\.)*[a-z0-9]+(?:-[
  * for `'Another.AmazingLiteral'` or '`another_amazing_literal'`.
  *
  * @param inputStr the input string to test.
- * @return `true` if the `inputStr` follows the extended Kebab Case convention.
+ * @returns `true` if the `inputStr` follows the extended Kebab Case convention.
  */
 export const isExtendedKebabCase = (inputStr) => {
     return EXTENDED_KEBAB_CASE_REGEXP.test(inputStr);
@@ -474,15 +474,9 @@ const WORD = /[A-Z]{2,}(?=[A-Z0-9][a-z0-9]+|\b|_)|[A-Za-z][0-9]+[a-z]?|[A-Z]?[a-
 export const toKebabCase = function (input) {
     return (input.match?.(WORD)?.map(w => w.toLowerCase()).join('-').replaceAll('-.-', '.') || input);
 };
-/* eslint-disable @typescript-eslint/no-explicit-any */
 export function toKebabCaseKeys(settingValue) {
-    const result = {};
-    for (const [key, value] of Object.entries(settingValue)) {
-        result[toKebabCase(key)] = value;
-    }
-    return result;
+    return Object.fromEntries(Object.entries(settingValue).map(([key, value]) => [toKebabCase(key), value]));
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 // Replaces the last ocurrence of parameter `search` with parameter `replacement` in `input`
 export const replaceLast = function (input, search, replacement) {
     const replacementStartIndex = input.lastIndexOf(search);

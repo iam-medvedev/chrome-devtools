@@ -1261,10 +1261,12 @@ var MediaQueryInspector = class extends UI2.Widget.Widget {
   cssModel;
   cachedQueryModels;
   constructor(getWidthCallback, setWidthCallback, mediaThrottler) {
-    super({ useShadowDom: true });
+    super({
+      jslog: `${VisualLogging2.mediaInspectorView().track({ click: true })}`,
+      useShadowDom: true
+    });
     this.registerRequiredCSS(mediaQueryInspector_css_default);
     this.contentElement.classList.add("media-inspector-view");
-    this.contentElement.setAttribute("jslog", `${VisualLogging2.mediaInspectorView().track({ click: true })}`);
     this.contentElement.addEventListener("click", this.onMediaQueryClicked.bind(this), false);
     this.contentElement.addEventListener("contextmenu", this.onContextMenu.bind(this), false);
     this.mediaThrottler = mediaThrottler;
@@ -1635,7 +1637,7 @@ var MediaQueryUIModel = class _MediaQueryUIModel {
 // gen/front_end/panels/emulation/DeviceModeView.js
 var UIStrings3 = {
   /**
-   *@description Bottom resizer element title in Device Mode View of the Device Toolbar
+   * @description Bottom resizer element title in Device Mode View of the Device Toolbar
    */
   doubleclickForFullHeight: "Double-click for full height",
   /**
@@ -2115,9 +2117,8 @@ var Ruler = class extends UI3.Widget.VBox {
   renderedScale;
   renderedZoomFactor;
   constructor(horizontal, applyCallback) {
-    super();
+    super({ jslog: `${VisualLogging3.deviceModeRuler().track({ click: true })}` });
     this.element.classList.add("device-mode-ruler");
-    this.element.setAttribute("jslog", `${VisualLogging3.deviceModeRuler().track({ click: true })}`);
     this.contentElementInternal = this.element.createChild("div", "device-mode-ruler-content").createChild("div", "device-mode-ruler-inner");
     this.horizontal = horizontal;
     this.scale = 1;

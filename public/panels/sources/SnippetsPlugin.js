@@ -9,11 +9,11 @@ import * as Snippets from '../snippets/snippets.js';
 import { Plugin } from './Plugin.js';
 const UIStrings = {
     /**
-     *@description Text in Snippets Plugin of the Sources panel
+     * @description Text in Snippets Plugin of the Sources panel
      */
     enter: '⌘+Enter',
     /**
-     *@description Text in Snippets Plugin of the Sources panel
+     * @description Text in Snippets Plugin of the Sources panel
      */
     ctrlenter: 'Ctrl+Enter',
 };

@@ -9,7 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:host {
+:scope {
   display: block;
   border-bottom: 1px solid var(--sys-color-divider);
   flex: none;

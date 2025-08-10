@@ -79,15 +79,15 @@ import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
 import * as UI from "./../../legacy.js";
 var UIStrings = {
   /**
-   *@description Text for the source of something
+   * @description Text for the source of something
    */
   source: "Source",
   /**
-   *@description Text to pretty print a file
+   * @description Text to pretty print a file
    */
   prettyPrint: "Pretty print",
   /**
-   *@description Text when something is loading
+   * @description Text when something is loading
    */
   loading: "Loading\u2026",
   /**
@@ -103,38 +103,38 @@ var UIStrings = {
    */
   bytecodePositionXs: "Bytecode position `0x`{PH1}",
   /**
-   *@description Text in Source Frame of the Sources panel
-   *@example {2} PH1
-   *@example {2} PH2
+   * @description Text in Source Frame of the Sources panel
+   * @example {2} PH1
+   * @example {2} PH2
    */
   lineSColumnS: "Line {PH1}, Column {PH2}",
   /**
-   *@description Text in Source Frame of the Sources panel
-   *@example {2} PH1
+   * @description Text in Source Frame of the Sources panel
+   * @example {2} PH1
    */
   dCharactersSelected: "{PH1} characters selected",
   /**
-   *@description Text in Source Frame of the Sources panel
-   *@example {2} PH1
-   *@example {2} PH2
+   * @description Text in Source Frame of the Sources panel
+   * @example {2} PH1
+   * @example {2} PH2
    */
   dLinesDCharactersSelected: "{PH1} lines, {PH2} characters selected",
   /**
-   *@description Headline of warning shown to users when pasting text/code into DevTools.
+   * @description Headline of warning shown to users when pasting text/code into DevTools.
    */
   doYouTrustThisCode: "Do you trust this code?",
   /**
-   *@description Warning shown to users when pasting text/code into DevTools.
-   *@example {allow pasting} PH1
+   * @description Warning shown to users when pasting text/code into DevTools.
+   * @example {allow pasting} PH1
    */
   doNotPaste: "Don't paste code you do not understand or have not reviewed yourself into DevTools. This could allow attackers to steal your identity or take control of your computer. Please type ''{PH1}'' below to allow pasting.",
   /**
-   *@description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
+   * @description Text a user needs to type in order to confirm that they are aware of the danger of pasting code into the DevTools console.
    */
   allowPasting: "allow pasting",
   /**
-   *@description Input box placeholder which instructs the user to type 'allow pasting' into the input box.
-   *@example {allow pasting} PH1
+   * @description Input box placeholder which instructs the user to type 'allow pasting' into the input box.
+   * @example {allow pasting} PH1
    */
   typeAllowPasting: "Type ''{PH1}''",
   /**
@@ -185,7 +185,10 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
   contentSet;
   selfXssWarningDisabledSetting;
   constructor(lazyContent, options = {}) {
-    super(i18nString(UIStrings.source));
+    super({
+      title: i18nString(UIStrings.source),
+      viewId: "source"
+    });
     this.options = options;
     this.lazyContent = lazyContent;
     this.prettyInternal = false;
@@ -1060,7 +1063,7 @@ var infobarState = CodeMirror.StateField.define({
 // gen/front_end/ui/legacy/components/source_frame/ResourceSourceFrame.js
 var UIStrings2 = {
   /**
-   *@description Text to find an item
+   * @description Text to find an item
    */
   find: "Find"
 };
@@ -1300,12 +1303,12 @@ var fontView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/FontView.js
 var UIStrings3 = {
   /**
-   *@description Text that appears on a button for the font resource type filter.
+   * @description Text that appears on a button for the font resource type filter.
    */
   font: "Font",
   /**
-   *@description Aria accessible name in Font View of the Sources panel
-   *@example {https://example.com} PH1
+   * @description Aria accessible name in Font View of the Sources panel
+   * @example {https://example.com} PH1
    */
   previewOfFontFromS: "Preview of font from {PH1}"
 };
@@ -1320,10 +1323,13 @@ var FontView = class extends UI4.View.SimpleView {
   fontStyleElement;
   inResize;
   constructor(mimeType, contentProvider) {
-    super(i18nString3(UIStrings3.font));
+    super({
+      title: i18nString3(UIStrings3.font),
+      viewId: "font",
+      jslog: `${VisualLogging2.pane("font-view")}`
+    });
     this.registerRequiredCSS(fontView_css_default);
     this.element.classList.add("font-view");
-    this.element.setAttribute("jslog", `${VisualLogging2.pane("font-view")}`);
     this.url = contentProvider.contentURL();
     UI4.ARIAUtils.setLabel(this.element, i18nString3(UIStrings3.previewOfFontFromS, { PH1: this.url }));
     this.contentProvider = contentProvider;
@@ -1466,42 +1472,42 @@ var imageView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/ImageView.js
 var UIStrings4 = {
   /**
-   *@description Text in Image View of the Sources panel
+   * @description Text in Image View of the Sources panel
    */
   image: "Image",
   /**
-   *@description Text that appears when user drag and drop something (for example, a file) in Image View of the Sources panel
+   * @description Text that appears when user drag and drop something (for example, a file) in Image View of the Sources panel
    */
   dropImageFileHere: "Drop image file here",
   /**
-   *@description Text to indicate the source of an image
-   *@example {example.com} PH1
+   * @description Text to indicate the source of an image
+   * @example {example.com} PH1
    */
   imageFromS: "Image from {PH1}",
   /**
-   *@description Text in Image View of the Sources panel
-   *@example {2} PH1
-   *@example {2} PH2
+   * @description Text in Image View of the Sources panel
+   * @example {2} PH1
+   * @example {2} PH2
    */
   dD: "{PH1} \xD7 {PH2}",
   /**
-   *@description A context menu item in the Image View of the Sources panel
+   * @description A context menu item in the Image View of the Sources panel
    */
   copyImageUrl: "Copy image URL",
   /**
-   *@description A context menu item in the Image View of the Sources panel
+   * @description A context menu item in the Image View of the Sources panel
    */
   copyImageAsDataUri: "Copy image as data URI",
   /**
-   *@description A context menu item in the Image View of the Sources panel
+   * @description A context menu item in the Image View of the Sources panel
    */
   openImageInNewTab: "Open image in new tab",
   /**
-   *@description A context menu item in the Image Preview
+   * @description A context menu item in the Image Preview
    */
   saveImageAs: "Save image as\u2026",
   /**
-   *@description The default file name when downloading a file
+   * @description The default file name when downloading a file
    */
   download: "download"
 };
@@ -1520,11 +1526,14 @@ var ImageView = class extends UI5.View.SimpleView {
   imagePreviewElement;
   cachedContent;
   constructor(mimeType, contentProvider) {
-    super(i18nString4(UIStrings4.image));
+    super({
+      title: i18nString4(UIStrings4.image),
+      viewId: "image",
+      jslog: `${VisualLogging3.pane("image-view")}}`
+    });
     this.registerRequiredCSS(imageView_css_default);
     this.element.tabIndex = -1;
     this.element.classList.add("image-view");
-    this.element.setAttribute("jslog", `${VisualLogging3.pane("image-view")}`);
     this.url = contentProvider.contentURL();
     this.parsedURL = new Common3.ParsedURL.ParsedURL(this.url);
     this.contentProvider = contentProvider;
@@ -1705,7 +1714,7 @@ var jsonView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/JSONView.js
 var UIStrings5 = {
   /**
-   *@description Text to find an item
+   * @description Text to find an item
    */
   find: "Find"
 };
@@ -2037,7 +2046,7 @@ var xmlView_css_default = `/*
 // gen/front_end/ui/legacy/components/source_frame/XMLView.js
 var UIStrings6 = {
   /**
-   *@description Text to find an item
+   * @description Text to find an item
    */
   find: "Find"
 };
@@ -2357,11 +2366,11 @@ var XMLViewNode = class _XMLViewNode extends UI7.TreeOutline.TreeElement {
 // gen/front_end/ui/legacy/components/source_frame/PreviewFactory.js
 var UIStrings7 = {
   /**
-   *@description Text in Preview Factory of the Sources panel if the data to preview can't be shown due to an error
+   * @description Text in Preview Factory of the Sources panel if the data to preview can't be shown due to an error
    */
   failedToLoadData: "Failed to load data",
   /**
-   *@description Text in Preview Factory of the Sources panel if there's no data to preview
+   * @description Text in Preview Factory of the Sources panel if there's no data to preview
    */
   nothingToPreview: "Nothing to preview"
 };

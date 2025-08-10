@@ -143,7 +143,7 @@ describe('StringUtilities', () => {
             assert.strictEqual(Platform.StringUtilities.stripLineBreaks('a\r\nb'), 'ab');
         });
     });
-    describe('isExtendedKebab', () => {
+    describe('isExtendedKebabCase', () => {
         const { isExtendedKebabCase } = Platform.StringUtilities;
         it('yields `true` for kebab case strings', () => {
             assert.isTrue(isExtendedKebabCase('a-b-c'));
@@ -565,6 +565,15 @@ describe('StringUtilities', () => {
         });
         it('should handle mixed cases', () => {
             assert.strictEqual(toKebabCase('CamelCase_with.DOTS123'), 'camel-case-with.dots-123');
+        });
+    });
+    describe('toKebabCaseKeys', () => {
+        const { toKebabCaseKeys } = Platform.StringUtilities;
+        it('converts dictionaries with numeric values', () => {
+            assert.deepEqual(toKebabCaseKeys({ ['FOO_BAR']: 1, ['FOO_BAZ']: 2 }), { ['foo-bar']: 1, ['foo-baz']: 2 });
+        });
+        it('converts dictionaries with mixed values', () => {
+            assert.deepEqual(toKebabCaseKeys({ ['FOO_BAR']: 1, ['FOO_BAZ']: 'test' }), { ['foo-bar']: 1, ['foo-baz']: 'test' });
         });
     });
 });

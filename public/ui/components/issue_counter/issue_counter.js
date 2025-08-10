@@ -34,15 +34,15 @@ var issueCounter_css_default = `/*
 // gen/front_end/ui/components/issue_counter/IssueCounter.js
 var UIStrings = {
   /**
-   *@description Label for link to Issues tab, specifying how many issues there are.
+   * @description Label for link to Issues tab, specifying how many issues there are.
    */
   pageErrors: "{issueCount, plural, =1 {# page error} other {# page errors}}",
   /**
-   *@description Label for link to Issues tab, specifying how many issues there are.
+   * @description Label for link to Issues tab, specifying how many issues there are.
    */
   breakingChanges: "{issueCount, plural, =1 {# breaking change} other {# breaking changes}}",
   /**
-   *@description Label for link to Issues tab, specifying how many issues there are.
+   * @description Label for link to Issues tab, specifying how many issues there are.
    */
   possibleImprovements: "{issueCount, plural, =1 {# possible improvement} other {# possible improvements}}"
 };
@@ -309,7 +309,7 @@ var UIStrings2 = {
    */
   clickToShowIssueWithTitle: "Click to open the issue tab and show issue: {title}",
   /**
-   *@description Title for an link to show an issue that is unavailable because the issue couldn't be resolved
+   * @description Title for an link to show an issue that is unavailable because the issue couldn't be resolved
    */
   issueUnavailable: "Issue unavailable at this time"
 };

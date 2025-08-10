@@ -9,11 +9,11 @@ import { ColdColorScheme, HotColorScheme, TickingFlameChart, } from './TickingFl
 const NO_NORMALIZED_TIMESTAMP = -1.5;
 const UIStrings = {
     /**
-     *@description Title of the 'Playback Status' button
+     * @description Title of the 'Playback Status' button
      */
     playbackStatus: 'Playback Status',
     /**
-     *@description Title of the 'Buffering Status' button
+     * @description Title of the 'Buffering Status' button
      */
     bufferingStatus: 'Buffering Status',
 };

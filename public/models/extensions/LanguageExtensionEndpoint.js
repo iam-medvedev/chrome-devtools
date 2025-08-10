@@ -64,7 +64,8 @@ export class LanguageExtensionEndpoint {
             initiatorUrl: this.extensionOrigin,
         };
     }
-    /** Notify the plugin about a new script
+    /**
+     * Notify the plugin about a new script
      */
     addRawModule(rawModuleId, symbolsURL, rawModule) {
         if (!this.canAccessURL(symbolsURL) || !this.canAccessURL(rawModule.url)) {
@@ -78,12 +79,14 @@ export class LanguageExtensionEndpoint {
     removeRawModule(rawModuleId) {
         return this.endpoint.sendRequest("removeRawModule" /* PrivateAPI.LanguageExtensionPluginCommands.RemoveRawModule */, { rawModuleId });
     }
-    /** Find locations in raw modules from a location in a source file
+    /**
+     * Find locations in raw modules from a location in a source file
      */
     sourceLocationToRawLocation(sourceLocation) {
         return this.endpoint.sendRequest("sourceLocationToRawLocation" /* PrivateAPI.LanguageExtensionPluginCommands.SourceLocationToRawLocation */, { sourceLocation });
     }
-    /** Find locations in source files from a location in a raw module
+    /**
+     * Find locations in source files from a location in a raw module
      */
     rawLocationToSourceLocation(rawLocation) {
         return this.endpoint.sendRequest("rawLocationToSourceLocation" /* PrivateAPI.LanguageExtensionPluginCommands.RawLocationToSourceLocation */, { rawLocation });
@@ -91,23 +94,27 @@ export class LanguageExtensionEndpoint {
     getScopeInfo(type) {
         return this.endpoint.sendRequest("getScopeInfo" /* PrivateAPI.LanguageExtensionPluginCommands.GetScopeInfo */, { type });
     }
-    /** List all variables in lexical scope at a given location in a raw module
+    /**
+     * List all variables in lexical scope at a given location in a raw module
      */
     listVariablesInScope(rawLocation) {
         return this.endpoint.sendRequest("listVariablesInScope" /* PrivateAPI.LanguageExtensionPluginCommands.ListVariablesInScope */, { rawLocation });
     }
-    /** List all function names (including inlined frames) at location
+    /**
+     * List all function names (including inlined frames) at location
      */
     getFunctionInfo(rawLocation) {
         return this.endpoint.sendRequest("getFunctionInfo" /* PrivateAPI.LanguageExtensionPluginCommands.GetFunctionInfo */, { rawLocation });
     }
-    /** Find locations in raw modules corresponding to the inline function
+    /**
+     * Find locations in raw modules corresponding to the inline function
      *  that rawLocation is in.
      */
     getInlinedFunctionRanges(rawLocation) {
         return this.endpoint.sendRequest("getInlinedFunctionRanges" /* PrivateAPI.LanguageExtensionPluginCommands.GetInlinedFunctionRanges */, { rawLocation });
     }
-    /** Find locations in raw modules corresponding to inline functions
+    /**
+     * Find locations in raw modules corresponding to inline functions
      *  called by the function or inline frame that rawLocation is in.
      */
     getInlinedCalleesRanges(rawLocation) {

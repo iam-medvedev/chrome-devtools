@@ -185,11 +185,11 @@ var UIStrings = {
    */
   formInspector: "Form inspector",
   /**
-   *@description Link text for a hyperlink to more documentation
+   * @description Link text for a hyperlink to more documentation
    */
   learnMore: "Learn more",
   /**
-   *@description Link text for a hyperlink to webpage for leaving user feedback
+   * @description Link text for a hyperlink to webpage for leaving user feedback
    */
   sendFeedback: "Send feedback"
 };
@@ -272,8 +272,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
   };
   if (!input.address && !input.filledFields.length) {
     render(html`
-        <style>${autofillView_css_default}</style>
-        <style>${UI.inspectorCommonStyles}</style>
+        <style>${UI.Widget.widgetScoped(autofillView_css_default)}</style>
+        <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
         <main>
           <div class="top-left-corner">
             <devtools-checkbox
@@ -304,8 +304,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
     return;
   }
   render(html`
-      <style>${autofillView_css_default}</style>
-      <style>${UI.inspectorCommonStyles}</style>
+      <style>${UI.Widget.widgetScoped(autofillView_css_default)}</style>
+      <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
       <main>
         <div class="content-container" jslog=${VisualLogging.pane("autofill")}>
           <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>

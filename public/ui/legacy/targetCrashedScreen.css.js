@@ -9,7 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
-.widget {
+:scope {
   padding: 25px;
 }
 

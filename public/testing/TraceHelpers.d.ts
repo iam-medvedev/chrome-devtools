@@ -151,8 +151,8 @@ export interface FlameChartWithFakeProviderOptions {
 }
 /**
  * Renders a flame chart using a fake provider and mock delegate.
- * @param provider - The fake flame chart provider.
- * @param options - Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
+ * @param provider The fake flame chart provider.
+ * @param options Optional parameters.  Includes windowTimes, an array specifying the minimum and maximum window times. Defaults to [0, 100].
  * @returns A promise that resolves when the flame chart is rendered.
  */
 export declare function renderFlameChartWithFakeProvider(provider: FakeFlameChartProvider, options?: FlameChartWithFakeProviderOptions): Promise<void>;

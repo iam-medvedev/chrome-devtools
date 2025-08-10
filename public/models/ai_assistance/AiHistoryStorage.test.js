@@ -443,9 +443,7 @@ describe('AiHistoryStorage', () => {
                 assert.lengthOf(imageHistory, 1);
                 const historyWithoutImages = storage.getHistory();
                 assert.lengthOf(historyWithoutImages, 2);
-                const conversationFromHistory = historyWithoutImages.map(item => {
-                    return new AiAssistance.Conversation(item.type, item.history, item.id, true);
-                });
+                const conversationFromHistory = historyWithoutImages.map(item => AiAssistance.Conversation.fromSerializedConversation(item));
                 assert.lengthOf(conversationFromHistory, 2);
                 assert.deepEqual(conversationFromHistory[0].history, [{
                         type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,

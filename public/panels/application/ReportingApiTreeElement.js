@@ -9,7 +9,7 @@ import * as ApplicationComponents from './components/components.js';
 import { ReportingApiView } from './ReportingApiView.js';
 const UIStrings = {
     /**
-     *@description Label for an item in the Application Panel Sidebar of the Application panel
+     * @description Label for an item in the Application Panel Sidebar of the Application panel
      */
     reportingApi: 'Reporting API',
 };

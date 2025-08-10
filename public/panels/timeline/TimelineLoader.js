@@ -10,8 +10,8 @@ import * as Trace from '../../models/trace/trace.js';
 import * as RecordingMetadata from './RecordingMetadata.js';
 const UIStrings = {
     /**
-     *@description Text in Timeline Loader of the Performance panel
-     *@example {Unknown JSON format} PH1
+     * @description Text in Timeline Loader of the Performance panel
+     * @example {Unknown JSON format} PH1
      */
     malformedTimelineDataS: 'Malformed timeline data: {PH1}',
 };

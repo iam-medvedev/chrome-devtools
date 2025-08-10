@@ -12,15 +12,15 @@ import requestInitiatorViewStyles from './requestInitiatorView.css.js';
 import requestInitiatorViewTreeStyles from './requestInitiatorViewTree.css.js';
 const UIStrings = {
     /**
-     *@description Text in Request Initiator View of the Network panel if the request has no initiator data
+     * @description Text in Request Initiator View of the Network panel if the request has no initiator data
      */
     noInitiator: 'No initiator data',
     /**
-     *@description Title of a section in Request Initiator view of the Network Panel
+     * @description Title of a section in Request Initiator view of the Network Panel
      */
     requestCallStack: 'Request call stack',
     /**
-     *@description Title of a section in Request Initiator view of the Network Panel
+     * @description Title of a section in Request Initiator view of the Network Panel
      */
     requestInitiatorChain: 'Request initiator chain',
 };
@@ -32,9 +32,8 @@ export class RequestInitiatorView extends UI.Widget.VBox {
     emptyWidget;
     hasShown;
     constructor(request) {
-        super();
+        super({ jslog: `${VisualLogging.pane('initiator').track({ resize: true })}` });
         this.element.classList.add('request-initiator-view');
-        this.element.setAttribute('jslog', `${VisualLogging.pane('initiator').track({ resize: true })}`);
         this.linkifier = new Components.Linkifier.Linkifier();
         this.request = request;
         this.emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noInitiator), '');

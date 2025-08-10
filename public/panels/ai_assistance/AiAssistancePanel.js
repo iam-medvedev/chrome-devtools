@@ -30,43 +30,43 @@ const SHOW_LOADING_STATE_TIMEOUT = 100;
 const JPEG_MIME_TYPE = 'image/jpeg';
 const UIStrings = {
     /**
-     *@description AI assistance UI text creating a new chat.
+     * @description AI assistance UI text creating a new chat.
      */
     newChat: 'New chat',
     /**
-     *@description AI assistance UI tooltip text for the help button.
+     * @description AI assistance UI tooltip text for the help button.
      */
     help: 'Help',
     /**
-     *@description AI assistant UI tooltip text for the settings button (gear icon).
+     * @description AI assistant UI tooltip text for the settings button (gear icon).
      */
     settings: 'Settings',
     /**
-     *@description AI assistant UI tooltip sending feedback.
+     * @description AI assistant UI tooltip sending feedback.
      */
     sendFeedback: 'Send feedback',
     /**
-     *@description Announcement text for screen readers when a new chat is created.
+     * @description Announcement text for screen readers when a new chat is created.
      */
     newChatCreated: 'New chat created',
     /**
-     *@description Announcement text for screen readers when the chat is deleted.
+     * @description Announcement text for screen readers when the chat is deleted.
      */
     chatDeleted: 'Chat deleted',
     /**
-     *@description AI assistance UI text creating selecting a history entry.
+     * @description AI assistance UI text creating selecting a history entry.
      */
     history: 'History',
     /**
-     *@description AI assistance UI text deleting the current chat session from local history.
+     * @description AI assistance UI text deleting the current chat session from local history.
      */
     deleteChat: 'Delete local chat',
     /**
-     *@description AI assistance UI text that deletes all local history entries.
+     * @description AI assistance UI text that deletes all local history entries.
      */
     clearChatHistory: 'Clear local chats',
     /**
-     *@description AI assistance UI text explains that he user had no pas conversations.
+     * @description AI assistance UI text explains that he user had no pas conversations.
      */
     noPastConversations: 'No past conversations',
     /**
@@ -74,11 +74,11 @@ const UIStrings = {
      */
     followTheSteps: 'Follow the steps above to ask a question',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
     /**
-     *@description Notification shown to the user whenever DevTools receives an external request.
+     * @description Notification shown to the user whenever DevTools receives an external request.
      */
     externalRequestReceived: '`DevTools` received an external request',
 };
@@ -87,11 +87,11 @@ const UIStrings = {
 */
 const UIStringsNotTranslate = {
     /**
-     *@description Announcement text for screen readers when the conversation starts.
+     * @description Announcement text for screen readers when the conversation starts.
      */
     answerLoading: 'Answer loading',
     /**
-     *@description Announcement text for screen readers when the answer comes.
+     * @description Announcement text for screen readers when the answer comes.
      */
     answerReady: 'Answer ready',
     /**
@@ -99,79 +99,79 @@ const UIStringsNotTranslate = {
      */
     crossOriginError: 'To talk about data from another origin, start a new chat',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForStyling: 'Ask a question about the selected element',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForNetwork: 'Ask a question about the selected network request',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForFile: 'Ask a question about the selected file',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForPerformance: 'Ask a question about the selected item and its call tree',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForPerformanceWithNoRecording: 'Record a performance trace and select an item to ask a question',
     /**
-     *@description Placeholder text for the chat UI input when there is no context selected.
+     * @description Placeholder text for the chat UI input when there is no context selected.
      */
     inputPlaceholderForStylingNoContext: 'Select an element to ask a question',
     /**
-     *@description Placeholder text for the chat UI input when there is no context selected.
+     * @description Placeholder text for the chat UI input when there is no context selected.
      */
     inputPlaceholderForNetworkNoContext: 'Select a network request to ask a question',
     /**
-     *@description Placeholder text for the chat UI input when there is no context selected.
+     * @description Placeholder text for the chat UI input when there is no context selected.
      */
     inputPlaceholderForFileNoContext: 'Select a file to ask a question',
     /**
-     *@description Placeholder text for the chat UI input when there is no context selected.
+     * @description Placeholder text for the chat UI input when there is no context selected.
      */
     inputPlaceholderForPerformanceNoContext: 'Select an item to ask a question',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForPerformanceInsights: 'Ask a question about the selected performance insight',
     /**
-     *@description Placeholder text for the chat UI input.
+     * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForPerformanceInsightsNoContext: 'Select a performance insight to ask a question',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForStyling: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForStylingEnterpriseNoLogging: 'Chat messages and any data the inspected page can access via Web APIs are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForNetwork: 'Chat messages and the selected network request are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won’t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForNetworkEnterpriseNoLogging: 'Chat messages and the selected network request are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForFile: 'Chat messages and the selected file are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForFileEnterpriseNoLogging: 'Chat messages and the selected file are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForPerformance: 'Chat messages and trace data from your performance trace are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\'t always get it right.',
     /**
-     *@description Disclaimer text right after the chat input.
+     * @description Disclaimer text right after the chat input.
      */
     inputDisclaimerForPerformanceEnterpriseNoLogging: 'Chat messages and data from your performance trace are sent to Google. The content you submit and that is generated by this feature will not be used to improve Google’s AI models. This is an experimental AI feature and won’t always get it right.',
     /**
@@ -322,7 +322,7 @@ function defaultView(input, output, target) {
               .widgetConfig=${UI.Widget.widgetConfig(ExploreWidget)}
             ></devtools-widget>`}
       </div>
-    `, target, { host: input });
+    `, target);
     // clang-format on
 }
 function createNodeContext(node) {
@@ -380,24 +380,6 @@ async function inspectElementBySelector(selector) {
     }
     return null;
 }
-async function inspectNetworkRequestByUrl(selector) {
-    const networkManagers = SDK.TargetManager.TargetManager.instance().models(SDK.NetworkManager.NetworkManager, { scoped: true });
-    const results = networkManagers
-        .map(networkManager => {
-        let request = networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector}`);
-        if (!request && selector.at(-1) === '/') {
-            request =
-                networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector.slice(0, -1)}`);
-        }
-        else if (!request && selector.at(-1) !== '/') {
-            request = networkManager.requestForURL(Platform.DevToolsPath.urlString `${selector}/`);
-        }
-        return request;
-    })
-        .filter(req => !!req);
-    const request = results.at(0);
-    return request ?? null;
-}
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
     view;
@@ -412,7 +394,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #mutex = new Common.Mutex.Mutex();
     #conversationAgent;
     #conversation;
-    #historicalConversations = [];
     #selectedFile = null;
     #selectedElement = null;
     #selectedPerformanceTrace = null;
@@ -439,6 +420,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     // Used to disable send button when there is not text input.
     #isTextInputEmpty = true;
     #timelinePanelInstance = null;
+    #conversationHandler;
+    #runAbortController = new AbortController();
     constructor(view = defaultView, { aidaClient, aidaAvailability, syncInfo }) {
         super(AiAssistancePanel.panelName);
         this.view = view;
@@ -450,9 +433,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             accountImage: syncInfo.accountImage,
             accountFullName: syncInfo.accountFullName,
         };
-        this.#historicalConversations = AiAssistanceModel.AiHistoryStorage.instance().getHistory().map(item => {
-            return new AiAssistanceModel.Conversation(item.type, item.history, item.id, true, item.isExternal);
-        });
+        this.#conversationHandler =
+            AiAssistanceModel.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             this.#toggleSearchElementAction =
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
@@ -480,42 +462,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         catch {
             return;
         }
-    }
-    #createAgent(conversationType) {
-        const options = {
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: this.#serverSideLoggingEnabled,
-        };
-        let agent;
-        switch (conversationType) {
-            case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */: {
-                agent = new AiAssistanceModel.StylingAgent({
-                    ...options,
-                    changeManager: this.#changeManager,
-                });
-                if (isAiAssistanceStylingWithFunctionCallingEnabled()) {
-                    agent = new AiAssistanceModel.StylingAgentWithFunctionCalling({
-                        ...options,
-                        changeManager: this.#changeManager,
-                    });
-                }
-                break;
-            }
-            case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */: {
-                agent = new AiAssistanceModel.NetworkAgent(options);
-                break;
-            }
-            case "drjones-file" /* AiAssistanceModel.ConversationType.FILE */: {
-                agent = new AiAssistanceModel.FileAgent(options);
-                break;
-            }
-            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
-                agent = new AiAssistanceModel.PerformanceAgent(options, conversationType);
-                break;
-            }
-        }
-        return agent;
     }
     static async instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -592,7 +538,9 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             // So we can just reuse it
             return;
         }
-        const agent = targetConversationType ? this.#createAgent(targetConversationType) : undefined;
+        const agent = targetConversationType ?
+            this.#conversationHandler.createAgent(targetConversationType, this.#changeManager) :
+            undefined;
         this.#updateConversationState(agent);
     }
     #updateConversationState(input) {
@@ -609,7 +557,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             // create a new conversation along side it
             if (agent) {
                 this.#conversation = new AiAssistanceModel.Conversation(agentToConversationType(agent), [], agent.id, false);
-                this.#historicalConversations.push(this.#conversation);
             }
         }
         if (!agent) {
@@ -998,7 +945,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#conversation?.isEmpty || targetConversationType === "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */ ||
             (agent instanceof AiAssistanceModel.PerformanceAgent &&
                 agent.getConversationType() !== targetConversationType)) {
-            agent = this.#createAgent(targetConversationType);
+            agent = this.#conversationHandler.createAgent(targetConversationType, this.#changeManager);
         }
         this.#updateConversationState(agent);
         const predefinedPrompt = opts?.['prompt'];
@@ -1016,7 +963,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #populateHistoryMenu(contextMenu) {
-        for (const conversation of [...this.#historicalConversations].reverse()) {
+        const historicalConversations = AiAssistanceModel.AiHistoryStorage.instance().getHistory().map(serializedConversation => AiAssistanceModel.Conversation.fromSerializedConversation(serializedConversation));
+        for (const conversation of historicalConversations.reverse()) {
             if (conversation.isEmpty) {
                 continue;
             }
@@ -1025,7 +973,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 continue;
             }
             contextMenu.defaultSection().appendCheckboxItem(title, () => {
-                void this.#openConversation(conversation);
+                void this.#openHistoricConversation(conversation);
             }, { checked: (this.#conversation === conversation) });
         }
         const historyEmpty = contextMenu.defaultSection().items.length === 0;
@@ -1041,20 +989,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         });
     }
     #onHistoryDeleted() {
-        this.#historicalConversations = [];
         this.#updateConversationState();
     }
     #onDeleteClicked() {
         if (!this.#conversation) {
             return;
         }
-        this.#historicalConversations =
-            this.#historicalConversations.filter(conversation => conversation !== this.#conversation);
         void AiAssistanceModel.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
         this.#updateConversationState();
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.chatDeleted));
     }
-    async #openConversation(conversation) {
+    async #openHistoricConversation(conversation) {
         if (this.#conversation === conversation) {
             return;
         }
@@ -1163,7 +1108,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             this.#viewOutput.chatView?.focusTextInput();
         });
     }
-    #runAbortController = new AbortController();
     #cancel() {
         this.#runAbortController.abort();
         this.#runAbortController = new AbortController();
@@ -1230,21 +1174,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#conversation) {
             void VisualLogging.logFunctionCall(`start-conversation-${this.#conversation.type}`, 'ui');
         }
-        const runner = this.#conversationAgent.run(text, {
+        const generator = this.#conversationAgent.run(text, {
             signal,
             selected: context,
         }, multimodalInput);
-        await this.#doConversation(this.#saveResponsesToCurrentConversation(runner));
-    }
-    async *#saveResponsesToCurrentConversation(items) {
-        const currentConversation = this.#conversation;
-        for await (const data of items) {
-            // We don't want to save partial responses to the conversation history.
-            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
-                void currentConversation?.addHistoryItem(data);
-            }
-            yield data;
-        }
+        const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
+        await this.#doConversation(generatorWithHistory);
     }
     async #doConversation(items) {
         const release = await this.#mutex.acquire();
@@ -1361,7 +1296,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         }
                     }
                 }
-                // Commit update intermediated step when not
+                // Commit update intermediate step when not
                 // in read only mode.
                 if (!this.#conversation?.isReadOnly) {
                     this.requestUpdate();
@@ -1402,10 +1337,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     /**
      * Handles an external request using the given prompt and uses the
-     * conversation type to use the correct agent. Note that the `selector` param
-     * is contextual; for styling it is a literal CSS selector, but for
-     * Performance Insights it is the name of the Insight that forms the
-     * context of the conversation.
+     * conversation type to use the correct agent.
      */
     handleExternalRequest(parameters) {
         // eslint-disable-next-line require-yield
@@ -1435,10 +1367,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     }
                     return this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
                 case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
-                    if (!parameters.requestUrl) {
-                        return generateErrorResponse('The url is required for debugging a network request.');
-                    }
-                    return this.handleExternalNetworkRequest(parameters.prompt, parameters.requestUrl);
+                    return generateErrorResponse('Not implemented here');
             }
         }
         catch (error) {
@@ -1446,11 +1375,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     async *handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
-        const insightsAgent = this.#createAgent("performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
+        const insightsAgent = this.#conversationHandler.createAgent("performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(insightsAgent), [], insightsAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
-        this.#historicalConversations.push(externalConversation);
         const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
         const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
         if ('error' in focusOrError) {
@@ -1460,9 +1388,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             };
         }
         const selectedContext = createPerformanceTraceContext(focusOrError.focus);
-        const runner = insightsAgent.run(prompt, { selected: selectedContext });
+        const generator = insightsAgent.run(prompt, { selected: selectedContext });
+        const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
         const devToolsLogs = [];
-        for await (const data of runner) {
+        for await (const data of generatorWithHistory) {
             // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
                 void externalConversation.addHistoryItem(data);
@@ -1488,65 +1417,20 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         };
     }
     async *handleExternalStylingRequest(prompt, selector = 'body') {
-        const stylingAgent = this.#createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+        const stylingAgent = this.#conversationHandler.createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
         const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
-        this.#historicalConversations.push(externalConversation);
         const node = await inspectElementBySelector(selector);
         if (node) {
             await node.setAsInspectedNode();
         }
-        const runner = stylingAgent.run(prompt, {
+        const generator = stylingAgent.run(prompt, {
             selected: createNodeContext(node),
         });
+        const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
         const devToolsLogs = [];
-        for await (const data of runner) {
-            // We don't want to save partial responses to the conversation history.
-            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
-                void externalConversation.addHistoryItem(data);
-                devToolsLogs.push(data);
-            }
-            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
-                yield {
-                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
-                    message: data.title,
-                };
-            }
-            if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
-                data.confirm(true);
-            }
-            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return {
-                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
-                    message: data.text,
-                    devToolsLogs,
-                };
-            }
-        }
-        return {
-            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-            message: 'Something went wrong. No answer was generated.',
-        };
-    }
-    async *handleExternalNetworkRequest(prompt, requestUrl) {
-        const networkAgent = this.#createAgent("drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */);
-        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(networkAgent), [], networkAgent.id, 
-        /* isReadOnly */ true, 
-        /* isExternal */ true);
-        this.#historicalConversations.push(externalConversation);
-        const request = await inspectNetworkRequestByUrl(requestUrl);
-        if (!request) {
-            return {
-                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-                message: `Can't find request with the given selector ${requestUrl}`,
-            };
-        }
-        const runner = networkAgent.run(prompt, {
-            selected: createRequestContext(request),
-        });
-        const devToolsLogs = [];
-        for await (const data of runner) {
+        for await (const data of generatorWithHistory) {
             // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
                 void externalConversation.addHistoryItem(data);
@@ -1616,8 +1500,5 @@ function isAiAssistanceMultimodalInputEnabled() {
 }
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
-}
-function isAiAssistanceStylingWithFunctionCallingEnabled() {
-    return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.functionCalling);
 }
 //# sourceMappingURL=AiAssistancePanel.js.map

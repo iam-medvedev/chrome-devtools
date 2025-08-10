@@ -22,7 +22,7 @@ const UIStrings = {
     onIgnoreList: 'On ignore list ({rule})',
     /**
      * @description Refers to the "Main frame", meaning the top level frame. See https://www.w3.org/TR/html401/present/frames.html
-     * @example{example.com} PH1
+     * @example {example.com} PH1
      */
     mainS: 'Main — {PH1}',
     /**
@@ -35,77 +35,77 @@ const UIStrings = {
      */
     frameS: 'Frame — {PH1}',
     /**
-     *@description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
-     *@example {https://google.com} PH1
+     * @description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
+     * @example {https://google.com} PH1
      */
     workerS: '`Worker` — {PH1}',
     /**
-     *@description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
-     *@example {FormatterWorker} PH1
-     *@example {https://google.com} PH2
+     * @description A web worker in the page. See https://developer.mozilla.org/en-US/docs/Web/API/Worker
+     * @example {FormatterWorker} PH1
+     * @example {https://google.com} PH2
      */
     workerSS: '`Worker`: {PH1} — {PH2}',
     /**
-     *@description Label for a web worker exclusively allocated for a purpose.
+     * @description Label for a web worker exclusively allocated for a purpose.
      */
     dedicatedWorker: 'Dedicated `Worker`',
     /**
-     *@description A generic name given for a thread running in the browser (sequence of programmed instructions).
+     * @description A generic name given for a thread running in the browser (sequence of programmed instructions).
      * The placeholder is an enumeration given to the thread.
-     *@example {1} PH1
+     * @example {1} PH1
      */
     threadS: 'Thread {PH1}',
     /**
-     *@description Rasterization in computer graphics.
+     * @description Rasterization in computer graphics.
      */
     raster: 'Raster',
     /**
-     *@description Threads used for background tasks.
+     * @description Threads used for background tasks.
      */
     threadPool: 'Thread pool',
     /**
-     *@description Name for a thread that rasterizes graphics in a website.
-     *@example {2} PH1
+     * @description Name for a thread that rasterizes graphics in a website.
+     * @example {2} PH1
      */
     rasterizerThreadS: 'Rasterizer thread {PH1}',
     /**
-     *@description Text in Timeline Flame Chart Data Provider of the Performance panel
-     *@example {2} PH1
+     * @description Text in Timeline Flame Chart Data Provider of the Performance panel
+     * @example {2} PH1
      */
     threadPoolThreadS: 'Thread pool worker {PH1}',
     /**
-     *@description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
-     *@example {https://google.com} PH1
+     * @description Title of a bidder auction worklet with known URL in the timeline flame chart of the Performance panel
+     * @example {https://google.com} PH1
      */
     bidderWorkletS: 'Bidder Worklet — {PH1}',
     /**
-     *@description Title of a bidder auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+     * @description Title of a bidder auction worklet in the timeline flame chart of the Performance panel with an unknown URL
      */
     bidderWorklet: 'Bidder Worklet',
     /**
-     *@description Title of a seller auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+     * @description Title of a seller auction worklet in the timeline flame chart of the Performance panel with an unknown URL
      */
     sellerWorklet: 'Seller Worklet',
     /**
-     *@description Title of an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+     * @description Title of an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
      */
     unknownWorklet: 'Auction Worklet',
     /**
-     *@description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
+     * @description Title of control thread of a service process for an auction worklet in the timeline flame chart of the Performance panel with an unknown URL
      */
     workletService: 'Auction Worklet service',
     /**
-     *@description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
-     *@example {https://google.com} PH1
+     * @description Title of a seller auction worklet with known URL in the timeline flame chart of the Performance panel
+     * @example {https://google.com} PH1
      */
     sellerWorkletS: 'Seller Worklet — {PH1}',
     /**
-     *@description Title of an auction worklet with known URL in the timeline flame chart of the Performance panel
-     *@example {https://google.com} PH1
+     * @description Title of an auction worklet with known URL in the timeline flame chart of the Performance panel
+     * @example {https://google.com} PH1
      */
     unknownWorkletS: 'Auction Worklet — {PH1}',
     /**
-     *@description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
+     * @description Title of control thread of a service process for an auction worklet with known URL in the timeline flame chart of the Performance panel
      * @example {https://google.com} PH1
      */
     workletServiceS: 'Auction Worklet service — {PH1}',

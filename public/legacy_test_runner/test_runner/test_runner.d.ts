@@ -4,13 +4,13 @@ export declare function _executeTestScript(): Promise<void>;
  */
 export declare class _TestObserver {
     /**
-     * @param {!SDK.Target.Target} target
      * @override
+     * @param {!SDK.Target.Target} target
      */
     targetAdded(target: any): void;
     /**
-     * @param {!SDK.Target.Target} target
      * @override
+     * @param {!SDK.Target.Target} target
      */
     targetRemoved(target: any): void;
 }

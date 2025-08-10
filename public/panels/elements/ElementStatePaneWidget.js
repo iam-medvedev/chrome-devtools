@@ -36,7 +36,7 @@ const UIStrings = {
      */
     forceElementSpecificStates: 'Force specific element state',
     /**
-     *@description Text that is usually a hyperlink to more documentation
+     * @description Text that is usually a hyperlink to more documentation
      */
     learnMore: 'Learn more',
 };
@@ -79,7 +79,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     };
     // clang-format off
     render(html `
-    <style>${elementStatePaneWidgetStyles}</style>
+    <style>${UI.Widget.widgetScoped(elementStatePaneWidgetStyles)}</style>
     <div class="styles-element-state-pane"
         jslog=${VisualLogging.pane('element-states')}>
       <div class="page-state-checkbox">
@@ -111,7 +111,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         .map(state => createElementStateCheckbox(state))}
         </div>
       </details>
-    </div>`, target, { host: input });
+    </div>`, target);
     // clang-format on
 };
 export class ElementStatePaneWidget extends UI.Widget.Widget {

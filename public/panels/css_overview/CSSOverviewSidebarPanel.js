@@ -11,7 +11,7 @@ import cssOverviewSidebarPanelStyles from './cssOverviewSidebarPanel.css.js';
 const { classMap } = Directives;
 const UIStrings = {
     /**
-     *@description Label for the 'Clear overview' button in the CSS overview report
+     * @description Label for the 'Clear overview' button in the CSS overview report
      */
     clearOverview: 'Clear overview',
     /**
@@ -44,7 +44,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     };
     // clang-format off
     render(html `
-      <style>${cssOverviewSidebarPanelStyles}</style>
+      <style>${UI.Widget.widgetScoped(cssOverviewSidebarPanelStyles)}</style>
       <div class="overview-sidebar-panel" @click=${onClick} @keydown=${onKeyDown}
            aria-label=${i18nString(UIStrings.cssOverviewPanelSidebar)} role="tree">
         <div class="overview-toolbar">
@@ -65,7 +65,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
               ${name}
             </div>`;
     })}
-      </div>`, target, { host: input });
+      </div>`, target);
     // clang-format on
 };
 export class CSSOverviewSidebarPanel extends UI.Widget.VBox {

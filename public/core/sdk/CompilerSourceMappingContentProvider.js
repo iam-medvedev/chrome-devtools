@@ -32,9 +32,9 @@ import * as i18n from '../i18n/i18n.js';
 import { PageResourceLoader } from './PageResourceLoader.js';
 const UIStrings = {
     /**
-     *@description Error message when failing to fetch a resource referenced in a source map
-     *@example {https://example.com/sourcemap.map} PH1
-     *@example {An error occurred} PH2
+     * @description Error message when failing to fetch a resource referenced in a source map
+     * @example {https://example.com/sourcemap.map} PH1
+     * @example {An error occurred} PH2
      */
     couldNotLoadContentForSS: 'Could not load content for {PH1} ({PH2})',
 };
