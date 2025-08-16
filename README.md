@@ -21,7 +21,7 @@ For your hack needs there is a [deployed version](https://iam-medvedev.github.io
 
 ## NPM packages
 
-The builder extracts individual DevTools components into separate scoped packages published to npm under the `@chrome-devtools` namespace.
+The builder extracts individual DevTools components into separate scoped packages published to npm under the [`@chrome-devtools`](https://www.npmjs.com/org/chrome-devtools) namespace.
 
 Each component is published as its own package, allowing you to import only the specific DevTools functionality you need.
 
