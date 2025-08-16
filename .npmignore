@@ -14,3 +14,10 @@
 # Exclude typescript config files
 **/tsconfig*.json
 **/*-tsconfig.json
+
+# Rest
+.github/
+.vscode/
+.idea/
+*.log
+.DS_Store
