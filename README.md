@@ -19,11 +19,11 @@ This repository contains a [Github Action](.github/workflows/build.yml) that run
 
 For your hack needs there is a [deployed version](https://iam-medvedev.github.io/chrome-devtools/) which will be updated after each build.
 
-## NPM package
+## NPM packages
 
-[![npm version](https://badge.fury.io/js/chrome-devtools-built.svg)](https://www.npmjs.com/package/chrome-devtools-built)
+The builder extracts individual DevTools components into separate scoped packages published to npm under the `@chrome-devtools` namespace.
 
-Also every build is published in the NPM.
+Each component is published as its own package, allowing you to import only the specific DevTools functionality you need.
 
 Package versioning works as follows: `1.20232611.0` where `1.${current_date}.{patch_number}`.
 
