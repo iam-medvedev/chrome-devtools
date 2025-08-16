@@ -1,0 +1,16 @@
+# Exclude test files
+**/*test*
+**/*testing*
+**/unittests*
+**/*spec*
+
+# Exclude typescript source files
+**/*.ts
+!**/*.d.ts
+
+# Exclude source maps
+**/*.js.map
+
+# Exclude typescript config files
+**/tsconfig*.json
+**/*-tsconfig.json
