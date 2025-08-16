@@ -73,7 +73,7 @@ jobs:
 
               # Publish package
               cd "$package_dir"
-              npm publish
+              npm publish --access public
               cd ../..
 
               echo "Successfully published $scoped_name v$new_version"
