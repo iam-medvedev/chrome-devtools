@@ -5,6 +5,8 @@
 !LICENSE
 !public
 !public/**/*
+!packages
+!packages/**/*
 !package.json
 !.npmignore
 !tsconfig.json
