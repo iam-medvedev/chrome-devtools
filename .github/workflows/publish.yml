@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org/"
-          cache: "yarn"
+          cache: ""
 
       - name: Set up Bun
         uses: oven-sh/setup-bun@v2
