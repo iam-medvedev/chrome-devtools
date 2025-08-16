@@ -4,5 +4,9 @@
   "description": "chrome-devtools-frontend built version",
   "repository": "https://github.com/iam-medvedev/chrome-devtools.git",
   "author": "Ilya Medvedev <ilya@medvedev.im>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@types/bun": "1.2.20",
+    "typescript": "5.9.2"
+  }
 }

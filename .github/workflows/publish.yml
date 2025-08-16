@@ -20,41 +20,64 @@ jobs:
           registry-url: "https://registry.npmjs.org/"
           cache: "yarn"
 
-      - name: Get published version
-        id: get_published_version
-        run: |
-          published_version=$(npm show chrome-devtools-built version || echo "0.0.0")
-          IFS='.' read -r major date patch <<< "$published_version"
-          echo "date=${date}" >> $GITHUB_OUTPUT
-          echo "patch=${patch}" >> $GITHUB_OUTPUT
-          echo "Published version: ${published_version} (date: ${date}, patch: ${patch})"
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
-      - name: Create new version
-        id: create_new_version
-        run: |
-          current_date=$(date +"%Y%d%m")
-          if [ "${{ steps.get_published_version.outputs.date }}" != "$current_date" ]; then
-            new_version="1.${current_date}.0"
-          else
-            new_patch=$(( ${{ steps.get_published_version.outputs.patch }} + 1 ))
-            new_version="1.${current_date}.${new_patch}"
-          fi
-          echo "New version: ${new_version}"
-          echo "new_version=${new_version}" >> $GITHUB_OUTPUT
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
 
-      - name: Update package version
+      - name: Run builder
+        run: bun run builder.ts
+
+      - name: Process and publish packages
         run: |
           git config --global user.name "GitHub"
           git config --global user.email "noreply@github.com"
-          echo "Updating package version to ${{ steps.create_new_version.outputs.new_version }}"
-          npm version ${{ steps.create_new_version.outputs.new_version }} --allow-same-version
 
-      - name: Create git release
-        run: |
-          git tag -a v${{ steps.create_new_version.outputs.new_version }} -m "Release v${{ steps.create_new_version.outputs.new_version }}" --force
-          git push origin v${{ steps.create_new_version.outputs.new_version }}
+          current_date=$(date +"%Y%d%m")
 
-      - name: Publish
-        run: npm publish
+          for package_dir in ./packages/*; do
+            if [ -d "$package_dir" ] && [ -f "$package_dir/package.json" ]; then
+              package_name=$(basename "$package_dir")
+              scoped_name=$(node -p "require('$package_dir/package.json').name")
+
+              echo "Processing package: $scoped_name"
+
+              # Get published version for this specific package
+              published_version=$(npm show "$scoped_name" version 2>/dev/null || echo "0.0.0")
+              IFS='.' read -r major date patch <<< "$published_version"
+
+              # Create new version
+              if [ "$date" != "$current_date" ]; then
+                new_version="1.${current_date}.0"
+              else
+                new_patch=$((patch + 1))
+                new_version="1.${current_date}.${new_patch}"
+              fi
+
+              echo "Updating $scoped_name from $published_version to $new_version"
+
+              # Update package version
+              cd "$package_dir"
+              npm version "$new_version" --allow-same-version --no-git-tag-version
+
+              # Create git tag for this package
+              tag_name="${package_name}-v${new_version}"
+              cd ../..
+              git add "$package_dir/package.json"
+              git commit -m "Release $scoped_name v$new_version" || true
+              git tag -a "$tag_name" -m "Release $scoped_name v$new_version" --force
+              git push origin "$tag_name" || true
+
+              # Publish package
+              cd "$package_dir"
+              npm publish
+              cd ../..
+
+              echo "Successfully published $scoped_name v$new_version"
+            fi
+          done
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

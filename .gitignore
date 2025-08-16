@@ -6,5 +6,7 @@
 !public
 !public/**/*
 !package.json
-!yarn.lock
 !.npmignore
+!tsconfig.json
+!bun.lock
+!builder.ts
