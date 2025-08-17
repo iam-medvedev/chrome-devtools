@@ -54,7 +54,7 @@ export declare const detectIndentation: (lines: Iterable<string>) => string | nu
  * line length for the whole text is 80 characters or more.
  *
  * @param text The input text to check.
- * @returns
+ * @returns `true` if the heuristic considers `text` to be minified.
  */
 export declare const isMinified: (text: string) => boolean;
 /**

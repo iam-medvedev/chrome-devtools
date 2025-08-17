@@ -391,7 +391,7 @@ export class CookiesTable extends UI.Widget.VBox {
                 i18nString(UIStrings.timeAfterTooltip, { seconds: cookie.expires(), date: new Date(maxTime).toISOString() });
         }
         data["partition-key-site" /* SDK.Cookie.Attribute.PARTITION_KEY_SITE */] =
-            cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey) : cookie.topLevelSite();
+            cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey).toString() : cookie.topLevelSite();
         data["has-cross-site-ancestor" /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */] = cookie.hasCrossSiteAncestor() ? 'true' : '';
         data["size" /* SDK.Cookie.Attribute.SIZE */] = String(cookie.size());
         data["priority" /* SDK.Cookie.Attribute.PRIORITY */] = cookie.priority();
@@ -406,17 +406,13 @@ export class CookiesTable extends UI.Widget.VBox {
                 if (attribute === "name" /* SDK.Cookie.Attribute.NAME */ &&
                     IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssue(cookie)) {
                     data.icons[attribute].name = 'warning-filled';
-                    data.icons[attribute].style.color = 'var(--icon-warning)';
-                    data.icons[attribute].style.width = '14px';
-                    data.icons[attribute].style.height = '14px';
                     data.icons[attribute].onclick = () => IssuesManager.RelatedIssue.reveal(cookie);
                     data.icons[attribute].style.cursor = 'pointer';
                 }
                 else {
                     data.icons[attribute].name = 'info';
-                    data.icons[attribute].style.width = '14px';
-                    data.icons[attribute].style.height = '14px';
                 }
+                data.icons[attribute].classList.add('small');
                 data.icons[attribute].title = blockedReason.uiString;
             }
             else if (data.icons[attribute]) {
@@ -429,8 +425,7 @@ export class CookiesTable extends UI.Widget.VBox {
             data.flagged = true;
             data.icons.name = new IconButton.Icon.Icon();
             data.icons.name.name = 'info';
-            data.icons.name.style.width = '14px';
-            data.icons.name.style.height = '14px';
+            data.icons.name.classList.add('small');
             data.icons.name.title = exemptionReason;
         }
         data.key = cookie.key();

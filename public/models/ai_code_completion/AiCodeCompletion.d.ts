@@ -1,9 +1,13 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
-import type { AgentOptions } from '../ai_assistance/ai_assistance.js';
 export declare const DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
 export declare const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
+interface AgentOptions {
+    aidaClient: Host.AidaClient.AidaClient;
+    serverSideLoggingEnabled?: boolean;
+    confirmSideEffectForTest?: typeof Promise.withResolvers;
+}
 /**
  * The AiCodeCompletion class is responsible for fetching code completion suggestions
  * from the AIDA backend and displaying them in the text editor.
@@ -22,7 +26,9 @@ export declare const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
 export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor);
-    onTextChanged: (...args: any[]) => void;
+    registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number): void;
+    onTextChanged(prefix: string, suffix: string, cursor: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
+    remove(): void;
 }
 export declare const enum Events {
     RESPONSE_RECEIVED = "ResponseReceived",
@@ -35,3 +41,4 @@ export interface EventTypes {
     [Events.RESPONSE_RECEIVED]: ResponseReceivedEvent;
     [Events.REQUEST_TRIGGERED]: {};
 }
+export {};

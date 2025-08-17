@@ -29,8 +29,8 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     private highlightingNode;
     private aidaClient?;
     private aiCodeCompletion?;
+    private teaser?;
     private placeholderCompartment;
-    private teaserContainer?;
     private aiCodeCompletionSetting;
     private aiCodeCompletionCitations?;
     constructor();
@@ -59,6 +59,8 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     focus(): void;
     private setAiCodeCompletion;
     private onAiCodeCompletionSettingChanged;
+    onAiCodeCompletionTeaserActionKeyDown(event: Event): Promise<void>;
+    onAiCodeCompletionTeaserDismissKeyDown(event: Event): void;
     private detachAiCodeCompletionTeaser;
     private isAiCodeCompletionEnabled;
     private editorSetForTest;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
+import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('TraceEvent types', function () {
@@ -58,7 +59,7 @@ describeWithEnvironment('TraceEvent types', function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
         const networkEvent = parsedTrace.NetworkRequests.byTime[0];
         assert.isTrue(Trace.Types.Events.isSyntheticNetworkRequest(networkEvent));
-        const otherEvent = parsedTrace.Renderer.allTraceEntries[0];
+        const otherEvent = allThreadEntriesInTrace(parsedTrace)[0];
         assert.isFalse(Trace.Types.Events.isSyntheticNetworkRequest(otherEvent));
     });
     it('is able to determine that an event is a synthetic layout shift event', async function () {

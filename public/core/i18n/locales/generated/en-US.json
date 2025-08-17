@@ -2690,8 +2690,8 @@
   "panels/ai_assistance/AiAssistancePanel.ts | deleteChat": {
     "message": "Delete local chat"
   },
-  "panels/ai_assistance/AiAssistancePanel.ts | externalRequestReceived": {
-    "message": "DevTools received an external request"
+  "panels/ai_assistance/AiAssistancePanel.ts | exportConversation": {
+    "message": "Export conversation"
   },
   "panels/ai_assistance/AiAssistancePanel.ts | followTheSteps": {
     "message": "Follow the steps above to ask a question"
@@ -2713,6 +2713,9 @@
   },
   "panels/ai_assistance/AiAssistancePanel.ts | noPastConversations": {
     "message": "No past conversations"
+  },
+  "panels/ai_assistance/AiAssistancePanel.ts | responseCopiedToClipboard": {
+    "message": "Response copied to clipboard"
   },
   "panels/ai_assistance/AiAssistancePanel.ts | sendFeedback": {
     "message": "Send feedback"
@@ -5606,27 +5609,6 @@
   "panels/changes/CombinedDiffView.ts | copyFile": {
     "message": "Copy file {PH1} to clipboard"
   },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | generatedCodeMayBeSubjectToALicense": {
-    "message": "Generated code may be subject to a license."
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | isSentToGoogle": {
-    "message": "is sent to Google"
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | manageInSettings": {
-    "message": "Manage in settings"
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | relevantData": {
-    "message": "Relevant data"
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | tooltipDisclaimerTextForAiCodeCompletion": {
-    "message": "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data may be seen by human reviewers to improve this feature."
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | tooltipDisclaimerTextForAiCodeCompletionNoLogging": {
-    "message": "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data will not be used to improve Google’s AI models."
-  },
-  "panels/common/AiCodeCompletionSummaryToolbar.ts | viewSources": {
-    "message": "View Sources"
-  },
   "panels/common/common.ts | allow": {
     "message": "Allow"
   },
@@ -6821,6 +6803,9 @@
   "panels/elements/ElementsTreeElement.ts | disableGridMode": {
     "message": "Disable grid mode"
   },
+  "panels/elements/ElementsTreeElement.ts | disableMasonryMode": {
+    "message": "Disable masonry mode"
+  },
   "panels/elements/ElementsTreeElement.ts | disableScrollSnap": {
     "message": "Disable scroll-snap overlay"
   },
@@ -6847,6 +6832,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | enableGridMode": {
     "message": "Enable grid mode"
+  },
+  "panels/elements/ElementsTreeElement.ts | enableMasonryMode": {
+    "message": "Enable masonry mode"
   },
   "panels/elements/ElementsTreeElement.ts | enableScrollSnap": {
     "message": "Enable scroll-snap overlay"
@@ -6960,7 +6948,7 @@
     "message": "Event listeners category"
   },
   "panels/elements/EventListenersWidget.ts | frameworkListeners": {
-    "message": "Framework listeners"
+    "message": "Resolve Framework listeners"
   },
   "panels/elements/EventListenersWidget.ts | passive": {
     "message": "Passive"
@@ -11795,6 +11783,24 @@
   "panels/security/CookieReportView.ts | videoCookieTypeString": {
     "message": "Video"
   },
+  "panels/security/IPProtectionView.ts | cardDescription": {
+    "message": "Only when DevTools is open"
+  },
+  "panels/security/IPProtectionView.ts | cardTitle": {
+    "message": "Bypass IP Protection"
+  },
+  "panels/security/IPProtectionView.ts | notInIncognito": {
+    "message": "IP proxy unavailable"
+  },
+  "panels/security/IPProtectionView.ts | openIncognito": {
+    "message": "IP proxy is only available within incognito mode. Open site in incognito."
+  },
+  "panels/security/IPProtectionView.ts | viewExplanation": {
+    "message": "Test how this site will perform if IP Proxy is enabled in Chrome"
+  },
+  "panels/security/IPProtectionView.ts | viewTitle": {
+    "message": "IP Protection Proxy Controls"
+  },
   "panels/security/security-meta.ts | PrivacyAndSecurity": {
     "message": "Privacy and security"
   },
@@ -12112,6 +12118,9 @@
   },
   "panels/security/SecurityPanelSidebar.ts | flagControls": {
     "message": "Controls"
+  },
+  "panels/security/SecurityPanelSidebar.ts | ipProtection": {
+    "message": "IP Protection"
   },
   "panels/security/SecurityPanelSidebar.ts | mainOrigin": {
     "message": "Main origin"
@@ -14012,6 +14021,24 @@
   "panels/timeline/components/DetailsView.ts | websocketProtocol": {
     "message": "WebSocket protocol"
   },
+  "panels/timeline/components/ExportTraceOptions.ts | exportTraceOptionsDialogTitle": {
+    "message": "Save performance trace "
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | includeAnnotations": {
+    "message": "Include annotations"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | includeScriptContent": {
+    "message": "Include script content"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | includeSourcemap": {
+    "message": "Include script source maps"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | saveButtonTitle": {
+    "message": "Save"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | showExportTraceOptionsDialogTitle": {
+    "message": "Save trace…"
+  },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Advanced"
   },
@@ -15038,6 +15065,12 @@
   "panels/timeline/TimelinePanel.ts | dimThirdParties": {
     "message": "Dim 3rd parties"
   },
+  "panels/timeline/TimelinePanel.ts | disableJavascriptSamples": {
+    "message": "Disable JavaScript samples"
+  },
+  "panels/timeline/TimelinePanel.ts | disablesJavascriptSampling": {
+    "message": "Disables JavaScript sampling, reduces overhead when running against mobile devices"
+  },
   "panels/timeline/TimelinePanel.ts | dropTimelineFileOrUrlHere": {
     "message": "Drop trace file or URL here"
   },
@@ -15050,14 +15083,8 @@
   "panels/timeline/TimelinePanel.ts | eventSelected": {
     "message": "Event {PH1} selected"
   },
-  "panels/timeline/TimelinePanel.ts | exportEnhancedTraces": {
-    "message": "Enhanced performance traces"
-  },
   "panels/timeline/TimelinePanel.ts | exportingFailed": {
     "message": "Exporting the trace failed"
-  },
-  "panels/timeline/TimelinePanel.ts | exportNormalTraces": {
-    "message": "Basic performance traces"
   },
   "panels/timeline/TimelinePanel.ts | externalRequestReceived": {
     "message": "DevTools received an external request"
@@ -15073,6 +15100,9 @@
   },
   "panels/timeline/TimelinePanel.ts | initializingTracing": {
     "message": "Initializing tracing…"
+  },
+  "panels/timeline/TimelinePanel.ts | JavascriptSamplingIsDisabled": {
+    "message": "- JavaScript sampling is disabled"
   },
   "panels/timeline/TimelinePanel.ts | learnMore": {
     "message": "Learn more"
@@ -15106,15 +15136,6 @@
   },
   "panels/timeline/TimelinePanel.ts | recordingFailed": {
     "message": "Recording failed"
-  },
-  "panels/timeline/TimelinePanel.ts | saveTrace": {
-    "message": "Save trace…"
-  },
-  "panels/timeline/TimelinePanel.ts | saveTraceWithAnnotationsMenuOption": {
-    "message": "Save trace"
-  },
-  "panels/timeline/TimelinePanel.ts | saveTraceWithoutAnnotationsMenuOption": {
-    "message": "Save trace without annotations"
   },
   "panels/timeline/TimelinePanel.ts | screenshots": {
     "message": "Screenshots"
@@ -16079,33 +16100,6 @@
   "panels/utils/utils.ts | thirdPartyPhaseout": {
     "message": "Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
   },
-  "panels/web_audio/AudioContextContentBuilder.ts | callbackBufferSize": {
-    "message": "Callback Buffer Size"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | callbackInterval": {
-    "message": "Callback Interval"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | currentTime": {
-    "message": "Current Time"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | maxOutputChannels": {
-    "message": "Max Output Channels"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | renderCapacity": {
-    "message": "Render Capacity"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | sampleRate": {
-    "message": "Sample Rate"
-  },
-  "panels/web_audio/AudioContextContentBuilder.ts | state": {
-    "message": "State"
-  },
-  "panels/web_audio/AudioContextSelector.ts | audioContextS": {
-    "message": "Audio context: {PH1}"
-  },
-  "panels/web_audio/AudioContextSelector.ts | noRecordings": {
-    "message": "(no recordings)"
-  },
   "panels/web_audio/web_audio-meta.ts | audio": {
     "message": "audio"
   },
@@ -16115,11 +16109,38 @@
   "panels/web_audio/web_audio-meta.ts | webaudio": {
     "message": "WebAudio"
   },
+  "panels/web_audio/WebAudioView.ts | audioContextS": {
+    "message": "Audio context: {PH1}"
+  },
+  "panels/web_audio/WebAudioView.ts | callbackBufferSize": {
+    "message": "Callback Buffer Size"
+  },
+  "panels/web_audio/WebAudioView.ts | callbackInterval": {
+    "message": "Callback Interval"
+  },
+  "panels/web_audio/WebAudioView.ts | currentTime": {
+    "message": "Current Time"
+  },
+  "panels/web_audio/WebAudioView.ts | maxOutputChannels": {
+    "message": "Max Output Channels"
+  },
+  "panels/web_audio/WebAudioView.ts | noRecordings": {
+    "message": "(no recordings)"
+  },
   "panels/web_audio/WebAudioView.ts | noWebAudio": {
     "message": "No Web Audio API usage detected"
   },
   "panels/web_audio/WebAudioView.ts | openAPageThatUsesWebAudioApiTo": {
     "message": "Open a page that uses Web Audio API to start monitoring."
+  },
+  "panels/web_audio/WebAudioView.ts | renderCapacity": {
+    "message": "Render Capacity"
+  },
+  "panels/web_audio/WebAudioView.ts | sampleRate": {
+    "message": "Sample Rate"
+  },
+  "panels/web_audio/WebAudioView.ts | state": {
+    "message": "State"
   },
   "panels/webauthn/webauthn-meta.ts | showWebauthn": {
     "message": "Show WebAuthn"

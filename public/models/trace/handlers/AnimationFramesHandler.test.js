@@ -4,18 +4,18 @@
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function parseEvents(events) {
-    Trace.Handlers.ModelHandlers.Flows.reset();
     Trace.Handlers.ModelHandlers.AnimationFrames.reset();
+    Trace.Handlers.ModelHandlers.AnimationFrames.handleUserConfig({
+        ...Trace.Types.Configuration.defaults(),
+        enableAnimationsFrameHandler: true,
+    });
     for (const event of events) {
-        Trace.Handlers.ModelHandlers.Flows.handleEvent(event);
         Trace.Handlers.ModelHandlers.AnimationFrames.handleEvent(event);
     }
-    await Trace.Handlers.ModelHandlers.Flows.finalize();
     await Trace.Handlers.ModelHandlers.AnimationFrames.finalize();
 }
 describe('AnimationFramesHandler', () => {
     it('can group all related animation frame events', async function () {
-        Trace.Handlers.ModelHandlers.AnimationFrames.reset();
         const events = await TraceLoader.rawEvents(this, 'web-dev-animation-frames.json.gz');
         await parseEvents(events);
         const data = Trace.Handlers.ModelHandlers.AnimationFrames.data();
@@ -25,7 +25,6 @@ describe('AnimationFramesHandler', () => {
         assert.strictEqual(firstFrame.dur, Trace.Types.Timing.Micro(76038));
     });
     it('links an animation frame to its presentation event', async function () {
-        Trace.Handlers.ModelHandlers.AnimationFrames.reset();
         const events = await TraceLoader.rawEvents(this, 'web-dev-animation-frames.json.gz');
         await parseEvents(events);
         const data = Trace.Handlers.ModelHandlers.AnimationFrames.data();

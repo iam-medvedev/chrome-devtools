@@ -68,7 +68,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown, } = input;
     // clang-format off
     Lit.render(html `
-      <style>${UI.Widget.widgetScoped(recordingListViewStyles)}</style>
+      <style>${recordingListViewStyles}</style>
       <div class="wrapper">
         <div class="header">
           <h1>${i18nString(UIStrings.savedRecordings)}</h1>

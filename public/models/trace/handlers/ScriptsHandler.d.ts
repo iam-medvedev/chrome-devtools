@@ -1,7 +1,7 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
-import type { HandlerName } from './types.js';
+import type { FinalizeOptions, HandlerName } from './types.js';
 export interface ScriptsData {
     /** Note: this is only populated when the "Enhanced Traces" feature is enabled. */
     scripts: Script[];
@@ -38,6 +38,6 @@ export declare function deps(): HandlerName[];
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function getScriptGeneratedSizes(script: Script): GeneratedFileSizes | null;
-export declare function finalize(options: Types.Configuration.ParseOptions): Promise<void>;
+export declare function finalize(options: FinalizeOptions): Promise<void>;
 export declare function data(): ScriptsData;
 export {};

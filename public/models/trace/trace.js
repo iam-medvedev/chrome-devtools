@@ -511,12 +511,16 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       }
     }
     options.logger?.end("parse:handleEvent");
+    const finalizeOptions = {
+      ...options,
+      allTraceEvents: traceEvents
+    };
     for (let i = 0; i < sortedHandlers.length; i++) {
       const [name, handler] = sortedHandlers[i];
       if (handler.finalize) {
         options.logger?.start(`parse:${name}:finalize`);
         await new Promise((resolve) => setTimeout(resolve, 0));
-        await handler.finalize(options);
+        await handler.finalize(finalizeOptions);
         options.logger?.end(`parse:${name}:finalize`);
       }
       const percent = calculateProgress(
@@ -924,12 +928,24 @@ var Model = class _Model extends EventTarget {
       syntheticEventsManager: Helpers2.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents)
     };
     try {
-      await this.#processor.parse(traceEvents, {
+      const parseConfig = {
         isFreshRecording,
         isCPUProfile,
         metadata,
         resolveSourceMap: config?.resolveSourceMap
-      });
+      };
+      if (window.location.href.includes("devtools/bundled") || window.location.search.includes("debugFrontend")) {
+        const times = {};
+        parseConfig.logger = {
+          start(id) {
+            times[id] = performance.now();
+          },
+          end(id) {
+            performance.measure(id, { start: times[id] });
+          }
+        };
+      }
+      await this.#processor.parse(traceEvents, parseConfig);
       this.#storeParsedFileData(file, this.#processor.parsedTrace, this.#processor.insights);
       this.#traces.push(file);
     } catch (e) {

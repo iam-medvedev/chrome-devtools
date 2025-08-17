@@ -30,6 +30,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/common/AiCodeCompletionDisclaimer.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.ts",
     "../../../../../../front_end/panels/common/FreDialog.ts",

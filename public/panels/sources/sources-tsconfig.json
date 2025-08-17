@@ -31,6 +31,7 @@
   },
   "files": [
     "../../../../../../front_end/panels/sources/AddSourceMapURLDialog.ts",
+    "../../../../../../front_end/panels/sources/AiCodeCompletionPlugin.ts",
     "../../../../../../front_end/panels/sources/AiWarningInfobarPlugin.ts",
     "../../../../../../front_end/panels/sources/BreakpointEditDialog.ts",
     "../../../../../../front_end/panels/sources/BreakpointsView.ts",
@@ -81,7 +82,13 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/ai_code_completion/bundle-tsconfig.json"
     },
     {
       "path": "../../models/bindings/bundle-tsconfig.json"

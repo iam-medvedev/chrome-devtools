@@ -8,28 +8,29 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  .data-grid {
+    border: none;
+  }
 
-.data-grid {
-  border: none;
-}
+  ::part(url-outer) {
+    width: 100%;
+    display: inline-flex;
+    justify-content: flex-start;
+  }
 
-::part(url-outer) {
-  width: 100%;
-  display: inline-flex;
-  justify-content: flex-start;
-}
+  ::part(filter-highlight) {
+    font-weight: bold;
+  }
 
-::part(filter-highlight) {
-  font-weight: bold;
-}
+  ::part(url-prefix) {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
 
-::part(url-prefix) {
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
-
-::part(url-suffix) {
-  flex: none;
+  ::part(url-suffix) {
+    flex: none;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./developerResourcesListView.css')} */`;

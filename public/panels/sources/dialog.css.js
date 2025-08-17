@@ -9,8 +9,11 @@ export default `/*
  * found in the LICENSE file.
  */
 
-:scope {
+:host {
   padding: var(--sys-size-7) var(--sys-size-8);
+}
+
+.widget {
   align-items: center;
 }
 

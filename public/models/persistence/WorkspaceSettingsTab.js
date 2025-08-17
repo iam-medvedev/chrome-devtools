@@ -42,7 +42,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(workspaceSettingsTabStyles)}</style>
+    <style>${workspaceSettingsTabStyles}</style>
     <div class="settings-card-container-wrapper" jslog=${VisualLogging.pane('workspace')}>
       <div class="settings-card-container">
         <devtools-card heading=${i18nString(UIStrings.workspace)}>

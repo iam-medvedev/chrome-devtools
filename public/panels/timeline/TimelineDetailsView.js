@@ -497,7 +497,7 @@ export var Tab;
 const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-        <style>${UI.Widget.widgetScoped(detailsViewStyles)}</style>
+        <style>${detailsViewStyles}</style>
         ${input.node ?? nothing}
         ${Directives.until(renderSelectedEventDetails(input))}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {

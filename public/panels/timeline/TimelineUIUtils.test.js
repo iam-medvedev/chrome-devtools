@@ -11,7 +11,7 @@ import { dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM, } from '../..
 import { createTarget, deinitializeGlobalVars, expectConsoleLogs, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
-import { getBaseTraceParseModelData, getEventOfType, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceParseModelData, getEventOfType, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
@@ -397,7 +397,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('assigns the correct color to the swatch of an event\'s title', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
-            const events = parsedTrace.Renderer.allTraceEntries;
+            const events = allThreadEntriesInTrace(parsedTrace);
             const task = events.find(event => {
                 return event.name.includes('RunTask');
             });
@@ -465,7 +465,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders all event data for a generic trace', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'generic-about-tracing.json.gz');
-            const event = parsedTrace.Renderer.allTraceEntries.find(entry => {
+            const event = allThreadEntriesInTrace(parsedTrace).find(entry => {
                 return entry.name === 'ThreadControllerImpl::RunTask';
             });
             if (!event) {
@@ -495,7 +495,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     nodeIds: [],
                 };
             });
-            const updateLayoutTreeEvent = parsedTrace.Renderer.allTraceEntries.find(event => {
+            const updateLayoutTreeEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
                 return Trace.Types.Events.isUpdateLayoutTree(event) &&
                     event.args.beginData?.stackTrace?.[0].functionName === 'testFuncs.changeAttributeAndDisplay';
             });
@@ -588,7 +588,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders details for a v8.compile ("Compile Script") event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
-            const compileEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isV8Compile);
+            const compileEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isV8Compile);
             if (!compileEvent) {
                 throw new Error('Could not find expected event');
             }
@@ -767,9 +767,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
         }
         it('renders the stack trace of extension entries properly', async function () {
             const traceData = await basicStackTraceParsedTrace();
-            const [function1, function2, function3] = traceData.Renderer.allTraceEntries.filter(Trace.Types.Events.isProfileCall);
-            const mark = traceData.Renderer.allTraceEntries.find(event => event.name === 'Mark');
-            const measure = traceData.Renderer.allTraceEntries.find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const [function1, function2, function3] = allThreadEntriesInTrace(traceData).filter(Trace.Types.Events.isProfileCall);
+            const mark = allThreadEntriesInTrace(traceData).find(event => event.name === 'Mark');
+            const measure = allThreadEntriesInTrace(traceData).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
             assert.exists(mark);
             assert.exists(measure);
             const markerExtensionEntry = {
@@ -809,9 +809,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders the stack trace of user timings properly', async function () {
             const traceData = await basicStackTraceParsedTrace();
-            const [function1, function2, function3] = traceData.Renderer.allTraceEntries.filter(Trace.Types.Events.isProfileCall);
-            const mark = traceData.Renderer.allTraceEntries.find(event => event.name === 'Mark');
-            const measure = traceData.Renderer.allTraceEntries.find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const [function1, function2, function3] = allThreadEntriesInTrace(traceData).filter(Trace.Types.Events.isProfileCall);
+            const mark = allThreadEntriesInTrace(traceData).find(event => event.name === 'Mark');
+            const measure = allThreadEntriesInTrace(traceData).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
             assert.exists(mark);
             assert.exists(measure);
             const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, mark, new Components.Linkifier.Linkifier(), false, null);
@@ -831,7 +831,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders the warning for a trace event in its details', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
-            const events = parsedTrace.Renderer.allTraceEntries;
+            const events = allThreadEntriesInTrace(parsedTrace);
             const longTask = events.find(e => (e.dur || 0) > 1_000_000);
             if (!longTask) {
                 throw new Error('Could not find Long Task event.');
@@ -849,7 +849,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('shows information for the WebSocketCreate initiator when viewing a WebSocketSendHandshakeRequest event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
-            const sendHandshake = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isWebSocketSendHandshakeRequest);
+            const sendHandshake = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isWebSocketSendHandshakeRequest);
             if (!sendHandshake) {
                 throw new Error('Could not find handshake event.');
             }
@@ -867,7 +867,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('shows information for the events initiated by WebSocketCreate when viewing a WebSocketCreate event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
-            const sendHandshake = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isWebSocketCreate);
+            const sendHandshake = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isWebSocketCreate);
             if (!sendHandshake) {
                 throw new Error('Could not find handshake event.');
             }
@@ -887,7 +887,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('shows the aggregated time information for an event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const event = parsedTrace.Renderer.allTraceEntries.find(e => e.ts === 1020034919877 && e.name === 'RunTask');
+            const event = allThreadEntriesInTrace(parsedTrace).find(e => e.ts === 1020034919877 && e.name === 'RunTask');
             if (!event) {
                 throw new Error('Could not find renderer events');
             }
@@ -904,7 +904,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders details for SchedulePostTaskCallback events', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
-            const scheduleEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isSchedulePostTaskCallback);
+            const scheduleEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isSchedulePostTaskCallback);
             assert(scheduleEvent, 'Could not find SchedulePostTaskCallback event');
             const scheduleDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleEvent, new Components.Linkifier.Linkifier(), false, null);
             const rowData = getRowDataForDetailsElement(scheduleDetails);
@@ -923,7 +923,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             // Make a stubbed TimelinePanel, and then ensure all instance() calls return it.
             const timelinePanel = sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel);
             sinon.stub(Timeline.TimelinePanel.TimelinePanel, 'instance').callsFake(() => timelinePanel);
-            const scheduleEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isSchedulePostTaskCallback);
+            const scheduleEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isSchedulePostTaskCallback);
             assert(scheduleEvent, 'Could not find SchedulePostTaskCallback event');
             // This is the event initiated by the schedule event.
             const postTaskEvent = parsedTrace.Initiators.initiatorToEvents.get(scheduleEvent)?.at(0);
@@ -941,7 +941,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders details for RunPostTaskCallback events', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
-            const runEvent = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isRunPostTaskCallback);
+            const runEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isRunPostTaskCallback);
             assert(runEvent, 'Could not find RunPostTaskCallback event');
             const runDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, runEvent, new Components.Linkifier.Linkifier(), false, null);
             const rowData = getRowDataForDetailsElement(runDetails);
@@ -960,7 +960,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('renders the stack trace of a profile call event', async function () {
             // uses source maps
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
-            const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
+            const jsCall = allThreadEntriesInTrace(parsedTrace)
+                .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
             assert.exists(jsCall);
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, jsCall, new Components.Linkifier.Linkifier(), false, null);
             const container = document.createElement('div');
@@ -989,7 +990,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
     it('renders 3p details for profile call properly', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
         const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
-        const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'z');
+        const jsCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'z');
         assert.exists(jsCall);
         const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, jsCall, new Components.Linkifier.Linkifier(), true, entityMapper);
         const rowData = getRowDataForDetailsElement(details).find(row => row.title?.startsWith('Origin'));
@@ -1229,7 +1231,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
     describe('isMarkerEvent', () => {
         it('is true for a timestamp event', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const timestamp = parsedTrace.Renderer.allTraceEntries.find(Trace.Types.Events.isConsoleTimeStamp);
+            const timestamp = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isConsoleTimeStamp);
             assert.isOk(timestamp);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, timestamp));
         });

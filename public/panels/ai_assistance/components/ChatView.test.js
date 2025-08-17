@@ -20,6 +20,7 @@ describeWithEnvironment('ChatView', () => {
             onFeedbackSubmit: noop,
             onCancelClick: noop,
             onContextClick: noop,
+            onCopyResponseClick: noop,
             onNewConversation: noop,
             onTextInputChange: noop,
             changeManager: new AiAssistanceModel.ChangeManager(),

@@ -568,94 +568,95 @@ var recordingListView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: inherit;
+  }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-size: inherit;
-}
+  *:focus,
+  *:focus-visible {
+    outline: none;
+  }
 
-*:focus,
-*:focus-visible {
-  outline: none;
-}
+  .wrapper {
+    padding: 24px;
+  }
 
-.wrapper {
-  padding: 24px;
-}
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
-}
+  h1 {
+    font-size: 16px;
+    line-height: 19px;
+    color: var(--sys-color-on-surface);
+    font-weight: normal;
+  }
 
-h1 {
-  font-size: 16px;
-  line-height: 19px;
-  color: var(--sys-color-on-surface);
-  font-weight: normal;
-}
+  .icon,
+  .icon devtools-icon {
+    width: 20px;
+    height: 20px;
+    color: var(--sys-color-primary);
+  }
 
-.icon,
-.icon devtools-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--sys-color-primary);
-}
+  .table {
+    margin-top: 35px;
+  }
 
-.table {
-  margin-top: 35px;
-}
+  .title {
+    font-size: 13px;
+    color: var(--sys-color-on-surface);
+    margin-left: 10px;
+    flex: 1;
+    overflow-x: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
 
-.title {
-  font-size: 13px;
-  color: var(--sys-color-on-surface);
-  margin-left: 10px;
-  flex: 1;
-  overflow-x: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
+  .row {
+    display: flex;
+    align-items: center;
+    padding-right: 5px;
+    height: 28px;
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 
-.row {
-  display: flex;
-  align-items: center;
-  padding-right: 5px;
-  height: 28px;
-  border-bottom: 1px solid var(--sys-color-divider);
-}
+  .row:focus-within,
+  .row:hover {
+    background-color: var(--sys-color-state-hover-on-subtle);
+  }
 
-.row:focus-within,
-.row:hover {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
+  .row:last-child {
+    border-bottom: none;
+  }
 
-.row:last-child {
-  border-bottom: none;
-}
+  .actions {
+    display: flex;
+    align-items: center;
+  }
 
-.actions {
-  display: flex;
-  align-items: center;
-}
+  .actions button {
+    border: none;
+    background-color: transparent;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+  }
 
-.actions button {
-  border: none;
-  background-color: transparent;
-  width: 24px;
-  height: 24px;
-  border-radius: 50%;
-}
-
-.actions .divider {
-  width: 1px;
-  height: 17px;
-  background-color: var(--sys-color-divider);
-  margin: 0 6px;
+  .actions .divider {
+    width: 1px;
+    height: 17px;
+    background-color: var(--sys-color-divider);
+    margin: 0 6px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./recordingListView.css")} */`;
@@ -719,7 +720,7 @@ var PlayRecordingEvent = class _PlayRecordingEvent extends Event {
 var DEFAULT_VIEW = (input, _output, target) => {
   const { recordings, replayAllowed, onCreateClick, onDeleteClick, onOpenClick, onPlayRecordingClick, onKeyDown } = input;
   Lit3.render(html3`
-      <style>${UI.Widget.widgetScoped(recordingListView_css_default)}</style>
+      <style>${recordingListView_css_default}</style>
       <div class="wrapper">
         <div class="header">
           <h1>${i18nString2(UIStrings2.savedRecordings)}</h1>
@@ -1213,368 +1214,369 @@ var recordingView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+    font-size: inherit;
+  }
 
-* {
-  padding: 0;
-  margin: 0;
-  box-sizing: border-box;
-  font-size: inherit;
-}
+  .wrapper {
+    display: flex;
+    flex-direction: row;
+    flex: 1;
+    height: 100%;
+  }
 
-.wrapper {
-  display: flex;
-  flex-direction: row;
-  flex: 1;
-  height: 100%;
-}
+  .main {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
 
-.main {
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-}
+  .sections {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden auto;
+    background-color: var(--sys-color-cdt-base-container);
+    z-index: 0;
+    position: relative;
+    container: sections / inline-size;
+  }
 
-.sections {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden auto;
-  background-color: var(--sys-color-cdt-base-container);
-  z-index: 0;
-  position: relative;
-  container: sections / inline-size;
-}
+  .section {
+    display: flex;
+    padding: 0 16px;
+    gap: 8px;
+    position: relative;
+  }
 
-.section {
-  display: flex;
-  padding: 0 16px;
-  gap: 8px;
-  position: relative;
-}
+  .section::after {
+    content: '';
+    border-bottom: 1px solid var(--sys-color-divider);
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+  }
 
-.section::after {
-  content: '';
-  border-bottom: 1px solid var(--sys-color-divider);
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: -1;
-}
+  .section:last-child {
+    /* Make sure there is enough space for the context menu. */
+    margin-bottom: 70px;
+  }
 
-.section:last-child {
-  /* Make sure there is enough space for the context menu. */
-  margin-bottom: 70px;
-}
+  .section:last-child::after {
+    content: none;
+  }
 
-.section:last-child::after {
-  content: none;
-}
-
-.screenshot-wrapper {
-  flex: 0 0 80px;
-  padding-top: 32px;
-  /* We want this to be on top of \\'.step-overlay\\' */
-  z-index: 2;
-}
-
-@container sections (max-width: 400px) {
   .screenshot-wrapper {
+    flex: 0 0 80px;
+    padding-top: 32px;
+    /* We want this to be on top of \\'.step-overlay\\' */
+    z-index: 2;
+  }
+
+  @container sections (max-width: 400px) {
+    .screenshot-wrapper {
+      display: none;
+    }
+  }
+
+  .screenshot {
+    object-fit: cover;
+    object-position: top center;
+    max-width: 100%;
+    width: 200px;
+    height: auto;
+    border: 1px solid var(--sys-color-divider);
+    border-radius: 1px;
+  }
+
+  .content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .steps {
+    flex: 1;
+    position: relative;
+    align-self: flex-start;
+    overflow: visible;
+  }
+
+  .step {
+    position: relative;
+    padding-left: 40px;
+    margin: 16px 0;
+  }
+
+  .step .action {
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+  }
+
+  .recording {
+    color: var(--sys-color-primary);
+    font-style: italic;
+    margin-top: 8px;
+    margin-bottom: 0;
+  }
+
+  .add-assertion-button {
+    margin-top: 8px;
+  }
+
+  .details {
+    max-width: 240px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .url {
+    font-size: 12px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--sys-color-secondary);
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .header {
+    flex-shrink: 0;
+    align-items: center;
+    border-bottom: 1px solid var(--sys-color-divider);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    padding: 16px;
+  }
+
+  .header-title-wrapper {
+    max-width: 100%;
+  }
+
+  .header-title {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    max-width: 100%;
+  }
+
+  .header-title::before {
+    content: '';
+    min-width: 12px;
+    height: 12px;
+    display: inline-block;
+    background: var(--sys-color-primary);
+    border-radius: 50%;
+    margin-right: 7px;
+  }
+
+  #title-input {
+    font-family: inherit;
+    field-sizing: content;
+    font-size: 18px;
+    line-height: 22px;
+    letter-spacing: 0.02em;
+    padding: 1px 4px;
+    border: 1px solid transparent;
+    border-radius: 1px;
+    word-break: break-all;
+  }
+
+  #title-input:hover,
+  #title-input:focus-visible {
+    border-color: var(--input-outline);
+  }
+
+  #title-input.has-error {
+    border-color: var(--sys-color-error);
+  }
+
+  #title-input.disabled {
+    color: var(--sys-color-state-disabled);
+  }
+
+  .title-input-error-text {
+    margin-top: 4px;
+    margin-left: 19px;
+    color: var(--sys-color-error);
+  }
+
+  .title-button-bar {
+    flex-shrink: 0;
+    padding-left: 2px;
+    display: flex;
+  }
+
+  #title-input:focus + .title-button-bar {
     display: none;
   }
-}
 
-.screenshot {
-  object-fit: cover;
-  object-position: top center;
-  max-width: 100%;
-  width: 200px;
-  height: auto;
-  border: 1px solid var(--sys-color-divider);
-  border-radius: 1px;
-}
+  .settings-row {
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--sys-color-divider);
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: space-between;
+  }
 
-.content {
-  flex: 1;
-  min-width: 0;
-}
+  .settings-title {
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: 0.03em;
+    color: var(--sys-color-on-surface);
+    display: flex;
+    align-items: center;
+    align-content: center;
+    gap: 5px;
+    width: fit-content;
+  }
 
-.steps {
-  flex: 1;
-  position: relative;
-  align-self: flex-start;
-  overflow: visible;
-}
+  .settings {
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    font-size: 12px;
+    line-height: 20px;
+    letter-spacing: 0.03em;
+    color: var(--sys-color-on-surface-subtle);
+  }
 
-.step {
-  position: relative;
-  padding-left: 40px;
-  margin: 16px 0;
-}
+  .settings.expanded {
+    gap: 10px;
+  }
 
-.step .action {
-  font-size: 13px;
-  line-height: 16px;
-  letter-spacing: 0.03em;
-}
+  .settings .separator {
+    width: 1px;
+    height: 20px;
+    background-color: var(--sys-color-divider);
+    margin: 0 5px;
+  }
 
-.recording {
-  color: var(--sys-color-primary);
-  font-style: italic;
-  margin-top: 8px;
-  margin-bottom: 0;
-}
+  .actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
 
-.add-assertion-button {
-  margin-top: 8px;
-}
+  .actions .separator {
+    width: 1px;
+    height: 24px;
+    background-color: var(--sys-color-divider);
+  }
 
-.details {
-  max-width: 240px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
+  .is-recording .header-title::before {
+    background: var(--sys-color-error-bright);
+  }
 
-.url {
-  font-size: 12px;
-  line-height: 16px;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  color: var(--sys-color-secondary);
-  max-width: 100%;
-  margin-bottom: 16px;
-}
+  .footer {
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--sys-color-divider);
+    padding: 12px;
+    background: var(--sys-color-cdt-base-container);
+    z-index: 1;
+  }
 
-.header {
-  flex-shrink: 0;
-  align-items: center;
-  border-bottom: 1px solid var(--sys-color-divider);
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-between;
-  padding: 16px;
-}
+  .controls {
+    align-items: center;
+    display: flex;
+    justify-content: center;
+    position: relative;
+    width: 100%;
+  }
 
-.header-title-wrapper {
-  max-width: 100%;
-}
+  .chevron {
+    width: 14px;
+    height: 14px;
+    transform: rotate(-90deg);
+    color: var(--sys-color-on-surface);
+  }
 
-.header-title {
-  align-items: center;
-  display: flex;
-  flex: 1;
-  max-width: 100%;
-}
+  .expanded .chevron {
+    transform: rotate(0);
+  }
 
-.header-title::before {
-  content: '';
-  min-width: 12px;
-  height: 12px;
-  display: inline-block;
-  background: var(--sys-color-primary);
-  border-radius: 50%;
-  margin-right: 7px;
-}
+  .editable-setting {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+  }
 
-#title-input {
-  font-family: inherit;
-  field-sizing: content;
-  font-size: 18px;
-  line-height: 22px;
-  letter-spacing: 0.02em;
-  padding: 1px 4px;
-  border: 1px solid transparent;
-  border-radius: 1px;
-  word-break: break-all;
-}
+  .editable-setting .devtools-text-input {
+    width: fit-content;
+    height: var(--sys-size-9);
+  }
 
-#title-input:hover,
-#title-input:focus-visible {
-  border-color: var(--input-outline);
-}
+  .wrapping-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
 
-#title-input.has-error {
-  border-color: var(--sys-color-error);
-}
+  .text-editor {
+    height: 100%;
+    overflow: auto;
+  }
 
-#title-input.disabled {
-  color: var(--sys-color-state-disabled);
-}
+  .section-toolbar {
+    display: flex;
+    align-items: center;
+    padding: 3px 5px;
+    justify-content: space-between;
+    gap: 3px;
+  }
 
-.title-input-error-text {
-  margin-top: 4px;
-  margin-left: 19px;
-  color: var(--sys-color-error);
-}
+  .section-toolbar > devtools-select-menu {
+    height: 24px;
+    min-width: 50px;
+  }
 
-.title-button-bar {
-  flex-shrink: 0;
-  padding-left: 2px;
-  display: flex;
-}
+  .sections .section-toolbar {
+    justify-content: flex-end;
+  }
 
-#title-input:focus + .title-button-bar {
-  display: none;
-}
+  devtools-split-view {
+    flex: 1 1 0%;
+    min-height: 0;
+  }
 
-.settings-row {
-  padding: 16px 28px;
-  border-bottom: 1px solid var(--sys-color-divider);
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: space-between;
-}
+  [slot='main'] {
+    overflow: hidden auto;
+  }
 
-.settings-title {
-  font-size: 14px;
-  line-height: 24px;
-  letter-spacing: 0.03em;
-  color: var(--sys-color-on-surface);
-  display: flex;
-  align-items: center;
-  align-content: center;
-  gap: 5px;
-  width: fit-content;
-}
+  [slot='sidebar'] {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    height: 100%;
+    width: 100%;
+  }
 
-.settings {
-  margin-top: 4px;
-  display: flex;
-  flex-wrap: wrap;
-  font-size: 12px;
-  line-height: 20px;
-  letter-spacing: 0.03em;
-  color: var(--sys-color-on-surface-subtle);
-}
+  [slot='sidebar'] .section-toolbar {
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 
-.settings.expanded {
-  gap: 10px;
-}
+  .show-code {
+    margin-right: 14px;
+    margin-top: 8px;
+  }
 
-.settings .separator {
-  width: 1px;
-  height: 20px;
-  background-color: var(--sys-color-divider);
-  margin: 0 5px;
-}
-
-.actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.actions .separator {
-  width: 1px;
-  height: 24px;
-  background-color: var(--sys-color-divider);
-}
-
-.is-recording .header-title::before {
-  background: var(--sys-color-error-bright);
-}
-
-.footer {
-  display: flex;
-  justify-content: center;
-  border-top: 1px solid var(--sys-color-divider);
-  padding: 12px;
-  background: var(--sys-color-cdt-base-container);
-  z-index: 1;
-}
-
-.controls {
-  align-items: center;
-  display: flex;
-  justify-content: center;
-  position: relative;
-  width: 100%;
-}
-
-.chevron {
-  width: 14px;
-  height: 14px;
-  transform: rotate(-90deg);
-  color: var(--sys-color-on-surface);
-}
-
-.expanded .chevron {
-  transform: rotate(0);
-}
-
-.editable-setting {
-  display: flex;
-  flex-direction: row;
-  gap: 12px;
-  align-items: center;
-}
-
-.editable-setting .devtools-text-input {
-  width: fit-content;
-  height: var(--sys-size-9);
-}
-
-.wrapping-label {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.text-editor {
-  height: 100%;
-  overflow: auto;
-}
-
-.section-toolbar {
-  display: flex;
-  align-items: center;
-  padding: 3px 5px;
-  justify-content: space-between;
-  gap: 3px;
-}
-
-.section-toolbar > devtools-select-menu {
-  height: 24px;
-  min-width: 50px;
-}
-
-.sections .section-toolbar {
-  justify-content: flex-end;
-}
-
-devtools-split-view {
-  flex: 1 1 0%;
-  min-height: 0;
-}
-
-[slot='main'] {
-  overflow: hidden auto;
-}
-
-[slot='sidebar'] {
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  height: 100%;
-  width: 100%;
-}
-
-[slot='sidebar'] .section-toolbar {
-  border-bottom: 1px solid var(--sys-color-divider);
-}
-
-.show-code {
-  margin-right: 14px;
-  margin-top: 8px;
-}
-
-devtools-recorder-extension-view {
-  flex: 1;
+  devtools-recorder-extension-view {
+    flex: 1;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./recordingView.css")} */`;
@@ -2117,9 +2119,9 @@ var DEFAULT_VIEW2 = (input, output, target) => {
   };
   const footerButtonTitle = input.recordingTogglingInProgress ? i18nString5(UIStrings5.recordingIsBeingStopped) : i18nString5(UIStrings5.endRecording);
   Lit6.render(html6`
-    <style>${UI2.Widget.widgetScoped(UI2.inspectorCommonStyles)}</style>
-    <style>${UI2.Widget.widgetScoped(recordingView_css_default)}</style>
-    <style>${UI2.Widget.widgetScoped(Input2.textInputStyles)}</style>
+    <style>${UI2.inspectorCommonStyles}</style>
+    <style>${recordingView_css_default}</style>
+    <style>${Input2.textInputStyles}</style>
     <div @click=${input.onWrapperClick} class=${Lit6.Directives.classMap(classNames)}>
       <div class="recording-view main">
         ${renderHeader(input)}
@@ -4120,248 +4122,249 @@ var stepView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-size: inherit;
-}
-
-.title-container {
-  /* 18px for 3 dot menu icon */
-  max-width: calc(100% - 18px);
-  font-size: 13px;
-  line-height: 16px;
-  letter-spacing: 0.03em;
-  display: flex;
-  flex-direction: row;
-  gap: 3px;
-  outline-offset: 3px;
-}
-
-.action {
-  display: flex;
-  align-items: flex-start;
-}
-
-.title {
-  flex: 1;
-  min-width: 0;
-}
-
-.is-start-of-group .title {
-  font-weight: bold;
-}
-
-.error-icon {
-  display: none;
-}
-
-.breakpoint-icon {
-  visibility: hidden;
-  cursor: pointer;
-  opacity: 0%;
-  fill: var(--sys-color-primary);
-  stroke: #1a73e8; /* stylelint-disable-line plugin/use_theme_colors */
-  transform: translate(-1.92px, -3px);
-}
-
-.circle-icon {
-  fill: var(--sys-color-primary);
-  stroke: var(--sys-color-cdt-base-container);
-  stroke-width: 4px;
-  r: 5px;
-  cx: 8px;
-  cy: 8px;
-}
-
-.is-start-of-group .circle-icon {
-  r: 7px;
-  fill: var(--sys-color-cdt-base-container);
-  stroke: var(--sys-color-primary);
-  stroke-width: 2px;
-}
-
-.step.is-success .circle-icon {
-  fill: var(--sys-color-primary);
-  stroke: var(--sys-color-primary);
-}
-
-.step.is-current .circle-icon {
-  stroke-dasharray: 24 10;
-  animation: rotate 1s linear infinite;
-  fill: var(--sys-color-cdt-base-container);
-  stroke: var(--sys-color-primary);
-  stroke-width: 2px;
-}
-
-.error {
-  margin: 16px 0 0;
-  padding: 8px;
-  background: var(--sys-color-error-container);
-  color: var(--sys-color-error);
-  position: relative;
-}
-
-@keyframes rotate {
-  0% {
-    transform: translate(8px, 8px) rotate(0) translate(-8px, -8px);
+@scope to (devtools-widget > *) {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-size: inherit;
   }
 
-  100% {
-    transform: translate(8px, 8px) rotate(360deg) translate(-8px, -8px);
-  }
-}
-
-.step.is-error .circle-icon {
-  fill: var(--sys-color-error);
-  stroke: var(--sys-color-error);
-}
-
-.step.is-error .error-icon {
-  display: block;
-  transform: translate(4px, 4px);
-}
-
-:host-context(.was-successful) .circle-icon {
-  animation: flash-circle 2s;
-}
-
-:host-context(.was-successful) .breakpoint-icon {
-  animation: flash-breakpoint-icon 2s;
-}
-
-@keyframes flash-circle {
-  25% {
-    fill: var(--override-color-recording-successful-text);
-    stroke: var(--override-color-recording-successful-text);
+  .title-container {
+    /* 18px for 3 dot menu icon */
+    max-width: calc(100% - 18px);
+    font-size: 13px;
+    line-height: 16px;
+    letter-spacing: 0.03em;
+    display: flex;
+    flex-direction: row;
+    gap: 3px;
+    outline-offset: 3px;
   }
 
-  75% {
-    fill: var(--override-color-recording-successful-text);
-    stroke: var(--override-color-recording-successful-text);
-  }
-}
-
-@keyframes flash-breakpoint-icon {
-  25% {
-    fill: var(--override-color-recording-successful-text);
-    stroke: var(--override-color-recording-successful-text);
+  .action {
+    display: flex;
+    align-items: flex-start;
   }
 
-  75% {
-    fill: var(--override-color-recording-successful-text);
-    stroke: var(--override-color-recording-successful-text);
+  .title {
+    flex: 1;
+    min-width: 0;
   }
-}
 
-.chevron {
-  width: 14px;
-  height: 14px;
-  transition: 200ms;
-  position: absolute;
-  top: 18px;
-  left: 24px;
-  transform: rotate(-90deg);
-  color: var(--sys-color-on-surface);
-}
+  .is-start-of-group .title {
+    font-weight: bold;
+  }
 
-.expanded .chevron {
-  transform: rotate(0deg);
-}
+  .error-icon {
+    display: none;
+  }
 
-.is-start-of-group .chevron {
-  top: 34px;
-}
+  .breakpoint-icon {
+    visibility: hidden;
+    cursor: pointer;
+    opacity: 0%;
+    fill: var(--sys-color-primary);
+    stroke: #1a73e8; /* stylelint-disable-line plugin/use_theme_colors */
+    transform: translate(-1.92px, -3px);
+  }
 
-.details {
-  display: none;
-  margin-top: 8px;
-  position: relative;
-}
+  .circle-icon {
+    fill: var(--sys-color-primary);
+    stroke: var(--sys-color-cdt-base-container);
+    stroke-width: 4px;
+    r: 5px;
+    cx: 8px;
+    cy: 8px;
+  }
 
-.expanded .details {
-  display: block;
-}
+  .is-start-of-group .circle-icon {
+    r: 7px;
+    fill: var(--sys-color-cdt-base-container);
+    stroke: var(--sys-color-primary);
+    stroke-width: 2px;
+  }
 
-.step-details {
-  overflow: auto;
-}
+  .step.is-success .circle-icon {
+    fill: var(--sys-color-primary);
+    stroke: var(--sys-color-primary);
+  }
 
-devtools-recorder-step-editor {
-  border: 1px solid var(--sys-color-neutral-outline);
-  padding: 3px 6px 6px;
-  margin-left: -6px;
-  border-radius: 3px;
-}
+  .step.is-current .circle-icon {
+    stroke-dasharray: 24 10;
+    animation: rotate 1s linear infinite;
+    fill: var(--sys-color-cdt-base-container);
+    stroke: var(--sys-color-primary);
+    stroke-width: 2px;
+  }
 
-devtools-recorder-step-editor:hover {
-  border: 1px solid var(--sys-color-neutral-outline);
-}
+  .error {
+    margin: 16px 0 0;
+    padding: 8px;
+    background: var(--sys-color-error-container);
+    color: var(--sys-color-error);
+    position: relative;
+  }
 
-devtools-recorder-step-editor.is-selected {
-  background-color: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-cdt-base-container) 50%);
-  border: 1px solid var(--sys-color-tonal-outline);
-}
+  @keyframes rotate {
+    0% {
+      transform: translate(8px, 8px) rotate(0) translate(-8px, -8px);
+    }
 
-.summary {
-  display: flex;
-  flex-flow: row nowrap;
-}
+    100% {
+      transform: translate(8px, 8px) rotate(360deg) translate(-8px, -8px);
+    }
+  }
 
-.filler {
-  flex-grow: 1;
-}
+  .step.is-error .circle-icon {
+    fill: var(--sys-color-error);
+    stroke: var(--sys-color-error);
+  }
 
-.subtitle {
-  font-weight: normal;
-  color: var(--sys-color-on-surface-subtle);
-  word-break: break-all;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .step.is-error .error-icon {
+    display: block;
+    transform: translate(4px, 4px);
+  }
 
-.main-title {
-  word-break: break-all;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  :host-context(.was-successful) .circle-icon {
+    animation: flash-circle 2s;
+  }
 
-.step-actions {
-  border: none;
-  border-radius: 0;
-  height: 24px;
+  :host-context(.was-successful) .breakpoint-icon {
+    animation: flash-breakpoint-icon 2s;
+  }
 
-  --override-select-menu-show-button-border-radius: 0;
-  --override-select-menu-show-button-outline: none;
-  --override-select-menu-show-button-padding: 0;
-}
+  @keyframes flash-circle {
+    25% {
+      fill: var(--override-color-recording-successful-text);
+      stroke: var(--override-color-recording-successful-text);
+    }
 
-.step.has-breakpoint .circle-icon {
-  visibility: hidden;
-}
+    75% {
+      fill: var(--override-color-recording-successful-text);
+      stroke: var(--override-color-recording-successful-text);
+    }
+  }
 
-.step:not(.is-start-of-group).has-breakpoint .breakpoint-icon {
-  visibility: visible;
-  opacity: 100%;
-}
+  @keyframes flash-breakpoint-icon {
+    25% {
+      fill: var(--override-color-recording-successful-text);
+      stroke: var(--override-color-recording-successful-text);
+    }
 
-.step:not(.is-start-of-group, .has-breakpoint) .icon:hover .circle-icon {
-  transition: opacity 0.2s;
-  opacity: 0%;
-}
+    75% {
+      fill: var(--override-color-recording-successful-text);
+      stroke: var(--override-color-recording-successful-text);
+    }
+  }
 
-.step:not(.is-start-of-group, .has-breakpoint) .icon:hover .error-icon {
-  visibility: hidden;
-}
+  .chevron {
+    width: 14px;
+    height: 14px;
+    transition: 200ms;
+    position: absolute;
+    top: 18px;
+    left: 24px;
+    transform: rotate(-90deg);
+    color: var(--sys-color-on-surface);
+  }
 
-.step:not(.is-start-of-group, .has-breakpoint) .icon:hover .breakpoint-icon {
-  transition: opacity 0.2s;
-  visibility: visible;
-  opacity: 50%;
+  .expanded .chevron {
+    transform: rotate(0deg);
+  }
+
+  .is-start-of-group .chevron {
+    top: 34px;
+  }
+
+  .details {
+    display: none;
+    margin-top: 8px;
+    position: relative;
+  }
+
+  .expanded .details {
+    display: block;
+  }
+
+  .step-details {
+    overflow: auto;
+  }
+
+  devtools-recorder-step-editor {
+    border: 1px solid var(--sys-color-neutral-outline);
+    padding: 3px 6px 6px;
+    margin-left: -6px;
+    border-radius: 3px;
+  }
+
+  devtools-recorder-step-editor:hover {
+    border: 1px solid var(--sys-color-neutral-outline);
+  }
+
+  devtools-recorder-step-editor.is-selected {
+    background-color: color-mix(in srgb, var(--sys-color-tonal-container), var(--sys-color-cdt-base-container) 50%);
+    border: 1px solid var(--sys-color-tonal-outline);
+  }
+
+  .summary {
+    display: flex;
+    flex-flow: row nowrap;
+  }
+
+  .filler {
+    flex-grow: 1;
+  }
+
+  .subtitle {
+    font-weight: normal;
+    color: var(--sys-color-on-surface-subtle);
+    word-break: break-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .main-title {
+    word-break: break-all;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .step-actions {
+    border: none;
+    border-radius: 0;
+    height: 24px;
+
+    --override-select-menu-show-button-border-radius: 0;
+    --override-select-menu-show-button-outline: none;
+    --override-select-menu-show-button-padding: 0;
+  }
+
+  .step.has-breakpoint .circle-icon {
+    visibility: hidden;
+  }
+
+  .step:not(.is-start-of-group).has-breakpoint .breakpoint-icon {
+    visibility: visible;
+    opacity: 100%;
+  }
+
+  .step:not(.is-start-of-group, .has-breakpoint) .icon:hover .circle-icon {
+    transition: opacity 0.2s;
+    opacity: 0%;
+  }
+
+  .step:not(.is-start-of-group, .has-breakpoint) .icon:hover .error-icon {
+    visibility: hidden;
+  }
+
+  .step:not(.is-start-of-group, .has-breakpoint) .icon:hover .breakpoint-icon {
+    transition: opacity 0.2s;
+    visibility: visible;
+    opacity: 50%;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./stepView.css")} */`;
@@ -4654,7 +4657,7 @@ function viewFunction(input, _output, target) {
   });
   const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
   Lit10.render(html10`
-    <style>${UI4.Widget.widgetScoped(stepView_css_default)}</style>
+    <style>${stepView_css_default}</style>
     <devtools-timeline-section .data=${{
     isFirstSection: input.isFirstSection,
     isLastSection: input.isLastSection,

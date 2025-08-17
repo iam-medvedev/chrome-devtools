@@ -306,7 +306,7 @@ function viewFunction(input, _output, target) {
     const subtitle = input.step ? getSelectorPreview(input.step) : getSectionPreview();
     // clang-format off
     Lit.render(html `
-    <style>${UI.Widget.widgetScoped(stepViewStyles)}</style>
+    <style>${stepViewStyles}</style>
     <devtools-timeline-section .data=${{
         isFirstSection: input.isFirstSection,
         isLastSection: input.isLastSection,

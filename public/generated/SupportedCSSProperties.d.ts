@@ -446,7 +446,7 @@ export const generatedPropertyValues: {
     "forced-color-adjust": {
         values: string[];
     };
-    "gap-rule-paint-order": {
+    "gap-rule-overlap": {
         values: string[];
     };
     "grid-auto-columns": {

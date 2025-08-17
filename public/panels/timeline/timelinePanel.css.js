@@ -47,6 +47,8 @@ export default `/*
 .timeline-settings-pane {
   display: grid;
   grid-template-columns: 50% 50%;
+  padding-top: var(--sys-size-3);
+  row-gap: var(--sys-size-3);
   flex: none;
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
@@ -56,12 +58,6 @@ export default `/*
     display: flex;
     align-items: center;
     gap: 5px;
-
-    & > select {
-      height: var(--sys-size-9);
-      min-width: var(--sys-size-14);
-      border: none;
-    }
   }
 }
 

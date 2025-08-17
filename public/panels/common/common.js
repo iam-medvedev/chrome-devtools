@@ -1,8 +1,8 @@
 // gen/front_end/panels/common/common.prebundle.js
 import * as Host2 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/common/common.css.js
 var common_css_default = `/*
@@ -72,24 +72,39 @@ var aiCodeCompletionTeaser_css_default = `/*
  * found in the LICENSE file.
  */
 
-.ai-code-completion-teaser {
-    pointer-events: all;
-    align-items: center;
-    font-style: italic;
-
-    .ai-code-completion-teaser-dismiss {
-        text-decoration: underline;
-        cursor: pointer;
+@scope to (devtools-widget > *) {
+    .ai-code-completion-teaser-screen-reader-only {
+        position: absolute;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        height: var(--sys-size-1);
+        width: var(--sys-size-1);
+        margin: -1 * var(--sys-size-1);;
+        padding: 0;
+        border: 0;
     }
 
-    .ai-code-completion-teaser-action {
-        display: inline-flex;
-        gap: var(--sys-size-2);
+    .ai-code-completion-teaser {
+        padding-left: var(--sys-size-3);
+        line-height: normal;
+        pointer-events: all;
+        align-items: center;
+        font-style: italic;
 
-        span {
-            border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-            border-radius: var(--sys-shape-corner-extra-small);
-            padding: 0 var(--sys-size-3);
+        .ai-code-completion-teaser-dismiss {
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .ai-code-completion-teaser-action {
+            display: inline-flex;
+            gap: var(--sys-size-2);
+
+            span {
+                border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
+                border-radius: var(--sys-shape-corner-extra-small);
+                padding: 0 var(--sys-size-3);
+            }
         }
     }
 }
@@ -310,6 +325,10 @@ var UIStringsNotTranslate = {
    */
   i: "i",
   /**
+   * @description Text for `x` key.
+   */
+  x: "x",
+  /**
    * @description Text for dismissing teaser.
    */
   dontShowAgain: "Don't show again",
@@ -349,7 +368,15 @@ var UIStringsNotTranslate = {
   /**
    * @description Third disclaimer item text for the fre dialog.
    */
-  freDisclaimerTextUseWithCaution: "Use generated code snippets with caution"
+  freDisclaimerTextUseWithCaution: "Use generated code snippets with caution",
+  /**
+   *@description Text for ARIA label for the teaser.
+   */
+  press: "Press",
+  /**
+   *@description Text for ARIA label for the teaser.
+   */
+  toDisableCodeSuggestions: "to disable code suggestions."
 };
 var lockedString = i18n3.i18n.lockedString;
 var CODE_SNIPPET_WARNING_URL = "https://support.google.com/legal/answer/13505487";
@@ -359,9 +386,11 @@ var DEFAULT_VIEW = (input, _output, target) => {
     return;
   }
   const cmdOrCtrl = Host.Platform.isMac() ? lockedString(UIStringsNotTranslate.cmd) : lockedString(UIStringsNotTranslate.ctrl);
+  const teaserAriaLabel = lockedString(UIStringsNotTranslate.press) + " " + cmdOrCtrl + " " + lockedString(UIStringsNotTranslate.i) + " " + lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions) + " " + lockedString(UIStringsNotTranslate.press) + " " + cmdOrCtrl + " " + lockedString(UIStringsNotTranslate.x) + " " + lockedString(UIStringsNotTranslate.toDisableCodeSuggestions);
   render2(html2`
-          <style>${UI2.Widget.widgetScoped(aiCodeCompletionTeaser_css_default)}</style>
-          <div class="ai-code-completion-teaser">
+          <style>${aiCodeCompletionTeaser_css_default}</style>
+          <div class="ai-code-completion-teaser-screen-reader-only">${teaserAriaLabel}</div>
+          <div class="ai-code-completion-teaser" aria-hidden="true">
             <span class="ai-code-completion-teaser-action">
               <span>${cmdOrCtrl}</span>
               <span>${lockedString(UIStringsNotTranslate.i)}</span>
@@ -387,6 +416,7 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
   constructor(config, view) {
     super();
+    this.markAsExternallyManaged();
     this.#onDetach = config.onDetach;
     this.#view = view ?? DEFAULT_VIEW;
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
@@ -412,20 +442,6 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
       this.requestUpdate();
     }
   }
-  #onKeyDown = async (event) => {
-    const keyboardEvent = event;
-    if (UI2.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
-      if (keyboardEvent.key === "i") {
-        keyboardEvent.consume(true);
-        await this.onAction(event);
-        void VisualLogging.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.fre");
-      } else if (keyboardEvent.key === "x") {
-        keyboardEvent.consume(true);
-        this.onDismiss(event);
-        void VisualLogging.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.dismiss");
-      }
-    }
-  };
   onAction = async (event) => {
     event.preventDefault();
     const result = await FreDialog.show({
@@ -481,12 +497,11 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
   }
   wasShown() {
     super.wasShown();
-    document.body.addEventListener("keydown", this.#onKeyDown);
     Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
     void this.#onAidaAvailabilityChange();
   }
   willHide() {
-    document.body.removeEventListener("keydown", this.#onKeyDown);
+    super.willHide();
     Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
   }
   onDetach() {
@@ -494,7 +509,7 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
+// gen/front_end/panels/common/AiCodeCompletionDisclaimer.js
 import "./../../ui/components/spinners/spinners.js";
 import "./../../ui/components/tooltips/tooltips.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -503,102 +518,68 @@ import * as UI3 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html3, nothing as nothing2, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/panels/common/aiCodeCompletionSummaryToolbar.css.js
-var aiCodeCompletionSummaryToolbar_css_default = `/*
+// gen/front_end/panels/common/aiCodeCompletionDisclaimer.css.js
+var aiCodeCompletionDisclaimer_css_default = `/*
  * Copyright 2025 The Chromium Authors. All rights reserved.
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-.ai-code-completion-summary-toolbar {
-  display: flex;
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  background-color: var(--sys-color-cdt-base-container);
-  padding: var(--sys-size-2) var(--sys-size-5);
-  align-items: center;
-  gap: var(--sys-size-5);
-  flex-shrink: 0;
-  color: var(--sys-color-on-surface-subtle);
+@scope to (devtools-widget > *) {
+    .ai-code-completion-disclaimer {
+        gap: 5px;
+        display: flex;
+        white-space: nowrap;
+        overflow: hidden;
+        flex-shrink: 0;
 
-  span.link {
-    color: var(--sys-color-on-surface-subtle);
-
-    &:focus-visible {
-      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-      outline-offset: 0;
-      border-radius: var(--sys-shape-corner-extra-small);
-    }
-  }
-
-  .ai-code-completion-disclaimer {
-    padding-right: var(--sys-size-5);
-    gap: 5px;
-    display: flex;
-
-    devtools-spinner {
-      margin-top: var(--sys-size-2);
-      padding: var(--sys-size-1);
-      height: var(--sys-size-6);
-      width: var(--sys-size-6);
-    }
-  }
-
-  .ai-code-completion-recitation-notice {
-    border-left: var(--sys-size-1) solid var(--sys-color-divider);
-
-    span.link {
-      padding-left: var(--sys-size-3);
-    }
-  }
-
-  devtools-tooltip:popover-open {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    .citations-tooltip-container {
-        display: inline-flex;
-        padding: var(--sys-size-4) var(--sys-size-5);
-        flex-direction: column;
-        align-items: flex-start;
-        justify-content: center;
-        gap: var(--sys-size-2);
-
-        x-link {
-            color: var(--sys-color-primary);
-            text-decoration: underline;
+        span.link {
+            color: var(--sys-color-on-surface-subtle);
 
             &:focus-visible {
-              outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-              outline-offset: 0;
-              border-radius: var(--sys-shape-corner-extra-small);
+            outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+            outline-offset: 0;
+            border-radius: var(--sys-shape-corner-extra-small);
+            }
+        }
+
+        devtools-spinner {
+            margin-top: var(--sys-size-2);
+            padding: var(--sys-size-1);
+            height: var(--sys-size-6);
+            width: var(--sys-size-6);
+        }
+
+        devtools-tooltip:popover-open {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            .disclaimer-tooltip-container {
+                padding: var(--sys-size-4) 0;
+                max-width: var(--sys-size-30);
+                white-space: normal;
+
+                .tooltip-text {
+                    color: var(--sys-color-on-surface-subtle);
+                    padding: 0 var(--sys-size-5);
+                    align-items: flex-start;
+                    gap: 10px;
+                }
+
+                .link {
+                    margin: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
+                    display: inline-block;
+                }
             }
         }
     }
-
-    .disclaimer-tooltip-container {
-      padding: var(--sys-size-4) 0;
-      max-width: var(--sys-size-30);
-
-      .tooltip-text {
-        color: var(--sys-color-on-surface-subtle);
-        padding: 0 var(--sys-size-5);
-        align-items: flex-start;
-        gap: 10px;
-      }
-
-      .link {
-        margin: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
-        display: inline-block;
-      }
-    }
-  }
 }
 
-/*# sourceURL=${import.meta.resolve("./aiCodeCompletionSummaryToolbar.css")} */`;
+/*# sourceURL=${import.meta.resolve("./aiCodeCompletionDisclaimer.css")} */`;
 
-// gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
-var UIStrings2 = {
+// gen/front_end/panels/common/AiCodeCompletionDisclaimer.js
+var UIStringsNotTranslate2 = {
   /**
    * @description Disclaimer text for AI code completion
    */
@@ -620,122 +601,97 @@ var UIStrings2 = {
    */
   manageInSettings: "Manage in settings",
   /**
-   * @description Text for recitation notice
+   *@description Text announced when request is sent to AIDA and the spinner is loading
    */
-  generatedCodeMayBeSubjectToALicense: "Generated code may be subject to a license.",
-  /**
-   * @description Text for citations
-   */
-  viewSources: "View Sources"
+  dataIsBeingSentToGoogle: "Data is being sent to Google"
 };
 var lockedString2 = i18n5.i18n.lockedString;
 var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-  const recitationNotice = input.citations && input.citations.length > 0 ? html3`<div class="ai-code-completion-recitation-notice">${lockedString2(UIStrings2.generatedCodeMayBeSubjectToALicense)}
-                <span class="link"
-                    role="link"
-                    aria-details=${input.citationsTooltipId}
-                    aria-describedby=${input.citationsTooltipId}
-                    tabIndex="0">
-                  ${lockedString2(UIStrings2.viewSources)}&nbsp;${lockedString2("(" + input.citations.length + ")")}</span>
-                <devtools-tooltip
-                    id=${input.citationsTooltipId}
-                    variant=${"rich"}
-                    jslogContext=${input.panelName + ".ai-code-completion-citations"}
-                ><div class="citations-tooltip-container">
-                    ${Directives.repeat(input.citations, (citation) => html3`<x-link
-                        tabIndex="0"
-                        href=${citation}
-                        jslog=${VisualLogging2.link(input.panelName + ".ai-code-completion-citations.citation-link").track({
-    click: true
-  })}>${citation}</x-link>`)}</div></devtools-tooltip>
-            </div>` : nothing2;
+  if (!input.disclaimerTooltipId || !input.panelName) {
+    render3(nothing2, target);
+    return;
+  }
   render3(html3`
-        <style>${UI3.Widget.widgetScoped(aiCodeCompletionSummaryToolbar_css_default)}</style>
-        <div class="ai-code-completion-summary-toolbar">
-            <div class="ai-code-completion-disclaimer">
-                <devtools-spinner
-                  .active=${false}
-                  ${Directives.ref((el) => {
+        <style>${aiCodeCompletionDisclaimer_css_default}</style>
+        <div class="ai-code-completion-disclaimer"><devtools-spinner
+          .active=${false}
+          ${Directives.ref((el) => {
     if (el instanceof HTMLElement) {
       output.setLoading = (isLoading) => {
         el.toggleAttribute("active", isLoading);
       };
     }
   })}></devtools-spinner>
-                <span
-                    tabIndex="0"
-                    class="link"
-                    role="link"
-                    jslog=${VisualLogging2.link("open-ai-settings").track({
+          <span
+              tabIndex="0"
+              class="link"
+              role="link"
+              jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
-                    aria-details=${input.disclaimerTooltipId}
-                    aria-describedby=${input.disclaimerTooltipId}
-                    @click=${() => {
+              aria-details=${input.disclaimerTooltipId}
+              aria-describedby=${input.disclaimerTooltipId}
+              @click=${() => {
     void UI3.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
-                >${lockedString2(UIStrings2.relevantData)}</span>${lockedString2(UIStrings2.isSentToGoogle)}
-                <devtools-tooltip
-                    id=${input.disclaimerTooltipId}
-                    variant=${"rich"}
-                    jslogContext=${input.panelName + ".ai-code-completion-disclaimer"}
-                    ${Directives.ref((el) => {
+          >${lockedString2(UIStringsNotTranslate2.relevantData)}</span>${lockedString2(UIStringsNotTranslate2.isSentToGoogle)}
+          <devtools-tooltip
+              id=${input.disclaimerTooltipId}
+              variant=${"rich"}
+              jslogContext=${input.panelName + ".ai-code-completion-disclaimer"}
+              ${Directives.ref((el) => {
     if (el instanceof HTMLElement) {
       output.hideTooltip = () => {
         el.hidePopover();
       };
     }
-  })}
-                ><div class="disclaimer-tooltip-container">
-                    <div class="tooltip-text">
-                      ${input.noLogging ? lockedString2(UIStrings2.tooltipDisclaimerTextForAiCodeCompletionNoLogging) : lockedString2(UIStrings2.tooltipDisclaimerTextForAiCodeCompletion)}
-                    </div>
-                    <span
-                        class="link"
-                        role="link"
-                        jslog=${VisualLogging2.link("open-ai-settings").track({
+  })}>
+            <div class="disclaimer-tooltip-container"><div class="tooltip-text">
+                ${input.noLogging ? lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeCompletionNoLogging) : lockedString2(UIStringsNotTranslate2.tooltipDisclaimerTextForAiCodeCompletion)}
+                </div>
+                <span
+                    class="link"
+                    role="link"
+                    jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
-                        @click=${input.onManageInSettingsTooltipClick}
-                    >${lockedString2(UIStrings2.manageInSettings)}</span></div></devtools-tooltip>
-            </div>
-            ${recitationNotice}
-        </div>
+                    @click=${input.onManageInSettingsTooltipClick}
+                >${lockedString2(UIStringsNotTranslate2.manageInSettings)}</span></div></devtools-tooltip>
+          </div class="ai-code-completion-disclaimer">
         `, target);
 };
 var MINIMUM_LOADING_STATE_TIMEOUT = 1e3;
-var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
+var AiCodeCompletionDisclaimer = class extends UI3.Widget.Widget {
   #view;
   #viewOutput = {};
   #disclaimerTooltipId;
-  #citationsTooltipId;
   #panelName;
-  #citations = [];
   #noLogging;
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
   #loading = false;
   #loadingStartTime = 0;
   #spinnerLoadingTimeout;
-  constructor(disclaimerTooltipId, citationsTooltipId, panelName, view) {
-    super();
-    this.#disclaimerTooltipId = disclaimerTooltipId;
-    this.#citationsTooltipId = citationsTooltipId;
-    this.#panelName = panelName;
+  constructor(element, view = DEFAULT_SUMMARY_TOOLBAR_VIEW) {
+    super(element);
     this.#noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
-    this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW;
+    this.#view = view;
+  }
+  set disclaimerTooltipId(disclaimerTooltipId) {
+    this.#disclaimerTooltipId = disclaimerTooltipId;
     this.requestUpdate();
   }
-  #onManageInSettingsTooltipClick() {
-    this.#viewOutput.hideTooltip?.();
-    void UI3.ViewManager.ViewManager.instance().showView("chrome-ai");
+  set panelName(panelName) {
+    this.#panelName = panelName;
+    this.requestUpdate();
   }
-  setLoading(loading) {
+  set loading(loading) {
     if (!loading && !this.#loading) {
       return;
     }
     if (loading) {
       if (!this.#loading) {
         this.#viewOutput.setLoading?.(true);
+        UI3.ARIAUtils.LiveAnnouncer.status(lockedString2(UIStringsNotTranslate2.dataIsBeingSentToGoogle));
       }
       if (this.#spinnerLoadingTimeout) {
         clearTimeout(this.#spinnerLoadingTimeout);
@@ -752,6 +708,195 @@ var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
         this.#spinnerLoadingTimeout = void 0;
       }, remainingTime);
     }
+  }
+  #onManageInSettingsTooltipClick() {
+    this.#viewOutput.hideTooltip?.();
+    void UI3.ViewManager.ViewManager.instance().showView("chrome-ai");
+  }
+  performUpdate() {
+    this.#view({
+      disclaimerTooltipId: this.#disclaimerTooltipId,
+      panelName: this.#panelName,
+      noLogging: this.#noLogging,
+      onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this)
+    }, this.#viewOutput, this.contentElement);
+  }
+};
+
+// gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
+import "./../../ui/components/spinners/spinners.js";
+import "./../../ui/components/tooltips/tooltips.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html4, nothing as nothing3, render as render4 } from "./../../ui/lit/lit.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/common/aiCodeCompletionSummaryToolbar.css.js
+var aiCodeCompletionSummaryToolbar_css_default = `/*
+ * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  .ai-code-completion-summary-toolbar {
+    display: flex;
+    height: 26px;
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    background-color: var(--sys-color-cdt-base-container);
+    padding: var(--sys-size-2) var(--sys-size-5);
+    align-items: center;
+    gap: var(--sys-size-5);
+    flex-shrink: 0;
+    color: var(--sys-color-on-surface-subtle);
+
+    devtools-widget.disclaimer-widget {
+      flex: none;
+    }
+
+    span.link {
+      color: var(--sys-color-on-surface-subtle);
+
+      &:focus-visible {
+        outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+        outline-offset: 0;
+        border-radius: var(--sys-shape-corner-extra-small);
+      }
+    }
+
+    .ai-code-completion-recitation-notice {
+      padding-left: var(--sys-size-5);
+      border-left: var(--sys-size-1) solid var(--sys-color-divider);
+      white-space: nowrap;
+      overflow: hidden;
+
+      span.link {
+        padding-left: var(--sys-size-3);
+      }
+    }
+
+    @media (width < 545px) {
+      &.has-disclaimer.has-recitation-notice {
+        height: 46px;
+        flex-direction: column;
+        align-items: flex-start;
+
+        .ai-code-completion-disclaimer {
+          height: 26px;
+          margin-bottom: -3px;
+          margin-top: var(--sys-size-2);
+          flex-shrink: 1;
+        }
+
+        .ai-code-completion-recitation-notice {
+          height: 26px;
+          padding-left: 0;
+          border-left: 0;
+          margin-top: -3px;
+        }
+      }
+    }
+
+    devtools-tooltip:popover-open {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .citations-tooltip-container {
+            display: inline-flex;
+            padding: var(--sys-size-4) var(--sys-size-5);
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: var(--sys-size-2);
+            white-space: normal;
+
+            x-link {
+                color: var(--sys-color-primary);
+                text-decoration: underline;
+
+              &:focus-visible {
+                outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+                outline-offset: 0;
+                border-radius: var(--sys-shape-corner-extra-small);
+              }
+          }
+      }
+    }
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./aiCodeCompletionSummaryToolbar.css")} */`;
+
+// gen/front_end/panels/common/AiCodeCompletionSummaryToolbar.js
+var UIStringsNotTranslate3 = {
+  /**
+   * @description Text for recitation notice
+   */
+  generatedCodeMayBeSubjectToALicense: "Generated code may be subject to a license.",
+  /**
+   * @description Text for citations
+   */
+  viewSources: "View Sources"
+};
+var lockedString3 = i18n7.i18n.lockedString;
+var DEFAULT_SUMMARY_TOOLBAR_VIEW2 = (input, _output, target) => {
+  const toolbarClasses = Directives2.classMap({
+    "ai-code-completion-summary-toolbar": true,
+    "has-disclaimer": Boolean(input.disclaimerTooltipId),
+    "has-recitation-notice": Boolean(input.citations && input.citations.length > 0)
+  });
+  const disclaimer = input.disclaimerTooltipId ? html4`<devtools-widget
+            .widgetConfig=${UI4.Widget.widgetConfig(AiCodeCompletionDisclaimer, {
+    disclaimerTooltipId: input.disclaimerTooltipId,
+    panelName: input.panelName,
+    loading: input.loading
+  })} class="disclaimer-widget"></devtools-widget>` : nothing3;
+  const recitationNotice = input.citations && input.citations.length > 0 ? html4`<div class="ai-code-completion-recitation-notice">${lockedString3(UIStringsNotTranslate3.generatedCodeMayBeSubjectToALicense)}
+                <span class="link"
+                    role="link"
+                    aria-details=${input.citationsTooltipId}
+                    aria-describedby=${input.citationsTooltipId}
+                    tabIndex="0">
+                  ${lockedString3(UIStringsNotTranslate3.viewSources)}&nbsp;${lockedString3("(" + input.citations.length + ")")}</span>
+                <devtools-tooltip
+                    id=${input.citationsTooltipId}
+                    variant=${"rich"}
+                    jslogContext=${input.panelName + ".ai-code-completion-citations"}
+                ><div class="citations-tooltip-container">
+                    ${Directives2.repeat(input.citations, (citation) => html4`<x-link
+                        tabIndex="0"
+                        href=${citation}
+                        jslog=${VisualLogging3.link(input.panelName + ".ai-code-completion-citations.citation-link").track({
+    click: true
+  })}>${citation}</x-link>`)}</div></devtools-tooltip>
+            </div>` : nothing3;
+  render4(html4`
+        <style>${aiCodeCompletionSummaryToolbar_css_default}</style>
+        <div class=${toolbarClasses}>
+          ${disclaimer}
+          ${recitationNotice}
+        </div>
+        `, target);
+};
+var AiCodeCompletionSummaryToolbar = class extends UI4.Widget.Widget {
+  #view;
+  #disclaimerTooltipId;
+  #citationsTooltipId;
+  #panelName;
+  #citations = [];
+  #loading = false;
+  constructor(props, view) {
+    super();
+    this.#disclaimerTooltipId = props.disclaimerTooltipId;
+    this.#citationsTooltipId = props.citationsTooltipId;
+    this.#panelName = props.panelName;
+    this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW2;
+    this.requestUpdate();
+  }
+  setLoading(loading) {
+    this.#loading = loading;
+    this.requestUpdate();
   }
   updateCitations(citations) {
     citations.forEach((citation) => {
@@ -771,14 +916,13 @@ var AiCodeCompletionSummaryToolbar = class extends UI3.Widget.Widget {
       citations: this.#citations,
       citationsTooltipId: this.#citationsTooltipId,
       panelName: this.#panelName,
-      noLogging: this.#noLogging,
-      onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this)
-    }, this.#viewOutput, this.contentElement);
+      loading: this.#loading
+    }, void 0, this.contentElement);
   }
 };
 
 // gen/front_end/panels/common/common.prebundle.js
-var UIStrings3 = {
+var UIStrings2 = {
   /**
    * @description Text for the cancel button in the dialog.
    */
@@ -788,18 +932,18 @@ var UIStrings3 = {
    */
   allow: "Allow"
 };
-var str_2 = i18n7.i18n.registerUIStrings("panels/common/common.ts", UIStrings3);
-var i18nString2 = i18n7.i18n.getLocalizedString.bind(void 0, str_2);
+var str_2 = i18n9.i18n.registerUIStrings("panels/common/common.ts", UIStrings2);
+var i18nString2 = i18n9.i18n.getLocalizedString.bind(void 0, str_2);
 var TypeToAllowDialog = class {
   static async show(options) {
-    const dialog = new UI4.Dialog.Dialog(options.jslogContext.dialog);
-    dialog.setMaxContentSize(new UI4.Geometry.Size(504, 340));
+    const dialog = new UI5.Dialog.Dialog(options.jslogContext.dialog);
+    dialog.setMaxContentSize(new UI5.Geometry.Size(504, 340));
     dialog.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
     dialog.setDimmed(true);
-    const shadowRoot = UI4.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: common_css_default });
+    const shadowRoot = UI5.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: common_css_default });
     const content = shadowRoot.createChild("div", "type-to-allow-dialog");
     const result = await new Promise((resolve) => {
       const header = content.createChild("div", "header");
@@ -816,12 +960,12 @@ var TypeToAllowDialog = class {
         /* Buttons.Button.Size.SMALL */
       );
       content.createChild("div", "message").textContent = options.message;
-      const input = UI4.UIUtils.createInput("text-input", "text", options.jslogContext.input);
+      const input = UI5.UIUtils.createInput("text-input", "text", options.jslogContext.input);
       input.placeholder = options.inputPlaceholder;
       content.appendChild(input);
       const buttonsBar = content.createChild("div", "button");
-      const cancelButton = UI4.UIUtils.createTextButton(i18nString2(UIStrings3.cancel), () => resolve(false), { jslogContext: "cancel" });
-      const allowButton = UI4.UIUtils.createTextButton(i18nString2(UIStrings3.allow), () => {
+      const cancelButton = UI5.UIUtils.createTextButton(i18nString2(UIStrings2.cancel), () => resolve(false), { jslogContext: "cancel" });
+      const allowButton = UI5.UIUtils.createTextButton(i18nString2(UIStrings2.allow), () => {
         resolve(input.value === options.typePhrase);
       }, {
         jslogContext: "confirm",
@@ -848,6 +992,7 @@ var TypeToAllowDialog = class {
   }
 };
 export {
+  AiCodeCompletionDisclaimer,
   AiCodeCompletionSummaryToolbar,
   AiCodeCompletionTeaser,
   FreDialog,

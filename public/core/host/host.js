@@ -606,6 +606,9 @@ var InspectorFrontendHostStub = class {
         thirdPartyCookieMetadataEnabled: true,
         thirdPartyCookieHeuristicsEnabled: true,
         managedBlockThirdPartyCookies: "Unset"
+      },
+      devToolsIpProtectionPanelInDevTools: {
+        enabled: false
       }
     };
     if ("hostConfigForTesting" in globalThis) {

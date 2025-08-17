@@ -4255,6 +4255,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   sourceOrderSubPane;
   constructor(throttlingTimeout) {
     super(false, throttlingTimeout);
+    this.element.classList.add("accessibility-sidebar-view");
     this.nodeInternal = null;
     this.axNodeInternal = null;
     this.skipNextPullNode = false;

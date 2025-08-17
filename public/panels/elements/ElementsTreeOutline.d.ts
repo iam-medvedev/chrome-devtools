@@ -5,6 +5,90 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { ElementsTreeElement } from './ElementsTreeElement.js';
 import type { MarkerDecoratorRegistration } from './MarkerDecorator.js';
 import { TopLayerContainer } from './TopLayerContainer.js';
+export type View = typeof DEFAULT_VIEW;
+interface ViewInput {
+    omitRootDOMNode: boolean;
+    selectEnabled: boolean;
+    hideGutter: boolean;
+    visibleWidth?: number;
+    visible?: boolean;
+    wrap: boolean;
+    onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
+        node: SDK.DOMModel.DOMNode | null;
+        focus: boolean;
+    }>) => void;
+    onElementsTreeUpdated: (event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode[]>) => void;
+}
+interface ViewOutput {
+    elementsTreeOutline?: ElementsTreeOutline;
+}
+export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
+/**
+ * The main goal of this presenter is to wrap ElementsTreeOutline until
+ * ElementsTreeOutline can be fully integrated into DOMTreeWidget.
+ *
+ * FIXME: once TreeOutline is declarative, this file needs to be renamed
+ * to DOMTreeWidget.ts.
+ */
+export declare class DOMTreeWidget extends UI.Widget.Widget {
+    #private;
+    omitRootDOMNode: boolean;
+    selectEnabled: boolean;
+    hideGutter: boolean;
+    onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
+        node: SDK.DOMModel.DOMNode | null;
+        focus: boolean;
+    }>) => void;
+    onElementsTreeUpdated: (event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode[]>) => void;
+    onDocumentUpdated: (domModel: SDK.DOMModel.DOMModel) => void;
+    set visibleWidth(width: number);
+    set rootDOMNode(node: SDK.DOMModel.DOMNode | null);
+    get rootDOMNode(): SDK.DOMModel.DOMNode | null;
+    constructor(element?: HTMLElement, view?: View);
+    selectDOMNode(node: SDK.DOMModel.DOMNode | null, focus?: boolean): void;
+    setWordWrap(wrap: boolean): void;
+    selectedDOMNode(): SDK.DOMModel.DOMNode | null;
+    /**
+     * FIXME: this is called to re-render everything from scratch, for
+     * example, if global settings changed. Instead, the setting values
+     * should be the input for the view function.
+     */
+    reload(): void;
+    /**
+     * Used by layout tests.
+     */
+    getTreeOutlineForTesting(): ElementsTreeOutline | undefined;
+    performUpdate(): void;
+    modelAdded(domModel: SDK.DOMModel.DOMModel): void;
+    modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
+    /**
+     * FIXME: which node is expanded should be part of the view input.
+     */
+    expand(): void;
+    /**
+     * FIXME: which node is selected should be part of the view input.
+     */
+    selectDOMNodeWithoutReveal(node: SDK.DOMModel.DOMNode): void;
+    /**
+     * FIXME: adorners should be part of the view input.
+     */
+    updateNodeAdorners(node: SDK.DOMModel.DOMNode): void;
+    highlightMatch(node: SDK.DOMModel.DOMNode, query?: string): void;
+    hideMatchHighlights(node: SDK.DOMModel.DOMNode): void;
+    toggleHideElement(node: SDK.DOMModel.DOMNode): void;
+    toggleEditAsHTML(node: SDK.DOMModel.DOMNode): void;
+    duplicateNode(node: SDK.DOMModel.DOMNode): void;
+    copyStyles(node: SDK.DOMModel.DOMNode): void;
+    /**
+     * FIXME: used to determine focus state, probably we can have a better
+     * way to do it.
+     */
+    empty(): boolean;
+    focus(): void;
+    wasShown(): void;
+    detach(overrideHideOnDetach?: boolean): void;
+    show(parentElement: Element, insertBefore?: Node | null, suppressOrphanWidgetError?: boolean): void;
+}
 declare const ElementsTreeOutline_base: (new (...args: any[]) => {
     "__#13@#events": Common.ObjectWrapper.ObjectWrapper<ElementsTreeOutline.EventTypes>;
     addEventListener<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<ElementsTreeOutline.EventTypes, T>;

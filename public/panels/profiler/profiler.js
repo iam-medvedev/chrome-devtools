@@ -157,8 +157,8 @@ var ProfileDataGridNode = class _ProfileDataGridNode extends DataGrid.DataGrid.D
         if (this.deoptReason) {
           cell.classList.add("not-optimized");
           const warningIcon = new IconButton.Icon.Icon();
-          warningIcon.data = { iconName: "warning-filled", color: "var(--icon-warning)", width: "14px", height: "14px" };
-          warningIcon.classList.add("profile-warn-marker");
+          warningIcon.name = "warning-filled";
+          warningIcon.classList.add("profile-warn-marker", "small");
           UI.Tooltip.Tooltip.install(warningIcon, i18nString(UIStrings.notOptimizedS, { PH1: this.deoptReason }));
           cell.appendChild(warningIcon);
         }
@@ -3120,7 +3120,8 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid3.DataGrid.DataGrid
       if (treeElement) {
         if (this.retainedNodeIds.has(descendantNode.backendNodeId())) {
           const icon = new IconButton3.Icon.Icon();
-          icon.data = { iconName: "small-status-dot", color: "var(--icon-error)", width: "12px", height: "12px" };
+          icon.data = { iconName: "small-status-dot", color: "var(--icon-error)" };
+          icon.classList.add("extra-small");
           icon.style.setProperty("vertical-align", "middle");
           treeElement.setLeadingIcons([icon]);
           treeElement.listItemNode.classList.add("detached-elements-detached-node");

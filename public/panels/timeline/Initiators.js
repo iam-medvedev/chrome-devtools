@@ -1,6 +1,10 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// We limit the amount of predecessors to 10; on large traces with large JS
+// stacks there can be a huge number of these. It's not super useful to
+// walk back too far and if we draw too many arrows on the timeline, the view becomes very cluttered and noisy.
+const MAX_PREDECESSOR_INITIATOR_LIMIT = 10;
 /**
  * Given an event that the user has selected, this function returns all the
  * data of events and their initiators that need to be drawn on the flamechart.
@@ -27,7 +31,7 @@ function findInitiatorDataPredecessors(parsedTrace, selectedEvent, eventToInitia
     const visited = new Set();
     visited.add(currentEvent);
     // Build event initiator data up to the selected one
-    while (currentEvent) {
+    while (currentEvent && initiatorsData.length < MAX_PREDECESSOR_INITIATOR_LIMIT) {
         const currentInitiator = eventToInitiator.get(currentEvent);
         if (currentInitiator) {
             if (visited.has(currentInitiator)) {

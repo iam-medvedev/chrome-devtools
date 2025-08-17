@@ -56,6 +56,16 @@ export type LowerCaseString = Brand<string, 'lowerCaseStringTag'>;
 export declare const toLowerCaseString: (input: string) => LowerCaseString;
 export declare const toKebabCase: (input: string) => Lowercase<string>;
 export declare function toKebabCaseKeys<T>(settingValue: Record<string, T>): Record<string, T>;
+/**
+ * Converts a given string to snake_case.
+ * This function handles camelCase, PascalCase, and acronyms, including transitions between letters and numbers.
+ * It uses Unicode-aware regular expressions (`\p{L}`, `\p{N}`, `\p{Lu}`, `\p{Ll}` with the `u` flag)
+ * to correctly process letters and numbers from various languages.
+ *
+ * @param text The input string to convert to snake_case.
+ * @returns The snake_case version of the input string.
+ */
+export declare function toSnakeCase(text: string): string;
 export declare const replaceLast: (input: string, search: string, replacement: string) => string;
 export declare const stringifyWithPrecision: (s: number, precision?: number) => string;
 /**

@@ -440,7 +440,8 @@ export class StorageView extends UI.ThrottledWidget.ThrottledWidget {
         UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
         if (!response.overrideActive && response.quota < 125829120) { // 120 MB
             const icon = new IconButton.Icon.Icon();
-            icon.data = { iconName: 'info', color: 'var(--icon-info)', width: '14px', height: '14px' };
+            icon.data = { iconName: 'info', color: 'var(--icon-info)' };
+            icon.classList.add('small');
             UI.Tooltip.Tooltip.install(this.quotaRow, i18nString(UIStrings.storageQuotaIsLimitedIn));
             this.quotaRow.appendChild(icon);
         }

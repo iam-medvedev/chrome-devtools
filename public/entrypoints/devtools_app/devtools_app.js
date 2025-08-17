@@ -245,7 +245,6 @@ UI2.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString2(UIStrings2.showEventListeners),
   title: i18nLazyString2(UIStrings2.eventListeners),
   order: 5,
-  hasToolbar: true,
   persistence: "permanent",
   async loadView() {
     const Elements = await loadElementsModule();

@@ -5,6 +5,7 @@ export var RegisteredAdorners;
 (function (RegisteredAdorners) {
     RegisteredAdorners["GRID"] = "grid";
     RegisteredAdorners["SUBGRID"] = "subgrid";
+    RegisteredAdorners["MASONRY"] = "masonry";
     RegisteredAdorners["FLEX"] = "flex";
     RegisteredAdorners["AD"] = "ad";
     RegisteredAdorners["SCROLL_SNAP"] = "scroll-snap";
@@ -29,6 +30,12 @@ export function getRegisteredAdorner(which) {
         case RegisteredAdorners.SUBGRID:
             return {
                 name: 'subgrid',
+                category: "Layout" /* AdornerCategories.LAYOUT */,
+                enabledByDefault: true,
+            };
+        case RegisteredAdorners.MASONRY:
+            return {
+                name: 'masonry',
                 category: "Layout" /* AdornerCategories.LAYOUT */,
                 enabledByDefault: true,
             };

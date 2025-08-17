@@ -48,8 +48,7 @@ import * as ElementsComponents from './components/components.js';
 import { ComputedStyleModel } from './ComputedStyleModel.js';
 import { ComputedStyleWidget } from './ComputedStyleWidget.js';
 import elementsPanelStyles from './elementsPanel.css.js';
-import { ElementsTreeElementHighlighter } from './ElementsTreeElementHighlighter.js';
-import { ElementsTreeOutline } from './ElementsTreeOutline.js';
+import { DOMTreeWidget } from './ElementsTreeOutline.js';
 import { LayoutPane } from './LayoutPane.js';
 import { MetricsSidebarPane } from './MetricsSidebarPane.js';
 import { StylesSidebarPane, } from './StylesSidebarPane.js';
@@ -172,7 +171,6 @@ export class ElementsPanel extends UI.Panel.Panel {
     stylesWidget;
     computedStyleWidget;
     metricsWidget;
-    treeOutlines = new Set();
     searchResults;
     currentSearchResultIndex;
     pendingNodeReveal;
@@ -194,6 +192,10 @@ export class ElementsPanel extends UI.Panel.Panel {
         },
     };
     cssStyleTrackerByCSSModel;
+    #domTreeWidget;
+    getTreeOutlineForTesting() {
+        return this.#domTreeWidget.getTreeOutlineForTesting();
+    }
     constructor() {
         super('elements');
         this.registerRequiredCSS(elementsPanelStyles);
@@ -247,16 +249,23 @@ export class ElementsPanel extends UI.Panel.Panel {
             .addChangeListener(this.updateSidebarPosition.bind(this));
         this.updateSidebarPosition();
         this.cssStyleTrackerByCSSModel = new Map();
+        this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
+        this.pendingNodeReveal = false;
+        this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adorner-settings'));
+        this.adornersByName = new Map();
+        this.#domTreeWidget = new DOMTreeWidget();
+        this.#domTreeWidget.omitRootDOMNode = true;
+        this.#domTreeWidget.selectEnabled = true;
+        this.#domTreeWidget.onSelectedNodeChanged = this.selectedNodeChanged.bind(this);
+        this.#domTreeWidget.onElementsTreeUpdated = this.updateBreadcrumbIfNeeded.bind(this);
+        this.#domTreeWidget.onDocumentUpdated = this.documentUpdated.bind(this);
+        this.#domTreeWidget.setWordWrap(Common.Settings.Settings.instance().moduleSetting('dom-word-wrap').get());
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.DOMModel.DOMModel, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, event => this.targetNameChanged(event.data));
         Common.Settings.Settings.instance()
             .moduleSetting('show-ua-shadow-dom')
             .addChangeListener(this.showUAShadowDOMChanged.bind(this));
         Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded" /* Extensions.ExtensionServer.Events.SidebarPaneAdded */, this.extensionSidebarPaneAdded, this);
-        this.currentSearchResultIndex = -1; // -1 represents the initial invalid state
-        this.pendingNodeReveal = false;
-        this.adornerManager = new ElementsComponents.AdornerManager.AdornerManager(Common.Settings.Settings.instance().moduleSetting('adorner-settings'));
-        this.adornersByName = new Map();
     }
     initializeFullAccessibilityTreeView() {
         this.accessibilityTreeButton = createAccessibilityTreeToggleButton(false);
@@ -276,11 +285,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (!selectedNode) {
             return;
         }
-        const treeElement = this.treeElementForNode(selectedNode);
-        if (!treeElement) {
-            return;
-        }
-        treeElement.select();
+        this.#domTreeWidget.selectDOMNodeWithoutReveal(selectedNode);
     }
     toggleAccessibilityTree() {
         if (!this.domTreeButton) {
@@ -316,27 +321,26 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.stylesWidget.showToolbarPane(widget, toggle);
     }
     modelAdded(domModel) {
-        const parentModel = domModel.parentModel();
-        let treeOutline = parentModel ? ElementsTreeOutline.forDOMModel(parentModel) : null;
-        if (!treeOutline) {
-            treeOutline = new ElementsTreeOutline(true, true);
-            treeOutline.setWordWrap(Common.Settings.Settings.instance().moduleSetting('dom-word-wrap').get());
-            treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this.selectedNodeChanged, this);
-            treeOutline.addEventListener(ElementsTreeOutline.Events.ElementsTreeUpdated, this.updateBreadcrumbIfNeeded, this);
-            new ElementsTreeElementHighlighter(treeOutline, new Common.Throttler.Throttler(100));
-            this.treeOutlines.add(treeOutline);
-        }
-        treeOutline.wireToDOMModel(domModel);
         this.setupStyleTracking(domModel.cssModel());
+        this.#domTreeWidget.modelAdded(domModel);
         // Perform attach if necessary.
         if (this.isShowing()) {
             this.wasShown();
         }
         if (this.domTreeContainer.hasFocus()) {
-            treeOutline.focus();
+            this.#domTreeWidget.focus();
         }
         domModel.addEventListener(SDK.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
         domModel.addEventListener(SDK.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
+    }
+    modelRemoved(domModel) {
+        domModel.removeEventListener(SDK.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
+        domModel.removeEventListener(SDK.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
+        this.#domTreeWidget.modelRemoved(domModel);
+        if (!domModel.parentModel()) {
+            this.#domTreeWidget.detach();
+        }
+        this.removeStyleTracking(domModel.cssModel());
     }
     handleNodeInserted(event) {
         // Queue the task for the case when all the view transitions are added
@@ -361,50 +365,25 @@ export class ElementsPanel extends UI.Panel.Panel {
             await cssModel.setStyleSheetText(styleSheetHeader.id, `${cssText}\n${node.simpleSelector()} {}`, false);
         });
     }
-    modelRemoved(domModel) {
-        domModel.removeEventListener(SDK.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
-        domModel.removeEventListener(SDK.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
-        const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
-        if (!treeOutline) {
-            return;
-        }
-        treeOutline.unwireFromDOMModel(domModel);
-        if (domModel.parentModel()) {
-            return;
-        }
-        this.treeOutlines.delete(treeOutline);
-        treeOutline.element.remove();
-        this.removeStyleTracking(domModel.cssModel());
-    }
     targetNameChanged(target) {
         const domModel = target.model(SDK.DOMModel.DOMModel);
         if (!domModel) {
             return;
         }
-        const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
-        if (!treeOutline) {
-            return;
-        }
     }
     updateTreeOutlineVisibleWidth() {
-        if (!this.treeOutlines.size) {
-            return;
-        }
         let width = this.splitWidget.element.offsetWidth;
         if (this.splitWidget.isVertical()) {
             width -= this.splitWidget.sidebarSize();
         }
-        for (const treeOutline of this.treeOutlines) {
-            treeOutline.setVisibleWidth(width);
-        }
+        this.#domTreeWidget.visibleWidth = width;
     }
     focus() {
-        const firstTreeOutline = this.treeOutlines.values().next();
-        if (firstTreeOutline.done) {
+        if (this.#domTreeWidget.empty()) {
             this.domTreeContainer.focus();
         }
         else {
-            firstTreeOutline.value.focus();
+            this.#domTreeWidget.focus();
         }
     }
     searchableView() {
@@ -413,40 +392,11 @@ export class ElementsPanel extends UI.Panel.Panel {
     wasShown() {
         super.wasShown();
         UI.Context.Context.instance().setFlavor(ElementsPanel, this);
-        for (const treeOutline of this.treeOutlines) {
-            // Attach heavy component lazily
-            if (treeOutline.element.parentElement !== this.domTreeContainer) {
-                this.domTreeContainer.appendChild(treeOutline.element);
-            }
-        }
-        const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
-        for (const domModel of domModels) {
-            if (domModel.parentModel()) {
-                continue;
-            }
-            const treeOutline = ElementsTreeOutline.forDOMModel(domModel);
-            if (!treeOutline) {
-                continue;
-            }
-            treeOutline.setVisible(true);
-            if (!treeOutline.rootDOMNode) {
-                if (domModel.existingDocument()) {
-                    treeOutline.rootDOMNode = domModel.existingDocument();
-                    this.documentUpdated(domModel);
-                }
-                else {
-                    void domModel.requestDocument();
-                }
-            }
-        }
+        this.#domTreeWidget.show(this.domTreeContainer);
     }
     willHide() {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-        for (const treeOutline of this.treeOutlines) {
-            treeOutline.setVisible(false);
-            // Detach heavy component on hide
-            this.domTreeContainer.removeChild(treeOutline.element);
-        }
+        this.#domTreeWidget.detach();
         super.willHide();
         UI.Context.Context.instance().setFlavor(ElementsPanel, null);
     }
@@ -461,10 +411,8 @@ export class ElementsPanel extends UI.Panel.Panel {
             selectedNode = null;
         }
         const { focus } = event.data;
-        for (const treeOutline of this.treeOutlines) {
-            if (!selectedNode || ElementsTreeOutline.forDOMModel(selectedNode.domModel()) !== treeOutline) {
-                treeOutline.selectDOMNode(null);
-            }
+        if (!selectedNode) {
+            this.#domTreeWidget.selectDOMNode(null);
         }
         if (selectedNode) {
             const activeNode = ElementsComponents.Helper.legacyNodeToElementsComponentsNode(selectedNode);
@@ -548,25 +496,15 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (!node || this.hasNonDefaultSelectedNode || this.pendingNodeReveal) {
             return;
         }
-        const treeOutline = ElementsTreeOutline.forDOMModel(node.domModel());
-        if (!treeOutline) {
-            return;
-        }
         this.selectDOMNode(node);
-        if (treeOutline.selectedTreeElement) {
-            treeOutline.selectedTreeElement.expand();
-        }
+        this.#domTreeWidget.expand();
     }
     onSearchClosed() {
         const selectedNode = this.selectedDOMNode();
         if (!selectedNode) {
             return;
         }
-        const treeElement = this.treeElementForNode(selectedNode);
-        if (!treeElement) {
-            return;
-        }
-        treeElement.select();
+        this.#domTreeWidget.selectDOMNodeWithoutReveal(selectedNode);
     }
     onSearchCanceled() {
         this.searchConfig = undefined;
@@ -621,9 +559,7 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     domWordWrapSettingChanged(event) {
         this.domTreeContainer.classList.toggle('elements-wrap', event.data);
-        for (const treeOutline of this.treeOutlines) {
-            treeOutline.setWordWrap(event.data);
-        }
+        this.#domTreeWidget.setWordWrap(event.data);
     }
     jumpToSearchResult(index) {
         if (!this.searchResults) {
@@ -674,16 +610,9 @@ export class ElementsPanel extends UI.Panel.Panel {
             });
             return;
         }
-        const treeElement = this.treeElementForNode(searchResult.node);
         void searchResult.node.scrollIntoView();
-        if (treeElement) {
-            this.searchConfig && treeElement.highlightSearchResults(this.searchConfig.query);
-            treeElement.reveal();
-            const matches = treeElement.listItemElement.getElementsByClassName(UI.UIUtils.highlightedSearchResultClassName);
-            if (matches.length) {
-                matches[0].scrollIntoViewIfNeeded(false);
-            }
-            treeElement.select(/* omitFocus */ true);
+        if (searchResult.node) {
+            this.#domTreeWidget.highlightMatch(searchResult.node, this.searchConfig?.query);
         }
     }
     hideSearchHighlights() {
@@ -694,29 +623,13 @@ export class ElementsPanel extends UI.Panel.Panel {
         if (!searchResult.node) {
             return;
         }
-        const treeElement = this.treeElementForNode(searchResult.node);
-        if (treeElement) {
-            treeElement.hideSearchHighlights();
-        }
+        this.#domTreeWidget.hideMatchHighlights(searchResult.node);
     }
     selectedDOMNode() {
-        for (const treeOutline of this.treeOutlines) {
-            if (treeOutline.selectedDOMNode()) {
-                return treeOutline.selectedDOMNode();
-            }
-        }
-        return null;
+        return this.#domTreeWidget.selectedDOMNode();
     }
     selectDOMNode(node, focus) {
-        for (const treeOutline of this.treeOutlines) {
-            const outline = ElementsTreeOutline.forDOMModel(node.domModel());
-            if (outline === treeOutline) {
-                treeOutline.selectDOMNode(node, focus);
-            }
-            else {
-                treeOutline.selectDOMNode(null);
-            }
-        }
+        this.#domTreeWidget.selectDOMNode(node, focus);
     }
     selectAndShowSidebarTab(tabId) {
         if (!this.sidebarPaneView) {
@@ -768,19 +681,6 @@ export class ElementsPanel extends UI.Panel.Panel {
     crumbNodeSelected(event) {
         this.selectDOMNode(event.legacyDomNode, true);
     }
-    treeOutlineForNode(node) {
-        if (!node) {
-            return null;
-        }
-        return ElementsTreeOutline.forDOMModel(node.domModel());
-    }
-    treeElementForNode(node) {
-        const treeOutline = this.treeOutlineForNode(node);
-        if (!treeOutline) {
-            return null;
-        }
-        return treeOutline.findTreeElement(node);
-    }
     leaveUserAgentShadowDOM(node) {
         let userAgentShadowRoot;
         while ((userAgentShadowRoot = node.ancestorUserAgentShadowRoot()) && userAgentShadowRoot.parentNode) {
@@ -810,9 +710,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         this.notFirstInspectElement = true;
     }
     showUAShadowDOMChanged() {
-        for (const treeOutline of this.treeOutlines) {
-            treeOutline.update();
-        }
+        this.#domTreeWidget.reload();
     }
     setupTextSelectionHack(stylePaneWrapperElement) {
         // We "extend" the sidebar area when dragging, in order to keep smooth text
@@ -1001,10 +899,7 @@ export class ElementsPanel extends UI.Panel.Panel {
             if (!domNode) {
                 continue;
             }
-            const treeElement = this.treeElementForNode(domNode);
-            if (treeElement) {
-                void treeElement.updateStyleAdorners();
-            }
+            this.#domTreeWidget.updateNodeAdorners(domNode);
         }
         LayoutPane.instance().requestUpdate();
     }
@@ -1045,6 +940,18 @@ export class ElementsPanel extends UI.Panel.Panel {
             return;
         }
         adornerSet.delete(adorner);
+    }
+    toggleHideElement(node) {
+        this.#domTreeWidget.toggleHideElement(node);
+    }
+    toggleEditAsHTML(node) {
+        this.#domTreeWidget.toggleEditAsHTML(node);
+    }
+    duplicateNode(node) {
+        this.#domTreeWidget.duplicateNode(node);
+    }
+    copyStyles(node) {
+        this.#domTreeWidget.copyStyles(node);
     }
     static firstInspectElementCompletedForTest = function () { };
     static firstInspectElementNodeNameForTest = '';
@@ -1183,22 +1090,18 @@ export class ElementsActionDelegate {
         if (!node) {
             return true;
         }
-        const treeOutline = ElementsTreeOutline.forDOMModel(node.domModel());
-        if (!treeOutline) {
-            return true;
-        }
         switch (actionId) {
             case 'elements.hide-element':
-                void treeOutline.toggleHideElement(node);
+                ElementsPanel.instance().toggleHideElement(node);
                 return true;
             case 'elements.edit-as-html':
-                treeOutline.toggleEditAsHTML(node);
+                ElementsPanel.instance().toggleEditAsHTML(node);
                 return true;
             case 'elements.duplicate-element':
-                treeOutline.duplicateNode(node);
+                ElementsPanel.instance().duplicateNode(node);
                 return true;
             case 'elements.copy-styles':
-                void treeOutline.findTreeElement(node)?.copyStyles();
+                ElementsPanel.instance().copyStyles(node);
                 return true;
             case 'elements.undo':
                 void SDK.DOMModel.DOMModelUndoStack.instance().undo();

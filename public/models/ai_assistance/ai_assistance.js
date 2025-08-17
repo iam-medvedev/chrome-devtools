@@ -4259,6 +4259,21 @@ var Conversation = class _Conversation {
   #isReadOnly;
   history;
   #isExternal;
+  static #generateContextDetailsMarkdown(details) {
+    let detailsMarkdown = "**Details**:\n\n";
+    for (const detail of details) {
+      const text = detail.codeLang ? `\`\`\`${detail.codeLang}
+${detail.text}
+\`\`\`
+` : detail.text;
+      detailsMarkdown += `**${detail.title}:**
+
+${text}
+
+`;
+    }
+    return detailsMarkdown;
+  }
   constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, isExternal = false) {
     this.type = type;
     this.id = id;
@@ -4301,6 +4316,81 @@ var Conversation = class _Conversation {
       return history;
     }
     return historyWithoutImages;
+  }
+  getConversationMarkdown() {
+    const contentParts = [];
+    contentParts.push(`# Exported Chat from Chrome DevTools AI Assistance
+
+**Export Timestamp (UTC):** ${(/* @__PURE__ */ new Date()).toISOString()}
+
+---
+
+`);
+    for (const item of this.history) {
+      switch (item.type) {
+        case "user-query": {
+          contentParts.push(`### User: ${item.query}
+`);
+          if (item.imageInput) {
+            contentParts.push("User attached an image\n\n");
+          }
+          break;
+        }
+        case "context": {
+          contentParts.push("### Context:\n");
+          if (item.details && item.details.length > 0) {
+            contentParts.push(_Conversation.#generateContextDetailsMarkdown(item.details));
+          }
+          break;
+        }
+        case "title": {
+          contentParts.push(`### AI (Title): ${item.title}
+
+`);
+          break;
+        }
+        case "thought": {
+          contentParts.push(`### AI (Thought): ${item.thought}
+
+`);
+          break;
+        }
+        case "action": {
+          if (!item.output) {
+            break;
+          }
+          contentParts.push("### AI (Action):\n");
+          if (item.code) {
+            contentParts.push(`**Code executed:**
+\`\`\`
+${item.code}
+\`\`\`
+`);
+          }
+          if (item.output) {
+            contentParts.push(`**Output:**
+\`\`\`
+${item.output}
+\`\`\`
+`);
+          }
+          if (item.canceled) {
+            contentParts.push("**(Action Canceled)**\n");
+          }
+          contentParts.push("\n");
+          break;
+        }
+        case "answer": {
+          if (item.complete) {
+            contentParts.push(`### AI (Answer): ${item.text}
+
+`);
+          }
+          break;
+        }
+      }
+    }
+    return contentParts.join("");
   }
   archiveConversation() {
     this.#isReadOnly = true;
@@ -4501,6 +4591,7 @@ import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root9 from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings2 = {
@@ -4523,6 +4614,21 @@ function isAiAssistanceStylingWithFunctionCallingEnabled() {
 }
 function isAiAssistanceServerSideLoggingEnabled() {
   return !Root9.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+}
+async function inspectElementBySelector(selector) {
+  const whitespaceTrimmedQuery = selector.trim();
+  if (!whitespaceTrimmedQuery.length) {
+    return null;
+  }
+  const showUAShadowDOM = Common6.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
+  const domModels = SDK5.TargetManager.TargetManager.instance().models(SDK5.DOMModel.DOMModel, { scoped: true });
+  const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
+  const resultCounts = await Promise.all(performSearchPromises);
+  const index = resultCounts.findIndex((value) => value > 0);
+  if (index >= 0) {
+    return await domModels[index].searchResult(0);
+  }
+  return null;
 }
 async function inspectNetworkRequestByUrl(selector) {
   const networkManagers = SDK5.TargetManager.TargetManager.instance().models(SDK5.NetworkManager.NetworkManager, { scoped: true });
@@ -4573,17 +4679,18 @@ var ConversationHandler = class _ConversationHandler {
     }
     return getDisabledReasons(this.#aidaAvailability);
   }
+  // eslint-disable-next-line require-yield
+  async *#generateErrorResponse(message) {
+    return {
+      type: "error",
+      message
+    };
+  }
   /**
    * Handles an external request using the given prompt and uses the
    * conversation type to use the correct agent.
    */
   async handleExternalRequest(parameters) {
-    async function* generateErrorResponse(message) {
-      return {
-        type: "error",
-        message
-      };
-    }
     try {
       Snackbars.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) });
       const disabledReasons = await this.#getDisabledReasons();
@@ -4592,23 +4699,26 @@ var ConversationHandler = class _ConversationHandler {
         disabledReasons.push(lockedString6(UIStringsNotTranslate4.enableInSettings));
       }
       if (disabledReasons.length > 0) {
-        return generateErrorResponse(disabledReasons.join(" "));
+        return this.#generateErrorResponse(disabledReasons.join(" "));
       }
       void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, "external");
       switch (parameters.conversationType) {
         case "freestyler": {
-          return generateErrorResponse("Not implemented here");
+          return await this.#handleExternalStylingConversation(parameters.prompt, parameters.selector);
         }
         case "performance-insight":
-          return generateErrorResponse("Not implemented here");
+          if (!parameters.insightTitle) {
+            return this.#generateErrorResponse("The insightTitle parameter is required for debugging a Performance Insight.");
+          }
+          return await this.#handleExternalPerformanceInsightsConversation(parameters.prompt, parameters.insightTitle, parameters.traceModel);
         case "drjones-network-request":
           if (!parameters.requestUrl) {
-            return generateErrorResponse("The url is required for debugging a network request.");
+            return this.#generateErrorResponse("The url is required for debugging a network request.");
           }
-          return this.#handleExternalNetworkConversation(parameters.prompt, parameters.requestUrl);
+          return await this.#handleExternalNetworkConversation(parameters.prompt, parameters.requestUrl);
       }
     } catch (error) {
-      return generateErrorResponse(error.message);
+      return this.#generateErrorResponse(error.message);
     }
   }
   async *handleConversationWithHistory(items, conversation) {
@@ -4619,36 +4729,22 @@ var ConversationHandler = class _ConversationHandler {
       yield data;
     }
   }
-  async *#handleExternalNetworkConversation(prompt, requestUrl) {
-    const options = {
-      aidaClient: this.#aidaClient,
-      serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
-    };
-    const networkAgent = new NetworkAgent(options);
+  async *#doExternalConversation(opts) {
+    const { conversationType, aiAgent, prompt, selected } = opts;
     const externalConversation = new Conversation(
-      "drjones-network-request",
+      conversationType,
       [],
-      networkAgent.id,
+      aiAgent.id,
       /* isReadOnly */
       true,
       /* isExternal */
       true
     );
-    const request = await inspectNetworkRequestByUrl(requestUrl);
-    if (!request) {
-      return {
-        type: "error",
-        message: `Can't find request with the given selector ${requestUrl}`
-      };
-    }
-    const generator = networkAgent.run(prompt, {
-      selected: new RequestContext(request)
-    });
+    const generator = aiAgent.run(prompt, { selected });
     const generatorWithHistory = this.handleConversationWithHistory(generator, externalConversation);
     const devToolsLogs = [];
     for await (const data of generatorWithHistory) {
       if (data.type !== "answer" || data.complete) {
-        void externalConversation.addHistoryItem(data);
         devToolsLogs.push(data);
       }
       if (data.type === "context" || data.type === "title") {
@@ -4672,6 +4768,55 @@ var ConversationHandler = class _ConversationHandler {
       type: "error",
       message: "Something went wrong. No answer was generated."
     };
+  }
+  async #handleExternalStylingConversation(prompt, selector = "body") {
+    const stylingAgent = this.createAgent(
+      "freestyler"
+      /* ConversationType.STYLING */
+    );
+    const node = await inspectElementBySelector(selector);
+    if (node) {
+      await node.setAsInspectedNode();
+    }
+    const selected = node ? new NodeContext(node) : null;
+    return this.#doExternalConversation({
+      conversationType: "freestyler",
+      aiAgent: stylingAgent,
+      prompt,
+      selected
+    });
+  }
+  async #handleExternalPerformanceInsightsConversation(prompt, insightTitle, traceModel) {
+    const insightsAgent = this.createAgent(
+      "performance-insight"
+      /* ConversationType.PERFORMANCE_INSIGHT */
+    );
+    const focusOrError = await Tracing.ExternalRequests.getInsightAgentFocusToDebug(traceModel, insightTitle);
+    if ("error" in focusOrError) {
+      return this.#generateErrorResponse(focusOrError.error);
+    }
+    return this.#doExternalConversation({
+      conversationType: "performance-insight",
+      aiAgent: insightsAgent,
+      prompt,
+      selected: new PerformanceTraceContext(focusOrError.focus)
+    });
+  }
+  async #handleExternalNetworkConversation(prompt, requestUrl) {
+    const networkAgent = this.createAgent(
+      "drjones-network-request"
+      /* ConversationType.NETWORK */
+    );
+    const request = await inspectNetworkRequestByUrl(requestUrl);
+    if (!request) {
+      return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
+    }
+    return this.#doExternalConversation({
+      conversationType: "drjones-network-request",
+      aiAgent: networkAgent,
+      prompt,
+      selected: new RequestContext(request)
+    });
   }
   createAgent(conversationType, changeManager) {
     const options = {

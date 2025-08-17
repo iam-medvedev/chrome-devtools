@@ -9,6 +9,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
@@ -66,6 +67,10 @@ const UIStrings = {
      */
     clearChatHistory: 'Clear local chats',
     /**
+     *@description AI assistance UI text for the export conversation button.
+     */
+    exportConversation: 'Export conversation',
+    /**
      * @description AI assistance UI text explains that he user had no pas conversations.
      */
     noPastConversations: 'No past conversations',
@@ -78,9 +83,9 @@ const UIStrings = {
      */
     inputDisclaimerForEmptyState: 'This is an experimental AI feature and won\'t always get it right.',
     /**
-     * @description Notification shown to the user whenever DevTools receives an external request.
+     * @description The message shown in a toast when the response is copied to the clipboard.
      */
-    externalRequestReceived: '`DevTools` received an external request',
+    responseCopiedToClipboard: 'Response copied to clipboard',
 };
 /*
 * Strings that don't need to be translated at this time.
@@ -182,10 +187,6 @@ const UIStringsNotTranslate = {
      * @description Message displayed in toast in case of any failures while uploading an image file as input.
      */
     uploadImageFailureMessage: 'Failed to upload image. Please try again.',
-    /**
-     * @description Error message shown when AI assistance is not enabled in DevTools settings.
-     */
-    enableInSettings: 'For AI features to be available, you need to enable AI assistance in DevTools settings.',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/ai_assistance/AiAssistancePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -265,14 +266,24 @@ function toolbarView(input) {
           .populateMenuCall=${input.populateHistoryMenu}
         ></devtools-menu-button>`
         : Lit.nothing}
-        ${input.showDeleteHistoryAction
-        ? html `<devtools-button
+        ${input.showActiveConversationActions ? html `
+          <devtools-button
               title=${i18nString(UIStrings.deleteChat)}
               aria-label=${i18nString(UIStrings.deleteChat)}
               .iconName=${'bin'}
               .jslogContext=${'freestyler.delete'}
               .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
-              @click=${input.onDeleteClick}></devtools-button>`
+              @click=${input.onDeleteClick}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString(UIStrings.exportConversation)}
+            aria-label=${i18nString(UIStrings.exportConversation)}
+            .iconName=${'download'}
+            .disabled=${input.isLoading}
+            .jslogContext=${'export-ai-conversation'}
+            .variant=${"toolbar" /* Buttons.Button.Variant.TOOLBAR */}
+            @click=${input.onExportConversationClick}>
+          </devtools-button>`
         : Lit.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
@@ -363,22 +374,6 @@ function agentToConversationType(agent) {
         return agent.getConversationType();
     }
     throw new Error('Provided agent does not have a corresponding conversation type');
-}
-async function inspectElementBySelector(selector) {
-    const whitespaceTrimmedQuery = selector.trim();
-    if (!whitespaceTrimmedQuery.length) {
-        return null;
-    }
-    const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get();
-    const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
-    const performSearchPromises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
-    const resultCounts = await Promise.all(performSearchPromises);
-    // If the selector matches multiple times, this returns the first match.
-    const index = resultCounts.findIndex(value => value > 0);
-    if (index >= 0) {
-        return await domModels[index].searchResult(0);
-    }
-    return null;
 }
 let panelInstance;
 export class AiAssistancePanel extends UI.Panel.Panel {
@@ -541,33 +536,31 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const agent = targetConversationType ?
             this.#conversationHandler.createAgent(targetConversationType, this.#changeManager) :
             undefined;
-        this.#updateConversationState(agent);
+        this.#updateConversationState({ agent });
     }
-    #updateConversationState(input) {
-        const agent = input instanceof AiAssistanceModel.AiAgent ? input : undefined;
-        const conversation = input instanceof AiAssistanceModel.Conversation ? input : undefined;
-        if (this.#conversationAgent !== agent) {
+    #updateConversationState(opts) {
+        if (this.#conversationAgent !== opts?.agent) {
             // Cancel any previous conversation
             this.#cancel();
             this.#messages = [];
             this.#isLoading = false;
             this.#conversation?.archiveConversation();
-            this.#conversationAgent = agent;
+            this.#conversationAgent = opts?.agent;
             // If we get a new agent we need to
             // create a new conversation along side it
-            if (agent) {
-                this.#conversation = new AiAssistanceModel.Conversation(agentToConversationType(agent), [], agent.id, false);
+            if (opts?.agent) {
+                this.#conversation = new AiAssistanceModel.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
             }
         }
-        if (!agent) {
+        if (!opts?.agent) {
             this.#conversation = undefined;
             // We need to run doConversation separately
             this.#messages = [];
             // If a no new agent is provided
             // but conversation is
             // update with history conversation
-            if (conversation) {
-                this.#conversation = conversation;
+            if (opts?.conversation) {
+                this.#conversation = opts?.conversation;
             }
         }
         if (!this.#conversationAgent && !this.#conversation) {
@@ -588,7 +581,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedPerformanceTrace =
             createPerformanceTraceContext(UI.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
         this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode));
-        this.#updateConversationState(this.#conversationAgent);
+        this.#updateConversationState({ agent: this.#conversationAgent });
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
         this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
@@ -642,7 +635,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
-        this.#updateConversationState(this.#conversationAgent);
+        this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handleDOMNodeAttrChange = (ev) => {
         if (this.#selectedElement?.getItem() === ev.data.node) {
@@ -656,7 +649,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel.RequestContext(ev.data) : null;
-        this.#updateConversationState(this.#conversationAgent);
+        this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handlePerformanceTraceFlavorChange = (ev) => {
         if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
@@ -664,7 +657,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         this.#selectedPerformanceTrace =
             Boolean(ev.data) ? new AiAssistanceModel.PerformanceTraceContext(ev.data) : null;
-        this.#updateConversationState(this.#conversationAgent);
+        this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handleUISourceCodeFlavorChange = (ev) => {
         const newFile = ev.data;
@@ -675,7 +668,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedFile = new AiAssistanceModel.FileContext(ev.data);
-        this.#updateConversationState(this.#conversationAgent);
+        this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #onPrimaryPageChanged() {
         if (!this.#imageInput) {
@@ -708,8 +701,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() &&
                 this.#conversation?.type === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
             imageInput: this.#imageInput,
-            showDeleteHistoryAction: Boolean(this.#conversation && !this.#conversation.isEmpty),
             showChatActions: this.#shouldShowChatActions(),
+            showActiveConversationActions: Boolean(this.#conversation && !this.#conversation.isEmpty),
             isTextInputDisabled: this.#isTextInputDisabled(),
             emptyStateSuggestions,
             inputPlaceholder: this.#getChatInputPlaceholder(),
@@ -721,6 +714,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onNewChatClick: this.#handleNewChatRequest.bind(this),
             populateHistoryMenu: this.#populateHistoryMenu.bind(this),
             onDeleteClick: this.#onDeleteClicked.bind(this),
+            onExportConversationClick: this.#onExportConversationClick.bind(this),
             onHelpClick: () => {
                 UI.UIUtils.openInNewTab(AI_ASSISTANCE_HELP);
             },
@@ -741,9 +735,19 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             onTakeScreenshot: isAiAssistanceMultimodalInputEnabled() ? this.#handleTakeScreenshot.bind(this) : undefined,
             onRemoveImageInput: isAiAssistanceMultimodalInputEnabled() ? this.#handleRemoveImageInput.bind(this) :
                 undefined,
+            onCopyResponseClick: this.#onCopyResponseClick.bind(this),
             onTextInputChange: this.#handleTextInputChange.bind(this),
             onLoadImage: isAiAssistanceMultimodalUploadInputEnabled() ? this.#handleLoadImage.bind(this) : undefined,
         }, this.#viewOutput, this.contentElement);
+    }
+    #onCopyResponseClick(message) {
+        const markdown = getResponseMarkdown(message);
+        if (markdown) {
+            Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(markdown);
+            Snackbars.Snackbar.Snackbar.show({
+                message: i18nString(UIStrings.responseCopiedToClipboard),
+            });
+        }
     }
     #handleSelectElementClick() {
         void this.#toggleSearchElementAction?.execute();
@@ -888,8 +892,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // Node picker is using linkifier.
     }
     handleAction(actionId, opts) {
-        if (this.#isLoading) {
-            // If running some queries already, focus the input with the abort
+        if (this.#isLoading && !opts?.['prompt']) {
+            // If running some queries already, and this action doesn't contain a predefined prompt, focus the input with the abort
             // button and do nothing.
             this.#viewOutput.chatView?.focusTextInput();
             return;
@@ -947,7 +951,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 agent.getConversationType() !== targetConversationType)) {
             agent = this.#conversationHandler.createAgent(targetConversationType, this.#changeManager);
         }
-        this.#updateConversationState(agent);
+        this.#updateConversationState({ agent });
         const predefinedPrompt = opts?.['prompt'];
         if (predefinedPrompt && typeof predefinedPrompt === 'string') {
             this.#imageInput = undefined;
@@ -999,11 +1003,22 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#updateConversationState();
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.chatDeleted));
     }
+    async #onExportConversationClick() {
+        if (!this.#conversation) {
+            return;
+        }
+        const markdownContent = this.#conversation.getConversationMarkdown();
+        const titleFormatted = Platform.StringUtilities.toSnakeCase(this.#conversation.title || '');
+        const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, 'text/markdown');
+        const filename = `devtools_${titleFormatted || 'conversation'}.md`;
+        await Workspace.FileManager.FileManager.instance().save(filename, contentData, true);
+        Workspace.FileManager.FileManager.instance().close(filename);
+    }
     async #openHistoricConversation(conversation) {
         if (this.#conversation === conversation) {
             return;
         }
-        this.#updateConversationState(conversation);
+        this.#updateConversationState({ conversation });
         await this.#doConversation(conversation.history);
     }
     #handleNewChatRequest() {
@@ -1335,129 +1350,50 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             release();
         }
     }
-    /**
-     * Handles an external request using the given prompt and uses the
-     * conversation type to use the correct agent.
-     */
-    handleExternalRequest(parameters) {
-        // eslint-disable-next-line require-yield
-        async function* generateErrorResponse(message) {
-            return {
-                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-                message,
-            };
+}
+export function getResponseMarkdown(message) {
+    let markdown = '';
+    const generateContextDetailsMarkdown = (details) => {
+        let detailsMarkdown = '**Details**:\n\n';
+        for (const detail of details) {
+            const text = detail.codeLang ? `\`\`\`${detail.codeLang}\n${detail.text}\n\`\`\`\n` : `${detail.text}`;
+            detailsMarkdown += `**${detail.title}:**\n\n${text}\n\n`;
         }
-        try {
-            Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
-            const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
-            const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-            if (!aiAssistanceSetting) {
-                disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
-            }
-            if (disabledReasons.length > 0) {
-                return generateErrorResponse(disabledReasons.join(' '));
-            }
-            void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, 'external');
-            switch (parameters.conversationType) {
-                case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
-                    return this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
-                case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-                    if (!parameters.insightTitle) {
-                        return generateErrorResponse('The insightTitle parameter is required for debugging a Performance Insight.');
-                    }
-                    return this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
-                case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
-                    return generateErrorResponse('Not implemented here');
-            }
+        return detailsMarkdown;
+    };
+    for (const step of message.steps) {
+        if (step.contextDetails) {
+            markdown += '### Context:\n';
+            markdown += generateContextDetailsMarkdown(step.contextDetails);
         }
-        catch (error) {
-            return generateErrorResponse(error.message);
+        if (step.title) {
+            markdown += `### AI (Title):\n${step.title}\n\n`;
         }
+        if (step.thought) {
+            markdown += `### AI (Thought):\n${step.thought}\n\n`;
+        }
+        if (step.code) {
+            markdown += '### AI (Action):\n';
+            markdown += `**Code executed:**\n\`\`\`\n${step.code.trim()}\n\`\`\`\n`;
+        }
+        if (step.output) {
+            if (!step.code) { // Add action header if not already added by code
+                markdown += '### AI (Action):\n';
+            }
+            markdown += `**Output:**\n\`\`\`\n${step.output}\n\`\`\`\n`;
+        }
+        if (step.canceled) {
+            if (!step.code && !step.output) { // Add action header if not already added
+                markdown += '### AI (Action):\n';
+            }
+            markdown += '**(Action Canceled)**\n';
+        }
+        markdown += '\n';
     }
-    async *handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
-        const insightsAgent = this.#conversationHandler.createAgent("performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */);
-        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(insightsAgent), [], insightsAgent.id, 
-        /* isReadOnly */ true, 
-        /* isExternal */ true);
-        const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
-        const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
-        if ('error' in focusOrError) {
-            return {
-                type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-                message: focusOrError.error,
-            };
-        }
-        const selectedContext = createPerformanceTraceContext(focusOrError.focus);
-        const generator = insightsAgent.run(prompt, { selected: selectedContext });
-        const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
-        const devToolsLogs = [];
-        for await (const data of generatorWithHistory) {
-            // We don't want to save partial responses to the conversation history.
-            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
-                void externalConversation.addHistoryItem(data);
-                devToolsLogs.push(data);
-            }
-            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return {
-                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
-                    message: data.text,
-                    devToolsLogs,
-                };
-            }
-            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
-                yield {
-                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
-                    message: data.title,
-                };
-            }
-        }
-        return {
-            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-            message: 'Something went wrong. No answer was generated.',
-        };
+    if (message.answer) {
+        markdown += `### AI (Answer):\n${message.answer}\n`;
     }
-    async *handleExternalStylingRequest(prompt, selector = 'body') {
-        const stylingAgent = this.#conversationHandler.createAgent("freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
-        const externalConversation = new AiAssistanceModel.Conversation(agentToConversationType(stylingAgent), [], stylingAgent.id, 
-        /* isReadOnly */ true, 
-        /* isExternal */ true);
-        const node = await inspectElementBySelector(selector);
-        if (node) {
-            await node.setAsInspectedNode();
-        }
-        const generator = stylingAgent.run(prompt, {
-            selected: createNodeContext(node),
-        });
-        const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
-        const devToolsLogs = [];
-        for await (const data of generatorWithHistory) {
-            // We don't want to save partial responses to the conversation history.
-            if (data.type !== "answer" /* AiAssistanceModel.ResponseType.ANSWER */ || data.complete) {
-                void externalConversation.addHistoryItem(data);
-                devToolsLogs.push(data);
-            }
-            if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ || data.type === "title" /* AiAssistanceModel.ResponseType.TITLE */) {
-                yield {
-                    type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
-                    message: data.title,
-                };
-            }
-            if (data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
-                data.confirm(true);
-            }
-            if (data.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && data.complete) {
-                return {
-                    type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
-                    message: data.text,
-                    devToolsLogs,
-                };
-            }
-        }
-        return {
-            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
-            message: 'Something went wrong. No answer was generated.',
-        };
-    }
+    return markdown;
 }
 export class ActionDelegate {
     handleAction(_context, actionId, opts) {

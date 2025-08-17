@@ -26,18 +26,6 @@ export declare class WidgetElement<WidgetT extends Widget> extends HTMLElement {
 }
 export declare function widgetRef<T extends Widget, Args extends unknown[]>(type: Platform.Constructor.Constructor<T, Args>, callback: (_: T) => void): ReturnType<typeof Lit.Directives.ref>;
 /**
- * Wraps CSS text in a @scope at-rule to encapsulate widget styles.
- *
- * This function relies on an implicit scope root (the parent element of the
- * <style> tag) and sets an explicit inclusive scope limit at `<devtools-widget>`.
- * This prevents a parent widget's styles from cascading into any nested
- * child widgets.
- *
- * @param styles The CSS rules to be scoped.
- * @returns The scoped CSS string.
- */
-export declare function widgetScoped(styles: string): string;
-/**
  * Additional options passed to the `Widget` constructor to configure the
  * behavior of the resulting instance.
  */
@@ -163,8 +151,8 @@ export declare class Widget {
      * use the `requestUpdate()` method to schedule an asynchronous update.
      *
      * @returns can either return nothing or a promise; in that latter case, the
-     *         update logic will await the resolution of the returned promise
-     *         before proceeding.
+     *          update logic will await the resolution of the returned promise
+     *          before proceeding.
      */
     performUpdate(): Promise<void> | void;
     /**

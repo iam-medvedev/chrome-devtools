@@ -1,9 +1,12 @@
 import type * as Types from './../types/types.js';
 import type * as ModelHandlers from './ModelHandlers.js';
+export type FinalizeOptions = Types.Configuration.ParseOptions & {
+    allTraceEvents: readonly Types.Events.Event[];
+};
 export interface Handler {
     reset(): void;
     handleEvent(data: object): void;
-    finalize(options?: Types.Configuration.ParseOptions): Promise<void>;
+    finalize(options?: FinalizeOptions): Promise<void>;
     data(): unknown;
     deps?(): HandlerName[];
     handleUserConfig?(config: Types.Configuration.Configuration): void;

@@ -554,7 +554,7 @@ var generatedProperties = [
       "font-variation-settings",
       "font-weight",
       "forced-color-adjust",
-      "gap-rule-paint-order",
+      "gap-rule-overlap",
       "grid-auto-columns",
       "grid-auto-flow",
       "grid-auto-rows",
@@ -2580,7 +2580,7 @@ var generatedProperties = [
       "row-over-column",
       "column-over-row"
     ],
-    "name": "gap-rule-paint-order"
+    "name": "gap-rule-overlap"
   },
   {
     "longhands": [
@@ -5852,7 +5852,7 @@ var generatedPropertyValues = {
       "preserve-parent-color"
     ]
   },
-  "gap-rule-paint-order": {
+  "gap-rule-overlap": {
     "values": [
       "row-over-column",
       "column-over-row"
@@ -19139,6 +19139,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     const isFlex = display === "flex" || display === "inline-flex";
     const isGrid = display === "grid" || display === "inline-grid";
     const isSubgrid = (isGrid && (styles.get("grid-template-columns")?.startsWith("subgrid") || styles.get("grid-template-rows")?.startsWith("subgrid"))) ?? false;
+    const isMasonry = display === "masonry" || display === "inline-masonry";
     const containerType = styles.get("container-type");
     const isContainer = Boolean(containerType) && containerType !== "" && containerType !== "normal";
     const hasScroll = Boolean(styles.get("scroll-snap-type")) && styles.get("scroll-snap-type") !== "none";
@@ -19146,6 +19147,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       isFlex,
       isGrid,
       isSubgrid,
+      isMasonry,
       isContainer,
       hasScroll
     };

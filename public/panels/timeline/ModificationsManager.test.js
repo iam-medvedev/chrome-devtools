@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { allThreadEntriesInTrace } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
 describeWithEnvironment('ModificationsManager', () => {
@@ -58,8 +59,8 @@ describeWithEnvironment('ModificationsManager', () => {
     it('creates annotations and generates correct json for annotations', async function () {
         const parsedTrace = (await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz')).parsedTrace;
         // Get any entres to create a label and a link with.
-        const entry = parsedTrace.Renderer.allTraceEntries[0];
-        const entry2 = parsedTrace.Renderer.allTraceEntries[1];
+        const entry = allThreadEntriesInTrace(parsedTrace)[0];
+        const entry2 = allThreadEntriesInTrace(parsedTrace)[1];
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({
@@ -85,7 +86,7 @@ describeWithEnvironment('ModificationsManager', () => {
         const modifications = modificationsManager.toJSON().annotations;
         assert.deepEqual(modifications, {
             entryLabels: [{
-                    entry: 'r-38',
+                    entry: 'r-39',
                     label: 'entry label',
                 }],
             labelledTimeRanges: [{
@@ -97,16 +98,16 @@ describeWithEnvironment('ModificationsManager', () => {
                     label: 'range label',
                 }],
             linksBetweenEntries: [{
-                    entryFrom: 'r-38',
-                    entryTo: 'r-39',
+                    entryFrom: 'r-39',
+                    entryTo: 'r-42',
                 }],
         });
     });
     it('does not add the annotation link between entries into the json saved into metadata if `entryTo` does not exist', async function () {
         const parsedTrace = (await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz')).parsedTrace;
         // Get any entry to create links with.
-        const entry = parsedTrace.Renderer.allTraceEntries[0];
-        const entry2 = parsedTrace.Renderer.allTraceEntries[1];
+        const entry = allThreadEntriesInTrace(parsedTrace)[0];
+        const entry2 = allThreadEntriesInTrace(parsedTrace)[1];
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         modificationsManager.createAnnotation({
@@ -126,17 +127,17 @@ describeWithEnvironment('ModificationsManager', () => {
             entryLabels: [],
             labelledTimeRanges: [],
             linksBetweenEntries: [{
-                    entryFrom: 'r-38',
-                    entryTo: 'r-39',
+                    entryFrom: 'r-39',
+                    entryTo: 'r-42',
                 }],
         });
     });
     it('correctly identifies if a connection between entries already exists', async function () {
         const parsedTrace = (await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz')).parsedTrace;
         // Get any entry to create links with.
-        const entry1 = parsedTrace.Renderer.allTraceEntries[0];
-        const entry2 = parsedTrace.Renderer.allTraceEntries[1];
-        const entry3 = parsedTrace.Renderer.allTraceEntries[2];
+        const entry1 = allThreadEntriesInTrace(parsedTrace)[0];
+        const entry2 = allThreadEntriesInTrace(parsedTrace)[1];
+        const entry3 = allThreadEntriesInTrace(parsedTrace)[2];
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         // Create a connection between entry 1 and entry 2

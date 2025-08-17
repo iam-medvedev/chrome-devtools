@@ -1301,7 +1301,7 @@ export class TimelineUIUtils {
             TimelineUIUtils.renderEventJson(event, contentHelper);
         }
         const stats = {};
-        const showPieChart = canShowPieChart && parsedTrace && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
+        const showPieChart = canShowPieChart && TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
         if (showPieChart) {
             contentHelper.addSection(i18nString(UIStrings.aggregatedTime));
             const pieChart = TimelineUIUtils.generatePieChart(stats, TimelineUIUtils.eventStyle(event).category, selfTime);
@@ -1609,47 +1609,36 @@ export class TimelineUIUtils {
     }
     /** Populates the passed object then returns true/false if it makes sense to show the pie chart */
     static aggregatedStatsForTraceEvent(total, parsedTrace, event) {
-        const events = parsedTrace.Renderer?.allTraceEntries || [];
-        const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
-        function eventComparator(startTime, e) {
-            return startTime - e.ts;
-        }
-        // Find index of selected event amongst allTraceEntries.
-        const index = Platform.ArrayUtilities.binaryIndexOf(events, startTime, eventComparator);
-        // Not a main thread event?
-        if (index < 0) {
+        const node = parsedTrace.Renderer.entryToNode.get(event);
+        if (!node) {
             return false;
         }
-        let hasChildren = false;
-        if (endTime) {
-            for (let i = index; i < events.length; i++) {
-                const nextEvent = events[i];
-                if (nextEvent.ts >= endTime) {
-                    break;
-                }
-                const nextEventSelfTime = getEventSelfTime(nextEvent, parsedTrace);
-                if (!nextEventSelfTime) {
-                    continue;
-                }
-                if (nextEvent.tid !== event.tid) {
-                    continue;
-                }
-                if (i > index) {
-                    hasChildren = true;
-                }
-                const categoryName = TimelineUIUtils.eventStyle(nextEvent).category.name;
-                total[categoryName] = (total[categoryName] || 0) + nextEventSelfTime;
+        // If the event has no children, we cannot calculate a pie chart.
+        if (node.children.length === 0) {
+            return false;
+        }
+        const childNodesToVisit = [...node.children];
+        while (childNodesToVisit.length) {
+            // Traversal order doesn't matter, pop() is more efficient than shift().
+            const childNode = childNodesToVisit.pop();
+            if (!childNode) {
+                continue;
             }
+            const childSelfTime = childNode.selfTime ?? 0;
+            if (childSelfTime > 0) {
+                const categoryName = TimelineUIUtils.eventStyle(childNode.entry).category.name;
+                total[categoryName] = (total[categoryName] || 0) + childSelfTime;
+            }
+            childNodesToVisit.push(...childNode.children);
         }
         if (Trace.Types.Events.isPhaseAsync(event.ph)) {
-            if (endTime) {
-                let aggregatedTotal = 0;
-                for (const categoryName in total) {
-                    aggregatedTotal += total[categoryName];
-                }
-                const deltaInMicro = (endTime - startTime);
-                total['idle'] = Math.max(0, deltaInMicro - aggregatedTotal);
+            let aggregatedTotal = 0;
+            for (const categoryName in total) {
+                aggregatedTotal += total[categoryName];
             }
+            const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMicroSeconds(event);
+            const deltaInMicro = (endTime - startTime);
+            total['idle'] = Math.max(0, deltaInMicro - aggregatedTotal);
             return false;
         }
         for (const categoryName in total) {
@@ -1657,7 +1646,7 @@ export class TimelineUIUtils {
             // Up until now we've kept the math all in micro integers. Finally switch these sums to milli.
             total[categoryName] = Trace.Helpers.Timing.microToMilli(value);
         }
-        return hasChildren;
+        return true;
     }
     static async buildPicturePreviewContent(parsedTrace, event, target) {
         const snapshotEvent = parsedTrace.LayerTree.paintsToSnapshots.get(event);

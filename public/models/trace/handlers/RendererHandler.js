@@ -32,7 +32,6 @@ let entityMappings = {
 // show the user the rasterization thread(s) on the main frame as tracks.
 const compositorTileWorkers = Array();
 const entryToNode = new Map();
-let allTraceEntries = [];
 const completeEventStack = [];
 let config = Types.Configuration.defaults();
 const makeRendererProcess = () => ({
@@ -63,7 +62,6 @@ export function reset() {
     entityMappings.entityByEvent.clear();
     entityMappings.createdEntityCache.clear();
     entityMappings.entityByUrlCache.clear();
-    allTraceEntries.length = 0;
     completeEventStack.length = 0;
     compositorTileWorkers.length = 0;
 }
@@ -82,14 +80,12 @@ export function handleEvent(event) {
             return;
         }
         thread.entries.push(completeEvent);
-        allTraceEntries.push(completeEvent);
         return;
     }
     if (Types.Events.isInstant(event) || Types.Events.isComplete(event)) {
         const process = getOrCreateRendererProcess(processes, event.pid);
         const thread = getOrCreateRendererThread(process, event.tid);
         thread.entries.push(event);
-        allTraceEntries.push(event);
     }
     if (Types.Events.isLayout(event)) {
         const process = getOrCreateRendererProcess(processes, event.pid);
@@ -109,14 +105,14 @@ export async function finalize() {
     sanitizeProcesses(processes);
     buildHierarchy(processes);
     sanitizeThreads(processes);
-    Helpers.Trace.sortTraceEventsInPlace(allTraceEntries);
 }
 export function data() {
     return {
-        processes: new Map(processes),
-        compositorTileWorkers: new Map(gatherCompositorThreads()),
-        entryToNode: new Map(entryToNode),
-        allTraceEntries: [...allTraceEntries],
+        processes,
+        compositorTileWorkers: gatherCompositorThreads(),
+        entryToNode,
+        // We only shallow clone the data in the processor, so these nested
+        // values need to be manually cloned.
         entityMappings: {
             entityByEvent: new Map(entityMappings.entityByEvent),
             eventsByEntity: new Map(entityMappings.eventsByEntity),
@@ -296,13 +292,11 @@ export function buildHierarchy(processes, options) {
                     new Helpers.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config);
                 const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
                 if (samplesIntegrator && profileCalls) {
-                    allTraceEntries = allTraceEntries.concat(profileCalls);
                     thread.entries = Helpers.Trace.mergeEventsInOrder(thread.entries, profileCalls);
                     thread.profileCalls = profileCalls;
                     // We'll also inject the instant JSSample events (in debug mode only)
                     const jsSamples = samplesIntegrator.jsSampleEvents;
                     if (jsSamples.length) {
-                        allTraceEntries = [...allTraceEntries, ...jsSamples];
                         thread.entries = Helpers.Trace.mergeEventsInOrder(thread.entries, jsSamples);
                     }
                 }

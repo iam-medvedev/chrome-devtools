@@ -3,6 +3,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ComputedStyleWidget } from './ComputedStyleWidget.js';
+import { type ElementsTreeOutline } from './ElementsTreeOutline.js';
 import type { MarkerDecorator } from './MarkerDecorator.js';
 import { StylesSidebarPane } from './StylesSidebarPane.js';
 /**
@@ -14,6 +15,7 @@ export declare const enum SidebarPaneTabId {
     STYLES = "styles"
 }
 export declare class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.Searchable, SDK.TargetManager.SDKModelObserver<SDK.DOMModel.DOMModel>, UI.View.ViewLocationResolver {
+    #private;
     private splitWidget;
     private readonly searchableViewInternal;
     private mainContainer;
@@ -24,7 +26,6 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     stylesWidget: StylesSidebarPane;
     private readonly computedStyleWidget;
     private readonly metricsWidget;
-    private treeOutlines;
     private searchResults;
     private currentSearchResultIndex;
     pendingNodeReveal: boolean;
@@ -41,6 +42,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private stylesViewToReveal?;
     private nodeInsertedTaskRunner;
     private cssStyleTrackerByCSSModel;
+    getTreeOutlineForTesting(): ElementsTreeOutline | undefined;
     constructor();
     private initializeFullAccessibilityTreeView;
     private showAccessibilityTree;
@@ -53,8 +55,8 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     resolveLocation(_locationName: string): UI.View.ViewLocation | null;
     showToolbarPane(widget: UI.Widget.Widget | null, toggle: UI.Toolbar.ToolbarToggle | null): void;
     modelAdded(domModel: SDK.DOMModel.DOMModel): void;
-    private handleNodeInserted;
     modelRemoved(domModel: SDK.DOMModel.DOMModel): void;
+    private handleNodeInserted;
     private targetNameChanged;
     private updateTreeOutlineVisibleWidth;
     focus(): void;
@@ -83,8 +85,6 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     selectAndShowSidebarTab(tabId: SidebarPaneTabId): void;
     private updateBreadcrumbIfNeeded;
     private crumbNodeSelected;
-    private treeOutlineForNode;
-    private treeElementForNode;
     private leaveUserAgentShadowDOM;
     revealAndSelectNode(nodeToReveal: SDK.DOMModel.DOMNode, focus: boolean, omitHighlight?: boolean): Promise<void>;
     private showUAShadowDOMChanged;
@@ -101,6 +101,10 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     isAdornerEnabled(adornerText: string): boolean;
     registerAdorner(adorner: Adorners.Adorner.Adorner): void;
     deregisterAdorner(adorner: Adorners.Adorner.Adorner): void;
+    toggleHideElement(node: SDK.DOMModel.DOMNode): void;
+    toggleEditAsHTML(node: SDK.DOMModel.DOMNode): void;
+    duplicateNode(node: SDK.DOMModel.DOMNode): void;
+    copyStyles(node: SDK.DOMModel.DOMNode): void;
     protected static firstInspectElementCompletedForTest: () => void;
     protected static firstInspectElementNodeNameForTest: string;
 }

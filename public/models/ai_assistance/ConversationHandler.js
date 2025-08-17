@@ -7,12 +7,13 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { FileAgent } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext } from './agents/NetworkAgent.js';
-import { PerformanceAgent } from './agents/PerformanceAgent.js';
-import { StylingAgent, StylingAgentWithFunctionCalling } from './agents/StylingAgent.js';
+import { PerformanceAgent, PerformanceTraceContext } from './agents/PerformanceAgent.js';
+import { NodeContext, StylingAgent, StylingAgentWithFunctionCalling } from './agents/StylingAgent.js';
 import { Conversation, } from './AiHistoryStorage.js';
 import { getDisabledReasons } from './AiUtils.js';
 const UIStrings = {
@@ -38,6 +39,22 @@ function isAiAssistanceStylingWithFunctionCallingEnabled() {
 }
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+}
+async function inspectElementBySelector(selector) {
+    const whitespaceTrimmedQuery = selector.trim();
+    if (!whitespaceTrimmedQuery.length) {
+        return null;
+    }
+    const showUAShadowDOM = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get();
+    const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
+    const performSearchPromises = domModels.map(domModel => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
+    const resultCounts = await Promise.all(performSearchPromises);
+    // If the selector matches multiple times, this returns the first match.
+    const index = resultCounts.findIndex(value => value > 0);
+    if (index >= 0) {
+        return await domModels[index].searchResult(0);
+    }
+    return null;
 }
 async function inspectNetworkRequestByUrl(selector) {
     const networkManagers = SDK.TargetManager.TargetManager.instance().models(SDK.NetworkManager.NetworkManager, { scoped: true });
@@ -93,18 +110,18 @@ export class ConversationHandler {
         }
         return getDisabledReasons(this.#aidaAvailability);
     }
+    // eslint-disable-next-line require-yield
+    async *#generateErrorResponse(message) {
+        return {
+            type: "error" /* ExternalRequestResponseType.ERROR */,
+            message,
+        };
+    }
     /**
      * Handles an external request using the given prompt and uses the
      * conversation type to use the correct agent.
      */
     async handleExternalRequest(parameters) {
-        // eslint-disable-next-line require-yield
-        async function* generateErrorResponse(message) {
-            return {
-                type: "error" /* ExternalRequestResponseType.ERROR */,
-                message,
-            };
-        }
         try {
             Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
             const disabledReasons = await this.#getDisabledReasons();
@@ -113,24 +130,27 @@ export class ConversationHandler {
                 disabledReasons.push(lockedString(UIStringsNotTranslate.enableInSettings));
             }
             if (disabledReasons.length > 0) {
-                return generateErrorResponse(disabledReasons.join(' '));
+                return this.#generateErrorResponse(disabledReasons.join(' '));
             }
             void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, 'external');
             switch (parameters.conversationType) {
                 case "freestyler" /* ConversationType.STYLING */: {
-                    return generateErrorResponse('Not implemented here');
+                    return await this.#handleExternalStylingConversation(parameters.prompt, parameters.selector);
                 }
                 case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
-                    return generateErrorResponse('Not implemented here');
+                    if (!parameters.insightTitle) {
+                        return this.#generateErrorResponse('The insightTitle parameter is required for debugging a Performance Insight.');
+                    }
+                    return await this.#handleExternalPerformanceInsightsConversation(parameters.prompt, parameters.insightTitle, parameters.traceModel);
                 case "drjones-network-request" /* ConversationType.NETWORK */:
                     if (!parameters.requestUrl) {
-                        return generateErrorResponse('The url is required for debugging a network request.');
+                        return this.#generateErrorResponse('The url is required for debugging a network request.');
                     }
-                    return this.#handleExternalNetworkConversation(parameters.prompt, parameters.requestUrl);
+                    return await this.#handleExternalNetworkConversation(parameters.prompt, parameters.requestUrl);
             }
         }
         catch (error) {
-            return generateErrorResponse(error.message);
+            return this.#generateErrorResponse(error.message);
         }
     }
     async *handleConversationWithHistory(items, conversation) {
@@ -142,31 +162,16 @@ export class ConversationHandler {
             yield data;
         }
     }
-    async *#handleExternalNetworkConversation(prompt, requestUrl) {
-        const options = {
-            aidaClient: this.#aidaClient,
-            serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),
-        };
-        const networkAgent = new NetworkAgent(options);
-        const externalConversation = new Conversation("drjones-network-request" /* ConversationType.NETWORK */, [], networkAgent.id, 
+    async *#doExternalConversation(opts) {
+        const { conversationType, aiAgent, prompt, selected } = opts;
+        const externalConversation = new Conversation(conversationType, [], aiAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
-        const request = await inspectNetworkRequestByUrl(requestUrl);
-        if (!request) {
-            return {
-                type: "error" /* ExternalRequestResponseType.ERROR */,
-                message: `Can't find request with the given selector ${requestUrl}`,
-            };
-        }
-        const generator = networkAgent.run(prompt, {
-            selected: new RequestContext(request),
-        });
+        const generator = aiAgent.run(prompt, { selected });
         const generatorWithHistory = this.handleConversationWithHistory(generator, externalConversation);
         const devToolsLogs = [];
         for await (const data of generatorWithHistory) {
-            // We don't want to save partial responses to the conversation history.
             if (data.type !== "answer" /* ResponseType.ANSWER */ || data.complete) {
-                void externalConversation.addHistoryItem(data);
                 devToolsLogs.push(data);
             }
             if (data.type === "context" /* ResponseType.CONTEXT */ || data.type === "title" /* ResponseType.TITLE */) {
@@ -190,6 +195,46 @@ export class ConversationHandler {
             type: "error" /* ExternalRequestResponseType.ERROR */,
             message: 'Something went wrong. No answer was generated.',
         };
+    }
+    async #handleExternalStylingConversation(prompt, selector = 'body') {
+        const stylingAgent = this.createAgent("freestyler" /* ConversationType.STYLING */);
+        const node = await inspectElementBySelector(selector);
+        if (node) {
+            await node.setAsInspectedNode();
+        }
+        const selected = node ? new NodeContext(node) : null;
+        return this.#doExternalConversation({
+            conversationType: "freestyler" /* ConversationType.STYLING */,
+            aiAgent: stylingAgent,
+            prompt,
+            selected,
+        });
+    }
+    async #handleExternalPerformanceInsightsConversation(prompt, insightTitle, traceModel) {
+        const insightsAgent = this.createAgent("performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */);
+        const focusOrError = await Tracing.ExternalRequests.getInsightAgentFocusToDebug(traceModel, insightTitle);
+        if ('error' in focusOrError) {
+            return this.#generateErrorResponse(focusOrError.error);
+        }
+        return this.#doExternalConversation({
+            conversationType: "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */,
+            aiAgent: insightsAgent,
+            prompt,
+            selected: new PerformanceTraceContext(focusOrError.focus),
+        });
+    }
+    async #handleExternalNetworkConversation(prompt, requestUrl) {
+        const networkAgent = this.createAgent("drjones-network-request" /* ConversationType.NETWORK */);
+        const request = await inspectNetworkRequestByUrl(requestUrl);
+        if (!request) {
+            return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
+        }
+        return this.#doExternalConversation({
+            conversationType: "drjones-network-request" /* ConversationType.NETWORK */,
+            aiAgent: networkAgent,
+            prompt,
+            selected: new RequestContext(request),
+        });
     }
     createAgent(conversationType, changeManager) {
         const options = {

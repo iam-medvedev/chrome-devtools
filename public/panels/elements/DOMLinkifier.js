@@ -22,7 +22,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `${(input.tagName || input.pseudo) ? html `
-    <style>${UI.Widget.widgetScoped(domLinkifierStyles)}</style>
+    <style>${domLinkifierStyles}</style>
     <span class="monospace">
       <button class="node-link text-button link-style ${classMap({
         'dynamic-link': Boolean(input.dynamic),
@@ -147,7 +147,7 @@ export class DOMNodeLink extends UI.Widget.Widget {
 const DEFERRED_DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-      <style>${UI.Widget.widgetScoped(domLinkifierStyles)}</style>
+      <style>${domLinkifierStyles}</style>
       <button class="node-link text-button link-style"
           jslog=${VisualLogging.link('node').track({ click: true })}
           tabindex=${input.preventKeyboardFocus ? -1 : 0}

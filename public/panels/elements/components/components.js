@@ -119,6 +119,7 @@ var RegisteredAdorners;
 (function(RegisteredAdorners2) {
   RegisteredAdorners2["GRID"] = "grid";
   RegisteredAdorners2["SUBGRID"] = "subgrid";
+  RegisteredAdorners2["MASONRY"] = "masonry";
   RegisteredAdorners2["FLEX"] = "flex";
   RegisteredAdorners2["AD"] = "ad";
   RegisteredAdorners2["SCROLL_SNAP"] = "scroll-snap";
@@ -141,6 +142,12 @@ function getRegisteredAdorner(which) {
     case RegisteredAdorners.SUBGRID:
       return {
         name: "subgrid",
+        category: "Layout",
+        enabledByDefault: true
+      };
+    case RegisteredAdorners.MASONRY:
+      return {
+        name: "masonry",
         category: "Layout",
         enabledByDefault: true
       };

@@ -79,11 +79,6 @@ export interface RendererHandlerData {
      */
     compositorTileWorkers: Map<Types.Events.ProcessID, Types.Events.ThreadID[]>;
     entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
-    /**
-     * All trace events and synthetic profile calls made from
-     * samples.
-     */
-    allTraceEntries: Types.Events.Event[];
     entityMappings: HandlerHelpers.EntityMappings;
 }
 export interface RendererProcess {

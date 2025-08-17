@@ -11,7 +11,7 @@ describeWithLocale('EventListenersView placeholder', () => {
         assert.deepEqual(window.getComputedStyle(element).display, style);
     }
     it('shows one-liner if in sources', () => {
-        const eventListenersView = new EventListeners.EventListenersView.EventListenersView(() => { });
+        const eventListenersView = new EventListeners.EventListenersView.EventListenersView();
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         container.classList.add('sources', 'panel');
@@ -22,7 +22,7 @@ describeWithLocale('EventListenersView placeholder', () => {
         assert.deepEqual(eventListenersView.contentElement.querySelector('.placeholder .gray-info-message')?.textContent, 'No event listeners');
     });
     it('shows empty widget if in elements panel', () => {
-        const eventListenersView = new EventListeners.EventListenersView.EventListenersView(() => { });
+        const eventListenersView = new EventListeners.EventListenersView.EventListenersView();
         const container = document.createElement('div');
         renderElementIntoDOM(container);
         container.classList.add('elements', 'panel');

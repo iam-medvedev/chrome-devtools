@@ -35,11 +35,8 @@ export class OpenFileQuickOpen extends FilteredUISourceCodeListProvider {
         super.renderItem(itemIndex, query, titleElement, subtitleElement);
         const iconElement = new IconButton.Icon.Icon();
         const iconData = PanelUtils.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
-        iconElement.data = {
-            ...iconData,
-            width: '18px',
-            height: '18px',
-        };
+        iconElement.data = iconData;
+        iconElement.classList.add('large');
         titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
     }
     renderAsTwoRows() {

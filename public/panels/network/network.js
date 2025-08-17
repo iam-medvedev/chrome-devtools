@@ -3251,8 +3251,8 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
       for (const malformedCookie of malformedResponseCookies) {
         const listItem = this.malformedResponseCookiesList.createChild("span", "cookie-line source-code");
         const icon = new IconButton2.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
-        icon.classList.add("cookie-warning-icon");
+        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.classList.add("cookie-warning-icon", "small");
         listItem.appendChild(icon);
         UI6.UIUtils.createTextChild(listItem, malformedCookie.cookieLine);
         if (malformedCookie.blockedReasons.includes(
@@ -4299,14 +4299,15 @@ var requestHTMLView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-.html-preview-frame {
-  box-shadow: var(--drop-shadow);
-  /* We always want a white background, even in dark mode */
-  background: var(--ref-palette-neutral100);
-  color-scheme: light;
-  flex-grow: 1;
-  margin: 20px;
+@scope to (devtools-widget > *) {
+  .html-preview-frame {
+    box-shadow: var(--drop-shadow);
+    /* We always want a white background, even in dark mode */
+    background: var(--ref-palette-neutral100);
+    color-scheme: light;
+    flex-grow: 1;
+    margin: 20px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./requestHTMLView.css")} */`;
@@ -4314,7 +4315,7 @@ var requestHTMLView_css_default = `/*
 // gen/front_end/panels/network/RequestHTMLView.js
 var DEFAULT_VIEW = (input, _output, target) => {
   render2(html`
-    <style>${UI9.Widget.widgetScoped(requestHTMLView_css_default)}</style>
+    <style>${requestHTMLView_css_default}</style>
     <div class="html request-view widget vbox">
       ${input.dataURL ? html`
         <!-- @ts-ignore -->
@@ -4588,8 +4589,8 @@ var SignedExchangeInfoView = class extends UI10.Widget.VBox {
       for (const error of signedExchangeInfo.errors) {
         const fragment = document.createDocumentFragment();
         const icon = new IconButton3.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
-        icon.classList.add("prompt-icon");
+        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.classList.add("prompt-icon", "small");
         fragment.appendChild(icon);
         fragment.createChild("div", "error-log").textContent = error.message;
         errorMessagesCategory.createLeaf(fragment);
@@ -6652,7 +6653,8 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
       const signedExchangeInfo = request.signedExchangeInfo();
       if (signedExchangeInfo?.errors?.length) {
         const icon = new IconButton4.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
+        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.classList.add("small");
         UI17.Tooltip.Tooltip.install(icon, i18nString16(UIStrings16.signedexchangeError));
         this.setTabIcon("preview", icon);
       }
@@ -6702,7 +6704,8 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     }
     if (this.#request.hasThirdPartyCookiePhaseoutIssue()) {
       const icon = new IconButton4.Icon.Icon();
-      icon.data = { iconName: "warning-filled", color: "var(--icon-warning)", width: "14px", height: "14px" };
+      icon.name = "warning-filled";
+      icon.classList.add("small");
       icon.title = i18nString16(UIStrings16.thirdPartyPhaseout);
       this.setTrailingTabIcon("cookies", icon);
     }
@@ -6733,7 +6736,8 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
     if (trustTokenResult && !NetworkComponents2.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
       const icon = new IconButton4.Icon.Icon();
-      icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)", width: "14px", height: "14px" };
+      icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+      icon.classList.add("small");
       this.setTabIcon("trust-tokens", icon);
     }
   }

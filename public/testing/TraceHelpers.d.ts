@@ -188,4 +188,10 @@ export declare function microsecondsTraceWindow(min: number, max: number): Trace
 export declare function microseconds(x: number): Trace.Types.Timing.Micro;
 export declare function milliseconds(x: number): Trace.Types.Timing.Milli;
 export declare function getAllNetworkRequestsByHost(networkRequests: Trace.Types.Events.SyntheticNetworkRequest[], host: string): Trace.Types.Events.SyntheticNetworkRequest[];
+/**
+ * A function to get a list of all thread entries that exist. This is
+ * reasonably expensive, so it's cached to avoid a huge impact on our test suite
+ * speed.
+ */
+export declare function allThreadEntriesInTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Types.Events.Event[];
 export {};

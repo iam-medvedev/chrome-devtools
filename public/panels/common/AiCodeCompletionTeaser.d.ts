@@ -7,7 +7,7 @@ export interface ViewInput {
 }
 export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export interface AiCodeCompletionTeaserConfig {
+interface AiCodeCompletionTeaserConfig {
     onDetach: () => void;
 }
 export declare class AiCodeCompletionTeaser extends UI.Widget.Widget {
@@ -20,3 +20,4 @@ export declare class AiCodeCompletionTeaser extends UI.Widget.Widget {
     willHide(): void;
     onDetach(): void;
 }
+export {};

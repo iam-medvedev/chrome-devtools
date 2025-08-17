@@ -1,0 +1,288 @@
+// Copyright 2025 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
+import * as Root from '../../core/root/root.js';
+import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
+import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import * as UI from '../../ui/legacy/legacy.js';
+import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import * as PanelCommon from '../common/common.js';
+import { Plugin } from './Plugin.js';
+const AI_CODE_COMPLETION_CHARACTER_LIMIT = 20_000;
+export class AiCodeCompletionPlugin extends Plugin {
+    #aidaClient;
+    #aiCodeCompletion;
+    #aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
+    #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
+    #teaserCompartment = new CodeMirror.Compartment();
+    #teaser;
+    #teaserDisplayTimeout;
+    #editor;
+    #boundEditorKeyDown;
+    #boundOnAiCodeCompletionSettingChanged;
+    constructor(uiSourceCode) {
+        super(uiSourceCode);
+        if (!this.#isAiCodeCompletionEnabled()) {
+            throw new Error('AI code completion feature is not enabled.');
+        }
+        this.#boundEditorKeyDown = this.#editorKeyDown.bind(this);
+        this.#boundOnAiCodeCompletionSettingChanged = this.#onAiCodeCompletionSettingChanged.bind(this);
+        const showTeaser = !this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get();
+        if (showTeaser) {
+            this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
+        }
+    }
+    static accepts(uiSourceCode) {
+        return uiSourceCode.contentType().hasScripts() || uiSourceCode.contentType().hasStyleSheets();
+    }
+    dispose() {
+        this.#teaser = undefined;
+        this.#aiCodeCompletionSetting.removeChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
+        this.#editor?.removeEventListener('keydown', this.#boundEditorKeyDown);
+        this.#aiCodeCompletion?.remove();
+        super.dispose();
+    }
+    editorInitialized(editor) {
+        this.#editor = editor;
+        this.#editor.addEventListener('keydown', this.#boundEditorKeyDown);
+        this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
+        this.#onAiCodeCompletionSettingChanged();
+    }
+    editorExtension() {
+        return [
+            CodeMirror.EditorView.updateListener.of(update => this.#editorUpdate(update)), this.#teaserCompartment.of([]),
+            // conservativeCompletion is required so that the completion suggestions in the traditional
+            // autocomplete menu are only activated after the first keyDown/keyUp events.
+            TextEditor.Config.conservativeCompletion, TextEditor.Config.aiAutoCompleteSuggestion,
+            CodeMirror.Prec.highest(CodeMirror.keymap.of(this.#editorKeymap()))
+        ];
+    }
+    #editorUpdate(update) {
+        if (this.#teaser) {
+            if (update.docChanged) {
+                update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
+                this.#addTeaserPluginToCompartment(update);
+            }
+            else if (update.selectionSet) {
+                update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
+            }
+        }
+        else if (this.#aiCodeCompletion) {
+            if (update.docChanged && update.state.doc !== update.startState.doc) {
+                this.#triggerAiCodeCompletion();
+            }
+        }
+    }
+    #triggerAiCodeCompletion() {
+        if (!this.#editor || !this.#aiCodeCompletion) {
+            return;
+        }
+        const { doc, selection } = this.#editor.state;
+        const query = doc.toString();
+        const cursor = selection.main.head;
+        let prefix = query.substring(0, cursor);
+        let suffix = query.substring(cursor);
+        if (prefix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
+            prefix = prefix.substring(prefix.length - AI_CODE_COMPLETION_CHARACTER_LIMIT);
+        }
+        if (suffix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
+            suffix = suffix.substring(0, AI_CODE_COMPLETION_CHARACTER_LIMIT);
+        }
+        this.#aiCodeCompletion.onTextChanged(prefix, suffix, cursor, this.#getInferenceLanguage());
+    }
+    #editorKeymap() {
+        return [
+            {
+                key: 'Escape',
+                run: () => {
+                    if (this.#aiCodeCompletion && this.#editor && TextEditor.Config.hasActiveAiSuggestion(this.#editor.state)) {
+                        this.#editor.dispatch({
+                            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(null),
+                        });
+                        return true;
+                    }
+                    return false;
+                },
+            },
+            {
+                key: 'Tab',
+                run: () => {
+                    if (this.#aiCodeCompletion && this.#editor && TextEditor.Config.hasActiveAiSuggestion(this.#editor.state)) {
+                        const { accepted, suggestion } = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.#editor.editor);
+                        if (accepted) {
+                            if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+                                this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
+                            }
+                        }
+                        return accepted;
+                    }
+                    return false;
+                },
+            }
+        ];
+    }
+    async #editorKeyDown(event) {
+        if (!this.#teaser?.isShowing()) {
+            return;
+        }
+        const keyboardEvent = event;
+        if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
+            if (keyboardEvent.key === 'i') {
+                keyboardEvent.consume(true);
+                void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.fre');
+                await this.#teaser?.onAction(event);
+            }
+            else if (keyboardEvent.key === 'x') {
+                keyboardEvent.consume(true);
+                void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.dismiss');
+                this.#teaser?.onDismiss(event);
+            }
+        }
+    }
+    #addTeaserPluginToCompartment = Common.Debouncer.debounce((update) => {
+        if (this.#teaserDisplayTimeout) {
+            window.clearTimeout(this.#teaserDisplayTimeout);
+            this.#teaserDisplayTimeout = undefined;
+        }
+        this.#teaserDisplayTimeout = window.setTimeout(() => {
+            if (this.#teaser) {
+                update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
+            }
+        }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
+    }, AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+    #setAiCodeCompletion() {
+        if (!this.#editor) {
+            return;
+        }
+        if (!this.#aidaClient) {
+            this.#aidaClient = new Host.AidaClient.AidaClient();
+        }
+        if (this.#teaser) {
+            this.#detachAiCodeCompletionTeaser();
+            this.#teaser = undefined;
+        }
+        this.#aiCodeCompletion =
+            new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor);
+    }
+    #onAiCodeCompletionSettingChanged() {
+        if (this.#aiCodeCompletionSetting.get()) {
+            this.#setAiCodeCompletion();
+        }
+        else if (this.#aiCodeCompletion) {
+            this.#aiCodeCompletion.remove();
+            this.#aiCodeCompletion = undefined;
+        }
+    }
+    #detachAiCodeCompletionTeaser() {
+        this.#editor?.dispatch({
+            effects: this.#teaserCompartment.reconfigure([]),
+        });
+        this.#teaser = undefined;
+    }
+    #isAiCodeCompletionEnabled() {
+        return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+    }
+    #getInferenceLanguage() {
+        const mimeType = this.uiSourceCode.mimeType();
+        switch (mimeType) {
+            case 'application/javascript':
+            case 'application/ecmascript':
+            case 'application/x-ecmascript':
+            case 'application/x-javascript':
+            case 'text/ecmascript':
+            case 'text/javascript1.0':
+            case 'text/javascript1.1':
+            case 'text/javascript1.2':
+            case 'text/javascript1.3':
+            case 'text/javascript1.4':
+            case 'text/javascript1.5':
+            case 'text/jscript':
+            case 'text/livescript ':
+            case 'text/x-ecmascript':
+            case 'text/x-javascript':
+            case 'text/javascript':
+            case 'text/jsx':
+                return "JAVASCRIPT" /* Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT */;
+            case 'text/typescript':
+            case 'text/typescript-jsx':
+            case 'application/typescript':
+                return "TYPESCRIPT" /* Host.AidaClient.AidaInferenceLanguage.TYPESCRIPT */;
+            case 'text/css':
+                return "CSS" /* Host.AidaClient.AidaInferenceLanguage.CSS */;
+            case 'text/html':
+                return "HTML" /* Host.AidaClient.AidaInferenceLanguage.HTML */;
+            case 'text/x-python':
+            case 'application/python':
+                return "PYTHON" /* Host.AidaClient.AidaInferenceLanguage.PYTHON */;
+            case 'text/x-java':
+            case 'text/x-java-source':
+                return "JAVA" /* Host.AidaClient.AidaInferenceLanguage.JAVA */;
+            case 'text/x-c++src':
+            case 'text/x-csrc':
+            case 'text/x-c':
+                return "CPP" /* Host.AidaClient.AidaInferenceLanguage.CPP */;
+            case 'application/json':
+            case 'application/manifest+json':
+                return "JSON" /* Host.AidaClient.AidaInferenceLanguage.JSON */;
+            case 'text/markdown':
+                return "MARKDOWN" /* Host.AidaClient.AidaInferenceLanguage.MARKDOWN */;
+            case 'application/xml':
+            case 'application/xhtml+xml':
+            case 'text/xml':
+                return "XML" /* Host.AidaClient.AidaInferenceLanguage.XML */;
+            case 'text/x-go':
+                return "GO" /* Host.AidaClient.AidaInferenceLanguage.GO */;
+            case 'application/x-sh':
+            case 'text/x-sh':
+                return "BASH" /* Host.AidaClient.AidaInferenceLanguage.BASH */;
+            case 'text/x-kotlin':
+                return "KOTLIN" /* Host.AidaClient.AidaInferenceLanguage.KOTLIN */;
+            case 'text/x-vue':
+            case 'text/x.vue':
+                return "VUE" /* Host.AidaClient.AidaInferenceLanguage.VUE */;
+            case 'application/vnd.dart':
+                return "DART" /* Host.AidaClient.AidaInferenceLanguage.DART */;
+            default:
+                return undefined;
+        }
+    }
+    setAidaClientForTest(aidaClient) {
+        this.#aidaClient = aidaClient;
+    }
+}
+export function aiCodeCompletionTeaserExtension(teaser) {
+    const teaserPlugin = CodeMirror.ViewPlugin.fromClass(class {
+        view;
+        #teaserDecoration;
+        constructor(view) {
+            this.view = view;
+            const cursorPosition = this.view.state.selection.main.head;
+            const line = this.view.state.doc.lineAt(cursorPosition);
+            const column = cursorPosition - line.from;
+            const isCursorAtEndOfLine = column >= line.length;
+            if (isCursorAtEndOfLine) {
+                this.#teaserDecoration = CodeMirror.Decoration.set([
+                    CodeMirror.Decoration
+                        .widget({
+                        widget: new TextEditor.AiCodeCompletionTeaserPlaceholder.AiCodeCompletionTeaserPlaceholder(teaser),
+                        side: 1
+                    })
+                        .range(cursorPosition),
+                ]);
+            }
+            else {
+                this.#teaserDecoration = CodeMirror.Decoration.none;
+            }
+        }
+        get decorations() {
+            return this.#teaserDecoration;
+        }
+    }, {
+        decorations: v => v.decorations,
+    });
+    return teaserPlugin;
+}
+//# sourceMappingURL=AiCodeCompletionPlugin.js.map

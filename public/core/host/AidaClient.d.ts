@@ -164,16 +164,38 @@ export interface CompletionRequest {
     metadata: RequestMetadata;
     last_user_action?: EditType;
 }
-export interface AidaDoConversationClientEvent {
+export interface DoConversationClientEvent {
+    user_feedback: {
+        sentiment?: Rating;
+        user_input?: {
+            comment?: string;
+        };
+    };
+}
+export interface UserImpression {
+    sample: {
+        sample_id: number;
+    };
+    latency: {
+        duration: {
+            seconds: number;
+            nanos: number;
+        };
+    };
+}
+export interface UserAcceptance {
+    sample: {
+        sample_id: number;
+    };
+}
+export interface AidaRegisterClientEvent {
     corresponding_aida_rpc_global_id: RpcGlobalId;
     disable_user_content_logging: boolean;
-    do_conversation_client_event: {
-        user_feedback: {
-            sentiment?: Rating;
-            user_input?: {
-                comment?: string;
-            };
-        };
+    do_conversation_client_event?: DoConversationClientEvent;
+    complete_code_client_event?: {
+        user_acceptance: UserAcceptance;
+    } | {
+        user_impression: UserImpression;
     };
 }
 export declare enum RecitationAction {
@@ -266,7 +288,7 @@ export declare class AidaClient {
     doConversation(request: DoConversationRequest, options?: {
         signal?: AbortSignal;
     }): AsyncGenerator<DoConversationResponse, void, void>;
-    registerClientEvent(clientEvent: AidaDoConversationClientEvent): Promise<AidaClientResult>;
+    registerClientEvent(clientEvent: AidaRegisterClientEvent): Promise<AidaClientResult>;
     completeCode(request: CompletionRequest): Promise<CompletionResponse | null>;
 }
 export declare function convertToUserTierEnum(userTier: string | undefined): UserTier;

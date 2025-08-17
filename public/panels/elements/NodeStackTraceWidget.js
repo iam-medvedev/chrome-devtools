@@ -19,7 +19,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const { target: sdkTarget, linkifier, options } = input;
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(nodeStackTraceWidgetStyles)}</style>
+    <style>${nodeStackTraceWidgetStyles}</style>
     ${target && options.stackTrace ?
         html `<devtools-widget
                 class="stack-trace"

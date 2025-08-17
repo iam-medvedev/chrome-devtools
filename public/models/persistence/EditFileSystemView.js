@@ -67,7 +67,7 @@ function statusString(status) {
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-      <style>${UI.Widget.widgetScoped(editFileSystemViewStyles)}</style>
+      <style>${editFileSystemViewStyles}</style>
       <div class="excluded-folder-header">
         <span>${i18nString(UIStrings.url)}</span>
         <span class="excluded-folder-url">${input.fileSystemPath}</span>

@@ -83,7 +83,11 @@ const UIStrings = {
      */
     dropTimelineFileOrUrlHere: 'Drop trace file or URL here',
     /**
-     * @description Title of capture layers and pictures setting in timeline panel of the performance panel
+     * @description Title of disable capture jsprofile setting in timeline panel of the performance panel
+     */
+    disableJavascriptSamples: 'Disable JavaScript samples',
+    /**
+     *@description Title of capture layers and pictures setting in timeline panel of the performance panel
      */
     enableAdvancedPaint: 'Enable advanced paint instrumentation (slow)',
     /**
@@ -111,18 +115,6 @@ const UIStrings = {
      */
     loadTrace: 'Load trace…',
     /**
-     * @description Tooltip text that appears when hovering over the largeicon download button
-     */
-    saveTrace: 'Save trace…',
-    /**
-     * @description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
-     */
-    saveTraceWithAnnotationsMenuOption: 'Save trace',
-    /**
-     * @description An option to save trace without annotations that appears in the menu of the toolbar download button
-     */
-    saveTraceWithoutAnnotationsMenuOption: 'Save trace without annotations',
-    /**
      * @description Text to take screenshots
      */
     captureScreenshots: 'Capture screenshots',
@@ -136,6 +128,10 @@ const UIStrings = {
     captureSettings: 'Capture settings',
     /**
      * @description Text in Timeline Panel of the Performance panel
+     */
+    disablesJavascriptSampling: 'Disables JavaScript sampling, reduces overhead when running against mobile devices',
+    /**
+     *@description Text in Timeline Panel of the Performance panel
      */
     capturesAdvancedPaint: 'Captures advanced paint instrumentation, introduces significant performance overhead',
     /**
@@ -172,6 +168,10 @@ const UIStrings = {
     SelectorStatsEnabled: '- Selector stats is enabled',
     /**
      * @description Text in Timeline Panel of the Performance panel
+     */
+    JavascriptSamplingIsDisabled: '- JavaScript sampling is disabled',
+    /**
+     *@description Text in Timeline Panel of the Performance panel
      */
     stoppingTimeline: 'Stopping timeline…',
     /**
@@ -215,16 +215,6 @@ const UIStrings = {
      * @description Text in Timeline Panel of the Performance panel
      */
     initializingTracing: 'Initializing tracing…',
-    /**
-     *
-     * @description Text for exporting basic traces
-     */
-    exportNormalTraces: 'Basic performance traces',
-    /**
-     *
-     * @description Text for exporting enhanced traces
-     */
-    exportEnhancedTraces: 'Enhanced performance traces',
     /**
      * @description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
      */
@@ -308,6 +298,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     toggleRecordAction;
     recordReloadAction;
     #historyManager;
+    disableCaptureJSProfileSetting;
     captureLayersAndPicturesSetting;
     captureSelectorStatsSetting;
     #thirdPartyTracksSetting;
@@ -415,6 +406,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
         this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
         this.traceLoadStart = null;
+        this.disableCaptureJSProfileSetting = Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+        this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
         this.captureLayersAndPicturesSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-layers-and-pictures', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureLayersAndPicturesSetting.setTitle(i18nString(UIStrings.enableAdvancedPaint));
         this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
@@ -861,29 +854,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     #removeSidebarIconFromToolbar() {
         this.panelToolbar.removeToolbarItem(this.#sidebarToggleButton);
     }
-    #populateDownloadMenu(contextMenu) {
-        // If the current trace is annotated, add an option to save it without annotations.
-        const currModificationManager = ModificationsManager.activeManager();
-        const annotationsExist = currModificationManager && currModificationManager.getAnnotations()?.length > 0;
-        contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithAnnotationsMenuOption), () => {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-            void this.saveToFile({ savingEnhancedTrace: false, addModifications: true });
-        }, {
-            jslogContext: annotationsExist ? 'timeline.save-to-file-with-annotations' :
-                'timeline.save-to-file-without-annotations',
-        });
-        if (annotationsExist) {
-            contextMenu.viewSection().appendItem(i18nString(UIStrings.saveTraceWithoutAnnotationsMenuOption), () => {
-                Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
-                void this.saveToFile({
-                    savingEnhancedTrace: false,
-                    addModifications: false,
-                });
-            }, {
-                jslogContext: 'timeline.save-to-file-without-annotations',
-            });
-        }
-    }
     /**
      * Returns false if this was loaded in a standalone context such that recording is
      * not possible, like an enhanced trace (which opens a new devtools window) or
@@ -911,27 +881,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceImported);
             this.selectFileToLoad();
         });
-        this.saveButton = new UI.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, false, 'timeline.save-to-file-more-options', 'download');
-        this.saveButton.setTitle(i18nString(UIStrings.saveTrace));
-        if (Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */)) {
-            this.saveButton.element.addEventListener('contextmenu', event => {
-                event.preventDefault();
-                event.stopPropagation();
-                if (event.ctrlKey || event.button === 2) {
-                    const contextMenu = new UI.ContextMenu.ContextMenu(event);
-                    contextMenu.saveSection().appendItem(i18nString(UIStrings.exportNormalTraces), () => {
-                        void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
-                    });
-                    contextMenu.saveSection().appendItem(i18nString(UIStrings.exportEnhancedTraces), () => {
-                        void this.saveToFile({ savingEnhancedTrace: true, addModifications: false });
-                    });
-                    void contextMenu.show();
-                }
-                else {
-                    void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
-                }
-            });
-        }
+        const exportTraceOptions = new TimelineComponents.ExportTraceOptions.ExportTraceOptions();
+        exportTraceOptions.data = {
+            onExport: this.saveToFile.bind(this),
+            buttonEnabled: this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace(),
+        };
+        this.saveButton = new UI.Toolbar.ToolbarItem(exportTraceOptions);
         this.panelToolbar.appendSeparator();
         this.panelToolbar.appendToolbarItem(this.loadButton);
         this.panelToolbar.appendToolbarItem(this.saveButton);
@@ -1086,6 +1041,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.showSettingsPaneButton = new UI.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, 'gear', i18nString(UIStrings.captureSettings), 'gear-filled', 'timeline-settings-toggle');
         SDK.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.CONDITIONS_CHANGED */, this.updateShowSettingsToolbarButton, this);
         SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged" /* SDK.CPUThrottlingManager.Events.RATE_CHANGED */, this.updateShowSettingsToolbarButton, this);
+        this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
         this.settingsPane = this.element.createChild('div', 'timeline-settings-pane');
@@ -1094,11 +1050,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         cpuThrottlingPane.append(i18nString(UIStrings.cpu));
         this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
         cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
         const networkThrottlingPane = this.settingsPane.createChild('div');
         networkThrottlingPane.append(i18nString(UIStrings.network));
         networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
-        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString(UIStrings.capturesSelectorStats)));
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString(UIStrings.capturesAdvancedPaint)));
+        this.settingsPane.append(UI.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString(UIStrings.disablesJavascriptSampling)));
         const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString(UIStrings.showDataAddedByExtensions));
         const localLink = UI.XLink.XLink.create('https://developer.chrome.com/docs/devtools/performance/extension', i18nString(UIStrings.learnMore));
         // Has to be done in JS because the element is inserted into the
@@ -1169,8 +1126,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             return;
         }
         const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex) ?? {};
-        const shouldRetainScriptSources = config.savingEnhancedTrace &&
-            Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */);
+        const shouldRetainScriptSources = config.includeScriptContent && config.includeSourceMaps;
         if (!shouldRetainScriptSources) {
             traceEvents = traceEvents.map(event => {
                 if (Trace.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== 'StubScriptCatchup') {
@@ -1200,7 +1156,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
         }
         try {
-            await this.innerSaveToFile(traceEvents, metadata, config);
+            await this.innerSaveToFile(traceEvents, metadata, { savingEnhancedTrace: config.includeScriptContent, addModifications: config.addModifications });
         }
         catch (e) {
             // We expect the error to be an Error class, but this deals with any weird case where it's not.
@@ -1436,6 +1392,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (this.captureSelectorStatsSetting.get()) {
             messages.push(i18nString(UIStrings.SelectorStatsEnabled));
         }
+        if (this.disableCaptureJSProfileSetting.get()) {
+            messages.push(i18nString(UIStrings.JavascriptSamplingIsDisabled));
+        }
         this.showSettingsPaneButton.setChecked(messages.length > 0);
         this.showSettingsPaneButton.element.style.setProperty('--dot-toggle-top', '16px');
         this.showSettingsPaneButton.element.style.setProperty('--dot-toggle-left', '15px');
@@ -1564,7 +1523,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 await this.#navigateToAboutBlank();
             }
             const recordingOptions = {
-                enableJSSampling: true,
+                enableJSSampling: !this.disableCaptureJSProfileSetting.get(),
                 capturePictures: this.captureLayersAndPicturesSetting.get(),
                 captureFilmStrip: this.showScreenshotsSetting.get(),
                 captureSelectorStats: this.captureSelectorStatsSetting.get(),
@@ -1663,7 +1622,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (this.#viewMode.mode === 'VIEWING_TRACE') {
             this.#addSidebarIconToToolbar();
         }
-        this.saveButton.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
+        const exportTraceOptionsElement = this.saveButton.element;
+        exportTraceOptionsElement.data = {
+            onExport: this.saveToFile.bind(this),
+            buttonEnabled: this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace(),
+        };
         this.#historyManager.setEnabled(this.state === "Idle" /* State.IDLE */);
         this.clearButton.setEnabled(this.state === "Idle" /* State.IDLE */);
         this.dropTarget.setEnabled(this.state === "Idle" /* State.IDLE */);
@@ -1794,6 +1757,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.searchableViewInternal.showWidget();
         const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
         this.#applyActiveFilters(parsedTrace.Meta.traceIsGeneric, exclusiveFilter);
+        this.saveButton.element
+            .updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
         // Add ModificationsManager listeners for annotations change to update the Annotation Overlays.
         currentManager?.addEventListener(AnnotationModifiedEvent.eventName, event => {
             // Update screen readers.
@@ -1827,6 +1792,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             const annotations = currentManager.getAnnotations();
             const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
             this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
+            this.saveButton.element
+                .updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
         });
         // To calculate the activity we might want to zoom in, we use the top-most main-thread track
         const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
@@ -2638,7 +2605,7 @@ export class ActionDelegate {
                 panel.recordReload();
                 return true;
             case 'timeline.save-to-file':
-                void panel.saveToFile({ savingEnhancedTrace: false, addModifications: false });
+                void panel.saveToFile({ includeScriptContent: false, includeSourceMaps: false, addModifications: false });
                 return true;
             case 'timeline.load-from-file':
                 panel.selectFileToLoad();

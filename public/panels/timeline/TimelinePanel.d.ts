@@ -27,6 +27,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private readonly millisecondsToRecordAfterLoadEvent;
     private readonly toggleRecordAction;
     private readonly recordReloadAction;
+    private disableCaptureJSProfileSetting;
     private readonly captureLayersAndPicturesSetting;
     private readonly captureSelectorStatsSetting;
     private showScreenshotsSetting;
@@ -118,7 +119,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      *      3. Visual track configuration (re-ordering or hiding tracks).
      */
     saveToFile(config: {
-        savingEnhancedTrace: boolean;
+        includeScriptContent: boolean;
+        includeSourceMaps: boolean;
         addModifications: boolean;
     }): Promise<void>;
     innerSaveToFile(traceEvents: readonly Trace.Types.Events.Event[], metadata: Trace.Types.File.MetaData, config: {

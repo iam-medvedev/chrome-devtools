@@ -707,23 +707,14 @@ describeWithEnvironment('RendererHandler', function () {
             await Trace.Handlers.ModelHandlers.Renderer.finalize();
             return Trace.Handlers.ModelHandlers.Renderer.data();
         }
-        let defaultTraceEvents;
         const pid = Trace.Types.Events.ProcessID(28274);
         const tid = Trace.Types.Events.ThreadID(775);
-        beforeEach(async function () {
-            defaultTraceEvents = await TraceLoader.rawEvents(this, 'missing-url.json.gz');
-        });
-        afterEach(() => {
-            Trace.Handlers.ModelHandlers.Renderer.reset();
-            Trace.Handlers.ModelHandlers.Meta.reset();
-            Trace.Handlers.ModelHandlers.Samples.reset();
-        });
         it('builds a hierarchy using begin and end trace events', async () => {
             // |------------- RunTask -------------||-- RunTask --|
             //  |-- RunMicrotasks --||-- Layout --|
             //   |- FunctionCall -|
             const traceEvents = [
-                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
+                makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
                 makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
                 makeBeginEvent('FunctionCall', 2, '*', pid, tid), // 2..3
                 makeEndEvent('FunctionCall', 3, '*', pid, tid), // 2..3
@@ -734,10 +725,9 @@ describeWithEnvironment('RendererHandler', function () {
                 makeBeginEvent('RunTask', 11, '*', pid, tid), // 11..14
                 makeEndEvent('RunTask', 14, '*', pid, tid), // 11..14
             ];
-            const data = await handleEvents(traceEvents);
-            assert.lengthOf(data.allTraceEntries, 7);
-            assert.strictEqual(data.processes.size, 1);
-            const [process] = data.processes.values();
+            const rendererData = await handleEvents(traceEvents);
+            assert.strictEqual(rendererData.processes.size, 1);
+            const [process] = rendererData.processes.values();
             assert.strictEqual(process.threads.size, 1);
             const [thread] = process.threads.values();
             assert.strictEqual(thread.tree?.roots.size, 2);
@@ -762,7 +752,7 @@ describeWithEnvironment('RendererHandler', function () {
             //  |-- RunMicrotasks --||-- Layout --|
             //   |- FunctionCall -|
             const traceEvents = [
-                ...defaultTraceEvents, makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
+                makeBeginEvent('RunTask', 0, '*', pid, tid), // 0..10
                 makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
                 makeCompleteEvent('FunctionCall', 2, 1, '*', pid, tid), // 2..3
                 makeEndEvent('RunMicrotasks', 4, '*', pid, tid), // 1..4
@@ -770,10 +760,9 @@ describeWithEnvironment('RendererHandler', function () {
                 makeEndEvent('Layout', 8, '*', pid, tid), // 5..8
                 makeEndEvent('RunTask', 10, '*', pid, tid), // 0..10
             ];
-            const data = await handleEvents(traceEvents);
-            assert.lengthOf(data.allTraceEntries, 6);
-            assert.strictEqual(data.processes.size, 1);
-            const [process] = data.processes.values();
+            const rendererData = await handleEvents(traceEvents);
+            assert.strictEqual(rendererData.processes.size, 1);
+            const [process] = rendererData.processes.values();
             assert.strictEqual(process.threads.size, 1);
             const [thread] = process.threads.values();
             assert.strictEqual(thread.tree?.roots.size, 1);
@@ -794,7 +783,7 @@ describeWithEnvironment('RendererHandler', function () {
         });
         it('keeps a FunctionCall that has the end event missing', async () => {
             const traceEvents = [
-                ...defaultTraceEvents, makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
+                makeBeginEvent('RunMicrotasks', 1, '*', pid, tid), // 1..4
                 makeBeginEvent('FunctionCall', 2, '*', pid, tid), // 2..3
             ];
             const data = await handleEvents(traceEvents);

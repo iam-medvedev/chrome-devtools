@@ -611,9 +611,9 @@ export const DEFAULT_VIEW = (input, output, target) => {
         i18nString(UIStrings.endRecording);
     // clang-format off
     Lit.render(html `
-    <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
-    <style>${UI.Widget.widgetScoped(recordingViewStyles)}</style>
-    <style>${UI.Widget.widgetScoped(Input.textInputStyles)}</style>
+    <style>${UI.inspectorCommonStyles}</style>
+    <style>${recordingViewStyles}</style>
+    <style>${Input.textInputStyles}</style>
     <div @click=${input.onWrapperClick} class=${Lit.Directives.classMap(classNames)}>
       <div class="recording-view main">
         ${renderHeader(input)}

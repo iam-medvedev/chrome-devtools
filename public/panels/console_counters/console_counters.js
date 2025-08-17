@@ -63,15 +63,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
       {
         iconName: "cross-circle-filled",
         iconColor: "var(--icon-error)",
-        iconHeight: "14px",
-        iconWidth: "14px",
         text: countToText(errors)
       },
       {
         iconName: "warning-filled",
-        iconColor: "var(--icon-warning)",
-        iconHeight: "14px",
-        iconWidth: "14px",
         text: countToText(warnings)
       }
     ]
@@ -90,7 +85,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
          ><icon-button
             .data=${iconData}
             title=${consoleTitle}
-            class=${warnings || errors ? nothing : "hidden"}
+            class=${"small" + warnings || errors ? nothing : "hidden"}
             jslog=${VisualLogging.counter("console").track({
     click: true
   })}

@@ -1,13 +1,14 @@
 import * as Host from '../../core/host/host.js';
+import type * as Trace from '../trace/trace.js';
 import { type AiAgent, type ExternalRequestResponse, type ResponseData } from './agents/AiAgent.js';
 import { Conversation, ConversationType } from './AiHistoryStorage.js';
 import type { ChangeManager } from './ChangeManager.js';
-export interface ExternalStylingRequestParameters {
+interface ExternalStylingRequestParameters {
     conversationType: ConversationType.STYLING;
     prompt: string;
     selector?: string;
 }
-export interface ExternalNetworkRequestParameters {
+interface ExternalNetworkRequestParameters {
     conversationType: ConversationType.NETWORK;
     prompt: string;
     requestUrl: string;
@@ -16,6 +17,7 @@ export interface ExternalPerformanceInsightsRequestParameters {
     conversationType: ConversationType.PERFORMANCE_INSIGHT;
     prompt: string;
     insightTitle: string;
+    traceModel: Trace.TraceModel.Model;
 }
 export declare class ConversationHandler {
     #private;
@@ -34,3 +36,4 @@ export declare class ConversationHandler {
     handleConversationWithHistory(items: AsyncIterable<ResponseData, void, void>, conversation: Conversation | undefined): AsyncGenerator<ResponseData, void, void>;
     createAgent(conversationType: ConversationType, changeManager?: ChangeManager): AiAgent<unknown>;
 }
+export {};

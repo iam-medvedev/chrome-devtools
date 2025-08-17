@@ -4,6 +4,73 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/ui/components/text_editor/AiCodeCompletionTeaserPlaceholder.js
+var AiCodeCompletionTeaserPlaceholder_exports = {};
+__export(AiCodeCompletionTeaserPlaceholder_exports, {
+  AiCodeCompletionTeaserPlaceholder: () => AiCodeCompletionTeaserPlaceholder,
+  aiCodeCompletionTeaserPlaceholder: () => aiCodeCompletionTeaserPlaceholder,
+  flattenRect: () => flattenRect
+});
+import * as CM from "./../../../third_party/codemirror.next/codemirror.next.js";
+function flattenRect(rect, left) {
+  const x = left ? rect.left : rect.right;
+  return { left: x, right: x, top: rect.top, bottom: rect.bottom };
+}
+var AiCodeCompletionTeaserPlaceholder = class extends CM.WidgetType {
+  teaser;
+  constructor(teaser) {
+    super();
+    this.teaser = teaser;
+  }
+  toDOM() {
+    const wrap = document.createElement("span");
+    wrap.classList.add("cm-placeholder");
+    wrap.style.pointerEvents = "none";
+    wrap.tabIndex = 0;
+    this.teaser.show(wrap, void 0, true);
+    return wrap;
+  }
+  /**
+   * Controls the cursor's height by reporting this widget's bounds as a
+   * single line. This prevents the cursor from expanding vertically when the
+   * placeholder content wraps across multiple lines.
+   */
+  coordsAt(dom) {
+    const boundingClientRect = dom.firstElementChild?.getBoundingClientRect();
+    if (!boundingClientRect) {
+      return null;
+    }
+    const style = window.getComputedStyle(dom.parentNode);
+    const rect = flattenRect(boundingClientRect, style.direction !== "rtl");
+    const lineHeight = parseInt(style.lineHeight, 10);
+    if (rect.bottom - rect.top > lineHeight * 1.5) {
+      return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.top + lineHeight };
+    }
+    return rect;
+  }
+  ignoreEvent(_) {
+    return false;
+  }
+  destroy(dom) {
+    super.destroy(dom);
+    this.teaser?.hideWidget();
+  }
+};
+function aiCodeCompletionTeaserPlaceholder(teaser) {
+  const plugin = CM.ViewPlugin.fromClass(class {
+    view;
+    placeholder;
+    constructor(view) {
+      this.view = view;
+      this.placeholder = CM.Decoration.set([CM.Decoration.widget({ widget: new AiCodeCompletionTeaserPlaceholder(teaser), side: 1 }).range(0)]);
+    }
+    get decorations() {
+      return this.view.state.doc.length ? CM.Decoration.none : this.placeholder;
+    }
+  }, { decorations: (v) => v.decorations });
+  return plugin;
+}
+
 // gen/front_end/ui/components/text_editor/AutocompleteHistory.js
 var AutocompleteHistory_exports = {};
 __export(AutocompleteHistory_exports, {
@@ -130,15 +197,15 @@ import * as Common from "./../../../core/common/common.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as TextUtils from "./../../../models/text_utils/text_utils.js";
 import * as WindowBoundsService from "./../../../services/window_bounds/window_bounds.js";
-import * as CM2 from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as CM3 from "./../../../third_party/codemirror.next/codemirror.next.js";
 import * as UI from "./../../legacy/legacy.js";
 import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 import * as CodeHighlighter from "./../code_highlighter/code_highlighter.js";
 import * as Icon from "./../icon_button/icon_button.js";
 
 // gen/front_end/ui/components/text_editor/theme.js
-import * as CM from "./../../../third_party/codemirror.next/codemirror.next.js";
-var editorTheme = CM.EditorView.theme({
+import * as CM2 from "./../../../third_party/codemirror.next/codemirror.next.js";
+var editorTheme = CM2.EditorView.theme({
   "&.cm-editor": {
     color: "color: var(--sys-color-on-subtle)",
     cursor: "auto",
@@ -349,11 +416,11 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("ui/components/text_editor/config.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var empty = [];
-var dynamicSetting = CM2.Facet.define();
+var dynamicSetting = CM3.Facet.define();
 var DynamicSetting = class _DynamicSetting {
   settingName;
   getExtension;
-  compartment = new CM2.Compartment();
+  compartment = new CM3.Compartment();
   constructor(settingName, getExtension) {
     this.settingName = settingName;
     this.getExtension = getExtension;
@@ -377,28 +444,28 @@ var DynamicSetting = class _DynamicSetting {
   }
   static none = [];
 };
-var tabMovesFocus = DynamicSetting.bool("text-editor-tab-moves-focus", [], CM2.keymap.of([{
+var tabMovesFocus = DynamicSetting.bool("text-editor-tab-moves-focus", [], CM3.keymap.of([{
   key: "Tab",
-  run: (view) => view.state.doc.length ? CM2.indentMore(view) : false,
-  shift: (view) => view.state.doc.length ? CM2.indentLess(view) : false
+  run: (view) => view.state.doc.length ? CM3.indentMore(view) : false,
+  shift: (view) => view.state.doc.length ? CM3.indentLess(view) : false
 }]));
-var disableConservativeCompletion = CM2.StateEffect.define();
-var conservativeCompletion = CM2.StateField.define({
+var disableConservativeCompletion = CM3.StateEffect.define();
+var conservativeCompletion = CM3.StateField.define({
   create() {
     return true;
   },
   update(value, tr) {
-    if (CM2.completionStatus(tr.state) !== "active") {
+    if (CM3.completionStatus(tr.state) !== "active") {
       return true;
     }
-    if ((CM2.selectedCompletionIndex(tr.startState) ?? 0) !== (CM2.selectedCompletionIndex(tr.state) ?? 0) || tr.effects.some((e) => e.is(disableConservativeCompletion))) {
+    if ((CM3.selectedCompletionIndex(tr.startState) ?? 0) !== (CM3.selectedCompletionIndex(tr.state) ?? 0) || tr.effects.some((e) => e.is(disableConservativeCompletion))) {
       return false;
     }
     return value;
   }
 });
 function acceptCompletionIfNotConservative(view) {
-  return !view.state.field(conservativeCompletion, false) && CM2.acceptCompletion(view);
+  return !view.state.field(conservativeCompletion, false) && CM3.acceptCompletion(view);
 }
 function acceptCompletionIfAtEndOfLine(view) {
   const cursorPosition = view.state.selection.main.head;
@@ -406,13 +473,13 @@ function acceptCompletionIfAtEndOfLine(view) {
   const column = cursorPosition - line.from;
   const isCursorAtEndOfLine = column >= line.length;
   if (isCursorAtEndOfLine) {
-    return CM2.acceptCompletion(view);
+    return CM3.acceptCompletion(view);
   }
   return false;
 }
 function moveCompletionSelectionIfNotConservative(forward, by = "option") {
   return (view) => {
-    if (CM2.completionStatus(view.state) !== "active") {
+    if (CM3.completionStatus(view.state) !== "active") {
       return false;
     }
     view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
@@ -421,32 +488,32 @@ function moveCompletionSelectionIfNotConservative(forward, by = "option") {
       announceSelectedCompletionInfo(view);
       return true;
     }
-    const moveSelectionResult = CM2.moveCompletionSelection(forward, by)(view);
+    const moveSelectionResult = CM3.moveCompletionSelection(forward, by)(view);
     announceSelectedCompletionInfo(view);
     return moveSelectionResult;
   };
 }
 function moveCompletionSelectionBackwardWrapper() {
   return (view) => {
-    if (CM2.completionStatus(view.state) !== "active") {
+    if (CM3.completionStatus(view.state) !== "active") {
       return false;
     }
     view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
-    CM2.moveCompletionSelection(false)(view);
+    CM3.moveCompletionSelection(false)(view);
     announceSelectedCompletionInfo(view);
     return true;
   };
 }
 function announceSelectedCompletionInfo(view) {
   const ariaMessage = i18nString(UIStrings.sSuggestionSOfS, {
-    PH1: CM2.selectedCompletion(view.state)?.label || "",
-    PH2: (CM2.selectedCompletionIndex(view.state) || 0) + 1,
-    PH3: CM2.currentCompletions(view.state).length
+    PH1: CM3.selectedCompletion(view.state)?.label || "",
+    PH2: (CM3.selectedCompletionIndex(view.state) || 0) + 1,
+    PH3: CM3.currentCompletions(view.state).length
   });
   UI.ARIAUtils.LiveAnnouncer.alert(ariaMessage);
 }
 var autocompletion2 = new DynamicSetting("text-editor-autocompletion", (activateOnTyping) => [
-  CM2.autocompletion({
+  CM3.autocompletion({
     activateOnTyping,
     icons: false,
     optionClass: (option) => option.type === "secondary" ? "cm-secondaryCompletion" : "",
@@ -456,23 +523,23 @@ var autocompletion2 = new DynamicSetting("text-editor-autocompletion", (activate
     defaultKeymap: false,
     updateSyncTime: 100
   }),
-  CM2.Prec.highest(CM2.keymap.of([
+  CM3.Prec.highest(CM3.keymap.of([
     { key: "End", run: acceptCompletionIfAtEndOfLine },
     { key: "ArrowRight", run: acceptCompletionIfAtEndOfLine },
-    { key: "Ctrl-Space", run: CM2.startCompletion },
-    { key: "Escape", run: CM2.closeCompletion },
+    { key: "Ctrl-Space", run: CM3.startCompletion },
+    { key: "Escape", run: CM3.closeCompletion },
     { key: "ArrowDown", run: moveCompletionSelectionIfNotConservative(true) },
     { key: "ArrowUp", run: moveCompletionSelectionBackwardWrapper() },
     { mac: "Ctrl-n", run: moveCompletionSelectionIfNotConservative(true) },
     { mac: "Ctrl-p", run: moveCompletionSelectionBackwardWrapper() },
-    { key: "PageDown", run: CM2.moveCompletionSelection(true, "page") },
-    { key: "PageUp", run: CM2.moveCompletionSelection(false, "page") },
+    { key: "PageDown", run: CM3.moveCompletionSelection(true, "page") },
+    { key: "PageUp", run: CM3.moveCompletionSelection(false, "page") },
     { key: "Enter", run: acceptCompletionIfNotConservative }
   ]))
 ]);
-var bracketMatching2 = DynamicSetting.bool("text-editor-bracket-matching", CM2.bracketMatching());
+var bracketMatching2 = DynamicSetting.bool("text-editor-bracket-matching", CM3.bracketMatching());
 var codeFolding = DynamicSetting.bool("text-editor-code-folding", [
-  CM2.foldGutter({
+  CM3.foldGutter({
     markerDOM(open) {
       const iconName = open ? "triangle-down" : "triangle-right";
       const icon = new Icon.Icon.Icon();
@@ -480,21 +547,20 @@ var codeFolding = DynamicSetting.bool("text-editor-code-folding", [
       icon.setAttribute("jslog", `${VisualLogging.expand().track({ click: true })}`);
       icon.data = {
         iconName,
-        color: "var(--icon-fold-marker)",
-        width: "14px",
-        height: "14px"
+        color: "var(--icon-fold-marker)"
       };
+      icon.classList.add("small");
       return icon;
     }
   }),
-  CM2.keymap.of(CM2.foldKeymap)
+  CM3.keymap.of(CM3.foldKeymap)
 ]);
-var AutoDetectIndent = CM2.StateField.define({
+var AutoDetectIndent = CM3.StateField.define({
   create: (state) => detectIndentation(state.doc),
   update: (indent, tr) => {
     return tr.docChanged && preservedLength(tr.changes) <= RECOMPUTE_INDENT_MAX_SIZE ? detectIndentation(tr.state.doc) : indent;
   },
-  provide: (f) => CM2.Prec.highest(CM2.indentUnit.from(f))
+  provide: (f) => CM3.Prec.highest(CM3.indentUnit.from(f))
 });
 function preservedLength(ch) {
   let len = 0;
@@ -510,7 +576,7 @@ function detectIndentation(doc) {
 }
 var autoDetectIndent = DynamicSetting.bool("text-editor-auto-detect-indent", AutoDetectIndent);
 function matcher(decorator) {
-  return CM2.ViewPlugin.define((view) => ({
+  return CM3.ViewPlugin.define((view) => ({
     decorations: decorator.createDeco(view),
     update(u) {
       this.decorations = decorator.updateDeco(u, this.decorations);
@@ -525,7 +591,7 @@ function getWhitespaceDeco(space) {
   if (cached) {
     return cached;
   }
-  const result = CM2.Decoration.mark({
+  const result = CM3.Decoration.mark({
     attributes: space === "	" ? {
       class: "cm-highlightedTab"
     } : { class: "cm-highlightedSpaces", "data-display": "\xB7".repeat(space.length) }
@@ -533,14 +599,14 @@ function getWhitespaceDeco(space) {
   WhitespaceDeco.set(space, result);
   return result;
 }
-var showAllWhitespace = matcher(new CM2.MatchDecorator({
+var showAllWhitespace = matcher(new CM3.MatchDecorator({
   regexp: /\t| +/g,
   decoration: (match) => getWhitespaceDeco(match[0]),
   boundary: /\S/
 }));
-var showTrailingWhitespace = matcher(new CM2.MatchDecorator({
+var showTrailingWhitespace = matcher(new CM3.MatchDecorator({
   regexp: /\s+$/g,
-  decoration: CM2.Decoration.mark({ class: "cm-trailingWhitespace" }),
+  decoration: CM3.Decoration.mark({ class: "cm-trailingWhitespace" }),
   boundary: /\S/
 }));
 var showWhitespace = new DynamicSetting("show-whitespaces-in-editor", (value) => {
@@ -552,42 +618,42 @@ var showWhitespace = new DynamicSetting("show-whitespaces-in-editor", (value) =>
   }
   return empty;
 });
-var allowScrollPastEof = DynamicSetting.bool("allow-scroll-past-eof", CM2.scrollPastEnd());
+var allowScrollPastEof = DynamicSetting.bool("allow-scroll-past-eof", CM3.scrollPastEnd());
 var cachedIndentUnit = /* @__PURE__ */ Object.create(null);
 function getIndentUnit(indent) {
   let value = cachedIndentUnit[indent];
   if (!value) {
-    value = cachedIndentUnit[indent] = CM2.indentUnit.of(indent);
+    value = cachedIndentUnit[indent] = CM3.indentUnit.of(indent);
   }
   return value;
 }
 var indentUnit2 = new DynamicSetting("text-editor-indent", getIndentUnit);
-var domWordWrap = DynamicSetting.bool("dom-word-wrap", CM2.EditorView.lineWrapping);
-var sourcesWordWrap = DynamicSetting.bool("sources.word-wrap", CM2.EditorView.lineWrapping);
+var domWordWrap = DynamicSetting.bool("dom-word-wrap", CM3.EditorView.lineWrapping);
+var sourcesWordWrap = DynamicSetting.bool("sources.word-wrap", CM3.EditorView.lineWrapping);
 function detectLineSeparator(text) {
   if (/\r\n/.test(text) && !/(^|[^\r])\n/.test(text)) {
-    return CM2.EditorState.lineSeparator.of("\r\n");
+    return CM3.EditorState.lineSeparator.of("\r\n");
   }
   return [];
 }
-var baseKeymap = CM2.keymap.of([
-  { key: "Tab", run: CM2.acceptCompletion },
-  { key: "Ctrl-m", run: CM2.cursorMatchingBracket, shift: CM2.selectMatchingBracket },
-  { key: "Mod-/", run: CM2.toggleComment },
-  { key: "Mod-d", run: CM2.selectNextOccurrence },
-  { key: "Alt-ArrowLeft", mac: "Ctrl-ArrowLeft", run: CM2.cursorSyntaxLeft, shift: CM2.selectSyntaxLeft },
-  { key: "Alt-ArrowRight", mac: "Ctrl-ArrowRight", run: CM2.cursorSyntaxRight, shift: CM2.selectSyntaxRight },
-  { key: "Ctrl-ArrowLeft", mac: "Alt-ArrowLeft", run: CM2.cursorGroupLeft, shift: CM2.selectGroupLeft },
-  { key: "Ctrl-ArrowRight", mac: "Alt-ArrowRight", run: CM2.cursorGroupRight, shift: CM2.selectGroupRight },
-  ...CM2.standardKeymap,
-  ...CM2.historyKeymap
+var baseKeymap = CM3.keymap.of([
+  { key: "Tab", run: CM3.acceptCompletion },
+  { key: "Ctrl-m", run: CM3.cursorMatchingBracket, shift: CM3.selectMatchingBracket },
+  { key: "Mod-/", run: CM3.toggleComment },
+  { key: "Mod-d", run: CM3.selectNextOccurrence },
+  { key: "Alt-ArrowLeft", mac: "Ctrl-ArrowLeft", run: CM3.cursorSyntaxLeft, shift: CM3.selectSyntaxLeft },
+  { key: "Alt-ArrowRight", mac: "Ctrl-ArrowRight", run: CM3.cursorSyntaxRight, shift: CM3.selectSyntaxRight },
+  { key: "Ctrl-ArrowLeft", mac: "Alt-ArrowLeft", run: CM3.cursorGroupLeft, shift: CM3.selectGroupLeft },
+  { key: "Ctrl-ArrowRight", mac: "Alt-ArrowRight", run: CM3.cursorGroupRight, shift: CM3.selectGroupRight },
+  ...CM3.standardKeymap,
+  ...CM3.historyKeymap
 ]);
 function themeIsDark() {
   const setting = Common.Settings.Settings.instance().moduleSetting("ui-theme").get();
   return setting === "systemPreferred" ? window.matchMedia("(prefers-color-scheme: dark)").matches : setting === "dark";
 }
-var dummyDarkTheme = CM2.EditorView.theme({}, { dark: true });
-var themeSelection = new CM2.Compartment();
+var dummyDarkTheme = CM3.EditorView.theme({}, { dark: true });
+var themeSelection = new CM3.Compartment();
 function theme() {
   return [editorTheme, themeIsDark() ? themeSelection.of(dummyDarkTheme) : themeSelection.of([])];
 }
@@ -601,56 +667,56 @@ function getTooltipSpace() {
 function baseConfiguration(text) {
   return [
     theme(),
-    CM2.highlightSpecialChars(),
-    CM2.highlightSelectionMatches(),
-    CM2.history(),
-    CM2.drawSelection(),
-    CM2.EditorState.allowMultipleSelections.of(true),
-    CM2.indentOnInput(),
-    CM2.syntaxHighlighting(CodeHighlighter.CodeHighlighter.highlightStyle),
+    CM3.highlightSpecialChars(),
+    CM3.highlightSelectionMatches(),
+    CM3.history(),
+    CM3.drawSelection(),
+    CM3.EditorState.allowMultipleSelections.of(true),
+    CM3.indentOnInput(),
+    CM3.syntaxHighlighting(CodeHighlighter.CodeHighlighter.highlightStyle),
     baseKeymap,
-    CM2.EditorView.clickAddsSelectionRange.of((mouseEvent) => mouseEvent.altKey || mouseEvent.ctrlKey),
+    CM3.EditorView.clickAddsSelectionRange.of((mouseEvent) => mouseEvent.altKey || mouseEvent.ctrlKey),
     tabMovesFocus.instance(),
     bracketMatching2.instance(),
     indentUnit2.instance(),
-    CM2.Prec.lowest(CM2.EditorView.contentAttributes.of({ "aria-label": i18nString(UIStrings.codeEditor) })),
-    text instanceof CM2.Text ? [] : detectLineSeparator(text),
-    CM2.tooltips({
+    CM3.Prec.lowest(CM3.EditorView.contentAttributes.of({ "aria-label": i18nString(UIStrings.codeEditor) })),
+    text instanceof CM3.Text ? [] : detectLineSeparator(text),
+    CM3.tooltips({
       parent: getTooltipHost(),
       tooltipSpace: getTooltipSpace
     }),
-    CM2.bidiIsolates()
+    CM3.bidiIsolates()
   ];
 }
 var closeBrackets2 = DynamicSetting.bool("text-editor-bracket-closing", [
-  CM2.html.autoCloseTags,
-  CM2.closeBrackets(),
-  CM2.keymap.of(CM2.closeBracketsKeymap)
+  CM3.html.autoCloseTags,
+  CM3.closeBrackets(),
+  CM3.keymap.of(CM3.closeBracketsKeymap)
 ]);
 var tooltipHost = null;
 function getTooltipHost() {
   if (!tooltipHost) {
-    const styleModules = CM2.EditorState.create({
+    const styleModules = CM3.EditorState.create({
       extensions: [
         editorTheme,
         themeIsDark() ? dummyDarkTheme : [],
-        CM2.syntaxHighlighting(CodeHighlighter.CodeHighlighter.highlightStyle),
-        CM2.showTooltip.of({
+        CM3.syntaxHighlighting(CodeHighlighter.CodeHighlighter.highlightStyle),
+        CM3.showTooltip.of({
           pos: 0,
           create() {
             return { dom: document.createElement("div") };
           }
         })
       ]
-    }).facet(CM2.EditorView.styleModule);
+    }).facet(CM3.EditorView.styleModule);
     const host = document.body.appendChild(document.createElement("div"));
     host.className = "editor-tooltip-host";
     tooltipHost = host.attachShadow({ mode: "open" });
-    CM2.StyleModule.mount(tooltipHost, styleModules);
+    CM3.StyleModule.mount(tooltipHost, styleModules);
   }
   return tooltipHost;
 }
-var CompletionHint = class extends CM2.WidgetType {
+var CompletionHint = class extends CM3.WidgetType {
   text;
   constructor(text) {
     super();
@@ -666,19 +732,19 @@ var CompletionHint = class extends CM2.WidgetType {
     return span;
   }
 };
-var showCompletionHint = CM2.ViewPlugin.fromClass(class {
-  decorations = CM2.Decoration.none;
+var showCompletionHint = CM3.ViewPlugin.fromClass(class {
+  decorations = CM3.Decoration.none;
   currentHint = null;
   update(update) {
     const top = this.currentHint = this.topCompletion(update.state);
     if (!top || update.state.field(conservativeCompletion, false)) {
-      this.decorations = CM2.Decoration.none;
+      this.decorations = CM3.Decoration.none;
     } else {
-      this.decorations = CM2.Decoration.set([CM2.Decoration.widget({ widget: new CompletionHint(top), side: 1 }).range(update.state.selection.main.head)]);
+      this.decorations = CM3.Decoration.set([CM3.Decoration.widget({ widget: new CompletionHint(top), side: 1 }).range(update.state.selection.main.head)]);
     }
   }
   topCompletion(state) {
-    const completion2 = CM2.selectedCompletion(state);
+    const completion2 = CM3.selectedCompletion(state);
     if (!completion2) {
       return null;
     }
@@ -711,8 +777,8 @@ function contentIncludingHint(view) {
   }
   return content;
 }
-var setAiAutoCompleteSuggestion = CM2.StateEffect.define();
-var aiAutoCompleteSuggestionState = CM2.StateField.define({
+var setAiAutoCompleteSuggestion = CM3.StateEffect.define();
+var aiAutoCompleteSuggestionState = CM3.StateField.define({
   create: () => null,
   update(value, tr) {
     for (const effect of tr.effects) {
@@ -747,13 +813,13 @@ function hasActiveAiSuggestion(state) {
 function acceptAiAutoCompleteSuggestion(view) {
   const suggestion = view.state.field(aiAutoCompleteSuggestionState);
   if (!suggestion) {
-    return false;
+    return { accepted: false };
   }
   const { text, from } = suggestion;
   const { head } = view.state.selection.main;
   const typedText = view.state.doc.sliceString(from, head);
   if (!text.startsWith(typedText)) {
-    return false;
+    return { accepted: false };
   }
   const remainingText = text.slice(typedText.length);
   view.dispatch({
@@ -762,12 +828,12 @@ function acceptAiAutoCompleteSuggestion(view) {
     effects: setAiAutoCompleteSuggestion.of(null),
     userEvent: "input.complete"
   });
-  return true;
+  return { accepted: true, suggestion };
 }
 var aiAutoCompleteSuggestion = [
   aiAutoCompleteSuggestionState,
-  CM2.ViewPlugin.fromClass(class {
-    decorations = CM2.Decoration.none;
+  CM3.ViewPlugin.fromClass(class {
+    decorations = CM3.Decoration.none;
     update(update) {
       const activeSuggestion = update.state.field(aiAutoCompleteSuggestionState);
       const { head, empty: empty2 } = update.state.selection.main;
@@ -780,9 +846,9 @@ var aiAutoCompleteSuggestion = [
         }
       }
       if (!hint) {
-        this.decorations = CM2.Decoration.none;
+        this.decorations = CM3.Decoration.none;
       } else {
-        this.decorations = CM2.Decoration.set([CM2.Decoration.widget({ widget: new CompletionHint(hint), side: 1 }).range(head)]);
+        this.decorations = CM3.Decoration.set([CM3.Decoration.widget({ widget: new CompletionHint(hint), side: 1 }).range(head)]);
       }
     }
   }, { decorations: (p) => p.decorations })
@@ -1962,6 +2028,7 @@ var TextEditorHistory = class {
   }
 };
 export {
+  AiCodeCompletionTeaserPlaceholder_exports as AiCodeCompletionTeaserPlaceholder,
   AutocompleteHistory_exports as AutocompleteHistory,
   config_exports as Config,
   ExecutionPositionHighlighter_exports as ExecutionPositionHighlighter,

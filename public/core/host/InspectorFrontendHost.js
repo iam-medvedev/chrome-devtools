@@ -321,6 +321,9 @@ export class InspectorFrontendHostStub {
                 thirdPartyCookieHeuristicsEnabled: true,
                 managedBlockThirdPartyCookies: 'Unset',
             },
+            devToolsIpProtectionPanelInDevTools: {
+                enabled: false,
+            }
         };
         if ('hostConfigForTesting' in globalThis) {
             const { hostConfigForTesting } = globalThis;

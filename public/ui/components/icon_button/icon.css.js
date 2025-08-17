@@ -20,8 +20,37 @@ export default `/*
   position: relative;
 }
 
+:host(.extra-small) {
+  height: var(--sys-size-6);
+  width: var(--sys-size-6);
+}
+
+:host(.small) {
+  height: var(--sys-size-7);
+  width: var(--sys-size-7);
+}
+
+:host(.medium) {
+  height: var(--sys-size-8);
+  width: var(--sys-size-8);
+}
+
+:host(.large) {
+  height: 18px;
+  width: 18px;
+}
+
+:host(.extra-large) {
+  height: var(--sys-size-9);
+  width: var(--sys-size-9);
+}
+
 :host([hidden]) {
   display: none;
+}
+
+:host([name="warning-filled"]) {
+  color: var(--icon-warning);
 }
 
 :host([name="triangle-up"]),

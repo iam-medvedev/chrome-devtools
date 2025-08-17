@@ -5535,10 +5535,6 @@ var resourcesSidebar_css_default = `/*
   color: var(--icon-error);
 }
 
-.icons-container devtools-icon.warn-icon {
-  color: var(--icon-warning);
-}
-
 devtools-icon.navigator-file-tree-item {
   color: var(--icon-file-default);
 }
@@ -9366,7 +9362,8 @@ var StorageView = class _StorageView extends UI21.ThrottledWidget.ThrottledWidge
     UI21.Tooltip.Tooltip.install(this.quotaRow, i18nString25(UIStrings25.storageQuotaUsedWithBytes, { PH1: response.usage.toLocaleString(), PH2: response.quota.toLocaleString() }));
     if (!response.overrideActive && response.quota < 125829120) {
       const icon = new IconButton11.Icon.Icon();
-      icon.data = { iconName: "info", color: "var(--icon-info)", width: "14px", height: "14px" };
+      icon.data = { iconName: "info", color: "var(--icon-info)" };
+      icon.classList.add("small");
       UI21.Tooltip.Tooltip.install(this.quotaRow, i18nString25(UIStrings25.storageQuotaIsLimitedIn));
       this.quotaRow.appendChild(icon);
     }
@@ -10923,7 +10920,6 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
     const icon = IconButton13.Icon.create("cookie");
     if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
       icon.name = "warning-filled";
-      icon.classList.add("warn-icon");
       this.tooltip = i18nString27(UIStrings27.thirdPartyPhaseout, { PH1: this.cookieDomainInternal });
     }
     this.setLeadingIcons([icon]);

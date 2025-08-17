@@ -2,8 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
+import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { Directives, html, render } from '../lit/lit.js';
 import * as UI from './legacy.js';
 const { urlString } = Platform.DevToolsPath;
 describe('UIUtils', () => {
@@ -154,6 +157,47 @@ describe('UIUtils', () => {
             const callback = () => { };
             const inputElement = UI.UIUtils.createFileSelectorElement(callback, '.json');
             assert.strictEqual(inputElement.getAttribute('accept'), '.json');
+        });
+    });
+    describe('bindToAction', () => {
+        const actionId = 'mock.action';
+        const mockHandleAction = sinon.stub();
+        UI.ActionRegistration.registerActionExtension({
+            actionId,
+            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            title: i18n.i18n.lockedLazyString('Mock action'),
+            loadActionDelegate: async () => ({ handleAction: mockHandleAction }),
+        });
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
+        function setup() {
+            const { bindToAction } = UI.UIUtils;
+            const container = document.createElement('div');
+            renderElementIntoDOM(container);
+            const buttonRef = Directives.createRef();
+            render(html `<devtools-button ${Directives.ref(buttonRef)} ${bindToAction(actionId)}></devtools-button>`, container);
+            const button = buttonRef.value;
+            assert.exists(button);
+            return { button, container };
+        }
+        it('sets button properties from the action', () => {
+            const { button } = setup();
+            const innerButton = button.shadowRoot?.querySelector('button');
+            assert.strictEqual(innerButton.title, action.title());
+            assert.strictEqual(button.disabled, !action.enabled());
+        });
+        it('updates the button when the action\'s enabled state changes', () => {
+            const { button } = setup();
+            action.setEnabled(false);
+            assert.isTrue(button.disabled);
+            action.setEnabled(true);
+            assert.isFalse(button.disabled);
+        });
+        it('removes the change listener when the button is removed from the DOM', () => {
+            const { button, container } = setup();
+            const spy = sinon.spy(action, 'removeEventListener');
+            render(html ``, container);
+            assert.isFalse(button.isConnected);
+            sinon.assert.calledWith(spy, "Enabled" /* UI.ActionRegistration.Events.ENABLED */);
         });
     });
 });

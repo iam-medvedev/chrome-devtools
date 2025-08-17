@@ -8,22 +8,23 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  .protocol-monitor-toolbar {
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 
-.protocol-monitor-toolbar {
-  border-bottom: 1px solid var(--sys-color-divider);
-}
+  .protocol-monitor-bottom-toolbar {
+    border-top: 1px solid var(--sys-color-divider);
+  }
 
-.protocol-monitor-bottom-toolbar {
-  border-top: 1px solid var(--sys-color-divider);
-}
+  .target-selector {
+    max-width: 120px;
+  }
 
-.target-selector {
-  max-width: 120px;
-}
-
-.protocol-monitor-main {
-  /* allows the main area to grow automatically */
-  flex-grow: 1;
+  .protocol-monitor-main {
+    /* allows the main area to grow automatically */
+    flex-grow: 1;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./protocolMonitor.css')} */`;

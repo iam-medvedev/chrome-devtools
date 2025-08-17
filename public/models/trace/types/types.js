@@ -14,7 +14,8 @@ var defaults = () => ({
   includeRuntimeCallStats: false,
   showAllEvents: false,
   debugMode: false,
-  maxInvalidationEventsPerEvent: 20
+  maxInvalidationEventsPerEvent: 20,
+  enableAnimationsFrameHandler: false
 });
 function configToCacheKey(config) {
   return JSON.stringify(config);

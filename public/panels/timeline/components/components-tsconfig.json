@@ -34,6 +34,7 @@
     "../../../../../../../front_end/panels/timeline/components/BreadcrumbsUI.ts",
     "../../../../../../../front_end/panels/timeline/components/CPUThrottlingSelector.ts",
     "../../../../../../../front_end/panels/timeline/components/DetailsView.ts",
+    "../../../../../../../front_end/panels/timeline/components/ExportTraceOptions.ts",
     "../../../../../../../front_end/panels/timeline/components/FieldSettingsDialog.ts",
     "../../../../../../../front_end/panels/timeline/components/IgnoreListSetting.ts",
     "../../../../../../../front_end/panels/timeline/components/InteractionBreakdown.ts",

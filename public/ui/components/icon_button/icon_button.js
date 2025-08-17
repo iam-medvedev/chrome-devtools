@@ -42,8 +42,37 @@ var icon_css_default = `/*
   position: relative;
 }
 
+:host(.extra-small) {
+  height: var(--sys-size-6);
+  width: var(--sys-size-6);
+}
+
+:host(.small) {
+  height: var(--sys-size-7);
+  width: var(--sys-size-7);
+}
+
+:host(.medium) {
+  height: var(--sys-size-8);
+  width: var(--sys-size-8);
+}
+
+:host(.large) {
+  height: 18px;
+  width: 18px;
+}
+
+:host(.extra-large) {
+  height: var(--sys-size-9);
+  width: var(--sys-size-9);
+}
+
 :host([hidden]) {
   display: none;
+}
+
+:host([name="warning-filled"]) {
+  color: var(--icon-warning);
 }
 
 :host([name="triangle-up"]),
@@ -101,10 +130,14 @@ var Icon = class extends HTMLElement {
    * @deprecated use `name` and CSS instead.
    */
   set data(data) {
-    const { color, width = "20px", height = "20px" } = data;
+    const { color, width, height } = data;
     this.style.color = color;
-    this.style.width = width;
-    this.style.height = height;
+    if (width) {
+      this.style.width = width;
+    }
+    if (height) {
+      this.style.height = height;
+    }
     if ("iconName" in data && data.iconName) {
       this.name = data.iconName;
     } else if ("iconPath" in data && data.iconPath) {
@@ -283,7 +316,7 @@ var IconButton = class extends HTMLElement {
       ${!this.#compact && this.#leadingText ? html`<span class="icon-button-title">${this.#leadingText}</span>` : Lit.nothing}
       ${filteredGroups.map((counter) => html`
       <devtools-icon class="status-icon"
-      .data=${{ iconName: counter.iconName, color: counter.iconColor, width: counter.iconWidth || "1.5ex", height: counter.iconHeight || "1.5ex" }}>
+      .data=${{ iconName: counter.iconName, color: counter.iconColor, width: counter.iconWidth || "var(--sys-size-7)", height: counter.iconHeight || "var(--sys-size-7)" }}>
       </devtools-icon>
       ${this.#compact ? html`<!-- Force line-height for this element --><span>&#8203;</span>` : Lit.nothing}
       <span class="icon-button-title">${counter.text}</span>`)}

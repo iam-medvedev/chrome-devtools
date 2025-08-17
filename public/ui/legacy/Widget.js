@@ -158,20 +158,6 @@ export function widgetRef(type, callback) {
         callback(widget);
     });
 }
-/**
- * Wraps CSS text in a @scope at-rule to encapsulate widget styles.
- *
- * This function relies on an implicit scope root (the parent element of the
- * <style> tag) and sets an explicit inclusive scope limit at `<devtools-widget>`.
- * This prevents a parent widget's styles from cascading into any nested
- * child widgets.
- *
- * @param styles The CSS rules to be scoped.
- * @returns The scoped CSS string.
- */
-export function widgetScoped(styles) {
-    return `@scope to (devtools-widget > *) { ${styles} }`;
-}
 const widgetCounterMap = new WeakMap();
 const widgetMap = new WeakMap();
 function incrementWidgetCounter(parentElement, childElement) {
@@ -704,8 +690,8 @@ export class Widget {
      * use the `requestUpdate()` method to schedule an asynchronous update.
      *
      * @returns can either return nothing or a promise; in that latter case, the
-     *         update logic will await the resolution of the returned promise
-     *         before proceeding.
+     *          update logic will await the resolution of the returned promise
+     *          before proceeding.
      */
     performUpdate() {
     }

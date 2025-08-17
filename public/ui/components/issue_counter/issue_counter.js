@@ -51,11 +51,11 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 function getIssueKindIconData(issueKind) {
   switch (issueKind) {
     case "PageError":
-      return { iconName: "issue-cross-filled", color: "var(--icon-error)", width: "20px", height: "20px" };
+      return { iconName: "issue-cross-filled", color: "var(--icon-error)" };
     case "BreakingChange":
-      return { iconName: "issue-exclamation-filled", color: "var(--icon-warning)", width: "20px", height: "20px" };
+      return { iconName: "issue-exclamation-filled", color: "var(--icon-warning)" };
     case "Improvement":
-      return { iconName: "issue-text-filled", color: "var(--icon-info)", width: "20px", height: "20px" };
+      return { iconName: "issue-text-filled", color: "var(--icon-info)" };
   }
 }
 function toIconGroup({ iconName, color, width, height }, sizeOverride) {

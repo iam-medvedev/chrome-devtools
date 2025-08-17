@@ -5,7 +5,7 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as Extensions from '../../../../panels/timeline/extensions/extensions.js';
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
-import { FakeFlameChartProvider, MockFlameChartDelegate, renderFlameChartIntoDOM, renderFlameChartWithFakeProvider, } from '../../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, FakeFlameChartProvider, MockFlameChartDelegate, renderFlameChartIntoDOM, renderFlameChartWithFakeProvider, } from '../../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../../testing/TraceLoader.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
 import * as PerfUI from './perf_ui.js';
@@ -1065,7 +1065,7 @@ describeWithEnvironment('FlameChart', () => {
         });
         // This event is one that is deep into the main thread, so it forces the
         // flamechart to be vertically scrolled. That's why we pick this one.
-        const event = parsedTrace.Renderer.allTraceEntries.find(entry => {
+        const event = allThreadEntriesInTrace(parsedTrace).find(entry => {
             return entry.dur === 462 && entry.ts === 1020035043753 &&
                 entry.name === "UpdateLayoutTree" /* Trace.Types.Events.Name.UPDATE_LAYOUT_TREE */;
         });

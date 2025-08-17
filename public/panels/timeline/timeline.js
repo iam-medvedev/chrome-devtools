@@ -2122,6 +2122,7 @@ __export(Initiators_exports, {
   initiatorsDataToDraw: () => initiatorsDataToDraw,
   initiatorsDataToDrawForNetwork: () => initiatorsDataToDrawForNetwork
 });
+var MAX_PREDECESSOR_INITIATOR_LIMIT = 10;
 function initiatorsDataToDraw(parsedTrace, selectedEvent, hiddenEntries, expandableEntries) {
   const initiatorsData = [
     ...findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.Initiators.eventToInitiator),
@@ -2138,7 +2139,7 @@ function findInitiatorDataPredecessors(parsedTrace, selectedEvent, eventToInitia
   let currentEvent = selectedEvent;
   const visited = /* @__PURE__ */ new Set();
   visited.add(currentEvent);
-  while (currentEvent) {
+  while (currentEvent && initiatorsData.length < MAX_PREDECESSOR_INITIATOR_LIMIT) {
     const currentInitiator = eventToInitiator.get(currentEvent);
     if (currentInitiator) {
       if (visited.has(currentInitiator)) {
@@ -7202,6 +7203,8 @@ var timelinePanel_css_default = `/*
 .timeline-settings-pane {
   display: grid;
   grid-template-columns: 50% 50%;
+  padding-top: var(--sys-size-3);
+  row-gap: var(--sys-size-3);
   flex: none;
   background-color: var(--sys-color-cdt-base-container);
   border-bottom: 1px solid var(--sys-color-divider);
@@ -7211,12 +7214,6 @@ var timelinePanel_css_default = `/*
     display: flex;
     align-items: center;
     gap: 5px;
-
-    & > select {
-      height: var(--sys-size-9);
-      min-width: var(--sys-size-14);
-      border: none;
-    }
   }
 }
 
@@ -7845,7 +7842,11 @@ var UIStrings19 = {
    */
   dropTimelineFileOrUrlHere: "Drop trace file or URL here",
   /**
-   * @description Title of capture layers and pictures setting in timeline panel of the performance panel
+   * @description Title of disable capture jsprofile setting in timeline panel of the performance panel
+   */
+  disableJavascriptSamples: "Disable JavaScript samples",
+  /**
+   *@description Title of capture layers and pictures setting in timeline panel of the performance panel
    */
   enableAdvancedPaint: "Enable advanced paint instrumentation (slow)",
   /**
@@ -7873,18 +7874,6 @@ var UIStrings19 = {
    */
   loadTrace: "Load trace\u2026",
   /**
-   * @description Tooltip text that appears when hovering over the largeicon download button
-   */
-  saveTrace: "Save trace\u2026",
-  /**
-   * @description An option to save trace with annotations that appears in the menu of the toolbar download button. This is the expected default option, therefore it does not mention annotations.
-   */
-  saveTraceWithAnnotationsMenuOption: "Save trace",
-  /**
-   * @description An option to save trace without annotations that appears in the menu of the toolbar download button
-   */
-  saveTraceWithoutAnnotationsMenuOption: "Save trace without annotations",
-  /**
    * @description Text to take screenshots
    */
   captureScreenshots: "Capture screenshots",
@@ -7898,6 +7887,10 @@ var UIStrings19 = {
   captureSettings: "Capture settings",
   /**
    * @description Text in Timeline Panel of the Performance panel
+   */
+  disablesJavascriptSampling: "Disables JavaScript sampling, reduces overhead when running against mobile devices",
+  /**
+   *@description Text in Timeline Panel of the Performance panel
    */
   capturesAdvancedPaint: "Captures advanced paint instrumentation, introduces significant performance overhead",
   /**
@@ -7934,6 +7927,10 @@ var UIStrings19 = {
   SelectorStatsEnabled: "- Selector stats is enabled",
   /**
    * @description Text in Timeline Panel of the Performance panel
+   */
+  JavascriptSamplingIsDisabled: "- JavaScript sampling is disabled",
+  /**
+   *@description Text in Timeline Panel of the Performance panel
    */
   stoppingTimeline: "Stopping timeline\u2026",
   /**
@@ -7977,16 +7974,6 @@ var UIStrings19 = {
    * @description Text in Timeline Panel of the Performance panel
    */
   initializingTracing: "Initializing tracing\u2026",
-  /**
-   *
-   * @description Text for exporting basic traces
-   */
-  exportNormalTraces: "Basic performance traces",
-  /**
-   *
-   * @description Text for exporting enhanced traces
-   */
-  exportEnhancedTraces: "Enhanced performance traces",
   /**
    * @description Tooltip description for a checkbox that toggles the visibility of data added by extensions of this panel (Performance).
    */
@@ -8070,6 +8057,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   toggleRecordAction;
   recordReloadAction;
   #historyManager;
+  disableCaptureJSProfileSetting;
   captureLayersAndPicturesSetting;
   captureSelectorStatsSetting;
   #thirdPartyTracksSetting;
@@ -8187,6 +8175,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.recordReloadAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
     this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
     this.traceLoadStart = null;
+    this.disableCaptureJSProfileSetting = Common10.Settings.Settings.instance().createSetting(
+      "timeline-disable-js-sampling",
+      false,
+      "Session"
+      /* Common.Settings.SettingStorageType.SESSION */
+    );
+    this.disableCaptureJSProfileSetting.setTitle(i18nString19(UIStrings19.disableJavascriptSamples));
     this.captureLayersAndPicturesSetting = Common10.Settings.Settings.instance().createSetting(
       "timeline-capture-layers-and-pictures",
       false,
@@ -8623,27 +8618,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   #removeSidebarIconFromToolbar() {
     this.panelToolbar.removeToolbarItem(this.#sidebarToggleButton);
   }
-  #populateDownloadMenu(contextMenu) {
-    const currModificationManager = ModificationsManager.activeManager();
-    const annotationsExist = currModificationManager && currModificationManager.getAnnotations()?.length > 0;
-    contextMenu.viewSection().appendItem(i18nString19(UIStrings19.saveTraceWithAnnotationsMenuOption), () => {
-      Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.PerfPanelTraceExported);
-      void this.saveToFile({ savingEnhancedTrace: false, addModifications: true });
-    }, {
-      jslogContext: annotationsExist ? "timeline.save-to-file-with-annotations" : "timeline.save-to-file-without-annotations"
-    });
-    if (annotationsExist) {
-      contextMenu.viewSection().appendItem(i18nString19(UIStrings19.saveTraceWithoutAnnotationsMenuOption), () => {
-        Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.PerfPanelTraceExported);
-        void this.saveToFile({
-          savingEnhancedTrace: false,
-          addModifications: false
-        });
-      }, {
-        jslogContext: "timeline.save-to-file-without-annotations"
-      });
-    }
-  }
   /**
    * Returns false if this was loaded in a standalone context such that recording is
    * not possible, like an enhanced trace (which opens a new devtools window) or
@@ -8668,29 +8642,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.PerfPanelTraceImported);
       this.selectFileToLoad();
     });
-    this.saveButton = new UI10.Toolbar.ToolbarMenuButton(this.#populateDownloadMenu.bind(this), true, false, "timeline.save-to-file-more-options", "download");
-    this.saveButton.setTitle(i18nString19(UIStrings19.saveTrace));
-    if (Root4.Runtime.experiments.isEnabled(
-      "timeline-enhanced-traces"
-      /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */
-    )) {
-      this.saveButton.element.addEventListener("contextmenu", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        if (event.ctrlKey || event.button === 2) {
-          const contextMenu = new UI10.ContextMenu.ContextMenu(event);
-          contextMenu.saveSection().appendItem(i18nString19(UIStrings19.exportNormalTraces), () => {
-            void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
-          });
-          contextMenu.saveSection().appendItem(i18nString19(UIStrings19.exportEnhancedTraces), () => {
-            void this.saveToFile({ savingEnhancedTrace: true, addModifications: false });
-          });
-          void contextMenu.show();
-        } else {
-          void this.saveToFile({ savingEnhancedTrace: false, addModifications: false });
-        }
-      });
-    }
+    const exportTraceOptions = new TimelineComponents3.ExportTraceOptions.ExportTraceOptions();
+    exportTraceOptions.data = {
+      onExport: this.saveToFile.bind(this),
+      buttonEnabled: this.state === "Idle" && this.#hasActiveTrace()
+    };
+    this.saveButton = new UI10.Toolbar.ToolbarItem(exportTraceOptions);
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.loadButton);
     this.panelToolbar.appendToolbarItem(this.saveButton);
@@ -8860,6 +8817,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.showSettingsPaneButton = new UI10.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString19(UIStrings19.captureSettings), "gear-filled", "timeline-settings-toggle");
     SDK8.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged", this.updateShowSettingsToolbarButton, this);
     SDK8.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged", this.updateShowSettingsToolbarButton, this);
+    this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
     this.captureLayersAndPicturesSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
     this.captureSelectorStatsSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
     this.settingsPane = this.element.createChild("div", "timeline-settings-pane");
@@ -8868,11 +8826,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     cpuThrottlingPane.append(i18nString19(UIStrings19.cpu));
     this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
     cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
-    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString19(UIStrings19.capturesAdvancedPaint)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString19(UIStrings19.capturesSelectorStats)));
     const networkThrottlingPane = this.settingsPane.createChild("div");
     networkThrottlingPane.append(i18nString19(UIStrings19.network));
     networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
-    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString19(UIStrings19.capturesSelectorStats)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString19(UIStrings19.capturesAdvancedPaint)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString19(UIStrings19.disablesJavascriptSampling)));
     const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString19(UIStrings19.showDataAddedByExtensions));
     const localLink = UI10.XLink.XLink.create("https://developer.chrome.com/docs/devtools/performance/extension", i18nString19(UIStrings19.learnMore));
     localLink.style.marginLeft = "5px";
@@ -8941,10 +8900,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       return;
     }
     const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex) ?? {};
-    const shouldRetainScriptSources = config.savingEnhancedTrace && Root4.Runtime.experiments.isEnabled(
-      "timeline-compiled-sources"
-      /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */
-    );
+    const shouldRetainScriptSources = config.includeScriptContent && config.includeSourceMaps;
     if (!shouldRetainScriptSources) {
       traceEvents = traceEvents.map((event) => {
         if (Trace21.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== "StubScriptCatchup") {
@@ -8971,7 +8927,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       }
     }
     try {
-      await this.innerSaveToFile(traceEvents, metadata, config);
+      await this.innerSaveToFile(traceEvents, metadata, { savingEnhancedTrace: config.includeScriptContent, addModifications: config.addModifications });
     } catch (e) {
       const error = e instanceof Error ? e : new Error(e);
       console.error(error.stack);
@@ -9200,6 +9156,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     if (this.captureSelectorStatsSetting.get()) {
       messages.push(i18nString19(UIStrings19.SelectorStatsEnabled));
     }
+    if (this.disableCaptureJSProfileSetting.get()) {
+      messages.push(i18nString19(UIStrings19.JavascriptSamplingIsDisabled));
+    }
     this.showSettingsPaneButton.setChecked(messages.length > 0);
     this.showSettingsPaneButton.element.style.setProperty("--dot-toggle-top", "16px");
     this.showSettingsPaneButton.element.style.setProperty("--dot-toggle-left", "15px");
@@ -9304,7 +9263,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         await this.#navigateToAboutBlank();
       }
       const recordingOptions = {
-        enableJSSampling: true,
+        enableJSSampling: !this.disableCaptureJSProfileSetting.get(),
         capturePictures: this.captureLayersAndPicturesSetting.get(),
         captureFilmStrip: this.showScreenshotsSetting.get(),
         captureSelectorStats: this.captureSelectorStatsSetting.get()
@@ -9414,7 +9373,11 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     if (this.#viewMode.mode === "VIEWING_TRACE") {
       this.#addSidebarIconToToolbar();
     }
-    this.saveButton.setEnabled(this.state === "Idle" && this.#hasActiveTrace());
+    const exportTraceOptionsElement = this.saveButton.element;
+    exportTraceOptionsElement.data = {
+      onExport: this.saveToFile.bind(this),
+      buttonEnabled: this.state === "Idle" && this.#hasActiveTrace()
+    };
     this.#historyManager.setEnabled(
       this.state === "Idle"
       /* State.IDLE */
@@ -9558,6 +9521,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.searchableViewInternal.showWidget();
     const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
     this.#applyActiveFilters(parsedTrace.Meta.traceIsGeneric, exclusiveFilter);
+    this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
     currentManager?.addEventListener(AnnotationModifiedEvent.eventName, (event) => {
       const announcementText = ariaAnnouncementForModifiedEvent(event);
       if (announcementText) {
@@ -9584,6 +9548,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       const annotations = currentManager.getAnnotations();
       const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
       this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
+      this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
     });
     const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
     if (topMostMainThreadAppender) {
@@ -10317,7 +10282,7 @@ var ActionDelegate = class {
         panel.recordReload();
         return true;
       case "timeline.save-to-file":
-        void panel.saveToFile({ savingEnhancedTrace: false, addModifications: false });
+        void panel.saveToFile({ includeScriptContent: false, includeSourceMaps: false, addModifications: false });
         return true;
       case "timeline.load-from-file":
         panel.selectFileToLoad();
@@ -11541,7 +11506,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       _TimelineUIUtils.renderEventJson(event, contentHelper);
     }
     const stats = {};
-    const showPieChart = canShowPieChart && parsedTrace && _TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
+    const showPieChart = canShowPieChart && _TimelineUIUtils.aggregatedStatsForTraceEvent(stats, parsedTrace, event);
     if (showPieChart) {
       contentHelper.addSection(i18nString20(UIStrings20.aggregatedTime));
       const pieChart = _TimelineUIUtils.generatePieChart(stats, _TimelineUIUtils.eventStyle(event).category, selfTime);
@@ -11815,52 +11780,41 @@ var TimelineUIUtils = class _TimelineUIUtils {
   }
   /** Populates the passed object then returns true/false if it makes sense to show the pie chart */
   static aggregatedStatsForTraceEvent(total, parsedTrace, event) {
-    const events = parsedTrace.Renderer?.allTraceEntries || [];
-    const { startTime, endTime } = Trace22.Helpers.Timing.eventTimingsMicroSeconds(event);
-    function eventComparator(startTime2, e) {
-      return startTime2 - e.ts;
-    }
-    const index = Platform12.ArrayUtilities.binaryIndexOf(events, startTime, eventComparator);
-    if (index < 0) {
+    const node = parsedTrace.Renderer.entryToNode.get(event);
+    if (!node) {
       return false;
     }
-    let hasChildren = false;
-    if (endTime) {
-      for (let i = index; i < events.length; i++) {
-        const nextEvent = events[i];
-        if (nextEvent.ts >= endTime) {
-          break;
-        }
-        const nextEventSelfTime = getEventSelfTime(nextEvent, parsedTrace);
-        if (!nextEventSelfTime) {
-          continue;
-        }
-        if (nextEvent.tid !== event.tid) {
-          continue;
-        }
-        if (i > index) {
-          hasChildren = true;
-        }
-        const categoryName = _TimelineUIUtils.eventStyle(nextEvent).category.name;
-        total[categoryName] = (total[categoryName] || 0) + nextEventSelfTime;
+    if (node.children.length === 0) {
+      return false;
+    }
+    const childNodesToVisit = [...node.children];
+    while (childNodesToVisit.length) {
+      const childNode = childNodesToVisit.pop();
+      if (!childNode) {
+        continue;
       }
+      const childSelfTime = childNode.selfTime ?? 0;
+      if (childSelfTime > 0) {
+        const categoryName = _TimelineUIUtils.eventStyle(childNode.entry).category.name;
+        total[categoryName] = (total[categoryName] || 0) + childSelfTime;
+      }
+      childNodesToVisit.push(...childNode.children);
     }
     if (Trace22.Types.Events.isPhaseAsync(event.ph)) {
-      if (endTime) {
-        let aggregatedTotal = 0;
-        for (const categoryName in total) {
-          aggregatedTotal += total[categoryName];
-        }
-        const deltaInMicro = endTime - startTime;
-        total["idle"] = Math.max(0, deltaInMicro - aggregatedTotal);
+      let aggregatedTotal = 0;
+      for (const categoryName in total) {
+        aggregatedTotal += total[categoryName];
       }
+      const { startTime, endTime } = Trace22.Helpers.Timing.eventTimingsMicroSeconds(event);
+      const deltaInMicro = endTime - startTime;
+      total["idle"] = Math.max(0, deltaInMicro - aggregatedTotal);
       return false;
     }
     for (const categoryName in total) {
       const value = total[categoryName];
       total[categoryName] = Trace22.Helpers.Timing.microToMilli(value);
     }
-    return hasChildren;
+    return true;
   }
   static async buildPicturePreviewContent(parsedTrace, event, target) {
     const snapshotEvent = parsedTrace.LayerTree.paintsToSnapshots.get(event);
@@ -12499,117 +12453,118 @@ var timelineDetailsView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-
-.timeline-details {
-  vertical-align: top;
-}
-
-.timeline-details-view {
-  color: var(--sys-color-on-surface);
-  overflow: hidden;
-}
-
-.timeline-details-view-body {
-  flex: auto;
-  overflow: auto;
-  position: relative;
-  background-color: var(--sys-color-cdt-base-container);
-  user-select: text;
-}
-
-.timeline-details-view-block {
-  flex: none;
-  display: flex;
-  background-color: var(--sys-color-cdt-base-container);
-  flex-direction: column;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--sys-color-divider);
-}
-
-.timeline-details-view-row {
-  padding-left: 10px;
-  min-height: 20px;
-  line-height: 16px; /* Vertically center text within row, important for background-color rows like .timeline-details-warning */
-}
-
-.timeline-details-view-block .timeline-details-stack-values {
-  flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.timeline-details-chip-title {
-  font-size: 12px;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-}
-
-.timeline-details-view-block:first-child > .timeline-details-chip-title {
-  font-size: 13px;
-}
-
-.timeline-details-range-summary {
-  padding: var(--sys-size-4) 0 0;
-  height: 100%;
-
-  & > devtools-performance-timeline-summary {
-    /* The category summary can't be more narrow than this, so we'll force a horizontal scrollbar
-       Also this style can't be applied on the element's :host without !important, thus its here. */
-    min-width: 192px;
+@scope to (devtools-widget > *) {
+  .timeline-details {
+    vertical-align: top;
   }
-}
 
-/* This is the coloured box that shows next to the event name */
-.timeline-details-chip-title > div {
-  width: 14px;
-  height: 14px;
-  border: 1px solid var(--sys-color-divider);
-  display: inline-block;
-  margin-right: 4px;
-  content: " ";
-}
+  .timeline-details-view {
+    color: var(--sys-color-on-surface);
+    overflow: hidden;
+  }
 
-.timeline-details-view-row-title:not(:empty) {
-  color: var(--sys-color-token-subtle);
-  overflow: hidden;
-  padding-right: 10px;
-  display: inline-block;
-  vertical-align: top;
-}
+  .timeline-details-view-body {
+    flex: auto;
+    overflow: auto;
+    position: relative;
+    background-color: var(--sys-color-cdt-base-container);
+    user-select: text;
+  }
 
-.timeline-details-warning {
-  --override-details-warning-background-color: rgb(250 209 209 / 48%);
+  .timeline-details-view-block {
+    flex: none;
+    display: flex;
+    background-color: var(--sys-color-cdt-base-container);
+    flex-direction: column;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 
-  background-color: var(--override-details-warning-background-color);
-}
+  .timeline-details-view-row {
+    padding-left: 10px;
+    min-height: 20px;
+    line-height: 16px; /* Vertically center text within row, important for background-color rows like .timeline-details-warning */
+  }
 
-.theme-with-dark-background .timeline-details-warning,
-:host-context(.theme-with-dark-background) .timeline-details-warning {
-  --override-details-warning-background-color: rgb(87 10 10 / 48%);
-}
+  .timeline-details-view-block .timeline-details-stack-values {
+    flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
+  }
 
-.timeline-details-warning .timeline-details-view-row-title {
-  color: var(--sys-color-error);
-}
+  .timeline-details-chip-title {
+    font-size: 12px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+  }
 
-.timeline-details-view-row-value {
-  display: inline-block;
-  user-select: text;
-  text-overflow: ellipsis;
-  overflow: visible;
-}
+  .timeline-details-view-block:first-child > .timeline-details-chip-title {
+    font-size: 13px;
+  }
 
-.timeline-details-warning .timeline-details-view-row-value {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+  .timeline-details-range-summary {
+    padding: var(--sys-size-4) 0 0;
+    height: 100%;
 
-.timeline-details-view-pie-chart-wrapper {
-  margin: 4px 0;
-}
+    & > devtools-performance-timeline-summary {
+      /* The category summary can't be more narrow than this, so we'll force a horizontal scrollbar
+        Also this style can't be applied on the element's :host without !important, thus its here. */
+      min-width: 192px;
+    }
+  }
 
-.timeline-details-view-pie-chart {
-  margin-top: 5px;
+  /* This is the coloured box that shows next to the event name */
+  .timeline-details-chip-title > div {
+    width: 14px;
+    height: 14px;
+    border: 1px solid var(--sys-color-divider);
+    display: inline-block;
+    margin-right: 4px;
+    content: " ";
+  }
+
+  .timeline-details-view-row-title:not(:empty) {
+    color: var(--sys-color-token-subtle);
+    overflow: hidden;
+    padding-right: 10px;
+    display: inline-block;
+    vertical-align: top;
+  }
+
+  .timeline-details-warning {
+    --override-details-warning-background-color: rgb(250 209 209 / 48%);
+
+    background-color: var(--override-details-warning-background-color);
+  }
+
+  .theme-with-dark-background .timeline-details-warning,
+  :host-context(.theme-with-dark-background) .timeline-details-warning {
+    --override-details-warning-background-color: rgb(87 10 10 / 48%);
+  }
+
+  .timeline-details-warning .timeline-details-view-row-title {
+    color: var(--sys-color-error);
+  }
+
+  .timeline-details-view-row-value {
+    display: inline-block;
+    user-select: text;
+    text-overflow: ellipsis;
+    overflow: visible;
+  }
+
+  .timeline-details-warning .timeline-details-view-row-value {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .timeline-details-view-pie-chart-wrapper {
+    margin: 4px 0;
+  }
+
+  .timeline-details-view-pie-chart {
+    margin-top: 5px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./timelineDetailsView.css")} */`;
@@ -14151,7 +14106,7 @@ var Tab;
 })(Tab || (Tab = {}));
 var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
   render2(html2`
-        <style>${UI16.Widget.widgetScoped(timelineDetailsView_css_default)}</style>
+        <style>${timelineDetailsView_css_default}</style>
         ${input.node ?? nothing}
         ${Directives.until(renderSelectedEventDetails(input))}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
@@ -18359,45 +18314,8 @@ var CompatibilityTracksAppender = class {
   }
 };
 
-// gen/front_end/panels/timeline/ExternalRequests.js
-var ExternalRequests_exports = {};
-__export(ExternalRequests_exports, {
-  getInsightAgentFocusToDebug: () => getInsightAgentFocusToDebug
-});
-import * as Trace34 from "./../../models/trace/trace.js";
-import * as Utils19 from "./utils/utils.js";
-async function getInsightAgentFocusToDebug(model, insightTitle) {
-  const parsedTrace = model.parsedTrace();
-  const latestInsights = model.traceInsights();
-  if (!latestInsights || !parsedTrace) {
-    return {
-      error: "No trace has been recorded, so we cannot analyze any insights"
-    };
-  }
-  const firstNavigation = Array.from(latestInsights.keys()).find((k) => k !== Trace34.Types.Events.NO_NAVIGATION);
-  const insights = firstNavigation ? latestInsights.get(firstNavigation) : latestInsights.get(Trace34.Types.Events.NO_NAVIGATION);
-  if (!insights) {
-    return {
-      error: "Could not find any navigation with insights."
-    };
-  }
-  const insightKeys = Object.keys(insights.model);
-  const matchingInsightKey = insightKeys.find((insightKey) => {
-    const insight2 = insights.model[insightKey];
-    return insight2.title === insightTitle;
-  });
-  if (!matchingInsightKey) {
-    return {
-      error: `Could not find matching insight for ${insightTitle}`
-    };
-  }
-  const insight = insights.model[matchingInsightKey];
-  const focus = Utils19.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insights.bounds);
-  return { focus };
-}
-
 // gen/front_end/panels/timeline/timeline.prebundle.js
-import * as Utils20 from "./utils/utils.js";
+import * as Utils19 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18409,7 +18327,6 @@ export {
   EntriesFilter_exports as EntriesFilter,
   EventsTimelineTreeView_exports as EventsTimelineTreeView,
   ExtensionTrackAppender_exports as ExtensionTrackAppender,
-  ExternalRequests_exports as ExternalRequests,
   FreshRecording_exports as FreshRecording,
   GPUTrackAppender_exports as GPUTrackAppender,
   Initiators_exports as Initiators,
@@ -18442,6 +18359,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils20 as Utils
+  Utils19 as Utils
 };
 //# sourceMappingURL=timeline.js.map

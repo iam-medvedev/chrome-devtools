@@ -6,6 +6,7 @@
     "files": [
         "breadcrumbsUI.css.js",
         "cpuThrottlingSelector.css.js",
+        "exportTraceOptions.css.js",
         "fieldSettingsDialog.css.js",
         "ignoreListSetting.css.js",
         "interactionBreakdown.css.js",

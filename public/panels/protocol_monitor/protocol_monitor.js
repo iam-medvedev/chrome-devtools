@@ -922,17 +922,7 @@ function renderInlineButton(opts) {
       `;
 }
 function renderWarningIcon() {
-  return html`<devtools-icon
-    .data=${{
-    iconName: "warning-filled",
-    color: "var(--icon-warning)",
-    width: "14px",
-    height: "14px"
-  }}
-    class=${classMap({
-    "warning-icon": true
-  })}
-  >
+  return html`<devtools-icon name='warning-filled' class='warning-icon small'>
   </devtools-icon>`;
 }
 function renderParameters(input, parameters, id, parentParameter, parentParameterId) {
@@ -1186,22 +1176,23 @@ var protocolMonitor_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  .protocol-monitor-toolbar {
+    border-bottom: 1px solid var(--sys-color-divider);
+  }
 
-.protocol-monitor-toolbar {
-  border-bottom: 1px solid var(--sys-color-divider);
-}
+  .protocol-monitor-bottom-toolbar {
+    border-top: 1px solid var(--sys-color-divider);
+  }
 
-.protocol-monitor-bottom-toolbar {
-  border-top: 1px solid var(--sys-color-divider);
-}
+  .target-selector {
+    max-width: 120px;
+  }
 
-.target-selector {
-  max-width: 120px;
-}
-
-.protocol-monitor-main {
-  /* allows the main area to grow automatically */
-  flex-grow: 1;
+  .protocol-monitor-main {
+    /* allows the main area to grow automatically */
+    flex-grow: 1;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./protocolMonitor.css")} */`;
@@ -1322,7 +1313,7 @@ var enumsByName = ProtocolClient.InspectorBackend.inspectorBackend.enumMap;
 var DEFAULT_VIEW2 = (input, output, target) => {
   render2(html2`
         <style>${UI2.inspectorCommonStyles}</style>
-        <style>${UI2.Widget.widgetScoped(protocolMonitor_css_default)}</style>
+        <style>${protocolMonitor_css_default}</style>
         <devtools-split-view name="protocol-monitor-split-container"
                              direction="column"
                              sidebar-initial-size="400"

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getAllNetworkRequestsByHost } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getAllNetworkRequestsByHost } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
 describeWithEnvironment('EntityMapper', function () {
@@ -50,7 +50,7 @@ describeWithEnvironment('EntityMapper', function () {
         it('correctly contains main event entity mappings', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'lantern/paul/trace.json.gz');
             const mapper = new Utils.EntityMapper.EntityMapper(parsedTrace);
-            const funcCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isFunctionCall(e));
+            const funcCall = allThreadEntriesInTrace(parsedTrace).find(e => Trace.Types.Events.isFunctionCall(e));
             assert.exists(funcCall);
             // This function call should map to paulirish.com entity.
             const gotEntity = mapper.entityForEvent(funcCall);

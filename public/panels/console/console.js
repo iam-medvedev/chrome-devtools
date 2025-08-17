@@ -3522,10 +3522,9 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     const icon = new IconButton2.Icon.Icon();
     icon.data = {
       iconName: "lightbulb-spark",
-      color: "var(--devtools-icon-color)",
-      width: "16px",
-      height: "16px"
+      color: "var(--devtools-icon-color)"
     };
+    icon.classList.add("medium");
     const button = document.createElement("button");
     button.append(icon);
     button.onclick = (event) => {
@@ -3559,7 +3558,6 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     let iconName = "";
     let accessibleName = "";
     if (this.message.level === "warning") {
-      color = "var(--icon-warning)";
       iconName = "warning-filled";
       accessibleName = i18nString4(UIStrings4.warning);
     } else if (this.message.level === "error") {
@@ -3579,11 +3577,9 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     this.messageIcon = new IconButton2.Icon.Icon();
     this.messageIcon.data = {
       iconName,
-      color,
-      width: "14px",
-      height: "14px"
+      color
     };
-    this.messageIcon.classList.add("message-level-icon");
+    this.messageIcon.classList.add("message-level-icon", "small");
     if (this.contentElementInternal) {
       this.contentElementInternal.insertBefore(this.messageIcon, this.contentElementInternal.firstChild);
     }
@@ -4022,8 +4018,8 @@ var ConsoleCommand = class extends ConsoleViewMessage {
     this.setContentElement(newContentElement);
     newContentElement.classList.add("console-user-command");
     const userCommandIcon = new IconButton2.Icon.Icon();
-    userCommandIcon.data = { iconName: "chevron-right", color: "var(--icon-default)", width: "16px", height: "16px" };
-    userCommandIcon.classList.add("command-result-icon");
+    userCommandIcon.name = "chevron-right";
+    userCommandIcon.classList.add("command-result-icon", "medium");
     newContentElement.appendChild(userCommandIcon);
     elementToMessage.set(newContentElement, this);
     this.formattedCommand = document.createElement("span");
@@ -4049,8 +4045,8 @@ var ConsoleCommandResult = class extends ConsoleViewMessage {
       element.classList.add("console-user-command-result");
       if (this.consoleMessage().level === "info") {
         const icon = new IconButton2.Icon.Icon();
-        icon.data = { iconName: "chevron-left-dot", color: "var(--icon-default)", width: "16px", height: "16px" };
-        icon.classList.add("command-result-icon");
+        icon.name = "chevron-left-dot";
+        icon.classList.add("command-result-icon", "medium");
         element.insertBefore(icon, element.firstChild);
       }
     }
@@ -4814,7 +4810,7 @@ import * as TextEditor3 from "./../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
-import { AiCodeCompletionTeaser } from "./../common/common.js";
+import * as PanelCommon from "./../common/common.js";
 
 // gen/front_end/panels/console/ConsolePanel.js
 var ConsolePanel_exports = {};
@@ -5265,6 +5261,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       this.prompt.addEventListener("AiCodeCompletionSuggestionAccepted", this.#onAiCodeCompletionSuggestionAccepted, this);
       this.prompt.addEventListener("AiCodeCompletionRequestTriggered", this.#onAiCodeCompletionRequestTriggered, this);
       this.prompt.addEventListener("AiCodeCompletionResponseReceived", this.#onAiCodeCompletionResponseReceived, this);
+      this.element.addEventListener("keydown", this.keyDown.bind(this));
     }
     this.messagesElement.addEventListener("keydown", this.messagesKeyDown.bind(this), false);
     this.prompt.element.addEventListener("focusin", () => {
@@ -5301,7 +5298,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     return consoleViewInstance;
   }
   createAiCodeCompletionSummaryToolbar() {
-    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar(DISCLAIMER_TOOLTIP_ID, CITATIONS_TOOLTIP_ID, "console");
+    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, panelName: "console", disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
     this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild("div");
     this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, void 0, true);
   }
@@ -5968,6 +5965,18 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       keyboardEvent.preventDefault();
     }
   }
+  async keyDown(event) {
+    const keyboardEvent = event;
+    if (UI6.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
+      if (keyboardEvent.key === "i") {
+        keyboardEvent.consume(true);
+        await this.prompt.onAiCodeCompletionTeaserActionKeyDown(event);
+      } else if (keyboardEvent.key === "x") {
+        keyboardEvent.consume(true);
+        this.prompt.onAiCodeCompletionTeaserDismissKeyDown(event);
+      }
+    }
+  }
   printResult(result, originatingConsoleMessage, exceptionDetails) {
     if (!result) {
       return;
@@ -6534,8 +6543,8 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   #javaScriptCompletionCompartment = new CodeMirror2.Compartment();
   aidaClient;
   aiCodeCompletion;
+  teaser;
   placeholderCompartment = new CodeMirror2.Compartment();
-  teaserContainer;
   aiCodeCompletionSetting = Common8.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
   aiCodeCompletionCitations = [];
   #getJavaScriptCompletionExtensions() {
@@ -6572,14 +6581,14 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     this.requestPreviewBound = this.requestPreview.bind(this);
     this.innerPreviewElement = this.eagerPreviewElement.createChild("div", "console-eager-inner-preview");
     const previewIcon = new IconButton4.Icon.Icon();
-    previewIcon.data = { iconName: "chevron-left-dot", color: "var(--icon-default)", width: "16px", height: "16px" };
-    previewIcon.classList.add("preview-result-icon");
+    previewIcon.name = "chevron-left-dot";
+    previewIcon.classList.add("preview-result-icon", "medium");
     this.eagerPreviewElement.appendChild(previewIcon);
     const editorContainerElement = this.element.createChild("div", "console-prompt-editor-container");
     this.element.appendChild(this.eagerPreviewElement);
     this.promptIcon = new IconButton4.Icon.Icon();
-    this.promptIcon.data = { iconName: "chevron-right", color: "var(--icon-action)", width: "16px", height: "16px" };
-    this.promptIcon.classList.add("console-prompt-icon");
+    this.promptIcon.data = { iconName: "chevron-right", color: "var(--icon-action)" };
+    this.promptIcon.classList.add("console-prompt-icon", "medium");
     this.element.appendChild(this.promptIcon);
     this.iconThrottler = new Common8.Throttler.Throttler(0);
     this.eagerEvalSetting = Common8.Settings.Settings.instance().moduleSetting("console-eager-eval");
@@ -6613,10 +6622,8 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     if (this.isAiCodeCompletionEnabled()) {
       const aiCodeCompletionTeaserDismissedSetting = Common8.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
       if (!this.aiCodeCompletionSetting.get() && !aiCodeCompletionTeaserDismissedSetting.get()) {
-        this.teaserContainer = document.createElement("div");
-        const teaser = new AiCodeCompletionTeaser({ onDetach: this.detachAiCodeCompletionTeaser.bind(this) });
-        teaser.show(this.teaserContainer, void 0, true);
-        extensions.push(this.placeholderCompartment.of(CodeMirror2.placeholder(this.teaserContainer)));
+        this.teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.detachAiCodeCompletionTeaser.bind(this) });
+        extensions.push(this.placeholderCompartment.of(TextEditor3.AiCodeCompletionTeaserPlaceholder.aiCodeCompletionTeaserPlaceholder(this.teaser)));
       }
       extensions.push(TextEditor3.Config.aiAutoCompleteSuggestion);
     }
@@ -6688,9 +6695,6 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       }
     }
     let suffix = query.substring(cursor);
-    if (suffix === "") {
-      suffix = "\n";
-    }
     if (prefix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
       prefix = prefix.substring(prefix.length - AI_CODE_COMPLETION_CHARACTER_LIMIT);
     }
@@ -6796,9 +6800,12 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       keymap3.push({
         key: "Tab",
         run: () => {
-          const accepted = TextEditor3.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+          const { accepted, suggestion } = TextEditor3.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
           if (accepted) {
             this.dispatchEventToListeners("AiCodeCompletionSuggestionAccepted", { citations: this.aiCodeCompletionCitations });
+            if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+              this.aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
+            }
           }
           return accepted;
         }
@@ -6864,8 +6871,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
         changes: { from: 0, to: this.editor.state.doc.length },
         scrollIntoView: true
       });
-      if (this.teaserContainer) {
+      if (this.teaser) {
         this.detachAiCodeCompletionTeaser();
+        this.teaser = void 0;
       }
     } else if (this.editor.state.doc.length) {
       CodeMirror2.insertNewlineAndIndent(this.editor.editor);
@@ -6925,6 +6933,10 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     if (!this.aidaClient) {
       this.aidaClient = new Host3.AidaClient.AidaClient();
     }
+    if (this.teaser) {
+      this.detachAiCodeCompletionTeaser();
+      this.teaser = void 0;
+    }
     this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
     this.aiCodeCompletion.addEventListener("ResponseReceived", (event) => {
       this.aiCodeCompletionCitations = event.data.citations;
@@ -6938,14 +6950,26 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     if (this.aiCodeCompletionSetting.get() && this.isAiCodeCompletionEnabled()) {
       this.setAiCodeCompletion();
     } else if (this.aiCodeCompletion) {
+      this.aiCodeCompletion.remove();
       this.aiCodeCompletion = void 0;
+    }
+  }
+  async onAiCodeCompletionTeaserActionKeyDown(event) {
+    if (this.teaser?.isShowing()) {
+      await this.teaser?.onAction(event);
+      void VisualLogging6.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.fre");
+    }
+  }
+  onAiCodeCompletionTeaserDismissKeyDown(event) {
+    if (this.teaser?.isShowing()) {
+      this.teaser?.onDismiss(event);
+      void VisualLogging6.logKeyDown(event.currentTarget, event, "ai-code-completion-teaser.dismiss");
     }
   }
   detachAiCodeCompletionTeaser() {
     this.editor.dispatch({
       effects: this.placeholderCompartment.reconfigure([])
     });
-    this.teaserContainer = void 0;
   }
   isAiCodeCompletionEnabled() {
     return Boolean(Root4.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
