@@ -56,48 +56,21 @@ describeWithEnvironment('AiCodeCompletionTeaser', () => {
         assert.isTrue(showViewStub.calledOnceWith('chrome-ai'));
         widget.detach();
     });
-    it('should open FRE dialog on ctrl+i', async () => {
-        const { widget } = await createTeaser();
-        const onActionSpy = sinon.spy(widget, 'onAction');
-        const event = Host.Platform.isMac() ? new KeyboardEvent('keydown', { key: 'i', metaKey: true }) :
-            new KeyboardEvent('keydown', { key: 'i', ctrlKey: true });
-        document.body.dispatchEvent(event);
-        sinon.assert.calledOnce(onActionSpy);
-        sinon.assert.called(showFreDialogStub);
-        widget.detach();
-    });
     it('should FRE text include no logging case when the enterprise policy value is ALLOW_WITHOUT_LOGGING', async () => {
         updateHostConfig({ aidaAvailability: { enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING } });
-        const { widget } = await createTeaser();
-        const event = Host.Platform.isMac() ? new KeyboardEvent('keydown', { key: 'i', metaKey: true }) :
-            new KeyboardEvent('keydown', { key: 'i', ctrlKey: true });
-        document.body.dispatchEvent(event);
+        const { view, widget } = await createTeaser();
+        view.input.onAction(new Event(''));
         sinon.assert.called(showFreDialogStub);
         assert.exists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
         widget.detach();
     });
     it('should FRE text not include no logging case when the enterprise policy value is ALLOW', async () => {
         updateHostConfig({ aidaAvailability: { enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.ALLOW } });
-        const { widget } = await createTeaser();
-        const event = Host.Platform.isMac() ? new KeyboardEvent('keydown', { key: 'i', metaKey: true }) :
-            new KeyboardEvent('keydown', { key: 'i', ctrlKey: true });
-        document.body.dispatchEvent(event);
+        const { view, widget } = await createTeaser();
+        view.input.onAction(new Event(''));
         sinon.assert.called(showFreDialogStub);
         assert.notExists(showFreDialogStub.lastCall.args[0].reminderItems.find(reminderItem => reminderItem.content.toString().includes('This data will not be used to improve Google’s AI models.')));
         widget.detach();
-    });
-    it('should call dismiss on ctrl+x', async () => {
-        const { widget } = await createTeaser();
-        const onDismissSpy = sinon.spy(widget, 'onDismiss');
-        const showSnackbar = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
-        assert.isTrue(widget.isShowing());
-        const event = Host.Platform.isMac() ? new KeyboardEvent('keydown', { key: 'x', metaKey: true }) :
-            new KeyboardEvent('keydown', { key: 'x', ctrlKey: true });
-        document.body.dispatchEvent(event);
-        await widget.updateComplete;
-        sinon.assert.calledOnce(onDismissSpy);
-        sinon.assert.calledOnce(showSnackbar);
-        assert.isFalse(widget.isShowing());
     });
 });
 //# sourceMappingURL=AiCodeCompletionTeaser.test.js.map

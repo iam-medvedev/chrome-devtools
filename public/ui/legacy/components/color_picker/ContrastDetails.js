@@ -230,7 +230,8 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
             }
             else {
                 const iconNo = new IconButton.Icon.Icon();
-                iconNo.data = { iconName: 'clear', color: 'var(--icon-error)', width: '14px', height: '14px' };
+                iconNo.data = { iconName: 'clear', color: 'var(--icon-error)' };
+                iconNo.classList.add('small');
                 this.contrastPassFailAPCA.appendChild(iconNo);
                 const suggestedColor = this.computeSuggestedColor('APCA');
                 if (suggestedColor) {
@@ -275,7 +276,8 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         }
         else {
             const iconNo = new IconButton.Icon.Icon();
-            iconNo.data = { iconName: 'clear', color: 'var(--icon-error)', width: '14px', height: '14px' };
+            iconNo.data = { iconName: 'clear', color: 'var(--icon-error)' };
+            iconNo.classList.add('small');
             this.contrastPassFailAA.appendChild(iconNo);
             const suggestedColor = this.computeSuggestedColor('aa');
             if (suggestedColor) {
@@ -298,7 +300,8 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         }
         else {
             const iconNo = new IconButton.Icon.Icon();
-            iconNo.data = { iconName: 'clear', color: 'var(--icon-error)', width: '14px', height: '14px' };
+            iconNo.data = { iconName: 'clear', color: 'var(--icon-error)' };
+            iconNo.classList.add('small');
             this.contrastPassFailAAA.appendChild(iconNo);
             const suggestedColor = this.computeSuggestedColor('aaa');
             if (suggestedColor) {

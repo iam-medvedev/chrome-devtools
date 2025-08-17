@@ -39,6 +39,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/panels/sources/AiCodeCompletionPlugin.test.ts",
     "../../../../../../front_end/panels/sources/BreakpointEditDialog.test.ts",
     "../../../../../../front_end/panels/sources/BreakpointsView.test.ts",
     "../../../../../../front_end/panels/sources/BreakpointsViewUtils.test.ts",

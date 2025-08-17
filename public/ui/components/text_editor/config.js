@@ -174,9 +174,8 @@ export const codeFolding = DynamicSetting.bool('text-editor-code-folding', [
             icon.data = {
                 iconName,
                 color: 'var(--icon-fold-marker)',
-                width: '14px',
-                height: '14px',
             };
+            icon.classList.add('small');
             return icon;
         },
     }),
@@ -462,13 +461,13 @@ export function hasActiveAiSuggestion(state) {
 export function acceptAiAutoCompleteSuggestion(view) {
     const suggestion = view.state.field(aiAutoCompleteSuggestionState);
     if (!suggestion) {
-        return false;
+        return { accepted: false };
     }
     const { text, from } = suggestion;
     const { head } = view.state.selection.main;
     const typedText = view.state.doc.sliceString(from, head);
     if (!text.startsWith(typedText)) {
-        return false;
+        return { accepted: false };
     }
     const remainingText = text.slice(typedText.length);
     view.dispatch({
@@ -477,7 +476,7 @@ export function acceptAiAutoCompleteSuggestion(view) {
         effects: setAiAutoCompleteSuggestion.of(null),
         userEvent: 'input.complete',
     });
-    return true;
+    return { accepted: true, suggestion };
 }
 export const aiAutoCompleteSuggestion = [
     aiAutoCompleteSuggestionState,

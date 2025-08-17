@@ -2547,7 +2547,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.16.0";
+var packageVersion = "24.16.2";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -7779,8 +7779,9 @@ var QueryHandler = class {
         if (error.name === "AbortError") {
           throw error;
         }
-        error.message = `Waiting for selector \`${selector}\` failed: ${error.message}`;
-        throw error;
+        const waitForSelectorError = new (error instanceof TimeoutError ? TimeoutError : Error)(`Waiting for selector \`${selector}\` failed`);
+        waitForSelectorError.cause = error;
+        throw waitForSelectorError;
       }
     } catch (e_4) {
       env_3.error = e_4;
@@ -11970,6 +11971,7 @@ var WaitTask = class {
   #fn;
   #args;
   #timeout;
+  #genericError = new Error("Waiting failed");
   #timeoutError;
   #result = Deferred.create();
   #poller;
@@ -12058,7 +12060,8 @@ var WaitTask = class {
       }
       const badError = this.getBadError(error);
       if (badError) {
-        await this.terminate(badError);
+        this.#genericError.cause = badError;
+        await this.terminate(this.#genericError);
       }
     }
   }

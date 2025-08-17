@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 async function processTrace(events) {
@@ -25,10 +24,10 @@ async function processTrace(events) {
     }
     for (const handlerName of handlersInOrder) {
         const handler = Trace.Handlers.ModelHandlers[handlerName];
-        await handler.finalize({});
+        await handler.finalize({ allTraceEvents: events });
     }
 }
-describeWithMockConnection('FramesHandler', () => {
+describe('FramesHandler', () => {
     it('can parse out a trace and return the frames', async function () {
         const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
         await processTrace(rawEvents);
@@ -56,9 +55,6 @@ describeWithMockConnection('FramesHandler', () => {
         });
     });
     it('can create LayerPaintEvents from Paint and snapshot events', async function () {
-        // Advanced instrumentation trace file is large: allow the bots more time
-        // to process it.
-        this.timeout(20_000);
         const rawEvents = await TraceLoader.rawEvents(this, 'web-dev-with-advanced-instrumentation.json.gz');
         await processTrace(rawEvents);
         const parsedFrames = Trace.Handlers.ModelHandlers.Frames.data().frames;

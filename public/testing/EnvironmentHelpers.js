@@ -107,6 +107,7 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
+    "timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */,
     "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
@@ -212,6 +213,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("MOBILE" /* Common.Settings.SettingCategory.MOBILE */, 'emulation.show-device-outline', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'timeline.user-had-shortcuts-dialog-opened-once', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-event-listeners-for-ancestors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.

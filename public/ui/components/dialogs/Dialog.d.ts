@@ -30,6 +30,7 @@ export declare class Dialog extends HTMLElement {
     set closeButton(closeButton: boolean);
     set dialogTitle(dialogTitle: string);
     set jslogContext(jslogContext: string);
+    set state(state: DialogState);
     connectedCallback(): void;
     disconnectedCallback(): void;
     getHitArea(): DOMRect;
@@ -61,6 +62,10 @@ export declare const enum DialogVerticalPosition {
     TOP = "top",
     BOTTOM = "bottom",
     AUTO = "auto"
+}
+export declare const enum DialogState {
+    EXPANDED = "expanded",
+    COLLAPSED = "collapsed"
 }
 export declare const enum DialogHorizontalAlignment {
     LEFT = "left",

@@ -17,7 +17,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(cssOverviewProcessingViewStyles)}</style>
+    <style>${cssOverviewProcessingViewStyles}</style>
     <div style="overflow:auto">
       <div class="vbox overview-processing-view">
         <h1>Processing page</h1>

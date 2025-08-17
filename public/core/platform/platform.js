@@ -654,6 +654,7 @@ __export(StringUtilities_exports, {
   toKebabCase: () => toKebabCase,
   toKebabCaseKeys: () => toKebabCaseKeys,
   toLowerCaseString: () => toLowerCaseString,
+  toSnakeCase: () => toSnakeCase,
   toTitleCase: () => toTitleCase,
   trimEndWithMaxLength: () => trimEndWithMaxLength,
   trimMiddle: () => trimMiddle,
@@ -1069,6 +1070,13 @@ var toKebabCase = function(input) {
 };
 function toKebabCaseKeys(settingValue) {
   return Object.fromEntries(Object.entries(settingValue).map(([key, value]) => [toKebabCase(key), value]));
+}
+function toSnakeCase(text) {
+  if (!text) {
+    return "";
+  }
+  const result = text.replace(/(\p{L})(\p{N})/gu, "$1_$2").replace(/(\p{Lu}+)(\p{Lu}\p{Ll})/gu, "$1_$2").replace(/(\p{Ll}|\p{N})(\p{Lu})/gu, "$1_$2").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_|_$/g, "");
+  return result;
 }
 var replaceLast = function(input, search, replacement) {
   const replacementStartIndex = input.lastIndexOf(search);

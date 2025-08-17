@@ -8,7 +8,7 @@ import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
 import { assertScreenshot, dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
-import { microsecondsTraceWindow, renderWidgetInVbox, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, microsecondsTraceWindow, renderWidgetInVbox, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -143,7 +143,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             await raf();
             // No particular reason to pick this event; it's just an event in the
             // main thread within the time bounds.
-            const event = parsedTrace.Renderer.allTraceEntries.find(event => {
+            const event = allThreadEntriesInTrace(parsedTrace).find(event => {
                 return Trace.Types.Events.isTimerFire(event) && event.ts === 122411157276;
             });
             assert.isOk(event);
@@ -932,7 +932,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             const flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
             flameChartView.setModel(parsedTrace, metadata);
             // Find some task in the main thread that we can build an AI Call Tree from
-            const task = parsedTrace.Renderer.allTraceEntries.find(event => {
+            const task = allThreadEntriesInTrace(parsedTrace).find(event => {
                 return Trace.Types.Events.isRunTask(event) && event.dur > 5_000 &&
                     Utils.AICallTree.AICallTree.fromEvent(event, parsedTrace) !== null;
             });

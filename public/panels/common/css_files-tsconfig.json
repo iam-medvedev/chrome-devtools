@@ -4,6 +4,7 @@
         "outDir": "."
     },
     "files": [
+        "aiCodeCompletionDisclaimer.css.js",
         "aiCodeCompletionSummaryToolbar.css.js",
         "aiCodeCompletionTeaser.css.js",
         "common.css.js",

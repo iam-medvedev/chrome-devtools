@@ -71,6 +71,7 @@
     "../../../../../front_end/testing/SourceMapEncoder.test.ts",
     "../../../../../front_end/testing/SourceMapEncoder.ts",
     "../../../../../front_end/testing/SourceMapHelpers.ts",
+    "../../../../../front_end/testing/StackTraceHelpers.ts",
     "../../../../../front_end/testing/StorageItemsViewHelpers.ts",
     "../../../../../front_end/testing/StubIssue.ts",
     "../../../../../front_end/testing/StyleHelpers.ts",

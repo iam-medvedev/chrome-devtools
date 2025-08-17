@@ -67,7 +67,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const isEmptySection = !input.platformFonts?.length;
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(platformFontsWidgetStyles)}</style>
+    <style>${platformFontsWidgetStyles}</style>
     <div class="platform-fonts">
       ${isEmptySection ? '' : html `
         <div class="title">${i18nString(UIStrings.renderedFonts)}</div>

@@ -4,223 +4,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/web_audio/AudioContextContentBuilder.js
-var AudioContextContentBuilder_exports = {};
-__export(AudioContextContentBuilder_exports, {
-  ContextDetailBuilder: () => ContextDetailBuilder,
-  ContextSummaryBuilder: () => ContextSummaryBuilder
-});
-import * as i18n from "./../../core/i18n/i18n.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-var UIStrings = {
-  /**
-   * @description The current state of an item
-   */
-  state: "State",
-  /**
-   * @description Text in Audio Context Content Builder
-   */
-  sampleRate: "Sample Rate",
-  /**
-   * @description Text in Audio Context Content Builder
-   */
-  callbackBufferSize: "Callback Buffer Size",
-  /**
-   * @description Label in the Audio Context Content Builder for the maximum number of output channels
-   * that this Audio Context has.
-   */
-  maxOutputChannels: "Max Output Channels",
-  /**
-   * @description Text in Audio Context Content Builder
-   */
-  currentTime: "Current Time",
-  /**
-   * @description Text in Audio Context Content Builder
-   */
-  callbackInterval: "Callback Interval",
-  /**
-   * @description Text in Audio Context Content Builder
-   */
-  renderCapacity: "Render Capacity"
-};
-var str_ = i18n.i18n.registerUIStrings("panels/web_audio/AudioContextContentBuilder.ts", UIStrings);
-var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var ContextDetailBuilder = class {
-  fragment;
-  container;
-  constructor(context) {
-    this.fragment = document.createDocumentFragment();
-    this.container = document.createElement("div");
-    this.container.classList.add("context-detail-container");
-    this.fragment.appendChild(this.container);
-    this.build(context);
-  }
-  build(context) {
-    const title = context.contextType === "realtime" ? i18n.i18n.lockedString("AudioContext") : i18n.i18n.lockedString("OfflineAudioContext");
-    this.addTitle(title, context.contextId);
-    this.addEntry(i18nString(UIStrings.state), context.contextState);
-    this.addEntry(i18nString(UIStrings.sampleRate), context.sampleRate, "Hz");
-    if (context.contextType === "realtime") {
-      this.addEntry(i18nString(UIStrings.callbackBufferSize), context.callbackBufferSize, "frames");
-    }
-    this.addEntry(i18nString(UIStrings.maxOutputChannels), context.maxOutputChannelCount, "ch");
-  }
-  addTitle(title, subtitle) {
-    this.container.appendChild(UI.Fragment.html`
-  <div class="context-detail-header">
-  <div class="context-detail-title">${title}</div>
-  <div class="context-detail-subtitle">${subtitle}</div>
-  </div>
-  `);
-  }
-  addEntry(entry, value, unit) {
-    const valueWithUnit = value + (unit ? ` ${unit}` : "");
-    this.container.appendChild(UI.Fragment.html`
-  <div class="context-detail-row">
-  <div class="context-detail-row-entry">${entry}</div>
-  <div class="context-detail-row-value">${valueWithUnit}</div>
-  </div>
-  `);
-  }
-  getFragment() {
-    return this.fragment;
-  }
-};
-var ContextSummaryBuilder = class {
-  fragment;
-  constructor(contextRealtimeData) {
-    const time = contextRealtimeData.currentTime.toFixed(3);
-    const mean = (contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3);
-    const stddev = (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3);
-    const capacity = (contextRealtimeData.renderCapacity * 100).toFixed(3);
-    this.fragment = document.createDocumentFragment();
-    this.fragment.appendChild(UI.Fragment.html`
-  <div class="context-summary-container">
-  <span>${i18nString(UIStrings.currentTime)}: ${time} s</span>
-  <span>\u2758</span>
-  <span>${i18nString(UIStrings.callbackInterval)}: μ = ${mean} ms, σ = ${stddev} ms</span>
-  <span>\u2758</span>
-  <span>${i18nString(UIStrings.renderCapacity)}: ${capacity} %</span>
-  </div>
-  `);
-  }
-  getFragment() {
-    return this.fragment;
-  }
-};
-
-// gen/front_end/panels/web_audio/AudioContextSelector.js
-var AudioContextSelector_exports = {};
-__export(AudioContextSelector_exports, {
-  AudioContextSelector: () => AudioContextSelector
-});
-import * as Common from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-var UIStrings2 = {
-  /**
-   * @description Text that shows there is no recording
-   */
-  noRecordings: "(no recordings)",
-  /**
-   * @description Label prefix for an audio context selection
-   * @example {realtime (1e03ec)} PH1
-   */
-  audioContextS: "Audio context: {PH1}"
-};
-var str_2 = i18n3.i18n.registerUIStrings("panels/web_audio/AudioContextSelector.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var AudioContextSelector = class extends Common.ObjectWrapper.ObjectWrapper {
-  placeholderText;
-  selectElement;
-  items;
-  toolbarItemInternal;
-  constructor() {
-    super();
-    this.placeholderText = i18nString2(UIStrings2.noRecordings);
-    this.items = new UI2.ListModel.ListModel();
-    this.selectElement = document.createElement("select");
-    this.toolbarItemInternal = new UI2.Toolbar.ToolbarItem(this.selectElement);
-    this.toolbarItemInternal.setTitle(i18nString2(UIStrings2.audioContextS, { PH1: this.placeholderText }));
-    this.selectElement.addEventListener("change", this.onSelectionChanged.bind(this));
-    this.selectElement.disabled = true;
-    this.addPlaceholderOption();
-    this.items.addEventListener("ItemsReplaced", this.onListItemReplaced, this);
-  }
-  addPlaceholderOption() {
-    const placeholderOption = UI2.Fragment.html`
-    <option value="" hidden>${this.placeholderText}</option>`;
-    this.selectElement.appendChild(placeholderOption);
-  }
-  onListItemReplaced() {
-    this.selectElement.removeChildren();
-    if (this.items.length === 0) {
-      this.addPlaceholderOption();
-      this.selectElement.disabled = true;
-      this.onSelectionChanged();
-      return;
-    }
-    for (const context of this.items) {
-      const option = UI2.Fragment.html`
-    <option value=${context.contextId}>${this.titleFor(context)}</option>`;
-      this.selectElement.appendChild(option);
-    }
-    this.selectElement.disabled = false;
-    this.onSelectionChanged();
-  }
-  contextCreated({ data: context }) {
-    this.items.insert(this.items.length, context);
-    this.onListItemReplaced();
-  }
-  contextDestroyed({ data: contextId }) {
-    const index = this.items.findIndex((context) => context.contextId === contextId);
-    if (index !== -1) {
-      this.items.remove(index);
-      this.onListItemReplaced();
-    }
-  }
-  contextChanged({ data: changedContext }) {
-    const index = this.items.findIndex((context) => context.contextId === changedContext.contextId);
-    if (index !== -1) {
-      this.items.replace(index, changedContext);
-      this.onListItemReplaced();
-    }
-  }
-  selectedContext() {
-    const selectedValue = this.selectElement.value;
-    if (!selectedValue) {
-      return null;
-    }
-    return this.items.find((context) => context.contextId === selectedValue) || null;
-  }
-  onSelectionChanged() {
-    const selectedContext = this.selectedContext();
-    if (selectedContext) {
-      this.toolbarItemInternal.setTitle(i18nString2(UIStrings2.audioContextS, { PH1: this.titleFor(selectedContext) }));
-    } else {
-      this.toolbarItemInternal.setTitle(i18nString2(UIStrings2.audioContextS, { PH1: this.placeholderText }));
-    }
-    this.dispatchEventToListeners("ContextSelected", selectedContext);
-  }
-  itemSelected(item) {
-    if (!item) {
-      return;
-    }
-    this.selectElement.value = item.contextId;
-    this.onSelectionChanged();
-  }
-  reset() {
-    this.items.replaceAll([]);
-    this.onListItemReplaced();
-  }
-  titleFor(context) {
-    return `${context.contextType} (${context.contextId.substr(-6)})`;
-  }
-  toolbarItem() {
-    return this.toolbarItemInternal;
-  }
-};
-
 // gen/front_end/panels/web_audio/WebAudioModel.js
 var WebAudioModel_exports = {};
 __export(WebAudioModel_exports, {
@@ -315,9 +98,9 @@ __export(WebAudioView_exports, {
   WebAudioView: () => WebAudioView
 });
 import "./../../ui/legacy/legacy.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as GraphVisualizer from "./graph_visualizer/graph_visualizer.js";
 
@@ -432,7 +215,7 @@ var webAudio_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./webAudio.css")} */`;
 
 // gen/front_end/panels/web_audio/WebAudioView.js
-var UIStrings3 = {
+var UIStrings = {
   /**
    * @description Text in Web Audio View if there is nothing to show.
    * Web Audio API is an API for controlling audio on the web.
@@ -441,18 +224,59 @@ var UIStrings3 = {
   /**
    * @description Text in Web Audio View
    */
-  openAPageThatUsesWebAudioApiTo: "Open a page that uses Web Audio API to start monitoring."
+  openAPageThatUsesWebAudioApiTo: "Open a page that uses Web Audio API to start monitoring.",
+  /**
+   * @description Text that shows there is no recording
+   */
+  noRecordings: "(no recordings)",
+  /**
+   * @description Label prefix for an audio context selection
+   * @example {realtime (1e03ec)} PH1
+   */
+  audioContextS: "Audio context: {PH1}",
+  /**
+   * @description The current state of an item
+   */
+  state: "State",
+  /**
+   * @description Text in Web Audio View
+   */
+  sampleRate: "Sample Rate",
+  /**
+   * @description Text in Web Audio View
+   */
+  callbackBufferSize: "Callback Buffer Size",
+  /**
+   * @description Label in the Web Audio View for the maximum number of output channels
+   * that this Audio Context has.
+   */
+  maxOutputChannels: "Max Output Channels",
+  /**
+   * @description Text in Web Audio View
+   */
+  currentTime: "Current Time",
+  /**
+   * @description Text in Web Audio View
+   */
+  callbackInterval: "Callback Interval",
+  /**
+   * @description Text in Web Audio View
+   */
+  renderCapacity: "Render Capacity"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/web_audio/WebAudioView.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_ = i18n.i18n.registerUIStrings("panels/web_audio/WebAudioView.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var WEBAUDIO_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/webaudio";
-var WebAudioView = class extends UI3.ThrottledWidget.ThrottledWidget {
-  contextSelector;
+var WebAudioView = class extends UI.ThrottledWidget.ThrottledWidget {
   contentContainer;
   detailViewContainer;
   graphManager;
   landingPage;
   summaryBarContainer;
+  contextSelectorPlaceholderText;
+  contextSelectorElement;
+  contextSelectorItems;
+  contextSelectorToolbarItem;
   constructor() {
     super(true, 1e3);
     this.registerRequiredCSS(webAudio_css_default);
@@ -460,25 +284,28 @@ var WebAudioView = class extends UI3.ThrottledWidget.ThrottledWidget {
     this.element.classList.add("web-audio-drawer");
     const toolbarContainer = this.contentElement.createChild("div", "web-audio-toolbar-container vbox");
     toolbarContainer.role = "toolbar";
-    this.contextSelector = new AudioContextSelector();
+    this.contextSelectorPlaceholderText = i18nString(UIStrings.noRecordings);
+    this.contextSelectorItems = new UI.ListModel.ListModel();
+    this.contextSelectorElement = document.createElement("select");
+    this.contextSelectorToolbarItem = new UI.Toolbar.ToolbarItem(this.contextSelectorElement);
+    this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
+    this.contextSelectorElement.addEventListener("change", this.onContextSelectorSelectionChanged.bind(this));
+    this.contextSelectorElement.disabled = true;
+    this.addContextSelectorPlaceholderOption();
+    this.contextSelectorItems.addEventListener("ItemsReplaced", this.onContextSelectorListItemReplaced, this);
     const toolbar2 = toolbarContainer.createChild("devtools-toolbar", "web-audio-toolbar");
     toolbar2.role = "presentation";
-    toolbar2.appendToolbarItem(UI3.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
+    toolbar2.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
     toolbar2.appendSeparator();
-    toolbar2.appendToolbarItem(this.contextSelector.toolbarItem());
+    toolbar2.appendToolbarItem(this.contextSelectorToolbarItem);
     toolbar2.setAttribute("jslog", `${VisualLogging.toolbar()}`);
     this.contentContainer = this.contentElement.createChild("div", "web-audio-content-container vbox flex-auto");
     this.detailViewContainer = this.contentContainer.createChild("div", "web-audio-details-container vbox flex-auto");
     this.graphManager = new GraphVisualizer.GraphManager.GraphManager();
-    this.landingPage = new UI3.EmptyWidget.EmptyWidget(i18nString3(UIStrings3.noWebAudio), i18nString3(UIStrings3.openAPageThatUsesWebAudioApiTo));
+    this.landingPage = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWebAudio), i18nString(UIStrings.openAPageThatUsesWebAudioApiTo));
     this.landingPage.link = WEBAUDIO_EXPLANATION_URL;
     this.landingPage.show(this.detailViewContainer);
     this.summaryBarContainer = this.contentContainer.createChild("div", "web-audio-summary-container");
-    this.contextSelector.addEventListener("ContextSelected", (event) => {
-      const context = event.data;
-      this.updateDetailView(context);
-      void this.doUpdate();
-    });
     SDK2.TargetManager.TargetManager.instance().observeModels(WebAudioModel, this);
   }
   wasShown() {
@@ -539,25 +366,77 @@ var WebAudioView = class extends UI3.ThrottledWidget.ThrottledWidget {
     webAudioModel.removeEventListener("NodeParamConnected", this.nodeParamConnected, this);
     webAudioModel.removeEventListener("NodeParamDisconnected", this.nodeParamDisconnected, this);
   }
+  addContextSelectorPlaceholderOption() {
+    const placeholderOption = UI.Fragment.html`
+    <option value="" hidden>${this.contextSelectorPlaceholderText}</option>`;
+    this.contextSelectorElement.appendChild(placeholderOption);
+  }
+  onContextSelectorListItemReplaced() {
+    this.contextSelectorElement.removeChildren();
+    if (this.contextSelectorItems.length === 0) {
+      this.addContextSelectorPlaceholderOption();
+      this.contextSelectorElement.disabled = true;
+      this.onContextSelectorSelectionChanged();
+      return;
+    }
+    for (const context of this.contextSelectorItems) {
+      const option = UI.Fragment.html`
+    <option value=${context.contextId}>${this.titleForContext(context)}</option>`;
+      this.contextSelectorElement.appendChild(option);
+    }
+    this.contextSelectorElement.disabled = false;
+    this.onContextSelectorSelectionChanged();
+  }
+  selectedContext() {
+    const selectedValue = this.contextSelectorElement.value;
+    if (!selectedValue) {
+      return null;
+    }
+    return this.contextSelectorItems.find((context) => context.contextId === selectedValue) || null;
+  }
+  onContextSelectorSelectionChanged() {
+    const selectedContext = this.selectedContext();
+    if (selectedContext) {
+      this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleForContext(selectedContext) }));
+    } else {
+      this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
+    }
+    this.updateDetailView(selectedContext);
+    void this.doUpdate();
+  }
+  titleForContext(context) {
+    return `${context.contextType} (${context.contextId.substr(-6)})`;
+  }
   contextCreated(event) {
     const context = event.data;
     this.graphManager.createContext(context.contextId);
-    this.contextSelector.contextCreated(event);
+    this.contextSelectorItems.insert(this.contextSelectorItems.length, context);
+    this.onContextSelectorListItemReplaced();
   }
   contextDestroyed(event) {
     const contextId = event.data;
     this.graphManager.destroyContext(contextId);
-    this.contextSelector.contextDestroyed(event);
+    const index = this.contextSelectorItems.findIndex((context) => context.contextId === contextId);
+    if (index > -1) {
+      this.contextSelectorItems.remove(index);
+      this.onContextSelectorListItemReplaced();
+    }
   }
   contextChanged(event) {
     const context = event.data;
     if (!this.graphManager.hasContext(context.contextId)) {
       return;
     }
-    this.contextSelector.contextChanged(event);
+    const changedContext = event.data;
+    const index = this.contextSelectorItems.findIndex((context2) => context2.contextId === changedContext.contextId);
+    if (index > -1) {
+      this.contextSelectorItems.replace(index, changedContext);
+      this.onContextSelectorListItemReplaced();
+    }
   }
   reset() {
-    this.contextSelector.reset();
+    this.contextSelectorItems.replaceAll([]);
+    this.onContextSelectorListItemReplaced();
     if (this.landingPage.isShowing()) {
       this.landingPage.detach();
     }
@@ -700,20 +579,54 @@ var WebAudioView = class extends UI3.ThrottledWidget.ThrottledWidget {
     if (this.landingPage.isShowing()) {
       this.landingPage.detach();
     }
-    const detailBuilder = new ContextDetailBuilder(context);
     this.detailViewContainer.removeChildren();
-    this.detailViewContainer.appendChild(detailBuilder.getFragment());
+    const container = document.createElement("div");
+    container.classList.add("context-detail-container");
+    const addEntry = (entry, value, unit) => {
+      const valueWithUnit = value + (unit ? ` ${unit}` : "");
+      container.appendChild(UI.Fragment.html`
+        <div class="context-detail-row">
+          <div class="context-detail-row-entry">${entry}</div>
+          <div class="context-detail-row-value">${valueWithUnit}</div>
+        </div>
+      `);
+    };
+    const title = context.contextType === "realtime" ? i18n.i18n.lockedString("AudioContext") : i18n.i18n.lockedString("OfflineAudioContext");
+    container.appendChild(UI.Fragment.html`
+      <div class="context-detail-header">
+        <div class="context-detail-title">${title}</div>
+        <div class="context-detail-subtitle">${context.contextId}</div>
+      </div>
+    `);
+    addEntry(i18nString(UIStrings.state), context.contextState);
+    addEntry(i18nString(UIStrings.sampleRate), context.sampleRate, "Hz");
+    if (context.contextType === "realtime") {
+      addEntry(i18nString(UIStrings.callbackBufferSize), context.callbackBufferSize, "frames");
+    }
+    addEntry(i18nString(UIStrings.maxOutputChannels), context.maxOutputChannelCount, "ch");
+    this.detailViewContainer.appendChild(container);
   }
   updateSummaryBar(contextRealtimeData) {
-    const summaryBuilder = new ContextSummaryBuilder(contextRealtimeData);
     this.summaryBarContainer.removeChildren();
-    this.summaryBarContainer.appendChild(summaryBuilder.getFragment());
+    const time = contextRealtimeData.currentTime.toFixed(3);
+    const mean = (contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3);
+    const stddev = (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3);
+    const capacity = (contextRealtimeData.renderCapacity * 100).toFixed(3);
+    this.summaryBarContainer.appendChild(UI.Fragment.html`
+      <div class="context-summary-container">
+        <span>${i18nString(UIStrings.currentTime)}: ${time} s</span>
+        <span>\u2758</span>
+        <span>${i18nString(UIStrings.callbackInterval)}: μ = ${mean} ms, σ = ${stddev} ms</span>
+        <span>\u2758</span>
+        <span>${i18nString(UIStrings.renderCapacity)}: ${capacity} %</span>
+      </div>
+    `);
   }
   clearSummaryBar() {
     this.summaryBarContainer.removeChildren();
   }
   async pollRealtimeData() {
-    const context = this.contextSelector.selectedContext();
+    const context = this.selectedContext();
     if (!context) {
       this.clearSummaryBar();
       return;
@@ -737,8 +650,6 @@ var WebAudioView = class extends UI3.ThrottledWidget.ThrottledWidget {
 // gen/front_end/panels/web_audio/web_audio.prebundle.js
 import { EdgeView, GraphManager as GraphManager2, GraphStyle, GraphView, NodeRendererUtility, NodeView } from "./graph_visualizer/graph_visualizer.js";
 export {
-  AudioContextContentBuilder_exports as AudioContextContentBuilder,
-  AudioContextSelector_exports as AudioContextSelector,
   EdgeView,
   GraphManager2 as GraphManager,
   GraphStyle,

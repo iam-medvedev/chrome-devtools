@@ -491,7 +491,7 @@ export const generatedProperties = [
             "font-variation-settings",
             "font-weight",
             "forced-color-adjust",
-            "gap-rule-paint-order",
+            "gap-rule-overlap",
             "grid-auto-columns",
             "grid-auto-flow",
             "grid-auto-rows",
@@ -2517,7 +2517,7 @@ export const generatedProperties = [
             "row-over-column",
             "column-over-row"
         ],
-        "name": "gap-rule-paint-order"
+        "name": "gap-rule-overlap"
     },
     {
         "longhands": [
@@ -5789,7 +5789,7 @@ export const generatedPropertyValues = {
             "preserve-parent-color"
         ]
     },
-    "gap-rule-paint-order": {
+    "gap-rule-overlap": {
         "values": [
             "row-over-column",
             "column-over-row"

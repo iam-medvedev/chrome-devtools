@@ -208,7 +208,6 @@ UI.ViewManager.registerViewExtension({
     commandPrompt: i18nLazyString(UIStrings.showEventListeners),
     title: i18nLazyString(UIStrings.eventListeners),
     order: 5,
-    hasToolbar: true,
     persistence: "permanent" /* UI.ViewManager.ViewPersistence.PERMANENT */,
     async loadView() {
         const Elements = await loadElementsModule();

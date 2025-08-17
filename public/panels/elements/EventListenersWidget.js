@@ -1,7 +1,6 @@
 // Copyright 2021 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 /*
  * Copyright (C) 2007 Apple Inc.  All rights reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -34,13 +33,16 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as EventListeners from '../event_listeners/event_listeners.js';
+const { bindToSetting } = UI.SettingsUI;
+const { bindToAction } = UI.UIUtils;
 const UIStrings = {
     /**
      * @description Title of show framework listeners setting in event listeners widget of the elements panel
      */
-    frameworkListeners: '`Framework` listeners',
+    frameworkListeners: 'Resolve `Framework` listeners',
     /**
      * @description Tooltip text that appears on the setting when hovering over it in Event Listeners Widget of the Elements panel
      */
@@ -73,16 +75,50 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/elements/EventListenersWidget.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let eventListenersWidgetInstance;
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <div jslog=${VisualLogging.pane('elements.event-listeners').track({ resize: true })}>
+      <devtools-toolbar class="event-listener-toolbar" role="presentation">
+        <devtools-button ${bindToAction(input.refreshEventListenersActionName)}></devtools-button>
+        <devtools-checkbox title=${i18nString(UIStrings.showListenersOnTheAncestors)}
+          ${bindToSetting(input.showForAncestorsSetting)}
+          jslog=${VisualLogging.toggle('show-event-listeners-for-ancestors').track({ change: true })}>
+          ${i18nString(UIStrings.ancestors)}
+        </devtools-checkbox>
+        <select class="dispatch-filter"
+          title=${i18nString(UIStrings.eventListenersCategory)}
+          aria-label=${i18nString(UIStrings.eventListenersCategory)}
+          jslog=${VisualLogging.filterDropdown().track({ change: true })}
+          @change=${(e) => input.onDispatchFilterTypeChange(e.target.value)}>
+          ${input.dispatchFilters.map(filter => html `
+            <option value=${filter.value} ?selected=${filter.value === input.selectedDispatchFilter}>
+              ${filter.name}
+            </option>`)}
+        </select>
+        <devtools-checkbox title=${i18nString(UIStrings.resolveEventListenersBoundWith)}
+          ${bindToSetting(input.showFrameworkListenersSetting)}
+          jslog=${VisualLogging.toggle('show-frameowkr-listeners').track({ change: true })}>
+          ${i18nString(UIStrings.frameworkListeners)}
+        </devtools-checkbox>
+      </devtools-toolbar>
+      <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(EventListeners.EventListenersView.EventListenersView, {
+        changeCallback: input.onEventListenersViewChange,
+        objects: input.eventListenerObjects,
+        filter: input.filter,
+    })}></devtools-widget>
+    </div>`, target);
+    // clang-format on
+};
 export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
-    toolbarItemsInternal;
     showForAncestorsSetting;
     dispatchFilterBySetting;
     showFrameworkListenersSetting;
-    eventListenersView;
     lastRequestedNode;
-    constructor() {
+    #view;
+    constructor(view = DEFAULT_VIEW) {
         super();
-        this.toolbarItemsInternal = [];
+        this.#view = view;
         this.showForAncestorsSetting =
             Common.Settings.Settings.instance().moduleSetting('show-event-listeners-for-ancestors');
         this.showForAncestorsSetting.addChangeListener(this.update.bind(this));
@@ -92,26 +128,7 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
         this.showFrameworkListenersSetting =
             Common.Settings.Settings.instance().createSetting('show-frameowkr-listeners', true);
         this.showFrameworkListenersSetting.setTitle(i18nString(UIStrings.frameworkListeners));
-        this.showFrameworkListenersSetting.addChangeListener(this.showFrameworkListenersChanged.bind(this));
-        this.eventListenersView = new EventListeners.EventListenersView.EventListenersView(this.update.bind(this));
-        this.eventListenersView.show(this.element);
-        this.element.setAttribute('jslog', `${VisualLogging.pane('elements.event-listeners').track({ resize: true })}`);
-        this.toolbarItemsInternal.push(UI.Toolbar.Toolbar.createActionButton('elements.refresh-event-listeners'));
-        this.toolbarItemsInternal.push(new UI.Toolbar.ToolbarSettingCheckbox(this.showForAncestorsSetting, i18nString(UIStrings.showListenersOnTheAncestors), i18nString(UIStrings.ancestors)));
-        const dispatchFilter = new UI.Toolbar.ToolbarComboBox(this.onDispatchFilterTypeChanged.bind(this), i18nString(UIStrings.eventListenersCategory));
-        dispatchFilter.element.setAttribute('jslog', `${VisualLogging.filterDropdown().track({ change: true })}`);
-        function addDispatchFilterOption(name, value) {
-            const option = dispatchFilter.createOption(name, value);
-            if (value === this.dispatchFilterBySetting.get()) {
-                dispatchFilter.select(option);
-            }
-        }
-        addDispatchFilterOption.call(this, i18nString(UIStrings.all), DispatchFilterBy.All);
-        addDispatchFilterOption.call(this, i18nString(UIStrings.passive), DispatchFilterBy.Passive);
-        addDispatchFilterOption.call(this, i18nString(UIStrings.blocking), DispatchFilterBy.Blocking);
-        dispatchFilter.setMaxWidth(200);
-        this.toolbarItemsInternal.push(dispatchFilter);
-        this.toolbarItemsInternal.push(new UI.Toolbar.ToolbarSettingCheckbox(this.showFrameworkListenersSetting, i18nString(UIStrings.resolveEventListenersBoundWith)));
+        this.showFrameworkListenersSetting.addChangeListener(this.update.bind(this));
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.update, this);
         this.update();
     }
@@ -122,32 +139,49 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
         }
         return eventListenersWidgetInstance;
     }
-    doUpdate() {
+    async doUpdate() {
+        const dispatchFilter = this.dispatchFilterBySetting.get();
+        const showPassive = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Passive;
+        const showBlocking = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Blocking;
+        const input = {
+            refreshEventListenersActionName: 'elements.refresh-event-listeners',
+            showForAncestorsSetting: this.showForAncestorsSetting,
+            dispatchFilterBySetting: this.dispatchFilterBySetting,
+            showFrameworkListenersSetting: this.showFrameworkListenersSetting,
+            onDispatchFilterTypeChange: (value) => {
+                this.dispatchFilterBySetting.set(value);
+            },
+            onEventListenersViewChange: this.update.bind(this),
+            dispatchFilters: [
+                { name: i18nString(UIStrings.all), value: DispatchFilterBy.All },
+                { name: i18nString(UIStrings.passive), value: DispatchFilterBy.Passive },
+                { name: i18nString(UIStrings.blocking), value: DispatchFilterBy.Blocking },
+            ],
+            selectedDispatchFilter: dispatchFilter,
+            eventListenerObjects: [],
+            filter: { showFramework: this.showFrameworkListenersSetting.get(), showPassive, showBlocking },
+        };
         if (this.lastRequestedNode) {
             this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(objectGroupName);
             delete this.lastRequestedNode;
         }
         const node = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
-        if (!node) {
-            this.eventListenersView.reset();
-            this.eventListenersView.addEmptyHolderIfNeeded();
-            return Promise.resolve();
-        }
-        this.lastRequestedNode = node;
-        const selectedNodeOnly = !this.showForAncestorsSetting.get();
-        const promises = [];
-        promises.push(node.resolveToObject(objectGroupName));
-        if (!selectedNodeOnly) {
-            let currentNode = node.parentNode;
-            while (currentNode) {
-                promises.push(currentNode.resolveToObject(objectGroupName));
-                currentNode = currentNode.parentNode;
+        if (node) {
+            this.lastRequestedNode = node;
+            const selectedNodeOnly = !this.showForAncestorsSetting.get();
+            const promises = [];
+            promises.push(node.resolveToObject(objectGroupName));
+            if (!selectedNodeOnly) {
+                let currentNode = node.parentNode;
+                while (currentNode) {
+                    promises.push(currentNode.resolveToObject(objectGroupName));
+                    currentNode = currentNode.parentNode;
+                }
+                promises.push(this.windowObjectInNodeContext(node));
             }
-            promises.push(this.windowObjectInNodeContext(node));
+            input.eventListenerObjects = await Promise.all(promises);
         }
-        return Promise.all(promises)
-            .then(this.eventListenersView.addObjects.bind(this.eventListenersView))
-            .then(this.showFrameworkListenersChanged.bind(this));
+        this.#view(input, {}, this.contentElement);
     }
     wasShown() {
         UI.Context.Context.instance().setFlavor(EventListenersWidget, this);
@@ -156,19 +190,6 @@ export class EventListenersWidget extends UI.ThrottledWidget.ThrottledWidget {
     willHide() {
         super.willHide();
         UI.Context.Context.instance().setFlavor(EventListenersWidget, null);
-    }
-    toolbarItems() {
-        return this.toolbarItemsInternal;
-    }
-    onDispatchFilterTypeChanged(event) {
-        const filter = event.target;
-        this.dispatchFilterBySetting.set(filter.value);
-    }
-    showFrameworkListenersChanged() {
-        const dispatchFilter = this.dispatchFilterBySetting.get();
-        const showPassive = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Passive;
-        const showBlocking = dispatchFilter === DispatchFilterBy.All || dispatchFilter === DispatchFilterBy.Blocking;
-        this.eventListenersView.showFrameworkListeners(this.showFrameworkListenersSetting.get(), showPassive, showBlocking);
     }
     windowObjectInNodeContext(node) {
         const executionContexts = node.domModel().runtimeModel().executionContexts();

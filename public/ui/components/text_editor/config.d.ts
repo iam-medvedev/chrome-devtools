@@ -1,3 +1,4 @@
+import type * as Host from '../../../core/host/host.js';
 import * as CM from '../../../third_party/codemirror.next/codemirror.next.js';
 export declare const dynamicSetting: CM.Facet<DynamicSetting<unknown>, readonly DynamicSetting<unknown>[]>;
 export declare class DynamicSetting<T> {
@@ -38,9 +39,14 @@ export declare const setAiAutoCompleteSuggestion: CM.StateEffectType<ActiveSugge
 interface ActiveSuggestion {
     text: string;
     from: number;
+    sampleId?: number;
+    rpcGlobalId?: Host.AidaClient.RpcGlobalId;
 }
 export declare const aiAutoCompleteSuggestionState: CM.StateField<ActiveSuggestion | null>;
 export declare function hasActiveAiSuggestion(state: CM.EditorState): boolean;
-export declare function acceptAiAutoCompleteSuggestion(view: CM.EditorView): boolean;
+export declare function acceptAiAutoCompleteSuggestion(view: CM.EditorView): {
+    accepted: boolean;
+    suggestion?: ActiveSuggestion;
+};
 export declare const aiAutoCompleteSuggestion: CM.Extension;
 export {};

@@ -54,6 +54,7 @@ export class Dialog extends HTMLElement {
         closeButton: false,
         dialogTitle: '',
         jslogContext: '',
+        state: "expanded" /* DialogState.EXPANDED */,
     };
     #dialog = null;
     #isPendingShowDialog = false;
@@ -159,6 +160,10 @@ export class Dialog extends HTMLElement {
         this.#props.jslogContext = jslogContext;
         this.#onStateChange();
     }
+    set state(state) {
+        this.#props.state = state;
+        this.#onStateChange();
+    }
     #updateDialogBounds() {
         this.#dialogClientRect = this.#getDialog().getBoundingClientRect();
     }
@@ -195,9 +200,11 @@ export class Dialog extends HTMLElement {
     }
     async setDialogVisible(show) {
         if (show) {
+            this.state = "expanded" /* DialogState.EXPANDED */;
             await this.#showDialog();
             return;
         }
+        this.state = "collapsed" /* DialogState.COLLAPSED */;
         this.#closeDialog();
     }
     async #handlePointerEvent(evt) {
@@ -537,17 +544,24 @@ export class Dialog extends HTMLElement {
             // clang-format on
             return;
         }
+        let dialogContent = html ``;
+        // If state is expanded content should be shown, do not render it otherwise.
+        if (this.#props.state === "expanded" /* DialogState.EXPANDED */) {
+            dialogContent = html `
+    <div id="content">
+          <div class="dialog-header">${this.#renderHeaderRow()}</div>
+          <div class='dialog-content'>
+            <slot></slot>
+          </div>
+    </div>
+    `;
+        }
         // clang-format off
         Lit.render(html `
       <style>${dialogStyles}</style>
       <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel} @animationend=${this.#animationEndedEvent}
               jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: 'Escape' }).parent('mapped')}>
-        <div id="content">
-          <div class="dialog-header">${this.#renderHeaderRow()}</div>
-          <div class='dialog-content'>
-            <slot></slot>
-          </div>
-        </div>
+        ${dialogContent}
       </dialog>
     `, this.#shadow, { host: this });
         VisualLogging.setMappedParent(this.#getDialog(), this.parentElementOrShadowHost());

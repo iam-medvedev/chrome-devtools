@@ -630,6 +630,7 @@ __export(UIUtils_exports, {
   asyncStackTraceLabel: () => asyncStackTraceLabel,
   beautifyFunctionName: () => beautifyFunctionName,
   bindInput: () => bindInput,
+  bindToAction: () => bindToAction,
   copyFileNameLabel: () => copyFileNameLabel,
   copyLinkAddressLabel: () => copyLinkAddressLabel,
   createFileSelectorElement: () => createFileSelectorElement,
@@ -2045,23 +2046,6 @@ var TYPE_TO_ICON = {
   ]: "cross-circle"
 };
 
-// gen/front_end/ui/legacy/inspectorViewTabbedPane.css.js
-var inspectorViewTabbedPane_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.tabbed-pane-header-tab {
-  & > .tabbed-pane-header-tab-suffix-element devtools-icon.warning {
-    width: 14px;
-    height: 14px;
-    color: var(--icon-warning);
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./inspectorViewTabbedPane.css")} */`;
-
 // gen/front_end/ui/legacy/SplitWidget.js
 var SplitWidget_exports = {};
 __export(SplitWidget_exports, {
@@ -2652,8 +2636,7 @@ __export(Widget_exports, {
   WidgetElement: () => WidgetElement,
   WidgetFocusRestorer: () => WidgetFocusRestorer,
   widgetConfig: () => widgetConfig,
-  widgetRef: () => widgetRef,
-  widgetScoped: () => widgetScoped
+  widgetRef: () => widgetRef
 });
 import "./../../core/dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
@@ -3028,9 +3011,6 @@ function widgetRef(type, callback) {
     }
     callback(widget);
   });
-}
-function widgetScoped(styles) {
-  return `@scope to (devtools-widget > *) { ${styles} }`;
 }
 var widgetCounterMap = /* @__PURE__ */ new WeakMap();
 var widgetMap = /* @__PURE__ */ new WeakMap();
@@ -3538,8 +3518,8 @@ var Widget = class _Widget {
    * use the `requestUpdate()` method to schedule an asynchronous update.
    *
    * @returns can either return nothing or a promise; in that latter case, the
-   *         update logic will await the resolution of the returned promise
-   *         before proceeding.
+   *          update logic will await the resolution of the returned promise
+   *          before proceeding.
    */
   performUpdate() {
   }
@@ -6104,10 +6084,9 @@ var TabbedPaneTab = class {
     const closeIcon = new IconButton2.Icon.Icon();
     closeIcon.data = {
       iconName: "experiment",
-      color: "var(--override-tabbed-pane-preview-icon-color)",
-      height: "14px",
-      width: "14px"
+      color: "var(--override-tabbed-pane-preview-icon-color)"
     };
+    previewIcon.classList.add("small");
     previewIcon.appendChild(closeIcon);
     previewIcon.setAttribute("title", i18nString4(UIStrings4.previewFeature));
     previewIcon.setAttribute("aria-label", i18nString4(UIStrings4.previewFeature));
@@ -6277,7 +6256,11 @@ import * as IconButton3 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging6 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/viewContainers.css.js
-var viewContainers_css_default = `/*
+var viewContainers_css_default = `/* Copyright 2025 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file. */
+
+/*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2009 Anthony Ricaud <rik@webkit.org>
  *
@@ -6344,6 +6327,10 @@ var viewContainers_css_default = `/*
 
 .expandable-view-title:focus-visible {
   background-color: var(--sys-color-state-focus-highlight);
+
+  :host-context(.accessibility-sidebar-view) & {
+    background-color: var(--sys-color-tonal-container);
+  }
 }
 
 @media (forced-colors: active) {
@@ -7414,7 +7401,6 @@ var InspectorView = class _InspectorView extends VBox {
     this.tabbedPane.element.classList.add("main-tabbed-pane");
     const allocatedSpace = Root4.Runtime.conditions.canDock() ? "69px" : "41px";
     this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
-    this.tabbedPane.registerRequiredCSS(inspectorViewTabbedPane_css_default);
     this.tabbedPane.addEventListener(Events.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
     const selectedTab = this.tabbedPane.selectedTabId;
     if (selectedTab) {
@@ -7522,7 +7508,8 @@ var InspectorView = class _InspectorView extends VBox {
       let icon = null;
       if (warnings.length !== 0) {
         const warning = warnings.length === 1 ? warnings[0] : "\xB7 " + warnings.join("\n\xB7 ");
-        icon = IconButton4.Icon.create("warning-filled", "warning");
+        icon = IconButton4.Icon.create("warning-filled", "small");
+        icon.classList.add("warning");
         Tooltip.install(icon, warning);
       }
       tabbedPane.setTrailingTabIcon(tabId, icon);
@@ -8553,24 +8540,48 @@ var Item = class {
     this.jslogContext = jslogContext;
     this.featureName = featureName;
   }
+  /**
+   * Returns the unique ID of this item.
+   * @throws If the item ID was not set (e.g. for a separator).
+   */
   id() {
     if (this.idInternal === void 0) {
       throw new Error("Tried to access a ContextMenu Item ID but none was set.");
     }
     return this.idInternal;
   }
+  /**
+   * Returns the type of this item (e.g. 'item', 'checkbox').
+   */
   type() {
     return this.typeInternal;
   }
+  /**
+   * Returns whether this item is marked as a preview feature (experimental).
+   */
   isPreviewFeature() {
     return this.previewFeature;
   }
+  /**
+   * Returns whether this item is enabled.
+   */
   isEnabled() {
     return !this.disabled;
   }
+  /**
+   * Sets the enabled state of this item.
+   * @param enabled True to enable the item, false to disable it.
+   */
   setEnabled(enabled) {
     this.disabled = !enabled;
   }
+  /**
+   * Builds a descriptor object for this item.
+   * This descriptor is used to create the actual menu item in either
+   * a soft-rendered menu or a native menu.
+   * @returns The descriptor for the item.
+   * @throws If the item type is invalid.
+   */
   buildDescriptor() {
     switch (this.typeInternal) {
       case "item": {
@@ -8630,16 +8641,29 @@ var Item = class {
     }
     throw new Error("Invalid item type:" + this.typeInternal);
   }
+  /**
+   * Sets a keyboard accelerator for this item.
+   * @param key The key code for the accelerator.
+   * @param modifiers An array of modifiers (e.g. Ctrl, Shift).
+   */
   setAccelerator(key, modifiers) {
     const modifierSum = modifiers.reduce((result, modifier) => result + ShortcutRegistry.instance().devToolsToChromeModifier(modifier), 0);
     this.accelerator = { keyCode: key.code, modifiers: modifierSum };
   }
-  // This influences whether accelerators will be shown for native menus on Mac.
-  // Use this ONLY for performance menus and ONLY where accelerators are critical
-  // for a smooth user journey and heavily context dependent.
+  /**
+   * This influences whether accelerators will be shown for native menus on Mac.
+   * Use this ONLY for performance menus and ONLY where accelerators are critical
+   * for a smooth user journey and heavily context dependent.
+   * @param isDevToolsPerformanceMenuItem True if this is a DevTools performance menu item.
+   */
   setIsDevToolsPerformanceMenuItem(isDevToolsPerformanceMenuItem) {
     this.isDevToolsPerformanceMenuItem = isDevToolsPerformanceMenuItem;
   }
+  /**
+   * Sets a display string for the shortcut associated with this item.
+   * This is typically used when the shortcut is managed by `ActionRegistry`.
+   * @param shortcut The shortcut string to display.
+   */
   setShortcut(shortcut) {
     this.shortcut = shortcut;
   }
@@ -8651,6 +8675,13 @@ var Section = class {
     this.contextMenu = contextMenu;
     this.items = [];
   }
+  /**
+   * Appends a standard clickable item to this section.
+   * @param label The text to display for the item.
+   * @param handler The function to execute when the item is clicked.
+   * @param options Optional settings for the item.
+   * @returns The newly created `Item`.
+   */
   appendItem(label, handler, options) {
     const item8 = new Item(this.contextMenu, "item", label, options?.isPreviewFeature, options?.disabled, void 0, options?.accelerator, options?.tooltip, options?.jslogContext, options?.featureName);
     if (options?.additionalElement) {
@@ -8662,17 +8693,34 @@ var Section = class {
     }
     return item8;
   }
+  /**
+   * Appends an item that contains a custom HTML element (for non-native menus only).
+   * @param element The custom `Element` to display in the menu item.
+   * @param jslogContext An optional string identifying the element for visual logging.
+   * @returns The newly created `Item`.
+   */
   appendCustomItem(element, jslogContext) {
     const item8 = new Item(this.contextMenu, "item", void 0, void 0, void 0, void 0, void 0, void 0, jslogContext);
     item8.customElement = element;
     this.items.push(item8);
     return item8;
   }
+  /**
+   * Appends a visual separator to this section.
+   * @returns The newly created separator `Item`.
+   */
   appendSeparator() {
     const item8 = new Item(this.contextMenu, "separator");
     this.items.push(item8);
     return item8;
   }
+  /**
+   * Appends an item that triggers a registered `Action`.
+   * The item's label, handler, enabled state, and shortcut are derived from the action.
+   * @param actionId The ID of the action to append.
+   * @param label Optional label to override the action's title.
+   * @param optional If true and the action is not registered, this method does nothing.
+   */
   appendAction(actionId, label, optional, jslogContext, feature) {
     if (optional && !ActionRegistry.instance().hasAction(actionId)) {
       return;
@@ -8695,12 +8743,26 @@ var Section = class {
       result.setShortcut(shortcut);
     }
   }
+  /**
+   * Appends an item that, when clicked, opens a sub-menu.
+   * @param label The text to display for the sub-menu item.
+   * @param disabled Whether the sub-menu item should be disabled.
+   * @param jslogContext An optional string identifying the element for visual logging.
+   * @returns The newly created `SubMenu` instance.
+   */
   appendSubMenuItem(label, disabled, jslogContext, featureName) {
     const item8 = new SubMenu(this.contextMenu, label, disabled, jslogContext, featureName);
     item8.init();
     this.items.push(item8);
     return item8;
   }
+  /**
+   * Appends a checkbox item to this section.
+   * @param label The text to display for the checkbox item.
+   * @param handler The function to execute when the checkbox state changes.
+   * @param options Optional settings for the checkbox item.
+   * @returns The newly created checkbox `Item`.
+   */
   appendCheckboxItem(label, handler, options) {
     const item8 = new Item(this.contextMenu, "checkbox", label, options?.experimental, options?.disabled, options?.checked, void 0, options?.tooltip, options?.jslogContext, options?.featureName);
     this.items.push(item8);
@@ -8721,9 +8783,22 @@ var SubMenu = class extends Item {
     this.sections = /* @__PURE__ */ new Map();
     this.sectionList = [];
   }
+  /**
+   * Initializes the standard sections for this sub-menu based on `ContextMenu.groupWeights`.
+   */
   init() {
     ContextMenu.groupWeights.forEach((name) => this.section(name));
   }
+  /**
+   * Retrieves an existing section by its name or creates a new one if it doesn't exist.
+   *
+   * If a section with the given `name` (or 'default' if `name` is unspecified) is not found,
+   * a new `Section` instance is created, stored internally for future lookups by that name,
+   * and added to the ordered list of sections for this submenu.
+   *
+   * @param name The optional name of the section. Defaults to 'default' if not provided.
+   * @returns The `Section` object, either pre-existing or newly created.
+   */
   section(name) {
     if (!name) {
       name = "default";
@@ -8740,39 +8815,88 @@ var SubMenu = class extends Item {
     }
     return section4;
   }
+  /**
+   * Retrieves or creates the 'header' section.
+   * @returns The 'header' `Section` object.
+   */
   headerSection() {
     return this.section("header");
   }
+  /**
+   * Retrieves or creates the 'new' section.
+   * @returns The 'new' `Section` object.
+   */
   newSection() {
     return this.section("new");
   }
+  /**
+   * Retrieves or creates the 'reveal' section.
+   * @returns The 'reveal' `Section` object.
+   */
   revealSection() {
     return this.section("reveal");
   }
+  /**
+   * Retrieves or creates the 'clipboard' section.
+   * @returns The 'clipboard' `Section` object.
+   */
   clipboardSection() {
     return this.section("clipboard");
   }
+  /**
+   * Retrieves or creates the 'edit' section.
+   * @returns The 'edit' `Section` object.
+   */
   editSection() {
     return this.section("edit");
   }
+  /**
+   * Retrieves or creates the 'debug' section.
+   * @returns The 'debug' `Section` object.
+   */
   debugSection() {
     return this.section("debug");
   }
+  /**
+   * Retrieves or creates the 'view' section.
+   * @returns The 'view' `Section` object.
+   */
   viewSection() {
     return this.section("view");
   }
+  /**
+   * Retrieves or creates the 'default' section.
+   * This is often used for general-purpose menu items.
+   * @returns The 'default' `Section` object.
+   */
   defaultSection() {
     return this.section("default");
   }
+  /**
+   * Retrieves or creates the 'override' section.
+   * @returns The 'override' `Section` object.
+   */
   overrideSection() {
     return this.section("override");
   }
+  /**
+   * Retrieves or creates the 'save' section.
+   * @returns The 'save' `Section` object.
+   */
   saveSection() {
     return this.section("save");
   }
+  /**
+   * Retrieves or creates the 'annotation' section.
+   * @returns The 'annotation' `Section` object.
+   */
   annotationSection() {
     return this.section("annotation");
   }
+  /**
+   * Retrieves or creates the 'footer' section.
+   * @returns The 'footer' `Section` object.
+   */
   footerSection() {
     return this.section("footer");
   }
@@ -8814,6 +8938,12 @@ var SubMenu = class extends Item {
     }
     return result;
   }
+  /**
+   * Appends registered context menu items that are configured to appear under a specific `location` path.
+   * Items are sorted by their `order` property.
+   * Experimental items are only added if their corresponding experiment is enabled.
+   * @param location The base location path (e.g. 'mainMenu'). Items with locations like 'mainMenu/default' will be appended.
+   */
   appendItemsAtLocation(location) {
     const items = getRegisteredItems();
     items.sort((firstItem, secondItem) => {
@@ -8858,6 +8988,11 @@ var ContextMenu = class _ContextMenu extends SubMenu {
   openHostedMenu;
   eventTarget;
   loggableParent = null;
+  /**
+   * Creates an instance of `ContextMenu`.
+   * @param event The mouse event that triggered the menu.
+   * @param options Optional configuration for the context menu.
+   */
   constructor(event, options = {}) {
     super(null);
     const mouseEvent = event;
@@ -8885,12 +9020,21 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       }
     }
   }
+  /**
+   * Initializes global settings for context menus, such as listening for
+   * commands from the host to toggle soft menu usage.
+   */
   static initialize() {
     Host6.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host6.InspectorFrontendHostAPI.Events.SetUseSoftMenu, setUseSoftMenu);
     function setUseSoftMenu(event) {
       _ContextMenu.useSoftMenu = event.data;
     }
   }
+  /**
+   * Installs a global context menu handler on the provided document's body.
+   * This handler will create and show a `ContextMenu` when a contextmenu event is detected.
+   * @param doc The `Document` to install the handler on.
+   */
   static installHandler(doc) {
     doc.body.addEventListener("contextmenu", handler, false);
     function handler(event) {
@@ -8898,18 +9042,39 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       void contextMenu.show();
     }
   }
+  /**
+   * Generates the next unique ID for a menu item within this `ContextMenu`.
+   * @returns A unique number for the item ID.
+   */
   nextId() {
     return this.idInternal++;
   }
+  /**
+   * Checks if a native (hosted) context menu is currently open.
+   * @returns `true` if a native menu is open, `false` otherwise.
+   */
   isHostedMenuOpen() {
     return Boolean(this.openHostedMenu);
   }
+  /**
+   * Retrieves the item descriptors if a soft menu is currently active.
+   * @returns An array of `SoftContextMenuDescriptor`s or an empty array if no soft menu is active.
+   */
   getItems() {
     return this.softMenu?.getItems() || [];
   }
+  /**
+   * Sets the checked state of an item in an active soft menu.
+   * @param item The descriptor of the item to update.
+   * @param checked `true` to check the item, `false` to uncheck it.
+   */
   setChecked(item8, checked) {
     this.softMenu?.setChecked(item8, checked);
   }
+  /**
+   * Shows the context menu. This involves loading items from registered providers
+   * and then displaying either a soft or native menu.
+   */
   async show() {
     _ContextMenu.pendingMenu = this;
     this.event.consume(true);
@@ -8929,6 +9094,9 @@ var ContextMenu = class _ContextMenu extends SubMenu {
     this.pendingTargets = [];
     this.innerShow();
   }
+  /**
+   * Discards (closes) the soft context menu if it's currently shown.
+   */
   discard() {
     if (this.softMenu) {
       this.softMenu.discard();
@@ -8976,17 +9144,34 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       queueMicrotask(listenToEvents.bind(this));
     }
   }
+  /**
+   * Sets the x-coordinate for the menu's position.
+   * @param x The new x-coordinate.
+   */
   setX(x) {
     this.x = x;
   }
+  /**
+   * Sets the y-coordinate for the menu's position.
+   * @param y The new y-coordinate.
+   */
   setY(y) {
     this.y = y;
   }
+  /**
+   * Associates a handler function with a menu item ID.
+   * @param id The ID of the menu item.
+   * @param handler The function to execute when the item is selected.
+   */
   setHandler(id2, handler) {
     if (handler) {
       this.handlers.set(id2, handler);
     }
   }
+  /**
+   * Invokes the handler associated with the given menu item ID.
+   * @param id The ID of the selected menu item.
+   */
   invokeHandler(id2) {
     const handler = this.handlers.get(id2);
     if (handler) {
@@ -9044,8 +9229,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
   }
   /**
    * Appends the `target` to the list of pending targets for which context menu providers
-   * will be loaded when showing the context menu. If the `target` was already appended
-   * before, it just ignores this call.
+   * will be loaded when showing the context menu.
    *
    * @param target an object for which we can have registered menu item providers.
    */
@@ -9055,6 +9239,9 @@ var ContextMenu = class _ContextMenu extends SubMenu {
     }
     this.pendingTargets.push(target);
   }
+  /**
+   * Marks the soft context menu (if one exists) to visually indicate that its items behave like checkboxes.
+   */
   markAsMenuItemCheckBox() {
     if (this.softMenu) {
       this.softMenu.markAsMenuItemCheckBox();
@@ -9128,7 +9315,7 @@ var MenuButton = class extends HTMLElement {
     return this.getAttribute("jslogContext");
   }
   /**
-   * Reflects the `disabled` attribute. If true, the button is disabled and cannot be clicked.
+   * Reflects the `disabled` attribute. If true, the button cannot be clicked.
    * @default false
    */
   get disabled() {
@@ -12320,6 +12507,7 @@ import * as Root7 from "./../../core/root/root.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Buttons6 from "./../components/buttons/buttons.js";
 import * as IconButton7 from "./../components/icon_button/icon_button.js";
+import { Directives as Directives3 } from "./../lit/lit.js";
 import * as VisualLogging15 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/checkboxTextLabel.css.js
@@ -13027,15 +13215,20 @@ dt-icon-label {
 
 .new-badge {
   width: fit-content;
-  height: var(--sys-size-7);
-  line-height: var(--sys-size-7);
+  height: var(--sys-size-8);
+  line-height: var(--sys-size-8);
   border-radius: var(--sys-shape-corner-extra-small);
   padding: 0 var(--sys-size-3);
-  background-color: var(--sys-color-primary);
-  color: var(--sys-color-on-primary);
+  background-color: var(--sys-color-tonal-container);
+  color: var(--sys-color-on-tonal-container);
   font-weight: var(--ref-typeface-weight-bold);
   font-size: 9px;
   text-align: center;
+}
+
+:host-context(.platform-mac) .new-badge {
+  background-color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
 }
 
 .expandable-inline-button {
@@ -15477,6 +15670,44 @@ function maybeCreateNewBadge(promotionId) {
     return badge2;
   }
   return void 0;
+}
+function bindToAction(actionName) {
+  const action6 = ActionRegistry.instance().getAction(actionName);
+  let setEnabled;
+  function actionEnabledChanged(event) {
+    setEnabled(event.data);
+  }
+  return Directives3.ref((e) => {
+    if (!e || !(e instanceof Buttons6.Button.Button)) {
+      action6.removeEventListener("Enabled", actionEnabledChanged);
+      return;
+    }
+    setEnabled = (enabled) => {
+      e.disabled = !enabled;
+    };
+    action6.addEventListener("Enabled", actionEnabledChanged);
+    const title = action6.title();
+    const iconName = action6.icon();
+    const jslogContext = action6.id();
+    if (iconName) {
+      e.data = {
+        iconName,
+        jslogContext,
+        title,
+        variant: "icon"
+        /* Buttons.Button.Variant.ICON */
+      };
+    } else {
+      e.data = {
+        jslogContext,
+        title,
+        variant: "text"
+        /* Buttons.Button.Variant.TEXT */
+      };
+    }
+    setEnabled(action6.enabled());
+    e.onclick = () => action6.execute();
+  });
 }
 
 // gen/front_end/ui/legacy/GlassPane.js
@@ -18670,27 +18901,28 @@ var remoteDebuggingTerminatedScreen_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  .header {
+    padding-top: var(--sys-size-3);
+    margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
+    font: var(--sys-typescale-body2-medium);
+  }
 
-.header {
-  padding-top: var(--sys-size-3);
-  margin: var(--sys-size-5) var(--sys-size-5) var(--sys-size-5) var(--sys-size-8);
-  font: var(--sys-typescale-body2-medium);
-}
+  .close-button {
+    margin: var(--sys-size-3);
+  }
 
-.close-button {
-  margin: var(--sys-size-3);
-}
+  .content {
+    margin: 0 var(--sys-size-8);
+  }
 
-.content {
-  margin: 0 var(--sys-size-8);
-}
+  .button-container {
+    margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8) var(--sys-size-8);
+  }
 
-.button-container {
-  margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8) var(--sys-size-8);
-}
-
-.reason {
-  color: var(--sys-color-error);
+  .reason {
+    color: var(--sys-color-error);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./remoteDebuggingTerminatedScreen.css")} */`;
@@ -18727,7 +18959,7 @@ var str_16 = i18n31.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedS
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var DEFAULT_VIEW = (input, _output, target) => {
   render3(html5`
-    <style>${widgetScoped(remoteDebuggingTerminatedScreen_css_default)}</style>
+    <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString16(UIStrings16.debuggingConnectionWasClosed)}</div>
     <div class="content">
       <div class="reason">${i18nString16(UIStrings16.connectionClosedReason, { PH1: input.reason })}</div>
@@ -20329,15 +20561,16 @@ var targetCrashedScreen_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  :scope {
+    padding: 25px;
+  }
 
-:scope {
-  padding: 25px;
-}
-
-.message {
-  font-size: larger;
-  white-space: pre;
-  margin: 5px;
+  .message {
+    font-size: larger;
+    white-space: pre;
+    margin: 5px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./targetCrashedScreen.css")} */`;
@@ -20357,7 +20590,7 @@ var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", U
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render4(html6`
-    <style>${widgetScoped(targetCrashedScreen_css_default)}</style>
+    <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString19(UIStrings19.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString19(UIStrings19.oncePageIsReloadedDevtoolsWill)}</div>`, target);
 };

@@ -25,6 +25,10 @@ const UIStringsNotTranslate = {
      */
     i: 'i',
     /**
+     * @description Text for `x` key.
+     */
+    x: 'x',
+    /**
      * @description Text for dismissing teaser.
      */
     dontShowAgain: 'Don\'t show again',
@@ -65,6 +69,14 @@ const UIStringsNotTranslate = {
      * @description Third disclaimer item text for the fre dialog.
      */
     freDisclaimerTextUseWithCaution: 'Use generated code snippets with caution',
+    /**
+     *@description Text for ARIA label for the teaser.
+     */
+    press: 'Press',
+    /**
+     *@description Text for ARIA label for the teaser.
+     */
+    toDisableCodeSuggestions: 'to disable code suggestions.',
 };
 const lockedString = i18n.i18n.lockedString;
 const CODE_SNIPPET_WARNING_URL = 'https://support.google.com/legal/answer/13505487';
@@ -74,11 +86,15 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         return;
     }
     const cmdOrCtrl = Host.Platform.isMac() ? lockedString(UIStringsNotTranslate.cmd) : lockedString(UIStringsNotTranslate.ctrl);
-    // TODO: Add ARIA labels
+    const teaserAriaLabel = lockedString(UIStringsNotTranslate.press) + ' ' + cmdOrCtrl + ' ' +
+        lockedString(UIStringsNotTranslate.i) + ' ' + lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions) + ' ' +
+        lockedString(UIStringsNotTranslate.press) + ' ' + cmdOrCtrl + ' ' + lockedString(UIStringsNotTranslate.x) + ' ' +
+        lockedString(UIStringsNotTranslate.toDisableCodeSuggestions);
     // clang-format off
     render(html `
-          <style>${UI.Widget.widgetScoped(styles)}</style>
-          <div class="ai-code-completion-teaser">
+          <style>${styles}</style>
+          <div class="ai-code-completion-teaser-screen-reader-only">${teaserAriaLabel}</div>
+          <div class="ai-code-completion-teaser" aria-hidden="true">
             <span class="ai-code-completion-teaser-action">
               <span>${cmdOrCtrl}</span>
               <span>${lockedString(UIStringsNotTranslate.i)}</span>
@@ -104,6 +120,7 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
     #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
     constructor(config, view) {
         super();
+        this.markAsExternallyManaged();
         this.#onDetach = config.onDetach;
         this.#view = view ?? DEFAULT_VIEW;
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
@@ -130,21 +147,6 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
             this.requestUpdate();
         }
     }
-    #onKeyDown = async (event) => {
-        const keyboardEvent = event;
-        if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
-            if (keyboardEvent.key === 'i') {
-                keyboardEvent.consume(true);
-                await this.onAction(event);
-                void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.fre');
-            }
-            else if (keyboardEvent.key === 'x') {
-                keyboardEvent.consume(true);
-                this.onDismiss(event);
-                void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.dismiss');
-            }
-        }
-    };
     onAction = async (event) => {
         event.preventDefault();
         const result = await FreDialog.show({
@@ -202,12 +204,11 @@ export class AiCodeCompletionTeaser extends UI.Widget.Widget {
     }
     wasShown() {
         super.wasShown();
-        document.body.addEventListener('keydown', this.#onKeyDown);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
         void this.#onAidaAvailabilityChange();
     }
     willHide() {
-        document.body.removeEventListener('keydown', this.#onKeyDown);
+        super.willHide();
         Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
     onDetach() {

@@ -19,30 +19,8 @@ import * as Threads from './Threads.js';
  *
  * In time we expect to migrate this code to a more "typical" handler.
  */
-const allEvents = [];
 let model = null;
-export function reset() {
-    allEvents.length = 0;
-}
-export function handleEvent(event) {
-    allEvents.push(event);
-}
-export async function finalize() {
-    // Snapshot events can be emitted out of order, so we need to sort before
-    // building the frames model.
-    Helpers.Trace.sortTraceEventsInPlace(allEvents);
-    const modelForTrace = new TimelineFrameModel(allEvents, rendererHandlerData(), auctionWorkletsData(), metaHandlerData(), layerTreeHandlerData());
-    model = modelForTrace;
-}
-export function data() {
-    return {
-        frames: model ? Array.from(model.frames()) : [],
-        framesById: model ? { ...model.framesById() } : {},
-    };
-}
-export function deps() {
-    return ['Meta', 'Renderer', 'AuctionWorklets', 'LayerTree'];
-}
+const relevantFrameEvents = [];
 function isFrameEvent(event) {
     return (Types.Events.isSetLayerId(event) || Types.Events.isBeginFrame(event) || Types.Events.isDroppedFrame(event) ||
         Types.Events.isRequestMainThreadFrame(event) || Types.Events.isBeginMainThreadFrame(event) ||
@@ -57,6 +35,44 @@ function isFrameEvent(event) {
 function entryIsTopLevel(entry) {
     const devtoolsTimelineCategory = 'disabled-by-default-devtools.timeline';
     return entry.name === "RunTask" /* Types.Events.Name.RUN_TASK */ && entry.cat.includes(devtoolsTimelineCategory);
+}
+const MAIN_FRAME_MARKERS = new Set([
+    "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */,
+    "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */,
+    "BeginMainThreadFrame" /* Types.Events.Name.BEGIN_MAIN_THREAD_FRAME */,
+    "ScrollLayer" /* Types.Events.Name.SCROLL_LAYER */,
+]);
+export function reset() {
+    model = null;
+    relevantFrameEvents.length = 0;
+}
+export function handleEvent(event) {
+    // This might seem like a wide set of events to filter for, but these are all
+    // the types of events that we care about in the TimelineFrameModel class at
+    // the bottom of this file. Previously we would take a copy of an array of
+    // all trace events, but on a few test traces, this set of filtered events
+    // accounts for about 10% of the total events, so it's a big performance win
+    // to deal with a much smaller subset of the data.
+    if (isFrameEvent(event) || Types.Events.isLayerTreeHostImplSnapshot(event) || entryIsTopLevel(event) ||
+        MAIN_FRAME_MARKERS.has(event.name) || Types.Events.isPaint(event)) {
+        relevantFrameEvents.push(event);
+    }
+}
+export async function finalize() {
+    // We have to sort the events by timestamp, because the model code expects to
+    // process events in order.
+    Helpers.Trace.sortTraceEventsInPlace(relevantFrameEvents);
+    const modelForTrace = new TimelineFrameModel(relevantFrameEvents, rendererHandlerData(), auctionWorkletsData(), metaHandlerData(), layerTreeHandlerData());
+    model = modelForTrace;
+}
+export function data() {
+    return {
+        frames: model ? Array.from(model.frames()) : [],
+        framesById: model ? { ...model.framesById() } : {},
+    };
+}
+export function deps() {
+    return ['Meta', 'Renderer', 'AuctionWorklets', 'LayerTree'];
 }
 export class TimelineFrameModel {
     #frames = [];
@@ -303,12 +319,6 @@ export class TimelineFrameModel {
         }
     }
 }
-const MAIN_FRAME_MARKERS = new Set([
-    "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */,
-    "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */,
-    "BeginMainThreadFrame" /* Types.Events.Name.BEGIN_MAIN_THREAD_FRAME */,
-    "ScrollLayer" /* Types.Events.Name.SCROLL_LAYER */,
-]);
 /**
  * Legacy class that represents TimelineFrames that was ported from the old SDK.
  * This class is purposefully not exported as it breaks the abstraction that

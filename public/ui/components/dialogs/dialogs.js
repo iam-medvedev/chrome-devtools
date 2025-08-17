@@ -39,6 +39,7 @@ var ButtonDialog = class extends HTMLElement {
     if (!this.#dialog) {
       throw new Error("Dialog not found");
     }
+    this.state = "expanded";
     void this.#dialog.setDialogVisible(true);
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
@@ -47,10 +48,17 @@ var ButtonDialog = class extends HTMLElement {
       throw new Error("Dialog not found");
     }
     void this.#dialog.setDialogVisible(false);
+    this.state = "expanded";
     if (evt) {
       evt.stopImmediatePropagation();
     }
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+  }
+  set state(state) {
+    if (this.#data) {
+      this.#data.state = state;
+      void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    }
   }
   #render() {
     if (!this.#data) {
@@ -89,6 +97,7 @@ var ButtonDialog = class extends HTMLElement {
         .closeButton=${this.#data.closeButton ?? false}
         .dialogTitle=${this.#data.dialogTitle}
         .jslogContext=${this.#data.jslogContext ?? ""}
+        .state=${this.#data.state ?? "expanded"}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback((node) => {
       this.#dialog = node;
     })}
@@ -248,7 +257,8 @@ var Dialog = class extends HTMLElement {
     closeOnScroll: true,
     closeButton: false,
     dialogTitle: "",
-    jslogContext: ""
+    jslogContext: "",
+    state: "expanded"
   };
   #dialog = null;
   #isPendingShowDialog = false;
@@ -353,6 +363,10 @@ var Dialog = class extends HTMLElement {
     this.#props.jslogContext = jslogContext;
     this.#onStateChange();
   }
+  set state(state) {
+    this.#props.state = state;
+    this.#onStateChange();
+  }
   #updateDialogBounds() {
     this.#dialogClientRect = this.#getDialog().getBoundingClientRect();
   }
@@ -389,9 +403,11 @@ var Dialog = class extends HTMLElement {
   }
   async setDialogVisible(show) {
     if (show) {
+      this.state = "expanded";
       await this.#showDialog();
       return;
     }
+    this.state = "collapsed";
     this.#closeDialog();
   }
   async #handlePointerEvent(evt) {
@@ -684,16 +700,22 @@ var Dialog = class extends HTMLElement {
       );
       return;
     }
-    Lit.render(html2`
-      <style>${dialog_css_default}</style>
-      <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel} @animationend=${this.#animationEndedEvent}
-              jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: "Escape" }).parent("mapped")}>
-        <div id="content">
+    let dialogContent = html2``;
+    if (this.#props.state === "expanded") {
+      dialogContent = html2`
+    <div id="content">
           <div class="dialog-header">${this.#renderHeaderRow()}</div>
           <div class='dialog-content'>
             <slot></slot>
           </div>
-        </div>
+    </div>
+    `;
+    }
+    Lit.render(html2`
+      <style>${dialog_css_default}</style>
+      <dialog @click=${this.#handlePointerEvent} @pointermove=${this.#handlePointerEvent} @cancel=${this.#onCancel} @animationend=${this.#animationEndedEvent}
+              jslog=${VisualLogging.dialog(this.#props.jslogContext).track({ resize: true, keydown: "Escape" }).parent("mapped")}>
+        ${dialogContent}
       </dialog>
     `, this.#shadow, { host: this });
     VisualLogging.setMappedParent(this.#getDialog(), this.parentElementOrShadowHost());

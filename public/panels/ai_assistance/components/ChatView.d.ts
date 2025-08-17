@@ -53,6 +53,7 @@ export interface Props {
     onCancelClick: () => void;
     onContextClick: () => void;
     onNewConversation: () => void;
+    onCopyResponseClick: (message: ModelChatMessage) => void;
     onTakeScreenshot?: () => void;
     onRemoveImageInput?: () => void;
     onTextInputChange: (input: string) => void;

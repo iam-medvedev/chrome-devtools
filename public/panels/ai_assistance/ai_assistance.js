@@ -13,6 +13,7 @@ import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
+import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
@@ -120,91 +121,92 @@ var selectWorkspaceDialog_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  :scope {
+    width: 100%;
+    box-shadow: none;
+  }
 
-:scope {
-  width: 100%;
-  box-shadow: none;
-}
+  .dialog-header {
+    margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-5);
+    font: var(--sys-typescale-headline5);
+  }
 
-.dialog-header {
-  margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-5);
-  font: var(--sys-typescale-headline5);
-}
+  .buttons {
+    margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8);
+    display: flex;
+    justify-content: flex-start;
+    gap: var(--sys-size-5);
+  }
 
-.buttons {
-  margin: var(--sys-size-6) var(--sys-size-8) var(--sys-size-8);
-  display: flex;
-  justify-content: flex-start;
-  gap: var(--sys-size-5);
-}
+  .main-content {
+    color: var(--sys-color-on-surface-subtle);
+    margin: 0 var(--sys-size-8);
+    line-height: 18px;
+  }
 
-.main-content {
-  color: var(--sys-color-on-surface-subtle);
-  margin: 0 var(--sys-size-8);
-  line-height: 18px;
-}
+  .add-folder-button {
+    margin-left: auto;
+  }
 
-.add-folder-button {
-  margin-left: auto;
-}
+  ul {
+    list-style-type: none;
+    padding: 0;
+    margin: var(--sys-size-6) 0 var(--sys-size-4) 0;
+    max-height: var(--sys-size-20);
+    overflow-y: auto;
+  }
 
-ul {
-  list-style-type: none;
-  padding: 0;
-  margin: var(--sys-size-6) 0 var(--sys-size-4) 0;
-  max-height: var(--sys-size-20);
-  overflow-y: auto;
-}
+  li {
+    display: flex;
+    align-items: center;
+    color: var(--sys-color-on-surface-subtle);
+    border-radius: 0 var(--sys-shape-corner-full) var(--sys-shape-corner-full) 0;
+    height: var(--sys-size-10);
+    margin: 0 var(--sys-size-8);
+    padding-left: var(--sys-size-9);
+  }
 
-li {
-  display: flex;
-  align-items: center;
-  color: var(--sys-color-on-surface-subtle);
-  border-radius: 0 var(--sys-shape-corner-full) var(--sys-shape-corner-full) 0;
-  height: var(--sys-size-10);
-  margin: 0 var(--sys-size-8);
-  padding-left: var(--sys-size-9);
-}
+  li:hover, li.selected {
+    background-color: var(--sys-color-state-hover-on-subtle);
+  }
 
-li:hover, li.selected {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-li:focus {
-  background-color: var(--app-color-navigation-drawer-background-selected);
-}
-
-.folder-icon {
-  color: var(--icon-file-default);
-  margin-right: var(--sys-size-4);
-}
-
-li.selected .folder-icon {
-  color: var(--icon-file-authored);
-}
-
-.select-project-root {
-  margin-bottom: var(--sys-size-6);
-}
-
-.theme-with-dark-background, :host-context(.theme-with-dark-background) {
-  /*
-    * List item is focused and selected: there is no valid state where the list item is focused but not selected.
-  */
   li:focus {
-    color: var(--app-color-navigation-drawer-label-selected);
     background-color: var(--app-color-navigation-drawer-background-selected);
+  }
 
-    & .folder-icon {
+  .folder-icon {
+    color: var(--icon-file-default);
+    margin-right: var(--sys-size-4);
+  }
+
+  li.selected .folder-icon {
+    color: var(--icon-file-authored);
+  }
+
+  .select-project-root {
+    margin-bottom: var(--sys-size-6);
+  }
+
+  .theme-with-dark-background, :host-context(.theme-with-dark-background) {
+    /*
+      * List item is focused and selected: there is no valid state where the list item is focused but not selected.
+    */
+    li:focus {
       color: var(--app-color-navigation-drawer-label-selected);
+      background-color: var(--app-color-navigation-drawer-background-selected);
+
+      & .folder-icon {
+        color: var(--app-color-navigation-drawer-label-selected);
+      }
     }
   }
-}
 
-.ellipsis {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  .ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("././selectWorkspaceDialog.css")} */`;
@@ -240,7 +242,7 @@ var lockedString = i18n.i18n.lockedString;
 var SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
   const hasFolders = input.folders.length > 0;
   render(html`
-      <style>${UI.Widget.widgetScoped(selectWorkspaceDialog_css_default)}</style>
+      <style>${selectWorkspaceDialog_css_default}</style>
       <h2 class="dialog-header">${lockedString(UIStringsNotTranslate.selectFolder)}</h2>
       <div class="main-content">
         <div class="select-project-root">${lockedString(UIStringsNotTranslate.selectProjectRoot)}</div>
@@ -2146,118 +2148,119 @@ var userActionRow_css_default = `/*
  * found in the LICENSE file.
  */
 
-
-.ai-assistance-feedback-row {
-  font-family: var(--default-font-family);
-  width: 100%;
-  display: flex;
-  gap: var(--sys-size-8);
-  justify-content: space-between;
-  align-items: center;
-  margin-block: calc(-1 * var(--sys-size-3));
-
-  .rate-buttons {
+@scope to (devtools-widget > *) {
+  .ai-assistance-feedback-row {
+    font-family: var(--default-font-family);
+    width: 100%;
     display: flex;
-    align-items: center;
-    gap: var(--sys-size-2);
-    padding: var(--sys-size-4) 0;
-  }
-
-  .vertical-separator {
-    height: 16px;
-    width: 1px;
-    vertical-align: top;
-    margin: 0 var(--sys-size-2);
-    background: var(--sys-color-divider);
-    display: inline-block;
-  }
-
-  .suggestions-container {
-    overflow: hidden;
-    position: relative;
-    display: flex;
-
-    .suggestions-scroll-container {
-      display: flex;
-      overflow: auto hidden;
-      scrollbar-width: none;
-      gap: var(--sys-size-3);
-      padding: var(--sys-size-3);
-    }
-
-    .scroll-button-container {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      width: var(--sys-size-15);
-      z-index: 999;
-    }
-
-    .scroll-button-container.hidden {
-      display: none;
-    }
-
-    .scroll-button-container.left {
-      left: 0;
-      background:
-        linear-gradient(
-          90deg,
-          var(--sys-color-cdt-base-container) 0%,
-          var(--sys-color-cdt-base-container) 50%,
-          transparent
-        );
-    }
-
-    .scroll-button-container.right {
-      right: 0;
-      background:
-        linear-gradient(
-          90deg,
-          transparent,
-          var(--sys-color-cdt-base-container) 50%
-        );
-      justify-content: flex-end;
-    }
-  }
-}
-
-.feedback-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--sys-size-5);
-  margin-top: var(--sys-size-4);
-  background-color: var(--sys-color-surface3);
-  padding: var(--sys-size-6);
-  border-radius: var(--sys-shape-corner-medium-small);
-  max-width: var(--sys-size-32);
-
-  .feedback-input {
-    height: var(--sys-size-11);
-    padding: 0 var(--sys-size-5);
-    background-color: var(--sys-color-surface3);
-    width: auto;
-  }
-
-  .feedback-input::placeholder {
-    color: var(--sys-color-on-surface-subtle);
-    font: var(--sys-typescale-body4-regular);
-  }
-
-  .feedback-header {
-    display: flex;
+    gap: var(--sys-size-8);
     justify-content: space-between;
     align-items: center;
+    margin-block: calc(-1 * var(--sys-size-3));
+
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: var(--sys-size-2);
+      padding: var(--sys-size-4) 0;
+    }
+
+    .vertical-separator {
+      height: 16px;
+      width: 1px;
+      vertical-align: top;
+      margin: 0 var(--sys-size-2);
+      background: var(--sys-color-divider);
+      display: inline-block;
+    }
+
+    .suggestions-container {
+      overflow: hidden;
+      position: relative;
+      display: flex;
+
+      .suggestions-scroll-container {
+        display: flex;
+        overflow: auto hidden;
+        scrollbar-width: none;
+        gap: var(--sys-size-3);
+        padding: var(--sys-size-3);
+      }
+
+      .scroll-button-container {
+        position: absolute;
+        top: 0;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        width: var(--sys-size-15);
+        z-index: 999;
+      }
+
+      .scroll-button-container.hidden {
+        display: none;
+      }
+
+      .scroll-button-container.left {
+        left: 0;
+        background:
+          linear-gradient(
+            90deg,
+            var(--sys-color-cdt-base-container) 0%,
+            var(--sys-color-cdt-base-container) 50%,
+            transparent
+          );
+      }
+
+      .scroll-button-container.right {
+        right: 0;
+        background:
+          linear-gradient(
+            90deg,
+            transparent,
+            var(--sys-color-cdt-base-container) 50%
+          );
+        justify-content: flex-end;
+      }
+    }
   }
 
-  .feedback-title {
-    margin: 0;
-    font: var(--sys-typescale-body3-medium);
-  }
+  .feedback-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-5);
+    margin-top: var(--sys-size-4);
+    background-color: var(--sys-color-surface3);
+    padding: var(--sys-size-6);
+    border-radius: var(--sys-shape-corner-medium-small);
+    max-width: var(--sys-size-32);
 
-  .feedback-disclaimer {
-    padding: 0 var(--sys-size-4);
+    .feedback-input {
+      height: var(--sys-size-11);
+      padding: 0 var(--sys-size-5);
+      background-color: var(--sys-color-surface3);
+      width: auto;
+    }
+
+    .feedback-input::placeholder {
+      color: var(--sys-color-on-surface-subtle);
+      font: var(--sys-typescale-body4-regular);
+    }
+
+    .feedback-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .feedback-title {
+      margin: 0;
+      font: var(--sys-typescale-body3-medium);
+    }
+
+    .feedback-disclaimer {
+      padding: 0 var(--sys-size-4);
+    }
   }
 }
 
@@ -2309,17 +2312,21 @@ var UIStringsNotTranslate3 = {
   /**
    * @description The title of the button for scrolling to see previous suggestions
    */
-  scrollToPrevious: "Scroll to previous suggestions"
+  scrollToPrevious: "Scroll to previous suggestions",
+  /**
+   * @description The title of the button that copies the AI-generated response to the clipboard.
+   */
+  copyResponse: "Copy response"
 };
 var lockedString3 = i18n5.i18n.lockedString;
 var REPORT_URL = "https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504";
 var SCROLL_ROUNDING_OFFSET = 1;
 var DEFAULT_VIEW = (input, output, target) => {
   Lit.render(html3`
-    <style>${UI3.Widget.widgetScoped(Input.textInputStyles)}</style>
-    <style>${UI3.Widget.widgetScoped(userActionRow_css_default)}</style>
+    <style>${Input.textInputStyles}</style>
+    <style>${userActionRow_css_default}</style>
     <div class="ai-assistance-feedback-row">
-      <div class="rate-buttons">
+      <div class="action-buttons">
         ${input.showRateButtons ? html3`
           <devtools-button
             .data=${{
@@ -2365,6 +2372,17 @@ var DEFAULT_VIEW = (input, output, target) => {
   }}
           @click=${input.onReportClick}
         ></devtools-button>
+        <div class="vertical-separator"></div>
+          <devtools-button
+            .data=${{
+    variant: "icon",
+    size: "SMALL",
+    title: lockedString3(UIStringsNotTranslate3.copyResponse),
+    iconName: "copy",
+    jslogContext: "copy-ai-response"
+  }}
+            aria-label=${lockedString3(UIStringsNotTranslate3.copyResponse)}
+            @click=${input.onCopyResponseClick}></devtools-button>
       </div>
       ${input.suggestions ? html3`<div class="suggestions-container">
         <div class="scroll-button-container left hidden" ${ref((element) => {
@@ -2459,6 +2477,8 @@ var UserActionRow = class extends UI3.Widget.Widget {
   onFeedbackSubmit = () => {
   };
   suggestions;
+  onCopyResponseClick = () => {
+  };
   onSuggestionClick = () => {
   };
   canShowFeedbackForm = false;
@@ -2487,6 +2507,7 @@ var UserActionRow = class extends UI3.Widget.Widget {
       onSuggestionClick: this.onSuggestionClick,
       onRatingClick: this.#handleRateClick.bind(this),
       onReportClick: () => UI3.UIUtils.openInNewTab(REPORT_URL),
+      onCopyResponseClick: this.onCopyResponseClick,
       scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
       onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
       onSubmit: this.#handleSubmit.bind(this),
@@ -3016,7 +3037,8 @@ var ChatView = class extends HTMLElement {
       changeManager: this.#props.changeManager,
       onSuggestionClick: this.#handleSuggestionClick,
       onFeedbackSubmit: this.#props.onFeedbackSubmit,
-      onMessageContainerRef: this.#handleMessageContainerRef
+      onMessageContainerRef: this.#handleMessageContainerRef,
+      onCopyResponseClick: this.#props.onCopyResponseClick
     })}
           ${this.#props.isReadOnly ? renderReadOnlySection({
       conversationType: this.#props.conversationType,
@@ -3210,7 +3232,7 @@ function renderError(message) {
   }
   return Lit2.nothing;
 }
-function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm, isLast, userInfo, markdownRenderer, onSuggestionClick, onFeedbackSubmit }) {
+function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm, isLast, userInfo, markdownRenderer, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick }) {
   if (message.entity === "user") {
     const name = userInfo.accountFullName || lockedString4(UIStringsNotTranslate4.you);
     const image = userInfo.accountImage ? html4`<img src="data:image/png;base64, ${userInfo.accountImage}" alt=${UIStringsNotTranslate4.accountAvatar} />` : html4`<devtools-icon
@@ -3262,6 +3284,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
     },
     suggestions: isLast && !isReadOnly ? message.suggestions : void 0,
     onSuggestionClick,
+    onCopyResponseClick: () => onCopyResponseClick(message),
     canShowFeedbackForm
   })}></devtools-widget>`}
     </section>
@@ -3330,7 +3353,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
     </div>
   </div>`;
 }
-function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef }) {
+function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
   function renderPatchWidget() {
     if (isLoading) {
       return Lit2.nothing;
@@ -3353,7 +3376,8 @@ function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, 
     userInfo,
     markdownRenderer,
     onSuggestionClick,
-    onFeedbackSubmit
+    onFeedbackSubmit,
+    onCopyResponseClick
   }))}
       ${renderPatchWidget()}
     </div>
@@ -3642,7 +3666,7 @@ function renderDisabledState(contents) {
     </div>
   `;
 }
-function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef }) {
+function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef }) {
   if (state === "consent-view") {
     return renderDisabledState(renderConsentViewContents());
   }
@@ -3664,7 +3688,8 @@ function renderMainContents({ state, aidaAvailability, messages, isLoading, isRe
       changeManager,
       onSuggestionClick,
       onFeedbackSubmit,
-      onMessageContainerRef
+      onMessageContainerRef,
+      onCopyResponseClick
     });
   }
   return renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick });
@@ -3690,131 +3715,133 @@ var exploreWidget_css_default = `/*
  * found in the LICENSE file.
  */
 
-.ai-assistance-explore-container {
-  &,
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+@scope to (devtools-widget > *) {
+  .ai-assistance-explore-container {
+    &,
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  width: 100%;
-  height: fit-content;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: auto 0;
-  font: var(--sys-typescale-headline4);
-  gap: var(--sys-size-8);
-  padding: var(--sys-size-3);
-  overflow: auto;
-  scrollbar-gutter: stable both-edges;
-
-  .link {
-    padding: 0;
-    margin: 0 3px;
-  }
-
-  .header {
-    flex-shrink: 0;
+    width: 100%;
+    height: fit-content;
     display: flex;
     flex-direction: column;
-    width: 100%;
     align-items: center;
-    justify-content: center;
-    justify-self: center;
-    gap: var(--sys-size-4);
-
-    .icon {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: var(--sys-size-14);
-      width: var(--sys-size-14);
-      border-radius: var(--sys-shape-corner-small);
-      background: linear-gradient(
-        135deg,
-        var(--sys-color-gradient-primary),
-        var(--sys-color-gradient-tertiary)
-      );
-    }
-
-    h1 {
-      font: var(--sys-typescale-headline4);
-    }
-
-    p {
-      text-align: center;
-      font: var(--sys-typescale-body4-regular);
-    }
+    margin: auto 0;
+    font: var(--sys-typescale-headline4);
+    gap: var(--sys-size-8);
+    padding: var(--sys-size-3);
+    overflow: auto;
+    scrollbar-gutter: stable both-edges;
 
     .link {
-      font: var(--sys-typescale-body4-regular);
+      padding: 0;
+      margin: 0 3px;
     }
-  }
 
-  .content {
-    flex-shrink: 0;
-    display: flex;
-    flex-direction: column;
-    gap: var(--sys-size-5);
-    align-items: center;
-    justify-content: center;
-    justify-self: center;
-  }
-
-  .feature-card {
-    display: flex;
-    padding: var(--sys-size-4) var(--sys-size-6);
-    gap: 10px;
-    background-color: var(--sys-color-surface2);
-    border-radius: var(--sys-shape-corner-medium-small);
-    width: 100%;
-    align-items: center;
-
-    .feature-card-icon {
-      min-width: var(--sys-size-12);
-      min-height: var(--sys-size-12);
+    .header {
+      flex-shrink: 0;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      width: 100%;
       align-items: center;
-      background-color: var(--sys-color-tonal-container);
-      border-radius: var(--sys-shape-corner-full);
+      justify-content: center;
+      justify-self: center;
+      gap: var(--sys-size-4);
 
-      devtools-icon {
-        width: 18px;
-        height: 18px;
+      .icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: var(--sys-size-14);
+        width: var(--sys-size-14);
+        border-radius: var(--sys-shape-corner-small);
+        background: linear-gradient(
+          135deg,
+          var(--sys-color-gradient-primary),
+          var(--sys-color-gradient-tertiary)
+        );
       }
-    }
 
-    .feature-card-content {
-      h3 {
-        font: var(--sys-typescale-body3-medium);
+      h1 {
+        font: var(--sys-typescale-headline4);
       }
 
       p {
+        text-align: center;
         font: var(--sys-typescale-body4-regular);
-        line-height: 18px;
+      }
+
+      .link {
+        font: var(--sys-typescale-body4-regular);
+      }
+    }
+
+    .content {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: var(--sys-size-5);
+      align-items: center;
+      justify-content: center;
+      justify-self: center;
+    }
+
+    .feature-card {
+      display: flex;
+      padding: var(--sys-size-4) var(--sys-size-6);
+      gap: 10px;
+      background-color: var(--sys-color-surface2);
+      border-radius: var(--sys-shape-corner-medium-small);
+      width: 100%;
+      align-items: center;
+
+      .feature-card-icon {
+        min-width: var(--sys-size-12);
+        min-height: var(--sys-size-12);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--sys-color-tonal-container);
+        border-radius: var(--sys-shape-corner-full);
+
+        devtools-icon {
+          width: 18px;
+          height: 18px;
+        }
+      }
+
+      .feature-card-content {
+        h3 {
+          font: var(--sys-typescale-body3-medium);
+        }
+
+        p {
+          font: var(--sys-typescale-body4-regular);
+          line-height: 18px;
+        }
       }
     }
   }
-}
 
-.ai-assistance-explore-footer {
-  flex-shrink: 0;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-block: var(--sys-size-3);
-  font: var(--sys-typescale-body5-regular);
-  border-top: 1px solid var(--sys-color-divider);
-  text-wrap: balance;
-  text-align: center;
+  .ai-assistance-explore-footer {
+    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-block: var(--sys-size-3);
+    font: var(--sys-typescale-body5-regular);
+    border-top: 1px solid var(--sys-color-divider);
+    text-wrap: balance;
+    text-align: center;
 
-  p {
-    margin: 0;
-    padding: 0;
+    p {
+      margin: 0;
+      padding: 0;
+    }
   }
 }
 
@@ -3847,7 +3874,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
   }
   render5(html5`
       <style>
-        ${UI5.Widget.widgetScoped(exploreWidget_css_default)}
+        ${exploreWidget_css_default}
       </style>
       <div class="ai-assistance-explore-container">
         <div class="header">
@@ -3997,6 +4024,10 @@ var UIStrings2 = {
    */
   clearChatHistory: "Clear local chats",
   /**
+   *@description AI assistance UI text for the export conversation button.
+   */
+  exportConversation: "Export conversation",
+  /**
    * @description AI assistance UI text explains that he user had no pas conversations.
    */
   noPastConversations: "No past conversations",
@@ -4009,9 +4040,9 @@ var UIStrings2 = {
    */
   inputDisclaimerForEmptyState: "This is an experimental AI feature and won't always get it right.",
   /**
-   * @description Notification shown to the user whenever DevTools receives an external request.
+   * @description The message shown in a toast when the response is copied to the clipboard.
    */
-  externalRequestReceived: "`DevTools` received an external request"
+  responseCopiedToClipboard: "Response copied to clipboard"
 };
 var UIStringsNotTranslate6 = {
   /**
@@ -4109,11 +4140,7 @@ var UIStringsNotTranslate6 = {
   /**
    * @description Message displayed in toast in case of any failures while uploading an image file as input.
    */
-  uploadImageFailureMessage: "Failed to upload image. Please try again.",
-  /**
-   * @description Error message shown when AI assistance is not enabled in DevTools settings.
-   */
-  enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
+  uploadImageFailureMessage: "Failed to upload image. Please try again."
 };
 var str_2 = i18n11.i18n.registerUIStrings("panels/ai_assistance/AiAssistancePanel.ts", UIStrings2);
 var i18nString2 = i18n11.i18n.getLocalizedString.bind(void 0, str_2);
@@ -4190,13 +4217,24 @@ function toolbarView(input) {
           .jslogContext=${"freestyler.history"}
           .populateMenuCall=${input.populateHistoryMenu}
         ></devtools-menu-button>` : Lit3.nothing}
-        ${input.showDeleteHistoryAction ? html6`<devtools-button
+        ${input.showActiveConversationActions ? html6`
+          <devtools-button
               title=${i18nString2(UIStrings2.deleteChat)}
               aria-label=${i18nString2(UIStrings2.deleteChat)}
               .iconName=${"bin"}
               .jslogContext=${"freestyler.delete"}
               .variant=${"toolbar"}
-              @click=${input.onDeleteClick}></devtools-button>` : Lit3.nothing}
+              @click=${input.onDeleteClick}>
+          </devtools-button>
+          <devtools-button
+            title=${i18nString2(UIStrings2.exportConversation)}
+            aria-label=${i18nString2(UIStrings2.exportConversation)}
+            .iconName=${"download"}
+            .disabled=${input.isLoading}
+            .jslogContext=${"export-ai-conversation"}
+            .variant=${"toolbar"}
+            @click=${input.onExportConversationClick}>
+          </devtools-button>` : Lit3.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <x-link
@@ -4281,21 +4319,6 @@ function agentToConversationType(agent) {
     return agent.getConversationType();
   }
   throw new Error("Provided agent does not have a corresponding conversation type");
-}
-async function inspectElementBySelector(selector) {
-  const whitespaceTrimmedQuery = selector.trim();
-  if (!whitespaceTrimmedQuery.length) {
-    return null;
-  }
-  const showUAShadowDOM = Common4.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
-  const domModels = SDK.TargetManager.TargetManager.instance().models(SDK.DOMModel.DOMModel, { scoped: true });
-  const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
-  const resultCounts = await Promise.all(performSearchPromises);
-  const index = resultCounts.findIndex((value) => value > 0);
-  if (index >= 0) {
-    return await domModels[index].searchResult(0);
-  }
-  return null;
 }
 var panelInstance;
 var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
@@ -4433,26 +4456,24 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     const agent = targetConversationType ? this.#conversationHandler.createAgent(targetConversationType, this.#changeManager) : void 0;
-    this.#updateConversationState(agent);
+    this.#updateConversationState({ agent });
   }
-  #updateConversationState(input) {
-    const agent = input instanceof AiAssistanceModel3.AiAgent ? input : void 0;
-    const conversation = input instanceof AiAssistanceModel3.Conversation ? input : void 0;
-    if (this.#conversationAgent !== agent) {
+  #updateConversationState(opts) {
+    if (this.#conversationAgent !== opts?.agent) {
       this.#cancel();
       this.#messages = [];
       this.#isLoading = false;
       this.#conversation?.archiveConversation();
-      this.#conversationAgent = agent;
-      if (agent) {
-        this.#conversation = new AiAssistanceModel3.Conversation(agentToConversationType(agent), [], agent.id, false);
+      this.#conversationAgent = opts?.agent;
+      if (opts?.agent) {
+        this.#conversation = new AiAssistanceModel3.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
       }
     }
-    if (!agent) {
+    if (!opts?.agent) {
       this.#conversation = void 0;
       this.#messages = [];
-      if (conversation) {
-        this.#conversation = conversation;
+      if (opts?.conversation) {
+        this.#conversation = opts?.conversation;
       }
     }
     if (!this.#conversationAgent && !this.#conversation) {
@@ -4470,7 +4491,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace5.UISourceCode.UISourceCode));
-    this.#updateConversationState(this.#conversationAgent);
+    this.#updateConversationState({ agent: this.#conversationAgent });
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
@@ -4521,7 +4542,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     this.#selectedElement = createNodeContext(selectedElementFilter(ev.data));
-    this.#updateConversationState(this.#conversationAgent);
+    this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handleDOMNodeAttrChange = (ev) => {
     if (this.#selectedElement?.getItem() === ev.data.node) {
@@ -4535,14 +4556,14 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel3.RequestContext(ev.data) : null;
-    this.#updateConversationState(this.#conversationAgent);
+    this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handlePerformanceTraceFlavorChange = (ev) => {
     if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
     this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceTraceContext(ev.data) : null;
-    this.#updateConversationState(this.#conversationAgent);
+    this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handleUISourceCodeFlavorChange = (ev) => {
     const newFile = ev.data;
@@ -4553,7 +4574,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     this.#selectedFile = new AiAssistanceModel3.FileContext(ev.data);
-    this.#updateConversationState(this.#conversationAgent);
+    this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #onPrimaryPageChanged() {
     if (!this.#imageInput) {
@@ -4589,8 +4610,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       canShowFeedbackForm: this.#serverSideLoggingEnabled,
       multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() && this.#conversation?.type === "freestyler",
       imageInput: this.#imageInput,
-      showDeleteHistoryAction: Boolean(this.#conversation && !this.#conversation.isEmpty),
       showChatActions: this.#shouldShowChatActions(),
+      showActiveConversationActions: Boolean(this.#conversation && !this.#conversation.isEmpty),
       isTextInputDisabled: this.#isTextInputDisabled(),
       emptyStateSuggestions,
       inputPlaceholder: this.#getChatInputPlaceholder(),
@@ -4601,6 +4622,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       onNewChatClick: this.#handleNewChatRequest.bind(this),
       populateHistoryMenu: this.#populateHistoryMenu.bind(this),
       onDeleteClick: this.#onDeleteClicked.bind(this),
+      onExportConversationClick: this.#onExportConversationClick.bind(this),
       onHelpClick: () => {
         UI6.UIUtils.openInNewTab(AI_ASSISTANCE_HELP);
       },
@@ -4620,9 +4642,19 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       onNewConversation: this.#handleNewChatRequest.bind(this),
       onTakeScreenshot: isAiAssistanceMultimodalInputEnabled() ? this.#handleTakeScreenshot.bind(this) : void 0,
       onRemoveImageInput: isAiAssistanceMultimodalInputEnabled() ? this.#handleRemoveImageInput.bind(this) : void 0,
+      onCopyResponseClick: this.#onCopyResponseClick.bind(this),
       onTextInputChange: this.#handleTextInputChange.bind(this),
       onLoadImage: isAiAssistanceMultimodalUploadInputEnabled() ? this.#handleLoadImage.bind(this) : void 0
     }, this.#viewOutput, this.contentElement);
+  }
+  #onCopyResponseClick(message) {
+    const markdown = getResponseMarkdown(message);
+    if (markdown) {
+      Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(markdown);
+      Snackbars.Snackbar.Snackbar.show({
+        message: i18nString2(UIStrings2.responseCopiedToClipboard)
+      });
+    }
   }
   #handleSelectElementClick() {
     void this.#toggleSearchElementAction?.execute();
@@ -4755,7 +4787,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
   }
   handleAction(actionId, opts) {
-    if (this.#isLoading) {
+    if (this.#isLoading && !opts?.["prompt"]) {
       this.#viewOutput.chatView?.focusTextInput();
       return;
     }
@@ -4809,7 +4841,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType || this.#conversation?.isEmpty || targetConversationType === "drjones-performance" || agent instanceof AiAssistanceModel3.PerformanceAgent && agent.getConversationType() !== targetConversationType) {
       agent = this.#conversationHandler.createAgent(targetConversationType, this.#changeManager);
     }
-    this.#updateConversationState(agent);
+    this.#updateConversationState({ agent });
     const predefinedPrompt = opts?.["prompt"];
     if (predefinedPrompt && typeof predefinedPrompt === "string") {
       this.#imageInput = void 0;
@@ -4861,11 +4893,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#updateConversationState();
     UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.chatDeleted));
   }
+  async #onExportConversationClick() {
+    if (!this.#conversation) {
+      return;
+    }
+    const markdownContent = this.#conversation.getConversationMarkdown();
+    const titleFormatted = Platform4.StringUtilities.toSnakeCase(this.#conversation.title || "");
+    const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, "text/markdown");
+    const filename = `devtools_${titleFormatted || "conversation"}.md`;
+    await Workspace5.FileManager.FileManager.instance().save(filename, contentData, true);
+    Workspace5.FileManager.FileManager.instance().close(filename);
+  }
   async #openHistoricConversation(conversation) {
     if (this.#conversation === conversation) {
       return;
     }
-    this.#updateConversationState(conversation);
+    this.#updateConversationState({ conversation });
     await this.#doConversation(conversation.history);
   }
   #handleNewChatRequest() {
@@ -5175,144 +5218,74 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       release();
     }
   }
-  /**
-   * Handles an external request using the given prompt and uses the
-   * conversation type to use the correct agent.
-   */
-  handleExternalRequest(parameters) {
-    async function* generateErrorResponse(message) {
-      return {
-        type: "error",
-        message
-      };
-    }
-    try {
-      Snackbars.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) });
-      const disabledReasons = AiAssistanceModel3.getDisabledReasons(this.#aidaAvailability);
-      const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-      if (!aiAssistanceSetting) {
-        disabledReasons.push(lockedString6(UIStringsNotTranslate6.enableInSettings));
-      }
-      if (disabledReasons.length > 0) {
-        return generateErrorResponse(disabledReasons.join(" "));
-      }
-      void VisualLogging6.logFunctionCall(`start-conversation-${parameters.conversationType}`, "external");
-      switch (parameters.conversationType) {
-        case "freestyler":
-          return this.handleExternalStylingRequest(parameters.prompt, parameters.selector);
-        case "performance-insight":
-          if (!parameters.insightTitle) {
-            return generateErrorResponse("The insightTitle parameter is required for debugging a Performance Insight.");
-          }
-          return this.handleExternalPerformanceInsightsRequest(parameters.prompt, parameters.insightTitle);
-        case "drjones-network-request":
-          return generateErrorResponse("Not implemented here");
-      }
-    } catch (error) {
-      return generateErrorResponse(error.message);
-    }
-  }
-  async *handleExternalPerformanceInsightsRequest(prompt, insightTitle) {
-    const insightsAgent = this.#conversationHandler.createAgent(
-      "performance-insight"
-      /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */
-    );
-    const externalConversation = new AiAssistanceModel3.Conversation(
-      agentToConversationType(insightsAgent),
-      [],
-      insightsAgent.id,
-      /* isReadOnly */
-      true,
-      /* isExternal */
-      true
-    );
-    const timelinePanel = TimelinePanel.TimelinePanel.TimelinePanel.instance();
-    const focusOrError = await TimelinePanel.ExternalRequests.getInsightAgentFocusToDebug(timelinePanel.model, insightTitle);
-    if ("error" in focusOrError) {
-      return {
-        type: "error",
-        message: focusOrError.error
-      };
-    }
-    const selectedContext = createPerformanceTraceContext(focusOrError.focus);
-    const generator = insightsAgent.run(prompt, { selected: selectedContext });
-    const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
-    const devToolsLogs = [];
-    for await (const data of generatorWithHistory) {
-      if (data.type !== "answer" || data.complete) {
-        void externalConversation.addHistoryItem(data);
-        devToolsLogs.push(data);
-      }
-      if (data.type === "answer" && data.complete) {
-        return {
-          type: "answer",
-          message: data.text,
-          devToolsLogs
-        };
-      }
-      if (data.type === "context" || data.type === "title") {
-        yield {
-          type: "notification",
-          message: data.title
-        };
-      }
-    }
-    return {
-      type: "error",
-      message: "Something went wrong. No answer was generated."
-    };
-  }
-  async *handleExternalStylingRequest(prompt, selector = "body") {
-    const stylingAgent = this.#conversationHandler.createAgent(
-      "freestyler"
-      /* AiAssistanceModel.ConversationType.STYLING */
-    );
-    const externalConversation = new AiAssistanceModel3.Conversation(
-      agentToConversationType(stylingAgent),
-      [],
-      stylingAgent.id,
-      /* isReadOnly */
-      true,
-      /* isExternal */
-      true
-    );
-    const node = await inspectElementBySelector(selector);
-    if (node) {
-      await node.setAsInspectedNode();
-    }
-    const generator = stylingAgent.run(prompt, {
-      selected: createNodeContext(node)
-    });
-    const generatorWithHistory = this.#conversationHandler.handleConversationWithHistory(generator, this.#conversation);
-    const devToolsLogs = [];
-    for await (const data of generatorWithHistory) {
-      if (data.type !== "answer" || data.complete) {
-        void externalConversation.addHistoryItem(data);
-        devToolsLogs.push(data);
-      }
-      if (data.type === "context" || data.type === "title") {
-        yield {
-          type: "notification",
-          message: data.title
-        };
-      }
-      if (data.type === "side-effect") {
-        data.confirm(true);
-      }
-      if (data.type === "answer" && data.complete) {
-        return {
-          type: "answer",
-          message: data.text,
-          devToolsLogs
-        };
-      }
-    }
-    return {
-      type: "error",
-      message: "Something went wrong. No answer was generated."
-    };
-  }
 };
+function getResponseMarkdown(message) {
+  let markdown = "";
+  const generateContextDetailsMarkdown = (details) => {
+    let detailsMarkdown = "**Details**:\n\n";
+    for (const detail of details) {
+      const text = detail.codeLang ? `\`\`\`${detail.codeLang}
+${detail.text}
+\`\`\`
+` : `${detail.text}`;
+      detailsMarkdown += `**${detail.title}:**
+
+${text}
+
+`;
+    }
+    return detailsMarkdown;
+  };
+  for (const step of message.steps) {
+    if (step.contextDetails) {
+      markdown += "### Context:\n";
+      markdown += generateContextDetailsMarkdown(step.contextDetails);
+    }
+    if (step.title) {
+      markdown += `### AI (Title):
+${step.title}
+
+`;
+    }
+    if (step.thought) {
+      markdown += `### AI (Thought):
+${step.thought}
+
+`;
+    }
+    if (step.code) {
+      markdown += "### AI (Action):\n";
+      markdown += `**Code executed:**
+\`\`\`
+${step.code.trim()}
+\`\`\`
+`;
+    }
+    if (step.output) {
+      if (!step.code) {
+        markdown += "### AI (Action):\n";
+      }
+      markdown += `**Output:**
+\`\`\`
+${step.output}
+\`\`\`
+`;
+    }
+    if (step.canceled) {
+      if (!step.code && !step.output) {
+        markdown += "### AI (Action):\n";
+      }
+      markdown += "**(Action Canceled)**\n";
+    }
+    markdown += "\n";
+  }
+  if (message.answer) {
+    markdown += `### AI (Answer):
+${message.answer}
+`;
+  }
+  return markdown;
+}
 var ActionDelegate = class {
   handleAction(_context, actionId, opts) {
     switch (actionId) {
@@ -5361,6 +5334,7 @@ export {
   PatchWidget_exports as PatchWidget,
   SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW,
   SelectWorkspaceDialog,
-  UserActionRow_exports as UserActionRow
+  UserActionRow_exports as UserActionRow,
+  getResponseMarkdown
 };
 //# sourceMappingURL=ai_assistance.js.map

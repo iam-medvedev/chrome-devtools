@@ -185,8 +185,8 @@ const DEFAULT_VIEW = (input, _output, target) => {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         render(html `
-        <style>${UI.Widget.widgetScoped(autofillViewStyles)}</style>
-        <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
+        <style>${autofillViewStyles}</style>
+        <style>${UI.inspectorCommonStyles}</style>
         <main>
           <div class="top-left-corner">
             <devtools-checkbox
@@ -220,8 +220,8 @@ const DEFAULT_VIEW = (input, _output, target) => {
     // Disabled until https://crbug.com/1079231 is fixed.
     // clang-format off
     render(html `
-      <style>${UI.Widget.widgetScoped(autofillViewStyles)}</style>
-      <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
+      <style>${autofillViewStyles}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       <main>
         <div class="content-container" jslog=${VisualLogging.pane('autofill')}>
           <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>

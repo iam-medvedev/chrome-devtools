@@ -33,7 +33,7 @@ export type TraceEntryNodeId = Platform.Brand.Brand<number, 'traceEntryNodeIdTag
  *
  * Complexity: O(n), where n = number of events
  */
-export declare function treify(entries: Types.Events.Event[], options?: {
+export declare function treify(entries: readonly Types.Events.Event[], options?: {
     filter: {
         has: (name: Types.Events.Name) => boolean;
     };

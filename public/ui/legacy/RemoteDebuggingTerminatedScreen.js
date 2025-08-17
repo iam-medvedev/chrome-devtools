@@ -6,7 +6,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import { html, render } from '../../ui/lit/lit.js';
 import { Dialog } from './Dialog.js';
 import remoteDebuggingTerminatedScreenStyles from './remoteDebuggingTerminatedScreen.css.js';
-import { VBox, widgetScoped } from './Widget.js';
+import { VBox } from './Widget.js';
 const UIStrings = {
     /**
      * @description Text in a dialog box in DevTools stating that remote debugging has been terminated.
@@ -39,7 +39,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${widgetScoped(remoteDebuggingTerminatedScreenStyles)}</style>
+    <style>${remoteDebuggingTerminatedScreenStyles}</style>
     <div class="header">${i18nString(UIStrings.debuggingConnectionWasClosed)}</div>
     <div class="content">
       <div class="reason">${i18nString(UIStrings.connectionClosedReason, { PH1: input.reason })}</div>

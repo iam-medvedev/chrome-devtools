@@ -47,17 +47,17 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/event_listeners/EventListenersView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class EventListenersView extends UI.Widget.VBox {
-    changeCallback;
-    enableDefaultTreeFocus;
+    changeCallback = () => { };
+    enableDefaultTreeFocus = false;
     treeOutline;
     emptyHolder;
-    linkifier;
-    treeItemMap;
-    constructor(changeCallback, enableDefaultTreeFocus = false) {
-        super();
+    objects = [];
+    filter;
+    #linkifier = new Components.Linkifier.Linkifier();
+    #treeItemMap = new Map();
+    constructor(element) {
+        super(element);
         this.registerRequiredCSS(eventListenersViewStyles);
-        this.changeCallback = changeCallback;
-        this.enableDefaultTreeFocus = enableDefaultTreeFocus;
         this.emptyHolder = this.element.createChild('div', 'placeholder hidden');
         this.emptyHolder.createChild('span', 'gray-info-message').textContent = i18nString(UIStrings.noEventListeners);
         const emptyWidget = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEventListeners), i18nString(UIStrings.eventListenersExplanation));
@@ -69,8 +69,6 @@ export class EventListenersView extends UI.Widget.VBox {
         this.treeOutline.setFocusable(true);
         this.treeOutline.registerRequiredCSS(eventListenersViewStyles, objectValueStyles);
         this.element.appendChild(this.treeOutline.element);
-        this.linkifier = new Components.Linkifier.Linkifier();
-        this.treeItemMap = new Map();
     }
     focus() {
         if (!this.enableDefaultTreeFocus) {
@@ -83,8 +81,19 @@ export class EventListenersView extends UI.Widget.VBox {
             this.emptyHolder.focus();
         }
     }
+    async performUpdate() {
+        await this.addObjects(this.objects);
+        if (this.filter) {
+            this.showFrameworkListeners(this.filter.showFramework, this.filter.showPassive, this.filter.showBlocking);
+        }
+    }
     async addObjects(objects) {
-        this.reset();
+        // Remove existing event listeners and reset linkifier first.
+        const eventTypes = this.treeOutline.rootElement().children();
+        for (const eventType of eventTypes) {
+            eventType.removeChildren();
+        }
+        this.#linkifier.reset();
         await Promise.all(objects.map(obj => obj ? this.addObject(obj) : Promise.resolve()));
         this.addEmptyHolderIfNeeded();
         this.eventListenersArrivedForTest();
@@ -181,10 +190,10 @@ export class EventListenersView extends UI.Widget.VBox {
         }
     }
     getOrCreateTreeElementForType(type) {
-        let treeItem = this.treeItemMap.get(type);
+        let treeItem = this.#treeItemMap.get(type);
         if (!treeItem) {
-            treeItem = new EventListenersTreeElement(type, this.linkifier, this.changeCallback);
-            this.treeItemMap.set(type, treeItem);
+            treeItem = new EventListenersTreeElement(type, this.#linkifier, this.changeCallback);
+            this.#treeItemMap.set(type, treeItem);
             treeItem.hidden = true;
             this.treeOutline.appendChild(treeItem);
         }
@@ -208,13 +217,6 @@ export class EventListenersView extends UI.Widget.VBox {
             firstVisibleChild.select(true /* omitFocus */);
         }
         this.treeOutline.setFocusable(Boolean(firstVisibleChild));
-    }
-    reset() {
-        const eventTypes = this.treeOutline.rootElement().children();
-        for (const eventType of eventTypes) {
-            eventType.removeChildren();
-        }
-        this.linkifier.reset();
     }
     eventListenersArrivedForTest() {
     }

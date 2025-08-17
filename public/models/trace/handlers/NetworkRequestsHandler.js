@@ -64,6 +64,7 @@ export function reset() {
     entityMappings.eventsByEntity.clear();
     entityMappings.entityByEvent.clear();
     entityMappings.createdEntityCache.clear();
+    entityMappings.entityByUrlCache.clear();
     linkPreconnectEvents.length = 0;
 }
 export function handleEvent(event) {

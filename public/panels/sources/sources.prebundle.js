@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as AddSourceMapURLDialog from './AddSourceMapURLDialog.js';
+import * as AiCodeCompletionPlugin from './AiCodeCompletionPlugin.js';
 import * as AiWarningInfobarPlugin from './AiWarningInfobarPlugin.js';
 import * as BreakpointEditDialog from './BreakpointEditDialog.js';
 import * as BreakpointsView from './BreakpointsView.js';
@@ -33,5 +34,5 @@ import * as TabbedEditorContainer from './TabbedEditorContainer.js';
 import * as ThreadsSidebarPane from './ThreadsSidebarPane.js';
 import * as UISourceCodeFrame from './UISourceCodeFrame.js';
 import * as WatchExpressionsSidebarPane from './WatchExpressionsSidebarPane.js';
-export { AddSourceMapURLDialog, AiWarningInfobarPlugin, BreakpointEditDialog, BreakpointsView, BreakpointsViewUtils, CallStackSidebarPane, CategorizedBreakpointL10n, CoveragePlugin, CSSPlugin, DebuggerPausedMessage, DebuggerPlugin, EditingLocationHistoryManager, FilePathScoreFunction, FilteredUISourceCodeListProvider, GoToLineQuickOpen, InplaceFormatterEditorAction, NavigatorView, OpenFileQuickOpen, OutlineQuickOpen, Plugin, ResourceOriginPlugin, ScopeChainSidebarPane, SearchSourcesView, SnippetsPlugin, SourcesNavigator, SourcesPanel, SourcesSearchScope, SourcesView, TabbedEditorContainer, ThreadsSidebarPane, UISourceCodeFrame, WatchExpressionsSidebarPane, };
+export { AddSourceMapURLDialog, AiCodeCompletionPlugin, AiWarningInfobarPlugin, BreakpointEditDialog, BreakpointsView, BreakpointsViewUtils, CallStackSidebarPane, CategorizedBreakpointL10n, CoveragePlugin, CSSPlugin, DebuggerPausedMessage, DebuggerPlugin, EditingLocationHistoryManager, FilePathScoreFunction, FilteredUISourceCodeListProvider, GoToLineQuickOpen, InplaceFormatterEditorAction, NavigatorView, OpenFileQuickOpen, OutlineQuickOpen, Plugin, ResourceOriginPlugin, ScopeChainSidebarPane, SearchSourcesView, SnippetsPlugin, SourcesNavigator, SourcesPanel, SourcesSearchScope, SourcesView, TabbedEditorContainer, ThreadsSidebarPane, UISourceCodeFrame, WatchExpressionsSidebarPane, };
 //# sourceMappingURL=sources.prebundle.js.map

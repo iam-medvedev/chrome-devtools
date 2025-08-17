@@ -35,28 +35,29 @@ var developerResourcesListView_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  .data-grid {
+    border: none;
+  }
 
-.data-grid {
-  border: none;
-}
+  ::part(url-outer) {
+    width: 100%;
+    display: inline-flex;
+    justify-content: flex-start;
+  }
 
-::part(url-outer) {
-  width: 100%;
-  display: inline-flex;
-  justify-content: flex-start;
-}
+  ::part(filter-highlight) {
+    font-weight: bold;
+  }
 
-::part(filter-highlight) {
-  font-weight: bold;
-}
+  ::part(url-prefix) {
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+  }
 
-::part(url-prefix) {
-  overflow-x: hidden;
-  text-overflow: ellipsis;
-}
-
-::part(url-suffix) {
-  flex: none;
+  ::part(url-suffix) {
+    flex: none;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./developerResourcesListView.css")} */`;
@@ -131,7 +132,7 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var { withThousandsSeparator } = Platform.NumberUtilities;
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
-      <style>${UI.Widget.widgetScoped(developerResourcesListView_css_default)}</style>
+      <style>${developerResourcesListView_css_default}</style>
       <devtools-data-grid name=${i18nString(UIStrings.developerResources)} striped class="flex-auto"
          .filters=${input.filters} @contextmenu=${input.onContextMenu} @selected=${input.onSelect}>
         <table>
@@ -302,41 +303,43 @@ var developerResourcesView_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
-  overflow: hidden;
-}
+@scope to (devtools-widget > *) {
+  :scope {
+    overflow: hidden;
+  }
 
-.developer-resource-view-toolbar-container {
-  display: flex;
-  border-bottom: 1px solid var(--sys-color-divider);
-  flex: 0 0 auto;
-}
+  .developer-resource-view-toolbar-container {
+    display: flex;
+    border-bottom: 1px solid var(--sys-color-divider);
+    flex: 0 0 auto;
+  }
 
-.developer-resource-view-toolbar {
-  width: 100%;
-}
+  .developer-resource-view-toolbar {
+    width: 100%;
+  }
 
-.developer-resource-view-toolbar-summary {
-  background-color: var(--sys-color-cdt-base-container);
-  border-top: 1px solid var(--sys-color-divider);
-  padding-left: 5px;
-  flex: 0 0 19px;
-  display: flex;
-  padding-right: 5px;
-}
+  .developer-resource-view-toolbar-summary {
+    background-color: var(--sys-color-cdt-base-container);
+    border-top: 1px solid var(--sys-color-divider);
+    padding-left: 5px;
+    flex: 0 0 19px;
+    display: flex;
+    padding-right: 5px;
+  }
 
-.developer-resource-view-toolbar-summary .developer-resource-view-message {
-  padding-top: 2px;
-  padding-left: 1ex;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-}
+  .developer-resource-view-toolbar-summary .developer-resource-view-message {
+    padding-top: 2px;
+    padding-left: 1ex;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+  }
 
-.developer-resource-view-results {
-  overflow-y: auto;
-  display: flex;
-  flex: auto;
+  .developer-resource-view-results {
+    overflow-y: auto;
+    display: flex;
+    flex: auto;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./developerResourcesView.css")} */`;
@@ -389,7 +392,7 @@ var DeveloperResourcesRevealer = class {
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
     <style>
-      ${UI2.Widget.widgetScoped(developerResourcesView_css_default)}
+      ${developerResourcesView_css_default}
     </style>
     <div class="vbox flex-auto" jslog=${VisualLogging.panel("developer-resources").track({ resize: true })}>
       <div class="developer-resource-view-toolbar-container" jslog=${VisualLogging.toolbar()}

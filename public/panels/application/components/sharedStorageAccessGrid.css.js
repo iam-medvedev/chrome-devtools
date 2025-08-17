@@ -8,27 +8,29 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:scope {
-  padding: 20px;
-  height: 100%;
-  display: flex;
-}
+@scope to (devtools-widget > *) {
+  :scope {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+  }
 
-.heading {
-  font-size: 15px;
-}
+  .heading {
+    font-size: 15px;
+  }
 
-devtools-data-grid {
-  margin-top: 20px;
-}
+  devtools-data-grid {
+    margin-top: 20px;
+  }
 
-.info-icon {
-  vertical-align: text-bottom;
-  height: 14px;
-}
+  .info-icon {
+    vertical-align: text-bottom;
+    height: 14px;
+  }
 
-.no-events-message {
-  margin-top: 20px;
+  .no-events-message {
+    margin-top: 20px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./sharedStorageAccessGrid.css')} */`;

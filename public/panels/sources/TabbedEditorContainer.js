@@ -464,7 +464,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     addLoadErrorIcon(tabId) {
         const icon = new IconButton.Icon.Icon();
-        icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)', width: '14px', height: '14px' };
+        icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)' };
+        icon.classList.add('small');
         UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.unableToLoadThisContent));
         if (this.tabbedPane.tabView(tabId)) {
             this.tabbedPane.setTrailingTabIcon(tabId, icon);
@@ -528,7 +529,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             this.tabbedPane.changeTabTitle(tabId, title, tooltip);
             if (uiSourceCode.loadError()) {
                 const icon = new IconButton.Icon.Icon();
-                icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)', width: '14px', height: '14px' };
+                icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)' };
+                icon.classList.add('small');
                 UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.unableToLoadThisContent));
                 this.tabbedPane.setTrailingTabIcon(tabId, icon);
             }
@@ -539,7 +541,8 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
                  **/
                 const suffixElement = document.createElement('div');
                 const icon = new IconButton.Icon.Icon();
-                icon.data = { iconName: 'warning-filled', color: 'var(--icon-warning)', width: '14px', height: '14px' };
+                icon.name = 'warning-filled';
+                icon.classList.add('small');
                 const id = `tab-tooltip-${nextTooltipId++}`;
                 icon.setAttribute('aria-describedby', id);
                 const tooltip = new Tooltips.Tooltip.Tooltip({ id, anchor: icon, variant: 'rich' });

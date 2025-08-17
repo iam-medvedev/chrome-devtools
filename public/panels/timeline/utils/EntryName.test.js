@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getMainThread } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getMainThread } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Utils from './utils.js';
 describeWithEnvironment('EntryName', () => {
@@ -23,7 +23,7 @@ describeWithEnvironment('EntryName', () => {
     });
     it('adds the event type for EventDispatch events', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
-        const clickEvent = parsedTrace.Renderer.allTraceEntries.find(event => {
+        const clickEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
             return Trace.Types.Events.isDispatch(event) && event.args.data.type === 'click';
         });
         assert.isOk(clickEvent);
@@ -45,7 +45,7 @@ describeWithEnvironment('EntryName', () => {
     });
     it('uses the names defined in the entry styles', async function () {
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const entry = parsedTrace.Renderer.allTraceEntries.find(e => e.name === "RunTask" /* Trace.Types.Events.Name.RUN_TASK */);
+        const entry = allThreadEntriesInTrace(parsedTrace).find(e => e.name === "RunTask" /* Trace.Types.Events.Name.RUN_TASK */);
         assert.isOk(entry);
         const name = Utils.EntryName.nameForEntry(entry, parsedTrace);
         assert.strictEqual(name, 'Task');

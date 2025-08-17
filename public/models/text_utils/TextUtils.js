@@ -298,7 +298,7 @@ export const detectIndentation = function (lines) {
  * line length for the whole text is 80 characters or more.
  *
  * @param text The input text to check.
- * @returns
+ * @returns `true` if the heuristic considers `text` to be minified.
  */
 export const isMinified = function (text) {
     let lineCount = 0;

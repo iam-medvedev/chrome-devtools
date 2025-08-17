@@ -19,6 +19,7 @@ var DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
 var AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
 var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
   #editor;
+  #renderingTimeout;
   #sessionId = crypto.randomUUID();
   #aidaClient;
   #serverSideLoggingEnabled;
@@ -28,6 +29,9 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
     this.#editor = editor;
   }
+  #debouncedRequestAidaSuggestion = Common.Debouncer.debounce((prefix, suffix, cursor, inferenceLanguage) => {
+    void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix, inferenceLanguage), cursor);
+  }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
   #buildRequest(prefix, suffix, inferenceLanguage = "JAVASCRIPT") {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
     function validTemperature(temperature) {
@@ -63,10 +67,19 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
           return;
         }
         const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
-        setTimeout(() => {
+        this.#renderingTimeout = window.setTimeout(() => {
           this.#editor.dispatch({
-            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: response.generatedSamples[0].generationString, from: cursor })
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({
+              text: response.generatedSamples[0].generationString,
+              from: cursor,
+              rpcGlobalId: response.metadata.rpcGlobalId,
+              sampleId: response.generatedSamples[0].sampleId
+            })
           });
+          if (response.metadata.rpcGlobalId) {
+            const latency = performance.now() - startTime;
+            this.#registerUserImpression(response.metadata.rpcGlobalId, response.generatedSamples[0].sampleId, latency);
+          }
           const citations = response.generatedSamples[0].attributionMetadata?.citations;
           this.dispatchEventToListeners("ResponseReceived", { citations });
         }, remainderDelay);
@@ -88,9 +101,50 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       modelId
     };
   }
-  onTextChanged = Common.Debouncer.debounce((prefix, suffix, cursor) => {
-    void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix), cursor);
-  }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+  #registerUserImpression(rpcGlobalId, sampleId, latency) {
+    const seconds = Math.floor(latency / 1e3);
+    const remainingMs = latency % 1e3;
+    const nanos = remainingMs * 1e6;
+    void this.#aidaClient.registerClientEvent({
+      corresponding_aida_rpc_global_id: rpcGlobalId,
+      disable_user_content_logging: true,
+      complete_code_client_event: {
+        user_impression: {
+          sample: {
+            sample_id: sampleId
+          },
+          latency: {
+            duration: {
+              seconds,
+              nanos
+            }
+          }
+        }
+      }
+    });
+  }
+  registerUserAcceptance(rpcGlobalId, sampleId) {
+    void this.#aidaClient.registerClientEvent({
+      corresponding_aida_rpc_global_id: rpcGlobalId,
+      disable_user_content_logging: true,
+      complete_code_client_event: {
+        user_acceptance: {
+          sample: {
+            sample_id: sampleId
+          }
+        }
+      }
+    });
+  }
+  onTextChanged(prefix, suffix, cursor, inferenceLanguage) {
+    this.#debouncedRequestAidaSuggestion(prefix, suffix, cursor, inferenceLanguage);
+  }
+  remove() {
+    if (this.#renderingTimeout) {
+      clearTimeout(this.#renderingTimeout);
+      this.#renderingTimeout = void 0;
+    }
+  }
 };
 export {
   AiCodeCompletion_exports as AiCodeCompletion

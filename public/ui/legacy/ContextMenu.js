@@ -36,6 +36,18 @@ import { ActionRegistry } from './ActionRegistry.js';
 import { ShortcutRegistry } from './ShortcutRegistry.js';
 import { SoftContextMenu } from './SoftContextMenu.js';
 import { deepElementFromEvent } from './UIUtils.js';
+/**
+ * Represents a single item in a context menu.
+ * @property jslogContext - An optional string identifying the element for visual logging.
+ * @property customElement - A custom HTML element to be rendered for this item.
+ * @property idInternal - The unique ID of this item. Undefined for separators.
+ * @property contextMenu - The parent `ContextMenu` or `null` if this item is not part of a menu (e.g. a SubMenu).
+ * @property isDevToolsPerformanceMenuItem - Controls whether the shortcuts will be shown in Mac native menus. Use only in exceptional cases where shortcuts are heavily context dependent and critical for a smooth user interaction.
+ * @property disabled - Whether the item should be disabled.
+ * @property previewFeature - Whether this item represents an experimental feature. Adds an experiment icon next to the menu item.
+ * @property accelerator - Describes a keyboard shortcut for the item. Shortcut will not show in native Menus on Mac.
+ * @property label - The text to display for the item. Not used for 'separator' type.
+ */
 export class Item {
     typeInternal;
     label;
@@ -68,24 +80,48 @@ export class Item {
         this.jslogContext = jslogContext;
         this.featureName = featureName;
     }
+    /**
+     * Returns the unique ID of this item.
+     * @throws If the item ID was not set (e.g. for a separator).
+     */
     id() {
         if (this.idInternal === undefined) {
             throw new Error('Tried to access a ContextMenu Item ID but none was set.');
         }
         return this.idInternal;
     }
+    /**
+     * Returns the type of this item (e.g. 'item', 'checkbox').
+     */
     type() {
         return this.typeInternal;
     }
+    /**
+     * Returns whether this item is marked as a preview feature (experimental).
+     */
     isPreviewFeature() {
         return this.previewFeature;
     }
+    /**
+     * Returns whether this item is enabled.
+     */
     isEnabled() {
         return !this.disabled;
     }
+    /**
+     * Sets the enabled state of this item.
+     * @param enabled True to enable the item, false to disable it.
+     */
     setEnabled(enabled) {
         this.disabled = !enabled;
     }
+    /**
+     * Builds a descriptor object for this item.
+     * This descriptor is used to create the actual menu item in either
+     * a soft-rendered menu or a native menu.
+     * @returns The descriptor for the item.
+     * @throws If the item type is invalid.
+     */
     buildDescriptor() {
         switch (this.typeInternal) {
             case 'item': {
@@ -145,20 +181,39 @@ export class Item {
         }
         throw new Error('Invalid item type:' + this.typeInternal);
     }
+    /**
+     * Sets a keyboard accelerator for this item.
+     * @param key The key code for the accelerator.
+     * @param modifiers An array of modifiers (e.g. Ctrl, Shift).
+     */
     setAccelerator(key, modifiers) {
         const modifierSum = modifiers.reduce((result, modifier) => result + ShortcutRegistry.instance().devToolsToChromeModifier(modifier), 0);
         this.accelerator = { keyCode: key.code, modifiers: modifierSum };
     }
-    // This influences whether accelerators will be shown for native menus on Mac.
-    // Use this ONLY for performance menus and ONLY where accelerators are critical
-    // for a smooth user journey and heavily context dependent.
+    /**
+     * This influences whether accelerators will be shown for native menus on Mac.
+     * Use this ONLY for performance menus and ONLY where accelerators are critical
+     * for a smooth user journey and heavily context dependent.
+     * @param isDevToolsPerformanceMenuItem True if this is a DevTools performance menu item.
+     */
     setIsDevToolsPerformanceMenuItem(isDevToolsPerformanceMenuItem) {
         this.isDevToolsPerformanceMenuItem = isDevToolsPerformanceMenuItem;
     }
+    /**
+     * Sets a display string for the shortcut associated with this item.
+     * This is typically used when the shortcut is managed by `ActionRegistry`.
+     * @param shortcut The shortcut string to display.
+     */
     setShortcut(shortcut) {
         this.shortcut = shortcut;
     }
 }
+/**
+ * Represents a section within a `ContextMenu` or `SubMenu`.
+ * Sections are used to group related items and are often visually separated.
+ * @property items - The list of items in this section.
+ * @property contextMenu - The parent `ContextMenu` or `null`.
+ */
 export class Section {
     contextMenu;
     items;
@@ -166,6 +221,13 @@ export class Section {
         this.contextMenu = contextMenu;
         this.items = [];
     }
+    /**
+     * Appends a standard clickable item to this section.
+     * @param label The text to display for the item.
+     * @param handler The function to execute when the item is clicked.
+     * @param options Optional settings for the item.
+     * @returns The newly created `Item`.
+     */
     appendItem(label, handler, options) {
         const item = new Item(this.contextMenu, 'item', label, options?.isPreviewFeature, options?.disabled, undefined, options?.accelerator, options?.tooltip, options?.jslogContext, options?.featureName);
         if (options?.additionalElement) {
@@ -177,17 +239,34 @@ export class Section {
         }
         return item;
     }
+    /**
+     * Appends an item that contains a custom HTML element (for non-native menus only).
+     * @param element The custom `Element` to display in the menu item.
+     * @param jslogContext An optional string identifying the element for visual logging.
+     * @returns The newly created `Item`.
+     */
     appendCustomItem(element, jslogContext) {
         const item = new Item(this.contextMenu, 'item', undefined, undefined, undefined, undefined, undefined, undefined, jslogContext);
         item.customElement = element;
         this.items.push(item);
         return item;
     }
+    /**
+     * Appends a visual separator to this section.
+     * @returns The newly created separator `Item`.
+     */
     appendSeparator() {
         const item = new Item(this.contextMenu, 'separator');
         this.items.push(item);
         return item;
     }
+    /**
+     * Appends an item that triggers a registered `Action`.
+     * The item's label, handler, enabled state, and shortcut are derived from the action.
+     * @param actionId The ID of the action to append.
+     * @param label Optional label to override the action's title.
+     * @param optional If true and the action is not registered, this method does nothing.
+     */
     appendAction(actionId, label, optional, jslogContext, feature) {
         if (optional && !ActionRegistry.instance().hasAction(actionId)) {
             return;
@@ -210,12 +289,26 @@ export class Section {
             result.setShortcut(shortcut);
         }
     }
+    /**
+     * Appends an item that, when clicked, opens a sub-menu.
+     * @param label The text to display for the sub-menu item.
+     * @param disabled Whether the sub-menu item should be disabled.
+     * @param jslogContext An optional string identifying the element for visual logging.
+     * @returns The newly created `SubMenu` instance.
+     */
     appendSubMenuItem(label, disabled, jslogContext, featureName) {
         const item = new SubMenu(this.contextMenu, label, disabled, jslogContext, featureName);
         item.init();
         this.items.push(item);
         return item;
     }
+    /**
+     * Appends a checkbox item to this section.
+     * @param label The text to display for the checkbox item.
+     * @param handler The function to execute when the checkbox state changes.
+     * @param options Optional settings for the checkbox item.
+     * @returns The newly created checkbox `Item`.
+     */
     appendCheckboxItem(label, handler, options) {
         const item = new Item(this.contextMenu, 'checkbox', label, options?.experimental, options?.disabled, options?.checked, undefined, options?.tooltip, options?.jslogContext, options?.featureName);
         this.items.push(item);
@@ -228,6 +321,11 @@ export class Section {
         return item;
     }
 }
+/**
+ * Represents an `Item` that opens a nested menu (a sub-menu).
+ * It extends `Item` and manages its own set of `Section`s.
+ * @property sections - A map of section names to `Section` objects.
+ */
 export class SubMenu extends Item {
     sections;
     sectionList;
@@ -236,9 +334,22 @@ export class SubMenu extends Item {
         this.sections = new Map();
         this.sectionList = [];
     }
+    /**
+     * Initializes the standard sections for this sub-menu based on `ContextMenu.groupWeights`.
+     */
     init() {
         ContextMenu.groupWeights.forEach(name => this.section(name));
     }
+    /**
+     * Retrieves an existing section by its name or creates a new one if it doesn't exist.
+     *
+     * If a section with the given `name` (or 'default' if `name` is unspecified) is not found,
+     * a new `Section` instance is created, stored internally for future lookups by that name,
+     * and added to the ordered list of sections for this submenu.
+     *
+     * @param name The optional name of the section. Defaults to 'default' if not provided.
+     * @returns The `Section` object, either pre-existing or newly created.
+     */
     section(name) {
         if (!name) {
             name = 'default';
@@ -256,39 +367,88 @@ export class SubMenu extends Item {
         }
         return section;
     }
+    /**
+     * Retrieves or creates the 'header' section.
+     * @returns The 'header' `Section` object.
+     */
     headerSection() {
         return this.section('header');
     }
+    /**
+     * Retrieves or creates the 'new' section.
+     * @returns The 'new' `Section` object.
+     */
     newSection() {
         return this.section('new');
     }
+    /**
+     * Retrieves or creates the 'reveal' section.
+     * @returns The 'reveal' `Section` object.
+     */
     revealSection() {
         return this.section('reveal');
     }
+    /**
+     * Retrieves or creates the 'clipboard' section.
+     * @returns The 'clipboard' `Section` object.
+     */
     clipboardSection() {
         return this.section('clipboard');
     }
+    /**
+     * Retrieves or creates the 'edit' section.
+     * @returns The 'edit' `Section` object.
+     */
     editSection() {
         return this.section('edit');
     }
+    /**
+     * Retrieves or creates the 'debug' section.
+     * @returns The 'debug' `Section` object.
+     */
     debugSection() {
         return this.section('debug');
     }
+    /**
+     * Retrieves or creates the 'view' section.
+     * @returns The 'view' `Section` object.
+     */
     viewSection() {
         return this.section('view');
     }
+    /**
+     * Retrieves or creates the 'default' section.
+     * This is often used for general-purpose menu items.
+     * @returns The 'default' `Section` object.
+     */
     defaultSection() {
         return this.section('default');
     }
+    /**
+     * Retrieves or creates the 'override' section.
+     * @returns The 'override' `Section` object.
+     */
     overrideSection() {
         return this.section('override');
     }
+    /**
+     * Retrieves or creates the 'save' section.
+     * @returns The 'save' `Section` object.
+     */
     saveSection() {
         return this.section('save');
     }
+    /**
+     * Retrieves or creates the 'annotation' section.
+     * @returns The 'annotation' `Section` object.
+     */
     annotationSection() {
         return this.section('annotation');
     }
+    /**
+     * Retrieves or creates the 'footer' section.
+     * @returns The 'footer' `Section` object.
+     */
     footerSection() {
         return this.section('footer');
     }
@@ -330,6 +490,12 @@ export class SubMenu extends Item {
         }
         return result;
     }
+    /**
+     * Appends registered context menu items that are configured to appear under a specific `location` path.
+     * Items are sorted by their `order` property.
+     * Experimental items are only added if their corresponding experiment is enabled.
+     * @param location The base location path (e.g. 'mainMenu'). Items with locations like 'mainMenu/default' will be appended.
+     */
     appendItemsAtLocation(location) {
         const items = getRegisteredItems();
         items.sort((firstItem, secondItem) => {
@@ -358,6 +524,12 @@ export class SubMenu extends Item {
 }
 const MENU_ITEM_HEIGHT_FOR_LOGGING = 20;
 const MENU_ITEM_WIDTH_FOR_LOGGING = 200;
+/**
+ * Represents the main context menu. It extends `SubMenu` because a `ContextMenu`
+ * is essentially a top-level menu that can contain sections and items, similar to a sub-menu.
+ * It handles the display of the menu (either soft or native), event handling, and
+ * integration with registered context menu providers.
+ */
 export class ContextMenu extends SubMenu {
     contextMenu;
     pendingTargets;
@@ -374,6 +546,11 @@ export class ContextMenu extends SubMenu {
     openHostedMenu;
     eventTarget;
     loggableParent = null;
+    /**
+     * Creates an instance of `ContextMenu`.
+     * @param event The mouse event that triggered the menu.
+     * @param options Optional configuration for the context menu.
+     */
     constructor(event, options = {}) {
         super(null);
         const mouseEvent = event;
@@ -401,12 +578,25 @@ export class ContextMenu extends SubMenu {
             }
         }
     }
+    /**
+     * Initializes global settings for context menus, such as listening for
+     * commands from the host to toggle soft menu usage.
+     */
     static initialize() {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.SetUseSoftMenu, setUseSoftMenu);
+        /**
+         * Sets the global preference for using soft menus.
+         * @param event The event containing the new preference.
+         */
         function setUseSoftMenu(event) {
             ContextMenu.useSoftMenu = event.data;
         }
     }
+    /**
+     * Installs a global context menu handler on the provided document's body.
+     * This handler will create and show a `ContextMenu` when a contextmenu event is detected.
+     * @param doc The `Document` to install the handler on.
+     */
     static installHandler(doc) {
         doc.body.addEventListener('contextmenu', handler, false);
         function handler(event) {
@@ -414,18 +604,39 @@ export class ContextMenu extends SubMenu {
             void contextMenu.show();
         }
     }
+    /**
+     * Generates the next unique ID for a menu item within this `ContextMenu`.
+     * @returns A unique number for the item ID.
+     */
     nextId() {
         return this.idInternal++;
     }
+    /**
+     * Checks if a native (hosted) context menu is currently open.
+     * @returns `true` if a native menu is open, `false` otherwise.
+     */
     isHostedMenuOpen() {
         return Boolean(this.openHostedMenu);
     }
+    /**
+     * Retrieves the item descriptors if a soft menu is currently active.
+     * @returns An array of `SoftContextMenuDescriptor`s or an empty array if no soft menu is active.
+     */
     getItems() {
         return this.softMenu?.getItems() || [];
     }
+    /**
+     * Sets the checked state of an item in an active soft menu.
+     * @param item The descriptor of the item to update.
+     * @param checked `true` to check the item, `false` to uncheck it.
+     */
     setChecked(item, checked) {
         this.softMenu?.setChecked(item, checked);
     }
+    /**
+     * Shows the context menu. This involves loading items from registered providers
+     * and then displaying either a soft or native menu.
+     */
     async show() {
         ContextMenu.pendingMenu = this;
         this.event.consume(true);
@@ -446,6 +657,9 @@ export class ContextMenu extends SubMenu {
         this.pendingTargets = [];
         this.innerShow();
     }
+    /**
+     * Discards (closes) the soft context menu if it's currently shown.
+     */
     discard() {
         if (this.softMenu) {
             this.softMenu.discard();
@@ -501,17 +715,34 @@ export class ContextMenu extends SubMenu {
             queueMicrotask(listenToEvents.bind(this));
         }
     }
+    /**
+     * Sets the x-coordinate for the menu's position.
+     * @param x The new x-coordinate.
+     */
     setX(x) {
         this.x = x;
     }
+    /**
+     * Sets the y-coordinate for the menu's position.
+     * @param y The new y-coordinate.
+     */
     setY(y) {
         this.y = y;
     }
+    /**
+     * Associates a handler function with a menu item ID.
+     * @param id The ID of the menu item.
+     * @param handler The function to execute when the item is selected.
+     */
     setHandler(id, handler) {
         if (handler) {
             this.handlers.set(id, handler);
         }
     }
+    /**
+     * Invokes the handler associated with the given menu item ID.
+     * @param id The ID of the selected menu item.
+     */
     invokeHandler(id) {
         const handler = this.handlers.get(id);
         if (handler) {
@@ -572,8 +803,7 @@ export class ContextMenu extends SubMenu {
     }
     /**
      * Appends the `target` to the list of pending targets for which context menu providers
-     * will be loaded when showing the context menu. If the `target` was already appended
-     * before, it just ignores this call.
+     * will be loaded when showing the context menu.
      *
      * @param target an object for which we can have registered menu item providers.
      */
@@ -583,6 +813,9 @@ export class ContextMenu extends SubMenu {
         }
         this.pendingTargets.push(target);
     }
+    /**
+     * Marks the soft context menu (if one exists) to visually indicate that its items behave like checkboxes.
+     */
     markAsMenuItemCheckBox() {
         if (this.softMenu) {
             this.softMenu.markAsMenuItemCheckBox();
@@ -661,7 +894,7 @@ export class MenuButton extends HTMLElement {
         return this.getAttribute('jslogContext');
     }
     /**
-     * Reflects the `disabled` attribute. If true, the button is disabled and cannot be clicked.
+     * Reflects the `disabled` attribute. If true, the button cannot be clicked.
      * @default false
      */
     get disabled() {
@@ -731,10 +964,25 @@ export class MenuButton extends HTMLElement {
     }
 }
 customElements.define('devtools-menu-button', MenuButton);
+/**
+ * Stores all registered context menu provider registrations.
+ */
 const registeredProviders = [];
+/**
+ * Registers a new context menu provider.
+ * @template T The type of the object for which the provider supplies context menu items.
+ * @param registration The provider registration object, specifying context types and how to load the provider.
+ */
 export function registerProvider(registration) {
     registeredProviders.push(registration);
 }
+/**
+ * Asynchronously loads all registered providers that are applicable to the given `target` object.
+ * A provider is applicable if the `target` is an instance of one of its specified `contextTypes`
+ * and if its associated experiment (if any) is enabled.
+ * @param target The object for which to load applicable providers.
+ * @returns A promise that resolves to an array of loaded `Provider` instances.
+ */
 async function loadApplicableRegisteredProviders(target) {
     const providers = [];
     for (const providerRegistration of registeredProviders) {
@@ -751,10 +999,24 @@ async function loadApplicableRegisteredProviders(target) {
     }
     return providers;
 }
+/**
+ * Stores all registered context menu item registrations.
+ */
 const registeredItemsProviders = [];
+/**
+ * Registers a new context menu item.
+ * These items are typically actions that appear in predefined locations in the menu.
+ * @param registration The item registration object, specifying its location, action ID, and optional order/experiment.
+ */
 export function registerItem(registration) {
     registeredItemsProviders.push(registration);
 }
+/**
+ * Attempts to remove a registered context menu item.
+ * The item is identified by its `actionId` and `location`.
+ * @param registration The registration details of the item to remove.
+ * @returns `true` if the item was found and removed, `false` otherwise.
+ */
 export function maybeRemoveItem(registration) {
     const itemIndex = registeredItemsProviders.findIndex(item => item.actionId === registration.actionId && item.location === registration.location);
     if (itemIndex < 0) {
@@ -763,6 +1025,10 @@ export function maybeRemoveItem(registration) {
     registeredItemsProviders.splice(itemIndex, 1);
     return true;
 }
+/**
+ * Retrieves all currently registered context menu items.
+ * @returns An array of `ContextMenuItemRegistration` objects.
+ */
 function getRegisteredItems() {
     return registeredItemsProviders;
 }

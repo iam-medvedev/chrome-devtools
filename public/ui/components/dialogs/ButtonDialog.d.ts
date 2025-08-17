@@ -1,5 +1,6 @@
 import type * as Buttons from '../../../ui/components/buttons/buttons.js';
-import { DialogHorizontalAlignment, DialogVerticalPosition } from './Dialog.js';
+import { DialogHorizontalAlignment, DialogState, DialogVerticalPosition } from './Dialog.js';
+export type ButtonDialogState = DialogState;
 export interface ButtonDialogData {
     openOnRender?: boolean;
     jslogContext?: string;
@@ -12,11 +13,13 @@ export interface ButtonDialogData {
     closeOnESC?: boolean;
     closeOnScroll?: boolean;
     closeButton?: boolean;
+    state?: ButtonDialogState;
     dialogTitle: string;
 }
 export declare class ButtonDialog extends HTMLElement {
     #private;
     set data(data: ButtonDialogData);
+    set state(state: ButtonDialogState);
 }
 declare global {
     interface HTMLElementTagNameMap {

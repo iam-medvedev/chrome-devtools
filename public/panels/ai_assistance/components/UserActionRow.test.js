@@ -19,6 +19,7 @@ describeWithEnvironment('UserActionRow', () => {
             showRateButtons: true,
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
+            onCopyResponseClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
@@ -36,6 +37,7 @@ describeWithEnvironment('UserActionRow', () => {
             showRateButtons: true,
             canShowFeedbackForm: false,
             onSuggestionClick: sinon.stub(),
+            onCopyResponseClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
@@ -53,6 +55,7 @@ describeWithEnvironment('UserActionRow', () => {
             showRateButtons: true,
             canShowFeedbackForm: true,
             onSuggestionClick: sinon.stub(),
+            onCopyResponseClick: sinon.stub(),
             onFeedbackSubmit: sinon.stub(),
         });
         sinon.assert.callCount(view, 1);
@@ -80,6 +83,7 @@ describeWithEnvironment('UserActionRow', () => {
             AiAssistance.UserActionRow.DEFAULT_VIEW({
                 onRatingClick: () => { },
                 onReportClick: () => { },
+                onCopyResponseClick: () => { },
                 scrollSuggestionsScrollContainer: () => { },
                 onSuggestionsScrollOrResize: () => { },
                 onSuggestionClick: () => { },

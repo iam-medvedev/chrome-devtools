@@ -1056,6 +1056,9 @@ export declare namespace Audits {
         frameId: Page.FrameId;
         loaderId: Network.LoaderId;
     }
+    /**
+     * @deprecated
+     */
     interface NavigatorUserAgentIssueDetails {
         url: string;
         location?: SourceCodeLocation;
@@ -1381,6 +1384,9 @@ export declare namespace Audits {
         attributionReportingIssueDetails?: AttributionReportingIssueDetails;
         quirksModeIssueDetails?: QuirksModeIssueDetails;
         partitioningBlobURLIssueDetails?: PartitioningBlobURLIssueDetails;
+        /**
+         * @deprecated
+         */
         navigatorUserAgentIssueDetails?: NavigatorUserAgentIssueDetails;
         genericIssueDetails?: GenericIssueDetails;
         deprecationIssueDetails?: DeprecationIssueDetails;
@@ -1462,93 +1468,6 @@ export declare namespace Audits {
     }
     interface IssueAddedEvent {
         issue: InspectorIssue;
-    }
-}
-/**
- * Defines commands and events for browser extensions.
- */
-export declare namespace Extensions {
-    /**
-     * Storage areas.
-     */
-    const enum StorageArea {
-        Session = "session",
-        Local = "local",
-        Sync = "sync",
-        Managed = "managed"
-    }
-    interface LoadUnpackedRequest {
-        /**
-         * Absolute file path.
-         */
-        path: string;
-    }
-    interface LoadUnpackedResponse extends ProtocolResponseWithError {
-        /**
-         * Extension id.
-         */
-        id: string;
-    }
-    interface UninstallRequest {
-        /**
-         * Extension id.
-         */
-        id: string;
-    }
-    interface GetStorageItemsRequest {
-        /**
-         * ID of extension.
-         */
-        id: string;
-        /**
-         * StorageArea to retrieve data from.
-         */
-        storageArea: StorageArea;
-        /**
-         * Keys to retrieve.
-         */
-        keys?: string[];
-    }
-    interface GetStorageItemsResponse extends ProtocolResponseWithError {
-        data: any;
-    }
-    interface RemoveStorageItemsRequest {
-        /**
-         * ID of extension.
-         */
-        id: string;
-        /**
-         * StorageArea to remove data from.
-         */
-        storageArea: StorageArea;
-        /**
-         * Keys to remove.
-         */
-        keys: string[];
-    }
-    interface ClearStorageItemsRequest {
-        /**
-         * ID of extension.
-         */
-        id: string;
-        /**
-         * StorageArea to remove data from.
-         */
-        storageArea: StorageArea;
-    }
-    interface SetStorageItemsRequest {
-        /**
-         * ID of extension.
-         */
-        id: string;
-        /**
-         * StorageArea to set data in.
-         */
-        storageArea: StorageArea;
-        /**
-         * Values to set.
-         */
-        values: any;
     }
 }
 /**
@@ -1771,6 +1690,222 @@ export declare namespace BackgroundService {
      */
     interface BackgroundServiceEventReceivedEvent {
         backgroundServiceEvent: BackgroundServiceEvent;
+    }
+}
+/**
+ * This domain allows configuring virtual Bluetooth devices to test
+ * the web-bluetooth API.
+ */
+export declare namespace BluetoothEmulation {
+    /**
+     * Indicates the various states of Central.
+     */
+    const enum CentralState {
+        Absent = "absent",
+        PoweredOff = "powered-off",
+        PoweredOn = "powered-on"
+    }
+    /**
+     * Indicates the various types of GATT event.
+     */
+    const enum GATTOperationType {
+        Connection = "connection",
+        Discovery = "discovery"
+    }
+    /**
+     * Indicates the various types of characteristic write.
+     */
+    const enum CharacteristicWriteType {
+        WriteDefaultDeprecated = "write-default-deprecated",
+        WriteWithResponse = "write-with-response",
+        WriteWithoutResponse = "write-without-response"
+    }
+    /**
+     * Indicates the various types of characteristic operation.
+     */
+    const enum CharacteristicOperationType {
+        Read = "read",
+        Write = "write",
+        SubscribeToNotifications = "subscribe-to-notifications",
+        UnsubscribeFromNotifications = "unsubscribe-from-notifications"
+    }
+    /**
+     * Indicates the various types of descriptor operation.
+     */
+    const enum DescriptorOperationType {
+        Read = "read",
+        Write = "write"
+    }
+    /**
+     * Stores the manufacturer data
+     */
+    interface ManufacturerData {
+        /**
+         * Company identifier
+         * https://bitbucket.org/bluetooth-SIG/public/src/main/assigned_numbers/company_identifiers/company_identifiers.yaml
+         * https://usb.org/developers
+         */
+        key: integer;
+        /**
+         * Manufacturer-specific data
+         */
+        data: binary;
+    }
+    /**
+     * Stores the byte data of the advertisement packet sent by a Bluetooth device.
+     */
+    interface ScanRecord {
+        name?: string;
+        uuids?: string[];
+        /**
+         * Stores the external appearance description of the device.
+         */
+        appearance?: integer;
+        /**
+         * Stores the transmission power of a broadcasting device.
+         */
+        txPower?: integer;
+        /**
+         * Key is the company identifier and the value is an array of bytes of
+         * manufacturer specific data.
+         */
+        manufacturerData?: ManufacturerData[];
+    }
+    /**
+     * Stores the advertisement packet information that is sent by a Bluetooth device.
+     */
+    interface ScanEntry {
+        deviceAddress: string;
+        rssi: integer;
+        scanRecord: ScanRecord;
+    }
+    /**
+     * Describes the properties of a characteristic. This follows Bluetooth Core
+     * Specification BT 4.2 Vol 3 Part G 3.3.1. Characteristic Properties.
+     */
+    interface CharacteristicProperties {
+        broadcast?: boolean;
+        read?: boolean;
+        writeWithoutResponse?: boolean;
+        write?: boolean;
+        notify?: boolean;
+        indicate?: boolean;
+        authenticatedSignedWrites?: boolean;
+        extendedProperties?: boolean;
+    }
+    interface EnableRequest {
+        /**
+         * State of the simulated central.
+         */
+        state: CentralState;
+        /**
+         * If the simulated central supports low-energy.
+         */
+        leSupported: boolean;
+    }
+    interface SetSimulatedCentralStateRequest {
+        /**
+         * State of the simulated central.
+         */
+        state: CentralState;
+    }
+    interface SimulatePreconnectedPeripheralRequest {
+        address: string;
+        name: string;
+        manufacturerData: ManufacturerData[];
+        knownServiceUuids: string[];
+    }
+    interface SimulateAdvertisementRequest {
+        entry: ScanEntry;
+    }
+    interface SimulateGATTOperationResponseRequest {
+        address: string;
+        type: GATTOperationType;
+        code: integer;
+    }
+    interface SimulateCharacteristicOperationResponseRequest {
+        characteristicId: string;
+        type: CharacteristicOperationType;
+        code: integer;
+        data?: binary;
+    }
+    interface SimulateDescriptorOperationResponseRequest {
+        descriptorId: string;
+        type: DescriptorOperationType;
+        code: integer;
+        data?: binary;
+    }
+    interface AddServiceRequest {
+        address: string;
+        serviceUuid: string;
+    }
+    interface AddServiceResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this service.
+         */
+        serviceId: string;
+    }
+    interface RemoveServiceRequest {
+        serviceId: string;
+    }
+    interface AddCharacteristicRequest {
+        serviceId: string;
+        characteristicUuid: string;
+        properties: CharacteristicProperties;
+    }
+    interface AddCharacteristicResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this characteristic.
+         */
+        characteristicId: string;
+    }
+    interface RemoveCharacteristicRequest {
+        characteristicId: string;
+    }
+    interface AddDescriptorRequest {
+        characteristicId: string;
+        descriptorUuid: string;
+    }
+    interface AddDescriptorResponse extends ProtocolResponseWithError {
+        /**
+         * An identifier that uniquely represents this descriptor.
+         */
+        descriptorId: string;
+    }
+    interface RemoveDescriptorRequest {
+        descriptorId: string;
+    }
+    interface SimulateGATTDisconnectionRequest {
+        address: string;
+    }
+    /**
+     * Event for when a GATT operation of |type| to the peripheral with |address|
+     * happened.
+     */
+    interface GattOperationReceivedEvent {
+        address: string;
+        type: GATTOperationType;
+    }
+    /**
+     * Event for when a characteristic operation of |type| to the characteristic
+     * respresented by |characteristicId| happened. |data| and |writeType| is
+     * expected to exist when |type| is write.
+     */
+    interface CharacteristicOperationReceivedEvent {
+        characteristicId: string;
+        type: CharacteristicOperationType;
+        data?: binary;
+        writeType?: CharacteristicWriteType;
+    }
+    /**
+     * Event for when a descriptor operation of |type| to the descriptor
+     * respresented by |descriptorId| happened. |data| is expected to exist when
+     * |type| is write.
+     */
+    interface DescriptorOperationReceivedEvent {
+        descriptorId: string;
+        type: DescriptorOperationType;
+        data?: binary;
     }
 }
 /**
@@ -4071,6 +4206,7 @@ export declare namespace DOM {
          * Deprecated, as the HTML Imports API has been removed (crbug.com/937746).
          * This property used to return the imported document for the HTMLImport links.
          * The property is always undefined now.
+         * @deprecated
          */
         importedDocument?: Node;
         /**
@@ -5245,25 +5381,6 @@ export declare namespace DOMDebugger {
     }
 }
 /**
- * EventBreakpoints permits setting JavaScript breakpoints on operations and events
- * occurring in native code invoked from JavaScript. Once breakpoint is hit, it is
- * reported through Debugger domain, similarly to regular breakpoints being hit.
- */
-export declare namespace EventBreakpoints {
-    interface SetInstrumentationBreakpointRequest {
-        /**
-         * Instrumentation name to stop on.
-         */
-        eventName: string;
-    }
-    interface RemoveInstrumentationBreakpointRequest {
-        /**
-         * Instrumentation name to stop on.
-         */
-        eventName: string;
-    }
-}
-/**
  * This domain facilitates obtaining document snapshots with DOM, layout, and style information.
  */
 export declare namespace DOMSnapshot {
@@ -5835,6 +5952,41 @@ export declare namespace DOMStorage {
         storageId: StorageId;
     }
 }
+export declare namespace DeviceAccess {
+    /**
+     * Device request id.
+     */
+    type RequestId = OpaqueIdentifier<string, 'Protocol.DeviceAccess.RequestId'>;
+    /**
+     * A device id.
+     */
+    type DeviceId = OpaqueIdentifier<string, 'Protocol.DeviceAccess.DeviceId'>;
+    /**
+     * Device information displayed in a user prompt to select a device.
+     */
+    interface PromptDevice {
+        id: DeviceId;
+        /**
+         * Display name as it appears in a device request user prompt.
+         */
+        name: string;
+    }
+    interface SelectPromptRequest {
+        id: RequestId;
+        deviceId: DeviceId;
+    }
+    interface CancelPromptRequest {
+        id: RequestId;
+    }
+    /**
+     * A device request opened a user prompt to select a device. Respond with the
+     * selectPrompt or cancelPrompt command.
+     */
+    interface DeviceRequestPromptedEvent {
+        id: RequestId;
+        devices: PromptDevice[];
+    }
+}
 export declare namespace DeviceOrientation {
     interface SetDeviceOrientationOverrideRequest {
         /**
@@ -5974,6 +6126,9 @@ export declare namespace Emulation {
          * Brands appearing in Sec-CH-UA-Full-Version-List.
          */
         fullVersionList?: UserAgentBrandVersion[];
+        /**
+         * @deprecated
+         */
         fullVersion?: string;
         platform: string;
         platformVersion: string;
@@ -6037,6 +6192,95 @@ export declare namespace Emulation {
     }
     interface PressureMetadata {
         available?: boolean;
+    }
+    interface WorkAreaInsets {
+        /**
+         * Work area top inset in pixels. Default is 0;
+         */
+        top?: integer;
+        /**
+         * Work area left inset in pixels. Default is 0;
+         */
+        left?: integer;
+        /**
+         * Work area bottom inset in pixels. Default is 0;
+         */
+        bottom?: integer;
+        /**
+         * Work area right inset in pixels. Default is 0;
+         */
+        right?: integer;
+    }
+    type ScreenId = OpaqueIdentifier<string, 'Protocol.Emulation.ScreenId'>;
+    /**
+     * Screen information similar to the one returned by window.getScreenDetails() method,
+     * see https://w3c.github.io/window-management/#screendetailed.
+     */
+    interface ScreenInfo {
+        /**
+         * Offset of the left edge of the screen.
+         */
+        left: integer;
+        /**
+         * Offset of the top edge of the screen.
+         */
+        top: integer;
+        /**
+         * Width of the screen.
+         */
+        width: integer;
+        /**
+         * Height of the screen.
+         */
+        height: integer;
+        /**
+         * Offset of the left edge of the available screen area.
+         */
+        availLeft: integer;
+        /**
+         * Offset of the top edge of the available screen area.
+         */
+        availTop: integer;
+        /**
+         * Width of the available screen area.
+         */
+        availWidth: integer;
+        /**
+         * Height of the available screen area.
+         */
+        availHeight: integer;
+        /**
+         * Specifies the screen's device pixel ratio.
+         */
+        devicePixelRatio: number;
+        /**
+         * Specifies the screen's orientation.
+         */
+        orientation: ScreenOrientation;
+        /**
+         * Specifies the screen's color depth in bits.
+         */
+        colorDepth: integer;
+        /**
+         * Indicates whether the device has multiple screens.
+         */
+        isExtended: boolean;
+        /**
+         * Indicates whether the screen is internal to the device or external, attached to the device.
+         */
+        isInternal: boolean;
+        /**
+         * Indicates whether the screen is set as the the operating system primary screen.
+         */
+        isPrimary: boolean;
+        /**
+         * Specifies the descriptive label for the screen.
+         */
+        label: string;
+        /**
+         * Specifies the unique identifier of the screen.
+         */
+        id: ScreenId;
     }
     /**
      * Enum of image types that can be disabled.
@@ -6135,12 +6379,14 @@ export declare namespace Emulation {
          * If set, the display feature of a multi-segment screen. If not set, multi-segment support
          * is turned-off.
          * Deprecated, use Emulation.setDisplayFeaturesOverride.
+         * @deprecated
          */
         displayFeature?: DisplayFeature;
         /**
          * If set, the posture of a foldable device. If not set the posture is set
          * to continuous.
          * Deprecated, use Emulation.setDevicePostureOverride.
+         * @deprecated
          */
         devicePosture?: DevicePosture;
     }
@@ -6399,6 +6645,625 @@ export declare namespace Emulation {
          */
         difference: integer;
     }
+    interface GetScreenInfosResponse extends ProtocolResponseWithError {
+        screenInfos: ScreenInfo[];
+    }
+    interface AddScreenRequest {
+        /**
+         * Offset of the left edge of the screen in pixels.
+         */
+        left: integer;
+        /**
+         * Offset of the top edge of the screen in pixels.
+         */
+        top: integer;
+        /**
+         * The width of the screen in pixels.
+         */
+        width: integer;
+        /**
+         * The height of the screen in pixels.
+         */
+        height: integer;
+        /**
+         * Specifies the screen's work area. Default is entire screen.
+         */
+        workAreaInsets?: WorkAreaInsets;
+        /**
+         * Specifies the screen's device pixel ratio. Default is 1.
+         */
+        devicePixelRatio?: number;
+        /**
+         * Specifies the screen's rotation angle. Available values are 0, 90, 180 and 270. Default is 0.
+         */
+        rotation?: integer;
+        /**
+         * Specifies the screen's color depth in bits. Default is 24.
+         */
+        colorDepth?: integer;
+        /**
+         * Specifies the descriptive label for the screen. Default is none.
+         */
+        label?: string;
+        /**
+         * Indicates whether the screen is internal to the device or external, attached to the device. Default is false.
+         */
+        isInternal?: boolean;
+    }
+    interface AddScreenResponse extends ProtocolResponseWithError {
+        screenInfo: ScreenInfo;
+    }
+    interface RemoveScreenRequest {
+        screenId: ScreenId;
+    }
+}
+/**
+ * EventBreakpoints permits setting JavaScript breakpoints on operations and events
+ * occurring in native code invoked from JavaScript. Once breakpoint is hit, it is
+ * reported through Debugger domain, similarly to regular breakpoints being hit.
+ */
+export declare namespace EventBreakpoints {
+    interface SetInstrumentationBreakpointRequest {
+        /**
+         * Instrumentation name to stop on.
+         */
+        eventName: string;
+    }
+    interface RemoveInstrumentationBreakpointRequest {
+        /**
+         * Instrumentation name to stop on.
+         */
+        eventName: string;
+    }
+}
+/**
+ * Defines commands and events for browser extensions.
+ */
+export declare namespace Extensions {
+    /**
+     * Storage areas.
+     */
+    const enum StorageArea {
+        Session = "session",
+        Local = "local",
+        Sync = "sync",
+        Managed = "managed"
+    }
+    interface LoadUnpackedRequest {
+        /**
+         * Absolute file path.
+         */
+        path: string;
+    }
+    interface LoadUnpackedResponse extends ProtocolResponseWithError {
+        /**
+         * Extension id.
+         */
+        id: string;
+    }
+    interface UninstallRequest {
+        /**
+         * Extension id.
+         */
+        id: string;
+    }
+    interface GetStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to retrieve data from.
+         */
+        storageArea: StorageArea;
+        /**
+         * Keys to retrieve.
+         */
+        keys?: string[];
+    }
+    interface GetStorageItemsResponse extends ProtocolResponseWithError {
+        data: any;
+    }
+    interface RemoveStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to remove data from.
+         */
+        storageArea: StorageArea;
+        /**
+         * Keys to remove.
+         */
+        keys: string[];
+    }
+    interface ClearStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to remove data from.
+         */
+        storageArea: StorageArea;
+    }
+    interface SetStorageItemsRequest {
+        /**
+         * ID of extension.
+         */
+        id: string;
+        /**
+         * StorageArea to set data in.
+         */
+        storageArea: StorageArea;
+        /**
+         * Values to set.
+         */
+        values: any;
+    }
+}
+/**
+ * This domain allows interacting with the FedCM dialog.
+ */
+export declare namespace FedCm {
+    /**
+     * Whether this is a sign-up or sign-in action for this account, i.e.
+     * whether this account has ever been used to sign in to this RP before.
+     */
+    const enum LoginState {
+        SignIn = "SignIn",
+        SignUp = "SignUp"
+    }
+    /**
+     * The types of FedCM dialogs.
+     */
+    const enum DialogType {
+        AccountChooser = "AccountChooser",
+        AutoReauthn = "AutoReauthn",
+        ConfirmIdpLogin = "ConfirmIdpLogin",
+        Error = "Error"
+    }
+    /**
+     * The buttons on the FedCM dialog.
+     */
+    const enum DialogButton {
+        ConfirmIdpLoginContinue = "ConfirmIdpLoginContinue",
+        ErrorGotIt = "ErrorGotIt",
+        ErrorMoreDetails = "ErrorMoreDetails"
+    }
+    /**
+     * The URLs that each account has
+     */
+    const enum AccountUrlType {
+        TermsOfService = "TermsOfService",
+        PrivacyPolicy = "PrivacyPolicy"
+    }
+    /**
+     * Corresponds to IdentityRequestAccount
+     */
+    interface Account {
+        accountId: string;
+        email: string;
+        name: string;
+        givenName: string;
+        pictureUrl: string;
+        idpConfigUrl: string;
+        idpLoginUrl: string;
+        loginState: LoginState;
+        /**
+         * These two are only set if the loginState is signUp
+         */
+        termsOfServiceUrl?: string;
+        privacyPolicyUrl?: string;
+    }
+    interface EnableRequest {
+        /**
+         * Allows callers to disable the promise rejection delay that would
+         * normally happen, if this is unimportant to what's being tested.
+         * (step 4 of https://fedidcg.github.io/FedCM/#browser-api-rp-sign-in)
+         */
+        disableRejectionDelay?: boolean;
+    }
+    interface SelectAccountRequest {
+        dialogId: string;
+        accountIndex: integer;
+    }
+    interface ClickDialogButtonRequest {
+        dialogId: string;
+        dialogButton: DialogButton;
+    }
+    interface OpenUrlRequest {
+        dialogId: string;
+        accountIndex: integer;
+        accountUrlType: AccountUrlType;
+    }
+    interface DismissDialogRequest {
+        dialogId: string;
+        triggerCooldown?: boolean;
+    }
+    interface DialogShownEvent {
+        dialogId: string;
+        dialogType: DialogType;
+        accounts: Account[];
+        /**
+         * These exist primarily so that the caller can verify the
+         * RP context was used appropriately.
+         */
+        title: string;
+        subtitle?: string;
+    }
+    /**
+     * Triggered when a dialog is closed, either by user action, JS abort,
+     * or a command below.
+     */
+    interface DialogClosedEvent {
+        dialogId: string;
+    }
+}
+/**
+ * A domain for letting clients substitute browser's network layer with client code.
+ */
+export declare namespace Fetch {
+    /**
+     * Unique request identifier.
+     * Note that this does not identify individual HTTP requests that are part of
+     * a network request.
+     */
+    type RequestId = OpaqueIdentifier<string, 'Protocol.Fetch.RequestId'>;
+    /**
+     * Stages of the request to handle. Request will intercept before the request is
+     * sent. Response will intercept after the response is received (but before response
+     * body is received).
+     */
+    const enum RequestStage {
+        Request = "Request",
+        Response = "Response"
+    }
+    interface RequestPattern {
+        /**
+         * Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is
+         * backslash. Omitting is equivalent to `"*"`.
+         */
+        urlPattern?: string;
+        /**
+         * If set, only requests for matching resource types will be intercepted.
+         */
+        resourceType?: Network.ResourceType;
+        /**
+         * Stage at which to begin intercepting requests. Default is Request.
+         */
+        requestStage?: RequestStage;
+    }
+    /**
+     * Response HTTP header entry
+     */
+    interface HeaderEntry {
+        name: string;
+        value: string;
+    }
+    const enum AuthChallengeSource {
+        Server = "Server",
+        Proxy = "Proxy"
+    }
+    /**
+     * Authorization challenge for HTTP status code 401 or 407.
+     */
+    interface AuthChallenge {
+        /**
+         * Source of the authentication challenge.
+         */
+        source?: AuthChallengeSource;
+        /**
+         * Origin of the challenger.
+         */
+        origin: string;
+        /**
+         * The authentication scheme used, such as basic or digest
+         */
+        scheme: string;
+        /**
+         * The realm of the challenge. May be empty.
+         */
+        realm: string;
+    }
+    const enum AuthChallengeResponseResponse {
+        Default = "Default",
+        CancelAuth = "CancelAuth",
+        ProvideCredentials = "ProvideCredentials"
+    }
+    /**
+     * Response to an AuthChallenge.
+     */
+    interface AuthChallengeResponse {
+        /**
+         * The decision on what to do in response to the authorization challenge.  Default means
+         * deferring to the default behavior of the net stack, which will likely either the Cancel
+         * authentication or display a popup dialog box.
+         */
+        response: AuthChallengeResponseResponse;
+        /**
+         * The username to provide, possibly empty. Should only be set if response is
+         * ProvideCredentials.
+         */
+        username?: string;
+        /**
+         * The password to provide, possibly empty. Should only be set if response is
+         * ProvideCredentials.
+         */
+        password?: string;
+    }
+    interface EnableRequest {
+        /**
+         * If specified, only requests matching any of these patterns will produce
+         * fetchRequested event and will be paused until clients response. If not set,
+         * all requests will be affected.
+         */
+        patterns?: RequestPattern[];
+        /**
+         * If true, authRequired events will be issued and requests will be paused
+         * expecting a call to continueWithAuth.
+         */
+        handleAuthRequests?: boolean;
+    }
+    interface FailRequestRequest {
+        /**
+         * An id the client received in requestPaused event.
+         */
+        requestId: RequestId;
+        /**
+         * Causes the request to fail with the given reason.
+         */
+        errorReason: Network.ErrorReason;
+    }
+    interface FulfillRequestRequest {
+        /**
+         * An id the client received in requestPaused event.
+         */
+        requestId: RequestId;
+        /**
+         * An HTTP response code.
+         */
+        responseCode: integer;
+        /**
+         * Response headers.
+         */
+        responseHeaders?: HeaderEntry[];
+        /**
+         * Alternative way of specifying response headers as a \0-separated
+         * series of name: value pairs. Prefer the above method unless you
+         * need to represent some non-UTF8 values that can't be transmitted
+         * over the protocol as text.
+         */
+        binaryResponseHeaders?: binary;
+        /**
+         * A response body. If absent, original response body will be used if
+         * the request is intercepted at the response stage and empty body
+         * will be used if the request is intercepted at the request stage.
+         */
+        body?: binary;
+        /**
+         * A textual representation of responseCode.
+         * If absent, a standard phrase matching responseCode is used.
+         */
+        responsePhrase?: string;
+    }
+    interface ContinueRequestRequest {
+        /**
+         * An id the client received in requestPaused event.
+         */
+        requestId: RequestId;
+        /**
+         * If set, the request url will be modified in a way that's not observable by page.
+         */
+        url?: string;
+        /**
+         * If set, the request method is overridden.
+         */
+        method?: string;
+        /**
+         * If set, overrides the post data in the request.
+         */
+        postData?: binary;
+        /**
+         * If set, overrides the request headers. Note that the overrides do not
+         * extend to subsequent redirect hops, if a redirect happens. Another override
+         * may be applied to a different request produced by a redirect.
+         */
+        headers?: HeaderEntry[];
+        /**
+         * If set, overrides response interception behavior for this request.
+         */
+        interceptResponse?: boolean;
+    }
+    interface ContinueWithAuthRequest {
+        /**
+         * An id the client received in authRequired event.
+         */
+        requestId: RequestId;
+        /**
+         * Response to  with an authChallenge.
+         */
+        authChallengeResponse: AuthChallengeResponse;
+    }
+    interface ContinueResponseRequest {
+        /**
+         * An id the client received in requestPaused event.
+         */
+        requestId: RequestId;
+        /**
+         * An HTTP response code. If absent, original response code will be used.
+         */
+        responseCode?: integer;
+        /**
+         * A textual representation of responseCode.
+         * If absent, a standard phrase matching responseCode is used.
+         */
+        responsePhrase?: string;
+        /**
+         * Response headers. If absent, original response headers will be used.
+         */
+        responseHeaders?: HeaderEntry[];
+        /**
+         * Alternative way of specifying response headers as a \0-separated
+         * series of name: value pairs. Prefer the above method unless you
+         * need to represent some non-UTF8 values that can't be transmitted
+         * over the protocol as text.
+         */
+        binaryResponseHeaders?: binary;
+    }
+    interface GetResponseBodyRequest {
+        /**
+         * Identifier for the intercepted request to get body for.
+         */
+        requestId: RequestId;
+    }
+    interface GetResponseBodyResponse extends ProtocolResponseWithError {
+        /**
+         * Response body.
+         */
+        body: string;
+        /**
+         * True, if content was sent as base64.
+         */
+        base64Encoded: boolean;
+    }
+    interface TakeResponseBodyAsStreamRequest {
+        requestId: RequestId;
+    }
+    interface TakeResponseBodyAsStreamResponse extends ProtocolResponseWithError {
+        stream: IO.StreamHandle;
+    }
+    /**
+     * Issued when the domain is enabled and the request URL matches the
+     * specified filter. The request is paused until the client responds
+     * with one of continueRequest, failRequest or fulfillRequest.
+     * The stage of the request can be determined by presence of responseErrorReason
+     * and responseStatusCode -- the request is at the response stage if either
+     * of these fields is present and in the request stage otherwise.
+     * Redirect responses and subsequent requests are reported similarly to regular
+     * responses and requests. Redirect responses may be distinguished by the value
+     * of `responseStatusCode` (which is one of 301, 302, 303, 307, 308) along with
+     * presence of the `location` header. Requests resulting from a redirect will
+     * have `redirectedRequestId` field set.
+     */
+    interface RequestPausedEvent {
+        /**
+         * Each request the page makes will have a unique id.
+         */
+        requestId: RequestId;
+        /**
+         * The details of the request.
+         */
+        request: Network.Request;
+        /**
+         * The id of the frame that initiated the request.
+         */
+        frameId: Page.FrameId;
+        /**
+         * How the requested resource will be used.
+         */
+        resourceType: Network.ResourceType;
+        /**
+         * Response error if intercepted at response stage.
+         */
+        responseErrorReason?: Network.ErrorReason;
+        /**
+         * Response code if intercepted at response stage.
+         */
+        responseStatusCode?: integer;
+        /**
+         * Response status text if intercepted at response stage.
+         */
+        responseStatusText?: string;
+        /**
+         * Response headers if intercepted at the response stage.
+         */
+        responseHeaders?: HeaderEntry[];
+        /**
+         * If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
+         * then this networkId will be the same as the requestId present in the requestWillBeSent event.
+         */
+        networkId?: Network.RequestId;
+        /**
+         * If the request is due to a redirect response from the server, the id of the request that
+         * has caused the redirect.
+         */
+        redirectedRequestId?: RequestId;
+    }
+    /**
+     * Issued when the domain is enabled with handleAuthRequests set to true.
+     * The request is paused until client responds with continueWithAuth.
+     */
+    interface AuthRequiredEvent {
+        /**
+         * Each request the page makes will have a unique id.
+         */
+        requestId: RequestId;
+        /**
+         * The details of the request.
+         */
+        request: Network.Request;
+        /**
+         * The id of the frame that initiated the request.
+         */
+        frameId: Page.FrameId;
+        /**
+         * How the requested resource will be used.
+         */
+        resourceType: Network.ResourceType;
+        /**
+         * Details of the Authorization Challenge encountered.
+         * If this is set, client should respond with continueRequest that
+         * contains AuthChallengeResponse.
+         */
+        authChallenge: AuthChallenge;
+    }
+}
+export declare namespace FileSystem {
+    interface File {
+        name: string;
+        /**
+         * Timestamp
+         */
+        lastModified: Network.TimeSinceEpoch;
+        /**
+         * Size in bytes
+         */
+        size: number;
+        type: string;
+    }
+    interface Directory {
+        name: string;
+        nestedDirectories: string[];
+        /**
+         * Files that are directly nested under this directory.
+         */
+        nestedFiles: File[];
+    }
+    interface BucketFileSystemLocator {
+        /**
+         * Storage key
+         */
+        storageKey: Storage.SerializedStorageKey;
+        /**
+         * Bucket name. Not passing a `bucketName` will retrieve the default Bucket. (https://developer.mozilla.org/en-US/docs/Web/API/Storage_API#storage_buckets)
+         */
+        bucketName?: string;
+        /**
+         * Path to the directory using each path component as an array item.
+         */
+        pathComponents: string[];
+    }
+    interface GetDirectoryRequest {
+        bucketFileSystemLocator: BucketFileSystemLocator;
+    }
+    interface GetDirectoryResponse extends ProtocolResponseWithError {
+        /**
+         * Returns the directory object at the path.
+         */
+        directory: Directory;
+    }
 }
 /**
  * This domain provides experimental commands only supported in headless mode.
@@ -6517,51 +7382,6 @@ export declare namespace IO {
          * UUID of the specified Blob.
          */
         uuid: string;
-    }
-}
-export declare namespace FileSystem {
-    interface File {
-        name: string;
-        /**
-         * Timestamp
-         */
-        lastModified: Network.TimeSinceEpoch;
-        /**
-         * Size in bytes
-         */
-        size: number;
-        type: string;
-    }
-    interface Directory {
-        name: string;
-        nestedDirectories: string[];
-        /**
-         * Files that are directly nested under this directory.
-         */
-        nestedFiles: File[];
-    }
-    interface BucketFileSystemLocator {
-        /**
-         * Storage key
-         */
-        storageKey: Storage.SerializedStorageKey;
-        /**
-         * Bucket name. Not passing a `bucketName` will retrieve the default Bucket. (https://developer.mozilla.org/en-US/docs/Web/API/Storage_API#storage_buckets)
-         */
-        bucketName?: string;
-        /**
-         * Path to the directory using each path component as an array item.
-         */
-        pathComponents: string[];
-    }
-    interface GetDirectoryRequest {
-        bucketFileSystemLocator: BucketFileSystemLocator;
-    }
-    interface GetDirectoryResponse extends ProtocolResponseWithError {
-        /**
-         * Returns the directory object at the path.
-         */
-        directory: Directory;
     }
 }
 export declare namespace IndexedDB {
@@ -7789,6 +8609,125 @@ export declare namespace Log {
         entry: LogEntry;
     }
 }
+/**
+ * This domain allows detailed inspection of media elements.
+ */
+export declare namespace Media {
+    /**
+     * Players will get an ID that is unique within the agent context.
+     */
+    type PlayerId = OpaqueIdentifier<string, 'Protocol.Media.PlayerId'>;
+    type Timestamp = number;
+    const enum PlayerMessageLevel {
+        Error = "error",
+        Warning = "warning",
+        Info = "info",
+        Debug = "debug"
+    }
+    /**
+     * Have one type per entry in MediaLogRecord::Type
+     * Corresponds to kMessage
+     */
+    interface PlayerMessage {
+        /**
+         * Keep in sync with MediaLogMessageLevel
+         * We are currently keeping the message level 'error' separate from the
+         * PlayerError type because right now they represent different things,
+         * this one being a DVLOG(ERROR) style log message that gets printed
+         * based on what log level is selected in the UI, and the other is a
+         * representation of a media::PipelineStatus object. Soon however we're
+         * going to be moving away from using PipelineStatus for errors and
+         * introducing a new error type which should hopefully let us integrate
+         * the error log level into the PlayerError type.
+         */
+        level: PlayerMessageLevel;
+        message: string;
+    }
+    /**
+     * Corresponds to kMediaPropertyChange
+     */
+    interface PlayerProperty {
+        name: string;
+        value: string;
+    }
+    /**
+     * Corresponds to kMediaEventTriggered
+     */
+    interface PlayerEvent {
+        timestamp: Timestamp;
+        value: string;
+    }
+    /**
+     * Represents logged source line numbers reported in an error.
+     * NOTE: file and line are from chromium c++ implementation code, not js.
+     */
+    interface PlayerErrorSourceLocation {
+        file: string;
+        line: integer;
+    }
+    /**
+     * Corresponds to kMediaError
+     */
+    interface PlayerError {
+        errorType: string;
+        /**
+         * Code is the numeric enum entry for a specific set of error codes, such
+         * as PipelineStatusCodes in media/base/pipeline_status.h
+         */
+        code: integer;
+        /**
+         * A trace of where this error was caused / where it passed through.
+         */
+        stack: PlayerErrorSourceLocation[];
+        /**
+         * Errors potentially have a root cause error, ie, a DecoderError might be
+         * caused by an WindowsError
+         */
+        cause: PlayerError[];
+        /**
+         * Extra data attached to an error, such as an HRESULT, Video Codec, etc.
+         */
+        data: any;
+    }
+    /**
+     * This can be called multiple times, and can be used to set / override /
+     * remove player properties. A null propValue indicates removal.
+     */
+    interface PlayerPropertiesChangedEvent {
+        playerId: PlayerId;
+        properties: PlayerProperty[];
+    }
+    /**
+     * Send events as a list, allowing them to be batched on the browser for less
+     * congestion. If batched, events must ALWAYS be in chronological order.
+     */
+    interface PlayerEventsAddedEvent {
+        playerId: PlayerId;
+        events: PlayerEvent[];
+    }
+    /**
+     * Send a list of any messages that need to be delivered.
+     */
+    interface PlayerMessagesLoggedEvent {
+        playerId: PlayerId;
+        messages: PlayerMessage[];
+    }
+    /**
+     * Send a list of any errors that need to be delivered.
+     */
+    interface PlayerErrorsRaisedEvent {
+        playerId: PlayerId;
+        errors: PlayerError[];
+    }
+    /**
+     * Called whenever a player is created, or when a new agent joins and receives
+     * a list of active players. If an agent is restored, it will receive the full
+     * list of player ids and all events again.
+     */
+    interface PlayersCreatedEvent {
+        players: PlayerId[];
+    }
+}
 export declare namespace Memory {
     /**
      * Memory pressure level.
@@ -8157,6 +9096,7 @@ export declare namespace Network {
         /**
          * HTTP POST request data.
          * Use postDataEntries instead.
+         * @deprecated
          */
         postData?: string;
         /**
@@ -8469,6 +9409,7 @@ export declare namespace Network {
         headers: Headers;
         /**
          * HTTP response headers text. This has been replaced by the headers in Network.responseReceivedExtraInfo.
+         * @deprecated
          */
         headersText?: string;
         /**
@@ -8485,6 +9426,7 @@ export declare namespace Network {
         requestHeaders?: Headers;
         /**
          * HTTP request headers text. This has been replaced by the headers in Network.requestWillBeSentExtraInfo.
+         * @deprecated
          */
         requestHeadersText?: string;
         /**
@@ -8751,6 +9693,7 @@ export declare namespace Network {
         priority: CookiePriority;
         /**
          * True if cookie is SameParty.
+         * @deprecated
          */
         sameParty: boolean;
         /**
@@ -9700,6 +10643,7 @@ export declare namespace Network {
     interface SetCookieResponse extends ProtocolResponseWithError {
         /**
          * Always set to true. If an error occurs, the response indicates protocol error.
+         * @deprecated
          */
         success: boolean;
     }
@@ -9909,6 +10853,7 @@ export declare namespace Network {
      * Details of an intercepted HTTP request, which must be either allowed, blocked, modified or
      * mocked.
      * Deprecated, use Fetch.requestPaused instead.
+     * @deprecated
      */
     interface RequestInterceptedEvent {
         /**
@@ -10666,6 +11611,7 @@ export declare namespace Overlay {
         gridBorderColor?: DOM.RGBA;
         /**
          * The cell border color (default: transparent). Deprecated, please use rowLineColor and columnLineColor instead.
+         * @deprecated
          */
         cellBorderColor?: DOM.RGBA;
         /**
@@ -10682,6 +11628,7 @@ export declare namespace Overlay {
         gridBorderDash?: boolean;
         /**
          * Whether the cell border is dashed (default: false). Deprecated, please us rowLineDash and columnLineDash instead.
+         * @deprecated
          */
         cellBorderDash?: boolean;
         /**
@@ -11308,6 +12255,99 @@ export declare namespace Overlay {
          * Viewport to capture, in device independent pixels (dip).
          */
         viewport: Page.Viewport;
+    }
+}
+/**
+ * This domain allows interacting with the browser to control PWAs.
+ */
+export declare namespace PWA {
+    /**
+     * The following types are the replica of
+     * https://crsrc.org/c/chrome/browser/web_applications/proto/web_app_os_integration_state.proto;drc=9910d3be894c8f142c977ba1023f30a656bc13fc;l=67
+     */
+    interface FileHandlerAccept {
+        /**
+         * New name of the mimetype according to
+         * https://www.iana.org/assignments/media-types/media-types.xhtml
+         */
+        mediaType: string;
+        fileExtensions: string[];
+    }
+    interface FileHandler {
+        action: string;
+        accepts: FileHandlerAccept[];
+        displayName: string;
+    }
+    /**
+     * If user prefers opening the app in browser or an app window.
+     */
+    const enum DisplayMode {
+        Standalone = "standalone",
+        Browser = "browser"
+    }
+    interface GetOsAppStateRequest {
+        /**
+         * The id from the webapp's manifest file, commonly it's the url of the
+         * site installing the webapp. See
+         * https://web.dev/learn/pwa/web-app-manifest.
+         */
+        manifestId: string;
+    }
+    interface GetOsAppStateResponse extends ProtocolResponseWithError {
+        badgeCount: integer;
+        fileHandlers: FileHandler[];
+    }
+    interface InstallRequest {
+        manifestId: string;
+        /**
+         * The location of the app or bundle overriding the one derived from the
+         * manifestId.
+         */
+        installUrlOrBundleUrl?: string;
+    }
+    interface UninstallRequest {
+        manifestId: string;
+    }
+    interface LaunchRequest {
+        manifestId: string;
+        url?: string;
+    }
+    interface LaunchResponse extends ProtocolResponseWithError {
+        /**
+         * ID of the tab target created as a result.
+         */
+        targetId: Target.TargetID;
+    }
+    interface LaunchFilesInAppRequest {
+        manifestId: string;
+        files: string[];
+    }
+    interface LaunchFilesInAppResponse extends ProtocolResponseWithError {
+        /**
+         * IDs of the tab targets created as the result.
+         */
+        targetIds: Target.TargetID[];
+    }
+    interface OpenCurrentPageInAppRequest {
+        manifestId: string;
+    }
+    interface ChangeAppUserSettingsRequest {
+        manifestId: string;
+        /**
+         * If user allows the links clicked on by the user in the app's scope, or
+         * extended scope if the manifest has scope extensions and the flags
+         * `DesktopPWAsLinkCapturingWithScopeExtensions` and
+         * `WebAppEnableScopeExtensions` are enabled.
+         *
+         * Note, the API does not support resetting the linkCapturing to the
+         * initial value, uninstalling and installing the web app again will reset
+         * it.
+         *
+         * TODO(crbug.com/339453269): Setting this value on ChromeOS is not
+         * supported yet.
+         */
+        linkCapturing?: boolean;
+        displayMode?: DisplayMode;
     }
 }
 /**
@@ -12522,6 +13562,7 @@ export declare namespace Page {
         data?: string;
         /**
          * Parsed manifest properties. Deprecated, use manifest instead.
+         * @deprecated
          */
         parsed?: AppManifestParsedProperties;
         manifest: WebAppManifest;
@@ -12564,14 +13605,17 @@ export declare namespace Page {
     interface GetLayoutMetricsResponse extends ProtocolResponseWithError {
         /**
          * Deprecated metrics relating to the layout viewport. Is in device pixels. Use `cssLayoutViewport` instead.
+         * @deprecated
          */
         layoutViewport: LayoutViewport;
         /**
          * Deprecated metrics relating to the visual viewport. Is in device pixels. Use `cssVisualViewport` instead.
+         * @deprecated
          */
         visualViewport: VisualViewport;
         /**
          * Deprecated size of scrollable area. Is in DP. Use `cssContentSize` instead.
+         * @deprecated
          */
         contentSize: DOM.Rect;
         /**
@@ -13132,6 +14176,7 @@ export declare namespace Page {
     }
     /**
      * Fired when frame no longer has a scheduled navigation.
+     * @deprecated
      */
     interface FrameClearedScheduledNavigationEvent {
         /**
@@ -13243,6 +14288,7 @@ export declare namespace Page {
     }
     /**
      * Fired when frame schedules a potential navigation.
+     * @deprecated
      */
     interface FrameScheduledNavigationEvent {
         /**
@@ -13284,6 +14330,7 @@ export declare namespace Page {
     /**
      * Fired when page is about to start a download.
      * Deprecated. Use Browser.downloadWillBegin instead.
+     * @deprecated
      */
     interface DownloadWillBeginEvent {
         /**
@@ -13311,6 +14358,7 @@ export declare namespace Page {
     /**
      * Fired when download makes progress. Last call has |done| == true.
      * Deprecated. Use Browser.downloadProgress instead.
+     * @deprecated
      */
     interface DownloadProgressEvent {
         /**
@@ -13642,9 +14690,310 @@ export declare namespace PerformanceTimeline {
         event: TimelineEvent;
     }
 }
-/**
- * Security
- */
+export declare namespace Preload {
+    /**
+     * Unique id
+     */
+    type RuleSetId = OpaqueIdentifier<string, 'Protocol.Preload.RuleSetId'>;
+    /**
+     * Corresponds to SpeculationRuleSet
+     */
+    interface RuleSet {
+        id: RuleSetId;
+        /**
+         * Identifies a document which the rule set is associated with.
+         */
+        loaderId: Network.LoaderId;
+        /**
+         * Source text of JSON representing the rule set. If it comes from
+         * `<script>` tag, it is the textContent of the node. Note that it is
+         * a JSON for valid case.
+         *
+         * See also:
+         * - https://wicg.github.io/nav-speculation/speculation-rules.html
+         * - https://github.com/WICG/nav-speculation/blob/main/triggers.md
+         */
+        sourceText: string;
+        /**
+         * A speculation rule set is either added through an inline
+         * `<script>` tag or through an external resource via the
+         * 'Speculation-Rules' HTTP header. For the first case, we include
+         * the BackendNodeId of the relevant `<script>` tag. For the second
+         * case, we include the external URL where the rule set was loaded
+         * from, and also RequestId if Network domain is enabled.
+         *
+         * See also:
+         * - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-script
+         * - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-header
+         */
+        backendNodeId?: DOM.BackendNodeId;
+        url?: string;
+        requestId?: Network.RequestId;
+        /**
+         * Error information
+         * `errorMessage` is null iff `errorType` is null.
+         */
+        errorType?: RuleSetErrorType;
+        /**
+         * TODO(https://crbug.com/1425354): Replace this property with structured error.
+         * @deprecated
+         */
+        errorMessage?: string;
+    }
+    const enum RuleSetErrorType {
+        SourceIsNotJsonObject = "SourceIsNotJsonObject",
+        InvalidRulesSkipped = "InvalidRulesSkipped",
+        InvalidRulesetLevelTag = "InvalidRulesetLevelTag"
+    }
+    /**
+     * The type of preloading attempted. It corresponds to
+     * mojom::SpeculationAction (although PrefetchWithSubresources is omitted as it
+     * isn't being used by clients).
+     */
+    const enum SpeculationAction {
+        Prefetch = "Prefetch",
+        Prerender = "Prerender"
+    }
+    /**
+     * Corresponds to mojom::SpeculationTargetHint.
+     * See https://github.com/WICG/nav-speculation/blob/main/triggers.md#window-name-targeting-hints
+     */
+    const enum SpeculationTargetHint {
+        Blank = "Blank",
+        Self = "Self"
+    }
+    /**
+     * A key that identifies a preloading attempt.
+     *
+     * The url used is the url specified by the trigger (i.e. the initial URL), and
+     * not the final url that is navigated to. For example, prerendering allows
+     * same-origin main frame navigations during the attempt, but the attempt is
+     * still keyed with the initial URL.
+     */
+    interface PreloadingAttemptKey {
+        loaderId: Network.LoaderId;
+        action: SpeculationAction;
+        url: string;
+        targetHint?: SpeculationTargetHint;
+    }
+    /**
+     * Lists sources for a preloading attempt, specifically the ids of rule sets
+     * that had a speculation rule that triggered the attempt, and the
+     * BackendNodeIds of <a href> or <area href> elements that triggered the
+     * attempt (in the case of attempts triggered by a document rule). It is
+     * possible for multiple rule sets and links to trigger a single attempt.
+     */
+    interface PreloadingAttemptSource {
+        key: PreloadingAttemptKey;
+        ruleSetIds: RuleSetId[];
+        nodeIds: DOM.BackendNodeId[];
+    }
+    /**
+     * Chrome manages different types of preloads together using a
+     * concept of preloading pipeline. For example, if a site uses a
+     * SpeculationRules for prerender, Chrome first starts a prefetch and
+     * then upgrades it to prerender.
+     *
+     * CDP events for them are emitted separately but they share
+     * `PreloadPipelineId`.
+     */
+    type PreloadPipelineId = OpaqueIdentifier<string, 'Protocol.Preload.PreloadPipelineId'>;
+    /**
+     * List of FinalStatus reasons for Prerender2.
+     */
+    const enum PrerenderFinalStatus {
+        Activated = "Activated",
+        Destroyed = "Destroyed",
+        LowEndDevice = "LowEndDevice",
+        InvalidSchemeRedirect = "InvalidSchemeRedirect",
+        InvalidSchemeNavigation = "InvalidSchemeNavigation",
+        NavigationRequestBlockedByCsp = "NavigationRequestBlockedByCsp",
+        MojoBinderPolicy = "MojoBinderPolicy",
+        RendererProcessCrashed = "RendererProcessCrashed",
+        RendererProcessKilled = "RendererProcessKilled",
+        Download = "Download",
+        TriggerDestroyed = "TriggerDestroyed",
+        NavigationNotCommitted = "NavigationNotCommitted",
+        NavigationBadHttpStatus = "NavigationBadHttpStatus",
+        ClientCertRequested = "ClientCertRequested",
+        NavigationRequestNetworkError = "NavigationRequestNetworkError",
+        CancelAllHostsForTesting = "CancelAllHostsForTesting",
+        DidFailLoad = "DidFailLoad",
+        Stop = "Stop",
+        SslCertificateError = "SslCertificateError",
+        LoginAuthRequested = "LoginAuthRequested",
+        UaChangeRequiresReload = "UaChangeRequiresReload",
+        BlockedByClient = "BlockedByClient",
+        AudioOutputDeviceRequested = "AudioOutputDeviceRequested",
+        MixedContent = "MixedContent",
+        TriggerBackgrounded = "TriggerBackgrounded",
+        MemoryLimitExceeded = "MemoryLimitExceeded",
+        DataSaverEnabled = "DataSaverEnabled",
+        TriggerUrlHasEffectiveUrl = "TriggerUrlHasEffectiveUrl",
+        ActivatedBeforeStarted = "ActivatedBeforeStarted",
+        InactivePageRestriction = "InactivePageRestriction",
+        StartFailed = "StartFailed",
+        TimeoutBackgrounded = "TimeoutBackgrounded",
+        CrossSiteRedirectInInitialNavigation = "CrossSiteRedirectInInitialNavigation",
+        CrossSiteNavigationInInitialNavigation = "CrossSiteNavigationInInitialNavigation",
+        SameSiteCrossOriginRedirectNotOptInInInitialNavigation = "SameSiteCrossOriginRedirectNotOptInInInitialNavigation",
+        SameSiteCrossOriginNavigationNotOptInInInitialNavigation = "SameSiteCrossOriginNavigationNotOptInInInitialNavigation",
+        ActivationNavigationParameterMismatch = "ActivationNavigationParameterMismatch",
+        ActivatedInBackground = "ActivatedInBackground",
+        EmbedderHostDisallowed = "EmbedderHostDisallowed",
+        ActivationNavigationDestroyedBeforeSuccess = "ActivationNavigationDestroyedBeforeSuccess",
+        TabClosedByUserGesture = "TabClosedByUserGesture",
+        TabClosedWithoutUserGesture = "TabClosedWithoutUserGesture",
+        PrimaryMainFrameRendererProcessCrashed = "PrimaryMainFrameRendererProcessCrashed",
+        PrimaryMainFrameRendererProcessKilled = "PrimaryMainFrameRendererProcessKilled",
+        ActivationFramePolicyNotCompatible = "ActivationFramePolicyNotCompatible",
+        PreloadingDisabled = "PreloadingDisabled",
+        BatterySaverEnabled = "BatterySaverEnabled",
+        ActivatedDuringMainFrameNavigation = "ActivatedDuringMainFrameNavigation",
+        PreloadingUnsupportedByWebContents = "PreloadingUnsupportedByWebContents",
+        CrossSiteRedirectInMainFrameNavigation = "CrossSiteRedirectInMainFrameNavigation",
+        CrossSiteNavigationInMainFrameNavigation = "CrossSiteNavigationInMainFrameNavigation",
+        SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation = "SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation",
+        SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation = "SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation",
+        MemoryPressureOnTrigger = "MemoryPressureOnTrigger",
+        MemoryPressureAfterTriggered = "MemoryPressureAfterTriggered",
+        PrerenderingDisabledByDevTools = "PrerenderingDisabledByDevTools",
+        SpeculationRuleRemoved = "SpeculationRuleRemoved",
+        ActivatedWithAuxiliaryBrowsingContexts = "ActivatedWithAuxiliaryBrowsingContexts",
+        MaxNumOfRunningEagerPrerendersExceeded = "MaxNumOfRunningEagerPrerendersExceeded",
+        MaxNumOfRunningNonEagerPrerendersExceeded = "MaxNumOfRunningNonEagerPrerendersExceeded",
+        MaxNumOfRunningEmbedderPrerendersExceeded = "MaxNumOfRunningEmbedderPrerendersExceeded",
+        PrerenderingUrlHasEffectiveUrl = "PrerenderingUrlHasEffectiveUrl",
+        RedirectedPrerenderingUrlHasEffectiveUrl = "RedirectedPrerenderingUrlHasEffectiveUrl",
+        ActivationUrlHasEffectiveUrl = "ActivationUrlHasEffectiveUrl",
+        JavaScriptInterfaceAdded = "JavaScriptInterfaceAdded",
+        JavaScriptInterfaceRemoved = "JavaScriptInterfaceRemoved",
+        AllPrerenderingCanceled = "AllPrerenderingCanceled",
+        WindowClosed = "WindowClosed",
+        SlowNetwork = "SlowNetwork",
+        OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated",
+        V8OptimizerDisabled = "V8OptimizerDisabled",
+        PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch",
+        BrowsingDataRemoved = "BrowsingDataRemoved",
+        PrerenderHostReused = "PrerenderHostReused"
+    }
+    /**
+     * Preloading status values, see also PreloadingTriggeringOutcome. This
+     * status is shared by prefetchStatusUpdated and prerenderStatusUpdated.
+     */
+    const enum PreloadingStatus {
+        Pending = "Pending",
+        Running = "Running",
+        Ready = "Ready",
+        Success = "Success",
+        Failure = "Failure",
+        NotSupported = "NotSupported"
+    }
+    /**
+     * TODO(https://crbug.com/1384419): revisit the list of PrefetchStatus and
+     * filter out the ones that aren't necessary to the developers.
+     */
+    const enum PrefetchStatus {
+        PrefetchAllowed = "PrefetchAllowed",
+        PrefetchFailedIneligibleRedirect = "PrefetchFailedIneligibleRedirect",
+        PrefetchFailedInvalidRedirect = "PrefetchFailedInvalidRedirect",
+        PrefetchFailedMIMENotSupported = "PrefetchFailedMIMENotSupported",
+        PrefetchFailedNetError = "PrefetchFailedNetError",
+        PrefetchFailedNon2XX = "PrefetchFailedNon2XX",
+        PrefetchEvictedAfterBrowsingDataRemoved = "PrefetchEvictedAfterBrowsingDataRemoved",
+        PrefetchEvictedAfterCandidateRemoved = "PrefetchEvictedAfterCandidateRemoved",
+        PrefetchEvictedForNewerPrefetch = "PrefetchEvictedForNewerPrefetch",
+        PrefetchHeldback = "PrefetchHeldback",
+        PrefetchIneligibleRetryAfter = "PrefetchIneligibleRetryAfter",
+        PrefetchIsPrivacyDecoy = "PrefetchIsPrivacyDecoy",
+        PrefetchIsStale = "PrefetchIsStale",
+        PrefetchNotEligibleBrowserContextOffTheRecord = "PrefetchNotEligibleBrowserContextOffTheRecord",
+        PrefetchNotEligibleDataSaverEnabled = "PrefetchNotEligibleDataSaverEnabled",
+        PrefetchNotEligibleExistingProxy = "PrefetchNotEligibleExistingProxy",
+        PrefetchNotEligibleHostIsNonUnique = "PrefetchNotEligibleHostIsNonUnique",
+        PrefetchNotEligibleNonDefaultStoragePartition = "PrefetchNotEligibleNonDefaultStoragePartition",
+        PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy = "PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy",
+        PrefetchNotEligibleSchemeIsNotHttps = "PrefetchNotEligibleSchemeIsNotHttps",
+        PrefetchNotEligibleUserHasCookies = "PrefetchNotEligibleUserHasCookies",
+        PrefetchNotEligibleUserHasServiceWorker = "PrefetchNotEligibleUserHasServiceWorker",
+        PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler = "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler",
+        PrefetchNotEligibleRedirectFromServiceWorker = "PrefetchNotEligibleRedirectFromServiceWorker",
+        PrefetchNotEligibleRedirectToServiceWorker = "PrefetchNotEligibleRedirectToServiceWorker",
+        PrefetchNotEligibleBatterySaverEnabled = "PrefetchNotEligibleBatterySaverEnabled",
+        PrefetchNotEligiblePreloadingDisabled = "PrefetchNotEligiblePreloadingDisabled",
+        PrefetchNotFinishedInTime = "PrefetchNotFinishedInTime",
+        PrefetchNotStarted = "PrefetchNotStarted",
+        PrefetchNotUsedCookiesChanged = "PrefetchNotUsedCookiesChanged",
+        PrefetchProxyNotAvailable = "PrefetchProxyNotAvailable",
+        PrefetchResponseUsed = "PrefetchResponseUsed",
+        PrefetchSuccessfulButNotUsed = "PrefetchSuccessfulButNotUsed",
+        PrefetchNotUsedProbeFailed = "PrefetchNotUsedProbeFailed"
+    }
+    /**
+     * Information of headers to be displayed when the header mismatch occurred.
+     */
+    interface PrerenderMismatchedHeaders {
+        headerName: string;
+        initialValue?: string;
+        activationValue?: string;
+    }
+    /**
+     * Upsert. Currently, it is only emitted when a rule set added.
+     */
+    interface RuleSetUpdatedEvent {
+        ruleSet: RuleSet;
+    }
+    interface RuleSetRemovedEvent {
+        id: RuleSetId;
+    }
+    /**
+     * Fired when a preload enabled state is updated.
+     */
+    interface PreloadEnabledStateUpdatedEvent {
+        disabledByPreference: boolean;
+        disabledByDataSaver: boolean;
+        disabledByBatterySaver: boolean;
+        disabledByHoldbackPrefetchSpeculationRules: boolean;
+        disabledByHoldbackPrerenderSpeculationRules: boolean;
+    }
+    /**
+     * Fired when a prefetch attempt is updated.
+     */
+    interface PrefetchStatusUpdatedEvent {
+        key: PreloadingAttemptKey;
+        pipelineId: PreloadPipelineId;
+        /**
+         * The frame id of the frame initiating prefetch.
+         */
+        initiatingFrameId: Page.FrameId;
+        prefetchUrl: string;
+        status: PreloadingStatus;
+        prefetchStatus: PrefetchStatus;
+        requestId: Network.RequestId;
+    }
+    /**
+     * Fired when a prerender attempt is updated.
+     */
+    interface PrerenderStatusUpdatedEvent {
+        key: PreloadingAttemptKey;
+        pipelineId: PreloadPipelineId;
+        status: PreloadingStatus;
+        prerenderStatus?: PrerenderFinalStatus;
+        /**
+         * This is used to give users more information about the name of Mojo interface
+         * that is incompatible with prerender and has caused the cancellation of the attempt.
+         */
+        disallowedMojoInterface?: string;
+        mismatchedHeaders?: PrerenderMismatchedHeaders[];
+    }
+    /**
+     * Send a list of sources for all preloading attempts in a document.
+     */
+    interface PreloadingAttemptSourcesUpdatedEvent {
+        loaderId: Network.LoaderId;
+        preloadingAttemptSources: PreloadingAttemptSource[];
+    }
+}
 export declare namespace Security {
     /**
      * An internal certificate ID value.
@@ -13817,6 +15166,7 @@ export declare namespace Security {
     }
     /**
      * Information about insecure content on the page.
+     * @deprecated
      */
     interface InsecureContentStatus {
         /**
@@ -13883,6 +15233,7 @@ export declare namespace Security {
      * handled with the `handleCertificateError` command. Note: this event does not fire if the
      * certificate error has been allowed internally. Only one client per target should override
      * certificate errors at the same time.
+     * @deprecated
      */
     interface CertificateErrorEvent {
         /**
@@ -13909,6 +15260,7 @@ export declare namespace Security {
     }
     /**
      * The security state of the page changed. No longer being sent.
+     * @deprecated
      */
     interface SecurityStateChangedEvent {
         /**
@@ -13917,19 +15269,23 @@ export declare namespace Security {
         securityState: SecurityState;
         /**
          * True if the page was loaded over cryptographic transport such as HTTPS.
+         * @deprecated
          */
         schemeIsCryptographic: boolean;
         /**
          * Previously a list of explanations for the security state. Now always
          * empty.
+         * @deprecated
          */
         explanations: SecurityStateExplanation[];
         /**
          * Information about insecure content on the page.
+         * @deprecated
          */
         insecureContentStatus: InsecureContentStatus;
         /**
          * Overrides user-visible description of the state. Always omitted.
+         * @deprecated
          */
         summary?: string;
     }
@@ -15397,6 +16753,7 @@ export declare namespace Target {
     interface CloseTargetResponse extends ProtocolResponseWithError {
         /**
          * Always set to true. If an error occurs, the response indicates protocol error.
+         * @deprecated
          */
         success: boolean;
     }
@@ -15510,6 +16867,7 @@ export declare namespace Target {
         sessionId?: SessionID;
         /**
          * Deprecated.
+         * @deprecated
          */
         targetId?: TargetID;
     }
@@ -15544,6 +16902,7 @@ export declare namespace Target {
         sessionId?: SessionID;
         /**
          * Deprecated.
+         * @deprecated
          */
         targetId?: TargetID;
     }
@@ -15631,6 +16990,7 @@ export declare namespace Target {
         sessionId: SessionID;
         /**
          * Deprecated.
+         * @deprecated
          */
         targetId?: TargetID;
     }
@@ -15646,6 +17006,7 @@ export declare namespace Target {
         message: string;
         /**
          * Deprecated.
+         * @deprecated
          */
         targetId?: TargetID;
     }
@@ -15841,10 +17202,12 @@ export declare namespace Tracing {
     interface StartRequest {
         /**
          * Category/tag filter
+         * @deprecated
          */
         categories?: string;
         /**
          * Tracing options
+         * @deprecated
          */
         options?: string;
         /**
@@ -15923,325 +17286,6 @@ export declare namespace Tracing {
          * Compression format of returned stream.
          */
         streamCompression?: StreamCompression;
-    }
-}
-/**
- * A domain for letting clients substitute browser's network layer with client code.
- */
-export declare namespace Fetch {
-    /**
-     * Unique request identifier.
-     * Note that this does not identify individual HTTP requests that are part of
-     * a network request.
-     */
-    type RequestId = OpaqueIdentifier<string, 'Protocol.Fetch.RequestId'>;
-    /**
-     * Stages of the request to handle. Request will intercept before the request is
-     * sent. Response will intercept after the response is received (but before response
-     * body is received).
-     */
-    const enum RequestStage {
-        Request = "Request",
-        Response = "Response"
-    }
-    interface RequestPattern {
-        /**
-         * Wildcards (`'*'` -> zero or more, `'?'` -> exactly one) are allowed. Escape character is
-         * backslash. Omitting is equivalent to `"*"`.
-         */
-        urlPattern?: string;
-        /**
-         * If set, only requests for matching resource types will be intercepted.
-         */
-        resourceType?: Network.ResourceType;
-        /**
-         * Stage at which to begin intercepting requests. Default is Request.
-         */
-        requestStage?: RequestStage;
-    }
-    /**
-     * Response HTTP header entry
-     */
-    interface HeaderEntry {
-        name: string;
-        value: string;
-    }
-    const enum AuthChallengeSource {
-        Server = "Server",
-        Proxy = "Proxy"
-    }
-    /**
-     * Authorization challenge for HTTP status code 401 or 407.
-     */
-    interface AuthChallenge {
-        /**
-         * Source of the authentication challenge.
-         */
-        source?: AuthChallengeSource;
-        /**
-         * Origin of the challenger.
-         */
-        origin: string;
-        /**
-         * The authentication scheme used, such as basic or digest
-         */
-        scheme: string;
-        /**
-         * The realm of the challenge. May be empty.
-         */
-        realm: string;
-    }
-    const enum AuthChallengeResponseResponse {
-        Default = "Default",
-        CancelAuth = "CancelAuth",
-        ProvideCredentials = "ProvideCredentials"
-    }
-    /**
-     * Response to an AuthChallenge.
-     */
-    interface AuthChallengeResponse {
-        /**
-         * The decision on what to do in response to the authorization challenge.  Default means
-         * deferring to the default behavior of the net stack, which will likely either the Cancel
-         * authentication or display a popup dialog box.
-         */
-        response: AuthChallengeResponseResponse;
-        /**
-         * The username to provide, possibly empty. Should only be set if response is
-         * ProvideCredentials.
-         */
-        username?: string;
-        /**
-         * The password to provide, possibly empty. Should only be set if response is
-         * ProvideCredentials.
-         */
-        password?: string;
-    }
-    interface EnableRequest {
-        /**
-         * If specified, only requests matching any of these patterns will produce
-         * fetchRequested event and will be paused until clients response. If not set,
-         * all requests will be affected.
-         */
-        patterns?: RequestPattern[];
-        /**
-         * If true, authRequired events will be issued and requests will be paused
-         * expecting a call to continueWithAuth.
-         */
-        handleAuthRequests?: boolean;
-    }
-    interface FailRequestRequest {
-        /**
-         * An id the client received in requestPaused event.
-         */
-        requestId: RequestId;
-        /**
-         * Causes the request to fail with the given reason.
-         */
-        errorReason: Network.ErrorReason;
-    }
-    interface FulfillRequestRequest {
-        /**
-         * An id the client received in requestPaused event.
-         */
-        requestId: RequestId;
-        /**
-         * An HTTP response code.
-         */
-        responseCode: integer;
-        /**
-         * Response headers.
-         */
-        responseHeaders?: HeaderEntry[];
-        /**
-         * Alternative way of specifying response headers as a \0-separated
-         * series of name: value pairs. Prefer the above method unless you
-         * need to represent some non-UTF8 values that can't be transmitted
-         * over the protocol as text.
-         */
-        binaryResponseHeaders?: binary;
-        /**
-         * A response body. If absent, original response body will be used if
-         * the request is intercepted at the response stage and empty body
-         * will be used if the request is intercepted at the request stage.
-         */
-        body?: binary;
-        /**
-         * A textual representation of responseCode.
-         * If absent, a standard phrase matching responseCode is used.
-         */
-        responsePhrase?: string;
-    }
-    interface ContinueRequestRequest {
-        /**
-         * An id the client received in requestPaused event.
-         */
-        requestId: RequestId;
-        /**
-         * If set, the request url will be modified in a way that's not observable by page.
-         */
-        url?: string;
-        /**
-         * If set, the request method is overridden.
-         */
-        method?: string;
-        /**
-         * If set, overrides the post data in the request.
-         */
-        postData?: binary;
-        /**
-         * If set, overrides the request headers. Note that the overrides do not
-         * extend to subsequent redirect hops, if a redirect happens. Another override
-         * may be applied to a different request produced by a redirect.
-         */
-        headers?: HeaderEntry[];
-        /**
-         * If set, overrides response interception behavior for this request.
-         */
-        interceptResponse?: boolean;
-    }
-    interface ContinueWithAuthRequest {
-        /**
-         * An id the client received in authRequired event.
-         */
-        requestId: RequestId;
-        /**
-         * Response to  with an authChallenge.
-         */
-        authChallengeResponse: AuthChallengeResponse;
-    }
-    interface ContinueResponseRequest {
-        /**
-         * An id the client received in requestPaused event.
-         */
-        requestId: RequestId;
-        /**
-         * An HTTP response code. If absent, original response code will be used.
-         */
-        responseCode?: integer;
-        /**
-         * A textual representation of responseCode.
-         * If absent, a standard phrase matching responseCode is used.
-         */
-        responsePhrase?: string;
-        /**
-         * Response headers. If absent, original response headers will be used.
-         */
-        responseHeaders?: HeaderEntry[];
-        /**
-         * Alternative way of specifying response headers as a \0-separated
-         * series of name: value pairs. Prefer the above method unless you
-         * need to represent some non-UTF8 values that can't be transmitted
-         * over the protocol as text.
-         */
-        binaryResponseHeaders?: binary;
-    }
-    interface GetResponseBodyRequest {
-        /**
-         * Identifier for the intercepted request to get body for.
-         */
-        requestId: RequestId;
-    }
-    interface GetResponseBodyResponse extends ProtocolResponseWithError {
-        /**
-         * Response body.
-         */
-        body: string;
-        /**
-         * True, if content was sent as base64.
-         */
-        base64Encoded: boolean;
-    }
-    interface TakeResponseBodyAsStreamRequest {
-        requestId: RequestId;
-    }
-    interface TakeResponseBodyAsStreamResponse extends ProtocolResponseWithError {
-        stream: IO.StreamHandle;
-    }
-    /**
-     * Issued when the domain is enabled and the request URL matches the
-     * specified filter. The request is paused until the client responds
-     * with one of continueRequest, failRequest or fulfillRequest.
-     * The stage of the request can be determined by presence of responseErrorReason
-     * and responseStatusCode -- the request is at the response stage if either
-     * of these fields is present and in the request stage otherwise.
-     * Redirect responses and subsequent requests are reported similarly to regular
-     * responses and requests. Redirect responses may be distinguished by the value
-     * of `responseStatusCode` (which is one of 301, 302, 303, 307, 308) along with
-     * presence of the `location` header. Requests resulting from a redirect will
-     * have `redirectedRequestId` field set.
-     */
-    interface RequestPausedEvent {
-        /**
-         * Each request the page makes will have a unique id.
-         */
-        requestId: RequestId;
-        /**
-         * The details of the request.
-         */
-        request: Network.Request;
-        /**
-         * The id of the frame that initiated the request.
-         */
-        frameId: Page.FrameId;
-        /**
-         * How the requested resource will be used.
-         */
-        resourceType: Network.ResourceType;
-        /**
-         * Response error if intercepted at response stage.
-         */
-        responseErrorReason?: Network.ErrorReason;
-        /**
-         * Response code if intercepted at response stage.
-         */
-        responseStatusCode?: integer;
-        /**
-         * Response status text if intercepted at response stage.
-         */
-        responseStatusText?: string;
-        /**
-         * Response headers if intercepted at the response stage.
-         */
-        responseHeaders?: HeaderEntry[];
-        /**
-         * If the intercepted request had a corresponding Network.requestWillBeSent event fired for it,
-         * then this networkId will be the same as the requestId present in the requestWillBeSent event.
-         */
-        networkId?: Network.RequestId;
-        /**
-         * If the request is due to a redirect response from the server, the id of the request that
-         * has caused the redirect.
-         */
-        redirectedRequestId?: RequestId;
-    }
-    /**
-     * Issued when the domain is enabled with handleAuthRequests set to true.
-     * The request is paused until client responds with continueWithAuth.
-     */
-    interface AuthRequiredEvent {
-        /**
-         * Each request the page makes will have a unique id.
-         */
-        requestId: RequestId;
-        /**
-         * The details of the request.
-         */
-        request: Network.Request;
-        /**
-         * The id of the frame that initiated the request.
-         */
-        frameId: Page.FrameId;
-        /**
-         * How the requested resource will be used.
-         */
-        resourceType: Network.ResourceType;
-        /**
-         * Details of the Authorization Challenge encountered.
-         * If this is set, client should respond with continueRequest that
-         * contains AuthChallengeResponse.
-         */
-        authChallenge: AuthChallenge;
     }
 }
 /**
@@ -16721,870 +17765,6 @@ export declare namespace WebAuthn {
     }
 }
 /**
- * This domain allows detailed inspection of media elements
- */
-export declare namespace Media {
-    /**
-     * Players will get an ID that is unique within the agent context.
-     */
-    type PlayerId = OpaqueIdentifier<string, 'Protocol.Media.PlayerId'>;
-    type Timestamp = number;
-    const enum PlayerMessageLevel {
-        Error = "error",
-        Warning = "warning",
-        Info = "info",
-        Debug = "debug"
-    }
-    /**
-     * Have one type per entry in MediaLogRecord::Type
-     * Corresponds to kMessage
-     */
-    interface PlayerMessage {
-        /**
-         * Keep in sync with MediaLogMessageLevel
-         * We are currently keeping the message level 'error' separate from the
-         * PlayerError type because right now they represent different things,
-         * this one being a DVLOG(ERROR) style log message that gets printed
-         * based on what log level is selected in the UI, and the other is a
-         * representation of a media::PipelineStatus object. Soon however we're
-         * going to be moving away from using PipelineStatus for errors and
-         * introducing a new error type which should hopefully let us integrate
-         * the error log level into the PlayerError type.
-         */
-        level: PlayerMessageLevel;
-        message: string;
-    }
-    /**
-     * Corresponds to kMediaPropertyChange
-     */
-    interface PlayerProperty {
-        name: string;
-        value: string;
-    }
-    /**
-     * Corresponds to kMediaEventTriggered
-     */
-    interface PlayerEvent {
-        timestamp: Timestamp;
-        value: string;
-    }
-    /**
-     * Represents logged source line numbers reported in an error.
-     * NOTE: file and line are from chromium c++ implementation code, not js.
-     */
-    interface PlayerErrorSourceLocation {
-        file: string;
-        line: integer;
-    }
-    /**
-     * Corresponds to kMediaError
-     */
-    interface PlayerError {
-        errorType: string;
-        /**
-         * Code is the numeric enum entry for a specific set of error codes, such
-         * as PipelineStatusCodes in media/base/pipeline_status.h
-         */
-        code: integer;
-        /**
-         * A trace of where this error was caused / where it passed through.
-         */
-        stack: PlayerErrorSourceLocation[];
-        /**
-         * Errors potentially have a root cause error, ie, a DecoderError might be
-         * caused by an WindowsError
-         */
-        cause: PlayerError[];
-        /**
-         * Extra data attached to an error, such as an HRESULT, Video Codec, etc.
-         */
-        data: any;
-    }
-    /**
-     * This can be called multiple times, and can be used to set / override /
-     * remove player properties. A null propValue indicates removal.
-     */
-    interface PlayerPropertiesChangedEvent {
-        playerId: PlayerId;
-        properties: PlayerProperty[];
-    }
-    /**
-     * Send events as a list, allowing them to be batched on the browser for less
-     * congestion. If batched, events must ALWAYS be in chronological order.
-     */
-    interface PlayerEventsAddedEvent {
-        playerId: PlayerId;
-        events: PlayerEvent[];
-    }
-    /**
-     * Send a list of any messages that need to be delivered.
-     */
-    interface PlayerMessagesLoggedEvent {
-        playerId: PlayerId;
-        messages: PlayerMessage[];
-    }
-    /**
-     * Send a list of any errors that need to be delivered.
-     */
-    interface PlayerErrorsRaisedEvent {
-        playerId: PlayerId;
-        errors: PlayerError[];
-    }
-    /**
-     * Called whenever a player is created, or when a new agent joins and receives
-     * a list of active players. If an agent is restored, it will receive the full
-     * list of player ids and all events again.
-     */
-    interface PlayersCreatedEvent {
-        players: PlayerId[];
-    }
-}
-export declare namespace DeviceAccess {
-    /**
-     * Device request id.
-     */
-    type RequestId = OpaqueIdentifier<string, 'Protocol.DeviceAccess.RequestId'>;
-    /**
-     * A device id.
-     */
-    type DeviceId = OpaqueIdentifier<string, 'Protocol.DeviceAccess.DeviceId'>;
-    /**
-     * Device information displayed in a user prompt to select a device.
-     */
-    interface PromptDevice {
-        id: DeviceId;
-        /**
-         * Display name as it appears in a device request user prompt.
-         */
-        name: string;
-    }
-    interface SelectPromptRequest {
-        id: RequestId;
-        deviceId: DeviceId;
-    }
-    interface CancelPromptRequest {
-        id: RequestId;
-    }
-    /**
-     * A device request opened a user prompt to select a device. Respond with the
-     * selectPrompt or cancelPrompt command.
-     */
-    interface DeviceRequestPromptedEvent {
-        id: RequestId;
-        devices: PromptDevice[];
-    }
-}
-export declare namespace Preload {
-    /**
-     * Unique id
-     */
-    type RuleSetId = OpaqueIdentifier<string, 'Protocol.Preload.RuleSetId'>;
-    /**
-     * Corresponds to SpeculationRuleSet
-     */
-    interface RuleSet {
-        id: RuleSetId;
-        /**
-         * Identifies a document which the rule set is associated with.
-         */
-        loaderId: Network.LoaderId;
-        /**
-         * Source text of JSON representing the rule set. If it comes from
-         * `<script>` tag, it is the textContent of the node. Note that it is
-         * a JSON for valid case.
-         *
-         * See also:
-         * - https://wicg.github.io/nav-speculation/speculation-rules.html
-         * - https://github.com/WICG/nav-speculation/blob/main/triggers.md
-         */
-        sourceText: string;
-        /**
-         * A speculation rule set is either added through an inline
-         * `<script>` tag or through an external resource via the
-         * 'Speculation-Rules' HTTP header. For the first case, we include
-         * the BackendNodeId of the relevant `<script>` tag. For the second
-         * case, we include the external URL where the rule set was loaded
-         * from, and also RequestId if Network domain is enabled.
-         *
-         * See also:
-         * - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-script
-         * - https://wicg.github.io/nav-speculation/speculation-rules.html#speculation-rules-header
-         */
-        backendNodeId?: DOM.BackendNodeId;
-        url?: string;
-        requestId?: Network.RequestId;
-        /**
-         * Error information
-         * `errorMessage` is null iff `errorType` is null.
-         */
-        errorType?: RuleSetErrorType;
-        /**
-         * TODO(https://crbug.com/1425354): Replace this property with structured error.
-         */
-        errorMessage?: string;
-    }
-    const enum RuleSetErrorType {
-        SourceIsNotJsonObject = "SourceIsNotJsonObject",
-        InvalidRulesSkipped = "InvalidRulesSkipped",
-        InvalidRulesetLevelTag = "InvalidRulesetLevelTag"
-    }
-    /**
-     * The type of preloading attempted. It corresponds to
-     * mojom::SpeculationAction (although PrefetchWithSubresources is omitted as it
-     * isn't being used by clients).
-     */
-    const enum SpeculationAction {
-        Prefetch = "Prefetch",
-        Prerender = "Prerender"
-    }
-    /**
-     * Corresponds to mojom::SpeculationTargetHint.
-     * See https://github.com/WICG/nav-speculation/blob/main/triggers.md#window-name-targeting-hints
-     */
-    const enum SpeculationTargetHint {
-        Blank = "Blank",
-        Self = "Self"
-    }
-    /**
-     * A key that identifies a preloading attempt.
-     *
-     * The url used is the url specified by the trigger (i.e. the initial URL), and
-     * not the final url that is navigated to. For example, prerendering allows
-     * same-origin main frame navigations during the attempt, but the attempt is
-     * still keyed with the initial URL.
-     */
-    interface PreloadingAttemptKey {
-        loaderId: Network.LoaderId;
-        action: SpeculationAction;
-        url: string;
-        targetHint?: SpeculationTargetHint;
-    }
-    /**
-     * Lists sources for a preloading attempt, specifically the ids of rule sets
-     * that had a speculation rule that triggered the attempt, and the
-     * BackendNodeIds of <a href> or <area href> elements that triggered the
-     * attempt (in the case of attempts triggered by a document rule). It is
-     * possible for multiple rule sets and links to trigger a single attempt.
-     */
-    interface PreloadingAttemptSource {
-        key: PreloadingAttemptKey;
-        ruleSetIds: RuleSetId[];
-        nodeIds: DOM.BackendNodeId[];
-    }
-    /**
-     * Chrome manages different types of preloads together using a
-     * concept of preloading pipeline. For example, if a site uses a
-     * SpeculationRules for prerender, Chrome first starts a prefetch and
-     * then upgrades it to prerender.
-     *
-     * CDP events for them are emitted separately but they share
-     * `PreloadPipelineId`.
-     */
-    type PreloadPipelineId = OpaqueIdentifier<string, 'Protocol.Preload.PreloadPipelineId'>;
-    /**
-     * List of FinalStatus reasons for Prerender2.
-     */
-    const enum PrerenderFinalStatus {
-        Activated = "Activated",
-        Destroyed = "Destroyed",
-        LowEndDevice = "LowEndDevice",
-        InvalidSchemeRedirect = "InvalidSchemeRedirect",
-        InvalidSchemeNavigation = "InvalidSchemeNavigation",
-        NavigationRequestBlockedByCsp = "NavigationRequestBlockedByCsp",
-        MojoBinderPolicy = "MojoBinderPolicy",
-        RendererProcessCrashed = "RendererProcessCrashed",
-        RendererProcessKilled = "RendererProcessKilled",
-        Download = "Download",
-        TriggerDestroyed = "TriggerDestroyed",
-        NavigationNotCommitted = "NavigationNotCommitted",
-        NavigationBadHttpStatus = "NavigationBadHttpStatus",
-        ClientCertRequested = "ClientCertRequested",
-        NavigationRequestNetworkError = "NavigationRequestNetworkError",
-        CancelAllHostsForTesting = "CancelAllHostsForTesting",
-        DidFailLoad = "DidFailLoad",
-        Stop = "Stop",
-        SslCertificateError = "SslCertificateError",
-        LoginAuthRequested = "LoginAuthRequested",
-        UaChangeRequiresReload = "UaChangeRequiresReload",
-        BlockedByClient = "BlockedByClient",
-        AudioOutputDeviceRequested = "AudioOutputDeviceRequested",
-        MixedContent = "MixedContent",
-        TriggerBackgrounded = "TriggerBackgrounded",
-        MemoryLimitExceeded = "MemoryLimitExceeded",
-        DataSaverEnabled = "DataSaverEnabled",
-        TriggerUrlHasEffectiveUrl = "TriggerUrlHasEffectiveUrl",
-        ActivatedBeforeStarted = "ActivatedBeforeStarted",
-        InactivePageRestriction = "InactivePageRestriction",
-        StartFailed = "StartFailed",
-        TimeoutBackgrounded = "TimeoutBackgrounded",
-        CrossSiteRedirectInInitialNavigation = "CrossSiteRedirectInInitialNavigation",
-        CrossSiteNavigationInInitialNavigation = "CrossSiteNavigationInInitialNavigation",
-        SameSiteCrossOriginRedirectNotOptInInInitialNavigation = "SameSiteCrossOriginRedirectNotOptInInInitialNavigation",
-        SameSiteCrossOriginNavigationNotOptInInInitialNavigation = "SameSiteCrossOriginNavigationNotOptInInInitialNavigation",
-        ActivationNavigationParameterMismatch = "ActivationNavigationParameterMismatch",
-        ActivatedInBackground = "ActivatedInBackground",
-        EmbedderHostDisallowed = "EmbedderHostDisallowed",
-        ActivationNavigationDestroyedBeforeSuccess = "ActivationNavigationDestroyedBeforeSuccess",
-        TabClosedByUserGesture = "TabClosedByUserGesture",
-        TabClosedWithoutUserGesture = "TabClosedWithoutUserGesture",
-        PrimaryMainFrameRendererProcessCrashed = "PrimaryMainFrameRendererProcessCrashed",
-        PrimaryMainFrameRendererProcessKilled = "PrimaryMainFrameRendererProcessKilled",
-        ActivationFramePolicyNotCompatible = "ActivationFramePolicyNotCompatible",
-        PreloadingDisabled = "PreloadingDisabled",
-        BatterySaverEnabled = "BatterySaverEnabled",
-        ActivatedDuringMainFrameNavigation = "ActivatedDuringMainFrameNavigation",
-        PreloadingUnsupportedByWebContents = "PreloadingUnsupportedByWebContents",
-        CrossSiteRedirectInMainFrameNavigation = "CrossSiteRedirectInMainFrameNavigation",
-        CrossSiteNavigationInMainFrameNavigation = "CrossSiteNavigationInMainFrameNavigation",
-        SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation = "SameSiteCrossOriginRedirectNotOptInInMainFrameNavigation",
-        SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation = "SameSiteCrossOriginNavigationNotOptInInMainFrameNavigation",
-        MemoryPressureOnTrigger = "MemoryPressureOnTrigger",
-        MemoryPressureAfterTriggered = "MemoryPressureAfterTriggered",
-        PrerenderingDisabledByDevTools = "PrerenderingDisabledByDevTools",
-        SpeculationRuleRemoved = "SpeculationRuleRemoved",
-        ActivatedWithAuxiliaryBrowsingContexts = "ActivatedWithAuxiliaryBrowsingContexts",
-        MaxNumOfRunningEagerPrerendersExceeded = "MaxNumOfRunningEagerPrerendersExceeded",
-        MaxNumOfRunningNonEagerPrerendersExceeded = "MaxNumOfRunningNonEagerPrerendersExceeded",
-        MaxNumOfRunningEmbedderPrerendersExceeded = "MaxNumOfRunningEmbedderPrerendersExceeded",
-        PrerenderingUrlHasEffectiveUrl = "PrerenderingUrlHasEffectiveUrl",
-        RedirectedPrerenderingUrlHasEffectiveUrl = "RedirectedPrerenderingUrlHasEffectiveUrl",
-        ActivationUrlHasEffectiveUrl = "ActivationUrlHasEffectiveUrl",
-        JavaScriptInterfaceAdded = "JavaScriptInterfaceAdded",
-        JavaScriptInterfaceRemoved = "JavaScriptInterfaceRemoved",
-        AllPrerenderingCanceled = "AllPrerenderingCanceled",
-        WindowClosed = "WindowClosed",
-        SlowNetwork = "SlowNetwork",
-        OtherPrerenderedPageActivated = "OtherPrerenderedPageActivated",
-        V8OptimizerDisabled = "V8OptimizerDisabled",
-        PrerenderFailedDuringPrefetch = "PrerenderFailedDuringPrefetch",
-        BrowsingDataRemoved = "BrowsingDataRemoved",
-        PrerenderHostReused = "PrerenderHostReused"
-    }
-    /**
-     * Preloading status values, see also PreloadingTriggeringOutcome. This
-     * status is shared by prefetchStatusUpdated and prerenderStatusUpdated.
-     */
-    const enum PreloadingStatus {
-        Pending = "Pending",
-        Running = "Running",
-        Ready = "Ready",
-        Success = "Success",
-        Failure = "Failure",
-        NotSupported = "NotSupported"
-    }
-    /**
-     * TODO(https://crbug.com/1384419): revisit the list of PrefetchStatus and
-     * filter out the ones that aren't necessary to the developers.
-     */
-    const enum PrefetchStatus {
-        PrefetchAllowed = "PrefetchAllowed",
-        PrefetchFailedIneligibleRedirect = "PrefetchFailedIneligibleRedirect",
-        PrefetchFailedInvalidRedirect = "PrefetchFailedInvalidRedirect",
-        PrefetchFailedMIMENotSupported = "PrefetchFailedMIMENotSupported",
-        PrefetchFailedNetError = "PrefetchFailedNetError",
-        PrefetchFailedNon2XX = "PrefetchFailedNon2XX",
-        PrefetchEvictedAfterBrowsingDataRemoved = "PrefetchEvictedAfterBrowsingDataRemoved",
-        PrefetchEvictedAfterCandidateRemoved = "PrefetchEvictedAfterCandidateRemoved",
-        PrefetchEvictedForNewerPrefetch = "PrefetchEvictedForNewerPrefetch",
-        PrefetchHeldback = "PrefetchHeldback",
-        PrefetchIneligibleRetryAfter = "PrefetchIneligibleRetryAfter",
-        PrefetchIsPrivacyDecoy = "PrefetchIsPrivacyDecoy",
-        PrefetchIsStale = "PrefetchIsStale",
-        PrefetchNotEligibleBrowserContextOffTheRecord = "PrefetchNotEligibleBrowserContextOffTheRecord",
-        PrefetchNotEligibleDataSaverEnabled = "PrefetchNotEligibleDataSaverEnabled",
-        PrefetchNotEligibleExistingProxy = "PrefetchNotEligibleExistingProxy",
-        PrefetchNotEligibleHostIsNonUnique = "PrefetchNotEligibleHostIsNonUnique",
-        PrefetchNotEligibleNonDefaultStoragePartition = "PrefetchNotEligibleNonDefaultStoragePartition",
-        PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy = "PrefetchNotEligibleSameSiteCrossOriginPrefetchRequiredProxy",
-        PrefetchNotEligibleSchemeIsNotHttps = "PrefetchNotEligibleSchemeIsNotHttps",
-        PrefetchNotEligibleUserHasCookies = "PrefetchNotEligibleUserHasCookies",
-        PrefetchNotEligibleUserHasServiceWorker = "PrefetchNotEligibleUserHasServiceWorker",
-        PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler = "PrefetchNotEligibleUserHasServiceWorkerNoFetchHandler",
-        PrefetchNotEligibleRedirectFromServiceWorker = "PrefetchNotEligibleRedirectFromServiceWorker",
-        PrefetchNotEligibleRedirectToServiceWorker = "PrefetchNotEligibleRedirectToServiceWorker",
-        PrefetchNotEligibleBatterySaverEnabled = "PrefetchNotEligibleBatterySaverEnabled",
-        PrefetchNotEligiblePreloadingDisabled = "PrefetchNotEligiblePreloadingDisabled",
-        PrefetchNotFinishedInTime = "PrefetchNotFinishedInTime",
-        PrefetchNotStarted = "PrefetchNotStarted",
-        PrefetchNotUsedCookiesChanged = "PrefetchNotUsedCookiesChanged",
-        PrefetchProxyNotAvailable = "PrefetchProxyNotAvailable",
-        PrefetchResponseUsed = "PrefetchResponseUsed",
-        PrefetchSuccessfulButNotUsed = "PrefetchSuccessfulButNotUsed",
-        PrefetchNotUsedProbeFailed = "PrefetchNotUsedProbeFailed"
-    }
-    /**
-     * Information of headers to be displayed when the header mismatch occurred.
-     */
-    interface PrerenderMismatchedHeaders {
-        headerName: string;
-        initialValue?: string;
-        activationValue?: string;
-    }
-    /**
-     * Upsert. Currently, it is only emitted when a rule set added.
-     */
-    interface RuleSetUpdatedEvent {
-        ruleSet: RuleSet;
-    }
-    interface RuleSetRemovedEvent {
-        id: RuleSetId;
-    }
-    /**
-     * Fired when a preload enabled state is updated.
-     */
-    interface PreloadEnabledStateUpdatedEvent {
-        disabledByPreference: boolean;
-        disabledByDataSaver: boolean;
-        disabledByBatterySaver: boolean;
-        disabledByHoldbackPrefetchSpeculationRules: boolean;
-        disabledByHoldbackPrerenderSpeculationRules: boolean;
-    }
-    /**
-     * Fired when a prefetch attempt is updated.
-     */
-    interface PrefetchStatusUpdatedEvent {
-        key: PreloadingAttemptKey;
-        pipelineId: PreloadPipelineId;
-        /**
-         * The frame id of the frame initiating prefetch.
-         */
-        initiatingFrameId: Page.FrameId;
-        prefetchUrl: string;
-        status: PreloadingStatus;
-        prefetchStatus: PrefetchStatus;
-        requestId: Network.RequestId;
-    }
-    /**
-     * Fired when a prerender attempt is updated.
-     */
-    interface PrerenderStatusUpdatedEvent {
-        key: PreloadingAttemptKey;
-        pipelineId: PreloadPipelineId;
-        status: PreloadingStatus;
-        prerenderStatus?: PrerenderFinalStatus;
-        /**
-         * This is used to give users more information about the name of Mojo interface
-         * that is incompatible with prerender and has caused the cancellation of the attempt.
-         */
-        disallowedMojoInterface?: string;
-        mismatchedHeaders?: PrerenderMismatchedHeaders[];
-    }
-    /**
-     * Send a list of sources for all preloading attempts in a document.
-     */
-    interface PreloadingAttemptSourcesUpdatedEvent {
-        loaderId: Network.LoaderId;
-        preloadingAttemptSources: PreloadingAttemptSource[];
-    }
-}
-/**
- * This domain allows interacting with the FedCM dialog.
- */
-export declare namespace FedCm {
-    /**
-     * Whether this is a sign-up or sign-in action for this account, i.e.
-     * whether this account has ever been used to sign in to this RP before.
-     */
-    const enum LoginState {
-        SignIn = "SignIn",
-        SignUp = "SignUp"
-    }
-    /**
-     * The types of FedCM dialogs.
-     */
-    const enum DialogType {
-        AccountChooser = "AccountChooser",
-        AutoReauthn = "AutoReauthn",
-        ConfirmIdpLogin = "ConfirmIdpLogin",
-        Error = "Error"
-    }
-    /**
-     * The buttons on the FedCM dialog.
-     */
-    const enum DialogButton {
-        ConfirmIdpLoginContinue = "ConfirmIdpLoginContinue",
-        ErrorGotIt = "ErrorGotIt",
-        ErrorMoreDetails = "ErrorMoreDetails"
-    }
-    /**
-     * The URLs that each account has
-     */
-    const enum AccountUrlType {
-        TermsOfService = "TermsOfService",
-        PrivacyPolicy = "PrivacyPolicy"
-    }
-    /**
-     * Corresponds to IdentityRequestAccount
-     */
-    interface Account {
-        accountId: string;
-        email: string;
-        name: string;
-        givenName: string;
-        pictureUrl: string;
-        idpConfigUrl: string;
-        idpLoginUrl: string;
-        loginState: LoginState;
-        /**
-         * These two are only set if the loginState is signUp
-         */
-        termsOfServiceUrl?: string;
-        privacyPolicyUrl?: string;
-    }
-    interface EnableRequest {
-        /**
-         * Allows callers to disable the promise rejection delay that would
-         * normally happen, if this is unimportant to what's being tested.
-         * (step 4 of https://fedidcg.github.io/FedCM/#browser-api-rp-sign-in)
-         */
-        disableRejectionDelay?: boolean;
-    }
-    interface SelectAccountRequest {
-        dialogId: string;
-        accountIndex: integer;
-    }
-    interface ClickDialogButtonRequest {
-        dialogId: string;
-        dialogButton: DialogButton;
-    }
-    interface OpenUrlRequest {
-        dialogId: string;
-        accountIndex: integer;
-        accountUrlType: AccountUrlType;
-    }
-    interface DismissDialogRequest {
-        dialogId: string;
-        triggerCooldown?: boolean;
-    }
-    interface DialogShownEvent {
-        dialogId: string;
-        dialogType: DialogType;
-        accounts: Account[];
-        /**
-         * These exist primarily so that the caller can verify the
-         * RP context was used appropriately.
-         */
-        title: string;
-        subtitle?: string;
-    }
-    /**
-     * Triggered when a dialog is closed, either by user action, JS abort,
-     * or a command below.
-     */
-    interface DialogClosedEvent {
-        dialogId: string;
-    }
-}
-/**
- * This domain allows interacting with the browser to control PWAs.
- */
-export declare namespace PWA {
-    /**
-     * The following types are the replica of
-     * https://crsrc.org/c/chrome/browser/web_applications/proto/web_app_os_integration_state.proto;drc=9910d3be894c8f142c977ba1023f30a656bc13fc;l=67
-     */
-    interface FileHandlerAccept {
-        /**
-         * New name of the mimetype according to
-         * https://www.iana.org/assignments/media-types/media-types.xhtml
-         */
-        mediaType: string;
-        fileExtensions: string[];
-    }
-    interface FileHandler {
-        action: string;
-        accepts: FileHandlerAccept[];
-        displayName: string;
-    }
-    /**
-     * If user prefers opening the app in browser or an app window.
-     */
-    const enum DisplayMode {
-        Standalone = "standalone",
-        Browser = "browser"
-    }
-    interface GetOsAppStateRequest {
-        /**
-         * The id from the webapp's manifest file, commonly it's the url of the
-         * site installing the webapp. See
-         * https://web.dev/learn/pwa/web-app-manifest.
-         */
-        manifestId: string;
-    }
-    interface GetOsAppStateResponse extends ProtocolResponseWithError {
-        badgeCount: integer;
-        fileHandlers: FileHandler[];
-    }
-    interface InstallRequest {
-        manifestId: string;
-        /**
-         * The location of the app or bundle overriding the one derived from the
-         * manifestId.
-         */
-        installUrlOrBundleUrl?: string;
-    }
-    interface UninstallRequest {
-        manifestId: string;
-    }
-    interface LaunchRequest {
-        manifestId: string;
-        url?: string;
-    }
-    interface LaunchResponse extends ProtocolResponseWithError {
-        /**
-         * ID of the tab target created as a result.
-         */
-        targetId: Target.TargetID;
-    }
-    interface LaunchFilesInAppRequest {
-        manifestId: string;
-        files: string[];
-    }
-    interface LaunchFilesInAppResponse extends ProtocolResponseWithError {
-        /**
-         * IDs of the tab targets created as the result.
-         */
-        targetIds: Target.TargetID[];
-    }
-    interface OpenCurrentPageInAppRequest {
-        manifestId: string;
-    }
-    interface ChangeAppUserSettingsRequest {
-        manifestId: string;
-        /**
-         * If user allows the links clicked on by the user in the app's scope, or
-         * extended scope if the manifest has scope extensions and the flags
-         * `DesktopPWAsLinkCapturingWithScopeExtensions` and
-         * `WebAppEnableScopeExtensions` are enabled.
-         *
-         * Note, the API does not support resetting the linkCapturing to the
-         * initial value, uninstalling and installing the web app again will reset
-         * it.
-         *
-         * TODO(crbug.com/339453269): Setting this value on ChromeOS is not
-         * supported yet.
-         */
-        linkCapturing?: boolean;
-        displayMode?: DisplayMode;
-    }
-}
-/**
- * This domain allows configuring virtual Bluetooth devices to test
- * the web-bluetooth API.
- */
-export declare namespace BluetoothEmulation {
-    /**
-     * Indicates the various states of Central.
-     */
-    const enum CentralState {
-        Absent = "absent",
-        PoweredOff = "powered-off",
-        PoweredOn = "powered-on"
-    }
-    /**
-     * Indicates the various types of GATT event.
-     */
-    const enum GATTOperationType {
-        Connection = "connection",
-        Discovery = "discovery"
-    }
-    /**
-     * Indicates the various types of characteristic write.
-     */
-    const enum CharacteristicWriteType {
-        WriteDefaultDeprecated = "write-default-deprecated",
-        WriteWithResponse = "write-with-response",
-        WriteWithoutResponse = "write-without-response"
-    }
-    /**
-     * Indicates the various types of characteristic operation.
-     */
-    const enum CharacteristicOperationType {
-        Read = "read",
-        Write = "write",
-        SubscribeToNotifications = "subscribe-to-notifications",
-        UnsubscribeFromNotifications = "unsubscribe-from-notifications"
-    }
-    /**
-     * Indicates the various types of descriptor operation.
-     */
-    const enum DescriptorOperationType {
-        Read = "read",
-        Write = "write"
-    }
-    /**
-     * Stores the manufacturer data
-     */
-    interface ManufacturerData {
-        /**
-         * Company identifier
-         * https://bitbucket.org/bluetooth-SIG/public/src/main/assigned_numbers/company_identifiers/company_identifiers.yaml
-         * https://usb.org/developers
-         */
-        key: integer;
-        /**
-         * Manufacturer-specific data
-         */
-        data: binary;
-    }
-    /**
-     * Stores the byte data of the advertisement packet sent by a Bluetooth device.
-     */
-    interface ScanRecord {
-        name?: string;
-        uuids?: string[];
-        /**
-         * Stores the external appearance description of the device.
-         */
-        appearance?: integer;
-        /**
-         * Stores the transmission power of a broadcasting device.
-         */
-        txPower?: integer;
-        /**
-         * Key is the company identifier and the value is an array of bytes of
-         * manufacturer specific data.
-         */
-        manufacturerData?: ManufacturerData[];
-    }
-    /**
-     * Stores the advertisement packet information that is sent by a Bluetooth device.
-     */
-    interface ScanEntry {
-        deviceAddress: string;
-        rssi: integer;
-        scanRecord: ScanRecord;
-    }
-    /**
-     * Describes the properties of a characteristic. This follows Bluetooth Core
-     * Specification BT 4.2 Vol 3 Part G 3.3.1. Characteristic Properties.
-     */
-    interface CharacteristicProperties {
-        broadcast?: boolean;
-        read?: boolean;
-        writeWithoutResponse?: boolean;
-        write?: boolean;
-        notify?: boolean;
-        indicate?: boolean;
-        authenticatedSignedWrites?: boolean;
-        extendedProperties?: boolean;
-    }
-    interface EnableRequest {
-        /**
-         * State of the simulated central.
-         */
-        state: CentralState;
-        /**
-         * If the simulated central supports low-energy.
-         */
-        leSupported: boolean;
-    }
-    interface SetSimulatedCentralStateRequest {
-        /**
-         * State of the simulated central.
-         */
-        state: CentralState;
-    }
-    interface SimulatePreconnectedPeripheralRequest {
-        address: string;
-        name: string;
-        manufacturerData: ManufacturerData[];
-        knownServiceUuids: string[];
-    }
-    interface SimulateAdvertisementRequest {
-        entry: ScanEntry;
-    }
-    interface SimulateGATTOperationResponseRequest {
-        address: string;
-        type: GATTOperationType;
-        code: integer;
-    }
-    interface SimulateCharacteristicOperationResponseRequest {
-        characteristicId: string;
-        type: CharacteristicOperationType;
-        code: integer;
-        data?: binary;
-    }
-    interface SimulateDescriptorOperationResponseRequest {
-        descriptorId: string;
-        type: DescriptorOperationType;
-        code: integer;
-        data?: binary;
-    }
-    interface AddServiceRequest {
-        address: string;
-        serviceUuid: string;
-    }
-    interface AddServiceResponse extends ProtocolResponseWithError {
-        /**
-         * An identifier that uniquely represents this service.
-         */
-        serviceId: string;
-    }
-    interface RemoveServiceRequest {
-        serviceId: string;
-    }
-    interface AddCharacteristicRequest {
-        serviceId: string;
-        characteristicUuid: string;
-        properties: CharacteristicProperties;
-    }
-    interface AddCharacteristicResponse extends ProtocolResponseWithError {
-        /**
-         * An identifier that uniquely represents this characteristic.
-         */
-        characteristicId: string;
-    }
-    interface RemoveCharacteristicRequest {
-        characteristicId: string;
-    }
-    interface AddDescriptorRequest {
-        characteristicId: string;
-        descriptorUuid: string;
-    }
-    interface AddDescriptorResponse extends ProtocolResponseWithError {
-        /**
-         * An identifier that uniquely represents this descriptor.
-         */
-        descriptorId: string;
-    }
-    interface RemoveDescriptorRequest {
-        descriptorId: string;
-    }
-    interface SimulateGATTDisconnectionRequest {
-        address: string;
-    }
-    /**
-     * Event for when a GATT operation of |type| to the peripheral with |address|
-     * happened.
-     */
-    interface GattOperationReceivedEvent {
-        address: string;
-        type: GATTOperationType;
-    }
-    /**
-     * Event for when a characteristic operation of |type| to the characteristic
-     * respresented by |characteristicId| happened. |data| and |writeType| is
-     * expected to exist when |type| is write.
-     */
-    interface CharacteristicOperationReceivedEvent {
-        characteristicId: string;
-        type: CharacteristicOperationType;
-        data?: binary;
-        writeType?: CharacteristicWriteType;
-    }
-    /**
-     * Event for when a descriptor operation of |type| to the descriptor
-     * respresented by |descriptorId| happened. |data| is expected to exist when
-     * |type| is write.
-     */
-    interface DescriptorOperationReceivedEvent {
-        descriptorId: string;
-        type: DescriptorOperationType;
-        data?: binary;
-    }
-}
-/**
  * Debugger domain exposes JavaScript debugging capabilities. It allows setting and removing
  * breakpoints, stepping through execution, exploring stack traces, etc.
  */
@@ -17653,6 +17833,7 @@ export declare namespace Debugger {
          * JavaScript script name or url.
          * Deprecated in favor of using the `location.scriptId` to resolve the URL via a previously
          * sent `Debugger.scriptParsed` event.
+         * @deprecated
          */
         url: string;
         /**
@@ -17980,14 +18161,17 @@ export declare namespace Debugger {
     interface RestartFrameResponse extends ProtocolResponseWithError {
         /**
          * New stack trace.
+         * @deprecated
          */
         callFrames: CallFrame[];
         /**
          * Async stack trace, if any.
+         * @deprecated
          */
         asyncStackTrace?: Runtime.StackTrace;
         /**
          * Async stack trace, if any.
+         * @deprecated
          */
         asyncStackTraceId?: Runtime.StackTraceId;
     }
@@ -18201,18 +18385,22 @@ export declare namespace Debugger {
     interface SetScriptSourceResponse extends ProtocolResponseWithError {
         /**
          * New stack trace in case editing has happened while VM was stopped.
+         * @deprecated
          */
         callFrames?: CallFrame[];
         /**
          * Whether current call stack  was modified after applying the changes.
+         * @deprecated
          */
         stackChanged?: boolean;
         /**
          * Async stack trace, if any.
+         * @deprecated
          */
         asyncStackTrace?: Runtime.StackTrace;
         /**
          * Async stack trace, if any.
+         * @deprecated
          */
         asyncStackTraceId?: Runtime.StackTraceId;
         /**
@@ -18271,6 +18459,7 @@ export declare namespace Debugger {
     /**
      * Fired when breakpoint is resolved to an actual script and location.
      * Deprecated in favor of `resolvedBreakpoints` in the `scriptParsed` event.
+     * @deprecated
      */
     interface BreakpointResolvedEvent {
         /**
@@ -18327,6 +18516,7 @@ export declare namespace Debugger {
         asyncStackTraceId?: Runtime.StackTraceId;
         /**
          * Never present, will be removed.
+         * @deprecated
          */
         asyncCallStackTraceId?: Runtime.StackTraceId;
     }
@@ -18632,6 +18822,7 @@ export declare namespace HeapProfiler {
         reportProgress?: boolean;
         /**
          * Deprecated in favor of `exposeInternals`.
+         * @deprecated
          */
         treatGlobalObjectsAsRoots?: boolean;
         /**
@@ -18651,6 +18842,7 @@ export declare namespace HeapProfiler {
         /**
          * If true, a raw snapshot without artificial roots will be generated.
          * Deprecated in favor of `exposeInternals`.
+         * @deprecated
          */
         treatGlobalObjectsAsRoots?: boolean;
         /**
@@ -19849,6 +20041,7 @@ export declare namespace Runtime {
          * Deprecated in favor of `executionContextName` due to an unclear use case
          * and bugs in implementation (crbug.com/1169639). `executionContextId` will be
          * removed in the future.
+         * @deprecated
          */
         executionContextId?: ExecutionContextId;
         /**
@@ -19974,6 +20167,7 @@ export declare namespace Runtime {
     interface ExecutionContextDestroyedEvent {
         /**
          * Id of the destroyed context
+         * @deprecated
          */
         executionContextId: ExecutionContextId;
         /**
@@ -19996,6 +20190,7 @@ export declare namespace Runtime {
 }
 /**
  * This domain is deprecated.
+ * @deprecated
  */
 export declare namespace Schema {
     /**

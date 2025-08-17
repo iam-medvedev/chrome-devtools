@@ -8,15 +8,16 @@ export default `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
+@scope to (devtools-widget > *) {
+  :scope {
+    padding: 25px;
+  }
 
-:scope {
-  padding: 25px;
-}
-
-.message {
-  font-size: larger;
-  white-space: pre;
-  margin: 5px;
+  .message {
+    font-size: larger;
+    white-space: pre;
+    margin: 5px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve('./targetCrashedScreen.css')} */`;

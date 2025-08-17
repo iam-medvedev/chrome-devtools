@@ -127,11 +127,11 @@ function makeUpChromeExtensionEntity(entityCache, url, extensionName) {
   return chromeExtensionEntity;
 }
 function addEventToEntityMapping(event, entityMappings3) {
-  const entity = getEntityForEvent(event, entityMappings3);
-  if (!entity) {
+  if (entityMappings3.entityByEvent.has(event)) {
     return;
   }
-  if (entityMappings3.entityByEvent.has(event)) {
+  const entity = getEntityForEvent(event, entityMappings3);
+  if (!entity) {
     return;
   }
   const mappedEvents = entityMappings3.eventsByEntity.get(entity);
@@ -201,6 +201,7 @@ __export(AnimationFramesHandler_exports, {
   deps: () => deps,
   finalize: () => finalize,
   handleEvent: () => handleEvent,
+  handleUserConfig: () => handleUserConfig,
   reset: () => reset
 });
 import * as Helpers from "./../helpers/helpers.js";
@@ -219,8 +220,16 @@ function reset() {
   animationFrames.length = 0;
   presentationForFrame.clear();
   animationFramePresentations.clear();
+  isEnabled = false;
+}
+var isEnabled = false;
+function handleUserConfig(config2) {
+  isEnabled = config2.enableAnimationsFrameHandler;
 }
 function handleEvent(event) {
+  if (!isEnabled) {
+    return;
+  }
   if (Types2.Events.isAnimationFrameAsyncStart(event)) {
     const key = threadKey(event);
     const existing = animationFrameStarts.get(key) ?? [];
@@ -432,7 +441,7 @@ __export(RendererHandler_exports, {
   deps: () => deps3,
   finalize: () => finalize8,
   handleEvent: () => handleEvent8,
-  handleUserConfig: () => handleUserConfig,
+  handleUserConfig: () => handleUserConfig2,
   makeCompleteEvent: () => makeCompleteEvent,
   reset: () => reset8,
   sanitizeProcesses: () => sanitizeProcesses,
@@ -902,6 +911,7 @@ function reset6() {
   entityMappings.eventsByEntity.clear();
   entityMappings.entityByEvent.clear();
   entityMappings.createdEntityCache.clear();
+  entityMappings.entityByUrlCache.clear();
   linkPreconnectEvents.length = 0;
 }
 function handleEvent6(event) {
@@ -1422,7 +1432,6 @@ var entityMappings2 = {
 };
 var compositorTileWorkers = Array();
 var entryToNode2 = /* @__PURE__ */ new Map();
-var allTraceEntries = [];
 var completeEventStack = [];
 var config = Types9.Configuration.defaults();
 var makeRendererProcess = () => ({
@@ -1443,7 +1452,7 @@ var getOrCreateRendererProcess = (processes2, pid) => {
 var getOrCreateRendererThread = (process, tid) => {
   return Platform5.MapUtilities.getWithDefault(process.threads, tid, makeRendererThread);
 };
-function handleUserConfig(userConfig) {
+function handleUserConfig2(userConfig) {
   config = userConfig;
 }
 function reset8() {
@@ -1453,7 +1462,6 @@ function reset8() {
   entityMappings2.entityByEvent.clear();
   entityMappings2.createdEntityCache.clear();
   entityMappings2.entityByUrlCache.clear();
-  allTraceEntries.length = 0;
   completeEventStack.length = 0;
   compositorTileWorkers.length = 0;
 }
@@ -1472,14 +1480,12 @@ function handleEvent8(event) {
       return;
     }
     thread.entries.push(completeEvent);
-    allTraceEntries.push(completeEvent);
     return;
   }
   if (Types9.Events.isInstant(event) || Types9.Events.isComplete(event)) {
     const process = getOrCreateRendererProcess(processes, event.pid);
     const thread = getOrCreateRendererThread(process, event.tid);
     thread.entries.push(event);
-    allTraceEntries.push(event);
   }
   if (Types9.Events.isLayout(event)) {
     const process = getOrCreateRendererProcess(processes, event.pid);
@@ -1499,14 +1505,14 @@ async function finalize8() {
   sanitizeProcesses(processes);
   buildHierarchy(processes);
   sanitizeThreads(processes);
-  Helpers7.Trace.sortTraceEventsInPlace(allTraceEntries);
 }
 function data8() {
   return {
-    processes: new Map(processes),
-    compositorTileWorkers: new Map(gatherCompositorThreads()),
-    entryToNode: new Map(entryToNode2),
-    allTraceEntries: [...allTraceEntries],
+    processes,
+    compositorTileWorkers: gatherCompositorThreads(),
+    entryToNode: entryToNode2,
+    // We only shallow clone the data in the processor, so these nested
+    // values need to be manually cloned.
     entityMappings: {
       entityByEvent: new Map(entityMappings2.entityByEvent),
       eventsByEntity: new Map(entityMappings2.eventsByEntity),
@@ -1606,12 +1612,10 @@ function buildHierarchy(processes2, options) {
         const samplesIntegrator = cpuProfile && new Helpers7.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config);
         const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
         if (samplesIntegrator && profileCalls) {
-          allTraceEntries = allTraceEntries.concat(profileCalls);
           thread.entries = Helpers7.Trace.mergeEventsInOrder(thread.entries, profileCalls);
           thread.profileCalls = profileCalls;
           const jsSamples = samplesIntegrator.jsSampleEvents;
           if (jsSamples.length) {
-            allTraceEntries = [...allTraceEntries, ...jsSamples];
             thread.entries = Helpers7.Trace.mergeEventsInOrder(thread.entries, jsSamples);
           }
         }
@@ -2269,28 +2273,8 @@ function threadsInTrace(parsedTrace) {
 }
 
 // gen/front_end/models/trace/handlers/FramesHandler.js
-var allEvents = [];
 var model = null;
-function reset14() {
-  allEvents.length = 0;
-}
-function handleEvent14(event) {
-  allEvents.push(event);
-}
-async function finalize14() {
-  Helpers11.Trace.sortTraceEventsInPlace(allEvents);
-  const modelForTrace = new TimelineFrameModel(allEvents, data8(), data4(), data5(), data13());
-  model = modelForTrace;
-}
-function data14() {
-  return {
-    frames: model ? Array.from(model.frames()) : [],
-    framesById: model ? { ...model.framesById() } : {}
-  };
-}
-function deps7() {
-  return ["Meta", "Renderer", "AuctionWorklets", "LayerTree"];
-}
+var relevantFrameEvents = [];
 function isFrameEvent(event) {
   return Types15.Events.isSetLayerId(event) || Types15.Events.isBeginFrame(event) || Types15.Events.isDroppedFrame(event) || Types15.Events.isRequestMainThreadFrame(event) || Types15.Events.isBeginMainThreadFrame(event) || Types15.Events.isNeedsBeginFrameChanged(event) || // Note that "Commit" is the replacement for "CompositeLayers" so in a trace
   // we wouldn't expect to see a combination of these. All "new" trace
@@ -2301,6 +2285,35 @@ function isFrameEvent(event) {
 function entryIsTopLevel(entry) {
   const devtoolsTimelineCategory = "disabled-by-default-devtools.timeline";
   return entry.name === "RunTask" && entry.cat.includes(devtoolsTimelineCategory);
+}
+var MAIN_FRAME_MARKERS = /* @__PURE__ */ new Set([
+  "ScheduleStyleRecalculation",
+  "InvalidateLayout",
+  "BeginMainThreadFrame",
+  "ScrollLayer"
+]);
+function reset14() {
+  model = null;
+  relevantFrameEvents.length = 0;
+}
+function handleEvent14(event) {
+  if (isFrameEvent(event) || Types15.Events.isLayerTreeHostImplSnapshot(event) || entryIsTopLevel(event) || MAIN_FRAME_MARKERS.has(event.name) || Types15.Events.isPaint(event)) {
+    relevantFrameEvents.push(event);
+  }
+}
+async function finalize14() {
+  Helpers11.Trace.sortTraceEventsInPlace(relevantFrameEvents);
+  const modelForTrace = new TimelineFrameModel(relevantFrameEvents, data8(), data4(), data5(), data13());
+  model = modelForTrace;
+}
+function data14() {
+  return {
+    frames: model ? Array.from(model.frames()) : [],
+    framesById: model ? { ...model.framesById() } : {}
+  };
+}
+function deps7() {
+  return ["Meta", "Renderer", "AuctionWorklets", "LayerTree"];
 }
 var TimelineFrameModel = class {
   #frames = [];
@@ -2319,7 +2332,7 @@ var TimelineFrameModel = class {
   #activeProcessId = null;
   #activeThreadId = null;
   #layerTreeData;
-  constructor(allEvents3, rendererData, auctionWorkletsData, metaData, layerTreeData) {
+  constructor(allEvents2, rendererData, auctionWorkletsData, metaData, layerTreeData) {
     const mainThreads = threadsInRenderer(rendererData, auctionWorkletsData).filter((thread) => {
       return thread.type === "MAIN_THREAD" && thread.processIsOnMainFrame;
     });
@@ -2331,7 +2344,7 @@ var TimelineFrameModel = class {
       };
     });
     this.#layerTreeData = layerTreeData;
-    this.#addTraceEvents(allEvents3, threadData, metaData.mainFrameId);
+    this.#addTraceEvents(allEvents2, threadData, metaData.mainFrameId);
   }
   framesById() {
     return this.#frameById;
@@ -2519,12 +2532,6 @@ var TimelineFrameModel = class {
     }
   }
 };
-var MAIN_FRAME_MARKERS = /* @__PURE__ */ new Set([
-  "ScheduleStyleRecalculation",
-  "InvalidateLayout",
-  "BeginMainThreadFrame",
-  "ScrollLayer"
-]);
 var TimelineFrame = class {
   // These fields exist to satisfy the base Event type which all
   // "trace events" must implement. They aren't used, but doing this means we
@@ -2956,7 +2963,7 @@ __export(InvalidationsHandler_exports, {
   data: () => data18,
   finalize: () => finalize18,
   handleEvent: () => handleEvent18,
-  handleUserConfig: () => handleUserConfig2,
+  handleUserConfig: () => handleUserConfig3,
   reset: () => reset18
 });
 import * as Types19 from "./../types/types.js";
@@ -2974,7 +2981,7 @@ function reset18() {
   maxInvalidationsPerEvent = null;
 }
 var maxInvalidationsPerEvent = null;
-function handleUserConfig2(userConfig) {
+function handleUserConfig3(userConfig) {
   maxInvalidationsPerEvent = userConfig.maxInvalidationEventsPerEvent;
 }
 function addInvalidationToEvent(event, invalidation) {
@@ -4259,7 +4266,7 @@ __export(UserInteractionsHandler_exports, {
 });
 import * as Helpers17 from "./../helpers/helpers.js";
 import * as Types29 from "./../types/types.js";
-var allEvents2 = [];
+var allEvents = [];
 var beginCommitCompositorFrameEvents = [];
 var parseMetaViewportEvents = [];
 var LONG_INTERACTION_THRESHOLD = Helpers17.Timing.milliToMicro(Types29.Timing.Milli(200));
@@ -4271,7 +4278,7 @@ var interactionEventsWithNoNesting = [];
 var eventTimingEndEventsById = /* @__PURE__ */ new Map();
 var eventTimingStartEventsForInteractions = [];
 function reset28() {
-  allEvents2.length = 0;
+  allEvents.length = 0;
   beginCommitCompositorFrameEvents.length = 0;
   parseMetaViewportEvents.length = 0;
   interactionEvents.length = 0;
@@ -4295,7 +4302,7 @@ function handleEvent28(event) {
   if (Types29.Events.isEventTimingEnd(event)) {
     eventTimingEndEventsById.set(event.id, event);
   }
-  allEvents2.push(event);
+  allEvents.push(event);
   if (!event.args.data || !Types29.Events.isEventTimingStart(event)) {
     return;
   }
@@ -4432,7 +4439,7 @@ async function finalize28() {
 }
 function data28() {
   return {
-    allEvents: allEvents2,
+    allEvents,
     beginCommitCompositorFrameEvents,
     parseMetaViewportEvents,
     interactionEvents,

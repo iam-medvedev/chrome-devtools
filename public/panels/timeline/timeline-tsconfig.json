@@ -41,7 +41,6 @@
     "../../../../../../front_end/panels/timeline/EntriesFilter.ts",
     "../../../../../../front_end/panels/timeline/EventsTimelineTreeView.ts",
     "../../../../../../front_end/panels/timeline/ExtensionTrackAppender.ts",
-    "../../../../../../front_end/panels/timeline/ExternalRequests.ts",
     "../../../../../../front_end/panels/timeline/FreshRecording.ts",
     "../../../../../../front_end/panels/timeline/GPUTrackAppender.ts",
     "../../../../../../front_end/panels/timeline/Initiators.ts",

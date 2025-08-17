@@ -27,7 +27,7 @@ const { ref } = Directives;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(dialogStyles)}</style>
+    <style>${dialogStyles}</style>
     <label>${input.label}</label>
     <input class="harmony-input add-source-map" spellcheck="false" type="text"
         jslog=${VisualLogging.textField('url').track({ keydown: 'Enter', change: true })}

@@ -483,6 +483,7 @@ export class ChatView extends HTMLElement {
             onSuggestionClick: this.#handleSuggestionClick,
             onFeedbackSubmit: this.#props.onFeedbackSubmit,
             onMessageContainerRef: this.#handleMessageContainerRef,
+            onCopyResponseClick: this.#props.onCopyResponseClick,
         })}
           ${this.#props.isReadOnly
             ? renderReadOnlySection({
@@ -706,7 +707,7 @@ function renderError(message) {
     }
     return Lit.nothing;
 }
-function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm, isLast, userInfo, markdownRenderer, onSuggestionClick, onFeedbackSubmit, }) {
+function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm, isLast, userInfo, markdownRenderer, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, }) {
     if (message.entity === "user" /* ChatMessageEntity.USER */) {
         const name = userInfo.accountFullName || lockedString(UIStringsNotTranslate.you);
         const image = userInfo.accountImage ?
@@ -769,6 +770,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
             },
             suggestions: (isLast && !isReadOnly) ? message.suggestions : undefined,
             onSuggestionClick,
+            onCopyResponseClick: () => onCopyResponseClick(message),
             canShowFeedbackForm,
         })}></devtools-widget>`}
     </section>
@@ -845,7 +847,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
   </div>`;
     // clang-format on
 }
-function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
+function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, userInfo, markdownRenderer, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef, }) {
     function renderPatchWidget() {
         if (isLoading) {
             return Lit.nothing;
@@ -872,6 +874,7 @@ function renderMessages({ messages, isLoading, isReadOnly, canShowFeedbackForm, 
         markdownRenderer,
         onSuggestionClick,
         onFeedbackSubmit,
+        onCopyResponseClick,
     }))}
       ${renderPatchWidget()}
     </div>
@@ -1179,7 +1182,7 @@ function renderDisabledState(contents) {
   `;
     // clang-format on
 }
-function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onMessageContainerRef, }) {
+function renderMainContents({ state, aidaAvailability, messages, isLoading, isReadOnly, canShowFeedbackForm, isTextInputDisabled, suggestions, userInfo, markdownRenderer, conversationType, changeSummary, changeManager, onSuggestionClick, onFeedbackSubmit, onCopyResponseClick, onMessageContainerRef, }) {
     if (state === "consent-view" /* State.CONSENT_VIEW */) {
         return renderDisabledState(renderConsentViewContents());
     }
@@ -1202,6 +1205,7 @@ function renderMainContents({ state, aidaAvailability, messages, isLoading, isRe
             onSuggestionClick,
             onFeedbackSubmit,
             onMessageContainerRef,
+            onCopyResponseClick
         });
     }
     return renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick });

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getBaseTraceParseModelData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceParseModelData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function shapeStackTraceAsArray(stackTrace) {
@@ -31,7 +31,8 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         Trace.Extras.StackTraceForEvent.clearCacheForTrace(parsedTrace);
     });
     it('correctly builds the stack trace of a profile call when it only has a synchronous stack trace.', async function () {
-        const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'startExample');
+        const jsCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'startExample');
         assert.exists(jsCall);
         const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
         assert.exists(stackTrace);
@@ -50,7 +51,8 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         ]);
     });
     it('correctly builds the stack trace of a profile call when it only has an asynchronous stack trace.', async function () {
-        const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
+        const jsCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
         assert.exists(jsCall);
         const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
         assert.exists(stackTrace);
@@ -103,7 +105,8 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         ]);
     });
     it('uses cached data correctly.', async function () {
-        const fooCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'foo');
+        const fooCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'foo');
         assert.exists(fooCall);
         const result = parsedTrace.AsyncJSCalls.asyncCallToScheduler.get(fooCall);
         assert.exists(result);
@@ -153,7 +156,8 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         bottomFrame.functionName = originalName;
     });
     it('uses the stack trace of the profile call that contains the raw trace event of the extension entry call', async function () {
-        const jsCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
+        const jsCall = allThreadEntriesInTrace(parsedTrace)
+            .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
         assert.exists(jsCall);
         const stackTraceForExtensionProfileCall = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
         const measureTraceId = [...parsedTrace.UserTimings.measureTraceByTraceId.keys()].at(0);

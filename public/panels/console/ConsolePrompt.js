@@ -16,7 +16,7 @@ import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as ObjectUI from '../../ui/legacy/components/object_ui/object_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { AiCodeCompletionTeaser } from '../common/common.js';
+import * as PanelCommon from '../common/common.js';
 import { ConsolePanel } from './ConsolePanel.js';
 import consolePromptStyles from './consolePrompt.css.js';
 const { Direction } = TextEditor.TextEditorHistory;
@@ -62,8 +62,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     #javaScriptCompletionCompartment = new CodeMirror.Compartment();
     aidaClient;
     aiCodeCompletion;
+    teaser;
     placeholderCompartment = new CodeMirror.Compartment();
-    teaserContainer;
     aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
     aiCodeCompletionCitations = [];
     #getJavaScriptCompletionExtensions() {
@@ -101,14 +101,14 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         this.requestPreviewBound = this.requestPreview.bind(this);
         this.innerPreviewElement = this.eagerPreviewElement.createChild('div', 'console-eager-inner-preview');
         const previewIcon = new IconButton.Icon.Icon();
-        previewIcon.data = { iconName: 'chevron-left-dot', color: 'var(--icon-default)', width: '16px', height: '16px' };
-        previewIcon.classList.add('preview-result-icon');
+        previewIcon.name = 'chevron-left-dot';
+        previewIcon.classList.add('preview-result-icon', 'medium');
         this.eagerPreviewElement.appendChild(previewIcon);
         const editorContainerElement = this.element.createChild('div', 'console-prompt-editor-container');
         this.element.appendChild(this.eagerPreviewElement);
         this.promptIcon = new IconButton.Icon.Icon();
-        this.promptIcon.data = { iconName: 'chevron-right', color: 'var(--icon-action)', width: '16px', height: '16px' };
-        this.promptIcon.classList.add('console-prompt-icon');
+        this.promptIcon.data = { iconName: 'chevron-right', color: 'var(--icon-action)' };
+        this.promptIcon.classList.add('console-prompt-icon', 'medium');
         this.element.appendChild(this.promptIcon);
         this.iconThrottler = new Common.Throttler.Throttler(0);
         this.eagerEvalSetting = Common.Settings.Settings.instance().moduleSetting('console-eager-eval');
@@ -142,10 +142,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         if (this.isAiCodeCompletionEnabled()) {
             const aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
             if (!this.aiCodeCompletionSetting.get() && !aiCodeCompletionTeaserDismissedSetting.get()) {
-                this.teaserContainer = document.createElement('div');
-                const teaser = new AiCodeCompletionTeaser({ onDetach: this.detachAiCodeCompletionTeaser.bind(this) });
-                teaser.show(this.teaserContainer, undefined, true);
-                extensions.push(this.placeholderCompartment.of(CodeMirror.placeholder(this.teaserContainer)));
+                this.teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.detachAiCodeCompletionTeaser.bind(this) });
+                extensions.push(this.placeholderCompartment.of(TextEditor.AiCodeCompletionTeaserPlaceholder.aiCodeCompletionTeaserPlaceholder(this.teaser)));
             }
             extensions.push(TextEditor.Config.aiAutoCompleteSuggestion);
         }
@@ -215,9 +213,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             }
         }
         let suffix = query.substring(cursor);
-        if (suffix === '') {
-            suffix = '\n';
-        }
         if (prefix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
             prefix = prefix.substring(prefix.length - AI_CODE_COMPLETION_CHARACTER_LIMIT);
         }
@@ -309,9 +304,12 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             keymap.push({
                 key: 'Tab',
                 run: () => {
-                    const accepted = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
+                    const { accepted, suggestion } = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
                     if (accepted) {
                         this.dispatchEventToListeners("AiCodeCompletionSuggestionAccepted" /* Events.AI_CODE_COMPLETION_SUGGESTION_ACCEPTED */, { citations: this.aiCodeCompletionCitations });
+                        if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+                            this.aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
+                        }
                     }
                     return accepted;
                 },
@@ -375,8 +373,9 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                 changes: { from: 0, to: this.editor.state.doc.length },
                 scrollIntoView: true,
             });
-            if (this.teaserContainer) {
+            if (this.teaser) {
                 this.detachAiCodeCompletionTeaser();
+                this.teaser = undefined;
             }
         }
         else if (this.editor.state.doc.length) {
@@ -443,6 +442,10 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         if (!this.aidaClient) {
             this.aidaClient = new Host.AidaClient.AidaClient();
         }
+        if (this.teaser) {
+            this.detachAiCodeCompletionTeaser();
+            this.teaser = undefined;
+        }
         this.aiCodeCompletion =
             new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
         this.aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, event => {
@@ -458,14 +461,26 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.setAiCodeCompletion();
         }
         else if (this.aiCodeCompletion) {
+            this.aiCodeCompletion.remove();
             this.aiCodeCompletion = undefined;
+        }
+    }
+    async onAiCodeCompletionTeaserActionKeyDown(event) {
+        if (this.teaser?.isShowing()) {
+            await this.teaser?.onAction(event);
+            void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.fre');
+        }
+    }
+    onAiCodeCompletionTeaserDismissKeyDown(event) {
+        if (this.teaser?.isShowing()) {
+            this.teaser?.onDismiss(event);
+            void VisualLogging.logKeyDown(event.currentTarget, event, 'ai-code-completion-teaser.dismiss');
         }
     }
     detachAiCodeCompletionTeaser() {
         this.editor.dispatch({
             effects: this.placeholderCompartment.reconfigure([]),
         });
-        this.teaserContainer = undefined;
     }
     isAiCodeCompletionEnabled() {
         return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);

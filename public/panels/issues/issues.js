@@ -463,7 +463,7 @@ var IssueKindView = class extends UI2.TreeOutline.TreeElement {
     header.classList.add("header");
     const issueKindIcon = new IconButton.Icon.Icon();
     issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(this.#kind);
-    issueKindIcon.classList.add("leading-issue-icon");
+    issueKindIcon.classList.add("leading-issue-icon", "extra-large");
     const countAdorner = new Adorners.Adorner.Adorner();
     countAdorner.data = {
       name: "countWrapper",
@@ -1170,8 +1170,8 @@ var AffectedResourcesView = class extends UI3.TreeOutline.TreeElement {
     frameCell.classList.add("affected-resource-cell");
     if (frame) {
       const icon = new IconButton2.Icon.Icon();
-      icon.data = { iconName: "code-circle", color: "var(--icon-link)", width: "16px", height: "16px" };
-      icon.classList.add("link", "elements-panel");
+      icon.data = { iconName: "code-circle", color: "var(--icon-link)" };
+      icon.classList.add("link", "elements-panel", "medium");
       icon.onclick = async () => {
         Host.userMetrics.issuesPanelResourceOpened(
           issueCategory,
@@ -3230,7 +3230,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
     const header = document.createElement("div");
     header.classList.add("header");
     this.#issueKindIcon = new IconButton3.Icon.Icon();
-    this.#issueKindIcon.classList.add("leading-issue-icon");
+    this.#issueKindIcon.classList.add("leading-issue-icon", "extra-large");
     this.#aggregatedIssuesCount = document.createElement("span");
     const countAdorner = new Adorners2.Adorner.Adorner();
     countAdorner.data = {

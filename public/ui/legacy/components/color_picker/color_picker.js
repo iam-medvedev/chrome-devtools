@@ -504,7 +504,8 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
         this.contrastPassFailAPCA.appendChild(iconCheckmark);
       } else {
         const iconNo = new IconButton.Icon.Icon();
-        iconNo.data = { iconName: "clear", color: "var(--icon-error)", width: "14px", height: "14px" };
+        iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
+        iconNo.classList.add("small");
         this.contrastPassFailAPCA.appendChild(iconNo);
         const suggestedColor = this.computeSuggestedColor("APCA");
         if (suggestedColor) {
@@ -546,7 +547,8 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
       this.contrastPassFailAA.appendChild(iconCheckmark);
     } else {
       const iconNo = new IconButton.Icon.Icon();
-      iconNo.data = { iconName: "clear", color: "var(--icon-error)", width: "14px", height: "14px" };
+      iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
+      iconNo.classList.add("small");
       this.contrastPassFailAA.appendChild(iconNo);
       const suggestedColor = this.computeSuggestedColor("aa");
       if (suggestedColor) {
@@ -566,7 +568,8 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
       this.contrastPassFailAAA.appendChild(iconCheckmark);
     } else {
       const iconNo = new IconButton.Icon.Icon();
-      iconNo.data = { iconName: "clear", color: "var(--icon-error)", width: "14px", height: "14px" };
+      iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
+      iconNo.classList.add("small");
       this.contrastPassFailAAA.appendChild(iconNo);
       const suggestedColor = this.computeSuggestedColor("aaa");
       if (suggestedColor) {
@@ -1041,11 +1044,11 @@ var FormatPickerContextMenu = class {
     let icon = void 0;
     if (newColor.isGamutClipped()) {
       icon = new IconButton2.Icon.Icon();
+      icon.name = "warning";
+      icon.classList.add("medium");
       icon.data = {
         iconName: "warning",
-        color: "var(--icon-default)",
-        width: "16px",
-        height: "16px"
+        color: "var(--icon-default)"
       };
       icon.style.marginLeft = "1px";
       icon.style.marginTop = "-1px";
@@ -2246,7 +2249,8 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     }
     function appendSwitcherIcon(parentElement) {
       const switcherIcon = new IconButton3.Icon.Icon();
-      switcherIcon.data = { iconName: "fold-more", color: "var(--icon-default)", width: "16px", height: "16px" };
+      switcherIcon.name = "fold-more";
+      switcherIcon.classList.add("medium");
       parentElement.appendChild(switcherIcon);
     }
   }

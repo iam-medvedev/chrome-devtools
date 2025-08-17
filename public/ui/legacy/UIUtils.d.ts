@@ -3,6 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
+import { Directives } from '../lit/lit.js';
 import { Size } from './Geometry.js';
 import type { ToolbarButton } from './Toolbar.js';
 import type { TreeOutline } from './Treeoutline.js';
@@ -313,3 +314,4 @@ export declare class PromotionManager {
  * @returns the newly created `HTMLDivElement` for the new badge.
  */
 export declare function maybeCreateNewBadge(promotionId: string): HTMLDivElement | undefined;
+export declare function bindToAction(actionName: string): ReturnType<typeof Directives.ref>;

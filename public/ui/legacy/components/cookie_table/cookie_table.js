@@ -467,7 +467,7 @@ var CookiesTable = class extends UI.Widget.VBox {
     data[
       "partition-key-site"
       /* SDK.Cookie.Attribute.PARTITION_KEY_SITE */
-    ] = cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey) : cookie.topLevelSite();
+    ] = cookie.partitionKeyOpaque() ? i18nString(UIStrings.opaquePartitionKey).toString() : cookie.topLevelSite();
     data[
       "has-cross-site-ancestor"
       /* SDK.Cookie.Attribute.HAS_CROSS_SITE_ANCESTOR */
@@ -490,16 +490,12 @@ var CookiesTable = class extends UI.Widget.VBox {
         data.icons[attribute] = new IconButton.Icon.Icon();
         if (attribute === "name" && IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssue(cookie)) {
           data.icons[attribute].name = "warning-filled";
-          data.icons[attribute].style.color = "var(--icon-warning)";
-          data.icons[attribute].style.width = "14px";
-          data.icons[attribute].style.height = "14px";
           data.icons[attribute].onclick = () => IssuesManager.RelatedIssue.reveal(cookie);
           data.icons[attribute].style.cursor = "pointer";
         } else {
           data.icons[attribute].name = "info";
-          data.icons[attribute].style.width = "14px";
-          data.icons[attribute].style.height = "14px";
         }
+        data.icons[attribute].classList.add("small");
         data.icons[attribute].title = blockedReason.uiString;
       } else if (data.icons[attribute]) {
         data.icons[attribute].title += "\n" + blockedReason.uiString;
@@ -511,8 +507,7 @@ var CookiesTable = class extends UI.Widget.VBox {
       data.flagged = true;
       data.icons.name = new IconButton.Icon.Icon();
       data.icons.name.name = "info";
-      data.icons.name.style.width = "14px";
-      data.icons.name.style.height = "14px";
+      data.icons.name.classList.add("small");
       data.icons.name.title = exemptionReason;
     }
     data.key = cookie.key();

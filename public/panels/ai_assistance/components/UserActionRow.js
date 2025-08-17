@@ -60,6 +60,10 @@ const UIStringsNotTranslate = {
      * @description The title of the button for scrolling to see previous suggestions
      */
     scrollToPrevious: 'Scroll to previous suggestions',
+    /**
+     * @description The title of the button that copies the AI-generated response to the clipboard.
+     */
+    copyResponse: 'Copy response',
 };
 const lockedString = i18n.i18n.lockedString;
 const REPORT_URL = 'https://support.google.com/legal/troubleshooter/1114905?hl=en#ts=1115658%2C13380504';
@@ -67,10 +71,10 @@ const SCROLL_ROUNDING_OFFSET = 1;
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     Lit.render(html `
-    <style>${UI.Widget.widgetScoped(Input.textInputStyles)}</style>
-    <style>${UI.Widget.widgetScoped(userActionRowStyles)}</style>
+    <style>${Input.textInputStyles}</style>
+    <style>${userActionRowStyles}</style>
     <div class="ai-assistance-feedback-row">
-      <div class="rate-buttons">
+      <div class="action-buttons">
         ${input.showRateButtons ? html `
           <devtools-button
             .data=${{
@@ -110,6 +114,17 @@ export const DEFAULT_VIEW = (input, output, target) => {
     }}
           @click=${input.onReportClick}
         ></devtools-button>
+        <div class="vertical-separator"></div>
+          <devtools-button
+            .data=${{
+        variant: "icon" /* Buttons.Button.Variant.ICON */,
+        size: "SMALL" /* Buttons.Button.Size.SMALL */,
+        title: lockedString(UIStringsNotTranslate.copyResponse),
+        iconName: 'copy',
+        jslogContext: 'copy-ai-response',
+    }}
+            aria-label=${lockedString(UIStringsNotTranslate.copyResponse)}
+            @click=${input.onCopyResponseClick}></devtools-button>
       </div>
       ${input.suggestions ? html `<div class="suggestions-container">
         <div class="scroll-button-container left hidden" ${ref(element => { output.suggestionsLeftScrollButtonContainer = element; })}>
@@ -202,6 +217,7 @@ export class UserActionRow extends UI.Widget.Widget {
     showRateButtons = false;
     onFeedbackSubmit = () => { };
     suggestions;
+    onCopyResponseClick = () => { };
     onSuggestionClick = () => { };
     canShowFeedbackForm = false;
     #suggestionsResizeObserver = new ResizeObserver(() => this.#handleSuggestionsScrollOrResize());
@@ -229,6 +245,7 @@ export class UserActionRow extends UI.Widget.Widget {
             onSuggestionClick: this.onSuggestionClick,
             onRatingClick: this.#handleRateClick.bind(this),
             onReportClick: () => UI.UIUtils.openInNewTab(REPORT_URL),
+            onCopyResponseClick: this.onCopyResponseClick,
             scrollSuggestionsScrollContainer: this.#scrollSuggestionsScrollContainer.bind(this),
             onSuggestionsScrollOrResize: this.#handleSuggestionsScrollOrResize.bind(this),
             onSubmit: this.#handleSubmit.bind(this),

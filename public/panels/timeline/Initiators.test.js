@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { allThreadEntriesInTrace } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Timeline from './timeline.js';
 describeWithEnvironment('Initiators', () => {
@@ -17,31 +18,33 @@ describeWithEnvironment('Initiators', () => {
         beforeEach(async function () {
             parsedTrace = (await TraceLoader.traceEngine(this, 'async-js-calls.json.gz')).parsedTrace;
             setTimeoutCall =
-                parsedTrace.Renderer.allTraceEntries
+                allThreadEntriesInTrace(parsedTrace)
                     .filter(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'setTimeout')
                     .at(-1);
             assert.exists(setTimeoutCall);
             assert.isTrue(Trace.Types.Events.isProfileCall(setTimeoutCall));
             functionCallBySetTimeout =
-                parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > setTimeoutCall.ts);
+                allThreadEntriesInTrace(parsedTrace)
+                    .find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > setTimeoutCall.ts);
             assert.exists(functionCallBySetTimeout);
             rAFCall =
-                parsedTrace.Renderer.allTraceEntries
+                allThreadEntriesInTrace(parsedTrace)
                     .filter(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'requestAnimationFrame')
                     .at(-1);
             assert.exists(rAFCall);
             assert.isTrue(Trace.Types.Events.isProfileCall(rAFCall));
             functionCallByRAF =
-                parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > rAFCall.ts);
+                allThreadEntriesInTrace(parsedTrace).find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > rAFCall.ts);
             assert.exists(functionCallByRAF);
             requestIdleCallbackCall =
-                parsedTrace.Renderer.allTraceEntries
+                allThreadEntriesInTrace(parsedTrace)
                     .filter(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'requestIdleCallback')
                     .at(-1);
             assert.exists(requestIdleCallbackCall);
             assert.isTrue(Trace.Types.Events.isProfileCall(requestIdleCallbackCall));
-            functionCallByrequestIdleCallback = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isFunctionCall(e) &&
-                e.ts > requestIdleCallbackCall.ts);
+            functionCallByrequestIdleCallback =
+                allThreadEntriesInTrace(parsedTrace)
+                    .find(e => Trace.Types.Events.isFunctionCall(e) && e.ts > requestIdleCallbackCall.ts);
             assert.exists(functionCallByrequestIdleCallback);
         });
         it('returns the initiator data', async function () {
@@ -54,7 +57,8 @@ describeWithEnvironment('Initiators', () => {
         it('can walk up the tree to find the first parent with an initiator', async function () {
             // Find any of the bar() calls; they have a parent event
             // (FunctionCall) that has an initiator.
-            const barCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'bar');
+            const barCall = allThreadEntriesInTrace(parsedTrace)
+                .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'bar');
             assert.exists(barCall);
             // Find the initator data but starting at the fibonacci()
             // call.
@@ -67,7 +71,8 @@ describeWithEnvironment('Initiators', () => {
         it('will walk back through the initiators to find the entire chain', async function () {
             // Find any of the baz() calls; they have a parent event
             // (FunctionCall) that has an initiator.
-            const bazCall = parsedTrace.Renderer.allTraceEntries.find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
+            const bazCall = allThreadEntriesInTrace(parsedTrace)
+                .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
             assert.exists(bazCall);
             // Find the initators data but starting at the baz()
             // call. We expect to find 3 initiatorData objects here:

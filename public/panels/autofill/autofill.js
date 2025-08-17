@@ -27,89 +27,91 @@ var autofillView_css_default = `/*
  * found in the LICENSE file.
  */
 
-main {
-  height: 100%;
-}
+@scope to (devtools-widget > *) {
+  main {
+    height: 100%;
+  }
 
-.header {
-  display: flex;
-  border-bottom: 1px solid var(--sys-color-divider);
-  width: 100%;
-}
+  .header {
+    display: flex;
+    border-bottom: 1px solid var(--sys-color-divider);
+    width: 100%;
+  }
 
-.placeholder-container {
-  height: calc(100% - 29px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  .placeholder-container {
+    height: calc(100% - 29px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
 
-.address {
-  padding: 10px;
-  margin-right: auto;
-}
+  .address {
+    padding: 10px;
+    margin-right: auto;
+  }
 
-.filled-fields-grid {
-  border-top: 1px solid var(--sys-color-divider);
-  box-sizing: border-box;
-}
+  .filled-fields-grid {
+    border-top: 1px solid var(--sys-color-divider);
+    box-sizing: border-box;
+  }
 
-.content-container {
-  display: flex;
-  flex-flow: column;
-  height: 100%;
-}
+  .content-container {
+    display: flex;
+    flex-flow: column;
+    height: 100%;
+  }
 
-.grid-wrapper {
-  flex-grow: 1;
-}
+  .grid-wrapper {
+    flex-grow: 1;
+  }
 
-devtools-data-grid {
-  border: none;
-  height: 100%;
-}
+  devtools-data-grid {
+    border: none;
+    height: 100%;
+  }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-}
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+  }
 
-.right-to-left {
-  border-bottom: 1px solid var(--sys-color-divider);
-  display: flex;
-  flex-flow: row-reverse wrap;
-  justify-content: flex-end;
-}
+  .right-to-left {
+    border-bottom: 1px solid var(--sys-color-divider);
+    display: flex;
+    flex-flow: row-reverse wrap;
+    justify-content: flex-end;
+  }
 
-.label-container {
-  padding: 5px;
-  display: flex;
-  align-items: flex-start;
-}
+  .label-container {
+    padding: 5px;
+    display: flex;
+    align-items: flex-start;
+  }
 
-.top-left-corner {
-  border-bottom: 1px solid var(--sys-color-divider);
-  display: flex;
-  padding: 5px;
-  gap: 10px;
-}
+  .top-left-corner {
+    border-bottom: 1px solid var(--sys-color-divider);
+    display: flex;
+    padding: 5px;
+    gap: 10px;
+  }
 
-.matches-filled-field {
-  background-color: var(--sys-color-tonal-container);
-}
+  .matches-filled-field {
+    background-color: var(--sys-color-tonal-container);
+  }
 
-.highlighted {
-  background-color: var(--sys-color-state-focus-select);
-}
+  .highlighted {
+    background-color: var(--sys-color-state-focus-select);
+  }
 
-.link {
-  color: var(--sys-color-primary);
-  text-decoration-line: underline;
-}
+  .link {
+    color: var(--sys-color-primary);
+    text-decoration-line: underline;
+  }
 
-.feedback {
-  margin: auto 5px auto auto;
-  font-size: var(--sys-typescale-body4-size);
+  .feedback {
+    margin: auto 5px auto auto;
+    font-size: var(--sys-typescale-body4-size);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./autofillView.css")} */`;
@@ -272,8 +274,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
   };
   if (!input.address && !input.filledFields.length) {
     render(html`
-        <style>${UI.Widget.widgetScoped(autofillView_css_default)}</style>
-        <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
+        <style>${autofillView_css_default}</style>
+        <style>${UI.inspectorCommonStyles}</style>
         <main>
           <div class="top-left-corner">
             <devtools-checkbox
@@ -304,8 +306,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
     return;
   }
   render(html`
-      <style>${UI.Widget.widgetScoped(autofillView_css_default)}</style>
-      <style>${UI.Widget.widgetScoped(UI.inspectorCommonStyles)}</style>
+      <style>${autofillView_css_default}</style>
+      <style>${UI.inspectorCommonStyles}</style>
       <main>
         <div class="content-container" jslog=${VisualLogging.pane("autofill")}>
           <div class="right-to-left" role="region" aria-label=${i18nString(UIStrings.addressPreview)}>

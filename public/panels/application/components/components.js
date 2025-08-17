@@ -4265,15 +4265,20 @@ dt-icon-label {
 
 .new-badge {
   width: fit-content;
-  height: var(--sys-size-7);
-  line-height: var(--sys-size-7);
+  height: var(--sys-size-8);
+  line-height: var(--sys-size-8);
   border-radius: var(--sys-shape-corner-extra-small);
   padding: 0 var(--sys-size-3);
-  background-color: var(--sys-color-primary);
-  color: var(--sys-color-on-primary);
+  background-color: var(--sys-color-tonal-container);
+  color: var(--sys-color-on-tonal-container);
   font-weight: var(--ref-typeface-weight-bold);
   font-size: 9px;
   text-align: center;
+}
+
+:host-context(.platform-mac) .new-badge {
+  background-color: var(--sys-color-primary);
+  color: var(--sys-color-on-primary);
 }
 
 .expandable-inline-button {
@@ -5281,27 +5286,29 @@ var sharedStorageAccessGrid_css_default = `/*
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
-:scope {
-  padding: 20px;
-  height: 100%;
-  display: flex;
-}
+@scope to (devtools-widget > *) {
+  :scope {
+    padding: 20px;
+    height: 100%;
+    display: flex;
+  }
 
-.heading {
-  font-size: 15px;
-}
+  .heading {
+    font-size: 15px;
+  }
 
-devtools-data-grid {
-  margin-top: 20px;
-}
+  devtools-data-grid {
+    margin-top: 20px;
+  }
 
-.info-icon {
-  vertical-align: text-bottom;
-  height: 14px;
-}
+  .info-icon {
+    vertical-align: text-bottom;
+    height: 14px;
+  }
 
-.no-events-message {
-  margin-top: 20px;
+  .no-events-message {
+    margin-top: 20px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./sharedStorageAccessGrid.css")} */`;
@@ -5372,7 +5379,7 @@ var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/Shared
 var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var DEFAULT_VIEW = (input, _output, target) => {
   render12(html12`
-    <style>${UI5.Widget.widgetScoped(sharedStorageAccessGrid_css_default)}</style>
+    <style>${sharedStorageAccessGrid_css_default}</style>
     ${input.events.length === 0 ? html12`
         <div class="empty-state" jslog=${VisualLogging9.section().context("empty-view")}>
           <div class="empty-state-header">${i18nString11(UIStrings12.noEvents)}</div>

@@ -18,6 +18,7 @@ export class ButtonDialog extends HTMLElement {
         if (!this.#dialog) {
             throw new Error('Dialog not found');
         }
+        this.state = "expanded" /* DialogState.EXPANDED */;
         void this.#dialog.setDialogVisible(true);
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
@@ -26,10 +27,17 @@ export class ButtonDialog extends HTMLElement {
             throw new Error('Dialog not found');
         }
         void this.#dialog.setDialogVisible(false);
+        this.state = "expanded" /* DialogState.EXPANDED */;
         if (evt) {
             evt.stopImmediatePropagation();
         }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    }
+    set state(state) {
+        if (this.#data) {
+            this.#data.state = state;
+            void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+        }
     }
     #render() {
         if (!this.#data) {
@@ -69,6 +77,7 @@ export class ButtonDialog extends HTMLElement {
         .closeButton=${this.#data.closeButton ?? false}
         .dialogTitle=${this.#data.dialogTitle}
         .jslogContext=${this.#data.jslogContext ?? ''}
+        .state=${this.#data.state ?? "expanded" /* DialogState.EXPANDED */}
         on-render=${ComponentHelpers.Directives.nodeRenderedCallback(node => {
             this.#dialog = node;
         })}

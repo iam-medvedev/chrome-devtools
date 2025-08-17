@@ -3,12 +3,15 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { WebAudioModel } from './WebAudioModel.js';
 export declare class WebAudioView extends UI.ThrottledWidget.ThrottledWidget implements SDK.TargetManager.SDKModelObserver<WebAudioModel> {
-    private readonly contextSelector;
     private readonly contentContainer;
     private readonly detailViewContainer;
     private graphManager;
     private readonly landingPage;
     private readonly summaryBarContainer;
+    private readonly contextSelectorPlaceholderText;
+    private readonly contextSelectorElement;
+    private readonly contextSelectorItems;
+    private readonly contextSelectorToolbarItem;
     constructor();
     wasShown(): void;
     willHide(): void;
@@ -17,6 +20,11 @@ export declare class WebAudioView extends UI.ThrottledWidget.ThrottledWidget imp
     doUpdate(): Promise<void>;
     private addEventListeners;
     private removeEventListeners;
+    private addContextSelectorPlaceholderOption;
+    private onContextSelectorListItemReplaced;
+    private selectedContext;
+    private onContextSelectorSelectionChanged;
+    private titleForContext;
     private contextCreated;
     private contextDestroyed;
     private contextChanged;

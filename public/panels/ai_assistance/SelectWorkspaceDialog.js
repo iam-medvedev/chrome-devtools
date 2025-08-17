@@ -47,7 +47,7 @@ const lockedString = i18n.i18n.lockedString;
 export const SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
     const hasFolders = input.folders.length > 0;
     render(html `
-      <style>${UI.Widget.widgetScoped(selectWorkspaceDialogStyles)}</style>
+      <style>${selectWorkspaceDialogStyles}</style>
       <h2 class="dialog-header">${lockedString(UIStringsNotTranslate.selectFolder)}</h2>
       <div class="main-content">
         <div class="select-project-root">${lockedString(UIStringsNotTranslate.selectProjectRoot)}</div>

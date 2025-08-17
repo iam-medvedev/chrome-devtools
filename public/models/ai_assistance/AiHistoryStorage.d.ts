@@ -28,6 +28,7 @@ export declare class Conversation {
     get isReadOnly(): boolean;
     get title(): string | undefined;
     get isEmpty(): boolean;
+    getConversationMarkdown(): string;
     archiveConversation(): void;
     addHistoryItem(item: ResponseData): Promise<void>;
     serialize(): SerializedConversation;

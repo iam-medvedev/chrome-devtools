@@ -1130,6 +1130,7 @@ var SensorsView = class extends UI2.Widget.VBox {
   #locationSelectChanged() {
     this.fieldsetElement.disabled = false;
     this.timezoneError.textContent = "";
+    this.accuracyError.textContent = "";
     const value = this.locationSelectElement.options[this.locationSelectElement.selectedIndex].value;
     if (value === NonPresetOptions.NoOverride) {
       this.#locationOverrideEnabled = false;
@@ -1166,6 +1167,7 @@ var SensorsView = class extends UI2.Widget.VBox {
       return;
     }
     this.timezoneError.textContent = "";
+    this.accuracyError.textContent = "";
     this.setSelectElementLabel(this.locationSelectElement, NonPresetOptions.Custom);
     this.#location = location;
     this.applyLocation();
@@ -1185,6 +1187,10 @@ var SensorsView = class extends UI2.Widget.VBox {
           }
           case "emulation-set-locale": {
             this.localeError.textContent = err.message;
+            break;
+          }
+          case "emulation-set-accuracy": {
+            this.accuracyError.textContent = err.message;
             break;
           }
         }

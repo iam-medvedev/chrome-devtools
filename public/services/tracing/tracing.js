@@ -4,6 +4,43 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/services/tracing/ExternalRequests.js
+var ExternalRequests_exports = {};
+__export(ExternalRequests_exports, {
+  getInsightAgentFocusToDebug: () => getInsightAgentFocusToDebug
+});
+import * as Trace from "./../../models/trace/trace.js";
+import * as TimelineUtils from "./../../panels/timeline/utils/utils.js";
+async function getInsightAgentFocusToDebug(model, insightTitle) {
+  const parsedTrace = model.parsedTrace();
+  const latestInsights = model.traceInsights();
+  if (!latestInsights || !parsedTrace) {
+    return {
+      error: "No trace has been recorded, so we cannot analyze any insights"
+    };
+  }
+  const firstNavigation = Array.from(latestInsights.keys()).find((k) => k !== Trace.Types.Events.NO_NAVIGATION);
+  const insights = firstNavigation ? latestInsights.get(firstNavigation) : latestInsights.get(Trace.Types.Events.NO_NAVIGATION);
+  if (!insights) {
+    return {
+      error: "Could not find any navigation with insights."
+    };
+  }
+  const insightKeys = Object.keys(insights.model);
+  const matchingInsightKey = insightKeys.find((insightKey) => {
+    const insight2 = insights.model[insightKey];
+    return insight2.title === insightTitle;
+  });
+  if (!matchingInsightKey) {
+    return {
+      error: `Could not find matching insight for ${insightTitle}`
+    };
+  }
+  const insight = insights.model[matchingInsightKey];
+  const focus = TimelineUtils.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insights.bounds);
+  return { focus };
+}
+
 // gen/front_end/services/tracing/PerformanceTracing.js
 var PerformanceTracing_exports = {};
 __export(PerformanceTracing_exports, {
@@ -173,6 +210,7 @@ var RawTraceEvents = class {
   }
 };
 export {
+  ExternalRequests_exports as ExternalRequests,
   PerformanceTracing_exports as PerformanceTracing,
   TracingManager_exports as TracingManager
 };

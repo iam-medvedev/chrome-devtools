@@ -179,6 +179,14 @@ const UIStrings = {
      */
     disableGridMode: 'Disable grid mode',
     /**
+     * @description ARIA label for Elements Tree adorners
+     */
+    enableMasonryMode: 'Enable masonry mode',
+    /**
+     * @description ARIA label for Elements Tree adorners
+     */
+    disableMasonryMode: 'Disable masonry mode',
+    /**
      * @description ARIA label for an elements tree adorner
      */
     forceOpenPopover: 'Keep this popover open',
@@ -781,13 +789,22 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const openAiAssistanceId = 'freestyler.element-panel-context';
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
             function appendSubmenuPromptAction(submenu, action, label, prompt, jslogContext) {
-                submenu.defaultSection().appendItem(label, () => action.execute({ prompt }), { disabled: !action.enabled(), jslogContext });
+                submenu.defaultSection().appendItem(label, () => {
+                    void action.execute({ prompt });
+                    UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(openAiAssistanceId);
+                }, { disabled: !action.enabled(), jslogContext });
             }
             UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, this.nodeInternal);
             if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
                 const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
                 // Register new badge under the `devToolsAiSubmenuPrompts` feature, as the freestyler one is already used in ViewManager.
-                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.featureName);
+                // Additionally register with the PromotionManager. Since we use two features for freeestyler here (submenu or debug with ai),
+                // the back-end will not be able to identify them as one as soon as we launch, and show the new badge
+                // on the 'Debug with Ai' item even if the user was already seeing it during the study if they were in the other study group.
+                const featureName = UI.UIUtils.PromotionManager.instance().maybeShowPromotion(openAiAssistanceId) ?
+                    Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.featureName :
+                    undefined;
+                const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId, featureName);
                 submenu.defaultSection().appendAction(openAiAssistanceId, i18nString(UIStrings.startAChat));
                 const submenuConfigs = [
                     {
@@ -811,7 +828,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                         ],
                     },
                     {
-                        condition: (props) => Boolean(props?.isGrid),
+                        condition: (props) => Boolean(props?.isGrid && !props?.isSubgrid),
                         items: [
                             {
                                 label: i18nString(UIStrings.alignItems),
@@ -917,7 +934,17 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             }
             else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
                 // Register new badge under the `devToolsAiDebugWithAi` feature, as the freestyler one is already used in ViewManager.
-                contextMenu.footerSection().appendAction(openAiAssistanceId, undefined, false, undefined, Root.Runtime.hostConfig.devToolsAiDebugWithAi?.featureName);
+                // Additionally register with the PromotionManager. Since we use two different features for freeestyler here (submenu or debug with ai),
+                // the back-end will not be able to identify them as one as soon as we launch, and show the new badge
+                // on the 'Debug with Ai' item even if the user was already seeing it during the study if they were in the other study group.
+                const featureName = UI.UIUtils.PromotionManager.instance().maybeShowPromotion(openAiAssistanceId) ?
+                    Root.Runtime.hostConfig.devToolsAiDebugWithAi?.featureName :
+                    undefined;
+                const action = UI.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
+                contextMenu.footerSection().appendItem(action.title(), () => {
+                    void action.execute();
+                    UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(openAiAssistanceId);
+                }, { jslogContext: openAiAssistanceId, disabled: !action.enabled(), featureName });
             }
             else {
                 contextMenu.footerSection().appendAction(openAiAssistanceId);
@@ -2126,6 +2153,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             if (layout.isGrid) {
                 this.pushGridAdorner(this.tagTypeContext, layout.isSubgrid);
             }
+            if (layout.isMasonry) {
+                this.pushMasonryAdorner(this.tagTypeContext);
+            }
             if (layout.isFlex) {
                 this.pushFlexAdorner(this.tagTypeContext);
             }
@@ -2194,6 +2224,41 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             shouldPropagateOnKeydown: false,
             ariaLabelDefault: i18nString(UIStrings.enableGridMode),
             ariaLabelActive: i18nString(UIStrings.disableGridMode),
+        });
+        node.domModel().overlayModel().addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, event => {
+            const { nodeId: eventNodeId, enabled } = event.data;
+            if (eventNodeId !== nodeId) {
+                return;
+            }
+            adorner.toggle(enabled);
+        });
+        context.styleAdorners.add(adorner);
+        if (node.domModel().overlayModel().isHighlightedGridInPersistentOverlay(nodeId)) {
+            adorner.toggle(true);
+        }
+    }
+    pushMasonryAdorner(context) {
+        const node = this.node();
+        const nodeId = node.id;
+        if (!nodeId) {
+            return;
+        }
+        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.MASONRY);
+        const adorner = this.adorn(config);
+        adorner.classList.add('masonry');
+        const onClick = (() => {
+            if (adorner.isActive()) {
+                node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+            }
+            else {
+                node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
+            }
+        });
+        adorner.addInteraction(onClick, {
+            isToggle: true,
+            shouldPropagateOnKeydown: false,
+            ariaLabelDefault: i18nString(UIStrings.enableMasonryMode),
+            ariaLabelActive: i18nString(UIStrings.disableMasonryMode),
         });
         node.domModel().overlayModel().addEventListener("PersistentGridOverlayStateChanged" /* SDK.OverlayModel.Events.PERSISTENT_GRID_OVERLAY_STATE_CHANGED */, event => {
             const { nodeId: eventNodeId, enabled } = event.data;

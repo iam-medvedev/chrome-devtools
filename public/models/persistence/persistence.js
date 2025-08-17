@@ -2187,7 +2187,8 @@ var PersistenceUtils = class _PersistenceUtils {
         return null;
       }
       const icon2 = new IconButton.Icon.Icon();
-      icon2.data = { iconName: "document", color: "var(--icon-default)", width: "14px", height: "14px" };
+      icon2.name = "document";
+      icon2.classList.add("small");
       UI2.Tooltip.Tooltip.install(icon2, _PersistenceUtils.tooltipForUISourceCode(binding.network));
       if (NetworkPersistenceManager.instance().project() === binding.fileSystem.project()) {
         icon2.classList.add("dot", "purple");
@@ -2201,12 +2202,14 @@ var PersistenceUtils = class _PersistenceUtils {
     }
     if (NetworkPersistenceManager.instance().isActiveHeaderOverrides(uiSourceCode)) {
       const icon2 = new IconButton.Icon.Icon();
-      icon2.data = { iconName: "document", color: "var(--icon-default)", width: "14px", height: "14px" };
+      icon2.name = "document";
+      icon2.classList.add("small");
       icon2.classList.add("dot", "purple");
       return icon2;
     }
     const icon = new IconButton.Icon.Icon();
-    icon.data = { iconName: "document", color: "var(--icon-default)", width: "14px", height: "14px" };
+    icon.name = "document";
+    icon.classList.add("small");
     UI2.Tooltip.Tooltip.install(icon, _PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
     return icon;
   }
@@ -3257,25 +3260,27 @@ var editFileSystemView_css_default = `/*
  * found in the LICENSE file.
  */
 
-.excluded-folder-header {
-  display: flex;
-  flex-direction: column;
-  min-height: var(--sys-size-16);
-  padding: var(--sys-size-4) var(--sys-size-6);
-  gap: var(--sys-size-4);
+@scope to (devtools-widget > *) {
+  .excluded-folder-header {
+    display: flex;
+    flex-direction: column;
+    min-height: var(--sys-size-16);
+    padding: var(--sys-size-4) var(--sys-size-6);
+    gap: var(--sys-size-4);
 
-  & > .excluded-folder-url {
-    color: var(--sys-color-on-surface-subtle);
-    overflow-wrap: break-word;
+    & > .excluded-folder-url {
+      color: var(--sys-color-on-surface-subtle);
+      overflow-wrap: break-word;
+    }
   }
-}
 
-.exclude-subfolders-table {
-  padding: var(--sys-size-4) 0;
-}
+  .exclude-subfolders-table {
+    padding: var(--sys-size-4) 0;
+  }
 
-.excluded-folder-error {
-  color: var(--sys-color-error);
+  .excluded-folder-error {
+    color: var(--sys-color-error);
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./editFileSystemView.css")} */`;
@@ -3314,7 +3319,7 @@ function statusString(status) {
 }
 var DEFAULT_VIEW = (input, _output, target) => {
   render(html`
-      <style>${UI3.Widget.widgetScoped(editFileSystemView_css_default)}</style>
+      <style>${editFileSystemView_css_default}</style>
       <div class="excluded-folder-header">
         <span>${i18nString5(UIStrings5.url)}</span>
         <span class="excluded-folder-url">${input.fileSystemPath}</span>
@@ -3691,41 +3696,43 @@ var workspaceSettingsTab_css_default = `/*
  * found in the LICENSE file.
  */
 
-.mappings-info,
-.folder-exclude-pattern {
-  height: var(--settings-single-item-height);
-}
-
-.mapping-view-container {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.folder-exclude-pattern {
-  display: flex;
-  align-items: center;
-
-  & > input {
-    flex: 1;
+@scope to (devtools-widget > *) {
+  .mappings-info,
+  .folder-exclude-pattern {
+    height: var(--settings-single-item-height);
   }
-}
 
-label {
-  padding-bottom: 0;
-}
+  .mapping-view-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
 
-.mappings-info {
-  border: none;
-}
+  .folder-exclude-pattern {
+    display: flex;
+    align-items: center;
 
-.add-button-container {
-  max-width: var(--sys-size-35);
-  margin-left: var(--sys-size-8);
-  width: 100%;
+    & > input {
+      flex: 1;
+    }
+  }
 
-  & .add-folder {
-    min-width: var(--sys-size-31);
+  label {
+    padding-bottom: 0;
+  }
+
+  .mappings-info {
+    border: none;
+  }
+
+  .add-button-container {
     max-width: var(--sys-size-35);
+    margin-left: var(--sys-size-8);
+    width: 100%;
+
+    & .add-folder {
+      min-width: var(--sys-size-31);
+      max-width: var(--sys-size-35);
+    }
   }
 }
 
@@ -3758,7 +3765,7 @@ var str_7 = i18n13.i18n.registerUIStrings("models/persistence/WorkspaceSettingsT
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render2(html2`
-    <style>${UI5.Widget.widgetScoped(workspaceSettingsTab_css_default)}</style>
+    <style>${workspaceSettingsTab_css_default}</style>
     <div class="settings-card-container-wrapper" jslog=${VisualLogging.pane("workspace")}>
       <div class="settings-card-container">
         <devtools-card heading=${i18nString7(UIStrings7.workspace)}>

@@ -16,6 +16,7 @@ export interface RegisteredAdorner {
 export declare enum RegisteredAdorners {
     GRID = "grid",
     SUBGRID = "subgrid",
+    MASONRY = "masonry",
     FLEX = "flex",
     AD = "ad",
     SCROLL_SNAP = "scroll-snap",

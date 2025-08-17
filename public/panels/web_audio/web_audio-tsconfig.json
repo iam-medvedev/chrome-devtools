@@ -31,7 +31,6 @@
   },
   "files": [
     "../../../../../../front_end/panels/web_audio/AudioContextContentBuilder.ts",
-    "../../../../../../front_end/panels/web_audio/AudioContextSelector.ts",
     "../../../../../../front_end/panels/web_audio/WebAudioModel.ts",
     "../../../../../../front_end/panels/web_audio/WebAudioView.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

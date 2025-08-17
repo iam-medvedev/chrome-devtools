@@ -7,6 +7,7 @@ import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError, getInsightSetOrError } from '../../../testing/InsightHelpers.js';
+import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../../trace/trace.js';
 import { PerformanceAgent, PerformanceInsightFormatter, PerformanceTraceContext, TraceEventFormatter } from '../ai_assistance.js';
@@ -85,7 +86,8 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
         it('calculates the origin of the selected node when it has a URL associated with it', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             // An Evaluate Script event, picked because it has a URL of googletagmanager.com/...
-            const evalScriptEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
+            const evalScriptEvent = allThreadEntriesInTrace(parsedTrace)
+                .find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
             assert.exists(evalScriptEvent);
             const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(evalScriptEvent, parsedTrace);
             assert.isOk(aiCallTree);
@@ -95,7 +97,8 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
         it('returns a random but deterministic "origin" for nodes that have no URL associated', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             // A random layout event with no URL associated
-            const layoutEvent = parsedTrace.Renderer.allTraceEntries.find(event => event.name === "Layout" /* Trace.Types.Events.Name.LAYOUT */ && event.ts === 122411130078);
+            const layoutEvent = allThreadEntriesInTrace(parsedTrace)
+                .find(event => event.name === "Layout" /* Trace.Types.Events.Name.LAYOUT */ && event.ts === 122411130078);
             assert.exists(layoutEvent);
             const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(layoutEvent, parsedTrace);
             assert.isOk(aiCallTree);
@@ -107,7 +110,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
         it('generates an answer', async function () {
             const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-outermost-frames.json.gz');
             // A basic Layout.
-            const layoutEvt = parsedTrace.Renderer.allTraceEntries.find(event => event.ts === 465457096322);
+            const layoutEvt = allThreadEntriesInTrace(parsedTrace).find(event => event.ts === 465457096322);
             assert.exists(layoutEvt);
             const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
             assert.exists(aiCallTree);

@@ -4,7 +4,10 @@ export interface RatingViewInput {
     currentRating?: Host.AidaClient.Rating;
     onRatingClick: (rating: Host.AidaClient.Rating) => void;
     showRateButtons: boolean;
+}
+export interface ActionViewInput {
     onReportClick: () => void;
+    onCopyResponseClick: () => void;
 }
 export interface SuggestionViewInput {
     suggestions?: [string, ...string[]];
@@ -19,7 +22,7 @@ export interface FeedbackFormViewInput {
     onInputChange: (input: string) => void;
     isSubmitButtonDisabled: boolean;
 }
-export type UserActionRowViewInput = RatingViewInput & SuggestionViewInput & FeedbackFormViewInput;
+export type UserActionRowViewInput = RatingViewInput & ActionViewInput & SuggestionViewInput & FeedbackFormViewInput;
 export interface ViewOutput {
     suggestionsLeftScrollButtonContainer?: Element;
     suggestionsScrollContainer?: Element;
@@ -29,6 +32,7 @@ export interface UserActionRowWidgetParams {
     showRateButtons: boolean;
     onFeedbackSubmit: (rate: Host.AidaClient.Rating, feedback?: string) => void;
     suggestions?: [string, ...string[]];
+    onCopyResponseClick: () => void;
     onSuggestionClick: (suggestion: string) => void;
     canShowFeedbackForm: boolean;
 }
@@ -43,6 +47,7 @@ export declare class UserActionRow extends UI.Widget.Widget implements UserActio
     showRateButtons: boolean;
     onFeedbackSubmit: (rate: Host.AidaClient.Rating, feedback?: string) => void;
     suggestions: [string, ...string[]] | undefined;
+    onCopyResponseClick: () => void;
     onSuggestionClick: (suggestion: string) => void;
     canShowFeedbackForm: boolean;
     constructor(element?: HTMLElement, view?: View);

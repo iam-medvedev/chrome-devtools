@@ -24,6 +24,7 @@ export const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
  */
 export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
     #editor;
+    #renderingTimeout;
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
@@ -33,6 +34,9 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
         this.#editor = editor;
     }
+    #debouncedRequestAidaSuggestion = Common.Debouncer.debounce((prefix, suffix, cursor, inferenceLanguage) => {
+        void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix, inferenceLanguage), cursor);
+    }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
     #buildRequest(prefix, suffix, inferenceLanguage = "JAVASCRIPT" /* Host.AidaClient.AidaInferenceLanguage.JAVASCRIPT */) {
         const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
         function validTemperature(temperature) {
@@ -69,7 +73,7 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                 }
                 const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
                 // Delays the rendering of the Code completion
-                setTimeout(() => {
+                this.#renderingTimeout = window.setTimeout(() => {
                     // We are not cancelling the previous responses even when there are more recent responses
                     // from the LLM as:
                     // In case the user kept typing characters that are prefix of the previous suggestion, it
@@ -77,8 +81,17 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                     // In case the user typed a different character, the config for AI auto complete suggestion
                     // will set the suggestion to null.
                     this.#editor.dispatch({
-                        effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: response.generatedSamples[0].generationString, from: cursor }),
+                        effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({
+                            text: response.generatedSamples[0].generationString,
+                            from: cursor,
+                            rpcGlobalId: response.metadata.rpcGlobalId,
+                            sampleId: response.generatedSamples[0].sampleId,
+                        })
                     });
+                    if (response.metadata.rpcGlobalId) {
+                        const latency = performance.now() - startTime;
+                        this.#registerUserImpression(response.metadata.rpcGlobalId, response.generatedSamples[0].sampleId, latency);
+                    }
                     const citations = response.generatedSamples[0].attributionMetadata?.citations;
                     this.dispatchEventToListeners("ResponseReceived" /* Events.RESPONSE_RECEIVED */, { citations });
                 }, remainderDelay);
@@ -102,8 +115,49 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
             modelId,
         };
     }
-    onTextChanged = Common.Debouncer.debounce((prefix, suffix, cursor) => {
-        void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix), cursor);
-    }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+    #registerUserImpression(rpcGlobalId, sampleId, latency) {
+        const seconds = Math.floor(latency / 1_000);
+        const remainingMs = latency % 1_000;
+        const nanos = remainingMs * 1_000_000;
+        void this.#aidaClient.registerClientEvent({
+            corresponding_aida_rpc_global_id: rpcGlobalId,
+            disable_user_content_logging: true,
+            complete_code_client_event: {
+                user_impression: {
+                    sample: {
+                        sample_id: sampleId,
+                    },
+                    latency: {
+                        duration: {
+                            seconds,
+                            nanos,
+                        },
+                    }
+                },
+            },
+        });
+    }
+    registerUserAcceptance(rpcGlobalId, sampleId) {
+        void this.#aidaClient.registerClientEvent({
+            corresponding_aida_rpc_global_id: rpcGlobalId,
+            disable_user_content_logging: true,
+            complete_code_client_event: {
+                user_acceptance: {
+                    sample: {
+                        sample_id: sampleId,
+                    }
+                },
+            },
+        });
+    }
+    onTextChanged(prefix, suffix, cursor, inferenceLanguage) {
+        this.#debouncedRequestAidaSuggestion(prefix, suffix, cursor, inferenceLanguage);
+    }
+    remove() {
+        if (this.#renderingTimeout) {
+            clearTimeout(this.#renderingTimeout);
+            this.#renderingTimeout = undefined;
+        }
+    }
 }
 //# sourceMappingURL=AiCodeCompletion.js.map

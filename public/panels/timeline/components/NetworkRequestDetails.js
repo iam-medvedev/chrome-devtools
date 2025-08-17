@@ -175,8 +175,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const redirectsHtml = NetworkRequestTooltip.renderRedirects(request);
     // clang-format off
     render(html `
-        <style>${UI.Widget.widgetScoped(networkRequestDetailsStyles)}</style>
-        <style>${UI.Widget.widgetScoped(networkRequestTooltipStyles)}</style>
+        <style>${networkRequestDetailsStyles}</style>
+        <style>${networkRequestTooltipStyles}</style>
 
         <div class="network-request-details-content">
           ${renderTitle(input.request)}

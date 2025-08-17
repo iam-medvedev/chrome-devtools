@@ -6,6 +6,7 @@ export const defaults = () => ({
     showAllEvents: false,
     debugMode: false,
     maxInvalidationEventsPerEvent: 20,
+    enableAnimationsFrameHandler: false,
 });
 /**
  * Generates a key that can be used to represent this config in a cache. This is

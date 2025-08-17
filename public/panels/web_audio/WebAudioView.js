@@ -7,8 +7,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
-import { ContextDetailBuilder, ContextSummaryBuilder } from './AudioContextContentBuilder.js';
-import { AudioContextSelector } from './AudioContextSelector.js';
 import * as GraphVisualizer from './graph_visualizer/graph_visualizer.js';
 import webAudioStyles from './webAudio.css.js';
 import { WebAudioModel } from './WebAudioModel.js';
@@ -22,17 +20,58 @@ const UIStrings = {
      * @description Text in Web Audio View
      */
     openAPageThatUsesWebAudioApiTo: 'Open a page that uses Web Audio API to start monitoring.',
+    /**
+     * @description Text that shows there is no recording
+     */
+    noRecordings: '(no recordings)',
+    /**
+     * @description Label prefix for an audio context selection
+     * @example {realtime (1e03ec)} PH1
+     */
+    audioContextS: 'Audio context: {PH1}',
+    /**
+     * @description The current state of an item
+     */
+    state: 'State',
+    /**
+     * @description Text in Web Audio View
+     */
+    sampleRate: 'Sample Rate',
+    /**
+     * @description Text in Web Audio View
+     */
+    callbackBufferSize: 'Callback Buffer Size',
+    /**
+     * @description Label in the Web Audio View for the maximum number of output channels
+     * that this Audio Context has.
+     */
+    maxOutputChannels: 'Max Output Channels',
+    /**
+     * @description Text in Web Audio View
+     */
+    currentTime: 'Current Time',
+    /**
+     * @description Text in Web Audio View
+     */
+    callbackInterval: 'Callback Interval',
+    /**
+     * @description Text in Web Audio View
+     */
+    renderCapacity: 'Render Capacity',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/web_audio/WebAudioView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const WEBAUDIO_EXPLANATION_URL = 'https://developer.chrome.com/docs/devtools/webaudio';
 export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
-    contextSelector;
     contentContainer;
     detailViewContainer;
     graphManager;
     landingPage;
     summaryBarContainer;
+    contextSelectorPlaceholderText;
+    contextSelectorElement;
+    contextSelectorItems;
+    contextSelectorToolbarItem;
     constructor() {
         super(true, 1000);
         this.registerRequiredCSS(webAudioStyles);
@@ -41,12 +80,20 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         // Creates the toolbar.
         const toolbarContainer = this.contentElement.createChild('div', 'web-audio-toolbar-container vbox');
         toolbarContainer.role = 'toolbar';
-        this.contextSelector = new AudioContextSelector();
+        this.contextSelectorPlaceholderText = i18nString(UIStrings.noRecordings);
+        this.contextSelectorItems = new UI.ListModel.ListModel();
+        this.contextSelectorElement = document.createElement('select');
+        this.contextSelectorToolbarItem = new UI.Toolbar.ToolbarItem(this.contextSelectorElement);
+        this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
+        this.contextSelectorElement.addEventListener('change', this.onContextSelectorSelectionChanged.bind(this));
+        this.contextSelectorElement.disabled = true;
+        this.addContextSelectorPlaceholderOption();
+        this.contextSelectorItems.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, this.onContextSelectorListItemReplaced, this);
         const toolbar = toolbarContainer.createChild('devtools-toolbar', 'web-audio-toolbar');
         toolbar.role = 'presentation';
         toolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton('components.collect-garbage'));
         toolbar.appendSeparator();
-        toolbar.appendToolbarItem(this.contextSelector.toolbarItem());
+        toolbar.appendToolbarItem(this.contextSelectorToolbarItem);
         toolbar.setAttribute('jslog', `${VisualLogging.toolbar()}`);
         // Create content container
         this.contentContainer = this.contentElement.createChild('div', 'web-audio-content-container vbox flex-auto');
@@ -59,11 +106,6 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         this.landingPage.show(this.detailViewContainer);
         // Creates the summary bar.
         this.summaryBarContainer = this.contentContainer.createChild('div', 'web-audio-summary-container');
-        this.contextSelector.addEventListener("ContextSelected" /* SelectorEvents.CONTEXT_SELECTED */, (event) => {
-            const context = event.data;
-            this.updateDetailView(context);
-            void this.doUpdate();
-        });
         SDK.TargetManager.TargetManager.instance().observeModels(WebAudioModel, this);
     }
     wasShown() {
@@ -124,25 +166,78 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         webAudioModel.removeEventListener("NodeParamConnected" /* ModelEvents.NODE_PARAM_CONNECTED */, this.nodeParamConnected, this);
         webAudioModel.removeEventListener("NodeParamDisconnected" /* ModelEvents.NODE_PARAM_DISCONNECTED */, this.nodeParamDisconnected, this);
     }
+    addContextSelectorPlaceholderOption() {
+        const placeholderOption = UI.Fragment.html `
+    <option value="" hidden>${this.contextSelectorPlaceholderText}</option>`;
+        this.contextSelectorElement.appendChild(placeholderOption);
+    }
+    onContextSelectorListItemReplaced() {
+        this.contextSelectorElement.removeChildren();
+        if (this.contextSelectorItems.length === 0) {
+            this.addContextSelectorPlaceholderOption();
+            this.contextSelectorElement.disabled = true;
+            this.onContextSelectorSelectionChanged();
+            return;
+        }
+        for (const context of this.contextSelectorItems) {
+            const option = UI.Fragment.html `
+    <option value=${context.contextId}>${this.titleForContext(context)}</option>`;
+            this.contextSelectorElement.appendChild(option);
+        }
+        this.contextSelectorElement.disabled = false;
+        this.onContextSelectorSelectionChanged();
+    }
+    selectedContext() {
+        const selectedValue = this.contextSelectorElement.value;
+        if (!selectedValue) {
+            return null;
+        }
+        return this.contextSelectorItems.find(context => context.contextId === selectedValue) || null;
+    }
+    onContextSelectorSelectionChanged() {
+        const selectedContext = this.selectedContext();
+        if (selectedContext) {
+            this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleForContext(selectedContext) }));
+        }
+        else {
+            this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
+        }
+        this.updateDetailView(selectedContext);
+        void this.doUpdate();
+    }
+    titleForContext(context) {
+        return `${context.contextType} (${context.contextId.substr(-6)})`;
+    }
     contextCreated(event) {
         const context = event.data;
         this.graphManager.createContext(context.contextId);
-        this.contextSelector.contextCreated(event);
+        this.contextSelectorItems.insert(this.contextSelectorItems.length, context);
+        this.onContextSelectorListItemReplaced();
     }
     contextDestroyed(event) {
         const contextId = event.data;
         this.graphManager.destroyContext(contextId);
-        this.contextSelector.contextDestroyed(event);
+        const index = this.contextSelectorItems.findIndex(context => context.contextId === contextId);
+        if (index > -1) {
+            this.contextSelectorItems.remove(index);
+            this.onContextSelectorListItemReplaced();
+        }
     }
     contextChanged(event) {
         const context = event.data;
         if (!this.graphManager.hasContext(context.contextId)) {
             return;
         }
-        this.contextSelector.contextChanged(event);
+        const changedContext = event.data;
+        const index = this.contextSelectorItems.findIndex(context => context.contextId === changedContext.contextId);
+        if (index > -1) {
+            this.contextSelectorItems.replace(index, changedContext);
+            this.onContextSelectorListItemReplaced();
+        }
     }
     reset() {
-        this.contextSelector.reset();
+        this.contextSelectorItems.replaceAll([]);
+        this.onContextSelectorListItemReplaced();
         if (this.landingPage.isShowing()) {
             this.landingPage.detach();
         }
@@ -289,20 +384,55 @@ export class WebAudioView extends UI.ThrottledWidget.ThrottledWidget {
         if (this.landingPage.isShowing()) {
             this.landingPage.detach();
         }
-        const detailBuilder = new ContextDetailBuilder(context);
         this.detailViewContainer.removeChildren();
-        this.detailViewContainer.appendChild(detailBuilder.getFragment());
+        const container = document.createElement('div');
+        container.classList.add('context-detail-container');
+        const addEntry = (entry, value, unit) => {
+            const valueWithUnit = value + (unit ? ` ${unit}` : '');
+            container.appendChild(UI.Fragment.html `
+        <div class="context-detail-row">
+          <div class="context-detail-row-entry">${entry}</div>
+          <div class="context-detail-row-value">${valueWithUnit}</div>
+        </div>
+      `);
+        };
+        const title = context.contextType === 'realtime' ? i18n.i18n.lockedString('AudioContext') :
+            i18n.i18n.lockedString('OfflineAudioContext');
+        container.appendChild(UI.Fragment.html `
+      <div class="context-detail-header">
+        <div class="context-detail-title">${title}</div>
+        <div class="context-detail-subtitle">${context.contextId}</div>
+      </div>
+    `);
+        addEntry(i18nString(UIStrings.state), context.contextState);
+        addEntry(i18nString(UIStrings.sampleRate), context.sampleRate, 'Hz');
+        if (context.contextType === 'realtime') {
+            addEntry(i18nString(UIStrings.callbackBufferSize), context.callbackBufferSize, 'frames');
+        }
+        addEntry(i18nString(UIStrings.maxOutputChannels), context.maxOutputChannelCount, 'ch');
+        this.detailViewContainer.appendChild(container);
     }
     updateSummaryBar(contextRealtimeData) {
-        const summaryBuilder = new ContextSummaryBuilder(contextRealtimeData);
         this.summaryBarContainer.removeChildren();
-        this.summaryBarContainer.appendChild(summaryBuilder.getFragment());
+        const time = contextRealtimeData.currentTime.toFixed(3);
+        const mean = (contextRealtimeData.callbackIntervalMean * 1000).toFixed(3);
+        const stddev = (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1000).toFixed(3);
+        const capacity = (contextRealtimeData.renderCapacity * 100).toFixed(3);
+        this.summaryBarContainer.appendChild(UI.Fragment.html `
+      <div class="context-summary-container">
+        <span>${i18nString(UIStrings.currentTime)}: ${time} s</span>
+        <span>\u2758</span>
+        <span>${i18nString(UIStrings.callbackInterval)}: μ = ${mean} ms, σ = ${stddev} ms</span>
+        <span>\u2758</span>
+        <span>${i18nString(UIStrings.renderCapacity)}: ${capacity} %</span>
+      </div>
+    `);
     }
     clearSummaryBar() {
         this.summaryBarContainer.removeChildren();
     }
     async pollRealtimeData() {
-        const context = this.contextSelector.selectedContext();
+        const context = this.selectedContext();
         if (!context) {
             this.clearSummaryBar();
             return;

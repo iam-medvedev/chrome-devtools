@@ -897,13 +897,15 @@ export async function handleExternalRequestGenerator(input) {
             return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
         }
         case 'PERFORMANCE_ANALYZE_INSIGHT': {
-            const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
-            const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-            return panelInstance.handleExternalRequest({
+            const TimelinePanel = await import('../../panels/timeline/timeline.js');
+            const traceModel = TimelinePanel.TimelinePanel.TimelinePanel.instance().model;
+            const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
+            return await conversationHandler.handleExternalRequest({
                 conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */,
                 prompt: input.args.prompt,
                 insightTitle: input.args.insightTitle,
+                traceModel,
             });
         }
         case 'NETWORK_DEBUGGER': {
@@ -916,10 +918,9 @@ export async function handleExternalRequestGenerator(input) {
             });
         }
         case 'LIVE_STYLE_DEBUGGER': {
-            const AiAssistance = await import('../../panels/ai_assistance/ai_assistance.js');
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
-            const panelInstance = await AiAssistance.AiAssistancePanel.instance();
-            return panelInstance.handleExternalRequest({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
+            return await conversationHandler.handleExternalRequest({
                 conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
                 prompt: input.args.prompt,
                 selector: input.args.selector,

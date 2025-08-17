@@ -73,7 +73,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(sharedStorageAccessGridStyles)}</style>
+    <style>${sharedStorageAccessGridStyles}</style>
     ${input.events.length === 0
         ? html `
         <div class="empty-state" jslog=${VisualLogging.section().context('empty-view')}>

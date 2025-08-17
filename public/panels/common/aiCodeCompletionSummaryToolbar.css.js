@@ -9,86 +9,89 @@ export default `/*
  * found in the LICENSE file.
  */
 
-.ai-code-completion-summary-toolbar {
-  display: flex;
-  border-top: var(--sys-size-1) solid var(--sys-color-divider);
-  background-color: var(--sys-color-cdt-base-container);
-  padding: var(--sys-size-2) var(--sys-size-5);
-  align-items: center;
-  gap: var(--sys-size-5);
-  flex-shrink: 0;
-  color: var(--sys-color-on-surface-subtle);
-
-  span.link {
+@scope to (devtools-widget > *) {
+  .ai-code-completion-summary-toolbar {
+    display: flex;
+    height: 26px;
+    border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    background-color: var(--sys-color-cdt-base-container);
+    padding: var(--sys-size-2) var(--sys-size-5);
+    align-items: center;
+    gap: var(--sys-size-5);
+    flex-shrink: 0;
     color: var(--sys-color-on-surface-subtle);
 
-    &:focus-visible {
-      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-      outline-offset: 0;
-      border-radius: var(--sys-shape-corner-extra-small);
+    devtools-widget.disclaimer-widget {
+      flex: none;
     }
-  }
-
-  .ai-code-completion-disclaimer {
-    padding-right: var(--sys-size-5);
-    gap: 5px;
-    display: flex;
-
-    devtools-spinner {
-      margin-top: var(--sys-size-2);
-      padding: var(--sys-size-1);
-      height: var(--sys-size-6);
-      width: var(--sys-size-6);
-    }
-  }
-
-  .ai-code-completion-recitation-notice {
-    border-left: var(--sys-size-1) solid var(--sys-color-divider);
 
     span.link {
-      padding-left: var(--sys-size-3);
+      color: var(--sys-color-on-surface-subtle);
+
+      &:focus-visible {
+        outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+        outline-offset: 0;
+        border-radius: var(--sys-shape-corner-extra-small);
+      }
     }
-  }
 
-  devtools-tooltip:popover-open {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    .ai-code-completion-recitation-notice {
+      padding-left: var(--sys-size-5);
+      border-left: var(--sys-size-1) solid var(--sys-color-divider);
+      white-space: nowrap;
+      overflow: hidden;
 
-    .citations-tooltip-container {
-        display: inline-flex;
-        padding: var(--sys-size-4) var(--sys-size-5);
+      span.link {
+        padding-left: var(--sys-size-3);
+      }
+    }
+
+    @media (width < 545px) {
+      &.has-disclaimer.has-recitation-notice {
+        height: 46px;
         flex-direction: column;
         align-items: flex-start;
-        justify-content: center;
-        gap: var(--sys-size-2);
 
-        x-link {
-            color: var(--sys-color-primary);
-            text-decoration: underline;
-
-            &:focus-visible {
-              outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-              outline-offset: 0;
-              border-radius: var(--sys-shape-corner-extra-small);
-            }
+        .ai-code-completion-disclaimer {
+          height: 26px;
+          margin-bottom: -3px;
+          margin-top: var(--sys-size-2);
+          flex-shrink: 1;
         }
+
+        .ai-code-completion-recitation-notice {
+          height: 26px;
+          padding-left: 0;
+          border-left: 0;
+          margin-top: -3px;
+        }
+      }
     }
 
-    .disclaimer-tooltip-container {
-      padding: var(--sys-size-4) 0;
-      max-width: var(--sys-size-30);
+    devtools-tooltip:popover-open {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
 
-      .tooltip-text {
-        color: var(--sys-color-on-surface-subtle);
-        padding: 0 var(--sys-size-5);
-        align-items: flex-start;
-        gap: 10px;
-      }
+        .citations-tooltip-container {
+            display: inline-flex;
+            padding: var(--sys-size-4) var(--sys-size-5);
+            flex-direction: column;
+            align-items: flex-start;
+            justify-content: center;
+            gap: var(--sys-size-2);
+            white-space: normal;
 
-      .link {
-        margin: var(--sys-size-5) var(--sys-size-8) 0 var(--sys-size-5);
-        display: inline-block;
+            x-link {
+                color: var(--sys-color-primary);
+                text-decoration: underline;
+
+              &:focus-visible {
+                outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+                outline-offset: 0;
+                border-radius: var(--sys-shape-corner-extra-small);
+              }
+          }
       }
     }
   }

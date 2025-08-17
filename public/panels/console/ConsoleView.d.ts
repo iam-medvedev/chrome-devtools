@@ -129,6 +129,7 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private registerShortcuts;
     private clearPromptBackwards;
     private promptKeyDown;
+    private keyDown;
     private printResult;
     private commandEvaluated;
     elementsToRestoreScrollPositionsFor(): Element[];

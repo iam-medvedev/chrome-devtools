@@ -21,6 +21,7 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     sourceOrderSubPane;
     constructor(throttlingTimeout) {
         super(false /* useShadowDom */, throttlingTimeout);
+        this.element.classList.add('accessibility-sidebar-view');
         this.nodeInternal = null;
         this.axNodeInternal = null;
         this.skipNextPullNode = false;

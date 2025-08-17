@@ -477,6 +477,7 @@ export class ConsoleView extends UI.Widget.VBox {
             this.prompt.addEventListener("AiCodeCompletionSuggestionAccepted" /* ConsolePromptEvents.AI_CODE_COMPLETION_SUGGESTION_ACCEPTED */, this.#onAiCodeCompletionSuggestionAccepted, this);
             this.prompt.addEventListener("AiCodeCompletionRequestTriggered" /* ConsolePromptEvents.AI_CODE_COMPLETION_REQUEST_TRIGGERED */, this.#onAiCodeCompletionRequestTriggered, this);
             this.prompt.addEventListener("AiCodeCompletionResponseReceived" /* ConsolePromptEvents.AI_CODE_COMPLETION_RESPONSE_RECEIVED */, this.#onAiCodeCompletionResponseReceived, this);
+            this.element.addEventListener('keydown', this.keyDown.bind(this));
         }
         this.messagesElement.addEventListener('keydown', this.messagesKeyDown.bind(this), false);
         this.prompt.element.addEventListener('focusin', () => {
@@ -513,8 +514,7 @@ export class ConsoleView extends UI.Widget.VBox {
         return consoleViewInstance;
     }
     createAiCodeCompletionSummaryToolbar() {
-        this.aiCodeCompletionSummaryToolbar =
-            new AiCodeCompletionSummaryToolbar(DISCLAIMER_TOOLTIP_ID, CITATIONS_TOOLTIP_ID, 'console');
+        this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, panelName: 'console', disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
         this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild('div');
         this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, undefined, true);
     }
@@ -1210,6 +1210,19 @@ export class ConsoleView extends UI.Widget.VBox {
         if (handler) {
             handler(keyboardEvent);
             keyboardEvent.preventDefault();
+        }
+    }
+    async keyDown(event) {
+        const keyboardEvent = event;
+        if (UI.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent)) {
+            if (keyboardEvent.key === 'i') {
+                keyboardEvent.consume(true);
+                await this.prompt.onAiCodeCompletionTeaserActionKeyDown(event);
+            }
+            else if (keyboardEvent.key === 'x') {
+                keyboardEvent.consume(true);
+                this.prompt.onAiCodeCompletionTeaserDismissKeyDown(event);
+            }
         }
     }
     printResult(result, originatingConsoleMessage, exceptionDetails) {

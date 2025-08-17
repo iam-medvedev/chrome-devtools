@@ -430,8 +430,8 @@ function renderAuthenticatorFields(authenticatorId, options) {
 export const DEFAULT_VIEW = (input, output, target) => {
     // clang-format off
     render(html `
-    <style>${UI.Widget.widgetScoped(Input.checkboxStyles)}</style>
-    <style>${UI.Widget.widgetScoped(webauthnPaneStyles)}</style>
+    <style>${Input.checkboxStyles}</style>
+    <style>${webauthnPaneStyles}</style>
     <div class="webauthn-pane flex-auto ${classMap({ enabled: input.enabled })}">
       ${renderToolbar(input.enabled, input.onToggleEnabled)}
       <div class="authenticators-view">

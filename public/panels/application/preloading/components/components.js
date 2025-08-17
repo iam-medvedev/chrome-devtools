@@ -1575,9 +1575,8 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
                     ${hasError || hasWarning ? html4`
                       <devtools-icon
                         name=${hasWarning ? "warning-filled" : "cross-circle-filled"}
+                        class='medium'
                         style=${styleMap2({
-        width: "16px",
-        height: "16px",
         color: hasWarning ? "var(--sys-color-warning)" : "var(--sys-color-error)",
         "vertical-align": "sub"
       })}

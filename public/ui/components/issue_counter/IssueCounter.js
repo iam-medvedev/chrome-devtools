@@ -27,11 +27,11 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function getIssueKindIconData(issueKind) {
     switch (issueKind) {
         case "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */:
-            return { iconName: 'issue-cross-filled', color: 'var(--icon-error)', width: '20px', height: '20px' };
+            return { iconName: 'issue-cross-filled', color: 'var(--icon-error)' };
         case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
-            return { iconName: 'issue-exclamation-filled', color: 'var(--icon-warning)', width: '20px', height: '20px' };
+            return { iconName: 'issue-exclamation-filled', color: 'var(--icon-warning)' };
         case "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */:
-            return { iconName: 'issue-text-filled', color: 'var(--icon-info)', width: '20px', height: '20px' };
+            return { iconName: 'issue-text-filled', color: 'var(--icon-info)' };
     }
 }
 function toIconGroup({ iconName, color, width, height }, sizeOverride) {

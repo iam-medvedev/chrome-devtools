@@ -495,7 +495,8 @@ var ThrottlingManager = class _ThrottlingManager extends Common.ObjectWrapper.Ob
     const reset = new UI.Toolbar.ToolbarButton("Reset concurrency", "undo", void 0, "hardware-concurrency-reset");
     reset.setTitle(i18nString2(UIStrings2.resetConcurrency));
     const icon = new IconButton.Icon.Icon();
-    icon.data = { iconName: "warning-filled", color: "var(--icon-warning)", width: "14px", height: "14px" };
+    icon.name = "warning-filled";
+    icon.classList.add("small");
     const warning = new UI.Toolbar.ToolbarItem(icon);
     warning.setTitle(i18nString2(UIStrings2.excessConcurrency));
     checkbox.disabled = true;

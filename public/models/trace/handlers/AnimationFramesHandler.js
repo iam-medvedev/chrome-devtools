@@ -22,8 +22,16 @@ export function reset() {
     animationFrames.length = 0;
     presentationForFrame.clear();
     animationFramePresentations.clear();
+    isEnabled = false;
+}
+let isEnabled = false;
+export function handleUserConfig(config) {
+    isEnabled = config.enableAnimationsFrameHandler;
 }
 export function handleEvent(event) {
+    if (!isEnabled) {
+        return;
+    }
     if (Types.Events.isAnimationFrameAsyncStart(event)) {
         const key = threadKey(event);
         const existing = animationFrameStarts.get(key) ?? [];

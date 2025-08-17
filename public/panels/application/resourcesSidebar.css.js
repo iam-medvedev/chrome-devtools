@@ -37,10 +37,6 @@ export default `/*
   color: var(--icon-error);
 }
 
-.icons-container devtools-icon.warn-icon {
-  color: var(--icon-warning);
-}
-
 devtools-icon.navigator-file-tree-item {
   color: var(--icon-file-default);
 }

@@ -349,17 +349,10 @@ export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
         isOnMainFrame: true,
         threads: new Map([[tid, mockThread]]),
     };
-    const renderereEvents = [];
-    for (const entry of entries) {
-        if (Trace.Types.Events.isRendererEvent(entry)) {
-            renderereEvents.push(entry);
-        }
-    }
     return {
         processes: new Map([[pid, mockProcess]]),
         compositorTileWorkers: new Map(),
         entryToNode,
-        allTraceEntries: renderereEvents,
         entityMappings: {
             entityByEvent: new Map(),
             eventsByEntity: new Map(),
@@ -573,7 +566,6 @@ export function getBaseTraceParseModelData(overrides = {}) {
             processes: new Map(),
             compositorTileWorkers: new Map(),
             entryToNode: new Map(),
-            allTraceEntries: [],
             entityMappings: {
                 entityByEvent: new Map(),
                 eventsByEntity: new Map(),
@@ -737,5 +729,28 @@ export function getAllNetworkRequestsByHost(networkRequests, host) {
         return parsedUrl.host === host;
     });
     return reqs;
+}
+const allThreadEntriesForTraceCache = new WeakMap();
+/**
+ * A function to get a list of all thread entries that exist. This is
+ * reasonably expensive, so it's cached to avoid a huge impact on our test suite
+ * speed.
+ */
+export function allThreadEntriesInTrace(parsedTrace) {
+    const fromCache = allThreadEntriesForTraceCache.get(parsedTrace);
+    if (fromCache) {
+        return fromCache;
+    }
+    const allEvents = [];
+    for (const process of parsedTrace.Renderer.processes.values()) {
+        for (const thread of process.threads.values()) {
+            for (const entry of thread.entries) {
+                allEvents.push(entry);
+            }
+        }
+    }
+    Trace.Helpers.Trace.sortTraceEventsInPlace(allEvents);
+    allThreadEntriesForTraceCache.set(parsedTrace, allEvents);
+    return allEvents;
 }
 //# sourceMappingURL=TraceHelpers.js.map
