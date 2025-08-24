@@ -94,7 +94,7 @@ export default `/*
     .shortcut-line {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-column-gap: var(--sys-size-10);
+      column-gap: var(--sys-size-10);
       padding: var(--sys-size-4) 0;
 
       &:not(:last-child) {
@@ -437,6 +437,10 @@ export default `/*
   justify-content: center;
   margin-left: var(--sys-size-2);
   flex-shrink: 0;
+
+  devtools-icon {
+    color: var(--override-tabbed-pane-preview-icon-color);
+  }
 }
 
 @media (forced-colors: active) {

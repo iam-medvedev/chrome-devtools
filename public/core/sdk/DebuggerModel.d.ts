@@ -109,7 +109,10 @@ export declare class DebuggerModel extends SDKModel<EventTypes> {
      *
      * Important: This iterator will not yield the "synchronous" part of the stack trace, only the async parent chain.
      */
-    iterateAsyncParents(stackTraceOrPausedDetails: Protocol.Runtime.StackTrace | DebuggerPausedDetails): AsyncGenerator<Protocol.Runtime.StackTrace>;
+    iterateAsyncParents(stackTraceOrPausedDetails: Protocol.Runtime.StackTrace | DebuggerPausedDetails): AsyncGenerator<{
+        stackTrace: Protocol.Runtime.StackTrace;
+        target: Target;
+    }>;
 }
 /**
  * Keep these in sync with WebCore::V8Debugger

@@ -29,7 +29,7 @@ export default `/**
   .overview-completed-view .summary ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, 140px);
-    grid-gap: 16px;
+    gap: 16px;
   }
 
   .overview-completed-view .colors ul li {
@@ -198,7 +198,7 @@ export default `/**
   .overview-completed-view .unused-declarations ul li {
     display: grid;
     grid-template-columns: 2fr 3fr;
-    grid-gap: 12px;
+    gap: 12px;
     margin-bottom: 4px;
     align-items: center;
   }
@@ -267,7 +267,7 @@ export default `/**
   .overview-completed-view .font-info .font-metric {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    grid-gap: 12px;
+    gap: 12px;
   }
 
   .overview-completed-view .font-info ul {

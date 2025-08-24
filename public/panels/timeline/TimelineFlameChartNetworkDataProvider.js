@@ -14,7 +14,7 @@ import { NetworkTrackAppender } from './NetworkTrackAppender.js';
 import timelineFlamechartPopoverStyles from './timelineFlamechartPopover.css.js';
 import { FlameChartStyle, Selection } from './TimelineFlameChartView.js';
 import { selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
-import { buildPersistedConfig, keyForTraceConfig } from './TrackConfiguration.js';
+import { buildPersistedConfig } from './TrackConfiguration.js';
 import * as TimelineUtils from './utils/utils.js';
 export class TimelineFlameChartNetworkDataProvider {
     #minimumBoundary = 0;
@@ -390,10 +390,7 @@ export class TimelineFlameChartNetworkDataProvider {
             return;
         }
         const persistedDataForTrace = buildPersistedConfig(groups, indexesInVisualOrder);
-        const traceKey = keyForTraceConfig(this.#parsedTrace);
-        const setting = this.#persistedGroupConfigSetting.get();
-        setting[traceKey] = persistedDataForTrace;
-        this.#persistedGroupConfigSetting.set(setting);
+        this.#persistedGroupConfigSetting.set(persistedDataForTrace);
     }
     setPersistedGroupConfigSetting(setting) {
         this.#persistedGroupConfigSetting = setting;

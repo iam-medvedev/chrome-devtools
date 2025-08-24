@@ -2,7 +2,9 @@ import type * as Protocol from '../../../generated/protocol.js';
 import * as Types from '../types/types.js';
 import type { TraceFilter } from './TraceFilter.js';
 export declare class Node {
+    /** ms */
     totalTime: number;
+    /** ms */
     selfTime: number;
     transferSize: number;
     id: string | symbol;

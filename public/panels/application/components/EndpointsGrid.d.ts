@@ -8,6 +8,7 @@ export declare class EndpointsGrid extends HTMLElement {
     #private;
     connectedCallback(): void;
     set data(data: EndpointsGridData);
+    get data(): EndpointsGridData;
 }
 declare global {
     interface HTMLElementTagNameMap {

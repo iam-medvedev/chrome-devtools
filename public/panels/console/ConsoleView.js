@@ -514,7 +514,7 @@ export class ConsoleView extends UI.Widget.VBox {
         return consoleViewInstance;
     }
     createAiCodeCompletionSummaryToolbar() {
-        this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, panelName: 'console', disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
+        this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
         this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild('div');
         this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, undefined, true);
     }
@@ -989,7 +989,7 @@ export class ConsoleView extends UI.Widget.VBox {
             consoleViewMessage?.shouldShowInsights()) {
             contextMenu.headerSection().appendAction(consoleViewMessage?.getExplainActionId(), undefined, /* optional=*/ true);
         }
-        if (consoleMessage && consoleMessage.url) {
+        if (consoleMessage?.url) {
             const menuTitle = i18nString(UIStrings.hideMessagesFromS, { PH1: new Common.ParsedURL.ParsedURL(consoleMessage.url).displayName });
             contextMenu.headerSection().appendItem(menuTitle, this.filter.addMessageURLFilter.bind(this.filter, consoleMessage.url), { jslogContext: 'hide-messages-from' });
         }
@@ -1013,14 +1013,14 @@ export class ConsoleView extends UI.Widget.VBox {
         const parsedURL = Common.ParsedURL.ParsedURL.fromString(url);
         const filename = Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
         const stream = new Bindings.FileUtils.FileOutputStream();
-        const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        const progressIndicator = document.createElement('devtools-progress');
         progressIndicator.setTitle(i18nString(UIStrings.writingFile));
         progressIndicator.setTotalWork(this.itemCount());
         const chunkSize = 350;
         if (!await stream.open(filename)) {
             return;
         }
-        this.progressToolbarItem.element.appendChild(progressIndicator.element);
+        this.progressToolbarItem.element.appendChild(progressIndicator);
         let messageIndex = 0;
         while (messageIndex < this.itemCount() && !progressIndicator.isCanceled()) {
             const messageContents = [];
@@ -1266,10 +1266,10 @@ export class ConsoleView extends UI.Widget.VBox {
         if (shouldJump) {
             this.searchShouldJumpBackwards = Boolean(jumpBackwards);
         }
-        this.searchProgressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        this.searchProgressIndicator = document.createElement('devtools-progress');
         this.searchProgressIndicator.setTitle(i18nString(UIStrings.searching));
         this.searchProgressIndicator.setTotalWork(this.visibleViewMessages.length);
-        this.progressToolbarItem.element.appendChild(this.searchProgressIndicator.element);
+        this.progressToolbarItem.element.appendChild(this.searchProgressIndicator);
         this.innerSearch(0);
     }
     cleanupAfterSearch() {

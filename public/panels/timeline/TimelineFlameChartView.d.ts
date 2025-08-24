@@ -19,7 +19,6 @@ import type { TimelineMarkerStyle } from './TimelineUIUtils.js';
  */
 export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, number>>;
 declare const TimelineFlameChartView_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends Events.ENTRY_LABEL_ANNOTATION_CLICKED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -93,10 +92,11 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
      * Gets the persisted config (if the user has made any visual changes) in
      * order to save it to disk as part of the trace.
      */
-    getPersistedConfigMetadata(trace: Trace.Handlers.Types.ParsedTrace): Trace.Types.File.PersistedTraceVisualConfig;
+    getPersistedConfigMetadata(): Trace.Types.File.PersistedTraceVisualConfig;
     setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     reset(): void;
     setupWindowTimes(): void;
+    hasHiddenTracks(): boolean;
     updateLinkSelectionAnnotationWithToEntry(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryIndex: number): void;
     private onEntryHovered;
     highlightEvent(event: Trace.Types.Events.Event | null): void;
@@ -117,6 +117,8 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     updateExistingOverlay<T extends Trace.Types.Overlays.Overlay>(existingOverlay: T, newData: Partial<T>): void;
     enterLabelEditMode(overlay: Trace.Types.Overlays.EntryLabel): void;
     bringLabelForward(overlay: Trace.Types.Overlays.EntryLabel): void;
+    enterMainChartTrackConfigurationMode(): void;
+    showAllMainChartTracks(): void;
     private onAddEntryLabelAnnotation;
     onEntriesLinkAnnotationCreate(dataProvider: TimelineFlameChartDataProvider | TimelineFlameChartNetworkDataProvider, entryFromIndex: number, linkCreateButton?: boolean): void;
     /**

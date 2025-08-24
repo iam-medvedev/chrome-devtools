@@ -296,9 +296,9 @@ export class SearchView extends UI.Widget.VBox {
         if (this.progressIndicator) {
             this.progressIndicator.done();
         }
-        this.progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        this.progressIndicator = document.createElement('devtools-progress');
         this.searchMessageElement.textContent = i18nString(UIStrings.indexing);
-        this.progressIndicator.show(this.searchProgressPlaceholderElement);
+        this.searchProgressPlaceholderElement.appendChild(this.progressIndicator);
         if (this.searchScope) {
             this.searchScope.performIndexing(new Common.Progress.ProgressProxy(this.progressIndicator, this.onIndexingFinished.bind(this)));
         }
@@ -349,7 +349,7 @@ export class SearchView extends UI.Widget.VBox {
         if (this.progressIndicator) {
             this.progressIndicator.done();
         }
-        this.progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        this.progressIndicator = document.createElement('devtools-progress');
         this.searchStarted(this.progressIndicator);
         if (this.searchScope) {
             void this.searchScope.performSearch(searchConfig, this.progressIndicator, this.onSearchResult.bind(this, this.searchId), this.onSearchFinished.bind(this, this.searchId));
@@ -380,7 +380,7 @@ export class SearchView extends UI.Widget.VBox {
         }
         this.showPane(this.searchingView);
         this.searchMessageElement.textContent = i18nString(UIStrings.searching);
-        progressIndicator.show(this.searchProgressPlaceholderElement);
+        this.searchProgressPlaceholderElement.appendChild(progressIndicator);
         this.updateSearchResultsMessage();
     }
     updateSearchResultsMessage() {

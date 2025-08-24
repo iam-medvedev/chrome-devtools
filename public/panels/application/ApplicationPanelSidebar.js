@@ -518,8 +518,8 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         }
         this.cacheStorageListTreeElement.initialize();
         const backgroundServiceModel = this.target?.model(BackgroundServiceModel) || null;
-        this.backgroundFetchTreeElement && this.backgroundFetchTreeElement.initialize(backgroundServiceModel);
-        this.backgroundSyncTreeElement && this.backgroundSyncTreeElement.initialize(backgroundServiceModel);
+        this.backgroundFetchTreeElement.initialize(backgroundServiceModel);
+        this.backgroundSyncTreeElement.initialize(backgroundServiceModel);
         this.notificationsTreeElement.initialize(backgroundServiceModel);
         this.paymentHandlerTreeElement.initialize(backgroundServiceModel);
         this.periodicBackgroundSyncTreeElement.initialize(backgroundServiceModel);

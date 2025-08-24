@@ -14,6 +14,7 @@ export declare class ReportsGrid extends HTMLElement {
     #private;
     connectedCallback(): void;
     set data(data: ReportsGridData);
+    get data(): ReportsGridData;
 }
 declare global {
     interface HTMLElementTagNameMap {

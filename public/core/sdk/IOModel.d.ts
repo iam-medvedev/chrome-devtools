@@ -6,5 +6,5 @@ export declare class IOModel extends SDKModel<void> {
     close(handle: Protocol.IO.StreamHandle): Promise<void>;
     resolveBlob(objectOrObjectId: Protocol.Runtime.RemoteObjectId | RemoteObject): Promise<string>;
     readToString(handle: Protocol.IO.StreamHandle): Promise<string>;
-    readToBuffer(handle: Protocol.IO.StreamHandle): Promise<Uint8Array>;
+    readToBuffer(handle: Protocol.IO.StreamHandle): Promise<Uint8Array<ArrayBuffer>>;
 }

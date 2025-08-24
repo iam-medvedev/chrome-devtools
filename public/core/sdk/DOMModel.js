@@ -55,16 +55,25 @@ export class DOMNode {
     internalSubset;
     name;
     value;
+    /**
+     * Set when a DOMNode is retained in a detached sub-tree.
+     */
+    retained = false;
+    /**
+     * Set if a DOMNode is a root of a detached sub-tree.
+     */
+    detached = false;
+    #retainedNodes;
     constructor(domModel) {
         this.#domModelInternal = domModel;
         this.#agent = this.#domModelInternal.getAgent();
     }
-    static create(domModel, doc, isInShadowTree, payload) {
+    static create(domModel, doc, isInShadowTree, payload, retainedNodes) {
         const node = new DOMNode(domModel);
-        node.init(doc, isInShadowTree, payload);
+        node.init(doc, isInShadowTree, payload, retainedNodes);
         return node;
     }
-    init(doc, isInShadowTree, payload) {
+    init(doc, isInShadowTree, payload, retainedNodes) {
         this.#agent = this.#domModelInternal.getAgent();
         this.ownerDocument = doc;
         this.#isInShadowTreeInternal = isInShadowTree;
@@ -82,6 +91,10 @@ export class DOMNode {
         this.#xmlVersion = payload.xmlVersion;
         this.#isSVGNodeInternal = Boolean(payload.isSVG);
         this.#isScrollableInternal = Boolean(payload.isScrollable);
+        this.#retainedNodes = retainedNodes;
+        if (this.#retainedNodes?.has(this.backendNodeId())) {
+            this.retained = true;
+        }
         if (payload.attributes) {
             this.setAttributesPayload(payload.attributes);
         }
@@ -89,14 +102,14 @@ export class DOMNode {
         if (payload.shadowRoots) {
             for (let i = 0; i < payload.shadowRoots.length; ++i) {
                 const root = payload.shadowRoots[i];
-                const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, true, root);
+                const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, true, root, retainedNodes);
                 this.shadowRootsInternal.push(node);
                 node.parentNode = this;
             }
         }
         if (payload.templateContent) {
             this.templateContentInternal =
-                DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.templateContent);
+                DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.templateContent, retainedNodes);
             this.templateContentInternal.parentNode = this;
             this.childrenInternal = [];
         }
@@ -113,7 +126,7 @@ export class DOMNode {
         }
         if (payload.importedDocument) {
             this.#importedDocumentInternal =
-                DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.importedDocument);
+                DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.importedDocument, retainedNodes);
             this.#importedDocumentInternal.parentNode = this;
             this.childrenInternal = [];
         }
@@ -536,7 +549,7 @@ export class DOMNode {
         if (!this.childrenInternal) {
             throw new Error('DOMNode._children is expected to not be null.');
         }
-        const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload);
+        const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload, this.#retainedNodes);
         this.childrenInternal.splice(prev ? this.childrenInternal.indexOf(prev) + 1 : 0, 0, node);
         this.renumber();
         return node;
@@ -578,7 +591,7 @@ export class DOMNode {
         this.childrenInternal = [];
         for (let i = 0; i < payloads.length; ++i) {
             const payload = payloads[i];
-            const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload);
+            const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload, this.#retainedNodes);
             this.childrenInternal.push(node);
         }
         this.renumber();
@@ -588,7 +601,7 @@ export class DOMNode {
             return;
         }
         for (let i = 0; i < payloads.length; ++i) {
-            const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payloads[i]);
+            const node = DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payloads[i], this.#retainedNodes);
             node.parentNode = this;
             const pseudoType = node.pseudoType();
             if (!pseudoType) {

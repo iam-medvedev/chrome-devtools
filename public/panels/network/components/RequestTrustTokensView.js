@@ -178,7 +178,7 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
       <devtools-report-key>${i18nString(UIStrings.status)}</devtools-report-key>
       <devtools-report-value>
         <span>
-          <devtools-icon class="status-icon"
+          <devtools-icon class="status-icon medium"
             .data=${getIconForStatusCode(trustTokenResult.status)}>
           </devtools-icon>
           <strong>${getSimplifiedStatusTextForStatusCode(trustTokenResult.status)}</strong>
@@ -199,14 +199,10 @@ export class RequestTrustTokensView extends LegacyWrapper.LegacyWrapper.Wrappabl
 const SUCCESS_ICON_DATA = {
     color: 'var(--icon-checkmark-green)',
     iconName: 'check-circle',
-    width: '16px',
-    height: '16px',
 };
 const FAILURE_ICON_DATA = {
     color: 'var(--icon-error)',
     iconName: 'cross-circle-filled',
-    width: '16px',
-    height: '16px',
 };
 export function statusConsideredSuccess(status) {
     return status === "Ok" /* Protocol.Network.TrustTokenOperationDoneEventStatus.Ok */ ||

@@ -99,6 +99,8 @@ function entriesForOverlay(overlay) {
       entries.push(...overlay.entries);
       break;
     }
+    case "BOTTOM_INFO_BAR":
+      break;
     default:
       Platform.assertNever(overlay, `Unknown overlay type ${JSON.stringify(overlay)}`);
   }
@@ -114,7 +116,7 @@ function overlayIsSingleton(overlay) {
   return overlayTypeIsSingleton(overlay.type);
 }
 function overlayTypeIsSingleton(type) {
-  return type === "TIMESTAMP_MARKER" || type === "ENTRY_SELECTED";
+  return type === "TIMESTAMP_MARKER" || type === "ENTRY_SELECTED" || type === "BOTTOM_INFO_BAR";
 }
 var AnnotationOverlayActionEvent = class _AnnotationOverlayActionEvent extends Event {
   overlay;
@@ -414,6 +416,7 @@ var Overlays = class extends EventTarget {
       this.#overlaysContainer.innerHTML = "";
     }
     this.#overlaysToElements.clear();
+    this.#singletonOverlays.clear();
     this.#dimensions.trace.visibleWindow = null;
     this.#dimensions.charts.main = null;
     this.#dimensions.charts.network = null;
@@ -425,7 +428,6 @@ var Overlays = class extends EventTarget {
    */
   async update() {
     const timeRangeOverlays = [];
-    const timingsMarkerOverlays = [];
     for (const [overlay, existingElement] of this.#overlaysToElements) {
       const element = existingElement || this.#createElementForNewOverlay(overlay);
       if (!existingElement) {
@@ -437,9 +439,6 @@ var Overlays = class extends EventTarget {
       this.#updateOverlayAfterPositioning(overlay, element);
       if (overlay.type === "TIME_RANGE") {
         timeRangeOverlays.push(overlay);
-      }
-      if (overlay.type === "TIMINGS_MARKER") {
-        timingsMarkerOverlays.push(overlay);
       }
     }
     if (timeRangeOverlays.length > 1) {
@@ -580,9 +579,37 @@ var Overlays = class extends EventTarget {
         }
         break;
       }
+      case "BOTTOM_INFO_BAR": {
+        this.#positionInfoBarBanner(overlay, element);
+        break;
+      }
       default: {
         Platform.TypeScriptUtilities.assertNever(overlay, `Unknown overlay: ${JSON.stringify(overlay)}`);
       }
+    }
+  }
+  #positionInfoBarBanner(overlay, element) {
+    const mainChart = this.#dimensions.charts.main;
+    if (!mainChart) {
+      this.#setOverlayElementVisibility(element, false);
+      return;
+    }
+    const defaultBannerHeight = 40;
+    const totalHeight = this.#charts.mainChart.totalContentHeight();
+    const pixelsHiddenBelowViewport = totalHeight - (mainChart.scrollOffsetPixels + mainChart.heightPixels);
+    const visiblePixelsOfBanner = defaultBannerHeight - pixelsHiddenBelowViewport;
+    if (visiblePixelsOfBanner <= 0) {
+      this.#setOverlayElementVisibility(element, false);
+      return;
+    }
+    this.#setOverlayElementVisibility(element, true);
+    const actualBannerHeight = overlay.infobar.element.clientHeight;
+    const adjustedVisiblePixels = visiblePixelsOfBanner - defaultBannerHeight + actualBannerHeight;
+    element.style.height = `${Math.min(adjustedVisiblePixels, actualBannerHeight)}px`;
+    if (this.#charts.mainChart.verticalScrollBarVisible()) {
+      element.style.right = "11px";
+    } else {
+      element.style.right = "0";
     }
   }
   #positionTimingOverlay(overlay, element) {
@@ -1175,6 +1202,15 @@ var Overlays = class extends EventTarget {
         break;
       case "TIMINGS_MARKER":
         break;
+      case "BOTTOM_INFO_BAR":
+        {
+          if (element.contains(overlay.infobar.element)) {
+            return;
+          }
+          element.innerHTML = "";
+          element.appendChild(overlay.infobar.element);
+        }
+        break;
       default:
         Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
     }
@@ -1210,6 +1246,8 @@ var Overlays = class extends EventTarget {
       case "CANDY_STRIPED_TIME_RANGE":
         break;
       case "TIMINGS_MARKER":
+        break;
+      case "BOTTOM_INFO_BAR":
         break;
       default:
         Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
@@ -1466,6 +1504,8 @@ function jsLogContext(overlay) {
     case "TIMINGS_MARKER": {
       return "timeline.overlays.timings-marker";
     }
+    case "BOTTOM_INFO_BAR":
+      return "timeline.overlays.info-bar";
     default:
       Platform.assertNever(overlay, "Unknown overlay type");
   }

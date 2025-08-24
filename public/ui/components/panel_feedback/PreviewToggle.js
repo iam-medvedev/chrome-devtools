@@ -51,12 +51,7 @@ export class PreviewToggle extends HTMLElement {
             ?checked=${checked}
             @change=${this.#checkboxChanged}
             aria-label=${this.#name} />
-            <devtools-icon .data=${{
-            iconName: 'experiment',
-            width: '16px',
-            height: '16px',
-            color: 'var(--icon-default)',
-        }}>
+            <devtools-icon name="experiment" class="medium">
           </devtools-icon>${this.#name}
           </devtools-checkbox>
         <div class="spacer"></div>

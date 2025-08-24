@@ -377,6 +377,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "ai-assistance-history-images",
   "ai-assistance-patching-fre-completed",
   "ai-assistance-patching-selected-project-id",
+  "ai-code-completion-citations",
+  "ai-code-completion-citations.citation-link",
+  "ai-code-completion-disclaimer",
   "ai-code-completion-enabled",
   "ai-code-completion-teaser-dismissed",
   "ai-code-completion-teaser.dismiss",
@@ -888,9 +891,6 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "console-user-activation-eval",
   "console-user-activation-eval-false",
   "console-view",
-  "console.ai-code-completion-citations",
-  "console.ai-code-completion-citations.citation-link",
-  "console.ai-code-completion-disclaimer",
   "console.clear",
   "console.clear.history",
   "console.create-pin",
@@ -1343,6 +1343,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "drjones.performance-panel-context.improvements",
   "drjones.performance-panel-context.purpose",
   "drjones.performance-panel-context.time-spent",
+  "drjones.performance-panel-full-context",
   "drjones.sources-floating-button",
   "drjones.sources-panel-context",
   "drjones.sources-panel-context.input",
@@ -1729,6 +1730,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "geolocation.watch-position",
   "georgia",
   "gl",
+  "global-ai-button",
+  "global-ai-button-click-count",
   "googlebot",
   "googlebot-desktop",
   "googlebot-smartphone",
@@ -2815,6 +2818,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "perf-panel-annotations",
   "perfmon-active-indicators2",
   "performance-default",
+  "performance-full-default",
   "performance-insights",
   "performance-insights-default",
   "performance.history-item",
@@ -3046,6 +3050,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "report",
   "report-status",
   "reporting-api",
+  "reporting-api-empty",
   "reports",
   "request",
   "request-animation-frame",
@@ -3712,6 +3717,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "time",
   "timeline",
   "timeline-alternative-navigation",
+  "timeline-ask-ai-full-button",
   "timeline-capture-layers-and-pictures",
   "timeline-capture-selector-stats",
   "timeline-compiled-sources",
@@ -3734,6 +3740,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline-main-flamechart-group-config",
   "timeline-network-flame-group-config",
   "timeline-overview",
+  "timeline-persisted-main-flamechart-track-config",
+  "timeline-persisted-network-flamechart-track-config",
   "timeline-save-as-gz",
   "timeline-scope",
   "timeline-settings-pane",
@@ -4533,7 +4541,7 @@ function processEventForTestDebugging(event, state2, _extraInfo) {
   if (event !== "SettingAccess" && event !== "FunctionCall") {
     lastImpressionLogEntry = null;
   }
-  maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state2?.veid || 0) || (state2?.veid ? "<UNKNOWN>" : "")}` });
+  maybeLogDebugEvent({ interaction: event, veid: state2?.veid || 0 });
   checkPendingEventExpectation();
 }
 function processEventForAdHocAnalysisDebugging(event, state2, extraInfo) {
@@ -4885,7 +4893,8 @@ function processStartLoggingForDebugging() {
 }
 function compareVeEvents(actual, expected) {
   if ("interaction" in expected && "interaction" in actual) {
-    return expected.interaction === actual.interaction;
+    const actualString = formatInteraction(actual);
+    return expected.interaction === actualString;
   }
   if ("impressions" in expected && "impressions" in actual) {
     const actualSet = new Set(actual.impressions);
@@ -4912,8 +4921,23 @@ function formatImpressions(impressions) {
   return result.join("\n");
 }
 var EVENT_EXPECTATION_TIMEOUT = 5e3;
+function formatInteraction(e) {
+  if ("interaction" in e) {
+    if (e.veid !== void 0) {
+      const key = veTestKeys.get(e.veid) || (e.veid ? "<UNKNOWN>" : "");
+      return `${e.interaction}: ${key}`;
+    }
+    return e.interaction;
+  }
+  return "";
+}
 function formatVeEvents(events) {
-  return events.map((e) => "interaction" in e ? e.interaction : formatImpressions(e.impressions)).join("\n");
+  return events.map((e) => {
+    if ("interaction" in e) {
+      return formatInteraction(e);
+    }
+    return formatImpressions(e.impressions);
+  }).join("\n");
 }
 async function expectVeEvents(expectedEvents) {
   if (pendingEventExpectation) {
@@ -4924,7 +4948,7 @@ async function expectVeEvents(expectedEvents) {
   checkPendingEventExpectation();
   const timeout = setTimeout(() => {
     if (pendingEventExpectation?.missingEvents) {
-      pendingEventExpectation.fail(new Error("\nMissing VE Events:\n" + formatVeEvents(pendingEventExpectation.missingEvents) + "\nUnmatched VE Events:\n" + formatVeEvents(pendingEventExpectation.unmatchingEvents)));
+      pendingEventExpectation.fail(new Error("\nMissing VE Events:\n" + formatVeEvents(pendingEventExpectation.missingEvents) + "\nUnmatched VE Events:\n" + formatVeEvents(pendingEventExpectation.unmatchingEvents) + "\nAll events:\n" + JSON.stringify(veDebugEventsLog, null, 2)));
     }
   }, EVENT_EXPECTATION_TIMEOUT);
   return await promise.finally(() => {
@@ -4979,7 +5003,7 @@ function checkPendingEventExpectation() {
 }
 function getUnmatchedVeEvents() {
   console.error(numMatchedEvents);
-  return veDebugEventsLog.slice(numMatchedEvents).map((e) => "interaction" in e ? e.interaction : formatImpressions(e.impressions)).join("\n");
+  return formatVeEvents(veDebugEventsLog.slice(numMatchedEvents));
 }
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;
 globalThis.getUnmatchedVeEvents = getUnmatchedVeEvents;
@@ -5423,7 +5447,7 @@ async function process() {
     if (!loggingState.impressionLogged) {
       const overlap = visibleOverlap(element, viewportRectFor(element));
       const visibleSelectOption = element.tagName === "OPTION" && loggingState.parent?.selectOpen;
-      const visible = overlap && (!parent2 || loggingState.parent?.impressionLogged);
+      const visible = overlap && element.checkVisibility({ checkVisibilityCSS: true }) && (!parent2 || loggingState.parent?.impressionLogged);
       if (visible || visibleSelectOption) {
         if (overlap) {
           loggingState.size = overlap;

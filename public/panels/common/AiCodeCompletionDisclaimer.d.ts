@@ -3,7 +3,6 @@ import '../../ui/components/tooltips/tooltips.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     disclaimerTooltipId?: string;
-    panelName?: string;
     noLogging: boolean;
     onManageInSettingsTooltipClick: () => void;
 }
@@ -17,7 +16,6 @@ export declare class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     #private;
     constructor(element?: HTMLElement, view?: View);
     set disclaimerTooltipId(disclaimerTooltipId: string);
-    set panelName(panelName: string);
     set loading(loading: boolean);
     performUpdate(): void;
 }

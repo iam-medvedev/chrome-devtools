@@ -8689,6 +8689,10 @@ export declare namespace Media {
          */
         data: any;
     }
+    interface Player {
+        playerId: PlayerId;
+        domNodeId?: DOM.BackendNodeId;
+    }
     /**
      * This can be called multiple times, and can be used to set / override /
      * remove player properties. A null propValue indicates removal.
@@ -8721,11 +8725,11 @@ export declare namespace Media {
     }
     /**
      * Called whenever a player is created, or when a new agent joins and receives
-     * a list of active players. If an agent is restored, it will receive the full
-     * list of player ids and all events again.
+     * a list of active players. If an agent is restored, it will receive one
+     * event for each active player.
      */
-    interface PlayersCreatedEvent {
-        players: PlayerId[];
+    interface PlayerCreatedEvent {
+        player: Player;
     }
 }
 export declare namespace Memory {
@@ -9267,6 +9271,19 @@ export declare namespace Network {
         CorpNotSameOriginAfterDefaultedToSameOriginByCoepAndDip = "corp-not-same-origin-after-defaulted-to-same-origin-by-coep-and-dip",
         CorpNotSameSite = "corp-not-same-site",
         SriMessageSignatureMismatch = "sri-message-signature-mismatch"
+    }
+    /**
+     * Sets Controls for IP Proxy of requests.
+     * Page reload is required before the new behavior will be observed.
+     */
+    const enum IpProxyStatus {
+        Available = "Available",
+        FeatureNotEnabled = "FeatureNotEnabled",
+        MaskedDomainListNotEnabled = "MaskedDomainListNotEnabled",
+        MaskedDomainListNotPopulated = "MaskedDomainListNotPopulated",
+        AuthTokensUnavailable = "AuthTokensUnavailable",
+        Unavailable = "Unavailable",
+        BypassedByDevTools = "BypassedByDevTools"
     }
     /**
      * The reason why request was blocked.
@@ -10314,6 +10331,12 @@ export declare namespace Network {
     interface LoadNetworkResourceOptions {
         disableCache: boolean;
         includeCredentials: boolean;
+    }
+    interface GetIPProtectionProxyStatusResponse extends ProtocolResponseWithError {
+        /**
+         * Whether IP proxy is available
+         */
+        status: IpProxyStatus;
     }
     interface SetAcceptedEncodingsRequest {
         /**
@@ -16681,6 +16704,10 @@ export declare namespace Target {
          * Frame id of originating window (is only set if target has an opener).
          */
         openerFrameId?: Page.FrameId;
+        /**
+         * Id of the parent frame, only present for the "iframe" targets.
+         */
+        parentFrameId?: Page.FrameId;
         browserContextId?: Browser.BrowserContextID;
         /**
          * Provides additional details for specific target types. For example, for

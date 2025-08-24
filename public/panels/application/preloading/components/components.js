@@ -1577,7 +1577,6 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
                         name=${hasWarning ? "warning-filled" : "cross-circle-filled"}
                         class='medium'
                         style=${styleMap2({
-        color: hasWarning ? "var(--sys-color-warning)" : "var(--sys-color-error)",
         "vertical-align": "sub"
       })}
                       ></devtools-icon>` : ""}
@@ -1797,13 +1796,7 @@ var RuleSetDetailsView = class extends LegacyWrapper11.LegacyWrapper.WrappableCo
     }
     return html6`
       <div class="ruleset-header">
-        <devtools-icon
-          .data=${{
-      iconName: "cross-circle",
-      color: "var(--icon-error)",
-      width: "16px",
-      height: "16px"
-    }}>
+        <devtools-icon name="cross-circle" class="medium">
         </devtools-icon>
         <span id="error-message-text">${this.#data.errorMessage}</span>
       </div>
@@ -1987,11 +1980,9 @@ var RuleSetGrid = class extends LegacyWrapper13.LegacyWrapper.WrappableComponent
       })}
                             jslog=${VisualLogging3.action(revealInElements ? "reveal-in-elements" : "reveal-in-network").track({ click: true })}
                           >
-                            <devtools-icon name=${revealInElements ? "code-circle" : "arrow-up-down-circle"}
+                            <devtools-icon name=${revealInElements ? "code-circle" : "arrow-up-down-circle"} class="medium"
                               style=${styleMap3({
         color: "var(--icon-link)",
-        width: "16px",
-        height: "16px",
         "vertical-align": "sub"
       })}
                             ></devtools-icon>

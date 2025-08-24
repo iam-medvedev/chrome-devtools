@@ -376,6 +376,20 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             void this.updateScrollAdorner();
         }
         this.expandAllButtonElement = null;
+        if (this.nodeInternal.retained && !this.isClosingTag()) {
+            const icon = new IconButton.Icon.Icon();
+            icon.name = 'small-status-dot';
+            icon.style.color = 'var(--icon-error)';
+            icon.classList.add('extra-small');
+            icon.style.setProperty('vertical-align', 'middle');
+            this.setLeadingIcons([icon]);
+            this.listItemNode.classList.add('detached-elements-detached-node');
+            this.listItemNode.style.setProperty('display', '-webkit-box');
+            this.listItemNode.setAttribute('title', 'Retained Node');
+        }
+        if (this.nodeInternal.detached && !this.isClosingTag()) {
+            this.listItemNode.setAttribute('title', 'Detached Tree Node');
+        }
     }
     static animateOnDOMUpdate(treeElement) {
         const tagName = treeElement.listItemElement.querySelector('.webkit-html-tag-name');
@@ -1092,7 +1106,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         this.updateEditorHandles(attribute, config);
         const componentSelection = this.listItemElement.getComponentSelection();
-        componentSelection && componentSelection.selectAllChildren(elementForSelection);
+        componentSelection?.selectAllChildren(elementForSelection);
         return true;
     }
     startEditingTextNode(textNodeElement) {
@@ -1112,7 +1126,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const config = new UI.InplaceEditor.Config(this.textNodeEditingCommitted.bind(this, textNode), this.editingCancelled.bind(this), null);
         this.updateEditorHandles(textNodeElement, config);
         const componentSelection = this.listItemElement.getComponentSelection();
-        componentSelection && componentSelection.selectAllChildren(textNodeElement);
+        componentSelection?.selectAllChildren(textNodeElement);
         return true;
     }
     startEditingTagName(tagNameElement) {
@@ -1139,7 +1153,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             if (event.key !== ' ') {
                 return;
             }
-            this.editing && this.editing.commit();
+            this.editing?.commit();
             event.consume(true);
         };
         function editingCommitted(element, newTagName, oldText, tagName, moveDirection) {
@@ -1163,7 +1177,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const config = new UI.InplaceEditor.Config(editingCommitted.bind(this), editingCancelled.bind(this), tagName);
         this.updateEditorHandles(tagNameElement, config);
         const componentSelection = this.listItemElement.getComponentSelection();
-        componentSelection && componentSelection.selectAllChildren(tagNameElement);
+        componentSelection?.selectAllChildren(tagNameElement);
         return true;
     }
     updateEditorHandles(element, config) {
@@ -1240,7 +1254,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
                         // The relatedTarget is null when no element gains focus, e.g. switching windows.
                         const relatedTarget = event.relatedTarget;
                         if (relatedTarget && !relatedTarget.isSelfOrDescendant(editor)) {
-                            this.editing && this.editing.commit();
+                            this.editing?.commit();
                         }
                     },
                 }),
@@ -1250,7 +1264,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         resize.call(this);
         this.htmlEditElement.appendChild(editor);
         editor.editor.focus();
-        this.treeOutline && this.treeOutline.setMultilineEditing(this.editing);
+        this.treeOutline?.setMultilineEditing(this.editing);
         function resize() {
             if (this.treeOutline && this.htmlEditElement) {
                 this.htmlEditElement.style.width = this.treeOutline.visibleWidth() - this.computeLeftIndent() - 30 + 'px';

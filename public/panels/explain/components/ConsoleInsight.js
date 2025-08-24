@@ -718,11 +718,7 @@ export class ConsoleInsight extends HTMLElement {
             <h3>Things to consider</h3>
             <div class="reminder-items">
               <div>
-                <devtools-icon .data=${{
-                    iconName: 'google',
-                    width: 'var(--sys-size-8)',
-                    height: 'var(--sys-size-8)',
-                }}>
+                <devtools-icon name="google" class="medium">
                 </devtools-icon>
               </div>
               <div>The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. ${noLogging
@@ -730,11 +726,7 @@ export class ConsoleInsight extends HTMLElement {
                     : 'This data may be seen by human reviewers to improve this feature. Avoid sharing sensitive or personal information.'}
               </div>
               <div>
-                <devtools-icon .data=${{
-                    iconName: 'policy',
-                    width: 'var(--sys-size-8)',
-                    height: 'var(--sys-size-8)',
-                }}>
+                <devtools-icon name="policy" class="medium">
                 </devtools-icon>
               </div>
               <div>Use of this feature is subject to the <x-link
@@ -750,11 +742,7 @@ export class ConsoleInsight extends HTMLElement {
                 </x-link>
               </div>
               <div>
-                <devtools-icon .data=${{
-                    iconName: 'warning',
-                    width: 'var(--sys-size-8)',
-                    height: 'var(--sys-size-8)',
-                }}>
+                <devtools-icon name="warning" class="medium">
                 </devtools-icon>
               </div>
               <div>
@@ -778,11 +766,7 @@ export class ConsoleInsight extends HTMLElement {
           >${i18nString(UIStrings.settingsLink)}</button>`;
                 return html `<main class="opt-in-teaser" jslog=${jslog}>
           <div class="badge">
-            <devtools-icon .data=${{
-                    iconName: 'lightbulb-spark',
-                    width: 'var(--sys-size-8)',
-                    height: 'var(--sys-size-8)',
-                }}>
+            <devtools-icon name="lightbulb-spark" class="medium">
             </devtools-icon>
           </div>
           <div>
@@ -976,11 +960,7 @@ export class ConsoleInsight extends HTMLElement {
       <header>
         ${hasIcon ? html `
           <div class="header-icon-container">
-            <devtools-icon .data=${{
-            iconName: 'lightbulb-spark',
-            width: '18px',
-            height: '18px',
-        }}>
+            <devtools-icon name="lightbulb-spark" class="large">
             </devtools-icon>
           </div>`
             : Lit.nothing}

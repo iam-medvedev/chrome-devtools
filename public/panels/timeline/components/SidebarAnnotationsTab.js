@@ -267,12 +267,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
           <span class="annotation-identifier" style=${Lit.Directives.styleMap(styleForFromAnnotationIdentifier)}>
             ${entryFromName}
           </span>
-          <devtools-icon class="inline-icon" .data=${{
-                iconName: 'arrow-forward',
-                color: 'var(--icon-default)',
-                width: '18px',
-                height: '18px',
-            }}>
+          <devtools-icon name="arrow-forward" class="inline-icon large">
           </devtools-icon>
           ${renderEntryToIdentifier(annotation, annotationEntryToColorMap)}
         </div>
@@ -381,15 +376,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 event.stopPropagation();
                 input.onAnnotationDelete(annotation);
             }} jslog=${VisualLogging.action('timeline.annotation-sidebar.delete').track({ click: true })}>
-                    <devtools-icon
-                      class="bin-icon"
-                      .data=${{
-                iconName: 'bin',
-                color: 'var(--icon-default)',
-                width: '20px',
-                height: '20px',
-            }}
-                    ></devtools-icon>
+                    <devtools-icon class="bin-icon extra-large" name="bin"></devtools-icon>
                   </button>
                 </div>`;
         })}

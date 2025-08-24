@@ -332,7 +332,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         if (breadcrumb) {
             breadcrumb.setHovered(true);
         }
-        else if (node && node.id) {
+        else if (node?.id) {
             // Highlight and scroll into view the currently inspected node.
             node.domModel().overlayModel().nodeHighlightRequested({ nodeId: node.id });
         }

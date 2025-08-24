@@ -31,6 +31,7 @@
   },
   "files": [
     "../../../../../../front_end/entrypoints/main/ExecutionContextSelector.ts",
+    "../../../../../../front_end/entrypoints/main/GlobalAiButton.ts",
     "../../../../../../front_end/entrypoints/main/MainImpl.ts",
     "../../../../../../front_end/entrypoints/main/SimpleApp.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

@@ -598,7 +598,7 @@ var Button = class extends HTMLElement {
             <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>
             </devtools-icon>` : ""}
           ${this.#props.longClickable ? html`
-              <devtools-icon name=${"triangle-bottom-right"} class="long-click">
+              <devtools-icon name="triangle-bottom-right" class="long-click">
               </devtools-icon>` : ""}
           ${this.#props.spinner ? html`<span class=${classMap(spinnerClasses)}></span>` : ""}
           <slot @slotchange=${this.#render} ${ref(this.#slotRef)}></slot>

@@ -257,11 +257,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         const fileIcon = html `
-      <devtools-icon class=${overridesSetting.get() ? 'inline-icon dot purple' : 'inline-icon'} .data=${{
-            iconName: 'document',
-            width: '16px',
-            height: '16px',
-        }}>
+      <devtools-icon name="document" class=${'medium' + overridesSetting.get() ? 'inline-icon dot purple' : 'inline-icon'}>
       </devtools-icon>`;
         // clang-format on
         const revealHeadersFile = (event) => {
@@ -280,11 +276,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
           class="link devtools-link"
           jslog=${VisualLogging.link('devtools-override').track({ click: true })}
       >
-        <devtools-icon class="inline-icon" .data=${{
-            iconName: 'help',
-            width: '16px',
-            height: '16px',
-        }}>
+        <devtools-icon name="help" class="inline-icon medium">
         </devtools-icon>
       </x-link>
       <x-link

@@ -13,6 +13,9 @@ interface ViewInput {
     visibleWidth?: number;
     visible?: boolean;
     wrap: boolean;
+    showSelectionOnKeyboardFocus: boolean;
+    preventTabOrder: boolean;
+    deindentSingleNode: boolean;
     onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
         node: SDK.DOMModel.DOMNode | null;
         focus: boolean;
@@ -35,6 +38,9 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     omitRootDOMNode: boolean;
     selectEnabled: boolean;
     hideGutter: boolean;
+    showSelectionOnKeyboardFocus: boolean;
+    preventTabOrder: boolean;
+    deindentSingleNode: boolean;
     onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
         node: SDK.DOMModel.DOMNode | null;
         focus: boolean;
@@ -90,7 +96,6 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     show(parentElement: Element, insertBefore?: Node | null, suppressOrphanWidgetError?: boolean): void;
 }
 declare const ElementsTreeOutline_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<ElementsTreeOutline.EventTypes>;
     addEventListener<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<ElementsTreeOutline.EventTypes, T>;
     once<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T): Promise<ElementsTreeOutline.EventTypes[T]>;
     removeEventListener<T extends keyof ElementsTreeOutline.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<ElementsTreeOutline.EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -123,6 +128,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private updateModifiedNodesTimeout?;
     constructor(omitRootDOMNode?: boolean, selectEnabled?: boolean, hideGutter?: boolean);
     static forDOMModel(domModel: SDK.DOMModel.DOMModel): ElementsTreeOutline | null;
+    deindentSingleNode(): void;
     updateNodeElementToIssue(element: Element, issues: IssuesManager.Issue.Issue[]): void;
     private onShowHTMLCommentsChange;
     setWordWrap(wrap: boolean): void;
@@ -198,7 +204,11 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private childNodeCountUpdated;
     private distributedNodesChanged;
     private updateModifiedNodesSoon;
-    private updateModifiedNodes;
+    /**
+     * TODO: this is made public for unit tests until the ElementsTreeOutline is
+     * migrated into DOMTreeWidget and highlights are declarative.
+     */
+    updateModifiedNodes(): void;
     private updateModifiedNode;
     private updateModifiedParentNode;
     populateTreeElement(treeElement: ElementsTreeElement): Promise<void>;

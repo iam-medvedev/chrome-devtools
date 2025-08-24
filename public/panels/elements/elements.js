@@ -2489,7 +2489,7 @@ var stylePropertiesTreeOutline_css_default = `/*
   }
 
   &.child-editing {
-    word-wrap: break-word !important; /* stylelint-disable-line declaration-no-important */
+    overflow-wrap: break-word !important; /* stylelint-disable-line declaration-no-important */
     white-space: normal !important; /* stylelint-disable-line declaration-no-important */
     padding-left: 0;
   }
@@ -5435,7 +5435,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     const hasBeenEditedIncrementally = this.hasBeenEditedIncrementally;
     styleText = styleText.replace(/[\xA0\t]/g, " ").trim();
     if (!styleText.length && majorChange && this.newProperty && !hasBeenEditedIncrementally) {
-      this.parent && this.parent.removeChild(this);
+      this.parent?.removeChild(this);
       return;
     }
     const currentNode = this.parentPaneInternal.node();
@@ -7463,7 +7463,7 @@ var StylePropertyHighlighter = class {
     await Promise.all(populatePromises);
     const treeElement = this.findTreeElementFromSection((treeElement2) => treeElement2.property === cssProperty, section3);
     if (treeElement) {
-      treeElement.parent && treeElement.parent.expand();
+      treeElement.parent?.expand();
       this.scrollAndHighlightTreeElement(treeElement);
       section3.element.focus();
     }
@@ -9912,7 +9912,7 @@ var URLRenderer = class extends rendererBase(SDK10.CSSPropertyParserMatchers.URL
     const container = document.createDocumentFragment();
     UI13.UIUtils.createTextChild(container, "url(");
     let hrefUrl = null;
-    if (this.rule && this.rule.resourceURL()) {
+    if (this.rule?.resourceURL()) {
       hrefUrl = Common7.ParsedURL.ParsedURL.completeURL(this.rule.resourceURL(), url);
     } else if (this.node) {
       hrefUrl = this.node.resolveURL(url);
@@ -11512,6 +11512,20 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
       void this.updateScrollAdorner();
     }
     this.expandAllButtonElement = null;
+    if (this.nodeInternal.retained && !this.isClosingTag()) {
+      const icon = new IconButton3.Icon.Icon();
+      icon.name = "small-status-dot";
+      icon.style.color = "var(--icon-error)";
+      icon.classList.add("extra-small");
+      icon.style.setProperty("vertical-align", "middle");
+      this.setLeadingIcons([icon]);
+      this.listItemNode.classList.add("detached-elements-detached-node");
+      this.listItemNode.style.setProperty("display", "-webkit-box");
+      this.listItemNode.setAttribute("title", "Retained Node");
+    }
+    if (this.nodeInternal.detached && !this.isClosingTag()) {
+      this.listItemNode.setAttribute("title", "Detached Tree Node");
+    }
   }
   static animateOnDOMUpdate(treeElement) {
     const tagName = treeElement.listItemElement.querySelector(".webkit-html-tag-name");
@@ -12191,7 +12205,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     }
     this.updateEditorHandles(attribute, config);
     const componentSelection = this.listItemElement.getComponentSelection();
-    componentSelection && componentSelection.selectAllChildren(elementForSelection);
+    componentSelection?.selectAllChildren(elementForSelection);
     return true;
   }
   startEditingTextNode(textNodeElement) {
@@ -12209,7 +12223,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const config = new UI16.InplaceEditor.Config(this.textNodeEditingCommitted.bind(this, textNode), this.editingCancelled.bind(this), null);
     this.updateEditorHandles(textNodeElement, config);
     const componentSelection = this.listItemElement.getComponentSelection();
-    componentSelection && componentSelection.selectAllChildren(textNodeElement);
+    componentSelection?.selectAllChildren(textNodeElement);
     return true;
   }
   startEditingTagName(tagNameElement) {
@@ -12236,7 +12250,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
       if (event.key !== " ") {
         return;
       }
-      this.editing && this.editing.commit();
+      this.editing?.commit();
       event.consume(true);
     };
     function editingCommitted(element, newTagName, oldText, tagName2, moveDirection) {
@@ -12260,7 +12274,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const config = new UI16.InplaceEditor.Config(editingCommitted.bind(this), editingCancelled.bind(this), tagName);
     this.updateEditorHandles(tagNameElement, config);
     const componentSelection = this.listItemElement.getComponentSelection();
-    componentSelection && componentSelection.selectAllChildren(tagNameElement);
+    componentSelection?.selectAllChildren(tagNameElement);
     return true;
   }
   updateEditorHandles(element, config) {
@@ -12333,7 +12347,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
           focusout: (event) => {
             const relatedTarget = event.relatedTarget;
             if (relatedTarget && !relatedTarget.isSelfOrDescendant(editor)) {
-              this.editing && this.editing.commit();
+              this.editing?.commit();
             }
           }
         })
@@ -12343,7 +12357,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     resize.call(this);
     this.htmlEditElement.appendChild(editor);
     editor.editor.focus();
-    this.treeOutline && this.treeOutline.setMultilineEditing(this.editing);
+    this.treeOutline?.setMultilineEditing(this.editing);
     function resize() {
       if (this.treeOutline && this.htmlEditElement) {
         this.htmlEditElement.style.width = this.treeOutline.visibleWidth() - this.computeLeftIndent() - 30 + "px";
@@ -13834,7 +13848,7 @@ select {
 }
 
 .elements-disclosure .elements-tree-nowrap li {
-  word-wrap: normal;
+  overflow-wrap: normal;
 }
 /* DOM update highlight */
 @keyframes dom-update-highlight-animation {
@@ -14208,11 +14222,18 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     output.elementsTreeOutline.setVisible(input.visible);
   }
   output.elementsTreeOutline.setWordWrap(input.wrap);
+  output.elementsTreeOutline.setShowSelectionOnKeyboardFocus(input.showSelectionOnKeyboardFocus, input.preventTabOrder);
+  if (input.deindentSingleNode) {
+    output.elementsTreeOutline.deindentSingleNode();
+  }
 };
 var DOMTreeWidget = class extends UI20.Widget.Widget {
   omitRootDOMNode = false;
   selectEnabled = false;
   hideGutter = false;
+  showSelectionOnKeyboardFocus = false;
+  preventTabOrder = false;
+  deindentSingleNode = false;
   onSelectedNodeChanged = () => {
   };
   onElementsTreeUpdated = () => {
@@ -14280,6 +14301,9 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
       visibleWidth: this.#visibleWidth,
       visible: this.#visible,
       wrap: this.#wrap,
+      showSelectionOnKeyboardFocus: this.showSelectionOnKeyboardFocus,
+      preventTabOrder: this.preventTabOrder,
+      deindentSingleNode: this.deindentSingleNode,
       onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
       onSelectedNodeChanged: this.onSelectedNodeChanged.bind(this)
     }, this.#viewOutput, this.contentElement);
@@ -14509,11 +14533,11 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
               if (!elementIssueDetails) {
                 return nothing3;
               }
-              const issueKindIconData = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
+              const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
               const openIssueEvent = () => Common14.Revealer.reveal(issue);
               return html9`
                     <div class="squiggles-content-item">
-                    <devtools-icon .data=${issueKindIconData} @click=${openIssueEvent}></devtools-icon>
+                    <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
                     <x-link class="link" @click=${openIssueEvent}>${i18nString15(UIStrings16.viewIssue)}</x-link>
                     <span>${elementIssueDetails.tooltip}</span>
                     </div>`;
@@ -14561,6 +14585,12 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
       for (const [element, issues] of treeElementNodeElementsToIssues) {
         this.#nodeElementToIssues.set(element, issues);
       }
+    }
+  }
+  deindentSingleNode() {
+    const firstChild = this.firstChild();
+    if (!firstChild || firstChild && !firstChild.isExpandable()) {
+      this.shadowRoot.querySelector(".elements-disclosure")?.classList.add("single-node");
     }
   }
   updateNodeElementToIssue(element, issues) {
@@ -15328,6 +15358,10 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     }
     this.updateModifiedNodesTimeout = window.setTimeout(this.updateModifiedNodes.bind(this), 50);
   }
+  /**
+   * TODO: this is made public for unit tests until the ElementsTreeOutline is
+   * migrated into DOMTreeWidget and highlights are declarative.
+   */
   updateModifiedNodes() {
     if (this.updateModifiedNodesTimeout) {
       clearTimeout(this.updateModifiedNodesTimeout);
@@ -16726,7 +16760,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     const config = new UI22.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
     UI22.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
     const selection = targetElement.getComponentSelection();
-    selection && selection.selectAllChildren(targetElement);
+    selection?.selectAllChildren(targetElement);
   }
   handleKeyDown(context, event) {
     const element = event.currentTarget;
@@ -19325,12 +19359,9 @@ var Renderer2 = class _Renderer {
       true
     );
     treeOutline.rootDOMNode = node;
-    const firstChild = treeOutline.firstChild();
-    if (firstChild && !firstChild.isExpandable()) {
-      treeOutline.element.classList.add("single-node");
-    }
+    treeOutline.deindentSingleNode();
     treeOutline.setVisible(true);
-    treeOutline.element.treeElementForTest = firstChild;
+    treeOutline.element.treeElementForTest = treeOutline.firstChild();
     treeOutline.setShowSelectionOnKeyboardFocus(
       /* show: */
       true,

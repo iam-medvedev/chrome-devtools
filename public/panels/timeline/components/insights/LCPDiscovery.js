@@ -27,7 +27,7 @@ export class LCPDiscovery extends BaseInsightComponent {
             return [];
         }
         const imageResults = getImageData(this.model);
-        if (!imageResults || !imageResults.discoveryDelay) {
+        if (!imageResults?.discoveryDelay) {
             return [];
         }
         const timespanOverlaySection = overlays.find(overlay => overlay.type === 'TIMESPAN_BREAKDOWN')?.sections[0];

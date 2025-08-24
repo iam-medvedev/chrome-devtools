@@ -93,6 +93,10 @@ export const DEFAULT_VIEW = (input, output, target) => {
         output.elementsTreeOutline.setVisible(input.visible);
     }
     output.elementsTreeOutline.setWordWrap(input.wrap);
+    output.elementsTreeOutline.setShowSelectionOnKeyboardFocus(input.showSelectionOnKeyboardFocus, input.preventTabOrder);
+    if (input.deindentSingleNode) {
+        output.elementsTreeOutline.deindentSingleNode();
+    }
 };
 /**
  * The main goal of this presenter is to wrap ElementsTreeOutline until
@@ -105,6 +109,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     omitRootDOMNode = false;
     selectEnabled = false;
     hideGutter = false;
+    showSelectionOnKeyboardFocus = false;
+    preventTabOrder = false;
+    deindentSingleNode = false;
     onSelectedNodeChanged = () => { };
     onElementsTreeUpdated = () => { };
     onDocumentUpdated = () => { };
@@ -169,6 +176,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             visibleWidth: this.#visibleWidth,
             visible: this.#visible,
             wrap: this.#wrap,
+            showSelectionOnKeyboardFocus: this.showSelectionOnKeyboardFocus,
+            preventTabOrder: this.preventTabOrder,
+            deindentSingleNode: this.deindentSingleNode,
             onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
             onSelectedNodeChanged: this.onSelectedNodeChanged.bind(this),
         }, this.#viewOutput, this.contentElement);
@@ -393,11 +403,11 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
                                 // This shouldn't happen, but add this if check to pass ts check.
                                 return nothing;
                             }
-                            const issueKindIconData = IssueCounter.IssueCounter.getIssueKindIconData(issue.getKind());
+                            const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
                             const openIssueEvent = () => Common.Revealer.reveal(issue);
                             return html `
                     <div class="squiggles-content-item">
-                    <devtools-icon .data=${issueKindIconData} @click=${openIssueEvent}></devtools-icon>
+                    <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
                     <x-link class="link" @click=${openIssueEvent}>${i18nString(UIStrings.viewIssue)}</x-link>
                     <span>${elementIssueDetails.tooltip}</span>
                     </div>`;
@@ -447,6 +457,12 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             for (const [element, issues] of treeElementNodeElementsToIssues) {
                 this.#nodeElementToIssues.set(element, issues);
             }
+        }
+    }
+    deindentSingleNode() {
+        const firstChild = this.firstChild();
+        if (!firstChild || (firstChild && !firstChild.isExpandable())) {
+            this.shadowRoot.querySelector('.elements-disclosure')?.classList.add('single-node');
         }
     }
     updateNodeElementToIssue(element, issues) {
@@ -1245,6 +1261,10 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         }
         this.updateModifiedNodesTimeout = window.setTimeout(this.updateModifiedNodes.bind(this), 50);
     }
+    /**
+     * TODO: this is made public for unit tests until the ElementsTreeOutline is
+     * migrated into DOMTreeWidget and highlights are declarative.
+     */
     updateModifiedNodes() {
         if (this.updateModifiedNodesTimeout) {
             clearTimeout(this.updateModifiedNodesTimeout);

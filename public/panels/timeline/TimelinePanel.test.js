@@ -41,8 +41,6 @@ describeWithEnvironment('TimelinePanel', function () {
         timeline.detach();
         Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.removeInstance();
         Workspace.IgnoreListManager.IgnoreListManager.removeInstance();
-        UI.ActionRegistry.ActionRegistry.reset();
-        Timeline.TimelinePanel.TimelinePanel.removeInstance();
     });
     it('should keep other tracks when the custom tracks setting is toggled', async function () {
         const events = await TraceLoader.rawEvents(this, 'extension-tracks-and-marks.json.gz');
@@ -140,84 +138,6 @@ describeWithEnvironment('TimelinePanel', function () {
         assert.isOk(clearButton);
         dispatchClickEvent(clearButton);
         assert.isNull(context.flavor(AIContext.AgentFocus));
-    });
-    // These next few tests can move into the saveToFile describe block below.
-    it('saves visual track config metadata to disk if the user has modified it', async function () {
-        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
-        await timeline.loadingComplete(events, null, null);
-        const flameChartView = timeline.getFlameChart();
-        const FAKE_METADATA = {
-            main: [{ hidden: true, expanded: false, originalIndex: 0, visualIndex: 0 }],
-            network: [{ hidden: false, expanded: false, originalIndex: 0, visualIndex: 0 }],
-        };
-        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
-            return FAKE_METADATA;
-        });
-        const fileManager = Workspace.FileManager.FileManager.instance();
-        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
-            return Promise.resolve({});
-        });
-        const closeSpy = sinon.stub(fileManager, 'close');
-        await timeline.saveToFile({
-            includeScriptContent: false,
-            includeSourceMaps: false,
-            addModifications: true,
-        });
-        sinon.assert.calledOnce(saveSpy);
-        sinon.assert.calledOnce(closeSpy);
-        const [fileName, contentData] = saveSpy.getCall(0).args;
-        // Matches Trace-20250613T132120.json
-        assert.match(fileName, /Trace-[\d|T]+\.json$/);
-        const file = await contentDataToFile(contentData);
-        assert.deepEqual(file.metadata.visualTrackConfig, FAKE_METADATA);
-    });
-    it('does not save visual track config if the user does not save with modifications', async function () {
-        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
-        await timeline.loadingComplete(events, null, null);
-        const flameChartView = timeline.getFlameChart();
-        const FAKE_METADATA = {
-            main: [{ hidden: true, expanded: false, originalIndex: 0, visualIndex: 0 }],
-            network: [{ hidden: false, expanded: false, originalIndex: 0, visualIndex: 0 }],
-        };
-        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
-            return FAKE_METADATA;
-        });
-        const fileManager = Workspace.FileManager.FileManager.instance();
-        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
-            return Promise.resolve({});
-        });
-        sinon.stub(fileManager, 'close');
-        await timeline.saveToFile({
-            includeScriptContent: false,
-            includeSourceMaps: false,
-            addModifications: false,
-        });
-        sinon.assert.calledOnce(saveSpy);
-        const [, contentData] = saveSpy.getCall(0).args;
-        const file = await contentDataToFile(contentData);
-        assert.isUndefined(file.metadata.visualTrackConfig);
-    });
-    it('does not save visual track config if the user has not made any', async function () {
-        const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
-        await timeline.loadingComplete(events, null, null);
-        const flameChartView = timeline.getFlameChart();
-        sinon.stub(flameChartView, 'getPersistedConfigMetadata').callsFake(() => {
-            return { main: null, network: null };
-        });
-        const fileManager = Workspace.FileManager.FileManager.instance();
-        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
-            return Promise.resolve({});
-        });
-        sinon.stub(fileManager, 'close');
-        await timeline.saveToFile({
-            includeScriptContent: false,
-            includeSourceMaps: false,
-            addModifications: true,
-        });
-        sinon.assert.calledOnce(saveSpy);
-        const [, contentData] = saveSpy.getCall(0).args;
-        const file = await contentDataToFile(contentData);
-        assert.isUndefined(file.metadata.visualTrackConfig);
     });
     it('includes the trace metadata when saving to a file', async function () {
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
@@ -321,7 +241,8 @@ describeWithEnvironment('TimelinePanel', function () {
             it('saves a regular trace file', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    savingEnhancedTrace: false,
+                    includeScriptContent: false,
+                    includeSourceMaps: false,
                     addModifications: false,
                 });
                 sinon.assert.calledOnce(saveSpy);
@@ -331,13 +252,20 @@ describeWithEnvironment('TimelinePanel', function () {
                 const file = await contentDataToFile(contentData);
                 assert.isUndefined(file.metadata.enhancedTraceVersion);
                 assert.deepEqual(file.traceEvents, traceEvents);
+                // All `StubScriptCatchup` should have durations
+                for (const event of file.traceEvents) {
+                    if (event.name === 'StubScriptCatchup') {
+                        assert.isDefined(event.dur);
+                    }
+                }
             });
             it('saves a CPU profile trace file', async function () {
                 const profile = await TraceLoader.rawCPUProfile(this, 'node-fibonacci-website.cpuprofile.gz');
                 const file = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
                 const { traceEvents, metadata } = file;
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    savingEnhancedTrace: false,
+                    includeScriptContent: false,
+                    includeSourceMaps: false,
                     addModifications: false,
                 });
                 sinon.assert.calledOnce(saveSpy);
@@ -349,10 +277,11 @@ describeWithEnvironment('TimelinePanel', function () {
                 const profile2 = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
                 assert.deepEqual(cpuFile, profile2);
             });
-            it('saves an enhanced trace file', async function () {
+            it('saves an enhanced trace file without sourcemaps', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'enhanced-traces.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    savingEnhancedTrace: true,
+                    includeScriptContent: true,
+                    includeSourceMaps: false,
                     addModifications: false,
                 });
                 sinon.assert.calledOnce(saveSpy);
@@ -361,6 +290,22 @@ describeWithEnvironment('TimelinePanel', function () {
                 assert.match(fileName, /EnhancedTrace-[\d|T]+\.json\.gz$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
+                assert.isUndefined(file.metadata.sourceMaps);
+            });
+            it('saves an enhanced trace file with sourcemaps', async function () {
+                const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'dupe-js-inline-maps.json.gz');
+                await timeline.innerSaveToFile(traceEvents, metadata, {
+                    includeScriptContent: true,
+                    includeSourceMaps: true,
+                    addModifications: false,
+                });
+                sinon.assert.calledOnce(saveSpy);
+                sinon.assert.calledOnce(closeSpy);
+                const [fileName, contentData] = saveSpy.getCall(0).args;
+                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json\.gz$/);
+                const file = await contentDataToFile(contentData);
+                assert.isDefined(file.metadata.enhancedTraceVersion);
+                assert.isDefined(file.metadata.sourceMaps);
             });
             it('saves a trace file with modifications', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
@@ -391,7 +336,8 @@ describeWithEnvironment('TimelinePanel', function () {
             it('saves a regular trace file', async function () {
                 const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'web-dev.json.gz');
                 await timeline.innerSaveToFile(traceEvents, metadata, {
-                    savingEnhancedTrace: false,
+                    includeScriptContent: false,
+                    includeSourceMaps: false,
                     addModifications: false,
                 });
                 sinon.assert.calledOnce(saveSpy);
@@ -401,6 +347,71 @@ describeWithEnvironment('TimelinePanel', function () {
                 const file = await contentDataToFile(contentData);
                 assert.isUndefined(file.metadata.enhancedTraceVersion);
                 assert.deepEqual(file.traceEvents, traceEvents);
+            });
+        });
+        describe('removes chrome-extensions content', function () {
+            it('from trace events when saving a trace with "Include script content" on', async function () {
+                const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'chrome-ext-sourcemap-script-content.json.gz');
+                await timeline.loadingComplete(traceEvents, null, metadata);
+                // 7192505913775043000.8 matches a chrome-extension script in the trace
+                let extensionTracesWithContent = traceEvents.filter(value => {
+                    return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
+                        `${value.args.data.isolate}.${value.args.data.scriptId}` ===
+                            '7192505913775043000.8';
+                });
+                // loading the trace and verifying the chrome extension script has associated source text
+                let castedEvent = extensionTracesWithContent[0];
+                assert.lengthOf(extensionTracesWithContent, 1);
+                assert.isDefined(castedEvent.args.data.sourceText);
+                await timeline.saveToFile({
+                    includeScriptContent: true,
+                    includeSourceMaps: false,
+                    addModifications: false,
+                });
+                sinon.assert.calledOnce(saveSpy);
+                sinon.assert.calledOnce(closeSpy);
+                const [fileName, contentData] = saveSpy.getCall(0).args;
+                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json$/);
+                const file = await contentDataToFile(contentData);
+                assert.isDefined(file.metadata.enhancedTraceVersion);
+                // getting the same trace as before, but this time after saving has happened.
+                extensionTracesWithContent = file.traceEvents?.filter(value => {
+                    return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
+                        `${value.args.data.isolate}.${value.args.data.scriptId}` ===
+                            '7192505913775043000.8';
+                });
+                // the associated source text is now undefined from the chrome-extension script
+                castedEvent = extensionTracesWithContent[0];
+                assert.lengthOf(extensionTracesWithContent, 1);
+                assert.isUndefined(castedEvent.args.data.sourceText);
+                // non-extension script content is still present (7192505913775043000.10)
+                extensionTracesWithContent = file.traceEvents?.filter(value => {
+                    return value.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' &&
+                        `${value.args.data.isolate}.${value.args.data.scriptId}` ===
+                            '7192505913775043000.10';
+                });
+                castedEvent = extensionTracesWithContent[0];
+                assert.lengthOf(extensionTracesWithContent, 1);
+                assert.isDefined(castedEvent.args.data.sourceText);
+            });
+            it('from trace sourcemaps when saving a trace with "Include source map" on', async function () {
+                const { traceEvents, metadata } = await TraceLoader.traceFile(this, 'chrome-ext-sourcemap-script-content.json.gz');
+                await timeline.innerSaveToFile(traceEvents, metadata, {
+                    includeScriptContent: true,
+                    includeSourceMaps: true,
+                    addModifications: false,
+                });
+                sinon.assert.calledOnce(saveSpy);
+                sinon.assert.calledOnce(closeSpy);
+                const [fileName, contentData] = saveSpy.getCall(0).args;
+                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json$/);
+                const file = await contentDataToFile(contentData);
+                assert.isDefined(file.metadata.enhancedTraceVersion);
+                const totalSourceMapsWithChromExtensionProtocol = file.metadata.sourceMaps?.filter(value => {
+                    value.url.startsWith('chrome-extension:');
+                });
+                assert.isNotNull(totalSourceMapsWithChromExtensionProtocol);
+                assert.strictEqual(totalSourceMapsWithChromExtensionProtocol?.length, 0);
             });
         });
     });

@@ -392,12 +392,12 @@ export class DebuggerPlugin extends Plugin {
     }
     attachInfobar(bar) {
         if (this.editor) {
-            this.editor.dispatch({ effects: SourceFrame.SourceFrame.addInfobar.of(bar) });
+            this.editor.dispatch({ effects: SourceFrame.SourceFrame.addSourceFrameInfobar.of({ element: bar.element }) });
         }
     }
     removeInfobar(bar) {
         if (this.editor && bar) {
-            this.editor.dispatch({ effects: SourceFrame.SourceFrame.removeInfobar.of(bar) });
+            this.editor.dispatch({ effects: SourceFrame.SourceFrame.removeSourceFrameInfobar.of({ element: bar.element }) });
         }
     }
     hideIgnoreListInfobar() {

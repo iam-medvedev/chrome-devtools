@@ -56,6 +56,10 @@ export interface WidgetOptions {
      * `Widget`.
      */
     jslog?: string;
+    /**
+     * The additional classes to put onto the `element` of the resulting `Widget`.
+     */
+    classes?: string[];
 }
 export declare class Widget {
     #private;

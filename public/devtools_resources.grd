@@ -200,6 +200,7 @@
       <include file="Images/keyboard-full.svg" name="IMAGES_KEYBOARD_FULL_SVG" resource_path="Images/keyboard-full.svg" type="BINDATA" compress="false"/>
       <include file="Images/keyboard-pen.svg" name="IMAGES_KEYBOARD_PEN_SVG" resource_path="Images/keyboard-pen.svg" type="BINDATA" compress="false"/>
       <include file="Images/keyboard.svg" name="IMAGES_KEYBOARD_SVG" resource_path="Images/keyboard.svg" type="BINDATA" compress="false"/>
+      <include file="Images/label-auto.svg" name="IMAGES_LABEL_AUTO_SVG" resource_path="Images/label-auto.svg" type="BINDATA" compress="false"/>
       <include file="Images/label.svg" name="IMAGES_LABEL_SVG" resource_path="Images/label.svg" type="BINDATA" compress="false"/>
       <include file="Images/large-arrow-right-filled.svg" name="IMAGES_LARGE_ARROW_RIGHT_FILLED_SVG" resource_path="Images/large-arrow-right-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/layers-filled.svg" name="IMAGES_LAYERS_FILLED_SVG" resource_path="Images/layers-filled.svg" type="BINDATA" compress="false"/>
@@ -715,7 +716,6 @@
       <include file="panels/timeline/timeline.js" name="PANELS_TIMELINE_TIMELINE_JS" resource_path="panels/timeline/timeline.js" type="BINDATA" compress="false"/>
       <include file="panels/timeline/utils/utils.js" name="PANELS_TIMELINE_UTILS_UTILS_JS" resource_path="panels/timeline/utils/utils.js" type="BINDATA" compress="false"/>
       <include file="panels/utils/utils.js" name="PANELS_UTILS_UTILS_JS" resource_path="panels/utils/utils.js" type="BINDATA" compress="false"/>
-      <include file="panels/web_audio/graph_visualizer/graph_visualizer.js" name="PANELS_WEB_AUDIO_GRAPH_VISUALIZER_GRAPH_VISUALIZER_JS" resource_path="panels/web_audio/graph_visualizer/graph_visualizer.js" type="BINDATA" compress="false"/>
       <include file="panels/web_audio/web_audio-meta.js" name="PANELS_WEB_AUDIO_WEB_AUDIO_META_JS" resource_path="panels/web_audio/web_audio-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/web_audio/web_audio.js" name="PANELS_WEB_AUDIO_WEB_AUDIO_JS" resource_path="panels/web_audio/web_audio.js" type="BINDATA" compress="false"/>
       <include file="panels/webauthn/webauthn-meta.js" name="PANELS_WEBAUTHN_WEBAUTHN_META_JS" resource_path="panels/webauthn/webauthn-meta.js" type="BINDATA" compress="false"/>

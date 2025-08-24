@@ -45,12 +45,56 @@ export default `/*
   width: var(--sys-size-9);
 }
 
+:host(.toggled) {
+  color: var(--icon-toggled);
+}
+
 :host([hidden]) {
   display: none;
 }
 
-:host([name="warning-filled"]) {
+:host([name="warning-filled"]),
+:host([name="issue-exclamation-filled"]) {
   color: var(--icon-warning);
+}
+
+:host([name="cross-circle"]),
+:host([name="cross-circle-filled"]),
+:host([name="issue-cross-filled"]),
+:host([name="small-status-dot"]) {
+  color: var(--icon-error);
+}
+
+:host([name="issue-text-filled"]) {
+  color: var(--icon-info);
+}
+
+:host([name="large-arrow-right-filled"]) {
+  color: var(--icon-arrow-main-thread);
+}
+
+:host([name="code-circle"]) {
+  color: var(--icon-link);
+}
+
+:host([name="file-document"]) {
+  color: var(--icon-file-document);
+}
+
+:host([name="file-font"]) {
+  color: var(--icon-file-font);
+}
+
+:host([name="file-script"]) {
+  color: var(--icon-file-script);
+}
+
+:host([name="file-stylesheet"]) {
+  color: var(--icon-file-styles);
+}
+
+:host([name="file-media"]) {
+  color: var(--icon-file-media);
 }
 
 :host([name="triangle-up"]),

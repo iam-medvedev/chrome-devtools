@@ -6,6 +6,7 @@ export declare class ARIAAttributesPane extends AccessibilitySubPane {
     private readonly treeOutline;
     constructor();
     setNode(node: SDK.DOMModel.DOMNode | null): void;
+    getTreeOutlineForTesting(): Readonly<UI.TreeOutline.TreeOutline> | undefined;
     private isARIAAttribute;
 }
 export declare class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElement {
@@ -17,6 +18,7 @@ export declare class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElemen
     constructor(parentPane: ARIAAttributesPane, attribute: SDK.DOMModel.Attribute, _target: SDK.Target.Target);
     static createARIAValueElement(value: string): Element;
     onattach(): void;
+    getPromptForTesting(): Readonly<ARIAAttributePrompt> | undefined;
     private populateListItem;
     appendNameElement(name: string): void;
     appendAttributeValueElement(value: string): void;

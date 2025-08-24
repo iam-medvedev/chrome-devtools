@@ -251,7 +251,7 @@ UI.Toolbar.registerToolbarItem({
     const InspectorMain = await loadInspectorMainModule();
     return InspectorMain.OutermostTargetSelector.OutermostTargetSelector.instance();
   },
-  order: 98,
+  order: 97,
   location: "main-toolbar-right"
 });
 //# sourceMappingURL=inspector_main-meta.js.map

@@ -62,7 +62,6 @@ var DEFAULT_VIEW = (input, _output, target) => {
     groups: [
       {
         iconName: "cross-circle-filled",
-        iconColor: "var(--icon-error)",
         text: countToText(errors)
       },
       {

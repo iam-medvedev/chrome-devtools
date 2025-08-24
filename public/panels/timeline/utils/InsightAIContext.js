@@ -39,11 +39,7 @@ export class AIQueries {
     static networkRequest(parsedTrace, url) {
         return parsedTrace.NetworkRequests.byTime.find(r => r.args.data.url === url) ?? null;
     }
-    /**
-     * Returns an AI Call Tree representing the activity on the main thread for
-     * the relevant time range of the given insight.
-     */
-    static mainThreadActivity(insight, insightSetBounds, parsedTrace) {
+    static findMainThread(navigationId, parsedTrace) {
         /**
          * We cannot assume that there is one main thread as there are scenarios
          * where there can be multiple (see crbug.com/402658800) as an example.
@@ -59,8 +55,8 @@ export class AIQueries {
          */
         let mainThreadPID = null;
         let mainThreadTID = null;
-        if (insight.navigationId) {
-            const navigation = parsedTrace.Meta.navigationsByNavigationId.get(insight.navigationId);
+        if (navigationId) {
+            const navigation = parsedTrace.Meta.navigationsByNavigationId.get(navigationId);
             if (navigation?.args.data?.isOutermostMainFrame) {
                 mainThreadPID = navigation.pid;
                 mainThreadTID = navigation.tid;
@@ -73,10 +69,42 @@ export class AIQueries {
             }
             return thread.type === "MAIN_THREAD" /* Trace.Handlers.Threads.ThreadType.MAIN_THREAD */;
         });
+        return thread ?? null;
+    }
+    /**
+     * Returns bottom up activity for the given range.
+     */
+    static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
+        const thread = this.findMainThread(navigationId, parsedTrace);
         if (!thread) {
             return null;
         }
-        const bounds = insightBounds(insight, insightSetBounds);
+        const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
+        if (!events) {
+            return null;
+        }
+        // Use the same filtering as front_end/panels/timeline/TimelineTreeView.ts.
+        const visibleEvents = Trace.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat(["SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));
+        // The bottom up root node handles all the "in Tracebounds" checks we need for the insight.
+        const startTime = Trace.Helpers.Timing.microToMilli(bounds.min);
+        const endTime = Trace.Helpers.Timing.microToMilli(bounds.max);
+        return new Trace.Extras.TraceTree.BottomUpRootNode(events, {
+            textFilter: new Trace.Extras.TraceFilter.ExclusiveNameFilter([]),
+            filters: [filter],
+            startTime,
+            endTime,
+        });
+    }
+    /**
+     * Returns an AI Call Tree representing the activity on the main thread for
+     * the relevant time range of the given insight.
+     */
+    static mainThreadActivityTopDown(navigationId, bounds, parsedTrace) {
+        const thread = this.findMainThread(navigationId, parsedTrace);
+        if (!thread) {
+            return null;
+        }
         return AICallTree.fromTimeOnThread({
             thread: {
                 pid: thread.pid,
@@ -86,6 +114,37 @@ export class AIQueries {
             bounds,
         });
     }
+    /**
+     * Returns an AI Call Tree representing the activity on the main thread for
+     * the relevant time range of the given insight.
+     */
+    static mainThreadActivityForInsight(insight, insightSetBounds, parsedTrace) {
+        const bounds = insightBounds(insight, insightSetBounds);
+        return this.mainThreadActivityTopDown(insight.navigationId, bounds, parsedTrace);
+    }
+    /**
+     * Returns the top longest tasks as AI Call Trees.
+     */
+    static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
+        const thread = this.findMainThread(navigationId, parsedTrace);
+        if (!thread) {
+            return null;
+        }
+        const tasks = AICallTree.findMainThreadTasks({ thread, parsedTrace, bounds });
+        if (!tasks) {
+            return null;
+        }
+        const topTasks = tasks.filter(e => e.name === 'RunTask').sort((a, b) => b.dur - a.dur).slice(0, limit);
+        return topTasks
+            .map(task => {
+            const tree = AICallTree.fromEvent(task, parsedTrace);
+            if (tree) {
+                tree.selectedNode = null;
+            }
+            return tree;
+        })
+            .filter(tree => !!tree);
+    }
 }
 /**
  * Calculates the trace bounds for the given insight that are relevant.
@@ -93,7 +152,7 @@ export class AIQueries {
  * Uses the insight's overlays to determine the relevant trace bounds. If there are
  * no overlays, falls back to the insight set's navigation bounds.
  */
-function insightBounds(insight, insightSetBounds) {
+export function insightBounds(insight, insightSetBounds) {
     const overlays = insight.createOverlays?.() ?? [];
     const windows = overlays.map(Trace.Helpers.Timing.traceWindowFromOverlay).filter(bounds => !!bounds);
     const overlaysBounds = Trace.Helpers.Timing.combineTraceWindowsMicro(windows);

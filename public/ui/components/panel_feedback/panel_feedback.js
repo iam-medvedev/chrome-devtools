@@ -170,7 +170,6 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("ui/components/panel_feedback/PanelFeedback.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var previewFeatureUrl = new URL("../../../Images/experiment.svg", import.meta.url).toString();
 var videoThumbnailUrl = new URL("../../../Images/preview_feature_video_thumbnail.svg", import.meta.url).toString();
 var PanelFeedback = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
@@ -191,12 +190,7 @@ var PanelFeedback = class extends HTMLElement {
       <style>${panelFeedback_css_default}</style>
       <div class="preview">
         <h2 class="flex">
-          <devtools-icon .data=${{
-      iconPath: previewFeatureUrl,
-      width: "20px",
-      height: "20px",
-      color: "var(--icon-primary)"
-    }}></devtools-icon> ${i18nString2(UIStrings2.previewFeature)}
+          <devtools-icon name="experiment" class="extra-large" style="color: var(--icon-primary);"></devtools-icon> ${i18nString2(UIStrings2.previewFeature)}
         </h2>
         <p>${i18nString2(UIStrings2.previewText)} <x-link href=${this.#props.feedbackUrl} jslog=${VisualLogging.link("feedback").track({ click: true })}>${i18nString2(UIStrings2.previewTextFeedbackLink)}</x-link></p>
         <div class="video">
@@ -312,12 +306,7 @@ var PreviewToggle = class extends HTMLElement {
             ?checked=${checked}
             @change=${this.#checkboxChanged}
             aria-label=${this.#name} />
-            <devtools-icon .data=${{
-      iconName: "experiment",
-      width: "16px",
-      height: "16px",
-      color: "var(--icon-default)"
-    }}>
+            <devtools-icon name="experiment" class="medium">
           </devtools-icon>${this.#name}
           </devtools-checkbox>
         <div class="spacer"></div>

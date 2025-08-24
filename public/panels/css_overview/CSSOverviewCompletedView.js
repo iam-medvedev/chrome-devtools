@@ -814,7 +814,7 @@ function renderNode(data, link, showNode) {
       ${link}
       <devtools-icon part="show-element" name="select-element"
           title=${i18nString(UIStrings.showElement)} tabindex="0"
-          @click=${() => showNode && showNode()}></devtools-icon>
+          @click=${() => showNode?.()}></devtools-icon>
     </td>`;
 }
 function renderDeclaration(data) {
@@ -860,11 +860,11 @@ function renderContrastRatio(data) {
 }
 function createClearIcon() {
     return html `
-    <devtools-icon name="clear" style="color:var(--icon-error); width:14px; height:14px"></devtools-icon>`;
+    <devtools-icon name="clear" class="small" style="color:var(--icon-error);"></devtools-icon>`;
 }
 function createCheckIcon() {
     return html `
-    <devtools-icon name="checkmark"
-        style="color:var(--icon-checkmark-green); width:14px; height:14px"></devtools-icon>`;
+    <devtools-icon name="checkmark" class="small"
+        style="color:var(--icon-checkmark-green);></devtools-icon>`;
 }
 //# sourceMappingURL=CSSOverviewCompletedView.js.map

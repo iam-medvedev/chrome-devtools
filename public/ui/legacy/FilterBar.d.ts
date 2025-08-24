@@ -5,7 +5,6 @@ import type { Suggestions } from './SuggestBox.js';
 import { type ToolbarButton } from './Toolbar.js';
 import { HBox } from './Widget.js';
 declare const FilterBar_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<FilterBarEventTypes>;
     addEventListener<T extends FilterBarEvents.CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<FilterBarEventTypes, T>;
     once<T extends FilterBarEvents.CHANGED>(eventType: T): Promise<FilterBarEventTypes[T]>;
     removeEventListener<T extends FilterBarEvents.CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterBarEventTypes[T], any>) => void, thisObject?: Object): void;

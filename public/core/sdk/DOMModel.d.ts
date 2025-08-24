@@ -30,9 +30,17 @@ export declare class DOMNode {
     internalSubset?: string;
     name?: string;
     value?: string;
+    /**
+     * Set when a DOMNode is retained in a detached sub-tree.
+     */
+    retained: boolean;
+    /**
+     * Set if a DOMNode is a root of a detached sub-tree.
+     */
+    detached: boolean;
     constructor(domModel: DOMModel);
-    static create(domModel: DOMModel, doc: DOMDocument | null, isInShadowTree: boolean, payload: Protocol.DOM.Node): DOMNode;
-    init(doc: DOMDocument | null, isInShadowTree: boolean, payload: Protocol.DOM.Node): void;
+    static create(domModel: DOMModel, doc: DOMDocument | null, isInShadowTree: boolean, payload: Protocol.DOM.Node, retainedNodes?: Set<Protocol.DOM.BackendNodeId>): DOMNode;
+    init(doc: DOMDocument | null, isInShadowTree: boolean, payload: Protocol.DOM.Node, retainedNodes?: Set<Protocol.DOM.BackendNodeId>): void;
     private requestChildDocument;
     isAdFrameNode(): boolean;
     isSVGNode(): boolean;

@@ -24,21 +24,21 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/issue_counter/IssueCounter.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function getIssueKindIconData(issueKind) {
+export function getIssueKindIconName(issueKind) {
     switch (issueKind) {
         case "PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */:
-            return { iconName: 'issue-cross-filled', color: 'var(--icon-error)' };
+            return 'issue-cross-filled';
         case "BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */:
-            return { iconName: 'issue-exclamation-filled', color: 'var(--icon-warning)' };
+            return 'issue-exclamation-filled';
         case "Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */:
-            return { iconName: 'issue-text-filled', color: 'var(--icon-info)' };
+            return 'issue-text-filled';
     }
 }
-function toIconGroup({ iconName, color, width, height }, sizeOverride) {
+function toIconGroup(iconName, sizeOverride) {
     if (sizeOverride) {
-        return { iconName, iconColor: color, iconWidth: sizeOverride, iconHeight: sizeOverride };
+        return { iconName, iconWidth: sizeOverride, iconHeight: sizeOverride };
     }
-    return { iconName, iconColor: color, iconWidth: width, iconHeight: height };
+    return { iconName };
 }
 // Lazily instantiate the formatter as the constructor takes 50ms+
 // TODO: move me and others like me to i18n module
@@ -149,15 +149,15 @@ export class IssueCounter extends HTMLElement {
         const data = {
             groups: [
                 {
-                    ...toIconGroup(getIssueKindIconData("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */), iconSize),
+                    ...toIconGroup(getIssueKindIconName("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */), iconSize),
                     text: countToString("PageError" /* IssuesManager.Issue.IssueKind.PAGE_ERROR */, this.#counts[0]),
                 },
                 {
-                    ...toIconGroup(getIssueKindIconData("BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */), iconSize),
+                    ...toIconGroup(getIssueKindIconName("BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */), iconSize),
                     text: countToString("BreakingChange" /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */, this.#counts[1]),
                 },
                 {
-                    ...toIconGroup(getIssueKindIconData("Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */), iconSize),
+                    ...toIconGroup(getIssueKindIconName("Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */), iconSize),
                     text: countToString("Improvement" /* IssuesManager.Issue.IssueKind.IMPROVEMENT */, this.#counts[2]),
                 },
             ],

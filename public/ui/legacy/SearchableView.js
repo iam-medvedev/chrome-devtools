@@ -159,8 +159,8 @@ export class SearchableView extends VBox {
     searchIsVisible;
     currentQuery;
     valueChangedTimeoutId;
-    constructor(searchable, replaceable, settingName) {
-        super({ useShadowDom: true });
+    constructor(searchable, replaceable, settingName, element) {
+        super(element, { useShadowDom: true });
         this.registerRequiredCSS(searchableViewStyles);
         searchableViewsByElement.set(this.element, this);
         this.searchProvider = searchable;

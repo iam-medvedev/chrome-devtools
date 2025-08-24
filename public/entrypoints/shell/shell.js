@@ -4121,7 +4121,7 @@ function createOptionForLocale(localeString) {
   };
 }
 Common7.Settings.registerSettingExtension({
-  category: "SYNC",
+  category: "ACCOUNT",
   // This name must be kept in sync with DevToolsSettings::kSyncDevToolsPreferencesFrontendName.
   settingName: "sync-preferences",
   settingType: "boolean",
@@ -4217,7 +4217,24 @@ UI10.Toolbar.registerToolbarItem({
 });
 UI10.Toolbar.registerToolbarItem({
   separator: true,
-  order: 97,
+  order: 96,
+  location: "main-toolbar-right"
+});
+UI10.Toolbar.registerToolbarItem({
+  condition(config) {
+    const isFlagEnabled = config?.devToolsGlobalAiButton?.enabled;
+    const devtoolsLocale = i18n22.DevToolsLocale.DevToolsLocale.instance();
+    const isLocaleRestricted3 = !devtoolsLocale.locale.startsWith("en-");
+    const isGeoRestricted3 = config?.aidaAvailability?.blockedByGeo === true;
+    const isPolicyRestricted3 = config?.aidaAvailability?.blockedByEnterprisePolicy === true;
+    const isAgeRestricted = Boolean(config?.aidaAvailability?.blockedByAge);
+    return Boolean(isFlagEnabled && !isLocaleRestricted3 && !isGeoRestricted3 && !isPolicyRestricted3 && !isAgeRestricted);
+  },
+  async loadItem() {
+    const Main = await loadMainModule();
+    return Main.GlobalAiButton.GlobalAiButtonToolbarProvider.instance();
+  },
+  order: 98,
   location: "main-toolbar-right"
 });
 UI10.Toolbar.registerToolbarItem({
@@ -6021,6 +6038,21 @@ UI16.ActionRegistration.registerActionExtension({
   },
   condition: (config) => {
     return isPerformanceInsightsAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config);
+  }
+});
+UI16.ActionRegistration.registerActionExtension({
+  actionId: "drjones.performance-panel-full-context",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: i18nLazyString17(UIStrings17.askAi),
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => {
+    return isPerformanceAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config);
   }
 });
 UI16.ActionRegistration.registerActionExtension({

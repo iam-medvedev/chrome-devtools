@@ -108,6 +108,7 @@ entrypoints/heap_snapshot_worker/heap_snapshot_worker.test.js
 entrypoints/inspector_main/InspectorMain.test.js
 entrypoints/inspector_main/OutermostTargetSelector.test.js
 entrypoints/main/ExecutionContextSelector.test.js
+entrypoints/main/GlobalAiButton.test.js
 entrypoints/main/MainImpl.test.js
 entrypoints/wasmparser_worker/wasmparser_worker.test.js
 models/ai_assistance/AgentProject.test.js
@@ -126,6 +127,7 @@ models/ai_assistance/agents/StylingAgent.test.js
 models/ai_assistance/data_formatters/FileFormatter.test.js
 models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
+models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
 models/bindings/CompilerScriptMapping.test.js
@@ -185,6 +187,7 @@ models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
 models/source_map_scopes/ScopeTreeCache.test.js
 models/stack_trace/StackTraceImpl.test.js
+models/stack_trace/StackTraceModel.test.js
 models/stack_trace/Trie.test.js
 models/text_utils/ContentData.test.js
 models/text_utils/StaticContentProvider.test.js
@@ -279,6 +282,7 @@ models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
 models/workspace/WorkspaceImpl.test.js
 models/workspace_diff/WorkspaceDiff.test.js
+panels/accessibility/ARIAAttributesView.test.js
 panels/accessibility/AccessibilitySidebarView.test.js
 panels/ai_assistance/AiAssistancePanel.test.js
 panels/ai_assistance/PatchWidget.test.js
@@ -300,7 +304,6 @@ panels/application/InterestGroupStorageView.test.js
 panels/application/InterestGroupTreeElement.test.js
 panels/application/KeyValueStorageItemsView.test.js
 panels/application/PreloadingTreeElement.test.js
-panels/application/ReportingApiReportsView.test.js
 panels/application/ReportingApiView.test.js
 panels/application/ServiceWorkerUpdateCycleView.test.js
 panels/application/ServiceWorkersView.test.js
@@ -526,6 +529,7 @@ panels/timeline/TimelinePanel.test.js
 panels/timeline/TimelineSelection.test.js
 panels/timeline/TimelineTreeView.test.js
 panels/timeline/TimelineUIUtils.test.js
+panels/timeline/TrackConfigBanner.test.js
 panels/timeline/TrackConfiguration.test.js
 panels/timeline/components/BreadcrumbsUI.test.js
 panels/timeline/components/CPUThrottlingSelector.test.js

@@ -646,10 +646,10 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       LegacyJavaScript: null
     };
     const weights = Insights.Common.calculateMetricWeightsForSorting(insightSet, metadata);
-    const observedLcpMicro = Insights.Common.getLCP(this.#insights, insightSet.id)?.value;
+    const observedLcpMicro = Insights.Common.getLCP(insightSet)?.value;
     const observedLcp = observedLcpMicro ? Helpers.Timing.microToMilli(observedLcpMicro) : Types2.Timing.Milli(0);
-    const observedCls = Insights.Common.getCLS(this.#insights, insightSet.id).value;
-    const observedInpMicro = Insights.Common.getINP(this.#insights, insightSet.id)?.value;
+    const observedCls = Insights.Common.getCLS(insightSet).value;
+    const observedInpMicro = Insights.Common.getINP(insightSet)?.value;
     const observedInp = observedInpMicro ? Helpers.Timing.microToMilli(observedInpMicro) : Types2.Timing.Milli(200);
     const observedLcpScore = observedLcp !== void 0 ? Insights.Common.evaluateLCPMetricScore(observedLcp) : void 0;
     const observedInpScore = Insights.Common.evaluateINPMetricScore(observedInp);

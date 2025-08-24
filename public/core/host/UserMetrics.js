@@ -435,7 +435,7 @@ export var Action;
     Action[Action["AiAssistanceOpenedFromNetworkPanel"] = 170] = "AiAssistanceOpenedFromNetworkPanel";
     Action[Action["AiAssistanceOpenedFromSourcesPanel"] = 171] = "AiAssistanceOpenedFromSourcesPanel";
     Action[Action["AiAssistanceOpenedFromSourcesPanelFloatingButton"] = 172] = "AiAssistanceOpenedFromSourcesPanelFloatingButton";
-    Action[Action["AiAssistanceOpenedFromPerformancePanel"] = 173] = "AiAssistanceOpenedFromPerformancePanel";
+    Action[Action["AiAssistanceOpenedFromPerformancePanelCallTree"] = 173] = "AiAssistanceOpenedFromPerformancePanelCallTree";
     Action[Action["AiAssistanceOpenedFromNetworkPanelFloatingButton"] = 174] = "AiAssistanceOpenedFromNetworkPanelFloatingButton";
     Action[Action["AiAssistancePanelOpened"] = 175] = "AiAssistancePanelOpened";
     Action[Action["AiAssistanceQuerySubmitted"] = 176] = "AiAssistanceQuerySubmitted";
@@ -445,7 +445,9 @@ export var Action;
     Action[Action["AiAssistanceSideEffectRejected"] = 180] = "AiAssistanceSideEffectRejected";
     Action[Action["AiAssistanceError"] = 181] = "AiAssistanceError";
     Action[Action["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
-    Action[Action["MAX_VALUE"] = 183] = "MAX_VALUE";
+    Action[Action["AiAssistanceOpenedFromPerformanceFullButton"] = 183] = "AiAssistanceOpenedFromPerformanceFullButton";
+    Action[Action["AiCodeCompletionResponseServedFromCache"] = 184] = "AiCodeCompletionResponseServedFromCache";
+    Action[Action["MAX_VALUE"] = 185] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -723,13 +725,14 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
+    DevtoolsExperiments[DevtoolsExperiments["timeline-ask-ai-full-button"] = 109] = "timeline-ask-ai-full-button";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";
     DevtoolsExperiments[DevtoolsExperiments["vertical-drawer"] = 107] = "vertical-drawer";
     /* eslint-enable @typescript-eslint/naming-convention */
     // Increment this when new experiments are added.
-    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 109] = "MAX_VALUE";
+    DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 110] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 // Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
 export var IssueExpanded;

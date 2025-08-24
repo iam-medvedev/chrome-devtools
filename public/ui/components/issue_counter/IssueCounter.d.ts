@@ -1,7 +1,6 @@
 import '../icon_button/icon_button.js';
 import * as IssuesManager from '../../../models/issues_manager/issues_manager.js';
-import type * as IconButton from '../icon_button/icon_button.js';
-export declare function getIssueKindIconData(issueKind: IssuesManager.Issue.IssueKind): IconButton.Icon.IconWithName;
+export declare function getIssueKindIconName(issueKind: IssuesManager.Issue.IssueKind): string;
 export declare const enum DisplayMode {
     OMIT_EMPTY = "OmitEmpty",
     SHOW_ALWAYS = "ShowAlways",

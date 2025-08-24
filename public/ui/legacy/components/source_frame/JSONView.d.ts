@@ -10,7 +10,7 @@ export declare class JSONView extends UI.Widget.VBox implements UI.SearchableVie
     private searchRegex;
     constructor(parsedJSON: ParsedJSON, startCollapsed?: boolean);
     static createView(content: string): Promise<UI.SearchableView.SearchableView | null>;
-    static createViewSync(obj: Object | null): UI.SearchableView.SearchableView;
+    static createViewSync(obj: Object | null, element?: HTMLElement): UI.SearchableView.SearchableView;
     private static parseJSON;
     private static extractJSON;
     private static findBrackets;

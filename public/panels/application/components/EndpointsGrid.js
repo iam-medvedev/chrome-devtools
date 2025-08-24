@@ -33,6 +33,9 @@ export class EndpointsGrid extends HTMLElement {
         this.#endpoints = data.endpoints;
         this.#render();
     }
+    get data() {
+        return { endpoints: this.#endpoints };
+    }
     #render() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off

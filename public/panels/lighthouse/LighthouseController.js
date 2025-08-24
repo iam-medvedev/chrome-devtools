@@ -220,7 +220,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
             return false;
         }
         const inspectedURL = Common.ParsedURL.ParsedURL.fromString(mainTarget.inspectedURL());
-        const inspectedOrigin = inspectedURL && inspectedURL.securityOrigin();
+        const inspectedOrigin = inspectedURL?.securityOrigin();
         for (const registration of this.manager.registrations().values()) {
             if (registration.securityOrigin !== inspectedOrigin) {
                 continue;
@@ -241,7 +241,7 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
             return null;
         }
         const mainTarget = this.manager.target();
-        const inspectedURL = mainTarget && mainTarget.inspectedURL();
+        const inspectedURL = mainTarget?.inspectedURL();
         /*
          * The full history of Lighthouse panel + extensions et al:
          *

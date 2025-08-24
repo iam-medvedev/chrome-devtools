@@ -936,7 +936,9 @@ var SamplesIntegrator = class _SamplesIntegrator {
 // gen/front_end/models/trace/extras/TraceTree.js
 import * as Types7 from "./../types/types.js";
 var Node = class {
+  /** ms */
   totalTime;
+  /** ms */
   selfTime;
   transferSize;
   id;
@@ -1329,7 +1331,9 @@ var BottomUpRootNode = class extends Node {
         groupNode = new GroupNode(groupId, this, node.events);
         groupNodes.set(groupId, groupNode);
       } else {
-        groupNode.events.push(...node.events);
+        for (const e of node.events) {
+          groupNode.events.push(e);
+        }
       }
       groupNode.addChild(node, node.selfTime, node.selfTime, node.transferSize);
     }
@@ -1564,7 +1568,7 @@ function getBottomUpTree(mainThreadEvents, tracebounds, groupingFunction) {
   ]));
   const startTime = Helpers5.Timing.microToMilli(tracebounds.min);
   const endTime = Helpers5.Timing.microToMilli(tracebounds.max);
-  const node = new BottomUpRootNode(mainThreadEvents, {
+  return new BottomUpRootNode(mainThreadEvents, {
     textFilter: new ExclusiveNameFilter([]),
     filters: [filter],
     startTime,
@@ -1574,7 +1578,6 @@ function getBottomUpTree(mainThreadEvents, tracebounds, groupingFunction) {
     // Ensure we group by 3P alongside eventID for correct 3P grouping.
     forceGroupIdCallback: true
   });
-  return node;
 }
 export {
   FilmStrip_exports as FilmStrip,

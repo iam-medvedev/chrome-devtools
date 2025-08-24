@@ -51,7 +51,6 @@
     "../../../../../../front_end/panels/application/InterestGroupTreeElement.test.ts",
     "../../../../../../front_end/panels/application/KeyValueStorageItemsView.test.ts",
     "../../../../../../front_end/panels/application/PreloadingTreeElement.test.ts",
-    "../../../../../../front_end/panels/application/ReportingApiReportsView.test.ts",
     "../../../../../../front_end/panels/application/ReportingApiView.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkerUpdateCycleView.test.ts",
     "../../../../../../front_end/panels/application/ServiceWorkersView.test.ts",

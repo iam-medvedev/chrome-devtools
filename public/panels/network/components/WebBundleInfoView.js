@@ -40,16 +40,14 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
         render(html `
       <style>${webBundleInfoViewStyles}</style>
       <div class="header">
-        <devtools-icon class="icon"
-          .data=${{ color: 'var(--icon-default)', iconName: 'bundle', width: '20px' }}>
+        <devtools-icon name="bundle" class="icon extra-large">
         </devtools-icon>
         <span>${this.#webBundleName}</span>
         <x-link href="https://web.dev/web-bundles/#explaining-web-bundles"
           jslog=${VisualLogging.link('webbundle-explainer').track({
             click: true,
         })}>
-          <devtools-icon class="icon"
-            .data=${{ color: 'var(--icon-default)', iconName: 'help', width: '16px' }}>
+          <devtools-icon name="help" class="icon medium">
           </devtools-icon>
         </x-link>
       </div>
@@ -65,7 +63,7 @@ export class WebBundleInfoView extends LegacyWrapper.LegacyWrapper.WrappableComp
             return html `<tr>
               <td>
                 <div style="display: flex;">
-                  <devtools-icon class="icon" .data=${{ ...iconData, width: '20px' }}>
+                  <devtools-icon class="icon extra-large" .data=${iconData} as IconData}>
                   </devtools-icon>
                   <span>${url}</span>
                 </div>

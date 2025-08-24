@@ -4,7 +4,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { dispatchClickEvent } from '../../testing/DOMHelpers.js';
-import { createTarget } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, registerActions } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Resources from './application.js';
@@ -29,22 +29,18 @@ describeWithMockConnection('BackgroundServiceView', () => {
         target = createTarget();
         backgroundServiceModel = target.model(Resources.BackgroundServiceModel.BackgroundServiceModel);
         manager = target.model(SDK.StorageKeyManager.StorageKeyManager);
-        UI.ActionRegistration.maybeRemoveActionExtension('background-service.toggle-recording');
-        UI.ActionRegistration.registerActionExtension({
-            actionId: 'background-service.toggle-recording',
-            category: "BACKGROUND_SERVICES" /* UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES */,
-            title: () => 'mock',
-            toggleable: true,
-        });
+        registerActions([{
+                actionId: 'background-service.toggle-recording',
+                category: "BACKGROUND_SERVICES" /* UI.ActionRegistration.ActionCategory.BACKGROUND_SERVICES */,
+                title: () => 'mock',
+                toggleable: true,
+            }]);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => { },
             shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: UI.KeyboardShortcut.Keys.Ctrl.code, name: 'Ctrl' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
         });
         assert.exists(backgroundServiceModel);
         view = new Resources.BackgroundServiceView.BackgroundServiceView(serviceName, backgroundServiceModel);
-    });
-    afterEach(() => {
-        UI.ActionRegistration.maybeRemoveActionExtension('background-service.toggle-recording');
     });
     it('updates event list when main storage key changes', () => {
         assert.exists(backgroundServiceModel);

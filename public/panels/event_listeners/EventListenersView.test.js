@@ -18,7 +18,7 @@ describeWithLocale('EventListenersView placeholder', () => {
         eventListenersView.markAsRoot();
         eventListenersView.show(container);
         assertElementDisplayStyle(eventListenersView, '.empty-view-scroller', 'none');
-        assertElementDisplayStyle(eventListenersView, '.placeholder .gray-info-message', 'block');
+        assertElementDisplayStyle(eventListenersView, '.placeholder .gray-info-message', 'inline');
         assert.deepEqual(eventListenersView.contentElement.querySelector('.placeholder .gray-info-message')?.textContent, 'No event listeners');
     });
     it('shows empty widget if in elements panel', () => {
@@ -28,7 +28,7 @@ describeWithLocale('EventListenersView placeholder', () => {
         container.classList.add('elements', 'panel');
         eventListenersView.markAsRoot();
         eventListenersView.show(container);
-        assertElementDisplayStyle(eventListenersView, '.empty-view-scroller', 'block');
+        assertElementDisplayStyle(eventListenersView, '.empty-view-scroller', 'flex');
         assertElementDisplayStyle(eventListenersView, '.placeholder .gray-info-message', 'none');
         assert.deepEqual(eventListenersView.contentElement.querySelector('.empty-state-header')?.textContent, 'No event listeners');
         assert.deepEqual(eventListenersView.contentElement.querySelector('.empty-state-description')?.textContent, 'On this page you will find registered event listeners');

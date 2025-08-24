@@ -2025,7 +2025,7 @@ var LCPDiscovery = class extends BaseInsightComponent {
       return [];
     }
     const imageResults = getImageData(this.model);
-    if (!imageResults || !imageResults.discoveryDelay) {
+    if (!imageResults?.discoveryDelay) {
       return [];
     }
     const timespanOverlaySection = overlays.find((overlay) => overlay.type === "TIMESPAN_BREAKDOWN")?.sections[0];
@@ -2542,7 +2542,7 @@ var SlowCSSSelector = class extends BaseInsightComponent {
       return void 0;
     }
     const styleSheetHeader = cssModel.styleSheetHeaderForId(selector.style_sheet_id);
-    if (!styleSheetHeader || !styleSheetHeader.resourceURL()) {
+    if (!styleSheetHeader?.resourceURL()) {
       return void 0;
     }
     const key = JSON.stringify({ selectorText: selector.selector, styleSheetId: selector.style_sheet_id });

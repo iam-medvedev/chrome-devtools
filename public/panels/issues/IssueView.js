@@ -341,7 +341,7 @@ export class IssueView extends UI.TreeOutline.TreeElement {
     #updateFromIssue() {
         if (this.#issueKindIcon) {
             const kind = this.#issue.getKind();
-            this.#issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(kind);
+            this.#issueKindIcon.name = IssueCounter.IssueCounter.getIssueKindIconName(kind);
             this.#issueKindIcon.title = IssuesManager.Issue.getIssueKindDescription(kind);
         }
         if (this.#aggregatedIssuesCount) {

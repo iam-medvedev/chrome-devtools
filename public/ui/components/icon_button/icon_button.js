@@ -67,12 +67,56 @@ var icon_css_default = `/*
   width: var(--sys-size-9);
 }
 
+:host(.toggled) {
+  color: var(--icon-toggled);
+}
+
 :host([hidden]) {
   display: none;
 }
 
-:host([name="warning-filled"]) {
+:host([name="warning-filled"]),
+:host([name="issue-exclamation-filled"]) {
   color: var(--icon-warning);
+}
+
+:host([name="cross-circle"]),
+:host([name="cross-circle-filled"]),
+:host([name="issue-cross-filled"]),
+:host([name="small-status-dot"]) {
+  color: var(--icon-error);
+}
+
+:host([name="issue-text-filled"]) {
+  color: var(--icon-info);
+}
+
+:host([name="large-arrow-right-filled"]) {
+  color: var(--icon-arrow-main-thread);
+}
+
+:host([name="code-circle"]) {
+  color: var(--icon-link);
+}
+
+:host([name="file-document"]) {
+  color: var(--icon-file-document);
+}
+
+:host([name="file-font"]) {
+  color: var(--icon-file-font);
+}
+
+:host([name="file-script"]) {
+  color: var(--icon-file-script);
+}
+
+:host([name="file-stylesheet"]) {
+  color: var(--icon-file-styles);
+}
+
+:host([name="file-media"]) {
+  color: var(--icon-file-media);
 }
 
 :host([name="triangle-up"]),
@@ -131,7 +175,9 @@ var Icon = class extends HTMLElement {
    */
   set data(data) {
     const { color, width, height } = data;
-    this.style.color = color;
+    if (color) {
+      this.style.color = color;
+    }
     if (width) {
       this.style.width = width;
     }
@@ -315,8 +361,7 @@ var IconButton = class extends HTMLElement {
       <button class=${buttonClasses} @click=${this.#onClickHandler} aria-label=${Lit.Directives.ifDefined(this.#accessibleName)}>
       ${!this.#compact && this.#leadingText ? html`<span class="icon-button-title">${this.#leadingText}</span>` : Lit.nothing}
       ${filteredGroups.map((counter) => html`
-      <devtools-icon class="status-icon"
-      .data=${{ iconName: counter.iconName, color: counter.iconColor, width: counter.iconWidth || "var(--sys-size-7)", height: counter.iconHeight || "var(--sys-size-7)" }}>
+      <devtools-icon class="status-icon" name=${counter.iconName} style="color: ${counter.iconColor}; width: ${counter.iconWidth || "var(--sys-size-7)"}; height: ${counter.iconHeight || "var(--sys-size-7)"}">
       </devtools-icon>
       ${this.#compact ? html`<!-- Force line-height for this element --><span>&#8203;</span>` : Lit.nothing}
       <span class="icon-button-title">${counter.text}</span>`)}

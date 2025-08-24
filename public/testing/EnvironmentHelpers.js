@@ -79,6 +79,14 @@ export function stubNoopSettings() {
         getHostConfig: () => ({}),
     });
 }
+export function registerActions(actions) {
+    for (const action of actions) {
+        UI.ActionRegistration.maybeRemoveActionExtension(action.actionId);
+        UI.ActionRegistration.registerActionExtension(action);
+    }
+    const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+    UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+}
 export function registerNoopActions(actionIds) {
     for (const actionId of actionIds) {
         UI.ActionRegistration.maybeRemoveActionExtension(actionId);
@@ -106,6 +114,7 @@ const REGISTERED_EXPERIMENTS = [
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */,
+    "timeline-ask-ai-full-button" /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */,
     "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
@@ -214,6 +223,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'chrome-theme-colors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'timeline.user-had-shortcuts-dialog-opened-once', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-event-listeners-for-ancestors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'global-ai-button-click-count', 0),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.

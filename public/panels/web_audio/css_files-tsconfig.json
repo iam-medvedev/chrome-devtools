@@ -4,7 +4,6 @@
         "outDir": "."
     },
     "files": [
-        "audioContextSelector.css.js",
         "webAudio.css.js"
     ]
 }

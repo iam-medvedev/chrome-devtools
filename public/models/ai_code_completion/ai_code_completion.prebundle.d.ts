@@ -1,2 +1,2 @@
-import * as AiCodeCompletion from './AiCodeCompletion.js';
-export { AiCodeCompletion, };
+export * from './debug.js';
+export * as AiCodeCompletion from './AiCodeCompletion.js';

@@ -1,3 +1,4 @@
+import type * as Platform from '../../core/platform/platform.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -10,6 +11,7 @@ interface Folder {
 interface ViewInput {
     folders: Folder[];
     selectedIndex: number;
+    selectProjectRootText: Platform.UIString.LocalizedString;
     showAutomaticWorkspaceNudge: boolean;
     onProjectSelected: (index: number) => void;
     onSelectButtonClick: () => void;

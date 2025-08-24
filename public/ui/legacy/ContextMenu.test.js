@@ -4,7 +4,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { dispatchMouseUpEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
 import * as Lit from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as UI from './legacy.js';
@@ -123,20 +123,14 @@ describeWithEnvironment('ContextMenu', () => {
         await VisualLogging.stopLogging();
     });
     it('can register an action menu item with a new badge', async () => {
-        UI.ActionRegistration.registerActionExtension({
-            actionId: 'test-action',
-            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-            title: () => 'mock',
-            toggleable: true,
-        });
-        const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+        const actionId = 'test-action';
+        registerNoopActions([actionId]);
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'isHostedMode').returns(false);
         const showContextMenuAtPoint = sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'showContextMenuAtPoint');
         const event = new Event('contextmenu');
         sinon.stub(event, 'target').value(document);
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendAction('test-action', 'mockLabel', false, undefined, 'mockFeature');
+        contextMenu.defaultSection().appendAction(actionId, 'mockLabel', false, undefined, 'mockFeature');
         await contextMenu.show();
         sinon.assert.calledOnce(showContextMenuAtPoint);
         assert.strictEqual(showContextMenuAtPoint.args[0][2][0].featureName, 'mockFeature');

@@ -158,7 +158,7 @@ div.raw-headers-row {
 .header-grid-container {
   display: inline-grid;
   grid-template-columns: 156px 50px 1fr;
-  grid-gap: 4px;
+  gap: 4px;
   /* Make this fit into the same line as the summary marker */
   width: calc(100% - 15px);
 }
@@ -891,12 +891,7 @@ var HeaderSectionRow = class extends HTMLElement {
       <div class=${rowClasses}>
         <div class=${headerNameClasses}>
           ${this.#header.headerNotSet ? html3`<div class="header-badge header-badge-text">${i18n3.i18n.lockedString("not-set")}</div> ` : Lit2.nothing}
-          ${isHeaderNameEditable && !this.#isValidHeaderName ? html3`<devtools-icon class="inline-icon disallowed-characters" title=${UIStrings2.headerNamesOnlyLetters} .data=${{
-      iconName: "cross-circle-filled",
-      width: "16px",
-      height: "16px",
-      color: "var(--icon-error)"
-    }}>
+          ${isHeaderNameEditable && !this.#isValidHeaderName ? html3`<devtools-icon class="inline-icon disallowed-characters medium" title=${UIStrings2.headerNamesOnlyLetters} name='cross-circle-filled'>
             </devtools-icon>` : Lit2.nothing}
           ${isHeaderNameEditable && !this.#header.isDeleted ? html3`<devtools-editable-span
               @focusout=${this.#onHeaderNameFocusOut}
@@ -912,12 +907,7 @@ var HeaderSectionRow = class extends HTMLElement {
         >
           ${this.#renderHeaderValue()}
         </div>
-        ${showReloadInfoIcon ? html3`<devtools-icon class="row-flex-icon flex-right" title=${UIStrings2.reloadPrompt} .data=${{
-      iconName: "info",
-      width: "16px",
-      height: "16px",
-      color: "var(--icon-default)"
-    }}>
+        ${showReloadInfoIcon ? html3`<devtools-icon name="info" class="row-flex-icon flex-right medium" title=${UIStrings2.reloadPrompt}>
           </devtools-icon>` : Lit2.nothing}
       </div>
       ${this.#maybeRenderBlockedDetails(this.#header.blockedDetails)}
@@ -1018,12 +1008,7 @@ var HeaderSectionRow = class extends HTMLElement {
     if (blockedDetails?.reveal) {
       return html3`
         <div class="devtools-link" @click=${blockedDetails.reveal}>
-          <devtools-icon class="inline-icon" .data=${{
-        iconName: "issue-exclamation-filled",
-        color: "var(--icon-warning)",
-        width: "16px",
-        height: "16px"
-      }}>
+          <devtools-icon name="issue-exclamation-filled" class="inline-icon medium">
           </devtools-icon
           >${i18nString2(UIStrings2.learnMoreInTheIssuesTab)}
         </div>
@@ -1032,12 +1017,7 @@ var HeaderSectionRow = class extends HTMLElement {
     if (blockedDetails?.link) {
       return html3`
         <x-link href=${blockedDetails.link.url} class="link">
-          <devtools-icon class="inline-icon" .data=${{
-        iconName: "open-externally",
-        color: "var(--icon-link)",
-        width: "20px",
-        height: "20px"
-      }}>
+          <devtools-icon name="open-externally" class="inline-icon extra-large" style="color: var(--icon-link);">
           </devtools-icon
           >${i18nString2(UIStrings2.learnMore)}
         </x-link>
@@ -2134,11 +2114,7 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
     }
     const overridesSetting = Common3.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
     const fileIcon = html6`
-      <devtools-icon class=${overridesSetting.get() ? "inline-icon dot purple" : "inline-icon"} .data=${{
-      iconName: "document",
-      width: "16px",
-      height: "16px"
-    }}>
+      <devtools-icon name="document" class=${"medium" + overridesSetting.get() ? "inline-icon dot purple" : "inline-icon"}>
       </devtools-icon>`;
     const revealHeadersFile = (event) => {
       event.preventDefault();
@@ -2154,11 +2130,7 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
           class="link devtools-link"
           jslog=${VisualLogging6.link("devtools-override").track({ click: true })}
       >
-        <devtools-icon class="inline-icon" .data=${{
-      iconName: "help",
-      width: "16px",
-      height: "16px"
-    }}>
+        <devtools-icon name="help" class="inline-icon medium">
         </devtools-icon>
       </x-link>
       <x-link
@@ -2606,7 +2578,7 @@ var RequestTrustTokensView = class extends LegacyWrapper3.LegacyWrapper.Wrappabl
       <devtools-report-key>${i18nString6(UIStrings6.status)}</devtools-report-key>
       <devtools-report-value>
         <span>
-          <devtools-icon class="status-icon"
+          <devtools-icon class="status-icon medium"
             .data=${getIconForStatusCode(trustTokenResult.status)}>
           </devtools-icon>
           <strong>${getSimplifiedStatusTextForStatusCode(trustTokenResult.status)}</strong>
@@ -2626,15 +2598,11 @@ var RequestTrustTokensView = class extends LegacyWrapper3.LegacyWrapper.Wrappabl
 };
 var SUCCESS_ICON_DATA = {
   color: "var(--icon-checkmark-green)",
-  iconName: "check-circle",
-  width: "16px",
-  height: "16px"
+  iconName: "check-circle"
 };
 var FAILURE_ICON_DATA = {
   color: "var(--icon-error)",
-  iconName: "cross-circle-filled",
-  width: "16px",
-  height: "16px"
+  iconName: "cross-circle-filled"
 };
 function statusConsideredSuccess(status) {
   return status === "Ok" || status === "AlreadyExists" || status === "FulfilledLocally";
@@ -2762,16 +2730,14 @@ var WebBundleInfoView = class extends LegacyWrapper5.LegacyWrapper.WrappableComp
     render8(html8`
       <style>${WebBundleInfoView_css_default}</style>
       <div class="header">
-        <devtools-icon class="icon"
-          .data=${{ color: "var(--icon-default)", iconName: "bundle", width: "20px" }}>
+        <devtools-icon name="bundle" class="icon extra-large">
         </devtools-icon>
         <span>${this.#webBundleName}</span>
         <x-link href="https://web.dev/web-bundles/#explaining-web-bundles"
           jslog=${VisualLogging8.link("webbundle-explainer").track({
       click: true
     })}>
-          <devtools-icon class="icon"
-            .data=${{ color: "var(--icon-default)", iconName: "help", width: "16px" }}>
+          <devtools-icon name="help" class="icon medium">
           </devtools-icon>
         </x-link>
       </div>
@@ -2787,7 +2753,7 @@ var WebBundleInfoView = class extends LegacyWrapper5.LegacyWrapper.WrappableComp
       return html8`<tr>
               <td>
                 <div style="display: flex;">
-                  <devtools-icon class="icon" .data=${{ ...iconData, width: "20px" }}>
+                  <devtools-icon class="icon extra-large" .data=${iconData} as IconData}>
                   </devtools-icon>
                   <span>${url}</span>
                 </div>

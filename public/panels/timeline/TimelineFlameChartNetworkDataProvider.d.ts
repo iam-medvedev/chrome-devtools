@@ -79,7 +79,7 @@ export declare class TimelineFlameChartNetworkDataProvider implements PerfUI.Fla
      * here.
      */
     handleTrackConfigurationChange(groups: readonly PerfUI.FlameChart.Group[], indexesInVisualOrder: number[]): void;
-    setPersistedGroupConfigSetting(setting: Common.Settings.Setting<PerfUI.FlameChart.PersistedConfigPerTrace>): void;
+    setPersistedGroupConfigSetting(setting: Common.Settings.Setting<PerfUI.FlameChart.PersistedGroupConfig[] | null>): void;
     preferredHeight(): number;
     isExpanded(): boolean;
     formatValue(value: number, precision?: number): string;

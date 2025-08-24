@@ -5296,10 +5296,10 @@ var UIStrings3 = {
    */
   adorner: "Adorner",
   /**
-   * @description Header for the "Sync" section in the settings UI. The "Sync"
-   * section allows users to configure which DevTools data is synced via Chrome Sync.
+   * @description Header for the "Account" section in the settings UI. The "Account"
+   * section allows users see their signed in account and configure which DevTools data is synced via Chrome Sync.
    */
-  sync: "Sync",
+  account: "Account",
   /**
    * @description Text for the privacy section of the page.
    */
@@ -5383,8 +5383,8 @@ function getLocalizedSettingsCategory(category) {
       return i18nString(UIStrings3.adorner);
     case "":
       return i18n5.i18n.lockedString("");
-    case "SYNC":
-      return i18nString(UIStrings3.sync);
+    case "ACCOUNT":
+      return i18nString(UIStrings3.account);
     case "PRIVACY":
       return i18nString(UIStrings3.privacy);
   }

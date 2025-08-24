@@ -70,7 +70,7 @@ export class NetworkRequestTooltip extends HTMLElement {
             return html `${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.priority)}`;
         }
         return html `${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.initialPriority)}
-        <devtools-icon name=${'arrow-forward'} class="priority"></devtools-icon>
+        <devtools-icon name="arrow-forward" class="priority"></devtools-icon>
         ${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.priority)}`;
     }
     static renderTimings(networkRequest) {

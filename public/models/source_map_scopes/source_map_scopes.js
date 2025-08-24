@@ -572,7 +572,7 @@ async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
     return scopeName;
   }
   const mappingEntry = sourceMap.findEntry(lineNumber, columnNumber);
-  if (!mappingEntry || !mappingEntry.sourceURL) {
+  if (!mappingEntry?.sourceURL) {
     return null;
   }
   const name = mappingEntry.name;

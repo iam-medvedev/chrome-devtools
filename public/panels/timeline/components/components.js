@@ -211,12 +211,7 @@ var BreadcrumbsUI = class extends HTMLElement {
             </span>
           </div>
           ${breadcrumb.child !== null ? html`
-            <devtools-icon .data=${{
-      iconName: "chevron-right",
-      color: "var(--icon-default)",
-      width: "16px",
-      height: "16px"
-    }}>` : ""}
+            <devtools-icon name="chevron-right" class="medium">` : ""}
       `;
   }
   #render() {
@@ -5819,7 +5814,7 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
       return html13`${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.priority)}`;
     }
     return html13`${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.initialPriority)}
-        <devtools-icon name=${"arrow-forward"} class="priority"></devtools-icon>
+        <devtools-icon name="arrow-forward" class="priority"></devtools-icon>
         ${PerfUI.NetworkPriorities.uiLabelForNetworkPriority(networkRequest.args.data.priority)}`;
   }
   static renderTimings(networkRequest) {
@@ -6867,12 +6862,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
           <span class="annotation-identifier" style=${Lit16.Directives.styleMap(styleForFromAnnotationIdentifier)}>
             ${entryFromName}
           </span>
-          <devtools-icon class="inline-icon" .data=${{
-        iconName: "arrow-forward",
-        color: "var(--icon-default)",
-        width: "18px",
-        height: "18px"
-      }}>
+          <devtools-icon name="arrow-forward" class="inline-icon large">
           </devtools-icon>
           ${renderEntryToIdentifier(annotation, annotationEntryToColorMap)}
         </div>
@@ -6961,15 +6951,7 @@ var DEFAULT_VIEW4 = (input, _output, target) => {
       event.stopPropagation();
       input.onAnnotationDelete(annotation);
     }} jslog=${VisualLogging7.action("timeline.annotation-sidebar.delete").track({ click: true })}>
-                    <devtools-icon
-                      class="bin-icon"
-                      .data=${{
-      iconName: "bin",
-      color: "var(--icon-default)",
-      width: "20px",
-      height: "20px"
-    }}
-                    ></devtools-icon>
+                    <devtools-icon class="bin-icon extra-large" name="bin"></devtools-icon>
                   </button>
                 </div>`;
   })}
@@ -7026,7 +7008,7 @@ var sidebarSingleInsightSet_css_default = `/*
   display: grid;
   align-items: end;
   grid-template-columns: repeat(3, 1fr) 0.5fr;
-  grid-row-gap: 5px;
+  row-gap: 5px;
 }
 
 .row-border {
@@ -7286,9 +7268,13 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   }
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   #getLocalMetrics(insightSetKey) {
-    const lcp = Trace9.Insights.Common.getLCP(this.#data.insights, insightSetKey);
-    const cls = Trace9.Insights.Common.getCLS(this.#data.insights, insightSetKey);
-    const inp = Trace9.Insights.Common.getINP(this.#data.insights, insightSetKey);
+    const insightSet = this.#data.insights?.get(insightSetKey);
+    if (!insightSet) {
+      return {};
+    }
+    const lcp = Trace9.Insights.Common.getLCP(insightSet);
+    const cls = Trace9.Insights.Common.getCLS(insightSet);
+    const inp = Trace9.Insights.Common.getINP(insightSet);
     return { lcp, cls, inp };
   }
   #getFieldMetrics(insightSetKey) {
@@ -7330,7 +7316,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     const field = this.#getFieldMetrics(insightSetKey);
     const lcpEl = this.#renderMetricValue("LCP", local.lcp?.value ?? null, local.lcp?.event ?? null);
     const inpEl = this.#renderMetricValue("INP", local.inp?.value ?? null, local.inp?.event ?? null);
-    const clsEl = this.#renderMetricValue("CLS", local.cls.value ?? null, local.cls?.worstClusterEvent ?? null);
+    const clsEl = this.#renderMetricValue("CLS", local.cls?.value ?? null, local.cls?.worstClusterEvent ?? null);
     const localMetricsTemplateResult = html17`
       <div class="metrics-row">
         <span>${lcpEl}</span>

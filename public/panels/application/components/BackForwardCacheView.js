@@ -272,12 +272,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
             return html `
         <div class="text-ellipsis">
           ${node.treeNodeData.iconName ? html `
-            <devtools-icon class="inline-icon" style="margin-bottom: -3px;" .data=${{
-                iconName: node.treeNodeData.iconName,
-                color: 'var(--icon-default)',
-                width: '20px',
-                height: '20px',
-            }}>
+            <devtools-icon class="inline-icon extra-large" .name=${node.treeNodeData.iconName} style="margin-bottom: -3px;">
             </devtools-icon>
           ` : Lit.nothing}
           ${node.treeNodeData.text}
@@ -371,13 +366,8 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
                 // clang-format off
                 return html `
           <devtools-report-section>
-            <div class="status">
-              <devtools-icon class="inline-icon" .data=${{
-                    iconName: 'check-circle',
-                    color: 'var(--icon-checkmark-green)',
-                    width: '20px',
-                    height: '20px',
-                }}>
+            <div class="status extra-large">
+              <devtools-icon class="inline-icon extra-large" name="check-circle" style="color: var(--icon-checkmark-green);">
               </devtools-icon>
             </div>
             ${i18nString(UIStrings.restoredFromBFCache)}
@@ -389,12 +379,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
                 return html `
           <devtools-report-section>
             <div class="status">
-              <devtools-icon class="inline-icon" .data=${{
-                    iconName: 'clear',
-                    color: 'var(--icon-default)',
-                    width: '20px',
-                    height: '20px',
-                }}>
+              <devtools-icon class="inline-icon extra-large" name="clear">
               </devtools-icon>
             </div>
             ${i18nString(UIStrings.normalNavigation)}
@@ -458,12 +443,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         <devtools-report-section-header>
           ${category}
           <div class="help-outline-icon">
-            <devtools-icon class="inline-icon" .data=${{
-            iconName: 'help',
-            color: 'var(--icon-default)',
-            width: '16px',
-            height: '16px',
-        }} title=${explainerText}>
+            <devtools-icon class="inline-icon medium" name="help" title=${explainerText}>
             </devtools-icon>
           </div>
         </devtools-report-section-header>
@@ -540,12 +520,7 @@ export class BackForwardCacheView extends LegacyWrapper.LegacyWrapper.WrappableC
         ${(explanation.reason in NotRestoredReasonDescription) ?
             html `
             <div class="circled-exclamation-icon">
-              <devtools-icon class="inline-icon" .data=${{
-                iconName: 'warning',
-                color: 'var(--icon-warning)',
-                width: '16px',
-                height: '16px',
-            }}>
+              <devtools-icon class="inline-icon medium" style="color: var(--icon-warning)" name="warning">
               </devtools-icon>
             </div>
             <div>

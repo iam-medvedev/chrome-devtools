@@ -3251,7 +3251,7 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
       for (const malformedCookie of malformedResponseCookies) {
         const listItem = this.malformedResponseCookiesList.createChild("span", "cookie-line source-code");
         const icon = new IconButton2.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.name = "cross-circle-filled";
         icon.classList.add("cookie-warning-icon", "small");
         listItem.appendChild(icon);
         UI6.UIUtils.createTextChild(listItem, malformedCookie.cookieLine);
@@ -3518,6 +3518,7 @@ var objectPropertiesSection_css_default = `/*
   &::before {
     flex-shrink: 0;
     margin-right: 2px;
+    margin-top: calc(-1 * var(--sys-size-3));
   }
 }
 
@@ -4589,7 +4590,7 @@ var SignedExchangeInfoView = class extends UI10.Widget.VBox {
       for (const error of signedExchangeInfo.errors) {
         const fragment = document.createDocumentFragment();
         const icon = new IconButton3.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.name = "cross-circle-filled";
         icon.classList.add("prompt-icon", "small");
         fragment.appendChild(icon);
         fragment.createChild("div", "error-log").textContent = error.message;
@@ -6653,7 +6654,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
       const signedExchangeInfo = request.signedExchangeInfo();
       if (signedExchangeInfo?.errors?.length) {
         const icon = new IconButton4.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.name = "cross-circle-filled";
         icon.classList.add("small");
         UI17.Tooltip.Tooltip.install(icon, i18nString16(UIStrings16.signedexchangeError));
         this.setTabIcon("preview", icon);
@@ -6736,7 +6737,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
     if (trustTokenResult && !NetworkComponents2.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
       const icon = new IconButton4.Icon.Icon();
-      icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+      icon.name = "cross-circle-filled";
       icon.classList.add("small");
       this.setTabIcon("trust-tokens", icon);
     }
@@ -11296,8 +11297,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     if (!await stream.open(Common17.ParsedURL.ParsedURL.concatenate(filename, ".har"))) {
       return;
     }
-    const progressIndicator = new UI22.ProgressIndicator.ProgressIndicator();
-    this.progressBarContainer.appendChild(progressIndicator.element);
+    const progressIndicator = this.progressBarContainer.createChild("devtools-progress");
     await HAR.Writer.Writer.write(stream, this.harRequests(), options, progressIndicator);
     progressIndicator.done();
     void stream.close();

@@ -81,7 +81,7 @@ export class IssueKindView extends UI.TreeOutline.TreeElement {
         const header = document.createElement('div');
         header.classList.add('header');
         const issueKindIcon = new IconButton.Icon.Icon();
-        issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(this.#kind);
+        issueKindIcon.name = IssueCounter.IssueCounter.getIssueKindIconName(this.#kind);
         issueKindIcon.classList.add('leading-issue-icon', 'extra-large');
         const countAdorner = new Adorners.Adorner.Adorner();
         countAdorner.data = {

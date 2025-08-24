@@ -104,7 +104,7 @@ var ConsoleContextSelector = class {
   }
   highlightedItemChanged(_from, to, fromElement, toElement) {
     SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-    if (to && to.frameId) {
+    if (to?.frameId) {
       const frame = SDK.FrameManager.FrameManager.instance().getFrame(to.frameId);
       if (frame && !frame.isOutermostFrame()) {
         void frame.highlight();
@@ -1597,7 +1597,7 @@ var consoleView_css_default = `/*
 #console-messages {
   flex: 1 1;
   overflow-y: auto;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   user-select: text;
   transform: translateZ(0);
   overflow-anchor: none;  /* Chrome-specific scroll-anchoring opt-out */
@@ -1736,13 +1736,8 @@ var consoleView_css_default = `/*
   --console-color-lightcyan: #5ff;
   --console-color-white: #fff;
 
-  &:focus {
+  &.console-selected {
     background-color: var(--sys-color-tonal-container);
-
-    & ::selection {
-      background-color: var(--sys-color-state-focus-select);
-      color: currentcolor;
-    }
   }
 }
 
@@ -1852,11 +1847,12 @@ var consoleView_css_default = `/*
 .console-view-object-properties-section {
   padding: 0;
   position: relative;
-  vertical-align: baseline;
+  vertical-align: top;
   color: inherit;
   display: inline-block;
   overflow-wrap: break-word;
   max-width: 100%;
+  margin-top: -1.5px;
 }
 
 .info-note {
@@ -1897,7 +1893,7 @@ var consoleView_css_default = `/*
 
 .console-object-preview {
   white-space: normal;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   font-style: italic;
 }
 
@@ -2834,7 +2830,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       if (UI4.UIUtils.isEditing() || contentElement.hasSelection()) {
         return;
       }
-      this.expandTrace && this.expandTrace(stackTraceElement.classList.contains("hidden-stack-trace"));
+      this.expandTrace?.(stackTraceElement.classList.contains("hidden-stack-trace"));
       event.consume();
     };
     clickableElement.addEventListener("click", toggleStackTrace, false);
@@ -3314,7 +3310,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       return false;
     }
     if (event.key === "ArrowLeft") {
-      this.elementInternal && this.elementInternal.focus();
+      this.elementInternal?.focus();
       return true;
     }
     if (event.key === "ArrowRight") {
@@ -3325,7 +3321,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (event.key === "ArrowUp") {
       const firstVisibleChild = this.nearestVisibleChild(0);
       if (this.selectableChildren[focusedChildIndex] === firstVisibleChild && firstVisibleChild) {
-        this.elementInternal && this.elementInternal.focus();
+        this.elementInternal?.focus();
         return true;
       }
       if (this.selectNearestVisibleChild(
@@ -3520,10 +3516,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
   }
   #createHoverButton() {
     const icon = new IconButton2.Icon.Icon();
-    icon.data = {
-      iconName: "lightbulb-spark",
-      color: "var(--devtools-icon-color)"
-    };
+    icon.name = "lightbulb-spark";
+    icon.style.color = "var(--devtools-icon-color)";
     icon.classList.add("medium");
     const button = document.createElement("button");
     button.append(icon);
@@ -3554,14 +3548,13 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       this.messageIcon.remove();
       this.messageIcon = null;
     }
-    let color = "";
+    const color = "";
     let iconName = "";
     let accessibleName = "";
     if (this.message.level === "warning") {
       iconName = "warning-filled";
       accessibleName = i18nString4(UIStrings4.warning);
     } else if (this.message.level === "error") {
-      color = "var(--icon-error)";
       iconName = "cross-circle-filled";
       accessibleName = i18nString4(UIStrings4.error);
     } else if (this.message.originatesFromLogpoint) {
@@ -3575,10 +3568,8 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       return;
     }
     this.messageIcon = new IconButton2.Icon.Icon();
-    this.messageIcon.data = {
-      iconName,
-      color
-    };
+    this.messageIcon.name = iconName;
+    this.messageIcon.style.color = color;
     this.messageIcon.classList.add("message-level-icon", "small");
     if (this.contentElementInternal) {
       this.contentElementInternal.insertBefore(this.messageIcon, this.contentElementInternal.firstChild);
@@ -5298,7 +5289,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     return consoleViewInstance;
   }
   createAiCodeCompletionSummaryToolbar() {
-    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, panelName: "console", disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
+    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
     this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild("div");
     this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, void 0, true);
   }
@@ -5744,7 +5735,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
         true
       );
     }
-    if (consoleMessage && consoleMessage.url) {
+    if (consoleMessage?.url) {
       const menuTitle = i18nString5(UIStrings5.hideMessagesFromS, { PH1: new Common7.ParsedURL.ParsedURL(consoleMessage.url).displayName });
       contextMenu.headerSection().appendItem(menuTitle, this.filter.addMessageURLFilter.bind(this.filter, consoleMessage.url), { jslogContext: "hide-messages-from" });
     }
@@ -5768,14 +5759,14 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     const parsedURL = Common7.ParsedURL.ParsedURL.fromString(url);
     const filename = Platform4.StringUtilities.sprintf("%s-%d.log", parsedURL ? parsedURL.host : "console", Date.now());
     const stream = new Bindings2.FileUtils.FileOutputStream();
-    const progressIndicator = new UI6.ProgressIndicator.ProgressIndicator();
+    const progressIndicator = document.createElement("devtools-progress");
     progressIndicator.setTitle(i18nString5(UIStrings5.writingFile));
     progressIndicator.setTotalWork(this.itemCount());
     const chunkSize = 350;
     if (!await stream.open(filename)) {
       return;
     }
-    this.progressToolbarItem.element.appendChild(progressIndicator.element);
+    this.progressToolbarItem.element.appendChild(progressIndicator);
     let messageIndex = 0;
     while (messageIndex < this.itemCount() && !progressIndicator.isCanceled()) {
       const messageContents = [];
@@ -6017,10 +6008,10 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     if (shouldJump) {
       this.searchShouldJumpBackwards = Boolean(jumpBackwards);
     }
-    this.searchProgressIndicator = new UI6.ProgressIndicator.ProgressIndicator();
+    this.searchProgressIndicator = document.createElement("devtools-progress");
     this.searchProgressIndicator.setTitle(i18nString5(UIStrings5.searching));
     this.searchProgressIndicator.setTotalWork(this.visibleViewMessages.length);
-    this.progressToolbarItem.element.appendChild(this.searchProgressIndicator.element);
+    this.progressToolbarItem.element.appendChild(this.searchProgressIndicator);
     this.innerSearch(0);
   }
   cleanupAfterSearch() {
@@ -6587,7 +6578,8 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     const editorContainerElement = this.element.createChild("div", "console-prompt-editor-container");
     this.element.appendChild(this.eagerPreviewElement);
     this.promptIcon = new IconButton4.Icon.Icon();
-    this.promptIcon.data = { iconName: "chevron-right", color: "var(--icon-action)" };
+    this.promptIcon.name = "chevron-right";
+    this.promptIcon.style.color = "var(--icon-action)";
     this.promptIcon.classList.add("console-prompt-icon", "medium");
     this.element.appendChild(this.promptIcon);
     this.iconThrottler = new Common8.Throttler.Throttler(0);
@@ -6937,7 +6929,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       this.detachAiCodeCompletionTeaser();
       this.teaser = void 0;
     }
-    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
+    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, ["\n"]);
     this.aiCodeCompletion.addEventListener("ResponseReceived", (event) => {
       this.aiCodeCompletionCitations = event.data.citations;
       this.dispatchEventToListeners("AiCodeCompletionResponseReceived", event.data);

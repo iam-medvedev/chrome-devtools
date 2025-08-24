@@ -28,7 +28,7 @@ export default `/*
 
 .scope-chain-sidebar-pane-section-title {
   font-weight: normal;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: normal;
 }
 

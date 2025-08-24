@@ -492,6 +492,7 @@ var objectPropertiesSection_css_default = `/*
   &::before {
     flex-shrink: 0;
     margin-right: 2px;
+    margin-top: calc(-1 * var(--sys-size-3));
   }
 }
 
@@ -994,12 +995,9 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
       return;
     }
     const memoryIcon = new IconButton.Icon.Icon();
-    memoryIcon.data = {
-      iconName: "memory",
-      color: "var(--icon-default)",
-      width: "16px",
-      height: "13px"
-    };
+    memoryIcon.name = "memory";
+    memoryIcon.style.width = "var(--sys-size-8)";
+    memoryIcon.style.height = "13px";
     memoryIcon.addEventListener("click", (event) => {
       event.consume();
       void Common.Revealer.reveal(new SDK3.RemoteObject.LinearMemoryInspectable(object, expression));
@@ -1721,7 +1719,7 @@ var ObjectPropertyTreeElement = class _ObjectPropertyTreeElement extends UI3.Tre
       return;
     }
     if (!expression) {
-      this.parent && this.parent.removeChild(this);
+      this.parent?.removeChild(this);
     } else {
       const parent = this.parent;
       if (parent) {

@@ -234,7 +234,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             "PERSISTENCE" /* Common.Settings.SettingCategory.PERSISTENCE */,
             "DEBUGGER" /* Common.Settings.SettingCategory.DEBUGGER */,
             "GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */,
-            "SYNC" /* Common.Settings.SettingCategory.SYNC */,
+            "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */,
         ];
         // Some settings define their initial ordering.
         const preRegisteredSettings = Common.Settings.Settings.instance().getRegisteredSettings().sort((firstSetting, secondSetting) => {
@@ -304,8 +304,8 @@ export class GenericSettingsTab extends UI.Widget.VBox {
         if (category === "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */) {
             this.createExtensionSection(settings);
         }
-        else if (category === "SYNC" /* Common.Settings.SettingCategory.SYNC */ && settings.length > 0) {
-            const syncCard = createSettingsCard(Common.SettingRegistration.getLocalizedSettingsCategory("SYNC" /* Common.SettingRegistration.SettingCategory.SYNC */), this.syncSection);
+        else if (category === "ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */ && settings.length > 0) {
+            const syncCard = createSettingsCard(Common.SettingRegistration.getLocalizedSettingsCategory("ACCOUNT" /* Common.SettingRegistration.SettingCategory.ACCOUNT */), this.syncSection);
             this.containerElement.appendChild(syncCard);
         }
         else if (settings.length > 0) {

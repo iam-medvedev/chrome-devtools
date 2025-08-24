@@ -220,6 +220,7 @@ export class BackendSettingsSync {
         this.#adBlockEnabledSetting.addChangeListener(this.#update, this);
         this.#emulatePageFocusSetting = Common.Settings.Settings.instance().moduleSetting('emulate-page-focus');
         this.#emulatePageFocusSetting.addChangeListener(this.#update, this);
+        SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ChildTargetManager.ChildTargetManager, "TargetInfoChanged" /* SDK.ChildTargetManager.Events.TARGET_INFO_CHANGED */, this.#targetInfoChanged, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
     }
     #updateTarget(target) {
@@ -236,6 +237,14 @@ export class BackendSettingsSync {
         for (const target of SDK.TargetManager.TargetManager.instance().targets()) {
             this.#updateTarget(target);
         }
+    }
+    #targetInfoChanged(event) {
+        const targetManager = SDK.TargetManager.TargetManager.instance();
+        const target = targetManager.targetById(event.data.targetId);
+        if (!target || target.outermostTarget() !== target) {
+            return;
+        }
+        this.#updateTarget(target);
     }
     targetAdded(target) {
         this.#updateTarget(target);

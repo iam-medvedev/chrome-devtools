@@ -26,17 +26,31 @@ export class AICallTree {
         this.rootNode = rootNode;
         this.parsedTrace = parsedTrace;
     }
+    static findEventsForThread({ thread, parsedTrace, bounds }) {
+        const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+        if (!threadEvents) {
+            return null;
+        }
+        return threadEvents.filter(e => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
+    }
+    static findMainThreadTasks({ thread, parsedTrace, bounds }) {
+        const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+        if (!threadEvents) {
+            return null;
+        }
+        return threadEvents.filter(Trace.Types.Events.isRunTask)
+            .filter(e => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
+    }
     /**
      * Builds a call tree representing all calls within the given timeframe for
      * the provided thread.
      * Events that are less than 0.05% of the range duration are removed.
      */
     static fromTimeOnThread({ thread, parsedTrace, bounds }) {
-        const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-        if (!threadEvents) {
+        const overlappingEvents = this.findEventsForThread({ thread, parsedTrace, bounds });
+        if (!overlappingEvents) {
             return null;
         }
-        const overlappingEvents = threadEvents.filter(e => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
         const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(visibleTypes());
         // By default, we remove events whose duration is less than 0.5% of the total
         // range. So if the range is 10s, an event must be 0.05s+ to be included.
@@ -202,9 +216,8 @@ export class AICallTree {
             nodeIndex++;
         }
     }
-    /* This is a new serialization format that is currently only used in tests.
-     * TODO: replace the current format with this one. */
-    serialize() {
+    serialize(headerLevel = 1) {
+        const header = '#'.repeat(headerLevel);
         // Keep a map of URLs. We'll output a LUT to keep size down.
         const allUrls = [];
         let nodesStr = '';
@@ -215,9 +228,9 @@ export class AICallTree {
         let output = '';
         if (allUrls.length) {
             // Output lookup table of URLs within this tree
-            output += '\n# All URLs:\n\n' + allUrls.map((url, index) => `  * ${index}: ${url}`).join('\n');
+            output += `\n${header} All URLs:\n\n` + allUrls.map((url, index) => `  * ${index}: ${url}`).join('\n');
         }
-        output += '\n\n# Call tree:\n' + nodesStr;
+        output += `\n\n${header} Call tree:\n${nodesStr}`;
         return output;
     }
     /*

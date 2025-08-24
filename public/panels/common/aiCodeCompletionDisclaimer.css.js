@@ -10,20 +10,21 @@ export default `/*
  */
 
 @scope to (devtools-widget > *) {
+    /* stylelint-disable-next-line no-invalid-position-declaration */
+    display: flex;
+
     .ai-code-completion-disclaimer {
         gap: 5px;
         display: flex;
-        white-space: nowrap;
-        overflow: hidden;
         flex-shrink: 0;
 
         span.link {
             color: var(--sys-color-on-surface-subtle);
 
             &:focus-visible {
-            outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-            outline-offset: 0;
-            border-radius: var(--sys-shape-corner-extra-small);
+                outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+                outline-offset: 0;
+                border-radius: var(--sys-shape-corner-extra-small);
             }
         }
 

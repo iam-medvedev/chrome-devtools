@@ -2,17 +2,17 @@ import * as Protocol from '../../../generated/protocol.js';
 import type * as CrUXManager from '../../crux-manager/crux-manager.js';
 import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings, type TraceInsightSets } from './types.js';
-export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insights: TraceInsightSets | null, key: string | null): InsightModels[InsightName] | null;
-export declare function getLCP(insights: TraceInsightSets | null, key: string | null): {
+import { type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings } from './types.js';
+export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insightSet: InsightSet): InsightModels[InsightName] | null;
+export declare function getLCP(insightSet: InsightSet): {
     value: Types.Timing.Micro;
     event: Types.Events.LargestContentfulPaintCandidate;
 } | null;
-export declare function getINP(insights: TraceInsightSets | null, key: string | null): {
+export declare function getINP(insightSet: InsightSet): {
     value: Types.Timing.Micro;
     event: Types.Events.SyntheticInteractionPair;
 } | null;
-export declare function getCLS(insights: TraceInsightSets | null, key: string | null): {
+export declare function getCLS(insightSet: InsightSet): {
     value: number;
     worstClusterEvent: Types.Events.Event | null;
 };

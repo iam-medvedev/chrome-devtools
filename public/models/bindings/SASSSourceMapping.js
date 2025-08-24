@@ -101,7 +101,7 @@ export class SASSSourceMapping {
             }
         }
         const entry = sourceMap.findEntry(lineNumber, columnNumber);
-        if (!entry || !entry.sourceURL) {
+        if (!entry?.sourceURL) {
             return null;
         }
         const uiSourceCode = this.#project.uiSourceCodeForURL(entry.sourceURL);

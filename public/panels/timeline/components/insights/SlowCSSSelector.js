@@ -20,7 +20,7 @@ export class SlowCSSSelector extends BaseInsightComponent {
             return undefined;
         }
         const styleSheetHeader = cssModel.styleSheetHeaderForId(selector.style_sheet_id);
-        if (!styleSheetHeader || !styleSheetHeader.resourceURL()) {
+        if (!styleSheetHeader?.resourceURL()) {
             return undefined;
         }
         // get the locations from cache if available

@@ -58,10 +58,10 @@ var SourceFrame_exports = {};
 __export(SourceFrame_exports, {
   LINE_NUMBER_FORMATTER: () => LINE_NUMBER_FORMATTER,
   SourceFrameImpl: () => SourceFrameImpl,
-  addInfobar: () => addInfobar,
   addNonBreakableLines: () => addNonBreakableLines,
+  addSourceFrameInfobar: () => addSourceFrameInfobar,
   isBreakableLine: () => isBreakableLine,
-  removeInfobar: () => removeInfobar
+  removeSourceFrameInfobar: () => removeSourceFrameInfobar
 });
 import * as Common from "./../../../../core/common/common.js";
 import * as Host from "./../../../../core/host/host.js";
@@ -299,7 +299,7 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
           activeDark: "var(--sys-color-divider-prominent)"
         }
       }),
-      infobarState
+      sourceFrameInfobarState
     ];
   }
   onBlur() {
@@ -480,10 +480,10 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
     }
   }
   async setContentDataOrError(contentDataPromise) {
-    const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+    const progressIndicator = document.createElement("devtools-progress");
     progressIndicator.setTitle(i18nString(UIStrings.loading));
     progressIndicator.setTotalWork(100);
-    this.progressToolbarItem.element.appendChild(progressIndicator.element);
+    this.progressToolbarItem.element.appendChild(progressIndicator);
     progressIndicator.setWorked(1);
     const contentData = await contentDataPromise;
     let error;
@@ -1041,23 +1041,23 @@ var sourceFrameTheme = CodeMirror.EditorView.theme({
     color: "var(--sys-color-primary)"
   }
 });
-var addInfobar = CodeMirror.StateEffect.define();
-var removeInfobar = CodeMirror.StateEffect.define();
-var infobarState = CodeMirror.StateField.define({
+var addSourceFrameInfobar = CodeMirror.StateEffect.define();
+var removeSourceFrameInfobar = CodeMirror.StateEffect.define();
+var sourceFrameInfobarState = CodeMirror.StateField.define({
   create() {
     return [];
   },
   update(current, tr) {
     for (const effect of tr.effects) {
-      if (effect.is(addInfobar)) {
+      if (effect.is(addSourceFrameInfobar)) {
         current = current.concat(effect.value);
-      } else if (effect.is(removeInfobar)) {
-        current = current.filter((b) => b !== effect.value);
+      } else if (effect.is(removeSourceFrameInfobar)) {
+        current = current.filter((b) => b.element !== effect.value.element);
       }
     }
     return current;
   },
-  provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field).map((bar) => () => ({ dom: bar.element })))
+  provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field).sort((a, b) => (a.order ?? 0) - (b.order ?? 0)).map((bar) => () => ({ dom: bar.element })))
 });
 
 // gen/front_end/ui/legacy/components/source_frame/ResourceSourceFrame.js
@@ -1293,7 +1293,7 @@ var fontView_css_default = `/*
 .font-view {
   font-size: 60px;
   white-space: pre-wrap;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   text-align: center;
   padding: 15px;
 }
@@ -1753,9 +1753,9 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     jsonView.show(searchableView.element);
     return searchableView;
   }
-  static createViewSync(obj) {
+  static createViewSync(obj, element) {
     const jsonView = new _JSONView(new ParsedJSON(obj, "", ""));
-    const searchableView = new UI6.SearchableView.SearchableView(jsonView, null);
+    const searchableView = new UI6.SearchableView.SearchableView(jsonView, null, void 0, element);
     searchableView.setPlaceholder(i18nString5(UIStrings5.find));
     jsonView.searchableView = searchableView;
     jsonView.show(searchableView.element);

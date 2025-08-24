@@ -12,13 +12,13 @@ export default `/*
 :host {
   break-inside: avoid;
   display: block;
-  padding-bottom: 9px;
-  width: 288px;
+  width: 100%;
 }
 
 fieldset {
   border: 0;
   padding: 0;
+  padding: 4px 0 0;
 }
 
 .link {
@@ -36,20 +36,29 @@ img {
   width: var(--sys-size-9);
 }
 
-.warning {
-  display: block;
-}
-
 .account-info {
   display: flex;
   align-items: center;
-  margin-top: 12px;
 }
 
 .account-email {
   display: flex;
   flex-direction: column;
   margin-left: 8px;
+}
+
+.not-signed-in {
+  padding-bottom: 4px;
+}
+
+.setting-checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: var(--sys-size-2);
+}
+
+.setting-checkbox {
+  display: inline-block;
 }
 
 /*# sourceURL=${import.meta.resolve('./syncSection.css')} */`;

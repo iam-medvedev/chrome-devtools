@@ -57,7 +57,7 @@ export declare class TraceLoader {
     static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration): Promise<{
         parsedTrace: Trace.Handlers.Types.ParsedTrace;
         insights: Trace.Insights.Types.TraceInsightSets | null;
-        metadata: Trace.Types.File.MetaData | null;
+        metadata: Trace.Types.File.MetaData;
     }>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.

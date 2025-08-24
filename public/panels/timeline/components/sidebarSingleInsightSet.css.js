@@ -18,7 +18,7 @@ export default `/*
   display: grid;
   align-items: end;
   grid-template-columns: repeat(3, 1fr) 0.5fr;
-  grid-row-gap: 5px;
+  row-gap: 5px;
 }
 
 .row-border {

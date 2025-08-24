@@ -12,6 +12,8 @@ export declare class AICallTree {
     rootNode: Trace.Extras.TraceTree.TopDownRootNode;
     parsedTrace: Trace.Handlers.Types.ParsedTrace;
     constructor(selectedNode: Trace.Extras.TraceTree.Node | null, rootNode: Trace.Extras.TraceTree.TopDownRootNode, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    static findEventsForThread({ thread, parsedTrace, bounds }: FromTimeOnThreadOptions): Trace.Types.Events.Event[] | null;
+    static findMainThreadTasks({ thread, parsedTrace, bounds }: FromTimeOnThreadOptions): Trace.Types.Events.RunTask[] | null;
     /**
      * Builds a call tree representing all calls within the given timeframe for
      * the provided thread.
@@ -60,7 +62,7 @@ export declare class AICallTree {
      * their eventual IDs will follow this running count.
      */
     breadthFirstWalk(nodes: MapIterator<Trace.Extras.TraceTree.Node>, serializeNodeCallback: (currentNode: Trace.Extras.TraceTree.Node, nodeId: number, childrenStartingId?: number) => void): void;
-    serialize(): string;
+    serialize(headerLevel?: number): string;
     stringifyNode(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
     logDebug(): void;
 }

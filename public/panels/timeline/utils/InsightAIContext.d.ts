@@ -13,9 +13,30 @@ export declare class AIQueries {
      * is a valid and relevant request.
      */
     static networkRequest(parsedTrace: Trace.Handlers.Types.ParsedTrace, url: string): Trace.Types.Events.SyntheticNetworkRequest | null;
+    static findMainThread(navigationId: string | undefined, parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Handlers.Threads.ThreadData | null;
+    /**
+     * Returns bottom up activity for the given range.
+     */
+    static mainThreadActivityBottomUp(navigationId: string | undefined, bounds: Trace.Types.Timing.TraceWindowMicro, parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Extras.TraceTree.BottomUpRootNode | null;
     /**
      * Returns an AI Call Tree representing the activity on the main thread for
      * the relevant time range of the given insight.
      */
-    static mainThreadActivity(insight: Trace.Insights.Types.InsightModel, insightSetBounds: Trace.Types.Timing.TraceWindowMicro, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    static mainThreadActivityTopDown(navigationId: string | undefined, bounds: Trace.Types.Timing.TraceWindowMicro, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    /**
+     * Returns an AI Call Tree representing the activity on the main thread for
+     * the relevant time range of the given insight.
+     */
+    static mainThreadActivityForInsight(insight: Trace.Insights.Types.InsightModel, insightSetBounds: Trace.Types.Timing.TraceWindowMicro, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    /**
+     * Returns the top longest tasks as AI Call Trees.
+     */
+    static longestTasks(navigationId: string | undefined, bounds: Trace.Types.Timing.TraceWindowMicro, parsedTrace: Trace.Handlers.Types.ParsedTrace, limit?: number): AICallTree[] | null;
 }
+/**
+ * Calculates the trace bounds for the given insight that are relevant.
+ *
+ * Uses the insight's overlays to determine the relevant trace bounds. If there are
+ * no overlays, falls back to the insight set's navigation bounds.
+ */
+export declare function insightBounds(insight: Trace.Insights.Types.InsightModel, insightSetBounds: Trace.Types.Timing.TraceWindowMicro): Trace.Types.Timing.TraceWindowMicro;

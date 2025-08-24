@@ -96,12 +96,7 @@ export class BreadcrumbsUI extends HTMLElement {
           </div>
           ${breadcrumb.child !== null ?
             html `
-            <devtools-icon .data=${{
-                iconName: 'chevron-right',
-                color: 'var(--icon-default)',
-                width: '16px',
-                height: '16px',
-            }}>`
+            <devtools-icon name="chevron-right" class="medium">`
             : ''}
       `;
         // clang-format on

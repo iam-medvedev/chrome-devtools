@@ -10,7 +10,7 @@ import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
 import { findMenuItemWithLabel, getContextMenuForElement, getMenu, getMenuItemLabels, } from '../../testing/ContextMenuHelpers.js';
 import { dispatchClickEvent, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
-import { createTarget, describeWithEnvironment, registerNoopActions, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { createTarget, describeWithEnvironment, registerActions, registerNoopActions, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCalled } from '../../testing/ExpectStubCall.js';
 import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection, dispatchEvent } from '../../testing/MockConnection.js';
@@ -733,18 +733,20 @@ describeWithMockConnection('NetworkLogView placeholder', () => {
     const RELOAD_ID = 'inspector-main.reload';
     beforeEach(() => {
         stubNoopSettings();
-        UI.ActionRegistration.registerActionExtension({
-            actionId: START_RECORDING_ID,
-            category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
-            title: () => 'mock',
-            toggleable: true,
-        });
-        UI.ActionRegistration.registerActionExtension({
-            actionId: RELOAD_ID,
-            category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
-            title: () => 'mock',
-            toggleable: true,
-        });
+        registerActions([
+            {
+                actionId: START_RECORDING_ID,
+                category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
+                title: () => 'mock',
+                toggleable: true,
+            },
+            {
+                actionId: RELOAD_ID,
+                category: "NETWORK" /* UI.ActionRegistration.ActionCategory.NETWORK */,
+                title: () => 'mock',
+                toggleable: true,
+            }
+        ]);
         sinon.stub(UI.ShortcutRegistry.ShortcutRegistry, 'instance').returns({
             shortcutTitleForAction: () => 'Ctrl',
             shortcutsForAction: () => [new UI.KeyboardShortcut.KeyboardShortcut([{ key: UI.KeyboardShortcut.Keys.Ctrl.code, name: 'Ctrl' }], '', "DefaultShortcut" /* UI.KeyboardShortcut.Type.DEFAULT_SHORTCUT */)],
@@ -783,13 +785,11 @@ describeWithEnvironment('NetworkLogView', () => {
             },
         });
         stubNoopSettings();
-        UI.ActionRegistration.registerActionExtension({
-            actionId: 'drjones.network-panel-context',
-            title: () => 'Debug with AI',
-            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-        });
-        const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+        registerActions([{
+                actionId: 'drjones.network-panel-context',
+                title: () => 'Debug with AI',
+                category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            }]);
         const filterBar = new UI.FilterBar.FilterBar('network-test');
         const progressBarContainer = document.createElement('div');
         const setting = Common.Settings.Settings.instance().createSetting('network-log-large-rows', false);
@@ -802,9 +802,6 @@ describeWithEnvironment('NetworkLogView', () => {
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Explain purpose', 'Explain slowness', 'Explain failures', 'Assess security headers']);
-        // Cleanup
-        UI.ActionRegistry.ActionRegistry.reset();
-        UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
     });
 });
 function testPlaceholderText(networkLogView, expectedHeaderText, expectedDescriptionText) {

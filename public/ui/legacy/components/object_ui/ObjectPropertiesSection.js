@@ -340,12 +340,9 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
             return;
         }
         const memoryIcon = new IconButton.Icon.Icon();
-        memoryIcon.data = {
-            iconName: 'memory',
-            color: 'var(--icon-default)',
-            width: '16px',
-            height: '13px',
-        };
+        memoryIcon.name = 'memory';
+        memoryIcon.style.width = 'var(--sys-size-8)';
+        memoryIcon.style.height = '13px';
         memoryIcon.addEventListener('click', event => {
             event.consume();
             void Common.Revealer.reveal(new SDK.RemoteObject.LinearMemoryInspectable(object, expression));
@@ -1089,7 +1086,7 @@ export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         if (!expression) {
             // The property was deleted, so remove this tree element.
-            this.parent && this.parent.removeChild(this);
+            this.parent?.removeChild(this);
         }
         else {
             // Call updateSiblings since their value might be based on the value that just changed.

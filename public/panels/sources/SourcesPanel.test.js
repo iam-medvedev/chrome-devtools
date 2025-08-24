@@ -7,7 +7,7 @@ import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerActions, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Sources from './sources.js';
 describeWithEnvironment('SourcesPanel', () => {
@@ -50,13 +50,11 @@ describeWithEnvironment('SourcesPanel', () => {
             'debugger.toggle-pause', 'debugger.step-over', 'debugger.step-into', 'debugger.step-out', 'debugger.step',
             'debugger.toggle-breakpoints-active'
         ]);
-        UI.ActionRegistration.registerActionExtension({
-            actionId: 'drjones.sources-panel-context',
-            title: () => 'Debug with AI',
-            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-        });
-        const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+        registerActions([{
+                actionId: 'drjones.sources-panel-context',
+                title: () => 'Debug with AI',
+                category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            }]);
         setUpEnvironment();
         const sources = new Sources.SourcesPanel.SourcesPanel();
         const event = new Event('contextmenu');
@@ -67,8 +65,6 @@ describeWithEnvironment('SourcesPanel', () => {
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem.subItems?.map(item => item.label), ['Start a chat', 'Assess performance', 'Explain this script', 'Explain input handling']);
-        UI.ActionRegistry.ActionRegistry.reset();
-        UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
     });
 });
 //# sourceMappingURL=SourcesPanel.test.js.map

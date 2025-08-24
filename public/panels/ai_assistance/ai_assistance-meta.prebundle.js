@@ -221,6 +221,21 @@ UI.ActionRegistration.registerActionExtension({
     }
 });
 UI.ActionRegistration.registerActionExtension({
+    actionId: 'drjones.performance-panel-full-context',
+    contextTypes() {
+        return [];
+    },
+    category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+    title: i18nLazyString(UIStrings.askAi),
+    async loadActionDelegate() {
+        const AiAssistance = await loadAiAssistanceModule();
+        return new AiAssistance.ActionDelegate();
+    },
+    condition: config => {
+        return isPerformanceAgentFeatureAvailable(config) && !isPolicyRestricted(config) && !isGeoRestricted(config);
+    }
+});
+UI.ActionRegistration.registerActionExtension({
     actionId: 'drjones.sources-floating-button',
     contextTypes() {
         return [];

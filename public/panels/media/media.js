@@ -210,8 +210,8 @@ var MediaModel = class extends SDK.SDKModel.SDKModel {
   playerErrorsRaised(event) {
     this.dispatchEventToListeners("PlayerErrorsRaised", event);
   }
-  playersCreated({ players }) {
-    this.dispatchEventToListeners("PlayersCreated", players);
+  playerCreated({ player: { playerId } }) {
+    this.dispatchEventToListeners("PlayersCreated", [playerId]);
   }
 };
 SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144, autostart: false });

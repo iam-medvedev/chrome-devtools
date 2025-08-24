@@ -306,7 +306,7 @@ export class MetricsSidebarPane extends ElementsSidebarPane {
         const config = new UI.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
         UI.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
         const selection = targetElement.getComponentSelection();
-        selection && selection.selectAllChildren(targetElement);
+        selection?.selectAllChildren(targetElement);
     }
     handleKeyDown(context, event) {
         const element = event.currentTarget;

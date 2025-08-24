@@ -3211,6 +3211,9 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
     this.noPropertiesInfo.classList.toggle("hidden", foundAttributes);
     this.treeOutline.element.classList.toggle("hidden", !foundAttributes);
   }
+  getTreeOutlineForTesting() {
+    return this.treeOutline;
+  }
   isARIAAttribute(attribute) {
     return ATTRIBUTES.has(attribute.name);
   }
@@ -3236,6 +3239,9 @@ var ARIAAttributesTreeElement = class _ARIAAttributesTreeElement extends UI3.Tre
   onattach() {
     this.populateListItem();
     this.listItemElement.addEventListener("click", this.mouseClick.bind(this));
+  }
+  getPromptForTesting() {
+    return this.prompt;
   }
   populateListItem() {
     this.listItemElement.removeChildren();
@@ -3885,7 +3891,7 @@ var AXBreadcrumbsPane = class extends AccessibilitySubPane {
     const node = this.node();
     if (breadcrumb) {
       breadcrumb.setHovered(true);
-    } else if (node && node.id) {
+    } else if (node?.id) {
       node.domModel().overlayModel().nodeHighlightRequested({ nodeId: node.id });
     }
     this.hoveredBreadcrumb = breadcrumb;

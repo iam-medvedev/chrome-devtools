@@ -122,6 +122,9 @@
   "core/common/Revealer.ts | timelinePanel": {
     "message": "Performance panel"
   },
+  "core/common/SettingRegistration.ts | account": {
+    "message": "Account"
+  },
   "core/common/SettingRegistration.ts | adorner": {
     "message": "Adorner"
   },
@@ -172,9 +175,6 @@
   },
   "core/common/SettingRegistration.ts | sources": {
     "message": "Sources"
-  },
-  "core/common/SettingRegistration.ts | sync": {
-    "message": "Sync"
   },
   "core/host/InspectorFrontendHost.ts | devtoolsS": {
     "message": "DevTools - {PH1}"
@@ -1000,6 +1000,9 @@
   },
   "entrypoints/js_app/js_app.ts | showNode": {
     "message": "Show Scripts"
+  },
+  "entrypoints/main/GlobalAiButton.ts | aiAssistance": {
+    "message": "AI assistance"
   },
   "entrypoints/main/main-meta.ts | auto": {
     "message": "auto"
@@ -4991,17 +4994,17 @@
   "panels/application/PreloadingTreeElement.ts | speculativeLoads": {
     "message": "Speculative loads"
   },
-  "panels/application/ReportingApiReportsView.ts | clickToDisplayBody": {
-    "message": "Click on any report to display its body"
-  },
-  "panels/application/ReportingApiReportsView.ts | noReportSelected": {
-    "message": "No report selected"
-  },
   "panels/application/ReportingApiTreeElement.ts | reportingApi": {
     "message": "Reporting API"
   },
+  "panels/application/ReportingApiView.ts | clickToDisplayBody": {
+    "message": "Click on any report to display its body"
+  },
   "panels/application/ReportingApiView.ts | noReportOrEndpoint": {
     "message": "No report or endpoint"
+  },
+  "panels/application/ReportingApiView.ts | noReportSelected": {
+    "message": "No report selected"
   },
   "panels/application/ReportingApiView.ts | reportingApiDescription": {
     "message": "On this page you will be able to inspect Reporting API reports and endpoints."
@@ -12392,6 +12395,9 @@
   "panels/sensors/SensorsView.ts | timezoneId": {
     "message": "Timezone ID"
   },
+  "panels/settings/AISettingsTab.ts | aIAnnotationsFeatureDescription": {
+    "message": "Automatically generate titles for performance trace annotations"
+  },
   "panels/settings/AISettingsTab.ts | asYouTypeCodeSuggestions": {
     "message": "As you type in the Console or Sources panel, you’ll get code suggestions. Press Tab to accept one."
   },
@@ -12399,16 +12405,16 @@
     "message": "Boost your productivity with AI"
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendData": {
-    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature."
+    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendDataNoLogging": {
-    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models."
+    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
-    "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature."
+    "message": "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsDataNoLogging": {
-    "message": "The console message, associated stack trace, related source code, and the associated network headers are sent to Google to generate explanations. This data will not be used to improve Google’s AI models."
+    "message": "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | dataCollection": {
     "message": "Depending on your region, Google may refrain from data collection"
@@ -12444,19 +12450,19 @@
     "message": "Understand CSS styles, network activity, performance bottlenecks, and file origins with AI-powered insights"
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsData": {
-    "message": "Any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google to generate explanations. This data may be seen by human reviewers to improve this feature. Don’t use on pages with personal or sensitive information."
+    "message": "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data may be seen by human reviewers to improve this feature. Don’t use on pages with personal or sensitive information."
   },
   "panels/settings/AISettingsTab.ts | freestylerSendsDataNoLogging": {
-    "message": "Any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google to generate explanations. This data will not be used to improve Google’s AI models."
+    "message": "To generate explanations, any user query and data the inspected page can access via Web APIs, network requests, files, and performance traces are sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | generatedAiAnnotationsSendData": {
-    "message": "Your performance trace is sent to Google to generate an explanation. This data will be used to improve Google’s AI models."
+    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | generatedAiAnnotationsSendDataNoLogging": {
-    "message": "Your performance trace is sent to Google to generate an explanation. This data will not be used to improve Google’s AI models."
+    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
-  "panels/settings/AISettingsTab.ts | getAIAnnotationsSuggestions": {
-    "message": "Get AI suggestions for performance panel annotations"
+  "panels/settings/AISettingsTab.ts | helpAnnotatePerformance": {
+    "message": "Helps you annotate your performance trace with auto-generated labels"
   },
   "panels/settings/AISettingsTab.ts | helpUnderstandCodeSuggestions": {
     "message": "Get help completing your code"
@@ -12512,11 +12518,11 @@
   "panels/settings/AISettingsTab.ts | whenOn": {
     "message": "When on"
   },
+  "panels/settings/components/SyncSection.ts | notSignedIn": {
+    "message": "You're not signed into Chrome."
+  },
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
     "message": "To turn this setting on, you must first enable settings sync in Chrome."
-  },
-  "panels/settings/components/SyncSection.ts | settings": {
-    "message": "Go to Settings"
   },
   "panels/settings/components/SyncSection.ts | signedIn": {
     "message": "Signed into Chrome as:"
@@ -15656,6 +15662,15 @@
   "panels/timeline/TimingsTrackAppender.ts | timings": {
     "message": "Timings"
   },
+  "panels/timeline/TrackConfigBanner.ts | configureTracks": {
+    "message": "Configure tracks"
+  },
+  "panels/timeline/TrackConfigBanner.ts | showAll": {
+    "message": "Show all"
+  },
+  "panels/timeline/TrackConfigBanner.ts | someTracksAreHidden": {
+    "message": "Some tracks are hidden in this trace. You can configure tracks by right clicking the track name."
+  },
   "panels/timeline/UIDevtoolsUtils.ts | async": {
     "message": "Async"
   },
@@ -17335,6 +17350,9 @@
   },
   "ui/legacy/UIUtils.ts | new": {
     "message": "NEW"
+  },
+  "ui/legacy/UIUtils.ts | newFeature": {
+    "message": "This is a new feature"
   },
   "ui/legacy/UIUtils.ts | ok": {
     "message": "OK"

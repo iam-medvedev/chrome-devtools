@@ -996,12 +996,7 @@ var BackForwardCacheView = class extends LegacyWrapper.LegacyWrapper.WrappableCo
       return html`
         <div class="text-ellipsis">
           ${node.treeNodeData.iconName ? html`
-            <devtools-icon class="inline-icon" style="margin-bottom: -3px;" .data=${{
-        iconName: node.treeNodeData.iconName,
-        color: "var(--icon-default)",
-        width: "20px",
-        height: "20px"
-      }}>
+            <devtools-icon class="inline-icon extra-large" .name=${node.treeNodeData.iconName} style="margin-bottom: -3px;">
             </devtools-icon>
           ` : Lit.nothing}
           ${node.treeNodeData.text}
@@ -1083,13 +1078,8 @@ var BackForwardCacheView = class extends LegacyWrapper.LegacyWrapper.WrappableCo
       case true:
         return html`
           <devtools-report-section>
-            <div class="status">
-              <devtools-icon class="inline-icon" .data=${{
-          iconName: "check-circle",
-          color: "var(--icon-checkmark-green)",
-          width: "20px",
-          height: "20px"
-        }}>
+            <div class="status extra-large">
+              <devtools-icon class="inline-icon extra-large" name="check-circle" style="color: var(--icon-checkmark-green);">
               </devtools-icon>
             </div>
             ${i18nString(UIStrings2.restoredFromBFCache)}
@@ -1100,12 +1090,7 @@ var BackForwardCacheView = class extends LegacyWrapper.LegacyWrapper.WrappableCo
         return html`
           <devtools-report-section>
             <div class="status">
-              <devtools-icon class="inline-icon" .data=${{
-          iconName: "clear",
-          color: "var(--icon-default)",
-          width: "20px",
-          height: "20px"
-        }}>
+              <devtools-icon class="inline-icon extra-large" name="clear">
               </devtools-icon>
             </div>
             ${i18nString(UIStrings2.normalNavigation)}
@@ -1169,12 +1154,7 @@ var BackForwardCacheView = class extends LegacyWrapper.LegacyWrapper.WrappableCo
         <devtools-report-section-header>
           ${category}
           <div class="help-outline-icon">
-            <devtools-icon class="inline-icon" .data=${{
-      iconName: "help",
-      color: "var(--icon-default)",
-      width: "16px",
-      height: "16px"
-    }} title=${explainerText}>
+            <devtools-icon class="inline-icon medium" name="help" title=${explainerText}>
             </devtools-icon>
           </div>
         </devtools-report-section-header>
@@ -1243,12 +1223,7 @@ var BackForwardCacheView = class extends LegacyWrapper.LegacyWrapper.WrappableCo
       <devtools-report-section>
         ${explanation.reason in NotRestoredReasonDescription ? html`
             <div class="circled-exclamation-icon">
-              <devtools-icon class="inline-icon" .data=${{
-      iconName: "warning",
-      color: "var(--icon-warning)",
-      width: "16px",
-      height: "16px"
-    }}>
+              <devtools-icon class="inline-icon medium" style="color: var(--icon-warning)" name="warning">
               </devtools-icon>
             </div>
             <div>
@@ -1546,6 +1521,9 @@ var EndpointsGrid = class extends HTMLElement {
   set data(data) {
     this.#endpoints = data.endpoints;
     this.#render();
+  }
+  get data() {
+    return { endpoints: this.#endpoints };
   }
   #render() {
     render3(html3`
@@ -2305,15 +2283,7 @@ var OriginTrialTreeView = class extends HTMLElement {
       Lit5.render(html5`
     <style>${originTrialTreeView_css_default}</style>
     <span class="status-badge">
-      <devtools-icon
-          .data=${{
-        iconName: "clear",
-        color: "var(--icon-default)",
-        width: "16px",
-        height: "16px"
-      }}
-        >
-      </devtools-icon>
+      <devtools-icon class="medium" name="clear"></devtools-icon>
       <span>${i18nString5(UIStrings6.noTrialTokens)}</span>
     </span>`, this.#shadow, { host: this });
       return;
@@ -2535,13 +2505,7 @@ var PermissionsPolicySection = class extends HTMLElement {
       return html6`
         <div class="permissions-row">
           <div>
-            <devtools-icon class="allowed-icon"
-              .data=${{
-        color: "var(--icon-error)",
-        iconName: "cross-circle",
-        width: "20px",
-        height: "20px"
-      }}>
+            <devtools-icon class="allowed-icon extra-large" name="cross-circle">
             </devtools-icon>
           </div>
           <div class="feature-name text-ellipsis">
@@ -3480,9 +3444,8 @@ var InterestGroupAccessGrid = class extends HTMLElement {
           </div>` : html8`
           <div>
             <span class="heading">Interest Groups</span>
-            <devtools-icon class="info-icon"
-                          title=${i18nString8(UIStrings9.allInterestGroupStorageEvents)}
-                          .data=${{ iconName: "info", color: "var(--icon-default)", width: "16px" }}>
+            <devtools-icon class="info-icon medium" name="info"
+                          title=${i18nString8(UIStrings9.allInterestGroupStorageEvents)}>
             </devtools-icon>
             ${this.#renderGrid()}
           </div>`}
@@ -3665,7 +3628,7 @@ var ProtocolHandlersView = class extends HTMLElement {
     return html9`
     <div class="protocol-handlers-row status">
             <devtools-icon class="inline-icon"
-                                                name=${this.#protocolHandlers.length > 0 ? "check-circle" : "info"}>
+                           name=${this.#protocolHandlers.length > 0 ? "check-circle" : "info"}>
             </devtools-icon>
             ${i18n19.i18n.getFormatLocalizedString(str_10, statusString, {
       PH1: manifestInTextLink
@@ -4384,7 +4347,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
   border: var(--override-spinner-size, 3px) solid
     var(--override-spinner-color, var(--sys-color-token-subtle));
   border-radius: 12px;
-  clip: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
+  clip-path: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
   content: '';
   position: absolute;
   animation: spinner-animation 1s linear infinite;
@@ -5083,12 +5046,7 @@ var ReportsGridStatusHeader = class extends HTMLElement {
       <span class="status-header">${i18nString10(UIStrings11.status)}</span>
       <x-link href="https://web.dev/reporting-api/#report-status"
       jslog=${VisualLogging8.link("report-status").track({ click: true })}>
-        <devtools-icon class="inline-icon" .data=${{
-      iconName: "help",
-      color: "var(--icon-link)",
-      width: "16px",
-      height: "16px"
-    }}></devtools-icon>
+        <devtools-icon class="inline-icon medium" name="help" style="color: var(--icon-link);"></devtools-icon>
       </x-link>
     `, this.#shadow, { host: this });
   }
@@ -5104,6 +5062,9 @@ var ReportsGrid = class extends HTMLElement {
   set data(data) {
     this.#reports = data.reports;
     this.#render();
+  }
+  get data() {
+    return { reports: this.#reports };
   }
   #render() {
     render10(html10`
@@ -5390,9 +5351,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
         </div>` : html12`
         <div jslog=${VisualLogging9.section("events-table")}>
           <span class="heading">${i18nString11(UIStrings12.sharedStorage)}</span>
-          <devtools-icon class="info-icon"
-                          title=${i18nString11(UIStrings12.allSharedStorageEvents)}
-                          .data=${{ iconName: "info", color: "var(--icon-default)", width: "16px" }}>
+          <devtools-icon class="info-icon medium" name="info"
+                          title=${i18nString11(UIStrings12.allSharedStorageEvents)}>
           </devtools-icon>
           <devtools-data-grid striped inline @select=${input.onSelect}>
             <table>

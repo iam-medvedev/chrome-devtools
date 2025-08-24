@@ -13,7 +13,6 @@ export default `/*
   .ai-code-completion-summary-toolbar {
     display: flex;
     height: 26px;
-    border-top: var(--sys-size-1) solid var(--sys-color-divider);
     background-color: var(--sys-color-cdt-base-container);
     padding: var(--sys-size-2) var(--sys-size-5);
     align-items: center;
@@ -21,12 +20,19 @@ export default `/*
     flex-shrink: 0;
     color: var(--sys-color-on-surface-subtle);
 
+    &:not(.has-top-border) {
+      border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    }
+
     devtools-widget.disclaimer-widget {
       flex: none;
     }
 
     span.link {
       color: var(--sys-color-on-surface-subtle);
+      /* Inside the code mirror editor, the cursor and text-decoration styling need to be provided explicitly */
+      cursor: pointer;
+      text-decoration: underline;
 
       &:focus-visible {
         outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
@@ -36,14 +42,16 @@ export default `/*
     }
 
     .ai-code-completion-recitation-notice {
-      padding-left: var(--sys-size-5);
-      border-left: var(--sys-size-1) solid var(--sys-color-divider);
       white-space: nowrap;
-      overflow: hidden;
 
       span.link {
         padding-left: var(--sys-size-3);
       }
+    }
+
+    &.has-disclaimer .ai-code-completion-recitation-notice {
+      padding-left: var(--sys-size-5);
+      border-left: var(--sys-size-1) solid var(--sys-color-divider);
     }
 
     @media (width < 545px) {

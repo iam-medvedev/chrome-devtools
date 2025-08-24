@@ -107,7 +107,8 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         const editorContainerElement = this.element.createChild('div', 'console-prompt-editor-container');
         this.element.appendChild(this.eagerPreviewElement);
         this.promptIcon = new IconButton.Icon.Icon();
-        this.promptIcon.data = { iconName: 'chevron-right', color: 'var(--icon-action)' };
+        this.promptIcon.name = 'chevron-right';
+        this.promptIcon.style.color = 'var(--icon-action)';
         this.promptIcon.classList.add('console-prompt-icon', 'medium');
         this.element.appendChild(this.promptIcon);
         this.iconThrottler = new Common.Throttler.Throttler(0);
@@ -446,8 +447,9 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.detachAiCodeCompletionTeaser();
             this.teaser = undefined;
         }
+        // We are prioritizing single line suggestions in Console panel to reduce noise.
         this.aiCodeCompletion =
-            new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor);
+            new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, ['\n']);
         this.aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, event => {
             this.aiCodeCompletionCitations = event.data.citations;
             this.dispatchEventToListeners("AiCodeCompletionResponseReceived" /* Events.AI_CODE_COMPLETION_RESPONSE_RECEIVED */, event.data);

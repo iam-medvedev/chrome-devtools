@@ -1816,7 +1816,9 @@ var generatedProperties = [
   {
     "longhands": [
       "column-width",
-      "column-count"
+      "column-count",
+      "column-height",
+      "column-wrap"
     ],
     "name": "columns"
   },
@@ -9924,7 +9926,7 @@ var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWra
     for (const scopeChangeListener of this.#scopeChangeListeners) {
       scopeChangeListener();
     }
-    if (scopeTarget && scopeTarget.inspectedURL()) {
+    if (scopeTarget?.inspectedURL()) {
       this.onInspectedURLChange(scopeTarget);
     }
   }
@@ -21536,20 +21538,25 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       parent: stackTraceOrPausedDetails.asyncStackTrace,
       parentId: stackTraceOrPausedDetails.asyncStackTraceId
     } : stackTraceOrPausedDetails;
+    let target = this.target();
     while (true) {
       if (stackTrace.parent) {
         stackTrace = stackTrace.parent;
       } else if (stackTrace.parentId) {
         const model = stackTrace.parentId.debuggerId ? await _DebuggerModel.modelForDebuggerId(stackTrace.parentId.debuggerId) : this;
-        const maybeStackTrace = await model?.fetchAsyncStackTrace(stackTrace.parentId);
+        if (!model) {
+          return;
+        }
+        const maybeStackTrace = await model.fetchAsyncStackTrace(stackTrace.parentId);
         if (!maybeStackTrace) {
           return;
         }
         stackTrace = maybeStackTrace;
+        target = model.target();
       } else {
         return;
       }
-      yield stackTrace;
+      yield { stackTrace, target };
     }
   }
 };
@@ -23208,16 +23215,25 @@ var DOMNode = class _DOMNode {
   internalSubset;
   name;
   value;
+  /**
+   * Set when a DOMNode is retained in a detached sub-tree.
+   */
+  retained = false;
+  /**
+   * Set if a DOMNode is a root of a detached sub-tree.
+   */
+  detached = false;
+  #retainedNodes;
   constructor(domModel) {
     this.#domModelInternal = domModel;
     this.#agent = this.#domModelInternal.getAgent();
   }
-  static create(domModel, doc, isInShadowTree, payload) {
+  static create(domModel, doc, isInShadowTree, payload, retainedNodes) {
     const node = new _DOMNode(domModel);
-    node.init(doc, isInShadowTree, payload);
+    node.init(doc, isInShadowTree, payload, retainedNodes);
     return node;
   }
-  init(doc, isInShadowTree, payload) {
+  init(doc, isInShadowTree, payload, retainedNodes) {
     this.#agent = this.#domModelInternal.getAgent();
     this.ownerDocument = doc;
     this.#isInShadowTreeInternal = isInShadowTree;
@@ -23235,6 +23251,10 @@ var DOMNode = class _DOMNode {
     this.#xmlVersion = payload.xmlVersion;
     this.#isSVGNodeInternal = Boolean(payload.isSVG);
     this.#isScrollableInternal = Boolean(payload.isScrollable);
+    this.#retainedNodes = retainedNodes;
+    if (this.#retainedNodes?.has(this.backendNodeId())) {
+      this.retained = true;
+    }
     if (payload.attributes) {
       this.setAttributesPayload(payload.attributes);
     }
@@ -23242,13 +23262,13 @@ var DOMNode = class _DOMNode {
     if (payload.shadowRoots) {
       for (let i = 0; i < payload.shadowRoots.length; ++i) {
         const root = payload.shadowRoots[i];
-        const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, root);
+        const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, root, retainedNodes);
         this.shadowRootsInternal.push(node);
         node.parentNode = this;
       }
     }
     if (payload.templateContent) {
-      this.templateContentInternal = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.templateContent);
+      this.templateContentInternal = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.templateContent, retainedNodes);
       this.templateContentInternal.parentNode = this;
       this.childrenInternal = [];
     }
@@ -23262,7 +23282,7 @@ var DOMNode = class _DOMNode {
       this.childrenInternal = [];
     }
     if (payload.importedDocument) {
-      this.#importedDocumentInternal = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.importedDocument);
+      this.#importedDocumentInternal = _DOMNode.create(this.#domModelInternal, this.ownerDocument, true, payload.importedDocument, retainedNodes);
       this.#importedDocumentInternal.parentNode = this;
       this.childrenInternal = [];
     }
@@ -23725,7 +23745,7 @@ var DOMNode = class _DOMNode {
     if (!this.childrenInternal) {
       throw new Error("DOMNode._children is expected to not be null.");
     }
-    const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload);
+    const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload, this.#retainedNodes);
     this.childrenInternal.splice(prev ? this.childrenInternal.indexOf(prev) + 1 : 0, 0, node);
     this.renumber();
     return node;
@@ -23764,7 +23784,7 @@ var DOMNode = class _DOMNode {
     this.childrenInternal = [];
     for (let i = 0; i < payloads.length; ++i) {
       const payload = payloads[i];
-      const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload);
+      const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payload, this.#retainedNodes);
       this.childrenInternal.push(node);
     }
     this.renumber();
@@ -23774,7 +23794,7 @@ var DOMNode = class _DOMNode {
       return;
     }
     for (let i = 0; i < payloads.length; ++i) {
-      const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payloads[i]);
+      const node = _DOMNode.create(this.#domModelInternal, this.ownerDocument, this.#isInShadowTreeInternal, payloads[i], this.#retainedNodes);
       node.parentNode = this;
       const pseudoType = node.pseudoType();
       if (!pseudoType) {
@@ -28768,7 +28788,7 @@ var AnimationModel = class extends SDKModel {
     this.dispatchEventToListeners(Events10.AnimationGroupUpdated, foundAnimationGroup);
   }
   async animationStarted(payload) {
-    if (!payload.source || !payload.source.backendNodeId) {
+    if (!payload.source?.backendNodeId) {
       return;
     }
     const animation = await AnimationImpl.parsePayload(this, payload);

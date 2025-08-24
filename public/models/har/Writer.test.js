@@ -1,11 +1,11 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as HAR from '../har/har.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 const { urlString } = Platform.DevToolsPath;
@@ -24,7 +24,7 @@ describeWithLocale('HARWriter', () => {
         const req1 = simulateRequestWithStartTime(req1Time.getTime() / 1000);
         const req2 = simulateRequestWithStartTime(req2Time.getTime() / 1000);
         const req3 = simulateRequestWithStartTime(req3Time.getTime() / 1000);
-        const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        const progressIndicator = document.createElement('devtools-progress');
         const compositeProgress = new Common.Progress.CompositeProgress(progressIndicator);
         const result = await HAR.Writer.Writer.harStringForRequests([
             req3,
