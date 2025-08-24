@@ -5,7 +5,9 @@ import * as Helpers from '../helpers/helpers.js';
 import { SamplesIntegrator } from '../helpers/SamplesIntegrator.js';
 import * as Types from '../types/types.js';
 export class Node {
+    /** ms */
     totalTime;
+    /** ms */
     selfTime;
     transferSize;
     id;
@@ -432,7 +434,9 @@ export class BottomUpRootNode extends Node {
                 groupNodes.set(groupId, groupNode);
             }
             else {
-                groupNode.events.push(...node.events);
+                for (const e of node.events) {
+                    groupNode.events.push(e);
+                }
             }
             groupNode.addChild(node, node.selfTime, node.selfTime, node.transferSize);
         }

@@ -9,7 +9,7 @@ var IssueCounter_exports = {};
 __export(IssueCounter_exports, {
   IssueCounter: () => IssueCounter,
   getIssueCountsEnumeration: () => getIssueCountsEnumeration,
-  getIssueKindIconData: () => getIssueKindIconData
+  getIssueKindIconName: () => getIssueKindIconName
 });
 import "./../icon_button/icon_button.js";
 import * as Common from "./../../../core/common/common.js";
@@ -48,21 +48,21 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("ui/components/issue_counter/IssueCounter.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-function getIssueKindIconData(issueKind) {
+function getIssueKindIconName(issueKind) {
   switch (issueKind) {
     case "PageError":
-      return { iconName: "issue-cross-filled", color: "var(--icon-error)" };
+      return "issue-cross-filled";
     case "BreakingChange":
-      return { iconName: "issue-exclamation-filled", color: "var(--icon-warning)" };
+      return "issue-exclamation-filled";
     case "Improvement":
-      return { iconName: "issue-text-filled", color: "var(--icon-info)" };
+      return "issue-text-filled";
   }
 }
-function toIconGroup({ iconName, color, width, height }, sizeOverride) {
+function toIconGroup(iconName, sizeOverride) {
   if (sizeOverride) {
-    return { iconName, iconColor: color, iconWidth: sizeOverride, iconHeight: sizeOverride };
+    return { iconName, iconWidth: sizeOverride, iconHeight: sizeOverride };
   }
-  return { iconName, iconColor: color, iconWidth: width, iconHeight: height };
+  return { iconName };
 }
 var listFormatter = /* @__PURE__ */ function defineFormatter() {
   let intlListFormat;
@@ -187,21 +187,21 @@ var IssueCounter = class extends HTMLElement {
     const data = {
       groups: [
         {
-          ...toIconGroup(getIssueKindIconData(
+          ...toIconGroup(getIssueKindIconName(
             "PageError"
             /* IssuesManager.Issue.IssueKind.PAGE_ERROR */
           ), iconSize),
           text: countToString("PageError", this.#counts[0])
         },
         {
-          ...toIconGroup(getIssueKindIconData(
+          ...toIconGroup(getIssueKindIconName(
             "BreakingChange"
             /* IssuesManager.Issue.IssueKind.BREAKING_CHANGE */
           ), iconSize),
           text: countToString("BreakingChange", this.#counts[1])
         },
         {
-          ...toIconGroup(getIssueKindIconData(
+          ...toIconGroup(getIssueKindIconName(
             "Improvement"
             /* IssuesManager.Issue.IssueKind.IMPROVEMENT */
           ), iconSize),
@@ -395,7 +395,7 @@ var IssueLinkIcon = class extends HTMLElement {
     if (!this.#issue) {
       return "issue-questionmark-filled";
     }
-    const { iconName } = getIssueKindIconData(this.#issue.getKind());
+    const iconName = getIssueKindIconName(this.#issue.getKind());
     return iconName;
   }
   #render() {

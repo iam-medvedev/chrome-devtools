@@ -24,7 +24,7 @@ export class StylePropertyHighlighter {
         await Promise.all(populatePromises);
         const treeElement = this.findTreeElementFromSection(treeElement => treeElement.property === cssProperty, section);
         if (treeElement) {
-            treeElement.parent && treeElement.parent.expand();
+            treeElement.parent?.expand();
             this.scrollAndHighlightTreeElement(treeElement);
             section.element.focus();
         }

@@ -72,7 +72,9 @@ export class Icon extends HTMLElement {
      */
     set data(data) {
         const { color, width, height } = data;
-        this.style.color = color;
+        if (color) {
+            this.style.color = color;
+        }
         if (width) {
             this.style.width = width;
         }

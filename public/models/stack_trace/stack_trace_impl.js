@@ -42,7 +42,11 @@ var FragmentImpl = class _FragmentImpl {
     this.node = node;
   }
   get frames() {
-    throw new Error("Not implemented");
+    const frames = [];
+    for (const node of this.node.getCallStack()) {
+      frames.push(...node.frames);
+    }
+    return frames;
   }
 };
 var AsyncFragmentImpl = class {
@@ -70,6 +74,13 @@ var FrameImpl = class {
     this.column = column;
   }
 };
+
+// gen/front_end/models/stack_trace/StackTraceModel.js
+var StackTraceModel_exports = {};
+__export(StackTraceModel_exports, {
+  StackTraceModel: () => StackTraceModel
+});
+import * as SDK from "./../../core/sdk/sdk.js";
 
 // gen/front_end/models/stack_trace/Trie.js
 var Trie_exports = {};
@@ -162,8 +173,52 @@ function compareRawFrames(a, b) {
   }
   return a.columnNumber - b.columnNumber;
 }
+
+// gen/front_end/models/stack_trace/StackTraceModel.js
+var StackTraceModel = class _StackTraceModel extends SDK.SDKModel.SDKModel {
+  #trie = new Trie();
+  /** @returns the {@link StackTraceModel} for the target, or the model for the primaryPageTarget when passing null/undefined */
+  static #modelForTarget(target) {
+    const model = (target ?? SDK.TargetManager.TargetManager.instance().primaryPageTarget())?.model(_StackTraceModel);
+    if (!model) {
+      throw new Error("Unable to find StackTraceModel");
+    }
+    return model;
+  }
+  async createFromProtocolRuntime(stackTrace, rawFramesToUIFrames) {
+    const translatePromises = [];
+    const fragment = this.#createFragment(stackTrace.callFrames);
+    translatePromises.push(this.#translateFragment(fragment, rawFramesToUIFrames));
+    const asyncFragments = [];
+    const debuggerModel = this.target().model(SDK.DebuggerModel.DebuggerModel);
+    if (debuggerModel) {
+      for await (const { stackTrace: asyncStackTrace, target } of debuggerModel.iterateAsyncParents(stackTrace)) {
+        const model = _StackTraceModel.#modelForTarget(target);
+        const asyncFragment = model.#createFragment(asyncStackTrace.callFrames);
+        translatePromises.push(model.#translateFragment(asyncFragment, rawFramesToUIFrames));
+        asyncFragments.push(new AsyncFragmentImpl(asyncStackTrace.description ?? "", asyncFragment));
+      }
+    }
+    await Promise.all(translatePromises);
+    return new StackTraceImpl(fragment, asyncFragments);
+  }
+  #createFragment(frames) {
+    return FragmentImpl.getOrCreate(this.#trie.insert(frames));
+  }
+  async #translateFragment(fragment, rawFramesToUIFrames) {
+    const rawFrames = fragment.node.getCallStack().map((node) => node.rawFrame).toArray();
+    const uiFrames = await rawFramesToUIFrames(rawFrames, this.target());
+    console.assert(rawFrames.length === uiFrames.length, "Broken rawFramesToUIFrames implementation");
+    let i = 0;
+    for (const node of fragment.node.getCallStack()) {
+      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column));
+    }
+  }
+};
+SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0, autostart: false });
 export {
   StackTraceImpl_exports as StackTraceImpl,
+  StackTraceModel_exports as StackTraceModel,
   Trie_exports as Trie
 };
 //# sourceMappingURL=stack_trace_impl.js.map

@@ -7,7 +7,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import { describeWithEnvironment, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
+import { describeWithEnvironment, registerActions, stubNoopSettings, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { allThreadEntriesInTrace, setupIgnoreListManagerEnvironment } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUi from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -245,13 +245,11 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
             },
         });
         stubNoopSettings();
-        UI.ActionRegistration.registerActionExtension({
-            actionId: 'drjones.performance-panel-context',
-            title: () => 'Debug with AI',
-            category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
-        });
-        const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-        UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+        registerActions([{
+                actionId: 'drjones.performance-panel-context',
+                title: () => 'Debug with AI',
+                category: "GLOBAL" /* UI.ActionRegistration.ActionCategory.GLOBAL */,
+            }]);
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
         const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
@@ -261,8 +259,6 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const debugWithAiItem = contextMenu.buildDescriptor().subItems?.find(item => item.label === 'Debug with AI');
         assert.exists(debugWithAiItem);
         assert.deepEqual(debugWithAiItem?.subItems?.map(item => item.label), ['Start a chat', 'Label entry', 'Assess the purpose', 'Identify time spent', 'Find improvements']);
-        UI.ActionRegistry.ActionRegistry.reset();
-        UI.ShortcutRegistry.ShortcutRegistry.removeInstance();
     });
     it('filters navigations to only return those that happen on the main frame', async function () {
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
@@ -289,7 +285,7 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
     });
     it('persists track configurations to the setting if it is provided with one', async function () {
         const { Settings } = Common.Settings;
-        const setting = Settings.instance().createSetting('persist-flame-config', {});
+        const setting = Settings.instance().createSetting('persist-flame-config', null);
         const dataProvider = new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider();
         const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
@@ -302,25 +298,27 @@ describeWithEnvironment('TimelineFlameChartDataProvider', function () {
         const newVisualOrder = [1, 2, 0];
         dataProvider.handleTrackConfigurationChange(groups, newVisualOrder);
         const newSetting = setting.get();
-        const traceKey = Timeline.TrackConfiguration.keyForTraceConfig(parsedTrace);
-        assert.deepEqual(newSetting[traceKey], [
+        assert.deepEqual(newSetting, [
             {
                 expanded: false,
                 hidden: false,
                 originalIndex: 0,
                 visualIndex: 2,
+                trackName: 'Frames',
             },
             {
                 expanded: false,
                 hidden: false,
                 originalIndex: 1,
                 visualIndex: 0,
+                trackName: '', // This is screenshots.
             },
             {
                 expanded: false,
                 hidden: false,
                 originalIndex: 2,
                 visualIndex: 1,
+                trackName: 'Animations',
             }
         ]);
     });

@@ -52,7 +52,7 @@ export class ConsoleContextSelector {
     }
     highlightedItemChanged(_from, to, fromElement, toElement) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
-        if (to && to.frameId) {
+        if (to?.frameId) {
             const frame = SDK.FrameManager.FrameManager.instance().getFrame(to.frameId);
             if (frame && !frame.isOutermostFrame()) {
                 void frame.highlight();

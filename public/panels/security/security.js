@@ -290,7 +290,7 @@ var CookieControlsView = class extends UI.Widget.VBox {
           ${Boolean(enterpriseEnabledSetting.get()) ? html`
             <devtools-icon
               tabindex="0"
-              .name=${"domain"}
+              name="domain"
               ${Lit.Directives.ref((el) => {
       UI.Tooltip.Tooltip.install(el, i18nString(UIStrings.enterpriseTooltip));
       el.role = "img";
@@ -370,7 +370,7 @@ var CookieControlsView = class extends UI.Widget.VBox {
         <div class="text body">${i18nString(UIStrings.enterpriseDisclaimer)}</div>
           <div class="anchor">
             <devtools-icon
-            .name=${"domain"}
+            name="domain"
             ></devtools-icon>
             <devtools-button
             @click=${input.openChromeCookieSettings}
@@ -798,7 +798,7 @@ var CookieReportView = class _CookieReportView extends UI2.Widget.VBox {
                 <div class="empty-report">
                   <devtools-icon
                     class="cookie-off"
-                    .name=${"cookie_off"}
+                    name="cookie_off"
                   ></devtools-icon>
                   <div class="empty-report-title">
                     ${i18nString2(UIStrings2.emptyReport)}

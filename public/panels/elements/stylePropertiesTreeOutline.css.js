@@ -76,7 +76,7 @@ export default `/*
   }
 
   &.child-editing {
-    word-wrap: break-word !important; /* stylelint-disable-line declaration-no-important */
+    overflow-wrap: break-word !important; /* stylelint-disable-line declaration-no-important */
     white-space: normal !important; /* stylelint-disable-line declaration-no-important */
     padding-left: 0;
   }

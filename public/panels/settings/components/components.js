@@ -11,7 +11,9 @@ __export(SyncSection_exports, {
 });
 import "./../../../ui/components/chrome_link/chrome_link.js";
 import "./../../../ui/components/settings/settings.js";
+import "./../../../ui/components/tooltips/tooltips.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
+import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
 import * as Lit from "./../../../ui/lit/lit.js";
 
@@ -25,13 +27,13 @@ var syncSection_css_default = `/*
 :host {
   break-inside: avoid;
   display: block;
-  padding-bottom: 9px;
-  width: 288px;
+  width: 100%;
 }
 
 fieldset {
   border: 0;
   padding: 0;
+  padding: 4px 0 0;
 }
 
 .link {
@@ -49,20 +51,29 @@ img {
   width: var(--sys-size-9);
 }
 
-.warning {
-  display: block;
-}
-
 .account-info {
   display: flex;
   align-items: center;
-  margin-top: 12px;
 }
 
 .account-email {
   display: flex;
   flex-direction: column;
   margin-left: 8px;
+}
+
+.not-signed-in {
+  padding-bottom: 4px;
+}
+
+.setting-checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: var(--sys-size-2);
+}
+
+.setting-checkbox {
+  display: inline-block;
 }
 
 /*# sourceURL=${import.meta.resolve("./syncSection.css")} */`;
@@ -81,15 +92,15 @@ var UIStrings = {
    */
   preferencesSyncDisabled: "To turn this setting on, you must first enable settings sync in Chrome.",
   /**
-   * @description Label for a link that take the user to the "Sync" section of the
-   * chrome settings. The link is shown in the DevTools Settings UI.
-   */
-  settings: "Go to Settings",
-  /**
    * @description Label for the account email address. Shown in the DevTools Settings UI in
    * front of the email address currently used for Chrome Sync.
    */
-  signedIn: "Signed into Chrome as:"
+  signedIn: "Signed into Chrome as:",
+  /**
+   * @description Label for the account settings. Shown in the DevTools Settings UI in
+   * case the user is not logged in to Chrome.
+   */
+  notSignedIn: "You're not signed into Chrome."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/settings/components/SyncSection.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -104,36 +115,59 @@ var SyncSection = class extends HTMLElement {
   }
   #render() {
     if (!this.#syncSetting) {
-      throw new Error("SyncSection not properly initialized");
+      throw new Error("SyncSection is not properly initialized");
     }
     const checkboxDisabled = !this.#syncInfo.isSyncActive || !this.#syncInfo.arePreferencesSynced;
     this.#syncSetting?.setDisabled(checkboxDisabled);
     Lit.render(html`
       <style>${syncSection_css_default}</style>
       <fieldset>
-        ${renderAccountInfoOrWarning(this.#syncInfo)}
-        <setting-checkbox .data=${{ setting: this.#syncSetting }}>
-        </setting-checkbox>
+        ${renderAccountInfo(this.#syncInfo)}
+        ${renderSettingCheckboxIfNeeded(this.#syncInfo, this.#syncSetting)}
       </fieldset>
     `, this.#shadow, { host: this });
   }
 };
-function renderAccountInfoOrWarning(syncInfo) {
-  if (!syncInfo.isSyncActive) {
-    const link = "chrome://settings/syncSetup";
-    return html`
-      <span class="warning">
-        ${i18nString(UIStrings.syncDisabled)}
-        <devtools-chrome-link .href=${link}>${i18nString(UIStrings.settings)}</devtools-chrome-link>
-      </span>`;
+function renderSettingCheckboxIfNeeded(syncInfo, syncSetting) {
+  if (!syncInfo.accountEmail) {
+    return Lit.nothing;
   }
-  if (!syncInfo.arePreferencesSynced) {
-    const link = "chrome://settings/syncSetup/advanced";
+  return html`
+    <div class="setting-checkbox-container">
+      <setting-checkbox class="setting-checkbox" .data=${{ setting: syncSetting }}>
+      </setting-checkbox>
+      ${renderWarningIfNeeded(syncInfo)}
+    </div>
+  `;
+}
+function renderWarningIfNeeded(syncInfo) {
+  const hasWarning = !syncInfo.isSyncActive || !syncInfo.arePreferencesSynced;
+  if (!hasWarning) {
+    return Lit.nothing;
+  }
+  const warningLink = !syncInfo.isSyncActive ? "chrome://settings/syncSetup" : "chrome://settings/syncSetup/advanced";
+  const warningText = !syncInfo.isSyncActive ? i18nString(UIStrings.syncDisabled) : i18nString(UIStrings.preferencesSyncDisabled);
+  return html`
+    <devtools-chrome-link .href=${warningLink}>
+      <devtools-button
+        aria-describedby=settings-sync-info
+        .iconName=${"info"}
+        .variant=${"icon"}
+        .size=${"SMALL"}>
+      </devtools-button>
+    </devtools-chrome-link>
+    <devtools-tooltip
+        id=settings-sync-info
+        variant=simple>
+      ${warningText}
+    </devtools-tooltip>
+  `;
+}
+function renderAccountInfo(syncInfo) {
+  if (!syncInfo.accountEmail) {
     return html`
-      <span class="warning">
-        ${i18nString(UIStrings.preferencesSyncDisabled)}
-        <devtools-chrome-link .href=${link}>${i18nString(UIStrings.settings)}</devtools-chrome-link>
-      </span>`;
+      <div class="not-signed-in">${i18nString(UIStrings.notSignedIn)}</div>
+    `;
   }
   return html`
     <div class="account-info">

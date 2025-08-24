@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
+import { debugLog } from './debug.js';
 export const DELAY_BEFORE_SHOWING_RESPONSE_MS = 500;
 export const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
 /**
@@ -24,15 +25,18 @@ export const AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS = 200;
  */
 export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
     #editor;
+    #stopSequences;
     #renderingTimeout;
+    #aidaRequestCache;
     #sessionId = crypto.randomUUID();
     #aidaClient;
     #serverSideLoggingEnabled;
-    constructor(opts, editor) {
+    constructor(opts, editor, stopSequences) {
         super();
         this.#aidaClient = opts.aidaClient;
         this.#serverSideLoggingEnabled = opts.serverSideLoggingEnabled ?? false;
         this.#editor = editor;
+        this.#stopSequences = stopSequences ?? [];
     }
     #debouncedRequestAidaSuggestion = Common.Debouncer.debounce((prefix, suffix, cursor, inferenceLanguage) => {
         void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix, inferenceLanguage), cursor);
@@ -50,7 +54,7 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                 inference_language: inferenceLanguage,
                 temperature: validTemperature(this.#options.temperature),
                 model_id: this.#options.modelId || undefined,
-                stop_sequences: ['\n'], // We are prioritizing single line suggestions to reduce noise
+                stop_sequences: this.#stopSequences,
             },
             metadata: {
                 disable_user_content_logging: !(this.#serverSideLoggingEnabled ?? false),
@@ -62,12 +66,32 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
     }
     async #requestAidaSuggestion(request, cursor) {
         const startTime = performance.now();
+        let servedFromCache = false;
         this.dispatchEventToListeners("RequestTriggered" /* Events.REQUEST_TRIGGERED */, {});
         try {
-            const response = await this.#aidaClient.completeCode(request);
+            let response = this.#checkCachedRequestForResponse(request);
+            if (!response) {
+                response = await this.#aidaClient.completeCode(request);
+                if (response) {
+                    this.#updateCachedRequest(request, response);
+                }
+            }
+            else {
+                servedFromCache = true;
+            }
+            debugLog('At cursor position', cursor, { request, response });
             if (response && response.generatedSamples.length > 0 && response.generatedSamples[0].generationString) {
                 if (response.generatedSamples[0].attributionMetadata?.attributionAction ===
                     Host.AidaClient.RecitationAction.BLOCK) {
+                    this.dispatchEventToListeners("ResponseReceived" /* Events.RESPONSE_RECEIVED */, {});
+                    return;
+                }
+                // Use the suffix from the request to find and remove any overlap.
+                let suggestionText = response.generatedSamples[0].generationString;
+                if (request.suffix && request.suffix.length > 0) {
+                    suggestionText = this.#trimSuggestionOverlap(response.generatedSamples[0].generationString, request.suffix);
+                }
+                if (suggestionText.length === 0) {
                     this.dispatchEventToListeners("ResponseReceived" /* Events.RESPONSE_RECEIVED */, {});
                     return;
                 }
@@ -82,12 +106,16 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                     // will set the suggestion to null.
                     this.#editor.dispatch({
                         effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({
-                            text: response.generatedSamples[0].generationString,
+                            text: suggestionText,
                             from: cursor,
                             rpcGlobalId: response.metadata.rpcGlobalId,
                             sampleId: response.generatedSamples[0].sampleId,
                         })
                     });
+                    if (servedFromCache) {
+                        Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionResponseServedFromCache);
+                    }
+                    debugLog('Suggestion dispatched to the editor', response.generatedSamples[0], 'at cursor position', cursor);
                     if (response.metadata.rpcGlobalId) {
                         const latency = performance.now() - startTime;
                         this.#registerUserImpression(response.metadata.rpcGlobalId, response.generatedSamples[0].sampleId, latency);
@@ -115,10 +143,48 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
             modelId,
         };
     }
+    /**
+     * Removes the end of a suggestion if it overlaps with the start of the suffix.
+     */
+    #trimSuggestionOverlap(generationString, suffix) {
+        // Iterate from the longest possible overlap down to the shortest
+        for (let i = Math.min(generationString.length, suffix.length); i > 0; i--) {
+            const overlapCandidate = suffix.substring(0, i);
+            if (generationString.endsWith(overlapCandidate)) {
+                return generationString.slice(0, -i);
+            }
+        }
+        return generationString;
+    }
+    #checkCachedRequestForResponse(request) {
+        if (!this.#aidaRequestCache || this.#aidaRequestCache.request.suffix !== request.suffix ||
+            JSON.stringify(this.#aidaRequestCache.request.options) !== JSON.stringify(request.options)) {
+            return null;
+        }
+        const possibleGeneratedSamples = [];
+        for (const sample of this.#aidaRequestCache.response.generatedSamples) {
+            const prefixWithSample = this.#aidaRequestCache.request.prefix + sample.generationString;
+            if (prefixWithSample.startsWith(request.prefix)) {
+                possibleGeneratedSamples.push({
+                    generationString: prefixWithSample.substring(request.prefix.length),
+                    sampleId: sample.sampleId,
+                    score: sample.score,
+                    attributionMetadata: sample.attributionMetadata,
+                });
+            }
+        }
+        if (possibleGeneratedSamples.length === 0) {
+            return null;
+        }
+        return { generatedSamples: possibleGeneratedSamples, metadata: this.#aidaRequestCache.response.metadata };
+    }
+    #updateCachedRequest(request, response) {
+        this.#aidaRequestCache = { request, response };
+    }
     #registerUserImpression(rpcGlobalId, sampleId, latency) {
         const seconds = Math.floor(latency / 1_000);
         const remainingMs = latency % 1_000;
-        const nanos = remainingMs * 1_000_000;
+        const nanos = Math.floor(remainingMs * 1_000_000);
         void this.#aidaClient.registerClientEvent({
             corresponding_aida_rpc_global_id: rpcGlobalId,
             disable_user_content_logging: true,
@@ -136,6 +202,7 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                 },
             },
         });
+        debugLog('Registered user impression with latency {seconds:', seconds, ', nanos:', nanos, '}');
     }
     registerUserAcceptance(rpcGlobalId, sampleId) {
         void this.#aidaClient.registerClientEvent({
@@ -149,6 +216,7 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
                 },
             },
         });
+        debugLog('Registered user acceptance');
     }
     onTextChanged(prefix, suffix, cursor, inferenceLanguage) {
         this.#debouncedRequestAidaSuggestion(prefix, suffix, cursor, inferenceLanguage);

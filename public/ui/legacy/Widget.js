@@ -224,6 +224,9 @@ export class Widget {
         else {
             this.contentElement = this.element;
         }
+        if (options?.classes) {
+            this.element.classList.add(...options.classes);
+        }
         if (options?.jslog) {
             this.contentElement.setAttribute('jslog', options.jslog);
         }

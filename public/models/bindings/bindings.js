@@ -310,7 +310,7 @@ var CompilerScriptMapping = class {
     }
     const { lineNumber, columnNumber } = script.rawLocationToRelativeLocation(rawLocation);
     const entry = sourceMap.findEntry(lineNumber, columnNumber);
-    if (!entry || !entry.sourceURL) {
+    if (!entry?.sourceURL) {
       return [];
     }
     const project = this.#sourceMapToProject.get(sourceMap);
@@ -379,7 +379,7 @@ var CompilerScriptMapping = class {
       return null;
     }
     const entry = sourceMap.findEntry(lineNumber, columnNumber, rawLocation.inlineFrameIndex);
-    if (!entry || !entry.sourceURL) {
+    if (!entry?.sourceURL) {
       return null;
     }
     const uiSourceCode = project.uiSourceCodeForURL(entry.sourceURL);
@@ -767,7 +767,7 @@ var SASSSourceMapping = class {
       }
     }
     const entry = sourceMap.findEntry(lineNumber, columnNumber);
-    if (!entry || !entry.sourceURL) {
+    if (!entry?.sourceURL) {
       return null;
     }
     const uiSourceCode = this.#project.uiSourceCodeForURL(entry.sourceURL);

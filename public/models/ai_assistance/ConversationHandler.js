@@ -13,7 +13,7 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { FileAgent } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext } from './agents/NetworkAgent.js';
 import { PerformanceAgent, PerformanceTraceContext } from './agents/PerformanceAgent.js';
-import { NodeContext, StylingAgent, StylingAgentWithFunctionCalling } from './agents/StylingAgent.js';
+import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
 import { Conversation, } from './AiHistoryStorage.js';
 import { getDisabledReasons } from './AiUtils.js';
 const UIStrings = {
@@ -34,9 +34,6 @@ const UIStringsNotTranslate = {
 const str_ = i18n.i18n.registerUIStrings('models/ai_assistance/ConversationHandler.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
-function isAiAssistanceStylingWithFunctionCallingEnabled() {
-    return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.functionCalling);
-}
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
@@ -248,12 +245,6 @@ export class ConversationHandler {
                     ...options,
                     changeManager,
                 });
-                if (isAiAssistanceStylingWithFunctionCallingEnabled()) {
-                    agent = new StylingAgentWithFunctionCalling({
-                        ...options,
-                        changeManager,
-                    });
-                }
                 break;
             }
             case "drjones-network-request" /* ConversationType.NETWORK */: {
@@ -264,8 +255,9 @@ export class ConversationHandler {
                 agent = new FileAgent(options);
                 break;
             }
+            case "drjones-performance-full" /* ConversationType.PERFORMANCE_FULL */:
             case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
-            case "drjones-performance" /* ConversationType.PERFORMANCE */: {
+            case "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */: {
                 agent = new PerformanceAgent(options, conversationType);
                 break;
             }

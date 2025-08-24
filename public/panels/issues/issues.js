@@ -462,7 +462,7 @@ var IssueKindView = class extends UI2.TreeOutline.TreeElement {
     const header = document.createElement("div");
     header.classList.add("header");
     const issueKindIcon = new IconButton.Icon.Icon();
-    issueKindIcon.data = IssueCounter.IssueCounter.getIssueKindIconData(this.#kind);
+    issueKindIcon.name = IssueCounter.IssueCounter.getIssueKindIconName(this.#kind);
     issueKindIcon.classList.add("leading-issue-icon", "extra-large");
     const countAdorner = new Adorners.Adorner.Adorner();
     countAdorner.data = {
@@ -1139,7 +1139,7 @@ var AffectedResourcesView = class extends UI3.TreeOutline.TreeElement {
    */
   #resolveFrameId(frameId) {
     const frame = SDK.FrameManager.FrameManager.instance().getFrame(frameId);
-    if (!frame || !frame.url) {
+    if (!frame?.url) {
       this.#unresolvedFrameIds.add(frameId);
       if (!this.#frameListeners.length) {
         const addListener = SDK.FrameManager.FrameManager.instance().addEventListener("FrameAddedToTarget", this.#onFrameChanged, this);
@@ -1170,7 +1170,7 @@ var AffectedResourcesView = class extends UI3.TreeOutline.TreeElement {
     frameCell.classList.add("affected-resource-cell");
     if (frame) {
       const icon = new IconButton2.Icon.Icon();
-      icon.data = { iconName: "code-circle", color: "var(--icon-link)" };
+      icon.name = "code-circle";
       icon.classList.add("link", "elements-panel", "medium");
       icon.onclick = async () => {
         Host.userMetrics.issuesPanelResourceOpened(
@@ -3271,7 +3271,7 @@ var IssueView = class _IssueView extends UI5.TreeOutline.TreeElement {
   #updateFromIssue() {
     if (this.#issueKindIcon) {
       const kind = this.#issue.getKind();
-      this.#issueKindIcon.data = IssueCounter3.IssueCounter.getIssueKindIconData(kind);
+      this.#issueKindIcon.name = IssueCounter3.IssueCounter.getIssueKindIconName(kind);
       this.#issueKindIcon.title = IssuesManager11.Issue.getIssueKindDescription(kind);
     }
     if (this.#aggregatedIssuesCount) {
@@ -3701,7 +3701,7 @@ var IssuesPane = class extends UI6.Widget.VBox {
       if (preservedSet?.has(key)) {
         continue;
       }
-      view.parent && view.parent.removeChild(view);
+      view.parent?.removeChild(view);
       views.delete(key);
     }
   }

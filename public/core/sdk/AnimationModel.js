@@ -296,7 +296,7 @@ export class AnimationModel extends SDKModel {
     }
     async animationStarted(payload) {
         // We are not interested in animations without effect or target.
-        if (!payload.source || !payload.source.backendNodeId) {
+        if (!payload.source?.backendNodeId) {
             return;
         }
         const animation = await AnimationImpl.parsePayload(this, payload);

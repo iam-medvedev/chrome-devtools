@@ -45,8 +45,7 @@ var SettingDeprecationWarning = class extends HTMLElement {
     this.#render(data);
   }
   #render({ disabled, warning, experiment }) {
-    const iconData = { iconName: "info", color: "var(--icon-default)", width: "16px" };
-    const classes = { clickable: false };
+    const classes = { clickable: false, medium: true };
     let onclick2;
     if (disabled && experiment) {
       classes.clickable = true;
@@ -56,7 +55,7 @@ var SettingDeprecationWarning = class extends HTMLElement {
     }
     Lit.render(html`
         <style>${settingDeprecationWarning_css_default}</style>
-        <devtools-icon class=${Lit.Directives.classMap(classes)} .data=${iconData} title=${warning} @click=${onclick2}></devtools-icon>`, this.#shadow, { host: this });
+        <devtools-icon class=${Lit.Directives.classMap(classes)} name="info" title=${warning} @click=${onclick2}></devtools-icon>`, this.#shadow, { host: this });
   }
 };
 customElements.define("devtools-setting-deprecation-warning", SettingDeprecationWarning);
@@ -152,7 +151,7 @@ var SettingCheckbox = class extends HTMLElement {
       return html2`<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
     }
     const learnMore = this.#setting.learnMore();
-    if (learnMore && learnMore.url) {
+    if (learnMore?.url) {
       const url = learnMore.url;
       const data = {
         iconName: "help",

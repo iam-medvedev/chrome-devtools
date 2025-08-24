@@ -69,7 +69,7 @@ describeWithEnvironment('NetworkLogView', () => {
         const marker = el.querySelector('.network-override-marker');
         assert.isNull(marker);
     });
-    it('adds an error red icon to the left of the failed requests', async () => {
+    it('adds an error icon to the left of the failed requests', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
         request.statusCode = 404;
         const networkRequestNode = new Network.NetworkDataGridNode.NetworkRequestNode({}, request);
@@ -78,8 +78,6 @@ describeWithEnvironment('NetworkLogView', () => {
         const iconElement = el.querySelector('.icon');
         const iconImage = iconElement.getAttribute('name');
         assert.strictEqual('cross-circle-filled', iconImage);
-        const backgroundColorOfIcon = iconElement.style.color.toString();
-        assert.strictEqual(backgroundColorOfIcon, 'var(--icon-error)');
     });
     it('show document icon', async () => {
         const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
@@ -91,8 +89,6 @@ describeWithEnvironment('NetworkLogView', () => {
         const iconElement = el.querySelector('.icon');
         const iconImage = iconElement.getAttribute('name');
         assert.strictEqual('file-document', iconImage);
-        const backgroundColorOfIcon = iconElement.style.color.toString();
-        assert.strictEqual(backgroundColorOfIcon, 'var(--icon-file-document)');
         // TODO(barrypollard): Would be good to test the value of --icon-file-document
         // is correctly set to --sys-color-blue-bright. See https://crbug.com/346714111
     });
@@ -327,8 +323,6 @@ describeWithEnvironment('NetworkLogView', () => {
         const iconElement = el.querySelector('.icon');
         const iconImage = iconElement.getAttribute('name');
         assert.strictEqual('warning-filled', iconImage);
-        const backgroundColorOfIcon = iconElement.style.color.toString();
-        assert.strictEqual(backgroundColorOfIcon, 'var(--icon-warning)');
     });
 });
 //# sourceMappingURL=NetworkDataGridNode.test.js.map

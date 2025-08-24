@@ -78,6 +78,9 @@ export class ChartViewport extends UI.Widget.VBox {
     elementsToRestoreScrollPositionsFor() {
         return [this.vScrollElement];
     }
+    verticalScrollBarVisible() {
+        return !this.vScrollElement.classList.contains('hidden');
+    }
     updateScrollBar() {
         const showScroll = this.alwaysShowVerticalScrollInternal || this.totalHeight > this.offsetHeight;
         if (this.vScrollElement.classList.contains('hidden') !== showScroll) {

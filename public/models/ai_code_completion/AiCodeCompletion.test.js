@@ -25,7 +25,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
         const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
             completeCode: Promise.resolve(null),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor));
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor), ['\n']);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 6);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         sinon.assert.calledOnce(mockAidaClient.completeCode);
@@ -62,7 +62,29 @@ describeWithEnvironment('AiCodeCompletion', () => {
             effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'suggestion', from: 1, sampleId: 1, rpcGlobalId: undefined })
         });
     });
-    it('throttles requests to AIDA', async () => {
+    it('trims a suggestion with suffix overlap and dispatches it to the editor', async () => {
+        const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
+        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
+            completeCode: Promise.resolve({
+                generatedSamples: [{
+                        generationString: '"Hello World");',
+                        sampleId: 1,
+                        score: 1,
+                    }],
+                metadata: {},
+            }),
+        });
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        aiCodeCompletion.onTextChanged('console.log(', ');\n', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+        sinon.assert.calledOnce(mockAidaClient.completeCode);
+        await clock.tickAsync(AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+        sinon.assert.calledOnce(editor.dispatch);
+        assert.deepEqual(editor.dispatch.firstCall.args[0], {
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: '"Hello World"', from: 1, sampleId: 1, rpcGlobalId: undefined })
+        });
+    });
+    it('debounces requests to AIDA', async () => {
         const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
             completeCode: Promise.resolve(null),
         });
@@ -122,6 +144,101 @@ describeWithEnvironment('AiCodeCompletion', () => {
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         await clock.tickAsync(AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
         sinon.assert.calledWith(dispatchSpy, sinon.match("ResponseReceived" /* AiCodeCompletion.Events.RESPONSE_RECEIVED */), sinon.match({ citations }));
+    });
+    it('caches suggestions from AIDA', async () => {
+        const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
+        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
+            completeCode: Promise.resolve({
+                generatedSamples: [{
+                        generationString: 'suggestion',
+                        sampleId: 1,
+                        score: 1,
+                    }],
+                metadata: {},
+            }),
+        });
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+        aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+        sinon.assert.calledOnce(mockAidaClient.completeCode);
+        sinon.assert.calledTwice(editor.dispatch);
+        assert.deepEqual(editor.dispatch.firstCall.args[0], {
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'suggestion', from: 1, sampleId: 1, rpcGlobalId: undefined })
+        });
+        assert.deepEqual(editor.dispatch.secondCall.args[0], editor.dispatch.firstCall.args[0]);
+    });
+    it('caches suggestions from AIDA and returns only valid generated samples from cache', async () => {
+        const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
+        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
+            completeCode: Promise.resolve({
+                generatedSamples: [
+                    {
+                        generationString: 'suggestion',
+                        sampleId: 1,
+                        score: 1,
+                    },
+                    {
+                        generationString: 'recommendation',
+                        sampleId: 2,
+                        score: 0.5,
+                    }
+                ],
+                metadata: {},
+            }),
+        });
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        aiCodeCompletion.onTextChanged('prefix ', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+        aiCodeCompletion.onTextChanged('prefix re', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
+        sinon.assert.calledOnce(mockAidaClient.completeCode);
+        sinon.assert.calledTwice(editor.dispatch);
+        assert.deepEqual(editor.dispatch.firstCall.args[0], {
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'suggestion', from: 1, sampleId: 1, rpcGlobalId: undefined })
+        });
+        assert.deepEqual(editor.dispatch.secondCall.args[0], {
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({ text: 'commendation', from: 1, sampleId: 2, rpcGlobalId: undefined })
+        });
+    });
+    it('does not use cache for different requests', async () => {
+        const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
+        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
+            completeCode: Promise.resolve({
+                generatedSamples: [{
+                        generationString: 'suggestion',
+                        sampleId: 1,
+                        score: 1,
+                    }],
+                metadata: {},
+            }),
+        });
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+        aiCodeCompletion.onTextChanged('prefix re', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+        sinon.assert.calledTwice(mockAidaClient.completeCode);
+    });
+    it('does not use cache for different suffix', async () => {
+        const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
+        const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
+            completeCode: Promise.resolve({
+                generatedSamples: [{
+                        generationString: 'suggestion',
+                        sampleId: 1,
+                        score: 1,
+                    }],
+                metadata: {},
+            }),
+        });
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+        aiCodeCompletion.onTextChanged('prefix', 'suffixes', 1);
+        await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
+        sinon.assert.calledTwice(mockAidaClient.completeCode);
     });
 });
 //# sourceMappingURL=AiCodeCompletion.test.js.map

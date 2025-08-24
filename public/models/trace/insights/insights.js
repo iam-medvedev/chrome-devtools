@@ -85,38 +85,31 @@ function linearInterpolation(x0, y0, x1, y1, x) {
 
 // gen/front_end/models/trace/insights/Common.js
 var GRAPH_SAVINGS_PRECISION = 50;
-function getInsight(insightName, insights, key) {
-  if (!insights || !key) {
-    return null;
-  }
-  const insightSets = insights.get(key);
-  if (!insightSets) {
-    return null;
-  }
-  const insight = insightSets.model[insightName];
+function getInsight(insightName, insightSet) {
+  const insight = insightSet.model[insightName];
   if (insight instanceof Error) {
     return null;
   }
   return insight;
 }
-function getLCP(insights, key) {
-  const insight = getInsight("LCPBreakdown", insights, key);
+function getLCP(insightSet) {
+  const insight = getInsight("LCPBreakdown", insightSet);
   if (!insight || !insight.lcpMs || !insight.lcpEvent) {
     return null;
   }
   const value = Helpers.Timing.milliToMicro(insight.lcpMs);
   return { value, event: insight.lcpEvent };
 }
-function getINP(insights, key) {
-  const insight = getInsight("INPBreakdown", insights, key);
+function getINP(insightSet) {
+  const insight = getInsight("INPBreakdown", insightSet);
   if (!insight?.longestInteractionEvent?.dur) {
     return null;
   }
   const value = insight.longestInteractionEvent.dur;
   return { value, event: insight.longestInteractionEvent };
 }
-function getCLS(insights, key) {
-  const insight = getInsight("CLSCulprits", insights, key);
+function getCLS(insightSet) {
+  const insight = getInsight("CLSCulprits", insightSet);
   if (!insight) {
     return { value: 0, worstClusterEvent: null };
   }
@@ -2400,7 +2393,7 @@ function getImageData(model) {
 }
 function createOverlays11(model) {
   const imageResults = getImageData(model);
-  if (!imageResults || !imageResults.discoveryDelay) {
+  if (!imageResults?.discoveryDelay) {
     return [];
   }
   const delay = Helpers12.Timing.traceWindowFromMicroSeconds(Types8.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);

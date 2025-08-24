@@ -46,7 +46,7 @@ export class SettingCheckbox extends HTMLElement {
             return html `<devtools-setting-deprecation-warning .data=${this.#setting.deprecation}></devtools-setting-deprecation-warning>`;
         }
         const learnMore = this.#setting.learnMore();
-        if (learnMore && learnMore.url) {
+        if (learnMore?.url) {
             const url = learnMore.url;
             const data = {
                 iconName: 'help',

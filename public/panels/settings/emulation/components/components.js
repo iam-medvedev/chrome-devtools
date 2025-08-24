@@ -768,13 +768,7 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         change: true
       })}
           />
-          <devtools-icon
-            .data=${{
-        color: "var(--icon-default)",
-        iconName: "bin",
-        width: "16px",
-        height: "16px"
-      }}
+          <devtools-icon name="bin" class="medium"
             title=${i18nString(UIStrings.brandUserAgentDelete)}
             class="delete-icon"
             tabindex="0"
@@ -800,13 +794,7 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         @keypress=${this.#handleAddUseragentBrandKeyPress}
       >
         <devtools-icon
-          aria-hidden="true"
-          .data=${{
-      color: "var(--icon-default)",
-      iconName: "plus",
-      width: "16px"
-    }}
-        >
+          aria-hidden="true" name="plus" class="medium">
         </devtools-icon>
         ${i18nString(UIStrings.addBrand)}
       </div>
@@ -871,13 +859,7 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         change: true
       })}
           />
-          <devtools-icon
-            .data=${{
-        color: "var(--icon-default)",
-        iconName: "bin",
-        width: "16px",
-        height: "16px"
-      }}
+          <devtools-icon name="bin" class="medium"
             title=${i18nString(UIStrings.brandFullVersionListDelete)}
             class="delete-icon"
             tabindex="0"
@@ -902,14 +884,8 @@ var UserAgentClientHintsForm = class extends HTMLElement {
         @click=${this.#handleAddFullVersionListBrandClick}
         @keypress=${this.#handleAddFullVersionListBrandKeyPress}
       >
-        <devtools-icon
-          aria-hidden="true"
-          .data=${{
-      color: "var(--icon-default)",
-      iconName: "plus",
-      width: "16px"
-    }}
-        >
+        <devtools-icon name="plus" class="medium"
+          aria-hidden="true">
         </devtools-icon>
         ${i18nString(UIStrings.addBrand)}
       </div>

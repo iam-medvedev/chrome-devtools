@@ -62,6 +62,7 @@
     "../../../../../../front_end/panels/timeline/TimelineSelection.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineTreeView.test.ts",
     "../../../../../../front_end/panels/timeline/TimelineUIUtils.test.ts",
+    "../../../../../../front_end/panels/timeline/TrackConfigBanner.test.ts",
     "../../../../../../front_end/panels/timeline/TrackConfiguration.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

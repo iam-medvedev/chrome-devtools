@@ -17,7 +17,7 @@ export declare class FragmentImpl implements StackTrace.StackTrace.Fragment {
      */
     static getOrCreate(node: FrameNode): FragmentImpl;
     private constructor();
-    get frames(): StackTrace.StackTrace.Frame[];
+    get frames(): FrameImpl[];
 }
 export declare class AsyncFragmentImpl implements StackTrace.StackTrace.AsyncFragment {
     readonly description: string;

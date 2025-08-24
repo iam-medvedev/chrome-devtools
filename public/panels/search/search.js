@@ -50,7 +50,7 @@ li.search-result {
   font-size: 12px;
   margin-top: 8px;
   padding: 2px 0 2px 4px;
-  word-wrap: normal;
+  overflow-wrap: normal;
   white-space: pre;
 }
 
@@ -87,7 +87,7 @@ li.show-more-matches:hover {
 
 li.search-match {
   margin: 2px 0;
-  word-wrap: normal;
+  overflow-wrap: normal;
   white-space: pre;
 }
 
@@ -804,9 +804,9 @@ var SearchView = class extends UI2.Widget.VBox {
     if (this.progressIndicator) {
       this.progressIndicator.done();
     }
-    this.progressIndicator = new UI2.ProgressIndicator.ProgressIndicator();
+    this.progressIndicator = document.createElement("devtools-progress");
     this.searchMessageElement.textContent = i18nString2(UIStrings2.indexing);
-    this.progressIndicator.show(this.searchProgressPlaceholderElement);
+    this.searchProgressPlaceholderElement.appendChild(this.progressIndicator);
     if (this.searchScope) {
       this.searchScope.performIndexing(new Common2.Progress.ProgressProxy(this.progressIndicator, this.onIndexingFinished.bind(this)));
     }
@@ -857,7 +857,7 @@ var SearchView = class extends UI2.Widget.VBox {
     if (this.progressIndicator) {
       this.progressIndicator.done();
     }
-    this.progressIndicator = new UI2.ProgressIndicator.ProgressIndicator();
+    this.progressIndicator = document.createElement("devtools-progress");
     this.searchStarted(this.progressIndicator);
     if (this.searchScope) {
       void this.searchScope.performSearch(searchConfig, this.progressIndicator, this.onSearchResult.bind(this, this.searchId), this.onSearchFinished.bind(this, this.searchId));
@@ -888,7 +888,7 @@ var SearchView = class extends UI2.Widget.VBox {
     }
     this.showPane(this.searchingView);
     this.searchMessageElement.textContent = i18nString2(UIStrings2.searching);
-    progressIndicator.show(this.searchProgressPlaceholderElement);
+    this.searchProgressPlaceholderElement.appendChild(progressIndicator);
     this.updateSearchResultsMessage();
   }
   updateSearchResultsMessage() {

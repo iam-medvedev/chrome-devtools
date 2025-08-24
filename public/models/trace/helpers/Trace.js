@@ -444,6 +444,9 @@ const DevToolsTimelineEventCategory = 'disabled-by-default-devtools.timeline';
 export function isTopLevelEvent(event) {
     return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask" /* Types.Events.Name.RUN_TASK */;
 }
+export function isExtensionUrl(url) {
+    return url.startsWith('extensions:') || url.startsWith('chrome-extension:');
+}
 function topLevelEventIndexEndingAfter(events, time) {
     let index = Platform.ArrayUtilities.upperBound(events, time, (time, event) => time - event.ts) - 1;
     while (index > 0 && !isTopLevelEvent(events[index])) {

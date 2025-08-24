@@ -206,7 +206,8 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         let previousStackTrace = details.callFrames;
         let { maxAsyncStackChainDepth } = this;
         let asyncStackTrace = null;
-        for await (asyncStackTrace of details.debuggerModel.iterateAsyncParents(details)) {
+        for await (const { stackTrace } of details.debuggerModel.iterateAsyncParents(details)) {
+            asyncStackTrace = stackTrace;
             const title = UI.UIUtils.asyncStackTraceLabel(asyncStackTrace.description, previousStackTrace);
             items.push(...await Item.createItemsForAsyncStack(title, details.debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this)));
             previousStackTrace = asyncStackTrace.callFrames;
@@ -287,10 +288,7 @@ export class CallStackSidebarPane extends UI.View.SimpleView {
         UI.ARIAUtils.setSelected(element, isSelected);
         element.classList.toggle('hidden', !this.showIgnoreListed && item.isIgnoreListed);
         const icon = new IconButton.Icon.Icon();
-        icon.data = {
-            iconName: 'large-arrow-right-filled',
-            color: 'var(--icon-arrow-main-thread)',
-        };
+        icon.name = 'large-arrow-right-filled';
         icon.classList.add('selected-call-frame-icon', 'small');
         element.appendChild(icon);
         element.tabIndex = item === this.list.selectedItem() ? 0 : -1;

@@ -28,7 +28,6 @@ import { TimelineFlameChartNetworkDataProvider } from './TimelineFlameChartNetwo
 import timelineFlameChartViewStyles from './timelineFlameChartView.css.js';
 import { rangeForSelection, selectionFromEvent, selectionFromRangeMilliSeconds, selectionIsEvent, selectionIsRange, selectionsEqual } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView } from './TimelineTreeView.js';
-import { keyForTraceConfig } from './TrackConfiguration.js';
 import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
@@ -140,6 +139,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     #checkReducedMotion = true;
     /**
      * Persist the visual configuration of the tracks/groups into memory.
+     * Note that the user cannot hide/show/re-order the network track; so storing
+     * its configuration like this is a little overkill. But we use the
+     * configuration to check if the network track is collapsed or expanded, and
+     * it's easier to use the same configuration types for both.
      */
     #networkPersistedGroupConfigSetting;
     #mainPersistedGroupConfigSetting;
@@ -163,9 +166,9 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // Ensure that the network panel & resizer appears above the main thread.
         this.networkSplitWidget.sidebarElement().style.zIndex = '120';
         this.#mainPersistedGroupConfigSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-main-flame-group-config', {});
+            Common.Settings.Settings.instance().createSetting('timeline-persisted-main-flamechart-track-config', null);
         this.#networkPersistedGroupConfigSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-network-flame-group-config', {});
+            Common.Settings.Settings.instance().createSetting('timeline-persisted-network-flamechart-track-config', null);
         this.mainDataProvider = new TimelineFlameChartDataProvider();
         this.mainDataProvider.setPersistedGroupConfigSetting(this.#mainPersistedGroupConfigSetting);
         this.mainDataProvider.addEventListener("DataChanged" /* TimelineFlameChartDataProviderEvents.DATA_CHANGED */, () => this.mainFlameChart.scheduleUpdate());
@@ -966,33 +969,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         this.#parsedTrace = newParsedTrace;
         this.#traceMetadata = traceMetadata;
-        if (traceMetadata?.visualTrackConfig) {
-            this.#addPersistedConfigToSettings(newParsedTrace, traceMetadata.visualTrackConfig);
-        }
         for (const dimmer of this.#flameChartDimmers) {
             dimmer.active = false;
             dimmer.mainChartIndices = [];
             dimmer.networkChartIndices = [];
         }
         this.rebuildDataForTrace();
-    }
-    /**
-     * When the user imports a new trace and it has the visual config metadata, we add that data into the DevTools setting.
-     * NOTE: if the user has modifications for this trace already in memory,
-     * those are preferred over the modifications stored in the trace file itself.
-     */
-    #addPersistedConfigToSettings(trace, visualConfigForTrace) {
-        const key = keyForTraceConfig(trace);
-        if (visualConfigForTrace.main) {
-            const mainSetting = this.#mainPersistedGroupConfigSetting.get();
-            mainSetting[key] = mainSetting[key] ?? visualConfigForTrace.main;
-            this.#mainPersistedGroupConfigSetting.set(mainSetting);
-        }
-        if (visualConfigForTrace.network) {
-            const networkSetting = this.#networkPersistedGroupConfigSetting.get();
-            networkSetting[key] = networkSetting[key] ?? visualConfigForTrace.network;
-            this.#networkPersistedGroupConfigSetting.set(networkSetting);
-        }
     }
     /**
      * Resets the state of the UI data and initializes it again with the
@@ -1015,11 +997,11 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         // any state in the flame charts. We then need to provide it with any
         // persisted group settings here, before it recalculates the timeline data
         // and draws the UI.
-        const mainChartConfig = this.#getPersistedConfigForTrace(this.#parsedTrace, this.#mainPersistedGroupConfigSetting);
+        const mainChartConfig = this.#mainPersistedGroupConfigSetting.get();
         if (mainChartConfig) {
             this.mainFlameChart.setPersistedConfig(mainChartConfig);
         }
-        const networkChartConfig = this.#getPersistedConfigForTrace(this.#parsedTrace, this.#networkPersistedGroupConfigSetting);
+        const networkChartConfig = this.#networkPersistedGroupConfigSetting.get();
         if (networkChartConfig) {
             this.networkFlameChart.setPersistedConfig(networkChartConfig);
         }
@@ -1036,18 +1018,10 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
      * Gets the persisted config (if the user has made any visual changes) in
      * order to save it to disk as part of the trace.
      */
-    getPersistedConfigMetadata(trace) {
-        const main = this.#getPersistedConfigForTrace(trace, this.#mainPersistedGroupConfigSetting);
-        const network = this.#getPersistedConfigForTrace(trace, this.#networkPersistedGroupConfigSetting);
+    getPersistedConfigMetadata() {
+        const main = this.#mainPersistedGroupConfigSetting.get();
+        const network = this.#networkPersistedGroupConfigSetting.get();
         return { main, network };
-    }
-    #getPersistedConfigForTrace(trace, setting) {
-        const value = setting.get();
-        const key = trace.Meta.traceBounds.min;
-        if (value[key]) {
-            return value[key];
-        }
-        return null;
     }
     setInsights(insights, eventToRelatedInsightsMap) {
         if (this.#traceInsightSets === insights) {
@@ -1104,6 +1078,13 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.mainFlameChart.scheduleUpdate();
         this.networkFlameChart.scheduleUpdate();
         this.#registerLoggableGroups();
+    }
+    hasHiddenTracks() {
+        const groups = [
+            ...this.mainFlameChart.timelineData()?.groups ?? [],
+            ...this.networkFlameChart.timelineData()?.groups ?? [],
+        ];
+        return groups.some(g => g.hidden);
     }
     #registerLoggableGroups() {
         const groups = [
@@ -1330,6 +1311,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     }
     bringLabelForward(overlay) {
         this.#overlays.bringLabelForward(overlay);
+    }
+    enterMainChartTrackConfigurationMode() {
+        this.mainFlameChart.enterTrackConfigurationMode();
+    }
+    showAllMainChartTracks() {
+        this.mainFlameChart.showAllGroups();
     }
     onAddEntryLabelAnnotation(dataProvider, event) {
         const selection = dataProvider.createSelection(event.data.entryIndex);

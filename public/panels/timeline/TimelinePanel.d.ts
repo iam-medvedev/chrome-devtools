@@ -11,7 +11,6 @@ import { TimelineFlameChartView } from './TimelineFlameChartView.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import * as Utils from './utils/utils.js';
 declare const TimelinePanel_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -47,6 +46,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private loadButton;
     private saveButton;
     private homeButton?;
+    private askAiButton?;
     private statusDialog;
     private landingPage;
     private loader?;
@@ -104,6 +104,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * trace.cafe.
      */
     private canRecord;
+    private shouldEnableFullAskAI;
     private populateToolbar;
     private createSettingsPane;
     private createNetworkConditionsSelectToolbarItem;
@@ -124,7 +125,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
         addModifications: boolean;
     }): Promise<void>;
     innerSaveToFile(traceEvents: readonly Trace.Types.Events.Event[], metadata: Trace.Types.File.MetaData, config: {
-        savingEnhancedTrace: boolean;
+        includeScriptContent: boolean;
+        includeSourceMaps: boolean;
         addModifications: boolean;
     }): Promise<void>;
     showHistoryDropdown(): Promise<void>;
@@ -159,9 +161,9 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * have recorded a fresh trace.
      *
      * IMPORTANT: All the code in here should be code that is only required when we have
-     * recorded or loaded a brand new trace. If you need the code to run when the
-     * user switches to an existing trace, please @see #setModelForActiveTrace and put your
-     * code in there.
+     * recorded or imported from disk a brand new trace. If you need the code to
+     * run when the user switches to an existing trace, please @see
+     * #setModelForActiveTrace and put your code in there.
      **/
     loadingComplete(collectedEvents: Trace.Types.Events.Event[], exclusiveFilter: (Trace.Extras.TraceFilter.TraceFilter | null) | undefined, metadata: Trace.Types.File.MetaData | null): Promise<void>;
     recordTraceLoadMetric(): void;

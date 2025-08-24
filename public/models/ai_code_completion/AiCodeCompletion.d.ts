@@ -25,7 +25,7 @@ interface AgentOptions {
  */
 export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor);
+    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, stopSequences?: string[]);
     registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number): void;
     onTextChanged(prefix: string, suffix: string, cursor: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
     remove(): void;

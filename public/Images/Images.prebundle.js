@@ -200,6 +200,7 @@ style.setProperty('--image-file-keyboard-arrow-right', 'url(\"' + new URL('./src
 style.setProperty('--image-file-keyboard-full', 'url(\"' + new URL('./src/keyboard-full.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard-pen', 'url(\"' + new URL('./src/keyboard-pen.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-keyboard', 'url(\"' + new URL('./src/keyboard.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-label-auto', 'url(\"' + new URL('./src/label-auto.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-label', 'url(\"' + new URL('./src/label.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-large-arrow-right-filled', 'url(\"' + new URL('./src/large-arrow-right-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-layers-filled', 'url(\"' + new URL('./src/layers-filled.svg', import.meta.url).toString() + '\")');

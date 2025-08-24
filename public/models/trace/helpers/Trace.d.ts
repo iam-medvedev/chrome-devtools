@@ -95,6 +95,7 @@ export declare function getZeroIndexedStackTraceInEventPayload(event: Types.Even
 export declare function makeZeroBasedCallFrame(callFrame: Types.Events.CallFrame): Types.Events.CallFrame;
 export declare function frameIDForEvent(event: Types.Events.Event): string | null;
 export declare function isTopLevelEvent(event: Types.Events.Event): boolean;
+export declare function isExtensionUrl(url: string): boolean;
 export declare function findUpdateLayoutTreeEvents(events: Types.Events.Event[], startTime: Types.Timing.Micro, endTime?: Types.Timing.Micro): Types.Events.UpdateLayoutTree[];
 export declare function findNextEventAfterTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;
 export declare function findPreviousEventBeforeTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;

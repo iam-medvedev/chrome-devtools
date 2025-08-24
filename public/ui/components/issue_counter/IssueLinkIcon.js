@@ -9,7 +9,7 @@ import * as IssuesManager from '../../../models/issues_manager/issues_manager.js
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { getIssueKindIconData } from './IssueCounter.js';
+import { getIssueKindIconName } from './IssueCounter.js';
 import IssueLinkIconStyles from './issueLinkIcon.css.js';
 const { html } = Lit;
 const UIStrings = {
@@ -113,7 +113,7 @@ export class IssueLinkIcon extends HTMLElement {
         if (!this.#issue) {
             return 'issue-questionmark-filled';
         }
-        const { iconName } = getIssueKindIconData(this.#issue.getKind());
+        const iconName = getIssueKindIconName(this.#issue.getKind());
         return iconName;
     }
     #render() {

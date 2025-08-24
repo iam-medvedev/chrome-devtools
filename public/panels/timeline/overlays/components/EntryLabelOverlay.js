@@ -89,19 +89,15 @@ const UIStringsNotTranslate = {
     /**
      * @description Second disclaimer item text for the fre dialog - trace data is sent to Google.
      */
-    freDisclaimerPrivacyDataSentToGoogle: 'Performance trace is sent to Google to generate annotation suggestions',
+    freDisclaimerPrivacyDataSentToGoogle: 'To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature.',
     /**
-     * @description Third disclaimer item text part for the fre dialog part - you can control this setting from the settings panel (because 'settings panel' part of the string is a link, it is attached separately).
+     * @description Second disclaimer item text for the fre dialog - trace data is sent to Google.
      */
-    freDisclaimerControlSettingFrom: 'You can control this feature in the',
-    /**
-     * @description Third disclaimer item text part for the fre dialog part - settings panel text.
-     */
-    settingsPanel: 'settings panel',
+    freDisclaimerPrivacyDataSentToGoogleNoLogging: 'To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time.',
     /**
      * @description Text for the 'learn more' button displayed in fre.
      */
-    learnMoreButton: 'Learn more about auto annotations',
+    learnMoreButton: 'Learn more',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/overlays/components/EntryLabelOverlay.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -157,6 +153,7 @@ export class EntryLabelOverlay extends HTMLElement {
     #label;
     #shouldDrawBelowEntry;
     #richTooltip = Directives.createRef();
+    #noLogging;
     /**
      * Required to generate a label with AI.
      */
@@ -204,6 +201,8 @@ export class EntryLabelOverlay extends HTMLElement {
         this.#entryHighlightWrapper =
             this.#labelPartsWrapper?.querySelector('.entry-highlight-wrapper') ?? null;
         this.#label = label;
+        this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         this.#drawLabel(label);
         // If the label is not empty, it was loaded from the trace file.
         // In that case, do not auto-focus it as if the user were creating it for the first time
@@ -509,25 +508,8 @@ export class EntryLabelOverlay extends HTMLElement {
                 },
                 {
                     iconName: 'google',
-                    content: lockedString(UIStringsNotTranslate.freDisclaimerPrivacyDataSentToGoogle),
-                },
-                {
-                    iconName: 'gear',
-                    // clang-format off
-                    content: html `
-            ${lockedString(UIStringsNotTranslate.freDisclaimerControlSettingFrom)}
-            <button
-              @click=${() => {
-                        void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
-                    }}
-              class="link"
-              role="link"
-              jslog=${VisualLogging.link('open-ai-settings').track({
-                        click: true
-                    })}
-              tabindex="0"
-            >${lockedString(UIStringsNotTranslate.settingsPanel)}</button>`,
-                    // clang-format on
+                    content: this.#noLogging ? lockedString(UIStringsNotTranslate.freDisclaimerPrivacyDataSentToGoogleNoLogging) :
+                        lockedString(UIStringsNotTranslate.freDisclaimerPrivacyDataSentToGoogle),
                 },
             ],
             onLearnMoreClick: () => {
@@ -606,8 +588,6 @@ export class EntryLabelOverlay extends HTMLElement {
         // clang-format on
     }
     #renderAiButton() {
-        const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
-            Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         if (this.#currAIButtonState === "generation_failed" /* AIButtonState.GENERATION_FAILED */) {
             // Only show the error message on the first component render render after the failure.
             // clang-format off
@@ -615,11 +595,9 @@ export class EntryLabelOverlay extends HTMLElement {
         <span
           class="ai-label-error">
           <devtools-icon
-            class="warning"
-            .name=${'warning'}
-            .data=${{
-                iconName: 'warning', color: 'var(--ref-palette-error50)', width: '20px'
-            }}>
+            class="warning extra-large"
+            name="warning"
+            style="color: var(--ref-palette-error50)">
           </devtools-icon>
           <span class="generate-label-text">${lockedString(UIStringsNotTranslate.generationFailed)}</span>
         </span>
@@ -636,11 +614,9 @@ export class EntryLabelOverlay extends HTMLElement {
           class="ai-label-button enabled"
           @click=${this.#handleAiButtonClick}>
           <devtools-icon
-            class="pen-icon"
-            .name=${'pen-spark'}
-            .data=${{
-            iconName: 'pen-spark', color: 'var(--color-primary)', width: '20px'
-        }}>
+            class="pen-icon extra-large"
+            name="pen-spark"
+            style="color: var(--icon-primary);">
           </devtools-icon>
           <span class="generate-label-text">${i18nString(UIStrings.generateLabelButton)}</span>
         </button>
@@ -652,7 +628,7 @@ export class EntryLabelOverlay extends HTMLElement {
           .variant=${"icon" /* Buttons.Button.Variant.ICON */}
           ></devtools-button>
         ${this.#renderAITooltip({
-            textContent: noLogging ? lockedString(UIStringsNotTranslate.generateLabelSecurityDisclaimerLogginOff) : lockedString(UIStringsNotTranslate.generateLabelSecurityDisclaimer),
+            textContent: this.#noLogging ? lockedString(UIStringsNotTranslate.generateLabelSecurityDisclaimerLogginOff) : lockedString(UIStringsNotTranslate.generateLabelSecurityDisclaimer),
             includeSettingsButton: true,
         })}
       </span>
@@ -681,11 +657,9 @@ export class EntryLabelOverlay extends HTMLElement {
           @click=${this.#handleAiButtonClick}>
           <devtools-icon
             aria-details="info-tooltip"
-            class="pen-icon"
-            .name=${'pen-spark'}
-            .data=${{
-            iconName: 'pen-spark', color: 'var(--sys-color-state-disabled)', width: '20px'
-        }}>
+            class="pen-icon extra-large"
+            name="pen-spark"
+            style="color: var(--sys-color-state-disabled);">
           </devtools-icon>
         </button>
         ${this.#renderAITooltip({
@@ -749,13 +723,7 @@ export class EntryLabelOverlay extends HTMLElement {
                 class="delete-button"
                 @click=${() => this.dispatchEvent(new EntryLabelRemoveEvent())}
                 jslog=${VisualLogging.action('timeline.annotations.delete-entry-label').track({ click: true })}>
-              <devtools-icon
-                .data=${{
-            iconName: 'cross',
-            color: 'var(--color-background)',
-            width: '14px',
-            height: '14px'
-        }}
+              <devtools-icon name="cross" class="small" style="color: var(--color-background);"
               ></devtools-icon>
               </button>
             ` : Lit.nothing}

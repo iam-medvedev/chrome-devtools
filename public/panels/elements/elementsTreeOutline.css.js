@@ -248,7 +248,7 @@ select {
 }
 
 .elements-disclosure .elements-tree-nowrap li {
-  word-wrap: normal;
+  overflow-wrap: normal;
 }
 /* DOM update highlight */
 @keyframes dom-update-highlight-animation {

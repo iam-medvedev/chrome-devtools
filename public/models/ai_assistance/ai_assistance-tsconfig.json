@@ -47,6 +47,7 @@
     "../../../../../../front_end/models/ai_assistance/data_formatters/FileFormatter.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.ts",
+    "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.ts",
     "../../../../../../front_end/models/ai_assistance/debug.ts",
     "../../../../../../front_end/models/ai_assistance/injected.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",

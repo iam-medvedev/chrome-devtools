@@ -2993,7 +2993,6 @@ import * as UI9 from "./../../ui/legacy/legacy.js";
 // gen/front_end/panels/profiler/HeapDetachedElementsDataGrid.js
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Elements from "./../elements/elements.js";
@@ -3052,8 +3051,9 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid3.DataGrid.DataGrid
     const cell = this.createTD(columnId);
     switch (columnId) {
       case "detached-node": {
-        const DOMNode = SDK3.DOMModel.DOMNode.create(this.domModel, null, false, this.detachedElementInfo.treeNode);
-        cell.appendChild(this.#nodeRenderer(DOMNode));
+        const node = SDK3.DOMModel.DOMNode.create(this.domModel, null, false, this.detachedElementInfo.treeNode, this.retainedNodeIds);
+        node.detached = true;
+        this.#renderNode(node, cell);
         return cell;
       }
       case "detached-node-count": {
@@ -3085,55 +3085,17 @@ var HeapDetachedElementsDataGridNode = class extends DataGrid3.DataGrid.DataGrid
     }
     return count;
   }
-  #nodeRenderer(node) {
-    const treeOutline = new Elements.ElementsTreeOutline.ElementsTreeOutline(
-      /* omitRootDOMNode: */
-      false,
-      /* selectEnabled: */
-      false,
-      /* hideGutter: */
-      true
-    );
-    treeOutline.rootDOMNode = node;
-    const firstChild = treeOutline.firstChild();
-    if (!firstChild || firstChild && !firstChild.isExpandable()) {
-      treeOutline.element.classList.add("single-node");
-    }
-    treeOutline.setVisible(true);
-    treeOutline.element.treeElementForTest = firstChild;
-    treeOutline.setShowSelectionOnKeyboardFocus(
-      /* show: */
-      true,
-      /* preventTabOrder: */
-      true
-    );
-    const nodes = [node];
-    while (nodes.length > 0) {
-      const descendantNode = nodes.shift();
-      const descendantsChildren = descendantNode.children();
-      if (descendantsChildren) {
-        for (const child of descendantsChildren) {
-          nodes.push(child);
-        }
-      }
-      const treeElement = treeOutline.findTreeElement(descendantNode);
-      if (treeElement) {
-        if (this.retainedNodeIds.has(descendantNode.backendNodeId())) {
-          const icon = new IconButton3.Icon.Icon();
-          icon.data = { iconName: "small-status-dot", color: "var(--icon-error)" };
-          icon.classList.add("extra-small");
-          icon.style.setProperty("vertical-align", "middle");
-          treeElement.setLeadingIcons([icon]);
-          treeElement.listItemNode.classList.add("detached-elements-detached-node");
-          treeElement.listItemNode.style.setProperty("display", "-webkit-box");
-          treeElement.listItemNode.setAttribute("title", "Retained Node");
-        } else {
-          treeElement.listItemNode.setAttribute("title", "Node");
-        }
-      }
-    }
-    treeOutline.findTreeElement(node)?.listItemNode.setAttribute("title", "Detached Tree Node");
-    return treeOutline.element;
+  // FIXME: is it a partial dupe of front_end/panels/elements/ElementsTreeOutlineRenderer.ts?
+  #renderNode(node, target) {
+    const domTree = new Elements.ElementsTreeOutline.DOMTreeWidget();
+    domTree.omitRootDOMNode = false;
+    domTree.selectEnabled = true;
+    domTree.hideGutter = true;
+    domTree.rootDOMNode = node;
+    domTree.showSelectionOnKeyboardFocus = true;
+    domTree.preventTabOrder = true;
+    domTree.deindentSingleNode = true;
+    domTree.show(target, void 0, true);
   }
 };
 
@@ -5202,7 +5164,7 @@ import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as HeapSnapshotModel from "./../../models/heap_snapshot_model/heap_snapshot_model.js";
-import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -5695,12 +5657,12 @@ var HeapSnapshotGenericObjectNode = class extends HeapSnapshotGridNode {
     const div = fragment.$("container");
     this.prefixObjectCell(div);
     if (this.reachableFromWindow) {
-      const frameIcon = IconButton4.Icon.create("frame", "heap-object-tag");
+      const frameIcon = IconButton3.Icon.create("frame", "heap-object-tag");
       UI12.Tooltip.Tooltip.install(frameIcon, i18nString10(UIStrings10.userObjectReachableFromWindow));
       div.appendChild(frameIcon);
     }
     if (this.detachedDOMTreeNode) {
-      const frameIcon = IconButton4.Icon.create("scissors", "heap-object-tag");
+      const frameIcon = IconButton3.Icon.create("scissors", "heap-object-tag");
       UI12.Tooltip.Tooltip.install(frameIcon, i18nString10(UIStrings10.detachedFromDomTree));
       div.appendChild(frameIcon);
     }
@@ -8086,7 +8048,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
       return null;
     }
     const script = rawLocation.script();
-    const sourceURL = script && script.sourceURL;
+    const sourceURL = script?.sourceURL;
     return sourceURL && this.linkifier ? this.linkifier.linkifyRawLocation(rawLocation, sourceURL) : null;
   }
   async populate() {

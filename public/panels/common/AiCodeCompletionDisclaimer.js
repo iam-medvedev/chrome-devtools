@@ -37,7 +37,7 @@ const UIStringsNotTranslate = {
 };
 const lockedString = i18n.i18n.lockedString;
 export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-    if (!input.disclaimerTooltipId || !input.panelName) {
+    if (!input.disclaimerTooltipId) {
         render(nothing, target);
         return;
     }
@@ -69,7 +69,7 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
           <devtools-tooltip
               id=${input.disclaimerTooltipId}
               variant=${'rich'}
-              jslogContext=${input.panelName + '.ai-code-completion-disclaimer'}
+              jslogContext=${'ai-code-completion-disclaimer'}
               ${Directives.ref(el => {
         if (el instanceof HTMLElement) {
             output.hideTooltip = () => {
@@ -88,7 +88,7 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
     })}
                     @click=${input.onManageInSettingsTooltipClick}
                 >${lockedString(UIStringsNotTranslate.manageInSettings)}</span></div></devtools-tooltip>
-          </div class="ai-code-completion-disclaimer">
+          </div>
         `, target);
     // clang-format on
 };
@@ -97,23 +97,19 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     #view;
     #viewOutput = {};
     #disclaimerTooltipId;
-    #panelName;
     #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
     #loading = false;
     #loadingStartTime = 0;
     #spinnerLoadingTimeout;
     constructor(element, view = DEFAULT_SUMMARY_TOOLBAR_VIEW) {
         super(element);
+        this.markAsExternallyManaged();
         this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         this.#view = view;
     }
     set disclaimerTooltipId(disclaimerTooltipId) {
         this.#disclaimerTooltipId = disclaimerTooltipId;
-        this.requestUpdate();
-    }
-    set panelName(panelName) {
-        this.#panelName = panelName;
         this.requestUpdate();
     }
     set loading(loading) {
@@ -149,7 +145,6 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     performUpdate() {
         this.#view({
             disclaimerTooltipId: this.#disclaimerTooltipId,
-            panelName: this.#panelName,
             noLogging: this.#noLogging,
             onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this),
         }, this.#viewOutput, this.contentElement);

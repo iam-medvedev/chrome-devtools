@@ -74,6 +74,7 @@ import { TimelineMiniMap } from './TimelineMiniMap.js';
 import timelinePanelStyles from './timelinePanel.css.js';
 import { rangeForSelection, selectionFromEvent, selectionIsRange, selectionsEqual, } from './TimelineSelection.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
+import { createHiddenTracksOverlay } from './TrackConfigBanner.js';
 import { UIDevtoolsController } from './UIDevtoolsController.js';
 import { UIDevtoolsUtils } from './UIDevtoolsUtils.js';
 import * as Utils from './utils/utils.js';
@@ -338,6 +339,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     loadButton;
     saveButton;
     homeButton;
+    askAiButton;
     statusDialog = null;
     landingPage;
     loader;
@@ -377,6 +379,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     #modernNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Modern - normal scrolling', 'timeline.select-modern-navigation');
     #classicNavRadioButton = UI.UIUtils.createRadioButton('flamechart-selected-navigation', 'Classic - scroll to zoom', 'timeline.select-classic-navigation');
     #onMainEntryHovered;
+    #hiddenTracksInfoBarPerTrace = new WeakMap();
     constructor(traceModel) {
         super('timeline');
         this.registerRequiredCSS(timelinePanelStyles);
@@ -863,6 +866,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // TODO(paulirish) Determine a more robust method as checking `primaryPageTarget()?.sessionId` isn't accurate.
         return true;
     }
+    shouldEnableFullAskAI() {
+        if (!Root.Runtime.experiments.isEnabled("timeline-ask-ai-full-button" /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */)) {
+            return false;
+        }
+        if (Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
+            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE) {
+            return false;
+        }
+        return true;
+    }
     populateToolbar() {
         const canRecord = this.canRecord();
         if (canRecord || isNode) {
@@ -902,6 +915,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 this.panelToolbar.appendSeparator();
             }
         }
+        if (this.shouldEnableFullAskAI()) {
+            this.askAiButton = new UI.Toolbar.ToolbarButton('Ask AI', 'button-magic', undefined, 'timeline.ask-ai');
+            this.askAiButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#onClickAskAIButton.bind(this));
+            this.panelToolbar.appendToolbarItem(this.askAiButton);
+            this.panelToolbar.appendSeparator();
+        }
         // TODO(crbug.com/337909145): need to hide "Live metrics" option if !canRecord.
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         // View
@@ -938,6 +957,36 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
+    }
+    // Currently for debugging purposes only.
+    #onClickAskAIButton() {
+        const traceIndex = this.#activeTraceIndex();
+        if (traceIndex === null) {
+            return;
+        }
+        const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
+        if (parsedTrace === null) {
+            return;
+        }
+        const insights = this.#traceEngineModel.traceInsights(traceIndex);
+        if (insights === null) {
+            return;
+        }
+        const traceMetadata = this.#traceEngineModel.metadata(traceIndex);
+        if (traceMetadata === null) {
+            return;
+        }
+        const actionId = 'drjones.performance-panel-full-context';
+        if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
+            return;
+        }
+        // Currently only support a single insight set.
+        const insightSet = [...insights.values()].at(0) ?? null;
+        const context = Utils.AIContext.AgentFocus.full(parsedTrace, insightSet, traceMetadata);
+        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
+        // Trigger the AI Assistance panel to open.
+        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
+        void action.execute();
     }
     #setupNavigationSetting() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
@@ -1125,15 +1174,25 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (!traceEvents) {
             return;
         }
+        // Grab the script mapping to be able to filter out by url.
+        const mappedScriptsWithData = Trace.Handlers.ModelHandlers.Scripts.data().scripts;
+        const scriptByIdMap = new Map();
+        for (const mapScript of mappedScriptsWithData) {
+            scriptByIdMap.set(`${mapScript.isolate}.${mapScript.scriptId}`, mapScript);
+        }
         const metadata = this.#traceEngineModel.metadata(this.#viewMode.traceIndex) ?? {};
-        const shouldRetainScriptSources = config.includeScriptContent && config.includeSourceMaps;
-        if (!shouldRetainScriptSources) {
-            traceEvents = traceEvents.map(event => {
-                if (Trace.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== 'StubScriptCatchup') {
+        traceEvents = traceEvents.map(event => {
+            if (Trace.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== 'StubScriptCatchup') {
+                const mappedScript = scriptByIdMap.get(`${event.args.data.isolate}.${event.args.data.scriptId}`);
+                // If the checkbox to include script content is not checked or if it comes from and
+                // extension we dont include the script content.
+                if (!config.includeScriptContent ||
+                    (mappedScript?.url && Trace.Helpers.Trace.isExtensionUrl(mappedScript.url))) {
                     return {
                         cat: event.cat,
                         name: 'StubScriptCatchup',
                         ts: event.ts,
+                        dur: event.dur,
                         ph: event.ph,
                         pid: event.pid,
                         tid: event.tid,
@@ -1142,21 +1201,23 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                         },
                     };
                 }
-                return event;
-            });
-        }
-        metadata.modifications = config.addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
-        if (config.addModifications) {
-            // Get any visual track config
-            const visualConfig = this.flameChart.getPersistedConfigMetadata(trace);
-            // If both these values are null then the user has not made any visual
-            // changes, so we don't need to store it into the saved file.
-            if (visualConfig.main !== null || visualConfig.network !== null) {
-                metadata.visualTrackConfig = visualConfig;
             }
-        }
+            return event;
+        });
+        metadata.modifications = config.addModifications ? ModificationsManager.activeManager()?.toJSON() : undefined;
+        // NOTE: we used to export the track configuration changes into the trace
+        // file here.
+        // We don't do this now because as of August 2025 (M141) track
+        // configuration is persisted globally (not per trace). When a user imports
+        // a trace, we don't look for any configuration (as we treat the user's
+        // DevTools config as the canonical config), so it doesn't make sense to
+        // export the config.
         try {
-            await this.innerSaveToFile(traceEvents, metadata, { savingEnhancedTrace: config.includeScriptContent, addModifications: config.addModifications });
+            await this.innerSaveToFile(traceEvents, metadata, {
+                includeScriptContent: config.includeScriptContent,
+                includeSourceMaps: config.includeSourceMaps,
+                addModifications: config.addModifications
+            });
         }
         catch (e) {
             // We expect the error to be an Error class, but this deals with any weird case where it's not.
@@ -1173,11 +1234,11 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // Base the filename on the trace's time of recording
         const isoDate = Platform.DateUtilities.toISO8601Compact(metadata.startTime ? new Date(metadata.startTime) : new Date());
         const isCpuProfile = metadata.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */;
-        const { savingEnhancedTrace } = config;
+        const { includeScriptContent, includeSourceMaps } = config;
         metadata.enhancedTraceVersion =
-            savingEnhancedTrace ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
+            includeScriptContent ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
         let fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` :
-            savingEnhancedTrace ? `EnhancedTrace-${isoDate}.json` :
+            includeScriptContent ? `EnhancedTrace-${isoDate}.json` :
                 `Trace-${isoDate}.json`);
         let blobParts = [];
         if (isCpuProfile) {
@@ -1185,9 +1246,10 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             blobParts = [JSON.stringify(profile)];
         }
         else {
+            const filteredMetadataSourceMaps = includeScriptContent && includeSourceMaps ? this.#filterMetadataSourceMaps(metadata) : undefined;
             const formattedTraceIter = traceJsonGenerator(traceEvents, {
                 ...metadata,
-                sourceMaps: savingEnhancedTrace ? metadata.sourceMaps : undefined,
+                sourceMaps: filteredMetadataSourceMaps,
             });
             blobParts = Array.from(formattedTraceIter);
         }
@@ -1229,6 +1291,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             a.click();
             URL.revokeObjectURL(url);
         }
+    }
+    #filterMetadataSourceMaps(metadata) {
+        if (!metadata.sourceMaps) {
+            return undefined;
+        }
+        // extensions sourcemaps provide little to no-value for the exported trace
+        // debugging, so they are filtered out.
+        return metadata.sourceMaps.filter(value => {
+            return value.url && Trace.Helpers.Trace.isExtensionUrl(value.url);
+        });
     }
     #showExportTraceErrorDialog(error) {
         if (this.statusDialog) {
@@ -1633,6 +1705,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.loadButton.setEnabled(this.state === "Idle" /* State.IDLE */);
         this.toggleRecordAction.setToggled(this.state === "Recording" /* State.RECORDING */);
         this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.RECORDING */ || this.state === "Idle" /* State.IDLE */);
+        this.askAiButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
         if (!this.canRecord()) {
             return;
         }
@@ -1836,6 +1909,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.updateMiniMap();
         this.statusDialog?.updateProgressBar(i18nString(UIStrings.processed), 90);
         this.updateTimelineControls();
+        this.#maybeCreateHiddenTracksBanner(parsedTrace);
         this.#setActiveInsight(null);
         this.#sideBar.setInsights(traceInsightsSets);
         this.#eventToRelatedInsights.clear();
@@ -1903,6 +1977,32 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
         }
         return annotationEntryToColorMap;
+    }
+    /**
+     * If the user imports or records a trace and we have any hidden tracks, we
+     * show a warning banner at the bottom. This can be dismissed by the user and
+     * if that happens we do not want to bring it back again.
+     */
+    #maybeCreateHiddenTracksBanner(trace) {
+        const hasHiddenTracks = this.flameChart.hasHiddenTracks();
+        if (!hasHiddenTracks) {
+            return;
+        }
+        const maybeOverlay = createHiddenTracksOverlay(trace, {
+            onClose: () => {
+                this.flameChart.overlays().removeOverlaysOfType('BOTTOM_INFO_BAR');
+                this.#hiddenTracksInfoBarPerTrace.set(trace, 'DISMISSED');
+            },
+            onShowAllTracks: () => {
+                this.flameChart.showAllMainChartTracks();
+            },
+            onShowTrackConfigurationMode: () => {
+                this.flameChart.enterMainChartTrackConfigurationMode();
+            }
+        });
+        if (maybeOverlay) {
+            this.flameChart.addOverlay(maybeOverlay);
+        }
     }
     getEntryColorByEntry(entry) {
         const mainIndex = this.flameChart.getMainDataProvider().indexForEvent(entry);
@@ -2040,9 +2140,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
      * have recorded a fresh trace.
      *
      * IMPORTANT: All the code in here should be code that is only required when we have
-     * recorded or loaded a brand new trace. If you need the code to run when the
-     * user switches to an existing trace, please @see #setModelForActiveTrace and put your
-     * code in there.
+     * recorded or imported from disk a brand new trace. If you need the code to
+     * run when the user switches to an existing trace, please @see
+     * #setModelForActiveTrace and put your code in there.
      **/
     async loadingComplete(collectedEvents, exclusiveFilter = null, metadata) {
         this.#traceEngineModel.resetProcessor();

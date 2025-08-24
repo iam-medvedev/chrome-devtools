@@ -327,7 +327,7 @@ export class BreakpointsSidebarController {
     #getBreakpointTypeAndDetails(locations) {
         const breakpointWithCondition = locations.find(location => Boolean(location.breakpoint.condition()));
         const breakpoint = breakpointWithCondition?.breakpoint;
-        if (!breakpoint || !breakpoint.condition()) {
+        if (!breakpoint?.condition()) {
             return { type: "REGULAR_BREAKPOINT" /* SDK.DebuggerModel.BreakpointType.REGULAR_BREAKPOINT */ };
         }
         const condition = breakpoint.condition();

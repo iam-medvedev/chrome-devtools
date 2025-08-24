@@ -577,7 +577,7 @@ export class ConsoleViewMessage {
             if (UI.UIUtils.isEditing() || contentElement.hasSelection()) {
                 return;
             }
-            this.expandTrace && this.expandTrace(stackTraceElement.classList.contains('hidden-stack-trace'));
+            this.expandTrace?.(stackTraceElement.classList.contains('hidden-stack-trace'));
             event.consume();
         };
         clickableElement.addEventListener('click', toggleStackTrace, false);
@@ -1074,7 +1074,7 @@ export class ConsoleViewMessage {
             return false;
         }
         if (event.key === 'ArrowLeft') {
-            this.elementInternal && this.elementInternal.focus();
+            this.elementInternal?.focus();
             return true;
         }
         if (event.key === 'ArrowRight') {
@@ -1085,7 +1085,7 @@ export class ConsoleViewMessage {
         if (event.key === 'ArrowUp') {
             const firstVisibleChild = this.nearestVisibleChild(0);
             if (this.selectableChildren[focusedChildIndex] === firstVisibleChild && firstVisibleChild) {
-                this.elementInternal && this.elementInternal.focus();
+                this.elementInternal?.focus();
                 return true;
             }
             if (this.selectNearestVisibleChild(focusedChildIndex - 1, true /* backwards */)) {
@@ -1282,10 +1282,8 @@ export class ConsoleViewMessage {
     }
     #createHoverButton() {
         const icon = new IconButton.Icon.Icon();
-        icon.data = {
-            iconName: 'lightbulb-spark',
-            color: 'var(--devtools-icon-color)',
-        };
+        icon.name = 'lightbulb-spark';
+        icon.style.color = 'var(--devtools-icon-color)';
         icon.classList.add('medium');
         const button = document.createElement('button');
         button.append(icon);
@@ -1323,7 +1321,7 @@ export class ConsoleViewMessage {
             this.messageIcon.remove();
             this.messageIcon = null;
         }
-        let color = '';
+        const color = '';
         let iconName = '';
         let accessibleName = '';
         if (this.message.level === "warning" /* Protocol.Log.LogEntryLevel.Warning */) {
@@ -1331,7 +1329,6 @@ export class ConsoleViewMessage {
             accessibleName = i18nString(UIStrings.warning);
         }
         else if (this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */) {
-            color = 'var(--icon-error)';
             iconName = 'cross-circle-filled';
             accessibleName = i18nString(UIStrings.error);
         }
@@ -1347,10 +1344,8 @@ export class ConsoleViewMessage {
             return;
         }
         this.messageIcon = new IconButton.Icon.Icon();
-        this.messageIcon.data = {
-            iconName,
-            color,
-        };
+        this.messageIcon.name = iconName;
+        this.messageIcon.style.color = color;
         this.messageIcon.classList.add('message-level-icon', 'small');
         if (this.contentElementInternal) {
             this.contentElementInternal.insertBefore(this.messageIcon, this.contentElementInternal.firstChild);

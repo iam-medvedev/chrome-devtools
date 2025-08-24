@@ -51,6 +51,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
     disableRangeSelection(): void;
     isDragging(): boolean;
     elementsToRestoreScrollPositionsFor(): Element[];
+    verticalScrollBarVisible(): boolean;
     private updateScrollBar;
     onResize(): void;
     reset(): void;

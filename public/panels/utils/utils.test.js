@@ -76,14 +76,12 @@ describeWithEnvironment('panels/utils', () => {
             assert.instanceOf(container.firstElementChild, HTMLElement);
             return container.firstElementChild;
         }
-        it('creates an error red icon for request with status code 404', async () => {
+        it('creates an error icon for request with status code 404', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com`, urlString ``, null, null, null);
             request.statusCode = 404;
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('cross-circle-filled', iconImage);
-            const backgroundColorOfIcon = iconElement.style.color.toString();
-            assert.strictEqual(backgroundColorOfIcon, 'var(--icon-error)');
         });
         it('show document icon', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/`, urlString ``, null, null, null);
@@ -92,8 +90,6 @@ describeWithEnvironment('panels/utils', () => {
             const iconElement = renderIcon(request);
             const iconImage = iconElement.getAttribute('name');
             assert.strictEqual('file-document', iconImage);
-            const backgroundColorOfIcon = iconElement.style.color.toString();
-            assert.strictEqual(backgroundColorOfIcon, 'var(--icon-file-document)');
         });
         it('show media icon', async () => {
             const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/test.mp3`, urlString ``, null, null, null);

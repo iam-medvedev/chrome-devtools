@@ -40,6 +40,7 @@
   },
   "files": [
     "../../../../../../front_end/entrypoints/main/ExecutionContextSelector.test.ts",
+    "../../../../../../front_end/entrypoints/main/GlobalAiButton.test.ts",
     "../../../../../../front_end/entrypoints/main/MainImpl.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

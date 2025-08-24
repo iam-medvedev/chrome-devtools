@@ -2,6 +2,7 @@ import * as Common from '../core/common/common.js';
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import type * as Protocol from '../generated/protocol.js';
+import type * as UIModule from '../ui/legacy/legacy.js';
 export declare function createTarget({ id, name, type, parentTarget, subtype, url }?: {
     id?: Protocol.Target.TargetID;
     name?: string;
@@ -11,6 +12,7 @@ export declare function createTarget({ id, name, type, parentTarget, subtype, ur
     url?: string;
 }): SDK.Target.Target;
 export declare function stubNoopSettings(): void;
+export declare function registerActions(actions: UIModule.ActionRegistration.ActionRegistration[]): void;
 export declare function registerNoopActions(actionIds: string[]): void;
 export declare function initializeGlobalVars({ reset }?: {
     reset?: boolean | undefined;

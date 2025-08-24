@@ -619,7 +619,7 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .summary ul {
     display: grid;
     grid-template-columns: repeat(auto-fill, 140px);
-    grid-gap: 16px;
+    gap: 16px;
   }
 
   .overview-completed-view .colors ul li {
@@ -788,7 +788,7 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .unused-declarations ul li {
     display: grid;
     grid-template-columns: 2fr 3fr;
-    grid-gap: 12px;
+    gap: 12px;
     margin-bottom: 4px;
     align-items: center;
   }
@@ -857,7 +857,7 @@ var cssOverviewCompletedView_css_default = `/**
   .overview-completed-view .font-info .font-metric {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    grid-gap: 12px;
+    gap: 12px;
   }
 
   .overview-completed-view .font-info ul {
@@ -1966,7 +1966,7 @@ function renderNode(data, link, showNode) {
       ${link}
       <devtools-icon part="show-element" name="select-element"
           title=${i18nString4(UIStrings4.showElement)} tabindex="0"
-          @click=${() => showNode && showNode()}></devtools-icon>
+          @click=${() => showNode?.()}></devtools-icon>
     </td>`;
 }
 function renderDeclaration(data) {
@@ -2008,12 +2008,12 @@ function renderContrastRatio(data) {
 }
 function createClearIcon() {
   return html3`
-    <devtools-icon name="clear" style="color:var(--icon-error); width:14px; height:14px"></devtools-icon>`;
+    <devtools-icon name="clear" class="small" style="color:var(--icon-error);"></devtools-icon>`;
 }
 function createCheckIcon() {
   return html3`
-    <devtools-icon name="checkmark"
-        style="color:var(--icon-checkmark-green); width:14px; height:14px"></devtools-icon>`;
+    <devtools-icon name="checkmark" class="small"
+        style="color:var(--icon-checkmark-green);></devtools-icon>`;
 }
 
 // gen/front_end/panels/css_overview/CSSOverviewPanel.js

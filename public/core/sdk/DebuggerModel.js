@@ -807,6 +807,7 @@ export class DebuggerModel extends SDKModel {
                 parentId: stackTraceOrPausedDetails.asyncStackTraceId
             } :
             stackTraceOrPausedDetails;
+        let target = this.target();
         while (true) {
             if (stackTrace.parent) {
                 stackTrace = stackTrace.parent;
@@ -815,16 +816,20 @@ export class DebuggerModel extends SDKModel {
                 const model = stackTrace.parentId.debuggerId ?
                     await DebuggerModel.modelForDebuggerId(stackTrace.parentId.debuggerId) :
                     this;
-                const maybeStackTrace = await model?.fetchAsyncStackTrace(stackTrace.parentId);
+                if (!model) {
+                    return;
+                }
+                const maybeStackTrace = await model.fetchAsyncStackTrace(stackTrace.parentId);
                 if (!maybeStackTrace) {
                     return;
                 }
                 stackTrace = maybeStackTrace;
+                target = model.target();
             }
             else {
                 return;
             }
-            yield stackTrace;
+            yield { stackTrace, target };
         }
     }
 }

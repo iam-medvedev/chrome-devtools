@@ -1237,9 +1237,8 @@ var recordingView_css_default = `/*
   }
 
   .sections {
-    flex: 1;
     min-height: 0;
-    overflow: hidden auto;
+    overflow: hidden;
     background-color: var(--sys-color-cdt-base-container);
     z-index: 0;
     position: relative;
@@ -1261,11 +1260,6 @@ var recordingView_css_default = `/*
     right: 0;
     bottom: 0;
     z-index: -1;
-  }
-
-  .section:last-child {
-    /* Make sure there is enough space for the context menu. */
-    margin-bottom: 70px;
   }
 
   .section:last-child::after {
@@ -3936,7 +3930,7 @@ var timelineSection_css_default = `/*
 
 .timeline-section {
   position: relative;
-  padding: 16px 0 16px 40px;
+  padding: 16px 0 0 40px;
   margin-left: 8px;
 
   --override-color-recording-successful-text: #36a854;

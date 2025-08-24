@@ -50,7 +50,6 @@
     "../../../../../../front_end/panels/application/KeyValueStorageItemsView.ts",
     "../../../../../../front_end/panels/application/OpenedWindowDetailsView.ts",
     "../../../../../../front_end/panels/application/PreloadingTreeElement.ts",
-    "../../../../../../front_end/panels/application/ReportingApiReportsView.ts",
     "../../../../../../front_end/panels/application/ReportingApiTreeElement.ts",
     "../../../../../../front_end/panels/application/ReportingApiView.ts",
     "../../../../../../front_end/panels/application/ResourcesPanel.ts",

@@ -21,7 +21,7 @@ export declare class SearchableView extends VBox {
     private searchIsVisible?;
     private currentQuery?;
     private valueChangedTimeoutId?;
-    constructor(searchable: Searchable, replaceable: Replaceable | null, settingName?: string);
+    constructor(searchable: Searchable, replaceable: Replaceable | null, settingName?: string, element?: HTMLElement);
     static fromElement(element: Element | null): SearchableView | null;
     private toggleCaseSensitiveSearch;
     private toggleRegexSearch;

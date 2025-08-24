@@ -824,7 +824,8 @@ var ScreencastView = class extends UI.Widget.VBox {
     this.mouseInputToggle.disabled = true;
     {
       this.mouseInputToggleIcon = this.mouseInputToggle.appendChild(new IconButton.Icon.Icon());
-      this.mouseInputToggleIcon.data = { color: "var(--icon-toggled)", iconName: "mouse" };
+      this.mouseInputToggleIcon.name = "mouse";
+      this.mouseInputToggleIcon.classList.toggle("toggled", true);
     }
     UI.ARIAUtils.setLabel(this.mouseInputToggle, i18nString(UIStrings.mouseInput));
     this.touchInputToggle = this.navigationBar.createChild("button");
@@ -886,14 +887,8 @@ var ScreencastView = class extends UI.Widget.VBox {
     }
     this.mouseInputToggle.disabled = !value;
     this.touchInputToggle.disabled = value;
-    this.mouseInputToggleIcon.data = {
-      ...this.mouseInputToggleIcon.data,
-      color: this.mouseInputToggle.disabled ? "var(--icon-toggled)" : "var(--icon-default)"
-    };
-    this.touchInputToggleIcon.data = {
-      ...this.touchInputToggleIcon.data,
-      color: this.touchInputToggle.disabled ? "var(--icon-toggled)" : "var(--icon-default)"
-    };
+    this.mouseInputToggleIcon.classList.toggle("toggled", this.mouseInputToggle.disabled);
+    this.touchInputToggleIcon.classList.toggle("toggled", this.touchInputToggle.disabled);
     this.canvasContainerElement.classList.toggle("touchable", value);
   }
   requestNavigationHistoryEvent() {

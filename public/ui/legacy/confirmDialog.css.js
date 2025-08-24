@@ -50,7 +50,7 @@ export default `/*
 /* Added white-space property to handle text overflow */
 .message span {
   white-space: normal;
-  word-wrap: break-word; /* Allow long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Allow long words to break and wrap to the next line */
   max-width: 100%;
   display: inline-block;
   overflow: hidden;

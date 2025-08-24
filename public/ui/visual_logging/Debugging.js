@@ -223,7 +223,7 @@ export function processEventForTestDebugging(event, state, _extraInfo) {
     if (event !== 'SettingAccess' && event !== 'FunctionCall') {
         lastImpressionLogEntry = null;
     }
-    maybeLogDebugEvent({ interaction: `${event}: ${veTestKeys.get(state?.veid || 0) || (state?.veid ? '<UNKNOWN>' : '')}` });
+    maybeLogDebugEvent({ interaction: event, veid: state?.veid || 0 });
     checkPendingEventExpectation();
 }
 export function processEventForAdHocAnalysisDebugging(event, state, extraInfo) {
@@ -589,7 +589,8 @@ export function processStartLoggingForDebugging() {
 // Interaction events need to match exactly.
 function compareVeEvents(actual, expected) {
     if ('interaction' in expected && 'interaction' in actual) {
-        return expected.interaction === actual.interaction;
+        const actualString = formatInteraction(actual);
+        return expected.interaction === actualString;
     }
     if ('impressions' in expected && 'impressions' in actual) {
         const actualSet = new Set(actual.impressions);
@@ -616,8 +617,25 @@ function formatImpressions(impressions) {
     return result.join('\n');
 }
 const EVENT_EXPECTATION_TIMEOUT = 5000;
+function formatInteraction(e) {
+    if ('interaction' in e) {
+        if (e.veid !== undefined) {
+            const key = veTestKeys.get(e.veid) || (e.veid ? '<UNKNOWN>' : '');
+            return `${e.interaction}: ${key}`;
+        }
+        return e.interaction;
+    }
+    return '';
+}
 function formatVeEvents(events) {
-    return events.map(e => 'interaction' in e ? e.interaction : formatImpressions(e.impressions)).join('\n');
+    return events
+        .map(e => {
+        if ('interaction' in e) {
+            return formatInteraction(e);
+        }
+        return formatImpressions(e.impressions);
+    })
+        .join('\n');
 }
 // Verifies that VE events contains all the expected events in given order.
 // Unexpected VE events are ignored.
@@ -631,7 +649,8 @@ export async function expectVeEvents(expectedEvents) {
     const timeout = setTimeout(() => {
         if (pendingEventExpectation?.missingEvents) {
             pendingEventExpectation.fail(new Error('\nMissing VE Events:\n' + formatVeEvents(pendingEventExpectation.missingEvents) +
-                '\nUnmatched VE Events:\n' + formatVeEvents(pendingEventExpectation.unmatchingEvents)));
+                '\nUnmatched VE Events:\n' + formatVeEvents(pendingEventExpectation.unmatchingEvents) + '\nAll events:\n' +
+                JSON.stringify(veDebugEventsLog, null, 2)));
         }
     }, EVENT_EXPECTATION_TIMEOUT);
     return await promise.finally(() => {
@@ -687,9 +706,7 @@ function checkPendingEventExpectation() {
 }
 function getUnmatchedVeEvents() {
     console.error(numMatchedEvents);
-    return veDebugEventsLog.slice(numMatchedEvents)
-        .map(e => 'interaction' in e ? e.interaction : formatImpressions(e.impressions))
-        .join('\n');
+    return formatVeEvents(veDebugEventsLog.slice(numMatchedEvents));
 }
 // @ts-expect-error
 globalThis.setVeDebugLoggingEnabled = setVeDebugLoggingEnabled;

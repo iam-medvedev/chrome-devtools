@@ -1466,17 +1466,30 @@ var AICallTree = class _AICallTree {
     this.rootNode = rootNode;
     this.parsedTrace = parsedTrace;
   }
+  static findEventsForThread({ thread, parsedTrace, bounds }) {
+    const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+    if (!threadEvents) {
+      return null;
+    }
+    return threadEvents.filter((e) => Trace4.Helpers.Timing.eventIsInBounds(e, bounds));
+  }
+  static findMainThreadTasks({ thread, parsedTrace, bounds }) {
+    const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+    if (!threadEvents) {
+      return null;
+    }
+    return threadEvents.filter(Trace4.Types.Events.isRunTask).filter((e) => Trace4.Helpers.Timing.eventIsInBounds(e, bounds));
+  }
   /**
    * Builds a call tree representing all calls within the given timeframe for
    * the provided thread.
    * Events that are less than 0.05% of the range duration are removed.
    */
   static fromTimeOnThread({ thread, parsedTrace, bounds }) {
-    const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-    if (!threadEvents) {
+    const overlappingEvents = this.findEventsForThread({ thread, parsedTrace, bounds });
+    if (!overlappingEvents) {
       return null;
     }
-    const overlappingEvents = threadEvents.filter((e) => Trace4.Helpers.Timing.eventIsInBounds(e, bounds));
     const visibleEventsFilter = new Trace4.Extras.TraceFilter.VisibleEventsFilter(visibleTypes());
     const minDuration = Trace4.Types.Timing.Micro(bounds.range * 5e-3);
     const minDurationFilter = new MinDurationFilter(minDuration);
@@ -1600,9 +1613,8 @@ var AICallTree = class _AICallTree {
       nodeIndex++;
     }
   }
-  /* This is a new serialization format that is currently only used in tests.
-   * TODO: replace the current format with this one. */
-  serialize() {
+  serialize(headerLevel = 1) {
+    const header = "#".repeat(headerLevel);
     const allUrls = [];
     let nodesStr = "";
     this.breadthFirstWalk(this.rootNode.children().values(), (node, nodeId, childStartingNode) => {
@@ -1610,9 +1622,15 @@ var AICallTree = class _AICallTree {
     });
     let output = "";
     if (allUrls.length) {
-      output += "\n# All URLs:\n\n" + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
+      output += `
+${header} All URLs:
+
+` + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
     }
-    output += "\n\n# Call tree:\n" + nodesStr;
+    output += `
+
+${header} Call tree:
+${nodesStr}`;
     return output;
   }
   /*
@@ -1736,6 +1754,14 @@ __export(AIContext_exports, {
   AgentFocus: () => AgentFocus
 });
 var AgentFocus = class _AgentFocus {
+  static full(parsedTrace, insightSet, traceMetadata) {
+    return new _AgentFocus({
+      type: "full",
+      parsedTrace,
+      insightSet,
+      traceMetadata
+    });
+  }
   static fromInsight(parsedTrace, insight, insightSetBounds) {
     return new _AgentFocus({
       type: "insight",
@@ -2264,7 +2290,8 @@ var loadImageForTesting = loadImage;
 // gen/front_end/panels/timeline/utils/InsightAIContext.js
 var InsightAIContext_exports = {};
 __export(InsightAIContext_exports, {
-  AIQueries: () => AIQueries
+  AIQueries: () => AIQueries,
+  insightBounds: () => insightBounds
 });
 import * as Trace10 from "./../../../models/trace/trace.js";
 var AIQueries = class {
@@ -2297,15 +2324,11 @@ var AIQueries = class {
   static networkRequest(parsedTrace, url) {
     return parsedTrace.NetworkRequests.byTime.find((r) => r.args.data.url === url) ?? null;
   }
-  /**
-   * Returns an AI Call Tree representing the activity on the main thread for
-   * the relevant time range of the given insight.
-   */
-  static mainThreadActivity(insight, insightSetBounds, parsedTrace) {
+  static findMainThread(navigationId, parsedTrace) {
     let mainThreadPID = null;
     let mainThreadTID = null;
-    if (insight.navigationId) {
-      const navigation = parsedTrace.Meta.navigationsByNavigationId.get(insight.navigationId);
+    if (navigationId) {
+      const navigation = parsedTrace.Meta.navigationsByNavigationId.get(navigationId);
       if (navigation?.args.data?.isOutermostMainFrame) {
         mainThreadPID = navigation.pid;
         mainThreadTID = navigation.tid;
@@ -2318,10 +2341,43 @@ var AIQueries = class {
       }
       return thread2.type === "MAIN_THREAD";
     });
+    return thread ?? null;
+  }
+  /**
+   * Returns bottom up activity for the given range.
+   */
+  static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
     if (!thread) {
       return null;
     }
-    const bounds = insightBounds(insight, insightSetBounds);
+    const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
+    if (!events) {
+      return null;
+    }
+    const visibleEvents = Trace10.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace10.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
+      "SyntheticNetworkRequest"
+      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
+    ]));
+    const startTime = Trace10.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace10.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace10.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace10.Extras.TraceFilter.ExclusiveNameFilter([]),
+      filters: [filter],
+      startTime,
+      endTime
+    });
+  }
+  /**
+   * Returns an AI Call Tree representing the activity on the main thread for
+   * the relevant time range of the given insight.
+   */
+  static mainThreadActivityTopDown(navigationId, bounds, parsedTrace) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
+    if (!thread) {
+      return null;
+    }
     return AICallTree.fromTimeOnThread({
       thread: {
         pid: thread.pid,
@@ -2330,6 +2386,35 @@ var AIQueries = class {
       parsedTrace,
       bounds
     });
+  }
+  /**
+   * Returns an AI Call Tree representing the activity on the main thread for
+   * the relevant time range of the given insight.
+   */
+  static mainThreadActivityForInsight(insight, insightSetBounds, parsedTrace) {
+    const bounds = insightBounds(insight, insightSetBounds);
+    return this.mainThreadActivityTopDown(insight.navigationId, bounds, parsedTrace);
+  }
+  /**
+   * Returns the top longest tasks as AI Call Trees.
+   */
+  static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
+    if (!thread) {
+      return null;
+    }
+    const tasks = AICallTree.findMainThreadTasks({ thread, parsedTrace, bounds });
+    if (!tasks) {
+      return null;
+    }
+    const topTasks = tasks.filter((e) => e.name === "RunTask").sort((a, b) => b.dur - a.dur).slice(0, limit);
+    return topTasks.map((task) => {
+      const tree = AICallTree.fromEvent(task, parsedTrace);
+      if (tree) {
+        tree.selectedNode = null;
+      }
+      return tree;
+    }).filter((tree) => !!tree);
   }
 };
 function insightBounds(insight, insightSetBounds) {

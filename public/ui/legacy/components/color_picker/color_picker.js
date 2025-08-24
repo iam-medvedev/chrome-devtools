@@ -499,13 +499,10 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
         this.contrastPassFailAPCA.createChild("span").textContent = `: ${apcaThreshold.toFixed(2)}%`;
       }
       if (passesAPCA) {
-        const iconCheckmark = new IconButton.Icon.Icon();
-        iconCheckmark.data = { iconName: "checkmark", color: "var(--icon-checkmark-green)", width: "20px", height: "14px" };
+        const iconCheckmark = createIconCheckmark();
         this.contrastPassFailAPCA.appendChild(iconCheckmark);
       } else {
-        const iconNo = new IconButton.Icon.Icon();
-        iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
-        iconNo.classList.add("small");
+        const iconNo = createIconNo();
         this.contrastPassFailAPCA.appendChild(iconNo);
         const suggestedColor = this.computeSuggestedColor("APCA");
         if (suggestedColor) {
@@ -542,13 +539,10 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     labelAA.textContent = i18nString(UIStrings.aa);
     this.contrastPassFailAA.createChild("span").textContent = i18nString(UIStrings.placeholderWithColon, { PH1: aa.toFixed(1) });
     if (this.passesAA) {
-      const iconCheckmark = new IconButton.Icon.Icon();
-      iconCheckmark.data = { iconName: "checkmark", color: "var(--icon-checkmark-green)", width: "20px", height: "14px" };
+      const iconCheckmark = createIconCheckmark();
       this.contrastPassFailAA.appendChild(iconCheckmark);
     } else {
-      const iconNo = new IconButton.Icon.Icon();
-      iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
-      iconNo.classList.add("small");
+      const iconNo = createIconNo();
       this.contrastPassFailAA.appendChild(iconNo);
       const suggestedColor = this.computeSuggestedColor("aa");
       if (suggestedColor) {
@@ -563,13 +557,10 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     labelAAA.textContent = i18nString(UIStrings.aaa);
     this.contrastPassFailAAA.createChild("span").textContent = i18nString(UIStrings.placeholderWithColon, { PH1: aaa.toFixed(1) });
     if (passesAAA) {
-      const iconCheckmark = new IconButton.Icon.Icon();
-      iconCheckmark.data = { iconName: "checkmark", color: "var(--icon-checkmark-green)", width: "20px", height: "14px" };
+      const iconCheckmark = createIconCheckmark();
       this.contrastPassFailAAA.appendChild(iconCheckmark);
     } else {
-      const iconNo = new IconButton.Icon.Icon();
-      iconNo.data = { iconName: "clear", color: "var(--icon-error)" };
-      iconNo.classList.add("small");
+      const iconNo = createIconNo();
       this.contrastPassFailAAA.appendChild(iconNo);
       const suggestedColor = this.computeSuggestedColor("aaa");
       if (suggestedColor) {
@@ -690,6 +681,21 @@ var Swatch = class {
     ).l > 0.9);
   }
 };
+function createIconCheckmark() {
+  const icon = new IconButton.Icon.Icon();
+  icon.name = "checkmark";
+  icon.style.color = "var(--icon-checkmark-green)";
+  icon.style.width = "var(--sys-size-9)";
+  icon.style.height = "var(--sys-size-7)";
+  return icon;
+}
+function createIconNo() {
+  const icon = new IconButton.Icon.Icon();
+  icon.name = "clear";
+  icon.style.color = "var(--icon-error)";
+  icon.classList.add("small");
+  return icon;
+}
 
 // gen/front_end/ui/legacy/components/color_picker/ContrastInfo.js
 var ContrastInfo_exports = {};
@@ -1046,10 +1052,6 @@ var FormatPickerContextMenu = class {
       icon = new IconButton2.Icon.Icon();
       icon.name = "warning";
       icon.classList.add("medium");
-      icon.data = {
-        iconName: "warning",
-        color: "var(--icon-default)"
-      };
       icon.style.marginLeft = "1px";
       icon.style.marginTop = "-1px";
       icon.style.minWidth = "16px";

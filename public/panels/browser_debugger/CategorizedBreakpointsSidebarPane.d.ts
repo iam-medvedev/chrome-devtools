@@ -8,7 +8,6 @@ interface ViewInput {
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 declare const FilterToolbar_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<FilterToolbar.EventTypes>;
     addEventListener<T extends FilterToolbar.Events.FILTER_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterToolbar.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<FilterToolbar.EventTypes, T>;
     once<T extends FilterToolbar.Events.FILTER_CHANGED>(eventType: T): Promise<FilterToolbar.EventTypes[T]>;
     removeEventListener<T extends FilterToolbar.Events.FILTER_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<FilterToolbar.EventTypes[T], any>) => void, thisObject?: Object): void;

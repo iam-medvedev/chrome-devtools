@@ -171,6 +171,202 @@ var ExecutionContextSelector = class {
   }
 };
 
+// gen/front_end/entrypoints/main/GlobalAiButton.js
+var GlobalAiButton_exports = {};
+__export(GlobalAiButton_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  GlobalAiButton: () => GlobalAiButton,
+  GlobalAiButtonState: () => GlobalAiButtonState,
+  GlobalAiButtonToolbarProvider: () => GlobalAiButtonToolbarProvider
+});
+import * as Common from "./../../core/common/common.js";
+import * as i18n from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
+import * as UI from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
+import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/entrypoints/main/globalAiButton.css.js
+var globalAiButton_css_default = `/*
+ * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  .global-ai-button-container {
+    margin-inline: var(--sys-size-2);
+  }
+
+  .global-ai-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: var(--sys-size-10);
+    height: var(--sys-size-10);
+    border-radius: var(--sys-shape-corner-full);
+    background-image: var(--app-gradient-google-ai);
+    font: var(--sys-typescale-body4-medium);
+    color: var(--ref-palette-neutral100);
+    transition: width 1s, padding 1s;
+    margin-left: auto;
+    overflow: hidden;
+    position: relative;
+    border: 0;
+
+    &:focus-visible {
+      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+    }
+
+    &:hover::after,
+    &:active::after {
+      content: "";
+      height: 100%;
+      width: 100%;
+      border-radius: inherit;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    &:hover::after {
+      background-color: var(--sys-color-state-hover-on-prominent);
+    }
+
+    &:active::after {
+      background-color: var(--sys-color-state-ripple-primary);
+    }
+
+    devtools-icon {
+      width: var(--sys-size-8);
+      height: var(--sys-size-8);
+      color: var(--ref-palette-neutral100);
+    }
+
+    .button-text {
+      opacity: 0%;
+      transition: opacity 1s;
+    }
+  }
+
+  .global-ai-button.expanded {
+    width: auto;
+    padding: 0 var(--sys-size-6) 0 var(--sys-size-5);
+
+    .button-text {
+      opacity: 100%;
+    }
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("././globalAiButton.css")} */`;
+
+// gen/front_end/entrypoints/main/GlobalAiButton.js
+var { render, html, Directives: { classMap } } = Lit;
+var UIStrings = {
+  /**
+   * @description Button's string in promotion state.
+   */
+  aiAssistance: "AI assistance"
+};
+var str_ = i18n.i18n.registerUIStrings("entrypoints/main/GlobalAiButton.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS = 5e3;
+var PROMOTION_END_DATE = /* @__PURE__ */ new Date("2026-09-30");
+function getClickCountSetting() {
+  return Common.Settings.Settings.instance().createSetting(
+    "global-ai-button-click-count",
+    0,
+    "Synced"
+    /* Common.Settings.SettingStorageType.SYNCED */
+  );
+}
+function incrementClickCountSetting() {
+  const setting = getClickCountSetting();
+  setting.set(setting.get() + 1);
+}
+var GlobalAiButtonState;
+(function(GlobalAiButtonState2) {
+  GlobalAiButtonState2["PROMOTION"] = "promotion";
+  GlobalAiButtonState2["DEFAULT"] = "default";
+})(GlobalAiButtonState || (GlobalAiButtonState = {}));
+var DEFAULT_VIEW = (input, output, target) => {
+  const inPromotionState = input.state === GlobalAiButtonState.PROMOTION;
+  const classes = classMap({
+    "global-ai-button": true,
+    expanded: inPromotionState
+  });
+  render(html`
+    <style>${globalAiButton_css_default}</style>
+    <div class="global-ai-button-container">
+      <button class=${classes} @click=${input.onClick} jslog=${VisualLogging.action().track({ click: true }).context("global-ai-button")}>
+        <devtools-icon name="smart-assistant"></devtools-icon>
+        <span class="button-text">${` ${i18nString(UIStrings.aiAssistance)}`}</span>
+      </button>
+    </div>
+  `, target);
+};
+var GlobalAiButton = class extends UI.Widget.Widget {
+  #view;
+  #buttonState = GlobalAiButtonState.DEFAULT;
+  constructor(element, view) {
+    super(element);
+    this.#view = view ?? DEFAULT_VIEW;
+    this.requestUpdate();
+    if (this.#shouldTriggerPromotion()) {
+      this.#triggerPromotion();
+    }
+  }
+  // We only want to enable promotion when:
+  // * The flag is enabled,
+  // * The current date is before the promotion end date,
+  // * The click count on this button is less than 2.
+  #shouldTriggerPromotion() {
+    const isFlagEnabled = Boolean(Root.Runtime.hostConfig.devToolsGlobalAiButton?.promotionEnabled);
+    const isBeforeEndDate = /* @__PURE__ */ new Date() < PROMOTION_END_DATE;
+    return isFlagEnabled && isBeforeEndDate && getClickCountSetting().get() < 2;
+  }
+  #triggerPromotion() {
+    this.#buttonState = GlobalAiButtonState.PROMOTION;
+    this.requestUpdate();
+    window.setTimeout(() => {
+      this.#buttonState = GlobalAiButtonState.DEFAULT;
+      this.requestUpdate();
+    }, DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
+  }
+  #onClick() {
+    UI.ViewManager.ViewManager.instance().showViewInLocation("freestyler", "drawer-view");
+    incrementClickCountSetting();
+  }
+  performUpdate() {
+    this.#view({
+      state: this.#buttonState,
+      onClick: this.#onClick.bind(this)
+    }, void 0, this.contentElement);
+  }
+};
+var globalAiButtonToolbarProviderInstance;
+var GlobalAiButtonToolbarProvider = class _GlobalAiButtonToolbarProvider {
+  #toolbarItem;
+  #widgetElement;
+  constructor() {
+    this.#widgetElement = document.createElement("devtools-widget");
+    this.#widgetElement.widgetConfig = UI.Widget.widgetConfig(GlobalAiButton);
+    this.#toolbarItem = new UI.Toolbar.ToolbarItemWithCompactLayout(this.#widgetElement);
+    this.#toolbarItem.setVisible(false);
+  }
+  item() {
+    return this.#toolbarItem;
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!globalAiButtonToolbarProviderInstance || forceNew) {
+      globalAiButtonToolbarProviderInstance = new _GlobalAiButtonToolbarProvider();
+    }
+    return globalAiButtonToolbarProviderInstance;
+  }
+};
+
 // gen/front_end/entrypoints/main/MainImpl.js
 var MainImpl_exports = {};
 __export(MainImpl_exports, {
@@ -185,12 +381,12 @@ __export(MainImpl_exports, {
   handleExternalRequestGenerator: () => handleExternalRequestGenerator,
   sendOverProtocol: () => sendOverProtocol
 });
-import * as Common from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
-import * as i18n from "./../../core/i18n/i18n.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
-import * as Root from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as AutofillManager from "./../../models/autofill_manager/autofill_manager.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
@@ -207,11 +403,11 @@ import * as Snippets from "./../../panels/snippets/snippets.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as Snackbar from "./../../ui/components/snackbars/snackbars.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
-import { html, render } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-var UIStrings = {
+import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
+import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+var UIStrings2 = {
   /**
    * @description Title of item in main
    */
@@ -266,8 +462,8 @@ var UIStrings = {
    */
   dockSideNavigation: "Use left and right arrow keys to navigate the options"
 };
-var str_ = i18n.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings);
-var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var MainImpl = class _MainImpl {
   #readyForTestPromise = Promise.withResolvers();
   constructor() {
@@ -288,7 +484,7 @@ var MainImpl = class _MainImpl {
   }
   async #loaded() {
     console.timeStamp("Main._loaded");
-    Root.Runtime.Runtime.setPlatform(Host.Platform.platform());
+    Root2.Runtime.Runtime.setPlatform(Host.Platform.platform());
     const [config, prefs] = await Promise.all([
       new Promise((resolve) => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.getHostConfig(resolve);
@@ -297,30 +493,30 @@ var MainImpl = class _MainImpl {
     ]);
     console.timeStamp("Main._gotPreferences");
     this.#initializeGlobalsForLayoutTests();
-    Object.assign(Root.Runtime.hostConfig, config);
+    Object.assign(Root2.Runtime.hostConfig, config);
     this.createSettings(prefs);
     await this.requestAndRegisterLocaleData();
-    Host.userMetrics.syncSetting(Common.Settings.Settings.instance().moduleSetting("sync-preferences").get());
+    Host.userMetrics.syncSetting(Common2.Settings.Settings.instance().moduleSetting("sync-preferences").get());
     const veLogging = config.devToolsVeLogging;
-    const veLogsTestMode = Common.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
+    const veLogsTestMode = Common2.Settings.Settings.instance().createSetting("veLogsTestMode", false).get();
     if (veLogging?.enabled) {
       if (veLogging?.testing || veLogsTestMode) {
-        VisualLogging.setVeDebugLoggingEnabled(
+        VisualLogging2.setVeDebugLoggingEnabled(
           true,
           "Test"
           /* VisualLogging.DebugLoggingFormat.TEST */
         );
         const options = {
-          processingThrottler: new Common.Throttler.Throttler(0),
-          keyboardLogThrottler: new Common.Throttler.Throttler(10),
-          hoverLogThrottler: new Common.Throttler.Throttler(50),
-          dragLogThrottler: new Common.Throttler.Throttler(50),
-          clickLogThrottler: new Common.Throttler.Throttler(10),
-          resizeLogThrottler: new Common.Throttler.Throttler(10)
+          processingThrottler: new Common2.Throttler.Throttler(0),
+          keyboardLogThrottler: new Common2.Throttler.Throttler(10),
+          hoverLogThrottler: new Common2.Throttler.Throttler(50),
+          dragLogThrottler: new Common2.Throttler.Throttler(50),
+          clickLogThrottler: new Common2.Throttler.Throttler(10),
+          resizeLogThrottler: new Common2.Throttler.Throttler(10)
         };
-        void VisualLogging.startLogging(options);
+        void VisualLogging2.startLogging(options);
       } else {
-        void VisualLogging.startLogging();
+        void VisualLogging2.startLogging();
       }
     }
     void this.#createAppUI();
@@ -334,21 +530,21 @@ var MainImpl = class _MainImpl {
     self.ProtocolClient.test ||= ProtocolClient.InspectorBackend.test;
   }
   async requestAndRegisterLocaleData() {
-    const settingLanguage = Common.Settings.Settings.instance().moduleSetting("language").get();
-    const devToolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance({
+    const settingLanguage = Common2.Settings.Settings.instance().moduleSetting("language").get();
+    const devToolsLocale = i18n3.DevToolsLocale.DevToolsLocale.instance({
       create: true,
       data: {
         navigatorLanguage: navigator.language,
         settingLanguage,
-        lookupClosestDevToolsLocale: i18n.i18n.lookupClosestSupportedDevToolsLocale
+        lookupClosestDevToolsLocale: i18n3.i18n.lookupClosestSupportedDevToolsLocale
       }
     });
     Host.userMetrics.language(devToolsLocale.locale);
     if (devToolsLocale.locale !== "en-US") {
-      await i18n.i18n.fetchAndRegisterLocaleData("en-US");
+      await i18n3.i18n.fetchAndRegisterLocaleData("en-US");
     }
     try {
-      await i18n.i18n.fetchAndRegisterLocaleData(devToolsLocale.locale);
+      await i18n3.i18n.fetchAndRegisterLocaleData(devToolsLocale.locale);
     } catch (error) {
       console.warn(`Unable to fetch & register locale data for '${devToolsLocale.locale}', falling back to 'en-US'. Cause: `, error);
       devToolsLocale.forceFallbackLocale();
@@ -359,18 +555,18 @@ var MainImpl = class _MainImpl {
     let storagePrefix = "";
     if (Host.Platform.isCustomDevtoolsFrontend()) {
       storagePrefix = "__custom__";
-    } else if (!Root.Runtime.Runtime.queryParam("can_dock") && Boolean(Root.Runtime.Runtime.queryParam("debugFrontend")) && !Host.InspectorFrontendHost.isUnderTest()) {
+    } else if (!Root2.Runtime.Runtime.queryParam("can_dock") && Boolean(Root2.Runtime.Runtime.queryParam("debugFrontend")) && !Host.InspectorFrontendHost.isUnderTest()) {
       storagePrefix = "__bundled__";
     }
     let localStorage;
     if (!Host.InspectorFrontendHost.isUnderTest() && window.localStorage) {
       const localbackingStore = {
-        ...Common.Settings.NOOP_STORAGE,
+        ...Common2.Settings.NOOP_STORAGE,
         clear: () => window.localStorage.clear()
       };
-      localStorage = new Common.Settings.SettingsStorage(window.localStorage, localbackingStore, storagePrefix);
+      localStorage = new Common2.Settings.SettingsStorage(window.localStorage, localbackingStore, storagePrefix);
     } else {
-      localStorage = new Common.Settings.SettingsStorage({}, Common.Settings.NOOP_STORAGE, storagePrefix);
+      localStorage = new Common2.Settings.SettingsStorage({}, Common2.Settings.NOOP_STORAGE, storagePrefix);
     }
     const hostUnsyncedStorage = {
       register: (name) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, { synced: false }),
@@ -387,56 +583,57 @@ var MainImpl = class _MainImpl {
       ...hostUnsyncedStorage,
       register: (name) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.registerPreference(name, { synced: true })
     };
-    const syncedStorage = new Common.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
-    const globalStorage = new Common.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
-    Common.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage, logSettingAccess: VisualLogging.logSettingAccess });
+    const syncedStorage = new Common2.Settings.SettingsStorage(prefs, hostSyncedStorage, storagePrefix);
+    const globalStorage = new Common2.Settings.SettingsStorage(prefs, hostUnsyncedStorage, storagePrefix);
+    Common2.Settings.Settings.instance({ forceNew: true, syncedStorage, globalStorage, localStorage, logSettingAccess: VisualLogging2.logSettingAccess });
     if (!Host.InspectorFrontendHost.isUnderTest()) {
-      new Common.Settings.VersionController().updateVersion();
+      new Common2.Settings.VersionController().updateVersion();
     }
   }
   #initializeExperiments() {
-    Root.Runtime.experiments.register("capture-node-creation-stacks", "Capture node creation stacks");
-    Root.Runtime.experiments.register("live-heap-profile", "Live heap profile", true);
-    Root.Runtime.experiments.register("protocol-monitor", "Protocol Monitor", void 0, "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
-    Root.Runtime.experiments.register("sampling-heap-profiler-timeline", "Sampling heap profiler timeline", true);
-    Root.Runtime.experiments.register("show-option-tp-expose-internals-in-heap-snapshot", "Show option to expose internals in heap snapshots");
-    Root.Runtime.experiments.register("vertical-drawer", "Enable vertical drawer configuration");
-    Root.Runtime.experiments.register("timeline-invalidation-tracking", "Performance panel: invalidation tracking", true);
-    Root.Runtime.experiments.register("timeline-show-all-events", "Performance panel: show all events", true);
-    Root.Runtime.experiments.register("timeline-v8-runtime-call-stats", "Performance panel: V8 runtime call stats", true);
-    Root.Runtime.experiments.register("timeline-enhanced-traces", "Performance panel: Enable collecting enhanced traces", true);
-    Root.Runtime.experiments.register("timeline-compiled-sources", "Performance panel: Enable collecting source text for compiled script", true);
-    Root.Runtime.experiments.register("timeline-debug-mode", "Performance panel: Enable debug mode (trace event details, etc)", true);
-    Root.Runtime.experiments.register("instrumentation-breakpoints", "Enable instrumentation breakpoints", true);
-    Root.Runtime.experiments.register("use-source-map-scopes", "Use scope information from source maps", true);
-    Root.Runtime.experiments.register("apca", "Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines", void 0, "https://developer.chrome.com/blog/new-in-devtools-89/#apca");
-    Root.Runtime.experiments.register("full-accessibility-tree", "Enable full accessibility tree view in the Elements panel", void 0, "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
-    Root.Runtime.experiments.register("font-editor", "Enable new font editor within the Styles tab", void 0, "https://developer.chrome.com/blog/new-in-devtools-89/#font");
-    Root.Runtime.experiments.register("contrast-issues", "Enable automatic contrast issue reporting via the Issues panel", void 0, "https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast");
-    Root.Runtime.experiments.register("experimental-cookie-features", "Enable experimental cookie features");
-    Root.Runtime.experiments.register("highlight-errors-elements-panel", "Highlights a violating node or attribute in the Elements panel DOM tree");
-    Root.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
-    Root.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
-    Root.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
-    Root.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
-    Root.Runtime.experiments.enableExperimentsByDefault([
+    Root2.Runtime.experiments.register("capture-node-creation-stacks", "Capture node creation stacks");
+    Root2.Runtime.experiments.register("live-heap-profile", "Live heap profile", true);
+    Root2.Runtime.experiments.register("protocol-monitor", "Protocol Monitor", void 0, "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
+    Root2.Runtime.experiments.register("sampling-heap-profiler-timeline", "Sampling heap profiler timeline", true);
+    Root2.Runtime.experiments.register("show-option-tp-expose-internals-in-heap-snapshot", "Show option to expose internals in heap snapshots");
+    Root2.Runtime.experiments.register("vertical-drawer", "Enable vertical drawer configuration");
+    Root2.Runtime.experiments.register("timeline-invalidation-tracking", "Performance panel: invalidation tracking", true);
+    Root2.Runtime.experiments.register("timeline-show-all-events", "Performance panel: show all events", true);
+    Root2.Runtime.experiments.register("timeline-v8-runtime-call-stats", "Performance panel: V8 runtime call stats", true);
+    Root2.Runtime.experiments.register("timeline-enhanced-traces", "Performance panel: Enable collecting enhanced traces", true);
+    Root2.Runtime.experiments.register("timeline-compiled-sources", "Performance panel: Enable collecting source text for compiled script", true);
+    Root2.Runtime.experiments.register("timeline-debug-mode", "Performance panel: Enable debug mode (trace event details, etc)", true);
+    Root2.Runtime.experiments.register("instrumentation-breakpoints", "Enable instrumentation breakpoints", true);
+    Root2.Runtime.experiments.register("use-source-map-scopes", "Use scope information from source maps", true);
+    Root2.Runtime.experiments.register("apca", "Enable new Advanced Perceptual Contrast Algorithm (APCA) replacing previous contrast ratio and AA/AAA guidelines", void 0, "https://developer.chrome.com/blog/new-in-devtools-89/#apca");
+    Root2.Runtime.experiments.register("full-accessibility-tree", "Enable full accessibility tree view in the Elements panel", void 0, "https://developer.chrome.com/blog/new-in-devtools-90/#accessibility-tree", "https://g.co/devtools/a11y-tree-feedback");
+    Root2.Runtime.experiments.register("font-editor", "Enable new font editor within the Styles tab", void 0, "https://developer.chrome.com/blog/new-in-devtools-89/#font");
+    Root2.Runtime.experiments.register("contrast-issues", "Enable automatic contrast issue reporting via the Issues panel", void 0, "https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast");
+    Root2.Runtime.experiments.register("experimental-cookie-features", "Enable experimental cookie features");
+    Root2.Runtime.experiments.register("highlight-errors-elements-panel", "Highlights a violating node or attribute in the Elements panel DOM tree");
+    Root2.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
+    Root2.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
+    Root2.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
+    Root2.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
+    Root2.Runtime.experiments.register("timeline-ask-ai-full-button", "Performance panel: enable new, more powerful Ask AI in trace view");
+    Root2.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
       "highlight-errors-elements-panel",
-      ...Root.Runtime.Runtime.queryParam("isChromeForTesting") ? ["protocol-monitor"] : []
+      ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? ["protocol-monitor"] : []
     ]);
-    Root.Runtime.experiments.cleanUpStaleExperiments();
-    const enabledExperiments = Root.Runtime.Runtime.queryParam("enabledExperiments");
+    Root2.Runtime.experiments.cleanUpStaleExperiments();
+    const enabledExperiments = Root2.Runtime.Runtime.queryParam("enabledExperiments");
     if (enabledExperiments) {
-      Root.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));
+      Root2.Runtime.experiments.setServerEnabledExperiments(enabledExperiments.split(";"));
     }
-    Root.Runtime.experiments.enableExperimentsTransiently([]);
+    Root2.Runtime.experiments.enableExperimentsTransiently([]);
     if (Host.InspectorFrontendHost.isUnderTest()) {
-      const testParam = Root.Runtime.Runtime.queryParam("test");
+      const testParam = Root2.Runtime.Runtime.queryParam("test");
       if (testParam?.includes("live-line-level-heap-profile.js")) {
-        Root.Runtime.experiments.enableForTest("live-heap-profile");
+        Root2.Runtime.experiments.enableForTest("live-heap-profile");
       }
     }
-    for (const experiment of Root.Runtime.experiments.allConfigurableExperiments()) {
+    for (const experiment of Root2.Runtime.experiments.allConfigurableExperiments()) {
       if (experiment.isEnabled()) {
         Host.userMetrics.experimentEnabledAtLaunch(experiment.name);
       } else {
@@ -449,18 +646,18 @@ var MainImpl = class _MainImpl {
     const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
     isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, (event) => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
     const defaultThemeSetting = "systemPreferred";
-    const themeSetting = Common.Settings.Settings.instance().createSetting("ui-theme", defaultThemeSetting);
-    UI.UIUtils.initializeUIUtils(document);
+    const themeSetting = Common2.Settings.Settings.instance().createSetting("ui-theme", defaultThemeSetting);
+    UI2.UIUtils.initializeUIUtils(document);
     if (!ThemeSupport.ThemeSupport.hasInstance()) {
       ThemeSupport.ThemeSupport.instance({ forceNew: true, setting: themeSetting });
     }
-    UI.UIUtils.addPlatformClass(document.documentElement);
-    UI.UIUtils.installComponentRootStyles(document.body);
+    UI2.UIUtils.addPlatformClass(document.documentElement);
+    UI2.UIUtils.installComponentRootStyles(document.body);
     this.#addMainEventListeners(document);
-    const canDock = Boolean(Root.Runtime.Runtime.queryParam("can_dock"));
-    UI.ZoomManager.ZoomManager.instance({ forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance });
-    UI.ContextMenu.ContextMenu.initialize();
-    UI.ContextMenu.ContextMenu.installHandler(document);
+    const canDock = Boolean(Root2.Runtime.Runtime.queryParam("can_dock"));
+    UI2.ZoomManager.ZoomManager.instance({ forceNew: true, win: window, frontendHost: Host.InspectorFrontendHost.InspectorFrontendHostInstance });
+    UI2.ContextMenu.ContextMenu.initialize();
+    UI2.ContextMenu.ContextMenu.installHandler(document);
     Logs.NetworkLog.NetworkLog.instance();
     SDK2.FrameManager.FrameManager.instance();
     Logs.LogManager.LogManager.instance();
@@ -471,7 +668,7 @@ var MainImpl = class _MainImpl {
       hideIssueSetting: IssuesManager.IssuesManager.getHideIssueByCodeSetting()
     });
     IssuesManager.ContrastCheckTrigger.ContrastCheckTrigger.instance();
-    UI.DockController.DockController.instance({ forceNew: true, canDock });
+    UI2.DockController.DockController.instance({ forceNew: true, canDock });
     SDK2.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
     SDK2.DOMDebuggerModel.DOMDebuggerManager.instance({ forceNew: true });
     const targetManager = SDK2.TargetManager.TargetManager.instance();
@@ -496,7 +693,7 @@ var MainImpl = class _MainImpl {
       ignoreListManager: Workspace.IgnoreListManager.IgnoreListManager.instance()
     });
     targetManager.setScopeTarget(targetManager.primaryPageTarget());
-    UI.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
+    UI2.Context.Context.instance().addFlavorChangeListener(SDK2.Target.Target, ({ data }) => {
       const outermostTarget = data?.outermostTarget();
       targetManager.setScopeTarget(outermostTarget);
     });
@@ -515,10 +712,10 @@ var MainImpl = class _MainImpl {
       breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance()
     });
     Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
-    new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
+    new ExecutionContextSelector(targetManager, UI2.Context.Context.instance());
     const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
       forceNew: true,
-      hostConfig: Root.Runtime.hostConfig,
+      hostConfig: Root2.Runtime.hostConfig,
       pageResourceLoader: SDK2.PageResourceLoader.PageResourceLoader.instance(),
       targetManager
     });
@@ -537,11 +734,11 @@ var MainImpl = class _MainImpl {
     LiveMetrics.LiveMetrics.instance();
     CrUXManager.CrUXManager.instance();
     new PauseListener();
-    const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
-    UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
+    const actionRegistryInstance = UI2.ActionRegistry.ActionRegistry.instance({ forceNew: true });
+    UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
     _MainImpl.timeEnd("Main._createAppUI");
-    const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
+    const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
       throw new Error("Unable to boot DevTools, as the appprovider is missing");
     }
@@ -550,31 +747,31 @@ var MainImpl = class _MainImpl {
   async #showAppUI(appProvider) {
     _MainImpl.time("Main._showAppUI");
     const app = appProvider.createApp();
-    UI.DockController.DockController.instance().initialize();
+    UI2.DockController.DockController.instance().initialize();
     ThemeSupport.ThemeSupport.instance().fetchColorsAndApplyHostTheme();
     app.presentUI(document);
-    if (UI.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
-      const toggleSearchNodeAction = UI.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
+    if (UI2.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
+      const toggleSearchNodeAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.EnterInspectElementMode, () => {
         void toggleSearchNodeAction.execute();
       }, this);
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this.#revealSourceLine, this);
-    await UI.InspectorView.InspectorView.instance().createToolbars();
+    await UI2.InspectorView.InspectorView.instance().createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
-    const value = Root.Runtime.Runtime.queryParam("loadTimelineFromURL");
+    const value = Root2.Runtime.Runtime.queryParam("loadTimelineFromURL");
     if (value !== null) {
       const Timeline = await import("./../../panels/timeline/timeline.js");
       Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
     }
-    UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
-    UI.DockController.DockController.instance().announceDockLocation();
+    UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
+    UI2.DockController.DockController.instance().announceDockLocation();
     window.setTimeout(this.#initializeTarget.bind(this), 0);
     _MainImpl.timeEnd("Main._showAppUI");
   }
   async #initializeTarget() {
     _MainImpl.time("Main._initializeTarget");
-    for (const runnableInstanceFunction of Common.Runnable.earlyInitializationRunnables()) {
+    for (const runnableInstanceFunction of Common2.Runnable.earlyInitializationRunnables()) {
       await runnableInstanceFunction().run();
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
@@ -586,16 +783,16 @@ var MainImpl = class _MainImpl {
   async #maybeInstallVeInspectionBinding() {
     const primaryPageTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
     const url = primaryPageTarget?.targetInfo()?.url;
-    const origin = url ? Common.ParsedURL.ParsedURL.extractOrigin(url) : void 0;
+    const origin = url ? Common2.ParsedURL.ParsedURL.extractOrigin(url) : void 0;
     const binding = "__devtools_ve_inspection_binding__";
-    if (primaryPageTarget && await VisualLogging.isUnderInspection(origin)) {
+    if (primaryPageTarget && await VisualLogging2.isUnderInspection(origin)) {
       const runtimeModel = primaryPageTarget.model(SDK2.RuntimeModel.RuntimeModel);
       await runtimeModel?.addBinding({ name: binding });
       runtimeModel?.addEventListener(SDK2.RuntimeModel.Events.BindingCalled, (event) => {
         if (event.data.name === binding) {
           if (event.data.payload === "true" || event.data.payload === "false") {
-            VisualLogging.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
-              VisualLogging.setVeDebuggingEnabled(false);
+            VisualLogging2.setVeDebuggingEnabled(event.data.payload === "true", (query) => {
+              VisualLogging2.setVeDebuggingEnabled(false);
               void runtimeModel?.defaultExecutionContext()?.evaluate(
                 {
                   expression: `window.inspect(${JSON.stringify(query)})`,
@@ -611,7 +808,7 @@ var MainImpl = class _MainImpl {
               );
             });
           } else {
-            VisualLogging.setHighlightedVe(event.data.payload === "null" ? null : event.data.payload);
+            VisualLogging2.setHighlightedVe(event.data.payload === "null" ? null : event.data.payload);
           }
         }
       });
@@ -620,24 +817,24 @@ var MainImpl = class _MainImpl {
   async #lateInitialization() {
     _MainImpl.time("Main._lateInitialization");
     Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
-    const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
+    const promises = Common2.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
       const runnable = await lateInitializationLoader();
       return await runnable.run();
     });
-    if (Root.Runtime.experiments.isEnabled("live-heap-profile")) {
+    if (Root2.Runtime.experiments.isEnabled("live-heap-profile")) {
       const PerfUI = await import("./../../ui/legacy/components/perf_ui/perf_ui.js");
       const setting = "memory-live-heap-profile";
-      if (Common.Settings.Settings.instance().moduleSetting(setting).get()) {
+      if (Common2.Settings.Settings.instance().moduleSetting(setting).get()) {
         promises.push(PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run());
       } else {
         const changeListener = async (event) => {
           if (!event.data) {
             return;
           }
-          Common.Settings.Settings.instance().moduleSetting(setting).removeChangeListener(changeListener);
+          Common2.Settings.Settings.instance().moduleSetting(setting).removeChangeListener(changeListener);
           void PerfUI.LiveHeapProfile.LiveHeapProfile.instance().run();
         };
-        Common.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
+        Common2.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
       }
     }
     _MainImpl.timeEnd("Main._lateInitialization");
@@ -646,10 +843,10 @@ var MainImpl = class _MainImpl {
     return this.#readyForTestPromise.promise;
   }
   #registerMessageSinkListener() {
-    Common.Console.Console.instance().addEventListener("messageAdded", messageAdded);
+    Common2.Console.Console.instance().addEventListener("messageAdded", messageAdded);
     function messageAdded({ data: message }) {
       if (message.show) {
-        Common.Console.Console.instance().show();
+        Common2.Console.Console.instance().show();
       }
     }
   }
@@ -657,13 +854,13 @@ var MainImpl = class _MainImpl {
     const { url, lineNumber, columnNumber } = event.data;
     const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
     if (uiSourceCode) {
-      void Common.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
+      void Common2.Revealer.reveal(uiSourceCode.uiLocation(lineNumber, columnNumber));
       return;
     }
     function listener(event2) {
       const uiSourceCode2 = event2.data;
       if (uiSourceCode2.url() === url) {
-        void Common.Revealer.reveal(uiSourceCode2.uiLocation(lineNumber, columnNumber));
+        void Common2.Revealer.reveal(uiSourceCode2.uiLocation(lineNumber, columnNumber));
         Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, listener);
       }
     }
@@ -671,7 +868,7 @@ var MainImpl = class _MainImpl {
   }
   #postDocumentKeyDown(event) {
     if (!event.handled) {
-      UI.ShortcutRegistry.ShortcutRegistry.instance().handleShortcut(event);
+      UI2.ShortcutRegistry.ShortcutRegistry.instance().handleShortcut(event);
     }
   }
   #redispatchClipboardEvent(event) {
@@ -701,7 +898,7 @@ var MainImpl = class _MainImpl {
   }
   #onSuspendStateChanged() {
     const suspended = SDK2.TargetManager.TargetManager.instance().allTargetsSuspended();
-    UI.InspectorView.InspectorView.instance().onSuspendStateChanged(suspended);
+    UI2.InspectorView.InspectorView.instance().onSuspendStateChanged(suspended);
   }
   static instanceForTest = null;
 };
@@ -728,9 +925,9 @@ var ZoomActionDelegate = class {
 };
 var SearchActionDelegate = class {
   handleAction(_context, actionId) {
-    let searchableView = UI.SearchableView.SearchableView.fromElement(Platform2.DOMUtilities.deepActiveElement(document));
+    let searchableView = UI2.SearchableView.SearchableView.fromElement(Platform2.DOMUtilities.deepActiveElement(document));
     if (!searchableView) {
-      const currentPanel = UI.InspectorView.InspectorView.instance().currentPanelDeprecated();
+      const currentPanel = UI2.InspectorView.InspectorView.instance().currentPanelDeprecated();
       if (currentPanel?.searchableView) {
         searchableView = currentPanel.searchableView();
       }
@@ -755,7 +952,7 @@ var mainMenuItemInstance;
 var MainMenuItem = class _MainMenuItem {
   #itemInternal;
   constructor() {
-    this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(
+    this.#itemInternal = new UI2.Toolbar.ToolbarMenuButton(
       this.#handleContextMenu.bind(this),
       /* isIconDropdown */
       true,
@@ -765,7 +962,7 @@ var MainMenuItem = class _MainMenuItem {
       "dots-vertical"
     );
     this.#itemInternal.element.classList.add("main-menu");
-    this.#itemInternal.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
+    this.#itemInternal.setTitle(i18nString2(UIStrings2.customizeAndControlDevtools));
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -778,24 +975,24 @@ var MainMenuItem = class _MainMenuItem {
     return this.#itemInternal;
   }
   #handleContextMenu(contextMenu) {
-    const dockController = UI.DockController.DockController.instance();
+    const dockController = UI2.DockController.DockController.instance();
     if (dockController.canDock()) {
       const dockItemElement = document.createElement("div");
       dockItemElement.classList.add("flex-auto", "flex-centered", "location-menu");
-      dockItemElement.setAttribute("jslog", `${VisualLogging.item("dock-side").track({ keydown: "ArrowDown|ArrowLeft|ArrowRight" })}`);
+      dockItemElement.setAttribute("jslog", `${VisualLogging2.item("dock-side").track({ keydown: "ArrowDown|ArrowLeft|ArrowRight" })}`);
       dockItemElement.tabIndex = -1;
-      UI.ARIAUtils.setLabel(dockItemElement, UIStrings.dockSide + UIStrings.dockSideNavigation);
-      const [toggleDockSideShortcut] = UI.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction("main.toggle-dock");
-      render(html`
+      UI2.ARIAUtils.setLabel(dockItemElement, UIStrings2.dockSide + UIStrings2.dockSideNavigation);
+      const [toggleDockSideShortcut] = UI2.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction("main.toggle-dock");
+      render2(html2`
         <span class="dockside-title"
-              title=${i18nString(UIStrings.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShortcut.title() })}>
-          ${i18nString(UIStrings.dockSide)}
+              title=${i18nString2(UIStrings2.placementOfDevtoolsRelativeToThe, { PH1: toggleDockSideShortcut.title() })}>
+          ${i18nString2(UIStrings2.dockSide)}
         </span>
         <devtools-toolbar @mousedown=${(event) => event.consume()}>
           <devtools-button class="toolbar-button"
-                           jslog=${VisualLogging.toggle().track({ click: true }).context("current-dock-state-undock")}
-                           title=${i18nString(UIStrings.undockIntoSeparateWindow)}
-                           aria-label=${i18nString(UIStrings.undockIntoSeparateWindow)}
+                           jslog=${VisualLogging2.toggle().track({ click: true }).context("current-dock-state-undock")}
+                           title=${i18nString2(UIStrings2.undockIntoSeparateWindow)}
+                           aria-label=${i18nString2(UIStrings2.undockIntoSeparateWindow)}
                            .iconName=${"dock-window"}
                            .toggled=${dockController.dockSide() === "undocked"}
                            .toggledIconName=${"dock-window"}
@@ -807,9 +1004,9 @@ var MainMenuItem = class _MainMenuItem {
         /* UI.DockController.DockState.UNDOCKED */
       )}></devtools-button>
           <devtools-button class="toolbar-button"
-                           jslog=${VisualLogging.toggle().track({ click: true }).context("current-dock-state-left")}
-                           title=${i18nString(UIStrings.dockToLeft)}
-                           aria-label=${i18nString(UIStrings.dockToLeft)}
+                           jslog=${VisualLogging2.toggle().track({ click: true }).context("current-dock-state-left")}
+                           title=${i18nString2(UIStrings2.dockToLeft)}
+                           aria-label=${i18nString2(UIStrings2.dockToLeft)}
                            .iconName=${"dock-left"}
                            .toggled=${dockController.dockSide() === "left"}
                            .toggledIconName=${"dock-left"}
@@ -821,9 +1018,9 @@ var MainMenuItem = class _MainMenuItem {
         /* UI.DockController.DockState.LEFT */
       )}></devtools-button>
           <devtools-button class="toolbar-button"
-                           jslog=${VisualLogging.toggle().track({ click: true }).context("current-dock-state-bottom")}
-                           title=${i18nString(UIStrings.dockToBottom)}
-                           aria-label=${i18nString(UIStrings.dockToBottom)}
+                           jslog=${VisualLogging2.toggle().track({ click: true }).context("current-dock-state-bottom")}
+                           title=${i18nString2(UIStrings2.dockToBottom)}
+                           aria-label=${i18nString2(UIStrings2.dockToBottom)}
                            .iconName=${"dock-bottom"}
                            .toggled=${dockController.dockSide() === "bottom"}
                            .toggledIconName=${"dock-bottom"}
@@ -835,9 +1032,9 @@ var MainMenuItem = class _MainMenuItem {
         /* UI.DockController.DockState.BOTTOM */
       )}></devtools-button>
           <devtools-button class="toolbar-button"
-                           jslog=${VisualLogging.toggle().track({ click: true }).context("current-dock-state-right")}
-                           title=${i18nString(UIStrings.dockToRight)}
-                           aria-label=${i18nString(UIStrings.dockToRight)}
+                           jslog=${VisualLogging2.toggle().track({ click: true }).context("current-dock-state-right")}
+                           title=${i18nString2(UIStrings2.dockToRight)}
+                           aria-label=${i18nString2(UIStrings2.dockToRight)}
                            .iconName=${"dock-right"}
                            .toggled=${dockController.dockSide() === "right"}
                            .toggledIconName=${"dock-right"}
@@ -880,30 +1077,30 @@ var MainMenuItem = class _MainMenuItem {
       dockController.setDockSide(side);
       contextMenu.discard();
     }
-    const aiPreregisteredView = UI.ViewManager.getRegisteredViewExtensionForID("freestyler");
+    const aiPreregisteredView = UI2.ViewManager.getRegisteredViewExtensionForID("freestyler");
     if (aiPreregisteredView) {
       let additionalElement = void 0;
       const promotionId = aiPreregisteredView.featurePromotionId();
       if (promotionId) {
-        additionalElement = UI.UIUtils.maybeCreateNewBadge(promotionId);
+        additionalElement = UI2.UIUtils.maybeCreateNewBadge(promotionId);
       }
       contextMenu.defaultSection().appendItem(aiPreregisteredView.title(), () => {
-        void UI.ViewManager.ViewManager.instance().showView("freestyler", true, false);
+        void UI2.ViewManager.ViewManager.instance().showView("freestyler", true, false);
         if (promotionId) {
-          UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
+          UI2.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
         }
       }, { additionalElement, jslogContext: "freestyler" });
     }
     if (dockController.dockSide() === "undocked") {
       const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
       if (mainTarget && mainTarget.type() === SDK2.Target.Type.FRAME) {
-        contextMenu.defaultSection().appendAction("inspector-main.focus-debuggee", i18nString(UIStrings.focusDebuggee));
+        contextMenu.defaultSection().appendAction("inspector-main.focus-debuggee", i18nString2(UIStrings2.focusDebuggee));
       }
     }
-    contextMenu.defaultSection().appendAction("main.toggle-drawer", UI.InspectorView.InspectorView.instance().drawerVisible() ? i18nString(UIStrings.hideConsoleDrawer) : i18nString(UIStrings.showConsoleDrawer));
+    contextMenu.defaultSection().appendAction("main.toggle-drawer", UI2.InspectorView.InspectorView.instance().drawerVisible() ? i18nString2(UIStrings2.hideConsoleDrawer) : i18nString2(UIStrings2.showConsoleDrawer));
     contextMenu.appendItemsAtLocation("mainMenu");
-    const moreTools = contextMenu.defaultSection().appendSubMenuItem(i18nString(UIStrings.moreTools), false, "more-tools");
-    const viewExtensions = UI.ViewManager.getRegisteredViewExtensions();
+    const moreTools = contextMenu.defaultSection().appendSubMenuItem(i18nString2(UIStrings2.moreTools), false, "more-tools");
+    const viewExtensions = UI2.ViewManager.getRegisteredViewExtensions();
     viewExtensions.sort((extension1, extension2) => {
       const title1 = extension1.title();
       const title2 = extension2.title();
@@ -920,7 +1117,7 @@ var MainMenuItem = class _MainMenuItem {
             3
             /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */
           );
-          void UI.ViewManager.ViewManager.instance().showView(
+          void UI2.ViewManager.ViewManager.instance().showView(
             "issues-pane",
             /* userGesture */
             true
@@ -938,10 +1135,10 @@ var MainMenuItem = class _MainMenuItem {
         continue;
       }
       moreTools.defaultSection().appendItem(title, () => {
-        void UI.ViewManager.ViewManager.instance().showView(id, true, false);
+        void UI2.ViewManager.ViewManager.instance().showView(id, true, false);
       }, { isPreviewFeature: viewExtension.isPreviewFeature(), jslogContext: id });
     }
-    const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.help), false, "help");
+    const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString2(UIStrings2.help), false, "help");
     helpSubMenu.appendItemsAtLocation("mainMenuHelp");
   }
 };
@@ -949,7 +1146,7 @@ var settingsButtonProviderInstance;
 var SettingsButtonProvider = class _SettingsButtonProvider {
   #settingsButton;
   constructor() {
-    this.#settingsButton = UI.Toolbar.Toolbar.createActionButton("settings.show");
+    this.#settingsButton = UI2.Toolbar.Toolbar.createActionButton("settings.show");
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -970,8 +1167,8 @@ var PauseListener = class {
     SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.DebuggerModel.DebuggerModel, SDK2.DebuggerModel.Events.DebuggerPaused, this.#debuggerPaused, this);
     const debuggerModel = event.data;
     const debuggerPausedDetails = debuggerModel.debuggerPausedDetails();
-    UI.Context.Context.instance().setFlavor(SDK2.Target.Target, debuggerModel.target());
-    void Common.Revealer.reveal(debuggerPausedDetails);
+    UI2.Context.Context.instance().setFlavor(SDK2.Target.Target, debuggerModel.target());
+    void Common2.Revealer.reveal(debuggerPausedDetails);
   }
 };
 function sendOverProtocol(method, params) {
@@ -1070,11 +1267,11 @@ __export(SimpleApp_exports, {
   SimpleApp: () => SimpleApp,
   SimpleAppProvider: () => SimpleAppProvider
 });
-import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
 var SimpleApp = class {
   presentUI(document2) {
-    const rootView = new UI2.RootView.RootView();
-    UI2.InspectorView.InspectorView.instance().show(rootView.element);
+    const rootView = new UI3.RootView.RootView();
+    UI3.InspectorView.InspectorView.instance().show(rootView.element);
     rootView.attachToDocument(document2);
     rootView.focus();
   }
@@ -1094,6 +1291,7 @@ var SimpleAppProvider = class _SimpleAppProvider {
 };
 export {
   ExecutionContextSelector_exports as ExecutionContextSelector,
+  GlobalAiButton_exports as GlobalAiButton,
   MainImpl_exports as MainImpl,
   SimpleApp_exports as SimpleApp
 };

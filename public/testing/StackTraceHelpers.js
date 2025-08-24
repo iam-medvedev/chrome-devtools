@@ -14,4 +14,26 @@ export function protocolCallFrame(descriptor) {
         columnNumber: parts[4] ? Number.parseInt(parts[4], 10) : -1,
     };
 }
+export function stringifyFrame(frame) {
+    let result = `at ${frame.name ?? '<anonymous>'}`;
+    if (frame.uiSourceCode) {
+        result += ` (${frame.uiSourceCode.displayName()}:${frame.line}:${frame.column})`;
+    }
+    else if (frame.url) {
+        result += ` (${frame.url}:${frame.line}:${frame.column})`;
+    }
+    return result;
+}
+export function stringifyFragment(fragment) {
+    return fragment.frames.map(stringifyFrame).join('\n');
+}
+export function stringifyAsyncFragment(fragment) {
+    const separatorLineLength = 40;
+    const prefix = `--- ${fragment.description || 'async'} `;
+    const separator = prefix + '-'.repeat(separatorLineLength - prefix.length);
+    return separator + '\n' + stringifyFragment(fragment);
+}
+export function stringifyStackTrace(stackTrace) {
+    return [stringifyFragment(stackTrace.syncFragment), ...stackTrace.asyncFragments.map(stringifyAsyncFragment)].join('\n');
+}
 //# sourceMappingURL=StackTraceHelpers.js.map

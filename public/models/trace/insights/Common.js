@@ -5,39 +5,32 @@ import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { getLogNormalScore } from './Statistics.js';
 const GRAPH_SAVINGS_PRECISION = 50;
-export function getInsight(insightName, insights, key) {
-    if (!insights || !key) {
-        return null;
-    }
-    const insightSets = insights.get(key);
-    if (!insightSets) {
-        return null;
-    }
-    const insight = insightSets.model[insightName];
+export function getInsight(insightName, insightSet) {
+    const insight = insightSet.model[insightName];
     if (insight instanceof Error) {
         return null;
     }
     // For some reason typescript won't narrow the type by removing Error, so do it manually.
     return insight;
 }
-export function getLCP(insights, key) {
-    const insight = getInsight("LCPBreakdown" /* InsightKeys.LCP_BREAKDOWN */, insights, key);
+export function getLCP(insightSet) {
+    const insight = getInsight("LCPBreakdown" /* InsightKeys.LCP_BREAKDOWN */, insightSet);
     if (!insight || !insight.lcpMs || !insight.lcpEvent) {
         return null;
     }
     const value = Helpers.Timing.milliToMicro(insight.lcpMs);
     return { value, event: insight.lcpEvent };
 }
-export function getINP(insights, key) {
-    const insight = getInsight("INPBreakdown" /* InsightKeys.INP_BREAKDOWN */, insights, key);
+export function getINP(insightSet) {
+    const insight = getInsight("INPBreakdown" /* InsightKeys.INP_BREAKDOWN */, insightSet);
     if (!insight?.longestInteractionEvent?.dur) {
         return null;
     }
     const value = insight.longestInteractionEvent.dur;
     return { value, event: insight.longestInteractionEvent };
 }
-export function getCLS(insights, key) {
-    const insight = getInsight("CLSCulprits" /* InsightKeys.CLS_CULPRITS */, insights, key);
+export function getCLS(insightSet) {
+    const insight = getInsight("CLSCulprits" /* InsightKeys.CLS_CULPRITS */, insightSet);
     if (!insight) {
         // Unlike the other metrics, there is always a value for CLS even with no data.
         return { value: 0, worstClusterEvent: null };

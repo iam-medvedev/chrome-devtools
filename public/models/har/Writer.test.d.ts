@@ -1,1 +1,1 @@
-export {};
+import '../../ui/legacy/legacy.js';

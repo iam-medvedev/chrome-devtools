@@ -23,6 +23,7 @@ type TestLogEntry = {
     impressions: string[];
 } | {
     interaction: string;
+    veid?: number;
 };
 export declare function processImpressionsForDebugging(states: LoggingState[]): void;
 export declare function debugString(config: LoggingConfig): string;

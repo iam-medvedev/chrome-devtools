@@ -31,8 +31,11 @@ export class FragmentImpl {
         this.node = node;
     }
     get frames() {
-        // TODO(crbug.com/433162438): Walk `this.node.getCallStack` and collect frames, but take care to deduplicate outlined frames.
-        throw new Error('Not implemented');
+        const frames = [];
+        for (const node of this.node.getCallStack()) {
+            frames.push(...node.frames);
+        }
+        return frames;
     }
 }
 export class AsyncFragmentImpl {

@@ -27,7 +27,6 @@ export class ConversationContext {
         return;
     }
 }
-const OBSERVATION_PREFIX = 'OBSERVATION: ';
 /**
  * AiAgent is a base class for implementing an interaction with AIDA
  * that involves one or more requests being sent to AIDA optionally
@@ -109,7 +108,7 @@ export class AiAgent {
         function validTemperature(temperature) {
             return typeof temperature === 'number' && temperature >= 0 ? temperature : undefined;
         }
-        const enableAidaFunctionCalling = declarations.length && !this.functionCallEmulationEnabled;
+        const enableAidaFunctionCalling = declarations.length;
         const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
         const preamble = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : undefined;
         const facts = Array.from(this.#facts);
@@ -169,17 +168,6 @@ export class AiAgent {
     }
     clearDeclaredFunctions() {
         this.#functionDeclarations.clear();
-    }
-    formatParsedAnswer({ answer }) {
-        return answer;
-    }
-    /**
-     * Special mode for StylingAgent that turns custom text output into a
-     * function call.
-     */
-    functionCallEmulationEnabled = false;
-    emulateFunctionCall(_aidaResponse) {
-        throw new Error('Unexpected emulateFunctionCall. Only StylingAgent implements function call emulation');
     }
     async *run(initialQuery, options, multimodalInput) {
         await options.selected?.refresh();
@@ -252,7 +240,7 @@ export class AiAgent {
                 }
                 this.#history.push({
                     parts: [{
-                            text: this.formatParsedAnswer(parsedResponse),
+                            text: parsedResponse.answer,
                         }],
                     role: Host.AidaClient.Role.MODEL,
                 });
@@ -273,13 +261,13 @@ export class AiAgent {
                         yield this.#createErrorResponse("abort" /* ErrorType.ABORT */);
                         break;
                     }
-                    query = this.functionCallEmulationEnabled ? { text: OBSERVATION_PREFIX + result.result } : {
+                    query = {
                         functionResponse: {
                             name: functionCall.name,
                             response: result,
                         },
                     };
-                    request = this.buildRequest(query, this.functionCallEmulationEnabled ? Host.AidaClient.Role.USER : Host.AidaClient.Role.ROLE_UNSPECIFIED);
+                    request = this.buildRequest(query, Host.AidaClient.Role.ROLE_UNSPECIFIED);
                 }
                 catch {
                     yield this.#createErrorResponse("unknown" /* ErrorType.UNKNOWN */);
@@ -300,27 +288,15 @@ export class AiAgent {
         if (!call) {
             throw new Error(`Function ${name} is not found.`);
         }
-        if (this.functionCallEmulationEnabled) {
-            if (!call.displayInfoFromArgs) {
-                throw new Error('functionCallEmulationEnabled requires all functions to provide displayInfoFromArgs');
-            }
-            // Emulated function calls are formatted as text.
-            this.#history.push({
-                parts: [{ text: this.#formatParsedStep(call.displayInfoFromArgs(args)) }],
-                role: Host.AidaClient.Role.MODEL,
-            });
-        }
-        else {
-            this.#history.push({
-                parts: [{
-                        functionCall: {
-                            name,
-                            args,
-                        },
-                    }],
-                role: Host.AidaClient.Role.MODEL,
-            });
-        }
+        this.#history.push({
+            parts: [{
+                    functionCall: {
+                        name,
+                        args,
+                    },
+                }],
+            role: Host.AidaClient.Role.MODEL,
+        });
         let code;
         if (call.displayInfoFromArgs) {
             const { title, thought, action: callCode } = call.displayInfoFromArgs(args);
@@ -412,20 +388,6 @@ export class AiAgent {
                 };
                 break;
             }
-            if (this.functionCallEmulationEnabled) {
-                const emulatedFunctionCall = this.emulateFunctionCall(aidaResponse);
-                if (emulatedFunctionCall === 'wait-for-completion') {
-                    continue;
-                }
-                if (emulatedFunctionCall !== 'no-function-call') {
-                    yield {
-                        rpcId,
-                        functionCall: emulatedFunctionCall,
-                        completed: true,
-                    };
-                    break;
-                }
-            }
             rpcId = aidaResponse.metadata.rpcGlobalId ?? rpcId;
             yield {
                 rpcId,
@@ -444,21 +406,6 @@ export class AiAgent {
             });
             localStorage.setItem('aiAssistanceStructuredLog', JSON.stringify(this.#structuredLog));
         }
-    }
-    #formatParsedStep(step) {
-        let text = '';
-        if (step.thought) {
-            text = `THOUGHT: ${step.thought}`;
-        }
-        if (step.title) {
-            text += `\nTITLE: ${step.title}`;
-        }
-        if (step.action) {
-            text += `\nACTION
-${step.action}
-STOP`;
-        }
-        return text;
     }
     #removeLastRunParts() {
         this.#history.splice(this.#history.findLastIndex(item => {

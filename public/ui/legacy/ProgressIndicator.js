@@ -29,62 +29,63 @@
  */
 import progressIndicatorStyles from './progressIndicator.css.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
-export class ProgressIndicator {
-    element;
-    shadowRoot;
-    contentElement;
-    labelElement;
-    progressElement;
-    stopButton;
-    isCanceledInternal;
-    worked;
-    isDone;
-    constructor(options = { showStopButton: true }) {
-        this.element = document.createElement('div');
-        this.element.classList.add('progress-indicator');
-        this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: progressIndicatorStyles });
-        this.contentElement = this.shadowRoot.createChild('div', 'progress-indicator-shadow-container');
-        this.labelElement = this.contentElement.createChild('div', 'title');
-        this.progressElement = this.contentElement.createChild('progress');
-        this.progressElement.value = 0;
-        if (options.showStopButton) {
-            this.stopButton = this.contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
-            this.stopButton.addEventListener('click', this.cancel.bind(this));
+export class ProgressIndicator extends HTMLElement {
+    #shadowRoot;
+    #contentElement;
+    #labelElement;
+    #progressElement;
+    #stopButton;
+    #isCanceled = false;
+    #worked;
+    #isDone = false;
+    constructor() {
+        super();
+        this.#shadowRoot = createShadowRootWithCoreStyles(this, { cssFile: progressIndicatorStyles });
+        this.#contentElement = this.#shadowRoot.createChild('div', 'progress-indicator-shadow-container');
+        this.#labelElement = this.#contentElement.createChild('div', 'title');
+        this.#progressElement = this.#contentElement.createChild('progress');
+        this.#progressElement.value = 0;
+        // By default we show the stop button, but this can be controlled by
+        // using the 'no-stop-button' attribute on the element.
+        if (!this.hasAttribute('no-stop-button')) {
+            this.#stopButton = this.#contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
+            this.#stopButton.addEventListener('click', this.cancel.bind(this));
         }
-        this.isCanceledInternal = false;
-        this.worked = 0;
+        this.#isCanceled = false;
+        this.#worked = 0;
     }
-    show(parent) {
-        parent.appendChild(this.element);
+    connectedCallback() {
+        this.classList.add('progress-indicator');
     }
     done() {
-        if (this.isDone) {
+        if (this.#isDone) {
             return;
         }
-        this.isDone = true;
-        this.element.remove();
+        this.#isDone = true;
+        this.remove();
     }
     cancel() {
-        this.isCanceledInternal = true;
+        this.#isCanceled = true;
     }
     isCanceled() {
-        return this.isCanceledInternal;
+        return this.#isCanceled;
     }
     setTitle(title) {
-        this.labelElement.textContent = title;
+        this.#labelElement.textContent = title;
     }
     setTotalWork(totalWork) {
-        this.progressElement.max = totalWork;
+        this.#progressElement.max = totalWork;
     }
     setWorked(worked, title) {
-        this.worked = worked;
-        this.progressElement.value = worked;
+        this.#worked = worked;
+        this.#progressElement.value = worked;
         if (title) {
             this.setTitle(title);
         }
     }
     incrementWorked(worked) {
-        this.setWorked(this.worked + (worked || 1));
+        this.setWorked(this.#worked + (worked || 1));
     }
 }
+customElements.define('devtools-progress', ProgressIndicator);
 //# sourceMappingURL=ProgressIndicator.js.map

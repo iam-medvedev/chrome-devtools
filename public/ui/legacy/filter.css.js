@@ -33,7 +33,8 @@ export default `/*
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.filter-bar {
+.filter-bar,
+.filter-bar.hbox {
   background-color: var(--sys-color-cdt-base-container);
   flex: none;
   flex-wrap: wrap;

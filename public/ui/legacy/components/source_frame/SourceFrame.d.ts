@@ -19,7 +19,6 @@ export interface EventTypes {
 type FormatFn = (lineNo: number, state: CodeMirror.EditorState) => string;
 export declare const LINE_NUMBER_FORMATTER: CodeMirror.Facet<FormatFn, FormatFn>;
 declare const SourceFrameImpl_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -175,6 +174,10 @@ export type RevealPosition = number | {
         columnNumber: number;
     };
 };
-export declare const addInfobar: CodeMirror.StateEffectType<UI.Infobar.Infobar>;
-export declare const removeInfobar: CodeMirror.StateEffectType<UI.Infobar.Infobar>;
+export interface SourceFrameInfobar {
+    element: HTMLElement;
+    order?: number;
+}
+export declare const addSourceFrameInfobar: CodeMirror.StateEffectType<SourceFrameInfobar>;
+export declare const removeSourceFrameInfobar: CodeMirror.StateEffectType<SourceFrameInfobar>;
 export {};

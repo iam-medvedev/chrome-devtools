@@ -4,8 +4,9 @@ export declare const enum ConversationType {
     STYLING = "freestyler",
     FILE = "drjones-file",
     NETWORK = "drjones-network-request",
-    PERFORMANCE = "drjones-performance",
-    PERFORMANCE_INSIGHT = "performance-insight"
+    PERFORMANCE_CALL_TREE = "drjones-performance",
+    PERFORMANCE_INSIGHT = "performance-insight",
+    PERFORMANCE_FULL = "drjones-performance-full"
 }
 export declare const NOT_FOUND_IMAGE_DATA = "";
 export interface SerializedConversation {

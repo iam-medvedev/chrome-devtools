@@ -104,6 +104,10 @@ const UIStrings = {
      * @description Text for the new badge appearing next to some menu items
      */
     new: 'NEW',
+    /**
+     * @description Aria label for the new badge appearing next to some menu items
+     */
+    newFeature: 'This is a new feature',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/UIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -205,8 +209,7 @@ class DragHandler {
         }
         targetDocument.addEventListener('pointermove', this.elementDragMove, true);
         targetDocument.addEventListener('pointerup', this.elementDragEnd, true);
-        DragHandler.rootForMouseOut &&
-            DragHandler.rootForMouseOut.addEventListener('pointerout', this.mouseOutWhileDragging, { capture: true });
+        DragHandler.rootForMouseOut?.addEventListener('pointerout', this.mouseOutWhileDragging, { capture: true });
         if (this.dragEventsTargetDocumentTop && targetDocument !== this.dragEventsTargetDocumentTop) {
             this.dragEventsTargetDocumentTop.addEventListener('pointerup', this.elementDragEnd, true);
         }
@@ -252,7 +255,7 @@ class DragHandler {
             this.elementDragEnd(event);
             return;
         }
-        if (this.elementDraggingEventListener && this.elementDraggingEventListener(event)) {
+        if (this.elementDraggingEventListener?.(event)) {
             this.cancelDragEvents(event);
         }
     }
@@ -1815,6 +1818,7 @@ export function maybeCreateNewBadge(promotionId) {
         const badge = document.createElement('div');
         badge.className = 'new-badge';
         badge.textContent = i18nString(UIStrings.new);
+        badge.ariaLabel = i18nString(UIStrings.newFeature);
         badge.setAttribute('jslog', `${VisualLogging.badge('new-badge')}`);
         return badge;
     }

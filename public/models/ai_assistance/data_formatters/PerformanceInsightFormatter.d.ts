@@ -1,8 +1,10 @@
 import * as Trace from '../../trace/trace.js';
+import type { ConversationSuggestion } from '../agents/AiAgent.js';
 export declare class PerformanceInsightFormatter {
     #private;
     constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
     insightIsSupported(): boolean;
+    getSuggestions(): [ConversationSuggestion, ...ConversationSuggestion[]];
     /**
      * Formats and outputs the insight's data.
      * Pass `{headingLevel: X}` to determine what heading level to use for the
@@ -11,9 +13,10 @@ export declare class PerformanceInsightFormatter {
     formatInsight(opts?: {
         headingLevel: number;
     }): string;
+    estimatedSavings(): string;
 }
 export interface NetworkRequestFormatOptions {
-    verbose: boolean;
+    verbose?: boolean;
     customTitle?: string;
 }
 export declare class TraceEventFormatter {

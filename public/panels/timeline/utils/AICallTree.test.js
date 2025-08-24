@@ -117,7 +117,7 @@ describeWithEnvironment('AICallTree', () => {
         if (callTree?.selectedNode) {
             stringifiedNode = callTree?.stringifyNode(callTree.selectedNode, 2, parsedTrace, callTree.selectedNode, [''], 2);
         }
-        // Entry Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
+        // Entry Format: id;name;duration;selfTime;urlIndex;childRange;[S]
         assert.deepEqual(stringifiedNode, '2;define;3.5;0.5;;2-6;S');
     });
     // Since the childIds are serialized while the node is visited by BFS,
@@ -204,7 +204,7 @@ describeWithEnvironment('AICallTree', () => {
             throw new Error('Could not find expected event.');
         }
         const callTree = Utils.AICallTree.AICallTree.fromEvent(selectedEvent, parsedTrace);
-        // Entry Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
+        // Entry Format: id;name;duration;selfTime;urlIndex;childRange;[S]
         const expectedData = `
 # All URLs:
 
@@ -228,7 +228,7 @@ describeWithEnvironment('AICallTree', () => {
             throw new Error('Could not find expected event.');
         }
         const callTree = Utils.AICallTree.AICallTree.fromEvent(selectedEvent, parsedTrace);
-        // Entry Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
+        // Entry Format: id;name;duration;selfTime;urlIndex;childRange;[S]
         const expectedData = `
 # All URLs:
 

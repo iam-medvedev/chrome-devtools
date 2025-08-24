@@ -464,7 +464,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
     }
     addLoadErrorIcon(tabId) {
         const icon = new IconButton.Icon.Icon();
-        icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)' };
+        icon.name = 'cross-circle-filled';
         icon.classList.add('small');
         UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.unableToLoadThisContent));
         if (this.tabbedPane.tabView(tabId)) {
@@ -529,7 +529,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             this.tabbedPane.changeTabTitle(tabId, title, tooltip);
             if (uiSourceCode.loadError()) {
                 const icon = new IconButton.Icon.Icon();
-                icon.data = { iconName: 'cross-circle-filled', color: 'var(--icon-error)' };
+                icon.name = 'cross-circle-filled';
                 icon.classList.add('small');
                 UI.Tooltip.Tooltip.install(icon, i18nString(UIStrings.unableToLoadThisContent));
                 this.tabbedPane.setTrailingTabIcon(tabId, icon);

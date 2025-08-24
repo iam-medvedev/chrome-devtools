@@ -224,12 +224,7 @@ export class ElementsBreadcrumbs extends HTMLElement {
         ?disabled=${disabled}
         aria-label=${tooltipString}
         title=${tooltipString}>
-        <devtools-icon .data=${{
-            iconName: 'triangle-' + direction,
-            color: 'var(--sys-color-on-surface)',
-            width: '12px',
-            height: '10px',
-        }}>
+        <devtools-icon name=${'triangle-' + direction} style="width: var(--sys-size-6); height: 10px;">
         </devtools-icon>
       </button>
       `;

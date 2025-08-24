@@ -260,15 +260,7 @@ export class OriginTrialTreeView extends HTMLElement {
             Lit.render(html `
     <style>${originTrialTreeViewStyles}</style>
     <span class="status-badge">
-      <devtools-icon
-          .data=${{
-                iconName: 'clear',
-                color: 'var(--icon-default)',
-                width: '16px',
-                height: '16px',
-            }}
-        >
-      </devtools-icon>
+      <devtools-icon class="medium" name="clear"></devtools-icon>
       <span>${i18nString(UIStrings.noTrialTokens)}</span>
     </span>`, this.#shadow, { host: this });
             return;

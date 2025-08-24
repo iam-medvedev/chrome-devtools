@@ -3074,6 +3074,9 @@ var Widget = class _Widget {
     } else {
       this.contentElement = this.element;
     }
+    if (options?.classes) {
+      this.element.classList.add(...options.classes);
+    }
     if (options?.jslog) {
       this.contentElement.setAttribute("jslog", options.jslog);
     }
@@ -4594,7 +4597,7 @@ var tabbedPane_css_default = `/*
     .shortcut-line {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-column-gap: var(--sys-size-10);
+      column-gap: var(--sys-size-10);
       padding: var(--sys-size-4) 0;
 
       &:not(:last-child) {
@@ -4937,6 +4940,10 @@ var tabbedPane_css_default = `/*
   justify-content: center;
   margin-left: var(--sys-size-2);
   flex-shrink: 0;
+
+  devtools-icon {
+    color: var(--override-tabbed-pane-preview-icon-color);
+  }
 }
 
 @media (forced-colors: active) {
@@ -6079,18 +6086,15 @@ var TabbedPaneTab = class {
     return closeButton;
   }
   createPreviewIcon() {
-    const previewIcon = document.createElement("div");
-    previewIcon.classList.add("preview-icon");
-    const closeIcon = new IconButton2.Icon.Icon();
-    closeIcon.data = {
-      iconName: "experiment",
-      color: "var(--override-tabbed-pane-preview-icon-color)"
-    };
+    const iconContainer = document.createElement("div");
+    iconContainer.classList.add("preview-icon");
+    const previewIcon = new IconButton2.Icon.Icon();
+    previewIcon.name = "experiment";
     previewIcon.classList.add("small");
-    previewIcon.appendChild(closeIcon);
-    previewIcon.setAttribute("title", i18nString4(UIStrings4.previewFeature));
-    previewIcon.setAttribute("aria-label", i18nString4(UIStrings4.previewFeature));
-    return previewIcon;
+    iconContainer.appendChild(previewIcon);
+    iconContainer.setAttribute("title", i18nString4(UIStrings4.previewFeature));
+    iconContainer.setAttribute("aria-label", i18nString4(UIStrings4.previewFeature));
+    return iconContainer;
   }
   isCloseIconClicked(element) {
     return element?.classList.contains("tabbed-pane-close-button") || element?.parentElement?.classList.contains("tabbed-pane-close-button") || false;
@@ -12649,7 +12653,7 @@ var confirmDialog_css_default = `/*
 /* Added white-space property to handle text overflow */
 .message span {
   white-space: normal;
-  word-wrap: break-word; /* Allow long words to break and wrap to the next line */
+  overflow-wrap: break-word; /* Allow long words to break and wrap to the next line */
   max-width: 100%;
   display: inline-block;
   overflow: hidden;
@@ -13334,7 +13338,7 @@ input.custom-search-input::-webkit-search-cancel-button:hover {
   border: var(--override-spinner-size, 3px) solid
     var(--override-spinner-color, var(--sys-color-token-subtle));
   border-radius: 12px;
-  clip: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
+  clip-path: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
   content: '';
   position: absolute;
   animation: spinner-animation 1s linear infinite;
@@ -14089,7 +14093,11 @@ var UIStrings12 = {
   /**
    * @description Text for the new badge appearing next to some menu items
    */
-  new: "NEW"
+  new: "NEW",
+  /**
+   * @description Aria label for the new badge appearing next to some menu items
+   */
+  newFeature: "This is a new feature"
 };
 var str_12 = i18n23.i18n.registerUIStrings("ui/legacy/UIUtils.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
@@ -14191,7 +14199,7 @@ var DragHandler = class _DragHandler {
     }
     targetDocument.addEventListener("pointermove", this.elementDragMove, true);
     targetDocument.addEventListener("pointerup", this.elementDragEnd, true);
-    _DragHandler.rootForMouseOut && _DragHandler.rootForMouseOut.addEventListener("pointerout", this.mouseOutWhileDragging, { capture: true });
+    _DragHandler.rootForMouseOut?.addEventListener("pointerout", this.mouseOutWhileDragging, { capture: true });
     if (this.dragEventsTargetDocumentTop && targetDocument !== this.dragEventsTargetDocumentTop) {
       this.dragEventsTargetDocumentTop.addEventListener("pointerup", this.elementDragEnd, true);
     }
@@ -14237,7 +14245,7 @@ var DragHandler = class _DragHandler {
       this.elementDragEnd(event);
       return;
     }
-    if (this.elementDraggingEventListener && this.elementDraggingEventListener(event)) {
+    if (this.elementDraggingEventListener?.(event)) {
       this.cancelDragEvents(event);
     }
   }
@@ -15666,6 +15674,7 @@ function maybeCreateNewBadge(promotionId) {
     const badge2 = document.createElement("div");
     badge2.className = "new-badge";
     badge2.textContent = i18nString12(UIStrings12.new);
+    badge2.ariaLabel = i18nString12(UIStrings12.newFeature);
     badge2.setAttribute("jslog", `${VisualLogging15.badge("new-badge")}`);
     return badge2;
   }
@@ -16609,6 +16618,7 @@ __export(EmptyWidget_exports, {
   EmptyWidget: () => EmptyWidget
 });
 import * as i18n25 from "./../../core/i18n/i18n.js";
+import { Directives as Directives4, html as html4, render as render2 } from "./../lit/lit.js";
 import * as VisualLogging18 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -16674,10 +16684,10 @@ var Fragment = class _Fragment {
     return _Fragment.render(template, values);
   }
   static template(strings) {
-    let html7 = "";
+    let html8 = "";
     let insideText = true;
     for (let i = 0; i < strings.length - 1; i++) {
-      html7 += strings[i];
+      html8 += strings[i];
       const close5 = strings[i].lastIndexOf(">");
       const open = strings[i].indexOf("<", close5 + 1);
       if (close5 !== -1 && open === -1) {
@@ -16685,11 +16695,11 @@ var Fragment = class _Fragment {
       } else if (open !== -1) {
         insideText = false;
       }
-      html7 += insideText ? textMarker : attributeMarker(i);
+      html8 += insideText ? textMarker : attributeMarker(i);
     }
-    html7 += strings[strings.length - 1];
+    html8 += strings[strings.length - 1];
     const template = document.createElement("template");
-    template.innerHTML = html7;
+    template.innerHTML = html8;
     const walker = template.ownerDocument.createTreeWalker(template.content, NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT, null);
     let valueIndex = 0;
     const emptyTextNodes = [];
@@ -16926,7 +16936,7 @@ var ContextMenuProvider = class {
     while (targetNode && !(targetNode instanceof XLink)) {
       targetNode = targetNode.parentNodeOrShadowHost();
     }
-    if (!targetNode || !targetNode.href) {
+    if (!targetNode?.href) {
       return;
     }
     const node = targetNode;
@@ -16954,40 +16964,57 @@ var UIStrings13 = {
 };
 var str_13 = i18n25.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings13);
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var { ref } = Directives4;
+var DEFAULT_VIEW = (input, output, target) => {
+  render2(html4`
+    <style>${inspectorCommon_css_default}</style>
+    <style>${emptyWidget_css_default}</style>
+    <div class="empty-state" jslog=${VisualLogging18.section("empty-view")}
+         ${ref((e) => {
+    output.contentElement = e;
+  })}>
+      <div class="empty-state-header">${input.header}</div>
+      <div class="empty-state-description">
+        <span>${input.text}</span>
+        ${input.link ? XLink.create(input.link, i18nString13(UIStrings13.learnMore), void 0, void 0, "learn-more") : ""}
+      </div>
+    </div>`, target);
+};
 var EmptyWidget = class extends VBox {
-  #headerElement;
-  #textElement;
-  #linkElement;
-  constructor(headerOrElement, text = "", element) {
+  #header;
+  #text;
+  #link;
+  #view;
+  constructor(headerOrElement, text = "", element, view = DEFAULT_VIEW) {
     const header = typeof headerOrElement === "string" ? headerOrElement : "";
     if (!element && headerOrElement instanceof HTMLElement) {
       element = headerOrElement;
     }
-    super(element);
-    this.registerRequiredCSS(emptyWidget_css_default);
-    this.element.classList.add("empty-view-scroller");
-    this.contentElement = this.element.createChild("div", "empty-state");
-    this.contentElement.setAttribute("jslog", `${VisualLogging18.section("empty-view")}`);
-    this.#headerElement = this.contentElement.createChild("div", "empty-state-header");
-    this.#headerElement.textContent = header;
-    this.#textElement = this.contentElement.createChild("div", "empty-state-description").createChild("span");
-    this.#textElement.textContent = text;
+    super(element, { classes: ["empty-view-scroller"] });
+    this.#header = header;
+    this.#text = text;
+    this.#link = void 0;
+    this.#view = view;
+    this.performUpdate();
   }
   set link(link3) {
-    if (this.#linkElement) {
-      this.#linkElement.remove();
-    }
-    if (!link3) {
-      return;
-    }
-    this.#linkElement = XLink.create(link3, i18nString13(UIStrings13.learnMore), void 0, void 0, "learn-more");
-    this.#textElement.insertAdjacentElement("afterend", this.#linkElement);
+    this.#link = link3;
+    this.performUpdate();
   }
   set text(text) {
-    this.#textElement.textContent = text;
+    this.#text = text;
+    this.performUpdate();
   }
   set header(header) {
-    this.#headerElement.textContent = header;
+    this.#header = header;
+    this.performUpdate();
+  }
+  performUpdate() {
+    const output = { contentElement: void 0 };
+    this.#view({ header: this.#header, text: this.#text, link: this.#link }, output, this.element);
+    if (output.contentElement) {
+      this.contentElement = output.contentElement;
+    }
   }
 };
 
@@ -17037,7 +17064,8 @@ var filter_css_default = `/*
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.filter-bar {
+.filter-bar,
+.filter-bar.hbox {
   background-color: var(--sys-color-cdt-base-container);
   flex: none;
   flex-wrap: wrap;
@@ -17898,7 +17926,7 @@ __export(ListWidget_exports, {
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform23 from "./../../core/platform/platform.js";
 import * as Buttons7 from "./../components/buttons/buttons.js";
-import { html as html4, render as render2 } from "./../lit/lit.js";
+import { html as html5, render as render3 } from "./../lit/lit.js";
 import * as VisualLogging20 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -18208,7 +18236,7 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render2(html4`
+    render3(html5`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
@@ -18826,74 +18854,73 @@ var progressIndicator_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./progressIndicator.css")} */`;
 
 // gen/front_end/ui/legacy/ProgressIndicator.js
-var ProgressIndicator = class {
-  element;
-  shadowRoot;
-  contentElement;
-  labelElement;
-  progressElement;
-  stopButton;
-  isCanceledInternal;
-  worked;
-  isDone;
-  constructor(options = { showStopButton: true }) {
-    this.element = document.createElement("div");
-    this.element.classList.add("progress-indicator");
-    this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: progressIndicator_css_default });
-    this.contentElement = this.shadowRoot.createChild("div", "progress-indicator-shadow-container");
-    this.labelElement = this.contentElement.createChild("div", "title");
-    this.progressElement = this.contentElement.createChild("progress");
-    this.progressElement.value = 0;
-    if (options.showStopButton) {
-      this.stopButton = this.contentElement.createChild("button", "progress-indicator-shadow-stop-button");
-      this.stopButton.addEventListener("click", this.cancel.bind(this));
+var ProgressIndicator = class extends HTMLElement {
+  #shadowRoot;
+  #contentElement;
+  #labelElement;
+  #progressElement;
+  #stopButton;
+  #isCanceled = false;
+  #worked;
+  #isDone = false;
+  constructor() {
+    super();
+    this.#shadowRoot = createShadowRootWithCoreStyles(this, { cssFile: progressIndicator_css_default });
+    this.#contentElement = this.#shadowRoot.createChild("div", "progress-indicator-shadow-container");
+    this.#labelElement = this.#contentElement.createChild("div", "title");
+    this.#progressElement = this.#contentElement.createChild("progress");
+    this.#progressElement.value = 0;
+    if (!this.hasAttribute("no-stop-button")) {
+      this.#stopButton = this.#contentElement.createChild("button", "progress-indicator-shadow-stop-button");
+      this.#stopButton.addEventListener("click", this.cancel.bind(this));
     }
-    this.isCanceledInternal = false;
-    this.worked = 0;
+    this.#isCanceled = false;
+    this.#worked = 0;
   }
-  show(parent) {
-    parent.appendChild(this.element);
+  connectedCallback() {
+    this.classList.add("progress-indicator");
   }
   done() {
-    if (this.isDone) {
+    if (this.#isDone) {
       return;
     }
-    this.isDone = true;
-    this.element.remove();
+    this.#isDone = true;
+    this.remove();
   }
   cancel() {
-    this.isCanceledInternal = true;
+    this.#isCanceled = true;
   }
   isCanceled() {
-    return this.isCanceledInternal;
+    return this.#isCanceled;
   }
   setTitle(title) {
-    this.labelElement.textContent = title;
+    this.#labelElement.textContent = title;
   }
   setTotalWork(totalWork) {
-    this.progressElement.max = totalWork;
+    this.#progressElement.max = totalWork;
   }
   setWorked(worked, title) {
-    this.worked = worked;
-    this.progressElement.value = worked;
+    this.#worked = worked;
+    this.#progressElement.value = worked;
     if (title) {
       this.setTitle(title);
     }
   }
   incrementWorked(worked) {
-    this.setWorked(this.worked + (worked || 1));
+    this.setWorked(this.#worked + (worked || 1));
   }
 };
+customElements.define("devtools-progress", ProgressIndicator);
 
 // gen/front_end/ui/legacy/RemoteDebuggingTerminatedScreen.js
 var RemoteDebuggingTerminatedScreen_exports = {};
 __export(RemoteDebuggingTerminatedScreen_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RemoteDebuggingTerminatedScreen: () => RemoteDebuggingTerminatedScreen
 });
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Buttons8 from "./../components/buttons/buttons.js";
-import { html as html5, render as render3 } from "./../lit/lit.js";
+import { html as html6, render as render4 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -18957,8 +18984,8 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings16);
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var DEFAULT_VIEW = (input, _output, target) => {
-  render3(html5`
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render4(html6`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString16(UIStrings16.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -18973,7 +19000,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     </div>`, target);
 };
 var RemoteDebuggingTerminatedScreen = class _RemoteDebuggingTerminatedScreen extends VBox {
-  constructor(reason, view = DEFAULT_VIEW) {
+  constructor(reason, view = DEFAULT_VIEW2) {
     super({ useShadowDom: true });
     const input = {
       reason,
@@ -19708,8 +19735,8 @@ var SearchableView = class extends VBox {
   searchIsVisible;
   currentQuery;
   valueChangedTimeoutId;
-  constructor(searchable, replaceable, settingName) {
-    super({ useShadowDom: true });
+  constructor(searchable, replaceable, settingName, element) {
+    super(element, { useShadowDom: true });
     this.registerRequiredCSS(searchableView_css_default);
     searchableViewsByElement.set(this.element, this);
     this.searchProvider = searchable;
@@ -20549,11 +20576,11 @@ var SoftDropDown = class {
 // gen/front_end/ui/legacy/TargetCrashedScreen.js
 var TargetCrashedScreen_exports = {};
 __export(TargetCrashedScreen_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n37 from "./../../core/i18n/i18n.js";
-import { html as html6, render as render4 } from "./../lit/lit.js";
+import { html as html7, render as render5 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -20588,15 +20615,15 @@ var UIStrings19 = {
 };
 var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  render4(html6`
+var DEFAULT_VIEW3 = (input, _output, target) => {
+  render5(html7`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString19(UIStrings19.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString19(UIStrings19.oncePageIsReloadedDevtoolsWill)}</div>`, target);
 };
 var TargetCrashedScreen = class extends VBox {
   hideCallback;
-  constructor(hideCallback, view = DEFAULT_VIEW2) {
+  constructor(hideCallback, view = DEFAULT_VIEW3) {
     super({ useShadowDom: true });
     view({}, {}, this.contentElement);
     this.hideCallback = hideCallback;
@@ -20659,7 +20686,7 @@ __export(Treeoutline_exports, {
 });
 import * as Common19 from "./../../core/common/common.js";
 import * as Platform26 from "./../../core/platform/platform.js";
-import { render as render5 } from "./../lit/lit.js";
+import { render as render6 } from "./../lit/lit.js";
 import * as VisualLogging26 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -21604,7 +21631,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render5(icons, this.leadingIconsElement);
+    render6(icons, this.leadingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;

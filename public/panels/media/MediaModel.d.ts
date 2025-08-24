@@ -30,5 +30,5 @@ export declare class MediaModel extends SDK.SDKModel.SDKModel<EventTypes> implem
     playerEventsAdded(event: Protocol.Media.PlayerEventsAddedEvent): void;
     playerMessagesLogged(event: Protocol.Media.PlayerMessagesLoggedEvent): void;
     playerErrorsRaised(event: Protocol.Media.PlayerErrorsRaisedEvent): void;
-    playersCreated({ players }: Protocol.Media.PlayersCreatedEvent): void;
+    playerCreated({ player: { playerId } }: Protocol.Media.PlayerCreatedEvent): void;
 }

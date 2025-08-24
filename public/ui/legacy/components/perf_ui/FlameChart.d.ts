@@ -108,7 +108,6 @@ export interface PositionOverride {
 }
 export type DrawOverride = (context: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, timeToPosition: (time: number) => number, transformColor: (color: string) => string) => PositionOverride;
 declare const FlameChart_base: (new (...args: any[]) => {
-    "__#13@#events": Common.ObjectWrapper.ObjectWrapper<EventTypes>;
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
     removeEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): void;
@@ -178,6 +177,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     wasShown(): void;
     willHide(): void;
     canvasBoundingClientRect(): DOMRect | null;
+    verticalScrollBarVisible(): boolean;
     /**
      * In some cases we need to manually adjust the positioning of the tooltip
      * vertically to account for the fact that it might be rendered not relative
@@ -254,6 +254,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     moveGroupDown(groupIndex: number): void;
     hideGroup(groupIndex: number): void;
     showGroup(groupIndex: number): void;
+    showAllGroups(): void;
     modifyTree(treeAction: FilterAction, index: number): void;
     onContextMenu(event: MouseEvent): void;
     private onKeyDown;
@@ -332,6 +333,7 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
         groupIndex: number;
         hoverType: HoverType;
     };
+    enterTrackConfigurationMode(): void;
     private markerIndexBeforeTime;
     /**
      * Draw the whole flame chart.
@@ -474,8 +476,13 @@ export declare class FlameChart extends FlameChart_base implements Calculator, C
     levelHeight(level: number): number;
     private updateBoundaries;
     private updateHeight;
+    /**
+     * This is the total height that would be required to render the flame chart
+     * with no overflows.
+     */
+    totalContentHeight(): number;
     onResize(): void;
-    setPersistedConfig(config: PersistedGroupConfig[]): void;
+    setPersistedConfig(config: PersistedGroupConfig[] | null): void;
     update(): void;
     reset(): void;
     scheduleUpdate(): void;
@@ -570,7 +577,7 @@ export interface DataProviderSearchResult {
     provider: 'main' | 'network' | 'other';
 }
 export interface FlameChartDataProvider {
-    setPersistedGroupConfigSetting?(setting: Common.Settings.Setting<PersistedConfigPerTrace>): void;
+    setPersistedGroupConfigSetting?(setting: Common.Settings.Setting<PersistedGroupConfig[] | null>): void;
     minimumBoundary(): number;
     totalTime(): number;
     formatValue(value: number, precision?: number): string;
@@ -655,7 +662,6 @@ export declare const enum Events {
      * mouse off the event)
      */
     ENTRY_HOVERED = "EntryHovered",
-    CHART_PLAYABLE_STATE_CHANGED = "ChartPlayableStateChange",
     LATEST_DRAW_DIMENSIONS = "LatestDrawDimensions",
     MOUSE_MOVE = "MouseMove"
 }
@@ -672,7 +678,6 @@ export interface EventTypes {
     [Events.ENTRY_INVOKED]: number;
     [Events.ENTRY_SELECTED]: number;
     [Events.ENTRY_HOVERED]: number;
-    [Events.CHART_PLAYABLE_STATE_CHANGED]: boolean;
     [Events.LATEST_DRAW_DIMENSIONS]: {
         chart: {
             widthPixels: number;
@@ -718,22 +723,16 @@ export interface GroupStyle {
     useFirstLineForOverview?: boolean;
     useDecoratorsForOverview?: boolean;
 }
+/**
+ * Persists the configuration state of a group. When a trace is recorded /
+ * imported, we see if we can match any persisted config to each track based on
+ * its name, and if we can, we apply the config to it.
+ */
 export interface PersistedGroupConfig {
+    trackName: string;
     hidden: boolean;
     expanded: boolean;
     originalIndex: number;
     visualIndex: number;
 }
-/**
- * Used to persist into memory the configuration, so that if the user imports a
- * new trace and then navigates back to the old one, the configuration is
- * restored.
- * The key here is the `traceBounds.min` time from the trace. Given this is
- * monotonic, the chances of it clashing within traces the user records are very
- * low. It could happen, but we accept that this is best effort.
- * Note: the value type includes `undefined` to make sure that anyone can't do
- * value[traceMin] and not check that it exists. If the user has not manually
- * edited the track config, it will not be stored.
- */
-export type PersistedConfigPerTrace = Record<Trace.Types.Timing.Micro, PersistedGroupConfig[] | undefined>;
 export {};

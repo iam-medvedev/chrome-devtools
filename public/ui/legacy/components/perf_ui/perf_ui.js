@@ -1234,6 +1234,9 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.#canvasBoundingClientRect = this.canvas.getBoundingClientRect();
     return this.#canvasBoundingClientRect;
   }
+  verticalScrollBarVisible() {
+    return this.chartViewport.verticalScrollBarVisible();
+  }
   /**
    * In some cases we need to manually adjust the positioning of the tooltip
    * vertically to account for the fact that it might be rendered not relative
@@ -1959,6 +1962,20 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       false
     );
   }
+  showAllGroups() {
+    if (!this.rawTimelineData?.groups) {
+      return;
+    }
+    for (const group of this.rawTimelineData.groups) {
+      group.hidden = false;
+    }
+    this.updateLevelPositions();
+    this.updateHighlight();
+    this.updateHeight();
+    this.draw();
+    this.#notifyProviderOfConfigurationChange();
+    this.scrollGroupIntoView(0);
+  }
   #toggleGroupHiddenState(groupIndex, hidden) {
     if (groupIndex < 0) {
       return;
@@ -1993,7 +2010,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.contextMenu = new UI.ContextMenu.ContextMenu(event);
     const label = i18nString2(UIStrings2.enterTrackConfigurationMode);
     this.contextMenu.defaultSection().appendItem(label, () => {
-      this.#enterEditMode();
+      this.enterTrackConfigurationMode();
     }, {
       jslogContext: "track-configuration-enter"
     });
@@ -2607,7 +2624,10 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
       /* HoverType.OUTSIDE_TRACKS */
     };
   }
-  #enterEditMode() {
+  enterTrackConfigurationMode() {
+    if (!this.#hasTrackConfigurationMode()) {
+      return;
+    }
     const div = document.createElement("div");
     div.classList.add("flame-chart-edit-confirm");
     const button = new Buttons.Button.Button();
@@ -2625,6 +2645,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.dispatchEventToListeners("TracksReorderStateChange", true);
     this.updateLevelPositions();
     this.draw();
+    this.scrollGroupIntoView(0);
   }
   #removeEditModeButton() {
     const confirmButton = this.viewportElement.querySelector(".flame-chart-edit-confirm");
@@ -2683,26 +2704,9 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     context.translate(0, -top);
     context.font = this.#font;
     const { markerIndices, drawBatches, titleIndices } = this.getDrawBatches(context, timelineData);
-    const groups = this.rawTimelineData?.groups || [];
-    const trackIndex = groups.findIndex((g) => g.name.includes("Main"));
-    const group = groups.at(trackIndex);
-    const startLevel = group?.startLevel;
-    const endLevel = groups.at(trackIndex + 1)?.startLevel;
-    const entryIndexIsInTrack = (index) => {
-      if (trackIndex < 0 || startLevel === void 0 || endLevel === void 0) {
-        return false;
-      }
-      const barWidth = Math.min(this.#eventBarWidth(timelineData, index), canvasWidth);
-      return timelineData.entryLevels[index] >= startLevel && timelineData.entryLevels[index] < endLevel && barWidth > 10;
-    };
-    let wideEntryExists = false;
     for (const [{ color, outline }, { indexes }] of drawBatches) {
-      if (!wideEntryExists) {
-        wideEntryExists = indexes.some(entryIndexIsInTrack);
-      }
       this.#drawBatchEvents(context, timelineData, color, indexes, outline);
     }
-    this.dispatchEventToListeners("ChartPlayableStateChange", wideEntryExists);
     if (!this.#inTrackConfigEditMode) {
       this.#drawCustomSymbols(context, timelineData);
       this.drawMarkers(context, timelineData, markerIndices);
@@ -3609,8 +3613,9 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.timelineLevels = levelIndexes;
     const groups = this.rawTimelineData.groups || [];
     for (let i = 0; i < groups.length; ++i) {
-      const expanded = groups[i].expanded ?? this.#persistedGroupConfig?.[i]?.expanded ?? false;
-      const hidden = groups[i].hidden ?? this.#persistedGroupConfig?.[i]?.hidden ?? false;
+      const matchingConfig = this.#persistedGroupConfig?.find((c) => c.trackName === groups[i].name);
+      const expanded = matchingConfig?.expanded ?? groups[i].expanded ?? false;
+      const hidden = matchingConfig?.hidden ?? groups[i].hidden ?? false;
       groups[i].expanded = expanded;
       groups[i].hidden = hidden;
     }
@@ -4029,8 +4034,14 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     this.chartViewport.setBoundaries(this.minimumBoundaryInternal, this.totalTime);
   }
   updateHeight() {
-    const height = this.levelToOffset(this.dataProvider.maxStackDepth()) + 2;
-    this.chartViewport.setContentHeight(height);
+    this.chartViewport.setContentHeight(this.totalContentHeight());
+  }
+  /**
+   * This is the total height that would be required to render the flame chart
+   * with no overflows.
+   */
+  totalContentHeight() {
+    return this.levelToOffset(this.dataProvider.maxStackDepth()) + 2;
   }
   onResize() {
     this.#canvasBoundingClientRect = null;
@@ -4231,6 +4242,9 @@ var ChartViewport = class extends UI2.Widget.VBox {
   }
   elementsToRestoreScrollPositionsFor() {
     return [this.vScrollElement];
+  }
+  verticalScrollBarVisible() {
+    return !this.vScrollElement.classList.contains("hidden");
   }
   updateScrollBar() {
     const showScroll = this.alwaysShowVerticalScrollInternal || this.totalHeight > this.offsetHeight;

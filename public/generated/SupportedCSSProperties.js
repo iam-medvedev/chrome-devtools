@@ -1753,7 +1753,9 @@ export const generatedProperties = [
     {
         "longhands": [
             "column-width",
-            "column-count"
+            "column-count",
+            "column-height",
+            "column-wrap"
         ],
         "name": "columns"
     },

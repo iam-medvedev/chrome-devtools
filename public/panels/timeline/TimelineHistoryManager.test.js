@@ -4,16 +4,12 @@
 import { assertScreenshot, raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
 describeWithEnvironment('TimelineHistoryManager', function () {
     let historyManager;
     beforeEach(() => {
         registerNoopActions(['timeline.show-history']);
         historyManager = new Timeline.TimelineHistoryManager.TimelineHistoryManager();
-    });
-    afterEach(() => {
-        UI.ActionRegistry.ActionRegistry.reset();
     });
     it('shows the dropdown including a landing page link', async function () {
         assert.strictEqual(historyManager.button().element.innerText, 'Live metrics');

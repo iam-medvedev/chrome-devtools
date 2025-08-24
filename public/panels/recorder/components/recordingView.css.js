@@ -31,9 +31,8 @@ export default `/*
   }
 
   .sections {
-    flex: 1;
     min-height: 0;
-    overflow: hidden auto;
+    overflow: hidden;
     background-color: var(--sys-color-cdt-base-container);
     z-index: 0;
     position: relative;
@@ -55,11 +54,6 @@ export default `/*
     right: 0;
     bottom: 0;
     z-index: -1;
-  }
-
-  .section:last-child {
-    /* Make sure there is enough space for the context menu. */
-    margin-bottom: 70px;
   }
 
   .section:last-child::after {

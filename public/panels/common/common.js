@@ -76,7 +76,7 @@ var aiCodeCompletionTeaser_css_default = `/*
     .ai-code-completion-teaser-screen-reader-only {
         position: absolute;
         overflow: hidden;
-        clip: rect(0 0 0 0);
+        clip-path: rect(0 0 0 0);
         height: var(--sys-size-1);
         width: var(--sys-size-1);
         margin: -1 * var(--sys-size-1);;
@@ -526,20 +526,21 @@ var aiCodeCompletionDisclaimer_css_default = `/*
  */
 
 @scope to (devtools-widget > *) {
+    /* stylelint-disable-next-line no-invalid-position-declaration */
+    display: flex;
+
     .ai-code-completion-disclaimer {
         gap: 5px;
         display: flex;
-        white-space: nowrap;
-        overflow: hidden;
         flex-shrink: 0;
 
         span.link {
             color: var(--sys-color-on-surface-subtle);
 
             &:focus-visible {
-            outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-            outline-offset: 0;
-            border-radius: var(--sys-shape-corner-extra-small);
+                outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
+                outline-offset: 0;
+                border-radius: var(--sys-shape-corner-extra-small);
             }
         }
 
@@ -607,7 +608,7 @@ var UIStringsNotTranslate2 = {
 };
 var lockedString2 = i18n5.i18n.lockedString;
 var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-  if (!input.disclaimerTooltipId || !input.panelName) {
+  if (!input.disclaimerTooltipId) {
     render3(nothing2, target);
     return;
   }
@@ -638,7 +639,7 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
           <devtools-tooltip
               id=${input.disclaimerTooltipId}
               variant=${"rich"}
-              jslogContext=${input.panelName + ".ai-code-completion-disclaimer"}
+              jslogContext=${"ai-code-completion-disclaimer"}
               ${Directives.ref((el) => {
     if (el instanceof HTMLElement) {
       output.hideTooltip = () => {
@@ -657,7 +658,7 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
   })}
                     @click=${input.onManageInSettingsTooltipClick}
                 >${lockedString2(UIStringsNotTranslate2.manageInSettings)}</span></div></devtools-tooltip>
-          </div class="ai-code-completion-disclaimer">
+          </div>
         `, target);
 };
 var MINIMUM_LOADING_STATE_TIMEOUT = 1e3;
@@ -665,7 +666,6 @@ var AiCodeCompletionDisclaimer = class extends UI3.Widget.Widget {
   #view;
   #viewOutput = {};
   #disclaimerTooltipId;
-  #panelName;
   #noLogging;
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
   #loading = false;
@@ -673,15 +673,12 @@ var AiCodeCompletionDisclaimer = class extends UI3.Widget.Widget {
   #spinnerLoadingTimeout;
   constructor(element, view = DEFAULT_SUMMARY_TOOLBAR_VIEW) {
     super(element);
+    this.markAsExternallyManaged();
     this.#noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     this.#view = view;
   }
   set disclaimerTooltipId(disclaimerTooltipId) {
     this.#disclaimerTooltipId = disclaimerTooltipId;
-    this.requestUpdate();
-  }
-  set panelName(panelName) {
-    this.#panelName = panelName;
     this.requestUpdate();
   }
   set loading(loading) {
@@ -716,7 +713,6 @@ var AiCodeCompletionDisclaimer = class extends UI3.Widget.Widget {
   performUpdate() {
     this.#view({
       disclaimerTooltipId: this.#disclaimerTooltipId,
-      panelName: this.#panelName,
       noLogging: this.#noLogging,
       onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this)
     }, this.#viewOutput, this.contentElement);
@@ -742,7 +738,6 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
   .ai-code-completion-summary-toolbar {
     display: flex;
     height: 26px;
-    border-top: var(--sys-size-1) solid var(--sys-color-divider);
     background-color: var(--sys-color-cdt-base-container);
     padding: var(--sys-size-2) var(--sys-size-5);
     align-items: center;
@@ -750,12 +745,19 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
     flex-shrink: 0;
     color: var(--sys-color-on-surface-subtle);
 
+    &:not(.has-top-border) {
+      border-top: var(--sys-size-1) solid var(--sys-color-divider);
+    }
+
     devtools-widget.disclaimer-widget {
       flex: none;
     }
 
     span.link {
       color: var(--sys-color-on-surface-subtle);
+      /* Inside the code mirror editor, the cursor and text-decoration styling need to be provided explicitly */
+      cursor: pointer;
+      text-decoration: underline;
 
       &:focus-visible {
         outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
@@ -765,14 +767,16 @@ var aiCodeCompletionSummaryToolbar_css_default = `/*
     }
 
     .ai-code-completion-recitation-notice {
-      padding-left: var(--sys-size-5);
-      border-left: var(--sys-size-1) solid var(--sys-color-divider);
       white-space: nowrap;
-      overflow: hidden;
 
       span.link {
         padding-left: var(--sys-size-3);
       }
+    }
+
+    &.has-disclaimer .ai-code-completion-recitation-notice {
+      padding-left: var(--sys-size-5);
+      border-left: var(--sys-size-1) solid var(--sys-color-divider);
     }
 
     @media (width < 545px) {
@@ -844,30 +848,32 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW2 = (input, _output, target) => {
   const toolbarClasses = Directives2.classMap({
     "ai-code-completion-summary-toolbar": true,
     "has-disclaimer": Boolean(input.disclaimerTooltipId),
-    "has-recitation-notice": Boolean(input.citations && input.citations.length > 0)
+    "has-recitation-notice": Boolean(input.citations && input.citations.size > 0),
+    "has-top-border": input.hasTopBorder
   });
   const disclaimer = input.disclaimerTooltipId ? html4`<devtools-widget
             .widgetConfig=${UI4.Widget.widgetConfig(AiCodeCompletionDisclaimer, {
     disclaimerTooltipId: input.disclaimerTooltipId,
-    panelName: input.panelName,
     loading: input.loading
   })} class="disclaimer-widget"></devtools-widget>` : nothing3;
-  const recitationNotice = input.citations && input.citations.length > 0 ? html4`<div class="ai-code-completion-recitation-notice">${lockedString3(UIStringsNotTranslate3.generatedCodeMayBeSubjectToALicense)}
+  const recitationNotice = input.citations && input.citations.size > 0 ? html4`<div class="ai-code-completion-recitation-notice">
+                ${lockedString3(UIStringsNotTranslate3.generatedCodeMayBeSubjectToALicense)}
                 <span class="link"
                     role="link"
                     aria-details=${input.citationsTooltipId}
                     aria-describedby=${input.citationsTooltipId}
                     tabIndex="0">
-                  ${lockedString3(UIStringsNotTranslate3.viewSources)}&nbsp;${lockedString3("(" + input.citations.length + ")")}</span>
+                  ${lockedString3(UIStringsNotTranslate3.viewSources)}&nbsp;${lockedString3("(" + input.citations.size + ")")}
+                </span>
                 <devtools-tooltip
                     id=${input.citationsTooltipId}
                     variant=${"rich"}
-                    jslogContext=${input.panelName + ".ai-code-completion-citations"}
+                    jslogContext=${"ai-code-completion-citations"}
                 ><div class="citations-tooltip-container">
                     ${Directives2.repeat(input.citations, (citation) => html4`<x-link
                         tabIndex="0"
                         href=${citation}
-                        jslog=${VisualLogging3.link(input.panelName + ".ai-code-completion-citations.citation-link").track({
+                        jslog=${VisualLogging3.link("ai-code-completion-citations.citation-link").track({
     click: true
   })}>${citation}</x-link>`)}</div></devtools-tooltip>
             </div>` : nothing3;
@@ -883,14 +889,14 @@ var AiCodeCompletionSummaryToolbar = class extends UI4.Widget.Widget {
   #view;
   #disclaimerTooltipId;
   #citationsTooltipId;
-  #panelName;
-  #citations = [];
+  #citations = /* @__PURE__ */ new Set();
   #loading = false;
+  #hasTopBorder = false;
   constructor(props, view) {
     super();
     this.#disclaimerTooltipId = props.disclaimerTooltipId;
     this.#citationsTooltipId = props.citationsTooltipId;
-    this.#panelName = props.panelName;
+    this.#hasTopBorder = props.hasTopBorder ?? false;
     this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW2;
     this.requestUpdate();
   }
@@ -899,15 +905,11 @@ var AiCodeCompletionSummaryToolbar = class extends UI4.Widget.Widget {
     this.requestUpdate();
   }
   updateCitations(citations) {
-    citations.forEach((citation) => {
-      if (!this.#citations.includes(citation)) {
-        this.#citations.push(citation);
-      }
-    });
+    citations.forEach((citation) => this.#citations.add(citation));
     this.requestUpdate();
   }
   clearCitations() {
-    this.#citations = [];
+    this.#citations.clear();
     this.requestUpdate();
   }
   performUpdate() {
@@ -915,8 +917,8 @@ var AiCodeCompletionSummaryToolbar = class extends UI4.Widget.Widget {
       disclaimerTooltipId: this.#disclaimerTooltipId,
       citations: this.#citations,
       citationsTooltipId: this.#citationsTooltipId,
-      panelName: this.#panelName,
-      loading: this.#loading
+      loading: this.#loading,
+      hasTopBorder: this.#hasTopBorder
     }, void 0, this.contentElement);
   }
 };

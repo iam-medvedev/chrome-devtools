@@ -136,6 +136,7 @@ import * as Root from "./../../core/root/root.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as TextEditor from "./../../ui/components/text_editor/text_editor.js";
+import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon from "./../common/common.js";
@@ -183,6 +184,8 @@ var Plugin = class {
 
 // gen/front_end/panels/sources/AiCodeCompletionPlugin.js
 var AI_CODE_COMPLETION_CHARACTER_LIMIT = 2e4;
+var DISCLAIMER_TOOLTIP_ID = "sources-ai-code-completion-disclaimer-tooltip";
+var CITATIONS_TOOLTIP_ID = "sources-ai-code-completion-citations-tooltip";
 var AiCodeCompletionPlugin = class extends Plugin {
   #aidaClient;
   #aiCodeCompletion;
@@ -192,6 +195,13 @@ var AiCodeCompletionPlugin = class extends Plugin {
   #teaser;
   #teaserDisplayTimeout;
   #editor;
+  #aiCodeCompletionDisclaimer;
+  #aiCodeCompletionDisclaimerContainer = document.createElement("div");
+  #aiCodeCompletionDisclaimerToolbarItem = new UI2.Toolbar.ToolbarItem(this.#aiCodeCompletionDisclaimerContainer);
+  #aiCodeCompletionCitations = [];
+  #aiCodeCompletionCitationsToolbar;
+  #aiCodeCompletionCitationsToolbarContainer = document.createElement("div");
+  #aiCodeCompletionCitationsToolbarAttached = false;
   #boundEditorKeyDown;
   #boundOnAiCodeCompletionSettingChanged;
   constructor(uiSourceCode) {
@@ -213,7 +223,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#teaser = void 0;
     this.#aiCodeCompletionSetting.removeChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
     this.#editor?.removeEventListener("keydown", this.#boundEditorKeyDown);
-    this.#aiCodeCompletion?.remove();
+    this.#cleanupAiCodeCompletion();
     super.dispose();
   }
   editorInitialized(editor) {
@@ -232,6 +242,9 @@ var AiCodeCompletionPlugin = class extends Plugin {
       TextEditor.Config.aiAutoCompleteSuggestion,
       CodeMirror.Prec.highest(CodeMirror.keymap.of(this.#editorKeymap()))
     ];
+  }
+  rightToolbarItems() {
+    return [this.#aiCodeCompletionDisclaimerToolbarItem];
   }
   #editorUpdate(update) {
     if (this.#teaser) {
@@ -287,6 +300,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
               if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
                 this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
               }
+              this.#onAiCodeCompletionSuggestionAccepted();
             }
             return accepted;
           }
@@ -323,7 +337,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
       }
     }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
   }, AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
-  #setAiCodeCompletion() {
+  #setupAiCodeCompletion() {
     if (!this.#editor) {
       return;
     }
@@ -335,13 +349,72 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#teaser = void 0;
     }
     this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor);
+    this.#aiCodeCompletion.addEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
+    this.#aiCodeCompletion.addEventListener("ResponseReceived", this.#onAiResponseReceived, this);
+    this.#createAiCodeCompletionDisclaimer();
+    this.#createAiCodeCompletionCitationsToolbar();
+  }
+  #createAiCodeCompletionDisclaimer() {
+    this.#aiCodeCompletionDisclaimer = new PanelCommon.AiCodeCompletionDisclaimer();
+    this.#aiCodeCompletionDisclaimer.disclaimerTooltipId = DISCLAIMER_TOOLTIP_ID;
+    this.#aiCodeCompletionDisclaimer.show(this.#aiCodeCompletionDisclaimerContainer, void 0, true);
+  }
+  #createAiCodeCompletionCitationsToolbar() {
+    this.#aiCodeCompletionCitationsToolbar = new PanelCommon.AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, hasTopBorder: true });
+    this.#aiCodeCompletionCitationsToolbar.show(this.#aiCodeCompletionCitationsToolbarContainer, void 0, true);
+  }
+  #attachAiCodeCompletionCitationsToolbar() {
+    if (this.#editor) {
+      this.#editor.dispatch({
+        effects: SourceFrame.SourceFrame.addSourceFrameInfobar.of({ element: this.#aiCodeCompletionCitationsToolbarContainer, order: 100 })
+      });
+      this.#aiCodeCompletionCitationsToolbarAttached = true;
+    }
+  }
+  #removeAiCodeCompletionCitationsToolbar() {
+    if (this.#editor) {
+      this.#editor.dispatch({
+        effects: SourceFrame.SourceFrame.removeSourceFrameInfobar.of({ element: this.#aiCodeCompletionCitationsToolbarContainer })
+      });
+      this.#aiCodeCompletionCitationsToolbarAttached = false;
+    }
   }
   #onAiCodeCompletionSettingChanged() {
     if (this.#aiCodeCompletionSetting.get()) {
-      this.#setAiCodeCompletion();
+      this.#setupAiCodeCompletion();
     } else if (this.#aiCodeCompletion) {
-      this.#aiCodeCompletion.remove();
-      this.#aiCodeCompletion = void 0;
+      this.#cleanupAiCodeCompletion();
+    }
+  }
+  #cleanupAiCodeCompletion() {
+    this.#aiCodeCompletion?.removeEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
+    this.#aiCodeCompletion?.removeEventListener("ResponseReceived", this.#onAiResponseReceived, this);
+    this.#aiCodeCompletion?.remove();
+    this.#aiCodeCompletionCitations = [];
+    this.#aiCodeCompletionDisclaimerContainer.removeChildren();
+    this.#aiCodeCompletionDisclaimer = void 0;
+    this.#removeAiCodeCompletionCitationsToolbar();
+    this.#aiCodeCompletionCitationsToolbar = void 0;
+  }
+  #onAiRequestTriggered = () => {
+    if (this.#aiCodeCompletionDisclaimer) {
+      this.#aiCodeCompletionDisclaimer.loading = true;
+    }
+  };
+  #onAiResponseReceived = (event) => {
+    this.#aiCodeCompletionCitations = event.data.citations ?? [];
+    if (this.#aiCodeCompletionDisclaimer) {
+      this.#aiCodeCompletionDisclaimer.loading = false;
+    }
+  };
+  #onAiCodeCompletionSuggestionAccepted() {
+    if (!this.#aiCodeCompletionCitationsToolbar || this.#aiCodeCompletionCitations.length === 0) {
+      return;
+    }
+    const citations = this.#aiCodeCompletionCitations.map((citation) => citation.uri).filter((uri) => Boolean(uri));
+    this.#aiCodeCompletionCitationsToolbar.updateCitations(citations);
+    if (!this.#aiCodeCompletionCitationsToolbarAttached && citations.length > 0) {
+      this.#attachAiCodeCompletionCitationsToolbar();
     }
   }
   #detachAiCodeCompletionTeaser() {
@@ -458,7 +531,7 @@ __export(AiWarningInfobarPlugin_exports, {
 });
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
-import * as SourceFrame from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings2 = {
   /**
@@ -504,12 +577,12 @@ var AiWarningInfobarPlugin = class extends Plugin {
   }
   attachInfobar(bar) {
     if (this.#editor) {
-      this.#editor.dispatch({ effects: SourceFrame.SourceFrame.addInfobar.of(bar) });
+      this.#editor.dispatch({ effects: SourceFrame3.SourceFrame.addSourceFrameInfobar.of({ element: bar.element }) });
     }
   }
   removeInfobar(bar) {
     if (this.#editor && bar) {
-      this.#editor.dispatch({ effects: SourceFrame.SourceFrame.removeInfobar.of(bar) });
+      this.#editor.dispatch({ effects: SourceFrame3.SourceFrame.removeSourceFrameInfobar.of({ element: bar.element }) });
     }
   }
 };
@@ -1655,7 +1728,7 @@ var BreakpointsSidebarController = class _BreakpointsSidebarController {
   #getBreakpointTypeAndDetails(locations) {
     const breakpointWithCondition = locations.find((location) => Boolean(location.breakpoint.condition()));
     const breakpoint = breakpointWithCondition?.breakpoint;
-    if (!breakpoint || !breakpoint.condition()) {
+    if (!breakpoint?.condition()) {
       return {
         type: "REGULAR_BREAKPOINT"
         /* SDK.DebuggerModel.BreakpointType.REGULAR_BREAKPOINT */
@@ -2513,7 +2586,8 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
     let previousStackTrace = details.callFrames;
     let { maxAsyncStackChainDepth } = this;
     let asyncStackTrace = null;
-    for await (asyncStackTrace of details.debuggerModel.iterateAsyncParents(details)) {
+    for await (const { stackTrace } of details.debuggerModel.iterateAsyncParents(details)) {
+      asyncStackTrace = stackTrace;
       const title = UI6.UIUtils.asyncStackTraceLabel(asyncStackTrace.description, previousStackTrace);
       items.push(...await Item.createItemsForAsyncStack(title, details.debuggerModel, asyncStackTrace.callFrames, this.locationPool, this.refreshItem.bind(this)));
       previousStackTrace = asyncStackTrace.callFrames;
@@ -2596,10 +2670,7 @@ var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleVi
     UI6.ARIAUtils.setSelected(element, isSelected);
     element.classList.toggle("hidden", !this.showIgnoreListed && item.isIgnoreListed);
     const icon = new IconButton2.Icon.Icon();
-    icon.data = {
-      iconName: "large-arrow-right-filled",
-      color: "var(--icon-arrow-main-thread)"
-    };
+    icon.name = "large-arrow-right-filled";
     icon.classList.add("selected-call-frame-icon", "small");
     element.appendChild(icon);
     element.tabIndex = item === this.list.selectedItem() ? 0 : -1;
@@ -3101,7 +3172,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as CodeMirror3 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as Coverage from "./../coverage/coverage.js";
 var UIStrings7 = {
@@ -3905,10 +3976,8 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
     }
     const mainElement = messageWrapper.createChild("div", "status-main");
     const mainIcon = new IconButton4.Icon.Icon();
-    mainIcon.data = {
-      iconName: "info",
-      color: "var(--sys-color-on-yellow-container)"
-    };
+    mainIcon.name = "info";
+    mainIcon.style.color = "var(--sys-color-on-yellow-container)";
     mainIcon.classList.add("medium");
     mainElement.appendChild(mainIcon);
     const breakpointType = BreakpointTypeNouns.get(data.type);
@@ -4011,10 +4080,8 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
       const messageWrapper2 = document.createElement("span");
       const mainElement = messageWrapper2.createChild("div", "status-main");
       const mainIcon = new IconButton4.Icon.Icon();
-      mainIcon.data = {
-        iconName: errorLike ? "cross-circle-filled" : "info",
-        color: errorLike ? "var(--icon-error)" : "var(--sys-color-on-yellow-container)"
-      };
+      mainIcon.name = errorLike ? "cross-circle-filled" : "info";
+      mainIcon.style.color = errorLike ? "var(--icon-error)" : "var(--sys-color-on-yellow-container)";
       mainIcon.classList.add("medium");
       mainElement.appendChild(mainIcon);
       mainElement.appendChild(document.createTextNode(mainText));
@@ -4059,7 +4126,7 @@ import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as TextEditor6 from "./../../ui/components/text_editor/text_editor.js";
 import * as Tooltips2 from "./../../ui/components/tooltips/tooltips.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as SourceFrame11 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame13 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -6409,7 +6476,7 @@ import * as Persistence11 from "./../../models/persistence/persistence.js";
 import * as Workspace17 from "./../../models/workspace/workspace.js";
 import * as IconButton8 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen from "./../../ui/legacy/components/quick_open/quick_open.js";
-import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame12 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as Components2 from "./components/components.js";
@@ -6421,7 +6488,7 @@ __export(EditingLocationHistoryManager_exports, {
   HistoryDepth: () => HistoryDepth
 });
 import * as Workspace11 from "./../../models/workspace/workspace.js";
-import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
 var HistoryDepth = 20;
 var EditingLocationHistoryManager = class {
   sourcesView;
@@ -6593,7 +6660,7 @@ import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace15 from "./../../models/workspace/workspace.js";
 import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
 import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
-import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as Snippets3 from "./../snippets/snippets.js";
@@ -6626,14 +6693,14 @@ import * as CodeMirror6 from "./../../third_party/codemirror.next/codemirror.nex
 import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as TextEditor5 from "./../../ui/components/text_editor/text_editor.js";
-import * as SourceFrame6 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/sources/ProfilePlugin.js
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as CodeMirror5 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as SourceFrame5 from "./../../ui/legacy/components/source_frame/source_frame.js";
+import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
 var UIStrings11 = {
   /**
    * @description The milisecond unit
@@ -6905,7 +6972,7 @@ var SnippetsPlugin = class extends Plugin {
 };
 
 // gen/front_end/panels/sources/UISourceCodeFrame.js
-var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.eventMixin(SourceFrame6.SourceFrame.SourceFrameImpl) {
+var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.eventMixin(SourceFrame8.SourceFrame.SourceFrameImpl) {
   #uiSourceCode;
   #muteSourceCodeEvents = false;
   #persistenceBinding;
@@ -7339,7 +7406,7 @@ function messageLevelComparator(a, b) {
 }
 function getIconDataForMessage(message) {
   if (message.origin instanceof IssuesManager.SourceFrameIssuesManager.IssueMessage) {
-    return IssueCounter.IssueCounter.getIssueKindIconData(message.origin.getIssueKind());
+    return { iconName: IssueCounter.IssueCounter.getIssueKindIconName(message.origin.getIssueKind()) };
   }
   return getIconDataForLevel(message.level());
 }
@@ -7442,8 +7509,9 @@ var MessageWidget = class extends CodeMirror6.WidgetType {
     );
     if (nonIssues.length) {
       const maxIssue = nonIssues.sort(messageLevelComparator)[nonIssues.length - 1];
-      const errorIcon = wrap.appendChild(new IconButton6.Icon.Icon());
-      errorIcon.data = getIconDataForLevel(maxIssue.level());
+      const iconData = getIconDataForLevel(maxIssue.level());
+      const errorIcon = createIconFromIconData(iconData);
+      wrap.appendChild(errorIcon);
       errorIcon.classList.add("cm-messageIcon-error");
     }
     const issue = this.messages.find(
@@ -7451,8 +7519,9 @@ var MessageWidget = class extends CodeMirror6.WidgetType {
       /* Workspace.UISourceCode.Message.Level.ISSUE */
     );
     if (issue) {
-      const issueIcon = wrap.appendChild(new IconButton6.Icon.Icon());
-      issueIcon.data = getIconDataForMessage(issue);
+      const iconData = getIconDataForMessage(issue);
+      const issueIcon = createIconFromIconData(iconData);
+      wrap.appendChild(issueIcon);
       issueIcon.classList.add("cm-messageIcon-issue", "extra-small");
       issueIcon.addEventListener("click", () => (issue.clickHandler() || Math.min)());
     }
@@ -7491,6 +7560,17 @@ var RowMessageDecorations = class _RowMessageDecorations {
     return result;
   }
 };
+function createIconFromIconData(data) {
+  const icon = new IconButton6.Icon.Icon();
+  icon.name = data.iconName;
+  if (data.width) {
+    icon.style.width = data.width;
+  }
+  if (data.height) {
+    icon.style.height = data.height;
+  }
+  return icon;
+}
 var showRowMessages = CodeMirror6.StateField.define({
   create(state) {
     return RowMessageDecorations.create(new RowMessages([]), state.doc);
@@ -7520,8 +7600,9 @@ function renderMessage(message, count) {
   element.style.alignItems = "center";
   element.style.gap = "4px";
   if (count === 1) {
-    const icon = element.appendChild(new IconButton6.Icon.Icon());
-    icon.data = getIconDataForMessage(message);
+    const data = getIconDataForMessage(message);
+    const icon = createIconFromIconData(data);
+    element.appendChild(icon);
     icon.classList.add("text-editor-row-message-icon", "extra-small");
     icon.addEventListener("click", () => (message.clickHandler() || Math.min)());
   } else {
@@ -7727,21 +7808,21 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     this.tabbedPane.selectPrevTab();
   }
   addViewListeners() {
-    if (!this.currentView || !(this.currentView instanceof SourceFrame8.SourceFrame.SourceFrameImpl)) {
+    if (!this.currentView || !(this.currentView instanceof SourceFrame10.SourceFrame.SourceFrameImpl)) {
       return;
     }
     this.currentView.addEventListener("EditorUpdate", this.onEditorUpdate, this);
     this.currentView.addEventListener("EditorScroll", this.onScrollChanged, this);
   }
   removeViewListeners() {
-    if (!this.currentView || !(this.currentView instanceof SourceFrame8.SourceFrame.SourceFrameImpl)) {
+    if (!this.currentView || !(this.currentView instanceof SourceFrame10.SourceFrame.SourceFrameImpl)) {
       return;
     }
     this.currentView.removeEventListener("EditorUpdate", this.onEditorUpdate, this);
     this.currentView.removeEventListener("EditorScroll", this.onScrollChanged, this);
   }
   onScrollChanged() {
-    if (this.currentView instanceof SourceFrame8.SourceFrame.SourceFrameImpl) {
+    if (this.currentView instanceof SourceFrame10.SourceFrame.SourceFrameImpl) {
       if (this.scrollTimer) {
         clearTimeout(this.scrollTimer);
       }
@@ -7971,7 +8052,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
   }
   addLoadErrorIcon(tabId2) {
     const icon = new IconButton7.Icon.Icon();
-    icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+    icon.name = "cross-circle-filled";
     icon.classList.add("small");
     UI15.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
     if (this.tabbedPane.tabView(tabId2)) {
@@ -7979,7 +8060,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     }
   }
   restoreEditorProperties(editorView, selection, firstLineNumber) {
-    const sourceFrame = editorView instanceof SourceFrame8.SourceFrame.SourceFrameImpl ? editorView : null;
+    const sourceFrame = editorView instanceof SourceFrame10.SourceFrame.SourceFrameImpl ? editorView : null;
     if (!sourceFrame) {
       return;
     }
@@ -8035,7 +8116,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       this.tabbedPane.changeTabTitle(tabId2, title, tooltip);
       if (uiSourceCode.loadError()) {
         const icon = new IconButton7.Icon.Icon();
-        icon.data = { iconName: "cross-circle-filled", color: "var(--icon-error)" };
+        icon.name = "cross-circle-filled";
         icon.classList.add("small");
         UI15.Tooltip.Tooltip.install(icon, i18nString13(UIStrings14.unableToLoadThisContent));
         this.tabbedPane.setTrailingTabIcon(tabId2, icon);
@@ -8526,9 +8607,9 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     let sourceView;
     const contentType = uiSourceCode.contentType();
     if (contentType === Common13.ResourceType.resourceTypes.Image || uiSourceCode.mimeType().startsWith("image/")) {
-      sourceView = new SourceFrame10.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
+      sourceView = new SourceFrame12.ImageView.ImageView(uiSourceCode.mimeType(), uiSourceCode);
     } else if (contentType === Common13.ResourceType.resourceTypes.Font || uiSourceCode.mimeType().includes("font")) {
-      sourceView = new SourceFrame10.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
+      sourceView = new SourceFrame12.FontView.FontView(uiSourceCode.mimeType(), uiSourceCode);
     } else if (uiSourceCode.name() === HEADER_OVERRIDES_FILENAME) {
       sourceView = new Components2.HeadersView.HeadersView(uiSourceCode);
     } else {
@@ -8540,10 +8621,10 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     return sourceView;
   }
   #sourceViewTypeForWidget(widget) {
-    if (widget instanceof SourceFrame10.ImageView.ImageView) {
+    if (widget instanceof SourceFrame12.ImageView.ImageView) {
       return "ImageView";
     }
-    if (widget instanceof SourceFrame10.FontView.FontView) {
+    if (widget instanceof SourceFrame12.FontView.FontView) {
       return "FontView";
     }
     if (widget instanceof Components2.HeadersView.HeadersView) {
@@ -8939,10 +9020,7 @@ var ThreadsSidebarPane = class extends UI17.Widget.VBox {
     const title = element.createChild("div", "thread-item-title");
     const pausedState = element.createChild("div", "thread-item-paused-state");
     const icon = new IconButton9.Icon.Icon();
-    icon.data = {
-      iconName: "large-arrow-right-filled",
-      color: "var(--icon-arrow-main-thread)"
-    };
+    icon.name = "large-arrow-right-filled";
     icon.classList.add("selected-thread-icon", "small");
     element.appendChild(icon);
     element.tabIndex = -1;
@@ -10433,7 +10511,7 @@ var DebuggerPlugin = class extends Plugin {
     this.editor = editor;
     computeNonBreakableLines(editor.state, this.transformer, this.uiSourceCode).then((linePositions) => {
       if (linePositions.length) {
-        editor.dispatch({ effects: SourceFrame11.SourceFrame.addNonBreakableLines.of(linePositions) });
+        editor.dispatch({ effects: SourceFrame13.SourceFrame.addNonBreakableLines.of(linePositions) });
       }
     }, console.error);
     if (this.ignoreListInfobar) {
@@ -10494,12 +10572,12 @@ var DebuggerPlugin = class extends Plugin {
   }
   attachInfobar(bar) {
     if (this.editor) {
-      this.editor.dispatch({ effects: SourceFrame11.SourceFrame.addInfobar.of(bar) });
+      this.editor.dispatch({ effects: SourceFrame13.SourceFrame.addSourceFrameInfobar.of({ element: bar.element }) });
     }
   }
   removeInfobar(bar) {
     if (this.editor && bar) {
-      this.editor.dispatch({ effects: SourceFrame11.SourceFrame.removeInfobar.of(bar) });
+      this.editor.dispatch({ effects: SourceFrame13.SourceFrame.removeSourceFrameInfobar.of({ element: bar.element }) });
     }
   }
   hideIgnoreListInfobar() {
@@ -10530,7 +10608,7 @@ var DebuggerPlugin = class extends Plugin {
     const breakpoints = this.lineBreakpoints(line);
     const supportsConditionalBreakpoints = Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(this.uiSourceCode);
     if (!breakpoints.length) {
-      if (this.editor && SourceFrame11.SourceFrame.isBreakableLine(this.editor.state, line)) {
+      if (this.editor && SourceFrame13.SourceFrame.isBreakableLine(this.editor.state, line)) {
         contextMenu.debugSection().appendItem(i18nString17(UIStrings18.addBreakpoint), this.createNewBreakpoint.bind(
           this,
           line,
@@ -11274,7 +11352,7 @@ var DebuggerPlugin = class extends Plugin {
     const editor = this.editor;
     const position = editor.editor.posAtDOM(event.target);
     const line = editor.state.doc.lineAt(position);
-    if (!SourceFrame11.SourceFrame.isBreakableLine(editor.state, line) || // Editing breakpoints only make sense for conditional breakpoints
+    if (!SourceFrame13.SourceFrame.isBreakableLine(editor.state, line) || // Editing breakpoints only make sense for conditional breakpoints
     // and logpoints.
     !Bindings9.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().supportsConditionalBreakpoints(this.uiSourceCode)) {
       return;
@@ -11508,7 +11586,7 @@ var DebuggerPlugin = class extends Plugin {
     return this.transformer.editorLocationToUILocation(line.number - 1);
   }
   async createNewBreakpoint(line, condition, enabled, isLogpoint) {
-    if (!this.editor || !SourceFrame11.SourceFrame.isBreakableLine(this.editor.state, line)) {
+    if (!this.editor || !SourceFrame13.SourceFrame.isBreakableLine(this.editor.state, line)) {
       return;
     }
     Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.ScriptsBreakpointSet);
@@ -11736,7 +11814,7 @@ var BreakpointGutterMarker = class _BreakpointGutterMarker extends CodeMirror7.G
     const div = document.createElement("div");
     div.setAttribute("jslog", `${VisualLogging13.breakpointMarker().track({ click: true })}`);
     const line = view.state.doc.lineAt(this.#position).number;
-    const formatNumber = view.state.facet(SourceFrame11.SourceFrame.LINE_NUMBER_FORMATTER);
+    const formatNumber = view.state.facet(SourceFrame13.SourceFrame.LINE_NUMBER_FORMATTER);
     div.textContent = formatNumber(line, view.state);
     if (!this.condition) {
       return div;
@@ -12882,8 +12960,11 @@ var OpenFileQuickOpen = class extends FilteredUISourceCodeListProvider {
   renderItem(itemIndex, query, titleElement, subtitleElement) {
     super.renderItem(itemIndex, query, titleElement, subtitleElement);
     const iconElement = new IconButton11.Icon.Icon();
-    const iconData = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
-    iconElement.data = iconData;
+    const { iconName, color } = PanelUtils2.iconDataForResourceType(this.itemContentTypeAt(itemIndex));
+    iconElement.name = iconName;
+    if (color) {
+      iconElement.style.color = color;
+    }
     iconElement.classList.add("large");
     titleElement.parentElement?.parentElement?.insertBefore(iconElement, titleElement.parentElement);
   }
@@ -13273,7 +13354,7 @@ var scopeChainSidebarPane_css_default = `/*
 
 .scope-chain-sidebar-pane-section-title {
   font-weight: normal;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   white-space: normal;
 }
 
@@ -13600,7 +13681,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     if (event.data !== mainTarget) {
       return;
     }
-    const inspectedURL = mainTarget && mainTarget.inspectedURL();
+    const inspectedURL = mainTarget?.inspectedURL();
     if (!inspectedURL) {
       return;
     }
@@ -13612,7 +13693,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
   }
   uiSourceCodeAdded(uiSourceCode) {
     const mainTarget = SDK14.TargetManager.TargetManager.instance().scopeTarget();
-    const inspectedURL = mainTarget && mainTarget.inspectedURL();
+    const inspectedURL = mainTarget?.inspectedURL();
     if (!inspectedURL) {
       return;
     }

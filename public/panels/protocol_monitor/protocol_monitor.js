@@ -1392,17 +1392,17 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                           style="--override-data-grid-row-background-color: var(--sys-color-surface3)">
                         ${"id" in message ? html2`
                           <td title="sent">
-                            <devtools-icon name="arrow-up-down" style="color: var(--icon-request-response); width: 16px; height: 16px;">
+                            <devtools-icon name="arrow-up-down" class="medium" style="color: var(--icon-request-response);">
                             </devtools-icon>
                           </td>` : html2`
                           <td title="received">
-                            <devtools-icon name="arrow-down" style="color: var(--icon-request); width: 16px; height: 16px;">
+                            <devtools-icon name="arrow-down" class="medium" style="color: var(--icon-request);">
                             </devtools-icon>
                           </td>`}
                         <td>${message.method}</td>
                         <td>${message.params ? html2`<code>${JSON.stringify(message.params)}</code>` : ""}</td>
                         <td>
-                          ${message.result ? html2`<code>${JSON.stringify(message.result)}</code>` : message.error ? html2`<code>${JSON.stringify(message.error)}</code>` : "(pending)"}
+                          ${message.result ? html2`<code>${JSON.stringify(message.result)}</code>` : message.error ? html2`<code>${JSON.stringify(message.error)}</code>` : "id" in message ? "(pending)" : ""}
                         </td>
                         <td data-value=${message.elapsedTime || 0}>
                           ${!("id" in message) ? "" : message.elapsedTime ? i18nString2(UIStrings2.sMs, { PH1: String(message.elapsedTime) }) : "(pending)"}

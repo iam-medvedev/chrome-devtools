@@ -54,7 +54,7 @@ export class ImagePreview {
         const { precomputedFeatures, imageAltText, align } = options;
         let resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(originalImageURL);
         let imageURL = originalImageURL;
-        if (!isImageResource(resource) && precomputedFeatures && precomputedFeatures.currentSrc) {
+        if (!isImageResource(resource) && precomputedFeatures?.currentSrc) {
             imageURL = precomputedFeatures.currentSrc;
             resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(imageURL);
         }

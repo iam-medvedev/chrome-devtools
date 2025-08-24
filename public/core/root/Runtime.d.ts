@@ -78,6 +78,7 @@ export declare const enum ExperimentName {
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
+    TIMELINE_ASK_AI_FULL_BUTTON = "timeline-ask-ai-full-button",
     TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz",
     VERTICAL_DRAWER = "vertical-drawer"
 }
@@ -194,6 +195,10 @@ interface AiDebugWithAi {
     enabled: boolean;
     featureName?: string;
 }
+interface GlobalAiButton {
+    enabled: boolean;
+    promotionEnabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -234,6 +239,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAllowPopoverForcing: AllowPopoverForcing;
     devToolsAiSubmenuPrompts: AiSubmenuPrompts;
     devToolsIpProtectionInDevTools: IpProtectionInDevTools;
+    devToolsGlobalAiButton: GlobalAiButton;
 }>;
 /**
  * The host configuration for this DevTools instance.

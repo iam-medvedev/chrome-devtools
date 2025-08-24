@@ -134,10 +134,13 @@ export interface TrackVisualConfig {
     expanded: boolean;
     originalIndex: number;
     visualIndex: number;
+    trackName: string;
 }
 /**
  * Stores the visual config if the user has modified it. Split into "main" and
  * "network" so we can pass the relevant config into the right data provider.
+ * NOTE: as of August 2025 (M141) we currently do not export this in new
+ * traces, or use it if an existing trace is imported with it.
  */
 export interface PersistedTraceVisualConfig {
     main: TrackVisualConfig[] | null;
@@ -164,7 +167,7 @@ export interface MetaData {
     visualTrackConfig?: PersistedTraceVisualConfig;
     hostDPR?: number;
 }
-interface MetadataSourceMap {
+export interface MetadataSourceMap {
     url: string;
     /** If not defined, then this was a data url. */
     sourceMapUrl?: string;
@@ -172,4 +175,3 @@ interface MetadataSourceMap {
 }
 export type Contents = TraceFile | Event[];
 export declare function traceEventKeyToValues(key: SerializableKey): SerializableKeyValues;
-export {};

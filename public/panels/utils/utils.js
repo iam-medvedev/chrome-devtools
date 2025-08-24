@@ -55,22 +55,18 @@ var PanelUtils = class _PanelUtils {
     let type = request.resourceType();
     if (_PanelUtils.isFailedNetworkRequest(request)) {
       let iconName2;
-      let color2;
       if (request.resourceType() === Common.ResourceType.resourceTypes.Prefetch) {
         iconName2 = "warning-filled";
-        color2 = "var(--icon-warning)";
       } else {
         iconName2 = "cross-circle-filled";
-        color2 = "var(--icon-error)";
       }
       return html`<devtools-icon
-          class="icon" name=${iconName2} title=${type.title()} style=${styleMap({ color: color2 })}>
+          class="icon" name=${iconName2} title=${type.title()}>
         </devtools-icon>`;
     }
     if (request.hasThirdPartyCookiePhaseoutIssue()) {
       return html`<devtools-icon
           class="icon" name="warning-filled" title=${i18nString(UIStrings.thirdPartyPhaseout)}
-          style="color:var(--icon-warning)">
         </devtools-icon>`;
     }
     const isHeaderOverridden = request.hasOverriddenHeaders();
@@ -118,39 +114,39 @@ var PanelUtils = class _PanelUtils {
   }
   static iconDataForResourceType(resourceType) {
     if (resourceType.isDocument()) {
-      return { iconName: "file-document", color: "var(--icon-file-document)" };
+      return { iconName: "file-document" };
     }
     if (resourceType.isImage()) {
       return { iconName: "file-image", color: "var(--icon-file-image)" };
     }
     if (resourceType.isFont()) {
-      return { iconName: "file-font", color: "var(--icon-file-font)" };
+      return { iconName: "file-font" };
     }
     if (resourceType.isScript()) {
-      return { iconName: "file-script", color: "var(--icon-file-script)" };
+      return { iconName: "file-script" };
     }
     if (resourceType.isStyleSheet()) {
-      return { iconName: "file-stylesheet", color: "var(--icon-file-styles)" };
+      return { iconName: "file-stylesheet" };
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.Manifest.name()) {
-      return { iconName: "file-manifest", color: "var(--icon-default)" };
+      return { iconName: "file-manifest" };
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.Wasm.name()) {
-      return { iconName: "file-wasm", color: "var(--icon-default)" };
+      return { iconName: "file-wasm" };
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.WebSocket.name() || resourceType.name() === Common.ResourceType.resourceTypes.DirectSocket.name()) {
-      return { iconName: "file-websocket", color: "var(--icon-default)" };
+      return { iconName: "file-websocket" };
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.Media.name()) {
-      return { iconName: "file-media", color: "var(--icon-file-media)" };
+      return { iconName: "file-media" };
     }
     if (resourceType.isWebbundle()) {
-      return { iconName: "bundle", color: "var(--icon-default)" };
+      return { iconName: "bundle" };
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.Fetch.name() || resourceType.name() === Common.ResourceType.resourceTypes.XHR.name()) {
-      return { iconName: "file-fetch-xhr", color: "var(--icon-default)" };
+      return { iconName: "file-fetch-xhr" };
     }
-    return { iconName: "file-generic", color: "var(--icon-default)" };
+    return { iconName: "file-generic" };
   }
   static getIconForSourceFile(uiSourceCode) {
     const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);

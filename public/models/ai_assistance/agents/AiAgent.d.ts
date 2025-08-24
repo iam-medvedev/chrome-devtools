@@ -252,13 +252,6 @@ export declare abstract class AiAgent<T> {
      */
     protected declareFunction<Args extends Record<string, unknown>, ReturnType = unknown>(name: string, declaration: FunctionDeclaration<Args, ReturnType>): void;
     protected clearDeclaredFunctions(): void;
-    protected formatParsedAnswer({ answer }: ParsedAnswer): string;
-    /**
-     * Special mode for StylingAgent that turns custom text output into a
-     * function call.
-     */
-    protected functionCallEmulationEnabled: boolean;
-    protected emulateFunctionCall(_aidaResponse: Host.AidaClient.DoConversationResponse): Host.AidaClient.AidaFunctionCallResponse | 'no-function-call' | 'wait-for-completion';
     run(initialQuery: string, options: {
         selected: ConversationContext<T> | null;
         signal?: AbortSignal;

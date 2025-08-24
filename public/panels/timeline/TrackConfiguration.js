@@ -18,6 +18,7 @@ export function buildPersistedConfig(groups, indexesInVisualOrder) {
             hidden: Boolean(group.hidden),
             originalIndex: index,
             visualIndex: newVisualIndex,
+            trackName: group.name,
         };
     });
 }

@@ -28,14 +28,14 @@ describeWithEnvironment('PerformanceAgent', () => {
             mockHostConfig('test model');
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE */);
+            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE */);
+            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
         });
         it('structure matches the snapshot', async () => {
@@ -44,7 +44,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             const agent = new PerformanceAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
-            }, "drjones-performance" /* ConversationType.PERFORMANCE */);
+            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({
@@ -121,7 +121,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
                                 rpcGlobalId: 123,
                             },
                         }]]),
-            }, "drjones-performance" /* ConversationType.PERFORMANCE */);
+            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
             const context = PerformanceTraceContext.fromCallTree(aiCallTree);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             const expectedData = '\n\n' +
@@ -173,7 +173,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
         it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE */);
+            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
             const mockAiCallTree = {
                 serialize: () => 'Mock call tree',
             };
@@ -227,7 +227,7 @@ describeWithEnvironment('PerformanceAgent – insight focus', () => {
         const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
         const insightSet = getInsightSetOrError(insights, firstNav);
         const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
+        assert.strictEqual(context.getOrigin(), 'insight-658799706428-658804825864');
     });
     it('outputs the right title for the selected insight', async () => {
         const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
@@ -445,7 +445,7 @@ Help me understand?`;
             assert.strictEqual(titleResponse.title, 'Investigating main thread activity…');
             const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
             assert.exists(action);
-            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(lcpBreakdown, insightSet.bounds, parsedTrace);
+            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityForInsight(lcpBreakdown, insightSet.bounds, parsedTrace);
             assert.isOk(expectedTree);
             const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedTree.serialize());
             sinon.assert.calledWith(metricsSpy, expectedBytesSize);
@@ -513,7 +513,7 @@ Help me understand?`;
             assert.strictEqual(agent.currentFacts().size, 1);
             const mainThreadActivityFact = Array.from(agent.currentFacts()).at(0);
             assert.exists(mainThreadActivityFact);
-            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivity(lcpBreakdown, insightSet.bounds, parsedTrace);
+            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityForInsight(lcpBreakdown, insightSet.bounds, parsedTrace);
             assert.isOk(expectedTree);
             assert.include(mainThreadActivityFact.text, expectedTree.serialize());
             // Now we make one more request; we do this to ensure that we don't add the same fact again.
@@ -599,21 +599,31 @@ Help me understand?`;
             const mainThreadActivityDescriptionFact = Array.from(agent.currentFacts()).at(0);
             assert.exists(mainThreadActivityDescriptionFact);
             const expectedFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
-  The format of each callframe is:
+The format of each callframe is:
 
-    'id;name;duration;selfTime;urlIndex;childRange;[S]'
+  'id;name;duration;selfTime;urlIndex;childRange;[S]'
 
-  The fields are:
+The fields are:
 
-  * id: A unique numerical identifier for the call frame.
-  * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-  * duration: The total execution time of the call frame, including its children.
-  * selfTime: The time spent directly within the call frame, excluding its children's execution.
-  * urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-  * childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-  * S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
+* id: A unique numerical identifier for the call frame.
+* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+* duration: The total execution time of the call frame, including its children.
+* selfTime: The time spent directly within the call frame, excluding its children's execution.
+* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
             assert.deepEqual(mainThreadActivityDescriptionFact.text, expectedFormatDescription);
         });
+    });
+});
+describeWithEnvironment('PerformanceAgent – all focus', () => {
+    it('uses the min and max bounds of the trace as the origin', async function () {
+        const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+        assert.isOk(insights);
+        const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
+        const insightSet = getInsightSetOrError(insights, firstNav);
+        const context = PerformanceTraceContext.full(parsedTrace, insightSet, metadata);
+        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
     });
 });
 //# sourceMappingURL=PerformanceAgent.test.js.map

@@ -10,7 +10,7 @@ import * as Common4 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
@@ -70,7 +70,7 @@ var aiAssistancePanel_css_default = `/*
 import "./../../ui/components/spinners/spinners.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
@@ -92,7 +92,7 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
-import * as Root from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as Persistence2 from "./../../models/persistence/persistence.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
@@ -108,6 +108,7 @@ import * as PanelCommon from "./../common/common.js";
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
@@ -236,7 +237,11 @@ var UIStringsNotTranslate = {
   /**
    * @description Explanation for selecting the correct workspace folder.
    */
-  selectProjectRoot: "To save patches directly to your project, select the project root folder containing the source files of the inspected page. Relevant code snippets will be sent to Google to generate code suggestions."
+  selectProjectRoot: "Source code from the selected folder is sent to Google. This data may be seen by human reviewers to improve this feature.",
+  /**
+   * @description Explanation for selecting the correct workspace folder when enterprise logging is off.
+   */
+  selectProjectRootNoLogging: "Source code from the selected folder is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time."
 };
 var lockedString = i18n.i18n.lockedString;
 var SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
@@ -245,7 +250,7 @@ var SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
       <style>${selectWorkspaceDialog_css_default}</style>
       <h2 class="dialog-header">${lockedString(UIStringsNotTranslate.selectFolder)}</h2>
       <div class="main-content">
-        <div class="select-project-root">${lockedString(UIStringsNotTranslate.selectProjectRoot)}</div>
+        <div class="select-project-root">${input.selectProjectRootText}</div>
         ${input.showAutomaticWorkspaceNudge ? html`
           <!-- Hardcoding, because there is no 'getFormatLocalizedString' equivalent for 'lockedString' -->
           <div>
@@ -275,7 +280,7 @@ var SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
                 role="option"
                 tabindex=${index === input.selectedIndex ? "0" : "-1"}
               >
-                <devtools-icon class="folder-icon" .name=${"folder"}></devtools-icon>
+                <devtools-icon class="folder-icon" name="folder"></devtools-icon>
                 <span class="ellipsis">${folder.name}</span>
               </li>`;
   })}
@@ -374,9 +379,11 @@ var SelectWorkspaceDialog = class _SelectWorkspaceDialog extends UI.Widget.VBox 
     }
   }
   performUpdate() {
+    const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     const viewInput = {
       folders: this.#folders,
       selectedIndex: this.#selectedIndex,
+      selectProjectRootText: noLogging ? lockedString(UIStringsNotTranslate.selectProjectRootNoLogging) : lockedString(UIStringsNotTranslate.selectProjectRoot),
       showAutomaticWorkspaceNudge: this.#automaticFileSystemManager.automaticFileSystem === null && this.#automaticFileSystemManager.availability === "available",
       onProjectSelected: (index) => {
         this.#selectedIndex = index;
@@ -527,11 +534,11 @@ var UIStringsNotTranslate2 = {
    * @description The footer disclaimer that links to more information
    * about the AI feature. Same text as in ChatView.
    */
-  learnMore: "Learn about AI in DevTools",
+  learnMore: "Learn more",
   /**
    * @description Header text for the AI-powered code suggestions disclaimer dialog.
    */
-  freDisclaimerHeader: "Get AI-powered code suggestions for your workspace",
+  freDisclaimerHeader: "Apply changes directly to your project\u2019s source code",
   /**
    * @description First disclaimer item text for the fre dialog.
    */
@@ -539,11 +546,11 @@ var UIStringsNotTranslate2 = {
   /**
    * @description Second disclaimer item text for the fre dialog.
    */
-  freDisclaimerTextPrivacy: "Source code from the selected folder is sent to Google to generate code suggestions",
+  freDisclaimerTextPrivacy: "To generate code suggestions, source code from the selected folder is sent to Google. This data may be seen by human reviewers to improve this feature.",
   /**
    * @description Second disclaimer item text for the fre dialog when enterprise logging is off.
    */
-  freDisclaimerTextPrivacyNoLogging: "Source code from the selected folder is sent to Google to generate code suggestions. This data will not be used to improve Google\u2019s AI models.",
+  freDisclaimerTextPrivacyNoLogging: "To generate code suggestions, source code from the selected folder is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Third disclaimer item text for the fre dialog.
    */
@@ -604,7 +611,7 @@ var PatchWidget = class extends UI2.Widget.Widget {
   constructor(element, view, opts) {
     super(element);
     this.#aidaClient = opts?.aidaClient ?? new Host2.AidaClient.AidaClient();
-    this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    this.#noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     this.#view = view ?? ((input, output, target) => {
       if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
         return;
@@ -627,7 +634,7 @@ var PatchWidget = class extends UI2.Widget.Widget {
       function renderHeader() {
         if (input.savedToDisk) {
           return html2`
-            <devtools-icon class="green-bright-icon summary-badge" .name=${"check-circle"}></devtools-icon>
+            <devtools-icon class="green-bright-icon summary-badge" name="check-circle"></devtools-icon>
             <span class="header-text">
               ${lockedString2(UIStringsNotTranslate2.savedToDisk)}
             </span>
@@ -635,24 +642,24 @@ var PatchWidget = class extends UI2.Widget.Widget {
         }
         if (input.patchSuggestionState === PatchSuggestionState.SUCCESS) {
           return html2`
-            <devtools-icon class="on-tonal-icon summary-badge" .name=${"difference"}></devtools-icon>
+            <devtools-icon class="on-tonal-icon summary-badge" name="difference"></devtools-icon>
             <span class="header-text">
               ${lockedString2(`File changes in ${input.projectName}`)}
             </span>
             <devtools-icon
               class="arrow"
-              .name=${"chevron-down"}
+              name="chevron-down"
             ></devtools-icon>
           `;
         }
         return html2`
-          <devtools-icon class="on-tonal-icon summary-badge" .name=${"pen-spark"}></devtools-icon>
+          <devtools-icon class="on-tonal-icon summary-badge" name="pen-spark"></devtools-icon>
           <span class="header-text">
             ${lockedString2(UIStringsNotTranslate2.unsavedChanges)}
           </span>
           <devtools-icon
             class="arrow"
-            .name=${"chevron-down"}
+            name="chevron-down"
           ></devtools-icon>
         `;
       }
@@ -673,7 +680,7 @@ var PatchWidget = class extends UI2.Widget.Widget {
           .displayNotice=${true}
         ></devtools-code-block>
         ${input.patchSuggestionState === PatchSuggestionState.ERROR ? html2`<div class="error-container">
-              <devtools-icon .name=${"cross-circle-filled"}></devtools-icon>${lockedString2(UIStringsNotTranslate2.genericErrorMessage)} ${renderSourcesLink()}
+              <devtools-icon name="cross-circle-filled"></devtools-icon>${lockedString2(UIStringsNotTranslate2.genericErrorMessage)} ${renderSourcesLink()}
             </div>` : nothing2}`;
       }
       function renderFooter() {
@@ -1089,7 +1096,7 @@ ${processedFiles.map((filename) => `* ${filename}`).join("\n")}`;
   }
 };
 function isAiAssistancePatchingEnabled() {
-  return Boolean(Root.Runtime.hostConfig.devToolsFreestyler?.patching);
+  return Boolean(Root2.Runtime.hostConfig.devToolsFreestyler?.patching);
 }
 window.aiAssistanceTestPatchPrompt = async (projectName, changeSummary, expectedChanges) => {
   if (!isAiAssistancePatchingEnabled()) {
@@ -1985,11 +1992,6 @@ main {
     }
   }
 
-  /* TODO(b/412621009): Remove this once the bug is fixed on the VE logging side */
-  &:not(.saved-to-disk, &[open]) > *:not(summary) {
-    display: none;
-  }
-
   &:not(.saved-to-disk, &[open]):hover::after {
     content: '';
     height: 100%;
@@ -2025,10 +2027,6 @@ main {
     align-items: center;
     gap: var(--sys-size-3);
     color: var(--sys-color-error);
-
-    devtools-icon {
-      color: var(--sys-color-error);
-    }
   }
 
   .footer {
@@ -3179,7 +3177,7 @@ function renderStep({ step, isLoading, markdownRenderer, isLast }) {
           ${renderTitle(step)}
           <devtools-icon
             class="arrow"
-            .name=${"chevron-down"}
+            name="chevron-down"
           ></devtools-icon>
         </div>
       </summary>
@@ -3236,7 +3234,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
   if (message.entity === "user") {
     const name = userInfo.accountFullName || lockedString4(UIStringsNotTranslate4.you);
     const image = userInfo.accountImage ? html4`<img src="data:image/png;base64, ${userInfo.accountImage}" alt=${UIStringsNotTranslate4.accountAvatar} />` : html4`<devtools-icon
-          .name=${"profile"}
+          name="profile"
         ></devtools-icon>`;
     const imageInput = message.imageInput && "inlineData" in message.imageInput ? renderImageChatMessage(message.imageInput.inlineData) : Lit2.nothing;
     return html4`<section
@@ -3635,7 +3633,7 @@ function renderConsentViewContents() {
   });
   settingsLink.setAttribute("jslog", `${VisualLogging4.action("open-ai-settings").track({ click: true })}`);
   let consentViewContents;
-  const config = Root2.Runtime.hostConfig;
+  const config = Root3.Runtime.hostConfig;
   if (config.isOffTheRecord) {
     return html4`${i18nString(UIStrings.notAvailableInIncognitoMode)}`;
   }
@@ -3656,7 +3654,7 @@ function renderDisabledState(contents) {
       <div class="disabled-view">
         <div class="disabled-view-icon-container">
           <devtools-icon
-            .name=${"smart-assistant"}
+            name="smart-assistant"
           ></devtools-icon>
         </div>
         <div>
@@ -3703,7 +3701,7 @@ __export(ExploreWidget_exports, {
   ExploreWidget: () => ExploreWidget
 });
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Root3 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import { html as html5, render as render5 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
@@ -3923,7 +3921,7 @@ var ExploreWidget = class extends UI5.Widget.Widget {
     void this.requestUpdate();
   }
   performUpdate() {
-    const config = Root3.Runtime.hostConfig;
+    const config = Root4.Runtime.hostConfig;
     const featureCards = [];
     if (config.devToolsFreestyler?.enabled && UI5.ViewManager.ViewManager.instance().hasView("elements")) {
       featureCards.push({
@@ -4102,6 +4100,14 @@ var UIStringsNotTranslate6 = {
    */
   inputPlaceholderForPerformanceInsightsNoContext: "Select a performance insight to ask a question",
   /**
+   * @description Placeholder text for the chat UI input.
+   */
+  inputPlaceholderForPerformanceTrace: "Ask a question about the selected performance trace",
+  /**
+   *@description Placeholder text for the chat UI input.
+   */
+  inputPlaceholderForPerformanceTraceNoContext: "Select a performance trace to ask a question",
+  /**
    * @description Disclaimer text right after the chat input.
    */
   inputDisclaimerForStyling: "Chat messages and any data the inspected page can access via Web APIs are sent to Google and may be seen by human reviewers to improve this feature. This is an experimental AI feature and won\u2019t always get it right.",
@@ -4179,6 +4185,10 @@ async function getEmptyStateSuggestions(context, conversationType) {
         { title: "Why is this network request taking so long?", jslogContext: "network-default" },
         { title: "Are there any security headers present?", jslogContext: "network-default" },
         { title: "Why is the request failing?", jslogContext: "network-default" }
+      ];
+    case "drjones-performance-full":
+      return [
+        { title: "What performance issues exist with my page?", jslogContext: "performance-default" }
       ];
     case "performance-insight":
     case "drjones-performance": {
@@ -4380,7 +4390,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     AiAssistanceModel3.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
   }
   #getChatUiState() {
-    const blockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const blockedByAge = Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (this.#aidaAvailability !== "available") {
       return "chat-view";
     }
@@ -4433,7 +4443,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (this.#conversationAgent && this.#conversation && !this.#conversation.isEmpty || this.#isLoading) {
       return;
     }
-    const { hostConfig } = Root4.Runtime;
+    const { hostConfig } = Root5.Runtime;
     const viewManager = UI6.ViewManager.ViewManager.instance();
     const isElementsPanelVisible = viewManager.isViewVisible("elements");
     const isNetworkPanelVisible = viewManager.isViewVisible("network");
@@ -4563,6 +4573,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceTraceContext(ev.data) : null;
+    let conversationType;
+    if (ev.data) {
+      if (ev.data.data.type === "full") {
+        conversationType = "drjones-performance-full";
+      } else if (ev.data.data.type === "insight") {
+        conversationType = "performance-insight";
+      } else if (ev.data.data.type === "call-tree") {
+        conversationType = "drjones-performance";
+      } else {
+        Platform4.assertNever(ev.data.data, "Unknown agent focus");
+      }
+    }
+    let agent = this.#conversationAgent;
+    if (conversationType && agent instanceof AiAssistanceModel3.PerformanceAgent && agent.getConversationType() !== conversationType) {
+      agent = this.#conversationHandler.createAgent(conversationType);
+    }
     this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handleUISourceCodeFlavorChange = (ev) => {
@@ -4661,7 +4687,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #isTextInputDisabled() {
     const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-    const isBlockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const isBlockedByAge = Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (!aiAssistanceSetting || isBlockedByAge) {
       return true;
     }
@@ -4679,7 +4705,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #shouldShowChatActions() {
     const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
-    const isBlockedByAge = Root4.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
+    const isBlockedByAge = Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
     if (!aiAssistanceSetting || isBlockedByAge) {
       return false;
     }
@@ -4712,6 +4738,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       }
       case "performance-insight":
         return this.#selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceInsights) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceInsightsNoContext);
+      case "drjones-performance-full":
+        return this.#selectedContext ? lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceTrace) : lockedString6(UIStringsNotTranslate6.inputPlaceholderForPerformanceTraceNoContext);
     }
   }
   #getDisclaimerText() {
@@ -4719,7 +4747,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (state === "consent-view" || !this.#conversation || this.#conversation.isReadOnly) {
       return i18nString2(UIStrings2.inputDisclaimerForEmptyState);
     }
-    const noLogging = Root4.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root4.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+    const noLogging = Root5.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root5.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     switch (this.#conversation.type) {
       case "freestyler":
         if (noLogging) {
@@ -4738,6 +4766,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         return lockedString6(UIStringsNotTranslate6.inputDisclaimerForNetwork);
       // It is deliberate that both Performance agents use the same disclaimer
       // text and this has been approved by Privacy.
+      case "drjones-performance-full":
       case "drjones-performance":
       case "performance-insight":
         if (noLogging) {
@@ -4775,6 +4804,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
     if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
       const focus = context.getItem().data;
+      if (focus.type === "full") {
+        return;
+      }
       if (focus.type === "call-tree") {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
         const trace = new SDK.TraceObject.RevealableEvent(event);
@@ -4814,13 +4846,18 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         break;
       }
       case "drjones.performance-panel-context": {
-        Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformancePanel);
+        Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformancePanelCallTree);
         targetConversationType = "drjones-performance";
         break;
       }
       case "drjones.performance-insight-context": {
         Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
         targetConversationType = "performance-insight";
+        break;
+      }
+      case "drjones.performance-panel-full-context": {
+        Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistanceOpenedFromPerformanceFullButton);
+        targetConversationType = "drjones-performance-full";
         break;
       }
       case "drjones.sources-floating-button": {
@@ -5049,6 +5086,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       case "drjones-network-request":
         context = this.#selectedRequest;
         break;
+      case "drjones-performance-full":
       case "drjones-performance":
       case "performance-insight":
         context = this.#selectedPerformanceTrace;
@@ -5293,6 +5331,7 @@ var ActionDelegate = class {
       case "freestyler.element-panel-context":
       case "drjones.network-floating-button":
       case "drjones.network-panel-context":
+      case "drjones.performance-panel-full-context":
       case "drjones.performance-panel-context":
       case "drjones.performance-insight-context":
       case "drjones.sources-floating-button":
@@ -5317,13 +5356,13 @@ var ActionDelegate = class {
   }
 };
 function isAiAssistanceMultimodalUploadInputEnabled() {
-  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root4.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
+  return isAiAssistanceMultimodalInputEnabled() && Boolean(Root5.Runtime.hostConfig.devToolsFreestyler?.multimodalUploadInput);
 }
 function isAiAssistanceMultimodalInputEnabled() {
-  return Boolean(Root4.Runtime.hostConfig.devToolsFreestyler?.multimodal);
+  return Boolean(Root5.Runtime.hostConfig.devToolsFreestyler?.multimodal);
 }
 function isAiAssistanceServerSideLoggingEnabled() {
-  return !Root4.Runtime.hostConfig.aidaAvailability?.disallowLogging;
+  return !Root5.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
 export {
   ActionDelegate,

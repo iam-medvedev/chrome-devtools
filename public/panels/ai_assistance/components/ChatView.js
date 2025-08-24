@@ -651,7 +651,7 @@ function renderStep({ step, isLoading, markdownRenderer, isLast }) {
           ${renderTitle(step)}
           <devtools-icon
             class="arrow"
-            .name=${'chevron-down'}
+            name="chevron-down"
           ></devtools-icon>
         </div>
       </summary>
@@ -713,7 +713,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
         const image = userInfo.accountImage ?
             html `<img src="data:image/png;base64, ${userInfo.accountImage}" alt=${UIStringsNotTranslate.accountAvatar} />` :
             html `<devtools-icon
-          .name=${'profile'}
+          name="profile"
         ></devtools-icon>`;
         const imageInput = message.imageInput && 'inlineData' in message.imageInput ?
             renderImageChatMessage(message.imageInput.inlineData) :
@@ -1171,7 +1171,7 @@ function renderDisabledState(contents) {
       <div class="disabled-view">
         <div class="disabled-view-icon-container">
           <devtools-icon
-            .name=${'smart-assistant'}
+            name="smart-assistant"
           ></devtools-icon>
         </div>
         <div>

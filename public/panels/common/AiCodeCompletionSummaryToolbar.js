@@ -24,33 +24,35 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, _output, target) => {
     const toolbarClasses = Directives.classMap({
         'ai-code-completion-summary-toolbar': true,
         'has-disclaimer': Boolean(input.disclaimerTooltipId),
-        'has-recitation-notice': Boolean(input.citations && input.citations.length > 0),
+        'has-recitation-notice': Boolean(input.citations && input.citations.size > 0),
+        'has-top-border': input.hasTopBorder,
     });
     // clang-format off
     const disclaimer = input.disclaimerTooltipId ?
         html `<devtools-widget
             .widgetConfig=${UI.Widget.widgetConfig(AiCodeCompletionDisclaimer, {
             disclaimerTooltipId: input.disclaimerTooltipId,
-            panelName: input.panelName,
             loading: input.loading,
         })} class="disclaimer-widget"></devtools-widget>` : nothing;
-    const recitationNotice = input.citations && input.citations.length > 0 ?
-        html `<div class="ai-code-completion-recitation-notice">${lockedString(UIStringsNotTranslate.generatedCodeMayBeSubjectToALicense)}
+    const recitationNotice = input.citations && input.citations.size > 0 ?
+        html `<div class="ai-code-completion-recitation-notice">
+                ${lockedString(UIStringsNotTranslate.generatedCodeMayBeSubjectToALicense)}
                 <span class="link"
                     role="link"
                     aria-details=${input.citationsTooltipId}
                     aria-describedby=${input.citationsTooltipId}
                     tabIndex="0">
-                  ${lockedString(UIStringsNotTranslate.viewSources)}&nbsp;${lockedString('(' + input.citations.length + ')')}</span>
+                  ${lockedString(UIStringsNotTranslate.viewSources)}&nbsp;${lockedString('(' + input.citations.size + ')')}
+                </span>
                 <devtools-tooltip
                     id=${input.citationsTooltipId}
                     variant=${'rich'}
-                    jslogContext=${input.panelName + '.ai-code-completion-citations'}
+                    jslogContext=${'ai-code-completion-citations'}
                 ><div class="citations-tooltip-container">
                     ${Directives.repeat(input.citations, citation => html `<x-link
                         tabIndex="0"
                         href=${citation}
-                        jslog=${VisualLogging.link(input.panelName + '.ai-code-completion-citations.citation-link').track({
+                        jslog=${VisualLogging.link('ai-code-completion-citations.citation-link').track({
             click: true
         })}>${citation}</x-link>`)}</div></devtools-tooltip>
             </div>` : nothing;
@@ -67,14 +69,14 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     #view;
     #disclaimerTooltipId;
     #citationsTooltipId;
-    #panelName;
-    #citations = [];
+    #citations = new Set();
     #loading = false;
+    #hasTopBorder = false;
     constructor(props, view) {
         super();
         this.#disclaimerTooltipId = props.disclaimerTooltipId;
         this.#citationsTooltipId = props.citationsTooltipId;
-        this.#panelName = props.panelName;
+        this.#hasTopBorder = props.hasTopBorder ?? false;
         this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW;
         this.requestUpdate();
     }
@@ -83,15 +85,11 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
         this.requestUpdate();
     }
     updateCitations(citations) {
-        citations.forEach(citation => {
-            if (!this.#citations.includes(citation)) {
-                this.#citations.push(citation);
-            }
-        });
+        citations.forEach(citation => this.#citations.add(citation));
         this.requestUpdate();
     }
     clearCitations() {
-        this.#citations = [];
+        this.#citations.clear();
         this.requestUpdate();
     }
     performUpdate() {
@@ -99,8 +97,8 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
             disclaimerTooltipId: this.#disclaimerTooltipId,
             citations: this.#citations,
             citationsTooltipId: this.#citationsTooltipId,
-            panelName: this.#panelName,
             loading: this.#loading,
+            hasTopBorder: this.#hasTopBorder,
         }, undefined, this.contentElement);
     }
 }

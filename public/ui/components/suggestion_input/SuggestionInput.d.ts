@@ -39,6 +39,8 @@ export declare class SuggestionInput extends LitElement {
     #private;
     static shadowRootOptions: {
         readonly delegatesFocus: true;
+        readonly clonable?: boolean;
+        readonly customElementRegistry?: CustomElementRegistry;
         readonly mode: ShadowRootMode;
         readonly serializable?: boolean;
         readonly slotAssignment?: SlotAssignmentMode;

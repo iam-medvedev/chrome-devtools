@@ -2768,7 +2768,7 @@ async function getEmMultiplier(isFontSizeProperty) {
 async function getRemMultiplier() {
   const selectedNode = UI7.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
   const htmlNode = findHtmlNode(selectedNode);
-  if (!htmlNode || !htmlNode.id) {
+  if (!htmlNode?.id) {
     return 16;
   }
   const [model] = SDK.TargetManager.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);

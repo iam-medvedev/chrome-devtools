@@ -80,7 +80,7 @@ export default `/*
 #console-messages {
   flex: 1 1;
   overflow-y: auto;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   user-select: text;
   transform: translateZ(0);
   overflow-anchor: none;  /* Chrome-specific scroll-anchoring opt-out */
@@ -219,13 +219,8 @@ export default `/*
   --console-color-lightcyan: #5ff;
   --console-color-white: #fff;
 
-  &:focus {
+  &.console-selected {
     background-color: var(--sys-color-tonal-container);
-
-    & ::selection {
-      background-color: var(--sys-color-state-focus-select);
-      color: currentcolor;
-    }
   }
 }
 
@@ -335,11 +330,12 @@ export default `/*
 .console-view-object-properties-section {
   padding: 0;
   position: relative;
-  vertical-align: baseline;
+  vertical-align: top;
   color: inherit;
   display: inline-block;
   overflow-wrap: break-word;
   max-width: 100%;
+  margin-top: -1.5px;
 }
 
 .info-note {
@@ -380,7 +376,7 @@ export default `/*
 
 .console-object-preview {
   white-space: normal;
-  word-wrap: break-word;
+  overflow-wrap: break-word;
   font-style: italic;
 }
 

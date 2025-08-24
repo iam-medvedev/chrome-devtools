@@ -227,11 +227,7 @@ var LinearMemoryHighlightChipList = class extends HTMLElement {
           <button class="delete-highlight-button" title=${i18nString(UIStrings.deleteHighlight)}
               jslog=${VisualLogging.action("linear-memory-inspector.delete-highlight").track({ click: true })}
               @click=${() => this.#onDeleteHighlightClick(highlightInfo)}>
-            <devtools-icon .data=${{
-      iconName: "cross",
-      color: "var(--icon-default-hover)",
-      width: "16px"
-    }}>
+            <devtools-icon name="cross" class="medium">
             </devtools-icon>
           </button>
         </div>
@@ -661,7 +657,7 @@ var ValueInterpreterDisplay = class extends HTMLElement {
               <button class="jump-to-button" data-jump="true" title=${buttonTitle} ?disabled=${jumpDisabled}
                 jslog=${VisualLogging2.action("linear-memory-inspector.jump-to-address").track({ click: true })}
                 @click=${this.#onJumpToAddressClicked.bind(this, Number(address))}>
-                <devtools-icon .data=${{ iconName: "open-externally", color: iconColor, width: "16px" }}>
+                <devtools-icon name="open-externally" class="medium" style="color: ${iconColor}">
                 </devtools-icon>
               </button>`}
         </div>

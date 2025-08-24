@@ -154,7 +154,7 @@ export function getImageData(model) {
 }
 export function createOverlays(model) {
     const imageResults = getImageData(model);
-    if (!imageResults || !imageResults.discoveryDelay) {
+    if (!imageResults?.discoveryDelay) {
         return [];
     }
     const delay = Helpers.Timing.traceWindowFromMicroSeconds(Types.Timing.Micro(imageResults.request.ts - imageResults.discoveryDelay), imageResults.request.ts);

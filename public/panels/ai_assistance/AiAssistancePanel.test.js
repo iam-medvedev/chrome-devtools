@@ -484,7 +484,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             ]);
             view.input.onNewChatClick();
             assert.deepEqual((await view.nextInput).messages, []);
-            assert.deepEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
+            assert.deepEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */);
         });
         it('should switch agents and restore history', async () => {
             updateHostConfig({
@@ -660,9 +660,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const addHistoryItemStub = sinon.stub(AiAssistanceModel.Conversation.prototype, 'addHistoryItem');
             viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
             const { view } = await createAiAssistancePanel({
-                aidaClient: mockAidaClient([[
-                        { explanation: 'ANSWER: partially started' }, { explanation: 'ANSWER: partially started and now it\'s finished' }
-                    ]])
+                aidaClient: mockAidaClient([[{ explanation: 'partially started' }, { explanation: 'partially started and now it\'s finished' }]])
             });
             // Trigger running the conversation (observe that there are two answers: one partial, one complete)
             view.input.onTextSubmit('User question to Freestyler?');
@@ -996,7 +994,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             },
             {
                 panelName: 'timeline',
-                expectedConversationType: "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
+                expectedConversationType: "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */,
                 featureFlagName: 'devToolsAiAssistancePerformanceAgent',
             }
         ];
@@ -1066,7 +1064,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel));
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.SelectedInsight, null);
                 const { view } = await createAiAssistancePanel();
-                assert.strictEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
+                assert.strictEqual(view.input.conversationType, "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */);
             });
         });
     });

@@ -10,7 +10,7 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Elements from './elements.js';
 const { EventListenersWidget, DispatchFilterBy } = Elements.EventListenersWidget;
-describeWithMockConnection.only('EventListenersWidget', () => {
+describeWithMockConnection('EventListenersWidget', () => {
     let target;
     beforeEach(() => {
         target = createTarget();

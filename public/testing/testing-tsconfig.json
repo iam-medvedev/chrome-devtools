@@ -134,6 +134,9 @@
       "path": "../models/issues_manager/bundle-tsconfig.json"
     },
     {
+      "path": "../models/stack_trace/bundle-tsconfig.json"
+    },
+    {
       "path": "../models/text_utils/bundle-tsconfig.json"
     },
     {

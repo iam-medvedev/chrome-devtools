@@ -24,6 +24,7 @@ export var FunctionalityType;
     FunctionalityType[FunctionalityType["EXPLAIN_ERROR"] = 2] = "EXPLAIN_ERROR";
     FunctionalityType[FunctionalityType["AGENTIC_CHAT"] = 5] = "AGENTIC_CHAT";
 })(FunctionalityType || (FunctionalityType = {}));
+// See: cs/aida.proto (google3).
 export var ClientFeature;
 (function (ClientFeature) {
     // Unspecified client feature.
@@ -44,6 +45,8 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
     // Chrome AI Assistance Performance Insights Agent.
     ClientFeature[ClientFeature["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 13] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
+    // Chrome AI Assistance Performance Agent.
+    ClientFeature[ClientFeature["CHROME_PERFORMANCE_FULL_AGENT"] = 24] = "CHROME_PERFORMANCE_FULL_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {

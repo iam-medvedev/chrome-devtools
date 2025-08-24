@@ -33,6 +33,7 @@ __export(Trace_exports, {
   getNavigationForTraceEvent: () => getNavigationForTraceEvent,
   getZeroIndexedLineAndColumnForEvent: () => getZeroIndexedLineAndColumnForEvent,
   getZeroIndexedStackTraceInEventPayload: () => getZeroIndexedStackTraceInEventPayload,
+  isExtensionUrl: () => isExtensionUrl,
   isMatchingCallFrame: () => isMatchingCallFrame,
   isTopLevelEvent: () => isTopLevelEvent,
   makeProfileCall: () => makeProfileCall,
@@ -263,6 +264,8 @@ function traceWindowFromOverlay(overlay) {
       return traceWindowFromMicroSeconds(overlay.timestamp, overlay.timestamp);
     case "TIMINGS_MARKER":
       return traceWindowFromMicroSeconds(overlay.adjustedTimestamp, overlay.adjustedTimestamp);
+    case "BOTTOM_INFO_BAR":
+      return null;
     default:
       Platform.TypeScriptUtilities.assertNever(overlay, `Unexpected overlay ${overlay}`);
   }
@@ -623,6 +626,9 @@ function frameIDForEvent(event) {
 var DevToolsTimelineEventCategory = "disabled-by-default-devtools.timeline";
 function isTopLevelEvent(event) {
   return event.cat.includes(DevToolsTimelineEventCategory) && event.name === "RunTask";
+}
+function isExtensionUrl(url) {
+  return url.startsWith("extensions:") || url.startsWith("chrome-extension:");
 }
 function topLevelEventIndexEndingAfter(events, time) {
   let index = Platform2.ArrayUtilities.upperBound(events, time, (time2, event) => time2 - event.ts) - 1;

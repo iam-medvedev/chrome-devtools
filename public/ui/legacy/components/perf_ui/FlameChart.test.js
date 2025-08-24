@@ -215,6 +215,145 @@ describeWithEnvironment('FlameChart', () => {
             assert.strictEqual(event.data, -1);
         });
     });
+    describe('applying track configuration', () => {
+        it('applies existing track configuration', async () => {
+            class TrackConfigurationProvider extends FakeFlameChartProvider {
+                static data = PerfUI.FlameChart.FlameChartTimelineData.create({
+                    entryLevels: [0, 1, 2],
+                    entryStartTimes: [5, 60, 80],
+                    entryTotalTimes: [50, 10, 10],
+                    groups: [
+                        {
+                            name: 'Group0',
+                            startLevel: 0,
+                            style: defaultGroupStyle,
+                            hidden: false,
+                        },
+                        {
+                            name: 'Group1',
+                            startLevel: 1,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                        {
+                            name: 'Group2',
+                            startLevel: 2,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                    ],
+                });
+                timelineData() {
+                    return TrackConfigurationProvider.data;
+                }
+            }
+            const persistedConfig = [
+                { expanded: true, hidden: true, originalIndex: 0, visualIndex: 0, trackName: 'Group0' },
+                { expanded: true, hidden: true, originalIndex: 1, visualIndex: 1, trackName: 'Group1' },
+                { expanded: true, hidden: true, originalIndex: 2, visualIndex: 2, trackName: 'Group2' },
+            ];
+            const provider = new TrackConfigurationProvider();
+            const delegate = new MockFlameChartDelegate();
+            chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+            chartInstance.setPersistedConfig(persistedConfig);
+            renderChart(chartInstance);
+            const data = chartInstance.timelineData();
+            assert.isOk(data);
+            // It should have applied the persisted config from above and each group
+            // is now hidden and expanded.
+            assert.isTrue(data.groups.every(g => g.expanded && g.hidden));
+        });
+        it('does not apply configuration if the group name does not match', async () => {
+            class TrackConfigurationProvider extends FakeFlameChartProvider {
+                static data = PerfUI.FlameChart.FlameChartTimelineData.create({
+                    entryLevels: [0, 1, 2],
+                    entryStartTimes: [5, 60, 80],
+                    entryTotalTimes: [50, 10, 10],
+                    groups: [
+                        {
+                            name: 'Group0',
+                            startLevel: 0,
+                            style: defaultGroupStyle,
+                            hidden: false,
+                        },
+                        {
+                            name: 'Group1',
+                            startLevel: 1,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                        {
+                            name: 'Group2',
+                            startLevel: 2,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                    ],
+                });
+                timelineData() {
+                    return TrackConfigurationProvider.data;
+                }
+            }
+            const persistedConfig = [
+                { expanded: true, hidden: true, originalIndex: 0, visualIndex: 0, trackName: 'WRONG NON-MATCHING GROUP NAME' },
+                { expanded: true, hidden: true, originalIndex: 1, visualIndex: 1, trackName: 'Group1' },
+                { expanded: true, hidden: true, originalIndex: 2, visualIndex: 2, trackName: 'Group2' },
+            ];
+            const provider = new TrackConfigurationProvider();
+            const delegate = new MockFlameChartDelegate();
+            chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+            chartInstance.setPersistedConfig(persistedConfig);
+            renderChart(chartInstance);
+            const data = chartInstance.timelineData();
+            assert.isOk(data);
+            assert.isFalse(data.groups[0].hidden); // Because the name does not match.
+            assert.isTrue(data.groups[1].hidden);
+            assert.isTrue(data.groups[2].hidden);
+        });
+    });
+    describe('showAllGroups', () => {
+        it('updates each group to be expanded', async () => {
+            class ShowAllGroupsTestProvider extends FakeFlameChartProvider {
+                static data = PerfUI.FlameChart.FlameChartTimelineData.create({
+                    entryLevels: [0, 1, 2],
+                    entryStartTimes: [5, 60, 80],
+                    entryTotalTimes: [50, 10, 10],
+                    groups: [
+                        {
+                            name: 'Test Group 0',
+                            startLevel: 0,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                        {
+                            name: 'Test Group 1',
+                            startLevel: 1,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                        {
+                            name: 'Test Group 2',
+                            startLevel: 2,
+                            style: defaultGroupStyle,
+                            hidden: true,
+                        },
+                    ],
+                });
+                timelineData() {
+                    return ShowAllGroupsTestProvider.data;
+                }
+            }
+            const provider = new ShowAllGroupsTestProvider();
+            const delegate = new MockFlameChartDelegate();
+            chartInstance = new PerfUI.FlameChart.FlameChart(provider, delegate);
+            renderChart(chartInstance);
+            const data = chartInstance.timelineData();
+            assert.isOk(data);
+            assert.isTrue(data.groups.every(g => g.hidden === true));
+            chartInstance.showAllGroups();
+            assert.isTrue(data.groups.every(g => g.hidden === false));
+        });
+    });
     describe('updateLevelPositions', () => {
         class UpdateLevelPositionsTestProvider extends FakeFlameChartProvider {
             static data = PerfUI.FlameChart.FlameChartTimelineData.create({

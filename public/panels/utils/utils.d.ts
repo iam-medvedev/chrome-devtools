@@ -9,7 +9,7 @@ export declare class PanelUtils {
     static getIconForNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): TemplateResult;
     static iconDataForResourceType(resourceType: Common.ResourceType.ResourceType): {
         iconName: string;
-        color: string;
+        color?: string;
     };
     static getIconForSourceFile(uiSourceCode: Workspace.UISourceCode.UISourceCode): TemplateResult;
     static formatCSSChangesFromDiff(diff: Diff.Diff.DiffArray): Promise<string>;

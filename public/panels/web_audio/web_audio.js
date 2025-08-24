@@ -95,14 +95,16 @@ SDK.SDKModel.SDKModel.register(WebAudioModel, { capabilities: 2, autostart: fals
 // gen/front_end/panels/web_audio/WebAudioView.js
 var WebAudioView_exports = {};
 __export(WebAudioView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   WebAudioView: () => WebAudioView
 });
 import "./../../ui/legacy/legacy.js";
+import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
+import { html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-import * as GraphVisualizer from "./graph_visualizer/graph_visualizer.js";
 
 // gen/front_end/panels/web_audio/webAudio.css.js
 var webAudio_css_default = `/*
@@ -215,6 +217,8 @@ var webAudio_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./webAudio.css")} */`;
 
 // gen/front_end/panels/web_audio/WebAudioView.js
+var { widgetConfig } = UI.Widget;
+var { bindToAction } = UI.UIUtils;
 var UIStrings = {
   /**
    * @description Text in Web Audio View if there is nothing to show.
@@ -267,46 +271,92 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/web_audio/WebAudioView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var WEBAUDIO_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/webaudio";
-var WebAudioView = class extends UI.ThrottledWidget.ThrottledWidget {
-  contentContainer;
-  detailViewContainer;
-  graphManager;
-  landingPage;
-  summaryBarContainer;
-  contextSelectorPlaceholderText;
-  contextSelectorElement;
+var DEFAULT_VIEW = (input, _output, target) => {
+  const { contexts, selectedContextIndex, onContextSelectorSelectionChanged, contextRealtimeData } = input;
+  const selectedContext = selectedContextIndex > -1 ? contexts[selectedContextIndex] : null;
+  const titleForContext = (context) => context.contextType + " (" + context.contextId.substr(-6) + ")";
+  const selectorTitle = i18nString(UIStrings.audioContextS, { PH1: selectedContext ? titleForContext(selectedContext) : i18nString(UIStrings.noRecordings) });
+  render(html`
+    <style>${webAudio_css_default}</style>
+    <div class="web-audio-toolbar-container vbox" role="toolbar">
+      <devtools-toolbar class="web-audio-toolbar" role="presentation"
+          jslog=${VisualLogging.toolbar()}>
+        <devtools-button ${bindToAction("components.collect-garbage")}></devtools-button>
+        <div class="toolbar-divider"></div>
+        <select
+          title=${selectorTitle}
+          aria-label=${selectorTitle}
+          ?disabled=${contexts.length === 0}
+          @change=${(e) => onContextSelectorSelectionChanged(e.target.value)}
+          .value=${selectedContext ? selectedContext.contextId : ""}>
+          ${contexts.length === 0 ? html`<option value="" hidden>${i18nString(UIStrings.noRecordings)}</option>` : contexts.map((context) => html`
+            <option value=${context.contextId}>${titleForContext(context)}</option>
+          `)}
+        </select>
+      </devtools-toolbar>
+    </div>
+    <div class="web-audio-content-container vbox flex-auto">
+      ${!selectedContext ? html`
+        <div class="web-audio-details-container vbox flex-auto">
+          <devtools-widget .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, {
+    header: i18nString(UIStrings.noWebAudio),
+    text: i18nString(UIStrings.openAPageThatUsesWebAudioApiTo),
+    link: WEBAUDIO_EXPLANATION_URL
+  })}>
+          </devtools-widget>
+        </div>` : html`<div class="web-audio-details-container vbox flex-auto">
+          <div class="context-detail-container">
+            <div class="context-detail-header">
+              <div class="context-detail-title">
+                ${selectedContext.contextType === "realtime" ? i18n.i18n.lockedString("AudioContext") : i18n.i18n.lockedString("OfflineAudioContext")}
+              </div>
+              <div class="context-detail-subtitle">${selectedContext.contextId}</div>
+            </div>
+            <div class="context-detail-row">
+              <div class="context-detail-row-entry">${i18nString(UIStrings.state)}</div>
+              <div class="context-detail-row-value">${selectedContext.contextState}</div>
+            </div>
+            <div class="context-detail-row">
+              <div class="context-detail-row-entry">${i18nString(UIStrings.sampleRate)}</div>
+              <div class="context-detail-row-value">${selectedContext.sampleRate} Hz</div>
+            </div>
+            ${selectedContext.contextType === "realtime" ? html`
+              <div class="context-detail-row">
+                <div class="context-detail-row-entry">${i18nString(UIStrings.callbackBufferSize)}</div>
+                <div class="context-detail-row-value">${selectedContext.callbackBufferSize} frames</div>
+              </div>` : ""}
+            <div class="context-detail-row">
+              <div class="context-detail-row-entry">${i18nString(UIStrings.maxOutputChannels)}</div>
+              <div class="context-detail-row-value">${selectedContext.maxOutputChannelCount} ch</div>
+            </div>
+          </div>
+        </div>`}
+      <div class="web-audio-summary-container">
+        ${contextRealtimeData ? html`<div class="context-summary-container">
+            <span>${i18nString(UIStrings.currentTime)}: ${contextRealtimeData.currentTime.toFixed(3)} s</span>
+            <span>\u2758</span>
+            <span>${i18nString(UIStrings.callbackInterval)}: μ = ${(contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3)} ms, σ = ${(Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3)} ms</span>
+            <span>\u2758</span>
+            <span>${i18nString(UIStrings.renderCapacity)}: ${(contextRealtimeData.renderCapacity * 100).toFixed(3)} %</span>
+          </div>` : ""}
+      </div>
+    </div>`, target);
+};
+var WebAudioView = class extends UI.Widget.VBox {
+  knownContexts = /* @__PURE__ */ new Set();
   contextSelectorItems;
-  contextSelectorToolbarItem;
-  constructor() {
-    super(true, 1e3);
-    this.registerRequiredCSS(webAudio_css_default);
-    this.element.setAttribute("jslog", `${VisualLogging.panel("web-audio").track({ resize: true })}`);
-    this.element.classList.add("web-audio-drawer");
-    const toolbarContainer = this.contentElement.createChild("div", "web-audio-toolbar-container vbox");
-    toolbarContainer.role = "toolbar";
-    this.contextSelectorPlaceholderText = i18nString(UIStrings.noRecordings);
+  contextRealtimeData = null;
+  view;
+  selectedContextIndex = -1;
+  pollRealtimeDataThrottler;
+  constructor(element, view = DEFAULT_VIEW) {
+    super({ jslog: `${VisualLogging.panel("web-audio").track({ resize: true })}`, useShadowDom: true });
+    this.view = view;
     this.contextSelectorItems = new UI.ListModel.ListModel();
-    this.contextSelectorElement = document.createElement("select");
-    this.contextSelectorToolbarItem = new UI.Toolbar.ToolbarItem(this.contextSelectorElement);
-    this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
-    this.contextSelectorElement.addEventListener("change", this.onContextSelectorSelectionChanged.bind(this));
-    this.contextSelectorElement.disabled = true;
-    this.addContextSelectorPlaceholderOption();
-    this.contextSelectorItems.addEventListener("ItemsReplaced", this.onContextSelectorListItemReplaced, this);
-    const toolbar2 = toolbarContainer.createChild("devtools-toolbar", "web-audio-toolbar");
-    toolbar2.role = "presentation";
-    toolbar2.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
-    toolbar2.appendSeparator();
-    toolbar2.appendToolbarItem(this.contextSelectorToolbarItem);
-    toolbar2.setAttribute("jslog", `${VisualLogging.toolbar()}`);
-    this.contentContainer = this.contentElement.createChild("div", "web-audio-content-container vbox flex-auto");
-    this.detailViewContainer = this.contentContainer.createChild("div", "web-audio-details-container vbox flex-auto");
-    this.graphManager = new GraphVisualizer.GraphManager.GraphManager();
-    this.landingPage = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noWebAudio), i18nString(UIStrings.openAPageThatUsesWebAudioApiTo));
-    this.landingPage.link = WEBAUDIO_EXPLANATION_URL;
-    this.landingPage.show(this.detailViewContainer);
-    this.summaryBarContainer = this.contentContainer.createChild("div", "web-audio-summary-container");
+    this.contextSelectorItems.addEventListener("ItemsReplaced", this.requestUpdate, this);
     SDK2.TargetManager.TargetManager.instance().observeModels(WebAudioModel, this);
+    this.pollRealtimeDataThrottler = new Common.Throttler.Throttler(1e3);
+    this.performUpdate();
   }
   wasShown() {
     super.wasShown();
@@ -327,9 +377,14 @@ var WebAudioView = class extends UI.ThrottledWidget.ThrottledWidget {
   modelRemoved(webAudioModel) {
     this.removeEventListeners(webAudioModel);
   }
-  async doUpdate() {
-    await this.pollRealtimeData();
-    this.update();
+  performUpdate() {
+    const input = {
+      contexts: [...this.contextSelectorItems],
+      selectedContextIndex: this.selectedContextIndex,
+      onContextSelectorSelectionChanged: this.onContextSelectorSelectionChanged.bind(this),
+      contextRealtimeData: this.contextRealtimeData
+    };
+    this.view(input, {}, this.contentElement);
   }
   addEventListeners(webAudioModel) {
     webAudioModel.ensureEnabled();
@@ -337,325 +392,93 @@ var WebAudioView = class extends UI.ThrottledWidget.ThrottledWidget {
     webAudioModel.addEventListener("ContextDestroyed", this.contextDestroyed, this);
     webAudioModel.addEventListener("ContextChanged", this.contextChanged, this);
     webAudioModel.addEventListener("ModelReset", this.reset, this);
-    webAudioModel.addEventListener("ModelSuspend", this.suspendModel, this);
-    webAudioModel.addEventListener("AudioListenerCreated", this.audioListenerCreated, this);
-    webAudioModel.addEventListener("AudioListenerWillBeDestroyed", this.audioListenerWillBeDestroyed, this);
-    webAudioModel.addEventListener("AudioNodeCreated", this.audioNodeCreated, this);
-    webAudioModel.addEventListener("AudioNodeWillBeDestroyed", this.audioNodeWillBeDestroyed, this);
-    webAudioModel.addEventListener("AudioParamCreated", this.audioParamCreated, this);
-    webAudioModel.addEventListener("AudioParamWillBeDestroyed", this.audioParamWillBeDestroyed, this);
-    webAudioModel.addEventListener("NodesConnected", this.nodesConnected, this);
-    webAudioModel.addEventListener("NodesDisconnected", this.nodesDisconnected, this);
-    webAudioModel.addEventListener("NodeParamConnected", this.nodeParamConnected, this);
-    webAudioModel.addEventListener("NodeParamDisconnected", this.nodeParamDisconnected, this);
   }
   removeEventListeners(webAudioModel) {
     webAudioModel.removeEventListener("ContextCreated", this.contextCreated, this);
     webAudioModel.removeEventListener("ContextDestroyed", this.contextDestroyed, this);
     webAudioModel.removeEventListener("ContextChanged", this.contextChanged, this);
     webAudioModel.removeEventListener("ModelReset", this.reset, this);
-    webAudioModel.removeEventListener("ModelSuspend", this.suspendModel, this);
-    webAudioModel.removeEventListener("AudioListenerCreated", this.audioListenerCreated, this);
-    webAudioModel.removeEventListener("AudioListenerWillBeDestroyed", this.audioListenerWillBeDestroyed, this);
-    webAudioModel.removeEventListener("AudioNodeCreated", this.audioNodeCreated, this);
-    webAudioModel.removeEventListener("AudioNodeWillBeDestroyed", this.audioNodeWillBeDestroyed, this);
-    webAudioModel.removeEventListener("AudioParamCreated", this.audioParamCreated, this);
-    webAudioModel.removeEventListener("AudioParamWillBeDestroyed", this.audioParamWillBeDestroyed, this);
-    webAudioModel.removeEventListener("NodesConnected", this.nodesConnected, this);
-    webAudioModel.removeEventListener("NodesDisconnected", this.nodesDisconnected, this);
-    webAudioModel.removeEventListener("NodeParamConnected", this.nodeParamConnected, this);
-    webAudioModel.removeEventListener("NodeParamDisconnected", this.nodeParamDisconnected, this);
   }
-  addContextSelectorPlaceholderOption() {
-    const placeholderOption = UI.Fragment.html`
-    <option value="" hidden>${this.contextSelectorPlaceholderText}</option>`;
-    this.contextSelectorElement.appendChild(placeholderOption);
-  }
-  onContextSelectorListItemReplaced() {
-    this.contextSelectorElement.removeChildren();
-    if (this.contextSelectorItems.length === 0) {
-      this.addContextSelectorPlaceholderOption();
-      this.contextSelectorElement.disabled = true;
-      this.onContextSelectorSelectionChanged();
-      return;
-    }
-    for (const context of this.contextSelectorItems) {
-      const option = UI.Fragment.html`
-    <option value=${context.contextId}>${this.titleForContext(context)}</option>`;
-      this.contextSelectorElement.appendChild(option);
-    }
-    this.contextSelectorElement.disabled = false;
-    this.onContextSelectorSelectionChanged();
-  }
-  selectedContext() {
-    const selectedValue = this.contextSelectorElement.value;
-    if (!selectedValue) {
-      return null;
-    }
-    return this.contextSelectorItems.find((context) => context.contextId === selectedValue) || null;
-  }
-  onContextSelectorSelectionChanged() {
-    const selectedContext = this.selectedContext();
-    if (selectedContext) {
-      this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.titleForContext(selectedContext) }));
-    } else {
-      this.contextSelectorToolbarItem.setTitle(i18nString(UIStrings.audioContextS, { PH1: this.contextSelectorPlaceholderText }));
-    }
-    this.updateDetailView(selectedContext);
-    void this.doUpdate();
-  }
-  titleForContext(context) {
-    return `${context.contextType} (${context.contextId.substr(-6)})`;
+  onContextSelectorSelectionChanged(contextId) {
+    this.selectedContextIndex = this.contextSelectorItems.findIndex((context) => context.contextId === contextId);
+    void this.pollRealtimeDataThrottler.schedule(this.pollRealtimeData.bind(this));
+    this.requestUpdate();
   }
   contextCreated(event) {
     const context = event.data;
-    this.graphManager.createContext(context.contextId);
+    this.knownContexts.add(context.contextId);
     this.contextSelectorItems.insert(this.contextSelectorItems.length, context);
-    this.onContextSelectorListItemReplaced();
+    if (this.selectedContextIndex === -1) {
+      this.selectedContextIndex = this.contextSelectorItems.length - 1;
+      void this.pollRealtimeDataThrottler.schedule(this.pollRealtimeData.bind(this));
+    }
+    this.requestUpdate();
   }
   contextDestroyed(event) {
     const contextId = event.data;
-    this.graphManager.destroyContext(contextId);
+    this.knownContexts.delete(contextId);
     const index = this.contextSelectorItems.findIndex((context) => context.contextId === contextId);
     if (index > -1) {
+      const selectedContext = this.selectedContextIndex > -1 ? this.contextSelectorItems.at(this.selectedContextIndex) : null;
       this.contextSelectorItems.remove(index);
-      this.onContextSelectorListItemReplaced();
+      const newSelectedIndex = selectedContext ? this.contextSelectorItems.indexOf(selectedContext) : -1;
+      if (newSelectedIndex > -1) {
+        this.selectedContextIndex = newSelectedIndex;
+      } else {
+        this.selectedContextIndex = Math.min(index, this.contextSelectorItems.length - 1);
+      }
     }
+    this.requestUpdate();
   }
   contextChanged(event) {
     const context = event.data;
-    if (!this.graphManager.hasContext(context.contextId)) {
+    if (!this.knownContexts.has(context.contextId)) {
       return;
     }
     const changedContext = event.data;
     const index = this.contextSelectorItems.findIndex((context2) => context2.contextId === changedContext.contextId);
     if (index > -1) {
       this.contextSelectorItems.replace(index, changedContext);
-      this.onContextSelectorListItemReplaced();
     }
+    this.requestUpdate();
   }
   reset() {
     this.contextSelectorItems.replaceAll([]);
-    this.onContextSelectorListItemReplaced();
-    if (this.landingPage.isShowing()) {
-      this.landingPage.detach();
-    }
-    this.detailViewContainer.removeChildren();
-    this.landingPage.show(this.detailViewContainer);
-    this.graphManager.clearGraphs();
+    this.selectedContextIndex = -1;
+    this.knownContexts.clear();
+    this.requestUpdate();
   }
-  suspendModel() {
-    this.graphManager.clearGraphs();
-  }
-  audioListenerCreated(event) {
-    const listener = event.data;
-    const graph = this.graphManager.getGraph(listener.contextId);
-    if (!graph) {
-      return;
-    }
-    graph.addNode({
-      nodeId: listener.listenerId,
-      nodeType: "Listener",
-      numberOfInputs: 0,
-      numberOfOutputs: 0
-    });
-  }
-  audioListenerWillBeDestroyed(event) {
-    const { contextId, listenerId } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    graph.removeNode(listenerId);
-  }
-  audioNodeCreated(event) {
-    const node = event.data;
-    const graph = this.graphManager.getGraph(node.contextId);
-    if (!graph) {
-      return;
-    }
-    graph.addNode({
-      nodeId: node.nodeId,
-      nodeType: node.nodeType,
-      numberOfInputs: node.numberOfInputs,
-      numberOfOutputs: node.numberOfOutputs
-    });
-  }
-  audioNodeWillBeDestroyed(event) {
-    const { contextId, nodeId } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    graph.removeNode(nodeId);
-  }
-  audioParamCreated(event) {
-    const param = event.data;
-    const graph = this.graphManager.getGraph(param.contextId);
-    if (!graph) {
-      return;
-    }
-    graph.addParam({
-      paramId: param.paramId,
-      paramType: param.paramType,
-      nodeId: param.nodeId
-    });
-  }
-  audioParamWillBeDestroyed(event) {
-    const { contextId, paramId } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    graph.removeParam(paramId);
-  }
-  nodesConnected(event) {
-    const { contextId, sourceId, destinationId, sourceOutputIndex, destinationInputIndex } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    graph.addNodeToNodeConnection({
-      sourceId,
-      destinationId,
-      sourceOutputIndex,
-      destinationInputIndex
-    });
-  }
-  nodesDisconnected(event) {
-    const { contextId, sourceId, destinationId, sourceOutputIndex, destinationInputIndex } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    graph.removeNodeToNodeConnection({
-      sourceId,
-      destinationId,
-      sourceOutputIndex,
-      destinationInputIndex
-    });
-  }
-  nodeParamConnected(event) {
-    const { contextId, sourceId, destinationId, sourceOutputIndex } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    const nodeId = graph.getNodeIdByParamId(destinationId);
-    if (!nodeId) {
-      return;
-    }
-    graph.addNodeToParamConnection({
-      sourceId,
-      destinationId: nodeId,
-      sourceOutputIndex,
-      destinationParamId: destinationId
-    });
-  }
-  nodeParamDisconnected(event) {
-    const { contextId, sourceId, destinationId, sourceOutputIndex } = event.data;
-    const graph = this.graphManager.getGraph(contextId);
-    if (!graph) {
-      return;
-    }
-    const nodeId = graph.getNodeIdByParamId(destinationId);
-    if (!nodeId) {
-      return;
-    }
-    graph.removeNodeToParamConnection({
-      sourceId,
-      destinationId: nodeId,
-      sourceOutputIndex,
-      destinationParamId: destinationId
-    });
-  }
-  updateDetailView(context) {
-    if (!context) {
-      this.landingPage.detach();
-      this.detailViewContainer.removeChildren();
-      this.landingPage.show(this.detailViewContainer);
-      return;
-    }
-    if (this.landingPage.isShowing()) {
-      this.landingPage.detach();
-    }
-    this.detailViewContainer.removeChildren();
-    const container = document.createElement("div");
-    container.classList.add("context-detail-container");
-    const addEntry = (entry, value, unit) => {
-      const valueWithUnit = value + (unit ? ` ${unit}` : "");
-      container.appendChild(UI.Fragment.html`
-        <div class="context-detail-row">
-          <div class="context-detail-row-entry">${entry}</div>
-          <div class="context-detail-row-value">${valueWithUnit}</div>
-        </div>
-      `);
-    };
-    const title = context.contextType === "realtime" ? i18n.i18n.lockedString("AudioContext") : i18n.i18n.lockedString("OfflineAudioContext");
-    container.appendChild(UI.Fragment.html`
-      <div class="context-detail-header">
-        <div class="context-detail-title">${title}</div>
-        <div class="context-detail-subtitle">${context.contextId}</div>
-      </div>
-    `);
-    addEntry(i18nString(UIStrings.state), context.contextState);
-    addEntry(i18nString(UIStrings.sampleRate), context.sampleRate, "Hz");
-    if (context.contextType === "realtime") {
-      addEntry(i18nString(UIStrings.callbackBufferSize), context.callbackBufferSize, "frames");
-    }
-    addEntry(i18nString(UIStrings.maxOutputChannels), context.maxOutputChannelCount, "ch");
-    this.detailViewContainer.appendChild(container);
-  }
-  updateSummaryBar(contextRealtimeData) {
-    this.summaryBarContainer.removeChildren();
-    const time = contextRealtimeData.currentTime.toFixed(3);
-    const mean = (contextRealtimeData.callbackIntervalMean * 1e3).toFixed(3);
-    const stddev = (Math.sqrt(contextRealtimeData.callbackIntervalVariance) * 1e3).toFixed(3);
-    const capacity = (contextRealtimeData.renderCapacity * 100).toFixed(3);
-    this.summaryBarContainer.appendChild(UI.Fragment.html`
-      <div class="context-summary-container">
-        <span>${i18nString(UIStrings.currentTime)}: ${time} s</span>
-        <span>\u2758</span>
-        <span>${i18nString(UIStrings.callbackInterval)}: μ = ${mean} ms, σ = ${stddev} ms</span>
-        <span>\u2758</span>
-        <span>${i18nString(UIStrings.renderCapacity)}: ${capacity} %</span>
-      </div>
-    `);
-  }
-  clearSummaryBar() {
-    this.summaryBarContainer.removeChildren();
+  setContextRealtimeData(contextRealtimeData) {
+    this.contextRealtimeData = contextRealtimeData;
+    this.requestUpdate();
   }
   async pollRealtimeData() {
-    const context = this.selectedContext();
+    if (this.selectedContextIndex < 0) {
+      this.setContextRealtimeData(null);
+      return;
+    }
+    const context = this.contextSelectorItems.at(this.selectedContextIndex);
     if (!context) {
-      this.clearSummaryBar();
+      this.setContextRealtimeData(null);
       return;
     }
     for (const model of SDK2.TargetManager.TargetManager.instance().models(WebAudioModel)) {
       if (context.contextType === "realtime") {
-        if (!this.graphManager.hasContext(context.contextId)) {
+        if (!this.knownContexts.has(context.contextId)) {
           continue;
         }
         const realtimeData = await model.requestRealtimeData(context.contextId);
         if (realtimeData) {
-          this.updateSummaryBar(realtimeData);
+          this.setContextRealtimeData(realtimeData);
         }
+        void this.pollRealtimeDataThrottler.schedule(this.pollRealtimeData.bind(this));
       } else {
-        this.clearSummaryBar();
+        this.setContextRealtimeData(null);
       }
     }
   }
 };
-
-// gen/front_end/panels/web_audio/web_audio.prebundle.js
-import { EdgeView, GraphManager as GraphManager2, GraphStyle, GraphView, NodeRendererUtility, NodeView } from "./graph_visualizer/graph_visualizer.js";
 export {
-  EdgeView,
-  GraphManager2 as GraphManager,
-  GraphStyle,
-  GraphView,
-  NodeRendererUtility,
-  NodeView,
   WebAudioModel_exports as WebAudioModel,
   WebAudioView_exports as WebAudioView
 };

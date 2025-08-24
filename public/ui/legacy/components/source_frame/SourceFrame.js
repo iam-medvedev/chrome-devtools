@@ -264,7 +264,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
                     activeDark: 'var(--sys-color-divider-prominent)',
                 },
             }),
-            infobarState,
+            sourceFrameInfobarState,
         ];
     }
     onBlur() {
@@ -456,10 +456,10 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         }
     }
     async setContentDataOrError(contentDataPromise) {
-        const progressIndicator = new UI.ProgressIndicator.ProgressIndicator();
+        const progressIndicator = document.createElement('devtools-progress');
         progressIndicator.setTitle(i18nString(UIStrings.loading));
         progressIndicator.setTotalWork(100);
-        this.progressToolbarItem.element.appendChild(progressIndicator.element);
+        this.progressToolbarItem.element.appendChild(progressIndicator);
         progressIndicator.setWorked(1);
         const contentData = await contentDataPromise;
         let error;
@@ -1054,23 +1054,25 @@ const sourceFrameTheme = CodeMirror.EditorView.theme({
     },
 });
 // Infobar panel state, used to show additional panels below the editor.
-export const addInfobar = CodeMirror.StateEffect.define();
-export const removeInfobar = CodeMirror.StateEffect.define();
-const infobarState = CodeMirror.StateField.define({
+export const addSourceFrameInfobar = CodeMirror.StateEffect.define();
+export const removeSourceFrameInfobar = CodeMirror.StateEffect.define();
+const sourceFrameInfobarState = CodeMirror.StateField.define({
     create() {
         return [];
     },
     update(current, tr) {
         for (const effect of tr.effects) {
-            if (effect.is(addInfobar)) {
+            if (effect.is(addSourceFrameInfobar)) {
                 current = current.concat(effect.value);
             }
-            else if (effect.is(removeInfobar)) {
-                current = current.filter(b => b !== effect.value);
+            else if (effect.is(removeSourceFrameInfobar)) {
+                current = current.filter(b => b.element !== effect.value.element);
             }
         }
         return current;
     },
-    provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field).map((bar) => () => ({ dom: bar.element }))),
+    provide: (field) => CodeMirror.showPanel.computeN([field], (state) => state.field(field)
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map((bar) => () => ({ dom: bar.element }))),
 });
 //# sourceMappingURL=SourceFrame.js.map

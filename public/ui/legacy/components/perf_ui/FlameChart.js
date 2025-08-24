@@ -323,6 +323,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.#canvasBoundingClientRect = this.canvas.getBoundingClientRect();
         return this.#canvasBoundingClientRect;
     }
+    verticalScrollBarVisible() {
+        return this.chartViewport.verticalScrollBarVisible();
+    }
     /**
      * In some cases we need to manually adjust the positioning of the tooltip
      * vertically to account for the fact that it might be rendered not relative
@@ -1100,6 +1103,22 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     showGroup(groupIndex) {
         this.#toggleGroupHiddenState(groupIndex, /* hidden= */ false);
     }
+    showAllGroups() {
+        if (!this.rawTimelineData?.groups) {
+            return;
+        }
+        for (const group of this.rawTimelineData.groups) {
+            group.hidden = false;
+        }
+        this.updateLevelPositions();
+        this.updateHighlight();
+        this.updateHeight();
+        this.draw();
+        this.#notifyProviderOfConfigurationChange();
+        // When you show all groups, the UI can change quite significantly, so
+        // scroll the user back up to the top to orient them.
+        this.scrollGroupIntoView(0);
+    }
     #toggleGroupHiddenState(groupIndex, hidden) {
         if (groupIndex < 0) {
             return;
@@ -1134,7 +1153,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.contextMenu = new UI.ContextMenu.ContextMenu(event);
         const label = i18nString(UIStrings.enterTrackConfigurationMode);
         this.contextMenu.defaultSection().appendItem(label, () => {
-            this.#enterEditMode();
+            this.enterTrackConfigurationMode();
         }, {
             jslogContext: 'track-configuration-enter',
         });
@@ -1789,7 +1808,10 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         }
         return { groupIndex: -1, hoverType: "OUTSIDE_TRACKS" /* HoverType.OUTSIDE_TRACKS */ };
     }
-    #enterEditMode() {
+    enterTrackConfigurationMode() {
+        if (!this.#hasTrackConfigurationMode()) {
+            return;
+        }
         const div = document.createElement('div');
         div.classList.add('flame-chart-edit-confirm');
         const button = new Buttons.Button.Button();
@@ -1807,6 +1829,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.dispatchEventToListeners("TracksReorderStateChange" /* Events.TRACKS_REORDER_STATE_CHANGED */, true);
         this.updateLevelPositions();
         this.draw();
+        // When we collapse all the tracks into edit mode, we can leave the user at
+        // the bottom of the panel which can look very empty.
+        // So, scroll the user to the top so they can see all of the collapsed
+        // tracks.
+        this.scrollGroupIntoView(0);
     }
     #removeEditModeButton() {
         const confirmButton = this.viewportElement.querySelector('.flame-chart-edit-confirm');
@@ -1866,27 +1893,9 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         context.translate(0, -top);
         context.font = this.#font;
         const { markerIndices, drawBatches, titleIndices } = this.getDrawBatches(context, timelineData);
-        const groups = this.rawTimelineData?.groups || [];
-        const trackIndex = groups.findIndex(g => g.name.includes('Main'));
-        const group = groups.at(trackIndex);
-        const startLevel = group?.startLevel;
-        const endLevel = groups.at(trackIndex + 1)?.startLevel;
-        const entryIndexIsInTrack = (index) => {
-            if (trackIndex < 0 || startLevel === undefined || endLevel === undefined) {
-                return false;
-            }
-            const barWidth = Math.min(this.#eventBarWidth(timelineData, index), canvasWidth);
-            return timelineData.entryLevels[index] >= startLevel && timelineData.entryLevels[index] < endLevel &&
-                barWidth > 10;
-        };
-        let wideEntryExists = false;
         for (const [{ color, outline }, { indexes }] of drawBatches) {
-            if (!wideEntryExists) {
-                wideEntryExists = indexes.some(entryIndexIsInTrack);
-            }
             this.#drawBatchEvents(context, timelineData, color, indexes, outline);
         }
-        this.dispatchEventToListeners("ChartPlayableStateChange" /* Events.CHART_PLAYABLE_STATE_CHANGED */, wideEntryExists);
         if (!this.#inTrackConfigEditMode) {
             // In configuration mode, we do not render the actual flame chart, so we
             // can skip checking for any custom symbols on any tracks.
@@ -2926,8 +2935,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.timelineLevels = levelIndexes;
         const groups = this.rawTimelineData.groups || [];
         for (let i = 0; i < groups.length; ++i) {
-            const expanded = groups[i].expanded ?? this.#persistedGroupConfig?.[i]?.expanded ?? false;
-            const hidden = groups[i].hidden ?? this.#persistedGroupConfig?.[i]?.hidden ?? false;
+            // Find matching config based on the name of the track.
+            const matchingConfig = this.#persistedGroupConfig?.find(c => c.trackName === groups[i].name);
+            // Priority:
+            // 1. Prefer the active track config.
+            // 2. If that doesn't exist, prefer any explicit state set on the group.
+            // 3. If that doesn't exist, set defaults.
+            const expanded = matchingConfig?.expanded ?? groups[i].expanded ?? false;
+            const hidden = matchingConfig?.hidden ?? groups[i].hidden ?? false;
             groups[i].expanded = expanded;
             groups[i].hidden = hidden;
         }
@@ -2958,7 +2973,11 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
             this.updateGroupTree(groups, this.#groupTreeRoot);
         }
         // If we have persisted track config, apply it. This method can get called when there is no timeline data, so we check for that.
-        // It shouldn't happen, but if the length of the persisted config does not match, we bail, rather than apply some invalid state.
+        // For now, we only apply the sorting persistence if the length of the
+        // groups in the config matches the length of the current trace. In the
+        // future we might want to adjust this because it means that the persisted
+        // config sorting isn't that useful; the moment you import a trace with a
+        // new set of groups that are a different length, we don't use it.
         if (this.#persistedGroupConfig && groups.length > 0 && this.#groupTreeRoot &&
             this.#persistedGroupConfig.length === groups.length) {
             this.#reOrderGroupsBasedOnPersistedConfig(this.#persistedGroupConfig, this.#groupTreeRoot);
@@ -3438,8 +3457,14 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
         this.chartViewport.setBoundaries(this.minimumBoundaryInternal, this.totalTime);
     }
     updateHeight() {
-        const height = this.levelToOffset(this.dataProvider.maxStackDepth()) + 2;
-        this.chartViewport.setContentHeight(height);
+        this.chartViewport.setContentHeight(this.totalContentHeight());
+    }
+    /**
+     * This is the total height that would be required to render the flame chart
+     * with no overflows.
+     */
+    totalContentHeight() {
+        return this.levelToOffset(this.dataProvider.maxStackDepth()) + 2;
     }
     onResize() {
         // Clear the rect cache because we have been resized.

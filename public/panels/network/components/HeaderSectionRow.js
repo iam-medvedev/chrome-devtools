@@ -148,12 +148,7 @@ export class HeaderSectionRow extends HTMLElement {
             html `<div class="header-badge header-badge-text">${i18n.i18n.lockedString('not-set')}</div> ` :
             Lit.nothing}
           ${isHeaderNameEditable && !this.#isValidHeaderName ?
-            html `<devtools-icon class="inline-icon disallowed-characters" title=${UIStrings.headerNamesOnlyLetters} .data=${{
-                iconName: 'cross-circle-filled',
-                width: '16px',
-                height: '16px',
-                color: 'var(--icon-error)',
-            }}>
+            html `<devtools-icon class="inline-icon disallowed-characters medium" title=${UIStrings.headerNamesOnlyLetters} name='cross-circle-filled'>
             </devtools-icon>` : Lit.nothing}
           ${isHeaderNameEditable && !this.#header.isDeleted ?
             html `<devtools-editable-span
@@ -172,12 +167,7 @@ export class HeaderSectionRow extends HTMLElement {
           ${this.#renderHeaderValue()}
         </div>
         ${showReloadInfoIcon ?
-            html `<devtools-icon class="row-flex-icon flex-right" title=${UIStrings.reloadPrompt} .data=${{
-                iconName: 'info',
-                width: '16px',
-                height: '16px',
-                color: 'var(--icon-default)',
-            }}>
+            html `<devtools-icon name="info" class="row-flex-icon flex-right medium" title=${UIStrings.reloadPrompt}>
           </devtools-icon>` : Lit.nothing}
       </div>
       ${this.#maybeRenderBlockedDetails(this.#header.blockedDetails)}
@@ -292,12 +282,7 @@ export class HeaderSectionRow extends HTMLElement {
             // clang-format off
             return html `
         <div class="devtools-link" @click=${blockedDetails.reveal}>
-          <devtools-icon class="inline-icon" .data=${{
-                iconName: 'issue-exclamation-filled',
-                color: 'var(--icon-warning)',
-                width: '16px',
-                height: '16px',
-            }}>
+          <devtools-icon name="issue-exclamation-filled" class="inline-icon medium">
           </devtools-icon
           >${i18nString(UIStrings.learnMoreInTheIssuesTab)}
         </div>
@@ -309,12 +294,7 @@ export class HeaderSectionRow extends HTMLElement {
             // clang-format off
             return html `
         <x-link href=${blockedDetails.link.url} class="link">
-          <devtools-icon class="inline-icon" .data=${{
-                iconName: 'open-externally',
-                color: 'var(--icon-link)',
-                width: '20px',
-                height: '20px',
-            }}>
+          <devtools-icon name="open-externally" class="inline-icon extra-large" style="color: var(--icon-link);">
           </devtools-icon
           >${i18nString(UIStrings.learnMore)}
         </x-link>

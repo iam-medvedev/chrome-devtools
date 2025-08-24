@@ -27,6 +27,7 @@ export default `/*
   &::before {
     flex-shrink: 0;
     margin-right: 2px;
+    margin-top: calc(-1 * var(--sys-size-3));
   }
 }
 

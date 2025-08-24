@@ -895,10 +895,10 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const pieChartData = getPieChartDataForDetailsElement(details);
             const expectedPieChartData = [
                 { title: 'System (self)', value: '2\u00A0ms' },
-                { title: 'System (children)', value: '2\u00A0ms' },
+                { title: 'System (children)', value: '0\u00A0ms' },
                 { title: 'Rendering', value: '28\u00A0ms' },
                 { title: 'Painting', value: '2\u00A0ms' },
-                { title: 'Total', value: '34\u00A0ms' },
+                { title: 'Total', value: '32\u00A0ms' },
             ];
             assert.deepEqual(pieChartData, expectedPieChartData);
         });

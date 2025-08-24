@@ -25,7 +25,7 @@ export declare const enum SettingCategory {
     MEMORY = "MEMORY",
     EXTENSIONS = "EXTENSIONS",
     ADORNER = "ADORNER",
-    SYNC = "SYNC",
+    ACCOUNT = "ACCOUNT",
     PRIVACY = "PRIVACY"
 }
 export declare function getLocalizedSettingsCategory(category: SettingCategory): Platform.UIString.LocalizedString;
