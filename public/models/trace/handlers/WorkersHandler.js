@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-const sessionIdEvents = [];
-const workerIdByThread = new Map();
-const workerURLById = new Map();
+let sessionIdEvents = [];
+let workerIdByThread = new Map();
+let workerURLById = new Map();
 export function reset() {
-    sessionIdEvents.length = 0;
-    workerIdByThread.clear();
-    workerURLById.clear();
+    sessionIdEvents = [];
+    workerIdByThread = new Map();
+    workerURLById = new Map();
 }
 export function handleEvent(event) {
     if (Types.Events.isTracingSessionIdForWorker(event)) {

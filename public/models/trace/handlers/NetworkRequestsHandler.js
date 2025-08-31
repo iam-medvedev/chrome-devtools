@@ -8,19 +8,19 @@ import * as HandlerHelpers from './helpers.js';
 import { data as metaHandlerData } from './MetaHandler.js';
 const MILLISECONDS_TO_MICROSECONDS = 1000;
 const SECONDS_TO_MICROSECONDS = 1000000;
-const webSocketData = new Map();
-const linkPreconnectEvents = [];
-const requestMap = new Map();
-const requestsById = new Map();
-const requestsByTime = [];
-const networkRequestEventByInitiatorUrl = new Map();
-const eventToInitiatorMap = new Map();
+let webSocketData = new Map();
+let linkPreconnectEvents = [];
+let requestMap = new Map();
+let requestsById = new Map();
+let requestsByTime = [];
+let networkRequestEventByInitiatorUrl = new Map();
+let eventToInitiatorMap = new Map();
 /**
  * These are to store ThirdParty data relationships between entities and events. To reduce iterating through data
  * more than we have to, here we start building the caches. After this, the RendererHandler will update
  * the relationships. When handling ThirdParty references, use the one in the RendererHandler instead.
  */
-const entityMappings = {
+let entityMappings = {
     eventsByEntity: new Map(),
     entityByEvent: new Map(),
     createdEntityCache: new Map(),
@@ -55,17 +55,19 @@ function firstPositiveValueInList(entries) {
     return 0;
 }
 export function reset() {
-    requestsById.clear();
-    requestMap.clear();
-    requestsByTime.length = 0;
-    networkRequestEventByInitiatorUrl.clear();
-    eventToInitiatorMap.clear();
-    webSocketData.clear();
-    entityMappings.eventsByEntity.clear();
-    entityMappings.entityByEvent.clear();
-    entityMappings.createdEntityCache.clear();
-    entityMappings.entityByUrlCache.clear();
-    linkPreconnectEvents.length = 0;
+    requestsById = new Map();
+    requestMap = new Map();
+    requestsByTime = [];
+    networkRequestEventByInitiatorUrl = new Map();
+    eventToInitiatorMap = new Map();
+    webSocketData = new Map();
+    entityMappings = {
+        eventsByEntity: new Map(),
+        entityByEvent: new Map(),
+        createdEntityCache: new Map(),
+        entityByUrlCache: new Map(),
+    };
+    linkPreconnectEvents = [];
 }
 export function handleEvent(event) {
     if (Types.Events.isResourceChangePriority(event)) {
@@ -476,10 +478,10 @@ export function data() {
         eventToInitiator: eventToInitiatorMap,
         webSocket: [...webSocketData.values()],
         entityMappings: {
-            entityByEvent: new Map(entityMappings.entityByEvent),
-            eventsByEntity: new Map(entityMappings.eventsByEntity),
-            createdEntityCache: new Map(entityMappings.createdEntityCache),
-            entityByUrlCache: new Map(entityMappings.entityByUrlCache),
+            entityByEvent: entityMappings.entityByEvent,
+            eventsByEntity: entityMappings.eventsByEntity,
+            createdEntityCache: entityMappings.createdEntityCache,
+            entityByUrlCache: entityMappings.entityByUrlCache,
         },
         linkPreconnectEvents,
     };

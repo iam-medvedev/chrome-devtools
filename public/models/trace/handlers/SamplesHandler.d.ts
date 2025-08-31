@@ -1,8 +1,8 @@
 import * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-declare const profilesInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, ProfileData>>;
-declare const entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
+declare let profilesInProcess: Map<Types.Events.ProcessID, Map<Types.Events.ThreadID, ProfileData>>;
+declare let entryToNode: Map<Types.Events.Event, Helpers.TreeHelpers.TraceEntryNode>;
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(parseOptions?: Types.Configuration.ParseOptions): Promise<void>;

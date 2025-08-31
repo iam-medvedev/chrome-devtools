@@ -19,47 +19,47 @@ export const MAX_SHIFT_TIME_DELTA = Helpers.Timing.milliToMicro(Types.Timing.Mil
 // will be reported together. In the case of multiple renderers (frames across
 // different origins), we offer the developer the ability to switch renderer in
 // the UI.
-const layoutShiftEvents = [];
+let layoutShiftEvents = [];
 // These events denote potential node resizings. We store them to link captured
 // layout shifts to the resizing of unsized elements.
-const layoutInvalidationEvents = [];
-const scheduleStyleInvalidationEvents = [];
-const styleRecalcInvalidationEvents = [];
-const renderFrameImplCreateChildFrameEvents = [];
-const domLoadingEvents = [];
-const layoutImageUnsizedEvents = [];
-const remoteFonts = [];
-const backendNodeIds = new Set();
+let layoutInvalidationEvents = [];
+let scheduleStyleInvalidationEvents = [];
+let styleRecalcInvalidationEvents = [];
+let renderFrameImplCreateChildFrameEvents = [];
+let domLoadingEvents = [];
+let layoutImageUnsizedEvents = [];
+let remoteFonts = [];
+let backendNodeIds = new Set();
 // Layout shifts happen during PrePaint as part of the rendering lifecycle.
 // We determine if a LayoutInvalidation event is a potential root cause of a layout
 // shift if the next PrePaint after the LayoutInvalidation is the parent
 // node of such shift.
-const prePaintEvents = [];
-const paintImageEvents = [];
+let prePaintEvents = [];
+let paintImageEvents = [];
 let sessionMaxScore = 0;
 let clsWindowID = -1;
-const clusters = [];
-const clustersByNavigationId = new Map();
+let clusters = [];
+let clustersByNavigationId = new Map();
 // The complete timeline of LS score changes in a trace.
 // Includes drops to 0 when session windows end.
-const scoreRecords = [];
+let scoreRecords = [];
 export function reset() {
-    layoutShiftEvents.length = 0;
-    layoutInvalidationEvents.length = 0;
-    scheduleStyleInvalidationEvents.length = 0;
-    styleRecalcInvalidationEvents.length = 0;
-    prePaintEvents.length = 0;
-    paintImageEvents.length = 0;
-    renderFrameImplCreateChildFrameEvents.length = 0;
-    layoutImageUnsizedEvents.length = 0;
-    domLoadingEvents.length = 0;
-    remoteFonts.length = 0;
-    backendNodeIds.clear();
-    clusters.length = 0;
+    layoutShiftEvents = [];
+    layoutInvalidationEvents = [];
+    scheduleStyleInvalidationEvents = [];
+    styleRecalcInvalidationEvents = [];
+    prePaintEvents = [];
+    paintImageEvents = [];
+    renderFrameImplCreateChildFrameEvents = [];
+    layoutImageUnsizedEvents = [];
+    domLoadingEvents = [];
+    remoteFonts = [];
+    backendNodeIds = new Set();
+    clusters = [];
     sessionMaxScore = 0;
-    scoreRecords.length = 0;
+    scoreRecords = [];
     clsWindowID = -1;
-    clustersByNavigationId.clear();
+    clustersByNavigationId = new Map();
 }
 export function handleEvent(event) {
     if (Types.Events.isLayoutShift(event) && !event.args.data?.had_recent_input) {
@@ -253,8 +253,11 @@ async function buildLayoutShiftsClusters() {
             // comes from `data.navigationId`. I don't think that is possible for this
             // event type. Can we make this typing stronger? In the meantime, we allow
             // `navigationId` to include undefined values.
-            clusters.push({
+            clusters.push(Helpers.SyntheticEvents.SyntheticEventsManager
+                .registerSyntheticEvent({
                 name: 'SyntheticLayoutShiftCluster',
+                // Will be replaced by the worst layout shift in the next for loop.
+                rawSourceEvent: event,
                 events: [],
                 clusterWindow: traceWindowFromTime(clusterStartTime),
                 clusterCumulativeScore: 0,
@@ -269,7 +272,7 @@ async function buildLayoutShiftsClusters() {
                 ph: "X" /* Types.Events.Phase.COMPLETE */,
                 cat: '',
                 dur: Types.Timing.Micro(-1), // This `cluster.dur` is updated below.
-            });
+            }));
             firstShiftTime = clusterStartTime;
         }
         // Given the above we should have a cluster available, so pick the most
@@ -388,6 +391,7 @@ async function buildLayoutShiftsClusters() {
         // Update the cluster's worst layout shift.
         if (worstShiftEvent) {
             cluster.worstShiftEvent = worstShiftEvent;
+            cluster.rawSourceEvent = worstShiftEvent;
         }
         // layout shifts are already sorted by time ascending.
         // Capture the time range of the cluster.

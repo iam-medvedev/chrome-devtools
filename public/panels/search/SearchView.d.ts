@@ -1,4 +1,5 @@
 import '../../ui/legacy/legacy.js';
+import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -18,13 +19,13 @@ export declare class SearchView extends UI.Widget.VBox {
     private searchResultsPane;
     private progressIndicator;
     private visiblePane;
-    private readonly searchPanelElement;
-    private readonly searchResultsElement;
-    protected readonly search: HTMLInputElement;
-    protected readonly matchCaseButton: Buttons.Button.Button;
-    protected readonly regexButton: Buttons.Button.Button;
+    private searchPanelElement;
+    private searchResultsElement;
+    protected search: HTMLInputElement;
+    protected matchCaseButton: Buttons.Button.Button;
+    protected regexButton: Buttons.Button.Button;
     private searchMessageElement;
-    private readonly searchProgressPlaceholderElement;
+    private searchProgressPlaceholderElement;
     private searchResultsMessageElement;
     private readonly advancedSearchConfig;
     private searchScope;
@@ -75,5 +76,6 @@ export declare class SearchView extends UI.Widget.VBox {
     private save;
     private load;
     private onAction;
+    private onClearSearch;
     get throttlerForTest(): Common.Throttler.Throttler;
 }

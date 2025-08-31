@@ -8,20 +8,20 @@ function threadKey(data) {
 }
 // Track all the start + end events. We key them by the PID+TID so we don't
 // accidentally pair across different threads.
-const animationFrameStarts = new Map();
-const animationFrameEnds = new Map();
+let animationFrameStarts = new Map();
+let animationFrameEnds = new Map();
 // Store all the AnimationFrame::Presentation events. Key them by their ID for
 // easy look-up later on when we associate one to the AnimationFrame event.
-const animationFramePresentations = new Map();
+let animationFramePresentations = new Map();
 // The final list of animation frames that we return.
-const animationFrames = [];
-const presentationForFrame = new Map();
+let animationFrames = [];
+let presentationForFrame = new Map();
 export function reset() {
-    animationFrameStarts.clear();
-    animationFrameEnds.clear();
-    animationFrames.length = 0;
-    presentationForFrame.clear();
-    animationFramePresentations.clear();
+    animationFrameStarts = new Map();
+    animationFrameEnds = new Map();
+    animationFrames = [];
+    presentationForFrame = new Map();
+    animationFramePresentations = new Map();
     isEnabled = false;
 }
 let isEnabled = false;

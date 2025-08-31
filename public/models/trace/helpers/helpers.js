@@ -17,6 +17,7 @@ __export(Trace_exports, {
   VISIBLE_TRACE_EVENT_TYPES: () => VISIBLE_TRACE_EVENT_TYPES,
   activeURLForFrameAtTime: () => activeURLForFrameAtTime,
   addEventToProcessThread: () => addEventToProcessThread,
+  compareBeginAndEnd: () => compareBeginAndEnd,
   createMatchedSortedSyntheticEvents: () => createMatchedSortedSyntheticEvents,
   createSortedSyntheticEvents: () => createSortedSyntheticEvents,
   eventContainsTimestamp: () => eventContainsTimestamp,
@@ -40,6 +41,7 @@ __export(Trace_exports, {
   makeZeroBasedCallFrame: () => makeZeroBasedCallFrame,
   matchEvents: () => matchEvents,
   mergeEventsInOrder: () => mergeEventsInOrder,
+  parseDevtoolsDetails: () => parseDevtoolsDetails,
   sortTraceEventsInPlace: () => sortTraceEventsInPlace,
   stackTraceInEvent: () => stackTraceInEvent
 });
@@ -363,24 +365,31 @@ function addEventToProcessThread(event, eventsInProcessThread) {
   eventsInThread.set(event.tid, events);
   eventsInProcessThread.set(event.pid, eventsInThread);
 }
-function eventTimeComparator(a, b) {
-  const aBeginTime = a.ts;
-  const bBeginTime = b.ts;
+function compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime) {
   if (aBeginTime < bBeginTime) {
     return -1;
   }
   if (aBeginTime > bBeginTime) {
     return 1;
   }
-  const aDuration = a.dur ?? 0;
-  const bDuration = b.dur ?? 0;
-  const aEndTime = aBeginTime + aDuration;
-  const bEndTime = bBeginTime + bDuration;
   if (aEndTime > bEndTime) {
     return -1;
   }
   if (aEndTime < bEndTime) {
     return 1;
+  }
+  return 0;
+}
+function eventTimeComparator(a, b) {
+  const aBeginTime = a.ts;
+  const bBeginTime = b.ts;
+  const aDuration = a.dur ?? 0;
+  const bDuration = b.dur ?? 0;
+  const aEndTime = aBeginTime + aDuration;
+  const bEndTime = bBeginTime + bDuration;
+  const timeDifference = compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime);
+  if (timeDifference) {
+    return timeDifference;
   }
   if (Types2.Events.isProfileCall(a) && !Types2.Events.isProfileCall(b)) {
     return -1;
@@ -417,6 +426,20 @@ function mergeEventsInOrder(eventsArray1, eventsArray2) {
     result.push(eventsArray2[j++]);
   }
   return result;
+}
+function parseDevtoolsDetails(timingDetail, key) {
+  try {
+    const detailObj = JSON.parse(timingDetail);
+    if (!(key in detailObj)) {
+      return null;
+    }
+    if (!Types2.Extensions.isValidExtensionPayload(detailObj[key])) {
+      return null;
+    }
+    return detailObj[key];
+  } catch {
+    return null;
+  }
 }
 function getNavigationForTraceEvent(event, eventFrameId, navigationsByFrameId) {
   const navigations = navigationsByFrameId.get(eventFrameId);

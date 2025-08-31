@@ -1,8 +1,6 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -48,9 +46,9 @@ const UIStringsNotTranslate = {
     selectProjectRootNoLogging: 'Source code from the selected folder is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time.',
 };
 const lockedString = i18n.i18n.lockedString;
-// clang-format off
 export const SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
     const hasFolders = input.folders.length > 0;
+    // clang-format off
     render(html `
       <style>${selectWorkspaceDialogStyles}</style>
       <h2 class="dialog-header">${lockedString(UIStringsNotTranslate.selectFolder)}</h2>
@@ -115,9 +113,9 @@ export const SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => 
             .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}>${lockedString(UIStringsNotTranslate.select)}</devtools-button>
         ` : nothing}
       </div>
-    `, target, { host: target });
+    `, target);
+    // clang-format on
 };
-// clang-format on
 export class SelectWorkspaceDialog extends UI.Widget.VBox {
     #view;
     #workspace = Workspace.Workspace.WorkspaceImpl.instance();
@@ -128,7 +126,6 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     #folders = [];
     constructor(options, view) {
         super();
-        this.element.classList.add('dialog-container');
         this.#onProjectSelected = options.onProjectSelected;
         this.#dialog = options.dialog;
         this.#updateProjectsAndFolders();

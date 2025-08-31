@@ -6,10 +6,10 @@ import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
 // Each thread contains events. Events indicate the thread and process IDs, which are
 // used to store the event in the correct process thread entry below.
-const eventsInProcessThread = new Map();
+let eventsInProcessThread = new Map();
 let mainGPUThreadTasks = [];
 export function reset() {
-    eventsInProcessThread.clear();
+    eventsInProcessThread = new Map();
     mainGPUThreadTasks = [];
 }
 export function handleEvent(event) {

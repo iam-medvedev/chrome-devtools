@@ -121,7 +121,7 @@ const UIStrings = {
     /**
      * @description Tooltip for a filter in the Network panel
      */
-    onlyShowIPProtectedRequests: '(Incognito Only) Show only requests sent to IP Protection proxies',
+    onlyShowIPProtectedRequests: 'Show only requests sent to IP Protection proxies. Has no effect in regular browsing.',
     /**
      * @description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
      */
@@ -993,7 +993,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.dataGrid.setName('network-log');
         this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
         this.dataGrid.element.classList.add('network-log-grid');
-        this.dataGrid.element.addEventListener('mousedown', this.dataGridMouseDown.bind(this), true);
         this.dataGrid.element.addEventListener('mousemove', this.dataGridMouseMove.bind(this), true);
         this.dataGrid.element.addEventListener('mouseleave', () => this.setHoveredNode(null), true);
         this.dataGrid.element.addEventListener('keydown', event => {
@@ -1004,7 +1003,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
                 }
             }
             if (Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
-                this.dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel: true, takeFocus: true });
+                this.dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel: "ShowPanel" /* RequestPanelBehavior.ShowPanel */, takeFocus: true });
                 event.consume(true);
             }
         });
@@ -1040,12 +1039,6 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.hoveredNodeInternal = node;
         if (this.hoveredNodeInternal) {
             this.hoveredNodeInternal.setHovered(true, Boolean(highlightInitiatorChain));
-        }
-    }
-    dataGridMouseDown(event) {
-        const mouseEvent = event;
-        if (!this.dataGrid.selectedNode && mouseEvent.button) {
-            mouseEvent.consume();
         }
     }
     updateSummaryBar() {
@@ -1345,7 +1338,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         return groupNode;
     }
     reset() {
-        this.dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel: false });
+        this.dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel: "HidePanel" /* RequestPanelBehavior.HidePanel */ });
         this.setHoveredNode(null);
         this.columnsInternal.reset();
         this.timeFilter = null;
@@ -2297,7 +2290,6 @@ export class MoreFiltersDropDownUI extends Common.ObjectWrapper.ObjectWrapper {
         if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
             contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
                 checked: this.networkOnlyIPProtectedRequestsSetting.get(),
-                disabled: !Root.Runtime.hostConfig.isOffTheRecord,
                 tooltip: i18nString(UIStrings.onlyShowIPProtectedRequests),
                 jslogContext: 'only-ip-protected-requests',
             });

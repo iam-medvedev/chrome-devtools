@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { calculateDocFirstByteTs } from './Common.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
     /**
@@ -64,14 +65,9 @@ function anyValuesNaN(...values) {
  * data we rely on, so we want to handle that case.
  */
 function determineSubparts(nav, docRequest, lcpEvent, lcpRequest) {
-    const docReqTiming = docRequest.args.data.timing;
-    let firstDocByteTs;
-    if (docReqTiming) {
-        firstDocByteTs = Types.Timing.Micro(Helpers.Timing.secondsToMicro(docReqTiming.requestTime) +
-            Helpers.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
-    }
-    else {
-        firstDocByteTs = docRequest.ts; // file:
+    const firstDocByteTs = calculateDocFirstByteTs(docRequest);
+    if (firstDocByteTs === null) {
+        return null;
     }
     const ttfb = Helpers.Timing.traceWindowFromMicroSeconds(nav.ts, firstDocByteTs);
     ttfb.label = i18nString(UIStrings.timeToFirstByte);

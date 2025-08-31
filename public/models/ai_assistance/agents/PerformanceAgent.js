@@ -7,6 +7,7 @@ import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { html } from '../../../ui/lit/lit.js';
 import * as Trace from '../../trace/trace.js';
@@ -225,7 +226,7 @@ const callFrameDataFormatDescription = `Each call frame is presented in the foll
 
 Key definitions:
 
-* id: A unique numerical identifier for the call frame.
+* id: A unique numerical identifier for the call frame. Never mention this id in the output to the user.
 * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
 * duration: The total execution time of the call frame, including its children.
 * selfTime: The time spent directly within the call frame, excluding its children's execution.
@@ -262,8 +263,8 @@ var ScorePriority;
     ScorePriority[ScorePriority["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
 export class PerformanceTraceContext extends ConversationContext {
-    static full(parsedTrace, insightSet, traceMetadata) {
-        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.full(parsedTrace, insightSet, traceMetadata));
+    static full(parsedTrace, insights, traceMetadata) {
+        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.full(parsedTrace, insights, traceMetadata));
     }
     static fromInsight(parsedTrace, insight, insightSetBounds) {
         return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insightSetBounds));
@@ -696,7 +697,7 @@ export class PerformanceAgent extends AiAgent {
         if (focus.data.type !== 'full') {
             return;
         }
-        const { parsedTrace, insightSet } = focus.data;
+        const { parsedTrace, insightSet, traceMetadata } = focus.data;
         this.declareFunction('getInsightDetails', {
             description: 'Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.',
             parameters: {
@@ -759,8 +760,13 @@ export class PerformanceAgent extends AiAgent {
                 return { result: { details } };
             },
         });
+        const createBounds = (min, max) => {
+            min = Math.max(min ?? 0, parsedTrace.Meta.traceBounds.min);
+            max = Math.min(max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
+            return Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
+        };
         this.declareFunction('getMainThreadTrackSummary', {
-            description: 'Returns the main thread activity for the selected bounds. The result is a call tree.',
+            description: 'Returns a summary of the main thread for the given bounds. The result includes a top-down summary, bottom-up summary, third-parties summary, and a list of related insights for the events within the given bounds.',
             parameters: {
                 type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
                 description: '',
@@ -789,19 +795,132 @@ export class PerformanceAgent extends AiAgent {
                 if (!this.#formatter) {
                     throw new Error('missing formatter');
                 }
-                const min = Math.max(args.min ?? 0, parsedTrace.Meta.traceBounds.min);
-                const max = Math.min(args.max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
-                const activity = this.#formatter.formatMainThreadTrackSummary(min, max);
+                const bounds = createBounds(args.min, args.max);
+                const activity = this.#formatter.formatMainThreadTrackSummary(bounds);
                 if (this.#isFunctionResponseTooLarge(activity)) {
                     return {
-                        error: 'getMainThreadTrackSummary response is too large. Try investigating using other functions',
+                        error: 'getMainThreadTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds',
                     };
                 }
-                const key = `getMainThreadTrackSummary({min: ${min}, max: ${max}})`;
+                const key = `getMainThreadTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
                 this.#cacheFunctionResult(focus, key, activity);
                 return { result: { activity } };
             },
         });
+        this.declareFunction('getNetworkTrackSummary', {
+            description: 'Returns a summary of the network for the given bounds.',
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: false,
+                properties: {
+                    min: {
+                        type: 3 /* Host.AidaClient.ParametersTypes.INTEGER */,
+                        description: 'The minimum time of the bounds, in microseconds',
+                        nullable: false,
+                    },
+                    max: {
+                        type: 3 /* Host.AidaClient.ParametersTypes.INTEGER */,
+                        description: 'The maximum time of the bounds, in microseconds',
+                        nullable: false,
+                    },
+                },
+            },
+            displayInfoFromArgs: args => {
+                return {
+                    title: lockedString(UIStringsNotTranslated.networkActivitySummary),
+                    action: `getNetworkTrackSummary({min: ${args.min}, max: ${args.max}})`
+                };
+            },
+            handler: async (args) => {
+                debugLog('Function call: getNetworkTrackSummary');
+                if (!this.#formatter) {
+                    throw new Error('missing formatter');
+                }
+                const bounds = createBounds(args.min, args.max);
+                const activity = this.#formatter.formatNetworkTrackSummary(bounds);
+                if (this.#isFunctionResponseTooLarge(activity)) {
+                    return {
+                        error: 'getNetworkTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds',
+                    };
+                }
+                const key = `getNetworkTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
+                this.#cacheFunctionResult(focus, key, activity);
+                return { result: { activity } };
+            },
+        });
+        this.declareFunction('getDetailedCallTree', {
+            description: 'Returns a detailed call tree for the given main thread event.',
+            parameters: {
+                type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                description: '',
+                nullable: false,
+                properties: {
+                    eventKey: {
+                        type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                        description: 'The key for the event.',
+                        nullable: false,
+                    },
+                },
+            },
+            displayInfoFromArgs: args => {
+                return { title: lockedString('Looking at call tree…'), action: `getDetailedCallTree(${args.eventKey})` };
+            },
+            handler: async (args) => {
+                debugLog('Function call: getDetailedCallTree');
+                if (!this.#formatter) {
+                    throw new Error('missing formatter');
+                }
+                const event = this.#lookupEvent(args.eventKey);
+                if (!event) {
+                    return { error: 'Invalid eventKey' };
+                }
+                const tree = TimelineUtils.AICallTree.AICallTree.fromEvent(event, parsedTrace);
+                const callTree = tree ? this.#formatter.formatCallTree(tree) : 'No call tree found';
+                const key = `getDetailedCallTree(${args.eventKey})`;
+                this.#cacheFunctionResult(focus, key, callTree);
+                return { result: { callTree } };
+            },
+        });
+        const isFresh = TimelineUtils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
+        const hasScriptContents = traceMetadata.enhancedTraceVersion && parsedTrace.Scripts.scripts.some(s => s.content);
+        if (isFresh || hasScriptContents) {
+            this.declareFunction('getResourceContent', {
+                description: 'Returns the content of the resource with the given url. Only use this for text resource types.',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: '',
+                    nullable: false,
+                    properties: {
+                        url: {
+                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                            description: 'The url for the resource.',
+                            nullable: false,
+                        },
+                    },
+                },
+                displayInfoFromArgs: args => {
+                    return { title: lockedString('Looking at resource content…'), action: `getResourceContent(${args.url})` };
+                },
+                handler: async (args) => {
+                    debugLog('Function call: getResourceContent');
+                    const url = args.url;
+                    const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+                    if (!resource) {
+                        if (!resource) {
+                            return { error: 'Resource not found' };
+                        }
+                    }
+                    const content = resource.content;
+                    if (!content) {
+                        return { error: 'Resource has no content' };
+                    }
+                    const key = `getResourceContent(${args.url})`;
+                    this.#cacheFunctionResult(focus, key, content);
+                    return { result: { content } };
+                },
+            });
+        }
     }
     #declareFunctions(context) {
         const focus = context.getItem();

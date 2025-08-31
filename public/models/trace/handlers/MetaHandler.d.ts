@@ -40,7 +40,12 @@ export interface MetaHandlerData {
     frameByProcessId: Map<Types.Events.ProcessID, Map<string, Types.Events.TraceFrame>>;
     mainFrameNavigations: Types.Events.NavigationStart[];
     gpuThreadId?: Types.Events.ThreadID;
-    viewportRect?: DOMRect;
+    viewportRect?: {
+        x: number;
+        y: number;
+        width: number;
+        height: number;
+    };
     devicePixelRatio?: number;
 }
 export type FrameProcessData = Map<string, Map<Types.Events.ProcessID, Array<{

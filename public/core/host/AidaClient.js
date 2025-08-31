@@ -77,6 +77,22 @@ export var EditType;
     // User accepted a completion from AIDA
     EditType[EditType["ACCEPT_COMPLETION"] = 6] = "ACCEPT_COMPLETION";
 })(EditType || (EditType = {}));
+export var Reason;
+(function (Reason) {
+    // Unknown reason.
+    Reason[Reason["UNKNOWN"] = 0] = "UNKNOWN";
+    // The file is currently open.
+    Reason[Reason["CURRENTLY_OPEN"] = 1] = "CURRENTLY_OPEN";
+    // The file is opened recently.
+    Reason[Reason["RECENTLY_OPENED"] = 2] = "RECENTLY_OPENED";
+    // The file is edited recently.
+    Reason[Reason["RECENTLY_EDITED"] = 3] = "RECENTLY_EDITED";
+    // The file is located within the same directory.
+    Reason[Reason["COLOCATED"] = 4] = "COLOCATED";
+    // Included based on relation to code around the cursor (e.g: could be
+    // provided by local IDE analysis)
+    Reason[Reason["RELATED_FILE"] = 5] = "RELATED_FILE";
+})(Reason || (Reason = {}));
 /* eslint-enable @typescript-eslint/naming-convention */
 export var RecitationAction;
 (function (RecitationAction) {

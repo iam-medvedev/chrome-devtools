@@ -94,7 +94,6 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     }
     dockSideChanged() {
         this.setDockSide(this.currentDockStateSetting.get());
-        setTimeout(this.announceDockLocation.bind(this), 2000);
     }
     dockSide() {
         return this.dockSideInternal;
@@ -137,6 +136,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
     }
     setIsDockedResponse(eventData) {
         this.dispatchEventToListeners("AfterDockSideChanged" /* Events.AFTER_DOCK_SIDE_CHANGED */, eventData);
+        this.announceDockLocation();
     }
     toggleDockSide() {
         if (this.lastDockStateSetting.get() === this.currentDockStateSetting.get()) {

@@ -600,7 +600,7 @@ export class OverlayModel extends SDKModel {
         if (OverlayModel.inspectNodeHandler) {
             void deferredNode.resolvePromise().then(node => {
                 if (node && OverlayModel.inspectNodeHandler) {
-                    OverlayModel.inspectNodeHandler(node);
+                    void OverlayModel.inspectNodeHandler(node);
                 }
             });
         }

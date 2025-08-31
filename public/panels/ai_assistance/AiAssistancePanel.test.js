@@ -14,6 +14,7 @@ import { expectCall } from '../../testing/ExpectStubCall.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockStore } from '../../testing/MockSettingStorage.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
+import { SnapshotTester } from '../../testing/SnapshotTester.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Network from '../network/network.js';
@@ -1039,6 +1040,21 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 assert.isUndefined(view.input.conversationType);
             });
         }
+        it('should refresh its state when moved', async () => {
+            updateHostConfig({
+                devToolsFreestyler: {
+                    enabled: true,
+                },
+            });
+            viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'elements');
+            const { panel, view } = await createAiAssistancePanel();
+            assert.strictEqual(view.input.conversationType, "freestyler" /* AiAssistanceModel.ConversationType.STYLING */);
+            // Simulate ViewManager.moveView() that hides panel, updates locations and other panel visibility, then shows moved view
+            panel.willHide();
+            viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'console');
+            panel.wasShown();
+            assert.isUndefined((await view.nextInput).conversationType);
+        });
         describe('Performance Insight agent', () => {
             it('should select the PERFORMANCE_INSIGHT agent when the performance panel is open and insights are enabled and an insight is expanded', async () => {
                 updateHostConfig({
@@ -1376,15 +1392,23 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
     });
     describe('getResponseMarkdown', () => {
-        it('should generate correct markdown from a message object', () => {
+        let snapshotTester;
+        before(async () => {
+            snapshotTester = new SnapshotTester(import.meta);
+            await snapshotTester.load();
+        });
+        after(async () => {
+            await snapshotTester.finish();
+        });
+        it('should generate correct markdown from a message object', function () {
             const message = {
                 entity: "model" /* AiAssistancePanel.ChatMessageEntity.MODEL */,
                 steps: [
                     {
                         isLoading: false,
                         contextDetails: [
-                            { title: 'Detail 1', text: 'Some detail text' },
-                            { title: 'Detail 2', text: 'Some code', codeLang: 'js' },
+                            { title: 'Detail 1', text: '*Some markdown text' },
+                            { title: 'Detail 2', text: 'Some text', codeLang: 'js' },
                         ],
                     },
                     {
@@ -1394,30 +1418,11 @@ describeWithMockConnection('AI Assistance Panel', () => {
                         code: 'console.log("hello");',
                         output: 'hello',
                     },
-                    {
-                        isLoading: false,
-                        code: 'some code',
-                        canceled: true,
-                    },
-                    {
-                        isLoading: false,
-                        canceled: true,
-                    },
                 ],
                 answer: 'Final answer.',
             };
-            const expectedMarkdown = [
-                '### Context:\n',
-                '**Details**:\n\n**Detail 1:**\n\nSome detail text\n\n**Detail 2:**\n\n```js\nSome code\n```\n\n\n\n',
-                '### AI (Title):\nStep Title\n\n',
-                '### AI (Thought):\nStep Thought\n\n',
-                '### AI (Action):\n**Code executed:**\n```\nconsole.log("hello");\n```\n**Output:**\n```\nhello\n```\n\n',
-                '### AI (Action):\n**Code executed:**\n```\nsome code\n```\n**(Action Canceled)**\n\n',
-                '### AI (Action):\n**(Action Canceled)**\n\n',
-                '### AI (Answer):\nFinal answer.\n',
-            ].join('');
             const result = AiAssistancePanel.getResponseMarkdown(message);
-            assert.strictEqual(result, expectedMarkdown);
+            snapshotTester.assert(this, result);
         });
     });
     describe('a11y announcements', () => {
@@ -1541,6 +1546,27 @@ describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
             sinon.assert.calledOnce(closeSpy);
             const [fileName] = saveSpy.getCall(0).args;
             assert.strictEqual(fileName, 'devtools_test_question.md');
+        });
+        it('should truncate a long file name when exporting', async () => {
+            const fileManager = Workspace.FileManager.FileManager.instance();
+            const saveSpy = sinon.stub(fileManager, 'save');
+            const { panel, view } = await createAiAssistancePanel({
+                aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
+            });
+            panel.handleAction('freestyler.elements-floating-button');
+            const longTitle = 'this is a very long title that should be truncated when exporting the conversation to a file';
+            (await view.nextInput).onTextSubmit(longTitle);
+            await view.nextInput;
+            await view.input.onExportConversationClick();
+            sinon.assert.calledOnce(saveSpy);
+            const [fileName] = saveSpy.getCall(0).args;
+            const expectedSnakeCase = 'this_is_a_very_long_title_that_should_be_truncated_when_exporting_the_conversation_to_a_file';
+            const prefix = 'devtools_';
+            const suffix = '.md';
+            const maxTitleLength = 64 - prefix.length - suffix.length;
+            const expectedFileName = `${prefix}${expectedSnakeCase.substring(0, maxTitleLength)}${suffix}`;
+            assert.strictEqual(fileName, expectedFileName);
+            assert.isAtMost(fileName.length, 64);
         });
     });
 });

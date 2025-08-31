@@ -3,7 +3,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
-import { Directives } from '../lit/lit.js';
+import { Directives, type LitTemplate } from '../lit/lit.js';
 import { Size } from './Geometry.js';
 import type { ToolbarButton } from './Toolbar.js';
 import type { TreeOutline } from './Treeoutline.js';
@@ -224,6 +224,10 @@ export declare function formatTimestamp(timestamp: number, full: boolean): strin
 export interface Options {
     title?: string | Element;
     editable?: boolean;
+    /**
+     * Should the resulting object be expanded.
+     */
+    expand?: boolean;
 }
 export interface HighlightChange {
     node: Element | Text;
@@ -315,3 +319,11 @@ export declare class PromotionManager {
  */
 export declare function maybeCreateNewBadge(promotionId: string): HTMLDivElement | undefined;
 export declare function bindToAction(actionName: string): ReturnType<typeof Directives.ref>;
+export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
+    #private;
+    constructor();
+    set template(template: LitTemplate);
+    protected updateNodes(_node: Node, _attributeName: string | null): void;
+    protected addNodes(_nodes: NodeList | Node[]): void;
+    protected removeNodes(_nodes: NodeList): void;
+}

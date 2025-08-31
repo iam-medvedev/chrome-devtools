@@ -157,6 +157,14 @@ export declare enum EditType {
     REDO = 5,
     ACCEPT_COMPLETION = 6
 }
+export declare enum Reason {
+    UNKNOWN = 0,
+    CURRENTLY_OPEN = 1,
+    RECENTLY_OPENED = 2,
+    RECENTLY_EDITED = 3,
+    COLOCATED = 4,
+    RELATED_FILE = 5
+}
 export interface CompletionRequest {
     client: string;
     prefix: string;
@@ -164,6 +172,11 @@ export interface CompletionRequest {
     options?: CompleteCodeOptions;
     metadata: RequestMetadata;
     last_user_action?: EditType;
+    additional_files?: Array<{
+        path: string;
+        content: string;
+        included_reason: Reason;
+    }>;
 }
 export interface DoConversationClientEvent {
     user_feedback: {

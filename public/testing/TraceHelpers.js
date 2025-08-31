@@ -753,4 +753,56 @@ export function allThreadEntriesInTrace(parsedTrace) {
     allThreadEntriesForTraceCache.set(parsedTrace, allEvents);
     return allEvents;
 }
+let idCounter = 0;
+export function makeTimingEventWithPerformanceExtensionData({ name, ts: tsMicro, detail, dur: durMicro }) {
+    const isMark = durMicro === undefined;
+    const currentId = idCounter++;
+    const traceEventBase = {
+        cat: 'blink.user_timing',
+        pid: Trace.Types.Events.ProcessID(2017),
+        tid: Trace.Types.Events.ThreadID(259),
+        id2: { local: `${currentId}` },
+    };
+    const stringDetail = JSON.stringify(detail);
+    const args = isMark ? { data: { detail: stringDetail } } : { detail: stringDetail };
+    const firstEvent = {
+        args,
+        name,
+        ph: isMark ? "I" /* Trace.Types.Events.Phase.INSTANT */ : "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
+        ts: Trace.Types.Timing.Micro(tsMicro),
+        ...traceEventBase,
+    };
+    if (isMark) {
+        return [firstEvent];
+    }
+    return [
+        firstEvent,
+        {
+            name,
+            ...traceEventBase,
+            ts: Trace.Types.Timing.Micro(tsMicro + (durMicro || 0)),
+            ph: "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */,
+        },
+    ];
+}
+export function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, trackGroup, color }) {
+    return {
+        cat: 'devtools.timeline',
+        pid: Trace.Types.Events.ProcessID(2017),
+        tid: Trace.Types.Events.ThreadID(259),
+        name: "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */,
+        args: {
+            data: {
+                message: name,
+                start,
+                end,
+                track,
+                trackGroup,
+                color,
+            }
+        },
+        ts: Trace.Types.Timing.Micro(ts),
+        ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
+    };
+}
 //# sourceMappingURL=TraceHelpers.js.map

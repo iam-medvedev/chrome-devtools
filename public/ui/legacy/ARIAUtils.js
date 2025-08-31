@@ -333,7 +333,7 @@ export class LiveAnnouncer {
     }
     static removeAnnouncerElements(container = document.body) {
         LiveAnnouncer.#removeAnnouncerElement(container, "alert" /* AnnouncerRole.ALERT */);
-        LiveAnnouncer.#removeAnnouncerElement(container, "alert" /* AnnouncerRole.ALERT */);
+        LiveAnnouncer.#removeAnnouncerElement(container, "status" /* AnnouncerRole.STATUS */);
     }
     static alert(message) {
         LiveAnnouncer.#announce(message, "alert" /* AnnouncerRole.ALERT */);

@@ -19,7 +19,7 @@ import * as Types from '../types/types.js';
 // flows with the timestamps of each phase. Then, we place trace events
 // in the flows where their corresponding phase events were placed (if
 // there are any corresponding flow phase events at all).
-const flowDataByGroupToken = new Map();
+let flowDataByGroupToken = new Map();
 // Given a trace event's flow binding tuple (timestamp, process id,
 // thread id and category) we determine if there is any flow data bound
 // to it by using this map's content. It's built when processing flow
@@ -30,19 +30,19 @@ const flowDataByGroupToken = new Map();
 // every event in a trace, resulting in a lot of memory overhead and
 // major GC triggering. So we are trading off readability for
 // performance.
-const boundFlowData = new Map();
-const flowsById = new Map();
-const flowEvents = [];
-const nonFlowEvents = [];
+let boundFlowData = new Map();
+let flowsById = new Map();
+let flowEvents = [];
+let nonFlowEvents = [];
 let flows = [];
 const ID_COMPONENT_SEPARATOR = '-$-';
 export function reset() {
     flows = [];
-    flowEvents.length = 0;
-    nonFlowEvents.length = 0;
-    flowDataByGroupToken.clear();
-    boundFlowData.clear();
-    flowsById.clear();
+    flowEvents = [];
+    nonFlowEvents = [];
+    flowDataByGroupToken = new Map();
+    boundFlowData = new Map();
+    flowsById = new Map();
 }
 export function handleEvent(event) {
     if (Types.Events.isFlowPhaseEvent(event)) {

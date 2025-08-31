@@ -146,19 +146,21 @@ export class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent 
                     ${ruleSet.errorType !== undefined ? html `
                       <span style=${styleMap({ color: 'var(--sys-color-error)' })}>
                         ${i18nString(UIStrings.errors, { errorCount: 1 })}
-                      </span>` : ''} ${ruleSet.errorType !== "SourceIsNotJsonObject" /* Protocol.Preload.RuleSetErrorType.SourceIsNotJsonObject */ ? html `
+                      </span>` : ''} ${ruleSet.errorType !== "SourceIsNotJsonObject" /* Protocol.Preload.RuleSetErrorType.SourceIsNotJsonObject */ &&
+                ruleSet.errorType !== "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */ ?
+                html `
                       <button class="link" role="link"
                         @click=${() => this.#revealAttemptViewWithFilter(ruleSet)}
                         title=${i18nString(UIStrings.buttonRevealPreloadsAssociatedWithRuleSet)}
                         style=${styleMap({
-                color: 'var(--sys-color-primary)',
-                'text-decoration': 'underline',
-                cursor: 'pointer',
-                border: 'none',
-                background: 'none',
-                'padding-inline-start': '0',
-                'padding-inline-end': '0',
-            })}
+                    color: 'var(--sys-color-primary)',
+                    'text-decoration': 'underline',
+                    cursor: 'pointer',
+                    border: 'none',
+                    background: 'none',
+                    'padding-inline-start': '0',
+                    'padding-inline-end': '0',
+                })}
                         jslog=${VisualLogging.action('reveal-preloads').track({ click: true })}>
                         ${preloadsStatusSummary}
                       </button>` : ''}

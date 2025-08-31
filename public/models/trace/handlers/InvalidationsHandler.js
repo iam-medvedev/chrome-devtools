@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-const invalidationsForEvent = new Map();
-const invalidationCountForEvent = new Map();
+let invalidationsForEvent = new Map();
+let invalidationCountForEvent = new Map();
 let lastRecalcStyleEvent = null;
 // Used to track paints so we track invalidations correctly per paint.
 let hasPainted = false;
-const allInvalidationTrackingEvents = [];
+let allInvalidationTrackingEvents = [];
 export function reset() {
-    invalidationsForEvent.clear();
-    invalidationCountForEvent.clear();
+    invalidationsForEvent = new Map();
+    invalidationCountForEvent = new Map();
     lastRecalcStyleEvent = null;
-    allInvalidationTrackingEvents.length = 0;
+    allInvalidationTrackingEvents = [];
     hasPainted = false;
     maxInvalidationsPerEvent = null;
 }

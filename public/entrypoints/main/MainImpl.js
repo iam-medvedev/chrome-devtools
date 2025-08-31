@@ -909,6 +909,10 @@ export async function handleExternalRequestGenerator(input) {
                 traceModel,
             });
         }
+        case 'PERFORMANCE_ANALYZE': {
+            const TimelinePanel = await import('../../panels/timeline/timeline.js');
+            return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalAnalyzeRequest(input.args.prompt);
+        }
         case 'NETWORK_DEBUGGER': {
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
             const conversationHandler = await AiAssistanceModel.ConversationHandler.instance();

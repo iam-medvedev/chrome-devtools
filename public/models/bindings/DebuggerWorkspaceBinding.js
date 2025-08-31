@@ -4,6 +4,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as Workspace from '../workspace/workspace.js';
 import { CompilerScriptMapping } from './CompilerScriptMapping.js';
 import { DebuggerLanguagePluginManager } from './DebuggerLanguagePlugins.js';
@@ -120,12 +122,20 @@ export class DebuggerWorkspaceBinding {
         this.#liveLocationPromises.add(promise);
     }
     async updateLocations(script) {
+        const updatePromises = [script.target()
+                .model(StackTraceImpl.StackTraceModel.StackTraceModel)
+                ?.scriptInfoChanged(script, this.#translateRawFrames.bind(this))];
         const modelData = this.#debuggerModelToData.get(script.debuggerModel);
         if (modelData) {
             const updatePromise = modelData.updateLocations(script);
             this.recordLiveLocationChange(updatePromise);
-            await updatePromise;
+            updatePromises.push(updatePromise);
         }
+        await Promise.all(updatePromises);
+    }
+    async createStackTraceFromProtocolRuntime(stackTrace, target) {
+        const model = target.model(StackTraceImpl.StackTraceModel.StackTraceModel);
+        return await model.createFromProtocolRuntime(stackTrace, this.#translateRawFrames.bind(this));
     }
     async createLiveLocation(rawLocation, updateDelegate, locationPool) {
         const modelData = this.#debuggerModelToData.get(rawLocation.debuggerModel);
@@ -350,6 +360,27 @@ export class DebuggerWorkspaceBinding {
             autoSteppingContext.columnNumber !== functionLocation.columnNumber ||
             autoSteppingContext.lineNumber !== functionLocation.lineNumber;
     }
+    async #translateRawFrames(frames, target) {
+        const rawFrames = frames.slice(0);
+        const translatedFrames = [];
+        while (rawFrames.length) {
+            await this.#translateRawFramesStep(rawFrames, translatedFrames, target);
+        }
+        return translatedFrames;
+    }
+    async #translateRawFramesStep(rawFrames, translatedFrames, target) {
+        if (await this.pluginManager.translateRawFramesStep(rawFrames, translatedFrames, target)) {
+            return;
+        }
+        const modelData = this.#debuggerModelToData.get(target.model(SDK.DebuggerModel.DebuggerModel));
+        if (modelData) {
+            modelData.translateRawFramesStep(rawFrames, translatedFrames);
+            return;
+        }
+        const frame = rawFrames.shift();
+        const { url, lineNumber, columnNumber, functionName } = frame;
+        translatedFrames.push([{ url, line: lineNumber, column: columnNumber, name: functionName }]);
+    }
 }
 class ModelData {
     #debuggerModel;
@@ -423,6 +454,32 @@ class ModelData {
         ranges ??= this.#resourceMapping.uiLocationRangeToJSLocationRanges(uiSourceCode, textRange);
         ranges ??= this.#defaultMapping.uiLocationRangeToRawLocationRanges(uiSourceCode, textRange);
         return ranges;
+    }
+    translateRawFramesStep(rawFrames, translatedFrames) {
+        if (!this.compilerMapping.translateRawFramesStep(rawFrames, translatedFrames)) {
+            this.#defaultTranslateRawFramesStep(rawFrames, translatedFrames);
+        }
+    }
+    /** The default implementation translates one frame at a time and only translates the location, but not the function name. */
+    #defaultTranslateRawFramesStep(rawFrames, translatedFrames) {
+        const frame = rawFrames.shift();
+        const { scriptId, url, lineNumber, columnNumber, functionName } = frame;
+        const rawLocation = scriptId ? this.#debuggerModel.createRawLocationByScriptId(scriptId, lineNumber, columnNumber) :
+            url ? this.#debuggerModel.createRawLocationByURL(url, lineNumber, columnNumber) :
+                null;
+        if (rawLocation) {
+            const uiLocation = this.rawLocationToUILocation(rawLocation);
+            if (uiLocation) {
+                translatedFrames.push([{
+                        uiSourceCode: uiLocation.uiSourceCode,
+                        name: functionName,
+                        line: uiLocation.lineNumber,
+                        column: uiLocation.columnNumber ?? -1
+                    }]);
+                return;
+            }
+        }
+        translatedFrames.push([{ url, line: lineNumber, column: columnNumber, name: functionName }]);
     }
     getMappedLines(uiSourceCode) {
         const mappedLines = this.compilerMapping.getMappedLines(uiSourceCode);

@@ -1,35 +1,35 @@
 // gen/front_end/third_party/lighthouse/report/bundle.js
-var Pe = 0.8999999999999999;
-var Re = 0.5;
-var He = 0.49999999999999994;
-function Ne(o5) {
+var Ie = 0.8999999999999999;
+var Pe = 0.5;
+var Re = 0.49999999999999994;
+function He(o5) {
   let e = Math.sign(o5);
   o5 = Math.abs(o5);
   let t = 0.254829592, n = -0.284496736, r = 1.421413741, i = -1.453152027, a = 1.061405429, s = 1 / (1 + 0.3275911 * o5), c = s * (t + s * (n + s * (r + s * (i + s * a))));
   return e * (1 - c * Math.exp(-o5 * o5));
 }
-function fe({ median: o5, p10: e }, t) {
+function me({ median: o5, p10: e }, t) {
   if (o5 <= 0) throw new Error("median must be greater than zero");
   if (e <= 0) throw new Error("p10 must be greater than zero");
   if (e >= o5) throw new Error("p10 must be less than the median");
   if (t <= 0) return 1;
-  let n = 0.9061938024368232, r = Math.max(Number.MIN_VALUE, t / o5), i = Math.log(r), a = Math.max(Number.MIN_VALUE, e / o5), l = -Math.log(a), s = i * n / l, c = (1 - Ne(s)) / 2, d;
-  return t <= e ? d = Math.max(0.9, Math.min(1, c)) : t <= o5 ? d = Math.max(Re, Math.min(Pe, c)) : d = Math.max(0, Math.min(He, c)), d;
+  let n = 0.9061938024368232, r = Math.max(Number.MIN_VALUE, t / o5), i = Math.log(r), a = Math.max(Number.MIN_VALUE, e / o5), l = -Math.log(a), s = i * n / l, c = (1 - He(s)) / 2, d;
+  return t <= e ? d = Math.max(0.9, Math.min(1, c)) : t <= o5 ? d = Math.max(Pe, Math.min(Ie, c)) : d = Math.max(0, Math.min(Re, c)), d;
 }
 var O = "\u2026";
-var Oe = "\xA0";
-var ve = 0.9;
-var Ve = { PASS: { label: "pass", minScore: ve }, AVERAGE: { label: "average", minScore: 0.5 }, FAIL: { label: "fail" }, ERROR: { label: "error" } };
-var $e = ["com", "co", "gov", "edu", "ac", "org", "go", "gob", "or", "net", "in", "ne", "nic", "gouv", "web", "spb", "blog", "jus", "kiev", "mil", "wi", "qc", "ca", "bel", "on"];
+var Ue = "\xA0";
+var fe = 0.9;
+var Oe = { PASS: { label: "pass", minScore: fe }, AVERAGE: { label: "average", minScore: 0.5 }, FAIL: { label: "fail" }, ERROR: { label: "error" } };
+var Ve = ["com", "co", "gov", "edu", "ac", "org", "go", "gob", "or", "net", "in", "ne", "nic", "gouv", "web", "spb", "blog", "jus", "kiev", "mil", "wi", "qc", "ca", "bel", "on"];
 var E = class o {
   static get RATINGS() {
-    return Ve;
+    return Oe;
   }
   static get PASS_THRESHOLD() {
-    return ve;
+    return fe;
   }
   static get MS_DISPLAY_VALUE() {
-    return `%10d${Oe}ms`;
+    return `%10d${Ue}ms`;
   }
   static getFinalDisplayedUrl(e) {
     if (e.finalDisplayedUrl) return e.finalDisplayedUrl;
@@ -103,7 +103,7 @@ var E = class o {
   }
   static getPseudoTld(e) {
     let t = e.split(".").slice(-2);
-    return $e.includes(t[0]) ? `.${t.join(".")}` : `.${t[t.length - 1]}`;
+    return Ve.includes(t[0]) ? `.${t.join(".")}` : `.${t[t.length - 1]}`;
   }
   static getPseudoRootDomain(e) {
     let t = o.createOrReturnURL(e).hostname, r = o.getPseudoTld(t).split(".");
@@ -123,11 +123,11 @@ var E = class o {
     }), e.filter((a) => i.has(a.lineNumber));
   }
   static computeLogNormalScore(e, t) {
-    let n = fe(e, t);
+    let n = me(e, t);
     return n > 0.9 && (n += 0.05 * (n - 0.9)), Math.floor(n * 100) / 100;
   }
 };
-function Ge(o5) {
+function $e(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   t.append(`
     .lh-3p-filter {
@@ -150,7 +150,7 @@ function Ge(o5) {
   let l = o5.createElement("span", "lh-3p-filter-count");
   return r.append(" ", i, " ", a, " (", l, ") "), n.append(" ", r, " "), e.append(n), e;
 }
-function Be(o5) {
+function Ge(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-audit"), n = o5.createElement("details", "lh-expandable-details"), r = o5.createElement("summary"), i = o5.createElement("div", "lh-audit__header lh-expandable-details__summary"), a = o5.createElement("span", "lh-audit__score-icon"), l = o5.createElement("span", "lh-audit__title-and-text"), s = o5.createElement("span", "lh-audit__title"), c = o5.createElement("span", "lh-audit__display-text");
   l.append(" ", s, " ", c, " ");
   let d = o5.createElement("div", "lh-chevron-container");
@@ -158,13 +158,13 @@ function Be(o5) {
   let h = o5.createElement("div", "lh-audit__description"), p = o5.createElement("div", "lh-audit__stackpacks");
   return n.append(" ", r, " ", h, " ", p, " "), t.append(" ", n, " "), e.append(t), e;
 }
-function qe(o5) {
+function Be(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-category-header"), n = o5.createElement("div", "lh-score__gauge");
   n.setAttribute("role", "heading"), n.setAttribute("aria-level", "2");
   let r = o5.createElement("div", "lh-category-header__description");
   return t.append(" ", n, " ", r, " "), e.append(t), e;
 }
-function je(o5) {
+function qe(o5) {
   let e = o5.createFragment(), t = o5.createElementNS("http://www.w3.org/2000/svg", "svg", "lh-chevron");
   t.setAttribute("viewBox", "0 0 100 100");
   let n = o5.createElementNS("http://www.w3.org/2000/svg", "g", "lh-chevron__lines"), r = o5.createElementNS("http://www.w3.org/2000/svg", "path", "lh-chevron__line lh-chevron__line-left");
@@ -172,13 +172,13 @@ function je(o5) {
   let i = o5.createElementNS("http://www.w3.org/2000/svg", "path", "lh-chevron__line lh-chevron__line-right");
   return i.setAttribute("d", "M90 50H50"), n.append(" ", r, " ", i, " "), t.append(" ", n, " "), e.append(t), e;
 }
-function We(o5) {
+function je(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-audit-group"), n = o5.createElement("details", "lh-clump"), r = o5.createElement("summary"), i = o5.createElement("div", "lh-audit-group__summary"), a = o5.createElement("div", "lh-audit-group__header"), l = o5.createElement("span", "lh-audit-group__title"), s = o5.createElement("span", "lh-audit-group__itemcount");
   a.append(" ", l, " ", s, " ", " ", " ");
   let c = o5.createElement("div", "lh-clump-toggle"), d = o5.createElement("span", "lh-clump-toggletext--show"), h = o5.createElement("span", "lh-clump-toggletext--hide");
   return c.append(" ", d, " ", h, " "), i.append(" ", a, " ", c, " "), r.append(" ", i, " "), n.append(" ", r, " "), t.append(" ", " ", n, " "), e.append(t), e;
 }
-function Ke(o5) {
+function We(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-crc-container"), n = o5.createElement("style");
   n.append(`
       .lh-crc .lh-tree-marker {
@@ -238,11 +238,11 @@ function Ke(o5) {
   let s = o5.createElement("div", "lh-crc"), c = o5.createElement("div", "lh-crc-initial-nav");
   return s.append(" ", c, " ", " "), t.append(" ", n, " ", r, " ", s, " "), e.append(t), e;
 }
-function Ze(o5) {
+function Ke(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-crc-node"), n = o5.createElement("span", "lh-crc-node__tree-marker"), r = o5.createElement("span", "lh-crc-node__tree-value");
   return t.append(" ", n, " ", r, " "), e.append(t), e;
 }
-function Je(o5) {
+function Ze(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-element-screenshot"), n = o5.createElement("div", "lh-element-screenshot__content"), r = o5.createElement("div", "lh-element-screenshot__image"), i = o5.createElement("div", "lh-element-screenshot__mask"), a = o5.createElementNS("http://www.w3.org/2000/svg", "svg");
   a.setAttribute("height", "0"), a.setAttribute("width", "0");
   let l = o5.createElementNS("http://www.w3.org/2000/svg", "defs"), s = o5.createElementNS("http://www.w3.org/2000/svg", "clipPath");
@@ -250,7 +250,7 @@ function Je(o5) {
   let c = o5.createElement("div", "lh-element-screenshot__element-marker");
   return r.append(" ", i, " ", c, " "), n.append(" ", r, " "), t.append(" ", n, " "), e.append(t), e;
 }
-function Qe(o5) {
+function Je(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-exp-gauge-component"), n = o5.createElement("div", "lh-exp-gauge__wrapper");
   n.setAttribute("target", "_blank");
   let r = o5.createElement("div", "lh-exp-gauge__svg-wrapper"), i = o5.createElementNS("http://www.w3.org/2000/svg", "svg", "lh-exp-gauge"), a = o5.createElementNS("http://www.w3.org/2000/svg", "g", "lh-exp-gauge__inner"), l = o5.createElementNS("http://www.w3.org/2000/svg", "circle", "lh-exp-gauge__bg"), s = o5.createElementNS("http://www.w3.org/2000/svg", "circle", "lh-exp-gauge__base lh-exp-gauge--faded"), c = o5.createElementNS("http://www.w3.org/2000/svg", "circle", "lh-exp-gauge__arc"), d = o5.createElementNS("http://www.w3.org/2000/svg", "text", "lh-exp-gauge__percentage");
@@ -260,7 +260,7 @@ function Qe(o5) {
   let g = o5.createElementNS("http://www.w3.org/2000/svg", "text", "lh-exp-gauge__label");
   return g.setAttribute("text-anchor", "middle"), g.setAttribute("x", "0"), g.setAttribute("y", "60"), i.append(" ", a, " ", h, " ", g, " "), r.append(" ", i, " "), n.append(" ", r, " "), t.append(" ", n, " "), e.append(t), e;
 }
-function Xe(o5) {
+function Qe(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   t.append(`
     .lh-footer {
@@ -279,13 +279,13 @@ function Xe(o5) {
   let l = o5.createElement("span", "lh-footer__version"), s = o5.createElement("a", "lh-footer__version_issue");
   return s.setAttribute("href", "https://github.com/GoogleChrome/Lighthouse/issues"), s.setAttribute("target", "_blank"), s.setAttribute("rel", "noopener"), s.append("File an issue"), i.append(" ", " Generated by ", a, " ", l, " | ", s, " "), n.append(" ", r, " ", i, " "), e.append(n), e;
 }
-function Ye(o5) {
+function Xe(o5) {
   let e = o5.createFragment(), t = o5.createElement("a", "lh-fraction__wrapper"), n = o5.createElement("div", "lh-fraction__content-wrapper"), r = o5.createElement("div", "lh-fraction__content"), i = o5.createElement("div", "lh-fraction__background");
   r.append(" ", i, " "), n.append(" ", r, " ");
   let a = o5.createElement("div", "lh-fraction__label");
   return t.append(" ", n, " ", a, " "), e.append(t), e;
 }
-function et(o5) {
+function Ye(o5) {
   let e = o5.createFragment(), t = o5.createElement("a", "lh-gauge__wrapper"), n = o5.createElement("div", "lh-gauge__svg-wrapper"), r = o5.createElementNS("http://www.w3.org/2000/svg", "svg", "lh-gauge");
   r.setAttribute("viewBox", "0 0 120 120");
   let i = o5.createElementNS("http://www.w3.org/2000/svg", "circle", "lh-gauge-base");
@@ -295,7 +295,7 @@ function et(o5) {
   let l = o5.createElement("div", "lh-gauge__percentage"), s = o5.createElement("div", "lh-gauge__label");
   return t.append(" ", " ", n, " ", l, " ", " ", s, " "), e.append(t), e;
 }
-function tt(o5) {
+function et(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   t.append(`
     /* CSS Fireworks. Originally by Eddie Lin
@@ -372,11 +372,11 @@ function tt(o5) {
   let n = o5.createElement("div", "lh-header-container"), r = o5.createElement("div", "lh-scores-wrapper-placeholder");
   return n.append(" ", r, " "), e.append(n), e;
 }
-function nt(o5) {
+function tt(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-metric"), n = o5.createElement("div", "lh-metric__innerwrap"), r = o5.createElement("div", "lh-metric__icon"), i = o5.createElement("span", "lh-metric__title"), a = o5.createElement("div", "lh-metric__value"), l = o5.createElement("div", "lh-metric__description");
   return n.append(" ", r, " ", i, " ", a, " ", l, " "), t.append(" ", n, " "), e.append(t), e;
 }
-function rt(o5) {
+function nt(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-scorescale"), n = o5.createElement("span", "lh-scorescale-range lh-scorescale-range--fail");
   n.append("0\u201349");
   let r = o5.createElement("span", "lh-scorescale-range lh-scorescale-range--average");
@@ -384,7 +384,7 @@ function rt(o5) {
   let i = o5.createElement("span", "lh-scorescale-range lh-scorescale-range--pass");
   return i.append("90\u2013100"), t.append(" ", n, " ", r, " ", i, " "), e.append(t), e;
 }
-function ot(o5) {
+function rt(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   t.append(`
     .lh-scores-container {
@@ -453,7 +453,7 @@ function ot(o5) {
   let n = o5.createElement("div", "lh-scores-wrapper"), r = o5.createElement("div", "lh-scores-container"), i = o5.createElement("div", "lh-pyro"), a = o5.createElement("div", "lh-pyro-before"), l = o5.createElement("div", "lh-pyro-after");
   return i.append(" ", a, " ", l, " "), r.append(" ", i, " "), n.append(" ", r, " "), e.append(n), e;
 }
-function it(o5) {
+function ot(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-snippet"), n = o5.createElement("style");
   return n.append(`
           :root {
@@ -565,19 +565,19 @@ function it(o5) {
         }
     `), t.append(" ", n, " "), e.append(t), e;
 }
-function at(o5) {
+function it(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-snippet__snippet"), n = o5.createElement("div", "lh-snippet__snippet-inner");
   return t.append(" ", n, " "), e.append(t), e;
 }
-function lt(o5) {
+function at(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-snippet__header"), n = o5.createElement("div", "lh-snippet__title"), r = o5.createElement("div", "lh-snippet__node"), i = o5.createElement("button", "lh-snippet__toggle-expand"), a = o5.createElement("span", "lh-snippet__btn-label-collapse lh-snippet__show-if-expanded"), l = o5.createElement("span", "lh-snippet__btn-label-expand lh-snippet__show-if-collapsed");
   return i.append(" ", a, " ", l, " "), t.append(" ", n, " ", r, " ", i, " "), e.append(t), e;
 }
-function st(o5) {
+function lt(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-snippet__line"), n = o5.createElement("div", "lh-snippet__line-number"), r = o5.createElement("div", "lh-snippet__line-icon"), i = o5.createElement("code");
   return t.append(" ", n, " ", r, " ", i, " "), e.append(t), e;
 }
-function ct(o5) {
+function st(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   return t.append(`/**
  * @license
@@ -2911,7 +2911,7 @@ details[open] .lh-clump-toggletext--hide { display: block;}
 /*# sourceURL=report-styles.css */
 `), e.append(t), e;
 }
-function dt(o5) {
+function ct(o5) {
   let e = o5.createFragment(), t = o5.createElement("style");
   t.append(`
     .lh-topbar {
@@ -3118,58 +3118,58 @@ function dt(o5) {
   let N = o5.createElement("a", "lh-report-icon lh-report-icon--dark");
   return N.setAttribute("role", "menuitem"), N.setAttribute("tabindex", "-1"), N.setAttribute("href", "#"), N.setAttribute("data-i18n", "dropdownDarkTheme"), N.setAttribute("data-action", "toggle-dark"), y.append(" ", S, " ", C, " ", L, " ", " ", z, " ", F, " ", R, " ", H, " ", " ", I, " ", N, " "), c.append(" ", d, " ", m, " ", y, " "), n.append(" ", " ", r, " ", s, " ", c, " "), e.append(n), e;
 }
-function ht(o5) {
+function dt(o5) {
   let e = o5.createFragment(), t = o5.createElement("div", "lh-warnings lh-warnings--toplevel"), n = o5.createElement("p", "lh-warnings__msg"), r = o5.createElement("ul");
   return t.append(" ", n, " ", r, " "), e.append(t), e;
 }
-function be(o5, e) {
+function ve(o5, e) {
   switch (e) {
     case "3pFilter":
-      return Ge(o5);
+      return $e(o5);
     case "audit":
-      return Be(o5);
+      return Ge(o5);
     case "categoryHeader":
-      return qe(o5);
+      return Be(o5);
     case "chevron":
-      return je(o5);
+      return qe(o5);
     case "clump":
-      return We(o5);
+      return je(o5);
     case "crc":
-      return Ke(o5);
+      return We(o5);
     case "crcChain":
-      return Ze(o5);
+      return Ke(o5);
     case "elementScreenshot":
-      return Je(o5);
+      return Ze(o5);
     case "explodeyGauge":
-      return Qe(o5);
+      return Je(o5);
     case "footer":
-      return Xe(o5);
+      return Qe(o5);
     case "fraction":
-      return Ye(o5);
+      return Xe(o5);
     case "gauge":
-      return et(o5);
+      return Ye(o5);
     case "heading":
-      return tt(o5);
+      return et(o5);
     case "metric":
-      return nt(o5);
+      return tt(o5);
     case "scorescale":
-      return rt(o5);
+      return nt(o5);
     case "scoresWrapper":
-      return ot(o5);
+      return rt(o5);
     case "snippet":
-      return it(o5);
+      return ot(o5);
     case "snippetContent":
-      return at(o5);
+      return it(o5);
     case "snippetHeader":
-      return lt(o5);
+      return at(o5);
     case "snippetLine":
-      return st(o5);
+      return lt(o5);
     case "styles":
-      return ct(o5);
+      return st(o5);
     case "topbar":
-      return dt(o5);
+      return ct(o5);
     case "warningsToplevel":
-      return ht(o5);
+      return dt(o5);
   }
   throw new Error("unexpected component: " + e);
 }
@@ -3208,7 +3208,7 @@ var Q = class {
       let r = t.cloneNode(true);
       return this.findAll("style", r).forEach((i) => i.remove()), r;
     }
-    return t = be(this, e), this._componentCache.set(e, t), t.cloneNode(true);
+    return t = ve(this, e), this._componentCache.set(e, t), t.cloneNode(true);
   }
   clearComponentCache() {
     this._componentCache.clear();
@@ -3293,26 +3293,26 @@ var Q = class {
     t.append(...r), n.insertBefore(t, e), e.remove(), this._onSwap(), this._onSwapHook && this._onSwapHook();
   }
 };
-var _e = 0;
+var be = 0;
 var u = class o2 {
   static i18n = null;
   static strings = {};
   static reportJson = null;
   static apply(e) {
-    o2.strings = { ...we, ...e.providedStrings }, o2.i18n = e.i18n, o2.reportJson = e.reportJson;
+    o2.strings = { ..._e, ...e.providedStrings }, o2.i18n = e.i18n, o2.reportJson = e.reportJson;
   }
   static getUniqueSuffix() {
-    return _e++;
+    return be++;
   }
   static resetUniqueSuffix() {
-    _e = 0;
+    be = 0;
   }
 };
-var ye = "data:image/jpeg;base64,";
-function xe(o5) {
+var we = "data:image/jpeg;base64,";
+function ye(o5) {
   o5.configSettings.locale || (o5.configSettings.locale = "en"), o5.configSettings.formFactor || (o5.configSettings.formFactor = o5.configSettings.emulatedFormFactor), o5.finalDisplayedUrl = E.getFinalDisplayedUrl(o5), o5.mainDocumentUrl = E.getMainDocumentUrl(o5);
   for (let n of Object.values(o5.audits)) if ((n.scoreDisplayMode === "not_applicable" || n.scoreDisplayMode === "not-applicable") && (n.scoreDisplayMode = "notApplicable"), n.scoreDisplayMode === "informative" && (n.score = 1), n.details) {
-    if ((n.details.type === void 0 || n.details.type === "diagnostic") && (n.details.type = "debugdata"), n.details.type === "filmstrip") for (let r of n.details.items) r.data.startsWith(ye) || (r.data = ye + r.data);
+    if ((n.details.type === void 0 || n.details.type === "diagnostic") && (n.details.type = "debugdata"), n.details.type === "filmstrip") for (let r of n.details.items) r.data.startsWith(we) || (r.data = we + r.data);
     if (n.details.type === "table") for (let r of n.details.headings) {
       let { itemType: i, text: a } = r;
       i !== void 0 && (r.valueType = i, delete r.itemType), a !== void 0 && (r.label = a, delete r.text);
@@ -3362,7 +3362,7 @@ var V = E.RATINGS;
 var k = class o3 {
   static prepareReportResult(e) {
     let t = JSON.parse(JSON.stringify(e));
-    xe(t);
+    ye(t);
     for (let r of Object.values(t.audits)) r.details && (r.details.type === "opportunity" || r.details.type === "table") && !r.details.isEntityGrouped && t.entities && o3.classifyEntities(t.entities, r.details);
     if (typeof t.categories != "object") throw new Error("No categories provided.");
     let n = /* @__PURE__ */ new Map();
@@ -3494,7 +3494,7 @@ var k = class o3 {
     return e === "timespan" || e === "snapshot";
   }
 };
-var we = { varianceDisclaimer: "Values are estimated and may vary. The [performance score is calculated](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) directly from these metrics.", calculatorLink: "See calculator.", showRelevantAudits: "Show audits relevant to:", opportunityResourceColumnLabel: "Opportunity", opportunitySavingsColumnLabel: "Estimated Savings", errorMissingAuditInfo: "Report error: no audit information", errorLabel: "Error!", warningHeader: "Warnings: ", warningAuditsGroupTitle: "Passed audits but with warnings", passedAuditsGroupTitle: "Passed audits", notApplicableAuditsGroupTitle: "Not applicable", manualAuditsGroupTitle: "Additional items to manually check", toplevelWarningsMessage: "There were issues affecting this run of Lighthouse:", crcInitialNavigation: "Initial Navigation", crcLongestDurationLabel: "Maximum critical path latency:", snippetExpandButtonLabel: "Expand snippet", snippetCollapseButtonLabel: "Collapse snippet", lsPerformanceCategoryDescription: "[Lighthouse](https://developers.google.com/web/tools/lighthouse/) analysis of the current page on an emulated mobile network. Values are estimated and may vary.", labDataTitle: "Lab Data", thirdPartyResourcesLabel: "Show 3rd-party resources", viewTreemapLabel: "View Treemap", viewTraceLabel: "View Trace", dropdownPrintSummary: "Print Summary", dropdownPrintExpanded: "Print Expanded", dropdownCopyJSON: "Copy JSON", dropdownSaveHTML: "Save as HTML", dropdownSaveJSON: "Save as JSON", dropdownViewer: "Open in Viewer", dropdownSaveGist: "Save as Gist", dropdownDarkTheme: "Toggle Dark Theme", dropdownViewUnthrottledTrace: "View Unthrottled Trace", runtimeSettingsDevice: "Device", runtimeSettingsNetworkThrottling: "Network throttling", runtimeSettingsCPUThrottling: "CPU throttling", runtimeSettingsUANetwork: "User agent (network)", runtimeSettingsBenchmark: "Unthrottled CPU/Memory Power", runtimeSettingsAxeVersion: "Axe version", runtimeSettingsScreenEmulation: "Screen emulation", footerIssue: "File an issue", runtimeNoEmulation: "No emulation", runtimeMobileEmulation: "Emulated Moto G Power", runtimeDesktopEmulation: "Emulated Desktop", runtimeUnknown: "Unknown", runtimeSingleLoad: "Single page session", runtimeAnalysisWindow: "Initial page load", runtimeAnalysisWindowTimespan: "User interactions timespan", runtimeAnalysisWindowSnapshot: "Point-in-time snapshot", runtimeSingleLoadTooltip: "This data is taken from a single page session, as opposed to field data summarizing many sessions.", throttlingProvided: "Provided by environment", show: "Show", hide: "Hide", expandView: "Expand view", collapseView: "Collapse view", runtimeSlow4g: "Slow 4G throttling", runtimeCustom: "Custom throttling", firstPartyChipLabel: "1st party", openInANewTabTooltip: "Open in a new tab", unattributable: "Unattributable", insightsNotice: "Later this year, insights will replace performance audits. [Learn more and provide feedback here](https://github.com/GoogleChrome/lighthouse/discussions/16462).", tryInsights: "Try insights", goBackToAudits: "Go back to audits" };
+var _e = { varianceDisclaimer: "Values are estimated and may vary. The [performance score is calculated](https://developer.chrome.com/docs/lighthouse/performance/performance-scoring/) directly from these metrics.", calculatorLink: "See calculator.", showRelevantAudits: "Show audits relevant to:", opportunityResourceColumnLabel: "Opportunity", opportunitySavingsColumnLabel: "Estimated Savings", errorMissingAuditInfo: "Report error: no audit information", errorLabel: "Error!", warningHeader: "Warnings: ", warningAuditsGroupTitle: "Passed audits but with warnings", passedAuditsGroupTitle: "Passed audits", notApplicableAuditsGroupTitle: "Not applicable", manualAuditsGroupTitle: "Additional items to manually check", toplevelWarningsMessage: "There were issues affecting this run of Lighthouse:", crcInitialNavigation: "Initial Navigation", crcLongestDurationLabel: "Maximum critical path latency:", snippetExpandButtonLabel: "Expand snippet", snippetCollapseButtonLabel: "Collapse snippet", lsPerformanceCategoryDescription: "[Lighthouse](https://developers.google.com/web/tools/lighthouse/) analysis of the current page on an emulated mobile network. Values are estimated and may vary.", labDataTitle: "Lab Data", thirdPartyResourcesLabel: "Show 3rd-party resources", viewTreemapLabel: "View Treemap", viewTraceLabel: "View Trace", dropdownPrintSummary: "Print Summary", dropdownPrintExpanded: "Print Expanded", dropdownCopyJSON: "Copy JSON", dropdownSaveHTML: "Save as HTML", dropdownSaveJSON: "Save as JSON", dropdownViewer: "Open in Viewer", dropdownSaveGist: "Save as Gist", dropdownDarkTheme: "Toggle Dark Theme", dropdownViewUnthrottledTrace: "View Unthrottled Trace", runtimeSettingsDevice: "Device", runtimeSettingsNetworkThrottling: "Network throttling", runtimeSettingsCPUThrottling: "CPU throttling", runtimeSettingsUANetwork: "User agent (network)", runtimeSettingsBenchmark: "Unthrottled CPU/Memory Power", runtimeSettingsAxeVersion: "Axe version", runtimeSettingsScreenEmulation: "Screen emulation", footerIssue: "File an issue", runtimeNoEmulation: "No emulation", runtimeMobileEmulation: "Emulated Moto G Power", runtimeDesktopEmulation: "Emulated Desktop", runtimeUnknown: "Unknown", runtimeSingleLoad: "Single page session", runtimeAnalysisWindow: "Initial page load", runtimeAnalysisWindowTimespan: "User interactions timespan", runtimeAnalysisWindowSnapshot: "Point-in-time snapshot", runtimeSingleLoadTooltip: "This data is taken from a single page session, as opposed to field data summarizing many sessions.", throttlingProvided: "Provided by environment", show: "Show", hide: "Hide", expandView: "Expand view", collapseView: "Collapse view", runtimeSlow4g: "Slow 4G throttling", runtimeCustom: "Custom throttling", firstPartyChipLabel: "1st party", openInANewTabTooltip: "Open in a new tab", unattributable: "Unattributable", insightsNotice: "Later this year, insights will replace performance audits. [Learn more and provide feedback here](https://github.com/GoogleChrome/lighthouse/discussions/16462).", tryInsights: "Try insights", goBackToAudits: "Go back to audits" };
 var G = class {
   constructor(e, t) {
     this.dom = e, this.detailsRenderer = t;
@@ -3725,18 +3725,18 @@ var Y = class {
   }
 };
 var X = Y;
-function pt(o5, e) {
+function ht(o5, e) {
   return e.left <= o5.width && 0 <= e.right && e.top <= o5.height && 0 <= e.bottom;
 }
-function ke(o5, e, t) {
+function xe(o5, e, t) {
   return o5 < e ? e : o5 > t ? t : o5;
 }
-function gt(o5) {
+function pt(o5) {
   return { x: o5.left + o5.width / 2, y: o5.top + o5.height / 2 };
 }
 var $ = class o4 {
   static getScreenshotPositions(e, t, n) {
-    let r = gt(e), i = ke(r.x - t.width / 2, 0, n.width - t.width), a = ke(r.y - t.height / 2, 0, n.height - t.height);
+    let r = pt(e), i = xe(r.x - t.width / 2, 0, n.width - t.width), a = xe(r.y - t.height / 2, 0, n.height - t.height);
     return { screenshot: { left: i, top: a }, clip: { left: e.left - i, top: e.top - a } };
   }
   static renderClipPathInScreenshot(e, t, n, r, i) {
@@ -3773,7 +3773,7 @@ var $ = class o4 {
     return Math.min(1, i);
   }
   static render(e, t, n, r) {
-    if (!pt(t, n)) return null;
+    if (!ht(t, n)) return null;
     let i = e.createComponent("elementScreenshot"), a = e.find("div.lh-element-screenshot", i);
     a.dataset.rectWidth = n.width.toString(), a.dataset.rectHeight = n.height.toString(), a.dataset.rectLeft = n.left.toString(), a.dataset.rectTop = n.top.toString();
     let l = this._computeZoomFactor(n, r), s = { width: r.width / l, height: r.height / l };
@@ -3786,8 +3786,8 @@ var $ = class o4 {
     return g.style.width = c.width + "px", g.style.height = c.height + "px", o4.renderClipPathInScreenshot(e, g, d.clip, n, s), a;
   }
 };
-var ut = ["http://", "https://", "data:"];
-var mt = ["bytes", "numeric", "ms", "timespanMs"];
+var gt = ["http://", "https://", "data:"];
+var ut = ["bytes", "numeric", "ms", "timespanMs"];
 var ee = class {
   constructor(e, t = {}) {
     this._dom = e, this._fullPageScreenshot = t.fullPageScreenshot, this._entities = t.entities;
@@ -3913,7 +3913,7 @@ var ee = class {
       }
       case "url": {
         let n = String(e);
-        return ut.some((r) => n.startsWith(r)) ? this.renderTextURL(n) : this._renderCode(n);
+        return gt.some((r) => n.startsWith(r)) ? this.renderTextURL(n) : this._renderCode(n);
       }
       default:
         return this._renderUnknown(t.valueType, e);
@@ -3977,7 +3977,7 @@ var ee = class {
     let { items: t, headings: n, sortedBy: r } = e;
     if (!t.length || e.isEntityGrouped || !t.some((d) => d.entity)) return [];
     let i = new Set(e.skipSumming || []), a = [];
-    for (let d of n) !d.key || i.has(d.key) || mt.includes(d.valueType) && a.push(d.key);
+    for (let d of n) !d.key || i.has(d.key) || ut.includes(d.valueType) && a.push(d.key);
     let l = n[0].key;
     if (!l) return [];
     let s = /* @__PURE__ */ new Map();
@@ -4079,7 +4079,6 @@ var ee = class {
     return t.textContent = e, t;
   }
 };
-var le = "\xA0";
 var re = class {
   constructor(e) {
     e === "en-XA" && (e = "de"), this._locale = e, this._cachedNumberFormatters = /* @__PURE__ */ new Map();
@@ -4090,7 +4089,7 @@ var re = class {
       Number.isInteger(a) || (console.warn(`granularity of ${t} is invalid. Using 1 instead`), t = 1), t < 1 && (n = { ...n }, n.minimumFractionDigits = n.maximumFractionDigits = Math.ceil(a)), e = Math.round(e / t) * t, Object.is(e, -0) && (e = 0);
     } else Math.abs(e) < 5e-4 && (e = 0);
     let r, i = [n.minimumFractionDigits, n.maximumFractionDigits, n.style, n.unit, n.unitDisplay, this._locale].join("");
-    return r = this._cachedNumberFormatters.get(i), r || (r = new Intl.NumberFormat(this._locale, n), this._cachedNumberFormatters.set(i, r)), r.format(e).replace(" ", le);
+    return r = this._cachedNumberFormatters.get(i), r || (r = new Intl.NumberFormat(this._locale, n), this._cachedNumberFormatters.set(i, r)), r.format(e).replace(" ", "\xA0");
   }
   formatNumber(e, t) {
     return this._formatNumberWithGranularity(e, t);
@@ -4102,10 +4101,10 @@ var re = class {
     return new Intl.NumberFormat(this._locale, { style: "percent" }).format(e);
   }
   formatBytesToKiB(e, t = void 0) {
-    return this._formatNumberWithGranularity(e / 1024, t) + `${le}KiB`;
+    return this._formatNumberWithGranularity(e / 1024, t) + "\xA0KiB";
   }
   formatBytesToMiB(e, t = void 0) {
-    return this._formatNumberWithGranularity(e / 1048576, t) + `${le}MiB`;
+    return this._formatNumberWithGranularity(e / 1048576, t) + "\xA0MiB";
   }
   formatBytes(e, t = 1) {
     return this._formatNumberWithGranularity(e, t, { style: "unit", unit: "byte", unitDisplay: "long" });
@@ -4134,7 +4133,7 @@ var re = class {
   formatDuration(e) {
     let t = e / 1e3;
     if (Math.round(t) === 0) return "None";
-    let n = [], r = { day: 60 * 60 * 24, hour: 60 * 60, minute: 60, second: 1 };
+    let n = [], r = { day: 3600 * 24, hour: 3600, minute: 60, second: 1 };
     return Object.keys(r).forEach((i) => {
       let a = r[i], l = Math.floor(t / a);
       if (l > 0) {
@@ -4145,15 +4144,15 @@ var re = class {
     }), n.join(" ");
   }
 };
-function Ee(o5) {
+function ke(o5) {
   let e = o5.createComponent("explodeyGauge");
   return o5.find(".lh-exp-gauge-component", e);
 }
-function Se(o5, e, t) {
+function Ee(o5, e, t) {
   let n = o5.find("div.lh-exp-gauge__wrapper", e);
-  n.className = "", n.classList.add("lh-exp-gauge__wrapper", `lh-exp-gauge__wrapper--${k.calculateRating(t.score)}`), vt(o5, n, t);
+  n.className = "", n.classList.add("lh-exp-gauge__wrapper", `lh-exp-gauge__wrapper--${k.calculateRating(t.score)}`), ft(o5, n, t);
 }
-function ft(o5, e, t) {
+function mt(o5, e, t) {
   t = t || o5 / 32;
   let n = o5 / t, r = 0.5 * t, i = n + r + t, a = 2 * Math.PI * n, l = Math.acos(1 - 0.5 * Math.pow(0.5 * t / n, 2)) * n, s = 2 * Math.PI * i, c = Math.acos(1 - 0.5 * Math.pow(0.5 * t / i, 2)) * i;
   return { radiusInner: n, radiusOuter: i, circumferenceInner: a, circumferenceOuter: s, getArcLength: () => Math.max(0, Number(e * a)), getMetricArcLength: (d, h = false) => {
@@ -4161,8 +4160,8 @@ function ft(o5, e, t) {
     return Math.max(0, Number(d * s - r - p));
   }, endDiffInner: l, endDiffOuter: c, strokeWidth: t, strokeGap: r };
 }
-function vt(o5, e, t) {
-  let i = Number(t.score), { radiusInner: a, radiusOuter: l, circumferenceInner: s, circumferenceOuter: c, getArcLength: d, getMetricArcLength: h, endDiffInner: p, endDiffOuter: g, strokeWidth: b, strokeGap: _ } = ft(128, i), m = o5.find("svg.lh-exp-gauge", e);
+function ft(o5, e, t) {
+  let i = Number(t.score), { radiusInner: a, radiusOuter: l, circumferenceInner: s, circumferenceOuter: c, getArcLength: d, getMetricArcLength: h, endDiffInner: p, endDiffOuter: g, strokeWidth: b, strokeGap: _ } = mt(128, i), m = o5.find("svg.lh-exp-gauge", e);
   o5.find(".lh-exp-gauge__label", m).textContent = t.title, m.setAttribute("viewBox", [-64, -64 / 2, 128, 128 / 2].join(" ")), m.style.setProperty("--stroke-width", `${b}px`), m.style.setProperty("--circle-meas", (2 * Math.PI).toFixed(4));
   let w = o5.find("g.lh-exp-gauge__outer", e), f = o5.find("g.lh-exp-gauge__inner", e), v = o5.find("circle.lh-cover", w), y = o5.find("circle.lh-exp-gauge__arc", f), S = o5.find("text.lh-exp-gauge__percentage", f);
   w.style.setProperty("--scale-initial", String(a / l)), w.style.setProperty("--radius", `${l}px`), v.style.setProperty("--radius", `${0.5 * (a + l)}px`), v.setAttribute("stroke-width", String(_)), m.style.setProperty("--radius", `${a}px`), y.setAttribute("stroke-dasharray", `${d()} ${(s - d()).toFixed(4)}`), y.setAttribute("stroke-dashoffset", String(0.25 * s - p)), S.textContent = Math.round(i * 100).toString();
@@ -4172,9 +4171,9 @@ function vt(o5, e, t) {
   }), z.forEach((x, A) => {
     let M = x.acronym ?? x.id, D = !w.querySelector(`.metric--${M}`), T = o5.maybeFind(`g.metric--${M}`, w) || o5.createSVGElement("g"), B = o5.maybeFind(`.metric--${M} circle.lh-exp-gauge--faded`, w) || o5.createSVGElement("circle"), K = o5.maybeFind(`.metric--${M} circle.lh-exp-gauge--miniarc`, w) || o5.createSVGElement("circle"), q = o5.maybeFind(`.metric--${M} circle.lh-exp-gauge-hovertarget`, w) || o5.createSVGElement("circle"), P = o5.maybeFind(`.metric--${M} text.metric__label`, w) || o5.createSVGElement("text"), U = o5.maybeFind(`.metric--${M} text.metric__value`, w) || o5.createSVGElement("text");
     T.classList.add("metric", `metric--${M}`), B.classList.add("lh-exp-gauge__arc", "lh-exp-gauge__arc--metric", "lh-exp-gauge--faded"), K.classList.add("lh-exp-gauge__arc", "lh-exp-gauge__arc--metric", "lh-exp-gauge--miniarc"), q.classList.add("lh-exp-gauge__arc", "lh-exp-gauge__arc--metric", "lh-exp-gauge-hovertarget");
-    let j = x.weight / F, de = h(j), he = x.result.score ? x.result.score * j : 0, pe = h(he), Ie = j * c, ge = h(j, true), ue = k.calculateRating(x.result.score, x.result.scoreDisplayMode);
-    T.style.setProperty("--metric-rating", ue), T.style.setProperty("--metric-color", `var(--color-${ue})`), T.style.setProperty("--metric-offset", `${R}`), T.style.setProperty("--i", A.toString()), B.setAttribute("stroke-dasharray", `${de} ${c - de}`), K.style.setProperty("--metric-array", `${pe} ${c - pe}`), q.setAttribute("stroke-dasharray", `${ge} ${c - ge - g}`), P.classList.add("metric__label"), U.classList.add("metric__value"), P.textContent = M, U.textContent = `+${Math.round(he * 100)}`;
-    let me = H + j * Math.PI, Z = Math.cos(me), J = Math.sin(me);
+    let j = x.weight / F, ce = h(j), de = x.result.score ? x.result.score * j : 0, he = h(de), De = j * c, pe = h(j, true), ge = k.calculateRating(x.result.score, x.result.scoreDisplayMode);
+    T.style.setProperty("--metric-rating", ge), T.style.setProperty("--metric-color", `var(--color-${ge})`), T.style.setProperty("--metric-offset", `${R}`), T.style.setProperty("--i", A.toString()), B.setAttribute("stroke-dasharray", `${ce} ${c - ce}`), K.style.setProperty("--metric-array", `${he} ${c - he}`), q.setAttribute("stroke-dasharray", `${pe} ${c - pe - g}`), P.classList.add("metric__label"), U.classList.add("metric__value"), P.textContent = M, U.textContent = `+${Math.round(de * 100)}`;
+    let ue = H + j * Math.PI, Z = Math.cos(ue), J = Math.sin(ue);
     switch (true) {
       case Z > 0:
         U.setAttribute("text-anchor", "end");
@@ -4197,13 +4196,13 @@ function vt(o5, e, t) {
         P.setAttribute("dominant-baseline", "middle"), U.setAttribute("dominant-baseline", "middle");
         break;
     }
-    P.setAttribute("x", (C * Z).toFixed(2)), P.setAttribute("y", (C * J).toFixed(2)), U.setAttribute("x", (L * Z).toFixed(2)), U.setAttribute("y", (L * J).toFixed(2)), D && (T.appendChild(B), T.appendChild(K), T.appendChild(q), T.appendChild(P), T.appendChild(U), w.appendChild(T)), R -= Ie, H += j * 2 * Math.PI;
+    P.setAttribute("x", (C * Z).toFixed(2)), P.setAttribute("y", (C * J).toFixed(2)), U.setAttribute("x", (L * Z).toFixed(2)), U.setAttribute("y", (L * J).toFixed(2)), D && (T.appendChild(B), T.appendChild(K), T.appendChild(q), T.appendChild(P), T.appendChild(U), w.appendChild(T)), R -= De, H += j * 2 * Math.PI;
   });
   let I = w.querySelector(".lh-exp-gauge-underhovertarget") || o5.createSVGElement("circle");
   I.classList.add("lh-exp-gauge__arc", "lh-exp-gauge__arc--metric", "lh-exp-gauge-hovertarget", "lh-exp-gauge-underhovertarget");
   let N = h(1, true);
   if (I.setAttribute("stroke-dasharray", `${N} ${c - N - g}`), I.isConnected || w.prepend(I), m.dataset.listenersSetup) return;
-  m.dataset.listenersSetup = true, De(m), m.addEventListener("pointerover", (x) => {
+  m.dataset.listenersSetup = true, Fe(m), m.addEventListener("pointerover", (x) => {
     if (x.target === m && m.classList.contains("state--expanded")) {
       m.classList.remove("state--expanded"), m.classList.contains("state--highlight") && (m.classList.remove("state--highlight"), o5.find(".metric--highlight", m).classList.remove("metric--highlight"));
       return;
@@ -4227,7 +4226,7 @@ function vt(o5, e, t) {
   }), m.addEventListener("mouseleave", () => {
     m.classList.remove("state--highlight"), m.querySelector(".metric--highlight")?.classList.remove("metric--highlight");
   });
-  async function De(x) {
+  async function Fe(x) {
     if (await new Promise((P) => setTimeout(P, 1e3)), x.classList.contains("state--expanded")) return;
     let A = o5.find(".lh-exp-gauge__inner", x), M = `uniq-${Math.random()}`;
     A.setAttribute("id", M);
@@ -4246,7 +4245,7 @@ function vt(o5, e, t) {
     x.addEventListener("mouseenter", q, { once: true });
   }
 }
-var Ce = "__lh__insights_audits_toggle_state_2";
+var Se = "__lh__insights_audits_toggle_state_2";
 var oe = class extends G {
   _memoryInsightToggleState = "DEFAULT";
   _renderMetric(e) {
@@ -4297,7 +4296,7 @@ var oe = class extends G {
   }
   _persistInsightToggleToStorage(e) {
     try {
-      window.localStorage.setItem(Ce, e);
+      window.localStorage.setItem(Se, e);
     } finally {
       this._memoryInsightToggleState = e;
     }
@@ -4308,7 +4307,7 @@ var oe = class extends G {
   }
   _getRawInsightToggleState() {
     try {
-      let e = window.localStorage.getItem(Ce);
+      let e = window.localStorage.getItem(Se);
       if (e === "AUDITS" || e === "INSIGHTS") return e;
     } catch {
       return this._memoryInsightToggleState;
@@ -4367,8 +4366,8 @@ var oe = class extends G {
       let g = this.dom.maybeFind(".lh-perf-audits--swappable");
       g && this.dom.swapSectionIfPossible(g);
     }), this.dom.fireEventOn("lh-analytics", this.dom.document(), { name: "initial_insights_state", data: { state: this._getRawInsightToggleState() } }), (!n || n?.gatherMode === "navigation") && e.score !== null) {
-      let g = Ee(this.dom);
-      Se(this.dom, g, e), this.dom.find(".lh-score__gauge", i).replaceWith(g);
+      let g = ke(this.dom);
+      Ee(this.dom, g, e), this.dom.find(".lh-score__gauge", i).replaceWith(g);
     }
     return i;
   }
@@ -4545,9 +4544,9 @@ function W(o5, e) {
   let t = o5.rootEl;
   typeof e > "u" ? t.classList.toggle("lh-dark") : t.classList.toggle("lh-dark", e);
 }
-var bt = typeof btoa < "u" ? btoa : (o5) => Buffer.from(o5).toString("base64");
-var _t = typeof atob < "u" ? atob : (o5) => Buffer.from(o5, "base64").toString();
-async function wt(o5, e) {
+var vt = typeof btoa < "u" ? btoa : (o5) => Buffer.from(o5).toString("base64");
+var bt = typeof atob < "u" ? atob : (o5) => Buffer.from(o5, "base64").toString();
+async function _t(o5, e) {
   let t = new TextEncoder().encode(o5);
   if (e.gzip) if (typeof CompressionStream < "u") {
     let i = new CompressionStream("gzip"), a = i.writable.getWriter();
@@ -4557,44 +4556,44 @@ async function wt(o5, e) {
   } else t = window.pako.gzip(o5);
   let n = "", r = 5e3;
   for (let i = 0; i < t.length; i += r) n += String.fromCharCode(...t.subarray(i, i + r));
-  return bt(n);
+  return vt(n);
 }
-function yt(o5, e) {
-  let t = _t(o5), n = Uint8Array.from(t, (r) => r.charCodeAt(0));
+function wt(o5, e) {
+  let t = bt(o5), n = Uint8Array.from(t, (r) => r.charCodeAt(0));
   return e.gzip ? window.pako.ungzip(n, { to: "string" }) : new TextDecoder().decode(n);
 }
-var Ae = { toBase64: wt, fromBase64: yt };
-function se() {
+var Ce = { toBase64: _t, fromBase64: wt };
+function le() {
   let o5 = window.location.host.endsWith(".vercel.app"), e = new URLSearchParams(window.location.search).has("dev");
   return o5 ? `https://${window.location.host}/gh-pages` : e ? "http://localhost:7333" : "https://googlechrome.github.io/lighthouse";
 }
-function ce(o5) {
+function se(o5) {
   let e = o5.generatedTime, t = o5.fetchTime || e;
   return `${o5.lighthouseVersion}-${o5.finalDisplayedUrl}-${t}`;
 }
-function xt(o5, e, t) {
+function yt(o5, e, t) {
   let n = new URL(e).origin;
   window.addEventListener("message", function i(a) {
     a.origin === n && r && a.data.opened && (r.postMessage(o5, n), window.removeEventListener("message", i));
   });
   let r = window.open(e, t);
 }
-async function Le(o5, e, t) {
+async function Ae(o5, e, t) {
   let n = new URL(e), r = !!window.CompressionStream;
-  n.hash = await Ae.toBase64(JSON.stringify(o5), { gzip: r }), r && n.searchParams.set("gzip", "1"), window.open(n.toString(), t);
+  n.hash = await Ce.toBase64(JSON.stringify(o5), { gzip: r }), r && n.searchParams.set("gzip", "1"), window.open(n.toString(), t);
+}
+async function Le(o5) {
+  let e = "viewer-" + se(o5), t = le() + "/viewer/";
+  await Ae({ lhr: o5 }, t, e);
 }
 async function ze(o5) {
-  let e = "viewer-" + ce(o5), t = se() + "/viewer/";
-  await Le({ lhr: o5 }, t, e);
+  let e = "viewer-" + se(o5), t = le() + "/viewer/";
+  yt({ lhr: o5 }, t, e);
 }
-async function Me(o5) {
-  let e = "viewer-" + ce(o5), t = se() + "/viewer/";
-  xt({ lhr: o5 }, t, e);
-}
-function Te(o5) {
+function Me(o5) {
   if (!o5.audits["script-treemap-data"].details) throw new Error("no script treemap data found");
-  let t = { lhr: { mainDocumentUrl: o5.mainDocumentUrl, finalUrl: o5.finalUrl, finalDisplayedUrl: o5.finalDisplayedUrl, audits: { "script-treemap-data": o5.audits["script-treemap-data"] }, configSettings: { locale: o5.configSettings.locale } } }, n = se() + "/treemap/", r = "treemap-" + ce(o5);
-  Le(t, n, r);
+  let t = { lhr: { mainDocumentUrl: o5.mainDocumentUrl, finalUrl: o5.finalUrl, finalDisplayedUrl: o5.finalDisplayedUrl, audits: { "script-treemap-data": o5.audits["script-treemap-data"] }, configSettings: { locale: o5.configSettings.locale } } }, n = le() + "/treemap/", r = "treemap-" + se(o5);
+  Ae(t, n, r);
 }
 var ie = class {
   constructor(e) {
@@ -4701,7 +4700,7 @@ var ae = class {
           break;
         }
         case "open-viewer": {
-          this._dom.isDevTools() ? ze(this.lhr) : Me(this.lhr);
+          this._dom.isDevTools() ? Le(this.lhr) : ze(this.lhr);
           break;
         }
         case "save-gist": {
@@ -4773,17 +4772,17 @@ var ae = class {
     this.highlightEl.style.transform = `translate(${d}px)`, this.stickyHeaderEl.classList.toggle("lh-sticky-header--visible", n);
   }
 };
-function kt(o5, e) {
+function xt(o5, e) {
   let t = e ? new Date(e) : /* @__PURE__ */ new Date(), n = t.toLocaleTimeString("en-US", { hour12: false }), r = t.toLocaleDateString("en-US", { year: "numeric", month: "2-digit", day: "2-digit" }).split("/");
   r.unshift(r.pop());
   let i = r.join("-");
   return `${o5}_${i}_${n}`.replace(/[/?<>\\:*|"]/g, "-");
 }
-function Fe(o5) {
+function Te(o5) {
   let e = new URL(o5.finalDisplayedUrl).hostname;
-  return kt(e, o5.fetchTime);
+  return xt(e, o5.fetchTime);
 }
-function Et(o5) {
+function kt(o5) {
   return Array.from(o5.tBodies[0].rows);
 }
 var ne = class {
@@ -4802,7 +4801,7 @@ var ne = class {
       let s = this._dom.find("input.lh-metrics-toggle__input", this._dom.rootEl);
       s.checked = true;
     }
-    this.json.audits["script-treemap-data"] && this.json.audits["script-treemap-data"].details && this.addButton({ text: u.strings.viewTreemapLabel, icon: "treemap", onClick: () => Te(this.json) }), this._opts.onViewTrace && (e.configSettings.throttlingMethod === "simulate" ? this._dom.find('a[data-action="view-unthrottled-trace"]', this._dom.rootEl).classList.remove("lh-hidden") : this.addButton({ text: u.strings.viewTraceLabel, onClick: () => this._opts.onViewTrace?.() })), this._opts.getStandaloneReportHTML && this._dom.find('a[data-action="save-html"]', this._dom.rootEl).classList.remove("lh-hidden");
+    this.json.audits["script-treemap-data"] && this.json.audits["script-treemap-data"].details && this.addButton({ text: u.strings.viewTreemapLabel, icon: "treemap", onClick: () => Me(this.json) }), this._opts.onViewTrace && (e.configSettings.throttlingMethod === "simulate" ? this._dom.find('a[data-action="view-unthrottled-trace"]', this._dom.rootEl).classList.remove("lh-hidden") : this.addButton({ text: u.strings.viewTraceLabel, onClick: () => this._opts.onViewTrace?.() })), this._opts.getStandaloneReportHTML && this._dom.find('a[data-action="save-html"]', this._dom.rootEl).classList.remove("lh-hidden");
     for (let s of this._dom.findAll("[data-i18n]", this._dom.rootEl)) {
       let d = s.getAttribute("data-i18n");
       s.textContent = u.strings[d];
@@ -4850,7 +4849,7 @@ var ne = class {
     }).forEach((i) => {
       if (this._tablesHandledFor3p.has(i)) return;
       this._tablesHandledFor3p.add(i);
-      let a = Et(i), l = a.filter((m) => !m.classList.contains("lh-sub-item-row")), s = this._getThirdPartyRows(l, E.getFinalDisplayedUrl(this.json)), c = a.some((m) => m.classList.contains("lh-row--even")), d = this._dom.createComponent("3pFilter"), h = this._dom.find("input", d);
+      let a = kt(i), l = a.filter((m) => !m.classList.contains("lh-sub-item-row")), s = this._getThirdPartyRows(l, E.getFinalDisplayedUrl(this.json)), c = a.some((m) => m.classList.contains("lh-row--even")), d = this._dom.createComponent("3pFilter"), h = this._dom.find("input", d);
       h.addEventListener("change", (m) => {
         let w = m.target instanceof HTMLInputElement && !m.target.checked, f = true, v = l[0];
         for (; v; ) {
@@ -4890,32 +4889,32 @@ var ne = class {
     return i;
   }
   _saveFile(e) {
-    let t = e.type.match("json") ? ".json" : ".html", n = Fe({ finalDisplayedUrl: E.getFinalDisplayedUrl(this.json), fetchTime: this.json.fetchTime }) + t;
+    let t = e.type.match("json") ? ".json" : ".html", n = Te({ finalDisplayedUrl: E.getFinalDisplayedUrl(this.json), fetchTime: this.json.fetchTime }) + t;
     this._opts.onSaveFileOverride ? this._opts.onSaveFileOverride(e, n) : this._dom.saveFile(e, n);
   }
 };
-function St(o5, e = {}) {
+function Et(o5, e = {}) {
   let t = document.createElement("article");
   t.classList.add("lh-root", "lh-vars");
   let n = new Q(t.ownerDocument, t), r = new te(n);
   return e._onSwapHook && (n._onSwapHook = e._onSwapHook), r.renderReport(o5, t, e), new ne(n, e).initFeatures(o5), t;
 }
-function Ct(o5, e) {
+function St(o5, e) {
   return { lhr: o5, missingIcuMessageIds: [] };
 }
-function At(o5, e) {
+function Ct(o5, e) {
 }
-function Lt(o5) {
+function At(o5) {
   return false;
 }
-var zt = { registerLocaleData: At, hasLocale: Lt };
+var Lt = { registerLocaleData: Ct, hasLocale: At };
 export {
   Q as DOM,
   te as ReportRenderer,
   ne as ReportUIFeatures,
-  zt as format,
-  St as renderReport,
-  Ct as swapLocale
+  Lt as format,
+  Et as renderReport,
+  St as swapLocale
 };
 /**
  * @license

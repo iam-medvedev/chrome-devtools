@@ -69,6 +69,7 @@ var generatedProperties = [
   {
     "longhands": [
       "max-lines",
+      "block-ellipsis",
       "continue"
     ],
     "name": "-alternative-webkit-line-clamp"
@@ -156,14 +157,12 @@ var generatedProperties = [
     "name": "-webkit-font-smoothing"
   },
   {
-    "inherited": true,
     "keywords": [
       "auto",
       "loose",
       "normal",
       "strict",
-      "after-white-space",
-      "anywhere"
+      "after-white-space"
     ],
     "name": "-webkit-line-break"
   },
@@ -414,6 +413,7 @@ var generatedProperties = [
       "base-palette",
       "baseline-shift",
       "baseline-source",
+      "block-ellipsis",
       "block-size",
       "border-block-end-color",
       "border-block-end-style",
@@ -1103,6 +1103,14 @@ var generatedProperties = [
       "last"
     ],
     "name": "baseline-source"
+  },
+  {
+    "inherited": true,
+    "keywords": [
+      "auto",
+      "no-ellipsis"
+    ],
+    "name": "block-ellipsis"
   },
   {
     "keywords": [
@@ -2869,13 +2877,15 @@ var generatedProperties = [
       "loose",
       "normal",
       "strict",
-      "anywhere"
+      "anywhere",
+      "after-white-space"
     ],
     "name": "line-break"
   },
   {
     "longhands": [
       "max-lines",
+      "block-ellipsis",
       "continue"
     ],
     "name": "line-clamp"
@@ -4800,8 +4810,7 @@ var generatedPropertyValues = {
       "loose",
       "normal",
       "strict",
-      "after-white-space",
-      "anywhere"
+      "after-white-space"
     ]
   },
   "-webkit-line-clamp": {
@@ -5025,6 +5034,12 @@ var generatedPropertyValues = {
       "auto",
       "first",
       "last"
+    ]
+  },
+  "block-ellipsis": {
+    "values": [
+      "auto",
+      "no-ellipsis"
     ]
   },
   "block-size": {
@@ -6001,7 +6016,8 @@ var generatedPropertyValues = {
       "loose",
       "normal",
       "strict",
-      "anywhere"
+      "anywhere",
+      "after-white-space"
     ]
   },
   "line-height": {
@@ -23005,7 +23021,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (_OverlayModel.inspectNodeHandler) {
       void deferredNode.resolvePromise().then((node) => {
         if (node && _OverlayModel.inspectNodeHandler) {
-          _OverlayModel.inspectNodeHandler(node);
+          void _OverlayModel.inspectNodeHandler(node);
         }
       });
     } else {

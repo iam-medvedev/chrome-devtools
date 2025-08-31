@@ -41,7 +41,7 @@ export class Renderer {
         }
         return rendererInstance;
     }
-    async render(object) {
+    async render(object, options) {
         let node = null;
         if (object instanceof SDK.DOMModel.DOMNode) {
             node = (object);
@@ -61,6 +61,9 @@ export class Renderer {
         // @ts-expect-error used in console_test_runner
         treeOutline.element.treeElementForTest = treeOutline.firstChild();
         treeOutline.setShowSelectionOnKeyboardFocus(/* show: */ true, /* preventTabOrder: */ true);
+        if (options?.expand) {
+            treeOutline.firstChild()?.expand();
+        }
         return { node: treeOutline.element, tree: treeOutline };
     }
 }

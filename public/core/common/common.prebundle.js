@@ -23,6 +23,7 @@ import * as Progress from './Progress.js';
 import * as QueryParamHandler from './QueryParamHandler.js';
 import * as ResolverBase from './ResolverBase.js';
 import * as ResourceType from './ResourceType.js';
+import * as ReturnToPanel from './ReturnToPanel.js';
 import * as Revealer from './Revealer.js';
 import * as Runnable from './Runnable.js';
 import * as SegmentedRange from './SegmentedRange.js';
@@ -40,5 +41,5 @@ import * as Worker from './Worker.js';
  * update all references to `Common.UIString` to `Platform.UIString`.
  */
 export { UIString } from '../platform/platform.js';
-export { App, AppProvider, Base64, CharacterIdMap, Color, ColorConverter, ColorUtils, Console, Debouncer, EventTarget, Gzip, JavaScriptMetaData, Lazy, Linkifier, MapWithDefault, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, Revealer, Runnable, SegmentedRange, SettingRegistration, Settings, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };
+export { App, AppProvider, Base64, CharacterIdMap, Color, ColorConverter, ColorUtils, Console, Debouncer, EventTarget, Gzip, JavaScriptMetaData, Lazy, Linkifier, MapWithDefault, Mutex, ObjectWrapper, ParsedURL, Progress, QueryParamHandler, ResolverBase, ResourceType, ReturnToPanel, Revealer, Runnable, SegmentedRange, SettingRegistration, Settings, SimpleHistoryManager, StringOutputStream, TextDictionary, Throttler, Trie, Worker, };
 //# sourceMappingURL=common.prebundle.js.map

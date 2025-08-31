@@ -10,25 +10,25 @@ import { data as metaHandlerData } from './MetaHandler.js';
 // highlight long interactions to the user, along with INP.
 // We don't need to know which process / thread these events occurred in,
 // because they are effectively global, so we just track all that we find.
-const allEvents = [];
-const beginCommitCompositorFrameEvents = [];
-const parseMetaViewportEvents = [];
+let allEvents = [];
+let beginCommitCompositorFrameEvents = [];
+let parseMetaViewportEvents = [];
 export const LONG_INTERACTION_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(200));
 const INP_GOOD_TIMING = LONG_INTERACTION_THRESHOLD;
 const INP_MEDIUM_TIMING = Helpers.Timing.milliToMicro(Types.Timing.Milli(500));
 let longestInteractionEvent = null;
-const interactionEvents = [];
-const interactionEventsWithNoNesting = [];
-const eventTimingEndEventsById = new Map();
-const eventTimingStartEventsForInteractions = [];
+let interactionEvents = [];
+let interactionEventsWithNoNesting = [];
+let eventTimingEndEventsById = new Map();
+let eventTimingStartEventsForInteractions = [];
 export function reset() {
-    allEvents.length = 0;
-    beginCommitCompositorFrameEvents.length = 0;
-    parseMetaViewportEvents.length = 0;
-    interactionEvents.length = 0;
-    eventTimingStartEventsForInteractions.length = 0;
-    eventTimingEndEventsById.clear();
-    interactionEventsWithNoNesting.length = 0;
+    allEvents = [];
+    beginCommitCompositorFrameEvents = [];
+    parseMetaViewportEvents = [];
+    interactionEvents = [];
+    eventTimingStartEventsForInteractions = [];
+    eventTimingEndEventsById = new Map();
+    interactionEventsWithNoNesting = [];
     longestInteractionEvent = null;
 }
 export function handleEvent(event) {

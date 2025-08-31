@@ -567,10 +567,10 @@ export class NetworkPanel extends UI.Panel.Panel {
     }
     onRequestActivated(event) {
         const { showPanel, tab, takeFocus } = event.data;
-        if (showPanel) {
+        if (showPanel === "ShowPanel" /* RequestPanelBehavior.ShowPanel */) {
             this.showRequestPanel(tab, takeFocus);
         }
-        else {
+        else if (showPanel === "HidePanel" /* RequestPanelBehavior.HidePanel */) {
             this.hideRequestPanel();
         }
     }

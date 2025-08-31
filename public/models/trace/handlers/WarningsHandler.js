@@ -6,35 +6,35 @@ import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as userInteractionsHandlerData } from './UserInteractionsHandler.js';
 import { data as workersData } from './WorkersHandler.js';
-const warningsPerEvent = new Map();
-const eventsPerWarning = new Map();
+let warningsPerEvent = new Map();
+let eventsPerWarning = new Map();
 /**
  * Tracks the stack formed by nested trace events up to a given point
  */
-const allEventsStack = [];
+let allEventsStack = [];
 /**
  * Tracks the stack formed by JS invocation trace events up to a given point.
  * F.e. FunctionCall, EvaluateScript, V8Execute.
  * Not to be confused with ProfileCalls.
  */
-const jsInvokeStack = [];
+let jsInvokeStack = [];
 /**
  * Tracks reflow events in a task.
  */
-const taskReflowEvents = [];
+let taskReflowEvents = [];
 /**
  * Tracks events containing long running tasks. These are compared later against the worker thread pool to filter out long tasks from worker threads.
  */
-const longTaskEvents = [];
+let longTaskEvents = [];
 export const FORCED_REFLOW_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(30));
 export const LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(50));
 export function reset() {
-    warningsPerEvent.clear();
-    eventsPerWarning.clear();
-    allEventsStack.length = 0;
-    jsInvokeStack.length = 0;
-    taskReflowEvents.length = 0;
-    longTaskEvents.length = 0;
+    warningsPerEvent = new Map();
+    eventsPerWarning = new Map();
+    allEventsStack = [];
+    jsInvokeStack = [];
+    taskReflowEvents = [];
+    longTaskEvents = [];
 }
 function storeWarning(event, warning) {
     const existingWarnings = Platform.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);

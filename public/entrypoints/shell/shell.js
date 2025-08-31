@@ -5966,7 +5966,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -5979,7 +5979,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -5992,7 +5992,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6005,7 +6005,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6018,7 +6018,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6031,7 +6031,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6046,7 +6046,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: i18nLazyString17(UIStrings17.askAi),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6061,7 +6061,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();
@@ -6074,7 +6074,7 @@ UI16.ActionRegistration.registerActionExtension({
     return [];
   },
   category: "GLOBAL",
-  title: () => titleForAiAssistanceActions(),
+  title: titleForAiAssistanceActions,
   async loadActionDelegate() {
     const AiAssistance = await loadAiAssistanceModule();
     return new AiAssistance.ActionDelegate();

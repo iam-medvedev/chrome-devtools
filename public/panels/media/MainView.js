@@ -162,14 +162,14 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         mediaModel.addEventListener("PlayerEventsAdded" /* Events.PLAYER_EVENTS_ADDED */, this.eventsAdded, this);
         mediaModel.addEventListener("PlayerMessagesLogged" /* Events.PLAYER_MESSAGES_LOGGED */, this.messagesLogged, this);
         mediaModel.addEventListener("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, this.errorsRaised, this);
-        mediaModel.addEventListener("PlayersCreated" /* Events.PLAYERS_CREATED */, this.playersCreated, this);
+        mediaModel.addEventListener("PlayerCreated" /* Events.PLAYER_CREATED */, this.playerCreated, this);
     }
     removeEventListeners(mediaModel) {
         mediaModel.removeEventListener("PlayerPropertiesChanged" /* Events.PLAYER_PROPERTIES_CHANGED */, this.propertiesChanged, this);
         mediaModel.removeEventListener("PlayerEventsAdded" /* Events.PLAYER_EVENTS_ADDED */, this.eventsAdded, this);
         mediaModel.removeEventListener("PlayerMessagesLogged" /* Events.PLAYER_MESSAGES_LOGGED */, this.messagesLogged, this);
         mediaModel.removeEventListener("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, this.errorsRaised, this);
-        mediaModel.removeEventListener("PlayersCreated" /* Events.PLAYERS_CREATED */, this.playersCreated, this);
+        mediaModel.removeEventListener("PlayerCreated" /* Events.PLAYER_CREATED */, this.playerCreated, this);
     }
     onPlayerCreated(playerID) {
         this.sidebar.addMediaElementItem(playerID);
@@ -238,13 +238,11 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.downloadStore.onEvent(playerID, event);
         this.detailPanels.get(playerID)?.onEvent(event);
     }
-    playersCreated(event) {
-        if (event.data.length > 0 && this.splitWidget().showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
+    playerCreated(event) {
+        if (this.splitWidget().showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
             this.splitWidget().showBoth();
         }
-        for (const playerID of event.data) {
-            this.onPlayerCreated(playerID);
-        }
+        this.onPlayerCreated(event.data.playerId);
     }
     markPlayerForDeletion(playerID) {
         // TODO(tmathmeyer): send this to chromium to save the storage space there too.

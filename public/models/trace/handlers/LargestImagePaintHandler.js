@@ -25,10 +25,11 @@ import { data as pageLoadMetricsData } from './PageLoadMetricsHandler.js';
  * `BackendNodeId`s are only unique within a given renderer process, so this is
  * also keyed on `ProcessId`.
  **/
-const imagePaintsByNodeIdAndProcess = new Map();
-const lcpRequestByNavigationId = new Map();
+let imagePaintsByNodeIdAndProcess = new Map();
+let lcpRequestByNavigationId = new Map();
 export function reset() {
-    imagePaintsByNodeIdAndProcess.clear();
+    imagePaintsByNodeIdAndProcess = new Map();
+    lcpRequestByNavigationId = new Map();
 }
 export function handleEvent(event) {
     if (!Types.Events.isLargestImagePaintCandidate(event) || !event.args.data) {

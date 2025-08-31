@@ -1501,8 +1501,8 @@ var AICallTree = class _AICallTree {
       doNotAggregate: true,
       includeInstantEvents: true
     });
-    const instance = new _AICallTree(null, rootNode, parsedTrace);
-    return instance;
+    const instance2 = new _AICallTree(null, rootNode, parsedTrace);
+    return instance2;
   }
   /**
    * Attempts to build an AICallTree from a given selected event. It also
@@ -1562,8 +1562,8 @@ var AICallTree = class _AICallTree {
       console.warn(`Selected event ${selectedEvent} not found within its own tree.`);
       return null;
     }
-    const instance = new _AICallTree(selectedNode, rootNode, parsedTrace);
-    return instance;
+    const instance2 = new _AICallTree(selectedNode, rootNode, parsedTrace);
+    return instance2;
   }
   /**
    * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
@@ -1751,10 +1751,12 @@ var MinDurationFilter = class extends Trace4.Extras.TraceFilter.TraceFilter {
 // gen/front_end/panels/timeline/utils/AIContext.js
 var AIContext_exports = {};
 __export(AIContext_exports, {
-  AgentFocus: () => AgentFocus
+  AgentFocus: () => AgentFocus,
+  getPerformanceAgentFocusFromModel: () => getPerformanceAgentFocusFromModel
 });
 var AgentFocus = class _AgentFocus {
-  static full(parsedTrace, insightSet, traceMetadata) {
+  static full(parsedTrace, insights, traceMetadata) {
+    const insightSet = [...insights.values()].filter((insightSet2) => insightSet2.navigation).at(0) ?? null;
     return new _AgentFocus({
       type: "full",
       parsedTrace,
@@ -1781,6 +1783,15 @@ var AgentFocus = class _AgentFocus {
     return this.#data;
   }
 };
+function getPerformanceAgentFocusFromModel(model) {
+  const parsedTrace = model.parsedTrace();
+  const insights = model.traceInsights();
+  const traceMetadata = model.metadata();
+  if (!insights || !parsedTrace || !traceMetadata) {
+    return null;
+  }
+  return AgentFocus.full(parsedTrace, insights, traceMetadata);
+}
 
 // gen/front_end/panels/timeline/utils/EntityMapper.js
 var EntityMapper_exports = {};
@@ -2046,6 +2057,28 @@ var EventsSerializer = class _EventsSerializer {
     }
     this.#modifiedProfileCallByKey.set(key, match);
     return match;
+  }
+};
+
+// gen/front_end/panels/timeline/utils/FreshRecording.js
+var FreshRecording_exports = {};
+__export(FreshRecording_exports, {
+  Tracker: () => Tracker
+});
+var instance = null;
+var Tracker = class _Tracker {
+  #freshRecordings = /* @__PURE__ */ new WeakSet();
+  static instance(opts = { forceNew: false }) {
+    if (!instance || opts.forceNew) {
+      instance = new _Tracker();
+    }
+    return instance;
+  }
+  registerFreshRecording(data) {
+    this.#freshRecordings.add(data);
+  }
+  recordingIsFresh(data) {
+    return this.#freshRecordings.has(data);
   }
 };
 
@@ -2622,6 +2655,7 @@ export {
   EntryNodes_exports as EntryNodes,
   EntryStyles_exports as EntryStyles,
   EventsSerializer_exports as EventsSerializer,
+  FreshRecording_exports as FreshRecording,
   Helpers_exports as Helpers,
   IgnoreList_exports as IgnoreList,
   ImageCache_exports as ImageCache,

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import * as StackTrace from './stack_trace.js';
 import { AsyncFragmentImpl, FragmentImpl, FrameImpl, StackTraceImpl } from './StackTraceImpl.js';
 import { Trie } from './Trie.js';
 /**
@@ -36,6 +38,25 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
         await Promise.all(translatePromises);
         return new StackTraceImpl(fragment, asyncFragments);
     }
+    /** Trigger re-translation of all fragments with the provide script in their call stack */
+    async scriptInfoChanged(script, translateRawFrames) {
+        const translatePromises = [];
+        let stackTracesToUpdate = new Set();
+        for (const fragment of this.#affectedFragments(script)) {
+            // We trigger re-translation only for fragments of leaf-nodes. Any fragment along the ancestor-chain
+            // is re-translated as a side-effect.
+            // We just need to remember the stack traces of the skipped over fragments, so we can send the
+            // UPDATED event also to them.
+            if (fragment.node.children.length === 0) {
+                translatePromises.push(this.#translateFragment(fragment, translateRawFrames));
+            }
+            stackTracesToUpdate = stackTracesToUpdate.union(fragment.stackTraces);
+        }
+        await Promise.all(translatePromises);
+        for (const stackTrace of stackTracesToUpdate) {
+            stackTrace.dispatchEventToListeners("UPDATED" /* StackTrace.StackTrace.Events.UPDATED */);
+        }
+    }
     #createFragment(frames) {
         return FragmentImpl.getOrCreate(this.#trie.insert(frames));
     }
@@ -47,6 +68,30 @@ export class StackTraceModel extends SDK.SDKModel.SDKModel {
         for (const node of fragment.node.getCallStack()) {
             node.frames = uiFrames[i++].map(frame => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column));
         }
+    }
+    #affectedFragments(script) {
+        // 1. Collect branches with the matching script.
+        const affectedBranches = new Set();
+        this.#trie.walk(null, node => {
+            // scriptId has precedence, but if the frame does not have one, check the URL.
+            if (node.rawFrame.scriptId === script.scriptId ||
+                (!node.rawFrame.scriptId && node.rawFrame.url === script.sourceURL)) {
+                affectedBranches.add(node);
+                return false;
+            }
+            return true;
+        });
+        // 2. For each branch collect all the fragments.
+        const fragments = new Set();
+        for (const branch of affectedBranches) {
+            this.#trie.walk(branch, node => {
+                if (node.fragment) {
+                    fragments.add(node.fragment);
+                }
+                return true;
+            });
+        }
+        return fragments;
     }
 }
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0 /* SDK.Target.Capability.NONE */, autostart: false });

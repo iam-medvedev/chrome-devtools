@@ -306,4 +306,21 @@ export function estimateCompressionRatioForScript(script) {
     const compressionRatio = compressedSize / contentLength;
     return compressionRatio;
 }
+export function calculateDocFirstByteTs(docRequest) {
+    if (docRequest.args.data.protocol === 'file') {
+        // file: requests do not have timings
+        return docRequest.ts;
+    }
+    const timing = docRequest.args.data.timing;
+    if (!timing) {
+        // Older traces do not have timings.
+        return null;
+    }
+    // Time that first byte (headers) are received.
+    // For older traces, receiveHeadersStart can be missing (ex: web.dev.json.gz).
+    // In that case use the headers end timing, which should be pretty close to when
+    // the headers start.
+    return Types.Timing.Micro(Helpers.Timing.secondsToMicro(timing.requestTime) +
+        Helpers.Timing.milliToMicro(timing.receiveHeadersStart ?? timing.receiveHeadersEnd));
+}
 //# sourceMappingURL=Common.js.map

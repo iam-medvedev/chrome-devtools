@@ -16,14 +16,19 @@ interface ViewInput {
     showSelectionOnKeyboardFocus: boolean;
     preventTabOrder: boolean;
     deindentSingleNode: boolean;
+    currentHighlightedNode: SDK.DOMModel.DOMNode | null;
     onSelectedNodeChanged: (event: Common.EventTarget.EventTargetEvent<{
         node: SDK.DOMModel.DOMNode | null;
         focus: boolean;
     }>) => void;
     onElementsTreeUpdated: (event: Common.EventTarget.EventTargetEvent<SDK.DOMModel.DOMNode[]>) => void;
+    onElementCollapsed: () => void;
+    onElementExpanded: () => void;
 }
 interface ViewOutput {
     elementsTreeOutline?: ElementsTreeOutline;
+    highlightedTreeElement: ElementsTreeElement | null;
+    alreadyExpandedParentTreeElement: ElementsTreeElement | null;
 }
 export declare const DEFAULT_VIEW: (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 /**

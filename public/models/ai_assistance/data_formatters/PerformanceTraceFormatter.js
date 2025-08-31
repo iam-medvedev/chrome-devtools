@@ -44,13 +44,27 @@ export class PerformanceTraceFormatter {
             parts.push('Metrics:');
             if (lcp) {
                 parts.push(`  - LCP: ${Math.round(lcp.value / 1000)} ms, event: ${this.serializeEvent(lcp.event)}`);
+                const subparts = insightSet?.model.LCPBreakdown.subparts;
+                if (subparts) {
+                    const serializeSubpart = (subpart) => {
+                        return `${ms(subpart.range / 1000)}, bounds: ${this.serializeBounds(subpart)}`;
+                    };
+                    parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
+                    if (subparts.loadDelay !== undefined) {
+                        parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
+                    }
+                    if (subparts.loadDuration !== undefined) {
+                        parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
+                    }
+                    parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
+                }
             }
             if (inp) {
                 parts.push(`  - INP: ${Math.round(inp.value / 1000)} ms, event: ${this.serializeEvent(inp.event)}`);
             }
             if (cls) {
                 const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : '';
-                parts.push(`  - CLS: ${cls.value}${eventText}`);
+                parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
             }
         }
         else {
@@ -147,16 +161,7 @@ export class PerformanceTraceFormatter {
         }
         return this.#serializeBottomUpRootNode(rootNode, 10);
     }
-    formatThirdPartySummary() {
-        const insightSet = this.#insightSet;
-        if (!insightSet) {
-            return '';
-        }
-        const thirdParties = insightSet.model.ThirdParties;
-        let summaries = thirdParties.entitySummaries ?? [];
-        if (thirdParties.firstPartyEntity) {
-            summaries = summaries.filter(s => s.entity !== thirdParties?.firstPartyEntity || null);
-        }
+    #formatThirdPartyEntitySummaries(summaries) {
         const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
         if (!topMainThreadTimeEntries.length) {
             return '';
@@ -167,6 +172,22 @@ export class PerformanceTraceFormatter {
             return `- name: ${s.entity.name}, main thread time: ${ms(s.mainThreadTime)}, network transfer size: ${transferSize}`;
         })
             .join('\n');
+        return listText;
+    }
+    formatThirdPartySummary() {
+        const insightSet = this.#insightSet;
+        if (!insightSet) {
+            return '';
+        }
+        const thirdParties = insightSet.model.ThirdParties;
+        let summaries = thirdParties.entitySummaries ?? [];
+        if (thirdParties.firstPartyEntity) {
+            summaries = summaries.filter(s => s.entity !== thirdParties?.firstPartyEntity || null);
+        }
+        const listText = this.#formatThirdPartyEntitySummaries(summaries);
+        if (!listText) {
+            return '';
+        }
         return `Third party summary:\n${listText}`;
     }
     formatLongestTasks() {
@@ -185,17 +206,9 @@ export class PerformanceTraceFormatter {
             .join('\n');
         return `Longest ${longestTaskTrees.length} tasks:\n${listText}`;
     }
-    formatMainThreadTrackSummary(min, max) {
-        const results = [];
-        const topDownTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, { min, max, range: (max - min) }, this.#parsedTrace);
-        if (topDownTree) {
-            results.push('# Top-down main thread summary');
-            results.push(topDownTree.serialize(2 /* headerLevel */));
-        }
-        const bottomUpRootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, { min, max, range: (max - min) }, this.#parsedTrace);
-        if (bottomUpRootNode) {
-            results.push('# Bottom-up main thread summary');
-            results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+    #serializeRelatedInsightsForEvents(events) {
+        if (!events.length) {
+            return '';
         }
         const insightNameToRelatedEvents = new Map();
         if (this.#insightSet) {
@@ -203,40 +216,84 @@ export class PerformanceTraceFormatter {
                 if (!model.relatedEvents) {
                     continue;
                 }
-                const relatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
-                if (!relatedEvents.length) {
+                const modeRelatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
+                if (!modeRelatedEvents.length) {
                     continue;
                 }
-                const events = [];
-                if (topDownTree) {
-                    events.push(...relatedEvents.filter(e => topDownTree.rootNode.events.includes(e)));
-                }
-                if (bottomUpRootNode) {
-                    events.push(...relatedEvents.filter(e => bottomUpRootNode.events.includes(e)));
-                }
-                if (events.length) {
-                    insightNameToRelatedEvents.set(model.insightKey, events);
+                const relatedEvents = modeRelatedEvents.filter(e => events.includes(e));
+                if (relatedEvents.length) {
+                    insightNameToRelatedEvents.set(model.insightKey, relatedEvents);
                 }
             }
         }
-        if (insightNameToRelatedEvents.size) {
+        if (!insightNameToRelatedEvents.size) {
+            return '';
+        }
+        const results = [];
+        for (const [insightKey, events] of insightNameToRelatedEvents) {
+            // Limit to 5, because some insights (namely ThirdParties) can have a huge
+            // number of related events. Mostly, insights probably don't have more than
+            // 5.
+            const eventsString = events.slice(0, 5)
+                .map(e => TimelineUtils.EntryName.nameForEntry(e) + ' ' + this.serializeEvent(e))
+                .join(', ');
+            results.push(`- ${insightKey}: ${eventsString}`);
+        }
+        return results.join('\n');
+    }
+    formatMainThreadTrackSummary(bounds) {
+        const results = [];
+        const topDownTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+        if (topDownTree) {
+            results.push('# Top-down main thread summary');
+            results.push(this.formatCallTree(topDownTree, 2 /* headerLevel */));
+        }
+        const bottomUpRootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+        if (bottomUpRootNode) {
+            results.push('# Bottom-up main thread summary');
+            results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+        }
+        const thirdPartySummaries = Trace.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace, bounds);
+        if (thirdPartySummaries.length) {
+            results.push('# Third parties');
+            results.push(this.#formatThirdPartyEntitySummaries(thirdPartySummaries));
+        }
+        const relatedInsightsText = this.#serializeRelatedInsightsForEvents([...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]);
+        if (relatedInsightsText) {
             results.push('# Related insights');
             results.push('Here are all the insights that contain some related event from the main thread in the given range.');
-            for (const [insightKey, events] of insightNameToRelatedEvents) {
-                // Limit to 5, because some insights (namely ThirdParties) can have a huge
-                // number of related events. Mostly, insights probably don't have more than
-                // 5.
-                const eventsString = events.slice(0, 5)
-                    .map(e => TimelineUtils.EntryName.nameForEntry(e) + ' ' + this.serializeEvent(e))
-                    .join(', ');
-                results.push(`- ${insightKey}: ${eventsString}`);
-            }
+            results.push(relatedInsightsText);
         }
-        // TODO(b/425270067): add third party summary
         if (!results.length) {
             return 'No main thread activity found';
         }
         return results.join('\n\n');
+    }
+    formatNetworkTrackSummary(bounds) {
+        const results = [];
+        const requests = this.#parsedTrace.NetworkRequests.byTime.filter(request => Trace.Helpers.Timing.eventIsInBounds(request, bounds));
+        const requestsText = TraceEventFormatter.networkRequests(requests, this.#parsedTrace, { verbose: false });
+        results.push('# Network requests summary');
+        results.push(requestsText || 'No requests in the given bounds');
+        const relatedInsightsText = this.#serializeRelatedInsightsForEvents(requests);
+        if (relatedInsightsText) {
+            results.push('# Related insights');
+            results.push('Here are all the insights that contain some related request from the given range.');
+            results.push(relatedInsightsText);
+        }
+        return results.join('\n\n');
+    }
+    formatCallTree(tree, headerLevel = 1) {
+        const results = [tree.serialize(headerLevel), ''];
+        // TODO(b/425270067): add eventKey to tree.serialize, but need to wait for other
+        // performance agent to be consolidated.
+        results.push('#'.repeat(headerLevel) + ' Node id to eventKey\n');
+        results.push('These node ids correspond to the call tree nodes listed in the above section.\n');
+        tree.breadthFirstWalk(tree.rootNode.children().values(), (node, nodeId) => {
+            results.push(`${nodeId}: ${this.#eventsSerializer.keyForEvent(node.event)}`);
+        });
+        results.push('\nIMPORTANT: Never show eventKey to the user.');
+        return results.join('\n');
     }
 }
 //# sourceMappingURL=PerformanceTraceFormatter.js.map

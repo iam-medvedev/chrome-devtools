@@ -36,7 +36,7 @@ export class ProgressIndicator extends HTMLElement {
     #progressElement;
     #stopButton;
     #isCanceled = false;
-    #worked;
+    #worked = 0;
     #isDone = false;
     constructor() {
         super();
@@ -51,8 +51,6 @@ export class ProgressIndicator extends HTMLElement {
             this.#stopButton = this.#contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
             this.#stopButton.addEventListener('click', this.cancel.bind(this));
         }
-        this.#isCanceled = false;
-        this.#worked = 0;
     }
     connectedCallback() {
         this.classList.add('progress-indicator');

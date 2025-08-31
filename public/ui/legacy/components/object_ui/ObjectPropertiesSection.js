@@ -145,7 +145,7 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         this.object = object;
         this.editable = true;
         if (!showOverflow) {
-            this.hideOverflow();
+            this.setHideOverflow(true);
         }
         this.setFocusable(true);
         this.setShowSelectionOnKeyboardFocus(true);
@@ -1423,6 +1423,9 @@ export class Renderer {
             section.titleLessMode();
         }
         section.editable = Boolean(options.editable);
+        if (options.expand) {
+            section.firstChild()?.expand();
+        }
         return { node: section.element, tree: section };
     }
 }

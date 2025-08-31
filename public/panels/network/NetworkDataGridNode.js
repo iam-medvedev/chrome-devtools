@@ -981,11 +981,13 @@ export class NetworkRequestNode extends NetworkNode {
             cell.style.setProperty('padding-left', leftPadding);
             cell.tabIndex = -1;
             cell.addEventListener('dblclick', this.openInNewTab.bind(this), false);
-            cell.addEventListener('mousedown', () => {
+            cell.addEventListener('mousedown', (event) => {
                 // When the request panel isn't visible yet, firing the RequestActivated event
                 // doesn't make it visible if no request is selected. So we'll select it first.
                 this.select();
-                this.parentView().dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel: true });
+                // Only open panel on mousedown with left mouse button.
+                const showPanel = event.button ? "Unchanged" /* RequestPanelBehavior.Unchanged */ : "ShowPanel" /* RequestPanelBehavior.ShowPanel */;
+                this.parentView().dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, { showPanel });
             });
             cell.addEventListener('focus', () => this.parentView().resetFocus());
             // render icons
@@ -1116,7 +1118,7 @@ export class NetworkRequestNode extends NetworkNode {
             if (displayShowHeadersLink) {
                 this.setTextAndTitleAsLink(cell, i18nString(UIStrings.blockeds, { PH1: reason }), i18nString(UIStrings.blockedTooltip), () => {
                     this.parentView().dispatchEventToListeners("RequestActivated" /* Events.RequestActivated */, {
-                        showPanel: true,
+                        showPanel: "ShowPanel" /* RequestPanelBehavior.ShowPanel */,
                         tab: "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */,
                     });
                 });

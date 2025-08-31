@@ -86,8 +86,15 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     /**
      * Resets the state of the UI data and initializes it again with the
      * current parsed trace.
+     * @param opts.updateType determines if we are redrawing because we need to show a new trace,
+     * or redraw an existing trace (if the user changed a setting).
+     * This distinction is needed because in the latter case we do not want to
+     * trigger some code such as Aria announcements for annotations if we are
+     * just redrawing.
      */
-    rebuildDataForTrace(): void;
+    rebuildDataForTrace(opts: {
+        updateType: 'NEW_TRACE' | 'REDRAW_EXISTING_TRACE';
+    }): void;
     /**
      * Gets the persisted config (if the user has made any visual changes) in
      * order to save it to disk as part of the trace.

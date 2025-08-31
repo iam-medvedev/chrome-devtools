@@ -231,6 +231,9 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#editor.addEventListener("keydown", this.#boundEditorKeyDown);
     this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
     this.#onAiCodeCompletionSettingChanged();
+    if (editor.state.doc.length === 0) {
+      this.#addTeaserPluginToCompartmentImmediate(editor.editor);
+    }
   }
   editorExtension() {
     return [
@@ -250,8 +253,8 @@ var AiCodeCompletionPlugin = class extends Plugin {
     if (this.#teaser) {
       if (update.docChanged) {
         update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
-        this.#addTeaserPluginToCompartment(update);
-      } else if (update.selectionSet) {
+        this.#addTeaserPluginToCompartment(update.view);
+      } else if (update.selectionSet && update.state.doc.length > 0) {
         update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
       }
     } else if (this.#aiCodeCompletion) {
@@ -326,17 +329,21 @@ var AiCodeCompletionPlugin = class extends Plugin {
       }
     }
   }
-  #addTeaserPluginToCompartment = Common.Debouncer.debounce((update) => {
+  #addTeaserPluginToCompartment = Common.Debouncer.debounce((view) => {
     if (this.#teaserDisplayTimeout) {
       window.clearTimeout(this.#teaserDisplayTimeout);
       this.#teaserDisplayTimeout = void 0;
     }
     this.#teaserDisplayTimeout = window.setTimeout(() => {
-      if (this.#teaser) {
-        update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
-      }
+      this.#addTeaserPluginToCompartmentImmediate(view);
     }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
   }, AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+  #addTeaserPluginToCompartmentImmediate = (view) => {
+    if (!this.#teaser) {
+      return;
+    }
+    view.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
+  };
   #setupAiCodeCompletion() {
     if (!this.#editor) {
       return;
@@ -348,7 +355,12 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#detachAiCodeCompletionTeaser();
       this.#teaser = void 0;
     }
-    this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor);
+    this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
+      { aidaClient: this.#aidaClient },
+      this.#editor,
+      "sources"
+      /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */
+    );
     this.#aiCodeCompletion.addEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
     this.#aiCodeCompletion.addEventListener("ResponseReceived", this.#onAiResponseReceived, this);
     this.#createAiCodeCompletionDisclaimer();
@@ -4832,7 +4844,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
       /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */
     );
     this.scriptsTree.registerRequiredCSS(navigatorTree_css_default);
-    this.scriptsTree.hideOverflow();
+    this.scriptsTree.setHideOverflow(true);
     this.scriptsTree.setComparator(_NavigatorView.treeElementsCompare);
     this.scriptsTree.setFocusable(false);
     this.contentElement.appendChild(this.scriptsTree.element);
@@ -13406,7 +13418,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
     this.registerRequiredCSS(scopeChainSidebarPane_css_default);
     this.treeOutline = new ObjectUI3.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
     this.treeOutline.registerRequiredCSS(scopeChainSidebarPane_css_default);
-    this.treeOutline.hideOverflow();
+    this.treeOutline.setHideOverflow(true);
     this.treeOutline.setShowSelectionOnKeyboardFocus(
       /* show */
       true
@@ -14286,7 +14298,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.contentElement.addEventListener("contextmenu", this.contextMenu.bind(this), false);
     this.treeOutline = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline();
     this.treeOutline.registerRequiredCSS(watchExpressionsSidebarPane_css_default);
-    this.treeOutline.hideOverflow();
+    this.treeOutline.setHideOverflow(true);
     this.treeOutline.setShowSelectionOnKeyboardFocus(
       /* show */
       true

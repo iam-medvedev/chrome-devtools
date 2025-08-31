@@ -100,6 +100,7 @@ function createLanternRequest(parsedTrace, workerThreads, request) {
     // These two timings are not included in the trace.
     workerFetchStart: -1,
     workerRespondWithSettled: -1,
+    receiveHeadersStart: -1,
     ...request.args.data.timing
   } : void 0;
   const networkRequestTime = timing ? timing.requestTime * 1e3 : request.args.data.syntheticData.downloadStart / 1e3;
@@ -530,32 +531,12 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       );
       this.dispatchEvent(new TraceParseProgressEvent({ percent }));
     }
-    const shallowClone = (value, recurse = true) => {
-      if (value instanceof Map) {
-        return new Map(value);
-      }
-      if (value instanceof Set) {
-        return new Set(value);
-      }
-      if (Array.isArray(value)) {
-        return [...value];
-      }
-      if (typeof value === "object" && value && recurse) {
-        const obj = {};
-        for (const [key, v] of Object.entries(value)) {
-          obj[key] = shallowClone(v, false);
-        }
-        return obj;
-      }
-      return value;
-    };
-    options.logger?.start("parse:clone");
+    options.logger?.start("parse:handler.data()");
     const parsedTrace = {};
     for (const [name, handler] of Object.entries(this.#traceHandlers)) {
-      const data = shallowClone(handler.data());
-      Object.assign(parsedTrace, { [name]: data });
+      Object.assign(parsedTrace, { [name]: handler.data() });
     }
-    options.logger?.end("parse:clone");
+    options.logger?.end("parse:handler.data()");
     this.dispatchEvent(new TraceParseProgressEvent({
       percent: 1
       /* ProgressPhase.CLONE */
@@ -934,7 +915,7 @@ var Model = class _Model extends EventTarget {
         metadata,
         resolveSourceMap: config?.resolveSourceMap
       };
-      if (window.location.href.includes("devtools/bundled") || window.location.search.includes("debugFrontend")) {
+      if (!parseConfig.logger && (window.location.href.includes("devtools/bundled") || window.location.search.includes("debugFrontend"))) {
         const times = {};
         parseConfig.logger = {
           start(id) {

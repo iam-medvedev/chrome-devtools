@@ -23,9 +23,9 @@ export declare const setupTestDOM: () => Promise<void>;
  * Completely cleans out the test DOM to ensure it's empty for the next test run.
  * This is run automatically between tests - you should not be manually calling this yourself.
  **/
-export declare const cleanTestDOM: () => Promise<void>;
+export declare const cleanTestDOM: () => void;
 /**
- * Asserts that all emenents of `nodeList` are at least of type `T`.
+ * Asserts that all elements of `nodeList` are at least of type `T`.
  */
 export declare function assertElements<T extends Element>(nodeList: NodeListOf<Element>, elementClass: Platform.Constructor.Constructor<T>): asserts nodeList is NodeListOf<T>;
 export declare function getElementWithinComponent<T extends HTMLElement, V extends Element>(component: T, selector: string, elementClass: Platform.Constructor.Constructor<V>): V;

@@ -137,9 +137,6 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             CodeMirror.autocompletion({ aboveCursor: true }),
             this.#javaScriptCompletionCompartment.of(this.#getJavaScriptCompletionExtensions()),
         ];
-        const doc = this.initialText;
-        const editorState = CodeMirror.EditorState.create({ doc, extensions });
-        this.editor = new TextEditor.TextEditor.TextEditor(editorState);
         if (this.isAiCodeCompletionEnabled()) {
             const aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
             if (!this.aiCodeCompletionSetting.get() && !aiCodeCompletionTeaserDismissedSetting.get()) {
@@ -148,6 +145,9 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             }
             extensions.push(TextEditor.Config.aiAutoCompleteSuggestion);
         }
+        const doc = this.initialText;
+        const editorState = CodeMirror.EditorState.create({ doc, extensions });
+        this.editor = new TextEditor.TextEditor.TextEditor(editorState);
         this.editor.addEventListener('keydown', event => {
             if (event.defaultPrevented) {
                 event.stopPropagation();
@@ -447,9 +447,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.detachAiCodeCompletionTeaser();
             this.teaser = undefined;
         }
-        // We are prioritizing single line suggestions in Console panel to reduce noise.
-        this.aiCodeCompletion =
-            new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, ['\n']);
+        this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, "console" /* AiCodeCompletion.AiCodeCompletion.Panel.CONSOLE */);
         this.aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, event => {
             this.aiCodeCompletionCitations = event.data.citations;
             this.dispatchEventToListeners("AiCodeCompletionResponseReceived" /* Events.AI_CODE_COMPLETION_RESPONSE_RECEIVED */, event.data);

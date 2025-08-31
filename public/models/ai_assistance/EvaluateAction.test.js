@@ -35,9 +35,6 @@ describe('FreestylerEvaluateAction', () => {
                 exception: { type: "string" /* Protocol.Runtime.RemoteObjectType.String */, description },
             };
         }
-        beforeEach(() => {
-            sinon.restore();
-        });
         it('should serialize a CDP error as a string', async () => {
             assert.strictEqual(await executeWithResult({ error: 'errorMessage' }), 'Error: errorMessage');
         });

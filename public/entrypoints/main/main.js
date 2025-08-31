@@ -195,15 +195,16 @@ var globalAiButton_css_default = `/*
 
 @scope to (devtools-widget > *) {
   .global-ai-button-container {
-    margin-inline: var(--sys-size-2);
+    margin-left: var(--sys-size-3);
+    margin-right: var(--sys-size-2);
   }
 
   .global-ai-button {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: var(--sys-size-10);
-    height: var(--sys-size-10);
+    width: var(--sys-size-9);
+    height: var(--sys-size-9);
     border-radius: var(--sys-shape-corner-full);
     background-image: var(--app-gradient-google-ai);
     font: var(--sys-typescale-body4-medium);
@@ -238,8 +239,8 @@ var globalAiButton_css_default = `/*
     }
 
     devtools-icon {
-      width: var(--sys-size-8);
-      height: var(--sys-size-8);
+      width: var(--sys-size-7);
+      height: var(--sys-size-7);
       color: var(--ref-palette-neutral100);
     }
 
@@ -309,6 +310,8 @@ var DEFAULT_VIEW = (input, output, target) => {
 var GlobalAiButton = class extends UI.Widget.Widget {
   #view;
   #buttonState = GlobalAiButtonState.DEFAULT;
+  #mouseOnMainToolbar = false;
+  #returnToDefaultStateTimeout;
   constructor(element, view) {
     super(element);
     this.#view = view ?? DEFAULT_VIEW;
@@ -316,6 +319,26 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     if (this.#shouldTriggerPromotion()) {
       this.#triggerPromotion();
     }
+  }
+  willHide() {
+    this.#removeHoverEventListeners();
+    if (this.#returnToDefaultStateTimeout) {
+      window.clearTimeout(this.#returnToDefaultStateTimeout);
+    }
+  }
+  #handleMainToolbarMouseEnter = () => {
+    this.#mouseOnMainToolbar = true;
+  };
+  #handleMainToolbarMouseLeave = () => {
+    this.#mouseOnMainToolbar = false;
+  };
+  #addHoverEventListeners() {
+    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
+    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().addEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
+  }
+  #removeHoverEventListeners() {
+    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener("mouseenter", this.#handleMainToolbarMouseEnter);
+    UI.InspectorView.InspectorView.instance().tabbedPane.headerElement().removeEventListener("mouseleave", this.#handleMainToolbarMouseLeave);
   }
   // We only want to enable promotion when:
   // * The flag is enabled,
@@ -329,9 +352,21 @@ var GlobalAiButton = class extends UI.Widget.Widget {
   #triggerPromotion() {
     this.#buttonState = GlobalAiButtonState.PROMOTION;
     this.requestUpdate();
-    window.setTimeout(() => {
+    this.#addHoverEventListeners();
+    this.#scheduleReturnToDefaultState();
+  }
+  #scheduleReturnToDefaultState() {
+    if (this.#returnToDefaultStateTimeout) {
+      window.clearTimeout(this.#returnToDefaultStateTimeout);
+    }
+    this.#returnToDefaultStateTimeout = window.setTimeout(() => {
+      if (this.#mouseOnMainToolbar) {
+        this.#scheduleReturnToDefaultState();
+        return;
+      }
       this.#buttonState = GlobalAiButtonState.DEFAULT;
       this.requestUpdate();
+      this.#removeHoverEventListeners();
     }, DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
   }
   #onClick() {
@@ -1231,6 +1266,10 @@ async function handleExternalRequestGenerator(input) {
         insightTitle: input.args.insightTitle,
         traceModel
       });
+    }
+    case "PERFORMANCE_ANALYZE": {
+      const TimelinePanel = await import("./../../panels/timeline/timeline.js");
+      return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalAnalyzeRequest(input.args.prompt);
     }
     case "NETWORK_DEBUGGER": {
       const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");

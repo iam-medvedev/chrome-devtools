@@ -10,13 +10,13 @@ export class Conversation {
     #isReadOnly;
     history;
     #isExternal;
-    static #generateContextDetailsMarkdown(details) {
-        let detailsMarkdown = '**Details**:\n\n';
+    static generateContextDetailsMarkdown(details) {
+        const detailsMarkdown = [];
         for (const detail of details) {
-            const text = detail.codeLang ? `\`\`\`${detail.codeLang}\n${detail.text}\n\`\`\`\n` : detail.text;
-            detailsMarkdown += `**${detail.title}:**\n\n${text}\n\n`;
+            const text = `\`\`\`\`${detail.codeLang || ''}\n${detail.text.trim()}\n\`\`\`\``;
+            detailsMarkdown.push(`**${detail.title}:**\n${text}`);
         }
-        return detailsMarkdown;
+        return detailsMarkdown.join('\n\n');
     }
     constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, isExternal = false) {
         this.type = type;
@@ -64,29 +64,30 @@ export class Conversation {
         const contentParts = [];
         contentParts.push('# Exported Chat from Chrome DevTools AI Assistance\n\n' +
             `**Export Timestamp (UTC):** ${new Date().toISOString()}\n\n` +
-            '---\n\n');
+            '---');
         for (const item of this.history) {
             switch (item.type) {
                 case "user-query" /* ResponseType.USER_QUERY */: {
-                    contentParts.push(`### User: ${item.query}\n`);
+                    contentParts.push(`## User\n\n${item.query}`);
                     if (item.imageInput) {
-                        contentParts.push('User attached an image\n\n');
+                        contentParts.push('User attached an image');
                     }
+                    contentParts.push('## AI');
                     break;
                 }
                 case "context" /* ResponseType.CONTEXT */: {
-                    contentParts.push('### Context:\n');
+                    contentParts.push(`### ${item.title}`);
                     if (item.details && item.details.length > 0) {
-                        contentParts.push(Conversation.#generateContextDetailsMarkdown(item.details));
+                        contentParts.push(Conversation.generateContextDetailsMarkdown(item.details));
                     }
                     break;
                 }
                 case "title" /* ResponseType.TITLE */: {
-                    contentParts.push(`### AI (Title): ${item.title}\n\n`);
+                    contentParts.push(`### ${item.title}`);
                     break;
                 }
                 case "thought" /* ResponseType.THOUGHT */: {
-                    contentParts.push(`### AI (Thought): ${item.thought}\n\n`);
+                    contentParts.push(`${item.thought}`);
                     break;
                 }
                 case "action" /* ResponseType.ACTION */: {
@@ -94,28 +95,21 @@ export class Conversation {
                     if (!item.output) {
                         break;
                     }
-                    contentParts.push('### AI (Action):\n');
                     if (item.code) {
-                        contentParts.push(`**Code executed:**\n\`\`\`\n${item.code}\n\`\`\`\n`);
+                        contentParts.push(`**Code executed:**\n\`\`\`\n${item.code.trim()}\n\`\`\``);
                     }
-                    if (item.output) {
-                        contentParts.push(`**Output:**\n\`\`\`\n${item.output}\n\`\`\`\n`);
-                    }
-                    if (item.canceled) {
-                        contentParts.push('**(Action Canceled)**\n');
-                    }
-                    contentParts.push('\n');
+                    contentParts.push(`**Data returned:**\n\`\`\`\n${item.output}\n\`\`\``);
                     break;
                 }
                 case "answer" /* ResponseType.ANSWER */: {
                     if (item.complete) {
-                        contentParts.push(`### AI (Answer): ${item.text}\n\n`);
+                        contentParts.push(`### Answer\n\n${item.text.trim()}`);
                     }
                     break;
                 }
             }
         }
-        return contentParts.join('');
+        return contentParts.join('\n\n');
     }
     archiveConversation() {
         this.#isReadOnly = true;

@@ -104,7 +104,7 @@ var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     );
     this.treeoutline.registerRequiredCSS(changesSidebar_css_default);
     this.treeoutline.setFocusable(false);
-    this.treeoutline.hideOverflow();
+    this.treeoutline.setHideOverflow(true);
     this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
     UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);
     this.element.appendChild(this.treeoutline.element);

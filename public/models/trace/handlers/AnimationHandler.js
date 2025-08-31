@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
-const animations = [];
-const animationsSyntheticEvents = [];
+let animations = [];
+let animationsSyntheticEvents = [];
 export function reset() {
-    animations.length = 0;
-    animationsSyntheticEvents.length = 0;
+    animations = [];
+    animationsSyntheticEvents = [];
 }
 export function handleEvent(event) {
     if (Types.Events.isAnimation(event)) {

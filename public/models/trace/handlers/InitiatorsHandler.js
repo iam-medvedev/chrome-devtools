@@ -5,40 +5,38 @@ import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as AsyncJSCallsHandlerData } from './AsyncJSCallsHandler.js';
 import { data as flowsHandlerData } from './FlowsHandler.js';
-const lastScheduleStyleRecalcByFrame = new Map();
+let lastScheduleStyleRecalcByFrame = new Map();
 // This tracks the last event that is considered to have invalidated the layout
 // for a given frame.
 // Note that although there is an InvalidateLayout event, there are also other
 // events (ScheduleStyleRecalculation) that could be the reason a layout was
 // invalidated.
-const lastInvalidationEventForFrame = new Map();
+let lastInvalidationEventForFrame = new Map();
 // Important: although the event is called UpdateLayoutTree, in the UI we
 // present these to the user as "Recalculate Style". So don't get confused!
 // These are the same - just UpdateLayoutTree is what the event from Chromium
 // is called.
-const lastUpdateLayoutTreeByFrame = new Map();
+let lastUpdateLayoutTreeByFrame = new Map();
 // These two maps store the same data but in different directions.
 // For a given event, tell me what its initiator was. An event can only have one initiator.
-const eventToInitiatorMap = new Map();
+let eventToInitiatorMap = new Map();
 // For a given event, tell me what events it initiated. An event can initiate
 // multiple events, hence why the value for this map is an array.
-const initiatorToEventsMap = new Map();
-const requestAnimationFrameEventsById = new Map();
-const timerInstallEventsById = new Map();
-const requestIdleCallbackEventsById = new Map();
-const webSocketCreateEventsById = new Map();
-const schedulePostTaskCallbackEventsById = new Map();
+let initiatorToEventsMap = new Map();
+let timerInstallEventsById = new Map();
+let requestIdleCallbackEventsById = new Map();
+let webSocketCreateEventsById = new Map();
+let schedulePostTaskCallbackEventsById = new Map();
 export function reset() {
-    lastScheduleStyleRecalcByFrame.clear();
-    lastInvalidationEventForFrame.clear();
-    lastUpdateLayoutTreeByFrame.clear();
-    timerInstallEventsById.clear();
-    eventToInitiatorMap.clear();
-    initiatorToEventsMap.clear();
-    requestAnimationFrameEventsById.clear();
-    requestIdleCallbackEventsById.clear();
-    webSocketCreateEventsById.clear();
-    schedulePostTaskCallbackEventsById.clear();
+    lastScheduleStyleRecalcByFrame = new Map();
+    lastInvalidationEventForFrame = new Map();
+    lastUpdateLayoutTreeByFrame = new Map();
+    timerInstallEventsById = new Map();
+    eventToInitiatorMap = new Map();
+    initiatorToEventsMap = new Map();
+    requestIdleCallbackEventsById = new Map();
+    webSocketCreateEventsById = new Map();
+    schedulePostTaskCallbackEventsById = new Map();
 }
 function storeInitiator(data) {
     eventToInitiatorMap.set(data.event, data.initiator);

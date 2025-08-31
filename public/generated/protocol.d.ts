@@ -2084,9 +2084,15 @@ export declare namespace Browser {
          */
         setting: PermissionSetting;
         /**
-         * Origin the permission applies to, all origins if not specified.
+         * Requesting origin the permission applies to, all origins if not specified.
          */
         origin?: string;
+        /**
+         * Embedding origin the permission applies to. It is ignored unless the requesting origin is
+         * present and valid. If the requesting origin is provided but the embedding origin isn't, the
+         * requesting origin is used as the embedding origin.
+         */
+        embeddingOrigin?: string;
         /**
          * Context to override. When omitted, default browser context is used.
          */
@@ -2713,6 +2719,14 @@ export declare namespace CSS {
          * Computed style property value.
          */
         value: string;
+    }
+    interface ComputedStyleExtraFields {
+        /**
+         * Returns whether or not this node is being rendered with base appearance,
+         * which happens when it has its appearance property set to base/base-select
+         * or it is in the subtree of an element being rendered with base appearance.
+         */
+        isAppearanceBase: boolean;
     }
     /**
      * CSS style representation.
@@ -3409,6 +3423,11 @@ export declare namespace CSS {
          * Computed style for the specified DOM node.
          */
         computedStyle: CSSComputedStyleProperty[];
+        /**
+         * A list of non-standard "extra fields" which blink stores alongside each
+         * computed style.
+         */
+        extraFields: ComputedStyleExtraFields;
     }
     interface ResolveValuesRequest {
         /**
@@ -10474,6 +10493,12 @@ export declare namespace Network {
          * Whether DirectSocket chunk send/receive events should be reported.
          */
         reportDirectSocketTraffic?: boolean;
+        /**
+         * Enable storing response bodies outside of renderer, so that these survive
+         * a cross-process navigation. Requires maxTotalBufferSize to be set.
+         * Currently defaults to false.
+         */
+        enableDurableMessages?: boolean;
     }
     interface GetAllCookiesResponse extends ProtocolResponseWithError {
         /**

@@ -808,7 +808,7 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
     this.object = object;
     this.editable = true;
     if (!showOverflow) {
-      this.hideOverflow();
+      this.setHideOverflow(true);
     }
     this.setFocusable(true);
     this.setShowSelectionOnKeyboardFocus(true);
@@ -2037,6 +2037,9 @@ var Renderer = class _Renderer {
       section.titleLessMode();
     }
     section.editable = Boolean(options.editable);
+    if (options.expand) {
+      section.firstChild()?.expand();
+    }
     return { node: section.element, tree: section };
   }
 };

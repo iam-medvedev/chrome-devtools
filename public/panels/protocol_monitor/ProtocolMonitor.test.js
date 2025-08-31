@@ -357,8 +357,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
             target.style.width = '780px';
             target.style.height = '400px';
         });
-        // Fails on Linux due to a monospace font bug.
-        it.skip('[crbug.com/438643337]: basic', async () => {
+        it('basic', async () => {
             const viewInput = {
                 messages: [
                     {
@@ -408,8 +407,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
             view(viewInput, viewOutput, target);
             await assertScreenshot('protocol_monitor/basic.png');
         });
-        // Fails on Linux due to a monospace font bug.
-        it.skip('[crbug.com/438643337]: advanced', async () => {
+        it('advanced', async () => {
             const messages = [
                 {
                     id: 1,

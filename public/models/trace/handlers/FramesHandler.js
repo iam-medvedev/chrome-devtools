@@ -20,7 +20,7 @@ import * as Threads from './Threads.js';
  * In time we expect to migrate this code to a more "typical" handler.
  */
 let model = null;
-const relevantFrameEvents = [];
+let relevantFrameEvents = [];
 function isFrameEvent(event) {
     return (Types.Events.isSetLayerId(event) || Types.Events.isBeginFrame(event) || Types.Events.isDroppedFrame(event) ||
         Types.Events.isRequestMainThreadFrame(event) || Types.Events.isBeginMainThreadFrame(event) ||
@@ -44,7 +44,7 @@ const MAIN_FRAME_MARKERS = new Set([
 ]);
 export function reset() {
     model = null;
-    relevantFrameEvents.length = 0;
+    relevantFrameEvents = [];
 }
 export function handleEvent(event) {
     // This might seem like a wide set of events to filter for, but these are all

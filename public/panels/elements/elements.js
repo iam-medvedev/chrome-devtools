@@ -10,10 +10,10 @@ __export(InspectElementModeController_exports, {
   InspectElementModeController: () => InspectElementModeController,
   ToggleSearchActionDelegate: () => ToggleSearchActionDelegate
 });
-import * as Common18 from "./../../core/common/common.js";
+import * as Common17 from "./../../core/common/common.js";
 import * as Root9 from "./../../core/root/root.js";
-import * as SDK21 from "./../../core/sdk/sdk.js";
-import * as UI24 from "./../../ui/legacy/legacy.js";
+import * as SDK20 from "./../../core/sdk/sdk.js";
+import * as UI23 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/ElementsPanel.js
@@ -26,16 +26,16 @@ __export(ElementsPanel_exports, {
   ElementsPanel: () => ElementsPanel,
   PseudoStateMarkerDecorator: () => PseudoStateMarkerDecorator
 });
-import * as Common17 from "./../../core/common/common.js";
+import * as Common16 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as Root8 from "./../../core/root/root.js";
-import * as SDK20 from "./../../core/sdk/sdk.js";
+import * as SDK19 from "./../../core/sdk/sdk.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as TreeOutline13 from "./../../ui/components/tree_outline/tree_outline.js";
-import * as UI23 from "./../../ui/legacy/legacy.js";
+import * as TreeOutline12 from "./../../ui/components/tree_outline/tree_outline.js";
+import * as UI22 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/AccessibilityTreeView.js
@@ -209,7 +209,7 @@ var AccessibilityTreeView = class extends UI.Widget.VBox {
         deferredNode.resolve((domNode) => {
           if (domNode) {
             this.inspectedDOMNode = domNode;
-            void ElementsPanel.instance().revealAndSelectNode(domNode, true, false);
+            void ElementsPanel.instance().revealAndSelectNode(domNode, { showPanel: true, focusNode: true, highlightInOverlay: true });
           }
         });
       }
@@ -2796,14 +2796,14 @@ var CSSValueTraceView = class extends UI7.Widget.VBox {
     this.#view = view;
     this.requestUpdate();
   }
-  async showTrace(property, subexpression, matchedStyles, computedStyles, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus) {
+  async showTrace(property, subexpression, matchedStyles, computedStyles, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus2) {
     const matchedResult = subexpression === null ? property.parseValue(matchedStyles, computedStyles) : property.parseExpression(subexpression, matchedStyles, computedStyles);
     if (!matchedResult) {
       return void 0;
     }
-    return await this.#showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus);
+    return await this.#showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus2);
   }
-  async #showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus) {
+  async #showTrace(property, matchedResult, renderers, expandPercentagesInShorthands, shorthandPositionOffset, focus2) {
     this.#highlighting = new Highlighting();
     const rendererMap = new Map(renderers.map((r) => [r.matchType, r]));
     const substitutions = [];
@@ -2850,7 +2850,7 @@ var CSSValueTraceView = class extends UI7.Widget.VBox {
       const context = new RenderingContext(matchedResult.ast, property, rendererMap, matchedResult);
       this.#evaluations.push(Renderer.render(matchedResult.ast.tree, context).nodes);
     }
-    this.#pendingFocus = focus;
+    this.#pendingFocus = focus2;
     this.requestUpdate();
   }
   performUpdate() {
@@ -6684,7 +6684,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
       queryName: containerQuery.name,
       onContainerLinkClick: (event) => {
         event.preventDefault();
-        void ElementsPanel.instance().revealAndSelectNode(container.containerNode, true, true);
+        void ElementsPanel.instance().revealAndSelectNode(container.containerNode, { showPanel: true, focusNode: true, highlightInOverlay: false });
         void container.containerNode.scrollIntoView();
       }
     };
@@ -7059,7 +7059,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     }, { jslogContext: "copy-all-declarations" });
     void contextMenu.show();
   }
-  navigateToSelectorSource(index, focus) {
+  navigateToSelectorSource(index, focus2) {
     const cssModel = this.parentPane.cssModel();
     if (!cssModel) {
       return;
@@ -7073,12 +7073,12 @@ var StylePropertiesSection = class _StylePropertiesSection {
       return;
     }
     const rawLocation = new SDK8.CSSModel.CSSLocation(header, rule.lineNumberInSource(index), rule.columnNumberInSource(index));
-    _StylePropertiesSection.revealSelectorSource(rawLocation, focus);
+    _StylePropertiesSection.revealSelectorSource(rawLocation, focus2);
   }
-  static revealSelectorSource(rawLocation, focus) {
+  static revealSelectorSource(rawLocation, focus2) {
     const uiLocation = Bindings3.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
     if (uiLocation) {
-      void Common5.Revealer.reveal(uiLocation, !focus);
+      void Common5.Revealer.reveal(uiLocation, !focus2);
     }
   }
   startEditingAtFirstPosition() {
@@ -10672,16 +10672,16 @@ __export(ElementsTreeOutline_exports, {
   ElementsTreeOutline: () => ElementsTreeOutline,
   MappedCharToEntity: () => MappedCharToEntity
 });
-import * as Common14 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Root7 from "./../../core/root/root.js";
-import * as SDK17 from "./../../core/sdk/sdk.js";
+import * as SDK16 from "./../../core/sdk/sdk.js";
 import * as Elements from "./../../models/elements/elements.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
 import * as CopyToClipboard from "./../../ui/components/copy_to_clipboard/copy_to_clipboard.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
-import * as UI20 from "./../../ui/legacy/legacy.js";
+import * as UI19 from "./../../ui/legacy/legacy.js";
 import { html as html9, nothing as nothing3, render as render6 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -13518,90 +13518,6 @@ function loggingParentProvider(e) {
 }
 VisualLogging8.registerParentProvider("elementsTreeOutline", loggingParentProvider);
 
-// gen/front_end/panels/elements/ElementsTreeElementHighlighter.js
-var ElementsTreeElementHighlighter_exports = {};
-__export(ElementsTreeElementHighlighter_exports, {
-  ElementsTreeElementHighlighter: () => ElementsTreeElementHighlighter
-});
-import * as Common11 from "./../../core/common/common.js";
-import * as SDK15 from "./../../core/sdk/sdk.js";
-import * as UI17 from "./../../ui/legacy/legacy.js";
-var ElementsTreeElementHighlighter = class {
-  throttler;
-  treeOutline;
-  currentHighlightedElement;
-  alreadyExpandedParentElement;
-  pendingHighlightNode;
-  isModifyingTreeOutline;
-  constructor(treeOutline, throttler) {
-    this.throttler = throttler;
-    this.treeOutline = treeOutline;
-    this.treeOutline.addEventListener(UI17.TreeOutline.Events.ElementExpanded, this.clearState, this);
-    this.treeOutline.addEventListener(UI17.TreeOutline.Events.ElementCollapsed, this.clearState, this);
-    this.treeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, this.clearState, this);
-    SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "HighlightNodeRequested", this.highlightNode, this, { scoped: true });
-    SDK15.TargetManager.TargetManager.instance().addModelListener(SDK15.OverlayModel.OverlayModel, "InspectModeWillBeToggled", this.clearState, this, { scoped: true });
-    this.currentHighlightedElement = null;
-    this.alreadyExpandedParentElement = null;
-    this.pendingHighlightNode = null;
-    this.isModifyingTreeOutline = false;
-  }
-  highlightNode(event) {
-    if (!Common11.Settings.Settings.instance().moduleSetting("highlight-node-on-hover-in-overlay").get()) {
-      return;
-    }
-    const domNode = event.data;
-    void this.throttler.schedule(async () => {
-      this.highlightNodeInternal(this.pendingHighlightNode);
-      this.pendingHighlightNode = null;
-    });
-    this.pendingHighlightNode = this.treeOutline === ElementsTreeOutline.forDOMModel(domNode.domModel()) ? domNode : null;
-  }
-  highlightNodeInternal(node) {
-    this.isModifyingTreeOutline = true;
-    let treeElement = null;
-    if (this.currentHighlightedElement) {
-      let currentTreeElement = this.currentHighlightedElement;
-      while (currentTreeElement && currentTreeElement !== this.alreadyExpandedParentElement) {
-        if (currentTreeElement.expanded) {
-          currentTreeElement.collapse();
-        }
-        const parent = currentTreeElement.parent;
-        currentTreeElement = parent instanceof ElementsTreeElement ? parent : null;
-      }
-    }
-    this.currentHighlightedElement = null;
-    this.alreadyExpandedParentElement = null;
-    if (node) {
-      let deepestExpandedParent = node;
-      const treeElementByNode = this.treeOutline.treeElementByNode;
-      const treeIsNotExpanded = (deepestExpandedParent2) => {
-        const element = treeElementByNode.get(deepestExpandedParent2);
-        return element ? !element.expanded : true;
-      };
-      while (deepestExpandedParent && treeIsNotExpanded(deepestExpandedParent)) {
-        deepestExpandedParent = deepestExpandedParent.parentNode;
-      }
-      this.alreadyExpandedParentElement = deepestExpandedParent ? treeElementByNode.get(deepestExpandedParent) : this.treeOutline.rootElement();
-      treeElement = this.treeOutline.createTreeElementFor(node);
-    }
-    this.currentHighlightedElement = treeElement;
-    this.treeOutline.setHoverEffect(treeElement);
-    if (treeElement) {
-      treeElement.reveal(true);
-    }
-    this.isModifyingTreeOutline = false;
-  }
-  clearState() {
-    if (this.isModifyingTreeOutline) {
-      return;
-    }
-    this.currentHighlightedElement = null;
-    this.alreadyExpandedParentElement = null;
-    this.pendingHighlightNode = null;
-  }
-};
-
 // gen/front_end/panels/elements/elementsTreeOutline.css.js
 var elementsTreeOutline_css_default = `/*
  * Copyright (c) 2014 The Chromium Authors. All rights reserved.
@@ -13982,11 +13898,11 @@ li.hovered:not(.always-parent) + ol.children:not(.shadow-root) {
 /*# sourceURL=${import.meta.resolve("./elementsTreeOutline.css")} */`;
 
 // gen/front_end/panels/elements/ShortcutTreeElement.js
-import * as Common12 from "./../../core/common/common.js";
+import * as Common11 from "./../../core/common/common.js";
 import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as Adorners2 from "./../../ui/components/adorners/adorners.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
-import * as UI18 from "./../../ui/legacy/legacy.js";
+import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as ElementsComponents6 from "./components/components.js";
 var UIStrings14 = {
   /**
@@ -13996,7 +13912,7 @@ var UIStrings14 = {
 };
 var str_14 = i18n27.i18n.registerUIStrings("panels/elements/ShortcutTreeElement.ts", UIStrings14);
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
-var ShortcutTreeElement = class extends UI18.TreeOutline.TreeElement {
+var ShortcutTreeElement = class extends UI17.TreeOutline.TreeElement {
   nodeShortcut;
   hoveredInternal;
   constructor(nodeShortcut) {
@@ -14031,7 +13947,7 @@ var ShortcutTreeElement = class extends UI18.TreeOutline.TreeElement {
     this.listItemElement.appendChild(adorner);
     const onClick = () => {
       this.nodeShortcut.deferredNode.resolve((node) => {
-        void Common12.Revealer.reveal(node);
+        void Common11.Revealer.reveal(node);
       });
     };
     adorner.addInteraction(onClick, {
@@ -14091,11 +14007,11 @@ var TopLayerContainer_exports = {};
 __export(TopLayerContainer_exports, {
   TopLayerContainer: () => TopLayerContainer
 });
-import * as Common13 from "./../../core/common/common.js";
+import * as Common12 from "./../../core/common/common.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
-import * as SDK16 from "./../../core/sdk/sdk.js";
+import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
-import * as UI19 from "./../../ui/legacy/legacy.js";
+import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as ElementsComponents7 from "./components/components.js";
 var UIStrings15 = {
   /**
@@ -14105,7 +14021,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/elements/TopLayerContainer.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var TopLayerContainer = class extends UI19.TreeOutline.TreeElement {
+var TopLayerContainer = class extends UI18.TreeOutline.TreeElement {
   tree;
   document;
   currentTopLayerDOMNodes = /* @__PURE__ */ new Set();
@@ -14114,7 +14030,7 @@ var TopLayerContainer = class extends UI19.TreeOutline.TreeElement {
     super("#top-layer");
     this.tree = tree3;
     this.document = document2;
-    this.topLayerUpdateThrottler = new Common13.Throttler.Throttler(1);
+    this.topLayerUpdateThrottler = new Common12.Throttler.Throttler(1);
   }
   async throttledUpdateTopLayerElements() {
     await this.topLayerUpdateThrottler.schedule(() => this.updateTopLayerElements());
@@ -14135,13 +14051,13 @@ var TopLayerContainer = class extends UI19.TreeOutline.TreeElement {
         continue;
       }
       if (topLayerDOMNode.nodeName() !== "::backdrop") {
-        const topLayerElementShortcut = new SDK16.DOMModel.DOMNodeShortcut(domModel.target(), topLayerDOMNode.backendNodeId(), 0, topLayerDOMNode.nodeName());
+        const topLayerElementShortcut = new SDK15.DOMModel.DOMNodeShortcut(domModel.target(), topLayerDOMNode.backendNodeId(), 0, topLayerDOMNode.nodeName());
         const topLayerElementRepresentation = new ShortcutTreeElement(topLayerElementShortcut);
         this.appendChild(topLayerElementRepresentation);
         this.currentTopLayerDOMNodes.add(topLayerDOMNode);
         const previousTopLayerDOMNode = i > 0 ? domModel.idToDOMNode.get(newTopLayerElementsIDs[i - 1]) : void 0;
         if (previousTopLayerDOMNode && previousTopLayerDOMNode.nodeName() === "::backdrop") {
-          const backdropElementShortcut = new SDK16.DOMModel.DOMNodeShortcut(domModel.target(), previousTopLayerDOMNode.backendNodeId(), 0, previousTopLayerDOMNode.nodeName());
+          const backdropElementShortcut = new SDK15.DOMModel.DOMNodeShortcut(domModel.target(), previousTopLayerDOMNode.backendNodeId(), 0, previousTopLayerDOMNode.nodeName());
           const backdropElementRepresentation = new ShortcutTreeElement(backdropElementShortcut);
           topLayerElementRepresentation.appendChild(backdropElementRepresentation);
         }
@@ -14212,7 +14128,8 @@ var DEFAULT_VIEW4 = (input, output, target) => {
     output.elementsTreeOutline = new ElementsTreeOutline(input.omitRootDOMNode, input.selectEnabled, input.hideGutter);
     output.elementsTreeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, input.onSelectedNodeChanged, void 0);
     output.elementsTreeOutline.addEventListener(ElementsTreeOutline.Events.ElementsTreeUpdated, input.onElementsTreeUpdated, void 0);
-    new ElementsTreeElementHighlighter(output.elementsTreeOutline, new Common14.Throttler.Throttler(100));
+    output.elementsTreeOutline.addEventListener(UI19.TreeOutline.Events.ElementExpanded, input.onElementCollapsed, void 0);
+    output.elementsTreeOutline.addEventListener(UI19.TreeOutline.Events.ElementCollapsed, input.onElementExpanded, void 0);
     target.appendChild(output.elementsTreeOutline.element);
   }
   if (input.visibleWidth !== void 0) {
@@ -14226,8 +14143,40 @@ var DEFAULT_VIEW4 = (input, output, target) => {
   if (input.deindentSingleNode) {
     output.elementsTreeOutline.deindentSingleNode();
   }
+  const previousHighlightedNode = output.highlightedTreeElement?.node() ?? null;
+  if (previousHighlightedNode !== input.currentHighlightedNode) {
+    let treeElement = null;
+    if (output.highlightedTreeElement) {
+      let currentTreeElement = output.highlightedTreeElement;
+      while (currentTreeElement && currentTreeElement !== output.alreadyExpandedParentTreeElement) {
+        if (currentTreeElement.expanded) {
+          currentTreeElement.collapse();
+        }
+        const parent = currentTreeElement.parent;
+        currentTreeElement = parent instanceof ElementsTreeElement ? parent : null;
+      }
+    }
+    output.highlightedTreeElement = null;
+    output.alreadyExpandedParentTreeElement = null;
+    if (input.currentHighlightedNode) {
+      let deepestExpandedParent = input.currentHighlightedNode;
+      const treeElementByNode = output.elementsTreeOutline.treeElementByNode;
+      const treeIsNotExpanded = (deepestExpandedParent2) => {
+        const element = treeElementByNode.get(deepestExpandedParent2);
+        return element ? !element.expanded : true;
+      };
+      while (deepestExpandedParent && treeIsNotExpanded(deepestExpandedParent)) {
+        deepestExpandedParent = deepestExpandedParent.parentNode;
+      }
+      output.alreadyExpandedParentTreeElement = deepestExpandedParent ? treeElementByNode.get(deepestExpandedParent) : output.elementsTreeOutline.rootElement();
+      treeElement = output.elementsTreeOutline.createTreeElementFor(input.currentHighlightedNode);
+    }
+    output.highlightedTreeElement = treeElement;
+    output.elementsTreeOutline.setHoverEffect(treeElement);
+    treeElement?.reveal(true);
+  }
 };
-var DOMTreeWidget = class extends UI20.Widget.Widget {
+var DOMTreeWidget = class extends UI19.Widget.Widget {
   omitRootDOMNode = false;
   selectEnabled = false;
   hideGutter = false;
@@ -14260,17 +14209,36 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
   get rootDOMNode() {
     return this.#viewOutput.elementsTreeOutline?.rootDOMNode ?? null;
   }
+  #currentHighlightedNode = null;
   #view;
-  #viewOutput = {};
+  #viewOutput = {
+    highlightedTreeElement: null,
+    alreadyExpandedParentTreeElement: null
+  };
+  #highlightThrottler = new Common13.Throttler.Throttler(100);
   constructor(element, view) {
     super(element, {
       useShadowDom: false,
       delegatesFocus: false
     });
     this.#view = view ?? DEFAULT_VIEW4;
+    if (Common13.Settings.Settings.instance().moduleSetting("highlight-node-on-hover-in-overlay").get()) {
+      SDK16.TargetManager.TargetManager.instance().addModelListener(SDK16.OverlayModel.OverlayModel, "HighlightNodeRequested", this.#highlightNode, this, { scoped: true });
+      SDK16.TargetManager.TargetManager.instance().addModelListener(SDK16.OverlayModel.OverlayModel, "InspectModeWillBeToggled", this.#clearState, this, { scoped: true });
+    }
   }
-  selectDOMNode(node, focus) {
-    this.#viewOutput?.elementsTreeOutline?.selectDOMNode(node, focus);
+  #highlightNode(event) {
+    void this.#highlightThrottler.schedule(() => {
+      this.#currentHighlightedNode = event.data;
+      this.requestUpdate();
+    });
+  }
+  #clearState() {
+    this.#currentHighlightedNode = null;
+    this.requestUpdate();
+  }
+  selectDOMNode(node, focus2) {
+    this.#viewOutput?.elementsTreeOutline?.selectDOMNode(node, focus2);
   }
   setWordWrap(wrap) {
     this.#wrap = wrap;
@@ -14304,8 +14272,14 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
       showSelectionOnKeyboardFocus: this.showSelectionOnKeyboardFocus,
       preventTabOrder: this.preventTabOrder,
       deindentSingleNode: this.deindentSingleNode,
+      currentHighlightedNode: this.#currentHighlightedNode,
       onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
-      onSelectedNodeChanged: this.onSelectedNodeChanged.bind(this)
+      onSelectedNodeChanged: (event) => {
+        this.#clearState();
+        this.onSelectedNodeChanged(event);
+      },
+      onElementCollapsed: this.#clearState.bind(this),
+      onElementExpanded: this.#clearState.bind(this)
     }, this.#viewOutput, this.contentElement);
   }
   modelAdded(domModel) {
@@ -14349,7 +14323,7 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
       treeElement.highlightSearchResults(query);
     }
     treeElement.reveal();
-    const matches = treeElement.listItemElement.getElementsByClassName(UI20.UIUtils.highlightedSearchResultClassName);
+    const matches = treeElement.listItemElement.getElementsByClassName(UI19.UIUtils.highlightedSearchResultClassName);
     if (matches.length) {
       matches[0].scrollIntoViewIfNeeded(false);
     }
@@ -14400,7 +14374,7 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
   }
   show(parentElement, insertBefore, suppressOrphanWidgetError = false) {
     this.performUpdate();
-    const domModels = SDK17.TargetManager.TargetManager.instance().models(SDK17.DOMModel.DOMModel, { scoped: true });
+    const domModels = SDK16.TargetManager.TargetManager.instance().models(SDK16.DOMModel.DOMModel, { scoped: true });
     for (const domModel of domModels) {
       if (domModel.parentModel()) {
         continue;
@@ -14417,7 +14391,7 @@ var DOMTreeWidget = class extends UI20.Widget.Widget {
     super.show(parentElement, insertBefore, suppressOrphanWidgetError);
   }
 };
-var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrapper.eventMixin(UI20.TreeOutline.TreeOutline) {
+var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrapper.eventMixin(UI19.TreeOutline.TreeOutline) {
   treeElementByNode;
   shadowRoot;
   elementInternal;
@@ -14455,14 +14429,14 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     }
     this.treeElementByNode = /* @__PURE__ */ new WeakMap();
     const shadowContainer = document.createElement("div");
-    this.shadowRoot = UI20.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutline_css_default, CodeHighlighter3.codeHighlighterStyles] });
+    this.shadowRoot = UI19.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutline_css_default, CodeHighlighter3.codeHighlighterStyles] });
     const outlineDisclosureElement = this.shadowRoot.createChild("div", "elements-disclosure");
     this.elementInternal = this.element;
     this.elementInternal.classList.add("elements-tree-outline", "source-code");
     if (hideGutter) {
       this.elementInternal.classList.add("elements-hide-gutter");
     }
-    UI20.ARIAUtils.setLabel(this.elementInternal, i18nString15(UIStrings16.pageDom));
+    UI19.ARIAUtils.setLabel(this.elementInternal, i18nString15(UIStrings16.pageDom));
     this.elementInternal.addEventListener("focusout", this.onfocusout.bind(this), false);
     this.elementInternal.addEventListener("mousedown", this.onmousedown.bind(this), false);
     this.elementInternal.addEventListener("mousemove", this.onmousemove.bind(this), false);
@@ -14493,11 +14467,11 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
       }
       return link3;
     }, (link3) => {
-      const listItem = UI20.UIUtils.enclosingNodeOrSelfWithNodeName(link3, "li");
+      const listItem = UI19.UIUtils.enclosingNodeOrSelfWithNodeName(link3, "li");
       if (!listItem) {
         return null;
       }
-      const treeElement = UI20.TreeOutline.TreeElement.getTreeElementBylistItemNode(listItem);
+      const treeElement = UI19.TreeOutline.TreeElement.getTreeElementBylistItemNode(listItem);
       if (!treeElement) {
         return null;
       }
@@ -14506,14 +14480,14 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     this.updateRecords = /* @__PURE__ */ new Map();
     this.treeElementsBeingUpdated = /* @__PURE__ */ new Set();
     this.decoratorExtensions = null;
-    this.showHTMLCommentsSetting = Common14.Settings.Settings.instance().moduleSetting("show-html-comments");
+    this.showHTMLCommentsSetting = Common13.Settings.Settings.instance().moduleSetting("show-html-comments");
     this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
     this.setUseLightSelectionColor(true);
     if (Root7.Runtime.experiments.isEnabled(
       "highlight-errors-elements-panel"
       /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */
     )) {
-      this.#popupHelper = new UI20.PopoverHelper.PopoverHelper(this.elementInternal, (event) => {
+      this.#popupHelper = new UI19.PopoverHelper.PopoverHelper(this.elementInternal, (event) => {
         const hoveredNode = event.composedPath()[0];
         if (!hoveredNode?.matches(".violating-element")) {
           return null;
@@ -14534,7 +14508,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
                 return nothing3;
               }
               const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
-              const openIssueEvent = () => Common14.Revealer.reveal(issue);
+              const openIssueEvent = () => Common13.Revealer.reveal(issue);
               return html9`
                     <div class="squiggles-content-item">
                     <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
@@ -14573,7 +14547,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     if (!this.rootDOMNode || !nodeId) {
       return;
     }
-    const deferredDOMNode = new SDK17.DOMModel.DeferredDOMNode(this.rootDOMNode.domModel().target(), nodeId);
+    const deferredDOMNode = new SDK16.DOMModel.DeferredDOMNode(this.rootDOMNode.domModel().target(), nodeId);
     const node = await deferredDOMNode.resolvePromise();
     if (!node) {
       return;
@@ -14651,7 +14625,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     if (originalEvent.target instanceof Node && originalEvent.target.hasSelection()) {
       return;
     }
-    if (UI20.UIUtils.isEditing()) {
+    if (UI19.UIUtils.isEditing()) {
       return;
     }
     const targetNode = this.selectedDOMNode();
@@ -14704,7 +14678,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     this.performDuplicate(targetNode);
   }
   onPaste(event) {
-    if (UI20.UIUtils.isEditing()) {
+    if (UI19.UIUtils.isEditing()) {
       return;
     }
     const targetNode = this.selectedDOMNode();
@@ -14775,15 +14749,15 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
   selectedDOMNode() {
     return this.selectedDOMNodeInternal;
   }
-  selectDOMNode(node, focus) {
+  selectDOMNode(node, focus2) {
     if (this.selectedDOMNodeInternal === node) {
-      this.revealAndSelectNode(node, !focus);
+      this.revealAndSelectNode(node, !focus2);
       return;
     }
     this.selectedDOMNodeInternal = node;
-    this.revealAndSelectNode(node, !focus);
+    this.revealAndSelectNode(node, !focus2);
     if (this.selectedDOMNodeInternal === node) {
-      this.selectedNodeChanged(Boolean(focus));
+      this.selectedNodeChanged(Boolean(focus2));
     }
   }
   editing() {
@@ -14813,15 +14787,15 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
         this.appendChild(treeElement);
       }
     }
-    if (this.rootDOMNode instanceof SDK17.DOMModel.DOMDocument) {
+    if (this.rootDOMNode instanceof SDK16.DOMModel.DOMDocument) {
       void this.createTopLayerContainer(this.rootElement(), this.rootDOMNode);
     }
     if (selectedNode) {
       this.revealAndSelectNode(selectedNode, true);
     }
   }
-  selectedNodeChanged(focus) {
-    this.dispatchEventToListeners(_ElementsTreeOutline.Events.SelectedNodeChanged, { node: this.selectedDOMNodeInternal, focus });
+  selectedNodeChanged(focus2) {
+    this.dispatchEventToListeners(_ElementsTreeOutline.Events.SelectedNodeChanged, { node: this.selectedDOMNodeInternal, focus: focus2 });
   }
   fireElementsTreeUpdated(nodes) {
     this.dispatchEventToListeners(_ElementsTreeOutline.Events.ElementsTreeUpdated, nodes);
@@ -14909,7 +14883,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     return element;
   }
   onfocusout(_event) {
-    SDK17.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK16.OverlayModel.OverlayModel.hideDOMNodeHighlight();
   }
   onmousedown(event) {
     const element = this.treeElementFromEventInternal(event);
@@ -14936,7 +14910,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
       return;
     }
     this.setHoverEffect(element);
-    this.highlightTreeElement(element, !UI20.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event));
+    this.highlightTreeElement(element, !UI19.KeyboardShortcut.KeyboardShortcut.eventHasEitherCtrlOrMeta(event));
   }
   highlightTreeElement(element, showInfo) {
     if (element instanceof ElementsTreeElement) {
@@ -14949,7 +14923,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
   }
   onmouseleave(_event) {
     this.setHoverEffect(null);
-    SDK17.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK16.OverlayModel.OverlayModel.hideDOMNodeHighlight();
   }
   ondragstart(event) {
     const node = event.target;
@@ -14972,7 +14946,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     event.dataTransfer.setData("text/plain", treeElement.listItemElement.textContent.replace(/\u200b/g, ""));
     event.dataTransfer.effectAllowed = "copyMove";
     this.treeElementBeingDragged = treeElement;
-    SDK17.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK16.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     return true;
   }
   ondragover(event) {
@@ -15065,10 +15039,10 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     }
   }
   async showContextMenu(treeElement, event) {
-    if (UI20.UIUtils.isEditing()) {
+    if (UI19.UIUtils.isEditing()) {
       return;
     }
-    const contextMenu = new UI20.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI19.ContextMenu.ContextMenu(event);
     const isPseudoElement = Boolean(treeElement.node().pseudoType());
     const isTag = treeElement.node().nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
     const node = event.target;
@@ -15096,15 +15070,15 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
   }
   async saveNodeToTempVariable(node) {
     const remoteObjectForConsole = await node.resolveToObject();
-    const consoleModel = remoteObjectForConsole?.runtimeModel().target()?.model(SDK17.ConsoleModel.ConsoleModel);
-    await consoleModel?.saveToTempVariable(UI20.Context.Context.instance().flavor(SDK17.RuntimeModel.ExecutionContext), remoteObjectForConsole);
+    const consoleModel = remoteObjectForConsole?.runtimeModel().target()?.model(SDK16.ConsoleModel.ConsoleModel);
+    await consoleModel?.saveToTempVariable(UI19.Context.Context.instance().flavor(SDK16.RuntimeModel.ExecutionContext), remoteObjectForConsole);
   }
   runPendingUpdates() {
     this.updateModifiedNodes();
   }
   onKeyDown(event) {
     const keyboardEvent = event;
-    if (UI20.UIUtils.isEditing()) {
+    if (UI19.UIUtils.isEditing()) {
       return;
     }
     const node = this.selectedDOMNode();
@@ -15115,7 +15089,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     if (!treeElement) {
       return;
     }
-    if (UI20.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) && node.parentNode) {
+    if (UI19.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) && node.parentNode) {
       if (keyboardEvent.key === "ArrowUp" && node.previousSibling) {
         node.moveTo(node.parentNode, node.previousSibling, this.selectNodeAfterEdit.bind(this, treeElement.expanded));
         keyboardEvent.consume(true);
@@ -15252,35 +15226,35 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     this.selectDOMNode(null, false);
     this.imagePreviewPopover.hide();
     delete this.clipboardNodeData;
-    SDK17.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK16.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     this.updateRecords.clear();
   }
   wireToDOMModel(domModel) {
     elementsTreeOutlineByDOMModel.set(domModel, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.MarkersChanged, this.markersChanged, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.NodeInserted, this.nodeInserted, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.NodeRemoved, this.nodeRemoved, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.AttrModified, this.attributeModified, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
-    domModel.addEventListener(SDK17.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.MarkersChanged, this.markersChanged, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.NodeInserted, this.nodeInserted, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.NodeRemoved, this.nodeRemoved, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.AttrModified, this.attributeModified, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
   }
   unwireFromDOMModel(domModel) {
-    domModel.removeEventListener(SDK17.DOMModel.Events.MarkersChanged, this.markersChanged, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.NodeInserted, this.nodeInserted, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.NodeRemoved, this.nodeRemoved, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.AttrModified, this.attributeModified, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
-    domModel.removeEventListener(SDK17.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.MarkersChanged, this.markersChanged, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.NodeInserted, this.nodeInserted, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.NodeRemoved, this.nodeRemoved, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.AttrModified, this.attributeModified, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.AttrRemoved, this.attributeRemoved, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.CharacterDataModified, this.characterDataModified, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.DocumentUpdated, this.documentUpdated, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.ChildNodeCountUpdated, this.childNodeCountUpdated, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
     elementsTreeOutlineByDOMModel.delete(domModel);
   }
   addUpdateRecord(node) {
@@ -15528,9 +15502,9 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
     return Boolean(node.childNodeCount()) && !ElementsTreeElement.canShowInlineText(node);
   }
   createExpandAllButtonTreeElement(treeElement) {
-    const button = UI20.UIUtils.createTextButton("", handleLoadAllChildren.bind(this));
+    const button = UI19.UIUtils.createTextButton("", handleLoadAllChildren.bind(this));
     button.value = "";
-    const expandAllButtonElement = new UI20.TreeOutline.TreeElement(button);
+    const expandAllButtonElement = new UI19.TreeOutline.TreeElement(button);
     expandAllButtonElement.selectable = false;
     expandAllButtonElement.button = button;
     return expandAllButtonElement;
@@ -15567,7 +15541,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common14.ObjectWrap
   insertChildElement(treeElement, child, index, isClosingTag) {
     const newElement = this.createElementTreeElement(child, isClosingTag);
     treeElement.insertChild(newElement, index);
-    if (child instanceof SDK17.DOMModel.DOMDocument) {
+    if (child instanceof SDK16.DOMModel.DOMDocument) {
       void this.createTopLayerContainer(newElement, child);
     }
     return newElement;
@@ -15708,12 +15682,12 @@ __export(LayoutPane_exports, {
   LayoutPane: () => LayoutPane
 });
 import "./../../ui/components/node_text/node_text.js";
-import * as Common15 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
-import * as SDK18 from "./../../core/sdk/sdk.js";
+import * as SDK17 from "./../../core/sdk/sdk.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as UI21 from "./../../ui/legacy/legacy.js";
+import * as UI20 from "./../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../ui/lit/lit.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -15923,14 +15897,14 @@ var nodeToLayoutElement = (node) => {
     domClasses: className ? className.split(/\s+/).filter((s) => !!s) : void 0,
     enabled: false,
     reveal: () => {
-      void Common15.Revealer.reveal(node);
+      void Common14.Revealer.reveal(node);
       void node.scrollIntoView();
     },
     highlight: () => {
       node.highlight();
     },
     hideHighlight: () => {
-      SDK18.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+      SDK17.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     },
     toggle: (_value) => {
       throw new Error("Not implemented");
@@ -15999,7 +15973,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     const target2 = event.target;
     const input2 = target2.querySelector("input");
     input2.click();
-    UI21.ARIAUtils.LiveAnnouncer.alert(i18nString16(UIStrings17.colorPickerOpened));
+    UI20.ARIAUtils.LiveAnnouncer.alert(i18nString16(UIStrings17.colorPickerOpened));
     event.preventDefault();
   };
   const onColorLabelKeyDown = (event) => {
@@ -16061,7 +16035,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     html10`
       <div style="min-width: min-content;" jslog=${VisualLogging10.pane("layout").track({ resize: true })}>
         <style>${layoutPane_css_default}</style>
-        <style>${UI21.inspectorCommonStyles}</style>
+        <style>${UI20.inspectorCommonStyles}</style>
         <details open>
           <summary class="header"
             @keydown=${input.onSummaryKeyDown}
@@ -16124,7 +16098,7 @@ var DEFAULT_VIEW5 = (input, output, target) => {
     target
   );
 };
-var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
+var LayoutPane = class _LayoutPane extends UI20.Widget.Widget {
   #settings = [];
   #uaShadowDOMSetting;
   #domModels;
@@ -16132,7 +16106,7 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
   constructor(element, view = DEFAULT_VIEW5) {
     super(element);
     this.#settings = this.#makeSettings();
-    this.#uaShadowDOMSetting = Common15.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom");
+    this.#uaShadowDOMSetting = Common14.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom");
     this.#domModels = [];
     this.#view = view;
   }
@@ -16190,7 +16164,7 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
   #makeSettings() {
     const settings = [];
     for (const settingName of ["show-grid-line-labels", "show-grid-track-sizes", "show-grid-areas", "extend-grid-lines"]) {
-      const setting = Common15.Settings.Settings.instance().moduleSetting(settingName);
+      const setting = Common14.Settings.Settings.instance().moduleSetting(settingName);
       const settingValue = setting.get();
       const settingType = setting.type();
       if (!settingType) {
@@ -16227,28 +16201,28 @@ var LayoutPane = class _LayoutPane extends UI21.Widget.Widget {
     return settings;
   }
   onSettingChanged(setting, value4) {
-    Common15.Settings.Settings.instance().moduleSetting(setting).set(value4);
+    Common14.Settings.Settings.instance().moduleSetting(setting).set(value4);
   }
   wasShown() {
     super.wasShown();
     for (const setting of this.#settings) {
-      Common15.Settings.Settings.instance().moduleSetting(setting.name).addChangeListener(this.requestUpdate, this);
+      Common14.Settings.Settings.instance().moduleSetting(setting.name).addChangeListener(this.requestUpdate, this);
     }
     for (const domModel of this.#domModels) {
       this.modelRemoved(domModel);
     }
     this.#domModels = [];
-    SDK18.TargetManager.TargetManager.instance().observeModels(SDK18.DOMModel.DOMModel, this, { scoped: true });
-    UI21.Context.Context.instance().addFlavorChangeListener(SDK18.DOMModel.DOMNode, this.requestUpdate, this);
+    SDK17.TargetManager.TargetManager.instance().observeModels(SDK17.DOMModel.DOMModel, this, { scoped: true });
+    UI20.Context.Context.instance().addFlavorChangeListener(SDK17.DOMModel.DOMNode, this.requestUpdate, this);
     this.#uaShadowDOMSetting.addChangeListener(this.requestUpdate, this);
     this.requestUpdate();
   }
   willHide() {
     for (const setting of this.#settings) {
-      Common15.Settings.Settings.instance().moduleSetting(setting.name).removeChangeListener(this.requestUpdate, this);
+      Common14.Settings.Settings.instance().moduleSetting(setting.name).removeChangeListener(this.requestUpdate, this);
     }
-    SDK18.TargetManager.TargetManager.instance().unobserveModels(SDK18.DOMModel.DOMModel, this);
-    UI21.Context.Context.instance().removeFlavorChangeListener(SDK18.DOMModel.DOMNode, this.requestUpdate, this);
+    SDK17.TargetManager.TargetManager.instance().unobserveModels(SDK17.DOMModel.DOMModel, this);
+    UI20.Context.Context.instance().removeFlavorChangeListener(SDK17.DOMModel.DOMNode, this.requestUpdate, this);
     this.#uaShadowDOMSetting.removeChangeListener(this.requestUpdate, this);
   }
   #onSummaryKeyDown(event) {
@@ -16328,10 +16302,10 @@ var MetricsSidebarPane_exports = {};
 __export(MetricsSidebarPane_exports, {
   MetricsSidebarPane: () => MetricsSidebarPane
 });
-import * as Common16 from "./../../core/common/common.js";
+import * as Common15 from "./../../core/common/common.js";
 import * as Platform9 from "./../../core/platform/platform.js";
-import * as SDK19 from "./../../core/sdk/sdk.js";
-import * as UI22 from "./../../ui/legacy/legacy.js";
+import * as SDK18 from "./../../core/sdk/sdk.js";
+import * as UI21 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/metricsSidebarPane.css.js
@@ -16581,7 +16555,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
       node.highlight(mode);
     } else {
       this.highlightMode = "";
-      SDK19.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+      SDK18.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
     for (const { element, name, backgroundColor } of this.boxElements) {
       const shouldHighlight = !node || mode === "all" || name === mode;
@@ -16665,11 +16639,11 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     const noPositionType = /* @__PURE__ */ new Set(["static"]);
     const boxes = ["content", "padding", "border", "margin", "position"];
     const boxColors = [
-      Common16.Color.PageHighlight.Content,
-      Common16.Color.PageHighlight.Padding,
-      Common16.Color.PageHighlight.Border,
-      Common16.Color.PageHighlight.Margin,
-      Common16.Color.Legacy.fromRGBA([0, 0, 0, 0])
+      Common15.Color.PageHighlight.Content,
+      Common15.Color.PageHighlight.Padding,
+      Common15.Color.PageHighlight.Border,
+      Common15.Color.PageHighlight.Margin,
+      Common15.Color.Legacy.fromRGBA([0, 0, 0, 0])
     ];
     const boxLabels = ["content", "padding", "border", "margin", "position"];
     let previousBox = null;
@@ -16748,7 +16722,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     this.element.classList.remove("collapsed");
   }
   startEditing(targetElement, box, styleProperty, computedStyle) {
-    if (UI22.UIUtils.isBeingEdited(targetElement)) {
+    if (UI21.UIUtils.isBeingEdited(targetElement)) {
       return;
     }
     const context = { box, styleProperty, computedStyle, keyDownHandler: () => {
@@ -16757,8 +16731,8 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     context.keyDownHandler = boundKeyDown;
     targetElement.addEventListener("keydown", boundKeyDown, false);
     this.isEditingMetrics = true;
-    const config = new UI22.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
-    UI22.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
+    const config = new UI21.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
+    UI21.InplaceEditor.InplaceEditor.startEditing(targetElement, config);
     const selection = targetElement.getComponentSelection();
     selection?.selectAllChildren(targetElement);
   }
@@ -16773,7 +16747,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
       }
       return prefix + number + suffix;
     }
-    UI22.UIUtils.handleElementValueModifications(event, element, finishHandler.bind(this), void 0, customNumberHandler);
+    UI21.UIUtils.handleElementValueModifications(event, element, finishHandler.bind(this), void 0, customNumberHandler);
   }
   editingEnded(element, context) {
     this.originalPropertyData = null;
@@ -16815,7 +16789,7 @@ var MetricsSidebarPane = class extends ElementsSidebarPane {
     const computedStyle = context.computedStyle;
     if (computedStyle.get("box-sizing") === "border-box" && (styleProperty === "width" || styleProperty === "height")) {
       if (!userInput.match(/px$/)) {
-        Common16.Console.Console.instance().error("For elements with box-sizing: border-box, only absolute content area dimensions can be applied");
+        Common15.Console.Console.instance().error("For elements with box-sizing: border-box, only absolute content area dimensions can be applied");
         return;
       }
       const borderBox = this.getBox(computedStyle, "border");
@@ -16977,7 +16951,7 @@ var createAccessibilityTreeToggleButton = (isActive) => {
   return button;
 };
 var elementsPanelInstance;
-var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
+var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
   splitWidget;
   searchableViewInternal;
   mainContainer;
@@ -17016,10 +16990,10 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
   constructor() {
     super("elements");
     this.registerRequiredCSS(elementsPanel_css_default);
-    this.splitWidget = new UI23.SplitWidget.SplitWidget(true, true, "elements-panel-split-view-state", 325, 325);
+    this.splitWidget = new UI22.SplitWidget.SplitWidget(true, true, "elements-panel-split-view-state", 325, 325);
     this.splitWidget.addEventListener("SidebarSizeChanged", this.updateTreeOutlineVisibleWidth.bind(this));
     this.splitWidget.show(this.element);
-    this.searchableViewInternal = new UI23.SearchableView.SearchableView(this, null);
+    this.searchableViewInternal = new UI22.SearchableView.SearchableView(this, null);
     this.searchableViewInternal.setMinimalSearchQuerySize(0);
     this.searchableViewInternal.setMinimumSize(25, 28);
     this.searchableViewInternal.setPlaceholder(i18nString17(UIStrings18.findByStringSelectorOrXpath));
@@ -17033,20 +17007,20 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
     this.mainContainer.appendChild(this.domTreeContainer);
     stackElement.appendChild(this.mainContainer);
     stackElement.appendChild(crumbsContainer);
-    UI23.ARIAUtils.markAsMain(this.domTreeContainer);
-    UI23.ARIAUtils.setLabel(this.domTreeContainer, i18nString17(UIStrings18.domTreeExplorer));
+    UI22.ARIAUtils.markAsMain(this.domTreeContainer);
+    UI22.ARIAUtils.setLabel(this.domTreeContainer, i18nString17(UIStrings18.domTreeExplorer));
     this.splitWidget.setMainWidget(this.searchableViewInternal);
     this.splitMode = null;
     this.mainContainer.id = "main-content";
     this.domTreeContainer.id = "elements-content";
     this.domTreeContainer.tabIndex = -1;
-    if (Common17.Settings.Settings.instance().moduleSetting("dom-word-wrap").get()) {
+    if (Common16.Settings.Settings.instance().moduleSetting("dom-word-wrap").get()) {
       this.domTreeContainer.classList.add("elements-wrap");
     }
-    Common17.Settings.Settings.instance().moduleSetting("dom-word-wrap").addChangeListener(this.domWordWrapSettingChanged.bind(this));
+    Common16.Settings.Settings.instance().moduleSetting("dom-word-wrap").addChangeListener(this.domWordWrapSettingChanged.bind(this));
     crumbsContainer.id = "elements-crumbs";
     if (this.domTreeButton) {
-      this.accessibilityTreeView = new AccessibilityTreeView(this.domTreeButton, new TreeOutline13.TreeOutline.TreeOutline());
+      this.accessibilityTreeView = new AccessibilityTreeView(this.domTreeButton, new TreeOutline12.TreeOutline.TreeOutline());
     }
     this.breadcrumbs = new ElementsComponents8.ElementsBreadcrumbs.ElementsBreadcrumbs();
     this.breadcrumbs.addEventListener("breadcrumbsnodeselected", (event) => {
@@ -17057,12 +17031,12 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
     this.stylesWidget = new StylesSidebarPane(computedStyleModel);
     this.computedStyleWidget = new ComputedStyleWidget(computedStyleModel);
     this.metricsWidget = new MetricsSidebarPane(computedStyleModel);
-    Common17.Settings.Settings.instance().moduleSetting("sidebar-position").addChangeListener(this.updateSidebarPosition.bind(this));
+    Common16.Settings.Settings.instance().moduleSetting("sidebar-position").addChangeListener(this.updateSidebarPosition.bind(this));
     this.updateSidebarPosition();
     this.cssStyleTrackerByCSSModel = /* @__PURE__ */ new Map();
     this.currentSearchResultIndex = -1;
     this.pendingNodeReveal = false;
-    this.adornerManager = new ElementsComponents8.AdornerManager.AdornerManager(Common17.Settings.Settings.instance().moduleSetting("adorner-settings"));
+    this.adornerManager = new ElementsComponents8.AdornerManager.AdornerManager(Common16.Settings.Settings.instance().moduleSetting("adorner-settings"));
     this.adornersByName = /* @__PURE__ */ new Map();
     this.#domTreeWidget = new DOMTreeWidget();
     this.#domTreeWidget.omitRootDOMNode = true;
@@ -17070,10 +17044,10 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
     this.#domTreeWidget.onSelectedNodeChanged = this.selectedNodeChanged.bind(this);
     this.#domTreeWidget.onElementsTreeUpdated = this.updateBreadcrumbIfNeeded.bind(this);
     this.#domTreeWidget.onDocumentUpdated = this.documentUpdated.bind(this);
-    this.#domTreeWidget.setWordWrap(Common17.Settings.Settings.instance().moduleSetting("dom-word-wrap").get());
-    SDK20.TargetManager.TargetManager.instance().observeModels(SDK20.DOMModel.DOMModel, this, { scoped: true });
-    SDK20.TargetManager.TargetManager.instance().addEventListener("NameChanged", (event) => this.targetNameChanged(event.data));
-    Common17.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").addChangeListener(this.showUAShadowDOMChanged.bind(this));
+    this.#domTreeWidget.setWordWrap(Common16.Settings.Settings.instance().moduleSetting("dom-word-wrap").get());
+    SDK19.TargetManager.TargetManager.instance().observeModels(SDK19.DOMModel.DOMModel, this, { scoped: true });
+    SDK19.TargetManager.TargetManager.instance().addEventListener("NameChanged", (event) => this.targetNameChanged(event.data));
+    Common16.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").addChangeListener(this.showUAShadowDOMChanged.bind(this));
     Extensions.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
   }
   initializeFullAccessibilityTreeView() {
@@ -17136,12 +17110,12 @@ var ElementsPanel = class _ElementsPanel extends UI23.Panel.Panel {
     if (this.domTreeContainer.hasFocus()) {
       this.#domTreeWidget.focus();
     }
-    domModel.addEventListener(SDK20.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
-    domModel.addEventListener(SDK20.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
+    domModel.addEventListener(SDK19.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
+    domModel.addEventListener(SDK19.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
   }
   modelRemoved(domModel) {
-    domModel.removeEventListener(SDK20.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
-    domModel.removeEventListener(SDK20.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
+    domModel.removeEventListener(SDK19.DOMModel.Events.DocumentUpdated, this.documentUpdatedEvent, this);
+    domModel.removeEventListener(SDK19.DOMModel.Events.NodeInserted, this.handleNodeInserted, this);
     this.#domTreeWidget.modelRemoved(domModel);
     if (!domModel.parentModel()) {
       this.#domTreeWidget.detach();
@@ -17168,7 +17142,7 @@ ${node.simpleSelector()} {}`, false);
     });
   }
   targetNameChanged(target) {
-    const domModel = target.model(SDK20.DOMModel.DOMModel);
+    const domModel = target.model(SDK19.DOMModel.DOMModel);
     if (!domModel) {
       return;
     }
@@ -17192,14 +17166,14 @@ ${node.simpleSelector()} {}`, false);
   }
   wasShown() {
     super.wasShown();
-    UI23.Context.Context.instance().setFlavor(_ElementsPanel, this);
+    UI22.Context.Context.instance().setFlavor(_ElementsPanel, this);
     this.#domTreeWidget.show(this.domTreeContainer);
   }
   willHide() {
-    SDK20.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    SDK19.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     this.#domTreeWidget.detach();
     super.willHide();
-    UI23.Context.Context.instance().setFlavor(_ElementsPanel, null);
+    UI22.Context.Context.instance().setFlavor(_ElementsPanel, null);
   }
   onResize() {
     this.element.window().requestAnimationFrame(this.updateSidebarPosition.bind(this));
@@ -17210,7 +17184,7 @@ ${node.simpleSelector()} {}`, false);
     if (selectedNode?.pseudoType() && !selectedNode.parentNode) {
       selectedNode = null;
     }
-    const { focus } = event.data;
+    const { focus: focus2 } = event.data;
     if (!selectedNode) {
       this.#domTreeWidget.selectDOMNode(null);
     }
@@ -17230,12 +17204,12 @@ ${node.simpleSelector()} {}`, false);
     } else {
       this.breadcrumbs.data = { crumbs: [], selectedNode: null };
     }
-    UI23.Context.Context.instance().setFlavor(SDK20.DOMModel.DOMNode, selectedNode);
+    UI22.Context.Context.instance().setFlavor(SDK19.DOMModel.DOMNode, selectedNode);
     if (!selectedNode) {
       return;
     }
     void selectedNode.setAsInspectedNode();
-    if (focus) {
+    if (focus2) {
       this.selectedNodeOnReset = selectedNode;
       this.hasNonDefaultSelectedNode = true;
     }
@@ -17243,7 +17217,7 @@ ${node.simpleSelector()} {}`, false);
     const nodeFrameId = selectedNode.frameId();
     for (const context of executionContexts) {
       if (context.frameId === nodeFrameId) {
-        UI23.Context.Context.instance().setFlavor(SDK20.RuntimeModel.ExecutionContext, context);
+        UI22.Context.Context.instance().setFlavor(SDK19.RuntimeModel.ExecutionContext, context);
         break;
       }
     }
@@ -17307,7 +17281,7 @@ ${node.simpleSelector()} {}`, false);
     this.searchableViewInternal.updateSearchMatchesCount(0);
     this.currentSearchResultIndex = -1;
     delete this.searchResults;
-    SDK20.DOMModel.DOMModel.cancelSearch();
+    SDK19.DOMModel.DOMModel.cancelSearch();
   }
   performSearch(searchConfig, shouldJump, jumpBackwards) {
     const query = searchConfig.query;
@@ -17321,8 +17295,8 @@ ${node.simpleSelector()} {}`, false);
       this.hideSearchHighlights();
     }
     this.searchConfig = searchConfig;
-    const showUAShadowDOM = Common17.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
-    const domModels = SDK20.TargetManager.TargetManager.instance().models(SDK20.DOMModel.DOMModel, { scoped: true });
+    const showUAShadowDOM = Common16.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
+    const domModels = SDK19.TargetManager.TargetManager.instance().models(SDK19.DOMModel.DOMModel, { scoped: true });
     const promises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
     void Promise.all(promises).then((resultCounts) => {
       this.searchResults = [];
@@ -17418,8 +17392,8 @@ ${node.simpleSelector()} {}`, false);
   selectedDOMNode() {
     return this.#domTreeWidget.selectedDOMNode();
   }
-  selectDOMNode(node, focus) {
-    this.#domTreeWidget.selectDOMNode(node, focus);
+  selectDOMNode(node, focus2) {
+    this.#domTreeWidget.selectDOMNode(node, focus2);
   }
   selectAndShowSidebarTab(tabId) {
     if (!this.sidebarPaneView) {
@@ -17427,7 +17401,7 @@ ${node.simpleSelector()} {}`, false);
     }
     this.sidebarPaneView.tabbedPane().selectTab(tabId);
     if (!this.isShowing()) {
-      void UI23.ViewManager.ViewManager.instance().showView("elements");
+      void UI22.ViewManager.ViewManager.instance().showView("elements");
     }
   }
   updateBreadcrumbIfNeeded(event) {
@@ -17467,17 +17441,20 @@ ${node.simpleSelector()} {}`, false);
     }
     return node;
   }
-  async revealAndSelectNode(nodeToReveal, focus, omitHighlight) {
+  async revealAndSelectNode(nodeToReveal, opts) {
+    const { showPanel = true, focusNode = false, highlightInOverlay = true } = opts ?? {};
     this.omitDefaultSelection = true;
-    const node = Common17.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get() ? nodeToReveal : this.leaveUserAgentShadowDOM(nodeToReveal);
-    if (!omitHighlight) {
+    const node = Common16.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get() ? nodeToReveal : this.leaveUserAgentShadowDOM(nodeToReveal);
+    if (highlightInOverlay) {
       node.highlightForTwoSeconds();
     }
     if (this.accessibilityTreeView) {
       void this.accessibilityTreeView.revealAndSelectNode(nodeToReveal);
     }
-    await UI23.ViewManager.ViewManager.instance().showView("elements", false, !focus);
-    this.selectDOMNode(node, focus);
+    if (showPanel) {
+      await UI22.ViewManager.ViewManager.instance().showView("elements", false, !focus);
+    }
+    this.selectDOMNode(node, focusNode);
     delete this.omitDefaultSelection;
     if (!this.notFirstInspectElement) {
       _ElementsPanel.firstInspectElementNodeNameForTest = node.nodeName();
@@ -17538,16 +17515,16 @@ ${node.simpleSelector()} {}`, false);
       null
       /* toggle */
     );
-    const matchedStylePanesWrapper = new UI23.Widget.VBox();
+    const matchedStylePanesWrapper = new UI22.Widget.VBox();
     matchedStylePanesWrapper.element.classList.add("style-panes-wrapper");
     matchedStylePanesWrapper.element.setAttribute("jslog", `${VisualLogging12.pane("styles").track({ resize: true })}`);
     this.stylesWidget.show(matchedStylePanesWrapper.element);
     this.setupTextSelectionHack(matchedStylePanesWrapper.element);
-    const computedStylePanesWrapper = new UI23.Widget.VBox();
+    const computedStylePanesWrapper = new UI22.Widget.VBox();
     computedStylePanesWrapper.element.classList.add("style-panes-wrapper");
     computedStylePanesWrapper.element.setAttribute("jslog", `${VisualLogging12.pane("computed").track({ resize: true })}`);
     this.computedStyleWidget.show(computedStylePanesWrapper.element);
-    const stylesSplitWidget = new UI23.SplitWidget.SplitWidget(true, true, "elements.styles.sidebar.width", 100);
+    const stylesSplitWidget = new UI22.SplitWidget.SplitWidget(true, true, "elements.styles.sidebar.width", 100);
     stylesSplitWidget.setMainWidget(matchedStylePanesWrapper);
     stylesSplitWidget.hideSidebar();
     stylesSplitWidget.enableShowModeSaving();
@@ -17593,31 +17570,31 @@ ${node.simpleSelector()} {}`, false);
         showMetricsWidgetInStylesPane();
       }
     };
-    this.sidebarPaneView = UI23.ViewManager.ViewManager.instance().createTabbedLocation(() => UI23.ViewManager.ViewManager.instance().showView("elements"), "styles-pane-sidebar", true, true);
+    this.sidebarPaneView = UI22.ViewManager.ViewManager.instance().createTabbedLocation(() => UI22.ViewManager.ViewManager.instance().showView("elements"), "styles-pane-sidebar", true, true);
     const tabbedPane = this.sidebarPaneView.tabbedPane();
     tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging12.toolbar("sidebar").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
     if (this.splitMode !== "Vertical") {
       this.splitWidget.installResizer(tabbedPane.headerElement());
     }
     const headerElement = tabbedPane.headerElement();
-    UI23.ARIAUtils.markAsNavigation(headerElement);
-    UI23.ARIAUtils.setLabel(headerElement, i18nString17(UIStrings18.sidePanelToolbar));
+    UI22.ARIAUtils.markAsNavigation(headerElement);
+    UI22.ARIAUtils.setLabel(headerElement, i18nString17(UIStrings18.sidePanelToolbar));
     const contentElement = tabbedPane.tabbedPaneContentElement();
-    UI23.ARIAUtils.markAsComplementary(contentElement);
-    UI23.ARIAUtils.setLabel(contentElement, i18nString17(UIStrings18.sidePanelContent));
-    const stylesView = new UI23.View.SimpleView({
+    UI22.ARIAUtils.markAsComplementary(contentElement);
+    UI22.ARIAUtils.setLabel(contentElement, i18nString17(UIStrings18.sidePanelContent));
+    const stylesView = new UI22.View.SimpleView({
       title: i18nString17(UIStrings18.styles),
       viewId: "styles"
     });
     this.sidebarPaneView.appendView(stylesView);
     stylesView.element.classList.add("flex-auto");
     stylesSplitWidget.show(stylesView.element);
-    const computedView = new UI23.View.SimpleView({
+    const computedView = new UI22.View.SimpleView({
       title: i18nString17(UIStrings18.computed),
       viewId: "computed"
     });
     computedView.element.classList.add("composite", "fill");
-    tabbedPane.addEventListener(UI23.TabbedPane.Events.TabSelected, tabSelected, this);
+    tabbedPane.addEventListener(UI22.TabbedPane.Events.TabSelected, tabSelected, this);
     this.sidebarPaneView.appendView(computedView);
     this.stylesViewToReveal = stylesView;
     this.sidebarPaneView.appendApplicableItems("elements-sidebar");
@@ -17631,9 +17608,9 @@ ${node.simpleSelector()} {}`, false);
     if (this.sidebarPaneView?.tabbedPane().shouldHideOnDetach()) {
       return;
     }
-    const position = Common17.Settings.Settings.instance().moduleSetting("sidebar-position").get();
+    const position = Common16.Settings.Settings.instance().moduleSetting("sidebar-position").get();
     let splitMode = "Horizontal";
-    if (position === "right" || position === "auto" && UI23.InspectorView.InspectorView.instance().element.offsetWidth > 680) {
+    if (position === "right" || position === "auto" && this.splitWidget.element.offsetWidth > 680) {
       splitMode = "Vertical";
     }
     if (!this.sidebarPaneView) {
@@ -17782,13 +17759,13 @@ var TrackedCSSProperties = [
 ];
 var ContextMenuProvider = class {
   appendApplicableItems(event, contextMenu, object) {
-    if (object instanceof SDK20.RemoteObject.RemoteObject && !object.isNode()) {
+    if (object instanceof SDK19.RemoteObject.RemoteObject && !object.isNode()) {
       return;
     }
     if (ElementsPanel.instance().element.isAncestor(event.target)) {
       return;
     }
-    contextMenu.revealSection().appendItem(i18nString17(UIStrings18.openInElementsPanel), () => Common17.Revealer.reveal(object), { jslogContext: "elements.reveal-node" });
+    contextMenu.revealSection().appendItem(i18nString17(UIStrings18.openInElementsPanel), () => Common16.Revealer.reveal(object), { jslogContext: "elements.reveal-node" });
   }
 };
 var DOMNodeRevealer = class {
@@ -17802,16 +17779,16 @@ var DOMNodeRevealer = class {
       } else {
         message = i18nString17(UIStrings18.nodeCannotBeFoundInTheCurrent);
       }
-      Common17.Console.Console.instance().warn(message);
+      Common16.Console.Console.instance().warn(message);
       throw reason;
     });
     function revealPromise(resolve, reject) {
-      if (node instanceof SDK20.DOMModel.DOMNode) {
+      if (node instanceof SDK19.DOMModel.DOMNode) {
         onNodeResolved(node);
-      } else if (node instanceof SDK20.DOMModel.DeferredDOMNode) {
+      } else if (node instanceof SDK19.DOMModel.DeferredDOMNode) {
         node.resolve(checkDeferredDOMNodeThenReveal);
       } else {
-        const domModel = node.runtimeModel().target().model(SDK20.DOMModel.DOMModel);
+        const domModel = node.runtimeModel().target().model(SDK19.DOMModel.DOMModel);
         if (domModel) {
           void domModel.pushObjectAsNodeToFrontend(node).then(checkRemoteObjectThenReveal);
         } else {
@@ -17825,15 +17802,15 @@ var DOMNodeRevealer = class {
         while (currentNode.parentNode) {
           currentNode = currentNode.parentNode;
         }
-        const isDetached = !(currentNode instanceof SDK20.DOMModel.DOMDocument);
-        const isDocument = node instanceof SDK20.DOMModel.DOMDocument;
+        const isDetached = !(currentNode instanceof SDK19.DOMModel.DOMDocument);
+        const isDocument = node instanceof SDK19.DOMModel.DOMDocument;
         if (!isDocument && isDetached) {
           const msg2 = i18nString17(UIStrings18.nodeCannotBeFoundInTheCurrent);
           reject(new Platform10.UserVisibleError.UserVisibleError(msg2));
           return;
         }
         if (resolvedNode) {
-          void panel.revealAndSelectNode(resolvedNode, !omitFocus).then(resolve);
+          void panel.revealAndSelectNode(resolvedNode, { showPanel: true, focusNode: !omitFocus }).then(resolve);
           return;
         }
         const msg = i18nString17(UIStrings18.nodeCannotBeFoundInTheCurrent);
@@ -17866,7 +17843,7 @@ var CSSPropertyRevealer = class {
 };
 var ElementsActionDelegate = class {
   handleAction(context, actionId) {
-    const node = context.flavor(SDK20.DOMModel.DOMNode);
+    const node = context.flavor(SDK19.DOMModel.DOMNode);
     if (!node) {
       return true;
     }
@@ -17884,18 +17861,18 @@ var ElementsActionDelegate = class {
         ElementsPanel.instance().copyStyles(node);
         return true;
       case "elements.undo":
-        void SDK20.DOMModel.DOMModelUndoStack.instance().undo();
+        void SDK19.DOMModel.DOMModelUndoStack.instance().undo();
         ElementsPanel.instance().stylesWidget.forceUpdate();
         return true;
       case "elements.redo":
-        void SDK20.DOMModel.DOMModelUndoStack.instance().redo();
+        void SDK19.DOMModel.DOMModelUndoStack.instance().redo();
         ElementsPanel.instance().stylesWidget.forceUpdate();
         return true;
       case "elements.toggle-a11y-tree":
         ElementsPanel.instance().toggleAccessibilityTree();
         return true;
       case "elements.toggle-word-wrap": {
-        const setting = Common17.Settings.Settings.instance().moduleSetting("dom-word-wrap");
+        const setting = Common16.Settings.Settings.instance().moduleSetting("dom-word-wrap");
         setting.set(!setting.get());
         return true;
       }
@@ -17912,7 +17889,7 @@ var ElementsActionDelegate = class {
         );
         return true;
       case "elements.toggle-eye-dropper": {
-        const colorSwatchPopoverIcon = UI23.Context.Context.instance().flavor(ColorSwatchPopoverIcon);
+        const colorSwatchPopoverIcon = UI22.Context.Context.instance().flavor(ColorSwatchPopoverIcon);
         if (!colorSwatchPopoverIcon) {
           return false;
         }
@@ -17950,19 +17927,19 @@ var InspectElementModeController = class _InspectElementModeController {
   mode;
   showDetailedInspectTooltipSetting;
   constructor() {
-    this.toggleSearchAction = UI24.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
+    this.toggleSearchAction = UI23.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     this.mode = "none";
-    SDK21.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged", this.suspendStateChanged, this);
-    SDK21.TargetManager.TargetManager.instance().addModelListener(SDK21.OverlayModel.OverlayModel, "InspectModeExited", () => this.setMode(
+    SDK20.TargetManager.TargetManager.instance().addEventListener("SuspendStateChanged", this.suspendStateChanged, this);
+    SDK20.TargetManager.TargetManager.instance().addModelListener(SDK20.OverlayModel.OverlayModel, "InspectModeExited", () => this.setMode(
       "none"
       /* Protocol.Overlay.InspectMode.None */
     ), void 0, { scoped: true });
-    SDK21.OverlayModel.OverlayModel.setInspectNodeHandler(this.inspectNode.bind(this));
-    SDK21.TargetManager.TargetManager.instance().observeModels(SDK21.OverlayModel.OverlayModel, this, { scoped: true });
-    this.showDetailedInspectTooltipSetting = Common18.Settings.Settings.instance().moduleSetting("show-detailed-inspect-tooltip");
+    SDK20.OverlayModel.OverlayModel.setInspectNodeHandler(this.inspectNode.bind(this));
+    SDK20.TargetManager.TargetManager.instance().observeModels(SDK20.OverlayModel.OverlayModel, this, { scoped: true });
+    this.showDetailedInspectTooltipSetting = Common17.Settings.Settings.instance().moduleSetting("show-detailed-inspect-tooltip");
     this.showDetailedInspectTooltipSetting.addChangeListener(this.showDetailedInspectTooltipChanged.bind(this));
     document.addEventListener("keydown", (event) => {
-      if (event.keyCode !== UI24.KeyboardShortcut.Keys.Esc.code) {
+      if (event.keyCode !== UI23.KeyboardShortcut.Keys.Esc.code) {
         return;
       }
       if (!this.isInInspectElementMode()) {
@@ -17998,7 +17975,7 @@ var InspectElementModeController = class _InspectElementModeController {
     if (this.isInInspectElementMode()) {
       mode = "none";
     } else {
-      mode = Common18.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get() ? "searchForUAShadowDOM" : "searchForNode";
+      mode = Common17.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get() ? "searchForUAShadowDOM" : "searchForNode";
     }
     this.setMode(mode);
   }
@@ -18009,24 +17986,31 @@ var InspectElementModeController = class _InspectElementModeController {
     );
   }
   setMode(mode) {
-    if (SDK21.TargetManager.TargetManager.instance().allTargetsSuspended()) {
+    if (SDK20.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       return;
     }
     this.mode = mode;
-    for (const overlayModel of SDK21.TargetManager.TargetManager.instance().models(SDK21.OverlayModel.OverlayModel, { scoped: true })) {
+    for (const overlayModel of SDK20.TargetManager.TargetManager.instance().models(SDK20.OverlayModel.OverlayModel, { scoped: true })) {
       void overlayModel.setInspectMode(mode, this.showDetailedInspectTooltipSetting.get());
     }
     this.toggleSearchAction.setToggled(this.isInInspectElementMode());
   }
   suspendStateChanged() {
-    if (!SDK21.TargetManager.TargetManager.instance().allTargetsSuspended()) {
+    if (!SDK20.TargetManager.TargetManager.instance().allTargetsSuspended()) {
       return;
     }
     this.mode = "none";
     this.toggleSearchAction.setToggled(false);
   }
   inspectNode(node) {
-    void ElementsPanel.instance().revealAndSelectNode(node, true, true);
+    const returnToPanel = UI23.Context.Context.instance().flavor(Common17.ReturnToPanel.ReturnToPanelFlavor);
+    UI23.Context.Context.instance().setFlavor(Common17.ReturnToPanel.ReturnToPanelFlavor, null);
+    if (returnToPanel) {
+      return ElementsPanel.instance().revealAndSelectNode(node, { showPanel: false, highlightInOverlay: false }).then(() => {
+        void UI23.ViewManager.ViewManager.instance().showView(returnToPanel.viewId, false, false);
+      });
+    }
+    return ElementsPanel.instance().revealAndSelectNode(node, { showPanel: true, focusNode: true, highlightInOverlay: false });
   }
   showDetailedInspectTooltipChanged() {
     this.setMode(this.mode);
@@ -18058,15 +18042,15 @@ __export(EventListenersWidget_exports, {
   DispatchFilterBy: () => DispatchFilterBy,
   EventListenersWidget: () => EventListenersWidget
 });
-import * as Common19 from "./../../core/common/common.js";
+import * as Common18 from "./../../core/common/common.js";
 import * as i18n37 from "./../../core/i18n/i18n.js";
-import * as SDK22 from "./../../core/sdk/sdk.js";
-import * as UI25 from "./../../ui/legacy/legacy.js";
+import * as SDK21 from "./../../core/sdk/sdk.js";
+import * as UI24 from "./../../ui/legacy/legacy.js";
 import { html as html11, render as render8 } from "./../../ui/lit/lit.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 import * as EventListeners from "./../event_listeners/event_listeners.js";
-var { bindToSetting } = UI25.SettingsUI;
-var { bindToAction } = UI25.UIUtils;
+var { bindToSetting } = UI24.SettingsUI;
+var { bindToAction } = UI24.UIUtils;
 var UIStrings19 = {
   /**
    * @description Title of show framework listeners setting in event listeners widget of the elements panel
@@ -18130,14 +18114,14 @@ var DEFAULT_VIEW6 = (input, _output, target) => {
           ${i18nString18(UIStrings19.frameworkListeners)}
         </devtools-checkbox>
       </devtools-toolbar>
-      <devtools-widget .widgetConfig=${UI25.Widget.widgetConfig(EventListeners.EventListenersView.EventListenersView, {
+      <devtools-widget .widgetConfig=${UI24.Widget.widgetConfig(EventListeners.EventListenersView.EventListenersView, {
     changeCallback: input.onEventListenersViewChange,
     objects: input.eventListenerObjects,
     filter: input.filter
   })}></devtools-widget>
     </div>`, target);
 };
-var EventListenersWidget = class _EventListenersWidget extends UI25.ThrottledWidget.ThrottledWidget {
+var EventListenersWidget = class _EventListenersWidget extends UI24.ThrottledWidget.ThrottledWidget {
   showForAncestorsSetting;
   dispatchFilterBySetting;
   showFrameworkListenersSetting;
@@ -18146,14 +18130,14 @@ var EventListenersWidget = class _EventListenersWidget extends UI25.ThrottledWid
   constructor(view = DEFAULT_VIEW6) {
     super();
     this.#view = view;
-    this.showForAncestorsSetting = Common19.Settings.Settings.instance().moduleSetting("show-event-listeners-for-ancestors");
+    this.showForAncestorsSetting = Common18.Settings.Settings.instance().moduleSetting("show-event-listeners-for-ancestors");
     this.showForAncestorsSetting.addChangeListener(this.update.bind(this));
-    this.dispatchFilterBySetting = Common19.Settings.Settings.instance().createSetting("event-listener-dispatch-filter-type", DispatchFilterBy.All);
+    this.dispatchFilterBySetting = Common18.Settings.Settings.instance().createSetting("event-listener-dispatch-filter-type", DispatchFilterBy.All);
     this.dispatchFilterBySetting.addChangeListener(this.update.bind(this));
-    this.showFrameworkListenersSetting = Common19.Settings.Settings.instance().createSetting("show-frameowkr-listeners", true);
+    this.showFrameworkListenersSetting = Common18.Settings.Settings.instance().createSetting("show-frameowkr-listeners", true);
     this.showFrameworkListenersSetting.setTitle(i18nString18(UIStrings19.frameworkListeners));
     this.showFrameworkListenersSetting.addChangeListener(this.update.bind(this));
-    UI25.Context.Context.instance().addFlavorChangeListener(SDK22.DOMModel.DOMNode, this.update, this);
+    UI24.Context.Context.instance().addFlavorChangeListener(SDK21.DOMModel.DOMNode, this.update, this);
     this.update();
   }
   static instance(opts = { forceNew: null }) {
@@ -18189,7 +18173,7 @@ var EventListenersWidget = class _EventListenersWidget extends UI25.ThrottledWid
       this.lastRequestedNode.domModel().runtimeModel().releaseObjectGroup(objectGroupName);
       delete this.lastRequestedNode;
     }
-    const node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
+    const node = UI24.Context.Context.instance().flavor(SDK21.DOMModel.DOMNode);
     if (node) {
       this.lastRequestedNode = node;
       const selectedNodeOnly = !this.showForAncestorsSetting.get();
@@ -18208,12 +18192,12 @@ var EventListenersWidget = class _EventListenersWidget extends UI25.ThrottledWid
     this.#view(input, {}, this.contentElement);
   }
   wasShown() {
-    UI25.Context.Context.instance().setFlavor(_EventListenersWidget, this);
+    UI24.Context.Context.instance().setFlavor(_EventListenersWidget, this);
     super.wasShown();
   }
   willHide() {
     super.willHide();
-    UI25.Context.Context.instance().setFlavor(_EventListenersWidget, null);
+    UI24.Context.Context.instance().setFlavor(_EventListenersWidget, null);
   }
   windowObjectInNodeContext(node) {
     const executionContexts = node.domModel().runtimeModel().executionContexts();
@@ -18274,13 +18258,13 @@ __export(PropertiesWidget_exports, {
   PropertiesWidget: () => PropertiesWidget
 });
 import "./../../ui/legacy/legacy.js";
-import * as Common20 from "./../../core/common/common.js";
+import * as Common19 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as Platform11 from "./../../core/platform/platform.js";
-import * as SDK23 from "./../../core/sdk/sdk.js";
+import * as SDK22 from "./../../core/sdk/sdk.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
-import * as UI26 from "./../../ui/legacy/legacy.js";
+import * as UI25 from "./../../ui/legacy/legacy.js";
 import { html as html12, nothing as nothing4, render as render9 } from "./../../ui/lit/lit.js";
 import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -18309,7 +18293,7 @@ var propertiesWidget_css_default = `/*
 
 // gen/front_end/panels/elements/PropertiesWidget.js
 var OBJECT_GROUP_NAME = "properties-sidebar-pane";
-var { bindToSetting: bindToSetting2 } = UI26.SettingsUI;
+var { bindToSetting: bindToSetting2 } = UI25.SettingsUI;
 var UIStrings20 = {
   /**
    * @description Text on the checkbox in the Properties tab of the Elements panel, which controls whether
@@ -18349,12 +18333,12 @@ var DEFAULT_VIEW7 = (input, _output, target) => {
       ${input.treeOutlineElement}
     </div>`, target);
 };
-var getShowAllPropertiesSetting = () => Common20.Settings.Settings.instance().createSetting(
+var getShowAllPropertiesSetting = () => Common19.Settings.Settings.instance().createSetting(
   "show-all-properties",
   /* defaultValue */
   false
 );
-var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
+var PropertiesWidget = class extends UI25.ThrottledWidget.ThrottledWidget {
   node;
   showAllPropertiesSetting;
   filterRegex = null;
@@ -18367,12 +18351,12 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
     this.registerRequiredCSS(propertiesWidget_css_default);
     this.showAllPropertiesSetting = getShowAllPropertiesSetting();
     this.showAllPropertiesSetting.addChangeListener(this.filterAndScheduleUpdate.bind(this));
-    SDK23.TargetManager.TargetManager.instance().addModelListener(SDK23.DOMModel.DOMModel, SDK23.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
-    SDK23.TargetManager.TargetManager.instance().addModelListener(SDK23.DOMModel.DOMModel, SDK23.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
-    SDK23.TargetManager.TargetManager.instance().addModelListener(SDK23.DOMModel.DOMModel, SDK23.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
-    SDK23.TargetManager.TargetManager.instance().addModelListener(SDK23.DOMModel.DOMModel, SDK23.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
-    UI26.Context.Context.instance().addFlavorChangeListener(SDK23.DOMModel.DOMNode, this.setNode, this);
-    this.node = UI26.Context.Context.instance().flavor(SDK23.DOMModel.DOMNode);
+    SDK22.TargetManager.TargetManager.instance().addModelListener(SDK22.DOMModel.DOMModel, SDK22.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
+    SDK22.TargetManager.TargetManager.instance().addModelListener(SDK22.DOMModel.DOMModel, SDK22.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
+    SDK22.TargetManager.TargetManager.instance().addModelListener(SDK22.DOMModel.DOMModel, SDK22.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
+    SDK22.TargetManager.TargetManager.instance().addModelListener(SDK22.DOMModel.DOMModel, SDK22.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
+    UI25.Context.Context.instance().addFlavorChangeListener(SDK22.DOMModel.DOMNode, this.setNode, this);
+    this.node = UI25.Context.Context.instance().flavor(SDK22.DOMModel.DOMNode);
     this.#view = view;
     this.treeOutline = new ObjectUI.ObjectPropertiesSection.ObjectPropertiesSectionsTreeOutline({ readOnly: true });
     this.treeOutline.setShowSelectionOnKeyboardFocus(
@@ -18381,7 +18365,7 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
       /* preventTabOrder */
       false
     );
-    this.treeOutline.addEventListener(UI26.TreeOutline.Events.ElementExpanded, () => {
+    this.treeOutline.addEventListener(UI25.TreeOutline.Events.ElementExpanded, () => {
       Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.DOMPropertiesExpanded);
     });
     void this.doUpdate();
@@ -18428,7 +18412,7 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
         return;
       }
       const treeElement = this.treeOutline.rootElement();
-      let { properties } = await SDK23.RemoteObject.RemoteObject.loadFromObjectPerProto(
+      let { properties } = await SDK22.RemoteObject.RemoteObject.loadFromObjectPerProto(
         object,
         true
         /* generatePreview */
@@ -18451,7 +18435,7 @@ var PropertiesWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
       return;
     }
     const data = event.data;
-    const node = data instanceof SDK23.DOMModel.DOMNode ? data : data.node;
+    const node = data instanceof SDK22.DOMModel.DOMNode ? data : data.node;
     if (this.node !== node) {
       return;
     }
@@ -18467,9 +18451,9 @@ __export(NodeStackTraceWidget_exports, {
   NodeStackTraceWidget: () => NodeStackTraceWidget
 });
 import * as i18n41 from "./../../core/i18n/i18n.js";
-import * as SDK24 from "./../../core/sdk/sdk.js";
+import * as SDK23 from "./../../core/sdk/sdk.js";
 import * as Components6 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI27 from "./../../ui/legacy/legacy.js";
+import * as UI26 from "./../../ui/legacy/legacy.js";
 import { html as html13, render as render10 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/nodeStackTraceWidget.css.js
@@ -18502,10 +18486,10 @@ var DEFAULT_VIEW8 = (input, _output, target) => {
     <style>${nodeStackTraceWidget_css_default}</style>
     ${target && options.stackTrace ? html13`<devtools-widget
                 class="stack-trace"
-                .widgetConfig=${UI27.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
+                .widgetConfig=${UI26.Widget.widgetConfig(Components6.JSPresentationUtils.StackTracePreviewContent, { target: sdkTarget, linkifier, options })}>
               </devtools-widget>` : html13`<div class="gray-info-message">${i18nString20(UIStrings21.noStackTraceAvailable)}</div>`}`, target);
 };
-var NodeStackTraceWidget = class extends UI27.ThrottledWidget.ThrottledWidget {
+var NodeStackTraceWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
   #linkifier = new Components6.Linkifier.Linkifier(MaxLengthForLinks);
   #view;
   constructor(view = DEFAULT_VIEW8) {
@@ -18517,14 +18501,14 @@ var NodeStackTraceWidget = class extends UI27.ThrottledWidget.ThrottledWidget {
   }
   wasShown() {
     super.wasShown();
-    UI27.Context.Context.instance().addFlavorChangeListener(SDK24.DOMModel.DOMNode, this.update, this);
+    UI26.Context.Context.instance().addFlavorChangeListener(SDK23.DOMModel.DOMNode, this.update, this);
     this.update();
   }
   willHide() {
-    UI27.Context.Context.instance().removeFlavorChangeListener(SDK24.DOMModel.DOMNode, this.update, this);
+    UI26.Context.Context.instance().removeFlavorChangeListener(SDK23.DOMModel.DOMNode, this.update, this);
   }
   async doUpdate() {
-    const node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
+    const node = UI26.Context.Context.instance().flavor(SDK23.DOMModel.DOMNode);
     const stackTrace = await node?.creationStackTrace() ?? void 0;
     const input = {
       target: node?.domModel().target(),
@@ -18543,11 +18527,11 @@ __export(ClassesPaneWidget_exports, {
   ClassNamePrompt: () => ClassNamePrompt,
   ClassesPaneWidget: () => ClassesPaneWidget
 });
-import * as Common21 from "./../../core/common/common.js";
+import * as Common20 from "./../../core/common/common.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
-import * as SDK25 from "./../../core/sdk/sdk.js";
-import * as UI28 from "./../../ui/legacy/legacy.js";
+import * as SDK24 from "./../../core/sdk/sdk.js";
+import * as UI27 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/classesPaneWidget.css.js
@@ -18621,7 +18605,7 @@ var UIStrings22 = {
 };
 var str_22 = i18n43.i18n.registerUIStrings("panels/elements/ClassesPaneWidget.ts", UIStrings22);
 var i18nString21 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
-var ClassesPaneWidget = class extends UI28.Widget.Widget {
+var ClassesPaneWidget = class extends UI27.Widget.Widget {
   input;
   classesContainer;
   prompt;
@@ -18648,12 +18632,12 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     this.prompt.setPlaceholder(i18nString21(UIStrings22.addNewClass));
     this.prompt.addEventListener("TextChanged", this.onTextChanged, this);
     proxyElement.addEventListener("keydown", this.onKeyDown.bind(this), false);
-    SDK25.TargetManager.TargetManager.instance().addModelListener(SDK25.DOMModel.DOMModel, SDK25.DOMModel.Events.DOMMutated, this.onDOMMutated, this, { scoped: true });
+    SDK24.TargetManager.TargetManager.instance().addModelListener(SDK24.DOMModel.DOMModel, SDK24.DOMModel.Events.DOMMutated, this.onDOMMutated, this, { scoped: true });
     this.mutatingNodes = /* @__PURE__ */ new Set();
     this.pendingNodeClasses = /* @__PURE__ */ new Map();
-    this.updateNodeThrottler = new Common21.Throttler.Throttler(0);
+    this.updateNodeThrottler = new Common20.Throttler.Throttler(0);
     this.previousTarget = null;
-    UI28.Context.Context.instance().addFlavorChangeListener(SDK25.DOMModel.DOMNode, this.onSelectedNodeChanged, this);
+    UI27.Context.Context.instance().addFlavorChangeListener(SDK24.DOMModel.DOMNode, this.onSelectedNodeChanged, this);
   }
   splitTextIntoClasses(text) {
     return text.split(/[,\s]/).map((className) => className.trim()).filter((className) => className.length);
@@ -18678,7 +18662,7 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     }
     this.prompt.clearAutocomplete();
     eventTarget.textContent = "";
-    const node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    const node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -18692,12 +18676,12 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     }
     const joinClassString = classNames.join(" ");
     const announcementString = classNames.length > 1 ? i18nString21(UIStrings22.classesSAdded, { PH1: joinClassString }) : i18nString21(UIStrings22.classSAdded, { PH1: joinClassString });
-    UI28.ARIAUtils.LiveAnnouncer.alert(announcementString);
+    UI27.ARIAUtils.LiveAnnouncer.alert(announcementString);
     this.installNodeClasses(node);
     this.update();
   }
   onTextChanged() {
-    const node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    const node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -18727,7 +18711,7 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     if (!this.isShowing()) {
       return;
     }
-    let node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    let node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
@@ -18740,14 +18724,14 @@ var ClassesPaneWidget = class extends UI28.Widget.Widget {
     const keys = [...classes.keys()];
     keys.sort(Platform12.StringUtilities.caseInsensetiveComparator);
     for (const className of keys) {
-      const checkbox = UI28.UIUtils.CheckboxLabel.createWithStringLiteral(className, classes.get(className), "element-class", true);
+      const checkbox = UI27.UIUtils.CheckboxLabel.createWithStringLiteral(className, classes.get(className), "element-class", true);
       checkbox.classList.add("monospace");
       checkbox.addEventListener("click", this.onClick.bind(this, className), false);
       this.classesContainer.appendChild(checkbox);
     }
   }
   onClick(className, event) {
-    const node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    const node = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
     if (!node) {
       return;
     }
@@ -18813,7 +18797,7 @@ var ButtonProvider3 = class _ButtonProvider {
   button;
   view;
   constructor() {
-    this.button = new UI28.Toolbar.ToolbarToggle(i18nString21(UIStrings22.elementClasses), "class");
+    this.button = new UI27.Toolbar.ToolbarToggle(i18nString21(UIStrings22.elementClasses), "class");
     this.button.element.style.setProperty("--dot-toggle-top", "12px");
     this.button.element.style.setProperty("--dot-toggle-left", "18px");
     this.button.element.setAttribute("jslog", `${VisualLogging16.toggleSubpane("elements-classes").track({ click: true })}`);
@@ -18834,7 +18818,7 @@ var ButtonProvider3 = class _ButtonProvider {
     return this.button;
   }
 };
-var ClassNamePrompt = class extends UI28.TextPrompt.TextPrompt {
+var ClassNamePrompt = class extends UI27.TextPrompt.TextPrompt {
   nodeClasses;
   selectedFrameId;
   classNamesPromise;
@@ -18877,7 +18861,7 @@ var ClassNamePrompt = class extends UI28.TextPrompt.TextPrompt {
     if (!prefix || force) {
       this.classNamesPromise = null;
     }
-    const selectedNode = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    const selectedNode = UI27.Context.Context.instance().flavor(SDK24.DOMModel.DOMNode);
     if (!selectedNode || !prefix && !force && !expression.trim()) {
       return [];
     }
@@ -18914,9 +18898,9 @@ __export(ElementStatePaneWidget_exports, {
   ElementStatePaneWidget: () => ElementStatePaneWidget
 });
 import * as i18n45 from "./../../core/i18n/i18n.js";
-import * as SDK26 from "./../../core/sdk/sdk.js";
+import * as SDK25 from "./../../core/sdk/sdk.js";
 import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
-import * as UI29 from "./../../ui/legacy/legacy.js";
+import * as UI28 from "./../../ui/legacy/legacy.js";
 import { html as html14, render as render11 } from "./../../ui/lit/lit.js";
 import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -18977,7 +18961,7 @@ var elementStatePaneWidget_css_default = `/**
 /*# sourceURL=${import.meta.resolve("./elementStatePaneWidget.css")} */`;
 
 // gen/front_end/panels/elements/ElementStatePaneWidget.js
-var { bindToSetting: bindToSetting3 } = UI29.SettingsUI;
+var { bindToSetting: bindToSetting3 } = UI28.SettingsUI;
 var UIStrings23 = {
   /**
    * @description Title of a section in the Element State Pane Widget of the Elements panel. The
@@ -19051,7 +19035,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
         <devtools-checkbox class="small" title=${i18nString22(UIStrings23.emulatesAFocusedPage)}
             jslog=${VisualLogging17.toggle("emulate-page-focus").track({ change: true })} ${bindToSetting3("emulate-page-focus")}>${i18nString22(UIStrings23.emulateFocusedPage)}</devtools-checkbox>
         <devtools-button
-            @click=${() => UI29.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page")}
+            @click=${() => UI28.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/rendering/apply-effects#emulate_a_focused_page")}
            .data=${{
     variant: "icon",
     iconName: "help",
@@ -19076,7 +19060,7 @@ var DEFAULT_VIEW9 = (input, _output, target) => {
       </details>
     </div>`, target);
 };
-var ElementStatePaneWidget = class extends UI29.Widget.Widget {
+var ElementStatePaneWidget = class extends UI28.Widget.Widget {
   #duals;
   #cssModel;
   #states = /* @__PURE__ */ new Map();
@@ -19120,11 +19104,11 @@ var ElementStatePaneWidget = class extends UI29.Widget.Widget {
     setDualStateCheckboxes(SpecificPseudoStates.IN_RANGE, SpecificPseudoStates.OUT_OF_RANGE);
     setDualStateCheckboxes(SpecificPseudoStates.ENABLED, SpecificPseudoStates.DISABLED);
     setDualStateCheckboxes(SpecificPseudoStates.VISITED, SpecificPseudoStates.LINK);
-    UI29.Context.Context.instance().addFlavorChangeListener(SDK26.DOMModel.DOMNode, this.requestUpdate, this);
+    UI28.Context.Context.instance().addFlavorChangeListener(SDK25.DOMModel.DOMNode, this.requestUpdate, this);
   }
   onStateCheckboxClicked(event) {
-    const node = UI29.Context.Context.instance().flavor(SDK26.DOMModel.DOMNode);
-    if (!node || !(event.target instanceof UI29.UIUtils.CheckboxLabel)) {
+    const node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
+    if (!node || !(event.target instanceof UI28.UIUtils.CheckboxLabel)) {
       return;
     }
     const state = event.target.title.slice(1);
@@ -19143,11 +19127,11 @@ var ElementStatePaneWidget = class extends UI29.Widget.Widget {
       return;
     }
     if (this.#cssModel) {
-      this.#cssModel.removeEventListener(SDK26.CSSModel.Events.PseudoStateForced, this.requestUpdate, this);
+      this.#cssModel.removeEventListener(SDK25.CSSModel.Events.PseudoStateForced, this.requestUpdate, this);
     }
     this.#cssModel = cssModel;
     if (this.#cssModel) {
-      this.#cssModel.addEventListener(SDK26.CSSModel.Events.PseudoStateForced, this.requestUpdate, this);
+      this.#cssModel.addEventListener(SDK25.CSSModel.Events.PseudoStateForced, this.requestUpdate, this);
     }
   }
   wasShown() {
@@ -19155,7 +19139,7 @@ var ElementStatePaneWidget = class extends UI29.Widget.Widget {
     this.requestUpdate();
   }
   async performUpdate() {
-    let node = UI29.Context.Context.instance().flavor(SDK26.DOMModel.DOMNode);
+    let node = UI28.Context.Context.instance().flavor(SDK25.DOMModel.DOMNode);
     if (node) {
       node = node.enclosingElementOrSelf();
     }
@@ -19302,7 +19286,7 @@ var ButtonProvider4 = class _ButtonProvider {
   button;
   view;
   constructor() {
-    this.button = new UI29.Toolbar.ToolbarToggle(i18nString22(UIStrings23.toggleElementState), "hover");
+    this.button = new UI28.Toolbar.ToolbarToggle(i18nString22(UIStrings23.toggleElementState), "hover");
     this.button.addEventListener("Click", this.clicked, this);
     this.button.element.classList.add("element-state");
     this.button.element.setAttribute("jslog", `${VisualLogging17.toggleSubpane("element-states").track({ click: true })}`);
@@ -19330,7 +19314,7 @@ var ElementsTreeOutlineRenderer_exports = {};
 __export(ElementsTreeOutlineRenderer_exports, {
   Renderer: () => Renderer2
 });
-import * as SDK27 from "./../../core/sdk/sdk.js";
+import * as SDK26 from "./../../core/sdk/sdk.js";
 var rendererInstance;
 var Renderer2 = class _Renderer {
   static instance(opts = { forceNew: null }) {
@@ -19340,11 +19324,11 @@ var Renderer2 = class _Renderer {
     }
     return rendererInstance;
   }
-  async render(object) {
+  async render(object, options) {
     let node = null;
-    if (object instanceof SDK27.DOMModel.DOMNode) {
+    if (object instanceof SDK26.DOMModel.DOMNode) {
       node = object;
-    } else if (object instanceof SDK27.DOMModel.DeferredDOMNode) {
+    } else if (object instanceof SDK26.DOMModel.DeferredDOMNode) {
       node = await object.resolvePromise();
     }
     if (!node) {
@@ -19368,6 +19352,9 @@ var Renderer2 = class _Renderer {
       /* preventTabOrder: */
       true
     );
+    if (options?.expand) {
+      treeOutline.firstChild()?.expand();
+    }
     return { node: treeOutline.element, tree: treeOutline };
   }
 };
@@ -19386,7 +19373,6 @@ export {
   ElementsPanel_exports as ElementsPanel,
   ElementsSidebarPane_exports as ElementsSidebarPane,
   ElementsTreeElement_exports as ElementsTreeElement,
-  ElementsTreeElementHighlighter_exports as ElementsTreeElementHighlighter,
   ElementsTreeOutline_exports as ElementsTreeOutline,
   ElementsTreeOutlineRenderer_exports as ElementsTreeOutlineRenderer,
   EventListenersWidget_exports as EventListenersWidget,

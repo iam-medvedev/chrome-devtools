@@ -1,12 +1,11 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ConsoleFilter, FilterType } from './ConsoleFilter.js';
 import consoleSidebarStyles from './consoleSidebar.css.js';
@@ -45,177 +44,153 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console/ConsoleSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    tree;
-    selectedTreeElement;
-    treeElements;
-    constructor() {
-        super({
-            jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}`,
-            useShadowDom: true,
-        });
-        this.setMinimumSize(125, 0);
-        this.tree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
-        this.tree.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
-        this.tree.registerRequiredCSS(consoleSidebarStyles);
-        this.tree.hideOverflow();
-        this.contentElement.appendChild(this.tree.element);
-        this.selectedTreeElement = null;
-        this.treeElements = [];
-        const selectedFilterSetting = Common.Settings.Settings.instance().createSetting('console.sidebar-selected-filter', null);
-        const consoleAPIParsedFilters = [{
-                key: FilterType.Source,
-                text: Common.Console.FrontendMessageSource.ConsoleAPI,
-                negative: false,
-                regex: undefined,
-            }];
-        this.appendGroup("message" /* GroupName.ALL */, [], ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('list'), selectedFilterSetting);
-        this.appendGroup("user message" /* GroupName.CONSOLE_API */, consoleAPIParsedFilters, ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create('profile'), selectedFilterSetting);
-        this.appendGroup("error" /* GroupName.ERROR */, [], ConsoleFilter.singleLevelMask("error" /* Protocol.Log.LogEntryLevel.Error */), IconButton.Icon.create('cross-circle'), selectedFilterSetting);
-        this.appendGroup("warning" /* GroupName.WARNING */, [], ConsoleFilter.singleLevelMask("warning" /* Protocol.Log.LogEntryLevel.Warning */), IconButton.Icon.create('warning'), selectedFilterSetting);
-        this.appendGroup("info" /* GroupName.INFO */, [], ConsoleFilter.singleLevelMask("info" /* Protocol.Log.LogEntryLevel.Info */), IconButton.Icon.create('info'), selectedFilterSetting);
-        this.appendGroup("verbose" /* GroupName.VERBOSE */, [], ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */), IconButton.Icon.create('bug'), selectedFilterSetting);
-        const selectedTreeElementName = selectedFilterSetting.get();
-        const defaultTreeElement = this.treeElements.find(x => x.name() === selectedTreeElementName) || this.treeElements[0];
-        defaultTreeElement.select();
-    }
-    appendGroup(name, parsedFilters, levelsMask, icon, selectedFilterSetting) {
-        const filter = new ConsoleFilter(name, parsedFilters, null, levelsMask);
-        const treeElement = new FilterTreeElement(filter, icon, selectedFilterSetting);
-        this.tree.appendChild(treeElement);
-        this.treeElements.push(treeElement);
-    }
-    clear() {
-        for (const treeElement of this.treeElements) {
-            treeElement.clear();
+const { render, html, nothing, Directives } = Lit;
+const GROUP_ICONS = {
+    ["message" /* GroupName.ALL */]: { icon: 'list', label: UIStrings.dMessages },
+    ["user message" /* GroupName.CONSOLE_API */]: { icon: 'profile', label: UIStrings.dUserMessages },
+    ["error" /* GroupName.ERROR */]: { icon: 'cross-circle', label: UIStrings.dErrors },
+    ["warning" /* GroupName.WARNING */]: { icon: 'warning', label: UIStrings.dWarnings },
+    ["info" /* GroupName.INFO */]: { icon: 'info', label: UIStrings.dInfo },
+    ["verbose" /* GroupName.VERBOSE */]: { icon: 'bug', label: UIStrings.dVerbose },
+};
+export const DEFAULT_VIEW = (input, output, target) => {
+    const nodeFilterMap = new WeakMap();
+    const onSelectionChanged = (event) => {
+        const filter = nodeFilterMap.get(event.detail);
+        if (filter) {
+            input.onSelectionChanged(filter);
         }
+    };
+    render(html `<devtools-tree
+        navigation-variant
+        hide-overflow
+        @select=${onSelectionChanged}
+        .template=${html `
+          <ul role="tree">
+            ${input.groups.map(group => html `
+              <li
+                role="treeitem"
+                ${Directives.ref(element => element && nodeFilterMap.set(element, group.filter))}
+                ?selected=${group.filter === input.selectedFilter}>
+                  <style>${consoleSidebarStyles}</style>
+                  <devtools-icon name=${GROUP_ICONS[group.name].icon}></devtools-icon>
+                  ${
+    /* eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings */
+    i18nString(GROUP_ICONS[group.name].label, {
+        n: group.messageCount
+    })}
+                  ${group.messageCount === 0 ? nothing : html `
+                  <ul role="group" ?hidden=${group.filter !== input.selectedFilter}>
+                    ${group.urlGroups.values().map(urlGroup => html `
+                      <li
+                        ${Directives.ref(element => element && nodeFilterMap.set(element, group.filter))}
+                        role="treeitem"
+                        ?selected=${urlGroup.filter === input.selectedFilter}
+                        title=${urlGroup.url ?? ''}>
+                          <devtools-icon name=document></devtools-icon>
+                          ${urlGroup.filter.name} <span class=count>${urlGroup.count}</span>
+                      </li>`)}
+                  </ul>`}
+              </li>`)}
+        </ul>`}
+        ></devtools-tree>`, target);
+};
+class ConsoleFilterGroup {
+    urlGroups = new Map();
+    messageCount = 0;
+    name;
+    filter;
+    constructor(name, parsedFilters, levelsMask) {
+        this.name = name;
+        this.filter = new ConsoleFilter(name, parsedFilters, null, levelsMask);
     }
-    onMessageAdded(viewMessage) {
-        for (const treeElement of this.treeElements) {
-            treeElement.onMessageAdded(viewMessage);
-        }
-    }
-    shouldBeVisible(viewMessage) {
-        if (this.selectedTreeElement instanceof ConsoleSidebarTreeElement) {
-            return this.selectedTreeElement.filter().shouldBeVisible(viewMessage);
-        }
-        return true;
-    }
-    selectionChanged(event) {
-        this.selectedTreeElement = event.data;
-        this.dispatchEventToListeners("FilterSelected" /* Events.FILTER_SELECTED */);
-    }
-}
-class ConsoleSidebarTreeElement extends UI.TreeOutline.TreeElement {
-    filterInternal;
-    constructor(title, filter) {
-        super(title);
-        this.filterInternal = filter;
-    }
-    filter() {
-        return this.filterInternal;
-    }
-}
-export class URLGroupTreeElement extends ConsoleSidebarTreeElement {
-    countElement;
-    messageCount;
-    constructor(filter) {
-        super(filter.name, filter);
-        this.countElement = this.listItemElement.createChild('span', 'count');
-        const icon = IconButton.Icon.create('document');
-        this.setLeadingIcons([icon]);
-        this.messageCount = 0;
-    }
-    incrementAndUpdateCounter() {
-        this.messageCount++;
-        this.countElement.textContent = `${this.messageCount}`;
-    }
-}
-/**
- * Maps the GroupName for a filter to the UIString used to render messages.
- * Stored here so we only construct it once at runtime, rather than every time we
- * construct a filter or get a new message.
- */
-const stringForFilterSidebarItemMap = new Map([
-    ["user message" /* GroupName.CONSOLE_API */, UIStrings.dUserMessages],
-    ["message" /* GroupName.ALL */, UIStrings.dMessages],
-    ["error" /* GroupName.ERROR */, UIStrings.dErrors],
-    ["warning" /* GroupName.WARNING */, UIStrings.dWarnings],
-    ["info" /* GroupName.INFO */, UIStrings.dInfo],
-    ["verbose" /* GroupName.VERBOSE */, UIStrings.dVerbose],
-]);
-export class FilterTreeElement extends ConsoleSidebarTreeElement {
-    selectedFilterSetting;
-    urlTreeElements;
-    messageCount;
-    uiStringForFilterCount;
-    constructor(filter, icon, selectedFilterSetting) {
-        super(filter.name, filter);
-        this.uiStringForFilterCount = stringForFilterSidebarItemMap.get(filter.name) || '';
-        this.selectedFilterSetting = selectedFilterSetting;
-        this.urlTreeElements = new Map();
-        this.setLeadingIcons([icon]);
-        this.messageCount = 0;
-        this.updateCounter();
-    }
-    clear() {
-        this.urlTreeElements.clear();
-        this.removeChildren();
-        this.messageCount = 0;
-        this.updateCounter();
-    }
-    name() {
-        return this.filterInternal.name;
-    }
-    onselect(selectedByUser) {
-        this.selectedFilterSetting.set(this.filterInternal.name);
-        return super.onselect(selectedByUser);
-    }
-    updateCounter() {
-        this.title = this.updateGroupTitle(this.messageCount);
-        this.setExpandable(Boolean(this.childCount()));
-    }
-    updateGroupTitle(messageCount) {
-        if (this.uiStringForFilterCount) {
-            // eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings
-            return i18nString(this.uiStringForFilterCount, { n: messageCount });
-        }
-        return '';
-    }
-    onMessageAdded(viewMessage) {
+    onMessage(viewMessage) {
         const message = viewMessage.consoleMessage();
         const shouldIncrementCounter = message.type !== SDK.ConsoleModel.FrontendMessageType.Command &&
             message.type !== SDK.ConsoleModel.FrontendMessageType.Result && !message.isGroupMessage();
-        if (!this.filterInternal.shouldBeVisible(viewMessage) || !shouldIncrementCounter) {
+        if (!this.filter.shouldBeVisible(viewMessage) || !shouldIncrementCounter) {
             return;
         }
-        const child = this.childElement(message.url);
-        child.incrementAndUpdateCounter();
+        const child = this.#getUrlGroup(message.url || null);
+        child.count++;
         this.messageCount++;
-        this.updateCounter();
     }
-    childElement(url) {
-        const urlValue = url || null;
-        let child = this.urlTreeElements.get(urlValue);
+    clear() {
+        this.messageCount = 0;
+        this.urlGroups.clear();
+    }
+    #getUrlGroup(url) {
+        let child = this.urlGroups.get(url);
         if (child) {
             return child;
         }
-        const filter = this.filterInternal.clone();
-        const parsedURL = urlValue ? Common.ParsedURL.ParsedURL.fromString(urlValue) : null;
-        if (urlValue) {
-            filter.name = parsedURL ? parsedURL.displayName : urlValue;
+        const filter = this.filter.clone();
+        child = { filter, url, count: 0 };
+        const parsedURL = url ? Common.ParsedURL.ParsedURL.fromString(url) : null;
+        if (url) {
+            filter.name = parsedURL ? parsedURL.displayName : url;
         }
         else {
             filter.name = i18nString(UIStrings.other);
         }
-        filter.parsedFilters.push({ key: FilterType.Url, text: urlValue, negative: false, regex: undefined });
-        child = new URLGroupTreeElement(filter);
-        if (urlValue) {
-            child.tooltip = urlValue;
-        }
-        this.urlTreeElements.set(urlValue, child);
-        this.appendChild(child);
+        filter.parsedFilters.push({ key: FilterType.Url, text: url, negative: false, regex: undefined });
+        this.urlGroups.set(url, child);
         return child;
+    }
+}
+const CONSOLE_API_PARSED_FILTERS = [{
+        key: FilterType.Source,
+        text: Common.Console.FrontendMessageSource.ConsoleAPI,
+        negative: false,
+        regex: undefined,
+    }];
+export class ConsoleSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
+    #view;
+    #groups = [
+        new ConsoleFilterGroup("message" /* GroupName.ALL */, [], ConsoleFilter.allLevelsFilterValue()),
+        new ConsoleFilterGroup("user message" /* GroupName.CONSOLE_API */, CONSOLE_API_PARSED_FILTERS, ConsoleFilter.allLevelsFilterValue()),
+        new ConsoleFilterGroup("error" /* GroupName.ERROR */, [], ConsoleFilter.singleLevelMask("error" /* Protocol.Log.LogEntryLevel.Error */)),
+        new ConsoleFilterGroup("warning" /* GroupName.WARNING */, [], ConsoleFilter.singleLevelMask("warning" /* Protocol.Log.LogEntryLevel.Warning */)),
+        new ConsoleFilterGroup("info" /* GroupName.INFO */, [], ConsoleFilter.singleLevelMask("info" /* Protocol.Log.LogEntryLevel.Info */)),
+        new ConsoleFilterGroup("verbose" /* GroupName.VERBOSE */, [], ConsoleFilter.singleLevelMask("verbose" /* Protocol.Log.LogEntryLevel.Verbose */)),
+    ];
+    #selectedFilterSetting = Common.Settings.Settings.instance().createSetting('console.sidebar-selected-filter', null);
+    #selectedFilter = this.#groups.find(group => group.name === this.#selectedFilterSetting.get())?.filter;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, {
+            jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}`,
+            useShadowDom: true,
+        });
+        this.#view = view;
+        this.setMinimumSize(125, 0);
+        this.performUpdate();
+    }
+    performUpdate() {
+        const input = {
+            groups: this.#groups,
+            selectedFilter: this.#selectedFilter ?? this.#groups[0].filter,
+            onSelectionChanged: filter => {
+                this.#selectedFilter = filter;
+                this.#selectedFilterSetting.set(filter.name);
+                this.dispatchEventToListeners("FilterSelected" /* Events.FILTER_SELECTED */);
+            },
+        };
+        this.#view(input, {}, this.contentElement);
+    }
+    clear() {
+        for (const group of this.#groups) {
+            group.clear();
+        }
+        this.requestUpdate();
+    }
+    onMessageAdded(viewMessage) {
+        for (const group of this.#groups) {
+            group.onMessage(viewMessage);
+        }
+        this.requestUpdate();
+    }
+    shouldBeVisible(viewMessage) {
+        return this.#selectedFilter?.shouldBeVisible(viewMessage) ?? true;
     }
 }
 //# sourceMappingURL=ConsoleSidebar.js.map

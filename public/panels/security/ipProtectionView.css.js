@@ -25,6 +25,7 @@ export default `/*
     padding: var(--sys-size-5) var(--sys-size-3) var(--sys-size-5) var(--sys-size-5);
     min-width: fit-content;
     min-height: fit-content;
+    height: 100%;
   }
 
   .header {
@@ -105,6 +106,10 @@ export default `/*
     text-align: center;
     min-height: fit-content;
     min-width: fit-content;
+  }
+
+  devtools-data-grid {
+  flex: auto;
   }
 }
 

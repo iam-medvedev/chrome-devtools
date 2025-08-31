@@ -289,7 +289,7 @@ describeWithEnvironment('Overlays', () => {
                 type: 'ENTRY_LABEL',
                 entry: event,
                 label: label ?? '',
-            });
+            }, { loadedFromFile: false, muteAriaNotifications: false });
             await overlays.update();
             await RenderCoordinator.done();
             // Ensure that the overlay was created.
@@ -743,12 +743,12 @@ describeWithEnvironment('Overlays', () => {
                 type: 'TIME_RANGE',
                 label: 'label',
                 bounds: parsedTrace.Meta.traceBounds,
-            });
+            }, { loadedFromFile: false, muteAriaNotifications: false });
             Timeline.ModificationsManager.ModificationsManager.activeManager()?.createAnnotation({
                 type: 'TIME_RANGE',
                 label: 'label2',
                 bounds: parsedTrace.Meta.traceBounds,
-            });
+            }, { loadedFromFile: false, muteAriaNotifications: false });
             await overlays.update();
             assert.lengthOf(overlays.overlaysOfType('TIME_RANGE'), 2);
         });
@@ -775,7 +775,7 @@ describeWithEnvironment('Overlays', () => {
                 type: 'ENTRY_LABEL',
                 entry: event,
                 label: '',
-            });
+            }, { loadedFromFile: false, muteAriaNotifications: false });
             await overlays.update();
             // Ensure that the overlay was created.
             const overlayDOM = container.querySelector('.overlay-type-ENTRY_LABEL');
@@ -797,7 +797,7 @@ describeWithEnvironment('Overlays', () => {
                 label: '',
                 // Make this overlay the entire span of the trace
                 bounds: parsedTrace.Meta.traceBounds,
-            });
+            }, { loadedFromFile: false, muteAriaNotifications: false });
             await overlays.update();
             const overlayDOM = container.querySelector('.overlay-type-TIME_RANGE');
             assert.isOk(overlayDOM);

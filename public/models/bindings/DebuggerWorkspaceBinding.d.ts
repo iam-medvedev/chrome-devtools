@@ -1,5 +1,7 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Protocol from '../../generated/protocol.js';
+import type * as StackTrace from '../stack_trace/stack_trace.js';
 import type * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { DebuggerLanguagePluginManager } from './DebuggerLanguagePlugins.js';
@@ -29,6 +31,7 @@ export declare class DebuggerWorkspaceBinding implements SDK.TargetManager.SDKMo
     pendingLiveLocationChangesPromise(): Promise<void | Location | StackTraceTopFrameLocation | null>;
     private recordLiveLocationChange;
     updateLocations(script: SDK.Script.Script): Promise<void>;
+    createStackTraceFromProtocolRuntime(stackTrace: Protocol.Runtime.StackTrace, target: SDK.Target.Target): Promise<StackTrace.StackTrace.StackTrace>;
     createLiveLocation(rawLocation: SDK.DebuggerModel.Location, updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool): Promise<Location | null>;
     createStackTraceTopFrameLiveLocation(rawLocations: SDK.DebuggerModel.Location[], updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool): Promise<LiveLocation>;
     createCallFrameLiveLocation(location: SDK.DebuggerModel.Location, updateDelegate: (arg0: LiveLocation) => Promise<void>, locationPool: LiveLocationPool): Promise<Location | null>;

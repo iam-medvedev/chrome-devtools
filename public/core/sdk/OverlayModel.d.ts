@@ -84,11 +84,11 @@ export declare class OverlayModel extends SDKModel<EventTypes> implements Protoc
     toggleWindowControlsToolbar(show: boolean): Promise<void>;
     private buildHighlightConfig;
     nodeHighlightRequested({ nodeId }: Protocol.Overlay.NodeHighlightRequestedEvent): void;
-    static setInspectNodeHandler(handler: (arg0: DOMNode) => void): void;
+    static setInspectNodeHandler(handler: (arg0: DOMNode) => Promise<void>): void;
     inspectNodeRequested({ backendNodeId }: Protocol.Overlay.InspectNodeRequestedEvent): void;
     screenshotRequested({ viewport }: Protocol.Overlay.ScreenshotRequestedEvent): void;
     inspectModeCanceled(): void;
-    static inspectNodeHandler: ((node: DOMNode) => void) | null;
+    static inspectNodeHandler: ((node: DOMNode) => Promise<void>) | null;
     getOverlayAgent(): ProtocolProxyApi.OverlayApi;
     hasStyleSheetText(url: Platform.DevToolsPath.UrlString): Promise<boolean>;
 }

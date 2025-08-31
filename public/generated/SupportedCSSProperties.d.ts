@@ -143,6 +143,9 @@ export const generatedPropertyValues: {
     "baseline-source": {
         values: string[];
     };
+    "block-ellipsis": {
+        values: string[];
+    };
     "block-size": {
         values: string[];
     };

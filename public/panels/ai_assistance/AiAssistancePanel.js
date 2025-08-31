@@ -610,6 +610,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         // when AI Assistance is loaded.
         UI.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
         this.#bindTimelineTraceListener();
+        this.#selectDefaultAgentIfNeeded();
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
     }
     willHide() {
@@ -782,6 +783,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #handleSelectElementClick() {
+        UI.Context.Context.instance().setFlavor(Common.ReturnToPanel.ReturnToPanelFlavor, new Common.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
         void this.#toggleSearchElementAction?.execute();
     }
     #isTextInputDisabled() {
@@ -1053,9 +1055,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         const markdownContent = this.#conversation.getConversationMarkdown();
-        const titleFormatted = Platform.StringUtilities.toSnakeCase(this.#conversation.title || '');
         const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, 'text/markdown');
-        const filename = `devtools_${titleFormatted || 'conversation'}.md`;
+        const titleFormatted = Platform.StringUtilities.toSnakeCase(this.#conversation.title || '');
+        const prefix = 'devtools_';
+        const suffix = '.md';
+        const maxTitleLength = 64 - prefix.length - suffix.length;
+        let finalTitle = titleFormatted || 'conversation';
+        if (finalTitle.length > maxTitleLength) {
+            finalTitle = finalTitle.substring(0, maxTitleLength);
+        }
+        const filename = `${prefix}${finalTitle}${suffix}`;
         await Workspace.FileManager.FileManager.instance().save(filename, contentData, true);
         Workspace.FileManager.FileManager.instance().close(filename);
     }
@@ -1398,48 +1407,28 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
 }
 export function getResponseMarkdown(message) {
-    let markdown = '';
-    const generateContextDetailsMarkdown = (details) => {
-        let detailsMarkdown = '**Details**:\n\n';
-        for (const detail of details) {
-            const text = detail.codeLang ? `\`\`\`${detail.codeLang}\n${detail.text}\n\`\`\`\n` : `${detail.text}`;
-            detailsMarkdown += `**${detail.title}:**\n\n${text}\n\n`;
-        }
-        return detailsMarkdown;
-    };
+    const contentParts = ['## AI'];
     for (const step of message.steps) {
-        if (step.contextDetails) {
-            markdown += '### Context:\n';
-            markdown += generateContextDetailsMarkdown(step.contextDetails);
-        }
         if (step.title) {
-            markdown += `### AI (Title):\n${step.title}\n\n`;
+            contentParts.push(`### ${step.title}`);
+        }
+        if (step.contextDetails) {
+            contentParts.push(AiAssistanceModel.Conversation.generateContextDetailsMarkdown(step.contextDetails));
         }
         if (step.thought) {
-            markdown += `### AI (Thought):\n${step.thought}\n\n`;
+            contentParts.push(step.thought);
         }
         if (step.code) {
-            markdown += '### AI (Action):\n';
-            markdown += `**Code executed:**\n\`\`\`\n${step.code.trim()}\n\`\`\`\n`;
+            contentParts.push(`**Code executed:**\n\`\`\`\n${step.code.trim()}\n\`\`\``);
         }
         if (step.output) {
-            if (!step.code) { // Add action header if not already added by code
-                markdown += '### AI (Action):\n';
-            }
-            markdown += `**Output:**\n\`\`\`\n${step.output}\n\`\`\`\n`;
+            contentParts.push(`**Data returned:**\n\`\`\`\n${step.output}\n\`\`\``);
         }
-        if (step.canceled) {
-            if (!step.code && !step.output) { // Add action header if not already added
-                markdown += '### AI (Action):\n';
-            }
-            markdown += '**(Action Canceled)**\n';
-        }
-        markdown += '\n';
     }
     if (message.answer) {
-        markdown += `### AI (Answer):\n${message.answer}\n`;
+        contentParts.push(`### Answer\n\n${message.answer}`);
     }
-    return markdown;
+    return contentParts.join('\n\n');
 }
 export class ActionDelegate {
     handleAction(_context, actionId, opts) {

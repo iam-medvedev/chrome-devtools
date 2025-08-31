@@ -56,6 +56,11 @@ type ExternalRequestInput = {
         prompt: string;
     };
 } | {
+    kind: 'PERFORMANCE_ANALYZE';
+    args: {
+        prompt: string;
+    };
+} | {
     kind: 'NETWORK_DEBUGGER';
     args: {
         requestUrl: string;

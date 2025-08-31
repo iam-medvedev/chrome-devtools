@@ -37,9 +37,6 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         evaluateOnTarget = sinon.stub(target.runtimeAgent(), 'invoke_evaluate');
         Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
     });
-    afterEach(async () => {
-        sinon.restore();
-    });
     let id = 0;
     function createExecutionContext(target) {
         ++id;

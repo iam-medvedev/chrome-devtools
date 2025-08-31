@@ -50,7 +50,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import { getDurationString } from './AppenderUtils.js';
 import * as TimelineComponents from './components/components.js';
 import * as Extensions from './extensions/extensions.js';
-import { Tracker } from './FreshRecording.js';
 import { ModificationsManager } from './ModificationsManager.js';
 import { targetForEvent } from './TargetForEvent.js';
 import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
@@ -147,6 +146,10 @@ const UIStrings = {
      * @description Text for referring to a timer that has timed-out and therefore is being removed.
      */
     timeout: 'Timeout',
+    /**
+     * @description Text used to refer to a positive timeout value that schedules the idle callback once elapsed, even if no idle time is available.
+     */
+    requestIdleCallbackTimeout: 'Timeout',
     /**
      * @description Text used to indicate that a timer is repeating (e.g. every X seconds) rather than a one off.
      */
@@ -922,7 +925,7 @@ export class TimelineUIUtils {
                 contentHelper.appendTextRow(key, String(value));
             }
         }
-        const isFreshRecording = Boolean(parsedTrace && Tracker.instance().recordingIsFresh(parsedTrace));
+        const isFreshRecording = Boolean(parsedTrace && Utils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
         switch (event.name) {
             case "GCEvent" /* Trace.Types.Events.Name.GC */:
             case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
@@ -1226,6 +1229,9 @@ export class TimelineUIUtils {
             case "RequestIdleCallback" /* Trace.Types.Events.Name.REQUEST_IDLE_CALLBACK */:
             case "CancelIdleCallback" /* Trace.Types.Events.Name.CANCEL_IDLE_CALLBACK */: {
                 contentHelper.appendTextRow(i18nString(UIStrings.callbackId), unsafeEventData['id']);
+                if (Trace.Types.Events.isRequestIdleCallback(event)) {
+                    contentHelper.appendTextRow(i18nString(UIStrings.requestIdleCallbackTimeout), i18n.TimeUtilities.preciseMillisToString(event.args.data.timeout));
+                }
                 break;
             }
             case "EventDispatch" /* Trace.Types.Events.Name.EVENT_DISPATCH */: {

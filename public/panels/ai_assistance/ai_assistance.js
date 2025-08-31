@@ -310,7 +310,7 @@ var SELECT_WORKSPACE_DIALOG_DEFAULT_VIEW = (input, _output, target) => {
             .variant=${"primary"}>${lockedString(UIStringsNotTranslate.select)}</devtools-button>
         ` : nothing}
       </div>
-    `, target, { host: target });
+    `, target);
 };
 var SelectWorkspaceDialog = class _SelectWorkspaceDialog extends UI.Widget.VBox {
   #view;
@@ -322,7 +322,6 @@ var SelectWorkspaceDialog = class _SelectWorkspaceDialog extends UI.Widget.VBox 
   #folders = [];
   constructor(options, view) {
     super();
-    this.element.classList.add("dialog-container");
     this.#onProjectSelected = options.onProjectSelected;
     this.#dialog = options.dialog;
     this.#updateProjectsAndFolders();
@@ -4515,6 +4514,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     UI6.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     this.#bindTimelineTraceListener();
+    this.#selectDefaultAgentIfNeeded();
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistancePanelOpened);
   }
   willHide() {
@@ -4683,6 +4683,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
   }
   #handleSelectElementClick() {
+    UI6.Context.Context.instance().setFlavor(Common4.ReturnToPanel.ReturnToPanelFlavor, new Common4.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
     void this.#toggleSearchElementAction?.execute();
   }
   #isTextInputDisabled() {
@@ -4935,9 +4936,16 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       return;
     }
     const markdownContent = this.#conversation.getConversationMarkdown();
-    const titleFormatted = Platform4.StringUtilities.toSnakeCase(this.#conversation.title || "");
     const contentData = new TextUtils.ContentData.ContentData(markdownContent, false, "text/markdown");
-    const filename = `devtools_${titleFormatted || "conversation"}.md`;
+    const titleFormatted = Platform4.StringUtilities.toSnakeCase(this.#conversation.title || "");
+    const prefix = "devtools_";
+    const suffix = ".md";
+    const maxTitleLength = 64 - prefix.length - suffix.length;
+    let finalTitle = titleFormatted || "conversation";
+    if (finalTitle.length > maxTitleLength) {
+      finalTitle = finalTitle.substring(0, maxTitleLength);
+    }
+    const filename = `${prefix}${finalTitle}${suffix}`;
     await Workspace5.FileManager.FileManager.instance().save(filename, contentData, true);
     Workspace5.FileManager.FileManager.instance().close(filename);
   }
@@ -5258,71 +5266,36 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
 };
 function getResponseMarkdown(message) {
-  let markdown = "";
-  const generateContextDetailsMarkdown = (details) => {
-    let detailsMarkdown = "**Details**:\n\n";
-    for (const detail of details) {
-      const text = detail.codeLang ? `\`\`\`${detail.codeLang}
-${detail.text}
-\`\`\`
-` : `${detail.text}`;
-      detailsMarkdown += `**${detail.title}:**
-
-${text}
-
-`;
-    }
-    return detailsMarkdown;
-  };
+  const contentParts = ["## AI"];
   for (const step of message.steps) {
-    if (step.contextDetails) {
-      markdown += "### Context:\n";
-      markdown += generateContextDetailsMarkdown(step.contextDetails);
-    }
     if (step.title) {
-      markdown += `### AI (Title):
-${step.title}
-
-`;
+      contentParts.push(`### ${step.title}`);
+    }
+    if (step.contextDetails) {
+      contentParts.push(AiAssistanceModel3.Conversation.generateContextDetailsMarkdown(step.contextDetails));
     }
     if (step.thought) {
-      markdown += `### AI (Thought):
-${step.thought}
-
-`;
+      contentParts.push(step.thought);
     }
     if (step.code) {
-      markdown += "### AI (Action):\n";
-      markdown += `**Code executed:**
+      contentParts.push(`**Code executed:**
 \`\`\`
 ${step.code.trim()}
-\`\`\`
-`;
+\`\`\``);
     }
     if (step.output) {
-      if (!step.code) {
-        markdown += "### AI (Action):\n";
-      }
-      markdown += `**Output:**
+      contentParts.push(`**Data returned:**
 \`\`\`
 ${step.output}
-\`\`\`
-`;
+\`\`\``);
     }
-    if (step.canceled) {
-      if (!step.code && !step.output) {
-        markdown += "### AI (Action):\n";
-      }
-      markdown += "**(Action Canceled)**\n";
-    }
-    markdown += "\n";
   }
   if (message.answer) {
-    markdown += `### AI (Answer):
-${message.answer}
-`;
+    contentParts.push(`### Answer
+
+${message.answer}`);
   }
-  return markdown;
+  return contentParts.join("\n\n");
 }
 var ActionDelegate = class {
   handleAction(_context, actionId, opts) {

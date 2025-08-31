@@ -6,6 +6,15 @@ export declare class PerformanceInsightFormatter {
     insightIsSupported(): boolean;
     getSuggestions(): [ConversationSuggestion, ...ConversationSuggestion[]];
     /**
+     * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Network Dependency Tree Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatNetworkDependencyTreeInsight(insight: Trace.Insights.Models.NetworkDependencyTree.NetworkDependencyTreeInsightModel): string;
+    /**
      * Formats and outputs the insight's data.
      * Pass `{headingLevel: X}` to determine what heading level to use for the
      * titles in the markdown output. The default is 2 (##).

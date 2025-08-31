@@ -5,15 +5,15 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 import { data as flowsHandlerData } from './FlowsHandler.js';
 import { data as rendererHandlerData } from './RendererHandler.js';
-const schedulerToRunEntryPoints = new Map();
-const taskScheduleForTaskRunEvent = new Map();
-const asyncCallToScheduler = new Map();
-const runEntryPointToScheduler = new Map();
+let schedulerToRunEntryPoints = new Map();
+let taskScheduleForTaskRunEvent = new Map();
+let asyncCallToScheduler = new Map();
+let runEntryPointToScheduler = new Map();
 export function reset() {
-    schedulerToRunEntryPoints.clear();
-    asyncCallToScheduler.clear();
-    taskScheduleForTaskRunEvent.clear();
-    runEntryPointToScheduler.clear();
+    schedulerToRunEntryPoints = new Map();
+    asyncCallToScheduler = new Map();
+    taskScheduleForTaskRunEvent = new Map();
+    runEntryPointToScheduler = new Map();
 }
 export function handleEvent(_) {
 }

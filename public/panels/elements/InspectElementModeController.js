@@ -112,7 +112,16 @@ export class InspectElementModeController {
         this.toggleSearchAction.setToggled(false);
     }
     inspectNode(node) {
-        void ElementsPanel.instance().revealAndSelectNode(node, true, true);
+        const returnToPanel = UI.Context.Context.instance().flavor(Common.ReturnToPanel.ReturnToPanelFlavor);
+        UI.Context.Context.instance().setFlavor(Common.ReturnToPanel.ReturnToPanelFlavor, null);
+        if (returnToPanel) {
+            return ElementsPanel.instance()
+                .revealAndSelectNode(node, { showPanel: false, highlightInOverlay: false })
+                .then(() => {
+                void UI.ViewManager.ViewManager.instance().showView(returnToPanel.viewId, false, false);
+            });
+        }
+        return ElementsPanel.instance().revealAndSelectNode(node, { showPanel: true, focusNode: true, highlightInOverlay: false });
     }
     showDetailedInspectTooltipChanged() {
         this.setMode(this.mode);

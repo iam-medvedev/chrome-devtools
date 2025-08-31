@@ -290,6 +290,9 @@ function ariaDescriptionForOverlay(overlay) {
   return null;
 }
 function ariaAnnouncementForModifiedEvent(event) {
+  if (event.muteAriaNotifications) {
+    return null;
+  }
   const { overlay, action: action2 } = event;
   switch (action2) {
     case "Remove": {
@@ -546,7 +549,7 @@ var GPUTrackAppender = class {
    * GPU track.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -566,7 +569,7 @@ var GPUTrackAppender = class {
    * in the future).
    * @param currentLevel the flame chart level at which the header is
    * appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    */
   #appendTrackHeaderAtLevel(currentLevel, expanded) {
     const style = buildGroupStyle({ collapsible: false });
@@ -631,7 +634,7 @@ var InteractionsTrackAppender = class {
    * interactions track.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -771,7 +774,7 @@ var LayoutShiftsTrackAppender = class _LayoutShiftsTrackAppender {
    * layout shifts track.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -1302,11 +1305,13 @@ var activeManager;
 var AnnotationModifiedEvent = class _AnnotationModifiedEvent extends Event {
   overlay;
   action;
+  muteAriaNotifications;
   static eventName = "annotationmodifiedevent";
-  constructor(overlay, action2) {
+  constructor(overlay, action2, muteAriaNotifications = false) {
     super(_AnnotationModifiedEvent.eventName);
     this.overlay = overlay;
     this.action = action2;
+    this.muteAriaNotifications = muteAriaNotifications;
   }
 };
 var ModificationsManager = class _ModificationsManager extends EventTarget {
@@ -1395,7 +1400,7 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
    * Stores the annotation and creates its overlay.
    * @returns the Overlay that gets created and associated with this annotation.
    */
-  createAnnotation(newAnnotation, loadedFromFile = false) {
+  createAnnotation(newAnnotation, opts) {
     if (newAnnotation.type === "ENTRY_LABEL") {
       const overlay = this.#findLabelOverlayForEntry(newAnnotation.entry);
       if (overlay) {
@@ -1403,14 +1408,14 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
         return overlay;
       }
     }
-    if (!loadedFromFile) {
+    if (!opts.loadedFromFile) {
       if (newAnnotation.type !== "TIME_RANGE") {
         this.#annotationsHiddenSetting.set(false);
       }
     }
     const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
     this.#overlayForAnnotation.set(newAnnotation, newOverlay);
-    this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, "Add"));
+    this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, "Add", opts.muteAriaNotifications));
     return newOverlay;
   }
   linkAnnotationBetweenEntriesExists(entryFrom, entryTo) {
@@ -1526,10 +1531,10 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
   getOverlays() {
     return [...this.#overlayForAnnotation.values()];
   }
-  applyAnnotationsFromCache() {
+  applyAnnotationsFromCache(opts) {
     this.#modifications = this.toJSON();
     this.#overlayForAnnotation.clear();
-    this.#applyStoredAnnotations(this.#modifications.annotations);
+    this.#applyStoredAnnotations(this.#modifications.annotations, opts);
   }
   /**
    * Builds all modifications into a serializable object written into
@@ -1595,9 +1600,11 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
     const expandableEntries = this.#modifications.entriesModifications.expandableEntries;
     this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(this.#modifications.initialBreadcrumb);
     this.#applyEntriesFilterModifications(hiddenEntries, expandableEntries);
-    this.#applyStoredAnnotations(this.#modifications.annotations);
+    this.#applyStoredAnnotations(this.#modifications.annotations, {
+      muteAriaNotifications: false
+    });
   }
-  #applyStoredAnnotations(annotations) {
+  #applyStoredAnnotations(annotations, opts) {
     try {
       const entryLabels = annotations.entryLabels ?? [];
       entryLabels.forEach((entryLabel) => {
@@ -1605,7 +1612,10 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
           type: "ENTRY_LABEL",
           entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#parsedTrace),
           label: entryLabel.label
-        }, true);
+        }, {
+          loadedFromFile: true,
+          muteAriaNotifications: opts.muteAriaNotifications
+        });
       });
       const timeRanges = annotations.labelledTimeRanges ?? [];
       timeRanges.forEach((timeRange) => {
@@ -1613,7 +1623,10 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
           type: "TIME_RANGE",
           bounds: timeRange.bounds,
           label: timeRange.label
-        }, true);
+        }, {
+          loadedFromFile: true,
+          muteAriaNotifications: opts.muteAriaNotifications
+        });
       });
       const linksBetweenEntries = annotations.linksBetweenEntries ?? [];
       linksBetweenEntries.forEach((linkBetweenEntries) => {
@@ -1622,7 +1635,10 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
           state: "connected",
           entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#parsedTrace),
           entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#parsedTrace)
-        }, true);
+        }, {
+          loadedFromFile: true,
+          muteAriaNotifications: opts.muteAriaNotifications
+        });
       });
     } catch (err) {
       console.warn("Failed to apply stored annotations", err);
@@ -1789,7 +1805,7 @@ var ThreadAppender = class {
    * this thread.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -3076,28 +3092,6 @@ import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as TimelineComponents4 from "./components/components.js";
 import * as Extensions4 from "./extensions/extensions.js";
 
-// gen/front_end/panels/timeline/FreshRecording.js
-var FreshRecording_exports = {};
-__export(FreshRecording_exports, {
-  Tracker: () => Tracker
-});
-var instance = null;
-var Tracker = class _Tracker {
-  #freshRecordings = /* @__PURE__ */ new WeakSet();
-  static instance(opts = { forceNew: false }) {
-    if (!instance || opts.forceNew) {
-      instance = new _Tracker();
-    }
-    return instance;
-  }
-  registerFreshRecording(data) {
-    this.#freshRecordings.add(data);
-  }
-  recordingIsFresh(data) {
-    return this.#freshRecordings.has(data);
-  }
-};
-
 // gen/front_end/panels/timeline/ThirdPartyTreeView.js
 var ThirdPartyTreeView_exports = {};
 __export(ThirdPartyTreeView_exports, {
@@ -3146,17 +3140,17 @@ import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/ActiveFilters.js
-var instance2 = null;
+var instance = null;
 var ActiveFilters = class _ActiveFilters {
   static instance(opts = { forceNew: null }) {
     const forceNew = Boolean(opts.forceNew);
-    if (!instance2 || forceNew) {
-      instance2 = new _ActiveFilters();
+    if (!instance || forceNew) {
+      instance = new _ActiveFilters();
     }
-    return instance2;
+    return instance;
   }
   static removeInstance() {
-    instance2 = null;
+    instance = null;
   }
   #activeFilters = [];
   activeFilters() {
@@ -4032,7 +4026,7 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       const parsedTrace = this.treeView.parsedTrace();
       const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
       const linkifier = this.treeView.linkifier;
-      const isFreshRecording = Boolean(parsedTrace && Tracker.instance().recordingIsFresh(parsedTrace));
+      const isFreshRecording = Boolean(parsedTrace && Utils6.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
       this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
       if (this.linkElement) {
         container.createChild("div", "activity-link").appendChild(this.linkElement);
@@ -6480,8 +6474,8 @@ var DropDown = class _DropDown {
     }
     const availableDropdownChoices = [...availableparsedTraceIndexes];
     availableDropdownChoices.unshift(LANDING_PAGE_INDEX_DROPDOWN_CHOICE);
-    const instance3 = new _DropDown(availableDropdownChoices, landingPageTitle);
-    return instance3.show(anchor, activeparsedTraceIndex);
+    const instance2 = new _DropDown(availableDropdownChoices, landingPageTitle);
+    return instance2.show(anchor, activeparsedTraceIndex);
   }
   static cancelIfShowing() {
     if (!_DropDown.instance) {
@@ -8127,6 +8121,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   #viewMode = { mode: "LANDING_PAGE" };
   #dimThirdPartiesSetting = null;
   #thirdPartyCheckbox = null;
+  #onAnnotationModifiedEventBound = this.#onAnnotationModifiedEvent.bind(this);
   /**
    * We get given any filters for a new trace when it is recorded/imported.
    * Because the user can then use the dropdown to navigate to another trace,
@@ -8171,6 +8166,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   selection = null;
   traceLoadStart;
   #traceEngineModel;
+  #externalAIConversationData = null;
   #sourceMapsResolver = null;
   #entityMapper = null;
   #onSourceMapsNodeNamesResolvedBound = this.#onSourceMapsNodeNamesResolved.bind(this);
@@ -8183,12 +8179,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     "timeline.sidebar"
   );
   #sideBar = new TimelineComponents3.Sidebar.SidebarWidget();
-  /**
-   * Used to track an aria announcement that we need to alert for
-   * screen-readers. We track these because we debounce announcements to not
-   * overwhelm.
-   */
-  #pendingAriaMessage = null;
   #eventToRelatedInsights = /* @__PURE__ */ new Map();
   #shortcutsDialog = new Dialogs.ShortcutDialog.ShortcutDialog();
   /**
@@ -8552,6 +8542,10 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     if (this.#viewMode.mode === "VIEWING_TRACE") {
       this.#uninstallSourceMapsResolver();
       this.#saveModificationsForActiveTrace();
+      const manager = ModificationsManager.activeManager();
+      if (manager) {
+        manager.removeEventListener(AnnotationModifiedEvent.eventName, this.#onAnnotationModifiedEventBound);
+      }
     }
     this.#viewMode = newMode;
     this.updateTimelineControls();
@@ -8596,6 +8590,39 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
    */
   get model() {
     return this.#traceEngineModel;
+  }
+  getOrCreateExternalAIConversationData() {
+    if (!this.#externalAIConversationData) {
+      const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
+      const focus = Utils11.AIContext.getPerformanceAgentFocusFromModel(this.model);
+      if (!focus) {
+        throw new Error("could not create performance agent focus");
+      }
+      const agent = conversationHandler.createAgent(
+        "drjones-performance-full"
+        /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */
+      );
+      const conversation = new AiAssistanceModel.Conversation(
+        "drjones-performance-full",
+        [],
+        agent.id,
+        /* isReadOnly */
+        true,
+        /* isExternal */
+        true
+      );
+      const selected = new AiAssistanceModel.PerformanceTraceContext(focus);
+      this.#externalAIConversationData = {
+        conversationHandler,
+        conversation,
+        agent,
+        selected
+      };
+    }
+    return this.#externalAIConversationData;
+  }
+  invalidateExternalAIConversationData() {
+    this.#externalAIConversationData = null;
   }
   /**
    * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
@@ -8771,29 +8798,15 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   // Currently for debugging purposes only.
   #onClickAskAIButton() {
-    const traceIndex = this.#activeTraceIndex();
-    if (traceIndex === null) {
-      return;
-    }
-    const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
-    if (parsedTrace === null) {
-      return;
-    }
-    const insights = this.#traceEngineModel.traceInsights(traceIndex);
-    if (insights === null) {
-      return;
-    }
-    const traceMetadata = this.#traceEngineModel.metadata(traceIndex);
-    if (traceMetadata === null) {
-      return;
-    }
     const actionId = "drjones.performance-panel-full-context";
     if (!UI11.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    const insightSet = [...insights.values()].at(0) ?? null;
-    const context = Utils11.AIContext.AgentFocus.full(parsedTrace, insightSet, traceMetadata);
-    UI11.Context.Context.instance().setFlavor(Utils11.AIContext.AgentFocus, context);
+    const focus = Utils11.AIContext.getPerformanceAgentFocusFromModel(this.#traceEngineModel);
+    if (!focus) {
+      return;
+    }
+    UI11.Context.Context.instance().setFlavor(Utils11.AIContext.AgentFocus, focus);
     const action2 = UI11.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action2.execute();
   }
@@ -9200,12 +9213,21 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       hostWindow.removeEventListener("message", onMessageHandler);
     }
     hostWindow.addEventListener("message", onMessageHandler);
-    rehydratingWindow = hostWindow.open(
-      pathToLaunch,
-      /* target: */
-      void 0,
-      "noopener=false,popup=true"
-    );
+    if (this.isDocked()) {
+      rehydratingWindow = hostWindow.open(
+        pathToLaunch,
+        /* target: */
+        "_blank",
+        "noopener=false,popup=false"
+      );
+    } else {
+      rehydratingWindow = hostWindow.open(
+        pathToLaunch,
+        /* target: */
+        void 0,
+        "noopener=false,popup=true"
+      );
+    }
   }
   async loadFromURL(url) {
     if (this.state !== "Idle") {
@@ -9213,6 +9235,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
     this.prepareToLoadTimeline();
     this.loader = await TimelineLoader.loadFromURL(url, this);
+  }
+  isDocked() {
+    return UI11.DockController.DockController.instance().dockSide() !== "undocked";
   }
   updateMiniMap() {
     if (this.#viewMode.mode !== "VIEWING_TRACE") {
@@ -9246,7 +9271,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.dimThirdPartiesIfRequired();
   }
   #extensionDataVisibilityChanged() {
-    this.flameChart.rebuildDataForTrace();
+    this.flameChart.rebuildDataForTrace({ updateType: "REDRAW_EXISTING_TRACE" });
   }
   updateSettingsPaneVisibility() {
     if (isNode || !this.canRecord()) {
@@ -9579,26 +9604,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     ActiveFilters.instance().setFilters(newActiveFilters);
   }
   /**
-   * If we generate a lot of the same aria announcements very quickly, we don't
-   * want to send them all to the user.
-   */
-  #ariaDebouncer = Common10.Debouncer.debounce(() => {
-    if (this.#pendingAriaMessage) {
-      UI11.ARIAUtils.LiveAnnouncer.alert(this.#pendingAriaMessage);
-      this.#pendingAriaMessage = null;
-    }
-  }, 1e3);
-  #makeAriaAnnouncement(message) {
-    if (message === this.#pendingAriaMessage) {
-      return;
-    }
-    if (this.#pendingAriaMessage) {
-      UI11.ARIAUtils.LiveAnnouncer.alert(this.#pendingAriaMessage);
-    }
-    this.#pendingAriaMessage = message;
-    this.#ariaDebouncer();
-  }
-  /**
    * Called when we update the active trace that is being shown to the user.
    * This is called from {@see changeView} when we change the UI to show a
    * trace - either one the user has just recorded/imported, or one they have
@@ -9641,34 +9646,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
     this.#applyActiveFilters(parsedTrace.Meta.traceIsGeneric, exclusiveFilter);
     this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
-    currentManager?.addEventListener(AnnotationModifiedEvent.eventName, (event) => {
-      const announcementText = ariaAnnouncementForModifiedEvent(event);
-      if (announcementText) {
-        this.#makeAriaAnnouncement(announcementText);
-      }
-      const { overlay, action: action2 } = event;
-      if (action2 === "Add") {
-        this.flameChart.addOverlay(overlay);
-      } else if (action2 === "Remove") {
-        this.flameChart.removeOverlay(overlay);
-      } else if (action2 === "UpdateTimeRange" && isTimeRangeLabel(overlay)) {
-        this.flameChart.updateExistingOverlay(overlay, {
-          bounds: overlay.bounds
-        });
-      } else if (action2 === "UpdateLinkToEntry" && isEntriesLink(overlay)) {
-        this.flameChart.updateExistingOverlay(overlay, {
-          entryTo: overlay.entryTo
-        });
-      } else if (action2 === "EnterLabelEditState" && isEntryLabel(overlay)) {
-        this.flameChart.enterLabelEditMode(overlay);
-      } else if (action2 === "LabelBringForward" && isEntryLabel(overlay)) {
-        this.flameChart.bringLabelForward(overlay);
-      }
-      const annotations = currentManager.getAnnotations();
-      const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
-      this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
-      this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
-    });
+    currentManager?.addEventListener(AnnotationModifiedEvent.eventName, this.#onAnnotationModifiedEventBound);
     const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
     if (topMostMainThreadAppender) {
       const zoomedInBounds = Trace21.Extras.MainThreadActivity.calculateWindow(parsedTrace.Meta.traceBounds, topMostMainThreadAppender.getEntries());
@@ -9742,6 +9720,36 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         );
       }
     }
+  }
+  #onAnnotationModifiedEvent(e) {
+    const event = e;
+    const announcementText = ariaAnnouncementForModifiedEvent(event);
+    if (announcementText) {
+      UI11.ARIAUtils.LiveAnnouncer.alert(announcementText);
+    }
+    const { overlay, action: action2 } = event;
+    if (action2 === "Add") {
+      this.flameChart.addOverlay(overlay);
+    } else if (action2 === "Remove") {
+      this.flameChart.removeOverlay(overlay);
+    } else if (action2 === "UpdateTimeRange" && isTimeRangeLabel(overlay)) {
+      this.flameChart.updateExistingOverlay(overlay, {
+        bounds: overlay.bounds
+      });
+    } else if (action2 === "UpdateLinkToEntry" && isEntriesLink(overlay)) {
+      this.flameChart.updateExistingOverlay(overlay, {
+        entryTo: overlay.entryTo
+      });
+    } else if (action2 === "EnterLabelEditState" && isEntryLabel(overlay)) {
+      this.flameChart.enterLabelEditMode(overlay);
+    } else if (action2 === "LabelBringForward" && isEntryLabel(overlay)) {
+      this.flameChart.bringLabelForward(overlay);
+    }
+    const currentManager = ModificationsManager.activeManager();
+    const annotations = currentManager?.getAnnotations() ?? [];
+    const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
+    this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
+    this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
   }
   /**
    * After the user imports / records a trace, we auto-show the sidebar.
@@ -9961,7 +9969,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         throw new Error(`Could not get trace data at index ${traceIndex}`);
       }
       if (recordingIsFresh) {
-        Tracker.instance().registerFreshRecording(parsedTrace);
+        Utils11.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
       }
       this.#historyManager.addRecording({
         data: {
@@ -10298,6 +10306,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       type: "notification",
       message: "Recording performance trace"
     };
+    _TimelinePanel.instance().invalidateExternalAIConversationData();
     void VisualLogging6.logFunctionCall("timeline.record-reload", "external");
     Snackbars.Snackbar.Snackbar.show({ message: i18nString20(UIStrings20.externalRequestReceived) });
     const panelInstance = _TimelinePanel.instance();
@@ -10376,6 +10385,14 @@ ${responseTextForPassedInsights}`;
       }
       panelInstance.addEventListener("RecordingCompleted", listener);
       panelInstance.recordReload();
+    });
+  }
+  static async handleExternalAnalyzeRequest(prompt) {
+    const data = _TimelinePanel.instance().getOrCreateExternalAIConversationData();
+    return await data.conversationHandler.handleExternalRequest({
+      conversationType: "drjones-performance-full",
+      prompt,
+      data
     });
   }
 };
@@ -10552,6 +10569,10 @@ var UIStrings21 = {
    * @description Text for referring to a timer that has timed-out and therefore is being removed.
    */
   timeout: "Timeout",
+  /**
+   * @description Text used to refer to a positive timeout value that schedules the idle callback once elapsed, even if no idle time is available.
+   */
+  requestIdleCallbackTimeout: "Timeout",
   /**
    * @description Text used to indicate that a timer is repeating (e.g. every X seconds) rather than a one off.
    */
@@ -11283,7 +11304,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         contentHelper.appendTextRow(key, String(value));
       }
     }
-    const isFreshRecording = Boolean(parsedTrace && Tracker.instance().recordingIsFresh(parsedTrace));
+    const isFreshRecording = Boolean(parsedTrace && Utils12.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
     switch (event.name) {
       case "GCEvent":
       case "MajorGC":
@@ -11578,6 +11599,9 @@ var TimelineUIUtils = class _TimelineUIUtils {
       case "RequestIdleCallback":
       case "CancelIdleCallback": {
         contentHelper.appendTextRow(i18nString21(UIStrings21.callbackId), unsafeEventData["id"]);
+        if (Trace22.Types.Events.isRequestIdleCallback(event)) {
+          contentHelper.appendTextRow(i18nString21(UIStrings21.requestIdleCallbackTimeout), i18n41.TimeUtilities.preciseMillisToString(event.args.data.timeout));
+        }
         break;
       }
       case "EventDispatch": {
@@ -14295,7 +14319,7 @@ async function renderSelectedEventDetails(input) {
   if (!selectedEvent || !parsedTrace || !linkifier) {
     return nothing;
   }
-  const traceRecordingIsFresh = parsedTrace ? Tracker.instance().recordingIsFresh(parsedTrace) : false;
+  const traceRecordingIsFresh = parsedTrace ? Utils15.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
   if (Trace27.Types.Events.isSyntheticLayoutShift(selectedEvent) || Trace27.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
     return html2`
       <devtools-widget data-layout-shift-details .widgetConfig=${UI17.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
@@ -14409,7 +14433,7 @@ var NetworkTrackAppender = class {
    * Network track.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -14428,7 +14452,7 @@ var NetworkTrackAppender = class {
    * in the future).
    * @param currentLevel the flame chart level at which the header is
    * appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    */
   #appendTrackHeaderAtLevel(_currentLevel, expanded) {
     const style = buildGroupStyle({
@@ -15926,7 +15950,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       type: "TIME_RANGE",
       label: ""
     };
-    ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation);
+    ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation, { muteAriaNotifications: false, loadedFromFile: false });
   }
   /**
    * Handles key presses that could impact the creation of a time range overlay with the keyboard.
@@ -16095,7 +16119,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         bounds
       };
       ModificationsManager.activeManager()?.deleteEmptyRangeAnnotations();
-      ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation);
+      ModificationsManager.activeManager()?.createAnnotation(this.#timeRangeSelectionAnnotation, { muteAriaNotifications: false, loadedFromFile: false });
     }
   }
   getMainFlameChart() {
@@ -16124,13 +16148,18 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       dimmer.mainChartIndices = [];
       dimmer.networkChartIndices = [];
     }
-    this.rebuildDataForTrace();
+    this.rebuildDataForTrace({ updateType: "NEW_TRACE" });
   }
   /**
    * Resets the state of the UI data and initializes it again with the
    * current parsed trace.
+   * @param opts.updateType determines if we are redrawing because we need to show a new trace,
+   * or redraw an existing trace (if the user changed a setting).
+   * This distinction is needed because in the latter case we do not want to
+   * trigger some code such as Aria announcements for annotations if we are
+   * just redrawing.
    */
-  rebuildDataForTrace() {
+  rebuildDataForTrace(opts) {
     if (!this.#parsedTrace) {
       return;
     }
@@ -16155,7 +16184,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.resizeToPreferredHeights();
     this.setMarkers(this.#parsedTrace);
     this.dimThirdPartiesIfRequired();
-    ModificationsManager.activeManager()?.applyAnnotationsFromCache();
+    ModificationsManager.activeManager()?.applyAnnotationsFromCache({ muteAriaNotifications: opts.updateType === "REDRAW_EXISTING_TRACE" });
   }
   /**
    * Gets the persisted config (if the user has made any visual changes) in
@@ -16432,7 +16461,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         type: "ENTRY_LABEL",
         entry: selection.event,
         label: ""
-      });
+      }, { loadedFromFile: false, muteAriaNotifications: false });
       if (event.data.withLinkCreationButton) {
         this.onEntriesLinkAnnotationCreate(dataProvider, event.data.entryIndex, true);
       }
@@ -16447,7 +16476,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         state: linkCreateButton ? "creation_not_started" : "pending_to_event"
       });
       if (this.#linkSelectionAnnotation) {
-        ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation);
+        ModificationsManager.activeManager()?.createAnnotation(this.#linkSelectionAnnotation, { loadedFromFile: false, muteAriaNotifications: false });
       }
     }
   }
@@ -17844,7 +17873,7 @@ var TimingsTrackAppender = class {
    * timings track.
    * @param trackStartLevel the horizontal level of the flame chart events where
    * the track's events will start being appended.
-   * @param expanded wether the track should be rendered expanded.
+   * @param expanded whether the track should be rendered expanded.
    * @returns the first available level to append more data after having
    * appended the track's events.
    */
@@ -17895,8 +17924,7 @@ var TimingsTrackAppender = class {
    * extension markers (the first available level to append more data).
    */
   #appendExtensionsAtLevel(currentLevel) {
-    let markers = [];
-    markers = markers.concat(this.#extensionMarkers).sort((m1, m2) => m1.ts - m2.ts);
+    const markers = this.#extensionMarkers.toSorted((m1, m2) => m1.ts - m2.ts);
     if (markers.length === 0) {
       return currentLevel;
     }
@@ -18468,7 +18496,6 @@ export {
   EntriesFilter_exports as EntriesFilter,
   EventsTimelineTreeView_exports as EventsTimelineTreeView,
   ExtensionTrackAppender_exports as ExtensionTrackAppender,
-  FreshRecording_exports as FreshRecording,
   GPUTrackAppender_exports as GPUTrackAppender,
   Initiators_exports as Initiators,
   InteractionsTrackAppender_exports as InteractionsTrackAppender,

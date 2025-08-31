@@ -14,9 +14,6 @@ describeWithEnvironment('AiCodeCompletionSummaryToolbar', () => {
         await view.nextInput;
         return { view, widget };
     }
-    afterEach(() => {
-        sinon.restore();
-    });
     it('should update citations', async () => {
         const { view, widget } = await createToolbar();
         const expectedCitations = new Set();

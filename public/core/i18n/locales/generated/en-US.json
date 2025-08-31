@@ -9711,7 +9711,7 @@
     "message": "Show only blocked requests"
   },
   "panels/network/NetworkLogView.ts | onlyShowIPProtectedRequests": {
-    "message": "(Incognito Only) Show only requests sent to IP Protection proxies"
+    "message": "Show only requests sent to IP Protection proxies. Has no effect in regular browsing."
   },
   "panels/network/NetworkLogView.ts | onlyShowRequestsWithBlockedCookies": {
     "message": "Show only requests with blocked response cookies"
@@ -11792,11 +11792,26 @@
   "panels/security/IPProtectionView.ts | cardTitle": {
     "message": "Bypass IP Protection"
   },
+  "panels/security/IPProtectionView.ts | idColumn": {
+    "message": "ID"
+  },
+  "panels/security/IPProtectionView.ts | methodColumn": {
+    "message": "Method"
+  },
   "panels/security/IPProtectionView.ts | notInIncognito": {
     "message": "IP proxy unavailable"
   },
   "panels/security/IPProtectionView.ts | openIncognito": {
     "message": "IP proxy is only available within incognito mode. Open site in incognito."
+  },
+  "panels/security/IPProtectionView.ts | proxyRequests": {
+    "message": "Proxy Requests"
+  },
+  "panels/security/IPProtectionView.ts | statusColumn": {
+    "message": "Status"
+  },
+  "panels/security/IPProtectionView.ts | urlColumn": {
+    "message": "URL"
   },
   "panels/security/IPProtectionView.ts | viewExplanation": {
     "message": "Test how this site will perform if IP Proxy is enabled in Chrome"
@@ -12424,6 +12439,9 @@
   },
   "panels/settings/AISettingsTab.ts | enableAiAssistance": {
     "message": "Enable AI assistance"
+  },
+  "panels/settings/AISettingsTab.ts | enableAiCodeSuggestions": {
+    "message": "Enable AI code suggestions"
   },
   "panels/settings/AISettingsTab.ts | enableAiSuggestedAnnotations": {
     "message": "Enable AI suggestions for performance panel annotations"
@@ -15578,6 +15596,9 @@
   "panels/timeline/TimelineUIUtils.ts | repeats": {
     "message": "Repeats"
   },
+  "panels/timeline/TimelineUIUtils.ts | requestIdleCallbackTimeout": {
+    "message": "Timeout"
+  },
   "panels/timeline/TimelineUIUtils.ts | sAtS": {
     "message": "{PH1} at {PH2}"
   },
@@ -16898,6 +16919,9 @@
   "ui/legacy/components/quick_open/CommandMenu.ts | runCommand": {
     "message": "Run command"
   },
+  "ui/legacy/components/quick_open/FilteredListWidget.ts | newFeature": {
+    "message": "This is a new feature"
+  },
   "ui/legacy/components/quick_open/FilteredListWidget.ts | noResultsFound": {
     "message": "No results found"
   },
@@ -17141,11 +17165,11 @@
   "ui/legacy/InspectorView.ts | moreTools": {
     "message": "More Tools"
   },
-  "ui/legacy/InspectorView.ts | moveToBottom": {
-    "message": "Move to bottom"
+  "ui/legacy/InspectorView.ts | moveToDrawer": {
+    "message": "Move to drawer"
   },
-  "ui/legacy/InspectorView.ts | moveToTop": {
-    "message": "Move to top"
+  "ui/legacy/InspectorView.ts | moveToMainTabBar": {
+    "message": "Move to main tab bar"
   },
   "ui/legacy/InspectorView.ts | panels": {
     "message": "Panels"
@@ -17264,6 +17288,9 @@
   "ui/legacy/SoftContextMenu.ts | checked": {
     "message": "checked"
   },
+  "ui/legacy/SoftContextMenu.ts | newFeature": {
+    "message": "This is a new feature"
+  },
   "ui/legacy/SoftContextMenu.ts | sS": {
     "message": "{PH1}, {PH2}"
   },
@@ -17350,9 +17377,6 @@
   },
   "ui/legacy/UIUtils.ts | new": {
     "message": "NEW"
-  },
-  "ui/legacy/UIUtils.ts | newFeature": {
-    "message": "This is a new feature"
   },
   "ui/legacy/UIUtils.ts | ok": {
     "message": "OK"

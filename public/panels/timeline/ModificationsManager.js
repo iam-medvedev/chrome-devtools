@@ -16,11 +16,13 @@ let activeManager;
 export class AnnotationModifiedEvent extends Event {
     overlay;
     action;
+    muteAriaNotifications;
     static eventName = 'annotationmodifiedevent';
-    constructor(overlay, action) {
+    constructor(overlay, action, muteAriaNotifications = false) {
         super(AnnotationModifiedEvent.eventName);
         this.overlay = overlay;
         this.action = action;
+        this.muteAriaNotifications = muteAriaNotifications;
     }
 }
 export class ModificationsManager extends EventTarget {
@@ -114,7 +116,7 @@ export class ModificationsManager extends EventTarget {
      * Stores the annotation and creates its overlay.
      * @returns the Overlay that gets created and associated with this annotation.
      */
-    createAnnotation(newAnnotation, loadedFromFile = false) {
+    createAnnotation(newAnnotation, opts) {
         // If a label already exists on an entry and a user is trying to create a new one, start editing an existing label instead.
         if (newAnnotation.type === 'ENTRY_LABEL') {
             const overlay = this.#findLabelOverlayForEntry(newAnnotation.entry);
@@ -125,7 +127,7 @@ export class ModificationsManager extends EventTarget {
         }
         // If the new annotation created was not loaded from the file, set the annotations visibility setting to true. That way we make sure
         // the annotations are on when a new one is created.
-        if (!loadedFromFile) {
+        if (!opts.loadedFromFile) {
             // Time range annotation could also be used to check the length of a selection in the timeline. Therefore, only set the annotations
             // hidden to true if annotations label is added. This is done in OverlaysImpl.
             if (newAnnotation.type !== 'TIME_RANGE') {
@@ -134,7 +136,7 @@ export class ModificationsManager extends EventTarget {
         }
         const newOverlay = this.#createOverlayFromAnnotation(newAnnotation);
         this.#overlayForAnnotation.set(newAnnotation, newOverlay);
-        this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add'));
+        this.dispatchEvent(new AnnotationModifiedEvent(newOverlay, 'Add', opts.muteAriaNotifications));
         return newOverlay;
     }
     linkAnnotationBetweenEntriesExists(entryFrom, entryTo) {
@@ -257,12 +259,12 @@ export class ModificationsManager extends EventTarget {
     getOverlays() {
         return [...this.#overlayForAnnotation.values()];
     }
-    applyAnnotationsFromCache() {
+    applyAnnotationsFromCache(opts) {
         this.#modifications = this.toJSON();
         // The cache is filled by applyModificationsIfPresent, so we clear
         // it beforehand to prevent duplicate entries.
         this.#overlayForAnnotation.clear();
-        this.#applyStoredAnnotations(this.#modifications.annotations);
+        this.#applyStoredAnnotations(this.#modifications.annotations, opts);
     }
     /**
      * Builds all modifications into a serializable object written into
@@ -335,9 +337,11 @@ export class ModificationsManager extends EventTarget {
         const expandableEntries = this.#modifications.entriesModifications.expandableEntries;
         this.#timelineBreadcrumbs.setInitialBreadcrumbFromLoadedModifications(this.#modifications.initialBreadcrumb);
         this.#applyEntriesFilterModifications(hiddenEntries, expandableEntries);
-        this.#applyStoredAnnotations(this.#modifications.annotations);
+        this.#applyStoredAnnotations(this.#modifications.annotations, {
+            muteAriaNotifications: false,
+        });
     }
-    #applyStoredAnnotations(annotations) {
+    #applyStoredAnnotations(annotations, opts) {
         try {
             // Assign annotations to an empty array if they don't exist to not
             // break the traces that were saved before those annotations were implemented
@@ -347,7 +351,10 @@ export class ModificationsManager extends EventTarget {
                     type: 'ENTRY_LABEL',
                     entry: this.#eventsSerializer.eventForKey(entryLabel.entry, this.#parsedTrace),
                     label: entryLabel.label,
-                }, true);
+                }, {
+                    loadedFromFile: true,
+                    muteAriaNotifications: opts.muteAriaNotifications,
+                });
             });
             const timeRanges = annotations.labelledTimeRanges ?? [];
             timeRanges.forEach(timeRange => {
@@ -355,7 +362,10 @@ export class ModificationsManager extends EventTarget {
                     type: 'TIME_RANGE',
                     bounds: timeRange.bounds,
                     label: timeRange.label,
-                }, true);
+                }, {
+                    loadedFromFile: true,
+                    muteAriaNotifications: opts.muteAriaNotifications,
+                });
             });
             const linksBetweenEntries = annotations.linksBetweenEntries ?? [];
             linksBetweenEntries.forEach(linkBetweenEntries => {
@@ -364,7 +374,10 @@ export class ModificationsManager extends EventTarget {
                     state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
                     entryFrom: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryFrom, this.#parsedTrace),
                     entryTo: this.#eventsSerializer.eventForKey(linkBetweenEntries.entryTo, this.#parsedTrace),
-                }, true);
+                }, {
+                    loadedFromFile: true,
+                    muteAriaNotifications: opts.muteAriaNotifications,
+                });
             });
         }
         catch (err) {

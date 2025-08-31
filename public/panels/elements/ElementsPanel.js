@@ -688,19 +688,22 @@ export class ElementsPanel extends UI.Panel.Panel {
         }
         return node;
     }
-    async revealAndSelectNode(nodeToReveal, focus, omitHighlight) {
+    async revealAndSelectNode(nodeToReveal, opts) {
+        const { showPanel = true, focusNode = false, highlightInOverlay = true } = opts ?? {};
         this.omitDefaultSelection = true;
         const node = Common.Settings.Settings.instance().moduleSetting('show-ua-shadow-dom').get() ?
             nodeToReveal :
             this.leaveUserAgentShadowDOM(nodeToReveal);
-        if (!omitHighlight) {
+        if (highlightInOverlay) {
             node.highlightForTwoSeconds();
         }
         if (this.accessibilityTreeView) {
             void this.accessibilityTreeView.revealAndSelectNode(nodeToReveal);
         }
-        await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);
-        this.selectDOMNode(node, focus);
+        if (showPanel) {
+            await UI.ViewManager.ViewManager.instance().showView('elements', false, !focus);
+        }
+        this.selectDOMNode(node, focusNode);
         delete this.omitDefaultSelection;
         if (!this.notFirstInspectElement) {
             ElementsPanel.firstInspectElementNodeNameForTest = node.nodeName();
@@ -848,8 +851,7 @@ export class ElementsPanel extends UI.Panel.Panel {
         } // We can't reparent extension iframes.
         const position = Common.Settings.Settings.instance().moduleSetting('sidebar-position').get();
         let splitMode = "Horizontal" /* SplitMode.HORIZONTAL */;
-        if (position === 'right' ||
-            (position === 'auto' && UI.InspectorView.InspectorView.instance().element.offsetWidth > 680)) {
+        if (position === 'right' || (position === 'auto' && this.splitWidget.element.offsetWidth > 680)) {
             splitMode = "Vertical" /* SplitMode.VERTICAL */;
         }
         if (!this.sidebarPaneView) {
@@ -1053,7 +1055,7 @@ export class DOMNodeRevealer {
                     return;
                 }
                 if (resolvedNode) {
-                    void panel.revealAndSelectNode(resolvedNode, !omitFocus).then(resolve);
+                    void panel.revealAndSelectNode(resolvedNode, { showPanel: true, focusNode: !omitFocus }).then(resolve);
                     return;
                 }
                 const msg = i18nString(UIStrings.nodeCannotBeFoundInTheCurrent);

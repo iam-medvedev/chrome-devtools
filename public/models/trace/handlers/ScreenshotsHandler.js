@@ -5,16 +5,16 @@ import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 // Each thread contains events. Events indicate the thread and process IDs, which are
 // used to store the event in the correct process thread entry below.
-const unpairedAsyncEvents = [];
-const legacyScreenshotEvents = [];
-const modernScreenshotEvents = [];
-const syntheticScreenshots = [];
+let unpairedAsyncEvents = [];
+let legacyScreenshotEvents = [];
+let modernScreenshotEvents = [];
+let syntheticScreenshots = [];
 let frameSequenceToTs = {};
 export function reset() {
-    unpairedAsyncEvents.length = 0;
-    legacyScreenshotEvents.length = 0;
-    syntheticScreenshots.length = 0;
-    modernScreenshotEvents.length = 0;
+    unpairedAsyncEvents = [];
+    legacyScreenshotEvents = [];
+    syntheticScreenshots = [];
+    modernScreenshotEvents = [];
     frameSequenceToTs = {};
 }
 export function handleEvent(event) {

@@ -54,7 +54,7 @@ export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.T
     onError(playerID: string, error: Protocol.Media.PlayerError): void;
     onMessage(playerID: string, message: Protocol.Media.PlayerMessage): void;
     onEvent(playerID: string, event: PlayerEvent): void;
-    private playersCreated;
+    private playerCreated;
     markPlayerForDeletion(playerID: string): void;
     markOtherPlayersForDeletion(playerID: string): void;
     exportPlayerData(playerID: string): void;

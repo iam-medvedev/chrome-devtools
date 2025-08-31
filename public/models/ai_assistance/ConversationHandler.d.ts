@@ -1,6 +1,7 @@
 import * as Host from '../../core/host/host.js';
 import type * as Trace from '../trace/trace.js';
 import { type AiAgent, type ExternalRequestResponse, type ResponseData } from './agents/AiAgent.js';
+import { PerformanceTraceContext } from './agents/PerformanceAgent.js';
 import { Conversation, ConversationType } from './AiHistoryStorage.js';
 import type { ChangeManager } from './ChangeManager.js';
 interface ExternalStylingRequestParameters {
@@ -19,6 +20,17 @@ export interface ExternalPerformanceInsightsRequestParameters {
     insightTitle: string;
     traceModel: Trace.TraceModel.Model;
 }
+export interface ExternalPerformanceAIConversationData {
+    conversationHandler: ConversationHandler;
+    conversation: Conversation;
+    agent: AiAgent<unknown>;
+    selected: PerformanceTraceContext;
+}
+export interface ExternalPerformanceRequestParameters {
+    conversationType: ConversationType.PERFORMANCE_FULL;
+    prompt: string;
+    data: ExternalPerformanceAIConversationData;
+}
 export declare class ConversationHandler {
     #private;
     private constructor();
@@ -32,7 +44,7 @@ export declare class ConversationHandler {
      * Handles an external request using the given prompt and uses the
      * conversation type to use the correct agent.
      */
-    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters): Promise<AsyncGenerator<ExternalRequestResponse, ExternalRequestResponse>>;
+    handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceInsightsRequestParameters | ExternalPerformanceRequestParameters): Promise<AsyncGenerator<ExternalRequestResponse, ExternalRequestResponse>>;
     handleConversationWithHistory(items: AsyncIterable<ResponseData, void, void>, conversation: Conversation | undefined): AsyncGenerator<ResponseData, void, void>;
     createAgent(conversationType: ConversationType, changeManager?: ChangeManager): AiAgent<unknown>;
 }

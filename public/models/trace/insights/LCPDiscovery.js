@@ -5,6 +5,7 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+import { calculateDocFirstByteTs } from './Common.js';
 import { InsightCategory, InsightWarning, } from './types.js';
 export const UIStrings = {
     /**
@@ -103,11 +104,8 @@ export function generateInsight(parsedTrace, context) {
     const imgPreloadedOrFoundInHTML = lcpRequest?.args.data.isLinkPreload || initiatedByMainDoc;
     const imageLoadingAttr = lcpEvent.args.data?.loadingAttr;
     const imageFetchPriorityHint = lcpRequest?.args.data.fetchPriorityHint;
-    // This is the earliest discovery time an LCP request could have - it's TTFB.
-    const earliestDiscoveryTime = docRequest?.args.data.timing ?
-        Helpers.Timing.secondsToMicro(docRequest.args.data.timing.requestTime) +
-            Helpers.Timing.milliToMicro(docRequest.args.data.timing.receiveHeadersStart) :
-        undefined;
+    // This is the earliest discovery time an LCP request could have - it's TTFB (as an absolute timestamp).
+    const earliestDiscoveryTime = calculateDocFirstByteTs(docRequest);
     const priorityHintFound = imageFetchPriorityHint === 'high';
     return finalize({
         lcpEvent,

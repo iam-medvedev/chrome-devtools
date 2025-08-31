@@ -4747,10 +4747,9 @@ var PreloadingUIUtils = class {
       case void 0:
         return i18nString10(UIStrings10.validityValid);
       case "SourceIsNotJsonObject":
+      case "InvalidRulesetLevelTag":
         return i18nString10(UIStrings10.validityInvalid);
       case "InvalidRulesSkipped":
-        return i18nString10(UIStrings10.validitySomeRulesInvalid);
-      case "InvalidRulesetLevelTag":
         return i18nString10(UIStrings10.validitySomeRulesInvalid);
     }
   }
@@ -9753,7 +9752,7 @@ var ApplicationPanelSidebar = class extends UI22.Widget.VBox {
     );
     this.sidebarTree.registerRequiredCSS(resourcesSidebar_css_default);
     this.sidebarTree.element.classList.add("resources-sidebar");
-    this.sidebarTree.hideOverflow();
+    this.sidebarTree.setHideOverflow(true);
     this.sidebarTree.element.classList.add("filter-all");
     this.sidebarTree.addEventListener(UI22.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);
     this.contentElement.appendChild(this.sidebarTree.element);

@@ -81,6 +81,7 @@ __export(StackTraceModel_exports, {
   StackTraceModel: () => StackTraceModel
 });
 import * as SDK from "./../../core/sdk/sdk.js";
+import * as StackTrace from "./stack_trace.js";
 
 // gen/front_end/models/stack_trace/Trie.js
 var Trie_exports = {};
@@ -154,6 +155,23 @@ var Trie = class {
     }
     return newNode;
   }
+  /**
+   * Traverses the trie in pre-order.
+   *
+   * @param node Start at `node` or `null` to start with the children of the root.
+   * @param visit Called on each node in the trie. Return `true` if the visitor should descend into child nodes of the provided node.
+   */
+  walk(node, visit) {
+    const stack = node ? [node] : [...this.#root.children].map((ref) => ref.deref()).filter((node2) => Boolean(node2));
+    for (let node2 = stack.pop(); node2; node2 = stack.pop()) {
+      const visitChildren = visit(node2);
+      if (visitChildren) {
+        for (let i = node2.children.length - 1; i >= 0; --i) {
+          stack.push(node2.children[i]);
+        }
+      }
+    }
+  }
 };
 function compareRawFrames(a, b) {
   const scriptIdCompare = (a.scriptId ?? "").localeCompare(b.scriptId ?? "");
@@ -202,6 +220,24 @@ var StackTraceModel = class _StackTraceModel extends SDK.SDKModel.SDKModel {
     await Promise.all(translatePromises);
     return new StackTraceImpl(fragment, asyncFragments);
   }
+  /** Trigger re-translation of all fragments with the provide script in their call stack */
+  async scriptInfoChanged(script, translateRawFrames) {
+    const translatePromises = [];
+    let stackTracesToUpdate = /* @__PURE__ */ new Set();
+    for (const fragment of this.#affectedFragments(script)) {
+      if (fragment.node.children.length === 0) {
+        translatePromises.push(this.#translateFragment(fragment, translateRawFrames));
+      }
+      stackTracesToUpdate = stackTracesToUpdate.union(fragment.stackTraces);
+    }
+    await Promise.all(translatePromises);
+    for (const stackTrace of stackTracesToUpdate) {
+      stackTrace.dispatchEventToListeners(
+        "UPDATED"
+        /* StackTrace.StackTrace.Events.UPDATED */
+      );
+    }
+  }
   #createFragment(frames) {
     return FragmentImpl.getOrCreate(this.#trie.insert(frames));
   }
@@ -213,6 +249,26 @@ var StackTraceModel = class _StackTraceModel extends SDK.SDKModel.SDKModel {
     for (const node of fragment.node.getCallStack()) {
       node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column));
     }
+  }
+  #affectedFragments(script) {
+    const affectedBranches = /* @__PURE__ */ new Set();
+    this.#trie.walk(null, (node) => {
+      if (node.rawFrame.scriptId === script.scriptId || !node.rawFrame.scriptId && node.rawFrame.url === script.sourceURL) {
+        affectedBranches.add(node);
+        return false;
+      }
+      return true;
+    });
+    const fragments = /* @__PURE__ */ new Set();
+    for (const branch of affectedBranches) {
+      this.#trie.walk(branch, (node) => {
+        if (node.fragment) {
+          fragments.add(node.fragment);
+        }
+        return true;
+      });
+    }
+    return fragments;
   }
 };
 SDK.SDKModel.SDKModel.register(StackTraceModel, { capabilities: 0, autostart: false });

@@ -623,6 +623,10 @@ export class DebuggerLanguagePluginManager {
         }
         return ranges;
     }
+    async translateRawFramesStep(_rawFrames, _translatedFrames, _target) {
+        // TODO(crbug.com/433162438): Implement source map stack trace translation.
+        return false;
+    }
     scriptsForUISourceCode(uiSourceCode) {
         for (const modelData of this.#debuggerModelToData.values()) {
             const scripts = modelData.uiSourceCodeToScripts.get(uiSourceCode);
