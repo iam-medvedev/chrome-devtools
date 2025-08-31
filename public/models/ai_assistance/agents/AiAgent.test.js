@@ -41,9 +41,6 @@ describeWithEnvironment('AiAgent', () => {
         beforeEach(() => {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
         });
-        afterEach(() => {
-            sinon.restore();
-        });
         it('builds a request with a temperature', async () => {
             const agent = new AiAgentMock({
                 aidaClient: mockAidaClient(),

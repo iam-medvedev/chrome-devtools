@@ -67,13 +67,13 @@ describeWithEnvironment('ModificationsManager', () => {
             type: 'ENTRY_LABEL',
             entry,
             label: 'entry label',
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
             state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
             entryFrom: entry,
             entryTo: entry2,
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
             bounds: {
@@ -82,7 +82,7 @@ describeWithEnvironment('ModificationsManager', () => {
                 range: Trace.Types.Timing.Micro(10),
             },
             label: 'range label',
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         const modifications = modificationsManager.toJSON().annotations;
         assert.deepEqual(modifications, {
             entryLabels: [{
@@ -115,12 +115,12 @@ describeWithEnvironment('ModificationsManager', () => {
             state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
             entryFrom: entry,
             entryTo: entry2,
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.createAnnotation({
             type: 'ENTRIES_LINK',
             state: "pending_to_event" /* Trace.Types.File.EntriesLinkState.PENDING_TO_EVENT */,
             entryFrom: entry2,
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         // Make sure only the link with both 'to' and 'from' entries in in the generated JSON
         const modifications = modificationsManager.toJSON().annotations;
         assert.deepEqual(modifications, {
@@ -146,7 +146,7 @@ describeWithEnvironment('ModificationsManager', () => {
             state: "connected" /* Trace.Types.File.EntriesLinkState.CONNECTED */,
             entryFrom: entry1,
             entryTo: entry2,
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         // Chech if a connection between entries 1 and 3 exists
         const existsBetween1And3 = modificationsManager.linkAnnotationBetweenEntriesExists(entry1, entry3);
         // Make sure the link does not exists
@@ -172,7 +172,7 @@ describeWithEnvironment('ModificationsManager', () => {
                 range: Trace.Types.Timing.Micro(10),
             },
             label: 'label',
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         // Create time range with empty label that shoud be removed
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
@@ -182,7 +182,7 @@ describeWithEnvironment('ModificationsManager', () => {
                 range: Trace.Types.Timing.Micro(7),
             },
             label: '',
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         // Create time range with empty label that shoud be removed
         modificationsManager.createAnnotation({
             type: 'TIME_RANGE',
@@ -192,7 +192,7 @@ describeWithEnvironment('ModificationsManager', () => {
                 range: Trace.Types.Timing.Micro(5),
             },
             label: '',
-        });
+        }, { loadedFromFile: false, muteAriaNotifications: false });
         modificationsManager.deleteEmptyRangeAnnotations();
         const modifications = modificationsManager.toJSON().annotations;
         // Make sure that the annotations with an empty label were deleted

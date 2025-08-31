@@ -139,6 +139,8 @@ export class ConversationHandler {
                         return this.#generateErrorResponse('The insightTitle parameter is required for debugging a Performance Insight.');
                     }
                     return await this.#handleExternalPerformanceInsightsConversation(parameters.prompt, parameters.insightTitle, parameters.traceModel);
+                case "drjones-performance-full" /* ConversationType.PERFORMANCE_FULL */:
+                    return await this.#handleExternalPerformanceConversation(parameters.prompt, parameters.data);
                 case "drjones-network-request" /* ConversationType.NETWORK */:
                     if (!parameters.requestUrl) {
                         return this.#generateErrorResponse('The url is required for debugging a network request.');
@@ -159,13 +161,17 @@ export class ConversationHandler {
             yield data;
         }
     }
-    async *#doExternalConversation(opts) {
+    async *#createAndDoExternalConversation(opts) {
         const { conversationType, aiAgent, prompt, selected } = opts;
-        const externalConversation = new Conversation(conversationType, [], aiAgent.id, 
+        const conversation = new Conversation(conversationType, [], aiAgent.id, 
         /* isReadOnly */ true, 
         /* isExternal */ true);
+        return yield* this.#doExternalConversation({ conversation, aiAgent, prompt, selected });
+    }
+    async *#doExternalConversation(opts) {
+        const { conversation, aiAgent, prompt, selected } = opts;
         const generator = aiAgent.run(prompt, { selected });
-        const generatorWithHistory = this.handleConversationWithHistory(generator, externalConversation);
+        const generatorWithHistory = this.handleConversationWithHistory(generator, conversation);
         const devToolsLogs = [];
         for await (const data of generatorWithHistory) {
             if (data.type !== "answer" /* ResponseType.ANSWER */ || data.complete) {
@@ -200,7 +206,7 @@ export class ConversationHandler {
             await node.setAsInspectedNode();
         }
         const selected = node ? new NodeContext(node) : null;
-        return this.#doExternalConversation({
+        return this.#createAndDoExternalConversation({
             conversationType: "freestyler" /* ConversationType.STYLING */,
             aiAgent: stylingAgent,
             prompt,
@@ -213,11 +219,19 @@ export class ConversationHandler {
         if ('error' in focusOrError) {
             return this.#generateErrorResponse(focusOrError.error);
         }
-        return this.#doExternalConversation({
+        return this.#createAndDoExternalConversation({
             conversationType: "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */,
             aiAgent: insightsAgent,
             prompt,
             selected: new PerformanceTraceContext(focusOrError.focus),
+        });
+    }
+    async #handleExternalPerformanceConversation(prompt, data) {
+        return this.#doExternalConversation({
+            conversation: data.conversation,
+            aiAgent: data.agent,
+            prompt,
+            selected: data.selected,
         });
     }
     async #handleExternalNetworkConversation(prompt, requestUrl) {
@@ -226,7 +240,7 @@ export class ConversationHandler {
         if (!request) {
             return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
         }
-        return this.#doExternalConversation({
+        return this.#createAndDoExternalConversation({
             conversationType: "drjones-network-request" /* ConversationType.NETWORK */,
             aiAgent: networkAgent,
             prompt,

@@ -5112,6 +5112,18 @@ var mimeTypeByExtension = /* @__PURE__ */ new Map([
   ["vue", "text/x.vue"]
 ]);
 
+// gen/front_end/core/common/ReturnToPanel.js
+var ReturnToPanel_exports = {};
+__export(ReturnToPanel_exports, {
+  ReturnToPanelFlavor: () => ReturnToPanelFlavor
+});
+var ReturnToPanelFlavor = class {
+  viewId;
+  constructor(viewId) {
+    this.viewId = viewId;
+  }
+};
+
 // gen/front_end/core/common/Runnable.js
 var Runnable_exports = {};
 __export(Runnable_exports, {
@@ -7001,6 +7013,7 @@ export {
   QueryParamHandler_exports as QueryParamHandler,
   ResolverBase_exports as ResolverBase,
   ResourceType_exports as ResourceType,
+  ReturnToPanel_exports as ReturnToPanel,
   Revealer_exports as Revealer,
   Runnable_exports as Runnable,
   SegmentedRange_exports as SegmentedRange,

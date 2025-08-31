@@ -10,6 +10,7 @@ export declare class NetworkDependencyTree extends BaseInsightComponent<NetworkD
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     mapNetworkDependencyToRow(node: CriticalRequestNode): TableDataRow | null;
     renderContent(): Lit.LitTemplate;
 }

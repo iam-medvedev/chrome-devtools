@@ -67,3 +67,4 @@ export declare function estimateCompressedContentSize(request: Types.Events.Synt
  * This excludes the size of the response headers.
  */
 export declare function estimateCompressionRatioForScript(script: Handlers.ModelHandlers.Scripts.Script): number;
+export declare function calculateDocFirstByteTs(docRequest: Types.Events.SyntheticNetworkRequest): Types.Timing.Micro | null;

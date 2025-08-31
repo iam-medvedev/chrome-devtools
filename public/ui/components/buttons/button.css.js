@@ -134,6 +134,10 @@ button {
       top: 2px;
       left: 3px;
     }
+
+    devtools-icon[name='cross-circle-filled'] {
+      color: var(--icon-default);
+    }
   }
 
   &.primary {

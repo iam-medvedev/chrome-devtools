@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
-const domStatsByFrameId = new Map();
+let domStatsByFrameId = new Map();
 export function reset() {
-    domStatsByFrameId.clear();
+    domStatsByFrameId = new Map();
 }
 export function handleEvent(event) {
     if (!Types.Events.isDOMStats(event)) {

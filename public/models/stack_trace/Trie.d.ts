@@ -39,6 +39,13 @@ export declare class Trie {
      * @returns The {@link FrameNode} corresponding to the top-most stack frame.
      */
     insert(frames: RawFrame[]): FrameNode;
+    /**
+     * Traverses the trie in pre-order.
+     *
+     * @param node Start at `node` or `null` to start with the children of the root.
+     * @param visit Called on each node in the trie. Return `true` if the visitor should descend into child nodes of the provided node.
+     */
+    walk(node: FrameNode | null, visit: (node: FrameNode) => boolean): void;
 }
 /**
  * @returns a number < 0, 0 or > 0, if the `a` is smaller then, equal or greater then `b`.

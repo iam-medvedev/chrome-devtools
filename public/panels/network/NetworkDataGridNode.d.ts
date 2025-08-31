@@ -10,8 +10,13 @@ export declare const enum Events {
     RequestSelected = "RequestSelected",
     RequestActivated = "RequestActivated"
 }
+export declare const enum RequestPanelBehavior {
+    ShowPanel = "ShowPanel",
+    HidePanel = "HidePanel",
+    Unchanged = "Unchanged"
+}
 export interface RequestActivatedEvent {
-    showPanel: boolean;
+    showPanel: RequestPanelBehavior;
     takeFocus?: boolean;
     tab?: NetworkForward.UIRequestLocation.UIRequestTabs;
 }

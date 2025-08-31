@@ -2584,9 +2584,10 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       cell.style.setProperty("padding-left", leftPadding);
       cell.tabIndex = -1;
       cell.addEventListener("dblclick", this.openInNewTab.bind(this), false);
-      cell.addEventListener("mousedown", () => {
+      cell.addEventListener("mousedown", (event) => {
         this.select();
-        this.parentView().dispatchEventToListeners("RequestActivated", { showPanel: true });
+        const showPanel = event.button ? "Unchanged" : "ShowPanel";
+        this.parentView().dispatchEventToListeners("RequestActivated", { showPanel });
       });
       cell.addEventListener("focus", () => this.parentView().resetFocus());
       if (this.requestInternal.isIpProtectionUsed()) {
@@ -2703,7 +2704,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       if (displayShowHeadersLink) {
         this.setTextAndTitleAsLink(cell, i18nString5(UIStrings5.blockeds, { PH1: reason }), i18nString5(UIStrings5.blockedTooltip), () => {
           this.parentView().dispatchEventToListeners("RequestActivated", {
-            showPanel: true,
+            showPanel: "ShowPanel",
             tab: "headers-component"
           });
         });
@@ -3950,7 +3951,7 @@ var RequestPayloadView = class _RequestPayloadView extends UI8.Widget.VBox {
     const root = new UI8.TreeOutline.TreeOutlineInShadow();
     root.registerRequiredCSS(objectValue_css_default, objectPropertiesSection_css_default, requestPayloadTree_css_default);
     root.element.classList.add("request-payload-tree");
-    root.makeDense();
+    root.setDense(true);
     this.element.appendChild(root.element);
     this.queryStringCategory = new Category(root, "query-string");
     this.formDataCategory = new Category(root, "form-data");
@@ -4581,7 +4582,7 @@ var SignedExchangeInfoView = class extends UI10.Widget.VBox {
     root.registerRequiredCSS(signedExchangeInfoTree_css_default);
     root.element.classList.add("signed-exchange-info-tree");
     root.setFocusable(false);
-    root.makeDense();
+    root.setDense(true);
     root.expandTreeElementsWhenArrowing = true;
     this.element.appendChild(root.element);
     const errorFieldSetMap = /* @__PURE__ */ new Map();
@@ -8939,11 +8940,6 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       deleteCallback: void 0,
       refreshCallback: void 0
     });
-    this.dataGridInternal.element.addEventListener("mousedown", (event) => {
-      if (!this.dataGridInternal.selectedNode && event.button) {
-        event.consume();
-      }
-    }, true);
     this.dataGridScroller = this.dataGridInternal.scrollContainer;
     this.updateColumns();
     this.dataGridInternal.addEventListener("SortingChanged", this.sortHandler, this);
@@ -9786,7 +9782,7 @@ var UIStrings20 = {
   /**
    * @description Tooltip for a filter in the Network panel
    */
-  onlyShowIPProtectedRequests: "(Incognito Only) Show only requests sent to IP Protection proxies",
+  onlyShowIPProtectedRequests: "Show only requests sent to IP Protection proxies. Has no effect in regular browsing.",
   /**
    * @description Text that appears when user drag and drop something (for example, a file) in Network Log View of the Network panel
    */
@@ -10660,7 +10656,6 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       /* DataGrid.DataGrid.ResizeMethod.LAST */
     );
     this.dataGrid.element.classList.add("network-log-grid");
-    this.dataGrid.element.addEventListener("mousedown", this.dataGridMouseDown.bind(this), true);
     this.dataGrid.element.addEventListener("mousemove", this.dataGridMouseMove.bind(this), true);
     this.dataGrid.element.addEventListener("mouseleave", () => this.setHoveredNode(null), true);
     this.dataGrid.element.addEventListener("keydown", (event) => {
@@ -10671,7 +10666,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
         }
       }
       if (Platform9.KeyboardUtilities.isEnterOrSpaceKey(event)) {
-        this.dispatchEventToListeners("RequestActivated", { showPanel: true, takeFocus: true });
+        this.dispatchEventToListeners("RequestActivated", { showPanel: "ShowPanel", takeFocus: true });
         event.consume(true);
       }
     });
@@ -10707,12 +10702,6 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.hoveredNodeInternal = node;
     if (this.hoveredNodeInternal) {
       this.hoveredNodeInternal.setHovered(true, Boolean(highlightInitiatorChain));
-    }
-  }
-  dataGridMouseDown(event) {
-    const mouseEvent = event;
-    if (!this.dataGrid.selectedNode && mouseEvent.button) {
-      mouseEvent.consume();
     }
   }
   updateSummaryBar() {
@@ -10996,7 +10985,10 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     return groupNode;
   }
   reset() {
-    this.dispatchEventToListeners("RequestActivated", { showPanel: false });
+    this.dispatchEventToListeners("RequestActivated", {
+      showPanel: "HidePanel"
+      /* RequestPanelBehavior.HidePanel */
+    });
     this.setHoveredNode(null);
     this.columnsInternal.reset();
     this.timeFilter = null;
@@ -11880,7 +11872,6 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
     if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
       contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
         checked: this.networkOnlyIPProtectedRequestsSetting.get(),
-        disabled: !Root.Runtime.hostConfig.isOffTheRecord,
         tooltip: i18nString20(UIStrings20.onlyShowIPProtectedRequests),
         jslogContext: "only-ip-protected-requests"
       });
@@ -12803,9 +12794,9 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
   }
   onRequestActivated(event) {
     const { showPanel, tab, takeFocus } = event.data;
-    if (showPanel) {
+    if (showPanel === "ShowPanel") {
       this.showRequestPanel(tab, takeFocus);
-    } else {
+    } else if (showPanel === "HidePanel") {
       this.hideRequestPanel();
     }
   }

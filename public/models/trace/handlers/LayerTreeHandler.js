@@ -4,21 +4,21 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
-const paintEvents = [];
-const snapshotEvents = [];
-const paintToSnapshotMap = new Map();
+let paintEvents = [];
+let snapshotEvents = [];
+let paintToSnapshotMap = new Map();
 let lastPaintForLayerId = {};
 let currentMainFrameLayerTreeId = null;
-const updateLayerEvents = [];
-const relevantEvents = [];
+let updateLayerEvents = [];
+let relevantEvents = [];
 export function reset() {
-    paintEvents.length = 0;
-    snapshotEvents.length = 0;
-    paintToSnapshotMap.clear();
+    paintEvents = [];
+    snapshotEvents = [];
+    paintToSnapshotMap = new Map();
     lastPaintForLayerId = {};
     currentMainFrameLayerTreeId = null;
-    updateLayerEvents.length = 0;
-    relevantEvents.length = 0;
+    updateLayerEvents = [];
+    relevantEvents = [];
 }
 export function handleEvent(event) {
     // We gather up the events here but do all the processing in finalize(). This

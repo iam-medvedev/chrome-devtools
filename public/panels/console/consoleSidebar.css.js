@@ -19,6 +19,8 @@ export default `/*
 }
 
 devtools-icon {
+  margin-right: var(--sys-size-3);
+
   &[name="cross-circle"] {
     color: var(--sys-color-error-bright);
   }

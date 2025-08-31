@@ -1012,11 +1012,12 @@ var IPProtectionView_exports = {};
 __export(IPProtectionView_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
   IPProtectionView: () => IPProtectionView,
-  i18nFormatString: () => i18nFormatString2,
   i18nString: () => i18nString3
 });
 import "./../../ui/components/switch/switch.js";
 import "./../../ui/components/cards/cards.js";
+import "./../../ui/legacy/components/data_grid/data_grid.js";
+import "./../../ui/components/buttons/buttons.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -1045,6 +1046,7 @@ var ipProtectionView_css_default = `/*
     padding: var(--sys-size-5) var(--sys-size-3) var(--sys-size-5) var(--sys-size-5);
     min-width: fit-content;
     min-height: fit-content;
+    height: 100%;
   }
 
   .header {
@@ -1126,6 +1128,10 @@ var ipProtectionView_css_default = `/*
     min-height: fit-content;
     min-width: fit-content;
   }
+
+  devtools-data-grid {
+  flex: auto;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./ipProtectionView.css")} */`;
@@ -1157,63 +1163,112 @@ var UIStrings3 = {
   /**
    * @description Description in the widget instructing users to open site in incognito
    */
-  openIncognito: "IP proxy is only available within incognito mode. Open site in incognito."
+  openIncognito: "IP proxy is only available within incognito mode. Open site in incognito.",
+  /**
+   * @description Column header for the ID of a proxy request in the Proxy Request View panel.
+   */
+  idColumn: "ID",
+  /**
+   * @description Column header for the URL of a proxy request in the Proxy Request View panel.
+   */
+  urlColumn: "URL",
+  /**
+   * @description Column header for the HTTP method of a proxy request in the Proxy Request View panel.
+   */
+  methodColumn: "Method",
+  /**
+   * @description Column header for the status code of a proxy request in the Proxy Request View panel.
+   */
+  statusColumn: "Status",
+  /**
+   * @description Title for the grid of proxy requests.
+   */
+  proxyRequests: "Proxy Requests"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/security/IPProtectionView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var i18nFormatString2 = i18n5.i18n.getFormatLocalizedString.bind(void 0, str_3);
 var INCOGNITO_EXPLANATION_URL = "https://support.google.com/chrome/answer/95464?hl=en&co=GENIE.Platform%3DDesktop";
 var DEFAULT_VIEW = (input, _, target) => {
   render3(html3`
     <style>
       ${ipProtectionView_css_default}
     </style>
-    ${Root2.Runtime.hostConfig.isOffTheRecord ? html3`
-      <div class="overflow-auto">
-        <div class="ip-protection">
-          <div class="header">
-            <h1>${i18nString3(UIStrings3.viewTitle)}</h1>
-            <div class="body">${i18nString3(UIStrings3.viewExplanation)}</div>
-          </div>
-          <devtools-card class="card-container">
-            <div class="card">
-              <div class="card-header">
-                <div class="lhs">
-                  <div class="text">
-                    <h2 class="main-text">${i18nString3(UIStrings3.cardTitle)}</h2>
-                    <div class="body-subtext">
-                      ${i18nString3(UIStrings3.cardDescription)}
-                    </div>
+    <div class="ip-protection">
+      <div class="header">
+        <h1>${i18nString3(UIStrings3.viewTitle)}</h1>
+        <div class="body">${i18nString3(UIStrings3.viewExplanation)}</div>
+      </div>
+      ${Root2.Runtime.hostConfig.isOffTheRecord ? html3`
+        <devtools-card class="card-container">
+          <div class="card">
+            <div class="card-header">
+              <div class="lhs">
+                <div class="text">
+                  <h2 class="main-text">${i18nString3(UIStrings3.cardTitle)}</h2>
+                  <div class="body-subtext">
+                    ${i18nString3(UIStrings3.cardDescription)}
                   </div>
-                  <div>
-                    <devtools-switch></devtools-switch>
-                  </div>
+                </div>
+                <div>
+                  <devtools-switch></devtools-switch>
                 </div>
               </div>
             </div>
-          </devtools-card>
-        </div>
-      </div>
-    ` : html3`
-      <div class="empty-report">
-        <devtools-widget
-          class="learn-more"
-          .widgetConfig=${widgetConfig(UI3.EmptyWidget.EmptyWidget, {
+          </div>
+        </devtools-card>
+        <devtools-data-grid striped name=${i18nString3(UIStrings3.proxyRequests)}>
+          <table>
+            <thead>
+              <tr>
+                <th id="id" sortable>${i18nString3(UIStrings3.idColumn)}</th>
+                <th id="url" sortable>${i18nString3(UIStrings3.urlColumn)}</th>
+                <th id="method" sortable>${i18nString3(UIStrings3.methodColumn)}</th>
+                <th id="status" sortable>${i18nString3(UIStrings3.statusColumn)}</th>
+              </tr>
+            </thead>
+            <tbody id="proxy-requests-body">
+              ${input.proxyRequests.map((request, index) => html3`
+                <tr data-request-id=${request.requestId}>
+                  <td>${index + 1}</td>
+                  <td>${request.url}</td>
+                  <td>${request.requestMethod}</td>
+                  <td>${String(request.statusCode)}</td>
+                </tr>
+              `)}
+            </tbody>
+          </table>
+        </devtools-data-grid>
+        ` : html3`
+        <div class="empty-report">
+          <devtools-widget
+            class="learn-more"
+            .widgetConfig=${widgetConfig(UI3.EmptyWidget.EmptyWidget, {
     header: i18nString3(UIStrings3.notInIncognito),
     text: i18nString3(UIStrings3.openIncognito),
     link: INCOGNITO_EXPLANATION_URL
   })}>
-        </devtools-widget>
-      </div>
-  `}
-  `, target);
+          </devtools-widget>
+        </div>
+      `}
+    </div>
+  `, target, { host: input });
 };
 var IPProtectionView = class extends UI3.Widget.VBox {
   #view;
+  #proxyRequests = [];
   constructor(element, view = DEFAULT_VIEW) {
     super(element, { useShadowDom: true });
     this.#view = view;
+    this.registerRequiredCSS(ipProtectionView_css_default);
+    this.#proxyRequests = [
+      { requestId: "1", url: "https://example.com/api/data", requestMethod: "GET", statusCode: 200 },
+      { requestId: "2", url: "https://example.com/api/submit", requestMethod: "POST", statusCode: 404 },
+      { requestId: "3", url: "https://example.com/assets/style.css", requestMethod: "GET", statusCode: 200 }
+    ];
     this.requestUpdate();
+  }
+  get proxyRequests() {
+    return this.#proxyRequests;
   }
   performUpdate() {
     this.#view(this, this, this.contentElement);

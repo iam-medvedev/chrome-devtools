@@ -1206,14 +1206,13 @@ var ConsolePin = class {
 var ConsoleSidebar_exports = {};
 __export(ConsoleSidebar_exports, {
   ConsoleSidebar: () => ConsoleSidebar,
-  FilterTreeElement: () => FilterTreeElement,
-  URLGroupTreeElement: () => URLGroupTreeElement
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
 import * as Common4 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consoleSidebar.css.js
@@ -1233,6 +1232,8 @@ var consoleSidebar_css_default = `/*
 }
 
 devtools-icon {
+  margin-right: var(--sys-size-3);
+
   &[name="cross-circle"] {
     color: var(--sys-color-error-bright);
   }
@@ -1288,187 +1289,183 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/console/ConsoleSidebar.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var ConsoleSidebar = class extends Common4.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
-  tree;
-  selectedTreeElement;
-  treeElements;
-  constructor() {
-    super({
-      jslog: `${VisualLogging2.pane("sidebar").track({ resize: true })}`,
-      useShadowDom: true
-    });
-    this.setMinimumSize(125, 0);
-    this.tree = new UI3.TreeOutline.TreeOutlineInShadow(
-      "NavigationTree"
-      /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */
-    );
-    this.tree.addEventListener(UI3.TreeOutline.Events.ElementSelected, this.selectionChanged.bind(this));
-    this.tree.registerRequiredCSS(consoleSidebar_css_default);
-    this.tree.hideOverflow();
-    this.contentElement.appendChild(this.tree.element);
-    this.selectedTreeElement = null;
-    this.treeElements = [];
-    const selectedFilterSetting = Common4.Settings.Settings.instance().createSetting("console.sidebar-selected-filter", null);
-    const consoleAPIParsedFilters = [{
-      key: FilterType.Source,
-      text: Common4.Console.FrontendMessageSource.ConsoleAPI,
-      negative: false,
-      regex: void 0
-    }];
-    this.appendGroup("message", [], ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create("list"), selectedFilterSetting);
-    this.appendGroup("user message", consoleAPIParsedFilters, ConsoleFilter.allLevelsFilterValue(), IconButton.Icon.create("profile"), selectedFilterSetting);
-    this.appendGroup("error", [], ConsoleFilter.singleLevelMask(
-      "error"
-      /* Protocol.Log.LogEntryLevel.Error */
-    ), IconButton.Icon.create("cross-circle"), selectedFilterSetting);
-    this.appendGroup("warning", [], ConsoleFilter.singleLevelMask(
-      "warning"
-      /* Protocol.Log.LogEntryLevel.Warning */
-    ), IconButton.Icon.create("warning"), selectedFilterSetting);
-    this.appendGroup("info", [], ConsoleFilter.singleLevelMask(
-      "info"
-      /* Protocol.Log.LogEntryLevel.Info */
-    ), IconButton.Icon.create("info"), selectedFilterSetting);
-    this.appendGroup("verbose", [], ConsoleFilter.singleLevelMask(
-      "verbose"
-      /* Protocol.Log.LogEntryLevel.Verbose */
-    ), IconButton.Icon.create("bug"), selectedFilterSetting);
-    const selectedTreeElementName = selectedFilterSetting.get();
-    const defaultTreeElement = this.treeElements.find((x) => x.name() === selectedTreeElementName) || this.treeElements[0];
-    defaultTreeElement.select();
-  }
-  appendGroup(name, parsedFilters, levelsMask, icon, selectedFilterSetting) {
-    const filter = new ConsoleFilter(name, parsedFilters, null, levelsMask);
-    const treeElement = new FilterTreeElement(filter, icon, selectedFilterSetting);
-    this.tree.appendChild(treeElement);
-    this.treeElements.push(treeElement);
-  }
-  clear() {
-    for (const treeElement of this.treeElements) {
-      treeElement.clear();
-    }
-  }
-  onMessageAdded(viewMessage) {
-    for (const treeElement of this.treeElements) {
-      treeElement.onMessageAdded(viewMessage);
-    }
-  }
-  shouldBeVisible(viewMessage) {
-    if (this.selectedTreeElement instanceof ConsoleSidebarTreeElement) {
-      return this.selectedTreeElement.filter().shouldBeVisible(viewMessage);
-    }
-    return true;
-  }
-  selectionChanged(event) {
-    this.selectedTreeElement = event.data;
-    this.dispatchEventToListeners(
-      "FilterSelected"
-      /* Events.FILTER_SELECTED */
-    );
-  }
+var { render, html, nothing, Directives } = Lit;
+var GROUP_ICONS = {
+  [
+    "message"
+    /* GroupName.ALL */
+  ]: { icon: "list", label: UIStrings3.dMessages },
+  [
+    "user message"
+    /* GroupName.CONSOLE_API */
+  ]: { icon: "profile", label: UIStrings3.dUserMessages },
+  [
+    "error"
+    /* GroupName.ERROR */
+  ]: { icon: "cross-circle", label: UIStrings3.dErrors },
+  [
+    "warning"
+    /* GroupName.WARNING */
+  ]: { icon: "warning", label: UIStrings3.dWarnings },
+  [
+    "info"
+    /* GroupName.INFO */
+  ]: { icon: "info", label: UIStrings3.dInfo },
+  [
+    "verbose"
+    /* GroupName.VERBOSE */
+  ]: { icon: "bug", label: UIStrings3.dVerbose }
 };
-var ConsoleSidebarTreeElement = class extends UI3.TreeOutline.TreeElement {
-  filterInternal;
-  constructor(title, filter) {
-    super(title);
-    this.filterInternal = filter;
-  }
-  filter() {
-    return this.filterInternal;
-  }
-};
-var URLGroupTreeElement = class extends ConsoleSidebarTreeElement {
-  countElement;
-  messageCount;
-  constructor(filter) {
-    super(filter.name, filter);
-    this.countElement = this.listItemElement.createChild("span", "count");
-    const icon = IconButton.Icon.create("document");
-    this.setLeadingIcons([icon]);
-    this.messageCount = 0;
-  }
-  incrementAndUpdateCounter() {
-    this.messageCount++;
-    this.countElement.textContent = `${this.messageCount}`;
-  }
-};
-var stringForFilterSidebarItemMap = /* @__PURE__ */ new Map([
-  ["user message", UIStrings3.dUserMessages],
-  ["message", UIStrings3.dMessages],
-  ["error", UIStrings3.dErrors],
-  ["warning", UIStrings3.dWarnings],
-  ["info", UIStrings3.dInfo],
-  ["verbose", UIStrings3.dVerbose]
-]);
-var FilterTreeElement = class extends ConsoleSidebarTreeElement {
-  selectedFilterSetting;
-  urlTreeElements;
-  messageCount;
-  uiStringForFilterCount;
-  constructor(filter, icon, selectedFilterSetting) {
-    super(filter.name, filter);
-    this.uiStringForFilterCount = stringForFilterSidebarItemMap.get(filter.name) || "";
-    this.selectedFilterSetting = selectedFilterSetting;
-    this.urlTreeElements = /* @__PURE__ */ new Map();
-    this.setLeadingIcons([icon]);
-    this.messageCount = 0;
-    this.updateCounter();
-  }
-  clear() {
-    this.urlTreeElements.clear();
-    this.removeChildren();
-    this.messageCount = 0;
-    this.updateCounter();
-  }
-  name() {
-    return this.filterInternal.name;
-  }
-  onselect(selectedByUser) {
-    this.selectedFilterSetting.set(this.filterInternal.name);
-    return super.onselect(selectedByUser);
-  }
-  updateCounter() {
-    this.title = this.updateGroupTitle(this.messageCount);
-    this.setExpandable(Boolean(this.childCount()));
-  }
-  updateGroupTitle(messageCount) {
-    if (this.uiStringForFilterCount) {
-      return i18nString3(this.uiStringForFilterCount, { n: messageCount });
+var DEFAULT_VIEW = (input, output, target) => {
+  const nodeFilterMap = /* @__PURE__ */ new WeakMap();
+  const onSelectionChanged = (event) => {
+    const filter = nodeFilterMap.get(event.detail);
+    if (filter) {
+      input.onSelectionChanged(filter);
     }
-    return "";
+  };
+  render(html`<devtools-tree
+        navigation-variant
+        hide-overflow
+        @select=${onSelectionChanged}
+        .template=${html`
+          <ul role="tree">
+            ${input.groups.map((group) => html`
+              <li
+                role="treeitem"
+                ${Directives.ref((element) => element && nodeFilterMap.set(element, group.filter))}
+                ?selected=${group.filter === input.selectedFilter}>
+                  <style>${consoleSidebar_css_default}</style>
+                  <devtools-icon name=${GROUP_ICONS[group.name].icon}></devtools-icon>
+                  ${/* eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings */
+  i18nString3(GROUP_ICONS[group.name].label, {
+    n: group.messageCount
+  })}
+                  ${group.messageCount === 0 ? nothing : html`
+                  <ul role="group" ?hidden=${group.filter !== input.selectedFilter}>
+                    ${group.urlGroups.values().map((urlGroup) => html`
+                      <li
+                        ${Directives.ref((element) => element && nodeFilterMap.set(element, group.filter))}
+                        role="treeitem"
+                        ?selected=${urlGroup.filter === input.selectedFilter}
+                        title=${urlGroup.url ?? ""}>
+                          <devtools-icon name=document></devtools-icon>
+                          ${urlGroup.filter.name} <span class=count>${urlGroup.count}</span>
+                      </li>`)}
+                  </ul>`}
+              </li>`)}
+        </ul>`}
+        ></devtools-tree>`, target);
+};
+var ConsoleFilterGroup = class {
+  urlGroups = /* @__PURE__ */ new Map();
+  messageCount = 0;
+  name;
+  filter;
+  constructor(name, parsedFilters, levelsMask) {
+    this.name = name;
+    this.filter = new ConsoleFilter(name, parsedFilters, null, levelsMask);
   }
-  onMessageAdded(viewMessage) {
+  onMessage(viewMessage) {
     const message = viewMessage.consoleMessage();
     const shouldIncrementCounter = message.type !== SDK4.ConsoleModel.FrontendMessageType.Command && message.type !== SDK4.ConsoleModel.FrontendMessageType.Result && !message.isGroupMessage();
-    if (!this.filterInternal.shouldBeVisible(viewMessage) || !shouldIncrementCounter) {
+    if (!this.filter.shouldBeVisible(viewMessage) || !shouldIncrementCounter) {
       return;
     }
-    const child = this.childElement(message.url);
-    child.incrementAndUpdateCounter();
+    const child = this.#getUrlGroup(message.url || null);
+    child.count++;
     this.messageCount++;
-    this.updateCounter();
   }
-  childElement(url) {
-    const urlValue = url || null;
-    let child = this.urlTreeElements.get(urlValue);
+  clear() {
+    this.messageCount = 0;
+    this.urlGroups.clear();
+  }
+  #getUrlGroup(url) {
+    let child = this.urlGroups.get(url);
     if (child) {
       return child;
     }
-    const filter = this.filterInternal.clone();
-    const parsedURL = urlValue ? Common4.ParsedURL.ParsedURL.fromString(urlValue) : null;
-    if (urlValue) {
-      filter.name = parsedURL ? parsedURL.displayName : urlValue;
+    const filter = this.filter.clone();
+    child = { filter, url, count: 0 };
+    const parsedURL = url ? Common4.ParsedURL.ParsedURL.fromString(url) : null;
+    if (url) {
+      filter.name = parsedURL ? parsedURL.displayName : url;
     } else {
       filter.name = i18nString3(UIStrings3.other);
     }
-    filter.parsedFilters.push({ key: FilterType.Url, text: urlValue, negative: false, regex: void 0 });
-    child = new URLGroupTreeElement(filter);
-    if (urlValue) {
-      child.tooltip = urlValue;
-    }
-    this.urlTreeElements.set(urlValue, child);
-    this.appendChild(child);
+    filter.parsedFilters.push({ key: FilterType.Url, text: url, negative: false, regex: void 0 });
+    this.urlGroups.set(url, child);
     return child;
+  }
+};
+var CONSOLE_API_PARSED_FILTERS = [{
+  key: FilterType.Source,
+  text: Common4.Console.FrontendMessageSource.ConsoleAPI,
+  negative: false,
+  regex: void 0
+}];
+var ConsoleSidebar = class extends Common4.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
+  #view;
+  #groups = [
+    new ConsoleFilterGroup("message", [], ConsoleFilter.allLevelsFilterValue()),
+    new ConsoleFilterGroup("user message", CONSOLE_API_PARSED_FILTERS, ConsoleFilter.allLevelsFilterValue()),
+    new ConsoleFilterGroup("error", [], ConsoleFilter.singleLevelMask(
+      "error"
+      /* Protocol.Log.LogEntryLevel.Error */
+    )),
+    new ConsoleFilterGroup("warning", [], ConsoleFilter.singleLevelMask(
+      "warning"
+      /* Protocol.Log.LogEntryLevel.Warning */
+    )),
+    new ConsoleFilterGroup("info", [], ConsoleFilter.singleLevelMask(
+      "info"
+      /* Protocol.Log.LogEntryLevel.Info */
+    )),
+    new ConsoleFilterGroup("verbose", [], ConsoleFilter.singleLevelMask(
+      "verbose"
+      /* Protocol.Log.LogEntryLevel.Verbose */
+    ))
+  ];
+  #selectedFilterSetting = Common4.Settings.Settings.instance().createSetting("console.sidebar-selected-filter", null);
+  #selectedFilter = this.#groups.find((group) => group.name === this.#selectedFilterSetting.get())?.filter;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, {
+      jslog: `${VisualLogging2.pane("sidebar").track({ resize: true })}`,
+      useShadowDom: true
+    });
+    this.#view = view;
+    this.setMinimumSize(125, 0);
+    this.performUpdate();
+  }
+  performUpdate() {
+    const input = {
+      groups: this.#groups,
+      selectedFilter: this.#selectedFilter ?? this.#groups[0].filter,
+      onSelectionChanged: (filter) => {
+        this.#selectedFilter = filter;
+        this.#selectedFilterSetting.set(filter.name);
+        this.dispatchEventToListeners(
+          "FilterSelected"
+          /* Events.FILTER_SELECTED */
+        );
+      }
+    };
+    this.#view(input, {}, this.contentElement);
+  }
+  clear() {
+    for (const group of this.#groups) {
+      group.clear();
+    }
+    this.requestUpdate();
+  }
+  onMessageAdded(viewMessage) {
+    for (const group of this.#groups) {
+      group.onMessage(viewMessage);
+    }
+    this.requestUpdate();
+  }
+  shouldBeVisible(viewMessage) {
+    return this.#selectedFilter?.shouldBeVisible(viewMessage) ?? true;
   }
 };
 
@@ -1509,7 +1506,7 @@ import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as RequestLinkIcon from "./../../ui/components/request_link_icon/request_link_icon.js";
 import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
@@ -2806,7 +2803,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     return null;
   }
   buildMessageWithStackTrace(runtimeModel) {
-    const icon = IconButton2.Icon.create("triangle-right", "console-message-expand-icon");
+    const icon = IconButton.Icon.create("triangle-right", "console-message-expand-icon");
     const { stackTraceElement, contentElement, messageElement, clickableElement, toggleElement } = this.buildMessageHelper(runtimeModel.target(), this.message.stackTrace, icon);
     const DEBOUNCE_MS = 300;
     let debounce;
@@ -3515,7 +3512,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     return EXPLAIN_CONTEXT_OTHER_ACTION_ID;
   }
   #createHoverButton() {
-    const icon = new IconButton2.Icon.Icon();
+    const icon = new IconButton.Icon.Icon();
     icon.name = "lightbulb-spark";
     icon.style.color = "var(--devtools-icon-color)";
     icon.classList.add("medium");
@@ -3567,7 +3564,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (!iconName) {
       return;
     }
-    this.messageIcon = new IconButton2.Icon.Icon();
+    this.messageIcon = new IconButton.Icon.Icon();
     this.messageIcon.name = iconName;
     this.messageIcon.style.color = color;
     this.messageIcon.classList.add("message-level-icon", "small");
@@ -3957,7 +3954,7 @@ var ConsoleGroupViewMessage = class extends ConsoleViewMessage {
     if (!element) {
       element = super.toMessageElement();
       const iconType = this.collapsedInternal ? "triangle-right" : "triangle-down";
-      this.expandGroupIcon = IconButton2.Icon.create(iconType, "expand-group-icon");
+      this.expandGroupIcon = IconButton.Icon.create(iconType, "expand-group-icon");
       this.contentElement().tabIndex = -1;
       if (this.repeatCountElement) {
         this.repeatCountElement.insertBefore(this.expandGroupIcon, this.repeatCountElement.firstChild);
@@ -4008,7 +4005,7 @@ var ConsoleCommand = class extends ConsoleViewMessage {
     const newContentElement = document.createElement("div");
     this.setContentElement(newContentElement);
     newContentElement.classList.add("console-user-command");
-    const userCommandIcon = new IconButton2.Icon.Icon();
+    const userCommandIcon = new IconButton.Icon.Icon();
     userCommandIcon.name = "chevron-right";
     userCommandIcon.classList.add("command-result-icon", "medium");
     newContentElement.appendChild(userCommandIcon);
@@ -4035,7 +4032,7 @@ var ConsoleCommandResult = class extends ConsoleViewMessage {
     if (!element.classList.contains("console-user-command-result")) {
       element.classList.add("console-user-command-result");
       if (this.consoleMessage().level === "info") {
-        const icon = new IconButton2.Icon.Icon();
+        const icon = new IconButton.Icon.Icon();
         icon.name = "chevron-left-dot";
         icon.classList.add("command-result-icon", "medium");
         element.insertBefore(icon, element.firstChild);
@@ -4796,7 +4793,7 @@ import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_com
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
-import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
 import * as TextEditor3 from "./../../ui/components/text_editor/text_editor.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
@@ -4832,7 +4829,7 @@ import * as IssuesManager from "./../../models/issues_manager/issues_manager.js"
 import * as Logs2 from "./../../models/logs/logs.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
+import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
 import * as IssueCounter2 from "./../../ui/components/issue_counter/issue_counter.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
@@ -6196,7 +6193,7 @@ var ConsoleViewFilter = class _ConsoleViewFilter {
       ["error", i18nString5(UIStrings5.errors)]
     ]);
     this.levelMenuButton = new UI6.Toolbar.ToolbarMenuButton(this.appendLevelMenuItems.bind(this), void 0, void 0, "log-level");
-    const levelMenuButtonInfoIcon = IconButton3.Icon.create("info", "console-sidebar-levels-info");
+    const levelMenuButtonInfoIcon = IconButton2.Icon.create("info", "console-sidebar-levels-info");
     levelMenuButtonInfoIcon.title = i18nString5(UIStrings5.overriddenByFilterSidebar);
     this.levelMenuButtonInfo = new UI6.Toolbar.ToolbarItem(levelMenuButtonInfoIcon);
     this.levelMenuButtonInfo.setVisible(false);
@@ -6571,13 +6568,13 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     this.textChangeThrottler = new Common8.Throttler.Throttler(150);
     this.requestPreviewBound = this.requestPreview.bind(this);
     this.innerPreviewElement = this.eagerPreviewElement.createChild("div", "console-eager-inner-preview");
-    const previewIcon = new IconButton4.Icon.Icon();
+    const previewIcon = new IconButton3.Icon.Icon();
     previewIcon.name = "chevron-left-dot";
     previewIcon.classList.add("preview-result-icon", "medium");
     this.eagerPreviewElement.appendChild(previewIcon);
     const editorContainerElement = this.element.createChild("div", "console-prompt-editor-container");
     this.element.appendChild(this.eagerPreviewElement);
-    this.promptIcon = new IconButton4.Icon.Icon();
+    this.promptIcon = new IconButton3.Icon.Icon();
     this.promptIcon.name = "chevron-right";
     this.promptIcon.style.color = "var(--icon-action)";
     this.promptIcon.classList.add("console-prompt-icon", "medium");
@@ -6608,9 +6605,6 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       CodeMirror2.autocompletion({ aboveCursor: true }),
       this.#javaScriptCompletionCompartment.of(this.#getJavaScriptCompletionExtensions())
     ];
-    const doc = this.initialText;
-    const editorState = CodeMirror2.EditorState.create({ doc, extensions });
-    this.editor = new TextEditor3.TextEditor.TextEditor(editorState);
     if (this.isAiCodeCompletionEnabled()) {
       const aiCodeCompletionTeaserDismissedSetting = Common8.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
       if (!this.aiCodeCompletionSetting.get() && !aiCodeCompletionTeaserDismissedSetting.get()) {
@@ -6619,6 +6613,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       }
       extensions.push(TextEditor3.Config.aiAutoCompleteSuggestion);
     }
+    const doc = this.initialText;
+    const editorState = CodeMirror2.EditorState.create({ doc, extensions });
+    this.editor = new TextEditor3.TextEditor.TextEditor(editorState);
     this.editor.addEventListener("keydown", (event) => {
       if (event.defaultPrevented) {
         event.stopPropagation();
@@ -6929,7 +6926,12 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       this.detachAiCodeCompletionTeaser();
       this.teaser = void 0;
     }
-    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, ["\n"]);
+    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
+      { aidaClient: this.aidaClient },
+      this.editor,
+      "console"
+      /* AiCodeCompletion.AiCodeCompletion.Panel.CONSOLE */
+    );
     this.aiCodeCompletion.addEventListener("ResponseReceived", (event) => {
       this.aiCodeCompletionCitations = event.data.citations;
       this.dispatchEventToListeners("AiCodeCompletionResponseReceived", event.data);

@@ -1,4 +1,3 @@
-import type * as UI from '../../../ui/legacy/legacy.js';
 import type * as Lit from '../../../ui/lit/lit.js';
 import type { EntriesLinkState } from './File.js';
 import type { Micro, TraceWindowMicro } from './Timing.js';
@@ -107,7 +106,10 @@ export interface TimingsMarkerFieldResult {
 }
 export interface BottomInfoBar {
     type: 'BOTTOM_INFO_BAR';
-    infobar: UI.Infobar.Infobar;
+    infobar: {
+        element: HTMLElement;
+        dispose: () => void;
+    };
 }
 /**
  * All supported overlay types.

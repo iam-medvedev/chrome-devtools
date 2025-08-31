@@ -86,24 +86,31 @@ export function addEventToProcessThread(event, eventsInProcessThread) {
     eventsInThread.set(event.tid, events);
     eventsInProcessThread.set(event.pid, eventsInThread);
 }
-export function eventTimeComparator(a, b) {
-    const aBeginTime = a.ts;
-    const bBeginTime = b.ts;
+export function compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime) {
     if (aBeginTime < bBeginTime) {
         return -1;
     }
     if (aBeginTime > bBeginTime) {
         return 1;
     }
-    const aDuration = a.dur ?? 0;
-    const bDuration = b.dur ?? 0;
-    const aEndTime = aBeginTime + aDuration;
-    const bEndTime = bBeginTime + bDuration;
     if (aEndTime > bEndTime) {
         return -1;
     }
     if (aEndTime < bEndTime) {
         return 1;
+    }
+    return 0;
+}
+export function eventTimeComparator(a, b) {
+    const aBeginTime = a.ts;
+    const bBeginTime = b.ts;
+    const aDuration = a.dur ?? 0;
+    const bDuration = b.dur ?? 0;
+    const aEndTime = aBeginTime + aDuration;
+    const bEndTime = bBeginTime + bDuration;
+    const timeDifference = compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime);
+    if (timeDifference) {
+        return timeDifference;
     }
     // If times are equal, prioritize profile calls over trace events,
     // since an exactly equal timestamp with a trace event is likely
@@ -152,6 +159,29 @@ export function mergeEventsInOrder(eventsArray1, eventsArray2) {
         result.push(eventsArray2[j++]);
     }
     return result;
+}
+export function parseDevtoolsDetails(timingDetail, key) {
+    try {
+        // Attempt to parse the detail as an object that might be coming from a
+        // DevTools Perf extension.
+        // Wrapped in a try-catch because timingDetail might either:
+        // 1. Not be `json.parse`-able (it should, but just in case...)
+        // 2. Not be an object - in which case the `in` check will error.
+        // If we hit either of these cases, we just ignore this mark and move on.
+        const detailObj = JSON.parse(timingDetail);
+        if (!(key in detailObj)) {
+            return null;
+        }
+        if (!Types.Extensions.isValidExtensionPayload(detailObj[key])) {
+            return null;
+        }
+        return detailObj[key];
+    }
+    catch {
+        // No need to worry about this error, just discard this event and don't
+        // treat it as having any useful information for the purposes of extensions.
+        return null;
+    }
 }
 export function getNavigationForTraceEvent(event, eventFrameId, navigationsByFrameId) {
     const navigations = navigationsByFrameId.get(eventFrameId);

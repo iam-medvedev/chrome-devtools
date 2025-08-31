@@ -173,7 +173,7 @@ var SearchResultsPane = class extends UI.Widget.VBox {
     this.treeElements = [];
     this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
     this.treeOutline.registerRequiredCSS(searchResultsPane_css_default);
-    this.treeOutline.hideOverflow();
+    this.treeOutline.setHideOverflow(true);
     this.contentElement.appendChild(this.treeOutline.element);
     this.matchesExpandedCount = 0;
   }
@@ -393,13 +393,14 @@ __export(SearchView_exports, {
   SearchView: () => SearchView
 });
 import "./../../ui/legacy/legacy.js";
+import "./../../ui/components/icon_button/icon_button.js";
 import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { Directives, html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/search/searchView.css.js
@@ -512,13 +513,13 @@ var searchView_css_default = `/*
   overflow: hidden;
 }
 
-.search-view .search-results {
+.search-results {
   overflow-y: auto;
   display: flex;
   flex: auto;
 }
 
-.search-view .search-results > div {
+.search-results > div {
   flex: auto;
 }
 
@@ -613,19 +614,7 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/search/SearchView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-function createSearchToggleButton(iconName, jslogContext) {
-  const button = new Buttons.Button.Button();
-  button.data = {
-    variant: "icon_toggle",
-    iconName,
-    toggledIconName: iconName,
-    toggleType: "primary-toggle",
-    size: "SMALL",
-    toggled: false,
-    jslogContext
-  };
-  return button;
-}
+var { ref } = Directives;
 var SearchView = class extends UI2.Widget.VBox {
   focusOnShow;
   isIndexing;
@@ -661,7 +650,6 @@ var SearchView = class extends UI2.Widget.VBox {
       useShadowDom: true
     });
     this.setMinimumSize(0, 40);
-    this.registerRequiredCSS(searchView_css_default);
     this.focusOnShow = false;
     this.isIndexing = false;
     this.searchId = 1;
@@ -676,66 +664,101 @@ var SearchView = class extends UI2.Widget.VBox {
     this.progressIndicator = null;
     this.visiblePane = null;
     this.#throttler = throttler;
-    this.contentElement.classList.add("search-view");
-    this.contentElement.addEventListener("keydown", (event) => {
-      this.onKeyDownOnPanel(event);
-    });
-    this.searchPanelElement = this.contentElement.createChild("div", "search-drawer-header");
-    this.searchResultsElement = this.contentElement.createChild("div");
-    this.searchResultsElement.className = "search-results";
-    const searchContainer = document.createElement("div");
-    searchContainer.classList.add("search-container");
-    const searchElements = searchContainer.createChild("div", "toolbar-item-search");
-    const searchIcon = IconButton.Icon.create("search");
-    searchElements.appendChild(searchIcon);
-    this.search = UI2.UIUtils.createHistoryInput("search", "search-toolbar-input");
-    this.search.addEventListener("keydown", (event) => {
-      this.onKeyDown(event);
-    });
-    this.search.setAttribute("jslog", `${VisualLogging.textField().track({ change: true, keydown: "ArrowUp|ArrowDown|Enter" })}`);
-    searchElements.appendChild(this.search);
-    this.search.placeholder = i18nString2(UIStrings2.find);
-    this.search.setAttribute("results", "0");
-    this.search.setAttribute("size", "100");
-    UI2.ARIAUtils.setLabel(this.search, this.search.placeholder);
-    const clearInputFieldButton = new Buttons.Button.Button();
-    clearInputFieldButton.data = {
+    render(html`
+      <style>${searchView_css_default}</style>
+      <div class="search-drawer-header" @keydown=${this.onKeyDownOnPanel}
+           ${ref((e) => {
+      this.searchPanelElement = e;
+    })}>
+        <div class="search-container">
+          <div class="toolbar-item-search">
+            <devtools-icon name="search"></devtools-icon>
+            <input type="text"
+                class="search-toolbar-input"
+                placeholder=${i18nString2(UIStrings2.find)}
+                jslog=${VisualLogging.textField().track({
+      change: true,
+      keydown: "ArrowUp|ArrowDown|Enter"
+    })}
+                aria-label=${i18nString2(UIStrings2.find)}
+                size="100" results="0"
+                @keydown=${this.onKeyDown}
+                ${ref((e) => {
+      this.search = e;
+    })}>
+            <devtools-button class="clear-button" tabindex="-1"
+                @click=${this.onSearchInputClear}
+                .data=${{
       variant: "icon",
       iconName: "cross-circle-filled",
       jslogContext: "clear-input",
       size: "SMALL",
       title: i18nString2(UIStrings2.clearInput)
-    };
-    clearInputFieldButton.classList.add("clear-button");
-    clearInputFieldButton.addEventListener("click", () => {
-      this.onSearchInputClear();
-    });
-    clearInputFieldButton.tabIndex = -1;
-    searchElements.appendChild(clearInputFieldButton);
-    const regexIconName = "regular-expression";
-    this.regexButton = createSearchToggleButton(regexIconName, regexIconName);
-    this.regexButton.addEventListener("click", () => this.regexButtonToggled());
-    searchElements.appendChild(this.regexButton);
-    const matchCaseIconName = "match-case";
-    this.matchCaseButton = createSearchToggleButton(matchCaseIconName, matchCaseIconName);
-    this.matchCaseButton.addEventListener("click", () => this.matchCaseButtonToggled());
-    searchElements.appendChild(this.matchCaseButton);
-    this.searchPanelElement.appendChild(searchContainer);
-    const toolbar2 = this.searchPanelElement.createChild("devtools-toolbar", "search-toolbar");
-    toolbar2.setAttribute("jslog", `${VisualLogging.toolbar()}`);
-    const refreshButton = new UI2.Toolbar.ToolbarButton(i18nString2(UIStrings2.refresh), "refresh", void 0, "search.refresh");
-    const clearButton = new UI2.Toolbar.ToolbarButton(i18nString2(UIStrings2.clear), "clear", void 0, "search.clear");
-    toolbar2.appendToolbarItem(refreshButton);
-    toolbar2.appendToolbarItem(clearButton);
-    refreshButton.addEventListener("Click", () => this.onAction());
-    clearButton.addEventListener("Click", () => {
-      this.resetSearch();
-      this.onSearchInputClear();
-    });
-    const searchStatusBarElement = this.contentElement.createChild("div", "search-toolbar-summary");
-    this.searchMessageElement = searchStatusBarElement.createChild("div", "search-message");
-    this.searchProgressPlaceholderElement = searchStatusBarElement.createChild("div", "flex-centered");
-    this.searchResultsMessageElement = searchStatusBarElement.createChild("div", "search-message");
+    }}
+            ></devtools-button>
+            <devtools-button @click=${this.regexButtonToggled} .data=${{
+      variant: "icon_toggle",
+      iconName: "regular-expression",
+      toggledIconName: "regular-expression",
+      toggleType: "primary-toggle",
+      size: "SMALL",
+      toggled: false,
+      title: i18nString2(UIStrings2.enableRegularExpression),
+      jslogContext: "regular-expression"
+    }}
+              ${ref((e) => {
+      this.regexButton = e;
+    })}
+            ></devtools-button>
+            <devtools-button @click=${this.matchCaseButtonToggled} .data=${{
+      variant: "icon_toggle",
+      iconName: "match-case",
+      toggledIconName: "match-case",
+      toggleType: "primary-toggle",
+      size: "SMALL",
+      toggled: false,
+      title: i18nString2(UIStrings2.enableCaseSensitive),
+      jslogContext: "match-case"
+    }}
+              ${ref((e) => {
+      this.matchCaseButton = e;
+    })}
+            ></devtools-button>
+          </div>
+        </div>
+        <devtools-toolbar class="search-toolbar" jslog=${VisualLogging.toolbar()}>
+          <devtools-button title=${i18nString2(UIStrings2.refresh)} @click=${this.onAction}
+              .data=${{
+      variant: "toolbar",
+      iconName: "refresh",
+      jslogContext: "search.refresh"
+    }}></devtools-button>
+          <devtools-button title=${i18nString2(UIStrings2.clear)} @click=${this.onClearSearch}
+              .data=${{
+      variant: "toolbar",
+      iconName: "clear",
+      jslogContext: "search.clear"
+    }}></devtools-button>
+        </devtools-toolbar>
+      </div>
+      <div class="search-results" @keydown=${this.onKeyDownOnPanel}
+           ${ref((e) => {
+      this.searchResultsElement = e;
+    })}>
+      </div>
+      <div class="search-toolbar-summary" @keydown=${this.onKeyDownOnPanel}>
+        <div class="search-message" ${ref((e) => {
+      this.searchMessageElement = e;
+    })}></div>
+        <div class="flex-centered" ${ref((e) => {
+      this.searchProgressPlaceholderElement = e;
+    })}>
+        </div>
+        <div class="search-message" ${ref((e) => {
+      this.searchResultsMessageElement = e;
+    })}>
+        </div>
+      </div>`, this.contentElement, { host: this });
     this.advancedSearchConfig = Common2.Settings.Settings.instance().createLocalSetting(settingKey + "-search-config", new Workspace.SearchConfig.SearchConfig("", true, false).toPlainObject());
     this.load();
     this.searchScope = null;
@@ -1001,6 +1024,10 @@ var SearchView = class extends UI2.Widget.VBox {
       this.startIndexing();
     }
     this.pendingSearchConfig = searchConfig;
+  }
+  onClearSearch() {
+    this.resetSearch();
+    this.onSearchInputClear();
   }
   get throttlerForTest() {
     return this.#throttler;

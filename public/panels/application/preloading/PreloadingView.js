@@ -144,10 +144,9 @@ class PreloadingUIUtils {
             case undefined:
                 return i18nString(UIStrings.validityValid);
             case "SourceIsNotJsonObject" /* Protocol.Preload.RuleSetErrorType.SourceIsNotJsonObject */:
+            case "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */:
                 return i18nString(UIStrings.validityInvalid);
             case "InvalidRulesSkipped" /* Protocol.Preload.RuleSetErrorType.InvalidRulesSkipped */:
-                return i18nString(UIStrings.validitySomeRulesInvalid);
-            case "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */:
                 return i18nString(UIStrings.validitySomeRulesInvalid);
         }
     }

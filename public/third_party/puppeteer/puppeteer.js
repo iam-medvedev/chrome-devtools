@@ -2547,7 +2547,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.17.0";
+var packageVersion = "24.17.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -2680,6 +2680,8 @@ var ProtocolError = class extends PuppeteerError {
 var UnsupportedOperation = class extends PuppeteerError {
 };
 var TargetCloseError = class extends ProtocolError {
+};
+var ConnectionClosedError = class extends ProtocolError {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/PDFOptions.js
@@ -6446,7 +6448,7 @@ var Connection = class extends EventEmitter {
    */
   _rawSend(callbacks, method, params, sessionId, options) {
     if (this.#closed) {
-      return Promise.reject(new Error("Protocol error: Connection closed."));
+      return Promise.reject(new ConnectionClosedError("Connection closed."));
     }
     return callbacks.create(method, options?.timeout ?? this.#timeout, (id) => {
       const stringifiedMessage = JSON.stringify({
@@ -12320,6 +12322,7 @@ var LifecycleWatcher = class {
   #sameDocumentNavigationDeferred = Deferred.create();
   #lifecycleDeferred = Deferred.create();
   #newDocumentNavigationDeferred = Deferred.create();
+  #error = new Error("LifecycleWatcher terminated");
   #hasSameDocumentNavigation;
   #swapped;
   #navigationResponseReceived;
@@ -12336,6 +12339,9 @@ var LifecycleWatcher = class {
       return protocolEvent;
     });
     signal?.addEventListener("abort", () => {
+      if (signal.reason instanceof Error) {
+        signal.reason.cause = this.#error;
+      }
       this.#terminationDeferred.reject(signal.reason);
     });
     this.#frame = frame;
@@ -12383,7 +12389,8 @@ var LifecycleWatcher = class {
   }
   #onFrameDetached(frame) {
     if (this.#frame === frame) {
-      this.#terminationDeferred.resolve(new Error("Navigating frame was detached"));
+      this.#error.message = "Navigating frame was detached";
+      this.#terminationDeferred.resolve(this.#error);
       return;
     }
     this.#checkLifecycleComplete();
@@ -12445,7 +12452,8 @@ var LifecycleWatcher = class {
   }
   dispose() {
     this.#subscriptions.dispose();
-    this.#terminationDeferred.resolve(new Error("LifecycleWatcher disposed"));
+    this.#error.cause = new Error("LifecycleWatcher disposed");
+    this.#terminationDeferred.resolve(this.#error);
   }
 };
 
@@ -16563,7 +16571,7 @@ var CdpPage = class _CdpPage extends Page {
     try {
       const _guard = __addDisposableResource12(env_3, await this.browserContext().waitForScreenshotOperations(), false);
       const connection = this.#primaryTargetClient.connection();
-      assert(connection, "Protocol error: Connection closed. Most likely the page has been closed.");
+      assert(connection, "Connection closed. Most likely the page has been closed.");
       const runBeforeUnload = !!options.runBeforeUnload;
       if (runBeforeUnload) {
         await this.#primaryTargetClient.send("Page.close");

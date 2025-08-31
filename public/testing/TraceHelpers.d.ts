@@ -194,4 +194,25 @@ export declare function getAllNetworkRequestsByHost(networkRequests: Trace.Types
  * speed.
  */
 export declare function allThreadEntriesInTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Types.Events.Event[];
+export interface PerformanceAPIExtensionTestData {
+    detail: {
+        devtools?: Trace.Types.Extensions.ExtensionDataPayload;
+    };
+    name: string;
+    start?: string | number;
+    end?: string | number;
+    ts: number;
+    dur?: number;
+}
+export interface ConsoleAPIExtensionTestData {
+    name: string;
+    start?: string | number;
+    end?: string | number;
+    track?: string;
+    trackGroup?: string;
+    color?: string;
+    ts: number;
+}
+export declare function makeTimingEventWithPerformanceExtensionData({ name, ts: tsMicro, detail, dur: durMicro }: PerformanceAPIExtensionTestData): Trace.Types.Events.Event[];
+export declare function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, trackGroup, color }: ConsoleAPIExtensionTestData): Trace.Types.Events.ConsoleTimeStamp;
 export {};

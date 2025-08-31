@@ -22,10 +22,7 @@ export declare function stackTraceInEvent(event: Types.Events.Event): Types.Even
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
-export interface TimeSpan {
-    ts: Types.Timing.Micro;
-    dur?: Types.Timing.Micro;
-}
+export declare function compareBeginAndEnd(aBeginTime: number, bBeginTime: number, aEndTime: number, bEndTime: number): -1 | 0 | 1;
 export declare function eventTimeComparator(a: Types.Events.Event, b: Types.Events.Event): -1 | 0 | 1;
 /**
  * Sorts all the events in place, in order, by their start time. If they have
@@ -37,6 +34,7 @@ export declare function sortTraceEventsInPlace(events: Types.Events.Event[]): vo
  * ordered input arrays.
  */
 export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): Array<T1 | T2>;
+export declare function parseDevtoolsDetails(timingDetail: string, key: string): Types.Extensions.ExtensionDataPayload | Types.Extensions.ExtensionTrackEntryPayloadDeeplink | null;
 export declare function getNavigationForTraceEvent(event: Types.Events.Event, eventFrameId: string, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Events.NavigationStart | null;
 export declare function extractId(event: Types.Events.PairableAsync | Types.Events.SyntheticEventPair<Types.Events.PairableAsync>): string | undefined;
 export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.Micro, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, Array<{

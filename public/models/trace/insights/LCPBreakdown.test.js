@@ -17,6 +17,17 @@ describeWithEnvironment('LCPBreakdown', function () {
         const actual = Object.fromEntries(Object.entries(insight.subparts).map(([key, value]) => [key, value.range]));
         assert.deepEqual(actual, { ttfb: wantTtfb, renderDelay: wantRenderDelay });
     });
+    it('calculates text lcp breakdown (doc missing receiveHeadersStart)', async () => {
+        const { data, insights } = await processTrace(this, 'web-dev.json.gz');
+        const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
+        const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
+        assert.strictEqual(insight.lcpMs, 118.437);
+        const wantTtfb = Types.Timing.Micro(31343);
+        const wantRenderDelay = Types.Timing.Micro(87094);
+        assert.exists(insight.subparts);
+        const actual = Object.fromEntries(Object.entries(insight.subparts).map(([key, value]) => [key, value.range]));
+        assert.deepEqual(actual, { ttfb: wantTtfb, renderDelay: wantRenderDelay });
+    });
     it('calculates image lcp breakdown', async () => {
         const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
@@ -32,6 +43,22 @@ describeWithEnvironment('LCPBreakdown', function () {
             renderDelay: Helpers.Timing.microToMilli(insight.subparts.renderDelay?.range).toFixed(2),
         };
         assert.deepEqual(subparts, { ttfb: '6.94', loadTime: '12.10', loadDelay: '33.74', renderDelay: '56.85' });
+    });
+    it('calculates image lcp breakdown (doc missing receiveHeadersStart)', async () => {
+        const { data, insights } = await processTrace(this, 'multiple-navigations.json.gz');
+        const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
+        const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
+        assert.strictEqual(insight.lcpMs, 118.677);
+        if (!insight.subparts) {
+            throw new Error('No LCP subparts');
+        }
+        const subparts = {
+            ttfb: Helpers.Timing.microToMilli(insight.subparts.ttfb?.range).toFixed(2),
+            loadTime: Helpers.Timing.microToMilli(insight.subparts.loadDuration?.range).toFixed(2),
+            loadDelay: Helpers.Timing.microToMilli(insight.subparts.loadDelay?.range).toFixed(2),
+            renderDelay: Helpers.Timing.microToMilli(insight.subparts.renderDelay?.range).toFixed(2),
+        };
+        assert.deepEqual(subparts, { ttfb: '61.47', loadTime: '0.19', loadDelay: '47.74', renderDelay: '9.28' });
     });
     describe('warnings', function () {
         it('warns when there is no lcp', async () => {
@@ -50,13 +77,6 @@ describeWithEnvironment('LCPBreakdown', function () {
             assert.isUndefined(insight.subparts);
             assert.strictEqual(insight.warnings?.[0], 'NO_DOCUMENT_REQUEST');
         });
-    });
-    it('can handle old traces with missing data and return null for breakdowns of the subparts', async () => {
-        const { data, insights } = await processTrace(this, 'multiple-navigations.json.gz');
-        const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
-        const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
-        // This insight has invalid subparts, so we expect the value to be undefined.
-        assert.isUndefined(insight.subparts);
     });
 });
 //# sourceMappingURL=LCPBreakdown.test.js.map

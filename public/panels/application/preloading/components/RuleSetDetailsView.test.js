@@ -87,6 +87,30 @@ describeWithEnvironment('RuleSetDetailsView', () => {
         const textEditor = component.shadowRoot?.querySelector('devtools-text-editor');
         assert.strictEqual(textEditor.state.doc.toString(), data.sourceText);
     });
+    it('renders invalid rule set, invalid top-level key', async () => {
+        const data = {
+            id: 'ruleSetId:1',
+            loaderId: 'loaderId:1',
+            sourceText: `
+{
+  "prefetch": [
+    {
+      "source": "list",
+      "urls": ["/subresource.js"]
+    }
+  ],
+  "tag": "マイルール"
+}
+`,
+            backendNodeId: 1,
+            errorType: "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */,
+            errorMessage: 'Tag value is invalid: must be ASCII printable.',
+        };
+        const component = await renderRuleSetDetailsView(data, false);
+        assert.deepEqual(component.shadowRoot?.getElementById('error-message-text')?.textContent, 'Tag value is invalid: must be ASCII printable.');
+        const textEditor = component.shadowRoot?.querySelector('devtools-text-editor');
+        assert.strictEqual(textEditor.state.doc.toString(), data.sourceText);
+    });
     it('renders invalid rule set, lacking `urls`', async () => {
         const data = {
             id: 'ruleSetId:1',

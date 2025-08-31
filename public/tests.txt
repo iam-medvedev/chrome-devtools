@@ -348,6 +348,7 @@ panels/common/AiCodeCompletionTeaser.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsolePrompt.test.js
+panels/console/ConsoleSidebar.test.js
 panels/console/ConsoleView.test.js
 panels/console/ConsoleViewMessage.test.js
 panels/console/ConsoleViewport.test.js
@@ -380,10 +381,10 @@ panels/elements/ColorSwatchPopoverIcon.test.js
 panels/elements/ComputedStyleModel.test.js
 panels/elements/ComputedStyleWidget.test.js
 panels/elements/DOMLinkifier.test.js
+panels/elements/DOMTreeWidget.test.js
 panels/elements/ElementStatePaneWidget.test.js
 panels/elements/ElementsPanel.test.js
 panels/elements/ElementsTreeElement.test.js
-panels/elements/ElementsTreeElementHighlighter.test.js
 panels/elements/ElementsTreeOutline.test.js
 panels/elements/EventListenersWidget.test.js
 panels/elements/InspectElementModeController.test.js
@@ -510,7 +511,6 @@ panels/timeline/AnnotationHelpers.test.js
 panels/timeline/Breadcrumbs.test.js
 panels/timeline/CountersGraph.test.js
 panels/timeline/EntriesFilter.test.js
-panels/timeline/FreshRecording.test.js
 panels/timeline/Initiators.test.js
 panels/timeline/ModificationsManager.test.js
 panels/timeline/RecordingMetadata.test.js
@@ -574,6 +574,7 @@ panels/timeline/utils/EntityMapper.test.js
 panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/EntryNodes.test.js
 panels/timeline/utils/EventsSerializer.test.js
+panels/timeline/utils/FreshRecording.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
@@ -642,6 +643,7 @@ ui/legacy/FilterBar.test.js
 ui/legacy/Fragment.test.js
 ui/legacy/Geometry.test.js
 ui/legacy/Infobar.test.js
+ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js

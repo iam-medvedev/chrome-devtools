@@ -5,12 +5,12 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 // We track the renderer processes we see in each frame on the way through the trace.
-const rendererProcessesByFrameId = new Map();
+let rendererProcessesByFrameId = new Map();
 // We will often want to key data by Frame IDs, and commonly we'll care most
 // about the main frame's ID, so we store and expose that.
 let mainFrameId = '';
 let mainFrameURL = '';
-const framesByProcessId = new Map();
+let framesByProcessId = new Map();
 // We will often want to key data by the browser process, GPU process and top
 // level renderer IDs, so keep a track on those.
 let browserProcessId = Types.Events.ProcessID(-1);
@@ -19,8 +19,8 @@ let gpuProcessId = Types.Events.ProcessID(-1);
 let gpuThreadId = Types.Events.ThreadID(-1);
 let viewportRect = null;
 let devicePixelRatio = null;
-const processNames = new Map();
-const topLevelRendererIds = new Set();
+let processNames = new Map();
+let topLevelRendererIds = new Set();
 const traceBounds = {
     min: Types.Timing.Micro(Number.POSITIVE_INFINITY),
     max: Types.Timing.Micro(Number.NEGATIVE_INFINITY),
@@ -41,13 +41,13 @@ const traceBounds = {
  * main frame navigations, so calculating this list here is better than
  * filtering either of the below maps over and over again at the UI layer.
  */
-const navigationsByFrameId = new Map();
-const navigationsByNavigationId = new Map();
-const finalDisplayUrlByNavigationId = new Map();
-const mainFrameNavigations = [];
+let navigationsByFrameId = new Map();
+let navigationsByNavigationId = new Map();
+let finalDisplayUrlByNavigationId = new Map();
+let mainFrameNavigations = [];
 // Represents all the threads in the trace, organized by process. This is mostly for internal
 // bookkeeping so that during the finalize pass we can obtain the main and browser thread IDs.
-const threadsInProcess = new Map();
+let threadsInProcess = new Map();
 let traceStartedTimeFromTracingStartedEvent = Types.Timing.Micro(-1);
 const eventPhasesOfInterestForTraceBounds = new Set([
     "B" /* Types.Events.Phase.BEGIN */,
@@ -70,20 +70,20 @@ const CHROME_WEB_TRACE_EVENTS = new Set([
     "CpuProfile" /* Types.Events.Name.CPU_PROFILE */,
 ]);
 export function reset() {
-    navigationsByFrameId.clear();
-    navigationsByNavigationId.clear();
-    finalDisplayUrlByNavigationId.clear();
-    processNames.clear();
-    mainFrameNavigations.length = 0;
+    navigationsByFrameId = new Map();
+    navigationsByNavigationId = new Map();
+    finalDisplayUrlByNavigationId = new Map();
+    processNames = new Map();
+    mainFrameNavigations = [];
     browserProcessId = Types.Events.ProcessID(-1);
     browserThreadId = Types.Events.ThreadID(-1);
     gpuProcessId = Types.Events.ProcessID(-1);
     gpuThreadId = Types.Events.ThreadID(-1);
     viewportRect = null;
-    topLevelRendererIds.clear();
-    threadsInProcess.clear();
-    rendererProcessesByFrameId.clear();
-    framesByProcessId.clear();
+    topLevelRendererIds = new Set();
+    threadsInProcess = new Map();
+    rendererProcessesByFrameId = new Map();
+    framesByProcessId = new Map();
     traceBounds.min = Types.Timing.Micro(Number.POSITIVE_INFINITY);
     traceBounds.max = Types.Timing.Micro(Number.NEGATIVE_INFINITY);
     traceBounds.range = Types.Timing.Micro(Number.POSITIVE_INFINITY);
@@ -152,7 +152,7 @@ export function handleEvent(event) {
         const viewportY = rectAsArray[1];
         const viewportWidth = rectAsArray[2];
         const viewportHeight = rectAsArray[5];
-        viewportRect = new DOMRect(viewportX, viewportY, viewportWidth, viewportHeight);
+        viewportRect = { x: viewportX, y: viewportY, width: viewportWidth, height: viewportHeight };
         devicePixelRatio = event.args.data.dpr;
     }
     // The TracingStartedInBrowser event includes the data on which frames are

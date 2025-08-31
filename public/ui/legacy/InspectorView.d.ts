@@ -8,6 +8,7 @@ import type { View, ViewLocation, ViewLocationResolver } from './View.js';
 import { VBox, type Widget } from './Widget.js';
 export declare class InspectorView extends VBox implements ViewLocationResolver {
     #private;
+    private readonly drawerIsVerticalSetting;
     private readonly drawerSplitWidget;
     private readonly tabDelegate;
     private readonly drawerTabbedLocation;
@@ -53,6 +54,7 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     setDrawerSize(size: number): void;
     totalSize(): number;
     isDrawerMinimized(): boolean;
+    isDrawerOrientationVertical(): boolean;
     private keyDown;
     onResize(): void;
     topResizerElement(): Element;
@@ -75,7 +77,7 @@ export declare class ActionDelegate implements ActionDelegateInterface {
 export declare class InspectorViewTabDelegate implements TabbedPaneTabDelegate {
     closeTabs(tabbedPane: TabbedPane, ids: string[]): void;
     moveToDrawer(tabId: string): void;
-    moveToMainPanel(tabId: string): void;
+    moveToMainTabBar(tabId: string): void;
     onContextMenu(tabId: string, contextMenu: ContextMenu): void;
 }
 export declare const enum Events {

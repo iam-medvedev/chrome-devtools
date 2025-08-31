@@ -97,9 +97,6 @@ describeWithEnvironment('StylingAgent', () => {
         beforeEach(() => {
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
         });
-        afterEach(() => {
-            sinon.restore();
-        });
         it('builds a request with a model id', async () => {
             mockHostConfig('test model');
             const agent = new StylingAgent({

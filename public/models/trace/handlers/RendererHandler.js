@@ -20,7 +20,7 @@ import { data as samplesHandlerData } from './SamplesHandler.js';
  * and, for compatibility purposes, typed as an extension to the trace
  * event type.
  */
-const processes = new Map();
+let processes = new Map();
 let entityMappings = {
     eventsByEntity: new Map(),
     entityByEvent: new Map(),
@@ -30,9 +30,9 @@ let entityMappings = {
 // We track the compositor tile worker thread name events so that at the end we
 // can return these keyed by the process ID. These are used in the frontend to
 // show the user the rasterization thread(s) on the main frame as tracks.
-const compositorTileWorkers = Array();
-const entryToNode = new Map();
-const completeEventStack = [];
+let compositorTileWorkers = Array();
+let entryToNode = new Map();
+let completeEventStack = [];
 let config = Types.Configuration.defaults();
 const makeRendererProcess = () => ({
     url: null,
@@ -56,14 +56,16 @@ export function handleUserConfig(userConfig) {
     config = userConfig;
 }
 export function reset() {
-    processes.clear();
-    entryToNode.clear();
-    entityMappings.eventsByEntity.clear();
-    entityMappings.entityByEvent.clear();
-    entityMappings.createdEntityCache.clear();
-    entityMappings.entityByUrlCache.clear();
-    completeEventStack.length = 0;
-    compositorTileWorkers.length = 0;
+    processes = new Map();
+    entryToNode = new Map();
+    entityMappings = {
+        eventsByEntity: new Map(),
+        entityByEvent: new Map(),
+        createdEntityCache: new Map(),
+        entityByUrlCache: new Map(),
+    };
+    completeEventStack = [];
+    compositorTileWorkers = [];
 }
 export function handleEvent(event) {
     if (Types.Events.isThreadName(event) && event.args.name?.startsWith('CompositorTileWorker')) {
@@ -111,13 +113,11 @@ export function data() {
         processes,
         compositorTileWorkers: gatherCompositorThreads(),
         entryToNode,
-        // We only shallow clone the data in the processor, so these nested
-        // values need to be manually cloned.
         entityMappings: {
-            entityByEvent: new Map(entityMappings.entityByEvent),
-            eventsByEntity: new Map(entityMappings.eventsByEntity),
-            createdEntityCache: new Map(entityMappings.createdEntityCache),
-            entityByUrlCache: new Map(entityMappings.entityByUrlCache),
+            entityByEvent: entityMappings.entityByEvent,
+            eventsByEntity: entityMappings.eventsByEntity,
+            createdEntityCache: entityMappings.createdEntityCache,
+            entityByUrlCache: entityMappings.entityByUrlCache,
         },
     };
 }

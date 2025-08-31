@@ -215,11 +215,11 @@ var animationFramePresentations = /* @__PURE__ */ new Map();
 var animationFrames = [];
 var presentationForFrame = /* @__PURE__ */ new Map();
 function reset() {
-  animationFrameStarts.clear();
-  animationFrameEnds.clear();
-  animationFrames.length = 0;
-  presentationForFrame.clear();
-  animationFramePresentations.clear();
+  animationFrameStarts = /* @__PURE__ */ new Map();
+  animationFrameEnds = /* @__PURE__ */ new Map();
+  animationFrames = [];
+  presentationForFrame = /* @__PURE__ */ new Map();
+  animationFramePresentations = /* @__PURE__ */ new Map();
   isEnabled = false;
 }
 var isEnabled = false;
@@ -303,8 +303,8 @@ import * as Types3 from "./../types/types.js";
 var animations = [];
 var animationsSyntheticEvents = [];
 function reset2() {
-  animations.length = 0;
-  animationsSyntheticEvents.length = 0;
+  animations = [];
+  animationsSyntheticEvents = [];
 }
 function handleEvent2(event) {
   if (Types3.Events.isAnimation(event)) {
@@ -353,11 +353,11 @@ var flows = [];
 var ID_COMPONENT_SEPARATOR = "-$-";
 function reset3() {
   flows = [];
-  flowEvents.length = 0;
-  nonFlowEvents.length = 0;
-  flowDataByGroupToken.clear();
-  boundFlowData.clear();
-  flowsById.clear();
+  flowEvents = [];
+  nonFlowEvents = [];
+  flowDataByGroupToken = /* @__PURE__ */ new Map();
+  boundFlowData = /* @__PURE__ */ new Map();
+  flowsById = /* @__PURE__ */ new Map();
 }
 function handleEvent3(event) {
   if (Types4.Events.isFlowPhaseEvent(event)) {
@@ -467,11 +467,11 @@ var createdSyntheticEvents = /* @__PURE__ */ new Map();
 var utilityThreads = /* @__PURE__ */ new Map();
 var v8HelperThreads = /* @__PURE__ */ new Map();
 function reset4() {
-  runningInProcessEvents.clear();
-  doneWithProcessEvents.clear();
-  createdSyntheticEvents.clear();
-  utilityThreads.clear();
-  v8HelperThreads.clear();
+  runningInProcessEvents = /* @__PURE__ */ new Map();
+  doneWithProcessEvents = /* @__PURE__ */ new Map();
+  createdSyntheticEvents = /* @__PURE__ */ new Map();
+  utilityThreads = /* @__PURE__ */ new Map();
+  v8HelperThreads = /* @__PURE__ */ new Map();
 }
 function handleEvent4(event) {
   if (Types5.Events.isAuctionWorkletRunningInProcess(event)) {
@@ -615,20 +615,20 @@ var CHROME_WEB_TRACE_EVENTS = /* @__PURE__ */ new Set([
   "CpuProfile"
 ]);
 function reset5() {
-  navigationsByFrameId.clear();
-  navigationsByNavigationId.clear();
-  finalDisplayUrlByNavigationId.clear();
-  processNames.clear();
-  mainFrameNavigations.length = 0;
+  navigationsByFrameId = /* @__PURE__ */ new Map();
+  navigationsByNavigationId = /* @__PURE__ */ new Map();
+  finalDisplayUrlByNavigationId = /* @__PURE__ */ new Map();
+  processNames = /* @__PURE__ */ new Map();
+  mainFrameNavigations = [];
   browserProcessId = Types6.Events.ProcessID(-1);
   browserThreadId = Types6.Events.ThreadID(-1);
   gpuProcessId = Types6.Events.ProcessID(-1);
   gpuThreadId = Types6.Events.ThreadID(-1);
   viewportRect = null;
-  topLevelRendererIds.clear();
-  threadsInProcess.clear();
-  rendererProcessesByFrameId.clear();
-  framesByProcessId.clear();
+  topLevelRendererIds = /* @__PURE__ */ new Set();
+  threadsInProcess = /* @__PURE__ */ new Map();
+  rendererProcessesByFrameId = /* @__PURE__ */ new Map();
+  framesByProcessId = /* @__PURE__ */ new Map();
   traceBounds.min = Types6.Timing.Micro(Number.POSITIVE_INFINITY);
   traceBounds.max = Types6.Timing.Micro(Number.NEGATIVE_INFINITY);
   traceBounds.range = Types6.Timing.Micro(Number.POSITIVE_INFINITY);
@@ -688,7 +688,7 @@ function handleEvent5(event) {
     const viewportY = rectAsArray[1];
     const viewportWidth = rectAsArray[2];
     const viewportHeight = rectAsArray[5];
-    viewportRect = new DOMRect(viewportX, viewportY, viewportWidth, viewportHeight);
+    viewportRect = { x: viewportX, y: viewportY, width: viewportWidth, height: viewportHeight };
     devicePixelRatio = event.args.data.dpr;
   }
   if (Types6.Events.isTracingStartedInBrowser(event)) {
@@ -902,17 +902,19 @@ function firstPositiveValueInList(entries) {
   return 0;
 }
 function reset6() {
-  requestsById.clear();
-  requestMap.clear();
-  requestsByTime.length = 0;
-  networkRequestEventByInitiatorUrl.clear();
-  eventToInitiatorMap.clear();
-  webSocketData.clear();
-  entityMappings.eventsByEntity.clear();
-  entityMappings.entityByEvent.clear();
-  entityMappings.createdEntityCache.clear();
-  entityMappings.entityByUrlCache.clear();
-  linkPreconnectEvents.length = 0;
+  requestsById = /* @__PURE__ */ new Map();
+  requestMap = /* @__PURE__ */ new Map();
+  requestsByTime = [];
+  networkRequestEventByInitiatorUrl = /* @__PURE__ */ new Map();
+  eventToInitiatorMap = /* @__PURE__ */ new Map();
+  webSocketData = /* @__PURE__ */ new Map();
+  entityMappings = {
+    eventsByEntity: /* @__PURE__ */ new Map(),
+    entityByEvent: /* @__PURE__ */ new Map(),
+    createdEntityCache: /* @__PURE__ */ new Map(),
+    entityByUrlCache: /* @__PURE__ */ new Map()
+  };
+  linkPreconnectEvents = [];
 }
 function handleEvent6(event) {
   if (Types7.Events.isResourceChangePriority(event)) {
@@ -1165,9 +1167,9 @@ async function finalize6() {
     addNetworkRequestToEntityMapping(networkEvent, entityMappings, request);
     const initiatorUrl = networkEvent.args.data.initiator?.url || Helpers5.Trace.getZeroIndexedStackTraceInEventPayload(networkEvent)?.at(0)?.url;
     if (initiatorUrl) {
-      const events2 = networkRequestEventByInitiatorUrl.get(initiatorUrl) ?? [];
-      events2.push(networkEvent);
-      networkRequestEventByInitiatorUrl.set(initiatorUrl, events2);
+      const events = networkRequestEventByInitiatorUrl.get(initiatorUrl) ?? [];
+      events.push(networkEvent);
+      networkRequestEventByInitiatorUrl.set(initiatorUrl, events);
     }
   }
   for (const request of requestsByTime) {
@@ -1187,10 +1189,10 @@ function data6() {
     eventToInitiator: eventToInitiatorMap,
     webSocket: [...webSocketData.values()],
     entityMappings: {
-      entityByEvent: new Map(entityMappings.entityByEvent),
-      eventsByEntity: new Map(entityMappings.eventsByEntity),
-      createdEntityCache: new Map(entityMappings.createdEntityCache),
-      entityByUrlCache: new Map(entityMappings.entityByUrlCache)
+      entityByEvent: entityMappings.entityByEvent,
+      eventsByEntity: entityMappings.eventsByEntity,
+      createdEntityCache: entityMappings.createdEntityCache,
+      entityByUrlCache: entityMappings.entityByUrlCache
     },
     linkPreconnectEvents
   };
@@ -1253,7 +1255,6 @@ import * as Platform4 from "./../../../core/platform/platform.js";
 import * as CPUProfile from "./../../cpu_profile/cpu_profile.js";
 import * as Helpers6 from "./../helpers/helpers.js";
 import * as Types8 from "./../types/types.js";
-var events = /* @__PURE__ */ new Map();
 var profilesInProcess = /* @__PURE__ */ new Map();
 var entryToNode = /* @__PURE__ */ new Map();
 var preprocessedData = /* @__PURE__ */ new Map();
@@ -1327,10 +1328,9 @@ function parseCPUProfileData(parseOptions) {
   }
 }
 function reset7() {
-  events.clear();
-  preprocessedData.clear();
-  profilesInProcess.clear();
-  entryToNode.clear();
+  preprocessedData = /* @__PURE__ */ new Map();
+  profilesInProcess = /* @__PURE__ */ new Map();
+  entryToNode = /* @__PURE__ */ new Map();
 }
 function handleEvent7(event) {
   if (Types8.Events.isSyntheticCpuProfile(event)) {
@@ -1456,14 +1456,16 @@ function handleUserConfig2(userConfig) {
   config = userConfig;
 }
 function reset8() {
-  processes.clear();
-  entryToNode2.clear();
-  entityMappings2.eventsByEntity.clear();
-  entityMappings2.entityByEvent.clear();
-  entityMappings2.createdEntityCache.clear();
-  entityMappings2.entityByUrlCache.clear();
-  completeEventStack.length = 0;
-  compositorTileWorkers.length = 0;
+  processes = /* @__PURE__ */ new Map();
+  entryToNode2 = /* @__PURE__ */ new Map();
+  entityMappings2 = {
+    eventsByEntity: /* @__PURE__ */ new Map(),
+    entityByEvent: /* @__PURE__ */ new Map(),
+    createdEntityCache: /* @__PURE__ */ new Map(),
+    entityByUrlCache: /* @__PURE__ */ new Map()
+  };
+  completeEventStack = [];
+  compositorTileWorkers = [];
 }
 function handleEvent8(event) {
   if (Types9.Events.isThreadName(event) && event.args.name?.startsWith("CompositorTileWorker")) {
@@ -1511,13 +1513,11 @@ function data8() {
     processes,
     compositorTileWorkers: gatherCompositorThreads(),
     entryToNode: entryToNode2,
-    // We only shallow clone the data in the processor, so these nested
-    // values need to be manually cloned.
     entityMappings: {
-      entityByEvent: new Map(entityMappings2.entityByEvent),
-      eventsByEntity: new Map(entityMappings2.eventsByEntity),
-      createdEntityCache: new Map(entityMappings2.createdEntityCache),
-      entityByUrlCache: new Map(entityMappings2.entityByUrlCache)
+      entityByEvent: entityMappings2.entityByEvent,
+      eventsByEntity: entityMappings2.eventsByEntity,
+      createdEntityCache: entityMappings2.createdEntityCache,
+      entityByUrlCache: entityMappings2.entityByUrlCache
     }
   };
 }
@@ -1660,10 +1660,10 @@ var taskScheduleForTaskRunEvent = /* @__PURE__ */ new Map();
 var asyncCallToScheduler = /* @__PURE__ */ new Map();
 var runEntryPointToScheduler = /* @__PURE__ */ new Map();
 function reset9() {
-  schedulerToRunEntryPoints.clear();
-  asyncCallToScheduler.clear();
-  taskScheduleForTaskRunEvent.clear();
-  runEntryPointToScheduler.clear();
+  schedulerToRunEntryPoints = /* @__PURE__ */ new Map();
+  asyncCallToScheduler = /* @__PURE__ */ new Map();
+  taskScheduleForTaskRunEvent = /* @__PURE__ */ new Map();
+  runEntryPointToScheduler = /* @__PURE__ */ new Map();
 }
 function handleEvent9(_) {
 }
@@ -1765,7 +1765,7 @@ import * as Platform7 from "./../../../core/platform/platform.js";
 import * as Types11 from "./../types/types.js";
 var domStatsByFrameId = /* @__PURE__ */ new Map();
 function reset10() {
-  domStatsByFrameId.clear();
+  domStatsByFrameId = /* @__PURE__ */ new Map();
 }
 function handleEvent10(event) {
   if (!Types11.Events.isDOMStats(event)) {
@@ -1802,7 +1802,8 @@ __export(UserTimingsHandler_exports, {
   data: () => data11,
   finalize: () => finalize11,
   handleEvent: () => handleEvent11,
-  reset: () => reset11
+  reset: () => reset11,
+  userTimingComparator: () => userTimingComparator
 });
 import * as Helpers8 from "./../helpers/helpers.js";
 import * as Types12 from "./../types/types.js";
@@ -1813,12 +1814,12 @@ var performanceMarkEvents = [];
 var consoleTimings = [];
 var timestampEvents = [];
 function reset11() {
-  syntheticEvents.length = 0;
-  performanceMeasureEvents.length = 0;
-  performanceMarkEvents.length = 0;
-  consoleTimings.length = 0;
-  timestampEvents.length = 0;
-  measureTraceByTraceId.clear();
+  syntheticEvents = [];
+  performanceMeasureEvents = [];
+  performanceMarkEvents = [];
+  consoleTimings = [];
+  timestampEvents = [];
+  measureTraceByTraceId = /* @__PURE__ */ new Map();
 }
 var resourceTimingNames = [
   "workerStart",
@@ -1859,26 +1860,48 @@ var navTimingNames = [
   "loadEventEnd"
 ];
 var ignoredNames = [...resourceTimingNames, ...navTimingNames];
+function getEventTimings(event) {
+  if ("dur" in event) {
+    return { start: event.ts, end: Types12.Timing.Micro(event.ts + (event.dur ?? 0)) };
+  }
+  if (Types12.Events.isConsoleTimeStamp(event)) {
+    const { start, end } = event.args.data || {};
+    if (typeof start === "number" && typeof end === "number") {
+      return { start: Types12.Timing.Micro(start), end: Types12.Timing.Micro(end) };
+    }
+  }
+  return { start: event.ts, end: event.ts };
+}
+function getEventTrack(event) {
+  if (event.cat === "blink.user_timing") {
+    const detailString = event.args.data.beginEvent.args?.detail;
+    if (detailString) {
+      const details = Helpers8.Trace.parseDevtoolsDetails(detailString, "devtools");
+      if (details && "track" in details) {
+        return details.track;
+      }
+    }
+  } else if (Types12.Events.isConsoleTimeStamp(event)) {
+    const track = event.args.data?.track;
+    return typeof track === "string" ? track : void 0;
+  }
+  return void 0;
+}
 function userTimingComparator(a, b, originalArray) {
-  const aBeginTime = a.ts;
-  const bBeginTime = b.ts;
-  if (aBeginTime < bBeginTime) {
-    return -1;
+  const { start: aStart, end: aEnd } = getEventTimings(a);
+  const { start: bStart, end: bEnd } = getEventTimings(b);
+  const timeDifference = Helpers8.Trace.compareBeginAndEnd(aStart, bStart, aEnd, bEnd);
+  if (timeDifference) {
+    return timeDifference;
   }
-  if (aBeginTime > bBeginTime) {
-    return 1;
+  const aTrack = getEventTrack(a);
+  const bTrack = getEventTrack(b);
+  if (aTrack !== bTrack) {
+    return 0;
   }
-  const aDuration = a.dur ?? 0;
-  const bDuration = b.dur ?? 0;
-  const aEndTime = aBeginTime + aDuration;
-  const bEndTime = bBeginTime + bDuration;
-  if (aEndTime > bEndTime) {
-    return -1;
-  }
-  if (aEndTime < bEndTime) {
-    return 1;
-  }
-  return originalArray.indexOf(b) - originalArray.indexOf(a);
+  const aIndex = originalArray.indexOf(a);
+  const bIndex = originalArray.indexOf(b);
+  return bIndex - aIndex;
 }
 function handleEvent11(event) {
   if (ignoredNames.includes(event.name)) {
@@ -1905,6 +1928,7 @@ async function finalize11() {
   const asyncEvents = [...performanceMeasureEvents, ...consoleTimings];
   syntheticEvents = Helpers8.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
   syntheticEvents = syntheticEvents.sort((a, b) => userTimingComparator(a, b, [...syntheticEvents]));
+  timestampEvents = timestampEvents.sort((a, b) => userTimingComparator(a, b, [...timestampEvents]));
 }
 function data11() {
   return {
@@ -1927,12 +1951,12 @@ var syntheticConsoleEntriesForTimingsTrack = [];
 function handleEvent12(_event) {
 }
 function reset12() {
-  extensionTrackEntries.length = 0;
-  syntheticConsoleEntriesForTimingsTrack.length = 0;
-  extensionTrackData.length = 0;
-  extensionMarkers.length = 0;
-  entryToNode3.clear();
-  timeStampByName.clear();
+  extensionTrackEntries = [];
+  syntheticConsoleEntriesForTimingsTrack = [];
+  extensionTrackData = [];
+  extensionMarkers = [];
+  entryToNode3 = /* @__PURE__ */ new Map();
+  timeStampByName = /* @__PURE__ */ new Map();
 }
 async function finalize12() {
   createExtensionFlameChartEntries();
@@ -2024,32 +2048,18 @@ function extractPerformanceAPIExtensionEntries(timings) {
     }
   }
 }
-function parseDetail(timingDetail, key) {
-  try {
-    const detailObj = JSON.parse(timingDetail);
-    if (!(key in detailObj)) {
-      return null;
-    }
-    if (!Types13.Extensions.isValidExtensionPayload(detailObj[key])) {
-      return null;
-    }
-    return detailObj[key];
-  } catch {
-    return null;
-  }
-}
 function extensionPayloadForConsoleApi(timing) {
   if (!timing.args.data || !("devtools" in timing.args.data)) {
     return null;
   }
-  return parseDetail(`{"additionalContext": ${timing.args.data.devtools} }`, "additionalContext");
+  return Helpers9.Trace.parseDevtoolsDetails(`{"additionalContext": ${timing.args.data.devtools} }`, "additionalContext");
 }
 function extensionDataInPerformanceTiming(timing) {
   const timingDetail = Types13.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
   if (!timingDetail) {
     return null;
   }
-  return parseDetail(timingDetail, "devtools");
+  return Helpers9.Trace.parseDevtoolsDetails(timingDetail, "devtools");
 }
 function extensionDataInConsoleTimeStamp(timeStamp) {
   if (!timeStamp.args.data) {
@@ -2124,13 +2134,13 @@ var currentMainFrameLayerTreeId = null;
 var updateLayerEvents = [];
 var relevantEvents = [];
 function reset13() {
-  paintEvents.length = 0;
-  snapshotEvents.length = 0;
-  paintToSnapshotMap.clear();
+  paintEvents = [];
+  snapshotEvents = [];
+  paintToSnapshotMap = /* @__PURE__ */ new Map();
   lastPaintForLayerId = {};
   currentMainFrameLayerTreeId = null;
-  updateLayerEvents.length = 0;
-  relevantEvents.length = 0;
+  updateLayerEvents = [];
+  relevantEvents = [];
 }
 function handleEvent13(event) {
   if (Types14.Events.isPaint(event) || Types14.Events.isDisplayListItemListSnapshot(event) || Types14.Events.isUpdateLayer(event) || Types14.Events.isSetLayerId(event)) {
@@ -2294,7 +2304,7 @@ var MAIN_FRAME_MARKERS = /* @__PURE__ */ new Set([
 ]);
 function reset14() {
   model = null;
-  relevantFrameEvents.length = 0;
+  relevantFrameEvents = [];
 }
 function handleEvent14(event) {
   if (isFrameEvent(event) || Types15.Events.isLayerTreeHostImplSnapshot(event) || entryIsTopLevel(event) || MAIN_FRAME_MARKERS.has(event.name) || Types15.Events.isPaint(event)) {
@@ -2459,16 +2469,16 @@ var TimelineFrameModel = class {
     this.#lastFrame.mainFrameId = this.#framePendingActivation.mainFrameId;
     this.#framePendingActivation = null;
   }
-  #addTraceEvents(events2, threadData, mainFrameId2) {
+  #addTraceEvents(events, threadData, mainFrameId2) {
     let j = 0;
     this.#activeThreadId = threadData.length && threadData[0].tid || null;
     this.#activeProcessId = threadData.length && threadData[0].pid || null;
-    for (let i = 0; i < events2.length; ++i) {
-      while (j + 1 < threadData.length && threadData[j + 1].startTime <= events2[i].ts) {
+    for (let i = 0; i < events.length; ++i) {
+      while (j + 1 < threadData.length && threadData[j + 1].startTime <= events[i].ts) {
         this.#activeThreadId = threadData[++j].tid;
         this.#activeProcessId = threadData[j].pid;
       }
-      this.#addTraceEvent(events2[i], mainFrameId2);
+      this.#addTraceEvent(events[i], mainFrameId2);
     }
     this.#activeThreadId = null;
     this.#activeProcessId = null;
@@ -2688,7 +2698,7 @@ import * as Types16 from "./../types/types.js";
 var eventsInProcessThread = /* @__PURE__ */ new Map();
 var mainGPUThreadTasks = [];
 function reset15() {
-  eventsInProcessThread.clear();
+  eventsInProcessThread = /* @__PURE__ */ new Map();
   mainGPUThreadTasks = [];
 }
 function handleEvent15(event) {
@@ -2731,12 +2741,12 @@ var urlToPaintImage = /* @__PURE__ */ new Map();
 var paintEventToCorrectedDisplaySize = /* @__PURE__ */ new Map();
 var didCorrectForHostDpr = false;
 function reset16() {
-  paintImageEvents.clear();
-  decodeLazyPixelRefEvents.clear();
-  paintImageByLazyPixelRef.clear();
-  eventToPaintImage.clear();
-  urlToPaintImage.clear();
-  paintEventToCorrectedDisplaySize.clear();
+  paintImageEvents = /* @__PURE__ */ new Map();
+  decodeLazyPixelRefEvents = /* @__PURE__ */ new Map();
+  paintImageByLazyPixelRef = /* @__PURE__ */ new Map();
+  eventToPaintImage = /* @__PURE__ */ new Map();
+  urlToPaintImage = /* @__PURE__ */ new Map();
+  paintEventToCorrectedDisplaySize = /* @__PURE__ */ new Map();
   didCorrectForHostDpr = false;
 }
 function handleEvent16(event) {
@@ -2831,22 +2841,20 @@ var lastInvalidationEventForFrame = /* @__PURE__ */ new Map();
 var lastUpdateLayoutTreeByFrame = /* @__PURE__ */ new Map();
 var eventToInitiatorMap2 = /* @__PURE__ */ new Map();
 var initiatorToEventsMap = /* @__PURE__ */ new Map();
-var requestAnimationFrameEventsById = /* @__PURE__ */ new Map();
 var timerInstallEventsById = /* @__PURE__ */ new Map();
 var requestIdleCallbackEventsById = /* @__PURE__ */ new Map();
 var webSocketCreateEventsById = /* @__PURE__ */ new Map();
 var schedulePostTaskCallbackEventsById = /* @__PURE__ */ new Map();
 function reset17() {
-  lastScheduleStyleRecalcByFrame.clear();
-  lastInvalidationEventForFrame.clear();
-  lastUpdateLayoutTreeByFrame.clear();
-  timerInstallEventsById.clear();
-  eventToInitiatorMap2.clear();
-  initiatorToEventsMap.clear();
-  requestAnimationFrameEventsById.clear();
-  requestIdleCallbackEventsById.clear();
-  webSocketCreateEventsById.clear();
-  schedulePostTaskCallbackEventsById.clear();
+  lastScheduleStyleRecalcByFrame = /* @__PURE__ */ new Map();
+  lastInvalidationEventForFrame = /* @__PURE__ */ new Map();
+  lastUpdateLayoutTreeByFrame = /* @__PURE__ */ new Map();
+  timerInstallEventsById = /* @__PURE__ */ new Map();
+  eventToInitiatorMap2 = /* @__PURE__ */ new Map();
+  initiatorToEventsMap = /* @__PURE__ */ new Map();
+  requestIdleCallbackEventsById = /* @__PURE__ */ new Map();
+  webSocketCreateEventsById = /* @__PURE__ */ new Map();
+  schedulePostTaskCallbackEventsById = /* @__PURE__ */ new Map();
 }
 function storeInitiator(data31) {
   eventToInitiatorMap2.set(data31.event, data31.initiator);
@@ -2973,10 +2981,10 @@ var lastRecalcStyleEvent = null;
 var hasPainted = false;
 var allInvalidationTrackingEvents = [];
 function reset18() {
-  invalidationsForEvent.clear();
-  invalidationCountForEvent.clear();
+  invalidationsForEvent = /* @__PURE__ */ new Map();
+  invalidationCountForEvent = /* @__PURE__ */ new Map();
   lastRecalcStyleEvent = null;
-  allInvalidationTrackingEvents.length = 0;
+  allInvalidationTrackingEvents = [];
   hasPainted = false;
   maxInvalidationsPerEvent = null;
 }
@@ -3085,10 +3093,10 @@ import * as Types20 from "./../types/types.js";
 var metricScoresByFrameId = /* @__PURE__ */ new Map();
 var allMarkerEvents = [];
 function reset19() {
-  metricScoresByFrameId.clear();
+  metricScoresByFrameId = /* @__PURE__ */ new Map();
   pageLoadEventsArray = [];
   allMarkerEvents = [];
-  selectedLCPCandidateEvents.clear();
+  selectedLCPCandidateEvents = /* @__PURE__ */ new Set();
 }
 var pageLoadEventsArray = [];
 var selectedLCPCandidateEvents = /* @__PURE__ */ new Set();
@@ -3178,7 +3186,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
   if (Types20.Events.isLargestContentfulPaintCandidate(event)) {
     const candidateIndex = event.args.data?.candidateIndex;
     if (!candidateIndex) {
-      throw new Error("Largest Contenful Paint unexpectedly had no candidateIndex.");
+      throw new Error("Largest Contentful Paint unexpectedly had no candidateIndex.");
     }
     const lcpTime = Types20.Timing.Micro(event.ts - navigation.ts);
     const lcp = {
@@ -3360,7 +3368,8 @@ function metricIsLCP(metric) {
 var imagePaintsByNodeIdAndProcess = /* @__PURE__ */ new Map();
 var lcpRequestByNavigationId = /* @__PURE__ */ new Map();
 function reset20() {
-  imagePaintsByNodeIdAndProcess.clear();
+  imagePaintsByNodeIdAndProcess = /* @__PURE__ */ new Map();
+  lcpRequestByNavigationId = /* @__PURE__ */ new Map();
 }
 function handleEvent20(event) {
   if (!Types21.Events.isLargestImagePaintCandidate(event) || !event.args.data) {
@@ -3429,7 +3438,7 @@ __export(LargestTextPaintHandler_exports, {
 import * as Types22 from "./../types/types.js";
 var textPaintByDOMNodeId = /* @__PURE__ */ new Map();
 function reset21() {
-  textPaintByDOMNodeId.clear();
+  textPaintByDOMNodeId = /* @__PURE__ */ new Map();
 }
 function handleEvent21(event) {
   if (!Types22.Events.isLargestTextPaintCandidate(event)) {
@@ -3480,10 +3489,10 @@ var modernScreenshotEvents = [];
 var syntheticScreenshots = [];
 var frameSequenceToTs = {};
 function reset22() {
-  unpairedAsyncEvents.length = 0;
-  legacyScreenshotEvents.length = 0;
-  syntheticScreenshots.length = 0;
-  modernScreenshotEvents.length = 0;
+  unpairedAsyncEvents = [];
+  legacyScreenshotEvents = [];
+  syntheticScreenshots = [];
+  modernScreenshotEvents = [];
   frameSequenceToTs = {};
 }
 function handleEvent22(event) {
@@ -3559,22 +3568,22 @@ var clusters = [];
 var clustersByNavigationId = /* @__PURE__ */ new Map();
 var scoreRecords = [];
 function reset23() {
-  layoutShiftEvents.length = 0;
-  layoutInvalidationEvents.length = 0;
-  scheduleStyleInvalidationEvents.length = 0;
-  styleRecalcInvalidationEvents.length = 0;
-  prePaintEvents.length = 0;
-  paintImageEvents2.length = 0;
-  renderFrameImplCreateChildFrameEvents.length = 0;
-  layoutImageUnsizedEvents.length = 0;
-  domLoadingEvents.length = 0;
-  remoteFonts.length = 0;
-  backendNodeIds.clear();
-  clusters.length = 0;
+  layoutShiftEvents = [];
+  layoutInvalidationEvents = [];
+  scheduleStyleInvalidationEvents = [];
+  styleRecalcInvalidationEvents = [];
+  prePaintEvents = [];
+  paintImageEvents2 = [];
+  renderFrameImplCreateChildFrameEvents = [];
+  layoutImageUnsizedEvents = [];
+  domLoadingEvents = [];
+  remoteFonts = [];
+  backendNodeIds = /* @__PURE__ */ new Set();
+  clusters = [];
   sessionMaxScore = 0;
-  scoreRecords.length = 0;
+  scoreRecords = [];
   clsWindowID = -1;
-  clustersByNavigationId.clear();
+  clustersByNavigationId = /* @__PURE__ */ new Map();
 }
 function handleEvent23(event) {
   if (Types24.Events.isLayoutShift(event) && !event.args.data?.had_recent_input) {
@@ -3727,8 +3736,10 @@ async function buildLayoutShiftsClusters() {
         updateTraceWindowMax(currentCluster2.clusterWindow, Types24.Timing.Micro(previousClusterEndTime));
       }
       const navigationId = currentShiftNavigation === null ? Types24.Events.NO_NAVIGATION : navigations[currentShiftNavigation].args.data?.navigationId;
-      clusters.push({
+      clusters.push(Helpers16.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
         name: "SyntheticLayoutShiftCluster",
+        // Will be replaced by the worst layout shift in the next for loop.
+        rawSourceEvent: event,
         events: [],
         clusterWindow: traceWindowFromTime(clusterStartTime),
         clusterCumulativeScore: 0,
@@ -3744,7 +3755,7 @@ async function buildLayoutShiftsClusters() {
         cat: "",
         dur: Types24.Timing.Micro(-1)
         // This `cluster.dur` is updated below.
-      });
+      }));
       firstShiftTime = clusterStartTime;
     }
     const currentCluster = clusters[clusters.length - 1];
@@ -3833,6 +3844,7 @@ async function buildLayoutShiftsClusters() {
     }
     if (worstShiftEvent) {
       cluster.worstShiftEvent = worstShiftEvent;
+      cluster.rawSourceEvent = worstShiftEvent;
     }
     cluster.ts = cluster.events[0].ts;
     const lastShiftTimings = Helpers16.Timing.eventTimingsMicroSeconds(cluster.events[cluster.events.length - 1]);
@@ -3895,7 +3907,7 @@ import * as Platform13 from "./../../../core/platform/platform.js";
 import * as Types25 from "./../types/types.js";
 var updateCountersByProcess = /* @__PURE__ */ new Map();
 function reset24() {
-  updateCountersByProcess.clear();
+  updateCountersByProcess = /* @__PURE__ */ new Map();
 }
 function handleEvent24(event) {
   if (Types25.Events.isUpdateCounters(event)) {
@@ -3921,7 +3933,7 @@ __export(PageFramesHandler_exports, {
 import * as Types26 from "./../types/types.js";
 var frames = /* @__PURE__ */ new Map();
 function reset25() {
-  frames.clear();
+  frames = /* @__PURE__ */ new Map();
 }
 function handleEvent25(event) {
   if (Types26.Events.isTracingStartedInBrowser(event)) {
@@ -3972,7 +3984,7 @@ function deps14() {
   return ["Meta", "NetworkRequests"];
 }
 function reset26() {
-  scriptById.clear();
+  scriptById = /* @__PURE__ */ new Map();
 }
 function handleEvent26(event) {
   const getOrMakeScript = (isolate, scriptIdAsNumber) => {
@@ -4199,8 +4211,8 @@ var invalidatedNodeList = new Array();
 function reset27() {
   lastUpdateLayoutTreeEvent = null;
   lastInvalidatedNode = null;
-  selectorDataForUpdateLayoutTree.clear();
-  invalidatedNodeList.length = 0;
+  selectorDataForUpdateLayoutTree = /* @__PURE__ */ new Map();
+  invalidatedNodeList = [];
 }
 function handleEvent27(event) {
   if (Types28.Events.isStyleRecalcInvalidationTracking(event)) {
@@ -4278,13 +4290,13 @@ var interactionEventsWithNoNesting = [];
 var eventTimingEndEventsById = /* @__PURE__ */ new Map();
 var eventTimingStartEventsForInteractions = [];
 function reset28() {
-  allEvents.length = 0;
-  beginCommitCompositorFrameEvents.length = 0;
-  parseMetaViewportEvents.length = 0;
-  interactionEvents.length = 0;
-  eventTimingStartEventsForInteractions.length = 0;
-  eventTimingEndEventsById.clear();
-  interactionEventsWithNoNesting.length = 0;
+  allEvents = [];
+  beginCommitCompositorFrameEvents = [];
+  parseMetaViewportEvents = [];
+  interactionEvents = [];
+  eventTimingStartEventsForInteractions = [];
+  eventTimingEndEventsById = /* @__PURE__ */ new Map();
+  interactionEventsWithNoNesting = [];
   longestInteractionEvent = null;
 }
 function handleEvent28(event) {
@@ -4491,9 +4503,9 @@ var sessionIdEvents = [];
 var workerIdByThread = /* @__PURE__ */ new Map();
 var workerURLById = /* @__PURE__ */ new Map();
 function reset29() {
-  sessionIdEvents.length = 0;
-  workerIdByThread.clear();
-  workerURLById.clear();
+  sessionIdEvents = [];
+  workerIdByThread = /* @__PURE__ */ new Map();
+  workerURLById = /* @__PURE__ */ new Map();
 }
 function handleEvent29(event) {
   if (Types30.Events.isTracingSessionIdForWorker(event)) {
@@ -4527,12 +4539,12 @@ var longTaskEvents = [];
 var FORCED_REFLOW_THRESHOLD = Helpers18.Timing.milliToMicro(Types31.Timing.Milli(30));
 var LONG_MAIN_THREAD_TASK_THRESHOLD = Helpers18.Timing.milliToMicro(Types31.Timing.Milli(50));
 function reset30() {
-  warningsPerEvent.clear();
-  eventsPerWarning.clear();
-  allEventsStack.length = 0;
-  jsInvokeStack.length = 0;
-  taskReflowEvents.length = 0;
-  longTaskEvents.length = 0;
+  warningsPerEvent = /* @__PURE__ */ new Map();
+  eventsPerWarning = /* @__PURE__ */ new Map();
+  allEventsStack = [];
+  jsInvokeStack = [];
+  taskReflowEvents = [];
+  longTaskEvents = [];
 }
 function storeWarning(event, warning) {
   const existingWarnings = Platform15.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);

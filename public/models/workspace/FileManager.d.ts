@@ -12,6 +12,7 @@ export declare class FileManager extends Common.ObjectWrapper.ObjectWrapper<Even
     }): FileManager;
     /**
      * {@link FileManager.close | close} *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
+     * @param url The url of the file to save. **NOTE:** The backend truncates this filename to 64 characters.
      */
     save(url: Platform.DevToolsPath.RawPathString | Platform.DevToolsPath.UrlString, contentData: TextUtils.ContentData.ContentData, forceSaveAs: boolean): Promise<SaveCallbackParam | null>;
     /**

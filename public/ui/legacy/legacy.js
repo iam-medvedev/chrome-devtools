@@ -617,6 +617,7 @@ __export(UIUtils_exports, {
   DevToolsIconLabel: () => DevToolsIconLabel,
   DevToolsSmallBubble: () => DevToolsSmallBubble,
   ElementFocusRestorer: () => ElementFocusRestorer,
+  HTMLElementWithLightDOMTemplate: () => HTMLElementWithLightDOMTemplate,
   LongClickController: () => LongClickController,
   MaxLengthForDisplayedURLs: () => MaxLengthForDisplayedURLs,
   MessageDialog: () => MessageDialog,
@@ -1601,7 +1602,6 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   }
   dockSideChanged() {
     this.setDockSide(this.currentDockStateSetting.get());
-    setTimeout(this.announceDockLocation.bind(this), 2e3);
   }
   dockSide() {
     return this.dockSideInternal;
@@ -1646,6 +1646,7 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
   }
   setIsDockedResponse(eventData) {
     this.dispatchEventToListeners("AfterDockSideChanged", eventData);
+    this.announceDockLocation();
   }
   toggleDockSide() {
     if (this.lastDockStateSetting.get() === this.currentDockStateSetting.get()) {
@@ -7264,7 +7265,7 @@ var UIStrings7 = {
    */
   closeDrawer: "Close drawer",
   /**
-   * @description The aria label for main tabbed pane that contains Panels
+   * @description The ARIA label for the main tab bar that contains the DevTools panels
    */
   panels: "Panels",
   /**
@@ -7276,13 +7277,13 @@ var UIStrings7 = {
    */
   reloadDevtools: "Reload DevTools",
   /**
-   * @description Text for context menu action to move a tab to the main panel
+   * @description Text for context menu action to move a tab to the main tab bar
    */
-  moveToTop: "Move to top",
+  moveToMainTabBar: "Move to main tab bar",
   /**
    * @description Text for context menu action to move a tab to the drawer
    */
-  moveToBottom: "Move to bottom",
+  moveToDrawer: "Move to drawer",
   /**
    * @description Text shown in a prompt to the user when DevTools is started and the
    * currently selected DevTools locale does not match Chrome's locale.
@@ -7337,6 +7338,7 @@ var str_7 = i18n13.i18n.registerUIStrings("ui/legacy/InspectorView.ts", UIString
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var inspectorViewInstance = null;
 var InspectorView = class _InspectorView extends VBox {
+  drawerIsVerticalSetting;
   drawerSplitWidget;
   tabDelegate;
   drawerTabbedLocation;
@@ -7356,7 +7358,8 @@ var InspectorView = class _InspectorView extends VBox {
     super();
     GlassPane.setContainer(this.element);
     this.setMinimumSize(250, 72);
-    this.drawerSplitWidget = new SplitWidget(false, true, "inspector.drawer-split-view-state", 200, 200);
+    this.drawerIsVerticalSetting = Common10.Settings.Settings.instance().createSetting("inspector.use-vertical-drawer-orientation", false);
+    this.drawerSplitWidget = new SplitWidget(this.drawerIsVerticalSetting.get(), true, "inspector.drawer-split-view-state", 200, 200);
     this.drawerSplitWidget.hideSidebar();
     this.drawerSplitWidget.enableShowModeSaving();
     this.drawerSplitWidget.show(this.element);
@@ -7566,13 +7569,14 @@ var InspectorView = class _InspectorView extends VBox {
   toggleDrawerOrientation() {
     const drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
     this.#toggleOrientationButton.setGlyph(drawerWillBeVertical ? "dock-bottom" : "dock-right");
+    this.drawerIsVerticalSetting.set(drawerWillBeVertical);
     this.drawerSplitWidget.setVertical(drawerWillBeVertical);
     this.setDrawerMinimumSize();
   }
   setDrawerMinimumSize() {
     const drawerIsVertical = this.drawerSplitWidget.isVertical();
     if (drawerIsVertical) {
-      this.drawerTabbedPane.setMinimumSize(100, 27);
+      this.drawerTabbedPane.setMinimumSize(200, 27);
     } else {
       this.drawerTabbedPane.setMinimumSize(0, 27);
     }
@@ -7592,6 +7596,9 @@ var InspectorView = class _InspectorView extends VBox {
   }
   isDrawerMinimized() {
     return this.drawerSplitWidget.isSidebarMinimized();
+  }
+  isDrawerOrientationVertical() {
+    return this.drawerSplitWidget.isVertical();
   }
   keyDown(event) {
     const keyboardEvent = event;
@@ -7818,7 +7825,7 @@ var InspectorViewTabDelegate = class {
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.TabMovedToDrawer);
     ViewManager.instance().moveView(tabId, "drawer-view");
   }
-  moveToMainPanel(tabId) {
+  moveToMainTabBar(tabId) {
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.TabMovedToMainPanel);
     ViewManager.instance().moveView(tabId, "panel");
   }
@@ -7828,9 +7835,9 @@ var InspectorViewTabDelegate = class {
     }
     const locationName = ViewManager.instance().locationNameForViewId(tabId);
     if (locationName === "drawer-view") {
-      contextMenu.defaultSection().appendItem(i18nString7(UIStrings7.moveToTop), this.moveToMainPanel.bind(this, tabId), { jslogContext: "move-to-top" });
+      contextMenu.defaultSection().appendItem(i18nString7(UIStrings7.moveToMainTabBar), this.moveToMainTabBar.bind(this, tabId), { jslogContext: "move-to-top" });
     } else {
-      contextMenu.defaultSection().appendItem(i18nString7(UIStrings7.moveToBottom), this.moveToDrawer.bind(this, tabId), { jslogContext: "move-to-bottom" });
+      contextMenu.defaultSection().appendItem(i18nString7(UIStrings7.moveToDrawer), this.moveToDrawer.bind(this, tabId), { jslogContext: "move-to-bottom" });
     }
   }
 };
@@ -8010,7 +8017,11 @@ var UIStrings8 = {
    * @example {1 613 680} PH1
    * @example {44 %} PH2
    */
-  sS: "{PH1}, {PH2}"
+  sS: "{PH1}, {PH2}",
+  /**
+   * @description Accessible text exposed to screen readers appended to menu items that have a new badge.
+   */
+  newFeature: "This is a new feature"
 };
 var str_8 = i18n15.i18n.registerUIStrings("ui/legacy/SoftContextMenu.ts", UIStrings8);
 var i18nString8 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
@@ -8225,6 +8236,9 @@ var SoftContextMenu = class _SoftContextMenu {
       }
     } else if (item8.shortcut) {
       accessibleName = i18nString8(UIStrings8.sS, { PH1: String(item8.label), PH2: item8.shortcut });
+    }
+    if (item8.element?.className === "new-badge") {
+      accessibleName = i18nString8(UIStrings8.sS, { PH1: String(item8.label), PH2: i18nString8(UIStrings8.newFeature) });
     }
     setLabel(menuItemElement, accessibleName);
     if (item8.isExperimentalFeature) {
@@ -12511,7 +12525,7 @@ import * as Root7 from "./../../core/root/root.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Buttons6 from "./../components/buttons/buttons.js";
 import * as IconButton7 from "./../components/icon_button/icon_button.js";
-import { Directives as Directives3 } from "./../lit/lit.js";
+import { Directives as Directives3, render as render2 } from "./../lit/lit.js";
 import * as VisualLogging15 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/checkboxTextLabel.css.js
@@ -12727,6 +12741,11 @@ body {
 
 :focus {
   outline-width: 0;
+}
+
+/* Prevent UA stylesheet from overriding font-family for HTML elements. */
+code, kbd, samp, pre {
+  font-family: var(--monospace-font-family);
 }
 
 .monospace {
@@ -14093,11 +14112,7 @@ var UIStrings12 = {
   /**
    * @description Text for the new badge appearing next to some menu items
    */
-  new: "NEW",
-  /**
-   * @description Aria label for the new badge appearing next to some menu items
-   */
-  newFeature: "This is a new feature"
+  new: "NEW"
 };
 var str_12 = i18n23.i18n.registerUIStrings("ui/legacy/UIUtils.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
@@ -15674,7 +15689,6 @@ function maybeCreateNewBadge(promotionId) {
     const badge2 = document.createElement("div");
     badge2.className = "new-badge";
     badge2.textContent = i18nString12(UIStrings12.new);
-    badge2.ariaLabel = i18nString12(UIStrings12.newFeature);
     badge2.setAttribute("jslog", `${VisualLogging15.badge("new-badge")}`);
     return badge2;
   }
@@ -15718,6 +15732,36 @@ function bindToAction(actionName) {
     e.onclick = () => action6.execute();
   });
 }
+var HTMLElementWithLightDOMTemplate = class extends HTMLElement {
+  #mutationObserver = new MutationObserver(this.#onChange.bind(this));
+  #contentTemplate = null;
+  constructor() {
+    super();
+    this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
+  }
+  set template(template) {
+    if (!this.#contentTemplate) {
+      this.removeChildren();
+      this.#contentTemplate = this.createChild("template");
+      this.#mutationObserver.disconnect();
+      this.#mutationObserver.observe(this.#contentTemplate.content, { childList: true, attributes: true, subtree: true, characterData: true });
+    }
+    render2(template, this.#contentTemplate.content);
+  }
+  #onChange(mutationList) {
+    for (const mutation of mutationList) {
+      this.removeNodes(mutation.removedNodes);
+      this.addNodes(mutation.addedNodes);
+      this.updateNodes(mutation.target, mutation.attributeName);
+    }
+  }
+  updateNodes(_node, _attributeName) {
+  }
+  addNodes(_nodes) {
+  }
+  removeNodes(_nodes) {
+  }
+};
 
 // gen/front_end/ui/legacy/GlassPane.js
 var GlassPane = class _GlassPane {
@@ -16470,8 +16514,8 @@ var LiveAnnouncer = class _LiveAnnouncer {
     );
     _LiveAnnouncer.#removeAnnouncerElement(
       container,
-      "alert"
-      /* AnnouncerRole.ALERT */
+      "status"
+      /* AnnouncerRole.STATUS */
     );
   }
   static alert(message) {
@@ -16618,7 +16662,7 @@ __export(EmptyWidget_exports, {
   EmptyWidget: () => EmptyWidget
 });
 import * as i18n25 from "./../../core/i18n/i18n.js";
-import { Directives as Directives4, html as html4, render as render2 } from "./../lit/lit.js";
+import { Directives as Directives4, html as html4, render as render3 } from "./../lit/lit.js";
 import * as VisualLogging18 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
@@ -16966,7 +17010,7 @@ var str_13 = i18n25.i18n.registerUIStrings("ui/legacy/EmptyWidget.ts", UIStrings
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
 var { ref } = Directives4;
 var DEFAULT_VIEW = (input, output, target) => {
-  render2(html4`
+  render3(html4`
     <style>${inspectorCommon_css_default}</style>
     <style>${emptyWidget_css_default}</style>
     <div class="empty-state" jslog=${VisualLogging18.section("empty-view")}
@@ -17926,7 +17970,7 @@ __export(ListWidget_exports, {
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform23 from "./../../core/platform/platform.js";
 import * as Buttons7 from "./../components/buttons/buttons.js";
-import { html as html5, render as render3 } from "./../lit/lit.js";
+import { html as html5, render as render4 } from "./../lit/lit.js";
 import * as VisualLogging20 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
@@ -18236,7 +18280,7 @@ var ListWidget = class extends VBox {
     const controls = document.createElement("div");
     controls.classList.add("controls-container");
     controls.classList.add("fill");
-    render3(html5`
+    render4(html5`
       <div class="controls-gradient"></div>
       <div class="controls-buttons">
         <devtools-toolbar>
@@ -18861,7 +18905,7 @@ var ProgressIndicator = class extends HTMLElement {
   #progressElement;
   #stopButton;
   #isCanceled = false;
-  #worked;
+  #worked = 0;
   #isDone = false;
   constructor() {
     super();
@@ -18874,8 +18918,6 @@ var ProgressIndicator = class extends HTMLElement {
       this.#stopButton = this.#contentElement.createChild("button", "progress-indicator-shadow-stop-button");
       this.#stopButton.addEventListener("click", this.cancel.bind(this));
     }
-    this.#isCanceled = false;
-    this.#worked = 0;
   }
   connectedCallback() {
     this.classList.add("progress-indicator");
@@ -18920,7 +18962,7 @@ __export(RemoteDebuggingTerminatedScreen_exports, {
 });
 import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Buttons8 from "./../components/buttons/buttons.js";
-import { html as html6, render as render4 } from "./../lit/lit.js";
+import { html as html6, render as render5 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
@@ -18985,7 +19027,7 @@ var UIStrings16 = {
 var str_16 = i18n31.i18n.registerUIStrings("ui/legacy/RemoteDebuggingTerminatedScreen.ts", UIStrings16);
 var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var DEFAULT_VIEW2 = (input, _output, target) => {
-  render4(html6`
+  render5(html6`
     <style>${remoteDebuggingTerminatedScreen_css_default}</style>
     <div class="header">${i18nString16(UIStrings16.debuggingConnectionWasClosed)}</div>
     <div class="content">
@@ -20580,7 +20622,7 @@ __export(TargetCrashedScreen_exports, {
   TargetCrashedScreen: () => TargetCrashedScreen
 });
 import * as i18n37 from "./../../core/i18n/i18n.js";
-import { html as html7, render as render5 } from "./../lit/lit.js";
+import { html as html7, render as render6 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
@@ -20616,7 +20658,7 @@ var UIStrings19 = {
 var str_19 = i18n37.i18n.registerUIStrings("ui/legacy/TargetCrashedScreen.ts", UIStrings19);
 var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
 var DEFAULT_VIEW3 = (input, _output, target) => {
-  render5(html7`
+  render6(html7`
     <style>${targetCrashedScreen_css_default}</style>
     <div class="message">${i18nString19(UIStrings19.devtoolsWasDisconnectedFromThe)}</div>
     <div class="message">${i18nString19(UIStrings19.oncePageIsReloadedDevtoolsWill)}</div>`, target);
@@ -20682,11 +20724,12 @@ __export(Treeoutline_exports, {
   TreeElement: () => TreeElement,
   TreeOutline: () => TreeOutline,
   TreeOutlineInShadow: () => TreeOutlineInShadow,
+  TreeViewElement: () => TreeViewElement,
   treeElementBylistItemNode: () => treeElementBylistItemNode
 });
 import * as Common19 from "./../../core/common/common.js";
 import * as Platform26 from "./../../core/platform/platform.js";
-import { render as render6 } from "./../lit/lit.js";
+import * as Lit2 from "./../lit/lit.js";
 import * as VisualLogging26 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -21004,6 +21047,7 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
 
 // gen/front_end/ui/legacy/Treeoutline.js
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
+var { render: render7 } = Lit2;
 var Events2;
 (function(Events3) {
   Events3["ElementAttached"] = "ElementAttached";
@@ -21284,10 +21328,10 @@ var TreeOutlineInShadow = class extends TreeOutline {
   shadowRoot;
   disclosureElement;
   renderSelection;
-  constructor(variant = "Other") {
+  constructor(variant = "Other", element) {
     super();
     this.contentElement.classList.add("tree-outline");
-    this.element = document.createElement("div");
+    this.element = element ?? document.createElement("div");
     this.shadowRoot = createShadowRootWithCoreStyles(this.element, { cssFile: treeoutline_css_default });
     this.disclosureElement = this.shadowRoot.createChild("div", "tree-outline-disclosure");
     this.disclosureElement.appendChild(this.contentElement);
@@ -21296,16 +21340,23 @@ var TreeOutlineInShadow = class extends TreeOutline {
       this.contentElement.classList.add("tree-variant-navigation");
     }
   }
+  setVariant(variant) {
+    this.contentElement.classList.toggle(
+      "tree-variant-navigation",
+      variant === "NavigationTree"
+      /* TreeVariant.NAVIGATION_TREE */
+    );
+  }
   registerRequiredCSS(...cssFiles) {
     for (const cssFile of cssFiles) {
       Platform26.DOMUtilities.appendStyle(this.shadowRoot, cssFile);
     }
   }
-  hideOverflow() {
-    this.disclosureElement.classList.add("tree-outline-disclosure-hide-overflow");
+  setHideOverflow(hideOverflow) {
+    this.disclosureElement.classList.toggle("tree-outline-disclosure-hide-overflow", hideOverflow);
   }
-  makeDense() {
-    this.contentElement.classList.add("tree-outline-dense");
+  setDense(dense) {
+    this.contentElement.classList.toggle("tree-outline-dense", dense);
   }
   onStartedEditingTitle(treeElement) {
     const selection = this.shadowRoot.getSelection();
@@ -21631,7 +21682,7 @@ var TreeElement = class {
       this.listItemNode.insertBefore(this.leadingIconsElement, this.titleElement);
       this.ensureSelection();
     }
-    render6(icons, this.leadingIconsElement);
+    render7(icons, this.leadingIconsElement);
   }
   get tooltip() {
     return this.tooltipInternal;
@@ -22107,6 +22158,189 @@ var TreeElement = class {
     this.disableSelectFocus = toggle6;
   }
 };
+function hasBooleanAttribute(element, name) {
+  return element.hasAttribute(name) && element.getAttribute(name) !== "false";
+}
+var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
+  static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
+  configElement;
+  constructor(treeOutline, configElement) {
+    super();
+    this.configElement = configElement;
+    _TreeViewTreeElement.#elementToTreeElement.set(configElement, this);
+    this.refresh();
+  }
+  refresh() {
+    this.titleElement.textContent = "";
+    if (hasBooleanAttribute(this.configElement, "selected")) {
+      this.revealAndSelect(true);
+    }
+    for (const child of this.configElement.childNodes) {
+      if (child instanceof HTMLUListElement && child.role === "group") {
+        if (hasBooleanAttribute(child, "hidden")) {
+          this.collapse();
+        } else {
+          this.expand();
+        }
+        continue;
+      }
+      this.titleElement.appendChild(child.cloneNode(true));
+    }
+  }
+  static get(configElement) {
+    return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
+  }
+  remove() {
+    const parent = this.parent;
+    if (parent) {
+      parent.removeChild(this);
+      parent.setExpandable(parent.children().length > 0);
+    }
+    _TreeViewTreeElement.#elementToTreeElement.delete(this.configElement);
+  }
+};
+function getTreeNodes(nodeList) {
+  return nodeList.values().flatMap((node) => {
+    if (node instanceof HTMLLIElement && node.role === "treeitem") {
+      return [node, ...node.querySelectorAll('ul[role="group"] li[role="treeitem"]')];
+    }
+    if (node instanceof HTMLElement) {
+      return node.querySelectorAll('li[role="treeitem"]');
+    }
+    return [];
+  }).toArray();
+}
+var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemplate {
+  static observedAttributes = ["navigation-variant", "hide-overflow"];
+  #treeOutline = new TreeOutlineInShadow(void 0, this);
+  constructor() {
+    super();
+    this.#treeOutline.addEventListener(Events2.ElementSelected, (event) => {
+      if (event.data instanceof TreeViewTreeElement) {
+        this.dispatchEvent(new _TreeViewElement.SelectEvent(event.data.configElement));
+      }
+    });
+    this.#treeOutline.addEventListener(Events2.ElementExpanded, (event) => {
+      if (event.data instanceof TreeViewTreeElement) {
+        event.data.configElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
+      }
+    });
+    this.#treeOutline.addEventListener(Events2.ElementCollapsed, (event) => {
+      if (event.data instanceof TreeViewTreeElement) {
+        event.data.configElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
+      }
+    });
+    this.addNodes(getTreeNodes([this]));
+  }
+  getInternalTreeOutlineForTest() {
+    return this.#treeOutline;
+  }
+  #getParentTreeElement(element) {
+    const subtreeRoot = element.parentElement;
+    if (!(subtreeRoot instanceof HTMLUListElement)) {
+      return null;
+    }
+    if (subtreeRoot.role === "tree") {
+      return { treeElement: this.#treeOutline.rootElement(), expanded: false };
+    }
+    if (subtreeRoot.role !== "group" || !subtreeRoot.parentElement) {
+      return null;
+    }
+    const expanded = !hasBooleanAttribute(subtreeRoot, "hidden");
+    const treeElement = TreeViewTreeElement.get(subtreeRoot.parentElement);
+    return treeElement ? { expanded, treeElement } : null;
+  }
+  updateNodes(node, attributeName) {
+    while (node?.parentNode && !(node instanceof HTMLElement)) {
+      node = node.parentNode;
+    }
+    const treeNode = node instanceof HTMLElement ? node.closest('li[role="treeitem"]') : null;
+    if (!treeNode) {
+      return;
+    }
+    const treeElement = TreeViewTreeElement.get(treeNode);
+    if (!treeElement) {
+      return;
+    }
+    treeElement.refresh();
+    if (node === treeNode && attributeName === "selected" && hasBooleanAttribute(treeNode, "selected")) {
+      treeElement.revealAndSelect(true);
+    }
+    if (attributeName === "hidden" && node instanceof HTMLUListElement && node.role === "group") {
+      if (hasBooleanAttribute(node, "hidden")) {
+        treeElement.collapse();
+      } else {
+        treeElement.expand();
+      }
+    }
+  }
+  addNodes(nodes) {
+    for (const node of getTreeNodes(nodes)) {
+      if (TreeViewTreeElement.get(node)) {
+        continue;
+      }
+      const parent = this.#getParentTreeElement(node);
+      if (!parent) {
+        continue;
+      }
+      const treeElement = new TreeViewTreeElement(this.#treeOutline, node);
+      parent.treeElement.appendChild(treeElement);
+      if (hasBooleanAttribute(node, "selected")) {
+        treeElement.revealAndSelect(true);
+      }
+      if (parent.expanded) {
+        parent.treeElement.expand();
+      }
+    }
+  }
+  removeNodes(nodes) {
+    for (const node of getTreeNodes(nodes)) {
+      TreeViewTreeElement.get(node)?.remove();
+    }
+  }
+  set hideOverflow(hide) {
+    this.toggleAttribute("hide-overflow", hide);
+  }
+  get hideOverflow() {
+    return hasBooleanAttribute(this, "hide-overflow");
+  }
+  set navgiationVariant(navigationVariant) {
+    this.toggleAttribute("navigation-variant", navigationVariant);
+  }
+  get navigationVariant() {
+    return hasBooleanAttribute(this, "navigation-variant");
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+    switch (name) {
+      case "navigation-variant":
+        this.#treeOutline.setVariant(
+          newValue !== "false" ? "NavigationTree" : "Other"
+          /* TreeVariant.OTHER */
+        );
+        break;
+      case "hide-overflow":
+        this.#treeOutline.setHideOverflow(newValue !== "false");
+    }
+  }
+};
+(function(TreeViewElement2) {
+  class SelectEvent extends CustomEvent {
+    constructor(detail) {
+      super("select", { detail });
+    }
+  }
+  TreeViewElement2.SelectEvent = SelectEvent;
+  class ExpandEvent extends CustomEvent {
+    constructor(detail) {
+      super("expand", { detail });
+    }
+  }
+  TreeViewElement2.ExpandEvent = ExpandEvent;
+})(TreeViewElement || (TreeViewElement = {}));
+customElements.define("devtools-tree", TreeViewElement);
 function loggingParentProvider(e) {
   const treeElement = TreeElement.getTreeElementBylistItemNode(e);
   const parentElement = treeElement?.parent?.listItemElement;

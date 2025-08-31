@@ -123,7 +123,6 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     private dataGridMouseMove;
     hoveredNode(): NetworkNode | null;
     private setHoveredNode;
-    private dataGridMouseDown;
     private updateSummaryBar;
     scheduleRefresh(): void;
     addFilmStripFrames(times: number[]): void;

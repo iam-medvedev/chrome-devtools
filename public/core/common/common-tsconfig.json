@@ -51,6 +51,7 @@
     "../../../../../../front_end/core/common/QueryParamHandler.ts",
     "../../../../../../front_end/core/common/ResolverBase.ts",
     "../../../../../../front_end/core/common/ResourceType.ts",
+    "../../../../../../front_end/core/common/ReturnToPanel.ts",
     "../../../../../../front_end/core/common/Revealer.ts",
     "../../../../../../front_end/core/common/Runnable.ts",
     "../../../../../../front_end/core/common/SegmentedRange.ts",

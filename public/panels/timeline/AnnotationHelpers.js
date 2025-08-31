@@ -140,6 +140,9 @@ export function ariaDescriptionForOverlay(overlay) {
     return null;
 }
 export function ariaAnnouncementForModifiedEvent(event) {
+    if (event.muteAriaNotifications) {
+        return null;
+    }
     const { overlay, action } = event;
     switch (action) {
         case 'Remove': {

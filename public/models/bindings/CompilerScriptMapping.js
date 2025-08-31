@@ -240,6 +240,10 @@ export class CompilerScriptMapping {
         }
         return ranges;
     }
+    translateRawFramesStep(_rawFrames, _translatedFrames) {
+        // TODO(crbug.com/433162438): Implement source map stack trace translation.
+        return false;
+    }
     /**
      * Computes the set of line numbers which are source-mapped to a script within the
      * given {@link uiSourceCode}.

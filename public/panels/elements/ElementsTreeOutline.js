@@ -47,7 +47,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
 import { ElementsPanel } from './ElementsPanel.js';
 import { ElementsTreeElement, InitialChildrenLimit, isOpeningTag } from './ElementsTreeElement.js';
-import { ElementsTreeElementHighlighter } from './ElementsTreeElementHighlighter.js';
 import elementsTreeOutlineStyles from './elementsTreeOutline.css.js';
 import { ImagePreviewPopover } from './ImagePreviewPopover.js';
 import { ShortcutTreeElement } from './ShortcutTreeElement.js';
@@ -83,7 +82,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
         output.elementsTreeOutline = new ElementsTreeOutline(input.omitRootDOMNode, input.selectEnabled, input.hideGutter);
         output.elementsTreeOutline.addEventListener(ElementsTreeOutline.Events.SelectedNodeChanged, input.onSelectedNodeChanged, this);
         output.elementsTreeOutline.addEventListener(ElementsTreeOutline.Events.ElementsTreeUpdated, input.onElementsTreeUpdated, this);
-        new ElementsTreeElementHighlighter(output.elementsTreeOutline, new Common.Throttler.Throttler(100));
+        output.elementsTreeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, input.onElementCollapsed, this);
+        output.elementsTreeOutline.addEventListener(UI.TreeOutline.Events.ElementCollapsed, input.onElementExpanded, this);
         target.appendChild(output.elementsTreeOutline.element);
     }
     if (input.visibleWidth !== undefined) {
@@ -96,6 +96,41 @@ export const DEFAULT_VIEW = (input, output, target) => {
     output.elementsTreeOutline.setShowSelectionOnKeyboardFocus(input.showSelectionOnKeyboardFocus, input.preventTabOrder);
     if (input.deindentSingleNode) {
         output.elementsTreeOutline.deindentSingleNode();
+    }
+    // Node highlighting logic. FIXME: express as a lit template.
+    const previousHighlightedNode = output.highlightedTreeElement?.node() ?? null;
+    if (previousHighlightedNode !== input.currentHighlightedNode) {
+        let treeElement = null;
+        if (output.highlightedTreeElement) {
+            let currentTreeElement = output.highlightedTreeElement;
+            while (currentTreeElement && currentTreeElement !== output.alreadyExpandedParentTreeElement) {
+                if (currentTreeElement.expanded) {
+                    currentTreeElement.collapse();
+                }
+                const parent = currentTreeElement.parent;
+                currentTreeElement = parent instanceof ElementsTreeElement ? parent : null;
+            }
+        }
+        output.highlightedTreeElement = null;
+        output.alreadyExpandedParentTreeElement = null;
+        if (input.currentHighlightedNode) {
+            let deepestExpandedParent = input.currentHighlightedNode;
+            const treeElementByNode = output.elementsTreeOutline.treeElementByNode;
+            const treeIsNotExpanded = (deepestExpandedParent) => {
+                const element = treeElementByNode.get(deepestExpandedParent);
+                return element ? !element.expanded : true;
+            };
+            while (deepestExpandedParent && treeIsNotExpanded(deepestExpandedParent)) {
+                deepestExpandedParent = deepestExpandedParent.parentNode;
+            }
+            output.alreadyExpandedParentTreeElement =
+                (deepestExpandedParent ? treeElementByNode.get(deepestExpandedParent) :
+                    output.elementsTreeOutline.rootElement());
+            treeElement = output.elementsTreeOutline.createTreeElementFor(input.currentHighlightedNode);
+        }
+        output.highlightedTreeElement = treeElement;
+        output.elementsTreeOutline.setHoverEffect(treeElement);
+        treeElement?.reveal(true);
     }
 };
 /**
@@ -135,14 +170,33 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     get rootDOMNode() {
         return this.#viewOutput.elementsTreeOutline?.rootDOMNode ?? null;
     }
+    #currentHighlightedNode = null;
     #view;
-    #viewOutput = {};
+    #viewOutput = {
+        highlightedTreeElement: null,
+        alreadyExpandedParentTreeElement: null,
+    };
+    #highlightThrottler = new Common.Throttler.Throttler(100);
     constructor(element, view) {
         super(element, {
             useShadowDom: false,
             delegatesFocus: false,
         });
         this.#view = view ?? DEFAULT_VIEW;
+        if (Common.Settings.Settings.instance().moduleSetting('highlight-node-on-hover-in-overlay').get()) {
+            SDK.TargetManager.TargetManager.instance().addModelListener(SDK.OverlayModel.OverlayModel, "HighlightNodeRequested" /* SDK.OverlayModel.Events.HIGHLIGHT_NODE_REQUESTED */, this.#highlightNode, this, { scoped: true });
+            SDK.TargetManager.TargetManager.instance().addModelListener(SDK.OverlayModel.OverlayModel, "InspectModeWillBeToggled" /* SDK.OverlayModel.Events.INSPECT_MODE_WILL_BE_TOGGLED */, this.#clearState, this, { scoped: true });
+        }
+    }
+    #highlightNode(event) {
+        void this.#highlightThrottler.schedule(() => {
+            this.#currentHighlightedNode = event.data;
+            this.requestUpdate();
+        });
+    }
+    #clearState() {
+        this.#currentHighlightedNode = null;
+        this.requestUpdate();
     }
     selectDOMNode(node, focus) {
         this.#viewOutput?.elementsTreeOutline?.selectDOMNode(node, focus);
@@ -179,8 +233,14 @@ export class DOMTreeWidget extends UI.Widget.Widget {
             showSelectionOnKeyboardFocus: this.showSelectionOnKeyboardFocus,
             preventTabOrder: this.preventTabOrder,
             deindentSingleNode: this.deindentSingleNode,
+            currentHighlightedNode: this.#currentHighlightedNode,
             onElementsTreeUpdated: this.onElementsTreeUpdated.bind(this),
-            onSelectedNodeChanged: this.onSelectedNodeChanged.bind(this),
+            onSelectedNodeChanged: event => {
+                this.#clearState();
+                this.onSelectedNodeChanged(event);
+            },
+            onElementCollapsed: this.#clearState.bind(this),
+            onElementExpanded: this.#clearState.bind(this),
         }, this.#viewOutput, this.contentElement);
     }
     modelAdded(domModel) {

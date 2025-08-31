@@ -29,7 +29,7 @@ export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Wi
         this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.treeoutline.registerRequiredCSS(changesSidebarStyles);
         this.treeoutline.setFocusable(false);
-        this.treeoutline.hideOverflow();
+        this.treeoutline.setHideOverflow(true);
         this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
         UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);
         this.element.appendChild(this.treeoutline.element);

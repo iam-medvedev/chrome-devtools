@@ -1,59 +1,8 @@
 // Copyright 2024 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import { makeTimingEventWithConsoleExtensionData, makeTimingEventWithPerformanceExtensionData, } from '../../../testing/TraceHelpers.js';
 import * as Trace from '../trace.js';
-let idCounter = 0;
-function makeTimingEventWithPerformanceExtensionData({ name, ts: tsMicro, detail, dur: durMicro }) {
-    const isMark = durMicro === undefined;
-    const currentId = idCounter++;
-    const traceEventBase = {
-        cat: 'blink.user_timing',
-        pid: Trace.Types.Events.ProcessID(2017),
-        tid: Trace.Types.Events.ThreadID(259),
-        id2: { local: `${currentId}` },
-    };
-    const stringDetail = JSON.stringify(detail);
-    const args = isMark ? { data: { detail: stringDetail } } : { detail: stringDetail };
-    const firstEvent = {
-        args,
-        name,
-        ph: isMark ? "I" /* Trace.Types.Events.Phase.INSTANT */ : "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
-        ts: Trace.Types.Timing.Micro(tsMicro),
-        ...traceEventBase,
-    };
-    if (isMark) {
-        return [firstEvent];
-    }
-    return [
-        firstEvent,
-        {
-            name,
-            ...traceEventBase,
-            ts: Trace.Types.Timing.Micro(tsMicro + (durMicro || 0)),
-            ph: "e" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_END */,
-        },
-    ];
-}
-function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, trackGroup, color }) {
-    return {
-        cat: 'devtools.timeline',
-        pid: Trace.Types.Events.ProcessID(2017),
-        tid: Trace.Types.Events.ThreadID(259),
-        name: "TimeStamp" /* Trace.Types.Events.Name.TIME_STAMP */,
-        args: {
-            data: {
-                message: name,
-                start,
-                end,
-                track,
-                trackGroup,
-                color,
-            }
-        },
-        ts: Trace.Types.Timing.Micro(ts),
-        ph: "I" /* Trace.Types.Events.Phase.INSTANT */,
-    };
-}
 export async function createTraceExtensionDataFromPerformanceAPITestInput(extensionData) {
     const events = extensionData.flatMap(makeTimingEventWithPerformanceExtensionData).sort((e1, e2) => e1.ts - e2.ts);
     return await createTraceExtensionDataFromEvents(events);
@@ -99,7 +48,7 @@ describe('ExtensionTraceDataHandler', function () {
                     name: 'A custom mark',
                     ts: 100,
                 },
-                // Marker with invalid dataType
+                // Marker with invalid dataType.
                 {
                     detail: { devtools: { color: 'error', dataType: 'invalid-marker' } },
                     name: 'A custom mark',
@@ -113,7 +62,7 @@ describe('ExtensionTraceDataHandler', function () {
                     ts: 100,
                     dur: 100,
                 },
-                // Track entry with no explicit dataType (should be accepted)
+                // Track entry with no explicit dataType (should be accepted).
                 {
                     detail: { devtools: { track: 'An Extension Track', color: 'tertiary' } },
                     name: 'An extension measurement',
@@ -161,16 +110,25 @@ describe('ExtensionTraceDataHandler', function () {
                 assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
             });
             it('parses track data correctly', async () => {
-                assert.lengthOf(extensionHandlerOutput.extensionTrackData[1].entriesByTrack['An Extension Track'], 2);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[1].name, 'An Extension Track');
-                assert.lengthOf(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['Another Extension Track'], 1);
-                assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].name, 'Another Extension Track');
+                assert.lengthOf(extensionHandlerOutput.extensionTrackData[0].entriesByTrack['An Extension Track'], 2);
+                assert.strictEqual(extensionHandlerOutput.extensionTrackData[0].name, 'An Extension Track');
+                assert.lengthOf(extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'], 1);
+                assert.strictEqual(extensionHandlerOutput.extensionTrackData[1].name, 'Another Extension Track');
             });
             it('gets data from individual entries', async () => {
-                const { tooltipText, track, properties } = extensionHandlerOutput.extensionTrackData[0].entriesByTrack['Another Extension Track'][0].args;
-                assert.strictEqual(tooltipText, 'A hint if needed');
-                assert.strictEqual(track, 'Another Extension Track');
-                assert.strictEqual(JSON.stringify(properties), '[["Description","Something"],["Tip","A tip to improve this"]]');
+                // The first track is the one labeled 'An Extension Track'.
+                {
+                    const { track, properties } = extensionHandlerOutput.extensionTrackData[0].entriesByTrack['An Extension Track'][0].args;
+                    assert.strictEqual(JSON.stringify(properties), '[["Description","Something"]]');
+                    assert.strictEqual(track, 'An Extension Track');
+                }
+                // Now look for 'Another Extension Track'.
+                {
+                    const { tooltipText, track, properties } = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'][0].args;
+                    assert.strictEqual(tooltipText, 'A hint if needed');
+                    assert.strictEqual(track, 'Another Extension Track');
+                    assert.strictEqual(JSON.stringify(properties), '[["Description","Something"],["Tip","A tip to improve this"]]');
+                }
             });
             it('discards track data without a corresponding track field', async () => {
                 // The test example contains a track entry without a track field.
@@ -493,6 +451,76 @@ describe('ExtensionTraceDataHandler', function () {
                 });
                 assert.deepEqual(ungroupedTrackData, [{ name: 'Measurement 6', selfTime: 50 }, { name: 'Measurement 7', selfTime: 50 }]);
             });
+            it('does not affect track order on entries with identical start and duration across tracks', async function () {
+                const extensionDevToolsObjects = [
+                    // Four measurements, with identical start and end times, to test that track
+                    // group order is not affected by swapping of elements within tracks.
+                    {
+                        detail: {
+                            devtools: {
+                                track: 'Track 1',
+                            },
+                        },
+                        name: 'Measurement 1 for track 1',
+                        ts: 0,
+                        dur: 100,
+                    },
+                    {
+                        detail: {
+                            devtools: {
+                                track: 'Track 1',
+                            },
+                        },
+                        name: 'Measurement 2 for track 1',
+                        ts: 0,
+                        dur: 100,
+                    },
+                    {
+                        detail: {
+                            devtools: {
+                                track: 'Track 2',
+                            },
+                        },
+                        name: 'Measurement 1 for track 2',
+                        ts: 0,
+                        dur: 100,
+                    },
+                    {
+                        detail: {
+                            devtools: {
+                                track: 'Track 2',
+                            },
+                        },
+                        name: 'Measurement 2 for track 2',
+                        ts: 0,
+                        dur: 100,
+                    },
+                ];
+                const extensionHandlerOutput = await createTraceExtensionDataFromPerformanceAPITestInput(extensionDevToolsObjects);
+                assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
+                // The tracks are added in the order: 'Track 1' first and then 'Track 2', and that order
+                // should not change. However, the order of entries with duplicate `start` and `end`
+                // times -- within these tracks -- should change. The reason for that is documented in
+                // the `userTimingComparator` sorting function.
+                let trackGroupData = extensionHandlerOutput.extensionTrackData[0];
+                const testDataTrack1 = trackGroupData.entriesByTrack['Track 1'].map(entry => {
+                    const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                    return { name: entry.name, selfTime };
+                });
+                assert.deepEqual(testDataTrack1, [
+                    { name: 'Measurement 2 for track 1', selfTime: 0 },
+                    { name: 'Measurement 1 for track 1', selfTime: 100 },
+                ]);
+                trackGroupData = extensionHandlerOutput.extensionTrackData[1];
+                const testDataTrack2 = trackGroupData.entriesByTrack['Track 2'].map(entry => {
+                    const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                    return { name: entry.name, selfTime };
+                });
+                assert.deepEqual(testDataTrack2, [
+                    { name: 'Measurement 2 for track 2', selfTime: 0 },
+                    { name: 'Measurement 1 for track 2', selfTime: 100 },
+                ]);
+            });
         });
     });
     describe('parsing extension data added via the console.timeStamp API', function () {
@@ -808,6 +836,68 @@ describe('ExtensionTraceDataHandler', function () {
                     return { name: entry.name, selfTime };
                 });
                 assert.deepEqual(ungroupedTrackData, [{ name: 'Measurement 6', selfTime: 50 }, { name: 'Measurement 7', selfTime: 50 }]);
+            });
+        });
+        describe('Identical start and end time event added with the Console API', () => {
+            it('shows tracks and events in the correct (reversed) order', async function () {
+                const extensionDevToolsObjects = [
+                    // Two measurements for a Custom track, that should get flipped in order.
+                    { track: 'Custom track B', name: 'Custom track measurement 1B', start: 10, end: 100, ts: 0 },
+                    { track: 'Custom track B', name: 'Custom track measurement 2B', start: 10, end: 100, ts: 0 },
+                    // These measurements have a start time the precedes the two above, so Custom Track A
+                    // should appear first in the graph.
+                    { track: 'Custom track A', name: 'Custom track measurement 1A', start: 0, end: 100, ts: 0 },
+                    { track: 'Custom track A', name: 'Custom track measurement 2A', start: 0, end: 100, ts: 0 },
+                ];
+                const extensionHandlerOutput = await createTraceExtensionDataFromConsoleAPITestInput(extensionDevToolsObjects);
+                assert.lengthOf(extensionHandlerOutput.extensionTrackData, 2);
+                const trackGroupDataA = extensionHandlerOutput.extensionTrackData[0];
+                const testDataTrackA = trackGroupDataA.entriesByTrack['Custom track A'].map(entry => {
+                    const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                    return { name: entry.name, selfTime };
+                });
+                assert.deepEqual(testDataTrackA, [
+                    { name: 'Custom track measurement 2A', selfTime: 0 },
+                    { name: 'Custom track measurement 1A', selfTime: 100 },
+                ]);
+                const trackGroupDataB = extensionHandlerOutput.extensionTrackData[1];
+                const testDataTrackB = trackGroupDataB.entriesByTrack['Custom track B'].map(entry => {
+                    const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                    return { name: entry.name, selfTime };
+                });
+                assert.deepEqual(testDataTrackB, [
+                    { name: 'Custom track measurement 2B', selfTime: 0 },
+                    { name: 'Custom track measurement 1B', selfTime: 90 },
+                ]);
+            });
+            it('shows events in custom tracks with numerical start and end in reversed order', async function () {
+                const extensionDevToolsObjects = [
+                    // Two measurements for a Custom track, that should get flipped in order.
+                    { track: 'Custom track', name: 'Measurement 2', start: 0, end: 100, ts: 0 },
+                    { track: 'Custom track', name: 'Measurement 1', start: 0, end: 100, ts: 0 },
+                ];
+                const extensionHandlerOutput = await createTraceExtensionDataFromConsoleAPITestInput(extensionDevToolsObjects);
+                assert.lengthOf(extensionHandlerOutput.extensionTrackData, 1);
+                const trackGroupData = extensionHandlerOutput.extensionTrackData[0];
+                const testDataTrack = trackGroupData.entriesByTrack['Custom track'].map(entry => {
+                    const selfTime = extensionHandlerOutput.entryToNode.get(entry)?.selfTime;
+                    return { name: entry.name, selfTime };
+                });
+                assert.deepEqual(testDataTrack, [
+                    { name: 'Measurement 1', selfTime: 0 },
+                    { name: 'Measurement 2', selfTime: 100 },
+                ]);
+            });
+            it('reverses order for timings track', async function () {
+                const extensionDevToolsObjects = [
+                    // Two measurements for a Timings track, should get flipped in order.
+                    { name: 'Measurement 2', start: 0, end: 100, ts: 0 },
+                    { name: 'Measurement 1', start: 0, end: 100, ts: 0 },
+                ];
+                const extensionHandlerOutput = await createTraceExtensionDataFromConsoleAPITestInput(extensionDevToolsObjects);
+                assert.lengthOf(extensionHandlerOutput.syntheticConsoleEntriesForTimingsTrack, 2);
+                assert.strictEqual(extensionHandlerOutput.syntheticConsoleEntriesForTimingsTrack[0].name, 'Measurement 1');
+                assert.strictEqual(extensionHandlerOutput.syntheticConsoleEntriesForTimingsTrack[1].name, 'Measurement 2');
             });
         });
     });

@@ -81,6 +81,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * Exposed for handling external requests.
      */
     get model(): Trace.TraceModel.Model;
+    getOrCreateExternalAIConversationData(): AiAssistanceModel.ExternalPerformanceAIConversationData;
+    invalidateExternalAIConversationData(): void;
     /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
      * DO NOT use this method within DevTools. It is marked as deprecated so
@@ -134,6 +136,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     selectFileToLoad(): void;
     loadFromFile(file: File): Promise<void>;
     loadFromURL(url: Platform.DevToolsPath.UrlString): Promise<void>;
+    private isDocked;
     private updateMiniMap;
     private onMemoryModeChanged;
     private onDimThirdPartiesChanged;
@@ -187,6 +190,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      */
     revealInsight(insightModel: Trace.Insights.Types.InsightModel): void;
     static handleExternalRecordRequest(): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
+    static handleExternalAnalyzeRequest(prompt: string): Promise<AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>>;
 }
 export declare const enum State {
     IDLE = "Idle",

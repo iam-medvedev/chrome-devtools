@@ -7,6 +7,7 @@ var __export = (target, all) => {
 // gen/front_end/models/trace/insights/Common.js
 var Common_exports = {};
 __export(Common_exports, {
+  calculateDocFirstByteTs: () => calculateDocFirstByteTs,
   calculateMetricWeightsForSorting: () => calculateMetricWeightsForSorting,
   estimateCompressedContentSize: () => estimateCompressedContentSize,
   estimateCompressionRatioForScript: () => estimateCompressionRatioForScript,
@@ -337,6 +338,16 @@ function estimateCompressionRatioForScript(script) {
   }
   const compressionRatio = compressedSize / contentLength;
   return compressionRatio;
+}
+function calculateDocFirstByteTs(docRequest) {
+  if (docRequest.args.data.protocol === "file") {
+    return docRequest.ts;
+  }
+  const timing = docRequest.args.data.timing;
+  if (!timing) {
+    return null;
+  }
+  return Types.Timing.Micro(Helpers.Timing.secondsToMicro(timing.requestTime) + Helpers.Timing.milliToMicro(timing.receiveHeadersStart ?? timing.receiveHeadersEnd));
 }
 
 // gen/front_end/models/trace/insights/Models.js
@@ -2138,12 +2149,9 @@ function anyValuesNaN(...values) {
   return values.some((v) => Number.isNaN(v));
 }
 function determineSubparts(nav, docRequest, lcpEvent, lcpRequest) {
-  const docReqTiming = docRequest.args.data.timing;
-  let firstDocByteTs;
-  if (docReqTiming) {
-    firstDocByteTs = Types7.Timing.Micro(Helpers11.Timing.secondsToMicro(docReqTiming.requestTime) + Helpers11.Timing.milliToMicro(docReqTiming.receiveHeadersStart));
-  } else {
-    firstDocByteTs = docRequest.ts;
+  const firstDocByteTs = calculateDocFirstByteTs(docRequest);
+  if (firstDocByteTs === null) {
+    return null;
   }
   const ttfb = Helpers11.Timing.traceWindowFromMicroSeconds(nav.ts, firstDocByteTs);
   ttfb.label = i18nString10(UIStrings10.timeToFirstByte);
@@ -2352,7 +2360,7 @@ function generateInsight11(parsedTrace, context) {
   const imgPreloadedOrFoundInHTML = lcpRequest?.args.data.isLinkPreload || initiatedByMainDoc;
   const imageLoadingAttr = lcpEvent.args.data?.loadingAttr;
   const imageFetchPriorityHint = lcpRequest?.args.data.fetchPriorityHint;
-  const earliestDiscoveryTime = docRequest?.args.data.timing ? Helpers12.Timing.secondsToMicro(docRequest.args.data.timing.requestTime) + Helpers12.Timing.milliToMicro(docRequest.args.data.timing.receiveHeadersStart) : void 0;
+  const earliestDiscoveryTime = calculateDocFirstByteTs(docRequest);
   const priorityHintFound = imageFetchPriorityHint === "high";
   return finalize11({
     lcpEvent,
@@ -2693,7 +2701,8 @@ __export(NetworkDependencyTree_exports, {
   generatePreconnectCandidates: () => generatePreconnectCandidates,
   generatePreconnectedOrigins: () => generatePreconnectedOrigins,
   handleLinkResponseHeader: () => handleLinkResponseHeader,
-  i18nString: () => i18nString14
+  i18nString: () => i18nString14,
+  isNetworkDependencyTree: () => isNetworkDependencyTree
 });
 import * as Common from "./../../../core/common/common.js";
 import * as i18n27 from "./../../../core/i18n/i18n.js";
@@ -3131,6 +3140,9 @@ function generatePreconnectCandidates(parsedTrace, context, contextRequests) {
   });
   preconnectCandidates = preconnectCandidates.sort((a, b) => b.wastedMs - a.wastedMs);
   return preconnectCandidates.slice(0, TOO_MANY_PRECONNECTS_THRESHOLD);
+}
+function isNetworkDependencyTree(model) {
+  return model.insightKey === "NetworkDependencyTree";
 }
 function generateInsight14(parsedTrace, context) {
   if (!context.navigation) {

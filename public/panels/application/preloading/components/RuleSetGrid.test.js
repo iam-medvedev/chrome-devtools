@@ -127,10 +127,31 @@ describeWithEnvironment('RuleSetGrid', () => {
                     },
                     preloadsStatusSummary: '',
                 },
+                {
+                    ruleSet: {
+                        id: 'ruleSetId:0.2',
+                        loaderId: 'loaderId:1',
+                        sourceText: `
+{
+  "prefetch": [
+    {
+      "source": "list",
+      "urls": ["/prefetched.html"]
+    }
+  ],
+  "tag": "マイルール"
+}
+`,
+                        errorType: "InvalidRulesetLevelTag" /* Protocol.Preload.RuleSetErrorType.InvalidRulesetLevelTag */,
+                        errorMessage: 'Tag value is invalid: must be ASCII printable.',
+                    },
+                    preloadsStatusSummary: '',
+                },
             ],
             pageURL: urlString `https://example.com/`,
         }, ['Rule set', 'Status'], [
             ['example.com/', '1 error 1 Not triggered, 2 Ready, 3 Failure'],
+            ['example.com/', '1 error'],
             ['example.com/', '1 error'],
         ]);
     });

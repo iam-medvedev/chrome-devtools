@@ -29,6 +29,7 @@ var FileManager = class _FileManager extends Common.ObjectWrapper.ObjectWrapper 
   }
   /**
    * {@link FileManager.close | close} *must* be called, for the InspectorFrontendHostStub case, to complete the saving.
+   * @param url The url of the file to save. **NOTE:** The backend truncates this filename to 64 characters.
    */
   save(url, contentData, forceSaveAs) {
     const result = new Promise((resolve) => this.#saveCallbacks.set(url, resolve));

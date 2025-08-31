@@ -19,19 +19,19 @@ describeWithEnvironment('AiCodeCompletion', () => {
         });
     });
     afterEach(() => {
-        sinon.restore();
+        clock.restore();
     });
     it('builds a request and calls the AIDA client on text changed', async () => {
         const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
             completeCode: Promise.resolve(null),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor), ['\n']);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor), "console" /* AiCodeCompletion.Panel.CONSOLE */, ['\n']);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 6);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         sinon.assert.calledOnce(mockAidaClient.completeCode);
         const request = mockAidaClient.completeCode.firstCall.args[0];
         assert.strictEqual(request.client, 'CHROME_DEVTOOLS');
-        assert.strictEqual(request.prefix, 'prefix');
+        assert.strictEqual(request.prefix, '\nprefix');
         assert.strictEqual(request.suffix, 'suffix');
         assert.deepEqual(request.options, {
             temperature: 0.5,
@@ -52,7 +52,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('prefix', '\n', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         sinon.assert.calledOnce(mockAidaClient.completeCode);
@@ -74,7 +74,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('console.log(', ');\n', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         sinon.assert.calledOnce(mockAidaClient.completeCode);
@@ -88,13 +88,13 @@ describeWithEnvironment('AiCodeCompletion', () => {
         const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {
             completeCode: Promise.resolve(null),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor));
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, sinon.createStubInstance(TextEditor.TextEditor.TextEditor), "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('p', '', 1);
         aiCodeCompletion.onTextChanged('pr', '', 2);
         aiCodeCompletion.onTextChanged('pre', '', 3);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         sinon.assert.calledOnce(mockAidaClient.completeCode);
-        assert.strictEqual(mockAidaClient.completeCode.firstCall.args[0].prefix, 'pre');
+        assert.strictEqual(mockAidaClient.completeCode.firstCall.args[0].prefix, '\npre');
     });
     it('does not dispatch suggestion or citation if recitation action is BLOCK', async () => {
         const editor = sinon.createStubInstance(TextEditor.TextEditor.TextEditor);
@@ -112,7 +112,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         const dispatchSpy = sinon.spy(aiCodeCompletion, 'dispatchEventToListeners');
         aiCodeCompletion.onTextChanged('prefix', '\n', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
@@ -138,7 +138,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         const dispatchSpy = sinon.spy(aiCodeCompletion, 'dispatchEventToListeners');
         aiCodeCompletion.onTextChanged('prefix', '\n', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
@@ -157,7 +157,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
@@ -188,7 +188,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('prefix ', 'suffix', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
         aiCodeCompletion.onTextChanged('prefix re', 'suffix', 1);
@@ -214,7 +214,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         aiCodeCompletion.onTextChanged('prefix re', 'suffix', 1);
@@ -233,7 +233,7 @@ describeWithEnvironment('AiCodeCompletion', () => {
                 metadata: {},
             }),
         });
-        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor);
+        const aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion({ aidaClient: mockAidaClient }, editor, "console" /* AiCodeCompletion.Panel.CONSOLE */);
         aiCodeCompletion.onTextChanged('prefix', 'suffix', 1);
         await clock.tickAsync(AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS + 1);
         aiCodeCompletion.onTextChanged('prefix', 'suffixes', 1);

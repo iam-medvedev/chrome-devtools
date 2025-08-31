@@ -12,6 +12,7 @@ export type View = typeof DEFAULT_VIEW;
 export declare class GlobalAiButton extends UI.Widget.Widget {
     #private;
     constructor(element?: HTMLElement, view?: View);
+    willHide(): void;
     performUpdate(): Promise<void> | void;
 }
 export declare class GlobalAiButtonToolbarProvider implements UI.Toolbar.Provider {

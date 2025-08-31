@@ -37,6 +37,7 @@
     "../../../../../../../front_end/panels/timeline/utils/EntryNodes.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/utils/EventsSerializer.ts",
+    "../../../../../../../front_end/panels/timeline/utils/FreshRecording.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.ts",

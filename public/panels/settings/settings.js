@@ -1455,9 +1455,13 @@ var UIStrings3 = {
    */
   enableAiAssistance: "Enable AI assistance",
   /**
-   * @description Label for a toggle to enable the AI assistance feature
+   * @description Label for a toggle to enable the AI annotation feature
    */
-  enableAiSuggestedAnnotations: "Enable AI suggestions for performance panel annotations"
+  enableAiSuggestedAnnotations: "Enable AI suggestions for performance panel annotations",
+  /**
+   * @description Label for a toggle to enable the AI code suggestions feature
+   */
+  enableAiCodeSuggestions: "Enable AI code suggestions"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
@@ -1582,7 +1586,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
         settingName: i18n5.i18n.lockedString("Code suggestions"),
         iconName: "text-analysis",
         settingDescription: i18nString3(UIStrings3.helpUnderstandCodeSuggestions),
-        enableSettingText: i18nString3(UIStrings3.enableAiSuggestedAnnotations),
+        enableSettingText: i18nString3(UIStrings3.enableAiCodeSuggestions),
         settingItems: [{ iconName: "code", text: i18nString3(UIStrings3.asYouTypeCodeSuggestions) }],
         toConsiderSettingItems: [{
           iconName: "google",

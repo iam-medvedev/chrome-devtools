@@ -1230,6 +1230,7 @@ import * as Host4 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as TimelineUtils2 from "./../../panels/timeline/utils/utils.js";
 import { html } from "./../../ui/lit/lit.js";
 import * as Trace3 from "./../trace/trace.js";
@@ -1394,6 +1395,86 @@ var PerformanceInsightFormatter = class {
       default:
         Platform.assertNever(this.#insight.insightKey, "Unknown insight key");
     }
+  }
+  /**
+   * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
+   * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
+   * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+   * should all be sent in English (at least for now).
+   * @param insight The Network Dependency Tree Insight Model to query.
+   * @returns a string formatted for sending to Ask AI.
+   */
+  formatNetworkDependencyTreeInsight(insight) {
+    let output = insight.fail ? "The network dependency tree checks found one or more problems.\n\n" : "The network dependency tree checks found no problems, but optimization suggestions may be available.\n\n";
+    const rootNodes = insight.rootNodes;
+    if (rootNodes.length > 0) {
+      let formatNode = function(node, indent) {
+        const url = node.request.args.data.url;
+        const time = formatMicroToMilli(node.timeFromInitialRequest);
+        const isLongest = node.isLongest ? " (longest chain)" : "";
+        let nodeString = `${indent}- ${url} (${time})${isLongest}
+`;
+        for (const child of node.children) {
+          nodeString += formatNode(child, indent + "  ");
+        }
+        return nodeString;
+      };
+      output += `Max critical path latency is ${formatMicroToMilli(insight.maxTime)}
+
+`;
+      output += "The following is the critical request chain:\n";
+      for (const rootNode of rootNodes) {
+        output += formatNode(rootNode, "");
+      }
+      output += "\n";
+    } else {
+      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.noNetworkDependencyTree}.
+
+`;
+    }
+    if (insight.preconnectedOrigins?.length > 0) {
+      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableTitle}:
+`;
+      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableDescription}
+`;
+      for (const origin of insight.preconnectedOrigins) {
+        const headerText = "headerText" in origin ? `'${origin.headerText}'` : ``;
+        output += `
+  - ${origin.url}
+    - ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.columnSource}: '${origin.source}'`;
+        if (headerText) {
+          output += `
+   - Header: ${headerText}`;
+        }
+        if (origin.unused) {
+          output += `
+   - Warning: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.unusedWarning}`;
+        }
+        if (origin.crossorigin) {
+          output += `
+   - Warning: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.crossoriginWarning}`;
+        }
+      }
+      if (insight.preconnectedOrigins.length > Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+        output += `
+
+**Warning**: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.tooManyPreconnectLinksWarning}`;
+      }
+    } else {
+      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.noPreconnectOrigins}.`;
+    }
+    if (insight.preconnectCandidates.length > 0 && insight.preconnectedOrigins.length < Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+      output += `
+
+${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:
+${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}
+`;
+      for (const candidate of insight.preconnectCandidates) {
+        output += `
+Adding [preconnect] to origin '${candidate.origin}' would save ${formatMilli(candidate.wastedMs)}.`;
+      }
+    }
+    return output;
   }
   /**
    * Formats and outputs the insight's data.
@@ -1583,14 +1664,17 @@ ${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, N
 Legacy JavaScript by file:
 ${filesFormatted}`;
     }
+    if (Trace.Insights.Models.NetworkDependencyTree.isNetworkDependencyTree(this.#insight)) {
+      return this.formatNetworkDependencyTreeInsight(this.#insight);
+    }
     return "";
   }
   estimatedSavings() {
     return Object.entries(this.#insight.metricSavings ?? {}).map(([k, v]) => {
       if (k === "CLS") {
-        return `${k} ${v}`;
+        return `${k} ${v.toFixed(2)}`;
       }
-      return `${k} ${v} ms`;
+      return `${k} ${Math.round(v)} ms`;
     }).join(", ");
   }
   #links() {
@@ -1622,7 +1706,8 @@ ${filesFormatted}`;
         return `- https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
       case "NetworkDependencyTree":
-        return "";
+        return `- https://web.dev/learn/performance/understanding-the-critical-path
+- https://developer.chrome.com/docs/lighthouse/performance/uses-rel-preconnect/`;
       case "RenderBlocking":
         return `- https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
@@ -1686,7 +1771,13 @@ It is important that all of these checks pass to minimize the delay between the 
       case "LCPBreakdown":
         return "This insight is used to analyze the time spent that contributed to the final LCP time and identify which of the 4 phases (or 2 if there was no LCP resource) are contributing most to the delay in rendering the LCP element.";
       case "NetworkDependencyTree":
-        return "";
+        return `This insight analyzes the network dependency tree to identify:
+- The maximum critical path latency (the longest chain of network requests that the browser must download before it can render the page).
+- Whether current [preconnect] tags are appropriate, according to the following rules:
+   1. They should all be in use (no unnecessary preconnects).
+   2. All preconnects should specify cross-origin correctly.
+   3. The maximum of 4 preconnects should be respected.
+- Opportunities to add [preconnect] for a faster loading experience.`;
       case "RenderBlocking":
         return "This insight identifies network requests that were render blocking. Render blocking requests are impactful because they are deemed critical to the page and therefore the browser stops rendering the page until it has dealt with these resources. For this insight make sure you fully inspect the details of each render blocking network request and prioritize your suggestions to the user based on the impact of each render blocking request.";
       case "SlowCSSSelector":
@@ -1992,13 +2083,27 @@ var PerformanceTraceFormatter = class {
       parts.push("Metrics:");
       if (lcp) {
         parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}`);
+        const subparts = insightSet?.model.LCPBreakdown.subparts;
+        if (subparts) {
+          const serializeSubpart = (subpart) => {
+            return `${ms(subpart.range / 1e3)}, bounds: ${this.serializeBounds(subpart)}`;
+          };
+          parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
+          if (subparts.loadDelay !== void 0) {
+            parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
+          }
+          if (subparts.loadDuration !== void 0) {
+            parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
+          }
+          parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
+        }
       }
       if (inp) {
         parts.push(`  - INP: ${Math.round(inp.value / 1e3)} ms, event: ${this.serializeEvent(inp.event)}`);
       }
       if (cls) {
         const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : "";
-        parts.push(`  - CLS: ${cls.value}${eventText}`);
+        parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
       }
     } else {
       parts.push("Metrics: n/a");
@@ -2088,6 +2193,17 @@ ${listText}`;
     }
     return this.#serializeBottomUpRootNode(rootNode, 10);
   }
+  #formatThirdPartyEntitySummaries(summaries) {
+    const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
+    if (!topMainThreadTimeEntries.length) {
+      return "";
+    }
+    const listText = topMainThreadTimeEntries.map((s) => {
+      const transferSize = `${kb(s.transferSize)}`;
+      return `- name: ${s.entity.name}, main thread time: ${ms(s.mainThreadTime)}, network transfer size: ${transferSize}`;
+    }).join("\n");
+    return listText;
+  }
   formatThirdPartySummary() {
     const insightSet = this.#insightSet;
     if (!insightSet) {
@@ -2098,14 +2214,10 @@ ${listText}`;
     if (thirdParties.firstPartyEntity) {
       summaries = summaries.filter((s) => s.entity !== thirdParties?.firstPartyEntity || null);
     }
-    const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
-    if (!topMainThreadTimeEntries.length) {
+    const listText = this.#formatThirdPartyEntitySummaries(summaries);
+    if (!listText) {
       return "";
     }
-    const listText = topMainThreadTimeEntries.map((s) => {
-      const transferSize = `${kb(s.transferSize)}`;
-      return `- name: ${s.entity.name}, main thread time: ${ms(s.mainThreadTime)}, network transfer size: ${transferSize}`;
-    }).join("\n");
     return `Third party summary:
 ${listText}`;
   }
@@ -2124,20 +2236,9 @@ ${listText}`;
     return `Longest ${longestTaskTrees.length} tasks:
 ${listText}`;
   }
-  formatMainThreadTrackSummary(min, max) {
-    const results = [];
-    const topDownTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, { min, max, range: max - min }, this.#parsedTrace);
-    if (topDownTree) {
-      results.push("# Top-down main thread summary");
-      results.push(topDownTree.serialize(
-        2
-        /* headerLevel */
-      ));
-    }
-    const bottomUpRootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, { min, max, range: max - min }, this.#parsedTrace);
-    if (bottomUpRootNode) {
-      results.push("# Bottom-up main thread summary");
-      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+  #serializeRelatedInsightsForEvents(events) {
+    if (!events.length) {
+      return "";
     }
     const insightNameToRelatedEvents = /* @__PURE__ */ new Map();
     if (this.#insightSet) {
@@ -2145,34 +2246,81 @@ ${listText}`;
         if (!model.relatedEvents) {
           continue;
         }
-        const relatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
-        if (!relatedEvents.length) {
+        const modeRelatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
+        if (!modeRelatedEvents.length) {
           continue;
         }
-        const events = [];
-        if (topDownTree) {
-          events.push(...relatedEvents.filter((e) => topDownTree.rootNode.events.includes(e)));
-        }
-        if (bottomUpRootNode) {
-          events.push(...relatedEvents.filter((e) => bottomUpRootNode.events.includes(e)));
-        }
-        if (events.length) {
-          insightNameToRelatedEvents.set(model.insightKey, events);
+        const relatedEvents = modeRelatedEvents.filter((e) => events.includes(e));
+        if (relatedEvents.length) {
+          insightNameToRelatedEvents.set(model.insightKey, relatedEvents);
         }
       }
     }
-    if (insightNameToRelatedEvents.size) {
+    if (!insightNameToRelatedEvents.size) {
+      return "";
+    }
+    const results = [];
+    for (const [insightKey, events2] of insightNameToRelatedEvents) {
+      const eventsString = events2.slice(0, 5).map((e) => TimelineUtils.EntryName.nameForEntry(e) + " " + this.serializeEvent(e)).join(", ");
+      results.push(`- ${insightKey}: ${eventsString}`);
+    }
+    return results.join("\n");
+  }
+  formatMainThreadTrackSummary(bounds) {
+    const results = [];
+    const topDownTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    if (topDownTree) {
+      results.push("# Top-down main thread summary");
+      results.push(this.formatCallTree(
+        topDownTree,
+        2
+        /* headerLevel */
+      ));
+    }
+    const bottomUpRootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    if (bottomUpRootNode) {
+      results.push("# Bottom-up main thread summary");
+      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+    }
+    const thirdPartySummaries = Trace2.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace, bounds);
+    if (thirdPartySummaries.length) {
+      results.push("# Third parties");
+      results.push(this.#formatThirdPartyEntitySummaries(thirdPartySummaries));
+    }
+    const relatedInsightsText = this.#serializeRelatedInsightsForEvents([...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]);
+    if (relatedInsightsText) {
       results.push("# Related insights");
       results.push("Here are all the insights that contain some related event from the main thread in the given range.");
-      for (const [insightKey, events] of insightNameToRelatedEvents) {
-        const eventsString = events.slice(0, 5).map((e) => TimelineUtils.EntryName.nameForEntry(e) + " " + this.serializeEvent(e)).join(", ");
-        results.push(`- ${insightKey}: ${eventsString}`);
-      }
+      results.push(relatedInsightsText);
     }
     if (!results.length) {
       return "No main thread activity found";
     }
     return results.join("\n\n");
+  }
+  formatNetworkTrackSummary(bounds) {
+    const results = [];
+    const requests = this.#parsedTrace.NetworkRequests.byTime.filter((request) => Trace2.Helpers.Timing.eventIsInBounds(request, bounds));
+    const requestsText = TraceEventFormatter.networkRequests(requests, this.#parsedTrace, { verbose: false });
+    results.push("# Network requests summary");
+    results.push(requestsText || "No requests in the given bounds");
+    const relatedInsightsText = this.#serializeRelatedInsightsForEvents(requests);
+    if (relatedInsightsText) {
+      results.push("# Related insights");
+      results.push("Here are all the insights that contain some related request from the given range.");
+      results.push(relatedInsightsText);
+    }
+    return results.join("\n\n");
+  }
+  formatCallTree(tree, headerLevel = 1) {
+    const results = [tree.serialize(headerLevel), ""];
+    results.push("#".repeat(headerLevel) + " Node id to eventKey\n");
+    results.push("These node ids correspond to the call tree nodes listed in the above section.\n");
+    tree.breadthFirstWalk(tree.rootNode.children().values(), (node, nodeId) => {
+      results.push(`${nodeId}: ${this.#eventsSerializer.keyForEvent(node.event)}`);
+    });
+    results.push("\nIMPORTANT: Never show eventKey to the user.");
+    return results.join("\n");
   }
 };
 
@@ -2374,7 +2522,7 @@ var callFrameDataFormatDescription = `Each call frame is presented in the follow
 
 Key definitions:
 
-* id: A unique numerical identifier for the call frame.
+* id: A unique numerical identifier for the call frame. Never mention this id in the output to the user.
 * name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
 * duration: The total execution time of the call frame, including its children.
 * selfTime: The time spent directly within the call frame, excluding its children's execution.
@@ -2411,8 +2559,8 @@ var ScorePriority;
   ScorePriority2[ScorePriority2["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
-  static full(parsedTrace, insightSet, traceMetadata) {
-    return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.full(parsedTrace, insightSet, traceMetadata));
+  static full(parsedTrace, insights, traceMetadata) {
+    return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.full(parsedTrace, insights, traceMetadata));
   }
   static fromInsight(parsedTrace, insight, insightSetBounds) {
     return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insightSetBounds));
@@ -2814,7 +2962,7 @@ ${result}`,
     if (focus.data.type !== "full") {
       return;
     }
-    const { parsedTrace, insightSet } = focus.data;
+    const { parsedTrace, insightSet, traceMetadata } = focus.data;
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.",
       parameters: {
@@ -2876,8 +3024,13 @@ ${result}`,
         return { result: { details } };
       }
     });
+    const createBounds = (min, max) => {
+      min = Math.max(min ?? 0, parsedTrace.Meta.traceBounds.min);
+      max = Math.min(max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
+      return Trace3.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
+    };
     this.declareFunction("getMainThreadTrackSummary", {
-      description: "Returns the main thread activity for the selected bounds. The result is a call tree.",
+      description: "Returns a summary of the main thread for the given bounds. The result includes a top-down summary, bottom-up summary, third-parties summary, and a list of related insights for the events within the given bounds.",
       parameters: {
         type: 6,
         description: "",
@@ -2906,19 +3059,132 @@ ${result}`,
         if (!this.#formatter) {
           throw new Error("missing formatter");
         }
-        const min = Math.max(args.min ?? 0, parsedTrace.Meta.traceBounds.min);
-        const max = Math.min(args.max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
-        const activity = this.#formatter.formatMainThreadTrackSummary(min, max);
+        const bounds = createBounds(args.min, args.max);
+        const activity = this.#formatter.formatMainThreadTrackSummary(bounds);
         if (this.#isFunctionResponseTooLarge(activity)) {
           return {
-            error: "getMainThreadTrackSummary response is too large. Try investigating using other functions"
+            error: "getMainThreadTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds"
           };
         }
-        const key = `getMainThreadTrackSummary({min: ${min}, max: ${max}})`;
+        const key = `getMainThreadTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
         this.#cacheFunctionResult(focus, key, activity);
         return { result: { activity } };
       }
     });
+    this.declareFunction("getNetworkTrackSummary", {
+      description: "Returns a summary of the network for the given bounds.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          min: {
+            type: 3,
+            description: "The minimum time of the bounds, in microseconds",
+            nullable: false
+          },
+          max: {
+            type: 3,
+            description: "The maximum time of the bounds, in microseconds",
+            nullable: false
+          }
+        }
+      },
+      displayInfoFromArgs: (args) => {
+        return {
+          title: lockedString3(UIStringsNotTranslated.networkActivitySummary),
+          action: `getNetworkTrackSummary({min: ${args.min}, max: ${args.max}})`
+        };
+      },
+      handler: async (args) => {
+        debugLog("Function call: getNetworkTrackSummary");
+        if (!this.#formatter) {
+          throw new Error("missing formatter");
+        }
+        const bounds = createBounds(args.min, args.max);
+        const activity = this.#formatter.formatNetworkTrackSummary(bounds);
+        if (this.#isFunctionResponseTooLarge(activity)) {
+          return {
+            error: "getNetworkTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds"
+          };
+        }
+        const key = `getNetworkTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
+        this.#cacheFunctionResult(focus, key, activity);
+        return { result: { activity } };
+      }
+    });
+    this.declareFunction("getDetailedCallTree", {
+      description: "Returns a detailed call tree for the given main thread event.",
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          eventKey: {
+            type: 1,
+            description: "The key for the event.",
+            nullable: false
+          }
+        }
+      },
+      displayInfoFromArgs: (args) => {
+        return { title: lockedString3("Looking at call tree\u2026"), action: `getDetailedCallTree(${args.eventKey})` };
+      },
+      handler: async (args) => {
+        debugLog("Function call: getDetailedCallTree");
+        if (!this.#formatter) {
+          throw new Error("missing formatter");
+        }
+        const event = this.#lookupEvent(args.eventKey);
+        if (!event) {
+          return { error: "Invalid eventKey" };
+        }
+        const tree = TimelineUtils2.AICallTree.AICallTree.fromEvent(event, parsedTrace);
+        const callTree = tree ? this.#formatter.formatCallTree(tree) : "No call tree found";
+        const key = `getDetailedCallTree(${args.eventKey})`;
+        this.#cacheFunctionResult(focus, key, callTree);
+        return { result: { callTree } };
+      }
+    });
+    const isFresh = TimelineUtils2.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
+    const hasScriptContents = traceMetadata.enhancedTraceVersion && parsedTrace.Scripts.scripts.some((s) => s.content);
+    if (isFresh || hasScriptContents) {
+      this.declareFunction("getResourceContent", {
+        description: "Returns the content of the resource with the given url. Only use this for text resource types.",
+        parameters: {
+          type: 6,
+          description: "",
+          nullable: false,
+          properties: {
+            url: {
+              type: 1,
+              description: "The url for the resource.",
+              nullable: false
+            }
+          }
+        },
+        displayInfoFromArgs: (args) => {
+          return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent(${args.url})` };
+        },
+        handler: async (args) => {
+          debugLog("Function call: getResourceContent");
+          const url = args.url;
+          const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+          if (!resource) {
+            if (!resource) {
+              return { error: "Resource not found" };
+            }
+          }
+          const content = resource.content;
+          if (!content) {
+            return { error: "Resource has no content" };
+          }
+          const key = `getResourceContent(${args.url})`;
+          this.#cacheFunctionResult(focus, key, content);
+          return { result: { content } };
+        }
+      });
+    }
   }
   #declareFunctions(context) {
     const focus = context.getItem();
@@ -3151,7 +3417,7 @@ import * as Host6 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as Root6 from "./../../core/root/root.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as ElementsPanel from "./../../panels/elements/elements.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import { html as html2 } from "./../../ui/lit/lit.js";
@@ -3159,7 +3425,7 @@ import { html as html2 } from "./../../ui/lit/lit.js";
 // gen/front_end/models/ai_assistance/ChangeManager.js
 import * as Common2 from "./../../core/common/common.js";
 import * as Platform4 from "./../../core/platform/platform.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 function formatStyles(styles, indent = 2) {
   const lines = Object.entries(styles).map(([key, value]) => `${" ".repeat(indent)}${key}: ${value};`);
   return lines.join("\n");
@@ -3252,7 +3518,7 @@ ${formatStyles(change.styles)}
       if (!frameToStylesheet) {
         frameToStylesheet = /* @__PURE__ */ new Map();
         this.#cssModelToStylesheetId.set(cssModel, frameToStylesheet);
-        cssModel.addEventListener(SDK.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
+        cssModel.addEventListener(SDK2.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
       }
       let stylesheetId = frameToStylesheet.get(frameId);
       if (!stylesheetId) {
@@ -3273,7 +3539,7 @@ ${formatStyles(change.styles)}
   async #onCssModelDisposed(event) {
     return await this.#stylesheetMutex.run(async () => {
       const cssModel = event.data;
-      cssModel.removeEventListener(SDK.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
+      cssModel.removeEventListener(SDK2.CSSModel.Events.ModelDisposed, this.#onCssModelDisposed, this);
       const stylesheetIds = Array.from(this.#cssModelToStylesheetId.get(cssModel)?.values() ?? []);
       const results = await Promise.allSettled(stylesheetIds.map(async (id) => {
         this.#stylesheetChanges.delete(id);
@@ -3290,7 +3556,7 @@ ${formatStyles(change.styles)}
 };
 
 // gen/front_end/models/ai_assistance/EvaluateAction.js
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 function formatError(message) {
   return `Error: ${message}`;
 }
@@ -3371,7 +3637,7 @@ var EvaluateAction = class {
       }
       if (response.exceptionDetails) {
         const exceptionDescription = response.exceptionDetails.exception?.description;
-        if (SDK2.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
+        if (SDK3.RuntimeModel.RuntimeModel.isSideEffectFailure(response)) {
           throw new SideEffectError(exceptionDescription);
         }
         return formatError(exceptionDescription ?? "JS exception");
@@ -3386,7 +3652,7 @@ var EvaluateAction = class {
 // gen/front_end/models/ai_assistance/ExtensionScope.js
 import * as Common3 from "./../../core/common/common.js";
 import * as Platform5 from "./../../core/platform/platform.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import * as Bindings2 from "./../bindings/bindings.js";
 
@@ -3502,7 +3768,7 @@ var ExtensionScope = class _ExtensionScope {
   #bindingMutex = new Common3.Mutex.Mutex();
   constructor(changes, agentId) {
     this.#changeManager = changes;
-    const selectedNode = UI.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode);
+    const selectedNode = UI.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode);
     const frameId = selectedNode?.frameId();
     const target = selectedNode?.domModel().target();
     this.#agentId = agentId;
@@ -3513,7 +3779,7 @@ var ExtensionScope = class _ExtensionScope {
     if (this.#target) {
       return this.#target;
     }
-    const target = UI.Context.Context.instance().flavor(SDK3.Target.Target);
+    const target = UI.Context.Context.instance().flavor(SDK4.Target.Target);
     if (!target) {
       throw new Error("Target is not found for executing code");
     }
@@ -3523,14 +3789,14 @@ var ExtensionScope = class _ExtensionScope {
     if (this.#frameId) {
       return this.#frameId;
     }
-    const resourceTreeModel = this.target.model(SDK3.ResourceTreeModel.ResourceTreeModel);
+    const resourceTreeModel = this.target.model(SDK4.ResourceTreeModel.ResourceTreeModel);
     if (!resourceTreeModel?.mainFrame) {
       throw new Error("Main frame is not found for executing code");
     }
     return resourceTreeModel.mainFrame.id;
   }
   async install() {
-    const runtimeModel = this.target.model(SDK3.RuntimeModel.RuntimeModel);
+    const runtimeModel = this.target.model(SDK4.RuntimeModel.RuntimeModel);
     const pageAgent = this.target.pageAgent();
     const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId: this.frameId, worldName: FREESTYLER_WORLD_NAME });
     const isolatedWorldContext = runtimeModel?.executionContext(executionContextId);
@@ -3538,7 +3804,7 @@ var ExtensionScope = class _ExtensionScope {
       throw new Error("Execution context is not found for executing code");
     }
     const handler = this.#bindingCalled.bind(this, isolatedWorldContext);
-    runtimeModel?.addEventListener(SDK3.RuntimeModel.Events.BindingCalled, handler);
+    runtimeModel?.addEventListener(SDK4.RuntimeModel.Events.BindingCalled, handler);
     this.#listeners.push(handler);
     await this.target.runtimeAgent().invoke_addBinding({
       name: FREESTYLER_BINDING_NAME,
@@ -3548,9 +3814,9 @@ var ExtensionScope = class _ExtensionScope {
     await this.#simpleEval(isolatedWorldContext, injectedFunctions);
   }
   async uninstall() {
-    const runtimeModel = this.target.model(SDK3.RuntimeModel.RuntimeModel);
+    const runtimeModel = this.target.model(SDK4.RuntimeModel.RuntimeModel);
     for (const handler of this.#listeners) {
-      runtimeModel?.removeEventListener(SDK3.RuntimeModel.Events.BindingCalled, handler);
+      runtimeModel?.removeEventListener(SDK4.RuntimeModel.Events.BindingCalled, handler);
     }
     this.#listeners = [];
     await this.target.runtimeAgent().invoke_removeBinding({
@@ -3595,7 +3861,7 @@ var ExtensionScope = class _ExtensionScope {
       if (rule?.origin === "user-agent") {
         break;
       }
-      if (rule instanceof SDK3.CSSRule.CSSStyleRule) {
+      if (rule instanceof SDK4.CSSRule.CSSStyleRule) {
         if (rule.nestingSelectors?.at(0)?.includes(AI_ASSISTANCE_CSS_CLASS_NAME) || rule.selectors.every((selector) => selector.text.includes(AI_ASSISTANCE_CSS_CLASS_NAME))) {
           continue;
         }
@@ -3655,7 +3921,7 @@ var ExtensionScope = class _ExtensionScope {
     }
     const lineNumber = styleSheetHeader.lineNumberInSource(range.startLine);
     const columnNumber = styleSheetHeader.columnNumberInSource(range.startLine, range.startColumn);
-    const location = new SDK3.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
+    const location = new SDK4.CSSModel.CSSLocation(styleSheetHeader, lineNumber, columnNumber);
     const uiLocation = Bindings2.CSSWorkspaceBinding.CSSWorkspaceBinding.instance().rawLocationToUILocation(location);
     return uiLocation?.linkText(
       /* skipTrim= */
@@ -3668,11 +3934,11 @@ var ExtensionScope = class _ExtensionScope {
     if (!remoteObject.objectId) {
       throw new Error("DOMModel is not found");
     }
-    const cssModel = this.target.model(SDK3.CSSModel.CSSModel);
+    const cssModel = this.target.model(SDK4.CSSModel.CSSModel);
     if (!cssModel) {
       throw new Error("CSSModel is not found");
     }
-    const domModel = this.target.model(SDK3.DOMModel.DOMModel);
+    const domModel = this.target.model(SDK4.DOMModel.DOMModel);
     if (!domModel) {
       throw new Error("DOMModel is not found");
     }
@@ -3710,7 +3976,7 @@ var ExtensionScope = class _ExtensionScope {
       return;
     }
     await this.#bindingMutex.run(async () => {
-      const cssModel = this.target.model(SDK3.CSSModel.CSSModel);
+      const cssModel = this.target.model(SDK4.CSSModel.CSSModel);
       if (!cssModel) {
         throw new Error("CSSModel is not found");
       }
@@ -3845,16 +4111,16 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect, contextNo
   if (!contextNode) {
     throw new Error("Cannot execute JavaScript because of missing context node");
   }
-  const target = contextNode.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK4.Target.Target);
+  const target = contextNode.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK5.Target.Target);
   if (!target) {
     throw new Error("Target is not found for executing code");
   }
-  const resourceTreeModel = target.model(SDK4.ResourceTreeModel.ResourceTreeModel);
+  const resourceTreeModel = target.model(SDK5.ResourceTreeModel.ResourceTreeModel);
   const frameId = contextNode.frameId() ?? resourceTreeModel?.mainFrame?.id;
   if (!frameId) {
     throw new Error("Main frame is not found for executing code");
   }
-  const runtimeModel = target.model(SDK4.RuntimeModel.RuntimeModel);
+  const runtimeModel = target.model(SDK5.RuntimeModel.RuntimeModel);
   const pageAgent = target.pageAgent();
   const { executionContextId } = await pageAgent.invoke_createIsolatedWorld({ frameId, worldName: FREESTYLER_WORLD_NAME });
   const executionContext = runtimeModel?.executionContext(executionContextId);
@@ -4001,7 +4267,7 @@ var StylingAgent = class _StylingAgent extends AiAgent {
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
       return new ExtensionScope(changes, this.id);
     });
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.ResourceTreeModel.ResourceTreeModel, SDK4.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     this.declareFunction("executeJavaScript", {
       description: `This function allows you to run JavaScript code on the inspected page to access the element styles and page content.
 Call this function to gather additional information or modify the page state. Call this function enough times to investigate the user request.`,
@@ -4285,9 +4551,9 @@ const data = {
         error: "Error: JavaScript execution is currently disabled."
       };
     }
-    const selectedNode = UI2.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode);
-    const target = selectedNode?.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK4.Target.Target);
-    if (target?.model(SDK4.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
+    const selectedNode = UI2.Context.Context.instance().flavor(SDK5.DOMModel.DOMNode);
+    const target = selectedNode?.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK5.Target.Target);
+    if (target?.model(SDK5.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
       return {
         error: "Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint."
       };
@@ -4593,20 +4859,16 @@ var Conversation = class _Conversation {
   #isReadOnly;
   history;
   #isExternal;
-  static #generateContextDetailsMarkdown(details) {
-    let detailsMarkdown = "**Details**:\n\n";
+  static generateContextDetailsMarkdown(details) {
+    const detailsMarkdown = [];
     for (const detail of details) {
-      const text = detail.codeLang ? `\`\`\`${detail.codeLang}
-${detail.text}
-\`\`\`
-` : detail.text;
-      detailsMarkdown += `**${detail.title}:**
-
-${text}
-
-`;
+      const text = `\`\`\`\`${detail.codeLang || ""}
+${detail.text.trim()}
+\`\`\`\``;
+      detailsMarkdown.push(`**${detail.title}:**
+${text}`);
     }
-    return detailsMarkdown;
+    return detailsMarkdown.join("\n\n");
   }
   constructor(type, data = [], id = crypto.randomUUID(), isReadOnly = true, isExternal = false) {
     this.type = type;
@@ -4657,74 +4919,61 @@ ${text}
 
 **Export Timestamp (UTC):** ${(/* @__PURE__ */ new Date()).toISOString()}
 
----
-
-`);
+---`);
     for (const item of this.history) {
       switch (item.type) {
         case "user-query": {
-          contentParts.push(`### User: ${item.query}
-`);
+          contentParts.push(`## User
+
+${item.query}`);
           if (item.imageInput) {
-            contentParts.push("User attached an image\n\n");
+            contentParts.push("User attached an image");
           }
+          contentParts.push("## AI");
           break;
         }
         case "context": {
-          contentParts.push("### Context:\n");
+          contentParts.push(`### ${item.title}`);
           if (item.details && item.details.length > 0) {
-            contentParts.push(_Conversation.#generateContextDetailsMarkdown(item.details));
+            contentParts.push(_Conversation.generateContextDetailsMarkdown(item.details));
           }
           break;
         }
         case "title": {
-          contentParts.push(`### AI (Title): ${item.title}
-
-`);
+          contentParts.push(`### ${item.title}`);
           break;
         }
         case "thought": {
-          contentParts.push(`### AI (Thought): ${item.thought}
-
-`);
+          contentParts.push(`${item.thought}`);
           break;
         }
         case "action": {
           if (!item.output) {
             break;
           }
-          contentParts.push("### AI (Action):\n");
           if (item.code) {
             contentParts.push(`**Code executed:**
 \`\`\`
-${item.code}
-\`\`\`
-`);
+${item.code.trim()}
+\`\`\``);
           }
-          if (item.output) {
-            contentParts.push(`**Output:**
+          contentParts.push(`**Data returned:**
 \`\`\`
 ${item.output}
-\`\`\`
-`);
-          }
-          if (item.canceled) {
-            contentParts.push("**(Action Canceled)**\n");
-          }
-          contentParts.push("\n");
+\`\`\``);
           break;
         }
         case "answer": {
           if (item.complete) {
-            contentParts.push(`### AI (Answer): ${item.text}
+            contentParts.push(`### Answer
 
-`);
+${item.text.trim()}`);
           }
           break;
         }
       }
     }
-    return contentParts.join("");
+    return contentParts.join("\n\n");
   }
   archiveConversation() {
     this.#isReadOnly = true;
@@ -4924,7 +5173,7 @@ import * as Host9 from "./../../core/host/host.js";
 import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Root9 from "./../../core/root/root.js";
-import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
@@ -4952,7 +5201,7 @@ async function inspectElementBySelector(selector) {
     return null;
   }
   const showUAShadowDOM = Common6.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
-  const domModels = SDK5.TargetManager.TargetManager.instance().models(SDK5.DOMModel.DOMModel, { scoped: true });
+  const domModels = SDK6.TargetManager.TargetManager.instance().models(SDK6.DOMModel.DOMModel, { scoped: true });
   const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
   const resultCounts = await Promise.all(performSearchPromises);
   const index = resultCounts.findIndex((value) => value > 0);
@@ -4962,7 +5211,7 @@ async function inspectElementBySelector(selector) {
   return null;
 }
 async function inspectNetworkRequestByUrl(selector) {
-  const networkManagers = SDK5.TargetManager.TargetManager.instance().models(SDK5.NetworkManager.NetworkManager, { scoped: true });
+  const networkManagers = SDK6.TargetManager.TargetManager.instance().models(SDK6.NetworkManager.NetworkManager, { scoped: true });
   const results = networkManagers.map((networkManager) => {
     let request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector}`);
     if (!request2 && selector.at(-1) === "/") {
@@ -5042,6 +5291,8 @@ var ConversationHandler = class _ConversationHandler {
             return this.#generateErrorResponse("The insightTitle parameter is required for debugging a Performance Insight.");
           }
           return await this.#handleExternalPerformanceInsightsConversation(parameters.prompt, parameters.insightTitle, parameters.traceModel);
+        case "drjones-performance-full":
+          return await this.#handleExternalPerformanceConversation(parameters.prompt, parameters.data);
         case "drjones-network-request":
           if (!parameters.requestUrl) {
             return this.#generateErrorResponse("The url is required for debugging a network request.");
@@ -5060,9 +5311,9 @@ var ConversationHandler = class _ConversationHandler {
       yield data;
     }
   }
-  async *#doExternalConversation(opts) {
+  async *#createAndDoExternalConversation(opts) {
     const { conversationType, aiAgent, prompt, selected } = opts;
-    const externalConversation = new Conversation(
+    const conversation = new Conversation(
       conversationType,
       [],
       aiAgent.id,
@@ -5071,8 +5322,12 @@ var ConversationHandler = class _ConversationHandler {
       /* isExternal */
       true
     );
+    return yield* this.#doExternalConversation({ conversation, aiAgent, prompt, selected });
+  }
+  async *#doExternalConversation(opts) {
+    const { conversation, aiAgent, prompt, selected } = opts;
     const generator = aiAgent.run(prompt, { selected });
-    const generatorWithHistory = this.handleConversationWithHistory(generator, externalConversation);
+    const generatorWithHistory = this.handleConversationWithHistory(generator, conversation);
     const devToolsLogs = [];
     for await (const data of generatorWithHistory) {
       if (data.type !== "answer" || data.complete) {
@@ -5110,7 +5365,7 @@ var ConversationHandler = class _ConversationHandler {
       await node.setAsInspectedNode();
     }
     const selected = node ? new NodeContext(node) : null;
-    return this.#doExternalConversation({
+    return this.#createAndDoExternalConversation({
       conversationType: "freestyler",
       aiAgent: stylingAgent,
       prompt,
@@ -5126,11 +5381,19 @@ var ConversationHandler = class _ConversationHandler {
     if ("error" in focusOrError) {
       return this.#generateErrorResponse(focusOrError.error);
     }
-    return this.#doExternalConversation({
+    return this.#createAndDoExternalConversation({
       conversationType: "performance-insight",
       aiAgent: insightsAgent,
       prompt,
       selected: new PerformanceTraceContext(focusOrError.focus)
+    });
+  }
+  async #handleExternalPerformanceConversation(prompt, data) {
+    return this.#doExternalConversation({
+      conversation: data.conversation,
+      aiAgent: data.agent,
+      prompt,
+      selected: data.selected
     });
   }
   async #handleExternalNetworkConversation(prompt, requestUrl) {
@@ -5142,7 +5405,7 @@ var ConversationHandler = class _ConversationHandler {
     if (!request) {
       return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
     }
-    return this.#doExternalConversation({
+    return this.#createAndDoExternalConversation({
       conversationType: "drjones-network-request",
       aiAgent: networkAgent,
       prompt,

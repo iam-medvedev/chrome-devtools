@@ -3,7 +3,7 @@ export declare class Renderer implements UI.UIUtils.Renderer {
     static instance(opts?: {
         forceNew: boolean | null;
     }): Renderer;
-    render(object: Object): Promise<{
+    render(object: Object, options?: UI.UIUtils.Options): Promise<{
         node: Node;
         tree: UI.TreeOutline.TreeOutline | null;
     } | null>;

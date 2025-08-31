@@ -40,7 +40,7 @@ import * as Root from '../../core/root/root.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
-import { Directives } from '../lit/lit.js';
+import { Directives, render } from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { ActionRegistry } from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
@@ -104,10 +104,6 @@ const UIStrings = {
      * @description Text for the new badge appearing next to some menu items
      */
     new: 'NEW',
-    /**
-     * @description Aria label for the new badge appearing next to some menu items
-     */
-    newFeature: 'This is a new feature',
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/UIUtils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -1818,7 +1814,6 @@ export function maybeCreateNewBadge(promotionId) {
         const badge = document.createElement('div');
         badge.className = 'new-badge';
         badge.textContent = i18nString(UIStrings.new);
-        badge.ariaLabel = i18nString(UIStrings.newFeature);
         badge.setAttribute('jslog', `${VisualLogging.badge('new-badge')}`);
         return badge;
     }
@@ -1851,5 +1846,36 @@ export function bindToAction(actionName) {
         setEnabled(action.enabled());
         e.onclick = () => action.execute();
     });
+}
+export class HTMLElementWithLightDOMTemplate extends HTMLElement {
+    #mutationObserver = new MutationObserver(this.#onChange.bind(this));
+    #contentTemplate = null;
+    constructor() {
+        super();
+        this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
+    }
+    set template(template) {
+        if (!this.#contentTemplate) {
+            this.removeChildren();
+            this.#contentTemplate = this.createChild('template');
+            this.#mutationObserver.disconnect();
+            this.#mutationObserver.observe(this.#contentTemplate.content, { childList: true, attributes: true, subtree: true, characterData: true });
+        }
+        // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
+        render(template, this.#contentTemplate.content);
+    }
+    #onChange(mutationList) {
+        for (const mutation of mutationList) {
+            this.removeNodes(mutation.removedNodes);
+            this.addNodes(mutation.addedNodes);
+            this.updateNodes(mutation.target, mutation.attributeName);
+        }
+    }
+    updateNodes(_node, _attributeName) {
+    }
+    addNodes(_nodes) {
+    }
+    removeNodes(_nodes) {
+    }
 }
 //# sourceMappingURL=UIUtils.js.map

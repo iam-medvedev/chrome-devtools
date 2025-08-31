@@ -261,7 +261,11 @@ var UIStrings = {
    * @example {2} PH2
    * @example {5} PH3
    */
-  sItemSOfS: "{PH1}, item {PH2} of {PH3}"
+  sItemSOfS: "{PH1}, item {PH2} of {PH3}",
+  /**
+   * @description Text that should be read out by screen readers when a new badge is available
+   */
+  newFeature: "This is a new feature"
 };
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/quick_open/FilteredListWidget.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -526,7 +530,9 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
       return;
     }
     this.list.selectItem(item2);
-    const text = this.list.elementAtIndex(this.list.selectedIndex())?.textContent;
+    const selectedElement = this.list.elementAtIndex(this.list.selectedIndex());
+    const children = selectedElement.querySelectorAll("*");
+    const text = Array.from(children).filter((e) => !e.children.length).map((e) => e.classList.contains("new-badge") ? i18nString(UIStrings.newFeature) : e.textContent).join();
     if (text) {
       UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.sItemSOfS, { PH1: text, PH2: this.list.selectedIndex() + 1, PH3: this.items.length }));
     }

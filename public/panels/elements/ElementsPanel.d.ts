@@ -14,6 +14,16 @@ export declare const enum SidebarPaneTabId {
     COMPUTED = "computed",
     STYLES = "styles"
 }
+type RevealAndSelectNodeOptsSelectionAndFocus = {
+    showPanel?: false;
+    focusNode?: never;
+} | {
+    showPanel: true;
+    focusNode?: boolean;
+};
+type RevealAndSelectNodeOpts = RevealAndSelectNodeOptsSelectionAndFocus & {
+    highlightInOverlay?: boolean;
+};
 export declare class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.Searchable, SDK.TargetManager.SDKModelObserver<SDK.DOMModel.DOMModel>, UI.View.ViewLocationResolver {
     #private;
     private splitWidget;
@@ -86,7 +96,7 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     private updateBreadcrumbIfNeeded;
     private crumbNodeSelected;
     private leaveUserAgentShadowDOM;
-    revealAndSelectNode(nodeToReveal: SDK.DOMModel.DOMNode, focus: boolean, omitHighlight?: boolean): Promise<void>;
+    revealAndSelectNode(nodeToReveal: SDK.DOMModel.DOMNode, opts?: RevealAndSelectNodeOpts): Promise<void>;
     private showUAShadowDOMChanged;
     private setupTextSelectionHack;
     private initializeSidebarPanes;
@@ -129,3 +139,4 @@ export declare class PseudoStateMarkerDecorator implements MarkerDecorator {
         color: string;
     } | null;
 }
+export {};

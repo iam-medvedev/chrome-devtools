@@ -1,6 +1,6 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import type * as StackTrace from './stack_trace.js';
+import * as StackTrace from './stack_trace.js';
 import { type RawFrame } from './Trie.js';
 /**
  * A stack trace translation function.
@@ -16,4 +16,6 @@ export type TranslateRawFrames = (frames: readonly RawFrame[], target: SDK.Targe
 export declare class StackTraceModel extends SDK.SDKModel.SDKModel<unknown> {
     #private;
     createFromProtocolRuntime(stackTrace: Protocol.Runtime.StackTrace, rawFramesToUIFrames: TranslateRawFrames): Promise<StackTrace.StackTrace.StackTrace>;
+    /** Trigger re-translation of all fragments with the provide script in their call stack */
+    scriptInfoChanged(script: SDK.Script.Script, translateRawFrames: TranslateRawFrames): Promise<void>;
 }

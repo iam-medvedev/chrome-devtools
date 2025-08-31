@@ -1,8 +1,9 @@
 import * as Common from '../../core/common/common.js';
 import type * as Buttons from '../components/buttons/buttons.js';
 import type * as IconButton from '../components/icon_button/icon_button.js';
-import { type TemplateResult } from '../lit/lit.js';
+import * as Lit from '../lit/lit.js';
 import { type Config } from './InplaceEditor.js';
+import { HTMLElementWithLightDOMTemplate } from './UIUtils.js';
 export declare enum Events {
     ElementAttached = "ElementAttached",
     ElementsDetached = "ElementsDetached",
@@ -69,12 +70,13 @@ export declare class TreeOutlineInShadow extends TreeOutline {
     shadowRoot: ShadowRoot;
     private readonly disclosureElement;
     renderSelection: boolean;
-    constructor(variant?: TreeVariant);
+    constructor(variant?: TreeVariant, element?: HTMLElement);
+    setVariant(variant: TreeVariant): void;
     registerRequiredCSS(...cssFiles: Array<string & {
         _tag: 'CSS-in-JS';
     }>): void;
-    hideOverflow(): void;
-    makeDense(): void;
+    setHideOverflow(hideOverflow: boolean): void;
+    setDense(dense: boolean): void;
     onStartedEditingTitle(treeElement: TreeElement): void;
 }
 export declare const treeElementBylistItemNode: WeakMap<Node, TreeElement>;
@@ -130,7 +132,7 @@ export declare class TreeElement {
     set title(x: string | Node);
     titleAsText(): string;
     startEditingTitle<T>(editingConfig: Config<T>): void;
-    setLeadingIcons(icons: IconButton.Icon.Icon[] | TemplateResult[]): void;
+    setLeadingIcons(icons: IconButton.Icon.Icon[] | Lit.TemplateResult[]): void;
     get tooltip(): string;
     set tooltip(x: string);
     isExpandable(): boolean;
@@ -181,4 +183,76 @@ export declare class TreeElement {
     traversePreviousTreeElement(skipUnrevealed: boolean, dontPopulate?: boolean): TreeElement | null;
     isEventWithinDisclosureTriangle(event: MouseEvent): boolean;
     setDisableSelectFocus(toggle: boolean): void;
+}
+/**
+ * A tree element that can be used as progressive enhancement over a <ul> element.
+ *
+ * It can be used as
+ * ```
+ * <devtools-tree
+ *   .template=${html`
+ *     <ul role="tree">
+ *        <li role="treeitem">
+ *          Tree Node Text
+ *          <ul role="group">
+ *            Node with subtree
+ *            <li role="treeitem">
+ *              <ul role="group" hidden>
+ *                <li role="treeitem">Tree Node Text in collapsed subtree</li>
+ *                <li role="treeitem">Tree Node Text in collapsed subtree</li>
+ *              </ul>
+ *           </li>
+ *           <li selected role="treeitem">Tree Node Text in a selected-by-default node</li>
+ *         </ul>
+ *       </li>
+ *     </ul>
+ *   </template>`}
+ * ></devtools-tree>
+ *
+ * ```
+ * where a <li role="treeitem"> element defines a tree node and its contents. The `selected` attribute on an <li>
+ * declares that this tree node should be selected on render. If a tree node contains a <ul role="group">, that defines
+ * a subtree under that tree node. The `hidden` attribute on the <ul> defines whether that subtree should render as
+ * collapsed initially.
+ *
+ * Under the hood this uses TreeOutline.
+ *
+ * @property template Define the tree contents
+ * @event selected A node was selected
+ * @event expand A subtree was expanded or collapsed
+ * @attribute navigation-variant Turn this tree into the navigation variant
+ * @attribute hide-overflow
+ */
+export declare class TreeViewElement extends HTMLElementWithLightDOMTemplate {
+    #private;
+    static readonly observedAttributes: string[];
+    constructor();
+    getInternalTreeOutlineForTest(): TreeOutlineInShadow;
+    protected updateNodes(node: Node, attributeName: string | null): void;
+    protected addNodes(nodes: NodeList | Node[]): void;
+    protected removeNodes(nodes: NodeList): void;
+    set hideOverflow(hide: boolean);
+    get hideOverflow(): boolean;
+    set navgiationVariant(navigationVariant: boolean);
+    get navigationVariant(): boolean;
+    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
+}
+export declare namespace TreeViewElement {
+    class SelectEvent extends CustomEvent<HTMLLIElement> {
+        constructor(detail: HTMLLIElement);
+    }
+    class ExpandEvent extends CustomEvent<{
+        expanded: boolean;
+        target: HTMLLIElement;
+    }> {
+        constructor(detail: {
+            expanded: boolean;
+            target: HTMLLIElement;
+        });
+    }
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'devtools-tree': TreeViewElement;
+    }
 }

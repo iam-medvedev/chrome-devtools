@@ -33,8 +33,8 @@ export class MediaModel extends SDK.SDKModel.SDKModel {
     playerErrorsRaised(event) {
         this.dispatchEventToListeners("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, event);
     }
-    playerCreated({ player: { playerId } }) {
-        this.dispatchEventToListeners("PlayersCreated" /* Events.PLAYERS_CREATED */, [playerId]);
+    playerCreated({ player }) {
+        this.dispatchEventToListeners("PlayerCreated" /* Events.PLAYER_CREATED */, player);
     }
 }
 SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144 /* SDK.Target.Capability.MEDIA */, autostart: false });

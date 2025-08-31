@@ -21,17 +21,17 @@ import { data as metaHandlerData } from './MetaHandler.js';
  * The metric scores include the event related to the metric as well as the data regarding
  * the score itself.
  */
-const metricScoresByFrameId = new Map();
+let metricScoresByFrameId = new Map();
 /**
  * Page load events with no associated duration that happened in the
  * main frame.
  */
 let allMarkerEvents = [];
 export function reset() {
-    metricScoresByFrameId.clear();
+    metricScoresByFrameId = new Map();
     pageLoadEventsArray = [];
     allMarkerEvents = [];
-    selectedLCPCandidateEvents.clear();
+    selectedLCPCandidateEvents = new Set();
 }
 let pageLoadEventsArray = [];
 // Once we've found the LCP events in the trace we want to fetch their DOM Node
@@ -42,7 +42,7 @@ let pageLoadEventsArray = [];
 // trace, we store that and delete the prior event. When we've parsed the
 // entire trace this set will contain all the LCP events that were used - e.g.
 // the candidates that were the actual LCP events.
-const selectedLCPCandidateEvents = new Set();
+let selectedLCPCandidateEvents = new Set();
 export function handleEvent(event) {
     if (!Types.Events.eventIsPageLoadEvent(event)) {
         return;
@@ -135,7 +135,7 @@ function storePageLoadMetricAgainstNavigationId(navigation, event) {
     if (Types.Events.isLargestContentfulPaintCandidate(event)) {
         const candidateIndex = event.args.data?.candidateIndex;
         if (!candidateIndex) {
-            throw new Error('Largest Contenful Paint unexpectedly had no candidateIndex.');
+            throw new Error('Largest Contentful Paint unexpectedly had no candidateIndex.');
         }
         const lcpTime = Types.Timing.Micro(event.ts - navigation.ts);
         const lcp = {

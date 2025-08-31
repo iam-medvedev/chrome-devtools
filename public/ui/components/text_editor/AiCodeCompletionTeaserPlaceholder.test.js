@@ -19,9 +19,6 @@ describeWithEnvironment('AiCodeCompletionTeaserPlaceholder', () => {
         sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions')
             .resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
     });
-    afterEach(() => {
-        sinon.restore();
-    });
     function createEditor(doc, teaser) {
         const editor = new TextEditor.TextEditor.TextEditor(CodeMirror.EditorState.create({
             doc,

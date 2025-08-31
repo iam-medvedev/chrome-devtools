@@ -24,7 +24,13 @@ var NativeFunctions = [
   },
   {
     name: "isNaN",
-    signatures: [["number"]]
+    signatures: [["number"]],
+    receivers: ["Window", "NumberConstructor"]
+  },
+  {
+    name: "isNaN",
+    signatures: [["x", "?options"]],
+    receivers: ["MLGraphBuilder"]
   },
   {
     name: "isFinite",
@@ -7586,6 +7592,10 @@ var NativeFunctions = [
     signatures: [["element", "x", "y", "?options"], ["element", "x", "y", "dwidth", "dheight", "?options"]]
   },
   {
+    name: "drawHTMLElement",
+    signatures: [["element", "x", "y", "?options"], ["element", "x", "y", "dwidth", "dheight", "?options"]]
+  },
+  {
     name: "setHitTestRegions",
     signatures: [["hitTestRegions"]]
   },
@@ -8022,11 +8032,19 @@ var NativeFunctions = [
     signatures: [["x", "?options"]]
   },
   {
+    name: "roundEven",
+    signatures: [["x", "?options"]]
+  },
+  {
     name: "erf",
     signatures: [["x", "?options"]]
   },
   {
     name: "identity",
+    signatures: [["x", "?options"]]
+  },
+  {
+    name: "isInfinite",
     signatures: [["x", "?options"]]
   },
   {
@@ -8864,6 +8882,10 @@ var NativeFunctions = [
     signatures: [["provokeMode"]]
   },
   {
+    name: "texHTMLElement2D",
+    signatures: [["target", "level", "internalformat", "format", "type", "element"]]
+  },
+  {
     name: "texElement2D",
     signatures: [["target", "level", "internalformat", "format", "type", "element"]]
   },
@@ -9146,10 +9168,6 @@ var NativeFunctions = [
   {
     name: "WebTransportError",
     signatures: [["?init"]]
-  },
-  {
-    name: "WebTransport",
-    signatures: [["url", "?options"]]
   },
   {
     name: "USBAlternateInterface",

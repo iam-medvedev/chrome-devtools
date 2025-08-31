@@ -112,13 +112,13 @@ export default `/*
   overflow: hidden;
 }
 
-.search-view .search-results {
+.search-results {
   overflow-y: auto;
   display: flex;
   flex: auto;
 }
 
-.search-view .search-results > div {
+.search-results > div {
   flex: auto;
 }
 

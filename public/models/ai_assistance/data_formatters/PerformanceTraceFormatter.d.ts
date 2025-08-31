@@ -10,5 +10,7 @@ export declare class PerformanceTraceFormatter {
     formatMainThreadBottomUpSummary(): string;
     formatThirdPartySummary(): string;
     formatLongestTasks(): string;
-    formatMainThreadTrackSummary(min: Trace.Types.Timing.Micro, max: Trace.Types.Timing.Micro): string;
+    formatMainThreadTrackSummary(bounds: Trace.Types.Timing.TraceWindowMicro): string;
+    formatNetworkTrackSummary(bounds: Trace.Types.Timing.TraceWindowMicro): string;
+    formatCallTree(tree: TimelineUtils.AICallTree.AICallTree, headerLevel?: number): string;
 }

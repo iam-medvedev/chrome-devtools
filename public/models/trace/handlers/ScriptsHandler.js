@@ -6,12 +6,12 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
 import { data as networkRequestsHandlerData } from './NetworkRequestsHandler.js';
-const scriptById = new Map();
+let scriptById = new Map();
 export function deps() {
     return ['Meta', 'NetworkRequests'];
 }
 export function reset() {
-    scriptById.clear();
+    scriptById = new Map();
 }
 export function handleEvent(event) {
     const getOrMakeScript = (isolate, scriptIdAsNumber) => {

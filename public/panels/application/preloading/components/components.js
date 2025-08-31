@@ -1993,7 +1993,7 @@ var RuleSetGrid = class extends LegacyWrapper13.LegacyWrapper.WrappableComponent
                     ${ruleSet.errorType !== void 0 ? html7`
                       <span style=${styleMap3({ color: "var(--sys-color-error)" })}>
                         ${i18nString8(UIStrings8.errors, { errorCount: 1 })}
-                      </span>` : ""} ${ruleSet.errorType !== "SourceIsNotJsonObject" ? html7`
+                      </span>` : ""} ${ruleSet.errorType !== "SourceIsNotJsonObject" && ruleSet.errorType !== "InvalidRulesetLevelTag" ? html7`
                       <button class="link" role="link"
                         @click=${() => this.#revealAttemptViewWithFilter(ruleSet)}
                         title=${i18nString8(UIStrings8.buttonRevealPreloadsAssociatedWithRuleSet)}

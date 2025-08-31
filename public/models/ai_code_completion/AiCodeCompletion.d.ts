@@ -25,10 +25,14 @@ interface AgentOptions {
  */
 export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, stopSequences?: string[]);
+    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, panel: Panel, stopSequences?: string[]);
     registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number): void;
     onTextChanged(prefix: string, suffix: string, cursor: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
     remove(): void;
+}
+export declare const enum Panel {
+    CONSOLE = "console",
+    SOURCES = "sources"
 }
 export declare const enum Events {
     RESPONSE_RECEIVED = "ResponseReceived",

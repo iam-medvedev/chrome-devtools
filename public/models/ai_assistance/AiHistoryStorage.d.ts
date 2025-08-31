@@ -1,5 +1,5 @@
 import * as Common from '../../core/common/common.js';
-import { type ResponseData, type SerializedResponseData } from './agents/AiAgent.js';
+import { type ContextDetail, type ResponseData, type SerializedResponseData } from './agents/AiAgent.js';
 export declare const enum ConversationType {
     STYLING = "freestyler",
     FILE = "drjones-file",
@@ -25,6 +25,7 @@ export declare class Conversation {
     readonly id: string;
     readonly type: ConversationType;
     readonly history: ResponseData[];
+    static generateContextDetailsMarkdown(details: ContextDetail[]): string;
     constructor(type: ConversationType, data?: ResponseData[], id?: string, isReadOnly?: boolean, isExternal?: boolean);
     get isReadOnly(): boolean;
     get title(): string | undefined;

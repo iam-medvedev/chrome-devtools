@@ -25,7 +25,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
     afterEach(() => {
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-teaser-dismissed').set(false);
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(false);
-        sinon.restore();
+        clock.restore();
     });
     function createEditorWithPlugin(doc) {
         const plugin = new AiCodeCompletionPlugin.AiCodeCompletionPlugin(uiSourceCode);

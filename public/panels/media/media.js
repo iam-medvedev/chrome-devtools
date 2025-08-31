@@ -210,8 +210,8 @@ var MediaModel = class extends SDK.SDKModel.SDKModel {
   playerErrorsRaised(event) {
     this.dispatchEventToListeners("PlayerErrorsRaised", event);
   }
-  playerCreated({ player: { playerId } }) {
-    this.dispatchEventToListeners("PlayersCreated", [playerId]);
+  playerCreated({ player }) {
+    this.dispatchEventToListeners("PlayerCreated", player);
   }
 };
 SDK.SDKModel.SDKModel.register(MediaModel, { capabilities: 262144, autostart: false });
@@ -2384,14 +2384,14 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
     mediaModel.addEventListener("PlayerEventsAdded", this.eventsAdded, this);
     mediaModel.addEventListener("PlayerMessagesLogged", this.messagesLogged, this);
     mediaModel.addEventListener("PlayerErrorsRaised", this.errorsRaised, this);
-    mediaModel.addEventListener("PlayersCreated", this.playersCreated, this);
+    mediaModel.addEventListener("PlayerCreated", this.playerCreated, this);
   }
   removeEventListeners(mediaModel) {
     mediaModel.removeEventListener("PlayerPropertiesChanged", this.propertiesChanged, this);
     mediaModel.removeEventListener("PlayerEventsAdded", this.eventsAdded, this);
     mediaModel.removeEventListener("PlayerMessagesLogged", this.messagesLogged, this);
     mediaModel.removeEventListener("PlayerErrorsRaised", this.errorsRaised, this);
-    mediaModel.removeEventListener("PlayersCreated", this.playersCreated, this);
+    mediaModel.removeEventListener("PlayerCreated", this.playerCreated, this);
   }
   onPlayerCreated(playerID) {
     this.sidebar.addMediaElementItem(playerID);
@@ -2457,13 +2457,11 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
     this.downloadStore.onEvent(playerID, event);
     this.detailPanels.get(playerID)?.onEvent(event);
   }
-  playersCreated(event) {
-    if (event.data.length > 0 && this.splitWidget().showMode() !== "Both") {
+  playerCreated(event) {
+    if (this.splitWidget().showMode() !== "Both") {
       this.splitWidget().showBoth();
     }
-    for (const playerID of event.data) {
-      this.onPlayerCreated(playerID);
-    }
+    this.onPlayerCreated(event.data.playerId);
   }
   markPlayerForDeletion(playerID) {
     this.deletedPlayers.add(playerID);

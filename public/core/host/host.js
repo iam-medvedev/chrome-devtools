@@ -16,6 +16,7 @@ __export(AidaClient_exports, {
   EditType: () => EditType,
   FunctionalityType: () => FunctionalityType,
   HostConfigTracker: () => HostConfigTracker,
+  Reason: () => Reason,
   RecitationAction: () => RecitationAction,
   Role: () => Role,
   UserTier: () => UserTier,
@@ -828,6 +829,15 @@ var EditType;
   EditType2[EditType2["REDO"] = 5] = "REDO";
   EditType2[EditType2["ACCEPT_COMPLETION"] = 6] = "ACCEPT_COMPLETION";
 })(EditType || (EditType = {}));
+var Reason;
+(function(Reason2) {
+  Reason2[Reason2["UNKNOWN"] = 0] = "UNKNOWN";
+  Reason2[Reason2["CURRENTLY_OPEN"] = 1] = "CURRENTLY_OPEN";
+  Reason2[Reason2["RECENTLY_OPENED"] = 2] = "RECENTLY_OPENED";
+  Reason2[Reason2["RECENTLY_EDITED"] = 3] = "RECENTLY_EDITED";
+  Reason2[Reason2["COLOCATED"] = 4] = "COLOCATED";
+  Reason2[Reason2["RELATED_FILE"] = 5] = "RELATED_FILE";
+})(Reason || (Reason = {}));
 var RecitationAction;
 (function(RecitationAction2) {
   RecitationAction2["ACTION_UNSPECIFIED"] = "ACTION_UNSPECIFIED";

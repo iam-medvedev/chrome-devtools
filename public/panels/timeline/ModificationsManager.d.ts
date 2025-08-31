@@ -5,8 +5,9 @@ export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' 
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Trace.Types.Overlays.Overlay;
     action: UpdateAction;
+    muteAriaNotifications: boolean;
     static readonly eventName = "annotationmodifiedevent";
-    constructor(overlay: Trace.Types.Overlays.Overlay, action: UpdateAction);
+    constructor(overlay: Trace.Types.Overlays.Overlay, action: UpdateAction, muteAriaNotifications?: boolean);
 }
 export declare class ModificationsManager extends EventTarget {
     #private;
@@ -31,7 +32,10 @@ export declare class ModificationsManager extends EventTarget {
      * Stores the annotation and creates its overlay.
      * @returns the Overlay that gets created and associated with this annotation.
      */
-    createAnnotation(newAnnotation: Trace.Types.File.Annotation, loadedFromFile?: boolean): Trace.Types.Overlays.Overlay;
+    createAnnotation(newAnnotation: Trace.Types.File.Annotation, opts: {
+        loadedFromFile: boolean;
+        muteAriaNotifications: boolean;
+    }): Trace.Types.Overlays.Overlay;
     linkAnnotationBetweenEntriesExists(entryFrom: Trace.Types.Events.Event, entryTo: Trace.Types.Events.Event): boolean;
     bringEntryLabelForwardIfExists(entry: Trace.Types.Events.Event): void;
     removeAnnotation(removedAnnotation: Trace.Types.File.Annotation): void;
@@ -42,7 +46,9 @@ export declare class ModificationsManager extends EventTarget {
     getOverlaybyAnnotation(annotation: Trace.Types.File.Annotation): Trace.Types.Overlays.Overlay | null;
     getAnnotations(): Trace.Types.File.Annotation[];
     getOverlays(): Trace.Types.Overlays.Overlay[];
-    applyAnnotationsFromCache(): void;
+    applyAnnotationsFromCache(opts: {
+        muteAriaNotifications: boolean;
+    }): void;
     /**
      * Builds all modifications into a serializable object written into
      * the 'modifications' trace file metadata field.

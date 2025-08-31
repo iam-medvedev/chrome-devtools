@@ -3738,6 +3738,11 @@ body {
   outline-width: 0;
 }
 
+/* Prevent UA stylesheet from overriding font-family for HTML elements. */
+code, kbd, samp, pre {
+  font-family: var(--monospace-font-family);
+}
+
 .monospace {
   font-family: var(--monospace-font-family);
   font-size: var(

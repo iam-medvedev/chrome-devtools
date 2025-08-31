@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
 import * as Types from '../types/types.js';
-const updateCountersByProcess = new Map();
+let updateCountersByProcess = new Map();
 export function reset() {
-    updateCountersByProcess.clear();
+    updateCountersByProcess = new Map();
 }
 export function handleEvent(event) {
     if (Types.Events.isUpdateCounters(event)) {

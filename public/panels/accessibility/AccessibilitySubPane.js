@@ -33,7 +33,7 @@ export class AccessibilitySubPane extends UI.View.SimpleView {
         const treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         treeOutline.registerRequiredCSS(accessibilityNodeStyles, accessibilityPropertiesStyles, objectValueStyles);
         treeOutline.element.classList.add('hidden');
-        treeOutline.hideOverflow();
+        treeOutline.setHideOverflow(true);
         this.element.appendChild(treeOutline.element);
         return treeOutline;
     }

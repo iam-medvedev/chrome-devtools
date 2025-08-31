@@ -331,7 +331,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox {
         this.sidebarTree = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
         this.sidebarTree.registerRequiredCSS(resourcesSidebarStyles);
         this.sidebarTree.element.classList.add('resources-sidebar');
-        this.sidebarTree.hideOverflow();
+        this.sidebarTree.setHideOverflow(true);
         this.sidebarTree.element.classList.add('filter-all');
         // Listener needs to have been set up before the elements are added
         this.sidebarTree.addEventListener(UI.TreeOutline.Events.ElementAttached, this.treeElementAdded, this);

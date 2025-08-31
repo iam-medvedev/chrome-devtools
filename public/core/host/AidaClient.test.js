@@ -522,9 +522,6 @@ describeWithEnvironment('AidaClient', () => {
                 cb(information);
             });
         }
-        beforeEach(() => {
-            sinon.restore();
-        });
         it('should return NO_INTERNET when navigator is not online', async () => {
             const navigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
             Object.defineProperty(globalThis, 'navigator', {
@@ -580,9 +577,6 @@ describeWithEnvironment('AidaClient', () => {
         });
     });
     describe('completeCode', () => {
-        beforeEach(() => {
-            sinon.restore();
-        });
         it('handles successful response', async () => {
             const mockResult = {
                 response: JSON.stringify({

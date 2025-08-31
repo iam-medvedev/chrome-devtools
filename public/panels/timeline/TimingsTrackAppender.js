@@ -44,7 +44,7 @@ export class TimingsTrackAppender {
      * timings track.
      * @param trackStartLevel the horizontal level of the flame chart events where
      * the track's events will start being appended.
-     * @param expanded wether the track should be rendered expanded.
+     * @param expanded whether the track should be rendered expanded.
      * @returns the first available level to append more data after having
      * appended the track's events.
      */
@@ -88,8 +88,7 @@ export class TimingsTrackAppender {
      * extension markers (the first available level to append more data).
      */
     #appendExtensionsAtLevel(currentLevel) {
-        let markers = [];
-        markers = markers.concat(this.#extensionMarkers).sort((m1, m2) => m1.ts - m2.ts);
+        const markers = this.#extensionMarkers.toSorted((m1, m2) => m1.ts - m2.ts);
         if (markers.length === 0) {
             return currentLevel;
         }

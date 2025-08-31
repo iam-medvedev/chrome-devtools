@@ -20,6 +20,9 @@ export class NetworkDependencyTree extends BaseInsightComponent {
     internalName = 'long-critical-network-tree';
     #relatedRequests = null;
     #countOfChains = 0;
+    hasAskAiSupport() {
+        return true;
+    }
     #createOverlayForChain(requests) {
         const overlays = [];
         requests.forEach(entry => overlays.push({

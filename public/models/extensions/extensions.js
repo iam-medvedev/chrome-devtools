@@ -1116,14 +1116,10 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
       return;
     }
     objectPropertiesView.element.removeChildren();
-    void UI2.UIUtils.Renderer.render(object, { title, editable: false }).then((result) => {
+    void UI2.UIUtils.Renderer.render(object, { title, editable: false, expand: true }).then((result) => {
       if (!result) {
         callback();
         return;
-      }
-      const firstChild = result.tree?.firstChild();
-      if (firstChild) {
-        firstChild.expand();
       }
       objectPropertiesView.element.appendChild(result.node);
       callback();

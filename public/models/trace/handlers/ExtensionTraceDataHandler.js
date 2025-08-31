@@ -4,22 +4,22 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as userTimingsData } from './UserTimingsHandler.js';
-const extensionTrackEntries = [];
-const extensionTrackData = [];
-const extensionMarkers = [];
-const entryToNode = new Map();
-const timeStampByName = new Map();
-const syntheticConsoleEntriesForTimingsTrack = [];
+let extensionTrackEntries = [];
+let extensionTrackData = [];
+let extensionMarkers = [];
+let entryToNode = new Map();
+let timeStampByName = new Map();
+let syntheticConsoleEntriesForTimingsTrack = [];
 export function handleEvent(_event) {
     // Implementation not needed because data is sourced from UserTimingsHandler
 }
 export function reset() {
-    extensionTrackEntries.length = 0;
-    syntheticConsoleEntriesForTimingsTrack.length = 0;
-    extensionTrackData.length = 0;
-    extensionMarkers.length = 0;
-    entryToNode.clear();
-    timeStampByName.clear();
+    extensionTrackEntries = [];
+    syntheticConsoleEntriesForTimingsTrack = [];
+    extensionTrackData = [];
+    extensionMarkers = [];
+    entryToNode = new Map();
+    timeStampByName = new Map();
 }
 export async function finalize() {
     createExtensionFlameChartEntries();
@@ -181,41 +181,18 @@ export function extractPerformanceAPIExtensionEntries(timings) {
         }
     }
 }
-function parseDetail(timingDetail, key) {
-    try {
-        // Attempt to parse the detail as an object that might be coming from a
-        // DevTools Perf extension.
-        // Wrapped in a try-catch because timingDetail might either:
-        // 1. Not be `json.parse`-able (it should, but just in case...)
-        // 2.Not be an object - in which case the `in` check will error.
-        // If we hit either of these cases, we just ignore this mark and move on.
-        const detailObj = JSON.parse(timingDetail);
-        if (!(key in detailObj)) {
-            return null;
-        }
-        if (!Types.Extensions.isValidExtensionPayload(detailObj[key])) {
-            return null;
-        }
-        return detailObj[key];
-    }
-    catch {
-        // No need to worry about this error, just discard this event and don't
-        // treat it as having any useful information for the purposes of extensions
-        return null;
-    }
-}
 function extensionPayloadForConsoleApi(timing) {
     if (!timing.args.data || !('devtools' in timing.args.data)) {
         return null;
     }
-    return parseDetail(`{"additionalContext": ${timing.args.data.devtools} }`, 'additionalContext');
+    return Helpers.Trace.parseDevtoolsDetails(`{"additionalContext": ${timing.args.data.devtools} }`, 'additionalContext');
 }
 export function extensionDataInPerformanceTiming(timing) {
     const timingDetail = Types.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
     if (!timingDetail) {
         return null;
     }
-    return parseDetail(timingDetail, 'devtools');
+    return Helpers.Trace.parseDevtoolsDetails(timingDetail, 'devtools');
 }
 /**
  * Extracts extension data from a `console.timeStamp` event.

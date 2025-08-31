@@ -4,13 +4,13 @@
 import * as Types from '../types/types.js';
 let lastUpdateLayoutTreeEvent = null;
 let lastInvalidatedNode = null;
-const selectorDataForUpdateLayoutTree = new Map();
-const invalidatedNodeList = new Array();
+let selectorDataForUpdateLayoutTree = new Map();
+let invalidatedNodeList = new Array();
 export function reset() {
     lastUpdateLayoutTreeEvent = null;
     lastInvalidatedNode = null;
-    selectorDataForUpdateLayoutTree.clear();
-    invalidatedNodeList.length = 0;
+    selectorDataForUpdateLayoutTree = new Map();
+    invalidatedNodeList = [];
 }
 export function handleEvent(event) {
     if (Types.Events.isStyleRecalcInvalidationTracking(event)) {

@@ -17,9 +17,6 @@ describeWithEnvironment('AiCodeCompletionDisclaimer', () => {
         await view.nextInput;
         return { view, widget };
     }
-    afterEach(() => {
-        sinon.restore();
-    });
     it('should show disclaimer with no logging text when enterprise policy value is ALLOW_WITHOUT_LOGGING', async () => {
         updateHostConfig({
             aidaAvailability: { enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING },

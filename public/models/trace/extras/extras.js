@@ -473,24 +473,31 @@ import * as Types5 from "./../types/types.js";
 import * as Common from "./../../../core/common/common.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
 import * as Types4 from "./../types/types.js";
-function eventTimeComparator(a, b) {
-  const aBeginTime = a.ts;
-  const bBeginTime = b.ts;
+function compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime) {
   if (aBeginTime < bBeginTime) {
     return -1;
   }
   if (aBeginTime > bBeginTime) {
     return 1;
   }
-  const aDuration = a.dur ?? 0;
-  const bDuration = b.dur ?? 0;
-  const aEndTime = aBeginTime + aDuration;
-  const bEndTime = bBeginTime + bDuration;
   if (aEndTime > bEndTime) {
     return -1;
   }
   if (aEndTime < bEndTime) {
     return 1;
+  }
+  return 0;
+}
+function eventTimeComparator(a, b) {
+  const aBeginTime = a.ts;
+  const bBeginTime = b.ts;
+  const aDuration = a.dur ?? 0;
+  const bDuration = b.dur ?? 0;
+  const aEndTime = aBeginTime + aDuration;
+  const bEndTime = bBeginTime + bDuration;
+  const timeDifference = compareBeginAndEnd(aBeginTime, bBeginTime, aEndTime, bEndTime);
+  if (timeDifference) {
+    return timeDifference;
   }
   if (Types4.Events.isProfileCall(a) && !Types4.Events.isProfileCall(b)) {
     return -1;

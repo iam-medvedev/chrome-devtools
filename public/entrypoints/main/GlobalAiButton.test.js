@@ -8,6 +8,7 @@ import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Main from './main.js';
 const CLICK_COUNT_LIMIT = 2;
+const DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS = 5000;
 const { GlobalAiButton } = Main.GlobalAiButton;
 describeWithEnvironment('GlobalAiButton', () => {
     let clock;
@@ -59,7 +60,7 @@ describeWithEnvironment('GlobalAiButton', () => {
             clock = sinon.useFakeTimers({ now: new Date('2025-01-01'), toFake: ['setTimeout', 'Date'] });
             Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(CLICK_COUNT_LIMIT - 1);
             const { view } = await createWidget();
-            clock.tick(5000);
+            clock.tick(DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
             const finalInput = await view.nextInput;
             assert.strictEqual(finalInput.state, Main.GlobalAiButton.GlobalAiButtonState.DEFAULT);
         });
@@ -98,6 +99,35 @@ describeWithEnvironment('GlobalAiButton', () => {
             Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(CLICK_COUNT_LIMIT);
             const { view } = await createWidget();
             assert.strictEqual(view.input.state, Main.GlobalAiButton.GlobalAiButtonState.DEFAULT);
+        });
+    });
+    describe('promotion lifecycle with toolbar hover', () => {
+        let headerElement;
+        beforeEach(() => {
+            headerElement = document.createElement('div');
+            sinon.stub(UI.InspectorView.InspectorView.instance().tabbedPane, 'headerElement').returns(headerElement);
+        });
+        it('does not revert from PROMOTION to DEFAULT state while the toolbar is hovered', async () => {
+            updateHostConfig({
+                devToolsGlobalAiButton: {
+                    promotionEnabled: true,
+                },
+            });
+            clock = sinon.useFakeTimers({ now: new Date('2025-01-01'), toFake: ['setTimeout', 'Date'] });
+            Common.Settings.Settings.instance().settingForTest('global-ai-button-click-count').set(CLICK_COUNT_LIMIT - 1);
+            const { view } = await createWidget();
+            assert.strictEqual(view.input.state, Main.GlobalAiButton.GlobalAiButtonState.PROMOTION);
+            // Simulate hovering over the toolbar.
+            headerElement.dispatchEvent(new MouseEvent('mouseenter'));
+            clock.tick(DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
+            // The button should still be in the promotion state.
+            assert.strictEqual(view.input.state, Main.GlobalAiButton.GlobalAiButtonState.PROMOTION);
+            // Simulate hovering out of the toolbar.
+            headerElement.dispatchEvent(new MouseEvent('mouseleave'));
+            clock.tick(DELAY_BEFORE_PROMOTION_COLLAPSE_IN_MS);
+            // The button should now be in the default state.
+            const finalInput = await view.nextInput;
+            assert.strictEqual(finalInput.state, Main.GlobalAiButton.GlobalAiButtonState.DEFAULT);
         });
     });
 });

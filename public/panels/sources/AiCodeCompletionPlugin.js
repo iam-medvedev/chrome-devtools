@@ -60,6 +60,9 @@ export class AiCodeCompletionPlugin extends Plugin {
         this.#editor.addEventListener('keydown', this.#boundEditorKeyDown);
         this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
         this.#onAiCodeCompletionSettingChanged();
+        if (editor.state.doc.length === 0) {
+            this.#addTeaserPluginToCompartmentImmediate(editor.editor);
+        }
     }
     editorExtension() {
         return [
@@ -77,9 +80,9 @@ export class AiCodeCompletionPlugin extends Plugin {
         if (this.#teaser) {
             if (update.docChanged) {
                 update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
-                this.#addTeaserPluginToCompartment(update);
+                this.#addTeaserPluginToCompartment(update.view);
             }
-            else if (update.selectionSet) {
+            else if (update.selectionSet && update.state.doc.length > 0) {
                 update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
             }
         }
@@ -156,17 +159,21 @@ export class AiCodeCompletionPlugin extends Plugin {
             }
         }
     }
-    #addTeaserPluginToCompartment = Common.Debouncer.debounce((update) => {
+    #addTeaserPluginToCompartment = Common.Debouncer.debounce((view) => {
         if (this.#teaserDisplayTimeout) {
             window.clearTimeout(this.#teaserDisplayTimeout);
             this.#teaserDisplayTimeout = undefined;
         }
         this.#teaserDisplayTimeout = window.setTimeout(() => {
-            if (this.#teaser) {
-                update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
-            }
+            this.#addTeaserPluginToCompartmentImmediate(view);
         }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
     }, AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
+    #addTeaserPluginToCompartmentImmediate = (view) => {
+        if (!this.#teaser) {
+            return;
+        }
+        view.dispatch({ effects: this.#teaserCompartment.reconfigure([aiCodeCompletionTeaserExtension(this.#teaser)]) });
+    };
     #setupAiCodeCompletion() {
         if (!this.#editor) {
             return;
@@ -178,8 +185,7 @@ export class AiCodeCompletionPlugin extends Plugin {
             this.#detachAiCodeCompletionTeaser();
             this.#teaser = undefined;
         }
-        this.#aiCodeCompletion =
-            new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor);
+        this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, "sources" /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */);
         this.#aiCodeCompletion.addEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, this.#onAiRequestTriggered, this);
         this.#aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, this.#onAiResponseReceived, this);
         this.#createAiCodeCompletionDisclaimer();

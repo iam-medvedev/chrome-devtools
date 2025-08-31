@@ -7,9 +7,9 @@ import * as Types from '../types/types.js';
  * LargestTextPaint. If an LCP event is text, it will point to one of these
  * candidates, so we store them by their DOM Node ID.
  **/
-const textPaintByDOMNodeId = new Map();
+let textPaintByDOMNodeId = new Map();
 export function reset() {
-    textPaintByDOMNodeId.clear();
+    textPaintByDOMNodeId = new Map();
 }
 export function handleEvent(event) {
     if (!Types.Events.isLargestTextPaintCandidate(event)) {
