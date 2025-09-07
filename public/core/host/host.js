@@ -706,6 +706,9 @@ var InspectorFrontendHostStub = class {
       error: "Not implemented"
     });
   }
+  dispatchHttpRequest(_request, callback) {
+    callback({ error: "Not implemented" });
+  }
   recordImpression(_event) {
   }
   recordResize(_event) {
@@ -809,7 +812,6 @@ var ClientFeature;
   ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_ANNOTATIONS_AGENT"] = 20] = "CHROME_PERFORMANCE_ANNOTATIONS_AGENT";
   ClientFeature2[ClientFeature2["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
-  ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 13] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_FULL_AGENT"] = 24] = "CHROME_PERFORMANCE_FULL_AGENT";
 })(ClientFeature || (ClientFeature = {}));
 var UserTier;
@@ -1141,6 +1143,122 @@ var HostConfigTracker = class _HostConfigTracker extends Common3.ObjectWrapper.O
   }
 };
 
+// gen/front_end/core/host/GdpClient.js
+var GdpClient_exports = {};
+__export(GdpClient_exports, {
+  EmailPreference: () => EmailPreference,
+  GdpClient: () => GdpClient,
+  SubscriptionStatus: () => SubscriptionStatus,
+  SubscriptionTier: () => SubscriptionTier
+});
+import * as Root3 from "./../root/root.js";
+var SubscriptionStatus;
+(function(SubscriptionStatus2) {
+  SubscriptionStatus2["ENABLED"] = "SUBSCRIPTION_STATE_ENABLED";
+  SubscriptionStatus2["PENDING"] = "SUBSCRIPTION_STATE_PENDING";
+  SubscriptionStatus2["CANCELED"] = "SUBSCRIPTION_STATE_CANCELED";
+  SubscriptionStatus2["REFUNDED"] = "SUBSCRIPTION_STATE_REFUNDED";
+  SubscriptionStatus2["AWAITING_FIX"] = "SUBSCRIPTION_STATE_AWAITING_FIX";
+  SubscriptionStatus2["ON_HOLD"] = "SUBSCRIPTION_STATE_ACCOUNT_ON_HOLD";
+})(SubscriptionStatus || (SubscriptionStatus = {}));
+var SubscriptionTier;
+(function(SubscriptionTier2) {
+  SubscriptionTier2["PREMIUM_ANNUAL"] = "SUBSCRIPTION_TIER_PREMIUM_ANNUAL";
+  SubscriptionTier2["PREMIUM_MONTHLY"] = "SUBSCRIPTION_TIER_PREMIUM_MONTHLY";
+  SubscriptionTier2["PRO_ANNUAL"] = "SUBSCRIPTION_TIER_PRO_ANNUAL";
+  SubscriptionTier2["PRO_MONTHLY"] = "SUBSCRIPTION_TIER_PRO_MONTHLY";
+})(SubscriptionTier || (SubscriptionTier = {}));
+var EligibilityStatus;
+(function(EligibilityStatus2) {
+  EligibilityStatus2["ELIGIBLE"] = "ELIGIBLE";
+  EligibilityStatus2["NOT_ELIGIBLE"] = "NOT_ELIGIBLE";
+})(EligibilityStatus || (EligibilityStatus = {}));
+var EmailPreference;
+(function(EmailPreference2) {
+  EmailPreference2["ENABLED"] = "ENABLED";
+  EmailPreference2["DISABLED"] = "DISABLED";
+})(EmailPreference || (EmailPreference = {}));
+async function makeHttpRequest(request) {
+  if (!Root3.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+    return null;
+  }
+  const response = await new Promise((resolve) => {
+    InspectorFrontendHostInstance.dispatchHttpRequest(request, resolve);
+  });
+  debugLog({ request, response });
+  if ("response" in response && response.statusCode === 200) {
+    return JSON.parse(response.response);
+  }
+  return null;
+}
+var SERVICE_NAME = "gdpService";
+var gdpClientInstance = null;
+var GdpClient = class _GdpClient {
+  #cachedProfilePromise;
+  #cachedEligibilityPromise;
+  constructor() {
+  }
+  static instance({ forceNew } = { forceNew: false }) {
+    if (!gdpClientInstance || forceNew) {
+      gdpClientInstance = new _GdpClient();
+    }
+    return gdpClientInstance;
+  }
+  async initialize() {
+    void this.getProfile();
+    void this.checkEligibility();
+  }
+  async getProfile() {
+    if (this.#cachedProfilePromise) {
+      return await this.#cachedProfilePromise;
+    }
+    this.#cachedProfilePromise = makeHttpRequest({
+      service: SERVICE_NAME,
+      path: "/v1beta1/profile:get",
+      method: "GET"
+    });
+    return await this.#cachedProfilePromise;
+  }
+  async checkEligibility() {
+    if (this.#cachedEligibilityPromise) {
+      return await this.#cachedEligibilityPromise;
+    }
+    this.#cachedEligibilityPromise = makeHttpRequest({ service: SERVICE_NAME, path: "/v1beta1/eligibility:check", method: "GET" });
+    return await this.#cachedEligibilityPromise;
+  }
+  async isEligibleToCreateProfile() {
+    return (await this.checkEligibility())?.createProfile === EligibilityStatus.ELIGIBLE;
+  }
+  createProfile({ user, emailPreference }) {
+    return makeHttpRequest({
+      service: SERVICE_NAME,
+      path: "/v1beta1/profiles",
+      method: "POST",
+      body: JSON.stringify({
+        user,
+        newsletter_email: emailPreference
+      })
+    });
+  }
+};
+function isDebugMode() {
+  return Boolean(localStorage.getItem("debugGdpIntegrationEnabled"));
+}
+function debugLog(...log) {
+  if (!isDebugMode()) {
+    return;
+  }
+  console.log("debugLog", ...log);
+}
+function setDebugGdpIntegrationEnabled(enabled) {
+  if (enabled) {
+    localStorage.setItem("debugGdpIntegrationEnabled", "true");
+  } else {
+    localStorage.removeItem("debugGdpIntegrationEnabled");
+  }
+}
+globalThis.setDebugGdpIntegrationEnabled = setDebugGdpIntegrationEnabled;
+
 // gen/front_end/core/host/Platform.js
 var Platform_exports = {};
 __export(Platform_exports, {
@@ -1461,14 +1579,6 @@ var UserMetrics = class {
       value,
       9
       /* RecordingCopiedToClipboard.MAX_VALUE */
-    );
-  }
-  cssHintShown(type) {
-    InspectorFrontendHostInstance.recordEnumeratedHistogram(
-      "DevTools.CSSHintShown",
-      type,
-      14
-      /* CSSHintType.MAX_VALUE */
     );
   }
   lighthouseModeRun(type) {
@@ -1972,7 +2082,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-ask-ai-full-button"] = 109] = "timeline-ask-ai-full-button";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
@@ -2218,6 +2327,7 @@ var ManifestSectionCodes;
 var userMetrics = new UserMetrics();
 export {
   AidaClient_exports as AidaClient,
+  GdpClient_exports as GdpClient,
   InspectorFrontendHost_exports as InspectorFrontendHost,
   InspectorFrontendHostAPI_exports as InspectorFrontendHostAPI,
   Platform_exports as Platform,

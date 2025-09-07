@@ -38,6 +38,9 @@ export class ThirdParties extends BaseInsightComponent {
             };
         },
     };
+    hasAskAiSupport() {
+        return true;
+    }
     renderContent() {
         if (!this.model) {
             return Lit.nothing;

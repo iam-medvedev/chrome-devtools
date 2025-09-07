@@ -49,6 +49,7 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Emulation from '../emulation/emulation.js';
+import * as Media from '../media/media.js';
 import * as ElementsComponents from './components/components.js';
 import { canGetJSPath, cssPath, jsPath, xPath } from './DOMPath.js';
 import { getElementIssueDetails } from './ElementIssueUtils.js';
@@ -2403,8 +2404,16 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.MEDIA);
         const adorner = this.adornMedia(config);
         adorner.classList.add('media');
-        const onClick = (() => {
-            void UI.ViewManager.ViewManager.instance().showView('medias');
+        const onClick = (async () => {
+            await UI.ViewManager.ViewManager.instance().showView('medias');
+            const view = UI.ViewManager.ViewManager.instance().view('medias');
+            if (view) {
+                const widget = await view.widget();
+                if (widget instanceof Media.MainView.MainView) {
+                    await widget.waitForInitialPlayers();
+                    widget.selectPlayerByDOMNodeId(node.backendNodeId());
+                }
+            }
         });
         adorner.addInteraction(onClick, {
             isToggle: false,

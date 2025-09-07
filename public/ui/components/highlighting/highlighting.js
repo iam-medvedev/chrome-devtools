@@ -7,25 +7,11 @@ var __export = (target, all) => {
 // gen/front_end/ui/components/highlighting/HighlightManager.js
 var HighlightManager_exports = {};
 __export(HighlightManager_exports, {
+  CURRENT_HIGHLIGHT_REGISTRY: () => CURRENT_HIGHLIGHT_REGISTRY,
   HIGHLIGHT_REGISTRY: () => HIGHLIGHT_REGISTRY,
   HighlightManager: () => HighlightManager,
   RangeWalker: () => RangeWalker
 });
-
-// gen/front_end/ui/components/highlighting/highlighting.css.js
-var highlighting_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-:root::highlight(search-highlight) {
-  background-color: var(--sys-color-yellow-outline);
-}
-
-/*# sourceURL=${import.meta.resolve("./highlighting.css")} */`;
-
-// gen/front_end/ui/components/highlighting/HighlightManager.js
 var RangeWalker = class {
   root;
   #offset = 0;
@@ -72,15 +58,15 @@ var RangeWalker = class {
     return range;
   }
 };
-var HIGHLIGHT_REGISTRY = "search-highlight";
+var HIGHLIGHT_REGISTRY = "highlighted-search-result";
+var CURRENT_HIGHLIGHT_REGISTRY = "current-search-result";
 var highlightManagerInstance;
 var HighlightManager = class _HighlightManager {
   #highlights = new Highlight();
+  #currentHighlights = new Highlight();
   constructor() {
-    const styleElement = document.createElement("style");
-    styleElement.textContent = highlighting_css_default;
-    document.head.appendChild(styleElement);
     CSS.highlights.set(HIGHLIGHT_REGISTRY, this.#highlights);
+    CSS.highlights.set(CURRENT_HIGHLIGHT_REGISTRY, this.#currentHighlights);
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -95,16 +81,27 @@ var HighlightManager = class _HighlightManager {
   removeHighlights(ranges) {
     ranges.forEach(this.removeHighlight.bind(this));
   }
+  addCurrentHighlight(range) {
+    this.#currentHighlights.add(range);
+  }
+  addCurrentHighlights(ranges) {
+    ranges.forEach(this.addCurrentHighlight.bind(this));
+  }
   addHighlight(range) {
     this.#highlights.add(range);
   }
   removeHighlight(range) {
     this.#highlights.delete(range);
+    this.#currentHighlights.delete(range);
   }
-  highlightOrderedTextRanges(root, sourceRanges) {
+  highlightOrderedTextRanges(root, sourceRanges, isCurrent = false) {
     const rangeWalker = new RangeWalker(root);
     const ranges = sourceRanges.map((range) => rangeWalker.nextRange(range.offset, range.length)).filter((r) => r !== null && !r.collapsed);
-    this.addHighlights(ranges);
+    if (isCurrent) {
+      this.addCurrentHighlights(ranges);
+    } else {
+      this.addHighlights(ranges);
+    }
     return ranges;
   }
 };

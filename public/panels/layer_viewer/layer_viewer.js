@@ -823,6 +823,7 @@ __export(Layers3DView_exports, {
 import * as Common5 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -1393,7 +1394,7 @@ var Layers3DView = class extends Common5.ObjectWrapper.eventMixin(UI4.Widget.VBo
     const scaleAndRotationMatrix = new WebKitCSSMatrix().scale(scale, scale, scale).translate(canvasWidth / 2, canvasHeight / 2, 0).rotate(rotateX, rotateY, 0).scale(viewScale, viewScale, viewScale).translate(-baseWidth / 2, -baseHeight / 2, 0);
     let bounds;
     for (let i = 0; i < this.rects.length; ++i) {
-      bounds = UI4.Geometry.boundsForTransformedPoints(scaleAndRotationMatrix, this.rects[i].vertices, bounds);
+      bounds = Geometry.boundsForTransformedPoints(scaleAndRotationMatrix, this.rects[i].vertices, bounds);
     }
     if (bounds) {
       this.transformController.clampOffsets((paddingX - bounds.maxX) / window.devicePixelRatio, (canvasWidth - paddingX - bounds.minX) / window.devicePixelRatio, (paddingY - bounds.maxY) / window.devicePixelRatio, (canvasHeight - paddingY - bounds.minY) / window.devicePixelRatio);
@@ -2082,18 +2083,18 @@ var Rectangle = class {
     let i;
     const points = [];
     for (i = 0; i < 4; ++i) {
-      points[i] = UI4.Geometry.multiplyVectorByMatrixAndNormalize(new UI4.Geometry.Vector(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]), matrix);
+      points[i] = Geometry.multiplyVectorByMatrixAndNormalize(new Geometry.Vector(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]), matrix);
     }
-    const normal = UI4.Geometry.crossProduct(UI4.Geometry.subtract(points[1], points[0]), UI4.Geometry.subtract(points[2], points[1]));
+    const normal = Geometry.crossProduct(Geometry.subtract(points[1], points[0]), Geometry.subtract(points[2], points[1]));
     const A = normal.x;
     const B = normal.y;
     const C = normal.z;
     const D = -(A * points[0].x + B * points[0].y + C * points[0].z);
     const t = -(D + A * x0 + B * y0) / C;
-    const pt = new UI4.Geometry.Vector(x0, y0, t);
-    const tVects = points.map(UI4.Geometry.subtract.bind(null, pt));
+    const pt = new Geometry.Vector(x0, y0, t);
+    const tVects = points.map(Geometry.subtract.bind(null, pt));
     for (i = 0; i < tVects.length; ++i) {
-      const product = UI4.Geometry.scalarProduct(normal, UI4.Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
+      const product = Geometry.scalarProduct(normal, Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
       if (product < 0) {
         return void 0;
       }

@@ -1,5 +1,5 @@
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import { type CompatibilityTracksAppender, type DrawOverride, type PopoverInfo, type TrackAppender, type TrackAppenderName } from './CompatibilityTracksAppender.js';
 export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.Micro;
 export declare class LayoutShiftsTrackAppender implements TrackAppender {
@@ -24,5 +24,5 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
     preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<Array<void | undefined>>;
     titleForEvent(_event: Trace.Types.Events.Event): string;
-    static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: UI.Geometry.Size): HTMLElement | undefined;
+    static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: Geometry.Size): HTMLElement | undefined;
 }

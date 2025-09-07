@@ -10284,6 +10284,13 @@ var NetworkManager = class _NetworkManager extends SDKModel {
     }
     return result.status;
   }
+  async getIpProtectionProxyStatus() {
+    const result = await this.#networkAgent.invoke_getIPProtectionProxyStatus();
+    if (result.getError()) {
+      return null;
+    }
+    return result.status;
+  }
   async enableReportingApi(enable = true) {
     return await this.#networkAgent.invoke_enableReportingApi({ enable });
   }
@@ -11752,6 +11759,7 @@ import * as Platform16 from "./../platform/platform.js";
 // gen/front_end/core/sdk/DOMModel.js
 var DOMModel_exports = {};
 __export(DOMModel_exports, {
+  ARIA_ATTRIBUTES: () => ARIA_ATTRIBUTES,
   DOMDocument: () => DOMDocument,
   DOMModel: () => DOMModel,
   DOMModelUndoStack: () => DOMModelUndoStack,
@@ -11863,6 +11871,8 @@ __export(CSSPropertyParserMatchers_exports, {
   AnchorFunctionMatcher: () => AnchorFunctionMatcher,
   AngleMatch: () => AngleMatch,
   AngleMatcher: () => AngleMatcher,
+  AttributeMatch: () => AttributeMatch,
+  AttributeMatcher: () => AttributeMatcher,
   AutoBaseMatch: () => AutoBaseMatch,
   AutoBaseMatcher: () => AutoBaseMatcher,
   BaseVariableMatch: () => BaseVariableMatch,
@@ -11899,6 +11909,7 @@ __export(CSSPropertyParserMatchers_exports, {
   PositionAnchorMatcher: () => PositionAnchorMatcher,
   PositionTryMatch: () => PositionTryMatch,
   PositionTryMatcher: () => PositionTryMatcher,
+  RAW_STRING_TYPE: () => RAW_STRING_TYPE,
   RelativeColorChannelMatch: () => RelativeColorChannelMatch,
   RelativeColorChannelMatcher: () => RelativeColorChannelMatcher,
   ShadowMatch: () => ShadowMatch,
@@ -11910,7 +11921,10 @@ __export(CSSPropertyParserMatchers_exports, {
   URLMatch: () => URLMatch,
   URLMatcher: () => URLMatcher,
   VariableMatch: () => VariableMatch,
-  VariableMatcher: () => VariableMatcher
+  VariableMatcher: () => VariableMatcher,
+  defaultValueForCSSType: () => defaultValueForCSSType,
+  isValidCSSType: () => isValidCSSType,
+  localEvalCSS: () => localEvalCSS
 });
 import * as Common6 from "./../common/common.js";
 var BaseVariableMatch = class {
@@ -11931,6 +11945,18 @@ var BaseVariableMatch = class {
   computedText() {
     return this.computedTextCallback(this, this.matching);
   }
+  fallbackValue() {
+    if (!this.fallback) {
+      return null;
+    }
+    if (this.fallback.length === 0) {
+      return "";
+    }
+    if (this.matching.hasUnresolvedSubstitutionsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
+      return null;
+    }
+    return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
+  }
 };
 var BaseVariableMatcher = class extends matcherBase(BaseVariableMatch) {
   // clang-format on
@@ -11941,29 +11967,17 @@ var BaseVariableMatcher = class extends matcherBase(BaseVariableMatch) {
   }
   matches(node, matching) {
     const callee = node.getChild("Callee");
-    const args = node.getChild("ArgList");
-    if (node.name !== "CallExpression" || !callee || matching.ast.text(callee) !== "var" || !args) {
+    if (node.name !== "CallExpression" || !callee || matching.ast.text(callee) !== "var") {
       return null;
     }
-    const [lparenNode, nameNode, ...fallbackOrRParenNodes] = ASTUtils.children(args);
-    if (lparenNode?.name !== "(" || nameNode?.name !== "VariableName") {
+    const args = ASTUtils.callArgs(node).map((args2) => Array.from(ASTUtils.stripComments(args2)));
+    if (args.length < 1 || args[0].length !== 1) {
       return null;
     }
-    if (fallbackOrRParenNodes.length <= 1 && fallbackOrRParenNodes[0]?.name !== ")") {
+    const nameNode = args[0][0];
+    const fallback = args.length === 2 ? args[1] : void 0;
+    if (nameNode?.name !== "VariableName") {
       return null;
-    }
-    let fallback;
-    if (fallbackOrRParenNodes.length > 1) {
-      if (fallbackOrRParenNodes.shift()?.name !== ",") {
-        return null;
-      }
-      if (fallbackOrRParenNodes.pop()?.name !== ")") {
-        return null;
-      }
-      fallback = fallbackOrRParenNodes;
-      if (fallback.some((n) => n.name === ",")) {
-        return null;
-      }
     }
     const varName = matching.ast.text(nameNode);
     if (!varName.startsWith("--")) {
@@ -11983,18 +11997,6 @@ var VariableMatch = class extends BaseVariableMatch {
   resolveVariable() {
     return this.matchedStyles.computeCSSVariable(this.style, this.name);
   }
-  fallbackValue() {
-    if (!this.fallback) {
-      return null;
-    }
-    if (this.fallback.length === 0) {
-      return "";
-    }
-    if (this.matching.hasUnresolvedVarsRange(this.fallback[0], this.fallback[this.fallback.length - 1])) {
-      return null;
-    }
-    return this.matching.getComputedTextRange(this.fallback[0], this.fallback[this.fallback.length - 1]);
-  }
 };
 var VariableMatcher = class extends matcherBase(VariableMatch) {
   matchedStyles;
@@ -12008,6 +12010,121 @@ var VariableMatcher = class extends matcherBase(VariableMatch) {
   matches(node, matching) {
     const match = new BaseVariableMatcher(() => null).matches(node, matching);
     return match ? new VariableMatch(match.text, match.node, match.name, match.fallback, match.matching, this.matchedStyles, this.style) : null;
+  }
+};
+var AttributeMatch = class extends BaseVariableMatch {
+  type;
+  isCSSTokens;
+  isValidType;
+  rawValue;
+  substitutionText;
+  matchedStyles;
+  style;
+  constructor(text, node, name, fallback, matching, type, isCSSTokens, isValidType, rawValue, substitutionText, matchedStyles, style, computedTextCallback) {
+    super(text, node, name, fallback, matching, (_, matching2) => computedTextCallback(this, matching2));
+    this.type = type;
+    this.isCSSTokens = isCSSTokens;
+    this.isValidType = isValidType;
+    this.rawValue = rawValue;
+    this.substitutionText = substitutionText;
+    this.matchedStyles = matchedStyles;
+    this.style = style;
+  }
+  rawAttributeValue() {
+    return this.rawValue;
+  }
+  cssType() {
+    return this.type ?? RAW_STRING_TYPE;
+  }
+  resolveAttributeValue() {
+    return this.matchedStyles.computeAttribute(this.style, this.name, { type: this.cssType(), isCSSTokens: this.isCSSTokens });
+  }
+};
+var cssEvaluationElement = null;
+function getCssEvaluationElement() {
+  const id = "css-evaluation-element";
+  if (!cssEvaluationElement) {
+    cssEvaluationElement = document.getElementById(id);
+    if (!cssEvaluationElement) {
+      cssEvaluationElement = document.createElement("div");
+      cssEvaluationElement.setAttribute("id", id);
+      cssEvaluationElement.setAttribute("style", "hidden: true; --evaluation: attr(data-custom-expr type(*))");
+      document.body.appendChild(cssEvaluationElement);
+    }
+  }
+  return cssEvaluationElement;
+}
+function localEvalCSS(value, type) {
+  const element = getCssEvaluationElement();
+  element.setAttribute("data-value", value);
+  element.setAttribute("data-custom-expr", `attr(data-value ${type})`);
+  return element.computedStyleMap().get("--evaluation")?.toString() ?? null;
+}
+function isValidCSSType(type) {
+  const element = getCssEvaluationElement();
+  element.setAttribute("data-custom-expr", `attr(data-nonexistent ${type}, "good")`);
+  return '"good"' === (element.computedStyleMap().get("--evaluation")?.toString() ?? null);
+}
+function defaultValueForCSSType(type) {
+  const element = getCssEvaluationElement();
+  element.setAttribute("data-custom-expr", `attr(data-nonexistent ${type ?? ""})`);
+  return element.computedStyleMap().get("--evaluation")?.toString() ?? null;
+}
+var RAW_STRING_TYPE = "raw-string";
+var AttributeMatcher = class extends matcherBase(AttributeMatch) {
+  matchedStyles;
+  style;
+  computedTextCallback;
+  // clang-format on
+  constructor(matchedStyles, style, computedTextCallback) {
+    super();
+    this.matchedStyles = matchedStyles;
+    this.style = style;
+    this.computedTextCallback = computedTextCallback;
+  }
+  matches(node, matching) {
+    const callee = node.getChild("Callee");
+    if (node.name !== "CallExpression" || !callee || matching.ast.text(callee) !== "attr") {
+      return null;
+    }
+    const args = ASTUtils.callArgs(node).map((args2) => Array.from(ASTUtils.stripComments(args2)));
+    if (args.length < 1) {
+      return null;
+    }
+    const nameNode = args[0][0];
+    if (args[0].length < 1 || args[0].length > 2 || nameNode?.name !== "ValueName") {
+      return null;
+    }
+    const fallback = args.length === 2 ? args[1] : void 0;
+    let type = null;
+    let isCSSTokens = false;
+    if (args[0].length === 2) {
+      const typeNode = args[0][1];
+      type = matching.ast.text(typeNode);
+      if (typeNode.name === "CallExpression") {
+        if (matching.ast.text(typeNode.getChild("Callee")) !== "type") {
+          return null;
+        }
+        isCSSTokens = true;
+      } else if (typeNode.name !== "ValueName" && type !== "%") {
+        return null;
+      }
+    }
+    const isValidType = type === null || isValidCSSType(type);
+    isCSSTokens = isCSSTokens && isValidType;
+    const attrName = matching.ast.text(nameNode);
+    let substitutionText = null;
+    const domNode = this.matchedStyles.nodeForStyle(this.style) ?? this.matchedStyles.node();
+    const rawValue = domNode.getAttribute(attrName) ?? null;
+    if (rawValue !== null) {
+      substitutionText = isCSSTokens ? rawValue : localEvalCSS(rawValue, type ?? RAW_STRING_TYPE);
+    } else if (!fallback) {
+      substitutionText = defaultValueForCSSType(type);
+    }
+    return new AttributeMatch(matching.ast.text(node), node, attrName, fallback, matching, type, isCSSTokens, isValidType, rawValue, substitutionText, this.matchedStyles, this.style, this.computedTextCallback ?? defaultComputeText);
+    function defaultComputeText(match, _matching) {
+      return match.resolveAttributeValue() ?? (isValidType ? match.fallbackValue() : defaultValueForCSSType(match.type));
+    }
   }
 };
 var BinOpMatch = class {
@@ -12241,7 +12358,7 @@ var ColorMatcher = class _ColorMatcher extends matcherBase(ColorMatch) {
       if (callee && colorFunc.match(/^(rgba?|hsla?|hwba?|lab|lch|oklab|oklch|color)$/)) {
         const args = ASTUtils.children(node.getChild("ArgList"));
         const colorText = args.length >= 2 ? matching.getComputedTextRange(args[0], args[args.length - 1]) : "";
-        const isRelativeColorSyntax = Boolean(colorText.match(/^[^)]*\(\W*from\W+/) && !matching.hasUnresolvedVars(node) && CSS.supports("color", colorFunc + colorText));
+        const isRelativeColorSyntax = Boolean(colorText.match(/^[^)]*\(\W*from\W+/) && !matching.hasUnresolvedSubstitutions(node) && CSS.supports("color", colorFunc + colorText));
         if (!isRelativeColorSyntax) {
           return new ColorMatch(text, node);
         }
@@ -12743,7 +12860,7 @@ var MathFunctionMatcher = class _MathFunctionMatcher extends matcherBase(MathFun
       return null;
     }
     const args = ASTUtils.callArgs(node);
-    if (args.some((arg) => arg.length === 0 || matching.hasUnresolvedVarsRange(arg[0], arg[arg.length - 1]))) {
+    if (args.some((arg) => arg.length === 0 || matching.hasUnresolvedSubstitutionsRange(arg[0], arg[arg.length - 1]))) {
       return null;
     }
     const text = matching.ast.text(node);
@@ -12806,7 +12923,7 @@ var GridTemplateMatcher = class extends matcherBase(GridTemplateMatch) {
     return cssMetadata().isGridAreaDefiningProperty(propertyName);
   }
   matches(node, matching) {
-    if (node.name !== "Declaration" || matching.hasUnresolvedVars(node)) {
+    if (node.name !== "Declaration" || matching.hasUnresolvedSubstitutions(node)) {
       return null;
     }
     const lines = [];
@@ -13236,11 +13353,11 @@ var BottomUpTreeMatching = class extends TreeWalker {
   getMatch(node) {
     return this.#matchedNodes.get(this.#key(node));
   }
-  hasUnresolvedVars(node) {
-    return this.hasUnresolvedVarsRange(node, node);
+  hasUnresolvedSubstitutions(node) {
+    return this.hasUnresolvedSubstitutionsRange(node, node);
   }
-  hasUnresolvedVarsRange(from, to) {
-    return this.computedText.hasUnresolvedVars(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
+  hasUnresolvedSubstitutionsRange(from, to) {
+    return this.computedText.hasUnresolvedSubstitutions(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
   }
   getComputedText(node, substitutionHook) {
     return this.getComputedTextRange(node, node, substitutionHook);
@@ -13256,9 +13373,9 @@ var BottomUpTreeMatching = class extends TreeWalker {
     const from = ASTUtils.declValue(this.ast.tree) ?? this.ast.tree;
     return this.computedText.countTopLevelValues(from.from - this.ast.tree.from, to.from - this.ast.tree.from);
   }
-  getComputedPropertyValueText() {
+  getComputedPropertyValueText(substitutionHook) {
     const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
-    return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
+    return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree, substitutionHook);
   }
   getComputedTextRange(from, to, substitutionHook) {
     if (!from || !to) {
@@ -13371,7 +13488,7 @@ var ComputedText = class {
       }
     }
   }
-  hasUnresolvedVars(begin, end) {
+  hasUnresolvedSubstitutions(begin, end) {
     for (const chunk of this.#range(begin, end)) {
       if (chunk.computedText === null) {
         return true;
@@ -15439,6 +15556,10 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     const domCascade = this.#styleToDOMCascade.get(style);
     return domCascade ? domCascade.computeCSSVariable(style, variableName) : null;
   }
+  computeAttribute(style, attributeName, type) {
+    const domCascade = this.#styleToDOMCascade.get(style);
+    return domCascade ? domCascade.computeAttribute(style, attributeName, type) : null;
+  }
   resolveProperty(name, ownerStyle) {
     return this.#styleToDOMCascade.get(ownerStyle)?.resolveProperty(name, ownerStyle) ?? null;
   }
@@ -15488,6 +15609,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new AutoBaseMatcher(),
       new BinOpMatcher(),
       new RelativeColorChannelMatcher(),
+      new AttributeMatcher(this, style),
       new EnvFunctionMatcher(this)
     ];
   }
@@ -15772,11 +15894,11 @@ var DOMInheritanceCascade = class {
     }
   }
   computeCSSVariable(style, variableName) {
+    this.ensureInitialized();
     const nodeCascade = this.#styleToNodeCascade.get(style);
     if (!nodeCascade) {
       return null;
     }
-    this.ensureInitialized();
     return this.innerComputeCSSVariable(nodeCascade, variableName);
   }
   innerComputeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
@@ -15808,60 +15930,148 @@ var DOMInheritanceCascade = class {
     if (!ast) {
       return null;
     }
-    const record = sccRecord.add(nodeCascade, variableName);
+    return this.innerWalkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
+  }
+  computeAttribute(style, attributeName, type) {
+    this.ensureInitialized();
+    const nodeCascade = this.#styleToNodeCascade.get(style);
+    if (!nodeCascade) {
+      return null;
+    }
+    return this.innerComputeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
+  }
+  rawAttributeValue(style, attributeName) {
+    const node = this.#matchedStyles.nodeForStyle(style) ?? this.#matchedStyles.node();
+    if (!node) {
+      return null;
+    }
+    return node.getAttribute(attributeName) ?? null;
+  }
+  attributeValueAsType(style, attributeName, type) {
+    const rawValue = this.rawAttributeValue(style, attributeName);
+    if (rawValue === null) {
+      return null;
+    }
+    return localEvalCSS(rawValue, type);
+  }
+  attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord) {
+    const rawValue = this.rawAttributeValue(style, attributeName);
+    if (rawValue === null) {
+      return null;
+    }
+    const ast = tokenizeDeclaration("--property", rawValue);
+    if (!ast) {
+      return null;
+    }
+    return this.innerWalkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
+  }
+  innerComputeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
+    if (type.isCSSTokens) {
+      const value = this.attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord);
+      if (value !== null && localEvalCSS(value, type.type) !== null) {
+        return value;
+      }
+      return null;
+    }
+    return this.attributeValueAsType(style, attributeName, type.type);
+  }
+  innerWalkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration2) {
+    const record = sccRecord.add(outerNodeCascade, substitutionName);
+    const computedCSSVariablesMap = this.#computedCSSVariables;
+    const innerNodeCascade = this.#styleToNodeCascade.get(parentStyle);
     const matching = BottomUpTreeMatching.walk(ast, [
       new BaseVariableMatcher((match) => {
-        const parentStyle = definedValue.declaration.style;
-        const nodeCascade2 = this.#styleToNodeCascade.get(parentStyle);
-        if (!nodeCascade2) {
-          return null;
-        }
-        const childRecord = sccRecord.get(nodeCascade2, match.name);
-        if (childRecord) {
-          if (sccRecord.isInInProgressSCC(childRecord)) {
-            record.updateRoot(childRecord);
-            return null;
-          }
-          return this.#computedCSSVariables.get(nodeCascade2)?.get(match.name)?.value ?? null;
-        }
-        const cssVariableValue2 = this.innerComputeCSSVariable(nodeCascade2, match.name, sccRecord);
-        const newChildRecord = sccRecord.get(nodeCascade2, match.name);
-        newChildRecord && record.updateRoot(newChildRecord);
-        if (cssVariableValue2?.value !== void 0) {
-          return cssVariableValue2.value;
+        const { value, mayFallback } = recurseWithCycleDetection(match.name, (nodeCascade) => this.innerComputeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
+        if (!mayFallback || value !== null) {
+          return value;
         }
         if (!match.fallback) {
           return null;
         }
-        if (match.fallback.length === 0) {
-          return "";
-        }
-        if (match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
-          return null;
-        }
-        return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
+        return evaluateFallback(match.fallback, match.matching);
       }),
-      new EnvFunctionMatcher(this.#matchedStyles)
+      new EnvFunctionMatcher(this.#matchedStyles),
+      new AttributeMatcher(this.#matchedStyles, parentStyle, (match) => {
+        const recordName = `attr(${match.name})`;
+        let attributeValue = null;
+        if (!match.isCSSTokens) {
+          const { value, mayFallback } = recurseWithCycleDetection(recordName, () => this.attributeValueAsType(parentStyle, match.name, match.cssType()));
+          if (value === null && !mayFallback) {
+            return null;
+          }
+          attributeValue = value;
+        } else {
+          const { value, mayFallback } = recurseWithCycleDetection(recordName, (nodeCascade) => this.attributeValueWithSubstitutions(nodeCascade, parentStyle, match.name, sccRecord));
+          if (value === null && !mayFallback) {
+            return null;
+          }
+          if (value !== null && localEvalCSS(value, match.cssType()) !== null) {
+            attributeValue = value;
+          }
+        }
+        if (attributeValue !== null) {
+          return attributeValue;
+        }
+        if (!match.fallback || !match.isValidType) {
+          return defaultValueForCSSType(match.type);
+        }
+        return evaluateFallback(match.fallback, match.matching);
+      })
     ]);
     const decl = ASTUtils.siblings(ASTUtils.declValue(matching.ast.tree));
-    const computedText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : "";
+    const declText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : "";
+    const hasUnresolvedSubstitutions = decl.length > 0 && matching.hasUnresolvedSubstitutionsRange(decl[0], decl[decl.length - 1]);
+    const computedText = hasUnresolvedSubstitutions ? null : declText;
+    const outerComputedCSSVariables = computedCSSVariablesMap.get(outerNodeCascade);
+    if (!outerComputedCSSVariables) {
+      return null;
+    }
     if (record.isRootEntry) {
       const scc = sccRecord.finishSCC(record);
       if (scc.length > 1) {
         for (const entry of scc) {
-          console.assert(entry.nodeCascade === nodeCascade, "Circles should be within the cascade");
-          computedCSSVariables.set(entry.name, null);
+          console.assert(entry.nodeCascade === outerNodeCascade, "Circles should be within the cascade");
+          outerComputedCSSVariables.set(entry.name, null);
         }
         return null;
       }
     }
-    if (decl.length > 0 && matching.hasUnresolvedVarsRange(decl[0], decl[decl.length - 1])) {
-      computedCSSVariables.set(variableName, null);
+    if (computedText === null) {
+      outerComputedCSSVariables.set(substitutionName, null);
       return null;
     }
-    const cssVariableValue = { value: computedText, declaration: definedValue.declaration };
-    computedCSSVariables.set(variableName, cssVariableValue);
+    const cssVariableValue = { value: computedText, declaration: declaration2 };
+    outerComputedCSSVariables.set(substitutionName, cssVariableValue);
     return cssVariableValue;
+    function recurseWithCycleDetection(recordName, func) {
+      if (!innerNodeCascade) {
+        return { value: null, mayFallback: false };
+      }
+      const childRecord = sccRecord.get(innerNodeCascade, recordName);
+      if (childRecord) {
+        if (sccRecord.isInInProgressSCC(childRecord)) {
+          record.updateRoot(childRecord);
+          return { value: null, mayFallback: false };
+        }
+        return {
+          value: computedCSSVariablesMap.get(innerNodeCascade)?.get(recordName)?.value ?? null,
+          mayFallback: false
+        };
+      }
+      const value = func(innerNodeCascade);
+      const newChildRecord = sccRecord.get(innerNodeCascade, recordName);
+      newChildRecord && record.updateRoot(newChildRecord);
+      return { value, mayFallback: true };
+    }
+    function evaluateFallback(fallback, matching2) {
+      if (fallback.length === 0) {
+        return "";
+      }
+      if (matching2.hasUnresolvedSubstitutionsRange(fallback[0], fallback[fallback.length - 1])) {
+        return null;
+      }
+      return matching2.getComputedTextRange(fallback[0], fallback[fallback.length - 1]);
+    }
   }
   styles() {
     return Array.from(this.#styleToNodeCascade.keys());
@@ -16141,6 +16351,9 @@ var CSSStyleSheetHeader = class {
       frameId: this.frameId,
       initiatorUrl: this.hasSourceURL ? Platform7.DevToolsPath.EmptyUrlString : this.sourceURL
     };
+  }
+  debugId() {
+    return null;
   }
 };
 
@@ -18196,6 +18409,7 @@ var SourceMap = class _SourceMap {
   #sourceInfos = [];
   #sourceInfoByURL = /* @__PURE__ */ new Map();
   #scopesInfo = null;
+  #debugId;
   /**
    * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
    * for format description.
@@ -18205,6 +18419,7 @@ var SourceMap = class _SourceMap {
     this.#compiledURLInternal = compiledURL;
     this.#sourceMappingURL = sourceMappingURL;
     this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
+    this.#debugId = "debugId" in payload ? payload.debugId : void 0;
     this.#mappingsInternal = null;
     if ("sections" in this.#json) {
       if (this.#json.sections.find((section) => "url" in section)) {
@@ -18242,6 +18457,9 @@ var SourceMap = class _SourceMap {
   }
   url() {
     return this.#sourceMappingURL;
+  }
+  debugId() {
+    return this.#debugId ?? null;
   }
   sourceURLs() {
     return [...this.#sourceInfoByURL.keys()];
@@ -18721,6 +18939,49 @@ var TokenIterator = class {
   }
 };
 
+// gen/front_end/core/sdk/SourceMapCache.js
+var SourceMapCache_exports = {};
+__export(SourceMapCache_exports, {
+  SourceMapCache: () => SourceMapCache
+});
+var SourceMapCache = class _SourceMapCache {
+  static #INSTANCE = new _SourceMapCache("devtools-source-map-cache");
+  static instance() {
+    return this.#INSTANCE;
+  }
+  static createForTest(name) {
+    return new _SourceMapCache(name);
+  }
+  #name;
+  #cachePromise;
+  constructor(name) {
+    this.#name = name;
+  }
+  async set(debugId, sourceMap) {
+    const cache = await this.#cache();
+    await cache.put(_SourceMapCache.#urlForDebugId(debugId), new Response(JSON.stringify(sourceMap)));
+  }
+  async get(debugId) {
+    const cache = await this.#cache();
+    const response = await cache.match(_SourceMapCache.#urlForDebugId(debugId));
+    return await response?.json() ?? null;
+  }
+  async #cache() {
+    if (this.#cachePromise) {
+      return await this.#cachePromise;
+    }
+    this.#cachePromise = window.caches.open(this.#name);
+    return await this.#cachePromise;
+  }
+  /** The Cache API only allows URL as keys, so we construct a simple one. Given that we have our own cache, we have no risk of conflicting URLs */
+  static #urlForDebugId(debugId) {
+    return "http://debug.id/" + encodeURIComponent(debugId);
+  }
+  async disposeForTest() {
+    await window.caches.delete(this.#name);
+  }
+};
+
 // gen/front_end/core/sdk/SourceMapManager.js
 var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.ObjectWrapper {
   #target;
@@ -18795,7 +19056,7 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
         if (this.#attachingClient === client) {
           this.#attachingClient = null;
           const initiator = client.createPageResourceLoadInitiator();
-          clientData.sourceMapPromise = loadSourceMap(sourceMapURL, initiator).then((payload) => {
+          clientData.sourceMapPromise = loadSourceMap(sourceMapURL, client.debugId(), initiator).then((payload) => {
             const sourceMap = new SourceMap(sourceURL, sourceMapURL, payload);
             if (this.#clientData.get(client) === clientData) {
               clientData.sourceMap = sourceMap;
@@ -18849,20 +19110,29 @@ var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.Ob
     }
   }
 };
-async function loadSourceMap(url, initiator) {
+async function loadSourceMap(url, debugId, initiator) {
   try {
+    if (debugId) {
+      const cachedSourceMap = await SourceMapCache.instance().get(debugId);
+      if (cachedSourceMap) {
+        return cachedSourceMap;
+      }
+    }
     const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
-    return parseSourceMap(content);
+    const sourceMap = parseSourceMap(content);
+    if ("debugId" in sourceMap && sourceMap.debugId) {
+      await SourceMapCache.instance().set(sourceMap.debugId, sourceMap).catch();
+    }
+    return sourceMap;
   } catch (cause) {
     throw new Error(`Could not load content for ${url}: ${cause.message}`, { cause });
   }
 }
 async function tryLoadSourceMap(url, initiator) {
   try {
-    const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
-    return parseSourceMap(content);
+    return await loadSourceMap(url, null, initiator);
   } catch (cause) {
-    console.error(`Could not load content for ${url}: ${cause.message}`, { cause });
+    console.error(cause);
     return null;
   }
 }
@@ -20734,6 +21004,9 @@ var Script = class _Script {
   }
   createPageResourceLoadInitiator() {
     return { target: this.target(), frameId: this.frameId, initiatorUrl: this.embedderName() };
+  }
+  debugId() {
+    return this.buildId;
   }
   rawLocationToRelativeLocation(rawLocation) {
     let { lineNumber, columnNumber } = rawLocation;
@@ -23188,6 +23461,62 @@ var SourceOrderHighlighter = class {
 SDKModel.register(OverlayModel, { capabilities: 2, autostart: true });
 
 // gen/front_end/core/sdk/DOMModel.js
+var ARIA_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "role",
+  "aria-activedescendant",
+  "aria-atomic",
+  "aria-autocomplete",
+  "aria-braillelabel",
+  "aria-brailleroledescription",
+  "aria-busy",
+  "aria-checked",
+  "aria-colcount",
+  "aria-colindex",
+  "aria-colindextext",
+  "aria-colspan",
+  "aria-controls",
+  "aria-current",
+  "aria-describedby",
+  "aria-description",
+  "aria-details",
+  "aria-disabled",
+  "aria-dropeffect",
+  "aria-errormessage",
+  "aria-expanded",
+  "aria-flowto",
+  "aria-grabbed",
+  "aria-haspopup",
+  "aria-hidden",
+  "aria-invalid",
+  "aria-keyshortcuts",
+  "aria-label",
+  "aria-labelledby",
+  "aria-level",
+  "aria-live",
+  "aria-modal",
+  "aria-multiline",
+  "aria-multiselectable",
+  "aria-orientation",
+  "aria-owns",
+  "aria-placeholder",
+  "aria-posinset",
+  "aria-pressed",
+  "aria-readonly",
+  "aria-relevant",
+  "aria-required",
+  "aria-roledescription",
+  "aria-rowcount",
+  "aria-rowindex",
+  "aria-rowindextext",
+  "aria-rowspan",
+  "aria-selected",
+  "aria-setsize",
+  "aria-sort",
+  "aria-valuemax",
+  "aria-valuemin",
+  "aria-valuenow",
+  "aria-valuetext"
+]);
 var DOMNode = class _DOMNode {
   #domModelInternal;
   #agent;
@@ -35183,6 +35512,7 @@ export {
   ServiceWorkerCacheModel_exports as ServiceWorkerCacheModel,
   ServiceWorkerManager_exports as ServiceWorkerManager,
   SourceMap_exports as SourceMap,
+  SourceMapCache_exports as SourceMapCache,
   SourceMapFunctionRanges_exports as SourceMapFunctionRanges,
   SourceMapManager_exports as SourceMapManager,
   SourceMapScopeChainEntry_exports as SourceMapScopeChainEntry,

@@ -1,27 +1,19 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { makeInstantEvent } from '../../testing/TraceHelpers.js';
 import * as Timeline from './timeline.js';
-async function loadWebDevTraceAsFile() {
-    const file = new URL('./fixtures/traces/web-dev.json.gz', import.meta.url);
-    const response = await fetch(file);
-    const asBlob = await response.blob();
-    const asFile = new File([asBlob], 'web-dev.json.gz', {
-        type: 'application/gzip',
-    });
-    return asFile;
+const { urlString } = Platform.DevToolsPath;
+function getWebDevTraceUrl() {
+    const href = new URL('./fixtures/traces/web-dev.json.gz', import.meta.url).href;
+    return urlString `${href}`;
 }
-async function loadBasicCpuProfileAsFile() {
-    const file = new URL('./fixtures/traces/node-fibonacci-website.cpuprofile.gz', import.meta.url);
-    const response = await fetch(file);
-    const asBlob = await response.blob();
-    const asFile = new File([asBlob], 'node-fibonacci-website.cpuprofile.gz', {
-        type: 'application/gzip',
-    });
-    return asFile;
+function getBasicCpuProfileUrl() {
+    const href = new URL('./fixtures/traces/node-fibonacci-website.cpuprofile.gz', import.meta.url).href;
+    return urlString `${href}`;
 }
 describeWithEnvironment('TimelineLoader', () => {
     const loadingStartedSpy = sinon.spy();
@@ -59,14 +51,12 @@ describeWithEnvironment('TimelineLoader', () => {
         loadingCompleteForTestSpy.resetHistory();
     });
     it('can load a saved trace file', async () => {
-        const file = await loadWebDevTraceAsFile();
-        const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromFile(file, client);
+        const url = getWebDevTraceUrl();
+        const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromURL(url, client);
         await loader.traceFinalizedForTest();
         sinon.assert.calledOnce(loadingStartedSpy);
-        // Exact number is deterministic so we can assert, but the fact it was 29
-        // calls doesn't really matter. We just want to check it got called "a
-        // bunch of times".
-        sinon.assert.callCount(loadingProgressSpy, 29);
+        // Not called for loadFromURL. Maybe it should be.
+        sinon.assert.callCount(loadingProgressSpy, 0);
         sinon.assert.calledOnce(processingStartedSpy);
         sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete
@@ -80,13 +70,12 @@ describeWithEnvironment('TimelineLoader', () => {
         assert.notStrictEqual(metadata?.dataOrigin, "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */);
     });
     it('can load a saved CPUProfile file', async () => {
-        const file = await loadBasicCpuProfileAsFile();
-        const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromFile(file, client);
+        const url = getBasicCpuProfileUrl();
+        const loader = await Timeline.TimelineLoader.TimelineLoader.loadFromURL(url, client);
         await loader.traceFinalizedForTest();
         sinon.assert.calledOnce(loadingStartedSpy);
-        // For the CPU Profile we are testing, loadingProgress will be called three times, because the
-        // file is not that big.
-        sinon.assert.callCount(loadingProgressSpy, 3);
+        // Not called for loadFromURL. Maybe it should be.
+        sinon.assert.callCount(loadingProgressSpy, 0);
         sinon.assert.calledOnce(processingStartedSpy);
         sinon.assert.calledOnce(loadingCompleteSpy);
         // Get the arguments of the first (and only) call to the loadingComplete

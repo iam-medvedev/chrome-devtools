@@ -3,6 +3,7 @@ import type { InsightModel } from '../../../../models/trace/insights/types.js';
 import type * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import type * as Overlays from '../../overlays/overlays.js';
+import * as Utils from '../../utils/utils.js';
 import type { TableState } from './Table.js';
 export interface BaseInsightData {
     /** The trace bounds for the insight set that contains this insight. */
@@ -27,7 +28,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
     set insightSetKey(insightSetKey: string | null);
     get bounds(): Trace.Types.Timing.TraceWindowMicro | null;
     set bounds(bounds: Trace.Types.Timing.TraceWindowMicro | null);
-    set parsedTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    set agentFocus(agentFocus: Utils.AIContext.AgentFocus);
     set fieldMetrics(fieldMetrics: Trace.Insights.Common.CrUXFieldMetricResults);
     get fieldMetrics(): Trace.Insights.Common.CrUXFieldMetricResults | null;
     getOverlayOptionsForInitialOverlays(): Overlays.Overlays.TimelineOverlaySetOptions;

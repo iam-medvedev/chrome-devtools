@@ -72,8 +72,8 @@ export declare class Snackbar extends HTMLElement {
      * @param actionButtonClickHandler
      */
     set actionButtonClickHandler(actionButtonClickHandler: () => void);
-    constructor(properties: SnackbarProperties);
-    static show(properties: SnackbarProperties): Snackbar;
+    constructor(properties: SnackbarProperties, container?: HTMLElement);
+    static show(properties: SnackbarProperties, container?: HTMLElement): Snackbar;
     connectedCallback(): void;
 }
 declare global {

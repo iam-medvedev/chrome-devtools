@@ -6,9 +6,14 @@ import { SplitWidget } from './SplitWidget.js';
 import { type TabbedPane, type TabbedPaneTabDelegate } from './TabbedPane.js';
 import type { View, ViewLocation, ViewLocationResolver } from './View.js';
 import { VBox, type Widget } from './Widget.js';
+export declare enum DrawerOrientation {
+    VERTICAL = "vertical",
+    HORIZONTAL = "horizontal",
+    UNSET = "unset"
+}
 export declare class InspectorView extends VBox implements ViewLocationResolver {
     #private;
-    private readonly drawerIsVerticalSetting;
+    private readonly drawerOrientationSetting;
     private readonly drawerSplitWidget;
     private readonly tabDelegate;
     private readonly drawerTabbedLocation;
@@ -47,8 +52,11 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     }): void;
     drawerVisible(): boolean;
     closeDrawer(): void;
-    toggleDrawerOrientation(): void;
-    setDrawerMinimumSize(): void;
+    toggleDrawerOrientation({ force }?: {
+        force?: Omit<DrawerOrientation, DrawerOrientation.UNSET>;
+    }): void;
+    isUserExplicitlyUpdatedDrawerOrientation(): boolean;
+    setDrawerRelatedMinimumSizes(): void;
     setDrawerMinimized(minimized: boolean): void;
     drawerSize(): number;
     setDrawerSize(size: number): void;

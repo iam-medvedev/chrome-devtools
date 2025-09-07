@@ -281,6 +281,9 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
   experiment() {
     return this.actionRegistration.experiment;
   }
+  featurePromotionId() {
+    return this.actionRegistration.featurePromotionId;
+  }
   setting() {
     return this.actionRegistration.setting;
   }
@@ -1508,6 +1511,7 @@ import * as VisualLogging8 from "./../visual_logging/visual_logging.js";
 var InspectorView_exports = {};
 __export(InspectorView_exports, {
   ActionDelegate: () => ActionDelegate,
+  DrawerOrientation: () => DrawerOrientation,
   InspectorView: () => InspectorView,
   InspectorViewTabDelegate: () => InspectorViewTabDelegate
 });
@@ -1515,7 +1519,7 @@ import * as Common10 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as Buttons3 from "./../components/buttons/buttons.js";
 import * as IconButton4 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging7 from "./../visual_logging/visual_logging.js";
@@ -2055,339 +2059,8 @@ __export(SplitWidget_exports, {
 });
 import * as Common7 from "./../../core/common/common.js";
 import * as Platform6 from "./../../core/platform/platform.js";
+import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as VisualLogging4 from "./../visual_logging/visual_logging.js";
-
-// gen/front_end/ui/legacy/Geometry.js
-var Geometry_exports = {};
-__export(Geometry_exports, {
-  Constraints: () => Constraints,
-  CubicBezier: () => CubicBezier,
-  EulerAngles: () => EulerAngles,
-  LINEAR_BEZIER: () => LINEAR_BEZIER,
-  Point: () => Point,
-  Size: () => Size,
-  Vector: () => Vector,
-  boundsForTransformedPoints: () => boundsForTransformedPoints,
-  calculateAngle: () => calculateAngle,
-  crossProduct: () => crossProduct,
-  degreesToGradians: () => degreesToGradians,
-  degreesToRadians: () => degreesToRadians,
-  degreesToTurns: () => degreesToTurns,
-  gradiansToRadians: () => gradiansToRadians,
-  multiplyVectorByMatrixAndNormalize: () => multiplyVectorByMatrixAndNormalize,
-  radiansToDegrees: () => radiansToDegrees,
-  radiansToGradians: () => radiansToGradians,
-  radiansToTurns: () => radiansToTurns,
-  scalarProduct: () => scalarProduct,
-  subtract: () => subtract,
-  turnsToRadians: () => turnsToRadians
-});
-import * as SDK from "./../../core/sdk/sdk.js";
-var EPS = 1e-5;
-var Vector = class {
-  x;
-  y;
-  z;
-  constructor(x, y, z) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-  }
-  length() {
-    return Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z);
-  }
-  normalize() {
-    const length = this.length();
-    if (length <= EPS) {
-      return;
-    }
-    this.x /= length;
-    this.y /= length;
-    this.z /= length;
-  }
-};
-var Point = class _Point {
-  x;
-  y;
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-  distanceTo(p) {
-    return Math.sqrt(Math.pow(p.x - this.x, 2) + Math.pow(p.y - this.y, 2));
-  }
-  projectOn(line) {
-    if (line.x === 0 && line.y === 0) {
-      return new _Point(0, 0);
-    }
-    return line.scale((this.x * line.x + this.y * line.y) / (Math.pow(line.x, 2) + Math.pow(line.y, 2)));
-  }
-  scale(scalar) {
-    return new _Point(this.x * scalar, this.y * scalar);
-  }
-  toString() {
-    return Math.round(this.x * 100) / 100 + ", " + Math.round(this.y * 100) / 100;
-  }
-};
-var CubicBezier = class _CubicBezier {
-  controlPoints;
-  constructor(point1, point2) {
-    this.controlPoints = [point1, point2];
-  }
-  static parse(text) {
-    const keywordValues = SDK.CSSMetadata.CubicBezierKeywordValues;
-    const value = text.toLowerCase().replace(/\s+/g, "");
-    if (keywordValues.has(value)) {
-      return _CubicBezier.parse(keywordValues.get(value));
-    }
-    const bezierRegex = /^cubic-bezier\(([^,]+),([^,]+),([^,]+),([^,]+)\)$/;
-    const match = value.match(bezierRegex);
-    if (match) {
-      const control1 = new Point(parseFloat(match[1]), parseFloat(match[2]));
-      const control2 = new Point(parseFloat(match[3]), parseFloat(match[4]));
-      return new _CubicBezier(control1, control2);
-    }
-    return null;
-  }
-  evaluateAt(t) {
-    function evaluate(v1, v2, t2) {
-      return 3 * (1 - t2) * (1 - t2) * t2 * v1 + 3 * (1 - t2) * t2 * t2 * v2 + Math.pow(t2, 3);
-    }
-    const x = evaluate(this.controlPoints[0].x, this.controlPoints[1].x, t);
-    const y = evaluate(this.controlPoints[0].y, this.controlPoints[1].y, t);
-    return new Point(x, y);
-  }
-  asCSSText() {
-    const raw = "cubic-bezier(" + this.controlPoints.join(", ") + ")";
-    const keywordValues = SDK.CSSMetadata.CubicBezierKeywordValues;
-    for (const [keyword, value] of keywordValues) {
-      if (raw === value && keyword !== "linear") {
-        return keyword;
-      }
-    }
-    return raw;
-  }
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  static Regex = /((cubic-bezier\([^)]+\))|\b(linear(?![-\(])|ease-in-out|ease-in|ease-out|ease)\b)|(linear\([^)]+\))/g;
-};
-var LINEAR_BEZIER = new CubicBezier(new Point(0, 0), new Point(1, 1));
-var EulerAngles = class _EulerAngles {
-  alpha;
-  beta;
-  gamma;
-  constructor(alpha, beta, gamma) {
-    this.alpha = alpha;
-    this.beta = beta;
-    this.gamma = gamma;
-  }
-  /**
-   * Derives orientation angles from a rotation matrix.
-   *
-   * The angles alpha, beta and gamma are in the [0, 360), [-180, 180) and
-   * [-90, 90) intervals respectively, as specified in the Device Orientation
-   * spec (https://w3c.github.io/deviceorientation/#deviceorientation).
-   *
-   * The Euler angles derived here follow a Z-X'-Y'' sequence.
-   *
-   * In particular we compute the decomposition of a given rotation matrix r
-   * such that
-   *    r = rz(alpha) * rx(beta) * ry(gamma)
-   * where rz, rx and ry are rotation matrices around z, x and y axes in the
-   * world coordinate reference frame respectively. The reference frame
-   * consists of three orthogonal axes x, y, z where x points East, y points
-   * north and z points upwards perpendicular to the ground plane. The computed
-   * angles alpha, beta and gamma are in degrees and clockwise-positive when
-   * viewed along the positive direction of the corresponding axis. Except for
-   * the special case when the beta angle is +-90 these angles uniquely
-   * define the orientation of a mobile device in 3D space. The
-   * alpha-beta-gamma representation resembles the yaw-pitch-roll convention
-   * used in vehicle dynamics, however it does not exactly match it. One of the
-   * differences is that the 'pitch' angle beta is allowed to be within [-180,
-   * 180). A mobile device with pitch angle greater than 90 could
-   * correspond to a user lying down and looking upward at the screen.
-   */
-  static fromDeviceOrientationRotationMatrix(rotationMatrix) {
-    let alpha, beta, gamma;
-    if (Math.abs(rotationMatrix.m33) < EPS) {
-      if (Math.abs(rotationMatrix.m13) < EPS) {
-        alpha = Math.atan2(rotationMatrix.m12, rotationMatrix.m11);
-        beta = rotationMatrix.m23 > 0 ? Math.PI / 2 : -(Math.PI / 2);
-        gamma = 0;
-      } else if (rotationMatrix.m13 > 0) {
-        alpha = Math.atan2(-rotationMatrix.m21, rotationMatrix.m22);
-        beta = Math.asin(rotationMatrix.m23);
-        gamma = -(Math.PI / 2);
-      } else {
-        alpha = Math.atan2(rotationMatrix.m21, -rotationMatrix.m22);
-        beta = -Math.asin(rotationMatrix.m23);
-        beta += beta > 0 || Math.abs(beta) < EPS ? -Math.PI : Math.PI;
-        gamma = -(Math.PI / 2);
-      }
-    } else if (rotationMatrix.m33 > 0) {
-      alpha = Math.atan2(-rotationMatrix.m21, rotationMatrix.m22);
-      beta = Math.asin(rotationMatrix.m23);
-      gamma = Math.atan2(-rotationMatrix.m13, rotationMatrix.m33);
-    } else {
-      alpha = Math.atan2(rotationMatrix.m21, -rotationMatrix.m22);
-      beta = -Math.asin(rotationMatrix.m23);
-      beta += beta > 0 || Math.abs(beta) < EPS ? -Math.PI : Math.PI;
-      gamma = Math.atan2(rotationMatrix.m13, -rotationMatrix.m33);
-    }
-    if (alpha < -EPS) {
-      alpha += 2 * Math.PI;
-    }
-    alpha = Number(radiansToDegrees(alpha).toFixed(6));
-    beta = Number(radiansToDegrees(beta).toFixed(6));
-    gamma = Number(radiansToDegrees(gamma).toFixed(6));
-    return new _EulerAngles(alpha, beta, gamma);
-  }
-};
-var scalarProduct = function(u, v) {
-  return u.x * v.x + u.y * v.y + u.z * v.z;
-};
-var crossProduct = function(u, v) {
-  const x = u.y * v.z - u.z * v.y;
-  const y = u.z * v.x - u.x * v.z;
-  const z = u.x * v.y - u.y * v.x;
-  return new Vector(x, y, z);
-};
-var subtract = function(u, v) {
-  const x = u.x - v.x;
-  const y = u.y - v.y;
-  const z = u.z - v.z;
-  return new Vector(x, y, z);
-};
-var multiplyVectorByMatrixAndNormalize = function(v, m) {
-  const t = v.x * m.m14 + v.y * m.m24 + v.z * m.m34 + m.m44;
-  const x = (v.x * m.m11 + v.y * m.m21 + v.z * m.m31 + m.m41) / t;
-  const y = (v.x * m.m12 + v.y * m.m22 + v.z * m.m32 + m.m42) / t;
-  const z = (v.x * m.m13 + v.y * m.m23 + v.z * m.m33 + m.m43) / t;
-  return new Vector(x, y, z);
-};
-var calculateAngle = function(u, v) {
-  const uLength = u.length();
-  const vLength = v.length();
-  if (uLength <= EPS || vLength <= EPS) {
-    return 0;
-  }
-  const cos = scalarProduct(u, v) / uLength / vLength;
-  if (Math.abs(cos) > 1) {
-    return 0;
-  }
-  return radiansToDegrees(Math.acos(cos));
-};
-var degreesToRadians = function(deg) {
-  return deg * Math.PI / 180;
-};
-var degreesToGradians = function(deg) {
-  return deg / 9 * 10;
-};
-var degreesToTurns = function(deg) {
-  return deg / 360;
-};
-var radiansToDegrees = function(rad) {
-  return rad * 180 / Math.PI;
-};
-var radiansToGradians = function(rad) {
-  return rad * 200 / Math.PI;
-};
-var radiansToTurns = function(rad) {
-  return rad / (2 * Math.PI);
-};
-var gradiansToRadians = function(grad) {
-  return grad * Math.PI / 200;
-};
-var turnsToRadians = function(turns) {
-  return turns * 2 * Math.PI;
-};
-var boundsForTransformedPoints = function(matrix, points, aggregateBounds) {
-  if (!aggregateBounds) {
-    aggregateBounds = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
-  }
-  if (points.length % 3) {
-    console.warn("Invalid size of points array");
-  }
-  for (let p = 0; p < points.length; p += 3) {
-    let vector = new Vector(points[p], points[p + 1], points[p + 2]);
-    vector = multiplyVectorByMatrixAndNormalize(vector, matrix);
-    aggregateBounds.minX = Math.min(aggregateBounds.minX, vector.x);
-    aggregateBounds.maxX = Math.max(aggregateBounds.maxX, vector.x);
-    aggregateBounds.minY = Math.min(aggregateBounds.minY, vector.y);
-    aggregateBounds.maxY = Math.max(aggregateBounds.maxY, vector.y);
-  }
-  return aggregateBounds;
-};
-var Size = class _Size {
-  width;
-  height;
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-  }
-  clipTo(size) {
-    if (!size) {
-      return this;
-    }
-    return new _Size(Math.min(this.width, size.width), Math.min(this.height, size.height));
-  }
-  scale(scale) {
-    return new _Size(this.width * scale, this.height * scale);
-  }
-  isEqual(size) {
-    return size !== null && this.width === size.width && this.height === size.height;
-  }
-  widthToMax(size) {
-    return new _Size(Math.max(this.width, typeof size === "number" ? size : size.width), this.height);
-  }
-  addWidth(size) {
-    return new _Size(this.width + (typeof size === "number" ? size : size.width), this.height);
-  }
-  heightToMax(size) {
-    return new _Size(this.width, Math.max(this.height, typeof size === "number" ? size : size.height));
-  }
-  addHeight(size) {
-    return new _Size(this.width, this.height + (typeof size === "number" ? size : size.height));
-  }
-};
-var Constraints = class _Constraints {
-  minimum;
-  preferred;
-  constructor(minimum, preferred) {
-    this.minimum = minimum || new Size(0, 0);
-    this.preferred = preferred || this.minimum;
-    if (this.minimum.width > this.preferred.width || this.minimum.height > this.preferred.height) {
-      throw new Error("Minimum size is greater than preferred.");
-    }
-  }
-  isEqual(constraints) {
-    return constraints !== null && this.minimum.isEqual(constraints.minimum) && this.preferred.isEqual(constraints.preferred);
-  }
-  widthToMax(value) {
-    if (typeof value === "number") {
-      return new _Constraints(this.minimum.widthToMax(value), this.preferred.widthToMax(value));
-    }
-    return new _Constraints(this.minimum.widthToMax(value.minimum), this.preferred.widthToMax(value.preferred));
-  }
-  addWidth(value) {
-    if (typeof value === "number") {
-      return new _Constraints(this.minimum.addWidth(value), this.preferred.addWidth(value));
-    }
-    return new _Constraints(this.minimum.addWidth(value.minimum), this.preferred.addWidth(value.preferred));
-  }
-  heightToMax(value) {
-    if (typeof value === "number") {
-      return new _Constraints(this.minimum.heightToMax(value), this.preferred.heightToMax(value));
-    }
-    return new _Constraints(this.minimum.heightToMax(value.minimum), this.preferred.heightToMax(value.preferred));
-  }
-  addHeight(value) {
-    if (typeof value === "number") {
-      return new _Constraints(this.minimum.addHeight(value), this.preferred.addHeight(value));
-    }
-    return new _Constraints(this.minimum.addHeight(value.minimum), this.preferred.addHeight(value.preferred));
-  }
-};
 
 // gen/front_end/ui/legacy/ResizerWidget.js
 var ResizerWidget_exports = {};
@@ -2397,46 +2070,45 @@ __export(ResizerWidget_exports, {
 });
 import * as Common5 from "./../../core/common/common.js";
 var ResizerWidget = class extends Common5.ObjectWrapper.ObjectWrapper {
-  isEnabledInternal = true;
-  elementsInternal = /* @__PURE__ */ new Set();
-  installDragOnMouseDownBound;
-  cursorInternal;
-  startX;
-  startY;
+  #isEnabled = true;
+  #elements = /* @__PURE__ */ new Set();
+  #installDragOnMouseDownBound;
+  #cursor = "nwse-resize";
+  #startX;
+  #startY;
   constructor() {
     super();
-    this.installDragOnMouseDownBound = this.installDragOnMouseDown.bind(this);
-    this.cursorInternal = "nwse-resize";
+    this.#installDragOnMouseDownBound = this.#installDragOnMouseDown.bind(this);
   }
   isEnabled() {
-    return this.isEnabledInternal;
+    return this.#isEnabled;
   }
   setEnabled(enabled) {
-    this.isEnabledInternal = enabled;
+    this.#isEnabled = enabled;
     this.updateElementCursors();
   }
   elements() {
-    return [...this.elementsInternal];
+    return [...this.#elements];
   }
   addElement(element) {
-    if (!this.elementsInternal.has(element)) {
-      this.elementsInternal.add(element);
-      element.addEventListener("pointerdown", this.installDragOnMouseDownBound, false);
-      this.updateElementCursor(element);
+    if (!this.#elements.has(element)) {
+      this.#elements.add(element);
+      element.addEventListener("pointerdown", this.#installDragOnMouseDownBound, false);
+      this.#updateElementCursor(element);
     }
   }
   removeElement(element) {
-    if (this.elementsInternal.has(element)) {
-      this.elementsInternal.delete(element);
-      element.removeEventListener("pointerdown", this.installDragOnMouseDownBound, false);
+    if (this.#elements.has(element)) {
+      this.#elements.delete(element);
+      element.removeEventListener("pointerdown", this.#installDragOnMouseDownBound, false);
       element.style.removeProperty("cursor");
     }
   }
   updateElementCursors() {
-    this.elementsInternal.forEach(this.updateElementCursor.bind(this));
+    this.#elements.forEach(this.#updateElementCursor.bind(this));
   }
-  updateElementCursor(element) {
-    if (this.isEnabledInternal) {
+  #updateElementCursor(element) {
+    if (this.#isEnabled) {
       element.style.setProperty("cursor", this.cursor());
       element.style.setProperty("touch-action", "none");
     } else {
@@ -2445,80 +2117,76 @@ var ResizerWidget = class extends Common5.ObjectWrapper.ObjectWrapper {
     }
   }
   cursor() {
-    return this.cursorInternal;
+    return this.#cursor;
   }
   setCursor(cursor) {
-    this.cursorInternal = cursor;
+    this.#cursor = cursor;
     this.updateElementCursors();
   }
-  installDragOnMouseDown(event) {
+  #installDragOnMouseDown(event) {
     const element = event.target;
-    if (!this.elementsInternal.has(element)) {
+    if (!this.#elements.has(element)) {
       return false;
     }
-    elementDragStart(element, this.dragStart.bind(this), (event2) => {
-      this.drag(event2);
-    }, this.dragEnd.bind(this), this.cursor(), event);
+    elementDragStart(element, this.#dragStart.bind(this), (event2) => {
+      this.#drag(event2);
+    }, this.#dragEnd.bind(this), this.cursor(), event);
     return void 0;
   }
-  dragStart(event) {
-    if (!this.isEnabledInternal) {
+  #dragStart(event) {
+    if (!this.#isEnabled) {
       return false;
     }
-    this.startX = event.pageX;
-    this.startY = event.pageY;
-    this.sendDragStart(this.startX, this.startY);
+    this.#startX = event.pageX;
+    this.#startY = event.pageY;
+    this.sendDragStart(this.#startX, this.#startY);
     return true;
   }
   sendDragStart(x, y) {
     this.dispatchEventToListeners("ResizeStart", { startX: x, currentX: x, startY: y, currentY: y });
   }
-  drag(event) {
-    if (!this.isEnabledInternal) {
-      this.dragEnd(event);
+  #drag(event) {
+    if (!this.#isEnabled) {
+      this.#dragEnd(event);
       return true;
     }
-    this.sendDragMove(this.startX, event.pageX, this.startY, event.pageY, event.shiftKey);
+    this.sendDragMove(this.#startX, event.pageX, this.#startY, event.pageY, event.shiftKey);
     event.preventDefault();
     return false;
   }
   sendDragMove(startX, currentX, startY, currentY, shiftKey) {
     this.dispatchEventToListeners("ResizeUpdateXY", { startX, currentX, startY, currentY, shiftKey });
   }
-  dragEnd(_event) {
+  #dragEnd(_event) {
     this.dispatchEventToListeners(
       "ResizeEnd"
       /* Events.RESIZE_END */
     );
-    delete this.startX;
-    delete this.startY;
+    this.#startX = void 0;
+    this.#startY = void 0;
   }
 };
 var SimpleResizerWidget = class extends ResizerWidget {
-  isVerticalInternal;
-  constructor() {
-    super();
-    this.isVerticalInternal = true;
-  }
+  #isVertical = true;
   isVertical() {
-    return this.isVerticalInternal;
+    return this.#isVertical;
   }
   /**
    * Vertical widget resizes height (along y-axis).
    */
   setVertical(vertical) {
-    this.isVerticalInternal = vertical;
+    this.#isVertical = vertical;
     this.updateElementCursors();
   }
   cursor() {
-    return this.isVerticalInternal ? "ns-resize" : "ew-resize";
+    return this.#isVertical ? "ns-resize" : "ew-resize";
   }
   sendDragStart(x, y) {
-    const position = this.isVerticalInternal ? y : x;
+    const position = this.#isVertical ? y : x;
     this.dispatchEventToListeners("ResizeStart", { startPosition: position, currentPosition: position });
   }
   sendDragMove(startX, currentX, startY, currentY, shiftKey) {
-    if (this.isVerticalInternal) {
+    if (this.#isVertical) {
       this.dispatchEventToListeners("ResizeUpdatePosition", { startPosition: startY, currentPosition: currentY, shiftKey });
     } else {
       this.dispatchEventToListeners("ResizeUpdatePosition", { startPosition: startX, currentPosition: currentX, shiftKey });
@@ -2641,6 +2309,7 @@ __export(Widget_exports, {
 });
 import "./../../core/dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Lit from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/XWidget.js
@@ -3452,7 +3121,7 @@ var Widget = class _Widget {
     return this.element.hasFocus();
   }
   calculateConstraints() {
-    return new Constraints();
+    return new Geometry.Constraints();
   }
   constraints() {
     if (typeof this.#constraints !== "undefined") {
@@ -3464,14 +3133,14 @@ var Widget = class _Widget {
     return this.#cachedConstraints;
   }
   setMinimumAndPreferredSizes(width, height, preferredWidth, preferredHeight) {
-    this.#constraints = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
+    this.#constraints = new Geometry.Constraints(new Geometry.Size(width, height), new Geometry.Size(preferredWidth, preferredHeight));
     this.invalidateConstraints();
   }
   setMinimumSize(width, height) {
-    this.minimumSize = new Size(width, height);
+    this.minimumSize = new Geometry.Size(width, height);
   }
   set minimumSize(size) {
-    this.#constraints = new Constraints(size);
+    this.#constraints = new Geometry.Constraints(size);
     this.invalidateConstraints();
   }
   hasNonZeroConstraints() {
@@ -3584,7 +3253,7 @@ var VBox = class extends Widget {
     this.contentElement.classList.add("vbox");
   }
   calculateConstraints() {
-    let constraints = new Constraints();
+    let constraints = new Geometry.Constraints();
     function updateForChild() {
       const child = this.constraints();
       constraints = constraints.widthToMax(child);
@@ -3600,7 +3269,7 @@ var HBox = class extends Widget {
     this.contentElement.classList.add("hbox");
   }
   calculateConstraints() {
-    let constraints = new Constraints();
+    let constraints = new Geometry.Constraints();
     function updateForChild() {
       const child = this.constraints();
       constraints = constraints.addWidth(child);
@@ -3716,493 +3385,471 @@ var ZoomManager = class _ZoomManager extends Common6.ObjectWrapper.ObjectWrapper
 
 // gen/front_end/ui/legacy/SplitWidget.js
 var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
-  sidebarElementInternal;
-  mainElement;
-  resizerElementInternal;
-  resizerElementSize;
-  resizerWidget;
-  defaultSidebarWidth;
-  defaultSidebarHeight;
-  constraintsInDip;
-  resizeStartSizeDIP;
+  #sidebarElement;
+  #mainElement;
+  #resizerElement;
+  #resizerElementSize = null;
+  #resizerWidget;
+  #defaultSidebarWidth;
+  #defaultSidebarHeight;
+  #constraintsInDip;
+  #resizeStartSizeDIP = 0;
+  // TODO: Used in WebTests
   setting;
-  totalSizeCSS;
-  totalSizeOtherDimensionCSS;
-  mainWidgetInternal;
-  sidebarWidgetInternal;
-  animationFrameHandle;
-  animationCallback;
-  showSidebarButtonTitle;
-  hideSidebarButtonTitle;
-  shownSidebarString;
-  hiddenSidebarString;
-  showHideSidebarButton;
-  isVerticalInternal;
-  sidebarMinimized;
-  detaching;
-  sidebarSizeDIP;
-  savedSidebarSizeDIP;
-  secondIsSidebar;
-  shouldSaveShowMode;
-  savedVerticalMainSize;
-  savedHorizontalMainSize;
-  showModeInternal;
-  savedShowMode;
-  autoAdjustOrientation;
+  #totalSizeCSS = 0;
+  #totalSizeOtherDimensionCSS = 0;
+  #mainWidget = null;
+  #sidebarWidget = null;
+  #animationFrameHandle = 0;
+  #animationCallback = null;
+  #showSidebarButtonTitle = Common7.UIString.LocalizedEmptyString;
+  #hideSidebarButtonTitle = Common7.UIString.LocalizedEmptyString;
+  #shownSidebarString = Common7.UIString.LocalizedEmptyString;
+  #hiddenSidebarString = Common7.UIString.LocalizedEmptyString;
+  #showHideSidebarButton = null;
+  #isVertical = false;
+  #sidebarMinimized = false;
+  #detaching = false;
+  #sidebarSizeDIP = -1;
+  #savedSidebarSizeDIP;
+  #secondIsSidebar = false;
+  #shouldSaveShowMode = false;
+  #savedVerticalMainSize = null;
+  #savedHorizontalMainSize = null;
+  #showMode = "Both";
+  #savedShowMode;
+  #autoAdjustOrientation = false;
   constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
     super(element, { useShadowDom: true });
     this.element.classList.add("split-widget");
     this.registerRequiredCSS(splitWidget_css_default);
     this.contentElement.classList.add("shadow-split-widget");
-    this.sidebarElementInternal = this.contentElement.createChild("div", "shadow-split-widget-contents shadow-split-widget-sidebar vbox");
-    this.mainElement = this.contentElement.createChild("div", "shadow-split-widget-contents shadow-split-widget-main vbox");
-    const mainSlot = this.mainElement.createChild("slot");
+    this.#sidebarElement = this.contentElement.createChild("div", "shadow-split-widget-contents shadow-split-widget-sidebar vbox");
+    this.#mainElement = this.contentElement.createChild("div", "shadow-split-widget-contents shadow-split-widget-main vbox");
+    const mainSlot = this.#mainElement.createChild("slot");
     mainSlot.name = "main";
     mainSlot.addEventListener("slotchange", (_) => {
       const assignedNode = mainSlot.assignedNodes()[0];
       const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-      if (widget && widget !== this.mainWidgetInternal) {
+      if (widget && widget !== this.#mainWidget) {
         this.setMainWidget(widget);
       }
     });
-    const sidebarSlot = this.sidebarElementInternal.createChild("slot");
+    const sidebarSlot = this.#sidebarElement.createChild("slot");
     sidebarSlot.name = "sidebar";
     sidebarSlot.addEventListener("slotchange", (_) => {
       const assignedNode = sidebarSlot.assignedNodes()[0];
       const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-      if (widget && widget !== this.sidebarWidgetInternal) {
+      if (widget && widget !== this.#sidebarWidget) {
         this.setSidebarWidget(widget);
       }
     });
-    this.resizerElementInternal = this.contentElement.createChild("div", "shadow-split-widget-resizer");
-    this.resizerElementSize = null;
-    this.resizerWidget = new SimpleResizerWidget();
-    this.resizerWidget.setEnabled(true);
-    this.resizerWidget.addEventListener("ResizeStart", this.onResizeStart, this);
-    this.resizerWidget.addEventListener("ResizeUpdatePosition", this.onResizeUpdate, this);
-    this.resizerWidget.addEventListener("ResizeEnd", this.onResizeEnd, this);
-    this.defaultSidebarWidth = defaultSidebarWidth || 200;
-    this.defaultSidebarHeight = defaultSidebarHeight || this.defaultSidebarWidth;
-    this.constraintsInDip = Boolean(constraintsInDip);
-    this.resizeStartSizeDIP = 0;
+    this.#resizerElement = this.contentElement.createChild("div", "shadow-split-widget-resizer");
+    this.#resizerWidget = new SimpleResizerWidget();
+    this.#resizerWidget.setEnabled(true);
+    this.#resizerWidget.addEventListener("ResizeStart", this.#onResizeStart, this);
+    this.#resizerWidget.addEventListener("ResizeUpdatePosition", this.#onResizeUpdate, this);
+    this.#resizerWidget.addEventListener("ResizeEnd", this.#onResizeEnd, this);
+    this.#defaultSidebarWidth = defaultSidebarWidth || 200;
+    this.#defaultSidebarHeight = defaultSidebarHeight || this.#defaultSidebarWidth;
+    this.#constraintsInDip = Boolean(constraintsInDip);
     this.setting = settingName ? Common7.Settings.Settings.instance().createSetting(settingName, {}) : null;
-    this.totalSizeCSS = 0;
-    this.totalSizeOtherDimensionCSS = 0;
-    this.mainWidgetInternal = null;
-    this.sidebarWidgetInternal = null;
-    this.animationFrameHandle = 0;
-    this.animationCallback = null;
-    this.showSidebarButtonTitle = Common7.UIString.LocalizedEmptyString;
-    this.hideSidebarButtonTitle = Common7.UIString.LocalizedEmptyString;
-    this.shownSidebarString = Common7.UIString.LocalizedEmptyString;
-    this.hiddenSidebarString = Common7.UIString.LocalizedEmptyString;
-    this.showHideSidebarButton = null;
-    this.isVerticalInternal = false;
-    this.sidebarMinimized = false;
-    this.detaching = false;
-    this.sidebarSizeDIP = -1;
-    this.savedSidebarSizeDIP = this.sidebarSizeDIP;
-    this.secondIsSidebar = false;
-    this.shouldSaveShowMode = false;
-    this.savedVerticalMainSize = null;
-    this.savedHorizontalMainSize = null;
+    this.#savedSidebarSizeDIP = this.#sidebarSizeDIP;
     this.setSecondIsSidebar(secondIsSidebar);
-    this.innerSetVertical(isVertical);
-    this.showModeInternal = "Both";
-    this.savedShowMode = this.showModeInternal;
-    this.installResizer(this.resizerElementInternal);
-    this.autoAdjustOrientation = false;
+    this.#setVertical(isVertical);
+    this.#savedShowMode = this.#showMode;
+    this.installResizer(this.#resizerElement);
   }
   isVertical() {
-    return this.isVerticalInternal;
+    return this.#isVertical;
   }
   setVertical(isVertical) {
-    if (this.isVerticalInternal === isVertical) {
+    if (this.#isVertical === isVertical) {
       return;
     }
-    this.innerSetVertical(isVertical);
+    this.#setVertical(isVertical);
     if (this.isShowing()) {
-      this.updateLayout();
+      this.#updateLayout();
     }
   }
   setAutoAdjustOrientation(autoAdjustOrientation) {
-    this.autoAdjustOrientation = autoAdjustOrientation;
-    this.maybeAutoAdjustOrientation();
+    this.#autoAdjustOrientation = autoAdjustOrientation;
+    this.#maybeAutoAdjustOrientation();
   }
-  innerSetVertical(isVertical) {
+  #setVertical(isVertical) {
     this.contentElement.classList.toggle("vbox", !isVertical);
     this.contentElement.classList.toggle("hbox", isVertical);
-    this.isVerticalInternal = isVertical;
-    this.resizerElementSize = null;
-    this.sidebarSizeDIP = -1;
-    this.restoreSidebarSizeFromSettings();
-    if (this.shouldSaveShowMode) {
-      this.restoreAndApplyShowModeFromSettings();
+    this.#isVertical = isVertical;
+    this.#resizerElementSize = null;
+    this.#sidebarSizeDIP = -1;
+    this.#restoreSidebarSizeFromSettings();
+    if (this.#shouldSaveShowMode) {
+      this.#restoreAndApplyShowModeFromSettings();
     }
-    this.updateShowHideSidebarButton();
-    this.resizerWidget.setVertical(!isVertical);
+    this.#updateShowHideSidebarButton();
+    this.#resizerWidget.setVertical(!isVertical);
     this.invalidateConstraints();
   }
-  updateLayout(animate) {
-    this.totalSizeCSS = 0;
-    this.totalSizeOtherDimensionCSS = 0;
-    this.mainElement.style.removeProperty("width");
-    this.mainElement.style.removeProperty("height");
-    this.sidebarElementInternal.style.removeProperty("width");
-    this.sidebarElementInternal.style.removeProperty("height");
-    this.innerSetSidebarSizeDIP(this.preferredSidebarSizeDIP(), Boolean(animate));
+  #updateLayout(animate) {
+    this.#totalSizeCSS = 0;
+    this.#totalSizeOtherDimensionCSS = 0;
+    this.#mainElement.style.removeProperty("width");
+    this.#mainElement.style.removeProperty("height");
+    this.#sidebarElement.style.removeProperty("width");
+    this.#sidebarElement.style.removeProperty("height");
+    this.#setSidebarSizeDIP(this.#preferredSidebarSizeDIP(), Boolean(animate));
   }
   setMainWidget(widget) {
-    if (this.mainWidgetInternal === widget) {
+    if (this.#mainWidget === widget) {
       return;
     }
     this.suspendInvalidations();
-    if (this.mainWidgetInternal) {
-      this.mainWidgetInternal.detach();
+    if (this.#mainWidget) {
+      this.#mainWidget.detach();
     }
-    this.mainWidgetInternal = widget;
+    this.#mainWidget = widget;
     if (widget) {
       widget.element.slot = "main";
-      if (this.showModeInternal === "OnlyMain" || this.showModeInternal === "Both") {
+      if (this.#showMode === "OnlyMain" || this.#showMode === "Both") {
         widget.show(this.element);
       }
     }
     this.resumeInvalidations();
   }
   setSidebarWidget(widget) {
-    if (this.sidebarWidgetInternal === widget) {
+    if (this.#sidebarWidget === widget) {
       return;
     }
     this.suspendInvalidations();
-    if (this.sidebarWidgetInternal) {
-      this.sidebarWidgetInternal.detach();
+    if (this.#sidebarWidget) {
+      this.#sidebarWidget.detach();
     }
-    this.sidebarWidgetInternal = widget;
+    this.#sidebarWidget = widget;
     if (widget) {
       widget.element.slot = "sidebar";
-      if (this.showModeInternal === "OnlySidebar" || this.showModeInternal === "Both") {
+      if (this.#showMode === "OnlySidebar" || this.#showMode === "Both") {
         widget.show(this.element);
       }
     }
     this.resumeInvalidations();
   }
   mainWidget() {
-    return this.mainWidgetInternal;
+    return this.#mainWidget;
   }
   sidebarWidget() {
-    return this.sidebarWidgetInternal;
+    return this.#sidebarWidget;
   }
   sidebarElement() {
-    return this.sidebarElementInternal;
+    return this.#sidebarElement;
   }
   childWasDetached(widget) {
-    if (this.detaching) {
+    if (this.#detaching) {
       return;
     }
-    if (this.mainWidgetInternal === widget) {
-      this.mainWidgetInternal = null;
+    if (this.#mainWidget === widget) {
+      this.#mainWidget = null;
     }
-    if (this.sidebarWidgetInternal === widget) {
-      this.sidebarWidgetInternal = null;
+    if (this.#sidebarWidget === widget) {
+      this.#sidebarWidget = null;
     }
     this.invalidateConstraints();
   }
   isSidebarSecond() {
-    return this.secondIsSidebar;
+    return this.#secondIsSidebar;
   }
   enableShowModeSaving() {
-    this.shouldSaveShowMode = true;
-    this.restoreAndApplyShowModeFromSettings();
+    this.#shouldSaveShowMode = true;
+    this.#restoreAndApplyShowModeFromSettings();
   }
   showMode() {
-    return this.showModeInternal;
+    return this.#showMode;
   }
   sidebarIsShowing() {
-    return this.showModeInternal !== "OnlyMain";
+    return this.#showMode !== "OnlyMain";
   }
   setSecondIsSidebar(secondIsSidebar) {
-    if (secondIsSidebar === this.secondIsSidebar) {
+    if (secondIsSidebar === this.#secondIsSidebar) {
       return;
     }
-    this.secondIsSidebar = secondIsSidebar;
-    if (!this.mainWidgetInternal?.shouldHideOnDetach()) {
+    this.#secondIsSidebar = secondIsSidebar;
+    if (!this.#mainWidget?.shouldHideOnDetach()) {
       if (secondIsSidebar) {
-        this.contentElement.insertBefore(this.mainElement, this.sidebarElementInternal);
+        this.contentElement.insertBefore(this.#mainElement, this.#sidebarElement);
       } else {
-        this.contentElement.insertBefore(this.mainElement, this.resizerElementInternal);
+        this.contentElement.insertBefore(this.#mainElement, this.#resizerElement);
       }
-    } else if (!this.sidebarWidgetInternal?.shouldHideOnDetach()) {
+    } else if (!this.#sidebarWidget?.shouldHideOnDetach()) {
       if (secondIsSidebar) {
-        this.contentElement.insertBefore(this.sidebarElementInternal, this.resizerElementInternal);
+        this.contentElement.insertBefore(this.#sidebarElement, this.#resizerElement);
       } else {
-        this.contentElement.insertBefore(this.sidebarElementInternal, this.mainElement);
+        this.contentElement.insertBefore(this.#sidebarElement, this.#mainElement);
       }
     } else {
       console.error("Could not swap split widget side. Both children widgets contain iframes.");
-      this.secondIsSidebar = !secondIsSidebar;
+      this.#secondIsSidebar = !secondIsSidebar;
     }
   }
   resizerElement() {
-    return this.resizerElementInternal;
+    return this.#resizerElement;
   }
   hideMain(animate) {
-    this.showOnly(this.sidebarWidgetInternal, this.mainWidgetInternal, this.sidebarElementInternal, this.mainElement, animate);
-    this.updateShowMode(
+    this.#showOnly(this.#sidebarWidget, this.#mainWidget, this.#sidebarElement, this.#mainElement, animate);
+    this.#updateShowMode(
       "OnlySidebar"
       /* ShowMode.ONLY_SIDEBAR */
     );
   }
   hideSidebar(animate) {
-    this.showOnly(this.mainWidgetInternal, this.sidebarWidgetInternal, this.mainElement, this.sidebarElementInternal, animate);
-    this.updateShowMode(
+    this.#showOnly(this.#mainWidget, this.#sidebarWidget, this.#mainElement, this.#sidebarElement, animate);
+    this.#updateShowMode(
       "OnlyMain"
       /* ShowMode.ONLY_MAIN */
     );
   }
   setSidebarMinimized(minimized) {
-    this.sidebarMinimized = minimized;
+    this.#sidebarMinimized = minimized;
     this.invalidateConstraints();
   }
   isSidebarMinimized() {
-    return this.sidebarMinimized;
+    return this.#sidebarMinimized;
   }
-  showOnly(sideToShow, sideToHide, shadowToShow, shadowToHide, animate) {
-    this.cancelAnimation();
+  #showOnly(sideToShow, sideToHide, shadowToShow, shadowToHide, animate) {
+    this.#cancelAnimation();
     function callback() {
       if (sideToShow) {
-        if (sideToShow === this.mainWidgetInternal) {
-          this.mainWidgetInternal.show(this.element, this.sidebarWidgetInternal ? this.sidebarWidgetInternal.element : null);
-        } else if (this.sidebarWidgetInternal) {
-          this.sidebarWidgetInternal.show(this.element);
+        if (sideToShow === this.#mainWidget) {
+          this.#mainWidget.show(this.element, this.#sidebarWidget ? this.#sidebarWidget.element : null);
+        } else if (this.#sidebarWidget) {
+          this.#sidebarWidget.show(this.element);
         }
       }
       if (sideToHide) {
-        this.detaching = true;
+        this.#detaching = true;
         sideToHide.detach();
-        this.detaching = false;
+        this.#detaching = false;
       }
-      this.resizerElementInternal.classList.add("hidden");
+      this.#resizerElement.classList.add("hidden");
       shadowToShow.classList.remove("hidden");
       shadowToShow.classList.add("maximized");
       shadowToHide.classList.add("hidden");
       shadowToHide.classList.remove("maximized");
-      this.removeAllLayoutProperties();
+      this.#removeAllLayoutProperties();
       this.doResize();
       this.showFinishedForTest();
     }
     if (animate) {
-      this.animate(true, callback.bind(this));
+      this.#animate(true, callback.bind(this));
     } else {
       callback.call(this);
     }
-    this.sidebarSizeDIP = -1;
+    this.#sidebarSizeDIP = -1;
     this.setResizable(false);
   }
   showFinishedForTest() {
   }
-  removeAllLayoutProperties() {
-    this.sidebarElementInternal.style.removeProperty("flexBasis");
-    this.mainElement.style.removeProperty("width");
-    this.mainElement.style.removeProperty("height");
-    this.sidebarElementInternal.style.removeProperty("width");
-    this.sidebarElementInternal.style.removeProperty("height");
-    this.resizerElementInternal.style.removeProperty("left");
-    this.resizerElementInternal.style.removeProperty("right");
-    this.resizerElementInternal.style.removeProperty("top");
-    this.resizerElementInternal.style.removeProperty("bottom");
-    this.resizerElementInternal.style.removeProperty("margin-left");
-    this.resizerElementInternal.style.removeProperty("margin-right");
-    this.resizerElementInternal.style.removeProperty("margin-top");
-    this.resizerElementInternal.style.removeProperty("margin-bottom");
+  #removeAllLayoutProperties() {
+    this.#sidebarElement.style.removeProperty("flexBasis");
+    this.#mainElement.style.removeProperty("width");
+    this.#mainElement.style.removeProperty("height");
+    this.#sidebarElement.style.removeProperty("width");
+    this.#sidebarElement.style.removeProperty("height");
+    this.#resizerElement.style.removeProperty("left");
+    this.#resizerElement.style.removeProperty("right");
+    this.#resizerElement.style.removeProperty("top");
+    this.#resizerElement.style.removeProperty("bottom");
+    this.#resizerElement.style.removeProperty("margin-left");
+    this.#resizerElement.style.removeProperty("margin-right");
+    this.#resizerElement.style.removeProperty("margin-top");
+    this.#resizerElement.style.removeProperty("margin-bottom");
   }
   showBoth(animate) {
-    if (this.showModeInternal === "Both") {
+    if (this.#showMode === "Both") {
       animate = false;
     }
-    this.cancelAnimation();
-    this.mainElement.classList.remove("maximized", "hidden");
-    this.sidebarElementInternal.classList.remove("maximized", "hidden");
-    this.resizerElementInternal.classList.remove("hidden");
+    this.#cancelAnimation();
+    this.#mainElement.classList.remove("maximized", "hidden");
+    this.#sidebarElement.classList.remove("maximized", "hidden");
+    this.#resizerElement.classList.remove("hidden");
     this.setResizable(true);
     this.suspendInvalidations();
-    if (this.sidebarWidgetInternal) {
-      this.sidebarWidgetInternal.show(this.element);
+    if (this.#sidebarWidget) {
+      this.#sidebarWidget.show(this.element);
     }
-    if (this.mainWidgetInternal) {
-      this.mainWidgetInternal.show(this.element, this.sidebarWidgetInternal ? this.sidebarWidgetInternal.element : null);
+    if (this.#mainWidget) {
+      this.#mainWidget.show(this.element, this.#sidebarWidget ? this.#sidebarWidget.element : null);
     }
     this.resumeInvalidations();
-    this.setSecondIsSidebar(this.secondIsSidebar);
-    this.sidebarSizeDIP = -1;
-    this.updateShowMode(
+    this.setSecondIsSidebar(this.#secondIsSidebar);
+    this.#sidebarSizeDIP = -1;
+    this.#updateShowMode(
       "Both"
       /* ShowMode.BOTH */
     );
-    this.updateLayout(animate);
+    this.#updateLayout(animate);
   }
   setResizable(resizable) {
-    this.resizerWidget.setEnabled(resizable);
+    this.#resizerWidget.setEnabled(resizable);
   }
   // Currently unused
   forceSetSidebarWidth(width) {
-    this.defaultSidebarWidth = width;
-    this.savedSidebarSizeDIP = width;
-    this.updateLayout();
+    this.#defaultSidebarWidth = width;
+    this.#savedSidebarSizeDIP = width;
+    this.#updateLayout();
   }
   isResizable() {
-    return this.resizerWidget.isEnabled();
+    return this.#resizerWidget.isEnabled();
   }
   setSidebarSize(size) {
     const sizeDIP = ZoomManager.instance().cssToDIP(size);
-    this.savedSidebarSizeDIP = sizeDIP;
-    this.saveSetting();
-    this.innerSetSidebarSizeDIP(sizeDIP, false, true);
+    this.#savedSidebarSizeDIP = sizeDIP;
+    this.#saveSetting();
+    this.#setSidebarSizeDIP(sizeDIP, false, true);
   }
   sidebarSize() {
-    const sizeDIP = Math.max(0, this.sidebarSizeDIP);
+    const sizeDIP = Math.max(0, this.#sidebarSizeDIP);
     return ZoomManager.instance().dipToCSS(sizeDIP);
   }
   totalSize() {
-    const sizeDIP = Math.max(0, this.totalSizeDIP());
+    const sizeDIP = Math.max(0, this.#totalSizeDIP());
     return ZoomManager.instance().dipToCSS(sizeDIP);
   }
   /**
    * Returns total size in DIP.
    */
-  totalSizeDIP() {
-    if (!this.totalSizeCSS) {
-      this.totalSizeCSS = this.isVerticalInternal ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
-      this.totalSizeOtherDimensionCSS = this.isVerticalInternal ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
+  #totalSizeDIP() {
+    if (!this.#totalSizeCSS) {
+      this.#totalSizeCSS = this.#isVertical ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
+      this.#totalSizeOtherDimensionCSS = this.#isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
     }
-    return ZoomManager.instance().cssToDIP(this.totalSizeCSS);
+    return ZoomManager.instance().cssToDIP(this.#totalSizeCSS);
   }
-  updateShowMode(showMode) {
-    this.showModeInternal = showMode;
-    this.saveShowModeToSettings();
-    this.updateShowHideSidebarButton();
+  #updateShowMode(showMode) {
+    this.#showMode = showMode;
+    this.#saveShowModeToSettings();
+    this.#updateShowHideSidebarButton();
     this.dispatchEventToListeners("ShowModeChanged", showMode);
     this.invalidateConstraints();
   }
-  innerSetSidebarSizeDIP(sizeDIP, animate, userAction) {
-    if (this.showModeInternal !== "Both" || !this.isShowing()) {
+  #setSidebarSizeDIP(sizeDIP, animate, userAction) {
+    if (this.#showMode !== "Both" || !this.isShowing()) {
       return;
     }
-    sizeDIP = this.applyConstraints(sizeDIP, userAction);
-    if (this.sidebarSizeDIP === sizeDIP) {
+    sizeDIP = this.#applyConstraints(sizeDIP, userAction);
+    if (this.#sidebarSizeDIP === sizeDIP) {
       return;
     }
-    if (!this.resizerElementSize) {
-      this.resizerElementSize = this.isVerticalInternal ? this.resizerElementInternal.offsetWidth : this.resizerElementInternal.offsetHeight;
+    if (!this.#resizerElementSize) {
+      this.#resizerElementSize = this.#isVertical ? this.#resizerElement.offsetWidth : this.#resizerElement.offsetHeight;
     }
-    this.removeAllLayoutProperties();
+    this.#removeAllLayoutProperties();
     const roundSizeCSS = Math.round(ZoomManager.instance().dipToCSS(sizeDIP));
     const sidebarSizeValue = roundSizeCSS + "px";
-    const mainSizeValue = this.totalSizeCSS - roundSizeCSS + "px";
-    this.sidebarElementInternal.style.flexBasis = sidebarSizeValue;
-    if (this.isVerticalInternal) {
-      this.sidebarElementInternal.style.width = sidebarSizeValue;
-      this.mainElement.style.width = mainSizeValue;
-      this.sidebarElementInternal.style.height = this.totalSizeOtherDimensionCSS + "px";
-      this.mainElement.style.height = this.totalSizeOtherDimensionCSS + "px";
+    const mainSizeValue = this.#totalSizeCSS - roundSizeCSS + "px";
+    this.#sidebarElement.style.flexBasis = sidebarSizeValue;
+    if (this.#isVertical) {
+      this.#sidebarElement.style.width = sidebarSizeValue;
+      this.#mainElement.style.width = mainSizeValue;
+      this.#sidebarElement.style.height = this.#totalSizeOtherDimensionCSS + "px";
+      this.#mainElement.style.height = this.#totalSizeOtherDimensionCSS + "px";
     } else {
-      this.sidebarElementInternal.style.height = sidebarSizeValue;
-      this.mainElement.style.height = mainSizeValue;
-      this.sidebarElementInternal.style.width = this.totalSizeOtherDimensionCSS + "px";
-      this.mainElement.style.width = this.totalSizeOtherDimensionCSS + "px";
+      this.#sidebarElement.style.height = sidebarSizeValue;
+      this.#mainElement.style.height = mainSizeValue;
+      this.#sidebarElement.style.width = this.#totalSizeOtherDimensionCSS + "px";
+      this.#mainElement.style.width = this.#totalSizeOtherDimensionCSS + "px";
     }
-    if (this.isVerticalInternal) {
-      if (this.secondIsSidebar) {
-        this.resizerElementInternal.style.right = sidebarSizeValue;
-        this.resizerElementInternal.style.marginRight = -this.resizerElementSize / 2 + "px";
+    if (this.#isVertical) {
+      if (this.#secondIsSidebar) {
+        this.#resizerElement.style.right = sidebarSizeValue;
+        this.#resizerElement.style.marginRight = -this.#resizerElementSize / 2 + "px";
       } else {
-        this.resizerElementInternal.style.left = sidebarSizeValue;
-        this.resizerElementInternal.style.marginLeft = -this.resizerElementSize / 2 + "px";
+        this.#resizerElement.style.left = sidebarSizeValue;
+        this.#resizerElement.style.marginLeft = -this.#resizerElementSize / 2 + "px";
       }
-    } else if (this.secondIsSidebar) {
-      this.resizerElementInternal.style.bottom = sidebarSizeValue;
-      this.resizerElementInternal.style.marginBottom = -this.resizerElementSize / 2 + "px";
+    } else if (this.#secondIsSidebar) {
+      this.#resizerElement.style.bottom = sidebarSizeValue;
+      this.#resizerElement.style.marginBottom = -this.#resizerElementSize / 2 + "px";
     } else {
-      this.resizerElementInternal.style.top = sidebarSizeValue;
-      this.resizerElementInternal.style.marginTop = -this.resizerElementSize / 2 + "px";
+      this.#resizerElement.style.top = sidebarSizeValue;
+      this.#resizerElement.style.marginTop = -this.#resizerElementSize / 2 + "px";
     }
-    this.sidebarSizeDIP = sizeDIP;
+    this.#sidebarSizeDIP = sizeDIP;
     if (animate) {
-      this.animate(false);
+      this.#animate(false);
     } else {
       this.doResize();
       this.dispatchEventToListeners("SidebarSizeChanged", this.sidebarSize());
     }
   }
-  animate(reverse, callback) {
+  #animate(reverse, callback) {
     const animationTime = 50;
-    this.animationCallback = callback || null;
+    this.#animationCallback = callback || null;
     let animatedMarginPropertyName;
-    if (this.isVerticalInternal) {
-      animatedMarginPropertyName = this.secondIsSidebar ? "margin-right" : "margin-left";
+    if (this.#isVertical) {
+      animatedMarginPropertyName = this.#secondIsSidebar ? "margin-right" : "margin-left";
     } else {
-      animatedMarginPropertyName = this.secondIsSidebar ? "margin-bottom" : "margin-top";
+      animatedMarginPropertyName = this.#secondIsSidebar ? "margin-bottom" : "margin-top";
     }
-    const marginFrom = reverse ? "0" : "-" + ZoomManager.instance().dipToCSS(this.sidebarSizeDIP) + "px";
-    const marginTo = reverse ? "-" + ZoomManager.instance().dipToCSS(this.sidebarSizeDIP) + "px" : "0";
+    const marginFrom = reverse ? "0" : "-" + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + "px";
+    const marginTo = reverse ? "-" + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + "px" : "0";
     this.contentElement.style.setProperty(animatedMarginPropertyName, marginFrom);
     this.contentElement.style.setProperty("overflow", "hidden");
     if (!reverse) {
-      suppressUnused(this.mainElement.offsetWidth);
-      suppressUnused(this.sidebarElementInternal.offsetWidth);
+      suppressUnused(this.#mainElement.offsetWidth);
+      suppressUnused(this.#sidebarElement.offsetWidth);
     }
-    if (!reverse && this.sidebarWidgetInternal) {
-      this.sidebarWidgetInternal.doResize();
+    if (!reverse && this.#sidebarWidget) {
+      this.#sidebarWidget.doResize();
     }
     this.contentElement.style.setProperty("transition", animatedMarginPropertyName + " " + animationTime + "ms linear");
     const boundAnimationFrame = animationFrame.bind(this);
     let startTime = null;
     function animationFrame() {
-      this.animationFrameHandle = 0;
+      this.#animationFrameHandle = 0;
       if (!startTime) {
         this.contentElement.style.setProperty(animatedMarginPropertyName, marginTo);
         startTime = window.performance.now();
       } else if (window.performance.now() < startTime + animationTime) {
-        if (this.mainWidgetInternal) {
-          this.mainWidgetInternal.doResize();
+        if (this.#mainWidget) {
+          this.#mainWidget.doResize();
         }
       } else {
-        this.cancelAnimation();
-        if (this.mainWidgetInternal) {
-          this.mainWidgetInternal.doResize();
+        this.#cancelAnimation();
+        if (this.#mainWidget) {
+          this.#mainWidget.doResize();
         }
         this.dispatchEventToListeners("SidebarSizeChanged", this.sidebarSize());
         return;
       }
-      this.animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
+      this.#animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
     }
-    this.animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
+    this.#animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
   }
-  cancelAnimation() {
+  #cancelAnimation() {
     this.contentElement.style.removeProperty("margin-top");
     this.contentElement.style.removeProperty("margin-right");
     this.contentElement.style.removeProperty("margin-bottom");
     this.contentElement.style.removeProperty("margin-left");
     this.contentElement.style.removeProperty("transition");
     this.contentElement.style.removeProperty("overflow");
-    if (this.animationFrameHandle) {
-      this.contentElement.window().cancelAnimationFrame(this.animationFrameHandle);
-      this.animationFrameHandle = 0;
+    if (this.#animationFrameHandle) {
+      this.contentElement.window().cancelAnimationFrame(this.#animationFrameHandle);
+      this.#animationFrameHandle = 0;
     }
-    if (this.animationCallback) {
-      this.animationCallback();
-      this.animationCallback = null;
+    if (this.#animationCallback) {
+      this.#animationCallback();
+      this.#animationCallback = null;
     }
   }
-  applyConstraints(sidebarSize, userAction) {
-    const totalSize = this.totalSizeDIP();
-    const zoomFactor = this.constraintsInDip ? 1 : ZoomManager.instance().zoomFactor();
-    let constraints = this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+  #applyConstraints(sidebarSize, userAction) {
+    const totalSize = this.#totalSizeDIP();
+    const zoomFactor = this.#constraintsInDip ? 1 : ZoomManager.instance().zoomFactor();
+    let constraints = this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry2.Constraints();
     let minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
     if (!minSidebarSize) {
       minSidebarSize = MinPadding;
     }
     minSidebarSize *= zoomFactor;
-    if (this.sidebarMinimized) {
+    if (this.#sidebarMinimized) {
       sidebarSize = minSidebarSize;
     }
     let preferredSidebarSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
@@ -4214,7 +3861,7 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
       preferredSidebarSize = Math.max(sidebarSize, minSidebarSize);
     }
     preferredSidebarSize += zoomFactor;
-    constraints = this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
+    constraints = this.#mainWidget ? this.#mainWidget.constraints() : new Geometry2.Constraints();
     let minMainSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
     if (!minMainSize) {
       minMainSize = MinPadding;
@@ -4225,7 +3872,7 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
       preferredMainSize = MinPadding;
     }
     preferredMainSize *= zoomFactor;
-    const savedMainSize = this.isVertical() ? this.savedVerticalMainSize : this.savedHorizontalMainSize;
+    const savedMainSize = this.isVertical() ? this.#savedVerticalMainSize : this.#savedHorizontalMainSize;
     if (savedMainSize !== null) {
       preferredMainSize = Math.min(preferredMainSize, savedMainSize * zoomFactor);
     }
@@ -4245,30 +3892,30 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
     return Math.max(0, totalSize - minMainSize);
   }
   wasShown() {
-    this.forceUpdateLayout();
+    this.#forceUpdateLayout();
     ZoomManager.instance().addEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   willHide() {
     ZoomManager.instance().removeEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   onResize() {
-    this.maybeAutoAdjustOrientation();
-    this.updateLayout();
+    this.#maybeAutoAdjustOrientation();
+    this.#updateLayout();
   }
   onLayout() {
-    this.updateLayout();
+    this.#updateLayout();
   }
   calculateConstraints() {
-    if (this.showModeInternal === "OnlyMain") {
-      return this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
+    if (this.#showMode === "OnlyMain") {
+      return this.#mainWidget ? this.#mainWidget.constraints() : new Geometry2.Constraints();
     }
-    if (this.showModeInternal === "OnlySidebar") {
-      return this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+    if (this.#showMode === "OnlySidebar") {
+      return this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry2.Constraints();
     }
-    let mainConstraints = this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
-    let sidebarConstraints = this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+    let mainConstraints = this.#mainWidget ? this.#mainWidget.constraints() : new Geometry2.Constraints();
+    let sidebarConstraints = this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry2.Constraints();
     const min = MinPadding;
-    if (this.isVerticalInternal) {
+    if (this.#isVertical) {
       mainConstraints = mainConstraints.widthToMax(min).addWidth(1);
       sidebarConstraints = sidebarConstraints.widthToMax(min);
       return mainConstraints.addWidth(sidebarConstraints).heightToMax(sidebarConstraints);
@@ -4277,10 +3924,10 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
     sidebarConstraints = sidebarConstraints.heightToMax(min);
     return mainConstraints.widthToMax(sidebarConstraints).addHeight(sidebarConstraints);
   }
-  maybeAutoAdjustOrientation() {
-    if (this.autoAdjustOrientation) {
-      const width = this.isVertical() ? this.totalSizeCSS : this.totalSizeOtherDimensionCSS;
-      const height = this.isVertical() ? this.totalSizeOtherDimensionCSS : this.totalSizeCSS;
+  #maybeAutoAdjustOrientation() {
+    if (this.#autoAdjustOrientation) {
+      const width = this.isVertical() ? this.#totalSizeCSS : this.#totalSizeOtherDimensionCSS;
+      const height = this.isVertical() ? this.#totalSizeOtherDimensionCSS : this.#totalSizeCSS;
       if (width <= 600 && height >= 600) {
         this.setVertical(false);
       } else {
@@ -4288,36 +3935,36 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
       }
     }
   }
-  onResizeStart() {
-    this.resizeStartSizeDIP = this.sidebarSizeDIP;
+  #onResizeStart() {
+    this.#resizeStartSizeDIP = this.#sidebarSizeDIP;
   }
-  onResizeUpdate(event) {
+  #onResizeUpdate(event) {
     const offset = event.data.currentPosition - event.data.startPosition;
     const offsetDIP = ZoomManager.instance().cssToDIP(offset);
-    const newSizeDIP = this.secondIsSidebar ? this.resizeStartSizeDIP - offsetDIP : this.resizeStartSizeDIP + offsetDIP;
-    const constrainedSizeDIP = this.applyConstraints(newSizeDIP, true);
-    this.savedSidebarSizeDIP = constrainedSizeDIP;
-    this.saveSetting();
-    this.innerSetSidebarSizeDIP(constrainedSizeDIP, false, true);
+    const newSizeDIP = this.#secondIsSidebar ? this.#resizeStartSizeDIP - offsetDIP : this.#resizeStartSizeDIP + offsetDIP;
+    const constrainedSizeDIP = this.#applyConstraints(newSizeDIP, true);
+    this.#savedSidebarSizeDIP = constrainedSizeDIP;
+    this.#saveSetting();
+    this.#setSidebarSizeDIP(constrainedSizeDIP, false, true);
     if (this.isVertical()) {
-      this.savedVerticalMainSize = this.totalSizeDIP() - this.sidebarSizeDIP;
+      this.#savedVerticalMainSize = this.#totalSizeDIP() - this.#sidebarSizeDIP;
     } else {
-      this.savedHorizontalMainSize = this.totalSizeDIP() - this.sidebarSizeDIP;
+      this.#savedHorizontalMainSize = this.#totalSizeDIP() - this.#sidebarSizeDIP;
     }
   }
-  onResizeEnd() {
-    this.resizeStartSizeDIP = 0;
+  #onResizeEnd() {
+    this.#resizeStartSizeDIP = 0;
   }
   hideDefaultResizer(noSplitter) {
-    this.resizerElementInternal.classList.toggle("hidden", Boolean(noSplitter));
-    this.uninstallResizer(this.resizerElementInternal);
-    this.sidebarElementInternal.classList.toggle("no-default-splitter", Boolean(noSplitter));
+    this.#resizerElement.classList.toggle("hidden", Boolean(noSplitter));
+    this.uninstallResizer(this.#resizerElement);
+    this.#sidebarElement.classList.toggle("no-default-splitter", Boolean(noSplitter));
   }
   installResizer(resizerElement) {
-    this.resizerWidget.addElement(resizerElement);
+    this.#resizerWidget.addElement(resizerElement);
   }
   uninstallResizer(resizerElement) {
-    this.resizerWidget.removeElement(resizerElement);
+    this.#resizerWidget.removeElement(resizerElement);
   }
   toggleResizer(resizer, on) {
     if (on) {
@@ -4326,30 +3973,30 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
       this.uninstallResizer(resizer);
     }
   }
-  settingForOrientation() {
+  #settingForOrientation() {
     const state = this.setting ? this.setting.get() : {};
-    const orientationState = this.isVerticalInternal ? state.vertical : state.horizontal;
+    const orientationState = this.#isVertical ? state.vertical : state.horizontal;
     return orientationState ?? null;
   }
-  preferredSidebarSizeDIP() {
-    let size = this.savedSidebarSizeDIP;
+  #preferredSidebarSizeDIP() {
+    let size = this.#savedSidebarSizeDIP;
     if (!size) {
-      size = this.isVerticalInternal ? this.defaultSidebarWidth : this.defaultSidebarHeight;
+      size = this.#isVertical ? this.#defaultSidebarWidth : this.#defaultSidebarHeight;
       if (0 < size && size < 1) {
-        size *= this.totalSizeDIP();
+        size *= this.#totalSizeDIP();
       }
     }
     return size;
   }
-  restoreSidebarSizeFromSettings() {
-    const settingForOrientation = this.settingForOrientation();
-    this.savedSidebarSizeDIP = settingForOrientation ? settingForOrientation.size : 0;
+  #restoreSidebarSizeFromSettings() {
+    const settingForOrientation = this.#settingForOrientation();
+    this.#savedSidebarSizeDIP = settingForOrientation ? settingForOrientation.size : 0;
   }
-  restoreAndApplyShowModeFromSettings() {
-    const orientationState = this.settingForOrientation();
-    this.savedShowMode = orientationState?.showMode ? orientationState.showMode : this.showModeInternal;
-    this.showModeInternal = this.savedShowMode;
-    switch (this.savedShowMode) {
+  #restoreAndApplyShowModeFromSettings() {
+    const orientationState = this.#settingForOrientation();
+    this.#savedShowMode = orientationState?.showMode ? orientationState.showMode : this.#showMode;
+    this.#showMode = this.#savedShowMode;
+    switch (this.#savedShowMode) {
       case "Both":
         this.showBoth();
         break;
@@ -4361,76 +4008,76 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
         break;
     }
   }
-  saveShowModeToSettings() {
-    this.savedShowMode = this.showModeInternal;
-    this.saveSetting();
+  #saveShowModeToSettings() {
+    this.#savedShowMode = this.#showMode;
+    this.#saveSetting();
   }
-  saveSetting() {
+  #saveSetting() {
     if (!this.setting) {
       return;
     }
     const state = this.setting.get();
-    const orientationState = (this.isVerticalInternal ? state.vertical : state.horizontal) || {};
-    orientationState.size = this.savedSidebarSizeDIP;
-    if (this.shouldSaveShowMode) {
-      orientationState.showMode = this.savedShowMode;
+    const orientationState = (this.#isVertical ? state.vertical : state.horizontal) || {};
+    orientationState.size = this.#savedSidebarSizeDIP;
+    if (this.#shouldSaveShowMode) {
+      orientationState.showMode = this.#savedShowMode;
     }
-    if (this.isVerticalInternal) {
+    if (this.#isVertical) {
       state.vertical = orientationState;
     } else {
       state.horizontal = orientationState;
     }
     this.setting.set(state);
   }
-  forceUpdateLayout() {
-    this.sidebarSizeDIP = -1;
-    this.updateLayout();
+  #forceUpdateLayout() {
+    this.#sidebarSizeDIP = -1;
+    this.#updateLayout();
   }
   onZoomChanged() {
-    this.forceUpdateLayout();
+    this.#forceUpdateLayout();
   }
   createShowHideSidebarButton(showTitle, hideTitle, shownString, hiddenString, jslogContext) {
-    this.showSidebarButtonTitle = showTitle;
-    this.hideSidebarButtonTitle = hideTitle;
-    this.shownSidebarString = shownString;
-    this.hiddenSidebarString = hiddenString;
-    this.showHideSidebarButton = new ToolbarButton("", "right-panel-open");
-    this.showHideSidebarButton.addEventListener("Click", buttonClicked, this);
+    this.#showSidebarButtonTitle = showTitle;
+    this.#hideSidebarButtonTitle = hideTitle;
+    this.#shownSidebarString = shownString;
+    this.#hiddenSidebarString = hiddenString;
+    this.#showHideSidebarButton = new ToolbarButton("", "right-panel-open");
+    this.#showHideSidebarButton.addEventListener("Click", buttonClicked, this);
     if (jslogContext) {
-      this.showHideSidebarButton.element.setAttribute("jslog", `${VisualLogging4.toggleSubpane().track({ click: true }).context(jslogContext)}`);
+      this.#showHideSidebarButton.element.setAttribute("jslog", `${VisualLogging4.toggleSubpane().track({ click: true }).context(jslogContext)}`);
     }
-    this.updateShowHideSidebarButton();
+    this.#updateShowHideSidebarButton();
     function buttonClicked() {
       this.toggleSidebar();
     }
-    return this.showHideSidebarButton;
+    return this.#showHideSidebarButton;
   }
   /**
    * @returns true if this call makes the sidebar visible, and false otherwise.
    */
   toggleSidebar() {
-    if (this.showModeInternal !== "Both") {
+    if (this.#showMode !== "Both") {
       this.showBoth(true);
-      LiveAnnouncer.alert(this.shownSidebarString);
+      LiveAnnouncer.alert(this.#shownSidebarString);
       return true;
     }
     this.hideSidebar(true);
-    LiveAnnouncer.alert(this.hiddenSidebarString);
+    LiveAnnouncer.alert(this.#hiddenSidebarString);
     return false;
   }
-  updateShowHideSidebarButton() {
-    if (!this.showHideSidebarButton) {
+  #updateShowHideSidebarButton() {
+    if (!this.#showHideSidebarButton) {
       return;
     }
-    const sidebarHidden = this.showModeInternal === "OnlyMain";
+    const sidebarHidden = this.#showMode === "OnlyMain";
     let glyph = "";
     if (sidebarHidden) {
       glyph = this.isVertical() ? this.isSidebarSecond() ? "right-panel-open" : "left-panel-open" : this.isSidebarSecond() ? "bottom-panel-open" : "top-panel-open";
     } else {
       glyph = this.isVertical() ? this.isSidebarSecond() ? "right-panel-close" : "left-panel-close" : this.isSidebarSecond() ? "bottom-panel-close" : "top-panel-close";
     }
-    this.showHideSidebarButton.setGlyph(glyph);
-    this.showHideSidebarButton.setTitle(sidebarHidden ? this.showSidebarButtonTitle : this.hideSidebarButtonTitle);
+    this.#showHideSidebarButton.setGlyph(glyph);
+    this.#showHideSidebarButton.setTitle(sidebarHidden ? this.#showSidebarButtonTitle : this.#hideSidebarButtonTitle);
   }
 };
 var SplitWidgetElement = class extends WidgetElement {
@@ -4502,6 +4149,7 @@ __export(TabbedPane_exports, {
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
+import * as Geometry3 from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../components/buttons/buttons.js";
 import * as VisualLogging5 from "./../visual_logging/visual_logging.js";
 import * as IconButton2 from "./../components/icon_button/icon_button.js";
@@ -5488,12 +5136,12 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   }
   calculateConstraints() {
     let constraints = super.calculateConstraints();
-    const minContentConstraints = new Constraints(new Size(0, 0), new Size(50, 50));
+    const minContentConstraints = new Geometry3.Constraints(new Geometry3.Size(0, 0), new Geometry3.Size(50, 50));
     constraints = constraints.widthToMax(minContentConstraints).heightToMax(minContentConstraints);
     if (this.verticalTabLayout) {
-      constraints = constraints.addWidth(new Constraints(new Size(120, 0)));
+      constraints = constraints.addWidth(new Geometry3.Constraints(new Geometry3.Size(120, 0)));
     } else {
-      constraints = constraints.addHeight(new Constraints(new Size(0, 30)));
+      constraints = constraints.addHeight(new Geometry3.Constraints(new Geometry3.Size(0, 30)));
     }
     return constraints;
   }
@@ -6245,7 +5893,6 @@ __export(ViewManager_exports, {
   defaultOptionsForTabs: () => defaultOptionsForTabs,
   getLocalizedViewLocationCategory: () => getLocalizedViewLocationCategory,
   getRegisteredLocationResolvers: () => getRegisteredLocationResolvers,
-  getRegisteredViewExtensionForID: () => getRegisteredViewExtensionForID,
   getRegisteredViewExtensions: () => getRegisteredViewExtensions,
   maybeRemoveViewExtension: () => maybeRemoveViewExtension,
   registerLocationResolver: () => registerLocationResolver,
@@ -6397,9 +6044,6 @@ function registerViewExtension(registration) {
   }
   viewIdSet.add(viewId);
   registeredViewExtensions.push(new PreRegisteredView(registration));
-}
-function getRegisteredViewExtensionForID(id2) {
-  return registeredViewExtensions.find((view) => view.viewId() === id2 && Root2.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }));
 }
 function getRegisteredViewExtensions() {
   return registeredViewExtensions.filter((view) => Root2.Runtime.Runtime.isDescriptorEnabled({ experiment: view.experiment(), condition: view.condition() }));
@@ -7337,8 +6981,19 @@ var UIStrings7 = {
 var str_7 = i18n13.i18n.registerUIStrings("ui/legacy/InspectorView.ts", UIStrings7);
 var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var inspectorViewInstance = null;
+var MIN_MAIN_PANEL_WIDTH = 240;
+var MIN_VERTICAL_DRAWER_WIDTH = 200;
+var MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER = 250;
+var MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER = 450;
+var MIN_INSPECTOR_HEIGHT = 72;
+var DrawerOrientation;
+(function(DrawerOrientation2) {
+  DrawerOrientation2["VERTICAL"] = "vertical";
+  DrawerOrientation2["HORIZONTAL"] = "horizontal";
+  DrawerOrientation2["UNSET"] = "unset";
+})(DrawerOrientation || (DrawerOrientation = {}));
 var InspectorView = class _InspectorView extends VBox {
-  drawerIsVerticalSetting;
+  drawerOrientationSetting;
   drawerSplitWidget;
   tabDelegate;
   drawerTabbedLocation;
@@ -7357,9 +7012,10 @@ var InspectorView = class _InspectorView extends VBox {
   constructor() {
     super();
     GlassPane.setContainer(this.element);
-    this.setMinimumSize(250, 72);
-    this.drawerIsVerticalSetting = Common10.Settings.Settings.instance().createSetting("inspector.use-vertical-drawer-orientation", false);
-    this.drawerSplitWidget = new SplitWidget(this.drawerIsVerticalSetting.get(), true, "inspector.drawer-split-view-state", 200, 200);
+    this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
+    this.drawerOrientationSetting = Common10.Settings.Settings.instance().createSetting("inspector.drawer-orientation", DrawerOrientation.UNSET);
+    const isVertical = this.drawerOrientationSetting.get() === DrawerOrientation.VERTICAL;
+    this.drawerSplitWidget = new SplitWidget(isVertical, true, "inspector.drawer-split-view-state", 200, 200);
     this.drawerSplitWidget.hideSidebar();
     this.drawerSplitWidget.enableShowModeSaving();
     this.drawerSplitWidget.show(this.element);
@@ -7371,7 +7027,7 @@ var InspectorView = class _InspectorView extends VBox {
     const moreTabsButton = this.drawerTabbedLocation.enableMoreTabsButton();
     moreTabsButton.setTitle(i18nString7(UIStrings7.moreTools));
     this.drawerTabbedPane = this.drawerTabbedLocation.tabbedPane();
-    this.setDrawerMinimumSize();
+    this.setDrawerRelatedMinimumSizes();
     this.drawerTabbedPane.element.classList.add("drawer-tabbed-pane");
     this.drawerTabbedPane.element.setAttribute("jslog", `${VisualLogging7.drawer()}`);
     const closeDrawerButton = new ToolbarButton(i18nString7(UIStrings7.closeDrawer), "cross");
@@ -7380,7 +7036,7 @@ var InspectorView = class _InspectorView extends VBox {
     this.#toggleOrientationButton = new ToolbarButton(i18nString7(UIStrings7.toggleDrawerOrientation), this.drawerSplitWidget.isVertical() ? "dock-bottom" : "dock-right");
     this.#toggleOrientationButton.element.setAttribute("jslog", `${VisualLogging7.toggle().track({ click: true })}`);
     this.#toggleOrientationButton.element.setAttribute("jslogcontext", "toggle-drawer-orientation");
-    this.#toggleOrientationButton.addEventListener("Click", this.toggleDrawerOrientation, this);
+    this.#toggleOrientationButton.addEventListener("Click", () => this.toggleDrawerOrientation(), this);
     this.drawerTabbedPane.addEventListener(Events.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
     const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
     if (this.drawerSplitWidget.showMode() !== "OnlyMain" && selectedDrawerTab) {
@@ -7405,6 +7061,7 @@ var InspectorView = class _InspectorView extends VBox {
     })}`);
     this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host5.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host5.InspectorFrontendHost.InspectorFrontendHostInstance), "panel", true, true, Root4.Runtime.Runtime.queryParam("panel"));
     this.tabbedPane = this.tabbedLocation.tabbedPane();
+    this.tabbedPane.setMinimumSize(MIN_MAIN_PANEL_WIDTH, 0);
     this.tabbedPane.element.classList.add("main-tabbed-pane");
     const allocatedSpace = Root4.Runtime.conditions.canDock() ? "69px" : "41px";
     this.tabbedPane.leftToolbar().style.minWidth = allocatedSpace;
@@ -7566,19 +7223,29 @@ var InspectorView = class _InspectorView extends VBox {
     this.emitDrawerChangeEvent(false);
     LiveAnnouncer.alert(i18nString7(UIStrings7.drawerHidden));
   }
-  toggleDrawerOrientation() {
-    const drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
+  toggleDrawerOrientation({ force } = {}) {
+    let drawerWillBeVertical;
+    if (force) {
+      drawerWillBeVertical = force === DrawerOrientation.VERTICAL;
+    } else {
+      drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
+    }
+    this.drawerOrientationSetting.set(drawerWillBeVertical ? DrawerOrientation.VERTICAL : DrawerOrientation.HORIZONTAL);
     this.#toggleOrientationButton.setGlyph(drawerWillBeVertical ? "dock-bottom" : "dock-right");
-    this.drawerIsVerticalSetting.set(drawerWillBeVertical);
     this.drawerSplitWidget.setVertical(drawerWillBeVertical);
-    this.setDrawerMinimumSize();
+    this.setDrawerRelatedMinimumSizes();
   }
-  setDrawerMinimumSize() {
+  isUserExplicitlyUpdatedDrawerOrientation() {
+    return this.drawerOrientationSetting.get() !== DrawerOrientation.UNSET;
+  }
+  setDrawerRelatedMinimumSizes() {
     const drawerIsVertical = this.drawerSplitWidget.isVertical();
     if (drawerIsVertical) {
-      this.drawerTabbedPane.setMinimumSize(200, 27);
+      this.drawerTabbedPane.setMinimumSize(MIN_VERTICAL_DRAWER_WIDTH, 27);
+      this.setMinimumSize(MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER, MIN_INSPECTOR_HEIGHT);
     } else {
       this.drawerTabbedPane.setMinimumSize(0, 27);
+      this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
     }
   }
   setDrawerMinimized(minimized) {
@@ -7673,13 +7340,13 @@ var InspectorView = class _InspectorView extends VBox {
       infobar.setCloseCallback(() => {
         delete this.reloadRequiredInfobar;
       });
-      SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
+      SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
     }
   }
   removeDebuggedTabReloadRequiredWarning() {
     if (this.reloadRequiredInfobar) {
       this.reloadRequiredInfobar.dispose();
-      SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
+      SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.removeDebuggedTabReloadRequiredWarning, this);
     }
   }
   displayReloadRequiredWarning(message) {
@@ -8747,11 +8414,12 @@ var Section = class {
     if (!label) {
       label = action6.title();
     }
-    const result = this.appendItem(label, action6.execute.bind(action6), {
-      disabled: !action6.enabled(),
-      jslogContext: jslogContext ?? actionId,
-      featureName: feature
-    });
+    const promotionId = action6.featurePromotionId();
+    let additionalElement = void 0;
+    if (promotionId) {
+      additionalElement = maybeCreateNewBadge(promotionId);
+    }
+    const result = this.appendItem(label, action6.execute.bind(action6), { disabled: !action6.enabled(), jslogContext: jslogContext ?? actionId, featureName: feature, additionalElement });
     const shortcut = ShortcutRegistry.instance().shortcutTitleForAction(actionId);
     const keyAndModifier = ShortcutRegistry.instance().keyAndModifiersForAction(actionId);
     if (keyAndModifier) {
@@ -9665,6 +9333,7 @@ __export(SuggestBox_exports, {
 });
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
+import * as Geometry4 from "./../../models/geometry/geometry.js";
 import * as VisualLogging12 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/ListControl.js
@@ -10473,7 +10142,7 @@ var SuggestBox = class {
     const maxWidth = this.maxWidth(items);
     const length = this.maxItemsHeight ? Math.min(this.maxItemsHeight, items.length) : items.length;
     const maxHeight = length * this.rowHeight;
-    this.glassPane.setMaxContentSize(new Size(maxWidth, maxHeight));
+    this.glassPane.setMaxContentSize(new Geometry4.Size(maxWidth, maxHeight));
   }
   maxWidth(items) {
     const kMaxWidth = 300;
@@ -12522,10 +12191,11 @@ import * as Host8 from "./../../core/host/host.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as Platform16 from "./../../core/platform/platform.js";
 import * as Root7 from "./../../core/root/root.js";
+import * as Geometry5 from "./../../models/geometry/geometry.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Buttons6 from "./../components/buttons/buttons.js";
 import * as IconButton7 from "./../components/icon_button/icon_button.js";
-import { Directives as Directives3, render as render2 } from "./../lit/lit.js";
+import * as Lit2 from "./../lit/lit.js";
 import * as VisualLogging15 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/checkboxTextLabel.css.js
@@ -12849,7 +12519,7 @@ iframe.widget {
   display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.highlighted-search-result {
+.highlighted-search-result,::highlight(highlighted-search-result) {
   border-radius: 1px;
   background-color: var(--sys-color-yellow-container);
   outline: 1px solid var(--sys-color-yellow-container);
@@ -13034,10 +12704,11 @@ input[type='range']:disabled::-webkit-slider-thumb {
   }
 }
 
-.highlighted-search-result.current-search-result {
+.highlighted-search-result.current-search-result,::highlight(current-search-result) {
   /* Note: this value is used in light & dark mode */
   --override-current-search-result-background-color: rgb(255 127 0 / 80%);
 
+  outline: 1px solid var(--sys-color-yellow-container);
   border-radius: 1px;
   padding: 1px;
   margin: -1px;
@@ -14064,6 +13735,7 @@ div.error {
 /*# sourceURL=${import.meta.resolve("./smallBubble.css")} */`;
 
 // gen/front_end/ui/legacy/UIUtils.js
+var { Directives: Directives3, render: render2 } = Lit2;
 var UIStrings12 = {
   /**
    * @description label to open link externally
@@ -14745,7 +14417,7 @@ function measurePreferredSize(element, containerElement) {
   } else {
     element.remove();
   }
-  return new Size(result.width, result.height);
+  return new Geometry5.Size(result.width, result.height);
 }
 var InvokeOnceHandlers = class {
   handlers;
@@ -15732,12 +15404,53 @@ function bindToAction(actionName) {
     e.onclick = () => action6.execute();
   });
 }
-var HTMLElementWithLightDOMTemplate = class extends HTMLElement {
+var InterceptBindingDirective = class _InterceptBindingDirective extends Lit2.Directive.Directive {
+  static #interceptedBindings = /* @__PURE__ */ new WeakMap();
+  constructor(part) {
+    super(part);
+    if (part.type !== Lit2.Directive.PartType.EVENT) {
+      throw new Error("This directive is for event bindings only");
+    }
+  }
+  update(part, [listener]) {
+    let eventListeners = _InterceptBindingDirective.#interceptedBindings.get(part.element);
+    if (!eventListeners) {
+      eventListeners = /* @__PURE__ */ new Map();
+      _InterceptBindingDirective.#interceptedBindings.set(part.element, eventListeners);
+    }
+    eventListeners.set(part.name, listener);
+    return this.render(listener);
+  }
+  render(_listener) {
+    return void 0;
+  }
+  static attachEventListeners(templateElement, renderedElement) {
+    const eventListeners = _InterceptBindingDirective.#interceptedBindings.get(templateElement);
+    if (!eventListeners) {
+      return;
+    }
+    for (const [name, listener] of eventListeners) {
+      renderedElement.addEventListener(name, listener);
+    }
+  }
+};
+var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate extends HTMLElement {
+  static on = Lit2.Directive.directive(InterceptBindingDirective);
   #mutationObserver = new MutationObserver(this.#onChange.bind(this));
   #contentTemplate = null;
   constructor() {
     super();
     this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
+  }
+  static cloneNode(node) {
+    const clone = node.cloneNode(false);
+    for (const child of node.childNodes) {
+      clone.appendChild(_HTMLElementWithLightDOMTemplate.cloneNode(child));
+    }
+    if (node instanceof Element && clone instanceof Element) {
+      InterceptBindingDirective.attachEventListeners(node, clone);
+    }
+    return clone;
   }
   set template(template) {
     if (!this.#contentTemplate) {
@@ -15749,13 +15462,16 @@ var HTMLElementWithLightDOMTemplate = class extends HTMLElement {
     render2(template, this.#contentTemplate.content);
   }
   #onChange(mutationList) {
+    this.onChange(mutationList);
     for (const mutation of mutationList) {
       this.removeNodes(mutation.removedNodes);
       this.addNodes(mutation.addedNodes);
-      this.updateNodes(mutation.target, mutation.attributeName);
+      this.updateNode(mutation.target, mutation.attributeName);
     }
   }
-  updateNodes(_node, _attributeName) {
+  onChange(_mutationList) {
+  }
+  updateNode(_node, _attributeName) {
   }
   addNodes(_nodes) {
   }
@@ -20238,6 +19954,7 @@ __export(SoftDropDown_exports, {
 });
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform25 from "./../../core/platform/platform.js";
+import * as Geometry6 from "./../../models/geometry/geometry.js";
 import * as IconButton9 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging25 from "./../visual_logging/visual_logging.js";
 
@@ -20441,7 +20158,7 @@ var SoftDropDown = class {
   }
   updateGlasspaneSize() {
     const maxHeight = this.rowHeight * Math.min(this.model.length, 9);
-    this.glassPane.setMaxContentSize(new Size(this.width, maxHeight));
+    this.glassPane.setMaxContentSize(new Geometry6.Size(this.width, maxHeight));
     this.list.viewportResized();
   }
   hide(event) {
@@ -20724,12 +20441,15 @@ __export(Treeoutline_exports, {
   TreeElement: () => TreeElement,
   TreeOutline: () => TreeOutline,
   TreeOutlineInShadow: () => TreeOutlineInShadow,
+  TreeSearch: () => TreeSearch,
   TreeViewElement: () => TreeViewElement,
   treeElementBylistItemNode: () => treeElementBylistItemNode
 });
 import * as Common19 from "./../../core/common/common.js";
 import * as Platform26 from "./../../core/platform/platform.js";
-import * as Lit2 from "./../lit/lit.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Highlighting from "./../components/highlighting/highlighting.js";
+import * as Lit3 from "./../lit/lit.js";
 import * as VisualLogging26 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
@@ -21047,7 +20767,7 @@ ol.tree-outline.tree-variant-navigation:not(.hide-selection-when-blurred) li.sel
 
 // gen/front_end/ui/legacy/Treeoutline.js
 var nodeToParentTreeElementMap = /* @__PURE__ */ new WeakMap();
-var { render: render7 } = Lit2;
+var { render: render7 } = Lit3;
 var Events2;
 (function(Events3) {
   Events3["ElementAttached"] = "ElementAttached";
@@ -22161,31 +21881,154 @@ var TreeElement = class {
 function hasBooleanAttribute(element, name) {
   return element.hasAttribute(name) && element.getAttribute(name) !== "false";
 }
+var TreeSearch = class {
+  #matches = [];
+  #currentMatchIndex = 0;
+  #nodeMatchMap;
+  reset() {
+    this.#matches = [];
+    this.#nodeMatchMap = void 0;
+    this.#currentMatchIndex = 0;
+  }
+  currentMatch() {
+    return this.#matches.at(this.#currentMatchIndex);
+  }
+  #getNodeMatchMap() {
+    if (!this.#nodeMatchMap) {
+      this.#nodeMatchMap = /* @__PURE__ */ new WeakMap();
+      for (const match of this.#matches) {
+        let entry = this.#nodeMatchMap.get(match.node);
+        if (!entry) {
+          entry = [];
+          this.#nodeMatchMap.set(match.node, entry);
+        }
+        entry.push(match);
+      }
+    }
+    return this.#nodeMatchMap;
+  }
+  getResults(node) {
+    return this.#getNodeMatchMap().get(node) ?? [];
+  }
+  highlight(ranges, selectedRange) {
+    return Lit3.Directives.ref((element) => {
+      if (element instanceof HTMLLIElement) {
+        TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
+      }
+    });
+  }
+  updateSearchableView(view) {
+    view.updateSearchMatchesCount(this.#matches.length);
+    view.updateCurrentMatchIndex(this.#currentMatchIndex);
+  }
+  next() {
+    this.#currentMatchIndex = Platform26.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+    return this.currentMatch();
+  }
+  prev() {
+    this.#currentMatchIndex = Platform26.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+    return this.currentMatch();
+  }
+  // This is a generator to sidestep stack overflow risks
+  *#innerSearch(node, currentMatch, jumpBackwards, match) {
+    const updateCurrentMatchIndex = (isPostOrder) => {
+      if (currentMatch?.node === node && currentMatch.isPostOrderMatch === isPostOrder) {
+        if (currentMatch.matchIndexInNode >= preOrderMatches.length) {
+          this.#currentMatchIndex = jumpBackwards ? this.#matches.length - 1 : this.#matches.length;
+        } else {
+          this.#currentMatchIndex = this.#matches.length - preOrderMatches.length + currentMatch.matchIndexInNode;
+        }
+      }
+    };
+    const preOrderMatches = match(
+      node,
+      /* isPostOrder=*/
+      false
+    );
+    this.#matches.push(...preOrderMatches);
+    updateCurrentMatchIndex(
+      /* isPostOrder=*/
+      false
+    );
+    yield* preOrderMatches.values();
+    for (const child of node.children()) {
+      yield* this.#innerSearch(child, currentMatch, jumpBackwards, match);
+    }
+    const postOrderMatches = match(
+      node,
+      /* isPostOrder=*/
+      true
+    );
+    this.#matches.push(...postOrderMatches);
+    updateCurrentMatchIndex(
+      /* isPostOrder=*/
+      true
+    );
+    yield* postOrderMatches.values();
+  }
+  search(node, jumpBackwards, match) {
+    const currentMatch = this.currentMatch();
+    this.reset();
+    for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
+    }
+    this.#currentMatchIndex = Platform26.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+    return this.#matches.length;
+  }
+};
+var ActiveHighlights = class {
+  #activeRanges = [];
+  #highlights = [];
+  #selectedSearchResult = void 0;
+  apply(node) {
+    Highlighting.HighlightManager.HighlightManager.instance().removeHighlights(this.#activeRanges);
+    this.#activeRanges = Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, this.#highlights);
+    if (this.#selectedSearchResult) {
+      this.#activeRanges.push(...Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(
+        node,
+        [this.#selectedSearchResult],
+        /* isSelected=*/
+        true
+      ));
+    }
+  }
+  set(element, highlights, selectedSearchResult) {
+    this.#highlights = highlights;
+    this.#selectedSearchResult = selectedSearchResult;
+    this.apply(element);
+  }
+};
 var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
+  #activeHighlights = new ActiveHighlights();
+  #clonedAttributes = /* @__PURE__ */ new Set();
   static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
   configElement;
   constructor(treeOutline, configElement) {
-    super();
+    super(void 0, void 0, configElement.getAttribute("jslog-context") ?? void 0);
     this.configElement = configElement;
     _TreeViewTreeElement.#elementToTreeElement.set(configElement, this);
     this.refresh();
   }
+  highlight(highlights, selectedSearchResult) {
+    this.#activeHighlights.set(this.titleElement, highlights, selectedSearchResult);
+  }
   refresh() {
     this.titleElement.textContent = "";
-    if (hasBooleanAttribute(this.configElement, "selected")) {
-      this.revealAndSelect(true);
+    this.#clonedAttributes.forEach((attr) => this.listItemElement.attributes.removeNamedItem(attr));
+    this.#clonedAttributes.clear();
+    for (let i = 0; i < this.configElement.attributes.length; ++i) {
+      const attribute = this.configElement.attributes.item(i);
+      if (attribute && attribute.name !== "role" && SDK2.DOMModel.ARIA_ATTRIBUTES.has(attribute.name)) {
+        this.listItemElement.setAttribute(attribute.name, attribute.value);
+        this.#clonedAttributes.add(attribute.name);
+      }
     }
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
-        if (hasBooleanAttribute(child, "hidden")) {
-          this.collapse();
-        } else {
-          this.expand();
-        }
         continue;
       }
-      this.titleElement.appendChild(child.cloneNode(true));
+      this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
+    this.#activeHighlights.apply(this.titleElement);
   }
   static get(configElement) {
     return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
@@ -22222,12 +22065,12 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     });
     this.#treeOutline.addEventListener(Events2.ElementExpanded, (event) => {
       if (event.data instanceof TreeViewTreeElement) {
-        event.data.configElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
+        this.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
       }
     });
     this.#treeOutline.addEventListener(Events2.ElementCollapsed, (event) => {
       if (event.data instanceof TreeViewTreeElement) {
-        event.data.configElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
+        this.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
       }
     });
     this.addNodes(getTreeNodes([this]));
@@ -22250,7 +22093,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     const treeElement = TreeViewTreeElement.get(subtreeRoot.parentElement);
     return treeElement ? { expanded, treeElement } : null;
   }
-  updateNodes(node, attributeName) {
+  updateNode(node, attributeName) {
     while (node?.parentNode && !(node instanceof HTMLElement)) {
       node = node.parentNode;
     }
@@ -22416,7 +22259,6 @@ export {
   FilterSuggestionBuilder_exports as FilterSuggestionBuilder,
   ForwardedInputEventHandler_exports as ForwardedInputEventHandler,
   Fragment_exports as Fragment,
-  Geometry_exports as Geometry,
   GlassPane_exports as GlassPane,
   Infobar_exports as Infobar,
   InplaceEditor_exports as InplaceEditor,

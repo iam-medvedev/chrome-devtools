@@ -1,18 +1,9 @@
 import type * as Trace from '../../../../models/trace/trace.js';
-import * as Lit from '../../../../ui/lit/lit.js';
-/**
- * An EntryBreakdown, or section, that makes up a TimespanBreakdown.
- */
-export interface EntryBreakdown {
-    bounds: Trace.Types.Timing.TraceWindowMicro;
-    label: string | Lit.LitTemplate;
-    showDuration: boolean;
-}
 export declare class TimespanBreakdownOverlay extends HTMLElement {
     #private;
     set isBelowEntry(isBelow: boolean);
     set canvasRect(rect: DOMRect | null);
-    set sections(sections: EntryBreakdown[] | null);
+    set sections(sections: Trace.Types.Overlays.TimespanBreakdownEntryBreakdown[] | null);
     /**
      * We use this method after the overlay has been positioned in order to move
      * the section label as required to keep it on screen.

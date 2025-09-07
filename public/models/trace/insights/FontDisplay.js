@@ -31,6 +31,9 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
+export function isFontDisplayInsight(model) {
+    return model.insightKey === "FontDisplay" /* InsightKeys.FONT_DISPLAY */;
+}
 export function generateInsight(parsedTrace, context) {
     const fonts = [];
     for (const remoteFont of parsedTrace.LayoutShifts.remoteFonts) {

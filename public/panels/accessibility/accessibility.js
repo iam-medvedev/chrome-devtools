@@ -1579,7 +1579,7 @@ __export(AccessibilitySidebarView_exports, {
   AccessibilitySidebarView: () => AccessibilitySidebarView
 });
 import * as Root2 from "./../../core/root/root.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
@@ -1591,6 +1591,7 @@ __export(ARIAAttributesView_exports, {
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -3215,7 +3216,7 @@ var ARIAAttributesPane = class extends AccessibilitySubPane {
     return this.treeOutline;
   }
   isARIAAttribute(attribute) {
-    return ATTRIBUTES.has(attribute.name);
+    return SDK2.DOMModel.ARIA_ATTRIBUTES.has(attribute.name);
   }
 };
 var ARIAAttributesTreeElement = class _ARIAAttributesTreeElement extends UI3.TreeOutline.TreeElement {
@@ -3350,62 +3351,6 @@ var ARIAAttributePrompt = class extends UI3.TextPrompt.TextPrompt {
     });
   }
 };
-var ATTRIBUTES = /* @__PURE__ */ new Set([
-  "role",
-  "aria-activedescendant",
-  "aria-atomic",
-  "aria-autocomplete",
-  "aria-braillelabel",
-  "aria-brailleroledescription",
-  "aria-busy",
-  "aria-checked",
-  "aria-colcount",
-  "aria-colindex",
-  "aria-colindextext",
-  "aria-colspan",
-  "aria-controls",
-  "aria-current",
-  "aria-describedby",
-  "aria-description",
-  "aria-details",
-  "aria-disabled",
-  "aria-dropeffect",
-  "aria-errormessage",
-  "aria-expanded",
-  "aria-flowto",
-  "aria-grabbed",
-  "aria-haspopup",
-  "aria-hidden",
-  "aria-invalid",
-  "aria-keyshortcuts",
-  "aria-label",
-  "aria-labelledby",
-  "aria-level",
-  "aria-live",
-  "aria-modal",
-  "aria-multiline",
-  "aria-multiselectable",
-  "aria-orientation",
-  "aria-owns",
-  "aria-placeholder",
-  "aria-posinset",
-  "aria-pressed",
-  "aria-readonly",
-  "aria-relevant",
-  "aria-required",
-  "aria-roledescription",
-  "aria-rowcount",
-  "aria-rowindex",
-  "aria-rowindextext",
-  "aria-rowspan",
-  "aria-selected",
-  "aria-setsize",
-  "aria-sort",
-  "aria-valuemax",
-  "aria-valuemin",
-  "aria-valuenow",
-  "aria-valuetext"
-]);
 
 // gen/front_end/panels/accessibility/AXBreadcrumbsPane.js
 var AXBreadcrumbsPane_exports = {};
@@ -3418,7 +3363,7 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Feedback from "./../../ui/components/panel_feedback/panel_feedback.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
@@ -3814,7 +3759,7 @@ var AXBreadcrumbsPane = class extends AccessibilitySubPane {
       this.preselectedBreadcrumb.setPreselected(true, hadFocus);
     }
     if (!breadcrumb && hadFocus) {
-      SDK2.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+      SDK3.OverlayModel.OverlayModel.hideDOMNodeHighlight();
     }
   }
   collapseBreadcrumb(breadcrumb) {
@@ -4057,7 +4002,7 @@ var AXBreadcrumb = class {
       if (!this.inspectedInternal) {
         this.axNodeInternal.highlightDOMNode();
       } else {
-        SDK2.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+        SDK3.OverlayModel.OverlayModel.hideDOMNodeHighlight();
       }
     }
   }
@@ -4275,7 +4220,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
     this.sourceOrderSubPane = new SourceOrderPane();
     void this.sidebarPaneStack.showView(this.sourceOrderSubPane);
     this.sidebarPaneStack.widget().show(this.element);
-    UI5.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.pullNode, this);
+    UI5.Context.Context.instance().addFlavorChangeListener(SDK4.DOMModel.DOMNode, this.pullNode, this);
     this.pullNode();
   }
   static instance(opts) {
@@ -4317,7 +4262,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
     if (!node) {
       return;
     }
-    const accessibilityModel = node.domModel().target().model(SDK3.AccessibilityModel.AccessibilityModel);
+    const accessibilityModel = node.domModel().target().model(SDK4.AccessibilityModel.AccessibilityModel);
     if (!accessibilityModel) {
       return;
     }
@@ -4330,30 +4275,30 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
   wasShown() {
     super.wasShown();
     void this.doUpdate();
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
-    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this, { scoped: true });
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this, { scoped: true });
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this, { scoped: true });
+    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
   }
   willHide() {
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.onNodeChange, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);
-    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);
+    SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this);
   }
   pullNode() {
     if (this.skipNextPullNode) {
       this.skipNextPullNode = false;
       return;
     }
-    this.setNode(UI5.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode));
+    this.setNode(UI5.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode));
   }
   onNodeChange(event) {
     if (!this.node()) {
       return;
     }
     const data = event.data;
-    const node = data instanceof SDK3.DOMModel.DOMNode ? data : data.node;
+    const node = data instanceof SDK4.DOMModel.DOMNode ? data : data.node;
     if (this.node() !== node) {
       return;
     }

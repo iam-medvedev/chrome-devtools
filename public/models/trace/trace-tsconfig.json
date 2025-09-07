@@ -30,6 +30,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/models/trace/EventsSerializer.ts",
     "../../../../../../front_end/models/trace/LanternComputationData.ts",
     "../../../../../../front_end/models/trace/ModelImpl.ts",
     "../../../../../../front_end/models/trace/Processor.ts",

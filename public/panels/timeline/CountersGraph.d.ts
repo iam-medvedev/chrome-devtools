@@ -1,7 +1,6 @@
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Trace from '../../models/trace/trace.js';
-import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 export declare class CountersGraph extends UI.Widget.VBox {
@@ -79,7 +78,7 @@ export declare class CounterUI {
     drawGraph(canvas: HTMLCanvasElement): void;
     visible(): boolean;
 }
-export declare class Calculator implements PerfUI.TimelineGrid.Calculator {
+export declare class Calculator implements Calculator {
     private minimumBoundaryInternal;
     private maximumBoundaryInternal;
     private workingArea;

@@ -114,7 +114,6 @@ const REGISTERED_EXPERIMENTS = [
     "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
     "timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */,
     "timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */,
-    "timeline-ask-ai-full-button" /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */,
     "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
@@ -224,6 +223,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("PERFORMANCE" /* Common.Settings.SettingCategory.PERFORMANCE */, 'timeline.user-had-shortcuts-dialog-opened-once', false, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-event-listeners-for-ancestors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'global-ai-button-click-count', 0),
+        createSettingValue("ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */, 'receive-gdp-badges', false),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.

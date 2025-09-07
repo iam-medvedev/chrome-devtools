@@ -1949,6 +1949,7 @@ __export(LighthouseStatusView_exports, {
 });
 import * as Common4 from "./../../core/common/common.js";
 import * as i18n8 from "./../../core/i18n/i18n.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/lighthouse/lighthouseDialog.css.js
@@ -2261,7 +2262,7 @@ var StatusView = class {
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
-    this.dialog.setMaxContentSize(new UI5.Geometry.Size(500, 400));
+    this.dialog.setMaxContentSize(new Geometry.Size(500, 400));
   }
   reset() {
     this.resetProgressBarClasses();
@@ -2489,6 +2490,7 @@ var FastFacts = [
 
 // gen/front_end/panels/lighthouse/LighthouseTimespanView.js
 import * as i18n10 from "./../../core/i18n/i18n.js";
+import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
@@ -2574,7 +2576,7 @@ var TimespanView = class extends UI6.Dialog.Dialog {
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
-    this.setMaxContentSize(new UI6.Geometry.Size(500, 400));
+    this.setMaxContentSize(new Geometry2.Size(500, 400));
     this.reset();
   }
   async endTimespan() {

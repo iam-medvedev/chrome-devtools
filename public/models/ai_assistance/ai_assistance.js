@@ -645,15 +645,15 @@ var AiAgent = class {
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n2 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
-import * as PanelUtils from "./../../panels/utils/utils.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/FileFormatter.js
 import * as Bindings from "./../bindings/bindings.js";
+import * as NetworkTimeCalculator2 from "./../network_time_calculator/network_time_calculator.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.js
 import * as i18n from "./../../core/i18n/i18n.js";
-import * as Network from "./../../panels/network/network.js";
 import * as Logs from "./../logs/logs.js";
+import * as NetworkTimeCalculator from "./../network_time_calculator/network_time_calculator.js";
 var MAX_HEADERS_SIZE = 1e3;
 function sanitizeHeaders(headers) {
   return headers.map((header) => {
@@ -664,6 +664,7 @@ function sanitizeHeaders(headers) {
   });
 }
 var NetworkRequestFormatter = class _NetworkRequestFormatter {
+  #calculator;
   static allowHeader(headerName) {
     return allowedHeaders.has(headerName.toLowerCase().trim());
   }
@@ -681,8 +682,9 @@ var NetworkRequestFormatter = class _NetworkRequestFormatter {
     return "<redacted cross-origin initiator URL>";
   }
   #request;
-  constructor(request) {
+  constructor(request, calculator) {
     this.#request = request;
+    this.#calculator = calculator;
   }
   formatRequestHeaders() {
     return _NetworkRequestFormatter.formatHeaders("Request headers:", this.#request.requestHeaders());
@@ -728,8 +730,7 @@ ${this.formatRequestInitiatorChain()}`;
     return initiatorChain.trim();
   }
   formatNetworkRequestTiming() {
-    const calculator = Network.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-    const results = Network.RequestTimingView.RequestTimingView.calculateRequestTimeRanges(this.#request, calculator.minimumBoundary());
+    const results = NetworkTimeCalculator.calculateRequestTimeRanges(this.#request, this.#calculator.minimumBoundary());
     function getDuration(name) {
       const result = results.find((r) => r.name === name);
       if (!result) {
@@ -740,11 +741,11 @@ ${this.formatRequestInitiatorChain()}`;
     const labels = [
       {
         label: "Queued at (timestamp)",
-        value: calculator.formatValue(this.#request.issueTime(), 2)
+        value: this.#calculator.formatValue(this.#request.issueTime(), 2)
       },
       {
         label: "Started at (timestamp)",
-        value: calculator.formatValue(this.#request.startTime, 2)
+        value: this.#calculator.formatValue(this.#request.startTime, 2)
       },
       {
         label: "Queueing (duration)",
@@ -950,8 +951,10 @@ var FileFormatter = class _FileFormatter {
     ];
     const resource = Bindings.ResourceUtils.resourceForURL(this.#file.url());
     if (resource?.request) {
+      const calculator = new NetworkTimeCalculator2.NetworkTransferTimeCalculator();
+      calculator.updateBoundaries(resource.request);
       lines.push(`Request initiator chain:
-${new NetworkRequestFormatter(resource.request).formatRequestInitiatorChain()}`);
+${new NetworkRequestFormatter(resource.request, calculator).formatRequestInitiatorChain()}`);
     }
     lines.push(`File content:
 ${this.#formatFileContent()}`);
@@ -1025,9 +1028,6 @@ var FileContext = class extends ConversationContext {
   getItem() {
     return this.#file;
   }
-  getIcon() {
-    return PanelUtils.PanelUtils.getIconForSourceFile(this.#file);
-  }
   getTitle() {
     return this.#file.displayName();
   }
@@ -1082,7 +1082,6 @@ function createContextDetailsForFileAgent(selectedFile) {
 import * as Host3 from "./../../core/host/host.js";
 import * as i18n4 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
-import * as PanelUtils3 from "./../../panels/utils/utils.js";
 var preamble2 = `You are the most advanced network request debugging assistant integrated into Chrome DevTools.
 The user selected a network request in the browser's DevTools Network Panel and sends a query to understand the request.
 Provide a comprehensive analysis of the network request, focusing on areas crucial for a software engineer. Your analysis should include:
@@ -1146,9 +1145,11 @@ var UIStringsNotTranslate2 = {
 var lockedString2 = i18n4.i18n.lockedString;
 var RequestContext = class extends ConversationContext {
   #request;
-  constructor(request) {
+  #calculator;
+  constructor(request, calculator) {
     super();
     this.#request = request;
+    this.#calculator = calculator;
   }
   getOrigin() {
     return new URL(this.#request.url()).origin;
@@ -1156,8 +1157,8 @@ var RequestContext = class extends ConversationContext {
   getItem() {
     return this.#request;
   }
-  getIcon() {
-    return PanelUtils3.PanelUtils.getIconForNetworkRequest(this.#request);
+  get calculator() {
+    return this.#calculator;
   }
   getTitle() {
     return this.#request.name();
@@ -1184,12 +1185,12 @@ var NetworkAgent = class extends AiAgent {
     yield {
       type: "context",
       title: lockedString2(UIStringsNotTranslate2.analyzingNetworkData),
-      details: createContextDetailsForNetworkAgent(selectedNetworkRequest.getItem())
+      details: createContextDetailsForNetworkAgent(selectedNetworkRequest)
     };
   }
   async enhanceQuery(query, selectedNetworkRequest) {
     const networkEnchantmentQuery = selectedNetworkRequest ? `# Selected network request 
-${new NetworkRequestFormatter(selectedNetworkRequest.getItem()).formatNetworkRequest()}
+${new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator).formatNetworkRequest()}
 
 # User request
 
@@ -1197,8 +1198,9 @@ ${new NetworkRequestFormatter(selectedNetworkRequest.getItem()).formatNetworkReq
     return `${networkEnchantmentQuery}${query}`;
   }
 };
-function createContextDetailsForNetworkAgent(request) {
-  const formatter = new NetworkRequestFormatter(request);
+function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
+  const request = selectedNetworkRequest.getItem();
+  const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
   const requestContextDetail = {
     title: lockedString2(UIStringsNotTranslate2.request),
     text: lockedString2(UIStringsNotTranslate2.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
@@ -1225,37 +1227,18 @@ function createContextDetailsForNetworkAgent(request) {
 
 // gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
 import "./../../ui/components/icon_button/icon_button.js";
-import * as Common from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform3 from "./../../core/platform/platform.js";
+import * as i18n6 from "./../../core/i18n/i18n.js";
+import * as Platform from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as TimelineUtils2 from "./../../panels/timeline/utils/utils.js";
-import { html } from "./../../ui/lit/lit.js";
 import * as Trace3 from "./../trace/trace.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
-import * as i18n6 from "./../../core/i18n/i18n.js";
-import * as Platform from "./../../core/platform/platform.js";
+import * as Common from "./../../core/common/common.js";
 import * as Trace from "./../trace/trace.js";
-function formatMilli(x) {
-  if (x === void 0) {
-    return "";
-  }
-  return i18n6.TimeUtilities.preciseMillisToString(
-    x,
-    2,
-    /* separator */
-    " "
-  );
-}
-function formatMicroToMilli(x) {
-  if (x === void 0) {
-    return "";
-  }
-  return formatMilli(Trace.Helpers.Timing.microToMilli(x));
-}
 function getLCPData(parsedTrace, frameId, navigationId) {
   const navMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
   if (!navMetrics) {
@@ -1281,9 +1264,23 @@ function getLCPData(parsedTrace, frameId, navigationId) {
 var PerformanceInsightFormatter = class {
   #insight;
   #parsedTrace;
-  constructor(parsedTrace, insight) {
+  #unitFormatters;
+  constructor(formatters, parsedTrace, insight) {
     this.#insight = insight;
     this.#parsedTrace = parsedTrace;
+    this.#unitFormatters = formatters;
+  }
+  #formatMilli(x) {
+    if (x === void 0) {
+      return "";
+    }
+    return this.#unitFormatters.millis(x);
+  }
+  #formatMicro(x) {
+    if (x === void 0) {
+      return "";
+    }
+    return this.#formatMilli(Trace.Helpers.Timing.microToMilli(x));
   }
   /**
    * Information about LCP which we pass to the LLM for all insights that relate to LCP.
@@ -1302,11 +1299,11 @@ var PerformanceInsightFormatter = class {
     const { metricScore, lcpRequest, lcpEvent } = data;
     const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName})` : "The LCP element";
     const parts = [
-      `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicroToMilli(metricScore.timing)}.`
+      `The Largest Contentful Paint (LCP) time for this navigation was ${this.#formatMicro(metricScore.timing)}.`
     ];
     if (lcpRequest) {
       parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
-      const request = TraceEventFormatter.networkRequests([lcpRequest], this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
+      const request = TraceEventFormatter.networkRequests(this.#unitFormatters, [lcpRequest], this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
       parts.push(request);
     } else {
       parts.push(`${theLcpElement} is text and was not fetched from the network.`);
@@ -1341,7 +1338,7 @@ var PerformanceInsightFormatter = class {
         ];
       case "ForcedReflow":
         return [
-          { title: "How can I avoid layout thrashing?" },
+          { title: "How can I avoid forced reflows and layout thrashing?" },
           { title: "What is forced reflow and why is it problematic?" }
         ];
       case "ImageDelivery":
@@ -1393,7 +1390,7 @@ var PerformanceInsightFormatter = class {
           { title: "How can I reduce the amount of legacy JavaScript on my page?" }
         ];
       default:
-        Platform.assertNever(this.#insight.insightKey, "Unknown insight key");
+        throw new Error("Unknown insight key");
     }
   }
   /**
@@ -1404,27 +1401,101 @@ var PerformanceInsightFormatter = class {
    * @param insight The Network Dependency Tree Insight Model to query.
    * @returns a string formatted for sending to Ask AI.
    */
+  formatFontDisplayInsight(insight) {
+    if (insight.fonts.length === 0) {
+      return "No font display issues were detected.";
+    }
+    let output = "The following font display issues were found:\n";
+    for (const font of insight.fonts) {
+      let fontName = font.name;
+      if (!fontName) {
+        const url = new Common.ParsedURL.ParsedURL(font.request.args.data.url);
+        fontName = url.isValid ? url.lastPathComponent : "(not available)";
+      }
+      output += `
+ - Font name: ${fontName}, URL: ${font.request.args.data.url}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;
+    }
+    output += "\n\n" + Trace.Insights.Models.FontDisplay.UIStrings.description;
+    return output;
+  }
+  /**
+   * Create an AI prompt string out of the Forced Reflow Insight model to use with Ask AI.
+   * Note: This function accesses the UIStrings within ForcedReflow model to help build the
+   * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+   * should all be sent in English (at least for now).
+   * @param insight The ForcedReflow Insight Model to query.
+   * @returns a string formatted for sending to Ask AI.
+   */
+  formatForcedReflowInsight(insight) {
+    let output = Trace.Insights.Models.ForcedReflow.UIStrings.description + "\n\n";
+    if (insight.topLevelFunctionCallData || insight.aggregatedBottomUpData.length > 0) {
+      output += "The forced reflow checks revealed one or more problems.\n\n";
+    } else {
+      output += "The forced reflow checks revealed no problems.";
+      return output;
+    }
+    function callFrameToString(frame) {
+      if (frame === null) {
+        return Trace.Insights.Models.ForcedReflow.UIStrings.unattributed;
+      }
+      let result = `${frame.functionName || Trace.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
+      if (frame.url) {
+        result += ` @ ${frame.url}:${frame.lineNumber}:${frame.columnNumber}`;
+      } else {
+        result += " @ unknown location";
+      }
+      return result;
+    }
+    if (insight.topLevelFunctionCallData) {
+      output += "The following is the top function call that caused forced reflow(s):\n\n";
+      output += " - " + callFrameToString(insight.topLevelFunctionCallData.topLevelFunctionCall);
+      output += `
+
+${Trace.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}
+`;
+    } else {
+      output += "No top-level functions causing forced reflows were identified.\n";
+    }
+    if (insight.aggregatedBottomUpData.length > 0) {
+      output += "\n" + Trace.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + " (including total time):\n";
+      for (const data of insight.aggregatedBottomUpData) {
+        output += `
+ - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
+      }
+    } else {
+      output += "\nNo aggregated bottom-up causes of forced reflows were identified.";
+    }
+    return output;
+  }
+  /**
+   * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
+   * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
+   * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+   * should all be sent in English (at least for now).
+   * @param insight The Network Dependency Tree Insight Model to query.
+   * @returns a string formatted for sending to Ask AI.
+   */
   formatNetworkDependencyTreeInsight(insight) {
-    let output = insight.fail ? "The network dependency tree checks found one or more problems.\n\n" : "The network dependency tree checks found no problems, but optimization suggestions may be available.\n\n";
+    let output = insight.fail ? "The network dependency tree checks found one or more problems.\n\n" : "The network dependency tree checks revealed no problems, but optimization suggestions may be available.\n\n";
     const rootNodes = insight.rootNodes;
     if (rootNodes.length > 0) {
       let formatNode = function(node, indent) {
         const url = node.request.args.data.url;
-        const time = formatMicroToMilli(node.timeFromInitialRequest);
+        const time = this.#formatMicro(node.timeFromInitialRequest);
         const isLongest = node.isLongest ? " (longest chain)" : "";
         let nodeString = `${indent}- ${url} (${time})${isLongest}
 `;
         for (const child of node.children) {
-          nodeString += formatNode(child, indent + "  ");
+          nodeString += formatNode.call(this, child, indent + "  ");
         }
         return nodeString;
       };
-      output += `Max critical path latency is ${formatMicroToMilli(insight.maxTime)}
+      output += `Max critical path latency is ${this.#formatMicro(insight.maxTime)}
 
 `;
       output += "The following is the critical request chain:\n";
       for (const rootNode of rootNodes) {
-        output += formatNode(rootNode, "");
+        output += formatNode.call(this, rootNode, "");
       }
       output += "\n";
     } else {
@@ -1471,9 +1542,92 @@ ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescriptio
 `;
       for (const candidate of insight.preconnectCandidates) {
         output += `
-Adding [preconnect] to origin '${candidate.origin}' would save ${formatMilli(candidate.wastedMs)}.`;
+Adding [preconnect] to origin '${candidate.origin}' would save ${this.#formatMilli(candidate.wastedMs)}.`;
       }
     }
+    return output;
+  }
+  /**
+   * Create an AI prompt string out of the Slow CSS Selector Insight model to use with Ask AI.
+   * Note: This function accesses the UIStrings within SlowCSSSelector to help build the
+   * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+   * should all be sent in English (at least for now).
+   * @param insight The Network Dependency Tree Insight Model to query.
+   * @returns a string formatted for sending to Ask AI.
+   */
+  formatSlowCssSelectorsInsight(insight) {
+    let output = "";
+    if (!insight.topSelectorElapsedMs && !insight.topSelectorMatchAttempts) {
+      return Trace.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
+    }
+    output += "One or more slow CSS selectors were identified as negatively affecting page performance:\n\n";
+    if (insight.topSelectorElapsedMs) {
+      output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):
+`;
+      output += `${this.#formatMicro(insight.topSelectorElapsedMs["elapsed (us)"])}: ${insight.topSelectorElapsedMs.selector}
+
+`;
+    }
+    if (insight.topSelectorMatchAttempts) {
+      output += Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ":\n";
+      output += `${insight.topSelectorMatchAttempts.match_attempts} attempts for selector: '${insight.topSelectorMatchAttempts.selector}'
+
+`;
+    }
+    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.total}:
+`;
+    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}
+`;
+    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}
+`;
+    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}
+
+`;
+    output += Trace.Insights.Models.SlowCSSSelector.UIStrings.description;
+    return output;
+  }
+  /**
+   * Create an AI prompt string out of the ThirdParties Insight model to use with Ask AI.
+   * Note: This function accesses the UIStrings within ThirdParties to help build the
+   * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+   * should all be sent in English (at least for now).
+   * @param insight The Third Parties Insight Model to query.
+   * @returns a string formatted for sending to Ask AI.
+   */
+  formatThirdPartiesInsight(insight) {
+    let output = "";
+    const entitySummaries = insight.entitySummaries ?? [];
+    const firstPartyEntity = insight.firstPartyEntity;
+    const thirdPartyTransferSizeEntries = entitySummaries.filter((s) => s.entity !== firstPartyEntity).toSorted((a, b) => b.transferSize - a.transferSize);
+    const thirdPartyMainThreadTimeEntries = entitySummaries.filter((s) => s.entity !== firstPartyEntity).toSorted((a, b) => b.mainThreadTime - a.mainThreadTime);
+    if (!thirdPartyTransferSizeEntries.length && !thirdPartyMainThreadTimeEntries.length) {
+      return `No 3rd party scripts were found on this page.`;
+    }
+    if (thirdPartyTransferSizeEntries.length) {
+      output += `The following list contains the largest transfer sizes by a 3rd party script:
+
+`;
+      for (const entry of thirdPartyTransferSizeEntries) {
+        if (entry.transferSize > 0) {
+          output += `- ${entry.entity.name}: ${this.#unitFormatters.bytes(entry.transferSize)}
+`;
+        }
+      }
+      output += "\n";
+    }
+    if (thirdPartyMainThreadTimeEntries.length) {
+      output += `The following list contains the largest amount spent by a 3rd party script on the main thread:
+
+`;
+      for (const entry of thirdPartyMainThreadTimeEntries) {
+        if (entry.mainThreadTime > 0) {
+          output += `- ${entry.entity.name}: ${this.#formatMilli(entry.mainThreadTime)}
+`;
+        }
+      }
+      output += "\n";
+    }
+    output += Trace.Insights.Models.ThirdParties.UIStrings.description;
     return output;
   }
   /**
@@ -1506,15 +1660,15 @@ ${this.#links()}`;
       const imageDetails = optimizableImages.map((image) => {
         const optimizations = image.optimizations.map((optimization) => {
           const message = Trace.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
-          const byteSavings = i18n6.ByteUtilities.bytesToString(optimization.byteSavings);
+          const byteSavings = this.#unitFormatters.bytes(optimization.byteSavings);
           return `${message} (Est ${byteSavings})`;
         }).join("\n");
         return `### ${image.request.args.data.url}
-- Potential savings: ${i18n6.ByteUtilities.bytesToString(image.byteSavings)}
+- Potential savings: ${this.#unitFormatters.bytes(image.byteSavings)}
 - Optimizations:
 ${optimizations}`;
       }).join("\n\n");
-      return `Total potential savings: ${i18n6.ByteUtilities.bytesToString(this.#insight.wastedBytes)}
+      return `Total potential savings: ${this.#unitFormatters.bytes(this.#insight.wastedBytes)}
 
 The following images could be optimized:
 
@@ -1529,7 +1683,7 @@ ${imageDetails}`;
       Object.values(subparts).forEach((subpart) => {
         const phaseMilli = Trace.Helpers.Timing.microToMilli(subpart.range);
         const percentage = (phaseMilli / lcpMs * 100).toFixed(1);
-        phaseBulletPoints.push({ name: subpart.label, value: formatMilli(phaseMilli), percentage });
+        phaseBulletPoints.push({ name: subpart.label, value: this.#formatMilli(phaseMilli), percentage });
       });
       return `${this.#lcpMetricSharedContext()}
 
@@ -1561,7 +1715,7 @@ The result of the checks for this insight are:
 ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSED" : "FAILED"}`).join("\n")}`;
     }
     if (Trace.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
-      const requestSummary = TraceEventFormatter.networkRequests(this.#insight.renderBlockingRequests, this.#parsedTrace);
+      const requestSummary = TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.renderBlockingRequests, this.#parsedTrace);
       if (requestSummary.length === 0) {
         return "There are no network requests that are render blocking.";
       }
@@ -1592,7 +1746,7 @@ ${requestSummary}`;
       });
       return `${this.#lcpMetricSharedContext()}
 
-${TraceEventFormatter.networkRequests([documentRequest], this.#parsedTrace, {
+${TraceEventFormatter.networkRequests(this.#unitFormatters, [documentRequest], this.#parsedTrace, {
         verbose: true,
         customTitle: "Document network request"
       })}
@@ -1605,11 +1759,11 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
       if (!event) {
         return "";
       }
-      const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${formatMicroToMilli(event.dur)}\`. The timings of each of the three phases were:
+      const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${this.#formatMicro(event.dur)}\`. The timings of each of the three phases were:
 
-1. Input delay: ${formatMicroToMilli(event.inputDelay)}
-2. Processing duration: ${formatMicroToMilli(event.mainThreadHandling)}
-3. Presentation delay: ${formatMicroToMilli(event.presentationDelay)}.`;
+1. Input delay: ${this.#formatMicro(event.inputDelay)}
+2. Processing duration: ${this.#formatMicro(event.mainThreadHandling)}
+3. Presentation delay: ${this.#formatMicro(event.presentationDelay)}.`;
       return inpInfoForEvent;
     }
     if (Trace.Insights.Models.CLSCulprits.isCLSCulprits(this.#insight)) {
@@ -1623,16 +1777,16 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
         end: worstCluster.ts + worstCluster.dur - baseTime
       };
       const shiftsFormatted = worstCluster.events.map((layoutShift, index) => {
-        return TraceEventFormatter.layoutShift(layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
+        return TraceEventFormatter.layoutShift(this.#unitFormatters, layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
       });
-      return `The worst layout shift cluster was the cluster that started at ${formatMicroToMilli(clusterTimes.start)} and ended at ${formatMicroToMilli(clusterTimes.end)}, with a duration of ${formatMicroToMilli(worstCluster.dur)}.
+      return `The worst layout shift cluster was the cluster that started at ${this.#formatMicro(clusterTimes.start)} and ended at ${this.#formatMicro(clusterTimes.end)}, with a duration of ${this.#formatMicro(worstCluster.dur)}.
 The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
 
 Layout shifts in this cluster:
 ${shiftsFormatted.join("\n")}`;
     }
     if (Trace.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
-      const requestSummary = this.#insight.http1Requests.length === 1 ? TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) : TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace);
+      const requestSummary = this.#insight.http1Requests.length === 1 ? TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) : TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace);
       if (requestSummary.length === 0) {
         return "There are no requests that were served over a legacy HTTP protocol.";
       }
@@ -1664,8 +1818,20 @@ ${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, N
 Legacy JavaScript by file:
 ${filesFormatted}`;
     }
+    if (Trace.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
+      return this.formatFontDisplayInsight(this.#insight);
+    }
+    if (Trace.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
+      return this.formatForcedReflowInsight(this.#insight);
+    }
     if (Trace.Insights.Models.NetworkDependencyTree.isNetworkDependencyTree(this.#insight)) {
       return this.formatNetworkDependencyTreeInsight(this.#insight);
+    }
+    if (Trace.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
+      return this.formatSlowCssSelectorsInsight(this.#insight);
+    }
+    if (Trace.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
+      return this.formatThirdPartiesInsight(this.#insight);
     }
     return "";
   }
@@ -1689,9 +1855,11 @@ ${filesFormatted}`;
       case "DuplicatedJavaScript":
         return "";
       case "FontDisplay":
-        return "";
+        return `- https://web.dev/articles/preload-optional-fonts
+- https://fonts.google.com/knowledge/glossary/foit
+- https://developer.chrome.com/blog/font-fallbacks`;
       case "ForcedReflow":
-        return "";
+        return "- https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts";
       case "ImageDelivery":
         return "- https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/";
       case "INPBreakdown":
@@ -1712,9 +1880,9 @@ ${filesFormatted}`;
         return `- https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
       case "SlowCSSSelector":
-        return "";
+        return "- https://developer.chrome.com/docs/devtools/performance/selector-stats";
       case "ThirdParties":
-        return "";
+        return "- https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/";
       case "Viewport":
         return "";
       case "Cache":
@@ -1744,9 +1912,9 @@ ${filesFormatted}`;
         return `This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
   This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.`;
       case "FontDisplay":
-        return "";
+        return 'This insight identifies font issues when a webpage uses custom fonts, for example when font-display is not set to `swap`, `fallback` or `optional`, causing the "Flash of Invisible Text" problem (FOIT).';
       case "ForcedReflow":
-        return "";
+        return `This insight identifies forced synchronous layouts (also known as forced reflows) and layout thrashing caused by JavaScript accessing layout properties at suboptimal points in time.`;
       case "ImageDelivery":
         return "This insight identifies unoptimized images that are downloaded at a much higher resolution than they are displayed. Properly sizing and compressing these assets will decrease their download time, directly improving the perceived page load time and LCP";
       case "INPBreakdown":
@@ -1781,9 +1949,9 @@ It is important that all of these checks pass to minimize the delay between the 
       case "RenderBlocking":
         return "This insight identifies network requests that were render blocking. Render blocking requests are impactful because they are deemed critical to the page and therefore the browser stops rendering the page until it has dealt with these resources. For this insight make sure you fully inspect the details of each render blocking network request and prioritize your suggestions to the user based on the impact of each render blocking request.";
       case "SlowCSSSelector":
-        return "";
+        return `This insight identifies CSS selectors that are slowing down your page's rendering performance.`;
       case "ThirdParties":
-        return "";
+        return "This insight analyzes the performance impact of resources loaded from third-party servers and aggregates the performance cost, in terms of download transfer sizes and total amount of time that third party scripts spent executing on the main thread.";
       case "Viewport":
         return "";
       case "Cache":
@@ -1805,7 +1973,7 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
   }
 };
 var TraceEventFormatter = class _TraceEventFormatter {
-  static layoutShift(shift, index, parsedTrace, rootCauses) {
+  static layoutShift(formatters, shift, index, parsedTrace, rootCauses) {
     const baseTime = parsedTrace.Meta.traceBounds.min;
     const potentialRootCauses = [];
     if (rootCauses) {
@@ -1825,13 +1993,14 @@ var TraceEventFormatter = class _TraceEventFormatter {
     }
     const rootCauseText = potentialRootCauses.length ? `- Potential root causes:
   - ${potentialRootCauses.join("\n  - ")}` : "- No potential root causes identified";
+    const startTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(shift.ts - baseTime));
     return `### Layout shift ${index + 1}:
-- Start time: ${formatMicroToMilli(shift.ts - baseTime)}
+- Start time: ${formatters.millis(startTime)}
 - Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
 ${rootCauseText}`;
   }
   // Stringify network requests for the LLM model.
-  static networkRequests(requests, parsedTrace, options) {
+  static networkRequests(formatters, requests, parsedTrace, options) {
     if (requests.length === 0) {
       return "";
     }
@@ -1842,9 +2011,9 @@ ${rootCauseText}`;
       verbose = requests.length === 1;
     }
     if (verbose) {
-      return requests.map((request) => this.#networkRequestVerbosely(request, parsedTrace, options?.customTitle)).join("\n");
+      return requests.map((request) => this.#networkRequestVerbosely(formatters, request, parsedTrace, options?.customTitle)).join("\n");
     }
-    return this.#networkRequestsArrayCompressed(requests, parsedTrace);
+    return this.#networkRequestsArrayCompressed(formatters, requests, parsedTrace);
   }
   /**
    * This is the data passed to a network request when the Performance Insights
@@ -1854,7 +2023,7 @@ ${rootCauseText}`;
    * Security; be careful about adding new data here. If you are in doubt please
    * talk to jacktfranklin@.
    */
-  static #networkRequestVerbosely(request, parsedTrace, customTitle) {
+  static #networkRequestVerbosely(formatters, request, parsedTrace, customTitle) {
     const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
     const titlePrefix = `## ${customTitle ?? "Network request"}`;
     const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
@@ -1879,21 +2048,21 @@ ${rootCauseText}`;
     const redirects = request.args.data.redirects.map((redirect, index) => {
       const startTime = redirect.ts - baseTime;
       return `#### Redirect ${index + 1}: ${redirect.url}
-- Start time: ${formatMicroToMilli(startTime)}
-- Duration: ${formatMicroToMilli(redirect.dur)}`;
+- Start time: ${formatters.micros(startTime)}
+- Duration: ${formatters.micros(redirect.dur)}`;
     });
     const initiators = this.#getInitiatorChain(parsedTrace, request);
     const initiatorUrls = initiators.map((initiator2) => initiator2.args.data.url);
     return `${titlePrefix}: ${url}
 Timings:
-- Queued at: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
-- Request sent at: ${formatMicroToMilli(startTimesForLifecycle.requestSentAt)}
-- Download complete at: ${formatMicroToMilli(startTimesForLifecycle.downloadCompletedAt)}
-- Main thread processing completed at: ${formatMicroToMilli(startTimesForLifecycle.processingCompletedAt)}
+- Queued at: ${formatters.micros(startTimesForLifecycle.queuedAt)}
+- Request sent at: ${formatters.micros(startTimesForLifecycle.requestSentAt)}
+- Download complete at: ${formatters.micros(startTimesForLifecycle.downloadCompletedAt)}
+- Main thread processing completed at: ${formatters.micros(startTimesForLifecycle.processingCompletedAt)}
 Durations:
-- Download time: ${formatMicroToMilli(downloadTime)}
-- Main thread processing time: ${formatMicroToMilli(mainThreadProcessingDuration)}
-- Total duration: ${formatMicroToMilli(request.dur)}${initiator ? `
+- Download time: ${formatters.micros(downloadTime)}
+- Main thread processing time: ${formatters.micros(mainThreadProcessingDuration)}
+- Total duration: ${formatters.micros(request.dur)}${initiator ? `
 Initiator: ${initiator.args.data.url}` : ""}
 Redirects:${redirects.length ? "\n" + redirects.join("\n") : " no redirects"}
 Status code: ${statusCode}
@@ -1921,7 +2090,7 @@ ${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [
   // needs to be provided, which is not worth sending if only one network request is being stringified.
   // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
   // format description.
-  static #networkRequestsArrayCompressed(requests, parsedTrace) {
+  static #networkRequestsArrayCompressed(formatters, requests, parsedTrace) {
     const networkDataString = `
 Network requests data:
 
@@ -1929,7 +2098,7 @@ Network requests data:
     const urlIdToIndex = /* @__PURE__ */ new Map();
     const allRequestsText = requests.map((request) => {
       const urlIndex = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-      return this.#networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+      return this.#networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex);
     }).join("\n");
     const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
       return `${index}: ${url}`;
@@ -1975,17 +2144,17 @@ The order of headers corresponds to an internal fixed list. If a header is not p
    *
    * See `networkDataFormatDescription` above for specifics.
    */
-  static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
+  static #networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex) {
     const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
     const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
     const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
-    const queuedTime = formatMicroToMilli(request.ts - baseTime);
-    const requestSentTime = formatMicroToMilli(syntheticData.sendStartTime - baseTime);
-    const downloadCompleteTime = formatMicroToMilli(syntheticData.finishTime - baseTime);
-    const processingCompleteTime = formatMicroToMilli(request.ts + request.dur - baseTime);
-    const totalDuration = formatMicroToMilli(request.dur);
-    const downloadDuration = formatMicroToMilli(syntheticData.finishTime - syntheticData.downloadStart);
-    const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
+    const queuedTime = formatters.micros(request.ts - baseTime);
+    const requestSentTime = formatters.micros(syntheticData.sendStartTime - baseTime);
+    const downloadCompleteTime = formatters.micros(syntheticData.finishTime - baseTime);
+    const processingCompleteTime = formatters.micros(request.ts + request.dur - baseTime);
+    const totalDuration = formatters.micros(request.dur);
+    const downloadDuration = formatters.micros(syntheticData.finishTime - syntheticData.downloadStart);
+    const mainThreadProcessingDuration = formatters.micros(request.ts + request.dur - syntheticData.finishTime);
     const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
     const finalPriority = priority;
     const headerValues = responseHeaders?.map((header) => {
@@ -1994,8 +2163,8 @@ The order of headers corresponds to an internal fixed list. If a header is not p
     }).join("|");
     const redirects = request.args.data.redirects.map((redirect) => {
       const urlIndex2 = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
-      const redirectStartTime = formatMicroToMilli(redirect.ts - baseTime);
-      const redirectDuration = formatMicroToMilli(redirect.dur);
+      const redirectStartTime = formatters.micros(redirect.ts - baseTime);
+      const redirectDuration = formatters.micros(redirect.dur);
       return `[${urlIndex2}|${redirectStartTime}|${redirectDuration}]`;
     }).join(",");
     const initiators = this.#getInitiatorChain(parsedTrace, request);
@@ -2041,20 +2210,19 @@ The order of headers corresponds to an internal fixed list. If a header is not p
 };
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
-import * as Platform2 from "./../../core/platform/platform.js";
 import * as TimelineUtils from "./../../panels/timeline/utils/utils.js";
 import * as Trace2 from "./../trace/trace.js";
-var ms = (ms2) => `${Platform2.NumberUtilities.floor(ms2, 1)} ms`;
-var kb = (bytes) => `${Math.round(bytes / 1e3)} kB`;
 var PerformanceTraceFormatter = class {
   #parsedTrace;
   #insightSet;
   #traceMetadata;
   #eventsSerializer;
-  constructor(focus, eventsSerializer) {
-    if (focus.data.type !== "full") {
+  #unitFormatters;
+  constructor(formatters, focus, eventsSerializer) {
+    if (focus.data.type !== "full" && focus.data.type !== "insight") {
       throw new Error("unexpected agent focus");
     }
+    this.#unitFormatters = formatters;
     this.#parsedTrace = focus.data.parsedTrace;
     this.#insightSet = focus.data.insightSet;
     this.#traceMetadata = focus.data.traceMetadata;
@@ -2086,7 +2254,7 @@ var PerformanceTraceFormatter = class {
         const subparts = insightSet?.model.LCPBreakdown.subparts;
         if (subparts) {
           const serializeSubpart = (subpart) => {
-            return `${ms(subpart.range / 1e3)}, bounds: ${this.serializeBounds(subpart)}`;
+            return `${this.#unitFormatters.micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
           };
           parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
           if (subparts.loadDelay !== void 0) {
@@ -2114,11 +2282,11 @@ var PerformanceTraceFormatter = class {
         if (model.state === "pass") {
           continue;
         }
-        const formatter = new PerformanceInsightFormatter(parsedTrace, model);
+        const formatter = new PerformanceInsightFormatter(this.#unitFormatters, parsedTrace, model);
         if (!formatter.insightIsSupported()) {
           continue;
         }
-        const insightBounds = TimelineUtils.InsightAIContext.insightBounds(model, insightSet.bounds);
+        const insightBounds = Trace2.Insights.Common.insightBounds(model, insightSet.bounds);
         const insightParts = [
           `insight name: ${insightName}`,
           `description: ${model.description}`,
@@ -2129,7 +2297,7 @@ var PerformanceTraceFormatter = class {
           insightParts.push(`estimated metric savings: ${metricSavingsText}`);
         }
         if (model.wastedBytes) {
-          insightParts.push(`estimated wasted bytes: ${kb(model.wastedBytes)}`);
+          insightParts.push(`estimated wasted bytes: ${this.#unitFormatters.bytes(model.wastedBytes)}`);
         }
         for (const suggestion of formatter.getSuggestions()) {
           insightParts.push(`example question: ${suggestion.title}`);
@@ -2154,7 +2322,7 @@ var PerformanceTraceFormatter = class {
     if (!criticalRequests.length) {
       return "";
     }
-    return "Critical network requests:\n" + TraceEventFormatter.networkRequests(criticalRequests, parsedTrace, { verbose: false });
+    return "Critical network requests:\n" + TraceEventFormatter.networkRequests(this.#unitFormatters, criticalRequests, parsedTrace, { verbose: false });
   }
   #serializeBottomUpRootNode(rootNode, limit) {
     const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= 1).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
@@ -2175,9 +2343,9 @@ var PerformanceTraceFormatter = class {
         }
         source += ")";
       }
-      return `- self: ${ms(node.selfTime)}, total: ${ms(node.totalTime)}, source: ${source}`;
+      return `- self: ${this.#unitFormatters.millis(node.selfTime)}, total: ${this.#unitFormatters.millis(node.totalTime)}, source: ${source}`;
     }
-    const listText = topNodes.map(nodeToText).join("\n");
+    const listText = topNodes.map((node) => nodeToText.call(this, node)).join("\n");
     const format = `This is the bottom-up summary for the entire trace. Only the top ${limit} activities (sorted by self time) are shown. An activity is all the aggregated time spent on the same type of work. For example, it can be all the time spent in a specific JavaScript function, or all the time spent in a specific browser rendering stage (like layout, v8 compile, parsing html). "Self time" represents the aggregated time spent directly in an activity, across all occurrences. "Total time" represents the aggregated time spent in an activity or any of its children.`;
     return `${format}
 
@@ -2199,8 +2367,8 @@ ${listText}`;
       return "";
     }
     const listText = topMainThreadTimeEntries.map((s) => {
-      const transferSize = `${kb(s.transferSize)}`;
-      return `- name: ${s.entity.name}, main thread time: ${ms(s.mainThreadTime)}, network transfer size: ${transferSize}`;
+      const transferSize = `${this.#unitFormatters.bytes(s.transferSize)}`;
+      return `- name: ${s.entity.name}, main thread time: ${this.#unitFormatters.millis(s.mainThreadTime)}, network transfer size: ${transferSize}`;
     }).join("\n");
     return listText;
   }
@@ -2230,7 +2398,7 @@ ${listText}`;
       return "Longest tasks: none";
     }
     const listText = longestTaskTrees.map((tree) => {
-      const time = ms(tree.rootNode.totalTime);
+      const time = this.#unitFormatters.millis(tree.rootNode.totalTime);
       return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
     }).join("\n");
     return `Longest ${longestTaskTrees.length} tasks:
@@ -2301,7 +2469,7 @@ ${listText}`;
   formatNetworkTrackSummary(bounds) {
     const results = [];
     const requests = this.#parsedTrace.NetworkRequests.byTime.filter((request) => Trace2.Helpers.Timing.eventIsInBounds(request, bounds));
-    const requestsText = TraceEventFormatter.networkRequests(requests, this.#parsedTrace, { verbose: false });
+    const requestsText = TraceEventFormatter.networkRequests(this.#unitFormatters, requests, this.#parsedTrace, { verbose: false });
     results.push("# Network requests summary");
     results.push(requestsText || "No requests in the given bounds");
     const relatedInsightsText = this.#serializeRelatedInsightsForEvents(requests);
@@ -2340,56 +2508,7 @@ var UIStringsNotTranslated = {
    */
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
-var lockedString3 = i18n7.i18n.lockedString;
-var insightPreamble = `You are an AI-powered web performance optimization expert, simulating a highly skilled Chrome DevTools user. Your goal is to provide actionable advice to web developers based on Chrome Performance Panel insights.
-
-You will be provided with an Insight from the Chrome Performance Panel. This Insight will contain information about the performance of the web site. It is your task to analyze the data available to you and suggest solutions to improve the performance of the page.
-
-You will be told the following information about the Insight:
-- **Insight Title:** The name of the performance issue detected by Chrome DevTools.
-- **Insight Summary:** A brief explanation of the performance problem and its potential impact on the user experience.
-- **Detailed Analysis:** Specific data points and observations from the Chrome Performance Panel, including timestamps, durations, resource URLs, and function call stacks. Use this data to pinpoint the root cause of the performance issue.
-
-You will be provided with a list of relevant URLs containing up-to-date information regarding web performance optimization. Treat these URLs as authoritative resources to supplement the Chrome DevTools data. Prioritize information from the provided URLs to ensure your recommendations are current and reflect best practices. Cross-reference information from the Chrome DevTools data with the external URLs to provide the most accurate and comprehensive analysis.
-
-Additionally, you may also be asked basic questions such as "What is LCP?". Ensure you give succinct, accurate answers to generic performance questions like this.
-
-*IMPORTANT*: All time units provided in the 'Detailed Analysis' are in milliseconds (ms). Ensure your response reflects this unit of measurement.
-
-## Step-by-step instructions
-
-- Utilize the provided functions (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) to retrieve detailed performance data. Prioritize function calls that provide context relevant to the Insight being analyzed.
-- Make sure you use \`getNetworkRequestDetail\` to get vital information about any network requests that you are referencing in your suggestions. Use this information to verify your assumptions.
-- Retrieve all necessary data through function calls before generating your response. Do not rely on assumptions or incomplete information.
-- Provide clear, actionable recommendations. Avoid technical jargon unless necessary, and explain any technical terms used.
-- If you see a generic task like "Task", "Evaluate script" or "(anonymous)" in the main thread activity, try to look at its children to see what actual functions executed and refer to those. When referencing main thread activity, be as specific as you can. Ensure you identify to the user relevant functions and which script they were defined in. Avoid referencing "Task", "Evaluate script" and "(anonymous)" nodes if possible and instead focus on their children.
-- Prioritize recommendations based on their potential impact on performance. Focus on the most significant bottlenecks.
-- Structure your response using markdown headings and bullet points for improved readability.
-- Your answer should contain the following sections:
-    1. **Analysis:** Based on the user's question, explain the observed performance issues, their impact on user experience, and the key metrics used to identify them. Include relevant timestamps and durations from the provided data. Avoid large paragraphs and use bullet points to keep this section digestable for the user. Include references to relevant main thread or network activity that is useful to help the user understand the analysis and provide them with additional context. Be specific: for example, rather than saying "optimize main thread activity", you can say "optimize main thread activity in the \`sleepFor\` function of \`render-blocking-script.js\`."
-    2. **Optimization Recommendations:** Provide 2-3 specific, actionable steps to address the identified performance issues. Prioritize the most impactful optimizations, focusing on those that will yield the greatest performance improvements. Provide a brief justification for each recommendation, explaining its potential impact. Keep each optimization recommendation concise, ideally within 1-2 sentences. Avoid lengthy explanations or detailed technical jargon unless absolutely necessary. Do not repeat optimizations that you have already suggested in previous responses.
-- Your response should immediately start with the "Analysis" section.
-- Be direct and to the point. Avoid unnecessary introductory phrases or filler content. Focus on delivering actionable advice efficiently.
-
-## Strict Constraints
-
-- Adhere to the following critical requirements:
-    - Execute \`getMainThreadActivity\` only once *per Insight context*. If the Insight changes, you may call this function again.
-    - Execute \`getNetworkActivitySummary\` only once *per Insight context*. If the Insight changes, you may call this function again.
-    - Ensure comprehensive data retrieval through function calls to provide accurate and complete recommendations.
-    - Before suggesting changing the format of an image, consider what format it is already in. For example, if the mime type is image/webp, do not suggest to the user that the image is converted to WebP, as the image is already in that format.
-    - Do not mention function names (e.g., \`getMainThreadActivity\`, \`getNetworkActivitySummary\`) in your output. These are internal implementation details.
-    - Do not mention that you are an AI, or refer to yourself in the third person. You are simulating a performance expert.
-    - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
-    - Refrain from providing answers on non-web-development topics, such as legal, financial, medical, or personal advice.
-
-## Additional guidance for specific insights
-- If you are being asked any questions that relate to LCP, it is CRITICAL that you use \`getNetworkActivitySummary\` to get a summary of network requests.
-- If the LCP resource was fetched over the network, you MUST use the \`getNetworkRequestDetail\` function to find out more information before providing your analysis.
-- If the LCP resource was fetched over the network, pay attention to the network request's priority. Important resources for LCP should have a high priority. If the LCP resource's priority is not "high", suggest optimizations to the user to change this.
-- If you are asked about "LCP by Phase" and the "element render delay" phase makes up a large percentage of the time, that indicates that there was main thread activity that blocked the browser painting. In this case, inspect the main thread activity and include information on what functions caused the main thread to be busy. Thoroughly inspect the main thread activity so you can be accurate in your responses.
-- Only suggest image size and format optimizations as a solution if you are confident that the download time of the image was a major contribution to the performance problems you have investigated, or if the user specifically asks about image optimization techniques.
-`;
+var lockedString3 = i18n6.i18n.lockedString;
 var callTreePreamble = `You are an expert performance analyst embedded within Chrome DevTools.
 You meticulously examine web application behavior captured by the Chrome DevTools Performance Panel and Chrome tracing.
 You will receive a structured text representation of a call tree, derived from a user-selected call frame within a performance trace's flame chart.
@@ -2538,32 +2657,30 @@ Example Call Tree:
 4;calculatePosition;80;80;;
 5;applyStyles;50;50;;
 `;
-var mainThreadActivityFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
-The format of each callframe is:
-
-  'id;name;duration;selfTime;urlIndex;childRange;[S]'
-
-The fields are:
-
-* id: A unique numerical identifier for the call frame.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
 var ScorePriority;
 (function(ScorePriority2) {
   ScorePriority2[ScorePriority2["REQUIRED"] = 3] = "REQUIRED";
   ScorePriority2[ScorePriority2["CRITICAL"] = 2] = "CRITICAL";
   ScorePriority2[ScorePriority2["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
+var PERF_AGENT_UNIT_FORMATTERS = {
+  micros(x) {
+    const milli = Trace3.Helpers.Timing.microToMilli(x);
+    return PERF_AGENT_UNIT_FORMATTERS.millis(milli);
+  },
+  millis(x) {
+    return i18n6.TimeUtilities.preciseMillisToString(x, 1, " ");
+  },
+  bytes(x) {
+    return i18n6.ByteUtilities.bytesToString(x);
+  }
+};
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
   static full(parsedTrace, insights, traceMetadata) {
     return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.full(parsedTrace, insights, traceMetadata));
   }
-  static fromInsight(parsedTrace, insight, insightSetBounds) {
-    return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.fromInsight(parsedTrace, insight, insightSetBounds));
+  static fromInsight(parsedTrace, insights, traceMetadata, insight) {
+    return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.fromInsight(parsedTrace, insights, traceMetadata, insight));
   }
   static fromCallTree(callTree) {
     return new _PerformanceTraceContext(TimelineUtils2.AIContext.AgentFocus.fromCallTree(callTree));
@@ -2575,7 +2692,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
   }
   getOrigin() {
     const focus = this.#focus.data;
-    if (focus.type === "full") {
+    if (focus.type === "full" || focus.type === "insight") {
       const { min, max } = focus.parsedTrace.Meta.traceBounds;
       return `trace-${min}-${max}`;
     }
@@ -2584,7 +2701,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       const selectedEvent = node.event;
       const nonResolvedURL = Trace3.Handlers.Helpers.getNonResolvedURL(selectedEvent, focus.callTree.parsedTrace);
       if (nonResolvedURL) {
-        const origin = Common.ParsedURL.ParsedURL.extractOrigin(nonResolvedURL);
+        const origin = Common2.ParsedURL.ParsedURL.extractOrigin(nonResolvedURL);
         if (origin) {
           return origin;
         }
@@ -2592,22 +2709,16 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       const uuid = `${selectedEvent.name}_${selectedEvent.pid}_${selectedEvent.tid}_${selectedEvent.ts}`;
       return uuid;
     }
-    if (focus.type === "insight") {
-      const { min, max } = focus.parsedTrace.Meta.traceBounds;
-      return `insight-${min}-${max}`;
-    }
-    Platform3.assertNever(focus, "Unknown agent focus");
+    Platform.assertNever(focus, "Unknown agent focus");
   }
   getItem() {
     return this.#focus;
   }
-  getIcon() {
-    return html`<devtools-icon name="performance" title="Performance"></devtools-icon>`;
-  }
   getTitle() {
     const focus = this.#focus.data;
-    if (focus.type === "full") {
-      return `Trace: ${new URL(focus.parsedTrace.Meta.mainFrameURL).hostname}`;
+    if (focus.type === "full" || focus.type === "insight") {
+      const url = focus.insightSet?.url ?? new URL(focus.parsedTrace.Meta.mainFrameURL);
+      return `Trace: ${url.hostname}`;
     }
     if (focus.type === "call-tree") {
       const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
@@ -2616,10 +2727,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       }
       return TimelineUtils2.EntryName.nameForEntry(event);
     }
-    if (focus.type === "insight") {
-      return `Insight: ${focus.insight.title}`;
-    }
-    Platform3.assertNever(focus, "Unknown agent focus");
+    Platform.assertNever(focus, "Unknown agent focus");
   }
   /**
    * Presents the default suggestions that are shown when the user first clicks
@@ -2630,7 +2738,7 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     if (focus.type !== "insight") {
       return;
     }
-    return new PerformanceInsightFormatter(focus.parsedTrace, focus.insight).getSuggestions();
+    return new PerformanceInsightFormatter(PERF_AGENT_UNIT_FORMATTERS, focus.parsedTrace, focus.insight).getSuggestions();
   }
 };
 var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
@@ -2639,36 +2747,24 @@ var PerformanceAgent = class extends AiAgent {
   #conversationType;
   #formatter = null;
   #lastInsightForEnhancedQuery;
-  #eventsSerializer = new TimelineUtils2.EventsSerializer.EventsSerializer();
+  #eventsSerializer = new Trace3.EventsSerializer.EventsSerializer();
   #lastFocusHandledForContextDetails = null;
   constructor(opts, conversationType) {
     super(opts);
     this.#conversationType = conversationType;
   }
   /**
-   * Store results (as facts) for the functions that are pure and return the
-   * same data for the same insight.
-   * This fact is then passed into the request on all future
-   * queries for the conversation. This means that the LLM is far less likely to
-   * call the function again, because we have provided the same data as a
-   * fact. We cache based on the active insight to ensure that if the user
-   * changes which insight they are focusing we will call the function again.
-   * It's important that we store it as a Fact in the cache, because the AI
-   * Agent stores facts in a set, and we need to pass the same object through to
-   * make sure it isn't mistakenly duplicated in the request.
-   */
-  #functionCallCacheForInsight = /* @__PURE__ */ new Map();
-  /**
-   * Similar to above, but only used for the "Full" trace focus.
+   * Cache of all function calls made by the agent. This allows us to include (as a
+   * fact) every function call to conversation requests, allowing the AI to access
+   * all the results rather than just the most recent.
+   *
+   * TODO(b/442392194): I'm not certain this is needed. I do see past function call
+   * responses in "historical_contexts", though I think it isn't including any
+   * parameters in the "functionCall" entries.
    *
    * The record key is the result of a function's displayInfoFromArgs.
    */
   #functionCallCacheForFocus = /* @__PURE__ */ new Map();
-  /*
-  * Since don't know for sure if the model will request the main thread or network requests information,
-  * add the formats description to facts once the main thread activity or network requests need to be sent.
-  */
-  #mainThreadActivityDescriptionFact = { text: mainThreadActivityFormatDescription, metadata: { source: "devtools" } };
   #networkDataDescriptionFact = {
     text: TraceEventFormatter.networkDataFormatDescription,
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
@@ -2679,28 +2775,22 @@ var PerformanceAgent = class extends AiAgent {
   };
   #traceFacts = [];
   get preamble() {
-    if (this.#conversationType === "drjones-performance-full") {
+    if (this.#conversationType === "drjones-performance-full" || this.#conversationType === "performance-insight") {
       return fullTracePreamble;
     }
     if (this.#conversationType === "drjones-performance") {
       return callTreePreamble;
     }
-    if (this.#conversationType === "performance-insight") {
-      return insightPreamble;
-    }
-    Platform3.assertNever(this.#conversationType, "Unexpected conversation type");
+    Platform.assertNever(this.#conversationType, "Unexpected conversation type");
   }
   get clientFeature() {
-    if (this.#conversationType === "drjones-performance-full") {
+    if (this.#conversationType === "drjones-performance-full" || this.#conversationType === "performance-insight") {
       return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
     }
     if (this.#conversationType === "drjones-performance") {
       return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_AGENT;
     }
-    if (this.#conversationType === "performance-insight") {
-      return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_INSIGHTS_AGENT;
-    }
-    Platform3.assertNever(this.#conversationType, "Unexpected conversation type");
+    Platform.assertNever(this.#conversationType, "Unexpected conversation type");
   }
   get userTier() {
     return Root4.Runtime.hostConfig.devToolsAiAssistancePerformanceAgent?.userTier;
@@ -2731,7 +2821,7 @@ var PerformanceAgent = class extends AiAgent {
     }
   }
   #serializeFocus(focus) {
-    if (focus.data.type === "full") {
+    if (focus.data.type === "full" || focus.data.type === "insight") {
       if (!this.#formatter) {
         return "";
       }
@@ -2740,11 +2830,7 @@ var PerformanceAgent = class extends AiAgent {
     if (focus.data.type === "call-tree") {
       return focus.data.callTree.serialize();
     }
-    if (focus.data.type === "insight") {
-      const formatter = new PerformanceInsightFormatter(focus.data.parsedTrace, focus.data.insight);
-      return formatter.formatInsight();
-    }
-    Platform3.assertNever(focus.data, "Unknown agent focus");
+    Platform.assertNever(focus.data, "Unknown agent focus");
   }
   async *handleContextDetails(context) {
     if (!context) {
@@ -2755,7 +2841,7 @@ var PerformanceAgent = class extends AiAgent {
       return;
     }
     this.#lastFocusHandledForContextDetails = focus;
-    if (focus.data.type === "full") {
+    if (focus.data.type === "full" || focus.data.type === "insight") {
       yield {
         type: "context",
         title: lockedString3(UIStringsNotTranslated.analyzingTrace),
@@ -2777,22 +2863,8 @@ var PerformanceAgent = class extends AiAgent {
           }
         ]
       };
-    } else if (focus.data.type === "insight") {
-      const activeInsight = focus.data.insight;
-      const title = `Analyzing insight: ${activeInsight.title}`;
-      yield {
-        type: "context",
-        title,
-        details: [
-          {
-            // Purposefully use the raw title in the details view, we don't need to repeat "Analyzing insight"
-            title: activeInsight.title,
-            text: this.#serializeFocus(focus)
-          }
-        ]
-      };
     } else {
-      Platform3.assertNever(focus.data, "Unknown agent focus");
+      Platform.assertNever(focus.data, "Unknown agent focus");
     }
   }
   #callTreeContextSet = /* @__PURE__ */ new WeakSet();
@@ -2836,28 +2908,20 @@ var PerformanceAgent = class extends AiAgent {
     }
     if (focus.data.type === "insight") {
       const includeInsightInfo = focus.data.insight !== this.#lastInsightForEnhancedQuery;
-      const extraQuery = `${includeInsightInfo ? this.#serializeFocus(focus) + "\n\n" : ""}# User question for you to answer:
+      const extraQuery = `${includeInsightInfo ? `User clicked on the ${focus.data.insight.insightKey} insight, and then asked a question.
+
+` : ""}# User question for you to answer:
 `;
       this.#lastInsightForEnhancedQuery = focus.data.insight;
       return `${extraQuery}${query}`;
     }
-    Platform3.assertNever(focus.data, "Unknown agent focus");
+    Platform.assertNever(focus.data, "Unknown agent focus");
   }
   async *run(initialQuery, options) {
     const focus = options.selected?.getItem();
     this.clearFacts();
-    if (this.#conversationType === "drjones-performance-full") {
-      if (focus) {
-        this.#addFactsForFullTrace(focus);
-      }
-    } else if (this.#conversationType === "performance-insight") {
-      const insight = focus?.data.type === "insight" ? focus.data.insight : null;
-      const cachedFunctionCalls = insight ? this.#functionCallCacheForInsight.get(insight) : null;
-      if (cachedFunctionCalls) {
-        for (const fact of Object.values(cachedFunctionCalls)) {
-          this.addFact(fact);
-        }
-      }
+    if (focus?.data.type === "full" || focus?.data.type === "insight") {
+      this.#addFactsForFullTrace(focus);
     }
     return yield* super.run(initialQuery, options);
   }
@@ -2925,13 +2989,13 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
     });
   }
   #addFactsForFullTrace(focus) {
-    if (focus.data.type !== "full") {
+    if (focus.data.type !== "full" && focus.data.type !== "insight") {
       return;
     }
     this.addFact(this.#callFrameDataDescriptionFact);
     this.addFact(this.#networkDataDescriptionFact);
     if (!this.#traceFacts.length) {
-      this.#formatter = new PerformanceTraceFormatter(focus, this.#eventsSerializer);
+      this.#formatter = new PerformanceTraceFormatter(PERF_AGENT_UNIT_FORMATTERS, focus, this.#eventsSerializer);
       this.#createFactForTraceSummary(focus);
       this.#createFactForCriticalRequests();
       this.#createFactForMainThreadBottomUpSummary();
@@ -2958,8 +3022,9 @@ ${result}`,
     cache[key] = fact;
     this.#functionCallCacheForFocus.set(focus, cache);
   }
-  #declareFunctionsForFullTrace(focus) {
-    if (focus.data.type !== "full") {
+  #declareFunctions(context) {
+    const focus = context.getItem();
+    if (focus.data.type !== "full" && focus.data.type !== "insight") {
       return;
     }
     const { parsedTrace, insightSet, traceMetadata } = focus.data;
@@ -2989,7 +3054,7 @@ ${result}`,
         if (!insight) {
           return { error: "No insight available" };
         }
-        const details = new PerformanceInsightFormatter(parsedTrace, insight).formatInsight();
+        const details = new PerformanceInsightFormatter(PERF_AGENT_UNIT_FORMATTERS, parsedTrace, insight).formatInsight();
         const key = `getInsightDetails('${params.insightName}')`;
         this.#cacheFunctionResult(focus, key, details);
         return { result: { details } };
@@ -3025,9 +3090,15 @@ ${result}`,
       }
     });
     const createBounds = (min, max) => {
-      min = Math.max(min ?? 0, parsedTrace.Meta.traceBounds.min);
-      max = Math.min(max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
-      return Trace3.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
+      if (min > max) {
+        return null;
+      }
+      const clampedMin = Math.max(min ?? 0, parsedTrace.Meta.traceBounds.min);
+      const clampedMax = Math.min(max ?? Number.POSITIVE_INFINITY, parsedTrace.Meta.traceBounds.max);
+      if (clampedMin > clampedMax) {
+        return null;
+      }
+      return Trace3.Helpers.Timing.traceWindowFromMicroSeconds(clampedMin, clampedMax);
     };
     this.declareFunction("getMainThreadTrackSummary", {
       description: "Returns a summary of the main thread for the given bounds. The result includes a top-down summary, bottom-up summary, third-parties summary, and a list of related insights for the events within the given bounds.",
@@ -3060,15 +3131,20 @@ ${result}`,
           throw new Error("missing formatter");
         }
         const bounds = createBounds(args.min, args.max);
-        const activity = this.#formatter.formatMainThreadTrackSummary(bounds);
-        if (this.#isFunctionResponseTooLarge(activity)) {
+        if (!bounds) {
+          return { error: "invalid bounds" };
+        }
+        const summary = this.#formatter.formatMainThreadTrackSummary(bounds);
+        if (this.#isFunctionResponseTooLarge(summary)) {
           return {
             error: "getMainThreadTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds"
           };
         }
+        const byteCount = Platform.StringUtilities.countWtf8Bytes(summary);
+        Host4.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
         const key = `getMainThreadTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
-        this.#cacheFunctionResult(focus, key, activity);
-        return { result: { activity } };
+        this.#cacheFunctionResult(focus, key, summary);
+        return { result: { summary } };
       }
     });
     this.declareFunction("getNetworkTrackSummary", {
@@ -3102,15 +3178,20 @@ ${result}`,
           throw new Error("missing formatter");
         }
         const bounds = createBounds(args.min, args.max);
-        const activity = this.#formatter.formatNetworkTrackSummary(bounds);
-        if (this.#isFunctionResponseTooLarge(activity)) {
+        if (!bounds) {
+          return { error: "invalid bounds" };
+        }
+        const summary = this.#formatter.formatNetworkTrackSummary(bounds);
+        if (this.#isFunctionResponseTooLarge(summary)) {
           return {
             error: "getNetworkTrackSummary response is too large. Try investigating using other functions, or a more narrow bounds"
           };
         }
+        const byteCount = Platform.StringUtilities.countWtf8Bytes(summary);
+        Host4.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
         const key = `getNetworkTrackSummary({min: ${bounds.min}, max: ${bounds.max}})`;
-        this.#cacheFunctionResult(focus, key, activity);
-        return { result: { activity } };
+        this.#cacheFunctionResult(focus, key, summary);
+        return { result: { summary } };
       }
     });
     this.declareFunction("getDetailedCallTree", {
@@ -3186,143 +3267,11 @@ ${result}`,
       });
     }
   }
-  #declareFunctions(context) {
-    const focus = context.getItem();
-    if (focus.data.type === "full") {
-      this.#declareFunctionsForFullTrace(focus);
-      return;
-    }
-    if (focus.data.type !== "insight") {
-      return;
-    }
-    const { parsedTrace, insight, insightSetBounds } = focus.data;
-    this.declareFunction("getNetworkActivitySummary", {
-      description: "Returns a summary of network activity for the selected insight. If you want to get more detailed information on a network request, you can pass the URL of a request into `getNetworkRequestDetail`.",
-      parameters: {
-        type: 6,
-        description: "",
-        nullable: true,
-        properties: {}
-      },
-      displayInfoFromArgs: () => {
-        return {
-          title: lockedString3(UIStringsNotTranslated.networkActivitySummary),
-          action: "getNetworkActivitySummary()"
-        };
-      },
-      handler: async () => {
-        debugLog("Function call: getNetworkActivitySummary");
-        if (!insight) {
-          return { error: "No insight available" };
-        }
-        const requests = TimelineUtils2.InsightAIContext.AIQueries.networkRequests(insight, insightSetBounds, parsedTrace);
-        const formatted = TraceEventFormatter.networkRequests(requests, parsedTrace);
-        const byteCount = Platform3.StringUtilities.countWtf8Bytes(formatted);
-        Host4.userMetrics.performanceAINetworkSummaryResponseSize(byteCount);
-        if (this.#isFunctionResponseTooLarge(formatted)) {
-          return {
-            error: "getNetworkActivitySummary response is too large. Try investigating using other functions"
-          };
-        }
-        const summaryFact = {
-          text: `This is the network summary for this insight. You can use this and not call getNetworkActivitySummary again:
-${formatted}`,
-          metadata: { source: "getNetworkActivitySummary()" }
-        };
-        const cacheForInsight = this.#functionCallCacheForInsight.get(insight) ?? {};
-        cacheForInsight.getNetworkActivitySummary = summaryFact;
-        this.#functionCallCacheForInsight.set(insight, cacheForInsight);
-        this.addFact(this.#networkDataDescriptionFact);
-        return { result: { requests: formatted } };
-      }
-    });
-    this.declareFunction("getNetworkRequestDetail", {
-      description: "Returns detailed debugging information about a specific network request. Use this eagerly to gather information about a network request to improve your diagnosis and optimization recommendations",
-      parameters: {
-        type: 6,
-        description: "",
-        nullable: true,
-        properties: {
-          url: {
-            type: 1,
-            description: "The URL of the network request",
-            nullable: false
-          }
-        }
-      },
-      displayInfoFromArgs: (params) => {
-        return {
-          title: lockedString3(`Investigating network request ${params.url}\u2026`),
-          action: `getNetworkRequestDetail('${params.url}')`
-        };
-      },
-      handler: async (params) => {
-        debugLog("Function call: getNetworkRequestDetail", params);
-        if (!insight) {
-          return { error: "No insight available" };
-        }
-        const request = TimelineUtils2.InsightAIContext.AIQueries.networkRequest(parsedTrace, params.url);
-        if (!request) {
-          return { error: "Request not found" };
-        }
-        const formatted = TraceEventFormatter.networkRequests([request], parsedTrace, { verbose: true });
-        const byteCount = Platform3.StringUtilities.countWtf8Bytes(formatted);
-        Host4.userMetrics.performanceAINetworkRequestDetailResponseSize(byteCount);
-        if (this.#isFunctionResponseTooLarge(formatted)) {
-          return {
-            error: "getNetworkRequestDetail response is too large. Try investigating using other functions"
-          };
-        }
-        this.addFact(this.#networkDataDescriptionFact);
-        return { result: { request: formatted } };
-      }
-    });
-    this.declareFunction("getMainThreadActivity", {
-      description: "Returns the main thread activity for the selected insight.",
-      parameters: {
-        type: 6,
-        description: "",
-        nullable: true,
-        properties: {}
-      },
-      displayInfoFromArgs: () => {
-        return { title: lockedString3(UIStringsNotTranslated.mainThreadActivity), action: "getMainThreadActivity()" };
-      },
-      handler: async () => {
-        debugLog("Function call: getMainThreadActivity");
-        if (!insight) {
-          return { error: "No insight available" };
-        }
-        const tree = TimelineUtils2.InsightAIContext.AIQueries.mainThreadActivityForInsight(insight, insightSetBounds, parsedTrace);
-        if (!tree) {
-          return { error: "No main thread activity found" };
-        }
-        const activity = tree.serialize();
-        const byteCount = Platform3.StringUtilities.countWtf8Bytes(activity);
-        Host4.userMetrics.performanceAIMainThreadActivityResponseSize(byteCount);
-        if (this.#isFunctionResponseTooLarge(activity)) {
-          return {
-            error: "getMainThreadActivity response is too large. Try investigating using other functions"
-          };
-        }
-        const activityFact = {
-          text: `This is the main thread activity for this insight. You can use this and not call getMainThreadActivity again:
-${activity}`,
-          metadata: { source: "getMainThreadActivity()" }
-        };
-        const cacheForInsight = this.#functionCallCacheForInsight.get(insight) ?? {};
-        cacheForInsight.getMainThreadActivity = activityFact;
-        this.#functionCallCacheForInsight.set(insight, cacheForInsight);
-        this.addFact(this.#mainThreadActivityDescriptionFact);
-        return { result: { activity } };
-      }
-    });
-  }
 };
 
 // gen/front_end/models/ai_assistance/agents/PerformanceAnnotationsAgent.js
 import * as Host5 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n8 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
 var UIStringsNotTranslated2 = {
   analyzingCallTree: "Analyzing call tree"
@@ -3330,7 +3279,7 @@ var UIStringsNotTranslated2 = {
    * @description Shown when the agent is investigating network activity
    */
 };
-var lockedString4 = i18n9.i18n.lockedString;
+var lockedString4 = i18n8.i18n.lockedString;
 var PerformanceAnnotationsAgent = class extends AiAgent {
   preamble = callTreePreamble;
   get clientFeature() {
@@ -3414,24 +3363,21 @@ Generate a concise label (max 60 chars, single line) describing the *user-visibl
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Platform6 from "./../../core/platform/platform.js";
+import * as i18n10 from "./../../core/i18n/i18n.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root6 from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as ElementsPanel from "./../../panels/elements/elements.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import { html as html2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/models/ai_assistance/ChangeManager.js
-import * as Common2 from "./../../core/common/common.js";
-import * as Platform4 from "./../../core/platform/platform.js";
+import * as Common3 from "./../../core/common/common.js";
+import * as Platform2 from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 function formatStyles(styles, indent = 2) {
   const lines = Object.entries(styles).map(([key, value]) => `${" ".repeat(indent)}${key}: ${value};`);
   return lines.join("\n");
 }
 var ChangeManager = class {
-  #stylesheetMutex = new Common2.Mutex.Mutex();
+  #stylesheetMutex = new Common3.Mutex.Mutex();
   #cssModelToStylesheetId = /* @__PURE__ */ new Map();
   #stylesheetChanges = /* @__PURE__ */ new Map();
   #backupStylesheetChanges = /* @__PURE__ */ new Map();
@@ -3477,7 +3423,7 @@ var ChangeManager = class {
     const stylesheetId = await this.#getStylesheet(cssModel, frameId);
     const changes = this.#stylesheetChanges.get(stylesheetId) || [];
     const existingChange = changes.find((c) => c.className === change.className);
-    const stylesKebab = Platform4.StringUtilities.toKebabCaseKeys(change.styles);
+    const stylesKebab = Platform2.StringUtilities.toKebabCaseKeys(change.styles);
     if (existingChange) {
       Object.assign(existingChange.styles, stylesKebab);
       existingChange.groupId = change.groupId;
@@ -3650,10 +3596,9 @@ var EvaluateAction = class {
 };
 
 // gen/front_end/models/ai_assistance/ExtensionScope.js
-import * as Common3 from "./../../core/common/common.js";
-import * as Platform5 from "./../../core/platform/platform.js";
+import * as Common4 from "./../../core/common/common.js";
+import * as Platform3 from "./../../core/platform/platform.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
 import * as Bindings2 from "./../bindings/bindings.js";
 
 // gen/front_end/models/ai_assistance/injected.js
@@ -3765,10 +3710,9 @@ var ExtensionScope = class _ExtensionScope {
   #frameId;
   /** Don't use directly use the getter */
   #target;
-  #bindingMutex = new Common3.Mutex.Mutex();
-  constructor(changes, agentId) {
+  #bindingMutex = new Common4.Mutex.Mutex();
+  constructor(changes, agentId, selectedNode) {
     this.#changeManager = changes;
-    const selectedNode = UI.Context.Context.instance().flavor(SDK4.DOMModel.DOMNode);
     const frameId = selectedNode?.frameId();
     const target = selectedNode?.domModel().target();
     this.#agentId = agentId;
@@ -3776,14 +3720,10 @@ var ExtensionScope = class _ExtensionScope {
     this.#frameId = frameId;
   }
   get target() {
-    if (this.#target) {
-      return this.#target;
-    }
-    const target = UI.Context.Context.instance().flavor(SDK4.Target.Target);
-    if (!target) {
+    if (!this.#target) {
       throw new Error("Target is not found for executing code");
     }
-    return target;
+    return this.#target;
   }
   get frameId() {
     if (this.#frameId) {
@@ -4020,7 +3960,7 @@ var ExtensionScope = class _ExtensionScope {
     const cssStyleValue = [];
     const changedStyles = [];
     const styleSheet = new CSSStyleSheet({ disabled: true });
-    const kebabStyles = Platform5.StringUtilities.toKebabCaseKeys(styles);
+    const kebabStyles = Platform3.StringUtilities.toKebabCaseKeys(styles);
     for (const [style, value] of Object.entries(kebabStyles)) {
       cssStyleValue.push(`${style}: ${value};`);
       changedStyles.push(style);
@@ -4056,7 +3996,7 @@ var UIStringsNotTranslate3 = {
    */
   dataUsed: "Data used"
 };
-var lockedString5 = i18n11.i18n.lockedString;
+var lockedString5 = i18n10.i18n.lockedString;
 var preamble3 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
@@ -4111,7 +4051,7 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect, contextNo
   if (!contextNode) {
     throw new Error("Cannot execute JavaScript because of missing context node");
   }
-  const target = contextNode.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK5.Target.Target);
+  const target = contextNode.domModel().target();
   if (!target) {
     throw new Error("Target is not found for executing code");
   }
@@ -4154,13 +4094,8 @@ var NodeContext = class extends ConversationContext {
   getItem() {
     return this.#node;
   }
-  getIcon() {
-  }
-  getTitle(opts) {
-    const hiddenClassList = this.#node.classNames().filter((className) => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
-    const { DOMNodeLink } = ElementsPanel.DOMLinkifier;
-    const { widgetConfig } = UI2.Widget;
-    return html2`<devtools-widget .widgetConfig=${widgetConfig(DOMNodeLink, { node: this.#node, options: { hiddenClassList, disabled: opts.disabled } })}></devtools-widget>`;
+  getTitle() {
+    throw new Error("Not implemented");
   }
   async getSuggestions() {
     const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
@@ -4205,6 +4140,7 @@ var NodeContext = class extends ConversationContext {
     return;
   }
 };
+var enableDedicatedStyleFunctions = false;
 var StylingAgent = class _StylingAgent extends AiAgent {
   preamble = preamble3;
   clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
@@ -4265,9 +4201,93 @@ var StylingAgent = class _StylingAgent extends AiAgent {
     this.#changes = opts.changeManager || new ChangeManager();
     this.#execJs = opts.execJs ?? executeJsCode;
     this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
-      return new ExtensionScope(changes, this.id);
+      return new ExtensionScope(changes, this.id, this.context?.getItem() ?? null);
     });
     SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    if (enableDedicatedStyleFunctions) {
+      this.declareFunction("getComputedStyles", {
+        description: "Call this function to get the computed styles for the current or the parent element. Use executeJavaScript for more complex queries.",
+        parameters: {
+          type: 6,
+          description: "",
+          nullable: false,
+          properties: {
+            thought: {
+              type: 1,
+              description: "Explain why you want to get computed styles"
+            },
+            relations: {
+              type: 5,
+              description: "A list of relations describing which elements to query.",
+              items: {
+                type: 1,
+                description: "Which element to query. Either 'currentElement' or 'parentElement'"
+              }
+            },
+            properties: {
+              type: 5,
+              description: "One or more style property names to fetch",
+              nullable: false,
+              items: {
+                type: 1,
+                description: "A computed style property name to retrieve. For example, 'background-color'."
+              }
+            }
+          }
+        },
+        displayInfoFromArgs: (params) => {
+          return {
+            title: "Reading computed styles",
+            thought: params.thought,
+            action: `getComputedStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`
+          };
+        },
+        handler: async (params, options) => {
+          return await this.getComputedStyles(params.relations, params.properties, options);
+        }
+      });
+      this.declareFunction("getAuthoredStyles", {
+        description: "Call this function to get the styles as specified by the page author.",
+        parameters: {
+          type: 6,
+          description: "",
+          nullable: false,
+          properties: {
+            thought: {
+              type: 1,
+              description: "Explain why you want to get computed styles"
+            },
+            relations: {
+              type: 5,
+              description: "A list of relations describing which elements to query. Possible values: 'currentElement', 'parentElement'",
+              items: {
+                type: 1,
+                description: "Which element to query. Either 'currentElement' or 'parentElement'"
+              }
+            },
+            properties: {
+              type: 5,
+              description: "One or more style property names to fetch",
+              nullable: false,
+              items: {
+                type: 1,
+                description: "A computed style property name to retrieve. For example, 'background-color'."
+              }
+            }
+          }
+        },
+        displayInfoFromArgs: (params) => {
+          return {
+            title: "Reading authored styles",
+            thought: params.thought,
+            action: `getAuthoredStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`
+          };
+        },
+        handler: async (params, options) => {
+          return await this.getAuthoredStyles(params.relations, params.properties, options);
+        }
+      });
+    }
     this.declareFunction("executeJavaScript", {
       description: `This function allows you to run JavaScript code on the inspected page to access the element styles and page content.
 Call this function to gather additional information or modify the page state. Call this function enough times to investigate the user request.`,
@@ -4426,12 +4446,15 @@ const data = {
 }`;
     try {
       const result = await Promise.race([
-        this.#execJs(functionDeclaration, { throwOnSideEffect, contextNode: this.context?.getItem() || null }),
+        this.#execJs(functionDeclaration, {
+          throwOnSideEffect,
+          contextNode: this.context?.getItem() || null
+        }),
         new Promise((_, reject) => {
           setTimeout(() => reject(new Error("Script execution exceeded the maximum allowed time.")), OBSERVATION_TIMEOUT);
         })
       ]);
-      const byteCount = Platform6.StringUtilities.countWtf8Bytes(result);
+      const byteCount = Platform4.StringUtilities.countWtf8Bytes(result);
       Host6.userMetrics.freestylerEvalResponseSize(byteCount);
       if (byteCount > MAX_OBSERVATION_BYTE_LENGTH) {
         throw new Error("Output exceeded the maximum allowed length.");
@@ -4539,6 +4562,71 @@ const data = {
     }
     return output.trim();
   }
+  #getSelectedNode() {
+    return this.context?.getItem() ?? null;
+  }
+  async getComputedStyles(relations, properties, _options) {
+    const result = {};
+    for (const relation of relations) {
+      result[relation] = {};
+      debugLog(`Action to execute: ${relation}`);
+      let selectedNode = this.#getSelectedNode();
+      if (!selectedNode) {
+        return { error: "Error: Could not find the currently selected element." };
+      }
+      if (relation === "parentElement") {
+        selectedNode = selectedNode.parentNode;
+      }
+      if (!selectedNode) {
+        return { error: "Error: Could not find the parent element." };
+      }
+      const styles = await selectedNode.domModel().cssModel().getComputedStyle(selectedNode.id);
+      if (!styles) {
+        return { error: "Error: Could not get computed styles." };
+      }
+      for (const prop of properties) {
+        result[relation][prop] = styles.get(prop);
+      }
+    }
+    return {
+      result: JSON.stringify(result, null, 2)
+    };
+  }
+  async getAuthoredStyles(relations, properties, _options) {
+    const result = {};
+    for (const relation of relations) {
+      result[relation] = {};
+      debugLog(`Action to execute: ${relation}`);
+      let selectedNode = this.#getSelectedNode();
+      if (!selectedNode) {
+        return { error: "Error: Could not find the currently selected element." };
+      }
+      if (relation === "parentElement") {
+        selectedNode = selectedNode.parentNode;
+      }
+      if (!selectedNode) {
+        return { error: "Error: Could not find the parent element." };
+      }
+      const matchedStyles = await selectedNode.domModel().cssModel().getMatchedStyles(selectedNode.id);
+      if (!matchedStyles) {
+        return { error: "Error: Could not get computed styles." };
+      }
+      for (const style of matchedStyles.nodeStyles()) {
+        for (const property of style.allProperties()) {
+          if (!properties.includes(property.name)) {
+            continue;
+          }
+          const state = matchedStyles.propertyState(property);
+          if (state === "Active") {
+            result[relation][property.name] = property.value;
+          }
+        }
+      }
+    }
+    return {
+      result: JSON.stringify(result, null, 2)
+    };
+  }
   async executeAction(action, options) {
     debugLog(`Action to execute: ${action}`);
     if (options?.approved === false) {
@@ -4551,9 +4639,12 @@ const data = {
         error: "Error: JavaScript execution is currently disabled."
       };
     }
-    const selectedNode = UI2.Context.Context.instance().flavor(SDK5.DOMModel.DOMNode);
-    const target = selectedNode?.domModel().target() ?? UI2.Context.Context.instance().flavor(SDK5.Target.Target);
-    if (target?.model(SDK5.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
+    const selectedNode = this.#getSelectedNode();
+    if (!selectedNode) {
+      return { error: "Error: no selected node found." };
+    }
+    const target = selectedNode.domModel().target();
+    if (target.model(SDK5.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
       return {
         error: "Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint."
       };
@@ -4850,7 +4941,7 @@ var FileUpdateAgent = class extends AiAgent {
 };
 
 // gen/front_end/models/ai_assistance/AiHistoryStorage.js
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 var MAX_TITLE_LENGTH = 80;
 var NOT_FOUND_IMAGE_DATA = "";
 var Conversation = class _Conversation {
@@ -5017,15 +5108,15 @@ ${item.text.trim()}`);
 };
 var instance = null;
 var DEFAULT_MAX_STORAGE_SIZE = 50 * 1024 * 1024;
-var AiHistoryStorage = class _AiHistoryStorage extends Common4.ObjectWrapper.ObjectWrapper {
+var AiHistoryStorage = class _AiHistoryStorage extends Common5.ObjectWrapper.ObjectWrapper {
   #historySetting;
   #imageHistorySettings;
-  #mutex = new Common4.Mutex.Mutex();
+  #mutex = new Common5.Mutex.Mutex();
   #maxStorageSize;
   constructor(maxStorageSize = DEFAULT_MAX_STORAGE_SIZE) {
     super();
-    this.#historySetting = Common4.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
-    this.#imageHistorySettings = Common4.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
+    this.#historySetting = Common5.Settings.Settings.instance().createSetting("ai-assistance-history-entries", []);
+    this.#imageHistorySettings = Common5.Settings.Settings.instance().createSetting("ai-assistance-history-images", []);
     this.#maxStorageSize = maxStorageSize;
   }
   clearForTest() {
@@ -5120,9 +5211,9 @@ var AiHistoryStorage = class _AiHistoryStorage extends Common4.ObjectWrapper.Obj
 };
 
 // gen/front_end/models/ai_assistance/AiUtils.js
-import * as Common5 from "./../../core/common/common.js";
+import * as Common6 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as i18n12 from "./../../core/i18n/i18n.js";
 import * as Root8 from "./../../core/root/root.js";
 var UIStrings = {
   /**
@@ -5142,8 +5233,8 @@ var UIStrings = {
    */
   notAvailableInIncognitoMode: "AI assistance is not available in Incognito mode or Guest mode."
 };
-var str_ = i18n13.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
-var i18nString = i18n13.i18n.getLocalizedString.bind(void 0, str_);
+var str_ = i18n12.i18n.registerUIStrings("models/ai_assistance/AiUtils.ts", UIStrings);
+var i18nString = i18n12.i18n.getLocalizedString.bind(void 0, str_);
 function getDisabledReasons(aidaAvailability) {
   const reasons = [];
   if (Root8.Runtime.hostConfig.isOffTheRecord) {
@@ -5163,20 +5254,20 @@ function getDisabledReasons(aidaAvailability) {
       }
     }
   }
-  reasons.push(...Common5.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons());
+  reasons.push(...Common6.Settings.Settings.instance().moduleSetting("ai-assistance-enabled").disabledReasons());
   return reasons;
 }
 
 // gen/front_end/models/ai_assistance/ConversationHandler.js
-import * as Common6 from "./../../core/common/common.js";
+import * as Common7 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Platform7 from "./../../core/platform/platform.js";
+import * as i18n14 from "./../../core/i18n/i18n.js";
+import * as Platform5 from "./../../core/platform/platform.js";
 import * as Root9 from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
-import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
+import * as NetworkTimeCalculator3 from "./../network_time_calculator/network_time_calculator.js";
 var UIStrings2 = {
   /**
    * @description Notification shown to the user whenever DevTools receives an external request.
@@ -5189,9 +5280,9 @@ var UIStringsNotTranslate4 = {
    */
   enableInSettings: "For AI features to be available, you need to enable AI assistance in DevTools settings."
 };
-var str_2 = i18n15.i18n.registerUIStrings("models/ai_assistance/ConversationHandler.ts", UIStrings2);
-var i18nString2 = i18n15.i18n.getLocalizedString.bind(void 0, str_2);
-var lockedString6 = i18n15.i18n.lockedString;
+var str_2 = i18n14.i18n.registerUIStrings("models/ai_assistance/ConversationHandler.ts", UIStrings2);
+var i18nString2 = i18n14.i18n.getLocalizedString.bind(void 0, str_2);
+var lockedString6 = i18n14.i18n.lockedString;
 function isAiAssistanceServerSideLoggingEnabled() {
   return !Root9.Runtime.hostConfig.aidaAvailability?.disallowLogging;
 }
@@ -5200,7 +5291,7 @@ async function inspectElementBySelector(selector) {
   if (!whitespaceTrimmedQuery.length) {
     return null;
   }
-  const showUAShadowDOM = Common6.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
+  const showUAShadowDOM = Common7.Settings.Settings.instance().moduleSetting("show-ua-shadow-dom").get();
   const domModels = SDK6.TargetManager.TargetManager.instance().models(SDK6.DOMModel.DOMModel, { scoped: true });
   const performSearchPromises = domModels.map((domModel) => domModel.performSearch(whitespaceTrimmedQuery, showUAShadowDOM));
   const resultCounts = await Promise.all(performSearchPromises);
@@ -5213,11 +5304,11 @@ async function inspectElementBySelector(selector) {
 async function inspectNetworkRequestByUrl(selector) {
   const networkManagers = SDK6.TargetManager.TargetManager.instance().models(SDK6.NetworkManager.NetworkManager, { scoped: true });
   const results = networkManagers.map((networkManager) => {
-    let request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector}`);
+    let request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector}`);
     if (!request2 && selector.at(-1) === "/") {
-      request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector.slice(0, -1)}`);
+      request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector.slice(0, -1)}`);
     } else if (!request2 && selector.at(-1) !== "/") {
-      request2 = networkManager.requestForURL(Platform7.DevToolsPath.urlString`${selector}/`);
+      request2 = networkManager.requestForURL(Platform5.DevToolsPath.urlString`${selector}/`);
     }
     return request2;
   }).filter((req) => !!req);
@@ -5248,7 +5339,7 @@ var ConversationHandler = class _ConversationHandler {
   }
   #getAiAssistanceEnabledSetting() {
     try {
-      return Common6.Settings.moduleSetting("ai-assistance-enabled");
+      return Common7.Settings.moduleSetting("ai-assistance-enabled");
     } catch {
       return;
     }
@@ -5286,11 +5377,6 @@ var ConversationHandler = class _ConversationHandler {
         case "freestyler": {
           return await this.#handleExternalStylingConversation(parameters.prompt, parameters.selector);
         }
-        case "performance-insight":
-          if (!parameters.insightTitle) {
-            return this.#generateErrorResponse("The insightTitle parameter is required for debugging a Performance Insight.");
-          }
-          return await this.#handleExternalPerformanceInsightsConversation(parameters.prompt, parameters.insightTitle, parameters.traceModel);
         case "drjones-performance-full":
           return await this.#handleExternalPerformanceConversation(parameters.prompt, parameters.data);
         case "drjones-network-request":
@@ -5372,22 +5458,6 @@ var ConversationHandler = class _ConversationHandler {
       selected
     });
   }
-  async #handleExternalPerformanceInsightsConversation(prompt, insightTitle, traceModel) {
-    const insightsAgent = this.createAgent(
-      "performance-insight"
-      /* ConversationType.PERFORMANCE_INSIGHT */
-    );
-    const focusOrError = await Tracing.ExternalRequests.getInsightAgentFocusToDebug(traceModel, insightTitle);
-    if ("error" in focusOrError) {
-      return this.#generateErrorResponse(focusOrError.error);
-    }
-    return this.#createAndDoExternalConversation({
-      conversationType: "performance-insight",
-      aiAgent: insightsAgent,
-      prompt,
-      selected: new PerformanceTraceContext(focusOrError.focus)
-    });
-  }
   async #handleExternalPerformanceConversation(prompt, data) {
     return this.#doExternalConversation({
       conversation: data.conversation,
@@ -5405,11 +5475,13 @@ var ConversationHandler = class _ConversationHandler {
     if (!request) {
       return this.#generateErrorResponse(`Can't find request with the given selector ${requestUrl}`);
     }
+    const calculator = new NetworkTimeCalculator3.NetworkTransferTimeCalculator();
+    calculator.updateBoundaries(request);
     return this.#createAndDoExternalConversation({
       conversationType: "drjones-network-request",
       aiAgent: networkAgent,
       prompt,
-      selected: new RequestContext(request)
+      selected: new RequestContext(request, calculator)
     });
   }
   createAgent(conversationType, changeManager) {
@@ -5445,6 +5517,7 @@ var ConversationHandler = class _ConversationHandler {
   }
 };
 export {
+  AI_ASSISTANCE_CSS_CLASS_NAME,
   AgentProject,
   AiAgent,
   AiHistoryStorage,
@@ -5454,6 +5527,8 @@ export {
   ConversationHandler,
   EvaluateAction,
   ExtensionScope,
+  FREESTYLER_BINDING_NAME,
+  FREESTYLER_WORLD_NAME,
   FileAgent,
   FileContext,
   FileFormatter,
@@ -5463,6 +5538,7 @@ export {
   NetworkAgent,
   NetworkRequestFormatter,
   NodeContext,
+  PERF_AGENT_UNIT_FORMATTERS,
   PatchAgent,
   PerformanceAgent,
   PerformanceAnnotationsAgent,
@@ -5476,7 +5552,9 @@ export {
   callTreePreamble,
   debugLog,
   formatError,
+  freestylerBinding,
   getDisabledReasons,
+  injectedFunctions,
   isDebugMode,
   isStructuredLogEnabled,
   stringifyObjectOnThePage,

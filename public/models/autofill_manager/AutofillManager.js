@@ -2,13 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 let autofillManagerInstance;
 export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
-    #autoOpenViewSetting;
     #address = '';
     #filledFields = [];
     #matches = [];
@@ -16,8 +13,6 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
     constructor() {
         super();
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.AutofillModel.AutofillModel, "AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, this.#addressFormFilled, this, { scoped: true });
-        this.#autoOpenViewSetting =
-            Common.Settings.Settings.instance().createSetting('auto-open-autofill-view-on-event', true);
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -27,13 +22,6 @@ export class AutofillManager extends Common.ObjectWrapper.ObjectWrapper {
         return autofillManagerInstance;
     }
     async #addressFormFilled({ data }) {
-        if (this.#autoOpenViewSetting.get()) {
-            await UI.ViewManager.ViewManager.instance().showView('autofill-view');
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AutofillReceivedAndTabAutoOpened);
-        }
-        else {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AutofillReceived);
-        }
         this.#autofillModel = data.autofillModel;
         this.#processAddressFormFilledData(data.event);
         if (this.#address) {

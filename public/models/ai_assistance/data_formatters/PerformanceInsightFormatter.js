@@ -1,22 +1,9 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as i18n from '../../../core/i18n/i18n.js';
-import * as Platform from '../../../core/platform/platform.js';
+import * as Common from '../../../core/common/common.js';
 import * as Trace from '../../trace/trace.js';
 import { NetworkRequestFormatter, } from './NetworkRequestFormatter.js';
-function formatMilli(x) {
-    if (x === undefined) {
-        return '';
-    }
-    return i18n.TimeUtilities.preciseMillisToString(x, 2, /* separator */ ' ');
-}
-function formatMicroToMilli(x) {
-    if (x === undefined) {
-        return '';
-    }
-    return formatMilli(Trace.Helpers.Timing.microToMilli(x));
-}
 /**
  * For a given frame ID and navigation ID, returns the LCP Event and the LCP Request, if the resource was an image.
  */
@@ -42,9 +29,23 @@ function getLCPData(parsedTrace, frameId, navigationId) {
 export class PerformanceInsightFormatter {
     #insight;
     #parsedTrace;
-    constructor(parsedTrace, insight) {
+    #unitFormatters;
+    constructor(formatters, parsedTrace, insight) {
         this.#insight = insight;
         this.#parsedTrace = parsedTrace;
+        this.#unitFormatters = formatters;
+    }
+    #formatMilli(x) {
+        if (x === undefined) {
+            return '';
+        }
+        return this.#unitFormatters.millis(x);
+    }
+    #formatMicro(x) {
+        if (x === undefined) {
+            return '';
+        }
+        return this.#formatMilli(Trace.Helpers.Timing.microToMilli(x));
     }
     /**
      * Information about LCP which we pass to the LLM for all insights that relate to LCP.
@@ -64,11 +65,11 @@ export class PerformanceInsightFormatter {
         const { metricScore, lcpRequest, lcpEvent } = data;
         const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName})` : 'The LCP element';
         const parts = [
-            `The Largest Contentful Paint (LCP) time for this navigation was ${formatMicroToMilli(metricScore.timing)}.`,
+            `The Largest Contentful Paint (LCP) time for this navigation was ${this.#formatMicro(metricScore.timing)}.`,
         ];
         if (lcpRequest) {
             parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
-            const request = TraceEventFormatter.networkRequests([lcpRequest], this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
+            const request = TraceEventFormatter.networkRequests(this.#unitFormatters, [lcpRequest], this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
             parts.push(request);
         }
         else {
@@ -104,7 +105,8 @@ export class PerformanceInsightFormatter {
                 ];
             case 'ForcedReflow':
                 return [
-                    { title: 'How can I avoid layout thrashing?' }, { title: 'What is forced reflow and why is it problematic?' }
+                    { title: 'How can I avoid forced reflows and layout thrashing?' },
+                    { title: 'What is forced reflow and why is it problematic?' }
                 ];
             case 'ImageDelivery':
                 return [
@@ -152,8 +154,81 @@ export class PerformanceInsightFormatter {
                     { title: 'How can I reduce the amount of legacy JavaScript on my page?' },
                 ];
             default:
-                Platform.assertNever(this.#insight.insightKey, 'Unknown insight key');
+                throw new Error('Unknown insight key');
         }
+    }
+    /**
+     * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Network Dependency Tree Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatFontDisplayInsight(insight) {
+        if (insight.fonts.length === 0) {
+            return 'No font display issues were detected.';
+        }
+        let output = 'The following font display issues were found:\n';
+        for (const font of insight.fonts) {
+            let fontName = font.name;
+            if (!fontName) {
+                const url = new Common.ParsedURL.ParsedURL(font.request.args.data.url);
+                fontName = url.isValid ? url.lastPathComponent : '(not available)';
+            }
+            output += `\n - Font name: ${fontName}, URL: ${font.request.args.data.url}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;
+        }
+        output += '\n\n' + Trace.Insights.Models.FontDisplay.UIStrings.description;
+        return output;
+    }
+    /**
+     * Create an AI prompt string out of the Forced Reflow Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within ForcedReflow model to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The ForcedReflow Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatForcedReflowInsight(insight) {
+        let output = Trace.Insights.Models.ForcedReflow.UIStrings.description + '\n\n';
+        if (insight.topLevelFunctionCallData || insight.aggregatedBottomUpData.length > 0) {
+            output += 'The forced reflow checks revealed one or more problems.\n\n';
+        }
+        else {
+            output += 'The forced reflow checks revealed no problems.';
+            return output;
+        }
+        function callFrameToString(frame) {
+            if (frame === null) {
+                return Trace.Insights.Models.ForcedReflow.UIStrings.unattributed;
+            }
+            let result = `${frame.functionName || Trace.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
+            if (frame.url) {
+                result += ` @ ${frame.url}:${frame.lineNumber}:${frame.columnNumber}`;
+            }
+            else {
+                result += ' @ unknown location';
+            }
+            return result;
+        }
+        if (insight.topLevelFunctionCallData) {
+            output += 'The following is the top function call that caused forced reflow(s):\n\n';
+            output += ' - ' + callFrameToString(insight.topLevelFunctionCallData.topLevelFunctionCall);
+            output += `\n\n${Trace.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}\n`;
+        }
+        else {
+            output += 'No top-level functions causing forced reflows were identified.\n';
+        }
+        if (insight.aggregatedBottomUpData.length > 0) {
+            output += '\n' + Trace.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + ' (including total time):\n';
+            for (const data of insight.aggregatedBottomUpData) {
+                output += `\n - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
+            }
+        }
+        else {
+            output += '\nNo aggregated bottom-up causes of forced reflows were identified.';
+        }
+        return output;
     }
     /**
      * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
@@ -166,23 +241,23 @@ export class PerformanceInsightFormatter {
     formatNetworkDependencyTreeInsight(insight) {
         let output = insight.fail ?
             'The network dependency tree checks found one or more problems.\n\n' :
-            'The network dependency tree checks found no problems, but optimization suggestions may be available.\n\n';
+            'The network dependency tree checks revealed no problems, but optimization suggestions may be available.\n\n';
         const rootNodes = insight.rootNodes;
         if (rootNodes.length > 0) {
-            output += `Max critical path latency is ${formatMicroToMilli(insight.maxTime)}\n\n`;
+            output += `Max critical path latency is ${this.#formatMicro(insight.maxTime)}\n\n`;
             output += 'The following is the critical request chain:\n';
             function formatNode(node, indent) {
                 const url = node.request.args.data.url;
-                const time = formatMicroToMilli(node.timeFromInitialRequest);
+                const time = this.#formatMicro(node.timeFromInitialRequest);
                 const isLongest = node.isLongest ? ' (longest chain)' : '';
                 let nodeString = `${indent}- ${url} (${time})${isLongest}\n`;
                 for (const child of node.children) {
-                    nodeString += formatNode(child, indent + '  ');
+                    nodeString += formatNode.call(this, child, indent + '  ');
                 }
                 return nodeString;
             }
             for (const rootNode of rootNodes) {
-                output += formatNode(rootNode, '');
+                output += formatNode.call(this, rootNode, '');
             }
             output += '\n';
         }
@@ -221,10 +296,78 @@ export class PerformanceInsightFormatter {
                 Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
             output += `\n\n${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:\n${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}\n`;
             for (const candidate of insight.preconnectCandidates) {
-                output +=
-                    `\nAdding [preconnect] to origin '${candidate.origin}' would save ${formatMilli(candidate.wastedMs)}.`;
+                output += `\nAdding [preconnect] to origin '${candidate.origin}' would save ${this.#formatMilli(candidate.wastedMs)}.`;
             }
         }
+        return output;
+    }
+    /**
+     * Create an AI prompt string out of the Slow CSS Selector Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within SlowCSSSelector to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Network Dependency Tree Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatSlowCssSelectorsInsight(insight) {
+        let output = '';
+        if (!insight.topSelectorElapsedMs && !insight.topSelectorMatchAttempts) {
+            return Trace.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
+        }
+        output += 'One or more slow CSS selectors were identified as negatively affecting page performance:\n\n';
+        if (insight.topSelectorElapsedMs) {
+            output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):\n`;
+            output += `${this.#formatMicro(insight.topSelectorElapsedMs['elapsed (us)'])}: ${insight.topSelectorElapsedMs.selector}\n\n`;
+        }
+        if (insight.topSelectorMatchAttempts) {
+            output += Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ':\n';
+            output += `${insight.topSelectorMatchAttempts.match_attempts} attempts for selector: '${insight.topSelectorMatchAttempts.selector}'\n\n`;
+        }
+        output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.total}:\n`;
+        output +=
+            `${Trace.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}\n`;
+        output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}\n`;
+        output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}\n\n`;
+        output += Trace.Insights.Models.SlowCSSSelector.UIStrings.description;
+        return output;
+    }
+    /**
+     * Create an AI prompt string out of the ThirdParties Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within ThirdParties to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Third Parties Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatThirdPartiesInsight(insight) {
+        let output = '';
+        const entitySummaries = insight.entitySummaries ?? [];
+        const firstPartyEntity = insight.firstPartyEntity;
+        const thirdPartyTransferSizeEntries = entitySummaries.filter(s => s.entity !== firstPartyEntity).toSorted((a, b) => b.transferSize - a.transferSize);
+        const thirdPartyMainThreadTimeEntries = entitySummaries.filter(s => s.entity !== firstPartyEntity)
+            .toSorted((a, b) => b.mainThreadTime - a.mainThreadTime);
+        if (!thirdPartyTransferSizeEntries.length && !thirdPartyMainThreadTimeEntries.length) {
+            return `No 3rd party scripts were found on this page.`;
+        }
+        if (thirdPartyTransferSizeEntries.length) {
+            output += `The following list contains the largest transfer sizes by a 3rd party script:\n\n`;
+            for (const entry of thirdPartyTransferSizeEntries) {
+                if (entry.transferSize > 0) {
+                    output += `- ${entry.entity.name}: ${this.#unitFormatters.bytes(entry.transferSize)}\n`;
+                }
+            }
+            output += '\n';
+        }
+        if (thirdPartyMainThreadTimeEntries.length) {
+            output += `The following list contains the largest amount spent by a 3rd party script on the main thread:\n\n`;
+            for (const entry of thirdPartyMainThreadTimeEntries) {
+                if (entry.mainThreadTime > 0) {
+                    output += `- ${entry.entity.name}: ${this.#formatMilli(entry.mainThreadTime)}\n`;
+                }
+            }
+            output += '\n';
+        }
+        output += Trace.Insights.Models.ThirdParties.UIStrings.description;
         return output;
     }
     /**
@@ -260,16 +403,16 @@ ${this.#links()}`;
                 const optimizations = image.optimizations
                     .map(optimization => {
                     const message = Trace.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
-                    const byteSavings = i18n.ByteUtilities.bytesToString(optimization.byteSavings);
+                    const byteSavings = this.#unitFormatters.bytes(optimization.byteSavings);
                     return `${message} (Est ${byteSavings})`;
                 })
                     .join('\n');
                 return `### ${image.request.args.data.url}
-- Potential savings: ${i18n.ByteUtilities.bytesToString(image.byteSavings)}
+- Potential savings: ${this.#unitFormatters.bytes(image.byteSavings)}
 - Optimizations:\n${optimizations}`;
             })
                 .join('\n\n');
-            return `Total potential savings: ${i18n.ByteUtilities.bytesToString(this.#insight.wastedBytes)}
+            return `Total potential savings: ${this.#unitFormatters.bytes(this.#insight.wastedBytes)}
 
 The following images could be optimized:\n\n${imageDetails}`;
         }
@@ -287,7 +430,7 @@ The following images could be optimized:\n\n${imageDetails}`;
             Object.values(subparts).forEach((subpart) => {
                 const phaseMilli = Trace.Helpers.Timing.microToMilli(subpart.range);
                 const percentage = (phaseMilli / lcpMs * 100).toFixed(1);
-                phaseBulletPoints.push({ name: subpart.label, value: formatMilli(phaseMilli), percentage });
+                phaseBulletPoints.push({ name: subpart.label, value: this.#formatMilli(phaseMilli), percentage });
             });
             return `${this.#lcpMetricSharedContext()}
 
@@ -320,7 +463,7 @@ The result of the checks for this insight are:
 ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED' : 'FAILED'}`).join('\n')}`;
         }
         if (Trace.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
-            const requestSummary = TraceEventFormatter.networkRequests(this.#insight.renderBlockingRequests, this.#parsedTrace);
+            const requestSummary = TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.renderBlockingRequests, this.#parsedTrace);
             if (requestSummary.length === 0) {
                 return 'There are no network requests that are render blocking.';
             }
@@ -351,7 +494,7 @@ ${requestSummary}`;
             });
             return `${this.#lcpMetricSharedContext()}
 
-${TraceEventFormatter.networkRequests([documentRequest], this.#parsedTrace, {
+${TraceEventFormatter.networkRequests(this.#unitFormatters, [documentRequest], this.#parsedTrace, {
                 verbose: true,
                 customTitle: 'Document network request'
             })}
@@ -364,11 +507,11 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             if (!event) {
                 return '';
             }
-            const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${formatMicroToMilli(event.dur)}\`. The timings of each of the three phases were:
+            const inpInfoForEvent = `The longest interaction on the page was a \`${event.type}\` which had a total duration of \`${this.#formatMicro(event.dur)}\`. The timings of each of the three phases were:
 
-1. Input delay: ${formatMicroToMilli(event.inputDelay)}
-2. Processing duration: ${formatMicroToMilli(event.mainThreadHandling)}
-3. Presentation delay: ${formatMicroToMilli(event.presentationDelay)}.`;
+1. Input delay: ${this.#formatMicro(event.inputDelay)}
+2. Processing duration: ${this.#formatMicro(event.mainThreadHandling)}
+3. Presentation delay: ${this.#formatMicro(event.presentationDelay)}.`;
             return inpInfoForEvent;
         }
         if (Trace.Insights.Models.CLSCulprits.isCLSCulprits(this.#insight)) {
@@ -382,9 +525,9 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
                 end: worstCluster.ts + worstCluster.dur - baseTime,
             };
             const shiftsFormatted = worstCluster.events.map((layoutShift, index) => {
-                return TraceEventFormatter.layoutShift(layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
+                return TraceEventFormatter.layoutShift(this.#unitFormatters, layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
             });
-            return `The worst layout shift cluster was the cluster that started at ${formatMicroToMilli(clusterTimes.start)} and ended at ${formatMicroToMilli(clusterTimes.end)}, with a duration of ${formatMicroToMilli(worstCluster.dur)}.
+            return `The worst layout shift cluster was the cluster that started at ${this.#formatMicro(clusterTimes.start)} and ended at ${this.#formatMicro(clusterTimes.end)}, with a duration of ${this.#formatMicro(worstCluster.dur)}.
 The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
 
 Layout shifts in this cluster:
@@ -392,8 +535,8 @@ ${shiftsFormatted.join('\n')}`;
         }
         if (Trace.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
             const requestSummary = (this.#insight.http1Requests.length === 1) ?
-                TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) :
-                TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace);
+                TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) :
+                TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace);
             if (requestSummary.length === 0) {
                 return 'There are no requests that were served over a legacy HTTP protocol.';
             }
@@ -428,8 +571,20 @@ ${result.matches.map(match => `Line: ${match.line}, Column: ${match.column}, Nam
 Legacy JavaScript by file:
 ${filesFormatted}`;
         }
+        if (Trace.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
+            return this.formatFontDisplayInsight(this.#insight);
+        }
+        if (Trace.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
+            return this.formatForcedReflowInsight(this.#insight);
+        }
         if (Trace.Insights.Models.NetworkDependencyTree.isNetworkDependencyTree(this.#insight)) {
             return this.formatNetworkDependencyTreeInsight(this.#insight);
+        }
+        if (Trace.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
+            return this.formatSlowCssSelectorsInsight(this.#insight);
+        }
+        if (Trace.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
+            return this.formatThirdPartiesInsight(this.#insight);
         }
         return '';
     }
@@ -455,9 +610,11 @@ ${filesFormatted}`;
             case 'DuplicatedJavaScript':
                 return '';
             case 'FontDisplay':
-                return '';
+                return `- https://web.dev/articles/preload-optional-fonts
+- https://fonts.google.com/knowledge/glossary/foit
+- https://developer.chrome.com/blog/font-fallbacks`;
             case 'ForcedReflow':
-                return '';
+                return '- https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts';
             case 'ImageDelivery':
                 return '- https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/';
             case 'INPBreakdown':
@@ -478,9 +635,9 @@ ${filesFormatted}`;
                 return `- https://web.dev/articles/lcp
 - https://web.dev/articles/optimize-lcp`;
             case 'SlowCSSSelector':
-                return '';
+                return '- https://developer.chrome.com/docs/devtools/performance/selector-stats';
             case 'ThirdParties':
-                return '';
+                return '- https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/';
             case 'Viewport':
                 return '';
             case 'Cache':
@@ -510,9 +667,9 @@ ${filesFormatted}`;
                 return `This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
   This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.`;
             case 'FontDisplay':
-                return '';
+                return 'This insight identifies font issues when a webpage uses custom fonts, for example when font-display is not set to `swap`, `fallback` or `optional`, causing the "Flash of Invisible Text" problem (FOIT).';
             case 'ForcedReflow':
-                return '';
+                return `This insight identifies forced synchronous layouts (also known as forced reflows) and layout thrashing caused by JavaScript accessing layout properties at suboptimal points in time.`;
             case 'ImageDelivery':
                 return 'This insight identifies unoptimized images that are downloaded at a much higher resolution than they are displayed. Properly sizing and compressing these assets will decrease their download time, directly improving the perceived page load time and LCP';
             case 'INPBreakdown':
@@ -547,9 +704,9 @@ It is important that all of these checks pass to minimize the delay between the 
             case 'RenderBlocking':
                 return 'This insight identifies network requests that were render blocking. Render blocking requests are impactful because they are deemed critical to the page and therefore the browser stops rendering the page until it has dealt with these resources. For this insight make sure you fully inspect the details of each render blocking network request and prioritize your suggestions to the user based on the impact of each render blocking request.';
             case 'SlowCSSSelector':
-                return '';
+                return `This insight identifies CSS selectors that are slowing down your page's rendering performance.`;
             case 'ThirdParties':
-                return '';
+                return 'This insight analyzes the performance impact of resources loaded from third-party servers and aggregates the performance cost, in terms of download transfer sizes and total amount of time that third party scripts spent executing on the main thread.';
             case 'Viewport':
                 return '';
             case 'Cache':
@@ -571,7 +728,7 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
     }
 }
 export class TraceEventFormatter {
-    static layoutShift(shift, index, parsedTrace, rootCauses) {
+    static layoutShift(formatters, shift, index, parsedTrace, rootCauses) {
         const baseTime = parsedTrace.Meta.traceBounds.min;
         const potentialRootCauses = [];
         if (rootCauses) {
@@ -598,13 +755,14 @@ export class TraceEventFormatter {
         const rootCauseText = potentialRootCauses.length ?
             `- Potential root causes:\n  - ${potentialRootCauses.join('\n  - ')}` :
             '- No potential root causes identified';
+        const startTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(shift.ts - baseTime));
         return `### Layout shift ${index + 1}:
-- Start time: ${formatMicroToMilli(shift.ts - baseTime)}
+- Start time: ${formatters.millis(startTime)}
 - Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
 ${rootCauseText}`;
     }
     // Stringify network requests for the LLM model.
-    static networkRequests(requests, parsedTrace, options) {
+    static networkRequests(formatters, requests, parsedTrace, options) {
         if (requests.length === 0) {
             return '';
         }
@@ -620,10 +778,11 @@ ${rootCauseText}`;
         // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
         // format description.
         if (verbose) {
-            return requests.map(request => this.#networkRequestVerbosely(request, parsedTrace, options?.customTitle))
+            return requests
+                .map(request => this.#networkRequestVerbosely(formatters, request, parsedTrace, options?.customTitle))
                 .join('\n');
         }
-        return this.#networkRequestsArrayCompressed(requests, parsedTrace);
+        return this.#networkRequestsArrayCompressed(formatters, requests, parsedTrace);
     }
     /**
      * This is the data passed to a network request when the Performance Insights
@@ -633,7 +792,7 @@ ${rootCauseText}`;
      * Security; be careful about adding new data here. If you are in doubt please
      * talk to jacktfranklin@.
      */
-    static #networkRequestVerbosely(request, parsedTrace, customTitle) {
+    static #networkRequestVerbosely(formatters, request, parsedTrace, customTitle) {
         const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
         const titlePrefix = `## ${customTitle ?? 'Network request'}`;
         // Note: unlike other agents, we do have the ability to include
@@ -664,21 +823,21 @@ ${rootCauseText}`;
         const redirects = request.args.data.redirects.map((redirect, index) => {
             const startTime = redirect.ts - baseTime;
             return `#### Redirect ${index + 1}: ${redirect.url}
-- Start time: ${formatMicroToMilli(startTime)}
-- Duration: ${formatMicroToMilli(redirect.dur)}`;
+- Start time: ${formatters.micros(startTime)}
+- Duration: ${formatters.micros(redirect.dur)}`;
         });
         const initiators = this.#getInitiatorChain(parsedTrace, request);
         const initiatorUrls = initiators.map(initiator => initiator.args.data.url);
         return `${titlePrefix}: ${url}
 Timings:
-- Queued at: ${formatMicroToMilli(startTimesForLifecycle.queuedAt)}
-- Request sent at: ${formatMicroToMilli(startTimesForLifecycle.requestSentAt)}
-- Download complete at: ${formatMicroToMilli(startTimesForLifecycle.downloadCompletedAt)}
-- Main thread processing completed at: ${formatMicroToMilli(startTimesForLifecycle.processingCompletedAt)}
+- Queued at: ${formatters.micros(startTimesForLifecycle.queuedAt)}
+- Request sent at: ${formatters.micros(startTimesForLifecycle.requestSentAt)}
+- Download complete at: ${formatters.micros(startTimesForLifecycle.downloadCompletedAt)}
+- Main thread processing completed at: ${formatters.micros(startTimesForLifecycle.processingCompletedAt)}
 Durations:
-- Download time: ${formatMicroToMilli(downloadTime)}
-- Main thread processing time: ${formatMicroToMilli(mainThreadProcessingDuration)}
-- Total duration: ${formatMicroToMilli(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
+- Download time: ${formatters.micros(downloadTime)}
+- Main thread processing time: ${formatters.micros(mainThreadProcessingDuration)}
+- Total duration: ${formatters.micros(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
 Redirects:${redirects.length ? '\n' + redirects.join('\n') : ' no redirects'}
 Status code: ${statusCode}
 MIME Type: ${mimeType}
@@ -705,7 +864,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
     // needs to be provided, which is not worth sending if only one network request is being stringified.
     // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
     // format description.
-    static #networkRequestsArrayCompressed(requests, parsedTrace) {
+    static #networkRequestsArrayCompressed(formatters, requests, parsedTrace) {
         const networkDataString = `
 Network requests data:
 
@@ -714,7 +873,7 @@ Network requests data:
         const allRequestsText = requests
             .map(request => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-            return this.#networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex);
+            return this.#networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex);
         })
             .join('\n');
         const urlsMapString = 'allUrls = ' +
@@ -764,17 +923,17 @@ The order of headers corresponds to an internal fixed list. If a header is not p
      *
      * See `networkDataFormatDescription` above for specifics.
      */
-    static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
+    static #networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex) {
         const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol, } = request.args.data;
         const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
         const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
-        const queuedTime = formatMicroToMilli(request.ts - baseTime);
-        const requestSentTime = formatMicroToMilli(syntheticData.sendStartTime - baseTime);
-        const downloadCompleteTime = formatMicroToMilli(syntheticData.finishTime - baseTime);
-        const processingCompleteTime = formatMicroToMilli(request.ts + request.dur - baseTime);
-        const totalDuration = formatMicroToMilli(request.dur);
-        const downloadDuration = formatMicroToMilli(syntheticData.finishTime - syntheticData.downloadStart);
-        const mainThreadProcessingDuration = formatMicroToMilli(request.ts + request.dur - syntheticData.finishTime);
+        const queuedTime = formatters.micros(request.ts - baseTime);
+        const requestSentTime = formatters.micros(syntheticData.sendStartTime - baseTime);
+        const downloadCompleteTime = formatters.micros(syntheticData.finishTime - baseTime);
+        const processingCompleteTime = formatters.micros(request.ts + request.dur - baseTime);
+        const totalDuration = formatters.micros(request.dur);
+        const downloadDuration = formatters.micros(syntheticData.finishTime - syntheticData.downloadStart);
+        const mainThreadProcessingDuration = formatters.micros(request.ts + request.dur - syntheticData.finishTime);
         const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? 't' : 'f';
         const finalPriority = priority;
         const headerValues = responseHeaders
@@ -786,8 +945,8 @@ The order of headers corresponds to an internal fixed list. If a header is not p
         const redirects = request.args.data.redirects
             .map(redirect => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
-            const redirectStartTime = formatMicroToMilli(redirect.ts - baseTime);
-            const redirectDuration = formatMicroToMilli(redirect.dur);
+            const redirectStartTime = formatters.micros(redirect.ts - baseTime);
+            const redirectDuration = formatters.micros(redirect.dur);
             return `[${urlIndex}|${redirectStartTime}|${redirectDuration}]`;
         })
             .join(',');

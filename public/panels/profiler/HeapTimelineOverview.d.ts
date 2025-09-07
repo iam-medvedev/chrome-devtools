@@ -1,5 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 declare const HeapTimelineOverview_base: (new (...args: any[]) => {
@@ -61,7 +62,7 @@ export declare class Samples {
     totalTime: number;
     constructor();
 }
-export declare class OverviewCalculator implements PerfUI.TimelineGrid.Calculator {
+export declare class OverviewCalculator implements NetworkTimeCalculator.Calculator {
     maximumBoundaries: number;
     minimumBoundaries: number;
     xScaleFactor: number;

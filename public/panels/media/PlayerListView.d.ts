@@ -20,6 +20,7 @@ export declare class PlayerListView extends UI.Widget.VBox implements TriggerDis
     private currentlySelectedEntry;
     constructor(mainContainer: MainView);
     private createPlayerListEntry;
+    selectPlayerById(playerID: string): void;
     private selectPlayer;
     private rightClickPlayer;
     private setMediaElementFrameTitle;

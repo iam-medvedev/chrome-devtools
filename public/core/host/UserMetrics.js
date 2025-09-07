@@ -212,9 +212,6 @@ export class UserMetrics {
     recordingCopiedToClipboard(value) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.RecordingCopiedToClipboard" /* EnumeratedHistogram.RecordingCopiedToClipboard */, value, 9 /* RecordingCopiedToClipboard.MAX_VALUE */);
     }
-    cssHintShown(type) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.CSSHintShown" /* EnumeratedHistogram.CSSHintShown */, type, 14 /* CSSHintType.MAX_VALUE */);
-    }
     lighthouseModeRun(type) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseModeRun" /* EnumeratedHistogram.LighthouseModeRun */, type, 4 /* LighthouseModeRun.MAX_VALUE */);
     }
@@ -725,7 +722,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
     DevtoolsExperiments[DevtoolsExperiments["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-ask-ai-full-button"] = 109] = "timeline-ask-ai-full-button";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";

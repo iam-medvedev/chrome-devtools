@@ -33,6 +33,8 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as SDK from '../../core/sdk/sdk.js';
+import * as Highlighting from '../components/highlighting/highlighting.js';
 import * as Lit from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
@@ -1202,32 +1204,144 @@ export class TreeElement {
 function hasBooleanAttribute(element, name) {
     return element.hasAttribute(name) && element.getAttribute(name) !== 'false';
 }
+export class TreeSearch {
+    #matches = [];
+    #currentMatchIndex = 0;
+    #nodeMatchMap;
+    reset() {
+        this.#matches = [];
+        this.#nodeMatchMap = undefined;
+        this.#currentMatchIndex = 0;
+    }
+    currentMatch() {
+        return this.#matches.at(this.#currentMatchIndex);
+    }
+    #getNodeMatchMap() {
+        if (!this.#nodeMatchMap) {
+            this.#nodeMatchMap = new WeakMap();
+            for (const match of this.#matches) {
+                let entry = this.#nodeMatchMap.get(match.node);
+                if (!entry) {
+                    entry = [];
+                    this.#nodeMatchMap.set(match.node, entry);
+                }
+                entry.push(match);
+            }
+        }
+        return this.#nodeMatchMap;
+    }
+    getResults(node) {
+        return this.#getNodeMatchMap().get(node) ?? [];
+    }
+    highlight(ranges, selectedRange) {
+        return Lit.Directives.ref(element => {
+            if (element instanceof HTMLLIElement) {
+                TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
+            }
+        });
+    }
+    updateSearchableView(view) {
+        view.updateSearchMatchesCount(this.#matches.length);
+        view.updateCurrentMatchIndex(this.#currentMatchIndex);
+    }
+    next() {
+        this.#currentMatchIndex = Platform.NumberUtilities.mod(this.#currentMatchIndex + 1, this.#matches.length);
+        return this.currentMatch();
+    }
+    prev() {
+        this.#currentMatchIndex = Platform.NumberUtilities.mod(this.#currentMatchIndex - 1, this.#matches.length);
+        return this.currentMatch();
+    }
+    // This is a generator to sidestep stack overflow risks
+    *#innerSearch(node, currentMatch, jumpBackwards, match) {
+        const updateCurrentMatchIndex = (isPostOrder) => {
+            if (currentMatch?.node === node && currentMatch.isPostOrderMatch === isPostOrder) {
+                // We're current matching the node that contains the currently focused search result, the n-th result
+                // within that node. When updating the search hits, make sure we're still focusing the n-th result within
+                // that node. That may make the result jump within the node, but at least we're still focusing the same
+                // node. If there are fewer than n hits in the current node, we're going to move the focus to the next
+                // search hit in the next node by default, or the last one in this node if searching backwards.
+                if (currentMatch.matchIndexInNode >= preOrderMatches.length) {
+                    this.#currentMatchIndex = jumpBackwards ? this.#matches.length - 1 : this.#matches.length;
+                }
+                else {
+                    this.#currentMatchIndex = this.#matches.length - preOrderMatches.length + currentMatch.matchIndexInNode;
+                }
+            }
+        };
+        const preOrderMatches = match(node, /* isPostOrder=*/ false);
+        this.#matches.push(...preOrderMatches);
+        updateCurrentMatchIndex(/* isPostOrder=*/ false);
+        yield* preOrderMatches.values();
+        for (const child of node.children()) {
+            yield* this.#innerSearch(child, currentMatch, jumpBackwards, match);
+        }
+        const postOrderMatches = match(node, /* isPostOrder=*/ true);
+        this.#matches.push(...postOrderMatches);
+        updateCurrentMatchIndex(/* isPostOrder=*/ true);
+        yield* postOrderMatches.values();
+    }
+    search(node, jumpBackwards, match) {
+        const currentMatch = this.currentMatch();
+        this.reset();
+        // eslint-disable-next-line @typescript-eslint/naming-convention,@typescript-eslint/no-unused-vars
+        for (const _ of this.#innerSearch(node, currentMatch, jumpBackwards, match)) {
+            // run the generator
+        }
+        this.#currentMatchIndex = Platform.NumberUtilities.mod(this.#currentMatchIndex, this.#matches.length);
+        return this.#matches.length;
+    }
+}
+class ActiveHighlights {
+    #activeRanges = [];
+    #highlights = [];
+    #selectedSearchResult = undefined;
+    apply(node) {
+        Highlighting.HighlightManager.HighlightManager.instance().removeHighlights(this.#activeRanges);
+        this.#activeRanges =
+            Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, this.#highlights);
+        if (this.#selectedSearchResult) {
+            this.#activeRanges.push(...Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, [this.#selectedSearchResult], /* isSelected=*/ true));
+        }
+    }
+    set(element, highlights, selectedSearchResult) {
+        this.#highlights = highlights;
+        this.#selectedSearchResult = selectedSearchResult;
+        this.apply(element);
+    }
+}
 class TreeViewTreeElement extends TreeElement {
+    #activeHighlights = new ActiveHighlights();
+    #clonedAttributes = new Set();
     static #elementToTreeElement = new WeakMap();
     configElement;
     constructor(treeOutline, configElement) {
-        super();
+        super(undefined, undefined, configElement.getAttribute('jslog-context') ?? undefined);
         this.configElement = configElement;
         TreeViewTreeElement.#elementToTreeElement.set(configElement, this);
         this.refresh();
     }
+    highlight(highlights, selectedSearchResult) {
+        this.#activeHighlights.set(this.titleElement, highlights, selectedSearchResult);
+    }
     refresh() {
         this.titleElement.textContent = '';
-        if (hasBooleanAttribute(this.configElement, 'selected')) {
-            this.revealAndSelect(true);
+        this.#clonedAttributes.forEach(attr => this.listItemElement.attributes.removeNamedItem(attr));
+        this.#clonedAttributes.clear();
+        for (let i = 0; i < this.configElement.attributes.length; ++i) {
+            const attribute = this.configElement.attributes.item(i);
+            if (attribute && attribute.name !== 'role' && SDK.DOMModel.ARIA_ATTRIBUTES.has(attribute.name)) {
+                this.listItemElement.setAttribute(attribute.name, attribute.value);
+                this.#clonedAttributes.add(attribute.name);
+            }
         }
         for (const child of this.configElement.childNodes) {
             if (child instanceof HTMLUListElement && child.role === 'group') {
-                if (hasBooleanAttribute(child, 'hidden')) {
-                    this.collapse();
-                }
-                else {
-                    this.expand();
-                }
                 continue;
             }
-            this.titleElement.appendChild(child.cloneNode(true));
+            this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
         }
+        this.#activeHighlights.apply(this.titleElement);
     }
     static get(configElement) {
         return configElement && TreeViewTreeElement.#elementToTreeElement.get(configElement);
@@ -1255,7 +1369,11 @@ function getTreeNodes(nodeList) {
         .toArray();
 }
 /**
- * A tree element that can be used as progressive enhancement over a <ul> element.
+ * A tree element that can be used as progressive enhancement over a <ul> element. A `template` IDL attribute allows
+ * additionally to insert the <ul> into a <template>, avoiding rendering anything into light DOM. The <ul> itself will
+ * be cloned into shadow DOM and rendered there.
+ *
+ * ## Usage ##
  *
  * It can be used as
  * ```
@@ -1266,7 +1384,7 @@ function getTreeNodes(nodeList) {
  *          Tree Node Text
  *          <ul role="group">
  *            Node with subtree
- *            <li role="treeitem">
+ *            <li role="treeitem" jslog-context="context">
  *              <ul role="group" hidden>
  *                <li role="treeitem">Tree Node Text in collapsed subtree</li>
  *                <li role="treeitem">Tree Node Text in collapsed subtree</li>
@@ -1280,12 +1398,30 @@ function getTreeNodes(nodeList) {
  * ></devtools-tree>
  *
  * ```
- * where a <li role="treeitem"> element defines a tree node and its contents. The `selected` attribute on an <li>
- * declares that this tree node should be selected on render. If a tree node contains a <ul role="group">, that defines
- * a subtree under that tree node. The `hidden` attribute on the <ul> defines whether that subtree should render as
- * collapsed initially.
+ * where a <li role="treeitem"> element defines a tree node and its contents (the <li> is the `config element` for this
+ * tree node). If a tree node contains a <ul role="group">, that defines a subtree under that tree node. The `hidden`
+ * attribute on the <ul> defines whether that subtree should render as collapsed. Note that node expanding/collapsing do
+ * not reflect this state back to the attribute on the config element, those state changes are rather sent out as
+ * `expand` events.
  *
  * Under the hood this uses TreeOutline.
+ *
+ * ## Config Element Attributes ##
+ *
+ * - `selected`: Whether the tree node should be rendered as selected.
+ * - `jslog-context`: The jslog context for the tree element.
+ * - `aria-*`: All aria attributes defined on the config element are cloned over.
+ * - `hidden`: On the <ul>, declares whether the subtree should be rendererd as expanded or collapsed.
+ *
+ * ## Event Handling ##
+ *
+ * Since config elements are cloned into the shadow DOM, it's not possible to directly attach event listeners to the
+ * children of config elements. Instead, the `HTMLElementWithLightDOMTemplate.on` directive should be used as a wrapper:
+ * ```
+ * <li role="treeitem">
+ *   <button @click=${on(clickHandler)}>click me</button>
+ * </li>
+ * ```
  *
  * @property template Define the tree contents
  * @event selected A node was selected
@@ -1305,12 +1441,12 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
         });
         this.#treeOutline.addEventListener(Events.ElementExpanded, event => {
             if (event.data instanceof TreeViewTreeElement) {
-                event.data.configElement.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
+                this.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
             }
         });
         this.#treeOutline.addEventListener(Events.ElementCollapsed, event => {
             if (event.data instanceof TreeViewTreeElement) {
-                event.data.configElement.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
+                this.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
             }
         });
         this.addNodes(getTreeNodes([this]));
@@ -1333,7 +1469,7 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
         const treeElement = TreeViewTreeElement.get(subtreeRoot.parentElement);
         return treeElement ? { expanded, treeElement } : null;
     }
-    updateNodes(node, attributeName) {
+    updateNode(node, attributeName) {
         while (node?.parentNode && !(node instanceof HTMLElement)) {
             node = node.parentNode;
         }

@@ -820,13 +820,12 @@ export class ConsoleViewMessage {
             }
             const renderResult = await UI.UIUtils.Renderer.render(node);
             if (renderResult) {
-                if (renderResult.tree) {
-                    this.selectableChildren.push(renderResult.tree);
-                    renderResult.tree.addEventListener(UI.TreeOutline.Events.ElementAttached, this.messageResized);
-                    renderResult.tree.addEventListener(UI.TreeOutline.Events.ElementExpanded, this.messageResized);
-                    renderResult.tree.addEventListener(UI.TreeOutline.Events.ElementCollapsed, this.messageResized);
-                }
-                result.appendChild(renderResult.node);
+                this.selectableChildren.push(renderResult);
+                const resizeObserver = new ResizeObserver(() => {
+                    this.messageResized({ data: renderResult.element });
+                });
+                resizeObserver.observe(renderResult.element);
+                result.appendChild(renderResult.element);
             }
             else {
                 result.appendChild(this.formatParameterAsObject(remoteObject, false));

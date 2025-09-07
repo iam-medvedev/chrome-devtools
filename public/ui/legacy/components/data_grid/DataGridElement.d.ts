@@ -1,4 +1,5 @@
 import type * as TextUtils from '../../../../models/text_utils/text_utils.js';
+import * as UI from '../../../../ui/legacy/legacy.js';
 import { type ColumnDescriptor } from './DataGrid.js';
 /**
  * A data grid (table) element that can be used as progressive enhancement over a <table> element.
@@ -27,7 +28,7 @@ import { type ColumnDescriptor } from './DataGrid.js';
  * @attribute striped
  * @attribute displayName
  */
-declare class DataGridElement extends HTMLElement {
+declare class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
     #private;
     static readonly observedAttributes: string[];
     constructor();
@@ -40,6 +41,10 @@ declare class DataGridElement extends HTMLElement {
     get displayName(): string | null;
     set filters(filters: TextUtils.TextUtils.ParsedFilter[]);
     get columns(): ColumnDescriptor[];
+    addNodes(nodes: NodeList): void;
+    removeNodes(nodes: NodeList): void;
+    updateNode(node: Node, attributeName: string | null): void;
+    onChange(mutationList: MutationRecord[]): void;
     addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
 }

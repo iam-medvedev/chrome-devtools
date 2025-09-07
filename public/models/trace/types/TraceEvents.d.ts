@@ -1,6 +1,5 @@
 import type * as Platform from '../../../core/platform/platform.js';
 import type * as Protocol from '../../../generated/protocol.js';
-import type { ExtensionTrackEntryPayloadDeeplink } from './Extensions.js';
 import type { Micro, Milli, Seconds, TraceWindowMicro } from './Timing.js';
 export declare const enum Phase {
     BEGIN = "B",
@@ -1175,9 +1174,7 @@ export interface ConsoleTimeStamp extends Event {
             track?: string | number;
             trackGroup?: string | number;
             color?: string | number;
-            devtools?: {
-                link: ExtensionTrackEntryPayloadDeeplink;
-            };
+            devtools?: string;
             sampleTraceId?: number;
         };
     };

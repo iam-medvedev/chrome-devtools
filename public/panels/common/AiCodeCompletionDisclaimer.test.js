@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
@@ -36,6 +37,28 @@ describeWithEnvironment('AiCodeCompletionDisclaimer', () => {
         const showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView');
         view.input.onManageInSettingsTooltipClick();
         assert.isTrue(showViewStub.calledOnceWith('chrome-ai'));
+        widget.detach();
+    });
+    it('renders when AIDA becomes available', async () => {
+        const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
+        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        const { view, widget } = await createDisclaimer();
+        assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        await view.nextInput;
+        assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        widget.detach();
+    });
+    it('does not render when AIDA becomes unavailable', async () => {
+        const checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        const { view, widget } = await createDisclaimer();
+        assert.strictEqual(view.input.aidaAvailability, "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        await view.nextInput;
+        assert.strictEqual(view.input.aidaAvailability, "no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
         widget.detach();
     });
 });

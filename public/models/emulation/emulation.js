@@ -22,7 +22,7 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
+import * as Geometry from "./../geometry/geometry.js";
 
 // gen/front_end/models/emulation/EmulatedDevices.js
 var EmulatedDevices_exports = {};
@@ -1832,10 +1832,10 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     super();
     this.#screenRectInternal = new Rect(0, 0, 1, 1);
     this.#visiblePageRectInternal = new Rect(0, 0, 1, 1);
-    this.#availableSize = new UI.Geometry.Size(1, 1);
-    this.#preferredSize = new UI.Geometry.Size(1, 1);
+    this.#availableSize = new Geometry.Size(1, 1);
+    this.#preferredSize = new Geometry.Size(1, 1);
     this.#initialized = false;
-    this.#appliedDeviceSizeInternal = new UI.Geometry.Size(1, 1);
+    this.#appliedDeviceSizeInternal = new Geometry.Size(1, 1);
     this.#appliedDeviceScaleFactorInternal = window.devicePixelRatio;
     this.#appliedUserAgentTypeInternal = "Desktop";
     this.#scaleSettingInternal = Common2.Settings.Settings.instance().createSetting("emulation.device-scale", 1);
@@ -2197,7 +2197,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       } else {
         this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Desktop (touch)" : "Desktop";
       }
-      this.applyDeviceMetrics(new UI.Geometry.Size(orientation.width, orientation.height), insets, outline, this.#scaleSettingInternal.get(), this.#deviceInternal.deviceScaleFactor, mobile, this.getScreenOrientationType(), resetPageScaleFactor);
+      this.applyDeviceMetrics(new Geometry.Size(orientation.width, orientation.height), insets, outline, this.#scaleSettingInternal.get(), this.#deviceInternal.deviceScaleFactor, mobile, this.getScreenOrientationType(), resetPageScaleFactor);
       this.applyUserAgent(this.#deviceInternal.userAgent, this.#deviceInternal.userAgentMetadata);
       this.applyTouch(this.#deviceInternal.touch(), mobile);
     } else if (this.#typeInternal === Type2.None) {
@@ -2218,7 +2218,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       const defaultDeviceScaleFactor = mobile ? defaultMobileScaleFactor : 0;
       this.#fitScaleInternal = this.calculateFitScale(this.#widthSetting.get(), this.#heightSetting.get());
       this.#appliedUserAgentTypeInternal = this.#uaSettingInternal.get();
-      this.applyDeviceMetrics(new UI.Geometry.Size(screenWidth, screenHeight), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), this.#scaleSettingInternal.get(), this.#deviceScaleFactorSettingInternal.get() || defaultDeviceScaleFactor, mobile, screenHeight >= screenWidth ? "portraitPrimary" : "landscapePrimary", resetPageScaleFactor);
+      this.applyDeviceMetrics(new Geometry.Size(screenWidth, screenHeight), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), this.#scaleSettingInternal.get(), this.#deviceScaleFactorSettingInternal.get() || defaultDeviceScaleFactor, mobile, screenHeight >= screenWidth ? "portraitPrimary" : "landscapePrimary", resetPageScaleFactor);
       this.applyUserAgent(mobile ? defaultMobileUserAgent : "", mobile ? defaultMobileUserAgentMetadata : null);
       this.applyTouch(
         this.#uaSettingInternal.get() === "Desktop (touch)" || this.#uaSettingInternal.get() === "Mobile",

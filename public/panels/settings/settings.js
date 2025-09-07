@@ -475,10 +475,15 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
       window.clearTimeout(this.#updateSyncSectionTimerId);
       this.#updateSyncSectionTimerId = -1;
     }
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation((syncInfo) => {
+    void Promise.all([
+      new Promise((resolve) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)),
+      Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled ? Host.GdpClient.GdpClient.instance().getProfile() : Promise.resolve(void 0)
+    ]).then(([syncInfo, gdpProfile]) => {
       this.syncSection.data = {
         syncInfo,
-        syncSetting: Common.Settings.moduleSetting("sync-preferences")
+        syncSetting: Common.Settings.moduleSetting("sync-preferences"),
+        receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting("receive-gdp-badges"),
+        gdpProfile: gdpProfile ?? void 0
       };
       if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
         this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
@@ -1433,11 +1438,11 @@ var UIStrings3 = {
   /**
    * @description Explainer for which data is being sent for the 'Code suggestions' feature
    */
-  codeSuggestionsSendData: "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature.",
+  codeSuggestionsSendData: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature.",
   /**
    * @description Explainer for which data is being sent for the 'Code suggestions' feature when logging is not enabled
    */
-  codeSuggestionsSendDataNoLogging: "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
+  codeSuggestionsSendDataNoLogging: "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google\u2019s AI models. Your organization may change these settings at any time.",
   /**
    * @description Label for a link to the terms of service
    */

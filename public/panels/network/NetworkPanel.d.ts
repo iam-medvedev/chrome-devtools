@@ -2,6 +2,7 @@ import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Extensions from '../../models/extensions/extensions.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
@@ -11,7 +12,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from '../search/search.js';
 import { NetworkItemView } from './NetworkItemView.js';
 import { NetworkLogView } from './NetworkLogView.js';
-import { type NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkPanel extends UI.Panel.Panel implements UI.ContextMenu
     .Provider<SDK.NetworkRequest.NetworkRequest | SDK.Resource.Resource | Workspace.UISourceCode.UISourceCode>, UI.View.ViewLocationResolver {
     private readonly networkLogShowOverviewSetting;
@@ -101,7 +101,7 @@ export declare class NetworkLogWithFilterRevealer implements Common.Revealer
 }
 export declare class FilmStripRecorder implements Tracing.TracingManager.TracingManagerClient {
     #private;
-    constructor(timeCalculator: NetworkTimeCalculator, filmStripView: PerfUI.FilmStripView.FilmStripView);
+    constructor(timeCalculator: NetworkTimeCalculator.NetworkTimeCalculator, filmStripView: PerfUI.FilmStripView.FilmStripView);
     traceEventsCollected(events: Trace.Types.Events.Event[]): void;
     tracingComplete(): Promise<void>;
     tracingBufferUsage(): void;

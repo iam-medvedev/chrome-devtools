@@ -23,6 +23,7 @@ __export(AnimationUI_exports, {
 import * as Common2 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as InlineEditor from "./../../ui/legacy/components/inline_editor/inline_editor.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
@@ -1803,7 +1804,7 @@ var AnimationUI = class _AnimationUI {
       line.setAttribute("y2", Options.AnimationHeight.toString());
       line.style.stroke = strokeColor;
     }
-    const bezier = UI2.Geometry.CubicBezier.parse(easing);
+    const bezier = Geometry.CubicBezier.parse(easing);
     const cache = this.#cachedElements[iteration].keyframeRender;
     if (!cache[keyframeIndex]) {
       const svg2 = bezier ? UI2.UIUtils.createSVGChild(parentElement, "path", "animation-keyframe") : UI2.UIUtils.createSVGChild(parentElement, "g", "animation-keyframe-step");

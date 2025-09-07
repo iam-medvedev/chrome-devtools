@@ -8018,6 +8018,7 @@ __export(KeyValueStorageItemsView_exports, {
   KeyValueStorageItemsView: () => KeyValueStorageItemsView
 });
 import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import { Directives as LitDirectives, html as html5, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
@@ -8196,7 +8197,7 @@ var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI16.W
 var { ARIAUtils: ARIAUtils6 } = UI17;
 var { EmptyWidget: EmptyWidget7 } = UI17.EmptyWidget;
 var { VBox, widgetConfig: widgetConfig2 } = UI17.Widget;
-var { Size } = UI17.Geometry;
+var { Size } = Geometry;
 var { repeat } = LitDirectives;
 var UIStrings21 = {
   /**

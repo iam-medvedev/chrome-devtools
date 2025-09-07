@@ -7,6 +7,7 @@ export declare class SlowCSSSelector extends BaseInsightComponent<SlowCSSSelecto
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     private toSourceFileLocation;
     private getSelectorLinks;
     renderContent(): Lit.LitTemplate;

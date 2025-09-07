@@ -29,9 +29,16 @@ describeWithEnvironment('StylingAgent', () => {
         };
     }
     let element;
+    let target;
+    let domModel;
     beforeEach(() => {
         mockHostConfig();
+        target = sinon.createStubInstance(SDK.Target.Target);
+        target.model.returns(null);
+        domModel = sinon.createStubInstance(SDK.DOMModel.DOMModel);
+        domModel.target.returns(target);
         element = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        element.domModel.returns(domModel);
     });
     describe('describeElement', () => {
         it('should describe an element with no children, siblings, or parent', async () => {
@@ -182,17 +189,18 @@ describeWithEnvironment('StylingAgent', () => {
                 createExtensionScope,
                 execJs,
             });
+            sinon.stub(StylingAgent, 'describeElement').resolves('element-description');
             const controller = new AbortController();
             controller.abort();
             await Array.fromAsync(agent.run('test', {
-                selected: null,
+                selected: new AiAssistance.NodeContext(element),
                 signal: controller.signal,
             }));
-            await Array.fromAsync(agent.run('test2', { selected: null }));
+            await Array.fromAsync(agent.run('test2', { selected: new AiAssistance.NodeContext(element) }));
             const request = agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER);
             assert.deepEqual(request.current_message?.parts[0], { text: 'test input' });
             assert.deepEqual(request.historical_contexts, [
-                { parts: [{ text: 'QUERY: test2' }], role: 1 }, {
+                { parts: [{ text: '# Inspected element\n\nelement-description\n\n# User request\n\nQUERY: test2' }], role: 1 }, {
                     parts: [
                         { functionCall: { name: 'executeJavaScript', args: { title: 'title2', thought: 'thought2', code: 'action2' } } }
                     ],

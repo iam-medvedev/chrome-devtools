@@ -892,16 +892,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // TODO(paulirish) Determine a more robust method as checking `primaryPageTarget()?.sessionId` isn't accurate.
         return true;
     }
-    shouldEnableFullAskAI() {
-        if (!Root.Runtime.experiments.isEnabled("timeline-ask-ai-full-button" /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */)) {
-            return false;
-        }
-        if (Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
-            Root.Runtime.GenAiEnterprisePolicyValue.DISABLE) {
-            return false;
-        }
-        return true;
-    }
     populateToolbar() {
         const canRecord = this.canRecord();
         if (canRecord || isNode) {
@@ -941,12 +931,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 this.panelToolbar.appendSeparator();
             }
         }
-        if (this.shouldEnableFullAskAI()) {
-            this.askAiButton = new UI.Toolbar.ToolbarButton('Ask AI', 'button-magic', undefined, 'timeline.ask-ai');
-            this.askAiButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#onClickAskAIButton.bind(this));
-            this.panelToolbar.appendToolbarItem(this.askAiButton);
-            this.panelToolbar.appendSeparator();
-        }
         // TODO(crbug.com/337909145): need to hide "Live metrics" option if !canRecord.
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         // View
@@ -983,21 +967,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
-    }
-    // Currently for debugging purposes only.
-    #onClickAskAIButton() {
-        const actionId = 'drjones.performance-panel-full-context';
-        if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
-            return;
-        }
-        const focus = Utils.AIContext.getPerformanceAgentFocusFromModel(this.#traceEngineModel);
-        if (!focus) {
-            return;
-        }
-        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, focus);
-        // Trigger the AI Assistance panel to open.
-        const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
-        void action.execute();
     }
     #setupNavigationSetting() {
         const currentNavSetting = Common.Settings.moduleSetting('flamechart-selected-navigation').get();
@@ -1310,7 +1279,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         // extensions sourcemaps provide little to no-value for the exported trace
         // debugging, so they are filtered out.
         return metadata.sourceMaps.filter(value => {
-            return value.url && Trace.Helpers.Trace.isExtensionUrl(value.url);
+            return !Trace.Helpers.Trace.isExtensionUrl(value.url);
         });
     }
     #showExportTraceErrorDialog(error) {
@@ -2612,7 +2581,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             for (const modelName in insightsForNav.model) {
                 const model = modelName;
                 const insight = insightsForNav.model[model];
-                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
+                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(AiAssistanceModel.PERF_AGENT_UNIT_FORMATTERS, parsedTrace, insight);
                 if (!formatter.insightIsSupported()) {
                     // Not all Insights are integrated with "Ask AI" yet, let's avoid
                     // filling up the response with those ones because there will be no

@@ -372,6 +372,18 @@ var GlobalAiButton = class extends UI.Widget.Widget {
   #onClick() {
     UI.ViewManager.ViewManager.instance().showViewInLocation("freestyler", "drawer-view");
     incrementClickCountSetting();
+    const hasExplicitUserPreference = UI.InspectorView.InspectorView.instance().isUserExplicitlyUpdatedDrawerOrientation();
+    const isVerticalDrawerExperimentEnabled = Root.Runtime.experiments.isEnabled(
+      "vertical-drawer"
+      /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
+    );
+    if (isVerticalDrawerExperimentEnabled && !hasExplicitUserPreference) {
+      UI.InspectorView.InspectorView.instance().showDrawer({
+        focus: true,
+        hasTargetDrawer: false
+      });
+      UI.InspectorView.InspectorView.instance().toggleDrawerOrientation({ force: UI.InspectorView.DrawerOrientation.VERTICAL });
+    }
   }
   performUpdate() {
     this.#view({
@@ -650,7 +662,6 @@ var MainImpl = class _MainImpl {
     Root2.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
     Root2.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
     Root2.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
-    Root2.Runtime.experiments.register("timeline-ask-ai-full-button", "Performance panel: enable new, more powerful Ask AI in trace view");
     Root2.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
       "highlight-errors-elements-panel",
@@ -772,6 +783,9 @@ var MainImpl = class _MainImpl {
     const actionRegistryInstance = UI2.ActionRegistry.ActionRegistry.instance({ forceNew: true });
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
+    if (Root2.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+      void Host.GdpClient.GdpClient.instance().initialize();
+    }
     _MainImpl.timeEnd("Main._createAppUI");
     const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
@@ -1112,20 +1126,12 @@ var MainMenuItem = class _MainMenuItem {
       dockController.setDockSide(side);
       contextMenu.discard();
     }
-    const aiPreregisteredView = UI2.ViewManager.getRegisteredViewExtensionForID("freestyler");
-    if (aiPreregisteredView) {
-      let additionalElement = void 0;
-      const promotionId = aiPreregisteredView.featurePromotionId();
-      if (promotionId) {
-        additionalElement = UI2.UIUtils.maybeCreateNewBadge(promotionId);
-      }
-      contextMenu.defaultSection().appendItem(aiPreregisteredView.title(), () => {
-        void UI2.ViewManager.ViewManager.instance().showView("freestyler", true, false);
-        if (promotionId) {
-          UI2.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
-        }
-      }, { additionalElement, jslogContext: "freestyler" });
-    }
+    contextMenu.defaultSection().appendAction(
+      "freestyler.main-menu",
+      void 0,
+      /* optional */
+      true
+    );
     if (dockController.dockSide() === "undocked") {
       const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
       if (mainTarget && mainTarget.type() === SDK2.Target.Type.FRAME) {
@@ -1146,6 +1152,7 @@ var MainMenuItem = class _MainMenuItem {
       const persistence = viewExtension.persistence();
       const title = viewExtension.title();
       const id = viewExtension.viewId();
+      const promotionId = viewExtension.featurePromotionId();
       if (id === "issues-pane") {
         moreTools.defaultSection().appendItem(title, () => {
           Host.userMetrics.issuesPanelOpenedFrom(
@@ -1166,12 +1173,13 @@ var MainMenuItem = class _MainMenuItem {
       if (location !== "drawer-view" && location !== "panel") {
         continue;
       }
-      if (id === "freestyler") {
-        continue;
+      let additionalElement = void 0;
+      if (promotionId) {
+        additionalElement = UI2.UIUtils.maybeCreateNewBadge(promotionId);
       }
       moreTools.defaultSection().appendItem(title, () => {
         void UI2.ViewManager.ViewManager.instance().showView(id, true, false);
-      }, { isPreviewFeature: viewExtension.isPreviewFeature(), jslogContext: id });
+      }, { additionalElement, isPreviewFeature: viewExtension.isPreviewFeature(), jslogContext: id });
     }
     const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString2(UIStrings2.help), false, "help");
     helpSubMenu.appendItemsAtLocation("mainMenuHelp");
@@ -1254,18 +1262,6 @@ async function handleExternalRequestGenerator(input) {
     case "PERFORMANCE_RELOAD_GATHER_INSIGHTS": {
       const TimelinePanel = await import("./../../panels/timeline/timeline.js");
       return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
-    }
-    case "PERFORMANCE_ANALYZE_INSIGHT": {
-      const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
-      const TimelinePanel = await import("./../../panels/timeline/timeline.js");
-      const traceModel = TimelinePanel.TimelinePanel.TimelinePanel.instance().model;
-      const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-      return await conversationHandler.handleExternalRequest({
-        conversationType: "performance-insight",
-        prompt: input.args.prompt,
-        insightTitle: input.args.insightTitle,
-        traceModel
-      });
     }
     case "PERFORMANCE_ANALYZE": {
       const TimelinePanel = await import("./../../panels/timeline/timeline.js");

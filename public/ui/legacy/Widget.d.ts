@@ -1,7 +1,7 @@
 import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Lit from '../../ui/lit/lit.js';
-import { Constraints, Size } from './Geometry.js';
 type WidgetConstructor<WidgetT extends Widget> = new (element: WidgetElement<WidgetT>) => WidgetT;
 type WidgetProducer<WidgetT extends Widget> = (element: WidgetElement<WidgetT>) => WidgetT;
 type WidgetFactory<WidgetT extends Widget> = WidgetConstructor<WidgetT> | WidgetProducer<WidgetT>;
@@ -137,11 +137,11 @@ export declare class Widget {
     setDefaultFocusedChild(child: Widget): void;
     focus(): void;
     hasFocus(): boolean;
-    calculateConstraints(): Constraints;
-    constraints(): Constraints;
+    calculateConstraints(): Geometry.Constraints;
+    constraints(): Geometry.Constraints;
     setMinimumAndPreferredSizes(width: number, height: number, preferredWidth: number, preferredHeight: number): void;
     setMinimumSize(width: number, height: number): void;
-    set minimumSize(size: Size);
+    set minimumSize(size: Geometry.Size);
     private hasNonZeroConstraints;
     suspendInvalidations(): void;
     resumeInvalidations(): void;
@@ -211,7 +211,7 @@ export declare class VBox extends Widget {
      * @param options optional settings to configure the behavior.
      */
     constructor(element?: HTMLElement, options?: WidgetOptions);
-    calculateConstraints(): Constraints;
+    calculateConstraints(): Geometry.Constraints;
 }
 export declare class HBox extends Widget {
     /**
@@ -231,7 +231,7 @@ export declare class HBox extends Widget {
      * @param options optional settings to configure the behavior.
      */
     constructor(element?: HTMLElement, options?: WidgetOptions);
-    calculateConstraints(): Constraints;
+    calculateConstraints(): Geometry.Constraints;
 }
 export declare class VBoxWithResizeCallback extends VBox {
     private readonly resizeCallback;

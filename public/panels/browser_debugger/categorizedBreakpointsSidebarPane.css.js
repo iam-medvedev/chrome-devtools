@@ -37,7 +37,7 @@ export default `/*
   color: var(--sys-color-on-yellow-container);
 }
 
-.breakpoint-hit .breakpoint-hit-marker {
+.breakpoint-hit-marker {
   background-color: var(--sys-color-yellow-container);
   border-right: 3px solid var(--sys-color-yellow-outline);
   color: var(--sys-color-on-yellow-container);

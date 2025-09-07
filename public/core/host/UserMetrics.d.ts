@@ -33,7 +33,6 @@ export declare class UserMetrics {
     recordingExported(value: RecordingExported): void;
     recordingCodeToggled(value: RecordingCodeToggled): void;
     recordingCopiedToClipboard(value: RecordingCopiedToClipboard): void;
-    cssHintShown(type: CSSHintType): void;
     lighthouseModeRun(type: LighthouseModeRun): void;
     lighthouseCategoryUsed(type: LighthouseCategoryUsed): void;
     swatchActivated(swatch: SwatchType): void;
@@ -511,7 +510,6 @@ export declare enum DevtoolsExperiments {
     'use-source-map-scopes' = 76,
     'timeline-show-postmessage-events' = 86,
     'timeline-save-as-gz' = 108,
-    'timeline-ask-ai-full-button' = 109,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
@@ -848,23 +846,6 @@ export declare enum ManifestSectionCodes {
     Icons = 4,
     'Window Controls Overlay' = 5,
     MAX_VALUE = 6
-}
-export declare const enum CSSHintType {
-    OTHER = 0,
-    ALIGN_CONTENT = 1,
-    FLEX_ITEM = 2,
-    FLEX_CONTAINER = 3,
-    GRID_CONTAINER = 4,
-    GRID_ITEM = 5,
-    FLEX_GRID = 6,
-    MULTICOL_FLEX_GRID = 7,
-    PADDING = 8,
-    POSITION = 9,
-    Z_INDEX = 10,
-    SIZING = 11,
-    FLEX_OR_GRID_ITEM = 12,
-    FONT_VARIATION_SETTINGS = 13,
-    MAX_VALUE = 14
 }
 export declare const enum LighthouseModeRun {
     NAVIGATION = 0,

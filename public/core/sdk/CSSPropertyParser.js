@@ -195,11 +195,11 @@ export class BottomUpTreeMatching extends TreeWalker {
     getMatch(node) {
         return this.#matchedNodes.get(this.#key(node));
     }
-    hasUnresolvedVars(node) {
-        return this.hasUnresolvedVarsRange(node, node);
+    hasUnresolvedSubstitutions(node) {
+        return this.hasUnresolvedSubstitutionsRange(node, node);
     }
-    hasUnresolvedVarsRange(from, to) {
-        return this.computedText.hasUnresolvedVars(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
+    hasUnresolvedSubstitutionsRange(from, to) {
+        return this.computedText.hasUnresolvedSubstitutions(from.from - this.ast.tree.from, to.to - this.ast.tree.from);
     }
     getComputedText(node, substitutionHook) {
         return this.getComputedTextRange(node, node, substitutionHook);
@@ -215,9 +215,9 @@ export class BottomUpTreeMatching extends TreeWalker {
         const from = ASTUtils.declValue(this.ast.tree) ?? this.ast.tree;
         return this.computedText.countTopLevelValues(from.from - this.ast.tree.from, to.from - this.ast.tree.from);
     }
-    getComputedPropertyValueText() {
+    getComputedPropertyValueText(substitutionHook) {
         const [from, to] = ASTUtils.range(ASTUtils.siblings(ASTUtils.declValue(this.ast.tree)));
-        return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree);
+        return this.getComputedTextRange(from ?? this.ast.tree, to ?? this.ast.tree, substitutionHook);
     }
     getComputedTextRange(from, to, substitutionHook) {
         if (!from || !to) {
@@ -343,7 +343,7 @@ export class ComputedText {
             }
         }
     }
-    hasUnresolvedVars(begin, end) {
+    hasUnresolvedSubstitutions(begin, end) {
         for (const chunk of this.#range(begin, end)) {
             if (chunk.computedText === null) {
                 return true;

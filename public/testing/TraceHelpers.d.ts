@@ -196,7 +196,7 @@ export declare function getAllNetworkRequestsByHost(networkRequests: Trace.Types
 export declare function allThreadEntriesInTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Types.Events.Event[];
 export interface PerformanceAPIExtensionTestData {
     detail: {
-        devtools?: Trace.Types.Extensions.ExtensionDataPayload;
+        devtools?: Trace.Types.Extensions.DevToolsObj;
     };
     name: string;
     start?: string | number;

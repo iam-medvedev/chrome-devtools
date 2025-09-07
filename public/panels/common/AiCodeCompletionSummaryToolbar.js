@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
@@ -21,6 +22,10 @@ const UIStringsNotTranslate = {
 };
 const lockedString = i18n.i18n.lockedString;
 export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, _output, target) => {
+    if (input.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+        render(nothing, target);
+        return;
+    }
     const toolbarClasses = Directives.classMap({
         'ai-code-completion-summary-toolbar': true,
         'has-disclaimer': Boolean(input.disclaimerTooltipId),
@@ -72,13 +77,23 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     #citations = new Set();
     #loading = false;
     #hasTopBorder = false;
+    #aidaAvailability;
+    #boundOnAidaAvailabilityChange;
     constructor(props, view) {
         super();
         this.#disclaimerTooltipId = props.disclaimerTooltipId;
         this.#citationsTooltipId = props.citationsTooltipId;
         this.#hasTopBorder = props.hasTopBorder ?? false;
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#view = view ?? DEFAULT_SUMMARY_TOOLBAR_VIEW;
         this.requestUpdate();
+    }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            this.requestUpdate();
+        }
     }
     setLoading(loading) {
         this.#loading = loading;
@@ -99,7 +114,17 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
             citationsTooltipId: this.#citationsTooltipId,
             loading: this.#loading,
             hasTopBorder: this.#hasTopBorder,
+            aidaAvailability: this.#aidaAvailability,
         }, undefined, this.contentElement);
+    }
+    wasShown() {
+        super.wasShown();
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        void this.#onAidaAvailabilityChange();
+    }
+    willHide() {
+        super.willHide();
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
 }
 //# sourceMappingURL=AiCodeCompletionSummaryToolbar.js.map

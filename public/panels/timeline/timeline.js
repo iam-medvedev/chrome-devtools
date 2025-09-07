@@ -515,7 +515,7 @@ var ExtensionTrackAppender = class {
     return event.name;
   }
   setPopoverInfo(event, info) {
-    info.title = Trace4.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText ? event.args.tooltipText : this.titleForEvent(event);
+    info.title = Trace4.Types.Extensions.isSyntheticExtensionEntry(event) && event.devtoolsObj.tooltipText ? event.devtoolsObj.tooltipText : this.titleForEvent(event);
     info.formattedTime = getDurationString(event.dur);
   }
 };
@@ -739,9 +739,9 @@ __export(LayoutShiftsTrackAppender_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Trace7 from "./../../models/trace/trace.js";
 import * as ComponentHelpers from "./../../ui/components/helpers/helpers.js";
-import * as UI from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport9 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as Utils3 from "./utils/utils.js";
 var UIStrings7 = {
@@ -850,7 +850,7 @@ var LayoutShiftsTrackAppender = class _LayoutShiftsTrackAppender {
     info.formattedTime = score.toFixed(4);
     info.title = Trace7.Types.Events.isSyntheticLayoutShift(event) ? i18nString7(UIStrings7.layoutShift) : Trace7.Types.Events.isSyntheticLayoutShiftCluster(event) ? i18nString7(UIStrings7.layoutShiftCluster) : event.name;
     if (Trace7.Types.Events.isSyntheticLayoutShift(event)) {
-      const maxSize = new UI.Geometry.Size(510, 400);
+      const maxSize = new Geometry.Size(510, 400);
       const vizElem = _LayoutShiftsTrackAppender.createShiftViz(event, this.#parsedTrace, maxSize);
       if (vizElem) {
         info.additionalElements.push(vizElem);
@@ -1299,7 +1299,6 @@ var EntriesFilter = class {
 };
 
 // gen/front_end/panels/timeline/ModificationsManager.js
-import * as Utils4 from "./utils/utils.js";
 var modificationsManagerByTraceIndex = [];
 var activeManager;
 var AnnotationModifiedEvent = class _AnnotationModifiedEvent extends Event {
@@ -1379,7 +1378,7 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
     this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
     this.#modifications = modifications || null;
     this.#parsedTrace = parsedTrace;
-    this.#eventsSerializer = new Utils4.EventsSerializer.EventsSerializer();
+    this.#eventsSerializer = new Trace9.EventsSerializer.EventsSerializer();
     this.#annotationsHiddenSetting = Common2.Settings.Settings.instance().moduleSetting("annotations-hidden");
     this.#overlayForAnnotation = /* @__PURE__ */ new Map();
   }
@@ -1657,7 +1656,7 @@ var ModificationsManager = class _ModificationsManager extends EventTarget {
 };
 
 // gen/front_end/panels/timeline/ThreadAppender.js
-import * as Utils5 from "./utils/utils.js";
+import * as Utils4 from "./utils/utils.js";
 var UIStrings8 = {
   /**
    * @description Text shown for an entry in the flame chart that is ignored because it matches
@@ -2024,7 +2023,7 @@ var ThreadAppender = class {
     for (const node of nodes) {
       let nextLevel = startingLevel;
       const entry = node.entry;
-      const entryIsIgnoreListed = Utils5.IgnoreList.isIgnoreListedEntry(entry);
+      const entryIsIgnoreListed = Utils4.IgnoreList.isIgnoreListedEntry(entry);
       const entryIsVisible = !invisibleEntries.includes(entry) && (entryIsVisibleInTimeline(entry, this.#parsedTrace) || this.#showAllEventsEnabled);
       const skipEventDueToIgnoreListing = entryIsIgnoreListed && parentIsIgnoredListed;
       if (entryIsVisible && !skipEventDueToIgnoreListing) {
@@ -2080,28 +2079,28 @@ var ThreadAppender = class {
     }
     if (Trace10.Types.Events.isProfileCall(event)) {
       if (event.callFrame.functionName === "(idle)") {
-        return Utils5.EntryStyles.getCategoryStyles().idle.getComputedColorValue();
+        return Utils4.EntryStyles.getCategoryStyles().idle.getComputedColorValue();
       }
       if (event.callFrame.functionName === "(program)") {
-        return Utils5.EntryStyles.getCategoryStyles().other.getComputedColorValue();
+        return Utils4.EntryStyles.getCategoryStyles().other.getComputedColorValue();
       }
       if (event.callFrame.scriptId === "0") {
-        return Utils5.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
+        return Utils4.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
       }
       return this.#colorGenerator.colorForID(event.callFrame.url);
     }
-    const defaultColor = Utils5.EntryStyles.getEventStyle(event.name)?.category.getComputedColorValue();
-    return defaultColor || Utils5.EntryStyles.getCategoryStyles().other.getComputedColorValue();
+    const defaultColor = Utils4.EntryStyles.getEventStyle(event.name)?.category.getComputedColorValue();
+    return defaultColor || Utils4.EntryStyles.getCategoryStyles().other.getComputedColorValue();
   }
   /**
    * Gets the title an event added by this appender should be rendered with.
    */
   titleForEvent(entry) {
-    if (Utils5.IgnoreList.isIgnoreListedEntry(entry)) {
-      const rule = Utils5.IgnoreList.getIgnoredReasonString(entry);
+    if (Utils4.IgnoreList.isIgnoreListedEntry(entry)) {
+      const rule = Utils4.IgnoreList.getIgnoredReasonString(entry);
       return i18nString8(UIStrings8.onIgnoreList, { rule });
     }
-    return Utils5.EntryName.nameForEntry(entry, this.#parsedTrace);
+    return Utils4.EntryName.nameForEntry(entry, this.#parsedTrace);
   }
   setPopoverInfo(event, info) {
     if (Trace10.Types.Events.isParseHTML(event)) {
@@ -2129,7 +2128,7 @@ import * as Root6 from "./../../core/root/root.js";
 import * as Trace31 from "./../../models/trace/trace.js";
 import * as Workspace4 from "./../../models/workspace/workspace.js";
 import * as PerfUI13 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI20 from "./../../ui/legacy/legacy.js";
+import * as UI19 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport17 from "./../../ui/legacy/theme_support/theme_support.js";
 
 // gen/front_end/panels/timeline/Initiators.js
@@ -2293,7 +2292,7 @@ import * as Trace30 from "./../../models/trace/trace.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as TraceBounds15 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI12 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI19 from "./../../ui/legacy/legacy.js";
+import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineInsights2 from "./components/insights/insights.js";
 
@@ -2312,7 +2311,7 @@ import * as Platform5 from "./../../core/platform/platform.js";
 import * as Trace11 from "./../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
    * @description Text for a heap profile type
@@ -2347,7 +2346,7 @@ var UIStrings9 = {
 };
 var str_9 = i18n17.i18n.registerUIStrings("panels/timeline/CountersGraph.ts", UIStrings9);
 var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-var CountersGraph = class extends UI2.Widget.VBox {
+var CountersGraph = class extends UI.Widget.VBox {
   delegate;
   calculator;
   header;
@@ -2371,13 +2370,13 @@ var CountersGraph = class extends UI2.Widget.VBox {
     this.element.id = "memory-graphs-container";
     this.delegate = delegate;
     this.calculator = new Calculator();
-    this.header = new UI2.Widget.HBox();
+    this.header = new UI.Widget.HBox();
     this.header.element.classList.add("timeline-memory-header");
     this.header.show(this.element);
     this.toolbar = this.header.element.createChild("devtools-toolbar", "timeline-memory-toolbar");
-    this.graphsContainer = new UI2.Widget.VBox();
+    this.graphsContainer = new UI.Widget.VBox();
     this.graphsContainer.show(this.element);
-    const canvasWidget = new UI2.Widget.VBoxWithResizeCallback(this.resize.bind(this));
+    const canvasWidget = new UI.Widget.VBoxWithResizeCallback(this.resize.bind(this));
     canvasWidget.show(this.graphsContainer.element);
     this.createCurrentValuesBar();
     this.canvasContainer = canvasWidget.element;
@@ -2472,7 +2471,7 @@ var CountersGraph = class extends UI2.Widget.VBox {
     this.refresh();
   }
   #scheduleRefresh() {
-    UI2.UIUtils.invokeOnceAfterBatchUpdate(this, this.refresh);
+    UI.UIUtils.invokeOnceAfterBatchUpdate(this, this.refresh);
   }
   draw() {
     this.clear();
@@ -2635,7 +2634,7 @@ var CounterUI = class {
     this.formatter = formatter || Platform5.NumberUtilities.withThousandsSeparator;
     this.setting = Common4.Settings.Settings.instance().createSetting("timeline-counters-graph-" + settingsKey, true);
     this.setting.setTitle(title);
-    this.filter = new UI2.Toolbar.ToolbarSettingCheckbox(this.setting, title);
+    this.filter = new UI.Toolbar.ToolbarSettingCheckbox(this.setting, title);
     const parsedColor = Common4.Color.parse(graphColor);
     if (parsedColor) {
       const colorWithAlpha = parsedColor.setAlpha(0.5).asString(
@@ -2851,7 +2850,7 @@ import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as Trace27 from "./../../models/trace/trace.js";
 import * as TraceBounds13 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI17 from "./../../ui/legacy/legacy.js";
+import * as UI16 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineComponents5 from "./components/components.js";
@@ -2866,7 +2865,7 @@ import * as Common12 from "./../../core/common/common.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Trace24 from "./../../models/trace/trace.js";
 import * as DataGrid5 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as UI13 from "./../../ui/legacy/legacy.js";
+import * as UI12 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/TimelineFilters.js
@@ -2895,6 +2894,7 @@ import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
+import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Trace22 from "./../../models/trace/trace.js";
 import * as TraceBounds11 from "./../../services/trace_bounds/trace_bounds.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
@@ -3088,7 +3088,7 @@ var imagePreview_css_default = `/*
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
 import * as LegacyComponents from "./../../ui/legacy/components/utils/utils.js";
-import * as UI12 from "./../../ui/legacy/legacy.js";
+import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as TimelineComponents4 from "./components/components.js";
 import * as Extensions4 from "./extensions/extensions.js";
 
@@ -3101,7 +3101,7 @@ __export(ThirdPartyTreeView_exports, {
 import * as i18n21 from "./../../core/i18n/i18n.js";
 import * as Trace14 from "./../../models/trace/trace.js";
 import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/thirdPartyTreeView.css.js
@@ -3136,7 +3136,7 @@ import * as Trace13 from "./../../models/trace/trace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/ActiveFilters.js
@@ -3391,7 +3391,7 @@ var timelineTreeView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineTreeView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineTreeView.js
-import * as Utils6 from "./utils/utils.js";
+import * as Utils5 from "./utils/utils.js";
 var UIStrings10 = {
   /**
    * @description Text for the performance of something
@@ -3530,7 +3530,7 @@ var UIStrings10 = {
 };
 var str_10 = i18n19.i18n.registerUIStrings("panels/timeline/TimelineTreeView.ts", UIStrings10);
 var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
+var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI2.Widget.VBox) {
   #selectedEvents;
   searchResults;
   linkifier;
@@ -3601,8 +3601,8 @@ var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget
     this.currentThreadSetting.addChangeListener(this.refreshTree, this);
     const columns = [];
     this.populateColumns(columns);
-    this.splitWidget = new UI3.SplitWidget.SplitWidget(true, true, "timeline-tree-view-details-split-widget");
-    const mainView = new UI3.Widget.VBox();
+    this.splitWidget = new UI2.SplitWidget.SplitWidget(true, true, "timeline-tree-view-details-split-widget");
+    const mainView = new UI2.Widget.VBox();
     const toolbar4 = mainView.element.createChild("devtools-toolbar");
     toolbar4.setAttribute("jslog", `${VisualLogging.toolbar()}`);
     toolbar4.wrappable = true;
@@ -3624,7 +3624,7 @@ var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget
     this.dataGrid.setRowContextMenuCallback(this.onContextMenu.bind(this));
     this.dataGrid.asWidget().show(mainView.element);
     this.dataGrid.addEventListener("SelectedNode", this.updateDetailsForSelection, this);
-    this.detailsView = new UI3.Widget.VBox();
+    this.detailsView = new UI2.Widget.VBox();
     this.detailsView.element.classList.add("timeline-details-view", "timeline-details-view-body");
     this.splitWidget.setMainWidget(mainView);
     this.splitWidget.setSidebarWidget(this.detailsView);
@@ -3671,22 +3671,22 @@ var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget
     return false;
   }
   populateToolbar(toolbar4) {
-    this.caseSensitiveButton = new UI3.Toolbar.ToolbarToggle(i18nString10(UIStrings10.matchCase), "match-case", void 0, "match-case");
+    this.caseSensitiveButton = new UI2.Toolbar.ToolbarToggle(i18nString10(UIStrings10.matchCase), "match-case", void 0, "match-case");
     this.caseSensitiveButton.addEventListener("Click", () => {
       this.#filterChanged();
     }, this);
     toolbar4.appendToolbarItem(this.caseSensitiveButton);
-    this.regexButton = new UI3.Toolbar.ToolbarToggle(i18nString10(UIStrings10.useRegularExpression), "regular-expression", void 0, "regular-expression");
+    this.regexButton = new UI2.Toolbar.ToolbarToggle(i18nString10(UIStrings10.useRegularExpression), "regular-expression", void 0, "regular-expression");
     this.regexButton.addEventListener("Click", () => {
       this.#filterChanged();
     }, this);
     toolbar4.appendToolbarItem(this.regexButton);
-    this.matchWholeWord = new UI3.Toolbar.ToolbarToggle(i18nString10(UIStrings10.matchWholeWord), "match-whole-word", void 0, "match-whole-word");
+    this.matchWholeWord = new UI2.Toolbar.ToolbarToggle(i18nString10(UIStrings10.matchWholeWord), "match-whole-word", void 0, "match-whole-word");
     this.matchWholeWord.addEventListener("Click", () => {
       this.#filterChanged();
     }, this);
     toolbar4.appendToolbarItem(this.matchWholeWord);
-    const textFilterUI = new UI3.Toolbar.ToolbarFilter();
+    const textFilterUI = new UI2.Toolbar.ToolbarFilter();
     this.textFilterUI = textFilterUI;
     textFilterUI.addEventListener("TextChanged", this.#filterChanged, this);
     toolbar4.appendToolbarItem(textFilterUI);
@@ -3860,7 +3860,7 @@ var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget
       return;
     }
     const banner = this.detailsView.element.createChild("div", "empty-state");
-    UI3.UIUtils.createTextChild(banner, i18nString10(UIStrings10.selectItemForDetails));
+    UI2.UIUtils.createTextChild(banner, i18nString10(UIStrings10.selectItemForDetails));
   }
   showDetailsForNode(_node) {
     return false;
@@ -4018,7 +4018,7 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
         if (badgeText) {
           const badge = container.createChild("div", "entity-badge");
           badge.textContent = badgeText;
-          UI3.ARIAUtils.setLabel(badge, badgeText);
+          UI2.ARIAUtils.setLabel(badge, badgeText);
         }
       }
     } else if (event) {
@@ -4026,12 +4026,12 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       const parsedTrace = this.treeView.parsedTrace();
       const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
       const linkifier = this.treeView.linkifier;
-      const isFreshRecording = Boolean(parsedTrace && Utils6.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+      const isFreshRecording = Boolean(parsedTrace && Utils5.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
       this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
       if (this.linkElement) {
         container.createChild("div", "activity-link").appendChild(this.linkElement);
       }
-      UI3.ARIAUtils.setLabel(icon, TimelineUIUtils.eventStyle(event).category.title);
+      UI2.ARIAUtils.setLabel(icon, TimelineUIUtils.eventStyle(event).category.title);
       icon.style.backgroundColor = TimelineUIUtils.eventColor(event);
       if (Trace13.Types.Extensions.isSyntheticExtensionEntry(event)) {
         icon.style.backgroundColor = Extensions2.ExtensionUI.extensionEntryColor(event);
@@ -4114,9 +4114,9 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       size: "SMALL",
       toggledIconName: i18nString10(UIStrings10.bottomUp)
     };
-    UI3.ARIAUtils.setLabel(button, i18nString10(UIStrings10.viewBottomUp));
+    UI2.ARIAUtils.setLabel(button, i18nString10(UIStrings10.viewBottomUp));
     button.addEventListener("click", () => this.#bottomUpButtonClicked());
-    UI3.Tooltip.Tooltip.install(button, i18nString10(UIStrings10.bottomUp));
+    UI2.Tooltip.Tooltip.install(button, i18nString10(UIStrings10.bottomUp));
     textDiv.appendChild(button);
   }
   #bottomUpButtonClicked() {
@@ -4184,13 +4184,13 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
     return name;
   }
   displayInfoForGroupNode(node) {
-    const categories2 = Utils6.EntryStyles.getCategoryStyles();
+    const categories2 = Utils5.EntryStyles.getCategoryStyles();
     const color = TimelineUIUtils.eventColor(node.event);
     const unattributed = i18nString10(UIStrings10.unattributed);
     const id = typeof node.id === "symbol" ? void 0 : node.id;
     switch (this.groupBySetting.get()) {
       case _AggregatedTimelineTreeView.GroupBy.Category: {
-        const idIsValid = id && Utils6.EntryStyles.stringIsEventCategory(id);
+        const idIsValid = id && Utils5.EntryStyles.stringIsEventCategory(id);
         const category = idIsValid ? categories2[id] || categories2["other"] : { title: unattributed, color: unattributed };
         return { name: category.title, color: category.color, icon: void 0 };
       }
@@ -4236,7 +4236,7 @@ var AggregatedTimelineTreeView = class _AggregatedTimelineTreeView extends Timel
       { label: i18nString10(UIStrings10.groupByUrl), value: groupBy.URL },
       { label: i18nString10(UIStrings10.groupByThirdParties), value: groupBy.ThirdParties }
     ];
-    toolbar4.appendToolbarItem(new UI3.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString10(UIStrings10.groupBy)));
+    toolbar4.appendToolbarItem(new UI2.Toolbar.ToolbarSettingComboBox(options, this.groupBySetting, i18nString10(UIStrings10.groupBy)));
     toolbar4.appendSpacer();
     toolbar4.appendToolbarItem(this.splitWidget.createShowHideSidebarButton(i18nString10(UIStrings10.showHeaviestStack), i18nString10(UIStrings10.hideHeaviestStack), i18nString10(UIStrings10.heaviestStackShown), i18nString10(UIStrings10.heaviestStackHidden)));
   }
@@ -4431,7 +4431,7 @@ var BottomUpTimelineTreeView = class extends AggregatedTimelineTreeView {
     });
   }
 };
-var TimelineStackView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
+var TimelineStackView = class extends Common5.ObjectWrapper.eventMixin(UI2.Widget.VBox) {
   treeView;
   dataGrid;
   constructor(treeView) {
@@ -4492,7 +4492,7 @@ var TimelineStackView = class extends Common5.ObjectWrapper.eventMixin(UI3.Widge
 };
 
 // gen/front_end/panels/timeline/ThirdPartyTreeView.js
-import * as Utils7 from "./utils/utils.js";
+import * as Utils6 from "./utils/utils.js";
 var UIStrings11 = {
   /**
    * @description Unattributed text for an unattributed entity.
@@ -4551,7 +4551,7 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
       });
     }
     const relatedEvents = this.selectedEvents().sort(Trace14.Helpers.Trace.eventTimeComparator);
-    const filter = new Trace14.Extras.TraceFilter.VisibleEventsFilter(Utils7.EntryStyles.visibleTypes().concat([
+    const filter = new Trace14.Extras.TraceFilter.VisibleEventsFilter(Utils6.EntryStyles.visibleTypes().concat([
       "SyntheticNetworkRequest"
       /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
     ]));
@@ -4683,7 +4683,7 @@ var ThirdPartyTreeViewWidget = class extends TimelineTreeView {
     return Boolean(entity) && entity?.category === "Chrome Extension";
   }
 };
-var ThirdPartyTreeElement = class extends UI4.Widget.WidgetElement {
+var ThirdPartyTreeElement = class extends UI3.Widget.WidgetElement {
   #treeView;
   set treeView(treeView) {
     this.#treeView = treeView;
@@ -4693,7 +4693,7 @@ var ThirdPartyTreeElement = class extends UI4.Widget.WidgetElement {
     this.style.display = "contents";
   }
   createWidget() {
-    const containerWidget = new UI4.Widget.Widget(this);
+    const containerWidget = new UI3.Widget.Widget(this);
     containerWidget.contentElement.style.display = "contents";
     if (this.#treeView) {
       this.#treeView.show(containerWidget.contentElement);
@@ -4735,7 +4735,7 @@ import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as PerfUI8 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI11 from "./../../ui/legacy/legacy.js";
+import * as UI10 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport11 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
@@ -4747,7 +4747,7 @@ import * as Common6 from "./../../core/common/common.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 import * as Menus from "./../../ui/components/menus/menus.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
    * @description Text to show an item is empty
@@ -4760,7 +4760,7 @@ var UIStrings12 = {
 };
 var str_12 = i18n23.i18n.registerUIStrings("panels/timeline/IsolateSelector.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
-var IsolateSelector = class extends UI5.Toolbar.ToolbarItem {
+var IsolateSelector = class extends UI4.Toolbar.ToolbarItem {
   menu;
   options;
   items;
@@ -4801,7 +4801,7 @@ var IsolateSelector = class extends UI5.Toolbar.ToolbarItem {
         const selectedIsolateTitle = item.textContent?.slice(0, 29);
         this.menu.buttonTitle = selectedIsolateTitle || i18nString12(UIStrings12.empty);
         const model = isolate.runtimeModel();
-        UI5.Context.Context.instance().setFlavor(SDK4.CPUProfilerModel.CPUProfilerModel, model?.target().model(SDK4.CPUProfilerModel.CPUProfilerModel) ?? null);
+        UI4.Context.Context.instance().setFlavor(SDK4.CPUProfilerModel.CPUProfilerModel, model?.target().model(SDK4.CPUProfilerModel.CPUProfilerModel) ?? null);
       }
     });
   }
@@ -4817,7 +4817,7 @@ var IsolateSelector = class extends UI5.Toolbar.ToolbarItem {
     if (isolateItem) {
       if (isolateItem.selected) {
         this.menu.buttonTitle = i18nString12(UIStrings12.selectJavascriptVmInstance);
-        UI5.Context.Context.instance().setFlavor(SDK4.CPUProfilerModel.CPUProfilerModel, null);
+        UI4.Context.Context.instance().setFlavor(SDK4.CPUProfilerModel.CPUProfilerModel, null);
       }
       this.menu.removeChild(isolateItem);
     }
@@ -4892,7 +4892,7 @@ import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as Platform8 from "./../../core/platform/platform.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
-import * as UI6 from "./../../ui/legacy/legacy.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/timelineStatusDialog.css.js
@@ -5019,7 +5019,7 @@ var UIStrings13 = {
 };
 var str_13 = i18n25.i18n.registerUIStrings("panels/timeline/StatusDialog.ts", UIStrings13);
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
-var StatusDialog = class extends UI6.Widget.VBox {
+var StatusDialog = class extends UI5.Widget.VBox {
   status;
   time;
   progressLabel;
@@ -5039,7 +5039,7 @@ var StatusDialog = class extends UI6.Widget.VBox {
     const statusLine = this.contentElement.createChild("div", "status-dialog-line status");
     statusLine.createChild("div", "label").textContent = i18nString13(UIStrings13.status);
     this.status = statusLine.createChild("div", "content");
-    UI6.ARIAUtils.markAsStatus(this.status);
+    UI5.ARIAUtils.markAsStatus(this.status);
     if (options.showTimer) {
       const timeLine = this.contentElement.createChild("div", "status-dialog-line time");
       timeLine.createChild("div", "label").textContent = i18nString13(UIStrings13.time);
@@ -5049,7 +5049,7 @@ var StatusDialog = class extends UI6.Widget.VBox {
       const progressBarContainer = this.contentElement.createChild("div", "status-dialog-line progress");
       this.progressLabel = progressBarContainer.createChild("div", "label");
       this.progressBar = progressBarContainer.createChild("div", "indicator-container").createChild("div", "indicator");
-      UI6.ARIAUtils.markAsProgressBar(this.progressBar);
+      UI5.ARIAUtils.markAsProgressBar(this.progressBar);
     }
     if (typeof options.description === "string") {
       const descriptionLine = this.contentElement.createChild("div", "status-dialog-line description");
@@ -5058,13 +5058,13 @@ var StatusDialog = class extends UI6.Widget.VBox {
       this.description.innerText = options.description;
     }
     const buttonContainer = this.contentElement.createChild("div", "stop-button");
-    this.downloadTraceButton = UI6.UIUtils.createTextButton(i18nString13(UIStrings13.downloadAfterError), () => {
+    this.downloadTraceButton = UI5.UIUtils.createTextButton(i18nString13(UIStrings13.downloadAfterError), () => {
       void this.#downloadRawTraceAfterError();
     }, { jslogContext: "timeline.download-after-error" });
     this.downloadTraceButton.disabled = true;
     this.downloadTraceButton.classList.add("hidden");
     const buttonText = options.buttonText || i18nString13(UIStrings13.stop);
-    this.button = UI6.UIUtils.createTextButton(buttonText, onButtonClickCallback, {
+    this.button = UI5.UIUtils.createTextButton(buttonText, onButtonClickCallback, {
       jslogContext: "timeline.stop-recording"
     });
     this.button.classList.toggle("hidden", options.hideStopButton);
@@ -5123,7 +5123,7 @@ var StatusDialog = class extends UI6.Widget.VBox {
     }
     if (this.progressBar) {
       this.progressBar.style.width = percent.toFixed(1) + "%";
-      UI6.ARIAUtils.setValueNow(this.progressBar, percent);
+      UI5.ARIAUtils.setValueNow(this.progressBar, percent);
     }
     this.updateTimer();
   }
@@ -5458,7 +5458,7 @@ import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as Trace18 from "./../../models/trace/trace.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/TimelineEventOverview.js
@@ -5476,9 +5476,9 @@ import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Trace17 from "./../../models/trace/trace.js";
 import * as TraceBounds5 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI6 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
-import * as Utils8 from "./utils/utils.js";
+import * as Utils7 from "./utils/utils.js";
 var UIStrings15 = {
   /**
    * @description Short for Network. Label for the network requests section of the Performance panel.
@@ -5575,12 +5575,12 @@ var TimelineEventOverviewCPUActivity = class extends TimelineEventOverview {
   }
   #entryCategory(entry) {
     if (Trace17.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === "(idle)") {
-      return Utils8.EntryStyles.EventCategory.IDLE;
+      return Utils7.EntryStyles.EventCategory.IDLE;
     }
     if (Trace17.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === "(program)") {
-      return Utils8.EntryStyles.EventCategory.OTHER;
+      return Utils7.EntryStyles.EventCategory.OTHER;
     }
-    const eventStyle = Utils8.EntryStyles.getEventStyle(entry.name)?.category || Utils8.EntryStyles.getCategoryStyles().other;
+    const eventStyle = Utils7.EntryStyles.getEventStyle(entry.name)?.category || Utils7.EntryStyles.getCategoryStyles().other;
     const categoryName = eventStyle.name;
     return categoryName;
   }
@@ -5598,11 +5598,11 @@ var TimelineEventOverviewCPUActivity = class extends TimelineEventOverview {
     const timeRange = this.#end - this.#start;
     const scale = width / timeRange;
     const quantTime = quantSizePx / scale;
-    const categories2 = Utils8.EntryStyles.getCategoryStyles();
-    const categoryOrder = Utils8.EntryStyles.getTimelineMainEventCategories();
-    const otherIndex = categoryOrder.indexOf(Utils8.EntryStyles.EventCategory.OTHER);
+    const categories2 = Utils7.EntryStyles.getCategoryStyles();
+    const categoryOrder = Utils7.EntryStyles.getTimelineMainEventCategories();
+    const otherIndex = categoryOrder.indexOf(Utils7.EntryStyles.EventCategory.OTHER);
     const idleIndex = 0;
-    console.assert(idleIndex === categoryOrder.indexOf(Utils8.EntryStyles.EventCategory.IDLE));
+    console.assert(idleIndex === categoryOrder.indexOf(Utils7.EntryStyles.EventCategory.IDLE));
     for (let i = 0; i < categoryOrder.length; ++i) {
       categoryToIndex.set(categories2[categoryOrder[i]], i);
     }
@@ -5814,7 +5814,7 @@ var TimelineFilmStripOverview = class _TimelineFilmStripOverview extends Timelin
     let imagePromise = this.frameToImagePromise.get(frame);
     if (!imagePromise) {
       const uri = Trace17.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(frame.screenshotEvent);
-      imagePromise = UI7.UIUtils.loadImage(uri);
+      imagePromise = UI6.UIUtils.loadImage(uri);
       this.frameToImagePromise.set(frame, imagePromise);
     }
     return await imagePromise;
@@ -6179,11 +6179,11 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
   constructor(minimapComponent, isNode2) {
     this.recordings = [];
     this.#minimapComponent = minimapComponent;
-    this.action = UI8.ActionRegistry.ActionRegistry.instance().getAction("timeline.show-history");
+    this.action = UI7.ActionRegistry.ActionRegistry.instance().getAction("timeline.show-history");
     this.nextNumberByDomain = /* @__PURE__ */ new Map();
     this.buttonInternal = new ToolbarButton(this.action);
     this.#landingPageTitle = isNode2 ? i18nString16(UIStrings16.nodeLandingPageTitle) : i18nString16(UIStrings16.landingPageTitle);
-    UI8.ARIAUtils.markAsMenuButton(this.buttonInternal.element);
+    UI7.ARIAUtils.markAsMenuButton(this.buttonInternal.element);
     this.clear();
     this.allOverviews = [
       {
@@ -6222,7 +6222,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     const modelTitle = this.title(newInput.data);
     this.buttonInternal.setText(modelTitle);
     const buttonTitle = this.action.title();
-    UI8.ARIAUtils.setLabel(this.buttonInternal.element, i18nString16(UIStrings16.currentSessionSS, { PH1: modelTitle, PH2: buttonTitle }));
+    UI7.ARIAUtils.setLabel(this.buttonInternal.element, i18nString16(UIStrings16.currentSessionSS, { PH1: modelTitle, PH2: buttonTitle }));
     this.updateState();
     if (this.recordings.length <= maxRecordings) {
       return;
@@ -6320,7 +6320,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     const modelTitle = this.title(item);
     const buttonTitle = this.action.title();
     this.buttonInternal.setText(modelTitle);
-    UI8.ARIAUtils.setLabel(this.buttonInternal.element, i18nString16(UIStrings16.currentSessionSS, { PH1: modelTitle, PH2: buttonTitle }));
+    UI7.ARIAUtils.setLabel(this.buttonInternal.element, i18nString16(UIStrings16.currentSessionSS, { PH1: modelTitle, PH2: buttonTitle }));
   }
   updateState() {
     this.action.setEnabled(this.recordings.length >= 1 && this.enabled);
@@ -6371,7 +6371,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     container.classList.add("hbox");
     const nameSpan = container.createChild("span", "name");
     nameSpan.textContent = title;
-    UI8.ARIAUtils.setLabel(nameSpan, title);
+    UI7.ARIAUtils.setLabel(nameSpan, title);
     if (metadata) {
       const parts = [
         metadata.emulatedDeviceTitle,
@@ -6396,7 +6396,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
       return container;
     }
     const uri = Trace18.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(lastFrame.screenshotEvent);
-    void UI8.UIUtils.loadImage(uri).then((img) => {
+    void UI7.UIUtils.loadImage(uri).then((img) => {
       if (img) {
         container.appendChild(img);
       }
@@ -6439,7 +6439,7 @@ var DropDown = class _DropDown {
   contentElement;
   constructor(availableparsedTraceIndexes, landingPageTitle) {
     this.#landingPageTitle = landingPageTitle;
-    this.glassPane = new UI8.GlassPane.GlassPane();
+    this.glassPane = new UI7.GlassPane.GlassPane();
     this.glassPane.setSizeBehavior(
       "MeasureContent"
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
@@ -6454,18 +6454,18 @@ var DropDown = class _DropDown {
       /* UI.GlassPane.AnchorBehavior.PREFER_BOTTOM */
     );
     this.glassPane.element.addEventListener("blur", () => this.close(null));
-    const shadowRoot = UI8.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: timelineHistoryManager_css_default });
+    const shadowRoot = UI7.UIUtils.createShadowRootWithCoreStyles(this.glassPane.contentElement, { cssFile: timelineHistoryManager_css_default });
     this.contentElement = shadowRoot.createChild("div", "drop-down");
-    const listModel = new UI8.ListModel.ListModel();
-    this.listControl = new UI8.ListControl.ListControl(listModel, this, UI8.ListControl.ListMode.NonViewport);
+    const listModel = new UI7.ListModel.ListModel();
+    this.listControl = new UI7.ListControl.ListControl(listModel, this, UI7.ListControl.ListMode.NonViewport);
     this.listControl.element.addEventListener("mousemove", this.onMouseMove.bind(this), false);
     listModel.replaceAll(availableparsedTraceIndexes);
-    UI8.ARIAUtils.markAsMenu(this.listControl.element);
-    UI8.ARIAUtils.setLabel(this.listControl.element, i18nString16(UIStrings16.selectTimelineSession));
+    UI7.ARIAUtils.markAsMenu(this.listControl.element);
+    UI7.ARIAUtils.setLabel(this.listControl.element, i18nString16(UIStrings16.selectTimelineSession));
     this.contentElement.appendChild(this.listControl.element);
     this.contentElement.addEventListener("keydown", this.onKeyDown.bind(this), false);
     this.contentElement.addEventListener("click", this.onClick.bind(this), false);
-    this.focusRestorer = new UI8.UIUtils.ElementFocusRestorer(this.listControl.element);
+    this.focusRestorer = new UI7.UIUtils.ElementFocusRestorer(this.listControl.element);
     this.selectionDone = null;
   }
   static show(availableparsedTraceIndexes, activeparsedTraceIndex, anchor, landingPageTitle = i18nString16(UIStrings16.landingPageTitle)) {
@@ -6534,13 +6534,13 @@ var DropDown = class _DropDown {
       return this.#createLandingPageListItem();
     }
     const element = TimelineHistoryManager.previewElement(parsedTraceIndex);
-    UI8.ARIAUtils.markAsMenuItem(element);
+    UI7.ARIAUtils.markAsMenuItem(element);
     element.classList.remove("selected");
     return element;
   }
   #createLandingPageListItem() {
     const div = document.createElement("div");
-    UI8.ARIAUtils.markAsMenuItem(div);
+    UI7.ARIAUtils.markAsMenuItem(div);
     div.classList.remove("selected");
     div.classList.add("preview-item");
     div.classList.add("landing-page-item");
@@ -6574,7 +6574,7 @@ var DropDown = class _DropDown {
   }
   static instance = null;
 };
-var ToolbarButton = class extends UI8.Toolbar.ToolbarItem {
+var ToolbarButton = class extends UI7.Toolbar.ToolbarItem {
   contentElement;
   constructor(action2) {
     const element = document.createElement("button");
@@ -6601,7 +6601,6 @@ import * as Common8 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
-import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as Trace19 from "./../../models/trace/trace.js";
 var UIStrings17 = {
   /**
@@ -6615,9 +6614,6 @@ var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var TimelineLoader = class _TimelineLoader {
   client;
   canceledCallback;
-  buffer;
-  firstRawChunk;
-  totalSize;
   filter;
   #traceIsCPUProfile;
   #collectedEvents = [];
@@ -6627,27 +6623,12 @@ var TimelineLoader = class _TimelineLoader {
   constructor(client) {
     this.client = client;
     this.canceledCallback = null;
-    this.buffer = "";
-    this.firstRawChunk = true;
     this.filter = null;
     this.#traceIsCPUProfile = false;
     this.#metadata = null;
     this.#traceFinalizedPromiseForTest = new Promise((resolve) => {
       this.#traceFinalizedCallbackForTest = resolve;
     });
-  }
-  static async loadFromFile(file, client) {
-    const loader = new _TimelineLoader(client);
-    const fileReader = new Bindings2.FileUtils.ChunkedFileReader(file);
-    loader.canceledCallback = fileReader.cancel.bind(fileReader);
-    loader.totalSize = file.size;
-    setTimeout(async () => {
-      const success = await fileReader.read(loader);
-      if (!success && fileReader.error()) {
-        loader.reportErrorAndCancelLoading(fileReader.error().message);
-      }
-    });
-    return loader;
   }
   static loadFromParsedJsonFile(contents, client) {
     const loader = new _TimelineLoader(client);
@@ -6764,37 +6745,6 @@ var TimelineLoader = class _TimelineLoader {
       this.canceledCallback();
     }
   }
-  /**
-   * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a
-   * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
-   * by `loadFromFile()`; it's NOT used by `loadFromEvents` or `loadFromURL`.
-   */
-  async write(chunk, endOfFile) {
-    if (!this.client) {
-      return await Promise.resolve();
-    }
-    this.buffer += chunk;
-    if (this.firstRawChunk) {
-      this.client.loadingStarted();
-      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      this.firstRawChunk = false;
-    } else {
-      let progress = void 0;
-      progress = this.buffer.length / this.totalSize;
-      progress = progress > 1 ? progress - Math.floor(progress) : progress;
-      this.client.loadingProgress(progress);
-    }
-    if (endOfFile) {
-      let trace;
-      try {
-        trace = JSON.parse(this.buffer);
-        this.#processParsedFile(trace);
-      } catch (e) {
-        this.reportErrorAndCancelLoading(i18nString17(UIStrings17.malformedTimelineDataS, { PH1: e.toString() }));
-      }
-      return;
-    }
-  }
   reportErrorAndCancelLoading(message) {
     if (message) {
       Common8.Console.Console.instance().error(message);
@@ -6836,7 +6786,7 @@ import * as Common9 from "./../../core/common/common.js";
 import * as Trace20 from "./../../models/trace/trace.js";
 import * as TraceBounds7 from "./../../services/trace_bounds/trace_bounds.js";
 import * as PerfUI7 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as TimelineComponents2 from "./components/components.js";
 
 // gen/front_end/panels/timeline/timelineMiniMap.css.js
@@ -6951,7 +6901,7 @@ var timelineMiniMap_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineMiniMap.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineMiniMap.js
-var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI9.Widget.VBox) {
+var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI8.Widget.VBox) {
   #overviewComponent = new PerfUI7.TimelineOverviewPane.TimelineOverviewPane("timeline");
   #controls = [];
   breadcrumbs = null;
@@ -7663,7 +7613,7 @@ __export(TrackConfigBanner_exports, {
 });
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI10 from "./../../ui/legacy/legacy.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
 var UIStrings18 = {
   /**
    * @description Message shown in a banner when some tracks are hidden in the timeline.
@@ -7686,13 +7636,13 @@ function createHiddenTracksOverlay(trace, callbacks) {
   if (status === "DISMISSED") {
     return null;
   }
-  if (status instanceof UI10.Infobar.Infobar) {
+  if (status instanceof UI9.Infobar.Infobar) {
     return {
       type: "BOTTOM_INFO_BAR",
       infobar: status
     };
   }
-  const infobarForTrace = new UI10.Infobar.Infobar("warning", i18nString18(UIStrings18.someTracksAreHidden), [
+  const infobarForTrace = new UI9.Infobar.Infobar("warning", i18nString18(UIStrings18.someTracksAreHidden), [
     {
       text: i18nString18(UIStrings18.showAll),
       delegate: callbacks.onShowAllTracks,
@@ -7727,7 +7677,7 @@ __export(UIDevtoolsUtils_exports, {
 });
 import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
-import * as Utils9 from "./utils/utils.js";
+import * as Utils8 from "./utils/utils.js";
 var UIStrings19 = {
   /**
    * @description Text in Timeline UIUtils of the Performance panel
@@ -7810,7 +7760,7 @@ var UIDevtoolsUtils = class _UIDevtoolsUtils {
     const painting = categories2["painting"];
     const other = categories2["other"];
     const eventStyles = {};
-    const { TimelineRecordStyle } = Utils9.EntryStyles;
+    const { TimelineRecordStyle } = Utils8.EntryStyles;
     eventStyles[type.ViewPaint] = new TimelineRecordStyle("View::Paint", painting);
     eventStyles[type.ViewOnPaint] = new TimelineRecordStyle("View::OnPaint", painting);
     eventStyles[type.ViewPaintChildren] = new TimelineRecordStyle("View::PaintChildren", painting);
@@ -7833,7 +7783,7 @@ var UIDevtoolsUtils = class _UIDevtoolsUtils {
     if (categories) {
       return categories;
     }
-    const { TimelineCategory, EventCategory } = Utils9.EntryStyles;
+    const { TimelineCategory, EventCategory } = Utils8.EntryStyles;
     categories = {
       layout: new TimelineCategory(EventCategory.LAYOUT, i18nString19(UIStrings19.layout), true, "--app-color-loading-children", "--app-color-loading"),
       rasterizing: new TimelineCategory(EventCategory.RASTERIZING, i18nString19(UIStrings19.rasterizing), true, "--app-color-children", "--app-color-scripting"),
@@ -7875,18 +7825,18 @@ var RecordType;
 })(RecordType || (RecordType = {}));
 
 // gen/front_end/panels/timeline/UIDevtoolsController.js
-import * as Utils10 from "./utils/utils.js";
+import * as Utils9 from "./utils/utils.js";
 var UIDevtoolsController = class extends TimelineController {
   constructor(rootTarget, primaryPageTarget, client) {
     super(rootTarget, primaryPageTarget, client);
-    Utils10.EntryStyles.setEventStylesMap(UIDevtoolsUtils.categorizeEvents());
-    Utils10.EntryStyles.setCategories(UIDevtoolsUtils.categories());
-    Utils10.EntryStyles.setTimelineMainEventCategories(UIDevtoolsUtils.getMainCategoriesList().filter(Utils10.EntryStyles.stringIsEventCategory));
+    Utils9.EntryStyles.setEventStylesMap(UIDevtoolsUtils.categorizeEvents());
+    Utils9.EntryStyles.setCategories(UIDevtoolsUtils.categories());
+    Utils9.EntryStyles.setTimelineMainEventCategories(UIDevtoolsUtils.getMainCategoriesList().filter(Utils9.EntryStyles.stringIsEventCategory));
   }
 };
 
 // gen/front_end/panels/timeline/TimelinePanel.js
-import * as Utils11 from "./utils/utils.js";
+import * as Utils10 from "./utils/utils.js";
 var UIStrings20 = {
   /**
    * @description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
@@ -8099,7 +8049,7 @@ var str_20 = i18n39.i18n.registerUIStrings("panels/timeline/TimelinePanel.ts", U
 var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var timelinePanelInstance;
 var isNode;
-var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMixin(UI11.Panel.Panel) {
+var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMixin(UI10.Panel.Panel) {
   dropTarget;
   recordingOptionUIControls;
   state;
@@ -8133,7 +8083,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
    * This widget holds the timeline sidebar which shows Insights & Annotations,
    * and the main UI which shows the timeline
    */
-  #splitWidget = new UI11.SplitWidget.SplitWidget(
+  #splitWidget = new UI10.SplitWidget.SplitWidget(
     true,
     // isVertical
     false,
@@ -8191,8 +8141,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
    * Navigation radio buttons located in the shortcuts dialog.
    */
   #navigationRadioButtons = document.createElement("form");
-  #modernNavRadioButton = UI11.UIUtils.createRadioButton("flamechart-selected-navigation", "Modern - normal scrolling", "timeline.select-modern-navigation");
-  #classicNavRadioButton = UI11.UIUtils.createRadioButton("flamechart-selected-navigation", "Classic - scroll to zoom", "timeline.select-classic-navigation");
+  #modernNavRadioButton = UI10.UIUtils.createRadioButton("flamechart-selected-navigation", "Modern - normal scrolling", "timeline.select-modern-navigation");
+  #classicNavRadioButton = UI10.UIUtils.createRadioButton("flamechart-selected-navigation", "Classic - scroll to zoom", "timeline.select-classic-navigation");
   #onMainEntryHovered;
   #hiddenTracksInfoBarPerTrace = /* @__PURE__ */ new WeakMap();
   constructor(traceModel) {
@@ -8215,13 +8165,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.#traceEngineModel = traceModel || this.#instantiateNewModel();
     this.#listenForProcessingProgress();
     this.element.addEventListener("contextmenu", this.contextMenu.bind(this), false);
-    this.dropTarget = new UI11.DropTarget.DropTarget(this.element, [UI11.DropTarget.Type.File, UI11.DropTarget.Type.URI], i18nString20(UIStrings20.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
+    this.dropTarget = new UI10.DropTarget.DropTarget(this.element, [UI10.DropTarget.Type.File, UI10.DropTarget.Type.URI], i18nString20(UIStrings20.dropTimelineFileOrUrlHere), this.handleDrop.bind(this));
     this.recordingOptionUIControls = [];
     this.state = "Idle";
     this.recordingPageReload = false;
     this.millisecondsToRecordAfterLoadEvent = 5e3;
-    this.toggleRecordAction = UI11.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
-    this.recordReloadAction = UI11.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
+    this.toggleRecordAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
+    this.recordReloadAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
     this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
     this.traceLoadStart = null;
     this.disableCaptureJSProfileSetting = Common10.Settings.Settings.instance().createSetting(
@@ -8279,7 +8229,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.createSettingsPane();
       this.updateShowSettingsToolbarButton();
     }
-    this.timelinePane = new UI11.Widget.VBox();
+    this.timelinePane = new UI10.Widget.VBox();
     const topPaneElement = this.timelinePane.element.createChild("div", "hbox");
     topPaneElement.id = "timeline-overview-panel";
     this.#minimapComponent.show(topPaneElement);
@@ -8300,7 +8250,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       const selection = selectionFromEvent(event.data.entry);
       this.select(selection);
     });
-    this.searchableViewInternal = new UI11.SearchableView.SearchableView(this.flameChart, null);
+    this.searchableViewInternal = new UI10.SearchableView.SearchableView(this.flameChart, null);
     this.searchableViewInternal.setMinimumSize(0, 100);
     this.searchableViewInternal.setMinimalSearchQuerySize(2);
     this.searchableViewInternal.element.classList.add("searchable-view");
@@ -8416,9 +8366,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.setActiveInsight(insight);
     if (insight) {
       const selectedInsight = new SelectedInsight(insight);
-      UI11.Context.Context.instance().setFlavor(SelectedInsight, selectedInsight);
+      UI10.Context.Context.instance().setFlavor(SelectedInsight, selectedInsight);
     } else {
-      UI11.Context.Context.instance().setFlavor(SelectedInsight, null);
+      UI10.Context.Context.instance().setFlavor(SelectedInsight, null);
     }
   }
   /**
@@ -8440,7 +8390,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     return timelinePanelInstance;
   }
   static removeInstance() {
-    Utils11.SourceMapsResolver.SourceMapsResolver.clearResolvedNodeNames();
+    Utils10.SourceMapsResolver.SourceMapsResolver.clearResolvedNodeNames();
     Trace21.Helpers.SyntheticEvents.SyntheticEventsManager.reset();
     TraceBounds9.TraceBounds.BoundsManager.removeInstance();
     ModificationsManager.reset();
@@ -8465,20 +8415,20 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   wasShown() {
     super.wasShown();
-    UI11.Context.Context.instance().setFlavor(_TimelinePanel, this);
+    UI10.Context.Context.instance().setFlavor(_TimelinePanel, this);
     Host2.userMetrics.panelLoaded("timeline", "DevTools.Launch.Timeline");
     const cruxManager = CrUXManager3.CrUXManager.instance();
     cruxManager.addEventListener("field-data-changed", this.#onFieldDataChanged, this);
     this.#onFieldDataChanged();
   }
   willHide() {
-    UI11.Context.Context.instance().setFlavor(_TimelinePanel, null);
+    UI10.Context.Context.instance().setFlavor(_TimelinePanel, null);
     this.#historyManager.cancelIfShowing();
     const cruxManager = CrUXManager3.CrUXManager.instance();
     cruxManager.removeEventListener("field-data-changed", this.#onFieldDataChanged, this);
   }
   #onFieldDataChanged() {
-    const recs = Utils11.Helpers.getThrottlingRecommendations();
+    const recs = Utils10.Helpers.getThrottlingRecommendations();
     this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
     if (this.networkThrottlingSelect) {
       this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
@@ -8520,8 +8470,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   #uninstallSourceMapsResolver() {
     if (this.#sourceMapsResolver) {
-      Utils11.SourceMapsResolver.SourceMapsResolver.clearResolvedNodeNames();
-      this.#sourceMapsResolver.removeEventListener(Utils11.SourceMapsResolver.SourceMappingsUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
+      Utils10.SourceMapsResolver.SourceMapsResolver.clearResolvedNodeNames();
+      this.#sourceMapsResolver.removeEventListener(Utils10.SourceMapsResolver.SourceMappingsUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
       this.#sourceMapsResolver.uninstall();
       this.#sourceMapsResolver = null;
     }
@@ -8594,7 +8544,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   getOrCreateExternalAIConversationData() {
     if (!this.#externalAIConversationData) {
       const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-      const focus = Utils11.AIContext.getPerformanceAgentFocusFromModel(this.model);
+      const focus = Utils10.AIContext.getPerformanceAgentFocusFromModel(this.model);
       if (!focus) {
         throw new Error("could not create performance agent focus");
       }
@@ -8687,7 +8637,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.updateTimelineControls();
   }
   createSettingCheckbox(setting, tooltip) {
-    const checkboxItem = new UI11.Toolbar.ToolbarSettingCheckbox(setting, tooltip);
+    const checkboxItem = new UI10.Toolbar.ToolbarSettingCheckbox(setting, tooltip);
     this.recordingOptionUIControls.push(checkboxItem);
     return checkboxItem;
   }
@@ -8712,30 +8662,18 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   canRecord() {
     return true;
   }
-  shouldEnableFullAskAI() {
-    if (!Root4.Runtime.experiments.isEnabled(
-      "timeline-ask-ai-full-button"
-      /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */
-    )) {
-      return false;
-    }
-    if (Root4.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root4.Runtime.GenAiEnterprisePolicyValue.DISABLE) {
-      return false;
-    }
-    return true;
-  }
   populateToolbar() {
     const canRecord = this.canRecord();
     if (canRecord || isNode) {
-      this.panelToolbar.appendToolbarItem(UI11.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
+      this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
     }
     if (canRecord) {
-      this.panelToolbar.appendToolbarItem(UI11.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
+      this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton(this.recordReloadAction));
     }
-    this.clearButton = new UI11.Toolbar.ToolbarButton(i18nString20(UIStrings20.clear), "clear", void 0, "timeline.clear");
+    this.clearButton = new UI10.Toolbar.ToolbarButton(i18nString20(UIStrings20.clear), "clear", void 0, "timeline.clear");
     this.clearButton.addEventListener("Click", () => this.onClearButton());
     this.panelToolbar.appendToolbarItem(this.clearButton);
-    this.loadButton = new UI11.Toolbar.ToolbarButton(i18nString20(UIStrings20.loadTrace), "import", void 0, "timeline.load-from-file");
+    this.loadButton = new UI10.Toolbar.ToolbarButton(i18nString20(UIStrings20.loadTrace), "import", void 0, "timeline.load-from-file");
     this.loadButton.addEventListener("Click", () => {
       Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.PerfPanelTraceImported);
       this.selectFileToLoad();
@@ -8745,14 +8683,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       onExport: this.saveToFile.bind(this),
       buttonEnabled: this.state === "Idle" && this.#hasActiveTrace()
     };
-    this.saveButton = new UI11.Toolbar.ToolbarItem(exportTraceOptions);
+    this.saveButton = new UI10.Toolbar.ToolbarItem(exportTraceOptions);
     this.panelToolbar.appendSeparator();
     this.panelToolbar.appendToolbarItem(this.loadButton);
     this.panelToolbar.appendToolbarItem(this.saveButton);
     if (canRecord) {
       this.panelToolbar.appendSeparator();
       if (!isNode) {
-        this.homeButton = new UI11.Toolbar.ToolbarButton(i18nString20(UIStrings20.backToLiveMetrics), "home", void 0, "timeline.back-to-live-metrics");
+        this.homeButton = new UI10.Toolbar.ToolbarButton(i18nString20(UIStrings20.backToLiveMetrics), "home", void 0, "timeline.back-to-live-metrics");
         this.homeButton.addEventListener("Click", () => {
           this.#changeView({ mode: "LANDING_PAGE" });
           this.#historyManager.navigateToLandingPage();
@@ -8760,12 +8698,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         this.panelToolbar.appendToolbarItem(this.homeButton);
         this.panelToolbar.appendSeparator();
       }
-    }
-    if (this.shouldEnableFullAskAI()) {
-      this.askAiButton = new UI11.Toolbar.ToolbarButton("Ask AI", "button-magic", void 0, "timeline.ask-ai");
-      this.askAiButton.addEventListener("Click", this.#onClickAskAIButton.bind(this));
-      this.panelToolbar.appendToolbarItem(this.askAiButton);
-      this.panelToolbar.appendSeparator();
     }
     this.panelToolbar.appendToolbarItem(this.#historyManager.button());
     this.panelToolbar.appendSeparator();
@@ -8776,11 +8708,11 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.showMemoryToolbarCheckbox = this.createSettingCheckbox(this.showMemorySetting, i18nString20(UIStrings20.showMemoryTimeline));
     if (canRecord) {
       this.panelToolbar.appendToolbarItem(this.showMemoryToolbarCheckbox);
-      this.panelToolbar.appendToolbarItem(UI11.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
+      this.panelToolbar.appendToolbarItem(UI10.Toolbar.Toolbar.createActionButton("components.collect-garbage"));
     }
     this.panelToolbar.appendSeparator();
     const showIgnoreListSetting = new TimelineComponents3.IgnoreListSetting.IgnoreListSetting();
-    this.panelToolbar.appendToolbarItem(new UI11.Toolbar.ToolbarItem(showIgnoreListSetting));
+    this.panelToolbar.appendToolbarItem(new UI10.Toolbar.ToolbarItem(showIgnoreListSetting));
     if (this.#dimThirdPartiesSetting) {
       const dimThirdPartiesCheckbox = this.createSettingCheckbox(this.#dimThirdPartiesSetting, i18nString20(UIStrings20.thirdPartiesByThirdPartyWeb));
       this.#thirdPartyCheckbox = dimThirdPartiesCheckbox;
@@ -8796,26 +8728,12 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
     }
   }
-  // Currently for debugging purposes only.
-  #onClickAskAIButton() {
-    const actionId = "drjones.performance-panel-full-context";
-    if (!UI11.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
-      return;
-    }
-    const focus = Utils11.AIContext.getPerformanceAgentFocusFromModel(this.#traceEngineModel);
-    if (!focus) {
-      return;
-    }
-    UI11.Context.Context.instance().setFlavor(Utils11.AIContext.AgentFocus, focus);
-    const action2 = UI11.ActionRegistry.ActionRegistry.instance().getAction(actionId);
-    void action2.execute();
-  }
   #setupNavigationSetting() {
     const currentNavSetting = Common10.Settings.moduleSetting("flamechart-selected-navigation").get();
     const hideTheDialogForTests = localStorage.getItem("hide-shortcuts-dialog-for-test");
     const userHadShortcutsDialogOpenedOnce = this.#userHadShortcutsDialogOpenedOnce.get();
     this.#shortcutsDialog.prependElement(this.#navigationRadioButtons);
-    const dialogToolbarItem = new UI11.Toolbar.ToolbarItem(this.#shortcutsDialog);
+    const dialogToolbarItem = new UI10.Toolbar.ToolbarItem(this.#shortcutsDialog);
     dialogToolbarItem.element.setAttribute("jslog", `${VisualLogging6.action().track({ click: true }).context("timeline.shortcuts-dialog-toggle")}`);
     this.panelRightToolbar.appendToolbarItem(dialogToolbarItem);
     this.#updateNavigationSettingSelection();
@@ -8826,7 +8744,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       open: !userHadShortcutsDialogOpenedOnce && hideTheDialogForTests !== "true" && !Host2.InspectorFrontendHost.isUnderTest()
     };
     this.#navigationRadioButtons.classList.add("nav-radio-buttons");
-    UI11.ARIAUtils.markAsRadioGroup(this.#navigationRadioButtons);
+    UI10.ARIAUtils.markAsRadioGroup(this.#navigationRadioButtons);
     this.#modernNavRadioButton.radio.addEventListener("change", () => {
       this.#shortcutsDialog.data = { shortcuts: this.#getShortcutsInfo(
         /* isNavClassic */
@@ -8932,7 +8850,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   createSettingsPane() {
     this.showSettingsPaneSetting = Common10.Settings.Settings.instance().createSetting("timeline-show-settings-toolbar", false);
-    this.showSettingsPaneButton = new UI11.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString20(UIStrings20.captureSettings), "gear-filled", "timeline-settings-toggle");
+    this.showSettingsPaneButton = new UI10.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString20(UIStrings20.captureSettings), "gear-filled", "timeline-settings-toggle");
     SDK8.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged", this.updateShowSettingsToolbarButton, this);
     SDK8.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged", this.updateShowSettingsToolbarButton, this);
     this.disableCaptureJSProfileSetting.addChangeListener(this.updateShowSettingsToolbarButton, this);
@@ -8944,14 +8862,14 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     cpuThrottlingPane.append(i18nString20(UIStrings20.cpu));
     this.cpuThrottlingSelect = MobileThrottling.ThrottlingManager.throttlingManager().createCPUThrottlingSelector();
     cpuThrottlingPane.append(this.cpuThrottlingSelect.control.element);
-    this.settingsPane.append(UI11.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString20(UIStrings20.capturesSelectorStats)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureSelectorStatsSetting.title(), this.captureSelectorStatsSetting, i18nString20(UIStrings20.capturesSelectorStats)));
     const networkThrottlingPane = this.settingsPane.createChild("div");
     networkThrottlingPane.append(i18nString20(UIStrings20.network));
     networkThrottlingPane.append(this.createNetworkConditionsSelectToolbarItem().element);
-    this.settingsPane.append(UI11.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString20(UIStrings20.capturesAdvancedPaint)));
-    this.settingsPane.append(UI11.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString20(UIStrings20.disablesJavascriptSampling)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.captureLayersAndPicturesSetting.title(), this.captureLayersAndPicturesSetting, i18nString20(UIStrings20.capturesAdvancedPaint)));
+    this.settingsPane.append(UI10.SettingsUI.createSettingCheckbox(this.disableCaptureJSProfileSetting.title(), this.disableCaptureJSProfileSetting, i18nString20(UIStrings20.disablesJavascriptSampling)));
     const thirdPartyCheckbox = this.createSettingCheckbox(this.#thirdPartyTracksSetting, i18nString20(UIStrings20.showDataAddedByExtensions));
-    const localLink = UI11.XLink.XLink.create("https://developer.chrome.com/docs/devtools/performance/extension", i18nString20(UIStrings20.learnMore));
+    const localLink = UI10.XLink.XLink.create("https://developer.chrome.com/docs/devtools/performance/extension", i18nString20(UIStrings20.learnMore));
     localLink.style.marginLeft = "5px";
     thirdPartyCheckbox.element.shadowRoot?.appendChild(localLink);
     this.settingsPane.append(thirdPartyCheckbox.element);
@@ -8959,7 +8877,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.updateSettingsPaneVisibility();
   }
   createNetworkConditionsSelectToolbarItem() {
-    const toolbarItem = new UI11.Toolbar.ToolbarItem(document.createElement("div"));
+    const toolbarItem = new UI10.Toolbar.ToolbarItem(document.createElement("div"));
     this.networkThrottlingSelect = MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString20(UIStrings20.networkConditions));
     return toolbarItem;
   }
@@ -8977,7 +8895,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     if (this.fileSelectorElement) {
       this.fileSelectorElement.remove();
     }
-    this.fileSelectorElement = UI11.UIUtils.createFileSelectorElement(this.loadFromFile.bind(this), ".json,.gz,.gzip,.cpuprofile");
+    this.fileSelectorElement = UI10.UIUtils.createFileSelectorElement(this.loadFromFile.bind(this), ".json,.gz,.gzip,.cpuprofile");
     this.timelinePane.element.appendChild(this.fileSelectorElement);
   }
   contextMenu(event) {
@@ -8990,7 +8908,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     if (this.flameChart.getMainFlameChart().coordinatesToEntryIndex(mouseEvent.offsetX, mouseEvent.offsetY) !== -1) {
       return;
     }
-    const contextMenu = new UI11.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI10.ContextMenu.ContextMenu(event);
     contextMenu.appendItemsAtLocation("timelineMenu");
     void contextMenu.show();
   }
@@ -9124,7 +9042,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       return void 0;
     }
     return metadata.sourceMaps.filter((value) => {
-      return value.url && Trace21.Helpers.Trace.isExtensionUrl(value.url);
+      return !Trace21.Helpers.Trace.isExtensionUrl(value.url);
     });
   }
   #showExportTraceErrorDialog(error) {
@@ -9237,7 +9155,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.loader = await TimelineLoader.loadFromURL(url, this);
   }
   isDocked() {
-    return UI11.DockController.DockController.instance().dockSide() !== "undocked";
+    return UI10.DockController.DockController.instance().dockSide() !== "undocked";
   }
   updateMiniMap() {
     if (this.#viewMode.mode !== "VIEWING_TRACE") {
@@ -9359,7 +9277,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   async #startCPUProfilingRecording() {
     try {
-      this.cpuProfiler = UI11.Context.Context.instance().flavor(SDK8.CPUProfilerModel.CPUProfilerModel);
+      this.cpuProfiler = UI10.Context.Context.instance().flavor(SDK8.CPUProfilerModel.CPUProfilerModel);
       if (!this.cpuProfiler) {
         const firstNodeTarget = SDK8.TargetManager.TargetManager.instance().targets().find((target) => target.type() === SDK8.Target.Type.NODE);
         if (!firstNodeTarget) {
@@ -9510,7 +9428,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   consoleProfileFinished(data) {
     this.loadFromCpuProfile(data.cpuProfile);
-    void UI11.InspectorView.InspectorView.instance().showPanel("timeline");
+    void UI10.InspectorView.InspectorView.instance().showPanel("timeline");
   }
   updateTimelineControls() {
     if (this.#viewMode.mode === "VIEWING_TRACE") {
@@ -9589,7 +9507,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.getNetworkDataProvider().reset();
     this.flameChart.reset();
     this.#changeView({ mode: "LANDING_PAGE" });
-    UI11.Context.Context.instance().setFlavor(Utils11.AIContext.AgentFocus, null);
+    UI10.Context.Context.instance().setFlavor(Utils10.AIContext.AgentFocus, null);
   }
   #hasActiveTrace() {
     return this.#viewMode.mode === "VIEWING_TRACE";
@@ -9670,11 +9588,11 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         PerfUI8.LineLevelProfile.Performance.instance().appendCPUProfile(profile, primaryPageTarget);
       }
     }
-    this.#entityMapper = new Utils11.EntityMapper.EntityMapper(parsedTrace);
-    this.#sourceMapsResolver = new Utils11.SourceMapsResolver.SourceMapsResolver(parsedTrace, this.#entityMapper);
-    this.#sourceMapsResolver.addEventListener(Utils11.SourceMapsResolver.SourceMappingsUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
+    this.#entityMapper = new Utils10.EntityMapper.EntityMapper(parsedTrace);
+    this.#sourceMapsResolver = new Utils10.SourceMapsResolver.SourceMapsResolver(parsedTrace, this.#entityMapper);
+    this.#sourceMapsResolver.addEventListener(Utils10.SourceMapsResolver.SourceMappingsUpdated.eventName, this.#onSourceMapsNodeNamesResolvedBound);
     void this.#sourceMapsResolver.install();
-    this.#entityMapper = new Utils11.EntityMapper.EntityMapper(parsedTrace);
+    this.#entityMapper = new Utils10.EntityMapper.EntityMapper(parsedTrace);
     this.statusDialog?.updateProgressBar(i18nString20(UIStrings20.processed), 80);
     this.updateMiniMap();
     this.statusDialog?.updateProgressBar(i18nString20(UIStrings20.processed), 90);
@@ -9725,7 +9643,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const event = e;
     const announcementText = ariaAnnouncementForModifiedEvent(event);
     if (announcementText) {
-      UI11.ARIAUtils.LiveAnnouncer.alert(announcementText);
+      UI10.ARIAUtils.LiveAnnouncer.alert(announcementText);
     }
     const { overlay, action: action2 } = event;
     if (action2 === "Add") {
@@ -9868,7 +9786,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     }
     const liveMetrics = new TimelineComponents3.LiveMetricsView.LiveMetricsView();
     liveMetrics.isNode = isNode;
-    this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI11.Widget.Widget, liveMetrics);
+    this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI10.Widget.Widget, liveMetrics);
     this.landingPage.element.classList.add("timeline-landing-page", "fill");
     this.landingPage.contentElement.classList.add("fill");
     this.landingPage.show(this.statusPaneContainer);
@@ -9969,7 +9887,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         throw new Error(`Could not get trace data at index ${traceIndex}`);
       }
       if (recordingIsFresh) {
-        Utils11.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
+        Utils10.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
       }
       this.#historyManager.addRecording({
         data: {
@@ -10202,7 +10120,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   #announceSelectionToAria(oldSelection, newSelection) {
     if (oldSelection !== null && newSelection === null) {
-      UI11.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.selectionCleared));
+      UI10.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.selectionCleared));
     }
     if (newSelection === null) {
       return;
@@ -10214,11 +10132,11 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       return;
     }
     if (Trace21.Types.Events.isLegacyTimelineFrame(newSelection.event)) {
-      UI11.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.frameSelected));
+      UI10.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.frameSelected));
       return;
     }
-    const name = Utils11.EntryName.nameForEntry(newSelection.event);
-    UI11.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.eventSelected, { PH1: name }));
+    const name = Utils10.EntryName.nameForEntry(newSelection.event);
+    UI10.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.eventSelected, { PH1: name }));
   }
   select(selection) {
     this.#announceSelectionToAria(this.selection, selection);
@@ -10310,7 +10228,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     void VisualLogging6.logFunctionCall("timeline.record-reload", "external");
     Snackbars.Snackbar.Snackbar.show({ message: i18nString20(UIStrings20.externalRequestReceived) });
     const panelInstance = _TimelinePanel.instance();
-    await UI11.ViewManager.ViewManager.instance().showView("timeline");
+    await UI10.ViewManager.ViewManager.instance().showView("timeline");
     function onRecordingCompleted(eventData) {
       if ("errorText" in eventData) {
         return {
@@ -10345,7 +10263,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       for (const modelName in insightsForNav.model) {
         const model = modelName;
         const insight = insightsForNav.model[model];
-        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
+        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(AiAssistanceModel.PERF_AGENT_UNIT_FORMATTERS, parsedTrace, insight);
         if (!formatter.insightIsSupported()) {
           continue;
         }
@@ -10408,26 +10326,26 @@ var LoadTimelineHandler = class _LoadTimelineHandler {
     return loadTimelineHandlerInstance;
   }
   handleQueryParam(value) {
-    void UI11.ViewManager.ViewManager.instance().showView("timeline").then(async () => {
+    void UI10.ViewManager.ViewManager.instance().showView("timeline").then(async () => {
       await TimelinePanel.instance().loadFromURL(window.decodeURIComponent(value));
     });
   }
 };
 var TraceRevealer = class {
   async reveal(trace) {
-    await UI11.ViewManager.ViewManager.instance().showView("timeline");
+    await UI10.ViewManager.ViewManager.instance().showView("timeline");
     TimelinePanel.instance().loadFromTraceFile(trace);
   }
 };
 var EventRevealer = class {
   async reveal(rEvent) {
-    await UI11.ViewManager.ViewManager.instance().showView("timeline");
+    await UI10.ViewManager.ViewManager.instance().showView("timeline");
     TimelinePanel.instance().select(selectionFromEvent(rEvent.event));
   }
 };
 var InsightRevealer = class {
   async reveal(revealable) {
-    await UI11.ViewManager.ViewManager.instance().showView("timeline");
+    await UI10.ViewManager.ViewManager.instance().showView("timeline");
     TimelinePanel.instance().revealInsight(revealable.insight);
   }
 };
@@ -10477,7 +10395,7 @@ var SelectedInsight = class {
 };
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
-import * as Utils12 from "./utils/utils.js";
+import * as Utils11 from "./utils/utils.js";
 var UIStrings21 = {
   /**
    * @description Text that only contain a placeholder
@@ -10908,10 +10826,10 @@ var TimelineUIUtils = class _TimelineUIUtils {
     return _TimelineUIUtils.debugModeEnabled;
   }
   static frameDisplayName(frame) {
-    const maybeResolvedData = Utils12.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForCallFrame(frame);
+    const maybeResolvedData = Utils11.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForCallFrame(frame);
     const functionName = maybeResolvedData?.name || frame.functionName;
     if (!SamplesIntegrator.isNativeRuntimeFrame(frame)) {
-      return UI12.UIUtils.beautifyFunctionName(functionName);
+      return UI11.UIUtils.beautifyFunctionName(functionName);
     }
     const nativeGroup = SamplesIntegrator.nativeGroup(functionName);
     switch (nativeGroup) {
@@ -10963,12 +10881,12 @@ var TimelineUIUtils = class _TimelineUIUtils {
   }
   static eventStyle(event) {
     if (Trace22.Types.Events.isProfileCall(event) && event.callFrame.functionName === "(idle)") {
-      return new Utils12.EntryStyles.TimelineRecordStyle(event.name, Utils12.EntryStyles.getCategoryStyles().idle);
+      return new Utils11.EntryStyles.TimelineRecordStyle(event.name, Utils11.EntryStyles.getCategoryStyles().idle);
     }
     if (event.cat === Trace22.Types.Events.Categories.Console || event.cat === Trace22.Types.Events.Categories.UserTiming) {
-      return new Utils12.EntryStyles.TimelineRecordStyle(event.name, Utils12.EntryStyles.getCategoryStyles()["scripting"]);
+      return new Utils11.EntryStyles.TimelineRecordStyle(event.name, Utils11.EntryStyles.getCategoryStyles()["scripting"]);
     }
-    return Utils12.EntryStyles.getEventStyle(event.name) ?? new Utils12.EntryStyles.TimelineRecordStyle(event.name, Utils12.EntryStyles.getCategoryStyles().other);
+    return Utils11.EntryStyles.getEventStyle(event.name) ?? new Utils11.EntryStyles.TimelineRecordStyle(event.name, Utils11.EntryStyles.getCategoryStyles().other);
   }
   static eventColor(event) {
     if (Trace22.Types.Events.isProfileCall(event)) {
@@ -10982,7 +10900,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     }
     let parsedColor = _TimelineUIUtils.eventStyle(event).category.getComputedColorValue();
     if (event.name === "v8.parseOnBackgroundWaiting") {
-      parsedColor = Utils12.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
+      parsedColor = Utils11.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
       if (!parsedColor) {
         throw new Error("Unable to parse color from getCategoryStyles().scripting.color");
       }
@@ -10991,12 +10909,12 @@ var TimelineUIUtils = class _TimelineUIUtils {
   }
   static eventTitle(event) {
     if (Trace22.Types.Events.isProfileCall(event)) {
-      const maybeResolvedData = Utils12.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForEntry(event);
+      const maybeResolvedData = Utils11.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForEntry(event);
       const displayName = maybeResolvedData?.name || _TimelineUIUtils.frameDisplayName(event.callFrame);
       return displayName;
     }
     if (event.name === "EventTiming" && Trace22.Types.Events.isSyntheticInteraction(event)) {
-      return Utils12.EntryName.nameForEntry(event);
+      return Utils11.EntryName.nameForEntry(event);
     }
     const title = _TimelineUIUtils.eventStyle(event).title;
     if (Trace22.Helpers.Trace.eventHasCategory(event, Trace22.Types.Events.Categories.Console)) {
@@ -11047,7 +10965,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         details = document.createElement("span");
         const callFrame = Trace22.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.at(0);
         if (Trace22.Types.Events.isFunctionCall(event) && callFrame) {
-          UI12.UIUtils.createTextChild(details, _TimelineUIUtils.frameDisplayName({ ...callFrame, scriptId: String(callFrame.scriptId) }));
+          UI11.UIUtils.createTextChild(details, _TimelineUIUtils.frameDisplayName({ ...callFrame, scriptId: String(callFrame.scriptId) }));
         }
         const location = this.linkifyLocation({
           scriptId: unsafeEventData["scriptId"],
@@ -11060,7 +10978,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
           omitOrigin: true
         });
         if (location) {
-          UI12.UIUtils.createTextChild(details, " @ ");
+          UI11.UIUtils.createTextChild(details, " @ ");
           details.appendChild(location);
         }
         break;
@@ -11180,7 +11098,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       default:
         break;
     }
-    const html3 = UI12.Fragment.html`<div>${UI12.XLink.XLink.create(link, i18nString21(UIStrings21.learnMore), void 0, void 0, "learn-more")} about ${name}.</div>`;
+    const html3 = UI11.Fragment.html`<div>${UI11.XLink.XLink.create(link, i18nString21(UIStrings21.learnMore), void 0, void 0, "learn-more")} about ${name}.</div>`;
     return html3;
   }
   static buildConsumeCacheDetails(eventData, contentHelper) {
@@ -11197,24 +11115,44 @@ var TimelineUIUtils = class _TimelineUIUtils {
       contentHelper.appendTextRow(i18nString21(UIStrings21.compilationCacheStatus), i18nString21(UIStrings21.scriptNotEligibleToBeLoadedFromCache));
     }
   }
-  static maybeCreateLinkElement(link) {
-    const protocol = URL.parse(link.url)?.protocol;
-    if (protocol && protocol.length > 0) {
-      const splitResult = Common11.ParsedURL.ParsedURL.splitLineAndColumn(link.url);
-      if (splitResult) {
-        const { lineNumber, columnNumber } = splitResult;
-        const options = { text: link.url, lineNumber, columnNumber };
-        const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(link.url, options);
-        return linkElement;
-      }
+  static maybeCreateLinkElement(url) {
+    const protocol = URL.parse(url)?.protocol;
+    if (!protocol || protocol.length === 0) {
+      return null;
     }
-    return null;
+    const splitResult = Common11.ParsedURL.ParsedURL.splitLineAndColumn(url);
+    if (!splitResult) {
+      return null;
+    }
+    const { lineNumber, columnNumber } = splitResult;
+    const options = { text: url, lineNumber, columnNumber };
+    const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
+    return linkElement;
+  }
+  /**
+   * Takes an input string and parses it to look for links. It does this by
+   * looking for URLs in the input string. The returned fragment will contain
+   * the same string but with any links wrapped in clickable links. The text
+   * of the link is the URL, so the visible string to the user is unchanged.
+   */
+  static parseStringForLinks(rawString) {
+    const urlRegex = /(?:[a-zA-Z][a-zA-Z0-9+.-]{2,}:\/\/)[^\s"]{2,}[^\s"'\)\}\],:;.!?]/u;
+    const results = TextUtils3.TextUtils.Utils.splitStringByRegexes(rawString, [urlRegex]);
+    const nodes = results.map((result) => {
+      if (result.regexIndex === -1) {
+        return result.value;
+      }
+      return _TimelineUIUtils.maybeCreateLinkElement(result.value) ?? result.value;
+    });
+    const frag = document.createDocumentFragment();
+    frag.append(...nodes);
+    return frag;
   }
   static async buildTraceEventDetails(parsedTrace, event, linkifier, canShowPieChart, entityMapper) {
     const maybeTarget = targetForEvent(parsedTrace, event);
     const { duration } = Trace22.Helpers.Timing.eventTimingsMicroSeconds(event);
     const selfTime = getEventSelfTime(event, parsedTrace);
-    const relatedNodesMap = await Utils12.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
+    const relatedNodesMap = await Utils11.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
     let entityAppended = false;
     if (maybeTarget) {
       if (typeof event[previewElementSymbol] === "undefined") {
@@ -11291,20 +11229,30 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
     }
     if (Trace22.Types.Extensions.isSyntheticExtensionEntry(event)) {
-      const additionalContext = "additionalContext" in event.args ? event.args.additionalContext : null;
-      if (additionalContext) {
-        if (Boolean(Root5.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
-          const linkElement = this.maybeCreateLinkElement(additionalContext);
+      const userDetail = structuredClone(event.userDetail);
+      if (userDetail && Object.keys(userDetail).length) {
+        const hasExclusiveLink = typeof userDetail === "object" && typeof userDetail.url === "string" && typeof userDetail.description === "string";
+        if (hasExclusiveLink && Boolean(Root5.Runtime.hostConfig.devToolsDeepLinksViaExtensibilityApi?.enabled)) {
+          const linkElement = this.maybeCreateLinkElement(String(userDetail.url));
           if (linkElement) {
-            contentHelper.appendElementRow(additionalContext.description, linkElement);
+            contentHelper.appendElementRow(String(userDetail.description), linkElement);
+            delete userDetail.url;
+            delete userDetail.description;
           }
         }
+        if (Object.keys(userDetail).length) {
+          const detailContainer = _TimelineUIUtils.renderObjectJson(userDetail);
+          contentHelper.appendElementRow(i18nString21(UIStrings21.details), detailContainer);
+        }
       }
-      for (const [key, value] of event.args.properties || []) {
-        contentHelper.appendTextRow(key, String(value));
+      if (event.devtoolsObj.properties) {
+        for (const [key, value] of event.devtoolsObj.properties || []) {
+          const renderedValue = typeof value === "string" ? _TimelineUIUtils.parseStringForLinks(value) : _TimelineUIUtils.renderObjectJson(value);
+          contentHelper.appendElementRow(key, renderedValue);
+        }
       }
     }
-    const isFreshRecording = Boolean(parsedTrace && Utils12.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+    const isFreshRecording = Boolean(parsedTrace && Utils11.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
     switch (event.name) {
       case "GCEvent":
       case "MajorGC":
@@ -11315,7 +11263,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
       case "ProfileCall": {
         const profileCall = event;
-        const resolvedURL = Utils12.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, profileCall);
+        const resolvedURL = Utils11.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, profileCall);
         if (!resolvedURL) {
           break;
         }
@@ -11757,7 +11705,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
       function onStartEvent(e) {
         const { startTime: startTime2 } = Trace22.Helpers.Timing.eventTimingsMilliSeconds(e);
-        const category = Utils12.EntryStyles.getEventStyle(e.name)?.category.name || Utils12.EntryStyles.getCategoryStyles().other.name;
+        const category = Utils11.EntryStyles.getEventStyle(e.name)?.category.name || Utils11.EntryStyles.getCategoryStyles().other.name;
         const parentCategory = categoryStack.length ? categoryStack[categoryStack.length - 1] : null;
         if (category !== parentCategory) {
           categoryChange(parentCategory || null, category, startTime2);
@@ -11789,11 +11737,22 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const indentLength = Common11.Settings.Settings.instance().moduleSetting("text-editor-indent").get().length;
     const eventStr = JSON.stringify(obj, null, indentLength).slice(0, 1e4).replace(/{\n  /, "{ ");
     const highlightContainer = document.createElement("div");
-    const shadowRoot = UI12.UIUtils.createShadowRootWithCoreStyles(highlightContainer, { cssFile: codeHighlighter_css_default });
+    const shadowRoot = UI11.UIUtils.createShadowRootWithCoreStyles(highlightContainer, { cssFile: codeHighlighter_css_default });
     const elem = shadowRoot.createChild("div");
     elem.classList.add("monospace", "source-code");
     elem.textContent = eventStr;
-    void CodeHighlighter.CodeHighlighter.highlightNode(elem, "text/javascript");
+    void CodeHighlighter.CodeHighlighter.highlightNode(elem, "text/javascript").then(() => {
+      function* iterateTreeWalker(walker2) {
+        while (walker2.nextNode()) {
+          yield walker2.currentNode;
+        }
+      }
+      const walker = document.createTreeWalker(elem, NodeFilter.SHOW_TEXT);
+      for (const node of Array.from(iterateTreeWalker(walker))) {
+        const frag = _TimelineUIUtils.parseStringForLinks(node.textContent || "");
+        node.parentNode?.replaceChild(frag, node);
+      }
+    });
     return highlightContainer;
   }
   static stackTraceFromCallFrames(callFrames) {
@@ -11880,7 +11839,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const isEntryHidden = ModificationsManager.activeManager()?.getEntriesFilter().entryIsInvisible(entry);
     if (!isEntryOutsideBreadcrumb) {
       link.classList.add("timeline-link");
-      UI12.ARIAUtils.markAsLink(link);
+      UI11.ARIAUtils.markAsLink(link);
       link.tabIndex = 0;
       link.addEventListener("click", () => {
         TimelinePanel.instance().select(selectionFromEvent(entry));
@@ -11927,7 +11886,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         return nodeSpan2;
       }
       const nodeSpan = document.createElement("span");
-      UI12.UIUtils.createTextChild(nodeSpan, i18nString21(UIStrings21.UnknownNode));
+      UI11.UIUtils.createTextChild(nodeSpan, i18nString21(UIStrings21.UnknownNode));
       return nodeSpan;
     }
     const generatedItems = /* @__PURE__ */ new Set();
@@ -12022,7 +11981,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     img.alt = LegacyComponents.ImagePreview.ImagePreview.defaultAltTextForImageURL(imageURL);
     const paintProfilerButton = container.createChild("a");
     paintProfilerButton.textContent = i18nString21(UIStrings21.paintProfiler);
-    UI12.ARIAUtils.markAsLink(container);
+    UI11.ARIAUtils.markAsLink(container);
     container.tabIndex = 0;
     container.addEventListener("click", () => TimelinePanel.instance().select(selectionFromEvent(event)), false);
     container.addEventListener("keydown", (keyEvent) => {
@@ -12038,7 +11997,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     eventDivider.classList.add("resources-event-divider");
     const { startTime: eventStartTime } = Trace22.Helpers.Timing.eventTimingsMilliSeconds(event);
     const startTime = i18n41.TimeUtilities.millisToString(eventStartTime - zeroTime);
-    UI12.Tooltip.Tooltip.install(eventDivider, i18nString21(UIStrings21.sAtS, { PH1: _TimelineUIUtils.eventTitle(event), PH2: startTime }));
+    UI11.Tooltip.Tooltip.install(eventDivider, i18nString21(UIStrings21.sAtS, { PH1: _TimelineUIUtils.eventTitle(event), PH2: startTime }));
     const style = _TimelineUIUtils.markerStyleForEvent(event);
     if (style.tall) {
       eventDivider.style.backgroundColor = style.color;
@@ -12046,12 +12005,12 @@ var TimelineUIUtils = class _TimelineUIUtils {
     return eventDivider;
   }
   static visibleEventsFilter() {
-    return new Trace22.Extras.TraceFilter.VisibleEventsFilter(Utils12.EntryStyles.visibleTypes());
+    return new Trace22.Extras.TraceFilter.VisibleEventsFilter(Utils11.EntryStyles.visibleTypes());
   }
   // Included only for layout tests.
   // TODO(crbug.com/1386091): Fix/port layout tests and remove.
   static categories() {
-    return Utils12.EntryStyles.getCategoryStyles();
+    return Utils11.EntryStyles.getCategoryStyles();
   }
   static generatePieChart(aggregatedStats, selfCategory, selfTime) {
     let total = 0;
@@ -12080,8 +12039,8 @@ var TimelineUIUtils = class _TimelineUIUtils {
         appendLegendRow(i18nString21(UIStrings21.sChildren, { PH1: selfCategory.title }), value, selfCategory.getCSSValue());
       }
     }
-    for (const categoryName in Utils12.EntryStyles.getCategoryStyles()) {
-      const category = Utils12.EntryStyles.getCategoryStyles()[categoryName];
+    for (const categoryName in Utils11.EntryStyles.getCategoryStyles()) {
+      const category = Utils11.EntryStyles.getCategoryStyles()[categoryName];
       if (categoryName === selfCategory?.name) {
         continue;
       }
@@ -12108,9 +12067,9 @@ var TimelineUIUtils = class _TimelineUIUtils {
     for (const categoryName in aggregatedStats) {
       total += aggregatedStats[categoryName];
     }
-    for (const categoryName in Utils12.EntryStyles.getCategoryStyles()) {
-      const category = Utils12.EntryStyles.getCategoryStyles()[categoryName];
-      if (category.name === Utils12.EntryStyles.EventCategory.IDLE) {
+    for (const categoryName in Utils11.EntryStyles.getCategoryStyles()) {
+      const category = Utils11.EntryStyles.getCategoryStyles()[categoryName];
+      if (category.name === Utils11.EntryStyles.EventCategory.IDLE) {
         continue;
       }
       const value = aggregatedStats[category.name];
@@ -12135,7 +12094,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     element.append(categorySummaryTable);
     const treeView = new ThirdPartyTreeElement();
     treeView.treeView = thirdPartyTree;
-    UI12.ARIAUtils.setLabel(treeView, i18nString21(UIStrings21.thirdPartyTable));
+    UI11.ARIAUtils.setLabel(treeView, i18nString21(UIStrings21.thirdPartyTable));
     element.append(treeView);
     return element;
   }
@@ -12148,7 +12107,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       const filmStripPreview = document.createElement("div");
       filmStripPreview.classList.add("timeline-filmstrip-preview");
       const uri = Trace22.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(filmStripFrame.screenshotEvent);
-      void UI12.UIUtils.loadImage(uri).then((image) => image && filmStripPreview.appendChild(image));
+      void UI11.UIUtils.loadImage(uri).then((image) => image && filmStripPreview.appendChild(image));
       contentHelper.appendElementRow("", filmStripPreview);
       filmStripPreview.addEventListener("click", frameClicked.bind(null, filmStrip, filmStripFrame), false);
     }
@@ -12260,7 +12219,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     return Common11.ParsedURL.schemeIs(url, "about:") ? `"${Platform12.StringUtilities.trimMiddle(frame.name, trimAt)}"` : frame.url.slice(0, trimAt);
   }
   static getOriginWithEntity(entityMapper, parsedTrace, event) {
-    const resolvedURL = Utils12.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
+    const resolvedURL = Utils11.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
     if (!resolvedURL) {
       return null;
     }
@@ -12272,7 +12231,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     if (!entity) {
       return null;
     }
-    const originWithEntity = Utils12.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
+    const originWithEntity = Utils11.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
     return originWithEntity;
   }
 };
@@ -12316,7 +12275,7 @@ var TimelineDetailsContentHelper = class {
       if (swatchColor) {
         titleElement.createChild("div").style.backgroundColor = swatchColor;
       }
-      UI12.UIUtils.createTextChild(titleElement, title);
+      UI11.UIUtils.createTextChild(titleElement, title);
     }
     this.tableElement = this.element.createChild("div", "vbox timeline-details-chip-body");
     this.fragment.appendChild(this.element);
@@ -12344,7 +12303,7 @@ var TimelineDetailsContentHelper = class {
     if (content instanceof Node) {
       valueElement.appendChild(content);
     } else {
-      UI12.UIUtils.createTextChild(valueElement, content || "");
+      UI11.UIUtils.createTextChild(valueElement, content || "");
     }
   }
   appendLocationRow(title, url, startLine, startColumn, text, omitOrigin) {
@@ -12375,7 +12334,7 @@ var TimelineDetailsContentHelper = class {
       return;
     }
     locationContent.appendChild(link);
-    UI12.UIUtils.createTextChild(locationContent, Platform12.StringUtilities.sprintf(" [%s\u2026%s]", startLine + 1, (endLine || 0) + 1 || ""));
+    UI11.UIUtils.createTextChild(locationContent, Platform12.StringUtilities.sprintf(" [%s\u2026%s]", startLine + 1, (endLine || 0) + 1 || ""));
     this.appendElementRow(title, locationContent);
   }
   createChildStackTraceElement(stackTrace) {
@@ -12387,7 +12346,7 @@ var TimelineDetailsContentHelper = class {
     while (currentResolvedStackTrace) {
       currentResolvedStackTrace.callFrames = currentResolvedStackTrace.callFrames.map((callFrame) => ({
         ...callFrame,
-        functionName: Utils12.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame)?.name || callFrame.functionName
+        functionName: Utils11.SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame)?.name || callFrame.functionName
       }));
       currentResolvedStackTrace = currentResolvedStackTrace.parent;
     }
@@ -12466,7 +12425,7 @@ var TimelineRegExp = class extends Trace23.Extras.TraceFilter.TraceFilter {
 };
 
 // gen/front_end/panels/timeline/EventsTimelineTreeView.js
-import * as Utils13 from "./utils/utils.js";
+import * as Utils12 from "./utils/utils.js";
 var UIStrings22 = {
   /**
    * @description Text for the start time of an activity
@@ -12578,19 +12537,19 @@ var Filters = class _Filters extends Common12.ObjectWrapper.ObjectWrapper {
     return this.filtersInternal;
   }
   populateToolbar(toolbar4) {
-    const durationFilterUI = new UI13.Toolbar.ToolbarComboBox(durationFilterChanged.bind(this), i18nString22(UIStrings22.durationFilter), void 0, "duration");
+    const durationFilterUI = new UI12.Toolbar.ToolbarComboBox(durationFilterChanged.bind(this), i18nString22(UIStrings22.durationFilter), void 0, "duration");
     for (const durationMs of _Filters.durationFilterPresetsMs) {
       durationFilterUI.addOption(durationFilterUI.createOption(durationMs ? `\u2265 ${i18n43.TimeUtilities.millisToString(durationMs)}` : i18nString22(UIStrings22.all), String(durationMs)));
     }
     toolbar4.appendToolbarItem(durationFilterUI);
     const categoryFiltersUI = /* @__PURE__ */ new Map();
-    const categories2 = Utils13.EntryStyles.getCategoryStyles();
+    const categories2 = Utils12.EntryStyles.getCategoryStyles();
     for (const categoryName in categories2) {
       const category = categories2[categoryName];
       if (!category.visible) {
         continue;
       }
-      const checkbox = new UI13.Toolbar.ToolbarCheckbox(category.title, void 0, categoriesFilterChanged.bind(this, categoryName), categoryName);
+      const checkbox = new UI12.Toolbar.ToolbarCheckbox(category.title, void 0, categoriesFilterChanged.bind(this, categoryName), categoryName);
       checkbox.setChecked(true);
       categoryFiltersUI.set(category.name, checkbox);
       toolbar4.appendToolbarItem(checkbox);
@@ -12602,7 +12561,7 @@ var Filters = class _Filters extends Common12.ObjectWrapper.ObjectWrapper {
       this.notifyFiltersChanged();
     }
     function categoriesFilterChanged(name) {
-      const categories3 = Utils13.EntryStyles.getCategoryStyles();
+      const categories3 = Utils12.EntryStyles.getCategoryStyles();
       const checkBox = categoryFiltersUI.get(name);
       categories3[name].hidden = !checkBox?.checked();
       this.notifyFiltersChanged();
@@ -12744,9 +12703,9 @@ var TimelineLayersView_exports = {};
 __export(TimelineLayersView_exports, {
   TimelineLayersView: () => TimelineLayersView
 });
-import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as LayerViewer from "./../layer_viewer/layer_viewer.js";
-var TimelineLayersView = class extends UI14.SplitWidget.SplitWidget {
+var TimelineLayersView = class extends UI13.SplitWidget.SplitWidget {
   showPaintProfilerCallback;
   rightSplitWidget;
   layerViewHost;
@@ -12757,10 +12716,10 @@ var TimelineLayersView = class extends UI14.SplitWidget.SplitWidget {
     super(true, false, "timeline-layers-view");
     this.showPaintProfilerCallback = showPaintProfilerCallback;
     this.element.classList.add("timeline-layers-view");
-    this.rightSplitWidget = new UI14.SplitWidget.SplitWidget(true, true, "timeline-layers-view-details");
+    this.rightSplitWidget = new UI13.SplitWidget.SplitWidget(true, true, "timeline-layers-view-details");
     this.rightSplitWidget.element.classList.add("timeline-layers-view-properties");
     this.setMainWidget(this.rightSplitWidget);
-    const vbox = new UI14.Widget.VBox();
+    const vbox = new UI13.Widget.VBox();
     this.setSidebarWidget(vbox);
     this.layerViewHost = new LayerViewer.LayerViewHost.LayerViewHost();
     const layerTreeOutline = new LayerViewer.LayerTreeOutline.LayerTreeOutline(this.layerViewHost);
@@ -12807,8 +12766,9 @@ __export(TimelinePaintProfilerView_exports, {
   TimelinePaintProfilerView: () => TimelinePaintProfilerView
 });
 import * as SDK11 from "./../../core/sdk/sdk.js";
+import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Trace25 from "./../../models/trace/trace.js";
-import * as UI15 from "./../../ui/legacy/legacy.js";
+import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as LayerViewer2 from "./../layer_viewer/layer_viewer.js";
 
 // gen/front_end/panels/timeline/timelinePaintProfiler.css.js
@@ -13184,7 +13144,7 @@ async function getPaintProfilerSnapshot(paintProfilerModel, paint) {
 }
 
 // gen/front_end/panels/timeline/TimelinePaintProfilerView.js
-var TimelinePaintProfilerView = class extends UI15.SplitWidget.SplitWidget {
+var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
   logAndImageSplitWidget;
   imageView;
   paintProfilerView;
@@ -13201,7 +13161,7 @@ var TimelinePaintProfilerView = class extends UI15.SplitWidget.SplitWidget {
     this.setSidebarSize(60);
     this.setResizable(false);
     this.#parsedTrace = parsedTrace;
-    this.logAndImageSplitWidget = new UI15.SplitWidget.SplitWidget(true, false);
+    this.logAndImageSplitWidget = new UI14.SplitWidget.SplitWidget(true, false);
     this.logAndImageSplitWidget.element.classList.add("timeline-paint-profiler-log-split");
     this.setMainWidget(this.logAndImageSplitWidget);
     this.imageView = new TimelinePaintImageView();
@@ -13332,7 +13292,7 @@ var TimelinePaintProfilerView = class extends UI15.SplitWidget.SplitWidget {
     this.logTreeView.updateWindow(this.paintProfilerView.selectionWindow());
   }
 };
-var TimelinePaintImageView = class extends UI15.Widget.Widget {
+var TimelinePaintImageView = class extends UI14.Widget.Widget {
   imageContainer;
   imageElement;
   maskElement;
@@ -13376,7 +13336,7 @@ var TimelinePaintImageView = class extends UI15.Widget.Widget {
     }
     this.transformController.setScaleConstraints(0.5, 10 / scale);
     let matrix = new WebKitCSSMatrix().scale(this.transformController.scale(), this.transformController.scale()).translate(clientWidth / 2, clientHeight / 2).scale(scale, scale).translate(-width / 2, -height / 2);
-    const bounds = UI15.Geometry.boundsForTransformedPoints(matrix, [0, 0, 0, width, height, 0]);
+    const bounds = Geometry2.boundsForTransformedPoints(matrix, [0, 0, 0, width, height, 0]);
     this.transformController.clampOffsets(paddingX - bounds.maxX, clientWidth - paddingX - bounds.minX, paddingY - bounds.maxY, clientHeight - paddingY - bounds.minY);
     matrix = new WebKitCSSMatrix().translate(this.transformController.offsetX(), this.transformController.offsetY()).multiply(matrix);
     this.imageContainer.style.webkitTransform = matrix.toString();
@@ -13400,7 +13360,7 @@ import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Trace26 from "./../../models/trace/trace.js";
 import * as CopyToClipboard from "./../../ui/components/copy_to_clipboard/copy_to_clipboard.js";
-import * as UI16 from "./../../ui/legacy/legacy.js";
+import * as UI15 from "./../../ui/legacy/legacy.js";
 import { html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
@@ -13417,7 +13377,7 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./timelineSelectorStatsView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineSelectorStatsView.js
-import * as Utils14 from "./utils/utils.js";
+import * as Utils13 from "./utils/utils.js";
 var UIStrings23 = {
   /**
    * @description Label for selector stats data table
@@ -13510,7 +13470,7 @@ var UIStrings23 = {
 var str_23 = i18n45.i18n.registerUIStrings("panels/timeline/TimelineSelectorStatsView.ts", UIStrings23);
 var i18nString23 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
 var SelectorTimingsKey = Trace26.Types.Events.SelectorTimingsKey;
-var TimelineSelectorStatsView = class extends UI16.Widget.VBox {
+var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
   #selectorLocations;
   #parsedTrace = null;
   /**
@@ -13674,7 +13634,7 @@ var TimelineSelectorStatsView = class extends UI16.Widget.VBox {
     }
     const invalidatedNodeIdMap = /* @__PURE__ */ new Map();
     for (const [frameId, backendNodeIds] of frameIdBackendNodeIdsMap) {
-      const backendNodeIdMap = await Utils14.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
+      const backendNodeIdMap = await Utils13.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
       invalidatedNodeIdMap.set(frameId, backendNodeIdMap);
     }
     for (const invalidatedNode of invalidatedNodes) {
@@ -13839,7 +13799,7 @@ var TimelineSelectorStatsView = class extends UI16.Widget.VBox {
 };
 
 // gen/front_end/panels/timeline/TimelineDetailsView.js
-import * as Utils15 from "./utils/utils.js";
+import * as Utils14 from "./utils/utils.js";
 var UIStrings24 = {
   /**
    * @description Text for the summary view
@@ -13872,7 +13832,7 @@ var UIStrings24 = {
 };
 var str_24 = i18n47.i18n.registerUIStrings("panels/timeline/TimelineDetailsView.ts", UIStrings24);
 var i18nString24 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
-var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.Widget.VBox) {
+var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
   detailsLinkifier;
   tabbedPane;
   defaultDetailsWidget;
@@ -13896,10 +13856,10 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
     this.registerRequiredCSS(timelineDetailsView_css_default);
     this.element.classList.add("timeline-details");
     this.detailsLinkifier = new Components3.Linkifier.Linkifier();
-    this.tabbedPane = new UI17.TabbedPane.TabbedPane();
+    this.tabbedPane = new UI16.TabbedPane.TabbedPane();
     this.tabbedPane.show(this.element);
     this.tabbedPane.headerElement().setAttribute("jslog", `${VisualLogging9.toolbar("sidebar").track({ keydown: "ArrowUp|ArrowLeft|ArrowDown|ArrowRight|Enter|Space" })}`);
-    this.defaultDetailsWidget = new UI17.Widget.VBox();
+    this.defaultDetailsWidget = new UI16.Widget.VBox();
     this.defaultDetailsWidget.element.classList.add("timeline-details-view");
     this.defaultDetailsWidget.element.setAttribute("jslog", `${VisualLogging9.pane("details").track({ resize: true })}`);
     this.#summaryContent.contentElement.classList.add("timeline-details-view-body");
@@ -13935,7 +13895,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
     this.#thirdPartyTree.addEventListener("TreeRowClicked", (node) => {
       this.dispatchEventToListeners("TreeRowClicked", { node: node.data.node, events: node.data.events ?? void 0 });
     });
-    this.tabbedPane.addEventListener(UI17.TabbedPane.Events.TabSelected, this.tabSelected, this);
+    this.tabbedPane.addEventListener(UI16.TabbedPane.Events.TabSelected, this.tabSelected, this);
     TraceBounds13.TraceBounds.onChange(this.#onTraceBoundsChangeBound);
     this.lazySelectorStatsView = null;
   }
@@ -14021,7 +13981,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
     }
     if (data.parsedTrace) {
       this.#summaryContent.filmStrip = Trace27.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
-      this.#entityMapper = new Utils15.EntityMapper.EntityMapper(data.parsedTrace);
+      this.#entityMapper = new Utils14.EntityMapper.EntityMapper(data.parsedTrace);
     }
     this.#selectedEvents = data.selectedEvents;
     this.#traceInsightsSets = data.traceInsightsSets;
@@ -14043,18 +14003,14 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
   /**
    * Updates the UI shown in the Summary tab, and updates the UI to select the
    * summary tab.
-   * @param node this is passed as an additional piece of DOM that will be
-   *     rendered in the summary view. This is a temporary ability to allow
-   *     incremental migration to the UI Eng vision.
    */
-  async updateSummaryAndSelectTab(node) {
+  async updateSummaryPane() {
     const allTabs = this.tabbedPane.otherTabs(Tab.Details);
     for (let i = 0; i < allTabs.length; ++i) {
       if (!this.rangeDetailViews.has(allTabs[i])) {
         this.tabbedPane.closeTab(allTabs[i]);
       }
     }
-    this.#summaryContent.node = node ?? null;
     this.#summaryContent.requestUpdate();
     await this.#summaryContent.updateComplete;
   }
@@ -14092,7 +14048,7 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
    */
   scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
     if (!this.#parsedTrace) {
-      void this.updateSummaryAndSelectTab(null);
+      void this.updateSummaryPane();
       return;
     }
     if (forceImmediateUpdate) {
@@ -14134,11 +14090,12 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
     if (!this.#parsedTrace) {
       return;
     }
+    this.#summaryContent.selectedRange = null;
     this.#summaryContent.selectedEvent = event;
     this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
     this.#summaryContent.linkifier = this.detailsLinkifier;
     this.#summaryContent.target = targetForEvent(this.#parsedTrace, event);
-    await this.updateSummaryAndSelectTab(null);
+    await this.updateSummaryPane();
     this.appendExtraDetailsTabsForTraceEvent(event);
   }
   async setSelection(selection) {
@@ -14247,12 +14204,14 @@ var TimelineDetailsPane = class extends Common14.ObjectWrapper.eventMixin(UI17.W
     if (!this.#selectedEvents || !this.#parsedTrace || !this.#entityMapper) {
       return;
     }
-    const minBoundsMilli = Trace27.Helpers.Timing.traceWindowMilliSeconds(this.#parsedTrace.Meta.traceBounds).min;
-    const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
-    const startOffset = startTime - minBoundsMilli;
-    const endOffset = endTime - minBoundsMilli;
-    const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
-    void this.updateSummaryAndSelectTab(summaryDetailElem).then(() => {
+    this.#summaryContent.selectedEvent = null;
+    this.#summaryContent.selectedRange = {
+      events: this.#selectedEvents,
+      thirdPartyTree: this.#thirdPartyTree,
+      startTime,
+      endTime
+    };
+    void this.updateSummaryPane().then(() => {
       this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
     });
     const isSelectorStatsEnabled = Common14.Settings.Settings.instance().createSetting("timeline-capture-selector-stats", false).get();
@@ -14277,17 +14236,16 @@ var Tab;
 var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
   render2(html2`
         <style>${timelineDetailsView_css_default}</style>
-        ${input.node ?? nothing}
         ${Directives.until(renderSelectedEventDetails(input))}
-        <devtools-widget data-related-insight-chips .widgetConfig=${UI17.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
+        ${input.selectedRange ? generateRangeSummaryDetails(input) : nothing}
+        <devtools-widget data-related-insight-chips .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
     activeEvent: input.selectedEvent,
     eventToInsightsMap: input.eventToRelatedInsightsMap
   })}></devtools-widget>
       `, target);
 };
-var SummaryView = class extends UI17.Widget.Widget {
+var SummaryView = class extends UI16.Widget.Widget {
   #view;
-  node = null;
   selectedEvent = null;
   eventToRelatedInsightsMap = null;
   parsedTrace = null;
@@ -14296,13 +14254,13 @@ var SummaryView = class extends UI17.Widget.Widget {
   target = null;
   linkifier = null;
   filmStrip = null;
+  selectedRange = null;
   constructor(element, view = SUMMARY_DEFAULT_VIEW) {
     super(element);
     this.#view = view;
   }
   performUpdate() {
     this.#view({
-      node: this.node,
       selectedEvent: this.selectedEvent,
       eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
       parsedTrace: this.parsedTrace,
@@ -14310,19 +14268,33 @@ var SummaryView = class extends UI17.Widget.Widget {
       entityMapper: this.entityMapper,
       target: this.target,
       linkifier: this.linkifier,
-      filmStrip: this.filmStrip
+      filmStrip: this.filmStrip,
+      selectedRange: this.selectedRange
     }, {}, this.contentElement);
   }
 };
+function generateRangeSummaryDetails(input) {
+  const { parsedTrace, selectedRange } = input;
+  if (!selectedRange || !parsedTrace) {
+    return nothing;
+  }
+  const minBoundsMilli = Trace27.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+  const { events, startTime, endTime, thirdPartyTree } = selectedRange;
+  const aggregatedStats = TimelineUIUtils.statsForTimeRange(events, startTime, endTime);
+  const startOffset = startTime - minBoundsMilli;
+  const endOffset = endTime - minBoundsMilli;
+  const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, events, thirdPartyTree);
+  return html2`${summaryDetailElem}`;
+}
 async function renderSelectedEventDetails(input) {
   const { selectedEvent, parsedTrace, linkifier } = input;
   if (!selectedEvent || !parsedTrace || !linkifier) {
     return nothing;
   }
-  const traceRecordingIsFresh = parsedTrace ? Utils15.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
+  const traceRecordingIsFresh = parsedTrace ? Utils14.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
   if (Trace27.Types.Events.isSyntheticLayoutShift(selectedEvent) || Trace27.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
     return html2`
-      <devtools-widget data-layout-shift-details .widgetConfig=${UI17.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
+      <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
       event: selectedEvent,
       traceInsightsSets: input.traceInsightsSets,
       parsedTrace: input.parsedTrace,
@@ -14332,7 +14304,7 @@ async function renderSelectedEventDetails(input) {
   }
   if (Trace27.Types.Events.isSyntheticNetworkRequest(selectedEvent)) {
     return html2`
-      <devtools-widget data-network-request-details .widgetConfig=${UI17.Widget.widgetConfig(TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails, {
+      <devtools-widget data-network-request-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails, {
       request: selectedEvent,
       entityMapper: input.entityMapper,
       target: input.target,
@@ -14382,7 +14354,7 @@ import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Trace29 from "./../../models/trace/trace.js";
 import * as PerfUI11 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as UI18 from "./../../ui/legacy/legacy.js";
+import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport15 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as TimelineComponents6 from "./components/components.js";
 
@@ -14711,7 +14683,7 @@ var TimelineFlameChartNetworkDataProvider = class {
       return;
     }
     const timelineNetworkRequest = SDK14.TraceObject.RevealableNetworkRequest.create(networkRequest);
-    const contextMenu = new UI18.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI17.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(timelineNetworkRequest);
     return contextMenu;
   }
@@ -14868,7 +14840,7 @@ var TimelineFlameChartNetworkDataProvider = class {
         const textPadding = 4;
         const textBaseline = 5;
         const textBaseHeight = barHeight - textBaseline;
-        const trimmedText = UI18.UIUtils.trimTextEnd(context, title, textWidth - 2 * textPadding);
+        const trimmedText = UI17.UIUtils.trimTextEnd(context, title, textWidth - 2 * textPadding);
         context.fillStyle = "#333";
         context.fillText(trimmedText, textStart + textPadding, barY + textBaseHeight);
       }
@@ -14918,7 +14890,7 @@ var TimelineFlameChartNetworkDataProvider = class {
     const event = this.#events[index];
     if (Trace29.Types.Events.isSyntheticNetworkRequest(event)) {
       const element = document.createElement("div");
-      const root = UI18.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
+      const root = UI17.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
       const contents = root.createChild("div", "timeline-flamechart-popover");
       const infoElement = new TimelineComponents6.NetworkRequestTooltip.NetworkRequestTooltip();
       infoElement.data = { networkRequest: event, entityMapper: this.#entityMapper };
@@ -15307,7 +15279,7 @@ var timelineFlameChartView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineFlameChartView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineFlameChartView.js
-import * as Utils17 from "./utils/utils.js";
+import * as Utils16 from "./utils/utils.js";
 var UIStrings26 = {
   /**
    * @description Text in Timeline Flame Chart View of the Performance panel
@@ -15341,7 +15313,7 @@ var SORT_ORDER_PAGE_LOAD_MARKERS = {
   ]: 4
 };
 var TIMESTAMP_THRESHOLD_MS = Trace30.Types.Timing.Micro(10);
-var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI19.Widget.VBox) {
+var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI18.Widget.VBox) {
   delegate;
   /**
    * Tracks the indexes of matched entries when the user searches the panel.
@@ -15440,9 +15412,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.eventListeners = [];
     this.#parsedTrace = null;
     this.#traceMetadata = null;
-    const flameChartsContainer = new UI19.Widget.VBox();
+    const flameChartsContainer = new UI18.Widget.VBox();
     flameChartsContainer.element.classList.add("flame-charts-container");
-    this.networkSplitWidget = new UI19.SplitWidget.SplitWidget(false, false, "timeline-flamechart-main-view", 150);
+    this.networkSplitWidget = new UI18.SplitWidget.SplitWidget(false, false, "timeline-flamechart-main-view", 150);
     this.networkSplitWidget.show(flameChartsContainer.element);
     this.#overlaysContainer.classList.add("timeline-overlays-container");
     flameChartsContainer.element.appendChild(this.#overlaysContainer);
@@ -15543,7 +15515,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.element.addEventListener(OverlayComponents.EntriesLinkOverlay.EntryLinkStartCreating.eventName, () => {
       this.focus();
     });
-    this.networkPane = new UI19.Widget.VBox();
+    this.networkPane = new UI18.Widget.VBox();
     this.networkPane.setMinimumSize(23, 23);
     this.networkFlameChart.show(this.networkPane.element);
     this.splitResizer = this.networkPane.element.createChild("div", "timeline-flamechart-resizer");
@@ -15551,13 +15523,13 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.networkSplitWidget.installResizer(this.splitResizer);
     this.networkSplitWidget.setMainWidget(this.mainFlameChart);
     this.networkSplitWidget.setSidebarWidget(this.networkPane);
-    this.chartSplitWidget = new UI19.SplitWidget.SplitWidget(false, true, "timeline-counters-split-view-state");
+    this.chartSplitWidget = new UI18.SplitWidget.SplitWidget(false, true, "timeline-counters-split-view-state");
     this.countersView = new CountersGraph(this.delegate);
     this.chartSplitWidget.setMainWidget(flameChartsContainer);
     this.chartSplitWidget.setSidebarWidget(this.countersView);
     this.chartSplitWidget.hideDefaultResizer();
     this.chartSplitWidget.installResizer(this.countersView.resizerElement());
-    this.detailsSplitWidget = new UI19.SplitWidget.SplitWidget(false, true, "timeline-panel-details-split-view-state");
+    this.detailsSplitWidget = new UI18.SplitWidget.SplitWidget(false, true, "timeline-panel-details-split-view-state");
     this.detailsSplitWidget.element.classList.add("timeline-details-split");
     this.detailsView = new TimelineDetailsPane(delegate);
     this.detailsSplitWidget.installResizer(this.detailsView.headerElement());
@@ -16166,7 +16138,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.#selectedGroupName = null;
     Common15.EventTarget.removeEventListeners(this.eventListeners);
     this.#selectedEvents = null;
-    this.#entityMapper = new Utils17.EntityMapper.EntityMapper(this.#parsedTrace);
+    this.#entityMapper = new Utils16.EntityMapper.EntityMapper(this.#parsedTrace);
     this.mainDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
     this.networkDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
     this.reset();
@@ -16306,7 +16278,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (!target) {
       return;
     }
-    const nodeIds = Utils17.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
+    const nodeIds = Utils16.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
     for (const nodeId of nodeIds) {
       new SDK15.DOMModel.DeferredDOMNode(target, nodeId).highlight();
     }
@@ -16394,10 +16366,10 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         if (!this.#parsedTrace) {
           return;
         }
-        const aiCallTree = Utils17.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
+        const aiCallTree = Utils16.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
         if (aiCallTree) {
-          const context = Utils17.AIContext.AgentFocus.fromCallTree(aiCallTree);
-          UI19.Context.Context.instance().setFlavor(Utils17.AIContext.AgentFocus, context);
+          const context = Utils16.AIContext.AgentFocus.fromCallTree(aiCallTree);
+          UI18.Context.Context.instance().setFlavor(Utils16.AIContext.AgentFocus, context);
         }
       });
     }
@@ -16738,7 +16710,7 @@ function groupForLevel(groups, level) {
 }
 
 // gen/front_end/panels/timeline/TimelineFlameChartDataProvider.js
-import * as Utils18 from "./utils/utils.js";
+import * as Utils17 from "./utils/utils.js";
 var UIStrings27 = {
   /**
    * @description Text for rendering frames
@@ -16862,7 +16834,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
         header.backgroundColor = ThemeSupport17.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container");
       }
     });
-    Utils18.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
+    Utils17.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
       "DataChanged"
       /* Events.DATA_CHANGED */
     ));
@@ -16906,17 +16878,17 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     }
     const possibleActions = this.getPossibleActions(entryIndex, groupIndex);
     const PERF_AI_ACTION_ID = "drjones.performance-panel-context";
-    const perfAIEntryPointEnabled = Boolean(entry && this.parsedTrace && UI20.ActionRegistry.ActionRegistry.instance().hasAction(PERF_AI_ACTION_ID));
+    const perfAIEntryPointEnabled = Boolean(entry && this.parsedTrace && UI19.ActionRegistry.ActionRegistry.instance().hasAction(PERF_AI_ACTION_ID));
     if (!possibleActions && !perfAIEntryPointEnabled) {
       return;
     }
-    const contextMenu = new UI20.ContextMenu.ContextMenu(mouseEvent);
+    const contextMenu = new UI19.ContextMenu.ContextMenu(mouseEvent);
     if (perfAIEntryPointEnabled && this.parsedTrace) {
-      const aiCallTree = Utils18.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
+      const aiCallTree = Utils17.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (aiCallTree) {
-        const action2 = UI20.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
-        const context = Utils18.AIContext.AgentFocus.fromCallTree(aiCallTree);
-        UI20.Context.Context.instance().setFlavor(Utils18.AIContext.AgentFocus, context);
+        const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
+        const context = Utils17.AIContext.AgentFocus.fromCallTree(aiCallTree);
+        UI19.Context.Context.instance().setFlavor(Utils17.AIContext.AgentFocus, context);
         if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
           let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
             submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
@@ -16950,7 +16922,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-function"
     });
-    hideEntryOption.setAccelerator(UI20.KeyboardShortcut.Keys.H, [UI20.KeyboardShortcut.Modifiers.None]);
+    hideEntryOption.setAccelerator(UI19.KeyboardShortcut.Keys.H, [UI19.KeyboardShortcut.Modifiers.None]);
     hideEntryOption.setIsDevToolsPerformanceMenuItem(true);
     const hideChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.hideChildren), () => {
       this.modifyTree("COLLAPSE_FUNCTION", entryIndex);
@@ -16961,7 +16933,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-children"
     });
-    hideChildrenOption.setAccelerator(UI20.KeyboardShortcut.Keys.C, [UI20.KeyboardShortcut.Modifiers.None]);
+    hideChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.C, [UI19.KeyboardShortcut.Modifiers.None]);
     hideChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     const hideRepeatingChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.hideRepeatingChildren), () => {
       this.modifyTree("COLLAPSE_REPEATING_DESCENDANTS", entryIndex);
@@ -16972,7 +16944,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "hide-repeating-children"
     });
-    hideRepeatingChildrenOption.setAccelerator(UI20.KeyboardShortcut.Keys.R, [UI20.KeyboardShortcut.Modifiers.None]);
+    hideRepeatingChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.R, [UI19.KeyboardShortcut.Modifiers.None]);
     hideRepeatingChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     const resetChildrenOption = contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.resetChildren), () => {
       this.modifyTree("RESET_CHILDREN", entryIndex);
@@ -16983,7 +16955,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       ],
       jslogContext: "reset-children"
     });
-    resetChildrenOption.setAccelerator(UI20.KeyboardShortcut.Keys.U, [UI20.KeyboardShortcut.Modifiers.None]);
+    resetChildrenOption.setAccelerator(UI19.KeyboardShortcut.Keys.U, [UI19.KeyboardShortcut.Modifiers.None]);
     resetChildrenOption.setIsDevToolsPerformanceMenuItem(true);
     contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.resetTrace), () => {
       this.modifyTree("UNDO_ALL_ACTIONS", entryIndex);
@@ -16997,11 +16969,11 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!this.parsedTrace || Trace31.Types.Events.isLegacyTimelineFrame(entry)) {
       return contextMenu;
     }
-    const url = Utils18.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
+    const url = Utils17.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.parsedTrace, entry);
     if (!url) {
       return contextMenu;
     }
-    if (Utils18.IgnoreList.isIgnoreListedEntry(entry)) {
+    if (Utils17.IgnoreList.isIgnoreListedEntry(entry)) {
       contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.removeScriptFromIgnoreList), () => {
         Workspace4.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
         this.#onIgnoreListChanged();
@@ -17172,7 +17144,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   textColor(index) {
     const event = this.entryData[index];
-    return Utils18.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
+    return Utils17.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
   }
   entryFont(_index) {
     return this.#font;
@@ -17437,7 +17409,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
       return null;
     }
     const popoverElement = document.createElement("div");
-    const root = UI20.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: timelineFlamechartPopover_css_default });
+    const root = UI19.UIUtils.createShadowRootWithCoreStyles(popoverElement, { cssFile: timelineFlamechartPopover_css_default });
     const popoverContents = root.createChild("div", "timeline-flamechart-popover");
     popoverContents.createChild("span", timeElementClassName).textContent = time;
     popoverContents.createChild("span", "popoverinfo-title").textContent = title;
@@ -17452,7 +17424,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   preparePopoverForCollapsedArrow(entryIndex) {
     const element = document.createElement("div");
-    const root = UI20.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
+    const root = UI19.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: timelineFlamechartPopover_css_default });
     const entry = this.entryData[entryIndex];
     const hiddenEntriesAmount = ModificationsManager.activeManager()?.getEntriesFilter().findHiddenDescendantsAmount(entry);
     if (!hiddenEntriesAmount) {
@@ -17549,7 +17521,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   async drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight) {
     const screenshot = this.entryData[entryIndex];
-    const image = Utils18.ImageCache.getOrQueue(screenshot);
+    const image = Utils17.ImageCache.getOrQueue(screenshot);
     if (!image) {
       return;
     }
@@ -17636,7 +17608,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (entryTitle) {
       const textStartX = desiredBoxStartX > 0 ? desiredBoxStartX : barX;
       context.font = this.#font;
-      const textWidth = UI20.UIUtils.measureTextWidth(context, entryTitle);
+      const textWidth = UI19.UIUtils.measureTextWidth(context, entryTitle);
       const textPadding = 5;
       const textBaseline = 5;
       if (textWidth <= desiredBoxEndX - textStartX + textPadding) {
@@ -17879,9 +17851,9 @@ var TimingsTrackAppender = class {
    */
   appendTrackAtLevel(trackStartLevel, expanded) {
     const extensionMarkersAreEmpty = this.#extensionMarkers.length === 0;
-    const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter((m) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
-    const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter((m) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m));
-    const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents.filter((timeStamp) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp));
+    const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter((m) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
+    const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter((m) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
+    const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents.filter((timeStamp) => !Trace32.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp).devtoolsObj);
     const consoleTimings = this.#parsedTrace.UserTimings.consoleTimings;
     if (extensionMarkersAreEmpty && performanceMarks.length === 0 && performanceMeasures.length === 0 && timestampEvents.length === 0 && consoleTimings.length === 0) {
       return trackStartLevel;
@@ -18041,13 +18013,13 @@ var TimingsTrackAppender = class {
     if (Trace32.Types.Events.isPerformanceMark(event)) {
       return `[mark]: ${event.name}`;
     }
-    if (Trace32.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText) {
-      return event.args.tooltipText;
-    }
     return event.name;
   }
   setPopoverInfo(event, info) {
-    const isExtensibilityMarker = Trace32.Types.Extensions.isSyntheticExtensionEntry(event) && Trace32.Types.Extensions.isExtensionPayloadMarker(event.args);
+    const isExtensibilityMarker = Trace32.Types.Extensions.isSyntheticExtensionEntry(event) && Trace32.Types.Extensions.isExtensionPayloadMarker(event.devtoolsObj);
+    if (isExtensibilityMarker) {
+      info.title = event.devtoolsObj.tooltipText || event.name;
+    }
     if (Trace32.Types.Events.isMarkerEvent(event) || Trace32.Types.Events.isPerformanceMark(event) || Trace32.Types.Events.isConsoleTimeStamp(event) || isExtensibilityMarker) {
       const timeOfEvent = Trace32.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.Meta.traceBounds, this.#parsedTrace.Meta.navigationsByNavigationId, this.#parsedTrace.Meta.navigationsByFrameId);
       info.formattedTime = getDurationString(timeOfEvent);
@@ -18484,7 +18456,7 @@ var CompatibilityTracksAppender = class {
 };
 
 // gen/front_end/panels/timeline/timeline.prebundle.js
-import * as Utils19 from "./utils/utils.js";
+import * as Utils18 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18528,6 +18500,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils19 as Utils
+  Utils18 as Utils
 };
 //# sourceMappingURL=timeline.js.map

@@ -1020,6 +1020,7 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import "./../../ui/components/buttons/buttons.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
 
@@ -1109,11 +1110,25 @@ var ipProtectionView_css_default = `/*
     font: var(--sys-typescale-body4-regular);
   }
 
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--sys-size-4);
+    padding-bottom: var(--sys-size-4);
+    padding-left: var(--sys-size-8);
+  }
+
+  h3 {
+    font: var(--sys-typescale-body4-medium);
+    margin: 0;
+  }
+
   .main-text {
     color: var(--sys-color-on-surface);
   }
 
-  .body-subtext {
+  .subtext {
     color: var(--sys-color-on-surface-subtle);
   }
 
@@ -1130,7 +1145,25 @@ var ipProtectionView_css_default = `/*
   }
 
   devtools-data-grid {
-  flex: auto;
+    flex: auto;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+  }
+
+  .status-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .green-status-icon {
+    color: var(--sys-color-green);
+  }
+
+  .red-status-icon {
+    color: var(--sys-color-error);
   }
 }
 
@@ -1151,11 +1184,15 @@ var UIStrings3 = {
   /**
    *@description Title in the card within the IP Protection tool
    */
-  cardTitle: "Bypass IP Protection",
+  cardTitle: "IP Protection Proxy Status",
   /**
-   *@description Description in the card within the IP Protection tool
+   *@description Subheading for bypassing IP protection toggle
    */
-  cardDescription: "Only when DevTools is open",
+  bypassTitle: "Bypass IP Protection",
+  /**
+   *@description Description of bypass IP protection toggle
+   */
+  bypassDescription: "Temporarily bypass IP protection for testing",
   /**
    * @description Text informing the user that IP Proxy is not available
    */
@@ -1183,40 +1220,97 @@ var UIStrings3 = {
   /**
    * @description Title for the grid of proxy requests.
    */
-  proxyRequests: "Proxy Requests"
+  proxyRequests: "Proxy Requests",
+  /**
+   * @description The status text for the available status of the IP protection proxy.
+   */
+  Available: "IP Protection is enabled and active.",
+  /**
+   * @description The status text for when the feature is not enabled.
+   */
+  FeatureNotEnabled: "IP Protection feature is not enabled.",
+  /**
+   * @description The status text for when the masked domain list is not enabled.
+   */
+  MaskedDomainListNotEnabled: "Masked Domain List feature is not enabled.",
+  /**
+   * @description The status text for when the masked domain list is not populated.
+   */
+  MaskedDomainListNotPopulated: "Masked Domain List is not populated.",
+  /**
+   * @description The status text for when authentication tokens are unavailable.
+   */
+  AuthTokensUnavailable: "Limit for authentication tokens was reached. IP Protection will be paused.",
+  /**
+   * @description The status text for when the proxy is unavailable for another reason.
+   */
+  Unavailable: "IP Protection is unavailable.",
+  /**
+   * @description The status text for when the proxy is bypassed by DevTools.
+   */
+  BypassedByDevTools: "IP Protection is being bypassed by DevTools.",
+  /**
+   * @description The status text for when the status is unknown or being loaded.
+   */
+  statusUnknown: "Status unknown"
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/security/IPProtectionView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var allStatusStrings = [
+  UIStrings3.Available,
+  UIStrings3.FeatureNotEnabled,
+  UIStrings3.MaskedDomainListNotEnabled,
+  UIStrings3.MaskedDomainListNotPopulated,
+  UIStrings3.AuthTokensUnavailable,
+  UIStrings3.Unavailable,
+  UIStrings3.BypassedByDevTools,
+  UIStrings3.statusUnknown
+];
 var INCOGNITO_EXPLANATION_URL = "https://support.google.com/chrome/answer/95464?hl=en&co=GENIE.Platform%3DDesktop";
 var DEFAULT_VIEW = (input, _, target) => {
+  const { status } = input;
+  const statusText = status ? i18nString3(UIStrings3[status]) : i18nString3(UIStrings3.statusUnknown);
+  const cardHeader = html3`
+    <div class="card-header">
+      <div class="lhs">
+        <div class="text">
+          <h2 class="main-text">${i18nString3(UIStrings3.cardTitle)}</h2>
+          <div class="body subtext">${statusText}</div>
+        </div>
+      </div>
+      <div class="status-badge">
+       ${status === "Available" ? html3`<devtools-icon class="status-icon green-status-icon" role="presentation" name="check-circle"></devtools-icon>` : html3`<devtools-icon class="status-icon red-status-icon" role="presentation" name="cross-circle-filled"></devtools-icon>`}
+      </div>
+    </div>
+  `;
   render3(html3`
     <style>
       ${ipProtectionView_css_default}
     </style>
-    <div class="ip-protection">
-      <div class="header">
-        <h1>${i18nString3(UIStrings3.viewTitle)}</h1>
-        <div class="body">${i18nString3(UIStrings3.viewExplanation)}</div>
-      </div>
-      ${Root2.Runtime.hostConfig.isOffTheRecord ? html3`
-        <devtools-card class="card-container">
-          <div class="card">
-            <div class="card-header">
-              <div class="lhs">
-                <div class="text">
-                  <h2 class="main-text">${i18nString3(UIStrings3.cardTitle)}</h2>
-                  <div class="body-subtext">
-                    ${i18nString3(UIStrings3.cardDescription)}
+    ${Root2.Runtime.hostConfig.isOffTheRecord ? html3`
+      <div class="overflow-auto">
+        <div class="ip-protection">
+          <div class="header">
+            <h1>${i18nString3(UIStrings3.viewTitle)}</h1>
+            <div class="body">${i18nString3(UIStrings3.viewExplanation)}</div>
+          </div>
+          <devtools-card class="card-container">
+            <div class="card">
+              ${cardHeader}
+              <div>
+                <div class="card-row">
+                  <div class="lhs">
+                    <h3 class="main-text">${i18nString3(UIStrings3.bypassTitle)}</h3>
+                    <div class="body subtext">${i18nString3(UIStrings3.bypassDescription)}</div>
                   </div>
-                </div>
-                <div>
-                  <devtools-switch></devtools-switch>
+                  <div>
+                    <devtools-switch></devtools-switch>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </devtools-card>
-        <devtools-data-grid striped name=${i18nString3(UIStrings3.proxyRequests)}>
+          </devtools-card>
+          <devtools-data-grid striped name=${i18nString3(UIStrings3.proxyRequests)}>
           <table>
             <thead>
               <tr>
@@ -1238,40 +1332,67 @@ var DEFAULT_VIEW = (input, _, target) => {
             </tbody>
           </table>
         </devtools-data-grid>
-        ` : html3`
-        <div class="empty-report">
-          <devtools-widget
-            class="learn-more"
-            .widgetConfig=${widgetConfig(UI3.EmptyWidget.EmptyWidget, {
+        </div>
+      </div>
+    ` : html3`
+      <div class="empty-report">
+        <devtools-widget
+          class="learn-more"
+          .widgetConfig=${widgetConfig(UI3.EmptyWidget.EmptyWidget, {
     header: i18nString3(UIStrings3.notInIncognito),
     text: i18nString3(UIStrings3.openIncognito),
     link: INCOGNITO_EXPLANATION_URL
   })}>
-          </devtools-widget>
-        </div>
-      `}
-    </div>
-  `, target, { host: input });
+        </devtools-widget>
+      </div>
+    `}
+  `, target);
 };
 var IPProtectionView = class extends UI3.Widget.VBox {
   #view;
   #proxyRequests = [];
+  #status = null;
   constructor(element, view = DEFAULT_VIEW) {
     super(element, { useShadowDom: true });
     this.#view = view;
-    this.registerRequiredCSS(ipProtectionView_css_default);
     this.#proxyRequests = [
       { requestId: "1", url: "https://example.com/api/data", requestMethod: "GET", statusCode: 200 },
       { requestId: "2", url: "https://example.com/api/submit", requestMethod: "POST", statusCode: 404 },
       { requestId: "3", url: "https://example.com/assets/style.css", requestMethod: "GET", statusCode: 200 }
     ];
+  }
+  async wasShown() {
+    super.wasShown();
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#updateIpProtectionStatus, this);
+    await this.#updateIpProtectionStatus();
+  }
+  willHide() {
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#updateIpProtectionStatus, this);
+    super.willHide();
+  }
+  async #updateIpProtectionStatus() {
+    const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      this.#status = null;
+      this.requestUpdate();
+      return;
+    }
+    const model = target.model(SDK3.NetworkManager.NetworkManager);
+    if (!model) {
+      this.#status = null;
+      this.requestUpdate();
+      return;
+    }
+    const status = await model.getIpProtectionProxyStatus();
+    this.#status = status;
     this.requestUpdate();
   }
   get proxyRequests() {
     return this.#proxyRequests;
   }
   performUpdate() {
-    this.#view(this, this, this.contentElement);
+    const input = { status: this.#status, proxyRequests: this.#proxyRequests };
+    this.#view(input, this, this.contentElement);
   }
 };
 
@@ -1287,7 +1408,7 @@ __export(SecurityModel_exports, {
   securityStateCompare: () => securityStateCompare
 });
 import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as SDK4 from "./../../core/sdk/sdk.js";
 var UIStrings4 = {
   /**
    * @description Text in Security Panel of the Security panel
@@ -1321,7 +1442,7 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/security/SecurityModel.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var i18nLazyString = i18n7.i18n.getLazilyComputedLocalizedString.bind(void 0, str_4);
-var SecurityModel = class extends SDK3.SDKModel.SDKModel {
+var SecurityModel = class extends SDK4.SDKModel.SDKModel {
   dispatcher;
   securityAgent;
   constructor(target) {
@@ -1332,10 +1453,10 @@ var SecurityModel = class extends SDK3.SDKModel.SDKModel {
     void this.securityAgent.invoke_enable();
   }
   resourceTreeModel() {
-    return this.target().model(SDK3.ResourceTreeModel.ResourceTreeModel);
+    return this.target().model(SDK4.ResourceTreeModel.ResourceTreeModel);
   }
   networkManager() {
-    return this.target().model(SDK3.NetworkManager.NetworkManager);
+    return this.target().model(SDK4.NetworkManager.NetworkManager);
   }
 };
 function securityStateCompare(a, b) {
@@ -1349,7 +1470,7 @@ function securityStateCompare(a, b) {
   ];
   return SECURITY_STATE_ORDER.indexOf(a) - SECURITY_STATE_ORDER.indexOf(b);
 }
-SDK3.SDKModel.SDKModel.register(SecurityModel, { capabilities: 512, autostart: false });
+SDK4.SDKModel.SDKModel.register(SecurityModel, { capabilities: 512, autostart: false });
 var Events;
 (function(Events2) {
   Events2["VisibleSecurityStateChanged"] = "VisibleSecurityStateChanged";
@@ -1498,7 +1619,7 @@ __export(SecurityPanel_exports, {
 import * as Common4 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
+import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as NetworkForward2 from "./../network/forward/forward.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
@@ -2875,8 +2996,8 @@ var SecurityPanel = class _SecurityPanel extends UI6.Panel.Panel {
     this.visibleView = null;
     this.eventListeners = [];
     this.securityModel = null;
-    SDK4.TargetManager.TargetManager.instance().observeModels(SecurityModel, this, { scoped: true });
-    SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.ResourceTreeModel.ResourceTreeModel, SDK4.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    SDK5.TargetManager.TargetManager.instance().observeModels(SecurityModel, this, { scoped: true });
+    SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     this.sidebar.showLastSelectedElement();
   }
   static instance(opts = { forceNew: null }) {
@@ -2889,7 +3010,7 @@ var SecurityPanel = class _SecurityPanel extends UI6.Panel.Panel {
   static createCertificateViewerButtonForOrigin(text, origin) {
     const certificateButton = UI6.UIUtils.createTextButton(text, async (e) => {
       e.consume();
-      const names = await SDK4.NetworkManager.MultitargetNetworkManager.instance().getCertificate(origin);
+      const names = await SDK5.NetworkManager.MultitargetNetworkManager.instance().getCertificate(origin);
       if (names.length > 0) {
         Host2.InspectorFrontendHost.InspectorFrontendHostInstance.showCertificateViewer(names);
       }
@@ -3025,10 +3146,10 @@ var SecurityPanel = class _SecurityPanel extends UI6.Panel.Panel {
     }
     this.eventListeners = [
       securityModel.addEventListener(Events.VisibleSecurityStateChanged, this.onVisibleSecurityStateChanged, this),
-      resourceTreeModel.addEventListener(SDK4.ResourceTreeModel.Events.InterstitialShown, this.onInterstitialShown, this),
-      resourceTreeModel.addEventListener(SDK4.ResourceTreeModel.Events.InterstitialHidden, this.onInterstitialHidden, this),
-      networkManager.addEventListener(SDK4.NetworkManager.Events.ResponseReceived, this.onResponseReceived, this),
-      networkManager.addEventListener(SDK4.NetworkManager.Events.RequestFinished, this.onRequestFinished, this)
+      resourceTreeModel.addEventListener(SDK5.ResourceTreeModel.Events.InterstitialShown, this.onInterstitialShown, this),
+      resourceTreeModel.addEventListener(SDK5.ResourceTreeModel.Events.InterstitialHidden, this.onInterstitialHidden, this),
+      networkManager.addEventListener(SDK5.NetworkManager.Events.ResponseReceived, this.onResponseReceived, this),
+      networkManager.addEventListener(SDK5.NetworkManager.Events.RequestFinished, this.onRequestFinished, this)
     ];
     if (resourceTreeModel.isInterstitialShowing) {
       this.onInterstitialShown();

@@ -3054,13 +3054,12 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       }
       const renderResult = await UI4.UIUtils.Renderer.render(node);
       if (renderResult) {
-        if (renderResult.tree) {
-          this.selectableChildren.push(renderResult.tree);
-          renderResult.tree.addEventListener(UI4.TreeOutline.Events.ElementAttached, this.messageResized);
-          renderResult.tree.addEventListener(UI4.TreeOutline.Events.ElementExpanded, this.messageResized);
-          renderResult.tree.addEventListener(UI4.TreeOutline.Events.ElementCollapsed, this.messageResized);
-        }
-        result.appendChild(renderResult.node);
+        this.selectableChildren.push(renderResult);
+        const resizeObserver = new ResizeObserver(() => {
+          this.messageResized({ data: renderResult.element });
+        });
+        resizeObserver.observe(renderResult.element);
+        result.appendChild(renderResult.element);
       } else {
         result.appendChild(this.formatParameterAsObject(remoteObject, false));
       }
@@ -5676,16 +5675,15 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     }
   }
   async onMessageResized(event) {
-    const treeElement = event.data;
-    if (this.pendingBatchResize || !treeElement.treeOutline) {
+    const treeElement = event.data instanceof UI6.TreeOutline.TreeElement ? event.data.treeOutline?.element : event.data;
+    if (this.pendingBatchResize || !treeElement) {
       return;
     }
     this.pendingBatchResize = true;
     await Promise.resolve();
-    const treeOutlineElement = treeElement.treeOutline.element;
     this.viewport.setStickToBottom(this.isScrolledToBottom());
-    if (treeOutlineElement.offsetHeight <= this.messagesElement.offsetHeight) {
-      treeOutlineElement.scrollIntoViewIfNeeded();
+    if (treeElement.offsetHeight <= this.messagesElement.offsetHeight) {
+      treeElement.scrollIntoViewIfNeeded();
     }
     this.pendingBatchResize = false;
   }
@@ -6530,6 +6528,8 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   #selfXssWarningShown = false;
   #javaScriptCompletionCompartment = new CodeMirror2.Compartment();
   aidaClient;
+  aidaAvailability;
+  boundOnAidaAvailabilityChange;
   aiCodeCompletion;
   teaser;
   placeholderCompartment = new CodeMirror2.Compartment();
@@ -6632,6 +6632,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     if (this.isAiCodeCompletionEnabled()) {
       this.aiCodeCompletionSetting.addChangeListener(this.onAiCodeCompletionSettingChanged.bind(this));
       this.onAiCodeCompletionSettingChanged();
+      this.boundOnAidaAvailabilityChange = this.onAidaAvailabilityChange.bind(this);
+      Host3.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.boundOnAidaAvailabilityChange);
+      void this.onAidaAvailabilityChange();
     }
   }
   eagerSettingChanged() {
@@ -6726,6 +6729,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     if (this.highlightingNode) {
       this.highlightingNode = false;
       SDK7.OverlayModel.OverlayModel.hideDOMNodeHighlight();
+    }
+    if (this.boundOnAidaAvailabilityChange) {
+      Host3.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.boundOnAidaAvailabilityChange);
     }
   }
   history() {
@@ -6919,6 +6925,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   // TODO(b/435654172): Refactor and move aiCodeCompletion model one level up to avoid
   // defining additional listeners and events.
   setAiCodeCompletion() {
+    if (this.aiCodeCompletion) {
+      return;
+    }
     if (!this.aidaClient) {
       this.aidaClient = new Host3.AidaClient.AidaClient();
     }
@@ -6946,6 +6955,18 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     } else if (this.aiCodeCompletion) {
       this.aiCodeCompletion.remove();
       this.aiCodeCompletion = void 0;
+    }
+  }
+  async onAidaAvailabilityChange() {
+    const currentAidaAvailability = await Host3.AidaClient.AidaClient.checkAccessPreconditions();
+    if (currentAidaAvailability !== this.aidaAvailability) {
+      this.aidaAvailability = currentAidaAvailability;
+      if (this.aidaAvailability === "available") {
+        this.onAiCodeCompletionSettingChanged();
+      } else if (this.aiCodeCompletion) {
+        this.aiCodeCompletion.remove();
+        this.aiCodeCompletion = void 0;
+      }
     }
   }
   async onAiCodeCompletionTeaserActionKeyDown(event) {

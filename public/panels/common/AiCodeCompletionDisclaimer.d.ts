@@ -1,9 +1,11 @@
 import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
+import * as Host from '../../core/host/host.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     disclaimerTooltipId?: string;
     noLogging: boolean;
+    aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     onManageInSettingsTooltipClick: () => void;
 }
 export interface ViewOutput {
@@ -18,4 +20,6 @@ export declare class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     set disclaimerTooltipId(disclaimerTooltipId: string);
     set loading(loading: boolean);
     performUpdate(): void;
+    wasShown(): void;
+    willHide(): void;
 }

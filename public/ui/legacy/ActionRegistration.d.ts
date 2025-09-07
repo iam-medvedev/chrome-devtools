@@ -28,6 +28,7 @@ export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventType
     canInstantiate(): boolean;
     bindings(): Binding[] | undefined;
     experiment(): string | undefined;
+    featurePromotionId(): string | undefined;
     setting(): string | undefined;
     condition(): Root.Runtime.Condition | undefined;
     order(): number | undefined;
@@ -236,6 +237,10 @@ export interface ActionRegistration {
      * experiment will enable and disable the action respectively.
      */
     experiment?: Root.Runtime.ExperimentName;
+    /**
+     * Whether an action needs to be promoted. A new badge is shown next to the menu items then.
+     */
+    featurePromotionId?: string;
     /**
      * The name of the setting an action is associated with. Enabling and
      * disabling the declared setting will enable and disable the action

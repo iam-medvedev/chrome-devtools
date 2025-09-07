@@ -7,7 +7,7 @@ import { type RawFrame } from './Trie.js';
  *
  * Any implementation must return an array with the same length as `frames`.
  */
-export type TranslateRawFrames = (frames: readonly RawFrame[], target: SDK.Target.Target) => Promise<Array<Array<Pick<StackTrace.StackTrace.Frame, 'url' | 'uiSourceCode' | 'name' | 'line' | 'column'>>>>;
+export type TranslateRawFrames = (frames: readonly RawFrame[], target: SDK.Target.Target) => Promise<Array<Array<Pick<StackTrace.StackTrace.Frame, 'url' | 'uiSourceCode' | 'name' | 'line' | 'column' | 'missingDebugInfo'>>>>;
 /**
  * The {@link StackTraceModel} is a thin wrapper around a fragment trie.
  *

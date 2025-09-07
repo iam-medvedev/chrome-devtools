@@ -143,7 +143,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
             for (const event of allExtensionTrackEntries) {
                 assert.strictEqual(extensionTrackAppenders[0].titleForEvent(event), event.name);
-                if (event.args.color === 'tertiary') {
+                if (event.devtoolsObj.color === 'tertiary') {
                     // "tertiary" color category is mapped to --ref-palette-green70
                     // which is faked out to 10, 10, 10
                     assert.strictEqual(extensionTrackAppenders[0].colorForEvent(event), 'rgb(10 10 10)');
@@ -158,14 +158,14 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
         });
         it('sets a default value when a color is not set or is set an unknown value', function () {
             const mockExtensionEntryNoColor = {
-                args: {
+                devtoolsObj: {
                     metadata: { dataType: 'track-entry', extensionName: 'Extension' },
                     track: 'A track',
                 },
                 cat: 'devtools.extension',
             };
             const mockExtensionEntryUnknownColor = {
-                args: {
+                devtoolsObj: {
                     metadata: { dataType: 'track-entry', extensionName: 'Extension' },
                     track: 'A track',
                     color: 'anUnknownColor',

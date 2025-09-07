@@ -5,7 +5,8 @@ export declare class RangeWalker {
     constructor(root: Node);
     nextRange(start: number, length: number): Range | null;
 }
-export declare const HIGHLIGHT_REGISTRY = "search-highlight";
+export declare const HIGHLIGHT_REGISTRY = "highlighted-search-result";
+export declare const CURRENT_HIGHLIGHT_REGISTRY = "current-search-result";
 export declare class HighlightManager {
     #private;
     constructor();
@@ -14,7 +15,9 @@ export declare class HighlightManager {
     } | undefined): HighlightManager;
     addHighlights(ranges: Range[]): void;
     removeHighlights(ranges: Range[]): void;
+    addCurrentHighlight(range: Range): void;
+    addCurrentHighlights(ranges: Range[]): void;
     addHighlight(range: Range): void;
     removeHighlight(range: Range): void;
-    highlightOrderedTextRanges(root: Node, sourceRanges: TextUtils.TextRange.SourceRange[]): Range[];
+    highlightOrderedTextRanges(root: Node, sourceRanges: TextUtils.TextRange.SourceRange[], isCurrent?: boolean): Range[];
 }

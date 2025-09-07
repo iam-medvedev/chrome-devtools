@@ -321,6 +321,13 @@ export class NetworkManager extends SDKModel {
         }
         return result.status;
     }
+    async getIpProtectionProxyStatus() {
+        const result = await this.#networkAgent.invoke_getIPProtectionProxyStatus();
+        if (result.getError()) {
+            return null;
+        }
+        return result.status;
+    }
     async enableReportingApi(enable = true) {
         return await this.#networkAgent.invoke_enableReportingApi({ enable });
     }

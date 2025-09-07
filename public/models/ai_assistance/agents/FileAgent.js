@@ -4,7 +4,6 @@
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
-import * as PanelUtils from '../../../panels/utils/utils.js';
 import { FileFormatter } from '../data_formatters/FileFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /**
@@ -71,9 +70,6 @@ export class FileContext extends ConversationContext {
     }
     getItem() {
         return this.#file;
-    }
-    getIcon() {
-        return PanelUtils.PanelUtils.getIconForSourceFile(this.#file);
     }
     getTitle() {
         return this.#file.displayName();

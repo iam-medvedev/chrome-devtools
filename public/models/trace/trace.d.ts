@@ -1,3 +1,4 @@
+import * as EventsSerializer from './EventsSerializer.js';
 import * as Extras from './extras/extras.js';
 import * as Handlers from './handlers/handlers.js';
 import * as Helpers from './helpers/helpers.js';
@@ -7,4 +8,4 @@ import * as LanternComputationData from './LanternComputationData.js';
 import * as TraceModel from './ModelImpl.js';
 import * as Processor from './Processor.js';
 import * as Types from './types/types.js';
-export { Extras, Handlers, Helpers, Insights, Lantern, LanternComputationData, Processor, TraceModel, Types, };
+export { EventsSerializer, Extras, Handlers, Helpers, Insights, Lantern, LanternComputationData, Processor, TraceModel, Types, };

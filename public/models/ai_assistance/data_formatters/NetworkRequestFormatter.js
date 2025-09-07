@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Network from '../../../panels/network/network.js';
 import * as Logs from '../../logs/logs.js';
+import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 const MAX_HEADERS_SIZE = 1000;
 /**
  * Sanitizes the set of headers, removing values that are not on the allow-list and replacing them with '<redacted>'.
@@ -17,6 +17,7 @@ function sanitizeHeaders(headers) {
     });
 }
 export class NetworkRequestFormatter {
+    #calculator;
     static allowHeader(headerName) {
         return allowedHeaders.has(headerName.toLowerCase().trim());
     }
@@ -34,8 +35,9 @@ export class NetworkRequestFormatter {
         return '<redacted cross-origin initiator URL>';
     }
     #request;
-    constructor(request) {
+    constructor(request, calculator) {
         this.#request = request;
+        this.#calculator = calculator;
     }
     formatRequestHeaders() {
         return NetworkRequestFormatter.formatHeaders('Request headers:', this.#request.requestHeaders());
@@ -81,8 +83,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         return initiatorChain.trim();
     }
     formatNetworkRequestTiming() {
-        const calculator = Network.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-        const results = Network.RequestTimingView.RequestTimingView.calculateRequestTimeRanges(this.#request, calculator.minimumBoundary());
+        const results = NetworkTimeCalculator.calculateRequestTimeRanges(this.#request, this.#calculator.minimumBoundary());
         function getDuration(name) {
             const result = results.find(r => r.name === name);
             if (!result) {
@@ -93,11 +94,11 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         const labels = [
             {
                 label: 'Queued at (timestamp)',
-                value: calculator.formatValue(this.#request.issueTime(), 2),
+                value: this.#calculator.formatValue(this.#request.issueTime(), 2),
             },
             {
                 label: 'Started at (timestamp)',
-                value: calculator.formatValue(this.#request.startTime, 2),
+                value: this.#calculator.formatValue(this.#request.startTime, 2),
             },
             {
                 label: 'Queueing (duration)',

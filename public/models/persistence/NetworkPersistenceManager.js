@@ -5,6 +5,8 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+// TODO(crbug.com/442509324): remove UI dependency
+// eslint-disable-next-line rulesdir/no-imports-in-directory
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as TextUtils from '../text_utils/text_utils.js';

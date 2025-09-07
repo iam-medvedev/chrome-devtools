@@ -17,6 +17,8 @@ const DISCLAIMER_TOOLTIP_ID = 'sources-ai-code-completion-disclaimer-tooltip';
 const CITATIONS_TOOLTIP_ID = 'sources-ai-code-completion-citations-tooltip';
 export class AiCodeCompletionPlugin extends Plugin {
     #aidaClient;
+    #aidaAvailability;
+    #boundOnAidaAvailabilityChange;
     #aiCodeCompletion;
     #aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
     #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
@@ -40,6 +42,9 @@ export class AiCodeCompletionPlugin extends Plugin {
         }
         this.#boundEditorKeyDown = this.#editorKeyDown.bind(this);
         this.#boundOnAiCodeCompletionSettingChanged = this.#onAiCodeCompletionSettingChanged.bind(this);
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        void this.#onAidaAvailabilityChange();
         const showTeaser = !this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get();
         if (showTeaser) {
             this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
@@ -51,6 +56,7 @@ export class AiCodeCompletionPlugin extends Plugin {
     dispose() {
         this.#teaser = undefined;
         this.#aiCodeCompletionSetting.removeChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
         this.#editor?.removeEventListener('keydown', this.#boundEditorKeyDown);
         this.#cleanupAiCodeCompletion();
         super.dispose();
@@ -185,18 +191,26 @@ export class AiCodeCompletionPlugin extends Plugin {
             this.#detachAiCodeCompletionTeaser();
             this.#teaser = undefined;
         }
-        this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, "sources" /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */);
-        this.#aiCodeCompletion.addEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, this.#onAiRequestTriggered, this);
-        this.#aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, this.#onAiResponseReceived, this);
+        if (!this.#aiCodeCompletion) {
+            this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, "sources" /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */);
+            this.#aiCodeCompletion.addEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, this.#onAiRequestTriggered, this);
+            this.#aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, this.#onAiResponseReceived, this);
+        }
         this.#createAiCodeCompletionDisclaimer();
         this.#createAiCodeCompletionCitationsToolbar();
     }
     #createAiCodeCompletionDisclaimer() {
+        if (this.#aiCodeCompletionDisclaimer) {
+            return;
+        }
         this.#aiCodeCompletionDisclaimer = new PanelCommon.AiCodeCompletionDisclaimer();
         this.#aiCodeCompletionDisclaimer.disclaimerTooltipId = DISCLAIMER_TOOLTIP_ID;
         this.#aiCodeCompletionDisclaimer.show(this.#aiCodeCompletionDisclaimerContainer, undefined, true);
     }
     #createAiCodeCompletionCitationsToolbar() {
+        if (this.#aiCodeCompletionCitationsToolbar) {
+            return;
+        }
         this.#aiCodeCompletionCitationsToolbar =
             new PanelCommon.AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, hasTopBorder: true });
         this.#aiCodeCompletionCitationsToolbar.show(this.#aiCodeCompletionCitationsToolbarContainer, undefined, true);
@@ -225,10 +239,23 @@ export class AiCodeCompletionPlugin extends Plugin {
             this.#cleanupAiCodeCompletion();
         }
     }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            if (this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
+                this.#onAiCodeCompletionSettingChanged();
+            }
+            else if (this.#aiCodeCompletion) {
+                this.#cleanupAiCodeCompletion();
+            }
+        }
+    }
     #cleanupAiCodeCompletion() {
         this.#aiCodeCompletion?.removeEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, this.#onAiRequestTriggered, this);
         this.#aiCodeCompletion?.removeEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, this.#onAiResponseReceived, this);
         this.#aiCodeCompletion?.remove();
+        this.#aiCodeCompletion = undefined;
         this.#aiCodeCompletionCitations = [];
         this.#aiCodeCompletionDisclaimerContainer.removeChildren();
         this.#aiCodeCompletionDisclaimer = undefined;
@@ -362,6 +389,15 @@ export function aiCodeCompletionTeaserExtension(teaser) {
         }
     }, {
         decorations: v => v.decorations,
+        eventHandlers: {
+            mousedown(event) {
+                // Required for mouse click to propagate to the "Don't show again" span in teaser.
+                if (event.target instanceof Node && teaser.contentElement.contains(event.target)) {
+                    return true;
+                }
+                return false;
+            },
+        },
     });
     return teaserPlugin;
 }

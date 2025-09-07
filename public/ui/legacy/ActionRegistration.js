@@ -189,6 +189,9 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
     experiment() {
         return this.actionRegistration.experiment;
     }
+    featurePromotionId() {
+        return this.actionRegistration.featurePromotionId;
+    }
     setting() {
         return this.actionRegistration.setting;
     }

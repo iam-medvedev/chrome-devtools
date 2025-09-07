@@ -330,6 +330,9 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
             clearTimeout(this.#renderingTimeout);
             this.#renderingTimeout = undefined;
         }
+        this.#editor.dispatch({
+            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(null),
+        });
     }
 }
 //# sourceMappingURL=AiCodeCompletion.js.map

@@ -424,6 +424,9 @@ export class InspectorFrontendHostStub {
             error: 'Not implemented',
         });
     }
+    dispatchHttpRequest(_request, callback) {
+        callback({ error: 'Not implemented' });
+    }
     recordImpression(_event) {
     }
     recordResize(_event) {

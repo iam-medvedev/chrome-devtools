@@ -4,41 +4,6 @@
 import * as Trace from '../../../models/trace/trace.js';
 import { AICallTree } from './AICallTree.js';
 export class AIQueries {
-    /**
-     * Returns the set of network requests that occurred within the timeframe of this Insight.
-     */
-    static networkRequests(insight, insightSetBounds, parsedTrace) {
-        const bounds = insightBounds(insight, insightSetBounds);
-        // Now we find network requests that:
-        // 1. began within the bounds
-        // 2. completed within the bounds
-        const matchedRequests = [];
-        for (const request of parsedTrace.NetworkRequests.byTime) {
-            // Requests are ordered by time ASC, so if we find one request that is
-            // beyond the max, the rest are guaranteed to be also and we can break early.
-            if (request.ts > bounds.max) {
-                break;
-            }
-            if (request.args.data.url.startsWith('data:')) {
-                // For the sake of the LLM querying data, we don't care about data: URLs.
-                continue;
-            }
-            if (request.ts >= bounds.min && request.ts + request.dur <= bounds.max) {
-                matchedRequests.push(request);
-            }
-        }
-        return matchedRequests;
-    }
-    /**
-     * Returns the single network request. We do not check to filter this by the
-     * bounds of the insight, because the only way that the LLM has found this
-     * request is by first inspecting a summary of relevant network requests for
-     * the given insight. So if it then looks up a request by URL, we know that
-     * is a valid and relevant request.
-     */
-    static networkRequest(parsedTrace, url) {
-        return parsedTrace.NetworkRequests.byTime.find(r => r.args.data.url === url) ?? null;
-    }
     static findMainThread(navigationId, parsedTrace) {
         /**
          * We cannot assume that there is one main thread as there are scenarios
@@ -115,14 +80,6 @@ export class AIQueries {
         });
     }
     /**
-     * Returns an AI Call Tree representing the activity on the main thread for
-     * the relevant time range of the given insight.
-     */
-    static mainThreadActivityForInsight(insight, insightSetBounds, parsedTrace) {
-        const bounds = insightBounds(insight, insightSetBounds);
-        return this.mainThreadActivityTopDown(insight.navigationId, bounds, parsedTrace);
-    }
-    /**
      * Returns the top longest tasks as AI Call Trees.
      */
     static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
@@ -145,20 +102,5 @@ export class AIQueries {
         })
             .filter(tree => !!tree);
     }
-}
-/**
- * Calculates the trace bounds for the given insight that are relevant.
- *
- * Uses the insight's overlays to determine the relevant trace bounds. If there are
- * no overlays, falls back to the insight set's navigation bounds.
- */
-export function insightBounds(insight, insightSetBounds) {
-    const overlays = insight.createOverlays?.() ?? [];
-    const windows = overlays.map(Trace.Helpers.Timing.traceWindowFromOverlay).filter(bounds => !!bounds);
-    const overlaysBounds = Trace.Helpers.Timing.combineTraceWindowsMicro(windows);
-    if (overlaysBounds) {
-        return overlaysBounds;
-    }
-    return insightSetBounds;
 }
 //# sourceMappingURL=InsightAIContext.js.map

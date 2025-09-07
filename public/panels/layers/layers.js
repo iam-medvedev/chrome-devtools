@@ -55,7 +55,7 @@ __export(LayersPanel_exports, {
 import * as Common2 from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as LayerViewer2 from "./../layer_viewer/layer_viewer.js";
 
 // gen/front_end/panels/layers/LayerTreeModel.js
@@ -68,7 +68,7 @@ __export(LayerTreeModel_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 var LayerTreeModel = class extends SDK.SDKModel.SDKModel {
   layerTreeAgent;
   paintProfilerModel;
@@ -374,8 +374,8 @@ var AgentLayer = class {
     let matrix = offsetMatrix;
     if (this.layerPayload.transform) {
       const transformMatrix = this.matrixFromArray(this.layerPayload.transform);
-      const anchorVector = new UI2.Geometry.Vector(this.layerPayload.width * this.anchorPoint()[0], this.layerPayload.height * this.anchorPoint()[1], this.anchorPoint()[2]);
-      const anchorPoint = UI2.Geometry.multiplyVectorByMatrixAndNormalize(anchorVector, matrix);
+      const anchorVector = new Geometry.Vector(this.layerPayload.width * this.anchorPoint()[0], this.layerPayload.height * this.anchorPoint()[1], this.anchorPoint()[2]);
+      const anchorPoint = Geometry.multiplyVectorByMatrixAndNormalize(anchorVector, matrix);
       const anchorMatrix = new WebKitCSSMatrix().translate(-anchorPoint.x, -anchorPoint.y, -anchorPoint.z);
       matrix = anchorMatrix.inverse().multiply(transformMatrix.multiply(anchorMatrix.multiply(matrix)));
     }
@@ -390,7 +390,7 @@ var AgentLayer = class {
     this.quadInternal = [];
     const vertices = this.createVertexArrayForRect(this.layerPayload.width, this.layerPayload.height);
     for (let i = 0; i < 4; ++i) {
-      const point = UI2.Geometry.multiplyVectorByMatrixAndNormalize(new UI2.Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
+      const point = Geometry.multiplyVectorByMatrixAndNormalize(new Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
       this.quadInternal.push(point.x, point.y);
     }
     function calculateQuadForLayer(layer) {
@@ -426,7 +426,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/layers/LayersPanel.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var layersPanelInstance;
-var LayersPanel = class _LayersPanel extends UI3.Panel.PanelWithSidebar {
+var LayersPanel = class _LayersPanel extends UI2.Panel.PanelWithSidebar {
   model;
   layerViewHost;
   layerTreeOutline;
@@ -446,7 +446,7 @@ var LayersPanel = class _LayersPanel extends UI3.Panel.PanelWithSidebar {
     this.layerTreeOutline.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
     this.panelSidebarElement().appendChild(this.layerTreeOutline.element);
     this.setDefaultFocusedElement(this.layerTreeOutline.element);
-    this.rightSplitWidget = new UI3.SplitWidget.SplitWidget(false, true, "layer-details-split-view-state");
+    this.rightSplitWidget = new UI2.SplitWidget.SplitWidget(false, true, "layer-details-split-view-state");
     this.splitWidget().setMainWidget(this.rightSplitWidget);
     this.splitWidget().hideSidebar();
     this.layers3DView = new LayerViewer2.Layers3DView.Layers3DView(this.layerViewHost);
@@ -454,13 +454,13 @@ var LayersPanel = class _LayersPanel extends UI3.Panel.PanelWithSidebar {
     this.rightSplitWidget.hideSidebar();
     this.layers3DView.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
     this.layers3DView.addEventListener("ScaleChanged", this.onScaleChanged, this);
-    this.tabbedPane = new UI3.TabbedPane.TabbedPane();
+    this.tabbedPane = new UI2.TabbedPane.TabbedPane();
     this.rightSplitWidget.setSidebarWidget(this.tabbedPane);
     this.layerDetailsView = new LayerViewer2.LayerDetailsView.LayerDetailsView(this.layerViewHost);
     this.layerDetailsView.addEventListener("PaintProfilerRequested", this.onPaintProfileRequested, this);
     this.tabbedPane.appendTab(DetailsViewTabs.Details, i18nString(UIStrings.details), this.layerDetailsView);
     this.paintProfilerView = new LayerPaintProfilerView(this.showImage.bind(this));
-    this.tabbedPane.addEventListener(UI3.TabbedPane.Events.TabClosed, this.onTabClosed, this);
+    this.tabbedPane.addEventListener(UI2.TabbedPane.Events.TabClosed, this.onTabClosed, this);
     this.updateThrottler = new Common2.Throttler.Throttler(100);
   }
   static instance(opts) {

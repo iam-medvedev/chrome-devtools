@@ -28,6 +28,10 @@ export interface CSSMatchedStylesPayload {
     inheritedAnimatedPayload: Protocol.CSS.InheritedAnimatedStyleEntry[];
     functionRules: Protocol.CSS.CSSFunctionRule[];
 }
+export interface CSSType {
+    type: string;
+    isCSSTokens: boolean;
+}
 export declare class CSSRegisteredProperty {
     #private;
     constructor(cssModel: CSSModel, registration: CSSPropertyRule | Protocol.CSS.CSSPropertyRegistration);
@@ -83,6 +87,7 @@ export declare class CSSMatchedStyles {
     nodeForStyle(style: CSSStyleDeclaration): DOMNode | null;
     availableCSSVariables(style: CSSStyleDeclaration): string[];
     computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
+    computeAttribute(style: CSSStyleDeclaration, attributeName: string, type: CSSType): string | null;
     resolveProperty(name: string, ownerStyle: CSSStyleDeclaration): CSSProperty | null;
     resolveGlobalKeyword(property: CSSProperty, keyword: CSSWideKeyword): CSSValueSource | null;
     isInherited(style: CSSStyleDeclaration): boolean;

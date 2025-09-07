@@ -832,7 +832,7 @@ var ExportTraceOptions = class extends HTMLElement {
       horizontalAlignment: "auto",
       closeButton: false,
       dialogTitle: i18nString4(UIStrings4.exportTraceOptionsDialogTitle),
-      state: emptyDialog ? "collapsed" : this.#state.dialogState
+      state: emptyDialog ? "disabled" : this.#state.dialogState
     }}>
         <div class='export-trace-options-content'>
           ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox(this.#includeAnnotationsCheckbox, i18nString4(UIStrings4.includeAnnotations), this.#state.includeAnnotations) : ""}
@@ -852,18 +852,26 @@ var ExportTraceOptions = class extends HTMLElement {
     `;
     Lit3.render(output, this.#shadow, { host: this });
   }
-  #onButtonDialogClick() {
+  async #onButtonDialogClick() {
     if (!(this.#state.displayAnnotationsCheckbox || this.#state.displayScriptContentCheckbox || this.#state.displaySourceMapsCheckbox)) {
-      this.#onExportClick();
+      void this.#onExportCallback();
+    } else {
+      this.state = Object.assign({}, this.#state, {
+        dialogState: "expanded"
+        /* Dialogs.Dialog.DialogState.EXPANDED */
+      });
     }
   }
-  #onExportClick() {
-    void this.#data?.onExport({
+  async #onExportCallback() {
+    await this.#data?.onExport({
       includeScriptContent: this.#state.includeScriptContent,
       includeSourceMaps: this.#state.includeSourceMaps,
       addModifications: this.#state.includeAnnotations
     });
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+  }
+  async #onExportClick() {
+    await this.#onExportCallback();
     this.state = Object.assign({}, this.#state, {
       dialogState: "collapsed"
       /* Dialogs.Dialog.DialogState.COLLAPSED */
@@ -6982,6 +6990,7 @@ import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
+import * as Utils3 from "./../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/insights/Helpers.js
 import * as Trace8 from "./../../../models/trace/trace.js";
@@ -7421,6 +7430,10 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _SidebarSingleInsightSet.categorizeInsights(insightSets, insightSetKey, this.#data.activeCategory);
     const renderInsightComponent = (insightData) => {
       const { componentClass, model } = insightData;
+      if (!this.#data.parsedTrace || !this.#data.insights || !this.#data.traceMetadata) {
+        return html17``;
+      }
+      const agentFocus = Utils3.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, this.#data.insights, this.#data.traceMetadata, model);
       return html17`<div>
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
@@ -7432,7 +7445,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
           .model=${model}
           .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}
-          .parsedTrace=${this.#data.parsedTrace}
+          .agentFocus=${agentFocus}
           .fieldMetrics=${fieldMetrics}>
         </${componentClass.litTagName}>
       </div>`;
@@ -7473,7 +7486,7 @@ import * as Trace10 from "./../../../models/trace/trace.js";
 import * as Buttons8 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
-import * as Utils3 from "./../utils/utils.js";
+import * as Utils4 from "./../utils/utils.js";
 import * as Insights6 from "./insights/insights.js";
 
 // gen/front_end/panels/timeline/components/sidebarInsightsTab.css.js
@@ -7676,7 +7689,7 @@ var SidebarInsightsTab = class extends HTMLElement {
       return;
     }
     const hasMultipleInsightSets = this.#insights.size > 1;
-    const labels = Utils3.Helpers.createUrlLabels([...this.#insights.values()].map(({ url }) => url));
+    const labels = Utils4.Helpers.createUrlLabels([...this.#insights.values()].map(({ url }) => url));
     const contents = (
       // clang-format off
       html18`

@@ -61,6 +61,10 @@ export declare class Experiment {
     setEnabled(enabled: boolean): void;
 }
 export declare const experiments: ExperimentsSupport;
+/**
+ * @deprecated Experiments should not be used anymore, instead use base::Feature.
+ * See docs/contributing/settings-experiments-features.md
+ */
 export declare const enum ExperimentName {
     CAPTURE_NODE_CREATION_STACKS = "capture-node-creation-stacks",
     CSS_OVERVIEW = "css-overview",
@@ -78,7 +82,6 @@ export declare const enum ExperimentName {
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
-    TIMELINE_ASK_AI_FULL_BUTTON = "timeline-ask-ai-full-button",
     TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz",
     VERTICAL_DRAWER = "vertical-drawer"
 }
@@ -199,6 +202,13 @@ interface GlobalAiButton {
     enabled: boolean;
     promotionEnabled: boolean;
 }
+interface GdpProfiles {
+    enabled: boolean;
+    starterBadgeEnabled: boolean;
+}
+interface LiveEdit {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -240,6 +250,8 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsAiSubmenuPrompts: AiSubmenuPrompts;
     devToolsIpProtectionInDevTools: IpProtectionInDevTools;
     devToolsGlobalAiButton: GlobalAiButton;
+    devToolsGdpProfiles: GdpProfiles;
+    devToolsLiveEdit: LiveEdit;
 }>;
 /**
  * The host configuration for this DevTools instance.

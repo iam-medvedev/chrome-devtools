@@ -64,7 +64,7 @@ export class BaseInsightComponent extends HTMLElement {
     #insightsAskAiEnabled = false;
     #selected = false;
     #model = null;
-    #parsedTrace = null;
+    #agentFocus = null;
     #fieldMetrics = null;
     get model() {
         return this.#model;
@@ -122,8 +122,8 @@ export class BaseInsightComponent extends HTMLElement {
         this.data.bounds = bounds;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
-    set parsedTrace(parsedTrace) {
-        this.#parsedTrace = parsedTrace;
+    set agentFocus(agentFocus) {
+        this.#agentFocus = agentFocus;
     }
     set fieldMetrics(fieldMetrics) {
         this.#fieldMetrics = fieldMetrics;
@@ -280,7 +280,7 @@ export class BaseInsightComponent extends HTMLElement {
         return null;
     }
     #askAIButtonClick() {
-        if (!this.#model || !this.#parsedTrace || !this.data.bounds) {
+        if (!this.#agentFocus) {
             return;
         }
         // matches the one in ai_assistance-meta.ts
@@ -288,8 +288,7 @@ export class BaseInsightComponent extends HTMLElement {
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
-        const context = Utils.AIContext.AgentFocus.fromInsight(this.#parsedTrace, this.#model, this.data.bounds);
-        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
+        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, this.#agentFocus);
         // Trigger the AI Assistance panel to open.
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
         void action.execute();

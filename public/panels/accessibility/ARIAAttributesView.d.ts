@@ -1,4 +1,4 @@
-import type * as SDK from '../../core/sdk/sdk.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { AccessibilitySubPane } from './AccessibilitySubPane.js';
 export declare class ARIAAttributesPane extends AccessibilitySubPane {

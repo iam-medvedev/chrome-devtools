@@ -9,6 +9,7 @@ import type * as NodeText from '../ui/components/node_text/node_text.js';
 import * as UI from '../ui/legacy/legacy.js';
 interface RenderOptions {
     allowMultipleChildren?: boolean;
+    includeCommonStyles?: boolean;
 }
 /**
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.

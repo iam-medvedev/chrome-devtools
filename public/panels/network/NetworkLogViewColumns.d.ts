@@ -1,8 +1,8 @@
 import * as Common from '../../core/common/common.js';
+import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import { type NetworkNode } from './NetworkDataGridNode.js';
 import type { NetworkLogView } from './NetworkLogView.js';
-import type { NetworkTimeCalculator, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkLogViewColumns {
     private networkLogView;
     private readonly persistentSettings;
@@ -29,7 +29,7 @@ export declare class NetworkLogViewColumns {
     private popoverHelper?;
     private hasScrollerTouchStarted?;
     private scrollerTouchStartPos?;
-    constructor(networkLogView: NetworkLogView, timeCalculator: NetworkTransferTimeCalculator, durationCalculator: NetworkTransferDurationCalculator, networkLogLargeRowsSetting: Common.Settings.Setting<boolean>);
+    constructor(networkLogView: NetworkLogView, timeCalculator: NetworkTimeCalculator.NetworkTransferTimeCalculator, durationCalculator: NetworkTimeCalculator.NetworkTransferDurationCalculator, networkLogLargeRowsSetting: Common.Settings.Setting<boolean>);
     private static convertToDataGridDescriptor;
     wasShown(): void;
     willHide(): void;
@@ -44,7 +44,7 @@ export declare class NetworkLogViewColumns {
     private updateScrollerWidthIfNeeded;
     private redrawWaterfallColumn;
     private createWaterfallHeader;
-    setCalculator(x: NetworkTimeCalculator): void;
+    setCalculator(x: NetworkTimeCalculator.NetworkTimeCalculator): void;
     scheduleRefresh(): void;
     private updateRowsSize;
     show(element: Element): void;

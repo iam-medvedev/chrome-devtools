@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 export function extensionEntryColor(event) {
-    const color = event.args.color;
+    const color = event.devtoolsObj.color;
     // Use a default value for when the color of the extension entry
     // was not passed or was set an unknown value.
     let themeColor = '--ref-palette-blue70';

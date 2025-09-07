@@ -4,6 +4,7 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import commonStyles from './common.css.js';
@@ -22,7 +23,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TypeToAllowDialog {
     static async show(options) {
         const dialog = new UI.Dialog.Dialog(options.jslogContext.dialog);
-        dialog.setMaxContentSize(new UI.Geometry.Size(504, 340));
+        dialog.setMaxContentSize(new Geometry.Size(504, 340));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
         const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: commonStyles });
@@ -68,6 +69,8 @@ export class TypeToAllowDialog {
 }
 export { AiCodeCompletionTeaser } from './AiCodeCompletionTeaser.js';
 export { FreDialog } from './FreDialog.js';
+export { GdpSignUpDialog } from './GdpSignUpDialog.js';
 export { AiCodeCompletionDisclaimer } from './AiCodeCompletionDisclaimer.js';
 export { AiCodeCompletionSummaryToolbar } from './AiCodeCompletionSummaryToolbar.js';
+export { BadgeNotification } from './BadgeNotification.js';
 //# sourceMappingURL=common.prebundle.js.map

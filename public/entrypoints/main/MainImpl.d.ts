@@ -50,12 +50,6 @@ type ExternalRequestInput = {
 } | {
     kind: 'PERFORMANCE_RELOAD_GATHER_INSIGHTS';
 } | {
-    kind: 'PERFORMANCE_ANALYZE_INSIGHT';
-    args: {
-        insightTitle: string;
-        prompt: string;
-    };
-} | {
     kind: 'PERFORMANCE_ANALYZE';
     args: {
         prompt: string;

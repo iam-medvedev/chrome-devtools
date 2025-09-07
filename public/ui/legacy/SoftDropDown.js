@@ -4,10 +4,10 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
 import { ListControl, ListMode } from './ListControl.js';
 import softDropDownStyles from './softDropDown.css.js';
@@ -111,7 +111,7 @@ export class SoftDropDown {
     }
     updateGlasspaneSize() {
         const maxHeight = this.rowHeight * (Math.min(this.model.length, 9));
-        this.glassPane.setMaxContentSize(new Size(this.width, maxHeight));
+        this.glassPane.setMaxContentSize(new Geometry.Size(this.width, maxHeight));
         this.list.viewportResized();
     }
     hide(event) {

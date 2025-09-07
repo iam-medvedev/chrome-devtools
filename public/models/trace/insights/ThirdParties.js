@@ -50,6 +50,9 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
+export function isThirdPartyInsight(model) {
+    return model.insightKey === "ThirdParties" /* InsightKeys.THIRD_PARTIES */;
+}
 export function generateInsight(parsedTrace, context) {
     const entitySummaries = Extras.ThirdParties.summarizeByThirdParty(parsedTrace, context.bounds);
     const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;

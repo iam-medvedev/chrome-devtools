@@ -1,5 +1,4 @@
 import * as Host from '../../../core/host/host.js';
-import type * as Lit from '../../../ui/lit/lit.js';
 export declare const enum ResponseType {
     CONTEXT = "context",
     TITLE = "title",
@@ -136,10 +135,7 @@ export type ExternalRequestResponse = ExternalRequestAnswer | ExternalRequestNot
 export declare abstract class ConversationContext<T> {
     abstract getOrigin(): string;
     abstract getItem(): T;
-    abstract getIcon(): Lit.TemplateResult | undefined;
-    abstract getTitle(opts?: {
-        disabled: boolean;
-    }): string | ReturnType<typeof Lit.Directives.until>;
+    abstract getTitle(): string;
     isOriginAllowed(agentOrigin: string | undefined): boolean;
     /**
      * This method is called at the start of `AiAgent.run`.

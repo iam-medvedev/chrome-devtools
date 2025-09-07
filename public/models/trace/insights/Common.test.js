@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getFirstOrError, processTrace } from '../../../testing/InsightHelpers.js';
+import { microsecondsTraceWindow } from '../../../testing/TraceHelpers.js';
 import * as Insights from './insights.js';
 const { calculateMetricWeightsForSorting, estimateCompressedContentSize } = Insights.Common;
 describeWithEnvironment('Common', function () {
@@ -93,6 +94,54 @@ describeWithEnvironment('Common', function () {
             const request = makeRequest({ transferSize: 1000, resourceSize: 0, resourceType, responseHeaders: [] });
             const result = estimate(request, 100, "Script" /* Protocol.Network.ResourceType.Script */);
             assert.strictEqual(result, 33); // uses default compression ratio.
+        });
+    });
+    describe('insightBounds', () => {
+        const INSIGHT_SET_BOUNDS = microsecondsTraceWindow(0, 1_000);
+        it('uses the bounds of the overlays', async () => {
+            const fakeInsight = {
+                createOverlays() {
+                    return [{
+                            type: 'TIME_RANGE',
+                            bounds: microsecondsTraceWindow(100, 500),
+                            label: 'test',
+                            showDuration: true,
+                        }];
+                }
+            };
+            const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
+            assert.deepEqual(bounds, microsecondsTraceWindow(100, 500));
+        });
+        it('merges the bounds of two overlays', async () => {
+            const fakeInsight = {
+                createOverlays() {
+                    return [
+                        {
+                            type: 'TIME_RANGE',
+                            bounds: microsecondsTraceWindow(100, 500),
+                            label: 'test',
+                            showDuration: true,
+                        },
+                        {
+                            type: 'TIME_RANGE',
+                            bounds: microsecondsTraceWindow(50, 400),
+                            label: 'test',
+                            showDuration: true,
+                        }
+                    ];
+                }
+            };
+            const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
+            assert.deepEqual(bounds, microsecondsTraceWindow(50, 500));
+        });
+        it('falls back to the set bounds if there are no overlays', async () => {
+            const fakeInsight = {
+                createOverlays() {
+                    return [];
+                }
+            };
+            const bounds = Insights.Common.insightBounds(fakeInsight, INSIGHT_SET_BOUNDS);
+            assert.deepEqual(bounds, INSIGHT_SET_BOUNDS);
         });
     });
 });

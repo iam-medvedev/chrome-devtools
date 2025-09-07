@@ -185,6 +185,11 @@ var UIStrings = {
    */
   enableSync: "Enable settings sync",
   /**
+   * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
+   * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
+   */
+  receiveBadges: "Receive badges",
+  /**
    * @description A command available in the command menu to perform searches, for example in the
    * elements panel, as user types, rather than only when they press Enter.
    */
@@ -745,6 +750,15 @@ Common.Settings.registerSettingExtension({
   settingName: "sync-preferences",
   settingType: "boolean",
   title: i18nLazyString(UIStrings.enableSync),
+  defaultValue: false,
+  reloadRequired: true
+});
+Common.Settings.registerSettingExtension({
+  category: "ACCOUNT",
+  settingName: "receive-gdp-badges",
+  settingType: "boolean",
+  storageType: "Synced",
+  title: i18nLazyString(UIStrings.receiveBadges),
   defaultValue: false,
   reloadRequired: true
 });

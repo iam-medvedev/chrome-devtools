@@ -1,4 +1,5 @@
 import type * as SDK from '../../../core/sdk/sdk.js';
+import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 export declare class NetworkRequestFormatter {
     #private;
     static allowHeader(headerName: string): boolean;
@@ -7,7 +8,7 @@ export declare class NetworkRequestFormatter {
         value: string;
     }>, addListPrefixToEachLine?: boolean): string;
     static formatInitiatorUrl(initiatorUrl: string, allowedOrigin: string): string;
-    constructor(request: SDK.NetworkRequest.NetworkRequest);
+    constructor(request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator.NetworkTransferTimeCalculator);
     formatRequestHeaders(): string;
     formatResponseHeaders(): string;
     /**

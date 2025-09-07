@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as UI from '../../legacy.js';
+import * as Geometry from '../../../../models/geometry/geometry.js';
 import * as InlineEditor from './inline_editor.js';
 describe('BezierUI', () => {
     it('can be instantiated successfully', () => {
@@ -24,7 +24,7 @@ describe('BezierUI', () => {
         assert.strictEqual(bezierUI.shouldDrawLine, testLinearLine, 'linear line value was not set or retrieved correctly');
     });
     it('can draw velocity chart correctly', () => {
-        const bezier = new UI.Geometry.CubicBezier(new UI.Geometry.Point(1, 1), new UI.Geometry.Point(3, 4));
+        const bezier = new Geometry.CubicBezier(new Geometry.Point(1, 1), new Geometry.Point(3, 4));
         const path = document.createElement('path');
         InlineEditor.BezierUI.BezierUI.drawVelocityChart(bezier, path, 10);
         assert.strictEqual(path.outerHTML, '<path d="M 0 26 L 0.02 10.58 L 0.81 10.11 L 1.63 9.72 L 2.48 9.40 L 3.36 9.12 L 4.25 8.88 L 5.16 8.68 L 6.08 8.50 L 7.00 8.34 L 7.92 8.20 L 8.84 8.08 L 9.74 7.97 L 10.63 7.88 L 11.49 7.80 L 12.33 7.72 L 13.14 7.66 L 13.91 7.61 L 14.64 7.57 L 15.32 7.54 L 15.96 7.52 L 16.53 7.52 L 17.04 7.54 L 17.49 7.60 L 17.87 7.72 L 18.16 7.94 L 18.38 8.46 L 18.51 10.15 L 18.55 50.73 L 18.49 4.00 L 18.33 5.24 L 18.06 5.68 L 17.68 5.89 L 17.18 6.01 L 16.56 6.08 L 15.82 6.13 L 14.94 6.16 L 13.92 6.18 L 12.76 6.19 L 11.46 6.20 L 10.00 6.20 L 10.00 26 Z"></path>', 'velocity chart was not drawn correctly');
@@ -57,7 +57,7 @@ describe('BezierUI', () => {
             controlPointRadius: 3,
             shouldDrawLine: true,
         });
-        const bezier = new UI.Geometry.CubicBezier(new UI.Geometry.Point(1, 1), new UI.Geometry.Point(3, 4));
+        const bezier = new Geometry.CubicBezier(new Geometry.Point(1, 1), new Geometry.Point(3, 4));
         const svg = document.createElement('svg');
         bezierUI.drawCurve(bezier, svg);
         /*

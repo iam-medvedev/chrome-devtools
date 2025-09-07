@@ -5,7 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as RecordingMetadata from './RecordingMetadata.js';
 const UIStrings = {
@@ -18,18 +17,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelineLoader.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 /**
- * This class handles loading traces from file and URL, and from the Lighthouse panel
- * It also handles loading cpuprofiles from file, url and console.profileEnd()
- *
- * Meanwhile, the normal trace recording flow bypasses TimelineLoader entirely,
- * as it's handled from TracingManager => TimelineController.
+ * This class handles loading traces from URL, and from the Lighthouse panel
+ * It also handles loading cpuprofiles from url and console.profileEnd()
  */
 export class TimelineLoader {
     client;
     canceledCallback;
-    buffer;
-    firstRawChunk;
-    totalSize;
     filter;
     #traceIsCPUProfile;
     #collectedEvents = [];
@@ -39,30 +32,12 @@ export class TimelineLoader {
     constructor(client) {
         this.client = client;
         this.canceledCallback = null;
-        this.buffer = '';
-        this.firstRawChunk = true;
         this.filter = null;
         this.#traceIsCPUProfile = false;
         this.#metadata = null;
         this.#traceFinalizedPromiseForTest = new Promise(resolve => {
             this.#traceFinalizedCallbackForTest = resolve;
         });
-    }
-    static async loadFromFile(file, client) {
-        const loader = new TimelineLoader(client);
-        const fileReader = new Bindings.FileUtils.ChunkedFileReader(file);
-        loader.canceledCallback = fileReader.cancel.bind(fileReader);
-        loader.totalSize = file.size;
-        // We'll resolve and return the loader instance before finalizing the trace.
-        setTimeout(async () => {
-            const success = await fileReader.read(loader);
-            if (!success && fileReader.error()) {
-                // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                loader.reportErrorAndCancelLoading(fileReader.error().message);
-            }
-        });
-        return loader;
     }
     static loadFromParsedJsonFile(contents, client) {
         const loader = new TimelineLoader(client);
@@ -192,42 +167,6 @@ export class TimelineLoader {
         }
         if (this.canceledCallback) {
             this.canceledCallback();
-        }
-    }
-    /**
-     * As TimelineLoader implements `Common.StringOutputStream.OutputStream`, `write()` is called when a
-     * Common.StringOutputStream.StringOutputStream instance has decoded a chunk. This path is only used
-     * by `loadFromFile()`; it's NOT used by `loadFromEvents` or `loadFromURL`.
-     */
-    async write(chunk, endOfFile) {
-        if (!this.client) {
-            return await Promise.resolve();
-        }
-        this.buffer += chunk;
-        if (this.firstRawChunk) {
-            this.client.loadingStarted();
-            // Ensure we paint the loading dialog before continuing
-            await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-            this.firstRawChunk = false;
-        }
-        else {
-            let progress = undefined;
-            progress = this.buffer.length / this.totalSize;
-            // For compressed traces, we can't provide a definite progress percentage. So, just keep it moving.
-            // For other traces, calculate a loaded part.
-            progress = progress > 1 ? progress - Math.floor(progress) : progress;
-            this.client.loadingProgress(progress);
-        }
-        if (endOfFile) {
-            let trace;
-            try {
-                trace = JSON.parse(this.buffer);
-                this.#processParsedFile(trace);
-            }
-            catch (e) {
-                this.reportErrorAndCancelLoading(i18nString(UIStrings.malformedTimelineDataS, { PH1: e.toString() }));
-            }
-            return;
         }
     }
     reportErrorAndCancelLoading(message) {

@@ -8,9 +8,8 @@ var __export = (target, all) => {
 var CategorizedBreakpointsSidebarPane_exports = {};
 __export(CategorizedBreakpointsSidebarPane_exports, {
   CategorizedBreakpointsSidebarPane: () => CategorizedBreakpointsSidebarPane,
-  FilterToolbar: () => FilterToolbar
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
-import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
@@ -54,7 +53,7 @@ var categorizedBreakpointsSidebarPane_css_default = `/*
   color: var(--sys-color-on-yellow-container);
 }
 
-.breakpoint-hit .breakpoint-hit-marker {
+.breakpoint-hit-marker {
   background-color: var(--sys-color-yellow-container);
   border-right: 3px solid var(--sys-color-yellow-outline);
   color: var(--sys-color-on-yellow-container);
@@ -186,166 +185,139 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/browser_debugger/CategorizedBreakpointsSidebarPane.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-var { html, render } = Lit;
-var DEFAULT_VIEW = (input, _output, target) => {
+var { html, render, Directives: { ref } } = Lit;
+var DEFAULT_VIEW = (input, output, target) => {
+  const shouldExpandCategory = (breakpoints) => Boolean(input.filterText) || input.highlightedItem && breakpoints.includes(input.highlightedItem) || breakpoints.some((breakpoint) => breakpoint.enabled());
+  const filter = (breakpoint) => !input.filterText || Boolean(Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name).match(input.filterText)) || breakpoint === input.highlightedItem;
+  const filteredCategories = input.sortedCategoryNames.values().map((category) => [category, input.categories.get(category)?.filter(filter)]).filter((filteredCategory) => Boolean(filteredCategory[1]?.length)).toArray();
+  const onCheckboxClicked = (event, target2) => {
+    const eventTarget = event.target;
+    if (!(eventTarget instanceof UI.UIUtils.CheckboxLabel)) {
+      return;
+    }
+    const enabled = eventTarget.checked;
+    if (target2 instanceof SDK.CategorizedBreakpoint.CategorizedBreakpoint) {
+      input.onBreakpointChange(target2, enabled);
+    } else {
+      input.categories.get(target2)?.forEach((breakpoint) => input.onBreakpointChange(breakpoint, enabled));
+    }
+  };
+  const { on } = UI.UIUtils.HTMLElementWithLightDOMTemplate;
+  const classes = (breakpoint) => Lit.Directives.classMap({
+    small: true,
+    "source-code": true,
+    "breakpoint-hit": input.highlightedItem === breakpoint
+  });
+  const categoryConfigElements = /* @__PURE__ */ new WeakMap();
+  const trackCategoryConfigElement = (category) => ref((e) => {
+    if (e instanceof HTMLLIElement) {
+      categoryConfigElements.set(e, category);
+    }
+  });
+  const onExpand = ({ detail: { expanded, target: target2 } }) => {
+    const category = categoryConfigElements.get(target2);
+    const breakpoints = category && input.categories.get(category);
+    if (!breakpoints) {
+      return;
+    }
+    if (shouldExpandCategory(breakpoints)) {
+      return;
+    }
+    if (expanded) {
+      output.userExpandedCategories.add(category);
+    } else {
+      output.userExpandedCategories.delete(category);
+    }
+  };
   render(
     // clang-format off
     html`
     <devtools-toolbar jslog=${VisualLogging.toolbar()}>
       <devtools-toolbar-input
         type="filter"
-        @change=${input.onFilterChanged}
+        @change=${(e) => input.onFilterChanged(e.detail)}
         style="flex: 1;"
         ></devtools-toolbar-input>
-    </devtools-toolbar>`,
+    </devtools-toolbar>
+    <devtools-tree
+      ${ref((e) => {
+      output.defaultFocus = e;
+    })}
+      @expand=${onExpand}
+      .template=${html`
+        <ul role="tree">
+          ${filteredCategories.map(([category, breakpoints]) => html`
+            <li
+                role="treeitem"
+                jslog-context=${category}
+                aria-checked=${breakpoints.some((breakpoint) => breakpoint.enabled()) ? breakpoints.some((breakpoint) => !breakpoint.enabled()) ? "mixed" : true : false}
+                ${trackCategoryConfigElement(category)}>
+              <style>${categorizedBreakpointsSidebarPane_css_default}</style>
+              <devtools-checkbox
+                class="small"
+                tabIndex=-1
+                title=${getLocalizedCategory(category)}
+                ?indeterminate=${breakpoints.some((breakpoint) => !breakpoint.enabled()) && breakpoints.some((breakpoint) => breakpoint.enabled())}
+                ?checked=${!breakpoints.some((breakpoint) => !breakpoint.enabled())}
+                @change=${on((e) => onCheckboxClicked(e, category))}
+              >${getLocalizedCategory(category)}</devtools-checkbox>
+              <ul
+                  role="group"
+                  ?hidden=${!shouldExpandCategory(breakpoints) && !input.userExpandedCategories.has(category)}>
+                ${breakpoints.map((breakpoint) => html`
+                <li
+                    role="treeitem"
+                    aria-checked=${breakpoint.enabled()}
+                    jslog-context=${Platform.StringUtilities.toKebabCase(breakpoint.name)}>
+                  <div ?hidden=${breakpoint !== input.highlightedItem} class="breakpoint-hit-marker"></div>
+                  <devtools-checkbox
+                    class=${classes(breakpoint)}
+                    tabIndex=-1
+                    title=${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}
+                    ?checked=${breakpoint.enabled()}
+                    aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit) : Lit.nothing}
+                    @change=${on((e) => onCheckboxClicked(e, breakpoint))}
+                  >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
+                </li>`)}
+              </ul>
+            </li>`)}
+        </ul>
+      `}>
+    </devtools-tree>`,
     // clang-format on
     target
   );
 };
-var FilterToolbar = class _FilterToolbar extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-  #view;
-  #filterText = null;
-  constructor(element, view = DEFAULT_VIEW) {
-    super(element);
-    this.#view = view;
-    this.performUpdate();
-  }
-  get filterText() {
-    return this.#filterText;
-  }
-  performUpdate() {
-    const input = {
-      onFilterChanged: (e) => {
-        this.#filterText = e.detail;
-        this.dispatchEventToListeners(_FilterToolbar.Events.FILTER_CHANGED, e.detail);
-      }
-    };
-    this.#view(input, {}, this.contentElement);
-  }
-};
-(function(FilterToolbar2) {
-  let Events;
-  (function(Events2) {
-    Events2["FILTER_CHANGED"] = "filter-changed";
-  })(Events = FilterToolbar2.Events || (FilterToolbar2.Events = {}));
-})(FilterToolbar || (FilterToolbar = {}));
 var CategorizedBreakpointsSidebarPane = class extends UI.Widget.VBox {
-  #categoriesTreeOutline;
   #viewId;
-  #detailsPausedReason;
-  #categories;
-  #breakpoints;
-  #highlightedElement;
+  // A layout test reaches into this
+  categories = /* @__PURE__ */ new Map();
   #sortedCategories;
-  filterToolbar;
-  #expandedForFilter = /* @__PURE__ */ new Set();
-  constructor(breakpoints, viewId, detailsPausedReason) {
-    super({ useShadowDom: true });
-    this.filterToolbar = new FilterToolbar();
-    this.filterToolbar.addEventListener(FilterToolbar.Events.FILTER_CHANGED, this.#onFilterChanged.bind(this));
-    this.filterToolbar.show(this.contentElement);
-    this.#categoriesTreeOutline = new UI.TreeOutline.TreeOutlineInShadow();
-    this.#categoriesTreeOutline.registerRequiredCSS(categorizedBreakpointsSidebarPane_css_default);
-    this.#categoriesTreeOutline.setShowSelectionOnKeyboardFocus(
-      /* show */
-      true
-    );
-    this.contentElement.appendChild(this.#categoriesTreeOutline.element);
+  #highlightedItem = null;
+  #filterText = null;
+  #view;
+  #userExpandedCategories = /* @__PURE__ */ new Set();
+  constructor(breakpoints, jslog, viewId, view = DEFAULT_VIEW) {
+    super({ useShadowDom: true, jslog });
+    this.#view = view;
     this.#viewId = viewId;
-    this.#detailsPausedReason = detailsPausedReason;
-    const categories = new Set(breakpoints.map((bp) => bp.category()));
-    this.#sortedCategories = [...categories].sort((a, b) => {
+    for (const breakpoint of breakpoints) {
+      let categorizedBreakpoints = this.categories.get(breakpoint.category());
+      if (!categorizedBreakpoints) {
+        categorizedBreakpoints = [];
+        this.categories.set(breakpoint.category(), categorizedBreakpoints);
+      }
+      categorizedBreakpoints.push(breakpoint);
+    }
+    this.#sortedCategories = [...this.categories.keys()].sort((a, b) => {
       const categoryA = getLocalizedCategory(a);
       const categoryB = getLocalizedCategory(b);
       return categoryA.localeCompare(categoryB, i18n.DevToolsLocale.DevToolsLocale.instance().locale);
     });
-    this.#categories = /* @__PURE__ */ new Map();
-    for (const category of this.#sortedCategories) {
-      this.createCategory(category);
-    }
-    if (this.#sortedCategories.length > 0) {
-      const firstCategory = this.#categories.get(this.#sortedCategories[0]);
-      if (firstCategory) {
-        firstCategory.element.select();
-      }
-    }
-    this.#breakpoints = /* @__PURE__ */ new Map();
-    for (const breakpoint of breakpoints) {
-      this.createBreakpoint(breakpoint);
-    }
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerPaused, this.update, this);
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.DebuggerResumed, this.update, this);
     UI.Context.Context.instance().addFlavorChangeListener(SDK.Target.Target, this.update, this);
-    this.populate();
-  }
-  get categories() {
-    return this.#categories;
-  }
-  get breakpoints() {
-    return this.#breakpoints;
-  }
-  get treeOutline() {
-    return this.#categoriesTreeOutline;
-  }
-  focus() {
-    this.#categoriesTreeOutline.forceSelect();
-  }
-  handleSpaceKeyEventOnBreakpoint(event, breakpoint) {
-    if (event && event.key === " ") {
-      if (breakpoint) {
-        breakpoint.checkbox.click();
-      }
-      event.consume(true);
-    }
-  }
-  createCategory(name) {
-    const labelNode = UI.UIUtils.CheckboxLabel.create(
-      getLocalizedCategory(name),
-      void 0,
-      void 0,
-      name,
-      /* small */
-      true
-    );
-    labelNode.addEventListener("click", this.categoryCheckboxClicked.bind(this, name), true);
-    labelNode.tabIndex = -1;
-    const treeElement = new UI.TreeOutline.TreeElement(labelNode, void 0, name);
-    treeElement.listItemElement.addEventListener("keydown", (event) => {
-      this.handleSpaceKeyEventOnBreakpoint(event, this.#categories.get(name));
-    });
-    labelNode.addEventListener("keydown", (event) => {
-      treeElement.listItemElement.focus();
-      this.handleSpaceKeyEventOnBreakpoint(event, this.#categories.get(name));
-    });
-    UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
-    this.#categories.set(name, { element: treeElement, checkbox: labelNode, category: name });
-  }
-  createBreakpoint(breakpoint) {
-    const labelNode = UI.UIUtils.CheckboxLabel.create(
-      Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name),
-      void 0,
-      void 0,
-      Platform.StringUtilities.toKebabCase(breakpoint.name),
-      /* small */
-      true
-    );
-    labelNode.classList.add("source-code", "breakpoint");
-    labelNode.addEventListener("click", this.breakpointCheckboxClicked.bind(this, breakpoint), true);
-    labelNode.tabIndex = -1;
-    const treeElement = new UI.TreeOutline.TreeElement(labelNode, void 0, Platform.StringUtilities.toKebabCase(breakpoint.name));
-    treeElement.listItemElement.addEventListener("keydown", (event) => {
-      this.handleSpaceKeyEventOnBreakpoint(event, this.#breakpoints.get(breakpoint));
-    });
-    labelNode.addEventListener("keydown", (event) => {
-      treeElement.listItemElement.focus();
-      this.handleSpaceKeyEventOnBreakpoint(event, this.#breakpoints.get(breakpoint));
-    });
-    UI.ARIAUtils.setChecked(treeElement.listItemElement, false);
-    treeElement.listItemElement.createChild("div", "breakpoint-hit-marker");
-    const category = this.#categories.get(breakpoint.category());
-    if (category) {
-      this.#breakpoints.set(breakpoint, { element: treeElement, checkbox: labelNode, category: category.category });
-    }
+    this.requestUpdate();
   }
   getBreakpointFromPausedDetails(_details) {
     return null;
@@ -354,118 +326,40 @@ var CategorizedBreakpointsSidebarPane = class extends UI.Widget.VBox {
     const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
     const debuggerModel = target ? target.model(SDK.DebuggerModel.DebuggerModel) : null;
     const details = debuggerModel ? debuggerModel.debuggerPausedDetails() : null;
-    if (!details || details.reason !== this.#detailsPausedReason || !details.auxData) {
-      if (this.#highlightedElement) {
-        UI.ARIAUtils.setDescription(this.#highlightedElement, "");
-        this.#highlightedElement.classList.remove("breakpoint-hit");
-        this.#highlightedElement = void 0;
-      }
-      return;
-    }
-    const breakpoint = this.getBreakpointFromPausedDetails(details);
+    const breakpoint = details && this.getBreakpointFromPausedDetails(details);
+    this.#highlightedItem = breakpoint;
     if (!breakpoint) {
       return;
     }
     void UI.ViewManager.ViewManager.instance().showView(this.#viewId);
-    const category = this.#categories.get(breakpoint.category());
-    if (category) {
-      category.element.expand();
-      this.#expandedForFilter.delete(category.category);
-    }
-    const matchingBreakpoint = this.#breakpoints.get(breakpoint);
-    if (matchingBreakpoint) {
-      this.#highlightedElement = matchingBreakpoint.element.listItemElement;
-      UI.ARIAUtils.setDescription(this.#highlightedElement, i18nString(UIStrings.breakpointHit));
-      this.#highlightedElement.classList.add("breakpoint-hit");
-    }
-    this.populate(this.filterToolbar.filterText);
+    this.requestUpdate();
   }
-  #onFilterChanged(e) {
-    this.populate(e.data);
+  #onFilterChanged(filterText) {
+    this.#filterText = filterText;
+    this.requestUpdate();
   }
-  populate(filterText = null) {
-    this.#categoriesTreeOutline.removeChildren();
-    for (const category of this.#sortedCategories) {
-      this.categories.get(category)?.element.removeChildren();
-    }
-    const nonEmptyCategories = /* @__PURE__ */ new Set();
-    for (const [breakpoint, item2] of this.#breakpoints) {
-      if (!filterText || breakpoint.name.match(filterText) || item2.element.listItemElement === this.#highlightedElement) {
-        const categoryItem = this.categories.get(breakpoint.category());
-        if (!categoryItem) {
-          continue;
-        }
-        if (!nonEmptyCategories.has(breakpoint.category())) {
-          nonEmptyCategories.add(breakpoint.category());
-        }
-        categoryItem.element.appendChild(item2.element);
-      }
-    }
-    for (const category of this.#sortedCategories) {
-      if (nonEmptyCategories.has(category)) {
-        const treeElement = this.categories.get(category).element;
-        this.#categoriesTreeOutline.appendChild(treeElement);
-        if (filterText && !treeElement.expanded) {
-          this.#expandedForFilter.add(category);
-          treeElement.expand();
-        } else if (!filterText && this.#expandedForFilter.has(category)) {
-          this.#expandedForFilter.delete(category);
-          treeElement.collapse();
-        }
-      }
-    }
-  }
-  // Probably can be kept although eventListener does not call this._breakpointCheckboxClicke
-  categoryCheckboxClicked(category) {
-    const item2 = this.#categories.get(category);
-    if (!item2) {
-      return;
-    }
-    const enabled = item2.checkbox.checked;
-    UI.ARIAUtils.setChecked(item2.element.listItemElement, enabled);
-    for (const [breakpoint, treeItem] of this.#breakpoints) {
-      if (breakpoint.category() === category) {
-        const matchingBreakpoint = this.#breakpoints.get(breakpoint);
-        if (matchingBreakpoint) {
-          matchingBreakpoint.checkbox.checked = enabled;
-          this.toggleBreakpoint(breakpoint, enabled);
-          UI.ARIAUtils.setChecked(treeItem.element.listItemElement, enabled);
-        }
-      }
-    }
-  }
-  toggleBreakpoint(breakpoint, enabled) {
+  onBreakpointChanged(breakpoint, enabled) {
     breakpoint.setEnabled(enabled);
+    this.requestUpdate();
   }
-  breakpointCheckboxClicked(breakpoint) {
-    const item2 = this.#breakpoints.get(breakpoint);
-    if (!item2) {
-      return;
-    }
-    this.toggleBreakpoint(breakpoint, item2.checkbox.checked);
-    UI.ARIAUtils.setChecked(item2.element.listItemElement, item2.checkbox.checked);
-    let hasEnabled = false;
-    let hasDisabled = false;
-    for (const other of this.#breakpoints.keys()) {
-      if (other.category() === breakpoint.category()) {
-        if (other.enabled()) {
-          hasEnabled = true;
-        } else {
-          hasDisabled = true;
-        }
-      }
-    }
-    const category = this.#categories.get(breakpoint.category());
-    if (!category) {
-      return;
-    }
-    category.checkbox.checked = hasEnabled;
-    category.checkbox.indeterminate = hasEnabled && hasDisabled;
-    if (category.checkbox.indeterminate) {
-      UI.ARIAUtils.setCheckboxAsIndeterminate(category.element.listItemElement);
-    } else {
-      UI.ARIAUtils.setChecked(category.element.listItemElement, hasEnabled);
-    }
+  performUpdate() {
+    const input = {
+      filterText: this.#filterText,
+      onFilterChanged: this.#onFilterChanged.bind(this),
+      onBreakpointChange: this.onBreakpointChanged.bind(this),
+      sortedCategoryNames: this.#sortedCategories,
+      categories: this.categories,
+      highlightedItem: this.#highlightedItem,
+      userExpandedCategories: this.#userExpandedCategories
+    };
+    const that = this;
+    const output = {
+      set defaultFocus(e) {
+        that.setDefaultFocusedElement(e ?? null);
+      },
+      userExpandedCategories: this.#userExpandedCategories
+    };
+    this.#view(input, output, this.contentElement);
   }
 };
 var LOCALIZED_CATEGORIES = {
@@ -588,13 +482,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var CSPViolationBreakpointsSidebarPane = class extends CategorizedBreakpointsSidebarPane {
   constructor() {
     const breakpoints = SDK2.DOMDebuggerModel.DOMDebuggerManager.instance().cspViolationBreakpoints();
-    super(
-      breakpoints,
-      "sources.csp-violation-breakpoints",
-      "CSPViolation"
-      /* Protocol.Debugger.PausedEventReason.CSPViolation */
-    );
-    this.contentElement.setAttribute("jslog", `${VisualLogging2.section("sources.csp-violation-breakpoints")}`);
+    super(breakpoints, `${VisualLogging2.section("sources.csp-violation-breakpoints")}`, "sources.csp-violation-breakpoints");
   }
   getBreakpointFromPausedDetails(details) {
     const breakpointType = details.auxData?.["violationType"] ? details.auxData["violationType"] : "";
@@ -602,8 +490,8 @@ var CSPViolationBreakpointsSidebarPane = class extends CategorizedBreakpointsSid
     const breakpoint = breakpoints.find((x) => x.type() === breakpointType);
     return breakpoint ? breakpoint : null;
   }
-  toggleBreakpoint(breakpoint, enabled) {
-    breakpoint.setEnabled(enabled);
+  onBreakpointChanged(breakpoint, enabled) {
+    super.onBreakpointChanged(breakpoint, enabled);
     SDK2.DOMDebuggerModel.DOMDebuggerManager.instance().updateCSPViolationBreakpoints();
   }
 };
@@ -614,7 +502,7 @@ __export(DOMBreakpointsSidebarPane_exports, {
   ContextMenuProvider: () => ContextMenuProvider,
   DOMBreakpointsSidebarPane: () => DOMBreakpointsSidebarPane
 });
-import * as Common2 from "./../../core/common/common.js";
+import * as Common from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
@@ -853,7 +741,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
     const linkifiedNode = document.createElement("monospace");
     linkifiedNode.style.display = "block";
     labelElement.appendChild(linkifiedNode);
-    void Common2.Linkifier.Linkifier.linkify(item2.node, { preventKeyboardFocus: true, tooltip: void 0 }).then((linkified) => {
+    void Common.Linkifier.Linkifier.linkify(item2.node, { preventKeyboardFocus: true, tooltip: void 0 }).then((linkified) => {
       linkifiedNode.appendChild(linkified);
       UI2.ARIAUtils.setLabel(checkbox, i18nString2(UIStrings2.sS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent() }));
       UI2.ARIAUtils.setLabel(element, i18nString2(UIStrings2.sSS, { PH1: breakpointTypeText, PH2: linkified.deepTextContent(), PH3: checkedStateText }));
@@ -943,7 +831,7 @@ var DOMBreakpointsSidebarPane = class _DOMBreakpointsSidebarPane extends UI2.Wid
   }
   contextMenu(breakpoint, event) {
     const contextMenu = new UI2.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.revealDomNodeInElementsPanel), () => Common2.Revealer.reveal(breakpoint.node), { jslogContext: "reveal-in-elements" });
+    contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.revealDomNodeInElementsPanel), () => Common.Revealer.reveal(breakpoint.node), { jslogContext: "reveal-in-elements" });
     contextMenu.defaultSection().appendItem(i18nString2(UIStrings2.removeBreakpoint), () => {
       breakpoint.domDebuggerModel.removeDOMBreakpoint(breakpoint.node, breakpoint.type);
     }, { jslogContext: "remove-breakpoint" });
@@ -1043,13 +931,7 @@ var EventListenerBreakpointsSidebarPane = class _EventListenerBreakpointsSidebar
     let breakpoints = SDK4.DOMDebuggerModel.DOMDebuggerManager.instance().eventListenerBreakpoints();
     const nonDomBreakpoints = SDK4.EventBreakpointsModel.EventBreakpointsManager.instance().eventListenerBreakpoints();
     breakpoints = breakpoints.concat(nonDomBreakpoints);
-    super(
-      breakpoints,
-      "sources.event-listener-breakpoints",
-      "EventListener"
-      /* Protocol.Debugger.PausedEventReason.EventListener */
-    );
-    this.contentElement.setAttribute("jslog", `${VisualLogging4.section("sources.event-listener-breakpoints")}`);
+    super(breakpoints, `${VisualLogging4.section("sources.event-listener-breakpoints")}`, "sources.event-listener-breakpoints");
   }
   static instance() {
     if (!eventListenerBreakpointsSidebarPaneInstance) {
@@ -1059,7 +941,10 @@ var EventListenerBreakpointsSidebarPane = class _EventListenerBreakpointsSidebar
   }
   getBreakpointFromPausedDetails(details) {
     const auxData = details.auxData;
-    const domBreakpoint2 = SDK4.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpoint(auxData);
+    if (!auxData) {
+      return null;
+    }
+    const domBreakpoint2 = auxData && SDK4.DOMDebuggerModel.DOMDebuggerManager.instance().resolveEventListenerBreakpoint(auxData);
     if (domBreakpoint2) {
       return domBreakpoint2;
     }

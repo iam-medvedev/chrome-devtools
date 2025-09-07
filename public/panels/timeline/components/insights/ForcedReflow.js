@@ -14,6 +14,9 @@ const { html, nothing } = Lit;
 export class ForcedReflow extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-forced-reflow`;
     internalName = 'forced-reflow';
+    hasAskAiSupport() {
+        return true;
+    }
     mapToRow(data) {
         return {
             values: [this.#linkifyUrl(data.bottomUpData)],

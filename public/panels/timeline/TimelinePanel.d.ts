@@ -106,7 +106,6 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * trace.cafe.
      */
     private canRecord;
-    private shouldEnableFullAskAI;
     private populateToolbar;
     private createSettingsPane;
     private createNetworkConditionsSelectToolbarItem;

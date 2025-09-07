@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as MobileThrottling from '../mobile_throttling/mobile_throttling.js';
@@ -609,7 +610,7 @@ export class SensorsView extends UI.Widget.VBox {
         //
         // |this.boxMatrix| is set in the Device Orientation coordinate space
         // because it represents the phone model we show users and also because the
-        // calculations in UI.Geometry.EulerAngles assume this coordinate space (so
+        // calculations in Geometry.EulerAngles assume this coordinate space (so
         // we apply the rotations in the Z-X'-Y'' order).
         // The CSS transforms, on the other hand, are done in the CSS coordinate
         // space, so we need to convert 2) to 1) while keeping 3) in mind. We can
@@ -629,12 +630,12 @@ export class SensorsView extends UI.Widget.VBox {
         event.consume(true);
         let axis, angle;
         if (event.shiftKey) {
-            axis = new UI.Geometry.Vector(0, 0, 1);
+            axis = new Geometry.Vector(0, 0, 1);
             angle = (mouseMoveVector.x - this.mouseDownVector.x) * ShiftDragOrientationSpeed;
         }
         else {
-            axis = UI.Geometry.crossProduct(this.mouseDownVector, mouseMoveVector);
-            angle = UI.Geometry.calculateAngle(this.mouseDownVector, mouseMoveVector);
+            axis = Geometry.crossProduct(this.mouseDownVector, mouseMoveVector);
+            angle = Geometry.calculateAngle(this.mouseDownVector, mouseMoveVector);
         }
         // See the comment in setBoxOrientation() for a longer explanation about
         // the CSS coordinate space, the Device Orientation coordinate space and
@@ -642,7 +643,7 @@ export class SensorsView extends UI.Widget.VBox {
         // space, while |this.originalBoxMatrix| is rotated and in the Device
         // Orientation coordinate space, which is why we swap Y and Z and invert X.
         const currentMatrix = new DOMMatrixReadOnly().rotateAxisAngle(-axis.x, axis.z, axis.y, angle).multiply(this.originalBoxMatrix);
-        const eulerAngles = UI.Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
+        const eulerAngles = Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
         const newOrientation = new SDK.EmulationModel.DeviceOrientation(eulerAngles.alpha, eulerAngles.beta, eulerAngles.gamma);
         this.setDeviceOrientation(newOrientation, "userDrag" /* DeviceOrientationModificationSource.USER_DRAG */);
         this.setSelectElementLabel(this.orientationSelectElement, NonPresetOptions.Custom);
@@ -667,9 +668,9 @@ export class SensorsView extends UI.Widget.VBox {
         const sphereY = (y - rect.top - rect.height / 2) / radius;
         const sqrSum = sphereX * sphereX + sphereY * sphereY;
         if (sqrSum > 0.5) {
-            return new UI.Geometry.Vector(sphereX, sphereY, 0.5 / Math.sqrt(sqrSum));
+            return new Geometry.Vector(sphereX, sphereY, 0.5 / Math.sqrt(sqrSum));
         }
-        return new UI.Geometry.Vector(sphereX, sphereY, Math.sqrt(1 - sqrSum));
+        return new Geometry.Vector(sphereX, sphereY, Math.sqrt(1 - sqrSum));
     }
     appendTouchControl() {
         const container = this.contentElement.createChild('div', 'touch-section');

@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
@@ -289,7 +290,7 @@ export class SelectWorkspaceDialog extends UI.Widget.VBox {
     static show(onProjectSelected, currentProject) {
         const dialog = new UI.Dialog.Dialog('select-workspace');
         dialog.setAriaLabel(UIStringsNotTranslate.selectFolderAccessibleLabel);
-        dialog.setMaxContentSize(new UI.Geometry.Size(384, 340));
+        dialog.setMaxContentSize(new Geometry.Size(384, 340));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
         new SelectWorkspaceDialog({ dialog, onProjectSelected, currentProject }).show(dialog.contentElement);

@@ -26,8 +26,8 @@ var Extensions_exports = {};
 __export(Extensions_exports, {
   extensionPalette: () => extensionPalette,
   isConsoleTimestampPayloadTrackEntry: () => isConsoleTimestampPayloadTrackEntry,
+  isExtensionEntryObj: () => isExtensionEntryObj,
   isExtensionPayloadMarker: () => isExtensionPayloadMarker,
-  isExtensionPayloadTrackEntry: () => isExtensionPayloadTrackEntry,
   isSyntheticExtensionEntry: () => isSyntheticExtensionEntry,
   isValidExtensionPayload: () => isValidExtensionPayload
 });
@@ -47,7 +47,7 @@ var extensionPalette = [
 function isExtensionPayloadMarker(payload) {
   return payload.dataType === "marker";
 }
-function isExtensionPayloadTrackEntry(payload) {
+function isExtensionEntryObj(payload) {
   const hasTrack = "track" in payload && Boolean(payload.track);
   const validEntryType = payload.dataType === "track-entry" || payload.dataType === void 0;
   return validEntryType && hasTrack;
@@ -56,7 +56,7 @@ function isConsoleTimestampPayloadTrackEntry(payload) {
   return payload.url !== void 0 && payload.description !== void 0;
 }
 function isValidExtensionPayload(payload) {
-  return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload) || isConsoleTimestampPayloadTrackEntry(payload);
+  return isExtensionPayloadMarker(payload) || isExtensionEntryObj(payload) || isConsoleTimestampPayloadTrackEntry(payload);
 }
 function isSyntheticExtensionEntry(entry) {
   return entry.cat === "devtools.extension";

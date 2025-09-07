@@ -64,7 +64,10 @@ export class Renderer {
         if (options?.expand) {
             treeOutline.firstChild()?.expand();
         }
-        return { node: treeOutline.element, tree: treeOutline };
+        return {
+            element: treeOutline.element,
+            forceSelect: treeOutline.forceSelect.bind(treeOutline),
+        };
     }
 }
 //# sourceMappingURL=ElementsTreeOutlineRenderer.js.map

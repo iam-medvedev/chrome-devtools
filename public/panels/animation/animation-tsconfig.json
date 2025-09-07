@@ -57,6 +57,9 @@
       "path": "../../generated/protocol-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

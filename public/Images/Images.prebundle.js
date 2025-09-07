@@ -162,6 +162,7 @@ style.setProperty('--image-file-folder', 'url(\"' + new URL('./src/folder.svg', 
 style.setProperty('--image-file-frame-crossed', 'url(\"' + new URL('./src/frame-crossed.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-frame-icon', 'url(\"' + new URL('./src/frame-icon.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-frame', 'url(\"' + new URL('./src/frame.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-gdp-logo-standalone', 'url(\"' + new URL('./src/gdp-logo-standalone.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gear-filled', 'url(\"' + new URL('./src/gear-filled.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gear', 'url(\"' + new URL('./src/gear.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-gears', 'url(\"' + new URL('./src/gears.svg', import.meta.url).toString() + '\")');
@@ -213,6 +214,7 @@ style.setProperty('--image-file-lighthouse_logo', 'url(\"' + new URL('./src/ligh
 style.setProperty('--image-file-list', 'url(\"' + new URL('./src/list.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-location-on', 'url(\"' + new URL('./src/location-on.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-lock', 'url(\"' + new URL('./src/lock.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-mark-email-unread', 'url(\"' + new URL('./src/mark-email-unread.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-match-case', 'url(\"' + new URL('./src/match-case.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-match-whole-word', 'url(\"' + new URL('./src/match-whole-word.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-memory', 'url(\"' + new URL('./src/memory.svg', import.meta.url).toString() + '\")');
@@ -292,6 +294,7 @@ style.setProperty('--image-file-triangle-down', 'url(\"' + new URL('./src/triang
 style.setProperty('--image-file-triangle-left', 'url(\"' + new URL('./src/triangle-left.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-triangle-right', 'url(\"' + new URL('./src/triangle-right.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-triangle-up', 'url(\"' + new URL('./src/triangle-up.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-trophy', 'url(\"' + new URL('./src/trophy.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-tune', 'url(\"' + new URL('./src/tune.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-undo', 'url(\"' + new URL('./src/undo.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-warning-filled', 'url(\"' + new URL('./src/warning-filled.svg', import.meta.url).toString() + '\")');

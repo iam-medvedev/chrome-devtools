@@ -1,5 +1,6 @@
 import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
+import * as Host from '../../core/host/host.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface AiCodeCompletionSummaryToolbarProps {
     citationsTooltipId: string;
@@ -12,6 +13,7 @@ export interface ViewInput {
     citationsTooltipId: string;
     loading: boolean;
     hasTopBorder: boolean;
+    aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
 }
 export type View = (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare const DEFAULT_SUMMARY_TOOLBAR_VIEW: View;
@@ -22,4 +24,6 @@ export declare class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     updateCitations(citations: string[]): void;
     clearCitations(): void;
     performUpdate(): void;
+    wasShown(): void;
+    willHide(): void;
 }

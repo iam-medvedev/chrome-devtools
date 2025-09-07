@@ -67,6 +67,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {

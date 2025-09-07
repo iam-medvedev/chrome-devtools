@@ -1764,12 +1764,14 @@ var AgentFocus = class _AgentFocus {
       traceMetadata
     });
   }
-  static fromInsight(parsedTrace, insight, insightSetBounds) {
+  static fromInsight(parsedTrace, insights, traceMetadata, insight) {
+    const insightSet = [...insights.values()].filter((insightSet2) => insightSet2.navigation).at(0) ?? null;
     return new _AgentFocus({
       type: "insight",
       parsedTrace,
-      insight,
-      insightSetBounds
+      insightSet,
+      traceMetadata,
+      insight
     });
   }
   static fromCallTree(callTree) {
@@ -1980,86 +1982,6 @@ async function domNodesForBackendIds(frameId, nodeIds) {
   return await domModel.pushNodesByBackendIdsToFrontend(nodeIds) || /* @__PURE__ */ new Map();
 }
 
-// gen/front_end/panels/timeline/utils/EventsSerializer.js
-var EventsSerializer_exports = {};
-__export(EventsSerializer_exports, {
-  EventsSerializer: () => EventsSerializer
-});
-import * as Trace7 from "./../../../models/trace/trace.js";
-var EventsSerializer = class _EventsSerializer {
-  #modifiedProfileCallByKey = /* @__PURE__ */ new Map();
-  keyForEvent(event) {
-    if (Trace7.Types.Events.isProfileCall(event)) {
-      return `${"p"}-${event.pid}-${event.tid}-${Trace7.Types.Events.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
-    }
-    if (Trace7.Types.Events.isLegacyTimelineFrame(event)) {
-      return `${"l"}-${event.index}`;
-    }
-    const rawEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
-    const key = Trace7.Types.Events.isSyntheticBased(event) ? `${"s"}-${rawEvents.indexOf(event.rawSourceEvent)}` : `${"r"}-${rawEvents.indexOf(event)}`;
-    if (key.length < 3) {
-      return null;
-    }
-    return key;
-  }
-  eventForKey(key, parsedTrace) {
-    const eventValues = Trace7.Types.File.traceEventKeyToValues(key);
-    if (_EventsSerializer.isProfileCallKey(eventValues)) {
-      return this.#getModifiedProfileCallByKeyValues(eventValues, parsedTrace);
-    }
-    if (_EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
-      const event = parsedTrace.Frames.frames.at(eventValues.rawIndex);
-      if (!event) {
-        throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
-      }
-      return event;
-    }
-    if (_EventsSerializer.isSyntheticEventKey(eventValues)) {
-      const syntheticEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
-      const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
-      if (!syntheticEvent) {
-        throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
-      }
-      return syntheticEvent;
-    }
-    if (_EventsSerializer.isRawEventKey(eventValues)) {
-      const rawEvents = Trace7.Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
-      return rawEvents[eventValues.rawIndex];
-    }
-    throw new Error(`Unknown trace event serializable key values: ${eventValues.join("-")}`);
-  }
-  static isProfileCallKey(key) {
-    return key.type === "p";
-  }
-  static isLegacyTimelineFrameKey(key) {
-    return key.type === "l";
-  }
-  static isRawEventKey(key) {
-    return key.type === "r";
-  }
-  static isSyntheticEventKey(key) {
-    return key.type === "s";
-  }
-  #getModifiedProfileCallByKeyValues(key, parsedTrace) {
-    const cacheResult = this.#modifiedProfileCallByKey.get(key);
-    if (cacheResult) {
-      return cacheResult;
-    }
-    const profileCallsInThread = parsedTrace.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
-    if (!profileCallsInThread) {
-      throw new Error(`Unknown profile call serializable key: ${key}`);
-    }
-    const match = profileCallsInThread?.find((e) => {
-      return e.sampleIndex === key.sampleIndex && e.nodeId === key.protocol;
-    });
-    if (!match) {
-      throw new Error(`Unknown profile call serializable key: ${JSON.stringify(key)}`);
-    }
-    this.#modifiedProfileCallByKey.set(key, match);
-    return match;
-  }
-};
-
 // gen/front_end/panels/timeline/utils/FreshRecording.js
 var FreshRecording_exports = {};
 __export(FreshRecording_exports, {
@@ -2205,7 +2127,7 @@ __export(IgnoreList_exports, {
   isIgnoreListedEntry: () => isIgnoreListedEntry
 });
 import * as i18n5 from "./../../../core/i18n/i18n.js";
-import * as Trace8 from "./../../../models/trace/trace.js";
+import * as Trace7 from "./../../../models/trace/trace.js";
 import * as Workspace3 from "./../../../models/workspace/workspace.js";
 var UIStrings3 = {
   /**
@@ -2240,7 +2162,7 @@ function getUrlAndIgnoreListOptions(entry) {
   return { url, ignoreListOptions };
 }
 function isIgnoreListedEntry(entry) {
-  if (!Trace8.Types.Events.isProfileCall(entry)) {
+  if (!Trace7.Types.Events.isProfileCall(entry)) {
     return false;
   }
   const { url, ignoreListOptions } = getUrlAndIgnoreListOptions(entry);
@@ -2250,7 +2172,7 @@ function isIgnoreListedURL(url, options) {
   return Workspace3.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
 }
 function getIgnoredReasonString(entry) {
-  if (!Trace8.Types.Events.isProfileCall(entry)) {
+  if (!Trace7.Types.Events.isProfileCall(entry)) {
     console.warn("Ignore list feature should only support ProfileCall.");
     return "";
   }
@@ -2281,14 +2203,14 @@ __export(ImageCache_exports, {
   loadImageForTesting: () => loadImageForTesting,
   preload: () => preload
 });
-import * as Trace9 from "./../../../models/trace/trace.js";
+import * as Trace8 from "./../../../models/trace/trace.js";
 var imageCache = /* @__PURE__ */ new WeakMap();
 var emitter = new EventTarget();
 function getOrQueue(screenshot) {
   if (imageCache.has(screenshot)) {
     return imageCache.get(screenshot) ?? null;
   }
-  const uri = Trace9.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+  const uri = Trace8.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
   loadImage(uri).then((imageOrNull) => {
     imageCache.set(screenshot, imageOrNull);
     emitter.dispatchEvent(new CustomEvent("screenshot-loaded", { detail: { screenshot, image: imageOrNull } }));
@@ -2309,7 +2231,7 @@ function preload(screenshots) {
     if (imageCache.has(screenshot)) {
       return;
     }
-    const uri = Trace9.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+    const uri = Trace8.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
     return loadImage(uri).then((image) => {
       imageCache.set(screenshot, image);
       return;
@@ -2323,40 +2245,10 @@ var loadImageForTesting = loadImage;
 // gen/front_end/panels/timeline/utils/InsightAIContext.js
 var InsightAIContext_exports = {};
 __export(InsightAIContext_exports, {
-  AIQueries: () => AIQueries,
-  insightBounds: () => insightBounds
+  AIQueries: () => AIQueries
 });
-import * as Trace10 from "./../../../models/trace/trace.js";
+import * as Trace9 from "./../../../models/trace/trace.js";
 var AIQueries = class {
-  /**
-   * Returns the set of network requests that occurred within the timeframe of this Insight.
-   */
-  static networkRequests(insight, insightSetBounds, parsedTrace) {
-    const bounds = insightBounds(insight, insightSetBounds);
-    const matchedRequests = [];
-    for (const request of parsedTrace.NetworkRequests.byTime) {
-      if (request.ts > bounds.max) {
-        break;
-      }
-      if (request.args.data.url.startsWith("data:")) {
-        continue;
-      }
-      if (request.ts >= bounds.min && request.ts + request.dur <= bounds.max) {
-        matchedRequests.push(request);
-      }
-    }
-    return matchedRequests;
-  }
-  /**
-   * Returns the single network request. We do not check to filter this by the
-   * bounds of the insight, because the only way that the LLM has found this
-   * request is by first inspecting a summary of relevant network requests for
-   * the given insight. So if it then looks up a request by URL, we know that
-   * is a valid and relevant request.
-   */
-  static networkRequest(parsedTrace, url) {
-    return parsedTrace.NetworkRequests.byTime.find((r) => r.args.data.url === url) ?? null;
-  }
   static findMainThread(navigationId, parsedTrace) {
     let mainThreadPID = null;
     let mainThreadTID = null;
@@ -2367,7 +2259,7 @@ var AIQueries = class {
         mainThreadTID = navigation.tid;
       }
     }
-    const threads = Trace10.Handlers.Threads.threadsInTrace(parsedTrace);
+    const threads = Trace9.Handlers.Threads.threadsInTrace(parsedTrace);
     const thread = threads.find((thread2) => {
       if (mainThreadPID && mainThreadTID) {
         return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
@@ -2388,15 +2280,15 @@ var AIQueries = class {
     if (!events) {
       return null;
     }
-    const visibleEvents = Trace10.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
-    const filter = new Trace10.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
+    const visibleEvents = Trace9.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace9.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
       "SyntheticNetworkRequest"
       /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
     ]));
-    const startTime = Trace10.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace10.Helpers.Timing.microToMilli(bounds.max);
-    return new Trace10.Extras.TraceTree.BottomUpRootNode(events, {
-      textFilter: new Trace10.Extras.TraceFilter.ExclusiveNameFilter([]),
+    const startTime = Trace9.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace9.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace9.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace9.Extras.TraceFilter.ExclusiveNameFilter([]),
       filters: [filter],
       startTime,
       endTime
@@ -2421,14 +2313,6 @@ var AIQueries = class {
     });
   }
   /**
-   * Returns an AI Call Tree representing the activity on the main thread for
-   * the relevant time range of the given insight.
-   */
-  static mainThreadActivityForInsight(insight, insightSetBounds, parsedTrace) {
-    const bounds = insightBounds(insight, insightSetBounds);
-    return this.mainThreadActivityTopDown(insight.navigationId, bounds, parsedTrace);
-  }
-  /**
    * Returns the top longest tasks as AI Call Trees.
    */
   static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
@@ -2450,15 +2334,6 @@ var AIQueries = class {
     }).filter((tree) => !!tree);
   }
 };
-function insightBounds(insight, insightSetBounds) {
-  const overlays = insight.createOverlays?.() ?? [];
-  const windows = overlays.map(Trace10.Helpers.Timing.traceWindowFromOverlay).filter((bounds) => !!bounds);
-  const overlaysBounds = Trace10.Helpers.Timing.combineTraceWindowsMicro(windows);
-  if (overlaysBounds) {
-    return overlaysBounds;
-  }
-  return insightSetBounds;
-}
 
 // gen/front_end/panels/timeline/utils/Treemap.js
 var Treemap_exports = {};
@@ -2469,7 +2344,7 @@ __export(Treemap_exports, {
 });
 import * as Common2 from "./../../../core/common/common.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
-import * as Trace11 from "./../../../models/trace/trace.js";
+import * as Trace10 from "./../../../models/trace/trace.js";
 async function toCompressedBase64(string) {
   const compAb = await Common2.Gzip.compress(string);
   const strb64 = await Common2.Base64.encode(compAb);
@@ -2579,7 +2454,7 @@ function createTreemapData(scripts, duplication) {
       continue;
     }
     const name = script.url;
-    const sizes = Trace11.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
+    const sizes = Trace10.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
     let node;
     if (script.sourceMap && sizes && !("errorMessage" in sizes)) {
       const sourcesData = {};
@@ -2588,7 +2463,7 @@ function createTreemapData(scripts, duplication) {
           resourceBytes,
           encodedBytes: void 0
         };
-        const key = Trace11.Extras.ScriptDuplication.normalizeSource(source);
+        const key = Trace10.Extras.ScriptDuplication.normalizeSource(source);
         if (duplication.has(key)) {
           sourceData.duplicatedNormalizedModuleName = key;
         }
@@ -2654,7 +2529,6 @@ export {
   EntryName_exports as EntryName,
   EntryNodes_exports as EntryNodes,
   EntryStyles_exports as EntryStyles,
-  EventsSerializer_exports as EventsSerializer,
   FreshRecording_exports as FreshRecording,
   Helpers_exports as Helpers,
   IgnoreList_exports as IgnoreList,

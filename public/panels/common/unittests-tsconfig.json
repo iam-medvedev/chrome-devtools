@@ -42,6 +42,7 @@
     "../../../../../../front_end/panels/common/AiCodeCompletionDisclaimer.test.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.test.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.test.ts",
+    "../../../../../../front_end/panels/common/BadgeNotification.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"

@@ -43,10 +43,11 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
     // Chrome AI Patch Agent.
     ClientFeature[ClientFeature["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
-    // Chrome AI Assistance Performance Insights Agent.
-    ClientFeature[ClientFeature["CHROME_PERFORMANCE_INSIGHTS_AGENT"] = 13] = "CHROME_PERFORMANCE_INSIGHTS_AGENT";
     // Chrome AI Assistance Performance Agent.
     ClientFeature[ClientFeature["CHROME_PERFORMANCE_FULL_AGENT"] = 24] = "CHROME_PERFORMANCE_FULL_AGENT";
+    // Removed features (for reference).
+    // Chrome AI Assistance Performance Insights Agent.
+    // CHROME_PERFORMANCE_INSIGHTS_AGENT = 13,
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {
@@ -406,6 +407,8 @@ export class HostConfigTracker extends Common.ObjectWrapper.ObjectWrapper {
             this.#aidaAvailability = currentAidaAvailability;
             const config = await new Promise(resolve => InspectorFrontendHostInstance.getHostConfig(resolve));
             Object.assign(Root.Runtime.hostConfig, config);
+            // TODO(crbug.com/442545623): Send `currentAidaAvailability` to the listeners as part of the event so that
+            // `await AidaClient.checkAccessPreconditions()` does not need to be called again in the event handlers.
             this.dispatchEventToListeners("aidaAvailabilityChanged" /* Events.AIDA_AVAILABILITY_CHANGED */);
         }
     }

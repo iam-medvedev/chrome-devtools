@@ -8,6 +8,7 @@ export declare class FontDisplay extends BaseInsightComponent<FontDisplayInsight
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     protected createOverlays(): Trace.Types.Overlays.Overlay[];
     mapToRow(font: Trace.Insights.Models.FontDisplay.RemoteFont): TableDataRow;
     createAggregatedTableRow(remaining: Trace.Insights.Models.FontDisplay.RemoteFont[]): TableDataRow;

@@ -37,7 +37,7 @@ export declare const UIStrings: {
     /**
      * @description top CSS selector when ranked by elapsed time in ms
      */
-    readonly topSelectorElapsedTime: "Top selector elaspsed time";
+    readonly topSelectorElapsedTime: "Top selector elapsed time";
     /**
      * @description top CSS selector when ranked by match attempt
      */
@@ -51,5 +51,6 @@ export type SlowCSSSelectorInsightModel = InsightModel<typeof UIStrings, {
     topSelectorElapsedMs: Types.Events.SelectorTiming | null;
     topSelectorMatchAttempts: Types.Events.SelectorTiming | null;
 }>;
+export declare function isSlowCSSSelectorInsight(model: InsightModel): model is SlowCSSSelectorInsightModel;
 export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): SlowCSSSelectorInsightModel;
 export declare function createOverlays(_: SlowCSSSelectorInsightModel): Types.Overlays.Overlay[];

@@ -936,17 +936,16 @@ export class ConsoleView extends UI.Widget.VBox {
         }
     }
     async onMessageResized(event) {
-        const treeElement = event.data;
-        if (this.pendingBatchResize || !treeElement.treeOutline) {
+        const treeElement = event.data instanceof UI.TreeOutline.TreeElement ? event.data.treeOutline?.element : event.data;
+        if (this.pendingBatchResize || !treeElement) {
             return;
         }
         this.pendingBatchResize = true;
         await Promise.resolve();
-        const treeOutlineElement = treeElement.treeOutline.element;
         this.viewport.setStickToBottom(this.isScrolledToBottom());
         // Scroll, in case mutations moved the element below the visible area.
-        if (treeOutlineElement.offsetHeight <= this.messagesElement.offsetHeight) {
-            treeOutlineElement.scrollIntoViewIfNeeded();
+        if (treeElement.offsetHeight <= this.messagesElement.offsetHeight) {
+            treeElement.scrollIntoViewIfNeeded();
         }
         this.pendingBatchResize = false;
     }

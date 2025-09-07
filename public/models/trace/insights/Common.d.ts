@@ -2,7 +2,7 @@ import * as Protocol from '../../../generated/protocol.js';
 import type * as CrUXManager from '../../crux-manager/crux-manager.js';
 import type * as Handlers from '../handlers/handlers.js';
 import * as Types from '../types/types.js';
-import { type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings } from './types.js';
+import { type InsightModel, type InsightModels, type InsightSet, type InsightSetContext, type MetricSavings } from './types.js';
 export declare function getInsight<InsightName extends keyof InsightModels>(insightName: InsightName, insightSet: InsightSet): InsightModels[InsightName] | null;
 export declare function getLCP(insightSet: InsightSet): {
     value: Types.Timing.Micro;
@@ -68,3 +68,10 @@ export declare function estimateCompressedContentSize(request: Types.Events.Synt
  */
 export declare function estimateCompressionRatioForScript(script: Handlers.ModelHandlers.Scripts.Script): number;
 export declare function calculateDocFirstByteTs(docRequest: Types.Events.SyntheticNetworkRequest): Types.Timing.Micro | null;
+/**
+ * Calculates the trace bounds for the given insight that are relevant.
+ *
+ * Uses the insight's overlays to determine the relevant trace bounds. If there are
+ * no overlays, falls back to the insight set's navigation bounds.
+ */
+export declare function insightBounds(insight: InsightModel, insightSetBounds: Types.Timing.TraceWindowMicro): Types.Timing.TraceWindowMicro;

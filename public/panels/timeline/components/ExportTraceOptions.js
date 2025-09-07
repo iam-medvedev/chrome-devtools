@@ -150,7 +150,7 @@ export class ExportTraceOptions extends HTMLElement {
             horizontalAlignment: "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
             closeButton: false,
             dialogTitle: i18nString(UIStrings.exportTraceOptionsDialogTitle),
-            state: emptyDialog ? "collapsed" /* Dialogs.Dialog.DialogState.COLLAPSED */ : this.#state.dialogState,
+            state: emptyDialog ? "disabled" /* Dialogs.Dialog.DialogState.DISABLED */ : this.#state.dialogState,
         }}>
         <div class='export-trace-options-content'>
           ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox(this.#includeAnnotationsCheckbox, i18nString(UIStrings.includeAnnotations), this.#state.includeAnnotations) : ''}
@@ -171,19 +171,30 @@ export class ExportTraceOptions extends HTMLElement {
         // clang-format on
         Lit.render(output, this.#shadow, { host: this });
     }
-    #onButtonDialogClick() {
+    async #onButtonDialogClick() {
+        // Handles button dialog click. Either expands dialog with options or
+        // directly exports if no options available.
         if (!(this.#state.displayAnnotationsCheckbox || this.#state.displayScriptContentCheckbox ||
             this.#state.displaySourceMapsCheckbox)) {
-            this.#onExportClick();
+            void this.#onExportCallback();
+        }
+        else {
+            this.state = Object.assign({}, this.#state, { dialogState: "expanded" /* Dialogs.Dialog.DialogState.EXPANDED */ });
         }
     }
-    #onExportClick() {
-        void this.#data?.onExport({
+    async #onExportCallback() {
+        // Calls passed onExport function with current settings.
+        await this.#data?.onExport({
             includeScriptContent: this.#state.includeScriptContent,
             includeSourceMaps: this.#state.includeSourceMaps,
             addModifications: this.#state.includeAnnotations
         });
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
+    }
+    async #onExportClick() {
+        // Handles save button click that lived inside the dialog.
+        // Exports trace and collapses dialog.
+        await this.#onExportCallback();
         this.state = Object.assign({}, this.#state, { dialogState: "collapsed" /* Dialogs.Dialog.DialogState.COLLAPSED */ });
     }
 }

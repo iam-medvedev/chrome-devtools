@@ -15,7 +15,7 @@ import { Events as TabbedPaneEvents, TabbedPane } from './TabbedPane.js';
 import { ToolbarMenuButton } from './Toolbar.js';
 import { createTextChild, PromotionManager } from './UIUtils.js';
 import viewContainersStyles from './viewContainers.css.js';
-import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensionForID, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
+import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, } from './ViewRegistration.js';
 import { VBox } from './Widget.js';
 const UIStrings = {
     /**
@@ -830,5 +830,5 @@ class StackLocation extends Location {
         }
     }
 }
-export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, getRegisteredViewExtensionForID, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, };
+export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, };
 //# sourceMappingURL=ViewManager.js.map

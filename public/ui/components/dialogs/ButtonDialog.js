@@ -18,8 +18,14 @@ export class ButtonDialog extends HTMLElement {
         if (!this.#dialog) {
             throw new Error('Dialog not found');
         }
-        this.state = "expanded" /* DialogState.EXPANDED */;
-        void this.#dialog.setDialogVisible(true);
+        if (this.#data?.state === "disabled" /* DialogState.DISABLED */) {
+            // If dialog is disabled start teardown process to return
+            // focus to caller.
+            void this.#dialog.setDialogVisible(false);
+        }
+        else {
+            void this.#dialog.setDialogVisible(true);
+        }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #closeDialog(evt) {
@@ -27,7 +33,6 @@ export class ButtonDialog extends HTMLElement {
             throw new Error('Dialog not found');
         }
         void this.#dialog.setDialogVisible(false);
-        this.state = "expanded" /* DialogState.EXPANDED */;
         if (evt) {
             evt.stopImmediatePropagation();
         }

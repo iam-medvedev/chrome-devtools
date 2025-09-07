@@ -5,6 +5,7 @@
 import '../../ui/components/adorners/adorners.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
@@ -255,7 +256,7 @@ const DEFAULT_VIEW = (input, _output, target) => {
 export class AutofillView extends UI.Widget.VBox {
     #view;
     #autofillManager;
-    #autoOpenViewSetting;
+    #autoOpenViewSetting = Common.Settings.Settings.instance().createSetting('auto-open-autofill-view-on-event', true);
     #showTestAddressesInAutofillMenuSetting;
     #address = '';
     #filledFields = [];
@@ -265,8 +266,6 @@ export class AutofillView extends UI.Widget.VBox {
         super({ useShadowDom: true });
         this.#autofillManager = autofillManager;
         this.#view = view;
-        this.#autoOpenViewSetting =
-            Common.Settings.Settings.instance().createSetting('auto-open-autofill-view-on-event', true);
         this.#showTestAddressesInAutofillMenuSetting =
             Common.Settings.Settings.instance().createSetting('show-test-addresses-in-autofill-menu-on-event', false);
     }
@@ -296,12 +295,17 @@ export class AutofillView extends UI.Widget.VBox {
         this.#highlightedMatches = [];
         this.requestUpdate();
     }
-    #onAddressFormFilled({ data }) {
-        ({
-            address: this.#address,
-            filledFields: this.#filledFields,
-            matches: this.#matches,
-        } = data);
+    async #onAddressFormFilled({ data }) {
+        if (this.#autoOpenViewSetting.get()) {
+            await UI.ViewManager.ViewManager.instance().showView('autofill-view');
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AutofillReceivedAndTabAutoOpened);
+        }
+        else {
+            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AutofillReceived);
+        }
+        this.#address = data.address;
+        this.#filledFields = data.filledFields;
+        this.#matches = data.matches;
         this.#highlightedMatches = [];
         this.requestUpdate();
     }

@@ -3,7 +3,7 @@ import * as Common from '../../core/common/common.js';
 import * as Root from '../../core/root/root.js';
 import { type ToolbarItem } from './Toolbar.js';
 import type { TabbedViewLocation, View, ViewLocation } from './View.js';
-import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensionForID, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';
+import { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, type ViewRegistration } from './ViewRegistration.js';
 import { VBox, type Widget } from './Widget.js';
 export declare const defaultOptionsForTabs: {
     security: boolean;
@@ -96,4 +96,4 @@ declare class Location {
     removeView(_view: View): void;
     isViewVisible(_view: View): boolean;
 }
-export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, getRegisteredViewExtensionForID, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, ViewRegistration, };
+export { getLocalizedViewLocationCategory, getRegisteredLocationResolvers, getRegisteredViewExtensions, maybeRemoveViewExtension, registerLocationResolver, registerViewExtension, resetViewRegistration, ViewLocationCategory, ViewLocationValues, ViewPersistence, ViewRegistration, };

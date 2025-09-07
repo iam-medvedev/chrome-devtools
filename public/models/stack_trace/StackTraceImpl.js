@@ -55,12 +55,14 @@ export class FrameImpl {
     name;
     line;
     column;
-    constructor(url, uiSourceCode, name, line, column) {
+    missingDebugInfo;
+    constructor(url, uiSourceCode, name, line, column, missingDebugInfo) {
         this.url = url;
         this.uiSourceCode = uiSourceCode;
         this.name = name;
         this.line = line;
         this.column = column;
+        this.missingDebugInfo = missingDebugInfo;
     }
 }
 //# sourceMappingURL=StackTraceImpl.js.map

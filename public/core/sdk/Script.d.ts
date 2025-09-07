@@ -6,7 +6,7 @@ import { type DebuggerModel, Location } from './DebuggerModel.js';
 import type { FrameAssociated } from './FrameAssociated.js';
 import type { PageResourceLoadInitiator } from './PageResourceLoader.js';
 import type { ExecutionContext } from './RuntimeModel.js';
-import type { SourceMap } from './SourceMap.js';
+import type { DebugId, SourceMap } from './SourceMap.js';
 import type { Target } from './Target.js';
 export declare class Script implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
     #private;
@@ -68,6 +68,7 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
      */
     sourceMap(): SourceMap | undefined;
     createPageResourceLoadInitiator(): PageResourceLoadInitiator;
+    debugId(): DebugId | null;
     /**
      * Translates the `rawLocation` from line and column number in terms of what V8 understands
      * to a script relative location. Specifically this means that for inline `<script>`'s

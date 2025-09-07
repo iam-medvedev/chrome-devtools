@@ -2,10 +2,12 @@ import '../../../ui/components/chrome_link/chrome_link.js';
 import '../../../ui/components/settings/settings.js';
 import '../../../ui/components/tooltips/tooltips.js';
 import type * as Common from '../../../core/common/common.js';
-import type * as Host from '../../../core/host/host.js';
+import * as Host from '../../../core/host/host.js';
 export interface SyncSectionData {
     syncInfo: Host.InspectorFrontendHostAPI.SyncInformation;
     syncSetting: Common.Settings.Setting<boolean>;
+    receiveBadgesSetting: Common.Settings.Setting<boolean>;
+    gdpProfile?: Host.GdpClient.Profile;
 }
 export declare class SyncSection extends HTMLElement {
     #private;

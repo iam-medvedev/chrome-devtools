@@ -21,10 +21,10 @@ describeWithMockConnection('MainMenuItem', () => {
         createTarget({ parentTarget: tabTaget, subtype: 'prerender' });
         createTarget({ parentTarget: tabTaget });
         sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')
-            .withArgs(sinon.match(/inspector-main.focus-debuggee|main.toggle-drawer/))
+            .withArgs(sinon.match(/inspector-main.focus-debuggee|main.toggle-drawer|freestyler.main-menu/))
             .returns(true);
         sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'getAction')
-            .withArgs(sinon.match(/inspector-main.focus-debuggee|main.toggle-drawer/))
+            .withArgs(sinon.match(/inspector-main.focus-debuggee|main.toggle-drawer|freestyler.main-menu/))
             .returns(sinon.createStubInstance(UI.ActionRegistration.Action));
     });
     it('includes focus debuggee item when undocked', async () => {

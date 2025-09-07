@@ -78,8 +78,8 @@ export class ExtensionTrackAppender {
         return event.name;
     }
     setPopoverInfo(event, info) {
-        info.title = Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.args.tooltipText ?
-            event.args.tooltipText :
+        info.title = Trace.Types.Extensions.isSyntheticExtensionEntry(event) && event.devtoolsObj.tooltipText ?
+            event.devtoolsObj.tooltipText :
             this.titleForEvent(event);
         info.formattedTime = getDurationString(event.dur);
     }

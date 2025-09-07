@@ -113,7 +113,6 @@ export interface ViewRegistration {
     featurePromotionId?: string;
 }
 export declare function registerViewExtension(registration: ViewRegistration): void;
-export declare function getRegisteredViewExtensionForID(id: string): PreRegisteredView | undefined;
 export declare function getRegisteredViewExtensions(): PreRegisteredView[];
 export declare function maybeRemoveViewExtension(viewId: string): boolean;
 export declare function registerLocationResolver(registration: LocationResolverRegistration): void;

@@ -1,6 +1,6 @@
+import type * as NetworkTimeCalculator from '../../../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../../../models/trace/trace.js';
-import type { Calculator } from './TimelineGrid.js';
-export declare class TimelineOverviewCalculator implements Calculator {
+export declare class TimelineOverviewCalculator implements NetworkTimeCalculator.Calculator {
     #private;
     private navStartTimes?;
     /**

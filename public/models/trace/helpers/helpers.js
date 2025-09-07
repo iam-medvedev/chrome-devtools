@@ -996,16 +996,16 @@ function canBuildTreesFromEvents(events) {
 function buildTrackDataFromExtensionEntries(extensionEntries, extensionTrackData, entryToNode) {
   const dataByTrack = /* @__PURE__ */ new Map();
   for (const entry of extensionEntries) {
-    const key = entry.args.trackGroup || `track-name-${entry.args.track}`;
+    const key = entry.devtoolsObj.trackGroup || `track-name-${entry.devtoolsObj.track}`;
     const batchedData = Platform3.MapUtilities.getWithDefault(dataByTrack, key, () => ({
-      name: entry.args.trackGroup || entry.args.track,
-      isTrackGroup: Boolean(entry.args.trackGroup),
-      entriesByTrack: { [entry.args.track]: [] }
+      name: entry.devtoolsObj.trackGroup || entry.devtoolsObj.track,
+      isTrackGroup: Boolean(entry.devtoolsObj.trackGroup),
+      entriesByTrack: { [entry.devtoolsObj.track]: [] }
     }));
-    if (!batchedData.entriesByTrack[entry.args.track]) {
-      batchedData.entriesByTrack[entry.args.track] = [];
+    if (!batchedData.entriesByTrack[entry.devtoolsObj.track]) {
+      batchedData.entriesByTrack[entry.devtoolsObj.track] = [];
     }
-    const entriesInTrack = batchedData.entriesByTrack[entry.args.track];
+    const entriesInTrack = batchedData.entriesByTrack[entry.devtoolsObj.track];
     entriesInTrack.push(entry);
   }
   for (const trackData of dataByTrack.values()) {

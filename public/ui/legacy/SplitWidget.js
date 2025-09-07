@@ -30,481 +30,459 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import { Constraints } from './Geometry.js';
 import { SimpleResizerWidget } from './ResizerWidget.js';
 import splitWidgetStyles from './splitWidget.css.js';
 import { ToolbarButton } from './Toolbar.js';
 import { Widget, WidgetElement } from './Widget.js';
 import { ZoomManager } from './ZoomManager.js';
 export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
-    sidebarElementInternal;
-    mainElement;
-    resizerElementInternal;
-    resizerElementSize;
-    resizerWidget;
-    defaultSidebarWidth;
-    defaultSidebarHeight;
-    constraintsInDip;
-    resizeStartSizeDIP;
+    #sidebarElement;
+    #mainElement;
+    #resizerElement;
+    #resizerElementSize = null;
+    #resizerWidget;
+    #defaultSidebarWidth;
+    #defaultSidebarHeight;
+    #constraintsInDip;
+    #resizeStartSizeDIP = 0;
+    // TODO: Used in WebTests
     setting;
-    totalSizeCSS;
-    totalSizeOtherDimensionCSS;
-    mainWidgetInternal;
-    sidebarWidgetInternal;
-    animationFrameHandle;
-    animationCallback;
-    showSidebarButtonTitle;
-    hideSidebarButtonTitle;
-    shownSidebarString;
-    hiddenSidebarString;
-    showHideSidebarButton;
-    isVerticalInternal;
-    sidebarMinimized;
-    detaching;
-    sidebarSizeDIP;
-    savedSidebarSizeDIP;
-    secondIsSidebar;
-    shouldSaveShowMode;
-    savedVerticalMainSize;
-    savedHorizontalMainSize;
-    showModeInternal;
-    savedShowMode;
-    autoAdjustOrientation;
+    #totalSizeCSS = 0;
+    #totalSizeOtherDimensionCSS = 0;
+    #mainWidget = null;
+    #sidebarWidget = null;
+    #animationFrameHandle = 0;
+    #animationCallback = null;
+    #showSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
+    #hideSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
+    #shownSidebarString = Common.UIString.LocalizedEmptyString;
+    #hiddenSidebarString = Common.UIString.LocalizedEmptyString;
+    #showHideSidebarButton = null;
+    #isVertical = false;
+    #sidebarMinimized = false;
+    #detaching = false;
+    #sidebarSizeDIP = -1;
+    #savedSidebarSizeDIP;
+    #secondIsSidebar = false;
+    #shouldSaveShowMode = false;
+    #savedVerticalMainSize = null;
+    #savedHorizontalMainSize = null;
+    #showMode = "Both" /* ShowMode.BOTH */;
+    #savedShowMode;
+    #autoAdjustOrientation = false;
     constructor(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, constraintsInDip, element) {
         super(element, { useShadowDom: true });
         this.element.classList.add('split-widget');
         this.registerRequiredCSS(splitWidgetStyles);
         this.contentElement.classList.add('shadow-split-widget');
-        this.sidebarElementInternal =
+        this.#sidebarElement =
             this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-sidebar vbox');
-        this.mainElement =
+        this.#mainElement =
             this.contentElement.createChild('div', 'shadow-split-widget-contents shadow-split-widget-main vbox');
-        const mainSlot = this.mainElement.createChild('slot');
+        const mainSlot = this.#mainElement.createChild('slot');
         mainSlot.name = 'main';
         mainSlot.addEventListener('slotchange', (_) => {
             const assignedNode = mainSlot.assignedNodes()[0];
             const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-            if (widget && widget !== this.mainWidgetInternal) {
+            if (widget && widget !== this.#mainWidget) {
                 this.setMainWidget(widget);
             }
         });
-        const sidebarSlot = this.sidebarElementInternal.createChild('slot');
+        const sidebarSlot = this.#sidebarElement.createChild('slot');
         sidebarSlot.name = 'sidebar';
         sidebarSlot.addEventListener('slotchange', (_) => {
             const assignedNode = sidebarSlot.assignedNodes()[0];
             const widget = assignedNode instanceof HTMLElement ? Widget.getOrCreateWidget(assignedNode) : null;
-            if (widget && widget !== this.sidebarWidgetInternal) {
+            if (widget && widget !== this.#sidebarWidget) {
                 this.setSidebarWidget(widget);
             }
         });
-        this.resizerElementInternal = this.contentElement.createChild('div', 'shadow-split-widget-resizer');
-        this.resizerElementSize = null;
-        this.resizerWidget = new SimpleResizerWidget();
-        this.resizerWidget.setEnabled(true);
-        this.resizerWidget.addEventListener("ResizeStart" /* ResizerWidgetEvents.RESIZE_START */, this.onResizeStart, this);
-        this.resizerWidget.addEventListener("ResizeUpdatePosition" /* ResizerWidgetEvents.RESIZE_UPDATE_POSITION */, this.onResizeUpdate, this);
-        this.resizerWidget.addEventListener("ResizeEnd" /* ResizerWidgetEvents.RESIZE_END */, this.onResizeEnd, this);
-        this.defaultSidebarWidth = defaultSidebarWidth || 200;
-        this.defaultSidebarHeight = defaultSidebarHeight || this.defaultSidebarWidth;
-        this.constraintsInDip = Boolean(constraintsInDip);
-        this.resizeStartSizeDIP = 0;
+        this.#resizerElement = this.contentElement.createChild('div', 'shadow-split-widget-resizer');
+        this.#resizerWidget = new SimpleResizerWidget();
+        this.#resizerWidget.setEnabled(true);
+        this.#resizerWidget.addEventListener("ResizeStart" /* ResizerWidgetEvents.RESIZE_START */, this.#onResizeStart, this);
+        this.#resizerWidget.addEventListener("ResizeUpdatePosition" /* ResizerWidgetEvents.RESIZE_UPDATE_POSITION */, this.#onResizeUpdate, this);
+        this.#resizerWidget.addEventListener("ResizeEnd" /* ResizerWidgetEvents.RESIZE_END */, this.#onResizeEnd, this);
+        this.#defaultSidebarWidth = defaultSidebarWidth || 200;
+        this.#defaultSidebarHeight = defaultSidebarHeight || this.#defaultSidebarWidth;
+        this.#constraintsInDip = Boolean(constraintsInDip);
         this.setting = settingName ? Common.Settings.Settings.instance().createSetting(settingName, {}) : null;
-        this.totalSizeCSS = 0;
-        this.totalSizeOtherDimensionCSS = 0;
-        this.mainWidgetInternal = null;
-        this.sidebarWidgetInternal = null;
-        this.animationFrameHandle = 0;
-        this.animationCallback = null;
-        this.showSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
-        this.hideSidebarButtonTitle = Common.UIString.LocalizedEmptyString;
-        this.shownSidebarString = Common.UIString.LocalizedEmptyString;
-        this.hiddenSidebarString = Common.UIString.LocalizedEmptyString;
-        this.showHideSidebarButton = null;
-        this.isVerticalInternal = false;
-        this.sidebarMinimized = false;
-        this.detaching = false;
-        this.sidebarSizeDIP = -1;
-        this.savedSidebarSizeDIP = this.sidebarSizeDIP;
-        this.secondIsSidebar = false;
-        this.shouldSaveShowMode = false;
-        this.savedVerticalMainSize = null;
-        this.savedHorizontalMainSize = null;
+        this.#savedSidebarSizeDIP = this.#sidebarSizeDIP;
         this.setSecondIsSidebar(secondIsSidebar);
-        this.innerSetVertical(isVertical);
-        this.showModeInternal = "Both" /* ShowMode.BOTH */;
-        this.savedShowMode = this.showModeInternal;
+        this.#setVertical(isVertical);
+        this.#savedShowMode = this.#showMode;
         // Should be called after isVertical has the right value.
-        this.installResizer(this.resizerElementInternal);
-        this.autoAdjustOrientation = false;
+        this.installResizer(this.#resizerElement);
     }
     isVertical() {
-        return this.isVerticalInternal;
+        return this.#isVertical;
     }
     setVertical(isVertical) {
-        if (this.isVerticalInternal === isVertical) {
+        if (this.#isVertical === isVertical) {
             return;
         }
-        this.innerSetVertical(isVertical);
+        this.#setVertical(isVertical);
         if (this.isShowing()) {
-            this.updateLayout();
+            this.#updateLayout();
         }
     }
     setAutoAdjustOrientation(autoAdjustOrientation) {
-        this.autoAdjustOrientation = autoAdjustOrientation;
-        this.maybeAutoAdjustOrientation();
+        this.#autoAdjustOrientation = autoAdjustOrientation;
+        this.#maybeAutoAdjustOrientation();
     }
-    innerSetVertical(isVertical) {
+    #setVertical(isVertical) {
         this.contentElement.classList.toggle('vbox', !isVertical);
         this.contentElement.classList.toggle('hbox', isVertical);
-        this.isVerticalInternal = isVertical;
-        this.resizerElementSize = null;
-        this.sidebarSizeDIP = -1;
-        this.restoreSidebarSizeFromSettings();
-        if (this.shouldSaveShowMode) {
-            this.restoreAndApplyShowModeFromSettings();
+        this.#isVertical = isVertical;
+        this.#resizerElementSize = null;
+        this.#sidebarSizeDIP = -1;
+        this.#restoreSidebarSizeFromSettings();
+        if (this.#shouldSaveShowMode) {
+            this.#restoreAndApplyShowModeFromSettings();
         }
-        this.updateShowHideSidebarButton();
+        this.#updateShowHideSidebarButton();
         // FIXME: reverse SplitWidget.isVertical meaning.
-        this.resizerWidget.setVertical(!isVertical);
+        this.#resizerWidget.setVertical(!isVertical);
         this.invalidateConstraints();
     }
-    updateLayout(animate) {
-        this.totalSizeCSS = 0; // Lazy update.
-        this.totalSizeOtherDimensionCSS = 0;
+    #updateLayout(animate) {
+        this.#totalSizeCSS = 0; // Lazy update.
+        this.#totalSizeOtherDimensionCSS = 0;
         // Remove properties that might affect total size calculation.
-        this.mainElement.style.removeProperty('width');
-        this.mainElement.style.removeProperty('height');
-        this.sidebarElementInternal.style.removeProperty('width');
-        this.sidebarElementInternal.style.removeProperty('height');
-        this.innerSetSidebarSizeDIP(this.preferredSidebarSizeDIP(), Boolean(animate));
+        this.#mainElement.style.removeProperty('width');
+        this.#mainElement.style.removeProperty('height');
+        this.#sidebarElement.style.removeProperty('width');
+        this.#sidebarElement.style.removeProperty('height');
+        this.#setSidebarSizeDIP(this.#preferredSidebarSizeDIP(), Boolean(animate));
     }
     setMainWidget(widget) {
-        if (this.mainWidgetInternal === widget) {
+        if (this.#mainWidget === widget) {
             return;
         }
         this.suspendInvalidations();
-        if (this.mainWidgetInternal) {
-            this.mainWidgetInternal.detach();
+        if (this.#mainWidget) {
+            this.#mainWidget.detach();
         }
-        this.mainWidgetInternal = widget;
+        this.#mainWidget = widget;
         if (widget) {
             widget.element.slot = 'main';
-            if (this.showModeInternal === "OnlyMain" /* ShowMode.ONLY_MAIN */ || this.showModeInternal === "Both" /* ShowMode.BOTH */) {
+            if (this.#showMode === "OnlyMain" /* ShowMode.ONLY_MAIN */ || this.#showMode === "Both" /* ShowMode.BOTH */) {
                 widget.show(this.element);
             }
         }
         this.resumeInvalidations();
     }
     setSidebarWidget(widget) {
-        if (this.sidebarWidgetInternal === widget) {
+        if (this.#sidebarWidget === widget) {
             return;
         }
         this.suspendInvalidations();
-        if (this.sidebarWidgetInternal) {
-            this.sidebarWidgetInternal.detach();
+        if (this.#sidebarWidget) {
+            this.#sidebarWidget.detach();
         }
-        this.sidebarWidgetInternal = widget;
+        this.#sidebarWidget = widget;
         if (widget) {
             widget.element.slot = 'sidebar';
-            if (this.showModeInternal === "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */ || this.showModeInternal === "Both" /* ShowMode.BOTH */) {
+            if (this.#showMode === "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */ || this.#showMode === "Both" /* ShowMode.BOTH */) {
                 widget.show(this.element);
             }
         }
         this.resumeInvalidations();
     }
     mainWidget() {
-        return this.mainWidgetInternal;
+        return this.#mainWidget;
     }
     sidebarWidget() {
-        return this.sidebarWidgetInternal;
+        return this.#sidebarWidget;
     }
     sidebarElement() {
-        return this.sidebarElementInternal;
+        return this.#sidebarElement;
     }
     childWasDetached(widget) {
-        if (this.detaching) {
+        if (this.#detaching) {
             return;
         }
-        if (this.mainWidgetInternal === widget) {
-            this.mainWidgetInternal = null;
+        if (this.#mainWidget === widget) {
+            this.#mainWidget = null;
         }
-        if (this.sidebarWidgetInternal === widget) {
-            this.sidebarWidgetInternal = null;
+        if (this.#sidebarWidget === widget) {
+            this.#sidebarWidget = null;
         }
         this.invalidateConstraints();
     }
     isSidebarSecond() {
-        return this.secondIsSidebar;
+        return this.#secondIsSidebar;
     }
     enableShowModeSaving() {
-        this.shouldSaveShowMode = true;
-        this.restoreAndApplyShowModeFromSettings();
+        this.#shouldSaveShowMode = true;
+        this.#restoreAndApplyShowModeFromSettings();
     }
     showMode() {
-        return this.showModeInternal;
+        return this.#showMode;
     }
     sidebarIsShowing() {
-        return this.showModeInternal !== "OnlyMain" /* ShowMode.ONLY_MAIN */;
+        return this.#showMode !== "OnlyMain" /* ShowMode.ONLY_MAIN */;
     }
     setSecondIsSidebar(secondIsSidebar) {
-        if (secondIsSidebar === this.secondIsSidebar) {
+        if (secondIsSidebar === this.#secondIsSidebar) {
             return;
         }
-        this.secondIsSidebar = secondIsSidebar;
-        if (!this.mainWidgetInternal?.shouldHideOnDetach()) {
+        this.#secondIsSidebar = secondIsSidebar;
+        if (!this.#mainWidget?.shouldHideOnDetach()) {
             if (secondIsSidebar) {
-                this.contentElement.insertBefore(this.mainElement, this.sidebarElementInternal);
+                this.contentElement.insertBefore(this.#mainElement, this.#sidebarElement);
             }
             else {
-                this.contentElement.insertBefore(this.mainElement, this.resizerElementInternal);
+                this.contentElement.insertBefore(this.#mainElement, this.#resizerElement);
             }
         }
-        else if (!this.sidebarWidgetInternal?.shouldHideOnDetach()) {
+        else if (!this.#sidebarWidget?.shouldHideOnDetach()) {
             if (secondIsSidebar) {
-                this.contentElement.insertBefore(this.sidebarElementInternal, this.resizerElementInternal);
+                this.contentElement.insertBefore(this.#sidebarElement, this.#resizerElement);
             }
             else {
-                this.contentElement.insertBefore(this.sidebarElementInternal, this.mainElement);
+                this.contentElement.insertBefore(this.#sidebarElement, this.#mainElement);
             }
         }
         else {
             console.error('Could not swap split widget side. Both children widgets contain iframes.');
-            this.secondIsSidebar = !secondIsSidebar;
+            this.#secondIsSidebar = !secondIsSidebar;
         }
     }
     resizerElement() {
-        return this.resizerElementInternal;
+        return this.#resizerElement;
     }
     hideMain(animate) {
-        this.showOnly(this.sidebarWidgetInternal, this.mainWidgetInternal, this.sidebarElementInternal, this.mainElement, animate);
-        this.updateShowMode("OnlySidebar" /* ShowMode.ONLY_SIDEBAR */);
+        this.#showOnly(this.#sidebarWidget, this.#mainWidget, this.#sidebarElement, this.#mainElement, animate);
+        this.#updateShowMode("OnlySidebar" /* ShowMode.ONLY_SIDEBAR */);
     }
     hideSidebar(animate) {
-        this.showOnly(this.mainWidgetInternal, this.sidebarWidgetInternal, this.mainElement, this.sidebarElementInternal, animate);
-        this.updateShowMode("OnlyMain" /* ShowMode.ONLY_MAIN */);
+        this.#showOnly(this.#mainWidget, this.#sidebarWidget, this.#mainElement, this.#sidebarElement, animate);
+        this.#updateShowMode("OnlyMain" /* ShowMode.ONLY_MAIN */);
     }
     setSidebarMinimized(minimized) {
-        this.sidebarMinimized = minimized;
+        this.#sidebarMinimized = minimized;
         this.invalidateConstraints();
     }
     isSidebarMinimized() {
-        return this.sidebarMinimized;
+        return this.#sidebarMinimized;
     }
-    showOnly(sideToShow, sideToHide, shadowToShow, shadowToHide, animate) {
-        this.cancelAnimation();
+    #showOnly(sideToShow, sideToHide, shadowToShow, shadowToHide, animate) {
+        this.#cancelAnimation();
         function callback() {
             if (sideToShow) {
                 // Make sure main is first in the children list.
-                if (sideToShow === this.mainWidgetInternal) {
-                    this.mainWidgetInternal.show(this.element, this.sidebarWidgetInternal ? this.sidebarWidgetInternal.element : null);
+                if (sideToShow === this.#mainWidget) {
+                    this.#mainWidget.show(this.element, this.#sidebarWidget ? this.#sidebarWidget.element : null);
                 }
-                else if (this.sidebarWidgetInternal) {
-                    this.sidebarWidgetInternal.show(this.element);
+                else if (this.#sidebarWidget) {
+                    this.#sidebarWidget.show(this.element);
                 }
             }
             if (sideToHide) {
-                this.detaching = true;
+                this.#detaching = true;
                 sideToHide.detach();
-                this.detaching = false;
+                this.#detaching = false;
             }
-            this.resizerElementInternal.classList.add('hidden');
+            this.#resizerElement.classList.add('hidden');
             shadowToShow.classList.remove('hidden');
             shadowToShow.classList.add('maximized');
             shadowToHide.classList.add('hidden');
             shadowToHide.classList.remove('maximized');
-            this.removeAllLayoutProperties();
+            this.#removeAllLayoutProperties();
             this.doResize();
             this.showFinishedForTest();
         }
         if (animate) {
-            this.animate(true, callback.bind(this));
+            this.#animate(true, callback.bind(this));
         }
         else {
             callback.call(this);
         }
-        this.sidebarSizeDIP = -1;
+        this.#sidebarSizeDIP = -1;
         this.setResizable(false);
     }
     showFinishedForTest() {
         // This method is sniffed in tests.
     }
-    removeAllLayoutProperties() {
-        this.sidebarElementInternal.style.removeProperty('flexBasis');
-        this.mainElement.style.removeProperty('width');
-        this.mainElement.style.removeProperty('height');
-        this.sidebarElementInternal.style.removeProperty('width');
-        this.sidebarElementInternal.style.removeProperty('height');
-        this.resizerElementInternal.style.removeProperty('left');
-        this.resizerElementInternal.style.removeProperty('right');
-        this.resizerElementInternal.style.removeProperty('top');
-        this.resizerElementInternal.style.removeProperty('bottom');
-        this.resizerElementInternal.style.removeProperty('margin-left');
-        this.resizerElementInternal.style.removeProperty('margin-right');
-        this.resizerElementInternal.style.removeProperty('margin-top');
-        this.resizerElementInternal.style.removeProperty('margin-bottom');
+    #removeAllLayoutProperties() {
+        this.#sidebarElement.style.removeProperty('flexBasis');
+        this.#mainElement.style.removeProperty('width');
+        this.#mainElement.style.removeProperty('height');
+        this.#sidebarElement.style.removeProperty('width');
+        this.#sidebarElement.style.removeProperty('height');
+        this.#resizerElement.style.removeProperty('left');
+        this.#resizerElement.style.removeProperty('right');
+        this.#resizerElement.style.removeProperty('top');
+        this.#resizerElement.style.removeProperty('bottom');
+        this.#resizerElement.style.removeProperty('margin-left');
+        this.#resizerElement.style.removeProperty('margin-right');
+        this.#resizerElement.style.removeProperty('margin-top');
+        this.#resizerElement.style.removeProperty('margin-bottom');
     }
     showBoth(animate) {
-        if (this.showModeInternal === "Both" /* ShowMode.BOTH */) {
+        if (this.#showMode === "Both" /* ShowMode.BOTH */) {
             animate = false;
         }
-        this.cancelAnimation();
-        this.mainElement.classList.remove('maximized', 'hidden');
-        this.sidebarElementInternal.classList.remove('maximized', 'hidden');
-        this.resizerElementInternal.classList.remove('hidden');
+        this.#cancelAnimation();
+        this.#mainElement.classList.remove('maximized', 'hidden');
+        this.#sidebarElement.classList.remove('maximized', 'hidden');
+        this.#resizerElement.classList.remove('hidden');
         this.setResizable(true);
         // Make sure main is the first in the children list.
         this.suspendInvalidations();
-        if (this.sidebarWidgetInternal) {
-            this.sidebarWidgetInternal.show(this.element);
+        if (this.#sidebarWidget) {
+            this.#sidebarWidget.show(this.element);
         }
-        if (this.mainWidgetInternal) {
-            this.mainWidgetInternal.show(this.element, this.sidebarWidgetInternal ? this.sidebarWidgetInternal.element : null);
+        if (this.#mainWidget) {
+            this.#mainWidget.show(this.element, this.#sidebarWidget ? this.#sidebarWidget.element : null);
         }
         this.resumeInvalidations();
         // Order widgets in DOM properly.
-        this.setSecondIsSidebar(this.secondIsSidebar);
-        this.sidebarSizeDIP = -1;
-        this.updateShowMode("Both" /* ShowMode.BOTH */);
-        this.updateLayout(animate);
+        this.setSecondIsSidebar(this.#secondIsSidebar);
+        this.#sidebarSizeDIP = -1;
+        this.#updateShowMode("Both" /* ShowMode.BOTH */);
+        this.#updateLayout(animate);
     }
     setResizable(resizable) {
-        this.resizerWidget.setEnabled(resizable);
+        this.#resizerWidget.setEnabled(resizable);
     }
     // Currently unused
     forceSetSidebarWidth(width) {
-        this.defaultSidebarWidth = width;
-        this.savedSidebarSizeDIP = width;
-        this.updateLayout();
+        this.#defaultSidebarWidth = width;
+        this.#savedSidebarSizeDIP = width;
+        this.#updateLayout();
     }
     isResizable() {
-        return this.resizerWidget.isEnabled();
+        return this.#resizerWidget.isEnabled();
     }
     setSidebarSize(size) {
         const sizeDIP = ZoomManager.instance().cssToDIP(size);
-        this.savedSidebarSizeDIP = sizeDIP;
-        this.saveSetting();
-        this.innerSetSidebarSizeDIP(sizeDIP, false, true);
+        this.#savedSidebarSizeDIP = sizeDIP;
+        this.#saveSetting();
+        this.#setSidebarSizeDIP(sizeDIP, false, true);
     }
     sidebarSize() {
-        const sizeDIP = Math.max(0, this.sidebarSizeDIP);
+        const sizeDIP = Math.max(0, this.#sidebarSizeDIP);
         return ZoomManager.instance().dipToCSS(sizeDIP);
     }
     totalSize() {
-        const sizeDIP = Math.max(0, this.totalSizeDIP());
+        const sizeDIP = Math.max(0, this.#totalSizeDIP());
         return ZoomManager.instance().dipToCSS(sizeDIP);
     }
     /**
      * Returns total size in DIP.
      */
-    totalSizeDIP() {
-        if (!this.totalSizeCSS) {
-            this.totalSizeCSS = this.isVerticalInternal ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
-            this.totalSizeOtherDimensionCSS =
-                this.isVerticalInternal ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
+    #totalSizeDIP() {
+        if (!this.#totalSizeCSS) {
+            this.#totalSizeCSS = this.#isVertical ? this.contentElement.offsetWidth : this.contentElement.offsetHeight;
+            this.#totalSizeOtherDimensionCSS =
+                this.#isVertical ? this.contentElement.offsetHeight : this.contentElement.offsetWidth;
         }
-        return ZoomManager.instance().cssToDIP(this.totalSizeCSS);
+        return ZoomManager.instance().cssToDIP(this.#totalSizeCSS);
     }
-    updateShowMode(showMode) {
-        this.showModeInternal = showMode;
-        this.saveShowModeToSettings();
-        this.updateShowHideSidebarButton();
+    #updateShowMode(showMode) {
+        this.#showMode = showMode;
+        this.#saveShowModeToSettings();
+        this.#updateShowHideSidebarButton();
         this.dispatchEventToListeners("ShowModeChanged" /* Events.SHOW_MODE_CHANGED */, showMode);
         this.invalidateConstraints();
     }
-    innerSetSidebarSizeDIP(sizeDIP, animate, userAction) {
-        if (this.showModeInternal !== "Both" /* ShowMode.BOTH */ || !this.isShowing()) {
+    #setSidebarSizeDIP(sizeDIP, animate, userAction) {
+        if (this.#showMode !== "Both" /* ShowMode.BOTH */ || !this.isShowing()) {
             return;
         }
-        sizeDIP = this.applyConstraints(sizeDIP, userAction);
-        if (this.sidebarSizeDIP === sizeDIP) {
+        sizeDIP = this.#applyConstraints(sizeDIP, userAction);
+        if (this.#sidebarSizeDIP === sizeDIP) {
             return;
         }
-        if (!this.resizerElementSize) {
-            this.resizerElementSize =
-                this.isVerticalInternal ? this.resizerElementInternal.offsetWidth : this.resizerElementInternal.offsetHeight;
+        if (!this.#resizerElementSize) {
+            this.#resizerElementSize =
+                this.#isVertical ? this.#resizerElement.offsetWidth : this.#resizerElement.offsetHeight;
         }
         // Invalidate layout below.
-        this.removeAllLayoutProperties();
-        // this.totalSizeDIP is available below since we successfully applied constraints.
+        this.#removeAllLayoutProperties();
+        // this.#totalSizeDIP is available below since we successfully applied constraints.
         const roundSizeCSS = Math.round(ZoomManager.instance().dipToCSS(sizeDIP));
         const sidebarSizeValue = roundSizeCSS + 'px';
-        const mainSizeValue = (this.totalSizeCSS - roundSizeCSS) + 'px';
-        this.sidebarElementInternal.style.flexBasis = sidebarSizeValue;
+        const mainSizeValue = (this.#totalSizeCSS - roundSizeCSS) + 'px';
+        this.#sidebarElement.style.flexBasis = sidebarSizeValue;
         // Make both sides relayout boundaries.
-        if (this.isVerticalInternal) {
-            this.sidebarElementInternal.style.width = sidebarSizeValue;
-            this.mainElement.style.width = mainSizeValue;
-            this.sidebarElementInternal.style.height = this.totalSizeOtherDimensionCSS + 'px';
-            this.mainElement.style.height = this.totalSizeOtherDimensionCSS + 'px';
+        if (this.#isVertical) {
+            this.#sidebarElement.style.width = sidebarSizeValue;
+            this.#mainElement.style.width = mainSizeValue;
+            this.#sidebarElement.style.height = this.#totalSizeOtherDimensionCSS + 'px';
+            this.#mainElement.style.height = this.#totalSizeOtherDimensionCSS + 'px';
         }
         else {
-            this.sidebarElementInternal.style.height = sidebarSizeValue;
-            this.mainElement.style.height = mainSizeValue;
-            this.sidebarElementInternal.style.width = this.totalSizeOtherDimensionCSS + 'px';
-            this.mainElement.style.width = this.totalSizeOtherDimensionCSS + 'px';
+            this.#sidebarElement.style.height = sidebarSizeValue;
+            this.#mainElement.style.height = mainSizeValue;
+            this.#sidebarElement.style.width = this.#totalSizeOtherDimensionCSS + 'px';
+            this.#mainElement.style.width = this.#totalSizeOtherDimensionCSS + 'px';
         }
         // Position resizer.
-        if (this.isVerticalInternal) {
-            if (this.secondIsSidebar) {
-                this.resizerElementInternal.style.right = sidebarSizeValue;
-                this.resizerElementInternal.style.marginRight = -this.resizerElementSize / 2 + 'px';
+        if (this.#isVertical) {
+            if (this.#secondIsSidebar) {
+                this.#resizerElement.style.right = sidebarSizeValue;
+                this.#resizerElement.style.marginRight = -this.#resizerElementSize / 2 + 'px';
             }
             else {
-                this.resizerElementInternal.style.left = sidebarSizeValue;
-                this.resizerElementInternal.style.marginLeft = -this.resizerElementSize / 2 + 'px';
+                this.#resizerElement.style.left = sidebarSizeValue;
+                this.#resizerElement.style.marginLeft = -this.#resizerElementSize / 2 + 'px';
             }
         }
-        else if (this.secondIsSidebar) {
-            this.resizerElementInternal.style.bottom = sidebarSizeValue;
-            this.resizerElementInternal.style.marginBottom = -this.resizerElementSize / 2 + 'px';
+        else if (this.#secondIsSidebar) {
+            this.#resizerElement.style.bottom = sidebarSizeValue;
+            this.#resizerElement.style.marginBottom = -this.#resizerElementSize / 2 + 'px';
         }
         else {
-            this.resizerElementInternal.style.top = sidebarSizeValue;
-            this.resizerElementInternal.style.marginTop = -this.resizerElementSize / 2 + 'px';
+            this.#resizerElement.style.top = sidebarSizeValue;
+            this.#resizerElement.style.marginTop = -this.#resizerElementSize / 2 + 'px';
         }
-        this.sidebarSizeDIP = sizeDIP;
+        this.#sidebarSizeDIP = sizeDIP;
         // Force layout.
         if (animate) {
-            this.animate(false);
+            this.#animate(false);
         }
         else {
-            // No need to recalculate this.sidebarSizeDIP and this.totalSizeDIP again.
+            // No need to recalculate this.sidebarSizeDIP and this.#totalSizeDIP again.
             this.doResize();
             this.dispatchEventToListeners("SidebarSizeChanged" /* Events.SIDEBAR_SIZE_CHANGED */, this.sidebarSize());
         }
     }
-    animate(reverse, callback) {
+    #animate(reverse, callback) {
         const animationTime = 50;
-        this.animationCallback = callback || null;
+        this.#animationCallback = callback || null;
         let animatedMarginPropertyName;
-        if (this.isVerticalInternal) {
-            animatedMarginPropertyName = this.secondIsSidebar ? 'margin-right' : 'margin-left';
+        if (this.#isVertical) {
+            animatedMarginPropertyName = this.#secondIsSidebar ? 'margin-right' : 'margin-left';
         }
         else {
-            animatedMarginPropertyName = this.secondIsSidebar ? 'margin-bottom' : 'margin-top';
+            animatedMarginPropertyName = this.#secondIsSidebar ? 'margin-bottom' : 'margin-top';
         }
-        const marginFrom = reverse ? '0' : '-' + ZoomManager.instance().dipToCSS(this.sidebarSizeDIP) + 'px';
-        const marginTo = reverse ? '-' + ZoomManager.instance().dipToCSS(this.sidebarSizeDIP) + 'px' : '0';
+        const marginFrom = reverse ? '0' : '-' + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + 'px';
+        const marginTo = reverse ? '-' + ZoomManager.instance().dipToCSS(this.#sidebarSizeDIP) + 'px' : '0';
         // This order of things is important.
         // 1. Resize main element early and force layout.
         this.contentElement.style.setProperty(animatedMarginPropertyName, marginFrom);
         this.contentElement.style.setProperty('overflow', 'hidden');
         if (!reverse) {
-            suppressUnused(this.mainElement.offsetWidth);
-            suppressUnused(this.sidebarElementInternal.offsetWidth);
+            suppressUnused(this.#mainElement.offsetWidth);
+            suppressUnused(this.#sidebarElement.offsetWidth);
         }
         // 2. Issue onresize to the sidebar element, its size won't change.
-        if (!reverse && this.sidebarWidgetInternal) {
-            this.sidebarWidgetInternal.doResize();
+        if (!reverse && this.#sidebarWidget) {
+            this.#sidebarWidget.doResize();
         }
         // 3. Configure and run animation
         this.contentElement.style.setProperty('transition', animatedMarginPropertyName + ' ' + animationTime + 'ms linear');
         const boundAnimationFrame = animationFrame.bind(this);
         let startTime = null;
         function animationFrame() {
-            this.animationFrameHandle = 0;
+            this.#animationFrameHandle = 0;
             if (!startTime) {
                 // Kick animation on first frame.
                 this.contentElement.style.setProperty(animatedMarginPropertyName, marginTo);
@@ -512,49 +490,49 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             }
             else if (window.performance.now() < startTime + animationTime) {
                 // Process regular animation frame.
-                if (this.mainWidgetInternal) {
-                    this.mainWidgetInternal.doResize();
+                if (this.#mainWidget) {
+                    this.#mainWidget.doResize();
                 }
             }
             else {
                 // Complete animation.
-                this.cancelAnimation();
-                if (this.mainWidgetInternal) {
-                    this.mainWidgetInternal.doResize();
+                this.#cancelAnimation();
+                if (this.#mainWidget) {
+                    this.#mainWidget.doResize();
                 }
                 this.dispatchEventToListeners("SidebarSizeChanged" /* Events.SIDEBAR_SIZE_CHANGED */, this.sidebarSize());
                 return;
             }
-            this.animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
+            this.#animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
         }
-        this.animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
+        this.#animationFrameHandle = this.contentElement.window().requestAnimationFrame(boundAnimationFrame);
     }
-    cancelAnimation() {
+    #cancelAnimation() {
         this.contentElement.style.removeProperty('margin-top');
         this.contentElement.style.removeProperty('margin-right');
         this.contentElement.style.removeProperty('margin-bottom');
         this.contentElement.style.removeProperty('margin-left');
         this.contentElement.style.removeProperty('transition');
         this.contentElement.style.removeProperty('overflow');
-        if (this.animationFrameHandle) {
-            this.contentElement.window().cancelAnimationFrame(this.animationFrameHandle);
-            this.animationFrameHandle = 0;
+        if (this.#animationFrameHandle) {
+            this.contentElement.window().cancelAnimationFrame(this.#animationFrameHandle);
+            this.#animationFrameHandle = 0;
         }
-        if (this.animationCallback) {
-            this.animationCallback();
-            this.animationCallback = null;
+        if (this.#animationCallback) {
+            this.#animationCallback();
+            this.#animationCallback = null;
         }
     }
-    applyConstraints(sidebarSize, userAction) {
-        const totalSize = this.totalSizeDIP();
-        const zoomFactor = this.constraintsInDip ? 1 : ZoomManager.instance().zoomFactor();
-        let constraints = this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+    #applyConstraints(sidebarSize, userAction) {
+        const totalSize = this.#totalSizeDIP();
+        const zoomFactor = this.#constraintsInDip ? 1 : ZoomManager.instance().zoomFactor();
+        let constraints = this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry.Constraints();
         let minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
         if (!minSidebarSize) {
             minSidebarSize = MinPadding;
         }
         minSidebarSize *= zoomFactor;
-        if (this.sidebarMinimized) {
+        if (this.#sidebarMinimized) {
             sidebarSize = minSidebarSize;
         }
         let preferredSidebarSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
@@ -567,7 +545,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             preferredSidebarSize = Math.max(sidebarSize, minSidebarSize);
         }
         preferredSidebarSize += zoomFactor; // 1 css pixel for splitter border.
-        constraints = this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
+        constraints = this.#mainWidget ? this.#mainWidget.constraints() : new Geometry.Constraints();
         let minMainSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
         if (!minMainSize) {
             minMainSize = MinPadding;
@@ -578,7 +556,7 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             preferredMainSize = MinPadding;
         }
         preferredMainSize *= zoomFactor;
-        const savedMainSize = this.isVertical() ? this.savedVerticalMainSize : this.savedHorizontalMainSize;
+        const savedMainSize = this.isVertical() ? this.#savedVerticalMainSize : this.#savedHorizontalMainSize;
         if (savedMainSize !== null) {
             preferredMainSize = Math.min(preferredMainSize, savedMainSize * zoomFactor);
         }
@@ -601,30 +579,30 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         return Math.max(0, totalSize - minMainSize);
     }
     wasShown() {
-        this.forceUpdateLayout();
+        this.#forceUpdateLayout();
         ZoomManager.instance().addEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
     }
     willHide() {
         ZoomManager.instance().removeEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
     }
     onResize() {
-        this.maybeAutoAdjustOrientation();
-        this.updateLayout();
+        this.#maybeAutoAdjustOrientation();
+        this.#updateLayout();
     }
     onLayout() {
-        this.updateLayout();
+        this.#updateLayout();
     }
     calculateConstraints() {
-        if (this.showModeInternal === "OnlyMain" /* ShowMode.ONLY_MAIN */) {
-            return this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
+        if (this.#showMode === "OnlyMain" /* ShowMode.ONLY_MAIN */) {
+            return this.#mainWidget ? this.#mainWidget.constraints() : new Geometry.Constraints();
         }
-        if (this.showModeInternal === "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */) {
-            return this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+        if (this.#showMode === "OnlySidebar" /* ShowMode.ONLY_SIDEBAR */) {
+            return this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry.Constraints();
         }
-        let mainConstraints = this.mainWidgetInternal ? this.mainWidgetInternal.constraints() : new Constraints();
-        let sidebarConstraints = this.sidebarWidgetInternal ? this.sidebarWidgetInternal.constraints() : new Constraints();
+        let mainConstraints = this.#mainWidget ? this.#mainWidget.constraints() : new Geometry.Constraints();
+        let sidebarConstraints = this.#sidebarWidget ? this.#sidebarWidget.constraints() : new Geometry.Constraints();
         const min = MinPadding;
-        if (this.isVerticalInternal) {
+        if (this.#isVertical) {
             mainConstraints = mainConstraints.widthToMax(min).addWidth(1); // 1 for splitter
             sidebarConstraints = sidebarConstraints.widthToMax(min);
             return mainConstraints.addWidth(sidebarConstraints).heightToMax(sidebarConstraints);
@@ -633,10 +611,10 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         sidebarConstraints = sidebarConstraints.heightToMax(min);
         return mainConstraints.widthToMax(sidebarConstraints).addHeight(sidebarConstraints);
     }
-    maybeAutoAdjustOrientation() {
-        if (this.autoAdjustOrientation) {
-            const width = this.isVertical() ? this.totalSizeCSS : this.totalSizeOtherDimensionCSS;
-            const height = this.isVertical() ? this.totalSizeOtherDimensionCSS : this.totalSizeCSS;
+    #maybeAutoAdjustOrientation() {
+        if (this.#autoAdjustOrientation) {
+            const width = this.isVertical() ? this.#totalSizeCSS : this.#totalSizeOtherDimensionCSS;
+            const height = this.isVertical() ? this.#totalSizeOtherDimensionCSS : this.#totalSizeCSS;
             if (width <= 600 && height >= 600) {
                 this.setVertical(false);
             }
@@ -645,37 +623,37 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             }
         }
     }
-    onResizeStart() {
-        this.resizeStartSizeDIP = this.sidebarSizeDIP;
+    #onResizeStart() {
+        this.#resizeStartSizeDIP = this.#sidebarSizeDIP;
     }
-    onResizeUpdate(event) {
+    #onResizeUpdate(event) {
         const offset = event.data.currentPosition - event.data.startPosition;
         const offsetDIP = ZoomManager.instance().cssToDIP(offset);
-        const newSizeDIP = this.secondIsSidebar ? this.resizeStartSizeDIP - offsetDIP : this.resizeStartSizeDIP + offsetDIP;
-        const constrainedSizeDIP = this.applyConstraints(newSizeDIP, true);
-        this.savedSidebarSizeDIP = constrainedSizeDIP;
-        this.saveSetting();
-        this.innerSetSidebarSizeDIP(constrainedSizeDIP, false, true);
+        const newSizeDIP = this.#secondIsSidebar ? this.#resizeStartSizeDIP - offsetDIP : this.#resizeStartSizeDIP + offsetDIP;
+        const constrainedSizeDIP = this.#applyConstraints(newSizeDIP, true);
+        this.#savedSidebarSizeDIP = constrainedSizeDIP;
+        this.#saveSetting();
+        this.#setSidebarSizeDIP(constrainedSizeDIP, false, true);
         if (this.isVertical()) {
-            this.savedVerticalMainSize = this.totalSizeDIP() - this.sidebarSizeDIP;
+            this.#savedVerticalMainSize = this.#totalSizeDIP() - this.#sidebarSizeDIP;
         }
         else {
-            this.savedHorizontalMainSize = this.totalSizeDIP() - this.sidebarSizeDIP;
+            this.#savedHorizontalMainSize = this.#totalSizeDIP() - this.#sidebarSizeDIP;
         }
     }
-    onResizeEnd() {
-        this.resizeStartSizeDIP = 0;
+    #onResizeEnd() {
+        this.#resizeStartSizeDIP = 0;
     }
     hideDefaultResizer(noSplitter) {
-        this.resizerElementInternal.classList.toggle('hidden', Boolean(noSplitter));
-        this.uninstallResizer(this.resizerElementInternal);
-        this.sidebarElementInternal.classList.toggle('no-default-splitter', Boolean(noSplitter));
+        this.#resizerElement.classList.toggle('hidden', Boolean(noSplitter));
+        this.uninstallResizer(this.#resizerElement);
+        this.#sidebarElement.classList.toggle('no-default-splitter', Boolean(noSplitter));
     }
     installResizer(resizerElement) {
-        this.resizerWidget.addElement(resizerElement);
+        this.#resizerWidget.addElement(resizerElement);
     }
     uninstallResizer(resizerElement) {
-        this.resizerWidget.removeElement(resizerElement);
+        this.#resizerWidget.removeElement(resizerElement);
     }
     toggleResizer(resizer, on) {
         if (on) {
@@ -685,31 +663,31 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             this.uninstallResizer(resizer);
         }
     }
-    settingForOrientation() {
+    #settingForOrientation() {
         const state = this.setting ? this.setting.get() : {};
-        const orientationState = this.isVerticalInternal ? state.vertical : state.horizontal;
+        const orientationState = this.#isVertical ? state.vertical : state.horizontal;
         return orientationState ?? null;
     }
-    preferredSidebarSizeDIP() {
-        let size = this.savedSidebarSizeDIP;
+    #preferredSidebarSizeDIP() {
+        let size = this.#savedSidebarSizeDIP;
         if (!size) {
-            size = this.isVerticalInternal ? this.defaultSidebarWidth : this.defaultSidebarHeight;
+            size = this.#isVertical ? this.#defaultSidebarWidth : this.#defaultSidebarHeight;
             // If we have default value in percents, calculate it on first use.
             if (0 < size && size < 1) {
-                size *= this.totalSizeDIP();
+                size *= this.#totalSizeDIP();
             }
         }
         return size;
     }
-    restoreSidebarSizeFromSettings() {
-        const settingForOrientation = this.settingForOrientation();
-        this.savedSidebarSizeDIP = settingForOrientation ? settingForOrientation.size : 0;
+    #restoreSidebarSizeFromSettings() {
+        const settingForOrientation = this.#settingForOrientation();
+        this.#savedSidebarSizeDIP = settingForOrientation ? settingForOrientation.size : 0;
     }
-    restoreAndApplyShowModeFromSettings() {
-        const orientationState = this.settingForOrientation();
-        this.savedShowMode = orientationState?.showMode ? orientationState.showMode : this.showModeInternal;
-        this.showModeInternal = this.savedShowMode;
-        switch (this.savedShowMode) {
+    #restoreAndApplyShowModeFromSettings() {
+        const orientationState = this.#settingForOrientation();
+        this.#savedShowMode = orientationState?.showMode ? orientationState.showMode : this.#showMode;
+        this.#showMode = this.#savedShowMode;
+        switch (this.#savedShowMode) {
             case "Both" /* ShowMode.BOTH */:
                 this.showBoth();
                 break;
@@ -721,21 +699,21 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
                 break;
         }
     }
-    saveShowModeToSettings() {
-        this.savedShowMode = this.showModeInternal;
-        this.saveSetting();
+    #saveShowModeToSettings() {
+        this.#savedShowMode = this.#showMode;
+        this.#saveSetting();
     }
-    saveSetting() {
+    #saveSetting() {
         if (!this.setting) {
             return;
         }
         const state = this.setting.get();
-        const orientationState = (this.isVerticalInternal ? state.vertical : state.horizontal) || {};
-        orientationState.size = this.savedSidebarSizeDIP;
-        if (this.shouldSaveShowMode) {
-            orientationState.showMode = this.savedShowMode;
+        const orientationState = (this.#isVertical ? state.vertical : state.horizontal) || {};
+        orientationState.size = this.#savedSidebarSizeDIP;
+        if (this.#shouldSaveShowMode) {
+            orientationState.showMode = this.#savedShowMode;
         }
-        if (this.isVerticalInternal) {
+        if (this.#isVertical) {
             state.vertical = orientationState;
         }
         else {
@@ -743,48 +721,48 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         }
         this.setting.set(state);
     }
-    forceUpdateLayout() {
+    #forceUpdateLayout() {
         // Force layout even if sidebar size does not change.
-        this.sidebarSizeDIP = -1;
-        this.updateLayout();
+        this.#sidebarSizeDIP = -1;
+        this.#updateLayout();
     }
     onZoomChanged() {
-        this.forceUpdateLayout();
+        this.#forceUpdateLayout();
     }
     createShowHideSidebarButton(showTitle, hideTitle, shownString, hiddenString, jslogContext) {
-        this.showSidebarButtonTitle = showTitle;
-        this.hideSidebarButtonTitle = hideTitle;
-        this.shownSidebarString = shownString;
-        this.hiddenSidebarString = hiddenString;
-        this.showHideSidebarButton = new ToolbarButton('', 'right-panel-open');
-        this.showHideSidebarButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, buttonClicked, this);
+        this.#showSidebarButtonTitle = showTitle;
+        this.#hideSidebarButtonTitle = hideTitle;
+        this.#shownSidebarString = shownString;
+        this.#hiddenSidebarString = hiddenString;
+        this.#showHideSidebarButton = new ToolbarButton('', 'right-panel-open');
+        this.#showHideSidebarButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, buttonClicked, this);
         if (jslogContext) {
-            this.showHideSidebarButton.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context(jslogContext)}`);
+            this.#showHideSidebarButton.element.setAttribute('jslog', `${VisualLogging.toggleSubpane().track({ click: true }).context(jslogContext)}`);
         }
-        this.updateShowHideSidebarButton();
+        this.#updateShowHideSidebarButton();
         function buttonClicked() {
             this.toggleSidebar();
         }
-        return this.showHideSidebarButton;
+        return this.#showHideSidebarButton;
     }
     /**
      * @returns true if this call makes the sidebar visible, and false otherwise.
      */
     toggleSidebar() {
-        if (this.showModeInternal !== "Both" /* ShowMode.BOTH */) {
+        if (this.#showMode !== "Both" /* ShowMode.BOTH */) {
             this.showBoth(true);
-            ARIAUtils.LiveAnnouncer.alert(this.shownSidebarString);
+            ARIAUtils.LiveAnnouncer.alert(this.#shownSidebarString);
             return true;
         }
         this.hideSidebar(true);
-        ARIAUtils.LiveAnnouncer.alert(this.hiddenSidebarString);
+        ARIAUtils.LiveAnnouncer.alert(this.#hiddenSidebarString);
         return false;
     }
-    updateShowHideSidebarButton() {
-        if (!this.showHideSidebarButton) {
+    #updateShowHideSidebarButton() {
+        if (!this.#showHideSidebarButton) {
             return;
         }
-        const sidebarHidden = this.showModeInternal === "OnlyMain" /* ShowMode.ONLY_MAIN */;
+        const sidebarHidden = this.#showMode === "OnlyMain" /* ShowMode.ONLY_MAIN */;
         let glyph = '';
         if (sidebarHidden) {
             glyph = this.isVertical() ? (this.isSidebarSecond() ? 'right-panel-open' : 'left-panel-open') :
@@ -794,8 +772,8 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
             glyph = this.isVertical() ? (this.isSidebarSecond() ? 'right-panel-close' : 'left-panel-close') :
                 (this.isSidebarSecond() ? 'bottom-panel-close' : 'top-panel-close');
         }
-        this.showHideSidebarButton.setGlyph(glyph);
-        this.showHideSidebarButton.setTitle(sidebarHidden ? this.showSidebarButtonTitle : this.hideSidebarButtonTitle);
+        this.#showHideSidebarButton.setGlyph(glyph);
+        this.#showHideSidebarButton.setTitle(sidebarHidden ? this.#showSidebarButtonTitle : this.#hideSidebarButtonTitle);
     }
 }
 export class SplitWidgetElement extends WidgetElement {

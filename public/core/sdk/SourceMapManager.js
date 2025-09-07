@@ -5,6 +5,7 @@ import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import { PageResourceLoader } from './PageResourceLoader.js';
 import { parseSourceMap, SourceMap } from './SourceMap.js';
+import { SourceMapCache } from './SourceMapCache.js';
 import { Type } from './Target.js';
 export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     #target;
@@ -86,7 +87,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
                     this.#attachingClient = null;
                     const initiator = client.createPageResourceLoadInitiator();
                     clientData.sourceMapPromise =
-                        loadSourceMap(sourceMapURL, initiator)
+                        loadSourceMap(sourceMapURL, client.debugId(), initiator)
                             .then(payload => {
                             const sourceMap = new SourceMap(sourceURL, sourceMapURL, payload);
                             if (this.#clientData.get(client) === clientData) {
@@ -148,10 +149,21 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
-export async function loadSourceMap(url, initiator) {
+export async function loadSourceMap(url, debugId, initiator) {
     try {
+        if (debugId) {
+            const cachedSourceMap = await SourceMapCache.instance().get(debugId);
+            if (cachedSourceMap) {
+                return cachedSourceMap;
+            }
+        }
         const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
-        return parseSourceMap(content);
+        const sourceMap = parseSourceMap(content);
+        if ('debugId' in sourceMap && sourceMap.debugId) {
+            // In case something goes wrong with updating the cache, we still want to use the source map.
+            await SourceMapCache.instance().set(sourceMap.debugId, sourceMap).catch();
+        }
+        return sourceMap;
     }
     catch (cause) {
         throw new Error(`Could not load content for ${url}: ${cause.message}`, { cause });
@@ -159,11 +171,10 @@ export async function loadSourceMap(url, initiator) {
 }
 export async function tryLoadSourceMap(url, initiator) {
     try {
-        const { content } = await PageResourceLoader.instance().loadResource(url, initiator);
-        return parseSourceMap(content);
+        return await loadSourceMap(url, null, initiator);
     }
     catch (cause) {
-        console.error(`Could not load content for ${url}: ${cause.message}`, { cause });
+        console.error(cause);
         return null;
     }
 }

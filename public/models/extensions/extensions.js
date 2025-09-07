@@ -1121,7 +1121,7 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
         callback();
         return;
       }
-      objectPropertiesView.element.appendChild(result.node);
+      objectPropertiesView.element.appendChild(result.element);
       callback();
     });
   }

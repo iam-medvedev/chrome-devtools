@@ -1,5 +1,4 @@
 import * as Host from '../../../core/host/host.js';
-import type { TemplateResult } from '../../../ui/lit/lit.js';
 import type * as Workspace from '../../workspace/workspace.js';
 import { AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class FileContext extends ConversationContext<Workspace.UISourceCode.UISourceCode> {
@@ -7,7 +6,6 @@ export declare class FileContext extends ConversationContext<Workspace.UISourceC
     constructor(file: Workspace.UISourceCode.UISourceCode);
     getOrigin(): string;
     getItem(): Workspace.UISourceCode.UISourceCode;
-    getIcon(): TemplateResult;
     getTitle(): string;
     refresh(): Promise<void>;
 }

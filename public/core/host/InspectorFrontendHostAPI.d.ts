@@ -182,6 +182,29 @@ export interface EventTypes {
     [Events.SetUseSoftMenu]: boolean;
     [Events.ShowPanel]: string;
 }
+export type DispatchHttpRequestRequest = {
+    service: string;
+    path: string;
+    method: 'GET';
+    body?: never;
+} | {
+    service: string;
+    path: string;
+    method: 'POST';
+    body?: string;
+};
+interface DispatchHttpRequestSuccessResult {
+    response: string;
+    statusCode: number;
+}
+interface DispatchHttpRequestErrorResult {
+    error: string;
+    detail?: string;
+    netError?: number;
+    netErrorName?: string;
+    statusCode?: number;
+}
+export type DispatchHttpRequestResult = DispatchHttpRequestSuccessResult | DispatchHttpRequestErrorResult;
 export interface InspectorFrontendHostAPI {
     events: Common.EventTarget.EventTarget<EventTypes>;
     connectAutomaticFileSystem(fileSystemPath: Platform.DevToolsPath.RawPathString, fileSystemUUID: string, addIfMissing: boolean, callback: (result: {
@@ -265,6 +288,7 @@ export interface InspectorFrontendHostAPI {
     doAidaConversation: (request: string, streamId: number, cb: (result: DoAidaConversationResult) => void) => void;
     registerAidaClientEvent: (request: string, cb: (result: AidaClientResult) => void) => void;
     aidaCodeComplete: (request: string, cb: (result: AidaCodeCompleteResult) => void) => void;
+    dispatchHttpRequest: (request: DispatchHttpRequestRequest, cb: (result: DispatchHttpRequestResult) => void) => void;
     recordImpression(event: ImpressionEvent): void;
     recordClick(event: ClickEvent): void;
     recordHover(event: HoverEvent): void;
@@ -368,9 +392,9 @@ export declare const enum EnumeratedHistogram {
     SourcesPanelFileOpened = "DevTools.SourcesPanelFileOpened",
     NetworkPanelResponsePreviewOpened = "DevTools.NetworkPanelResponsePreviewOpened",
     TimelineNavigationSettingState = "DevTools.TimelineNavigationSettingState",
-    CSSHintShown = "DevTools.CSSHintShown",
     LighthouseModeRun = "DevTools.LighthouseModeRun",
     LighthouseCategoryUsed = "DevTools.LighthouseCategoryUsed",
     SwatchActivated = "DevTools.SwatchActivated",
     AnimationPlaybackRateChanged = "DevTools.AnimationPlaybackRateChanged"
 }
+export {};

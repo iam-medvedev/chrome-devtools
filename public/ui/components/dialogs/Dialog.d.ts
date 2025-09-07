@@ -65,7 +65,8 @@ export declare const enum DialogVerticalPosition {
 }
 export declare const enum DialogState {
     EXPANDED = "expanded",
-    COLLAPSED = "collapsed"
+    COLLAPSED = "collapsed",
+    DISABLED = "disabled"
 }
 export declare const enum DialogHorizontalAlignment {
     LEFT = "left",

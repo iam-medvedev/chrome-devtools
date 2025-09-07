@@ -1963,12 +1963,14 @@ import * as UI8 from "./../../legacy.js";
 // gen/front_end/ui/legacy/components/source_frame/XMLView.js
 var XMLView_exports = {};
 __export(XMLView_exports, {
-  XMLView: () => XMLView,
-  XMLViewNode: () => XMLViewNode
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  XMLTreeViewModel: () => XMLTreeViewModel,
+  XMLTreeViewNode: () => XMLTreeViewNode,
+  XMLView: () => XMLView
 });
 import * as i18n11 from "./../../../../core/i18n/i18n.js";
-import * as Platform5 from "./../../../../core/platform/platform.js";
 import * as TextUtils8 from "./../../../../models/text_utils/text_utils.js";
+import * as Lit from "./../../../lit/lit.js";
 import * as UI7 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/xmlTree.css.js
@@ -1978,6 +1980,7 @@ var xmlTree_css_default = `/*
  * found in the LICENSE file.
  */
 
+@scope to (devtools-widget > *) {
 .tree-outline ol {
   list-style: none;
   padding: 0;
@@ -1993,37 +1996,38 @@ ol.tree-outline {
   min-height: 12px;
 }
 
-.tree-outline li.shadow-xml-view-close-tag {
+::part(shadow-xml-view-close-tag) {
   margin-left: -16px;
 }
 
-.shadow-xml-view-tag {
+::part(shadow-xml-view-close-tag),::part(shadow-xml-view-tag) {
   color: var(--sys-color-purple);
 }
 
-.shadow-xml-view-comment {
+::part(shadow-xml-view-comment) {
   color: var(--sys-color-green);
 }
 
-.shadow-xml-view-processing-instruction {
+::part(shadow-xml-view-processing-instruction) {
   color: var(--sys-color-green);
 }
 
-.shadow-xml-view-attribute-name {
+::part(shadow-xml-view-attribute-name) {
   color: var(--sys-color-orange);
 }
 
-.shadow-xml-view-attribute-value {
+::part(shadow-xml-view-attribute-value) {
   color: var(--sys-color-blue);
 }
 
-.shadow-xml-view-text {
+::part(shadow-xml-view-text) {
   color: var(--sys-color-on-surface);
   white-space: pre;
 }
 
-.shadow-xml-view-cdata {
+::part(shadow-xml-view-cdata) {
   color: var(--sys-color-on-surface);
+}
 }
 
 /*# sourceURL=${import.meta.resolve("./xmlTree.css")} */`;
@@ -2035,10 +2039,12 @@ var xmlView_css_default = `/*
  * found in the LICENSE file.
  */
 
+@scope to (devtools-widget > *) {
 .shadow-xml-view {
   user-select: text;
   overflow: auto;
-  padding: 2px 4px;
+  padding: 0;
+}
 }
 
 /*# sourceURL=${import.meta.resolve("./xmlView.css")} */`;
@@ -2052,30 +2058,213 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("ui/legacy/components/source_frame/XMLView.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var XMLView = class _XMLView extends UI7.Widget.Widget {
-  treeOutline = new UI7.TreeOutline.TreeOutlineInShadow();
-  searchableView = null;
-  currentSearchFocusIndex = 0;
-  currentSearchTreeElements = [];
-  searchConfig = null;
+var { render, html } = Lit;
+function* attributes(element) {
+  for (let i = 0; i < element.attributes.length; ++i) {
+    const attributeNode = element.attributes.item(i);
+    if (attributeNode) {
+      yield attributeNode;
+    }
+  }
+}
+function hasNonTextChildren(node) {
+  return node.childNodes.length !== node.childTextNodes.length;
+}
+function textView(treeNode, closeTag) {
+  const { node } = treeNode;
+  switch (node.nodeType) {
+    case Node.ELEMENT_NODE:
+      if (node instanceof Element) {
+        const tag = node.tagName;
+        return closeTag ? hasNonTextChildren(node) || node.textContent ? "</" + tag + ">" : "" : `${"<" + tag}${attributes(node).map((attributeNode) => `${"\xA0"}${attributeNode.name}${'="'}${attributeNode.value}${'"'}`).toArray().join("")}${hasNonTextChildren(node) ? "" : node.textContent ? `${">"}${node.textContent}${"</" + tag}` : `${" /"}`}${">"}`;
+      }
+      return "";
+    case Node.TEXT_NODE:
+      return node.nodeValue && !closeTag ? `${node.nodeValue}` : "";
+    case Node.CDATA_SECTION_NODE:
+      return node.nodeValue && !closeTag ? `${"<![CDATA["}${node.nodeValue}${"]]>"}` : "";
+    case Node.PROCESSING_INSTRUCTION_NODE:
+      return node.nodeValue && !closeTag ? `${"<?" + node.nodeName + " " + node.nodeValue + "?>"}` : "";
+    case Node.COMMENT_NODE:
+      return !closeTag ? `${"<!--" + node.nodeValue + "-->"}` : "";
+  }
+  return "";
+}
+function htmlView(treeNode) {
+  const { node } = treeNode;
+  switch (node.nodeType) {
+    case Node.ELEMENT_NODE:
+      if (node instanceof Element) {
+        const tag = node.tagName;
+        return html`<span part='shadow-xml-view-tag'>${"<" + tag}</span>${attributes(node).map((attributeNode) => html`<span part='shadow-xml-view-tag'>${"\xA0"}</span>
+                <span part='shadow-xml-view-attribute-name'>${attributeNode.name}</span>
+                <span part='shadow-xml-view-tag'>${'="'}</span>
+                <span part='shadow-xml-view-attribute-value'>${attributeNode.value}</span>
+                <span part='shadow-xml-view-tag'>${'"'}</span>`)}
+                <span ?hidden=${treeNode.expanded}>${hasNonTextChildren(node) ? html`<span part='shadow-xml-view-tag'>${">"}</span>
+                  <span part='shadow-xml-view-comment'>${"\u2026"}</span>
+                  <span part='shadow-xml-view-tag'>${"</" + tag}</span>` : node.textContent ? html`<span part='shadow-xml-view-tag'>${">"}</span>
+                  <span part='shadow-xml-view-text'>${node.textContent}</span>
+                  <span part='shadow-xml-view-tag'>${"</" + tag}</span>` : html`<span part='shadow-xml-view-tag'>${" /"}</span>`}</span>
+                <span part='shadow-xml-view-tag'>${">"}</span>`;
+      }
+      return Lit.nothing;
+    case Node.TEXT_NODE:
+      return node.nodeValue ? html`<span part='shadow-xml-view-text'>${node.nodeValue}</span>` : Lit.nothing;
+    case Node.CDATA_SECTION_NODE:
+      return node.nodeValue ? html`<span part='shadow-xml-view-cdata'>${"<![CDATA["}</span>
+          <span part='shadow-xml-view-text'>${node.nodeValue}</span>
+          <span part='shadow-xml-view-cdata'>${"]]>"}</span>` : Lit.nothing;
+    case Node.PROCESSING_INSTRUCTION_NODE:
+      return node.nodeValue ? html`<span part='shadow-xml-view-processing-instruction'>${"<?" + node.nodeName + " " + node.nodeValue + "?>"}</span>` : Lit.nothing;
+    case Node.COMMENT_NODE:
+      return html`<span part='shadow-xml-view-comment'>${"<!--" + node.nodeValue + "-->"}</span>`;
+  }
+  return Lit.nothing;
+}
+var DEFAULT_VIEW = (input, output, target) => {
+  function highlight(node, closeTag) {
+    if (!input.search) {
+      return Lit.nothing;
+    }
+    const entries = input.search.getResults(node);
+    const highlights = [];
+    let selected = void 0;
+    for (const entry of entries ?? []) {
+      if (entry.isPostOrderMatch === closeTag) {
+        const range = new TextUtils8.TextRange.SourceRange(entry.match.index, entry.match[0].length);
+        if (entry === input.jumpToNextSearchResult) {
+          selected = range;
+        } else {
+          highlights.push(range);
+        }
+      }
+    }
+    return input.search.highlight(highlights, selected);
+  }
+  function layOutNode(node, populateSubtrees = false) {
+    const onExpand = (event) => input.onExpand(node, event.detail.expanded);
+    return html`
+    <li
+      ${highlight(
+      node,
+      /* closeTag=*/
+      false
+    )}
+      role="treeitem"
+      ?selected=${input.jumpToNextSearchResult?.node === node}
+      @expand=${onExpand}>
+        ${htmlView(node)}${populateSubtrees || input.search ? subtree(node) : Lit.nothing}
+    </li>`;
+  }
+  function subtree(treeNode) {
+    const children2 = treeNode.children();
+    if (children2.length === 0) {
+      return Lit.nothing;
+    }
+    return html`<ul role="group" ?hidden=${!treeNode.expanded}>
+      ${children2.map((child) => layOutNode(child, treeNode.expanded))}
+      ${treeNode.node instanceof Element ? html`<li
+                  ${highlight(
+      treeNode,
+      /* closeTag=*/
+      true
+    )}
+                  role="treeitem"><span part='shadow-xml-view-close-tag'>${"</" + treeNode.node.tagName + ">"}</span
+                 ></li>` : Lit.nothing}
+        </ul>`;
+  }
+  render(
+    html`
+    <style>${xmlView_css_default}</style>
+    <style>${xmlTree_css_default}</style>
+    <devtools-tree
+      class="shadow-xml-view source-code"
+      .template=${html`
+        <ul role="tree">
+          ${input.xml.children().map((node) => layOutNode(
+      node,
+      /* populateSubtrees=*/
+      true
+    ))}
+        </ul>`}
+      ></devtools-tree>`,
+    // clang-format on
+    target
+  );
+};
+function* children(xmlNode) {
+  if (!xmlNode || !hasNonTextChildren(xmlNode)) {
+    return;
+  }
+  let node = xmlNode?.firstChild;
+  while (node) {
+    const currentNode = node;
+    node = node.nextSibling;
+    const nodeType = currentNode.nodeType;
+    if (nodeType === Node.TEXT_NODE && currentNode.nodeValue?.match(/\s+/)) {
+      continue;
+    }
+    if (nodeType !== Node.ELEMENT_NODE && nodeType !== Node.TEXT_NODE && nodeType !== Node.CDATA_SECTION_NODE && nodeType !== Node.PROCESSING_INSTRUCTION_NODE && nodeType !== Node.COMMENT_NODE) {
+      continue;
+    }
+    yield currentNode;
+  }
+}
+var XMLTreeViewNode = class _XMLTreeViewNode {
+  node;
+  expanded = false;
+  #children;
+  constructor(node) {
+    this.node = node;
+  }
+  children() {
+    if (!this.#children) {
+      this.#children = children(this.node).map((node) => new _XMLTreeViewNode(node)).toArray();
+    }
+    return this.#children;
+  }
+  match(regex, closeTag) {
+    return textView(this, closeTag).matchAll(regex);
+  }
+};
+var XMLTreeViewModel = class {
+  xmlDocument;
+  root;
   constructor(parsedXML) {
-    super({ useShadowDom: true });
-    this.registerRequiredCSS(xmlView_css_default);
-    this.contentElement.classList.add("shadow-xml-view", "source-code");
-    this.treeOutline.registerRequiredCSS(xmlTree_css_default);
-    this.contentElement.appendChild(this.treeOutline.element);
-    XMLViewNode.populate(this.treeOutline, parsedXML, this);
-    const firstChild = this.treeOutline.firstChild();
-    if (firstChild) {
-      firstChild.select(
-        true,
-        false
-        /* selectedByUser */
-      );
+    this.xmlDocument = parsedXML;
+    this.root = new XMLTreeViewNode(parsedXML);
+    this.root.expanded = true;
+  }
+};
+var XMLView = class _XMLView extends UI7.Widget.Widget {
+  searchableView = null;
+  #search;
+  #treeViewModel;
+  #view;
+  #nextJump;
+  constructor(target, view = DEFAULT_VIEW) {
+    super(target, { jslog: "xml-view", classes: ["shadow-xml-view", "source-code"] });
+    this.#view = view;
+  }
+  set parsedXML(parsedXML) {
+    if (this.#treeViewModel?.xmlDocument !== parsedXML) {
+      this.#treeViewModel = new XMLTreeViewModel(parsedXML);
+      this.requestUpdate();
+    }
+  }
+  performUpdate() {
+    if (this.#treeViewModel) {
+      const onExpand = (node, expanded) => {
+        node.expanded = expanded;
+        this.requestUpdate();
+      };
+      this.#view({ xml: this.#treeViewModel.root, onExpand, search: this.#search, jumpToNextSearchResult: this.#nextJump }, {}, this.contentElement);
     }
   }
   static createSearchableView(parsedXML) {
-    const xmlView = new _XMLView(parsedXML);
+    const xmlView = new _XMLView();
+    xmlView.parsedXML = parsedXML;
     const searchableView = new UI7.SearchableView.SearchableView(xmlView, null);
     searchableView.setPlaceholder(i18nString6(UIStrings6.find));
     xmlView.searchableView = searchableView;
@@ -2101,265 +2290,39 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
     }
     return parsedXML;
   }
-  jumpToMatch(index, shouldJump) {
-    if (!this.searchConfig) {
-      return;
-    }
-    const { regex } = this.searchConfig.toSearchRegex(true);
-    const previousFocusElement = this.currentSearchTreeElements[this.currentSearchFocusIndex];
-    if (previousFocusElement) {
-      previousFocusElement.setSearchRegex(regex);
-    }
-    const newFocusElement = this.currentSearchTreeElements[index];
-    if (newFocusElement) {
-      this.updateSearchIndex(index);
-      if (shouldJump) {
-        newFocusElement.reveal(true);
-      }
-      newFocusElement.setSearchRegex(regex, UI7.UIUtils.highlightedCurrentSearchResultClassName);
-    } else {
-      this.updateSearchIndex(0);
-    }
-  }
-  updateSearchCount(count) {
-    if (!this.searchableView) {
-      return;
-    }
-    this.searchableView.updateSearchMatchesCount(count);
-  }
-  updateSearchIndex(index) {
-    this.currentSearchFocusIndex = index;
-    if (!this.searchableView) {
-      return;
-    }
-    this.searchableView.updateCurrentMatchIndex(index);
-  }
-  innerPerformSearch(shouldJump, jumpBackwards) {
-    if (!this.searchConfig) {
-      return;
-    }
-    let newIndex = this.currentSearchFocusIndex;
-    const previousSearchFocusElement = this.currentSearchTreeElements[newIndex];
-    this.innerSearchCanceled();
-    this.currentSearchTreeElements = [];
-    const { regex } = this.searchConfig.toSearchRegex(true);
-    for (let element = this.treeOutline.rootElement(); element; element = element.traverseNextTreeElement(false)) {
-      if (!(element instanceof XMLViewNode)) {
-        continue;
-      }
-      const hasMatch = element.setSearchRegex(regex);
-      if (hasMatch) {
-        this.currentSearchTreeElements.push(element);
-      }
-      if (previousSearchFocusElement === element) {
-        const currentIndex = this.currentSearchTreeElements.length - 1;
-        if (hasMatch || jumpBackwards) {
-          newIndex = currentIndex;
-        } else {
-          newIndex = currentIndex + 1;
-        }
-      }
-    }
-    this.updateSearchCount(this.currentSearchTreeElements.length);
-    if (!this.currentSearchTreeElements.length) {
-      this.updateSearchIndex(0);
-      return;
-    }
-    newIndex = Platform5.NumberUtilities.mod(newIndex, this.currentSearchTreeElements.length);
-    this.jumpToMatch(newIndex, shouldJump);
-  }
-  innerSearchCanceled() {
-    for (let element = this.treeOutline.rootElement(); element; element = element.traverseNextTreeElement(false)) {
-      if (!(element instanceof XMLViewNode)) {
-        continue;
-      }
-      element.revertHighlightChanges();
-    }
-    this.updateSearchCount(0);
-    this.updateSearchIndex(0);
-  }
   onSearchCanceled() {
-    this.searchConfig = null;
-    this.currentSearchTreeElements = [];
-    this.innerSearchCanceled();
+    this.#search = void 0;
+    this.searchableView?.updateSearchMatchesCount(0);
+    this.searchableView?.updateCurrentMatchIndex(0);
   }
   performSearch(searchConfig, shouldJump, jumpBackwards) {
-    this.searchConfig = searchConfig;
-    this.innerPerformSearch(shouldJump, jumpBackwards);
+    if (!this.#treeViewModel || !this.searchableView) {
+      return;
+    }
+    const { regex } = searchConfig.toSearchRegex(true);
+    if (!this.#search) {
+      this.#search = new UI7.TreeOutline.TreeSearch();
+    }
+    this.#search.search(this.#treeViewModel.root, jumpBackwards ?? false, (node, closeTag) => node.match(regex, closeTag).map((match, matchIndexInNode) => ({ node, matchIndexInNode, isPostOrderMatch: closeTag, match })).toArray());
+    this.#nextJump = shouldJump ? this.#search.currentMatch() : void 0;
+    this.#search.updateSearchableView(this.searchableView);
+    this.requestUpdate();
   }
   jumpToNextSearchResult() {
-    if (!this.currentSearchTreeElements.length) {
-      return;
-    }
-    const newIndex = Platform5.NumberUtilities.mod(this.currentSearchFocusIndex + 1, this.currentSearchTreeElements.length);
-    this.jumpToMatch(newIndex, true);
+    this.#nextJump = this.#search?.next();
+    this.searchableView && this.#search?.updateSearchableView(this.searchableView);
+    this.requestUpdate();
   }
   jumpToPreviousSearchResult() {
-    if (!this.currentSearchTreeElements.length) {
-      return;
-    }
-    const newIndex = Platform5.NumberUtilities.mod(this.currentSearchFocusIndex - 1, this.currentSearchTreeElements.length);
-    this.jumpToMatch(newIndex, true);
+    this.#nextJump = this.#search?.prev();
+    this.searchableView && this.#search?.updateSearchableView(this.searchableView);
+    this.requestUpdate();
   }
   supportsCaseSensitiveSearch() {
     return true;
   }
   supportsRegexSearch() {
     return true;
-  }
-};
-var XMLViewNode = class _XMLViewNode extends UI7.TreeOutline.TreeElement {
-  node;
-  closeTag;
-  highlightChanges;
-  xmlView;
-  constructor(node, closeTag, xmlView) {
-    super("", !closeTag && "childElementCount" in node && Boolean(node.childElementCount));
-    this.node = node;
-    this.closeTag = closeTag;
-    this.selectable = true;
-    this.highlightChanges = [];
-    this.xmlView = xmlView;
-    this.updateTitle();
-  }
-  static populate(root, xmlNode, xmlView) {
-    if (!(xmlNode instanceof Node)) {
-      return;
-    }
-    let node = xmlNode.firstChild;
-    while (node) {
-      const currentNode = node;
-      node = node.nextSibling;
-      const nodeType = currentNode.nodeType;
-      if (nodeType === 3 && currentNode.nodeValue?.match(/\s+/)) {
-        continue;
-      }
-      if (nodeType !== 1 && nodeType !== 3 && nodeType !== 4 && nodeType !== 7 && nodeType !== 8) {
-        continue;
-      }
-      root.appendChild(new _XMLViewNode(currentNode, false, xmlView));
-    }
-  }
-  setSearchRegex(regex, additionalCssClassName) {
-    this.revertHighlightChanges();
-    if (!regex) {
-      return false;
-    }
-    if (this.closeTag && this.parent && !this.parent.expanded) {
-      return false;
-    }
-    regex.lastIndex = 0;
-    let cssClasses = UI7.UIUtils.highlightedSearchResultClassName;
-    if (additionalCssClassName) {
-      cssClasses += " " + additionalCssClassName;
-    }
-    if (!this.listItemElement.textContent) {
-      return false;
-    }
-    const content = this.listItemElement.textContent.replace(/\xA0/g, " ");
-    let match = regex.exec(content);
-    const ranges = [];
-    while (match) {
-      ranges.push(new TextUtils8.TextRange.SourceRange(match.index, match[0].length));
-      match = regex.exec(content);
-    }
-    if (ranges.length) {
-      UI7.UIUtils.highlightRangesWithStyleClass(this.listItemElement, ranges, cssClasses, this.highlightChanges);
-    }
-    return Boolean(this.highlightChanges.length);
-  }
-  revertHighlightChanges() {
-    UI7.UIUtils.revertDomChanges(this.highlightChanges);
-    this.highlightChanges = [];
-  }
-  updateTitle() {
-    const node = this.node;
-    if (!("nodeType" in node)) {
-      return;
-    }
-    switch (node.nodeType) {
-      case 1: {
-        if (node instanceof Element) {
-          const tag = node.tagName;
-          if (this.closeTag) {
-            this.setTitle(["</" + tag + ">", "shadow-xml-view-tag"]);
-            return;
-          }
-          const titleItems = ["<" + tag, "shadow-xml-view-tag"];
-          const attributes = node.attributes;
-          for (let i = 0; i < attributes.length; ++i) {
-            const attributeNode = attributes.item(i);
-            if (!attributeNode) {
-              return;
-            }
-            titleItems.push("\xA0", "shadow-xml-view-tag", attributeNode.name, "shadow-xml-view-attribute-name", '="', "shadow-xml-view-tag", attributeNode.value, "shadow-xml-view-attribute-value", '"', "shadow-xml-view-tag");
-          }
-          if (!this.expanded) {
-            if (node.childElementCount) {
-              titleItems.push(">", "shadow-xml-view-tag", "\u2026", "shadow-xml-view-comment", "</" + tag, "shadow-xml-view-tag");
-            } else if (node.textContent) {
-              titleItems.push(">", "shadow-xml-view-tag", node.textContent, "shadow-xml-view-text", "</" + tag, "shadow-xml-view-tag");
-            } else {
-              titleItems.push(" /", "shadow-xml-view-tag");
-            }
-          }
-          titleItems.push(">", "shadow-xml-view-tag");
-          this.setTitle(titleItems);
-          return;
-        }
-        return;
-      }
-      case 3: {
-        if (node.nodeValue) {
-          this.setTitle([node.nodeValue, "shadow-xml-view-text"]);
-        }
-        return;
-      }
-      case 4: {
-        if (node.nodeValue) {
-          this.setTitle([
-            "<![CDATA[",
-            "shadow-xml-view-cdata",
-            node.nodeValue,
-            "shadow-xml-view-text",
-            "]]>",
-            "shadow-xml-view-cdata"
-          ]);
-        }
-        return;
-      }
-      case 7: {
-        if (node.nodeValue) {
-          this.setTitle(["<?" + node.nodeName + " " + node.nodeValue + "?>", "shadow-xml-view-processing-instruction"]);
-        }
-        return;
-      }
-      case 8: {
-        this.setTitle(["<!--" + node.nodeValue + "-->", "shadow-xml-view-comment"]);
-        return;
-      }
-    }
-  }
-  setTitle(items) {
-    const titleFragment = document.createDocumentFragment();
-    for (let i = 0; i < items.length; i += 2) {
-      titleFragment.createChild("span", items[i + 1]).textContent = items[i];
-    }
-    this.title = titleFragment;
-    this.xmlView.innerPerformSearch(false, false);
-  }
-  onattach() {
-    this.listItemElement.classList.toggle("shadow-xml-view-close-tag", this.closeTag);
-  }
-  onexpand() {
-    this.updateTitle();
-  }
-  oncollapse() {
-    this.updateTitle();
-  }
-  async onpopulate() {
-    _XMLViewNode.populate(this, this.node, this.xmlView);
-    this.appendChild(new _XMLViewNode(this.node, true, this.xmlView));
   }
 };
 

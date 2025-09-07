@@ -1,13 +1,13 @@
 import * as Host from '../../../core/host/host.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
-import type { TemplateResult } from '../../../ui/lit/lit.js';
+import type * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import { AiAgent, type ContextResponse, ConversationContext, type RequestOptions } from './AiAgent.js';
 export declare class RequestContext extends ConversationContext<SDK.NetworkRequest.NetworkRequest> {
     #private;
-    constructor(request: SDK.NetworkRequest.NetworkRequest);
+    constructor(request: SDK.NetworkRequest.NetworkRequest, calculator: NetworkTimeCalculator.NetworkTransferTimeCalculator);
     getOrigin(): string;
     getItem(): SDK.NetworkRequest.NetworkRequest;
-    getIcon(): TemplateResult;
+    get calculator(): NetworkTimeCalculator.NetworkTimeCalculator;
     getTitle(): string;
 }
 /**
@@ -19,6 +19,6 @@ export declare class NetworkAgent extends AiAgent<SDK.NetworkRequest.NetworkRequ
     readonly clientFeature = Host.AidaClient.ClientFeature.CHROME_NETWORK_AGENT;
     get userTier(): string | undefined;
     get options(): RequestOptions;
-    handleContextDetails(selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): AsyncGenerator<ContextResponse, void, void>;
-    enhanceQuery(query: string, selectedNetworkRequest: ConversationContext<SDK.NetworkRequest.NetworkRequest> | null): Promise<string>;
+    handleContextDetails(selectedNetworkRequest: RequestContext | null): AsyncGenerator<ContextResponse, void, void>;
+    enhanceQuery(query: string, selectedNetworkRequest: RequestContext | null): Promise<string>;
 }

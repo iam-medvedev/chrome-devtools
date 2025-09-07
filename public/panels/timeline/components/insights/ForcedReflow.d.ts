@@ -8,6 +8,7 @@ export declare class ForcedReflow extends BaseInsightComponent<ForcedReflowInsig
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     mapToRow(data: Trace.Insights.Models.ForcedReflow.BottomUpCallStack): TableDataRow;
     createAggregatedTableRow(remaining: Trace.Insights.Models.ForcedReflow.BottomUpCallStack[]): TableDataRow;
     renderContent(): Lit.LitTemplate;

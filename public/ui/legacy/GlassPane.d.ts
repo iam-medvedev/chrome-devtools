@@ -1,4 +1,4 @@
-import type { Size } from './Geometry.js';
+import type { Size } from '../../models/geometry/geometry.js';
 import { Widget } from './Widget.js';
 export declare class GlassPane {
     #private;

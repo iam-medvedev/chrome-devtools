@@ -33,7 +33,9 @@
     "../../../../../../front_end/panels/common/AiCodeCompletionDisclaimer.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.ts",
+    "../../../../../../front_end/panels/common/BadgeNotification.ts",
     "../../../../../../front_end/panels/common/FreDialog.ts",
+    "../../../../../../front_end/panels/common/GdpSignUpDialog.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -52,6 +54,9 @@
       "path": "../../core/platform/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
     },
     {
@@ -59,6 +64,9 @@
     },
     {
       "path": "../../ui/components/spinners/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/components/switch/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/tooltips/bundle-tsconfig.json"

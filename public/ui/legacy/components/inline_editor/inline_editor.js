@@ -8,9 +8,9 @@ var __export = (target, all) => {
 var AnimationTimingModel_exports = {};
 __export(AnimationTimingModel_exports, {
   AnimationTimingModel: () => AnimationTimingModel,
-  LINEAR_BEZIER: () => LINEAR_BEZIER
+  LINEAR_BEZIER: () => LINEAR_BEZIER2
 });
-import * as UI from "./../../legacy.js";
+import * as Geometry from "./../../../../models/geometry/geometry.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/CSSLinearEasingModel.js
 var CSSLinearEasingModel_exports = {};
@@ -165,10 +165,10 @@ var AnimationTimingModel = class {
     if (cssLinearEasingModel) {
       return cssLinearEasingModel;
     }
-    return UI.Geometry.CubicBezier.parse(text) || null;
+    return Geometry.CubicBezier.parse(text) || null;
   }
 };
-var LINEAR_BEZIER = UI.Geometry.LINEAR_BEZIER;
+var LINEAR_BEZIER2 = Geometry.LINEAR_BEZIER;
 
 // gen/front_end/ui/legacy/components/inline_editor/AnimationTimingUI.js
 var AnimationTimingUI_exports = {};
@@ -177,8 +177,9 @@ __export(AnimationTimingUI_exports, {
   PresetUI: () => PresetUI
 });
 import * as Platform from "./../../../../core/platform/platform.js";
+import * as Geometry3 from "./../../../../models/geometry/geometry.js";
 import * as VisualLogging2 from "./../../../visual_logging/visual_logging.js";
-import * as UI3 from "./../../legacy.js";
+import * as UI2 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/BezierUI.js
 var BezierUI_exports = {};
@@ -186,8 +187,9 @@ __export(BezierUI_exports, {
   BezierUI: () => BezierUI,
   Height: () => Height
 });
+import * as Geometry2 from "./../../../../models/geometry/geometry.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
-import * as UI2 from "./../../legacy.js";
+import * as UI from "./../../legacy.js";
 var BezierUI = class {
   width;
   height;
@@ -224,7 +226,7 @@ var BezierUI = class {
     return this.height - this.radius * 2 - this.marginTop * 2;
   }
   drawLine(parentElement, className, x1, y1, x2, y2) {
-    const line = UI2.UIUtils.createSVGChild(parentElement, "line", className);
+    const line = UI.UIUtils.createSVGChild(parentElement, "line", className);
     line.setAttribute("x1", String(x1 + this.radius));
     line.setAttribute("y1", String(y1 + this.radius + this.marginTop));
     line.setAttribute("x2", String(x2 + this.radius));
@@ -232,7 +234,7 @@ var BezierUI = class {
   }
   drawControlPoints(parentElement, startX, startY, controlX, controlY) {
     this.drawLine(parentElement, "bezier-control-line", startX, startY, controlX, controlY);
-    const circle = UI2.UIUtils.createSVGChild(parentElement, "circle", "bezier-control-circle");
+    const circle = UI.UIUtils.createSVGChild(parentElement, "circle", "bezier-control-circle");
     circle.setAttribute("jslog", `${VisualLogging.controlPoint("bezier.control-circle").track({ drag: true })}`);
     circle.setAttribute("cx", String(controlX + this.radius));
     circle.setAttribute("cy", String(controlY + this.radius + this.marginTop));
@@ -247,15 +249,15 @@ var BezierUI = class {
     svg.setAttribute("width", String(this.width));
     svg.setAttribute("height", String(this.height));
     svg.removeChildren();
-    const group = UI2.UIUtils.createSVGChild(svg, "g");
+    const group = UI.UIUtils.createSVGChild(svg, "g");
     if (this.shouldDrawLine) {
       this.drawLine(group, "linear-line", 0, height, width, 0);
     }
-    const curve = UI2.UIUtils.createSVGChild(group, "path", "bezier-path");
+    const curve = UI.UIUtils.createSVGChild(group, "path", "bezier-path");
     const curvePoints = [
-      new UI2.Geometry.Point(bezier.controlPoints[0].x * width + this.radius, (1 - bezier.controlPoints[0].y) * height + this.radius + this.marginTop),
-      new UI2.Geometry.Point(bezier.controlPoints[1].x * width + this.radius, (1 - bezier.controlPoints[1].y) * height + this.radius + this.marginTop),
-      new UI2.Geometry.Point(width + this.radius, this.marginTop + this.radius)
+      new Geometry2.Point(bezier.controlPoints[0].x * width + this.radius, (1 - bezier.controlPoints[0].y) * height + this.radius + this.marginTop),
+      new Geometry2.Point(bezier.controlPoints[1].x * width + this.radius, (1 - bezier.controlPoints[1].y) * height + this.radius + this.marginTop),
+      new Geometry2.Point(width + this.radius, this.marginTop + this.radius)
     ];
     curve.setAttribute("d", "M" + this.radius + "," + (height + this.radius + this.marginTop) + " C" + curvePoints.join(" "));
     this.drawControlPoints(group, 0, height, bezier.controlPoints[0].x * width, (1 - bezier.controlPoints[0].y) * height);
@@ -283,14 +285,14 @@ var BezierCurveUI = class {
       controlPointRadius: 7,
       shouldDrawLine: true
     });
-    this.#curve = UI3.UIUtils.createSVGChild(container, "svg", "bezier-curve");
+    this.#curve = UI2.UIUtils.createSVGChild(container, "svg", "bezier-curve");
     this.#onBezierChange = onBezierChange;
-    UI3.UIUtils.installDragHandle(this.#curve, this.dragStart.bind(this), this.dragMove.bind(this), this.dragEnd.bind(this), "default");
+    UI2.UIUtils.installDragHandle(this.#curve, this.dragStart.bind(this), this.dragMove.bind(this), this.dragEnd.bind(this), "default");
   }
   dragStart(event) {
-    this.#mouseDownPosition = new UI3.Geometry.Point(event.x, event.y);
+    this.#mouseDownPosition = new Geometry3.Point(event.x, event.y);
     const ui = this.#curveUI;
-    this.#controlPosition = new UI3.Geometry.Point(Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1), (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight());
+    this.#controlPosition = new Geometry3.Point(Platform.NumberUtilities.clamp((event.offsetX - ui.radius) / ui.curveWidth(), 0, 1), (ui.curveHeight() + ui.marginTop + ui.radius - event.offsetY) / ui.curveHeight());
     const firstControlPointIsCloser = this.#controlPosition.distanceTo(this.#bezier.controlPoints[0]) < this.#controlPosition.distanceTo(this.#bezier.controlPoints[1]);
     this.#selectedPoint = firstControlPointIsCloser ? 0 : 1;
     this.#bezier.controlPoints[this.#selectedPoint] = this.#controlPosition;
@@ -304,7 +306,7 @@ var BezierCurveUI = class {
     }
     const deltaX = (mouseX - this.#mouseDownPosition.x) / this.#curveUI.curveWidth();
     const deltaY = (mouseY - this.#mouseDownPosition.y) / this.#curveUI.curveHeight();
-    const newPosition = new UI3.Geometry.Point(Platform.NumberUtilities.clamp(this.#controlPosition.x + deltaX, 0, 1), this.#controlPosition.y - deltaY);
+    const newPosition = new Geometry3.Point(Platform.NumberUtilities.clamp(this.#controlPosition.x + deltaX, 0, 1), this.#controlPosition.y - deltaY);
     this.#bezier.controlPoints[this.#selectedPoint] = newPosition;
   }
   dragMove(event) {
@@ -336,7 +338,7 @@ var LinearEasingPresentation = class {
     return this.params.height - this.params.pointRadius * 2 - this.params.marginTop * 2;
   }
   #drawControlPoint(parentElement, controlX, controlY, index) {
-    const circle = UI3.UIUtils.createSVGChild(parentElement, "circle", "bezier-control-circle");
+    const circle = UI2.UIUtils.createSVGChild(parentElement, "circle", "bezier-control-circle");
     circle.setAttribute("jslog", `${VisualLogging2.controlPoint("bezier.linear-control-circle").track({ drag: true, dblclick: true })}`);
     circle.setAttribute("data-point-index", String(index));
     circle.setAttribute("cx", String(controlX));
@@ -359,13 +361,13 @@ var LinearEasingPresentation = class {
     svg.setAttribute("width", String(this.#curveWidth()));
     svg.setAttribute("height", String(this.#curveHeight()));
     svg.removeChildren();
-    const group = UI3.UIUtils.createSVGChild(svg, "g");
+    const group = UI2.UIUtils.createSVGChild(svg, "g");
     const positions = linearEasingModel.points().map((point) => this.timingPointToPosition(point));
     this.renderedPositions = positions;
     let startingPoint = positions[0];
     for (let i = 1; i < positions.length; i++) {
       const position = positions[i];
-      const line = UI3.UIUtils.createSVGChild(group, "path", "bezier-path linear-path");
+      const line = UI2.UIUtils.createSVGChild(group, "path", "bezier-path linear-path");
       line.setAttribute("d", `M ${startingPoint.x} ${startingPoint.y} L ${position.x} ${position.y}`);
       line.setAttribute("data-line-index", String(i));
       startingPoint = position;
@@ -394,8 +396,8 @@ var LinearEasingUI = class {
       pointRadius: 7,
       marginTop: 50
     });
-    this.#svg = UI3.UIUtils.createSVGChild(container, "svg", "bezier-curve linear");
-    UI3.UIUtils.installDragHandle(this.#svg, this.#dragStart.bind(this), this.#dragMove.bind(this), this.#dragEnd.bind(this), "default");
+    this.#svg = UI2.UIUtils.createSVGChild(container, "svg", "bezier-curve linear");
+    UI2.UIUtils.installDragHandle(this.#svg, this.#dragStart.bind(this), this.#dragMove.bind(this), this.#dragEnd.bind(this), "default");
   }
   #handleLineClick(event, lineIndex) {
     const newPoint = this.#presentation.positionToTimingPoint({ x: event.offsetX, y: event.offsetY });
@@ -492,7 +494,7 @@ var PresetUI = class {
   draw(model, svg) {
     if (model instanceof CSSLinearEasingModel) {
       this.#linearEasingPresentation.draw(model, svg);
-    } else if (model instanceof UI3.Geometry.CubicBezier) {
+    } else if (model instanceof Geometry3.CubicBezier) {
       this.#bezierPresentation.drawCurve(model, svg);
     }
   }
@@ -518,7 +520,7 @@ var AnimationTimingUI = class {
     this.#container.appendChild(this.#linearEasingContainer);
     this.#model = model;
     this.#onChange = onChange;
-    if (this.#model instanceof UI3.Geometry.CubicBezier) {
+    if (this.#model instanceof Geometry3.CubicBezier) {
       this.#bezierCurveUI = new BezierCurveUI({ bezier: this.#model, container: this.#bezierContainer, onBezierChange: this.#onChange });
     } else if (this.#model instanceof CSSLinearEasingModel) {
       this.#linearEasingUI = new LinearEasingUI({
@@ -533,7 +535,7 @@ var AnimationTimingUI = class {
   }
   setModel(model) {
     this.#model = model;
-    if (this.#model instanceof UI3.Geometry.CubicBezier) {
+    if (this.#model instanceof Geometry3.CubicBezier) {
       if (this.#bezierCurveUI) {
         this.#bezierCurveUI.setBezier(this.#model);
       } else {
@@ -550,7 +552,7 @@ var AnimationTimingUI = class {
   }
   draw() {
     this.#linearEasingContainer.classList.toggle("hidden", !(this.#model instanceof CSSLinearEasingModel));
-    this.#bezierContainer.classList.toggle("hidden", !(this.#model instanceof UI3.Geometry.CubicBezier));
+    this.#bezierContainer.classList.toggle("hidden", !(this.#model instanceof Geometry3.CubicBezier));
     if (this.#bezierCurveUI) {
       this.#bezierCurveUI.draw();
     }
@@ -568,7 +570,7 @@ __export(BezierEditor_exports, {
 });
 import * as Common from "./../../../../core/common/common.js";
 import * as VisualLogging3 from "./../../../visual_logging/visual_logging.js";
-import * as UI4 from "./../../legacy.js";
+import * as UI3 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/bezierEditor.css.js
 var bezierEditor_css_default = `/*
@@ -790,7 +792,7 @@ svg.bezier-preset-modify:active {
 
 // gen/front_end/ui/legacy/components/inline_editor/BezierEditor.js
 var PREVIEW_ANIMATION_DEBOUNCE_DELAY = 300;
-var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
+var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
   model;
   previewElement;
   previewOnion;
@@ -888,17 +890,17 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI4.Widget.VBox
     const presetElement = document.createElement("div");
     presetElement.classList.add("bezier-preset-category");
     presetElement.setAttribute("jslog", `${VisualLogging3.bezierPresetCategory().track({ click: true }).context(presetGroup[0].name)}`);
-    const iconElement = UI4.UIUtils.createSVGChild(presetElement, "svg", "bezier-preset monospace");
+    const iconElement = UI3.UIUtils.createSVGChild(presetElement, "svg", "bezier-preset monospace");
     const category = { presets: presetGroup, presetIndex: 0, icon: presetElement };
     this.presetUI.draw(pivot, iconElement);
     iconElement.addEventListener("click", this.presetCategorySelected.bind(this, category));
     return category;
   }
   createPresetModifyIcon(parentElement, className, drawPath) {
-    const icon = UI4.UIUtils.createSVGChild(parentElement, "svg", "bezier-preset-modify " + className);
+    const icon = UI3.UIUtils.createSVGChild(parentElement, "svg", "bezier-preset-modify " + className);
     icon.setAttribute("width", "20");
     icon.setAttribute("height", "20");
-    const path = UI4.UIUtils.createSVGChild(icon, "path");
+    const path = UI3.UIUtils.createSVGChild(icon, "path");
     path.setAttribute("d", drawPath);
     return icon;
   }
@@ -1451,7 +1453,8 @@ __export(CSSAngleUtils_exports, {
   roundAngleByUnit: () => roundAngleByUnit
 });
 import * as Platform3 from "./../../../../core/platform/platform.js";
-import * as UI5 from "./../../legacy.js";
+import * as Geometry4 from "./../../../../models/geometry/geometry.js";
+import * as UI4 from "./../../legacy.js";
 var CSSAngleRegex = /(?<value>[+-]?\d*\.?\d+)(?<unit>deg|grad|rad|turn)/;
 var parseText = (text) => {
   const result = text.match(CSSAngleRegex);
@@ -1467,13 +1470,13 @@ var getAngleFromRadians = (rad, targetUnit) => {
   let value2 = rad;
   switch (targetUnit) {
     case "grad":
-      value2 = UI5.Geometry.radiansToGradians(rad);
+      value2 = Geometry4.radiansToGradians(rad);
       break;
     case "deg":
-      value2 = UI5.Geometry.radiansToDegrees(rad);
+      value2 = Geometry4.radiansToDegrees(rad);
       break;
     case "turn":
-      value2 = UI5.Geometry.radiansToTurns(rad);
+      value2 = Geometry4.radiansToTurns(rad);
       break;
   }
   return {
@@ -1484,11 +1487,11 @@ var getAngleFromRadians = (rad, targetUnit) => {
 var getRadiansFromAngle = (angle) => {
   switch (angle.unit) {
     case "deg":
-      return UI5.Geometry.degreesToRadians(angle.value);
+      return Geometry4.degreesToRadians(angle.value);
     case "grad":
-      return UI5.Geometry.gradiansToRadians(angle.value);
+      return Geometry4.gradiansToRadians(angle.value);
     case "turn":
-      return UI5.Geometry.turnsToRadians(angle.value);
+      return Geometry4.turnsToRadians(angle.value);
   }
   return angle.value;
 };
@@ -1540,7 +1543,7 @@ var convertAngleUnit = (angle, newUnit) => {
   return getAngleFromRadians(radian, newUnit);
 };
 var getNewAngleFromEvent = (angle, event) => {
-  const direction = UI5.UIUtils.getValueModificationDirection(event);
+  const direction = UI4.UIUtils.getValueModificationDirection(event);
   if (direction === null) {
     return;
   }
@@ -2001,8 +2004,9 @@ __export(CSSShadowEditor_exports, {
 import * as Common4 from "./../../../../core/common/common.js";
 import * as i18n3 from "./../../../../core/i18n/i18n.js";
 import * as Platform5 from "./../../../../core/platform/platform.js";
+import * as Geometry5 from "./../../../../models/geometry/geometry.js";
 import * as VisualLogging7 from "./../../../visual_logging/visual_logging.js";
-import * as UI6 from "./../../legacy.js";
+import * as UI5 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowEditor.css.js
 var cssShadowEditor_css_default = `/*
@@ -2181,7 +2185,7 @@ var CSSLength = class _CSSLength {
     return this.amount + this.unit;
   }
 };
-var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.VBox) {
+var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI5.Widget.VBox) {
   typeField;
   outsetButton;
   insetButton;
@@ -2227,7 +2231,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
     this.xySlider.tabIndex = -1;
     this.halfCanvasSize = canvasSize / 2;
     this.innerCanvasSize = this.halfCanvasSize - sliderThumbRadius;
-    UI6.UIUtils.installDragHandle(this.xySlider, this.dragStart.bind(this), this.dragMove.bind(this), null, "default");
+    UI5.UIUtils.installDragHandle(this.xySlider, this.dragStart.bind(this), this.dragMove.bind(this), null, "default");
     this.xySlider.addEventListener("keydown", this.onCanvasArrowKey.bind(this), false);
     this.xySlider.addEventListener("blur", this.onCanvasBlur.bind(this), false);
     const blurField = this.contentElement.createChild("div", "shadow-editor-field shadow-editor-flex-field shadow-editor-blur-field");
@@ -2241,7 +2245,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
     const label = field.createChild("label", "shadow-editor-label");
     label.textContent = propertyName;
     label.setAttribute("for", propertyName);
-    const textInput = UI6.UIUtils.createInput("shadow-editor-text-input", "text");
+    const textInput = UI5.UIUtils.createInput("shadow-editor-text-input", "text");
     field.appendChild(textInput);
     textInput.id = propertyName;
     textInput.addEventListener("keydown", this.handleValueModification.bind(this), false);
@@ -2252,7 +2256,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
     return textInput;
   }
   createSlider(field, jslogContext) {
-    const slider3 = UI6.UIUtils.createSlider(0, maxRange, -1);
+    const slider3 = UI5.UIUtils.createSlider(0, maxRange, -1);
     slider3.addEventListener("input", this.onSliderInput.bind(this), false);
     slider3.setAttribute("jslog", `${VisualLogging7.slider().track({ click: true, drag: true }).context(jslogContext)}`);
     field.appendChild(slider3);
@@ -2330,7 +2334,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
   }
   handleValueModification(event) {
     const target = event.currentTarget;
-    const modifiedValue = UI6.UIUtils.createReplacementString(target.value, event, customNumberHandler);
+    const modifiedValue = UI5.UIUtils.createReplacementString(target.value, event, customNumberHandler);
     if (!modifiedValue) {
       return;
     }
@@ -2427,8 +2431,8 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
   dragStart(event) {
     this.xySlider.focus();
     this.updateCanvas(true);
-    this.canvasOrigin = new UI6.Geometry.Point(this.xySlider.getBoundingClientRect().left + this.halfCanvasSize, this.xySlider.getBoundingClientRect().top + this.halfCanvasSize);
-    const clickedPoint = new UI6.Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
+    this.canvasOrigin = new Geometry5.Point(this.xySlider.getBoundingClientRect().left + this.halfCanvasSize, this.xySlider.getBoundingClientRect().top + this.halfCanvasSize);
+    const clickedPoint = new Geometry5.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
     const thumbPoint = this.sliderThumbPosition();
     if (clickedPoint.distanceTo(thumbPoint) >= sliderThumbRadius) {
       this.dragMove(event);
@@ -2436,7 +2440,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
     return true;
   }
   dragMove(event) {
-    let point = new UI6.Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
+    let point = new Geometry5.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
     if (event.shiftKey) {
       point = this.snapToClosestDirection(point);
     }
@@ -2450,7 +2454,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
       if (!event.altKey) {
         this.model.setOffsetX(new CSSLength(newX, this.model.offsetX().unit || defaultUnit));
       }
-      if (!UI6.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
+      if (!UI5.KeyboardShortcut.KeyboardShortcut.eventHasCtrlEquivalentKey(event)) {
         this.model.setOffsetY(new CSSLength(newY, this.model.offsetY().unit || defaultUnit));
       }
     }
@@ -2506,7 +2510,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
   }
   constrainPoint(point, max) {
     if (Math.abs(point.x) <= max && Math.abs(point.y) <= max) {
-      return new UI6.Geometry.Point(point.x, point.y);
+      return new Geometry5.Point(point.x, point.y);
     }
     return point.scale(max / Math.max(Math.abs(point.x), Math.abs(point.y)));
   }
@@ -2514,10 +2518,10 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
     let minDistance = Number.MAX_VALUE;
     let closestPoint = point;
     const directions = [
-      new UI6.Geometry.Point(0, -1),
-      new UI6.Geometry.Point(1, -1),
-      new UI6.Geometry.Point(1, 0),
-      new UI6.Geometry.Point(1, 1)
+      new Geometry5.Point(0, -1),
+      new Geometry5.Point(1, -1),
+      new Geometry5.Point(1, 0),
+      new Geometry5.Point(1, 1)
       // Southeast
     ];
     for (const direction of directions) {
@@ -2533,7 +2537,7 @@ var CSSShadowEditor = class extends Common4.ObjectWrapper.eventMixin(UI6.Widget.
   sliderThumbPosition() {
     const x = this.model.offsetX().amount / maxRange * this.innerCanvasSize;
     const y = this.model.offsetY().amount / maxRange * this.innerCanvasSize;
-    return this.constrainPoint(new UI6.Geometry.Point(x, y), this.innerCanvasSize);
+    return this.constrainPoint(new Geometry5.Point(x, y), this.innerCanvasSize);
   }
 };
 
@@ -2548,7 +2552,7 @@ import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform6 from "./../../../../core/platform/platform.js";
 import * as IconButton from "./../../../components/icon_button/icon_button.js";
 import * as VisualLogging8 from "./../../../visual_logging/visual_logging.js";
-import * as UI8 from "./../../legacy.js";
+import * as UI7 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/fontEditor.css.js
 var fontEditor_css_default = `/*
@@ -2746,13 +2750,13 @@ __export(FontEditorUnitConverter_exports, {
 });
 import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as CssOverviewModule from "./../../../../panels/css_overview/css_overview.js";
-import * as UI7 from "./../../legacy.js";
+import * as UI6 from "./../../legacy.js";
 var computedArrayFontSizeIndex = 6;
 function getPxMultiplier() {
   return 1;
 }
 async function getEmMultiplier(isFontSizeProperty) {
-  const selectedNode = UI7.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+  const selectedNode = UI6.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
   let currentFontSize;
   if (selectedNode?.parentNode && selectedNode.nodeName() !== "HTML") {
     const [model] = SDK.TargetManager.TargetManager.instance().models(CssOverviewModule.CSSOverviewModel.CSSOverviewModel);
@@ -2766,7 +2770,7 @@ async function getEmMultiplier(isFontSizeProperty) {
   return currentFontSize;
 }
 async function getRemMultiplier() {
-  const selectedNode = UI7.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+  const selectedNode = UI6.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
   const htmlNode = findHtmlNode(selectedNode);
   if (!htmlNode?.id) {
     return 16;
@@ -2888,7 +2892,7 @@ var heightEvaluateParams = {
   allowUnsafeEvalBlockedByCSP: false
 };
 async function getViewportObject() {
-  const currentExecutionContext = UI7.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
+  const currentExecutionContext = UI6.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
   let width, height;
   if (currentExecutionContext) {
     const widthObject = await currentExecutionContext.evaluate(widthEvaluateParams, false, false);
@@ -2904,7 +2908,7 @@ async function getViewportObject() {
     }
   }
   if (width === void 0 || height === void 0) {
-    const selectedNode = UI7.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
+    const selectedNode = UI6.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
     if (!selectedNode) {
       return null;
     }
@@ -3244,7 +3248,7 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("ui/legacy/components/inline_editor/FontEditor.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox) {
+var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI7.Widget.VBox) {
   propertyMap;
   fontSelectorSection;
   fontSelectors;
@@ -3390,7 +3394,7 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
     let fontSelectorObject = this.fontSelectors[index];
     const isPrimary = index === 0;
     if (fontSelectorObject.input.value === "" && !isGlobalValue) {
-      UI8.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.thereIsNoValueToDeleteAtIndexS, { PH1: index }));
+      UI7.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.thereIsNoValueToDeleteAtIndexS, { PH1: index }));
       return;
     }
     if (isPrimary) {
@@ -3414,7 +3418,7 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
           this.updateFontSelectorList();
         }
       }
-      UI8.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.fontSelectorDeletedAtIndexS, { PH1: index }));
+      UI7.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.fontSelectorDeletedAtIndexS, { PH1: index }));
     }
     this.onFontSelectorChanged();
     this.resizePopout();
@@ -3431,7 +3435,7 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
         label = i18nString3(UIStrings3.fallbackS, { PH1: i });
       }
       fontSelectorObject.label.textContent = label;
-      UI8.ARIAUtils.setLabel(fontSelectorObject.input, label);
+      UI7.ARIAUtils.setLabel(fontSelectorObject.input, label);
       fontSelectorObject.deleteButton.setTitle(i18nString3(UIStrings3.deleteS, { PH1: label }));
       fontSelectorObject.index = i;
     }
@@ -3452,10 +3456,10 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
   }
   createSelector(field, label, options, currentValue, jslogContext) {
     const index = this.fontSelectors.length;
-    const selectInput = UI8.UIUtils.createSelect(label, options);
+    const selectInput = UI7.UIUtils.createSelect(label, options);
     selectInput.value = currentValue;
     selectInput.setAttribute("jslog", `${VisualLogging8.dropDown(jslogContext).track({ click: true, change: true })}`);
-    const selectLabel = UI8.UIUtils.createLabel(label, "shadow-editor-label", selectInput);
+    const selectLabel = UI7.UIUtils.createLabel(label, "shadow-editor-label", selectInput);
     selectInput.addEventListener("input", this.onFontSelectorChanged.bind(this), false);
     selectInput.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -3465,7 +3469,7 @@ var FontEditor = class extends Common5.ObjectWrapper.eventMixin(UI8.Widget.VBox)
     field.appendChild(selectLabel);
     field.appendChild(selectInput);
     const deleteToolbar = field.createChild("devtools-toolbar");
-    const deleteButton = new UI8.Toolbar.ToolbarButton(i18nString3(UIStrings3.deleteS, { PH1: label }), "bin", void 0, "delete");
+    const deleteButton = new UI7.Toolbar.ToolbarButton(i18nString3(UIStrings3.deleteS, { PH1: label }), "bin", void 0, "delete");
     deleteToolbar.appendToolbarItem(deleteButton);
     const fontSelectorObject = { label: selectLabel, input: selectInput, deleteButton, index };
     deleteButton.addEventListener("Click", () => {
@@ -3543,7 +3547,7 @@ var FontPropertyInputs = class {
     this.errorText = field.createChild("div", "error-text");
     this.errorText.textContent = i18nString3(UIStrings3.PleaseEnterAValidValueForSText, { PH1: propertyName });
     this.errorText.hidden = true;
-    UI8.ARIAUtils.markAsAlert(this.errorText);
+    UI7.ARIAUtils.markAsAlert(this.errorText);
     this.propertyInfo = propertyInfo;
     this.propertyName = propertyName;
     this.staticParams = staticParams;
@@ -3560,11 +3564,11 @@ var FontPropertyInputs = class {
     this.initialRange = this.getUnitRange();
     this.boundUpdateCallback = updateCallback;
     this.boundResizeCallback = resizeCallback;
-    const propertyLabel = UI8.UIUtils.createLabel(label, "shadow-editor-label");
+    const propertyLabel = UI7.UIUtils.createLabel(label, "shadow-editor-label");
     propertyField.append(propertyLabel);
     this.sliderInput = this.createSliderInput(propertyField, propertyName);
     this.textBoxInput = this.createTextBoxInput(propertyField, propertyName);
-    UI8.ARIAUtils.bindLabelToControl(propertyLabel, this.textBoxInput);
+    UI7.ARIAUtils.bindLabelToControl(propertyLabel, this.textBoxInput);
     this.unitInput = this.createUnitInput(propertyField, `${propertyName}-unit`);
     this.selectorInput = this.createSelectorInput(propertyField, propertyName);
     this.createTypeToggle(propertyField, `${propertyName}-value-type`);
@@ -3625,7 +3629,7 @@ var FontPropertyInputs = class {
     const min = this.initialRange.min;
     const max = this.initialRange.max;
     const step = this.initialRange.step;
-    const slider3 = UI8.UIUtils.createSlider(min, max, -1);
+    const slider3 = UI7.UIUtils.createSlider(min, max, -1);
     slider3.step = step.toString();
     slider3.tabIndex = 0;
     if (this.propertyInfo.value) {
@@ -3654,12 +3658,12 @@ var FontPropertyInputs = class {
       }
     });
     field.appendChild(slider3);
-    UI8.ARIAUtils.setLabel(slider3, i18nString3(UIStrings3.sSliderInput, { PH1: this.propertyName }));
+    UI7.ARIAUtils.setLabel(slider3, i18nString3(UIStrings3.sSliderInput, { PH1: this.propertyName }));
     slider3.setAttribute("jslog", `${VisualLogging8.slider(jslogContext).track({ change: true })}`);
     return slider3;
   }
   createTextBoxInput(field, jslogContext) {
-    const textBoxInput = UI8.UIUtils.createInput("shadow-editor-text-input", "number", jslogContext);
+    const textBoxInput = UI7.UIUtils.createInput("shadow-editor-text-input", "number", jslogContext);
     textBoxInput.step = this.initialRange.step.toString();
     textBoxInput.classList.add("font-editor-text-input");
     if (this.propertyInfo.value !== null) {
@@ -3671,7 +3675,7 @@ var FontPropertyInputs = class {
     textBoxInput.step = "any";
     textBoxInput.addEventListener("input", this.onTextBoxInput.bind(this), false);
     field.appendChild(textBoxInput);
-    UI8.ARIAUtils.setLabel(textBoxInput, i18nString3(UIStrings3.sTextInput, { PH1: this.propertyName }));
+    UI7.ARIAUtils.setLabel(textBoxInput, i18nString3(UIStrings3.sTextInput, { PH1: this.propertyName }));
     return textBoxInput;
   }
   createUnitInput(field, jslogContext) {
@@ -3679,7 +3683,7 @@ var FontPropertyInputs = class {
     if (this.hasUnits && this.staticParams.units) {
       const currentValue = this.propertyInfo.units;
       const options = this.staticParams.units;
-      unitInput = UI8.UIUtils.createSelect(i18nString3(UIStrings3.units), options);
+      unitInput = UI7.UIUtils.createSelect(i18nString3(UIStrings3.units), options);
       unitInput.classList.add("font-editor-select");
       if (this.addedUnit && currentValue) {
         unitInput.add(new Option(currentValue, currentValue));
@@ -3689,7 +3693,7 @@ var FontPropertyInputs = class {
       }
       unitInput.addEventListener("change", this.onUnitInput.bind(this), false);
     } else {
-      unitInput = UI8.UIUtils.createSelect(i18nString3(UIStrings3.units), []);
+      unitInput = UI7.UIUtils.createSelect(i18nString3(UIStrings3.units), []);
       unitInput.classList.add("font-editor-select");
       unitInput.disabled = true;
     }
@@ -3700,11 +3704,11 @@ var FontPropertyInputs = class {
       }
     }, false);
     field.appendChild(unitInput);
-    UI8.ARIAUtils.setLabel(unitInput, i18nString3(UIStrings3.sUnitInput, { PH1: this.propertyName }));
+    UI7.ARIAUtils.setLabel(unitInput, i18nString3(UIStrings3.sUnitInput, { PH1: this.propertyName }));
     return unitInput;
   }
   createSelectorInput(field, jslogContext) {
-    const selectInput = UI8.UIUtils.createSelect(i18nString3(UIStrings3.sKeyValueSelector, { PH1: this.propertyName }), this.staticParams.keyValues);
+    const selectInput = UI7.UIUtils.createSelect(i18nString3(UIStrings3.sKeyValueSelector, { PH1: this.propertyName }), this.staticParams.keyValues);
     selectInput.classList.add("font-selector-input");
     if (this.propertyInfo.value) {
       selectInput.value = this.propertyInfo.value;
@@ -3788,10 +3792,10 @@ var FontPropertyInputs = class {
     icon.name = "fold-more";
     icon.classList.add("medium");
     displaySwitcher.appendChild(icon);
-    UI8.UIUtils.setTitle(displaySwitcher, i18nString3(UIStrings3.sToggleInputType, { PH1: this.propertyName }));
+    UI7.UIUtils.setTitle(displaySwitcher, i18nString3(UIStrings3.sToggleInputType, { PH1: this.propertyName }));
     displaySwitcher.tabIndex = 0;
     self.onInvokeElement(displaySwitcher, this.toggleInputType.bind(this));
-    UI8.ARIAUtils.markAsButton(displaySwitcher);
+    UI7.ARIAUtils.markAsButton(displaySwitcher);
     displaySwitcher.setAttribute("jslog", `${VisualLogging8.toggle(jslogContext).track({ click: true })}`);
   }
   toggleInputType(event) {
@@ -3804,14 +3808,14 @@ var FontPropertyInputs = class {
       this.unitInput.hidden = true;
       this.selectorInput.hidden = false;
       this.showSliderMode = false;
-      UI8.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.selectorInputMode));
+      UI7.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.selectorInputMode));
     } else {
       this.sliderInput.hidden = false;
       this.textBoxInput.hidden = false;
       this.unitInput.hidden = false;
       this.selectorInput.hidden = true;
       this.showSliderMode = true;
-      UI8.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.sliderInputMode));
+      UI7.ARIAUtils.LiveAnnouncer.alert(i18nString3(UIStrings3.sliderInputMode));
     }
   }
   setInputUnits(multiplier, newUnit) {
@@ -3997,7 +4001,7 @@ __export(SwatchPopoverHelper_exports, {
 import * as Common6 from "./../../../../core/common/common.js";
 import * as Platform8 from "./../../../../core/platform/platform.js";
 import * as VisualLogging10 from "./../../../visual_logging/visual_logging.js";
-import * as UI9 from "./../../legacy.js";
+import * as UI8 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/swatchPopover.css.js
 var swatchPopover_css_default = `/*
@@ -4037,7 +4041,7 @@ var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
   focusRestorer;
   constructor() {
     super();
-    this.popover = new UI9.GlassPane.GlassPane();
+    this.popover = new UI8.GlassPane.GlassPane();
     this.popover.setSizeBehavior(
       "MeasureContent"
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
@@ -4112,7 +4116,7 @@ var SwatchPopoverHelper = class extends Common6.ObjectWrapper.ObjectWrapper {
     }
     this.view.contentElement.addEventListener("focusout", this.boundFocusOut, false);
     if (!this.focusRestorer) {
-      this.focusRestorer = new UI9.Widget.WidgetFocusRestorer(this.view);
+      this.focusRestorer = new UI8.Widget.WidgetFocusRestorer(this.view);
     }
   }
   hide(commitEdit) {

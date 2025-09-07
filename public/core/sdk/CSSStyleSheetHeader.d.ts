@@ -6,6 +6,7 @@ import type { CSSModel } from './CSSModel.js';
 import { DeferredDOMNode } from './DOMModel.js';
 import type { FrameAssociated } from './FrameAssociated.js';
 import type { PageResourceLoadInitiator } from './PageResourceLoader.js';
+import type { DebugId } from './SourceMap.js';
 export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.ContentProvider, FrameAssociated {
     #private;
     id: Protocol.CSS.StyleSheetId;
@@ -48,4 +49,5 @@ export declare class CSSStyleSheetHeader implements TextUtils.ContentProvider.Co
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;
     isViaInspector(): boolean;
     createPageResourceLoadInitiator(): PageResourceLoadInitiator;
+    debugId(): DebugId | null;
 }

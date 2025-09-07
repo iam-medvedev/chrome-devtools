@@ -2105,6 +2105,12 @@ var PlayerListView = class extends UI6.Widget.VBox {
     entry.$("icon").appendChild(IconButton.Icon.create("pause", "media-player"));
     return entry;
   }
+  selectPlayerById(playerID) {
+    const fragment = this.playerEntryFragments.get(playerID);
+    if (fragment) {
+      this.selectPlayer(playerID, fragment.element());
+    }
+  }
   selectPlayer(playerID, element) {
     this.mainContainer.renderMainPanel(playerID);
     if (this.currentlySelectedEntry !== null) {
@@ -2335,10 +2341,20 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
   deletedPlayers;
   downloadStore;
   sidebar;
+  #playerIdsToPlayers;
+  #domNodeIdsToPlayerIds;
   #placeholder;
+  #initialPlayersLoadedPromise;
+  #initialPlayersLoadedPromiseResolve = () => {
+  };
   constructor(downloadStore = new PlayerDataDownloadManager()) {
     super("media");
     this.detailPanels = /* @__PURE__ */ new Map();
+    this.#playerIdsToPlayers = /* @__PURE__ */ new Map();
+    this.#domNodeIdsToPlayerIds = /* @__PURE__ */ new Map();
+    this.#initialPlayersLoadedPromise = new Promise((resolve) => {
+      this.#initialPlayersLoadedPromiseResolve = resolve;
+    });
     this.deletedPlayers = /* @__PURE__ */ new Set();
     this.downloadStore = downloadStore;
     this.sidebar = new PlayerListView(this);
@@ -2392,15 +2408,6 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
     mediaModel.removeEventListener("PlayerMessagesLogged", this.messagesLogged, this);
     mediaModel.removeEventListener("PlayerErrorsRaised", this.errorsRaised, this);
     mediaModel.removeEventListener("PlayerCreated", this.playerCreated, this);
-  }
-  onPlayerCreated(playerID) {
-    this.sidebar.addMediaElementItem(playerID);
-    this.detailPanels.set(playerID, new PlayerDetailView());
-    this.downloadStore.addPlayer(playerID);
-    if (this.detailPanels.size === 1) {
-      this.#placeholder.header = i18nString7(UIStrings7.noPlayerDetailsSelected);
-      this.#placeholder.text = i18nString7(UIStrings7.selectToViewDetails);
-    }
   }
   propertiesChanged(event) {
     for (const property of event.data.properties) {
@@ -2457,15 +2464,45 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
     this.downloadStore.onEvent(playerID, event);
     this.detailPanels.get(playerID)?.onEvent(event);
   }
+  selectPlayerByDOMNodeId(domNodeId) {
+    const playerId = this.#domNodeIdsToPlayerIds.get(domNodeId);
+    if (!playerId) {
+      return;
+    }
+    const player = this.#playerIdsToPlayers.get(playerId);
+    if (player) {
+      this.sidebar.selectPlayerById(player.playerId);
+    }
+  }
+  waitForInitialPlayers() {
+    return this.#initialPlayersLoadedPromise;
+  }
   playerCreated(event) {
+    const player = event.data;
+    this.#playerIdsToPlayers.set(player.playerId, player);
+    if (player.domNodeId) {
+      this.#domNodeIdsToPlayerIds.set(player.domNodeId, player.playerId);
+    }
     if (this.splitWidget().showMode() !== "Both") {
       this.splitWidget().showBoth();
     }
-    this.onPlayerCreated(event.data.playerId);
+    this.sidebar.addMediaElementItem(player.playerId);
+    this.detailPanels.set(player.playerId, new PlayerDetailView());
+    this.downloadStore.addPlayer(player.playerId);
+    if (this.detailPanels.size === 1) {
+      this.#placeholder.header = i18nString7(UIStrings7.noPlayerDetailsSelected);
+      this.#placeholder.text = i18nString7(UIStrings7.selectToViewDetails);
+    }
+    this.#initialPlayersLoadedPromiseResolve();
   }
   markPlayerForDeletion(playerID) {
     this.deletedPlayers.add(playerID);
     this.detailPanels.delete(playerID);
+    const player = this.#playerIdsToPlayers.get(playerID);
+    if (player?.domNodeId) {
+      this.#domNodeIdsToPlayerIds.delete(player.domNodeId);
+    }
+    this.#playerIdsToPlayers.delete(playerID);
     this.sidebar.deletePlayer(playerID);
     this.downloadStore.deletePlayer(playerID);
     if (this.detailPanels.size === 0) {
