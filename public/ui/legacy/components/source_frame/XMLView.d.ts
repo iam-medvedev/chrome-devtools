@@ -1,18 +1,36 @@
 import * as UI from '../../legacy.js';
-export declare class XMLView extends UI.Widget.Widget implements UI.SearchableView.Searchable {
-    private readonly treeOutline;
-    private searchableView;
-    private currentSearchFocusIndex;
-    private currentSearchTreeElements;
-    private searchConfig;
+interface ViewInput {
+    onExpand(node: XMLTreeViewNode, expanded: boolean): void;
+    xml: XMLTreeViewNode;
+    search: UI.TreeOutline.TreeSearch<XMLTreeViewNode, SearchResult> | undefined;
+    jumpToNextSearchResult: SearchResult | undefined;
+}
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
+export declare class XMLTreeViewNode {
+    #private;
+    readonly node: Node | ParentNode;
+    expanded: boolean;
+    constructor(node: Node | ParentNode);
+    children(): XMLTreeViewNode[];
+    match(regex: RegExp, closeTag: boolean): RegExpStringIterator<RegExpExecArray>;
+}
+export declare class XMLTreeViewModel {
+    readonly xmlDocument: Document;
+    readonly root: XMLTreeViewNode;
     constructor(parsedXML: Document);
+}
+interface SearchResult extends UI.TreeOutline.TreeSearchResult<XMLTreeViewNode> {
+    match: RegExpExecArray;
+}
+export declare class XMLView extends UI.Widget.Widget implements UI.SearchableView.Searchable {
+    #private;
+    private searchableView;
+    constructor(target?: HTMLElement, view?: View);
+    set parsedXML(parsedXML: Document);
+    performUpdate(): void;
     static createSearchableView(parsedXML: Document): UI.SearchableView.SearchableView;
     static parseXML(text: string, mimeType: string): Document | null;
-    private jumpToMatch;
-    private updateSearchCount;
-    private updateSearchIndex;
-    innerPerformSearch(shouldJump: boolean, jumpBackwards?: boolean): void;
-    private innerSearchCanceled;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
     jumpToNextSearchResult(): void;
@@ -20,19 +38,4 @@ export declare class XMLView extends UI.Widget.Widget implements UI.SearchableVi
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
-export declare class XMLViewNode extends UI.TreeOutline.TreeElement {
-    private readonly node;
-    private readonly closeTag;
-    private highlightChanges;
-    private readonly xmlView;
-    constructor(node: Node | ParentNode, closeTag: boolean, xmlView: XMLView);
-    static populate(root: UI.TreeOutline.TreeOutline | UI.TreeOutline.TreeElement, xmlNode: Node | ParentNode, xmlView: XMLView): void;
-    setSearchRegex(regex: RegExp | null, additionalCssClassName?: string): boolean;
-    revertHighlightChanges(): void;
-    private updateTitle;
-    private setTitle;
-    onattach(): void;
-    onexpand(): void;
-    oncollapse(): void;
-    onpopulate(): Promise<void>;
-}
+export {};

@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as StackTrace from '../stack_trace/stack_trace.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
@@ -623,9 +624,59 @@ export class DebuggerLanguagePluginManager {
         }
         return ranges;
     }
-    async translateRawFramesStep(_rawFrames, _translatedFrames, _target) {
-        // TODO(crbug.com/433162438): Implement source map stack trace translation.
-        return false;
+    async translateRawFramesStep(rawFrames, translatedFrames, target) {
+        const frame = rawFrames[0];
+        const script = target.model(SDK.DebuggerModel.DebuggerModel)?.scriptForId(frame.scriptId ?? '');
+        if (!script) {
+            return false;
+        }
+        const functionInfo = await this.getFunctionInfo(script, frame);
+        if (!functionInfo) {
+            return false;
+        }
+        // The plugin is responsible for translating this frame. The only question is whether it was successful,
+        // or if we identity map the raw frame and attach the "missing debug info details".
+        rawFrames.shift();
+        if ('frames' in functionInfo && functionInfo.frames.length) {
+            const framePromises = functionInfo.frames.map(async ({ name }, index) => {
+                const rawLocation = new SDK.DebuggerModel.Location(script.debuggerModel, script.scriptId, frame.lineNumber, frame.columnNumber, index);
+                const uiLocation = await this.rawLocationToUILocation(rawLocation);
+                return {
+                    uiSourceCode: uiLocation?.uiSourceCode,
+                    url: uiLocation ? undefined : frame.url,
+                    name,
+                    line: uiLocation?.lineNumber ?? frame.lineNumber,
+                    column: uiLocation?.columnNumber ?? frame.columnNumber,
+                };
+            });
+            translatedFrames.push(await Promise.all(framePromises));
+            return true;
+        }
+        // Identity map the frame, then add the missing debug info details.
+        const mappedFrame = {
+            url: frame.url,
+            name: frame.functionName,
+            line: frame.lineNumber,
+            column: frame.columnNumber,
+        };
+        if ('missingSymbolFiles' in functionInfo && functionInfo.missingSymbolFiles.length) {
+            translatedFrames.push([{
+                    ...mappedFrame,
+                    missingDebugInfo: {
+                        type: "PARTIAL_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.PARTIAL_INFO */,
+                        missingDebugFiles: functionInfo.missingSymbolFiles,
+                    },
+                }]);
+        }
+        else {
+            translatedFrames.push([{
+                    ...mappedFrame,
+                    missingDebugInfo: {
+                        type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */,
+                    },
+                }]);
+        }
+        return true;
     }
     scriptsForUISourceCode(uiSourceCode) {
         for (const modelData of this.#debuggerModelToData.values()) {

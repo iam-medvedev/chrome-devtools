@@ -112,10 +112,19 @@ export class MainView extends UI.Panel.PanelWithSidebar {
     deletedPlayers;
     downloadStore;
     sidebar;
+    #playerIdsToPlayers;
+    #domNodeIdsToPlayerIds;
     #placeholder;
+    #initialPlayersLoadedPromise;
+    #initialPlayersLoadedPromiseResolve = () => { };
     constructor(downloadStore = new PlayerDataDownloadManager()) {
         super('media');
         this.detailPanels = new Map();
+        this.#playerIdsToPlayers = new Map();
+        this.#domNodeIdsToPlayerIds = new Map();
+        this.#initialPlayersLoadedPromise = new Promise(resolve => {
+            this.#initialPlayersLoadedPromiseResolve = resolve;
+        });
         this.deletedPlayers = new Set();
         this.downloadStore = downloadStore;
         this.sidebar = new PlayerListView(this);
@@ -170,15 +179,6 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         mediaModel.removeEventListener("PlayerMessagesLogged" /* Events.PLAYER_MESSAGES_LOGGED */, this.messagesLogged, this);
         mediaModel.removeEventListener("PlayerErrorsRaised" /* Events.PLAYER_ERRORS_RAISED */, this.errorsRaised, this);
         mediaModel.removeEventListener("PlayerCreated" /* Events.PLAYER_CREATED */, this.playerCreated, this);
-    }
-    onPlayerCreated(playerID) {
-        this.sidebar.addMediaElementItem(playerID);
-        this.detailPanels.set(playerID, new PlayerDetailView());
-        this.downloadStore.addPlayer(playerID);
-        if (this.detailPanels.size === 1) {
-            this.#placeholder.header = i18nString(UIStrings.noPlayerDetailsSelected);
-            this.#placeholder.text = i18nString(UIStrings.selectToViewDetails);
-        }
     }
     propertiesChanged(event) {
         for (const property of event.data.properties) {
@@ -238,16 +238,46 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         this.downloadStore.onEvent(playerID, event);
         this.detailPanels.get(playerID)?.onEvent(event);
     }
+    selectPlayerByDOMNodeId(domNodeId) {
+        const playerId = this.#domNodeIdsToPlayerIds.get(domNodeId);
+        if (!playerId) {
+            return;
+        }
+        const player = this.#playerIdsToPlayers.get(playerId);
+        if (player) {
+            this.sidebar.selectPlayerById(player.playerId);
+        }
+    }
+    waitForInitialPlayers() {
+        return this.#initialPlayersLoadedPromise;
+    }
     playerCreated(event) {
+        const player = event.data;
+        this.#playerIdsToPlayers.set(player.playerId, player);
+        if (player.domNodeId) {
+            this.#domNodeIdsToPlayerIds.set(player.domNodeId, player.playerId);
+        }
         if (this.splitWidget().showMode() !== "Both" /* UI.SplitWidget.ShowMode.BOTH */) {
             this.splitWidget().showBoth();
         }
-        this.onPlayerCreated(event.data.playerId);
+        this.sidebar.addMediaElementItem(player.playerId);
+        this.detailPanels.set(player.playerId, new PlayerDetailView());
+        this.downloadStore.addPlayer(player.playerId);
+        if (this.detailPanels.size === 1) {
+            this.#placeholder.header = i18nString(UIStrings.noPlayerDetailsSelected);
+            this.#placeholder.text = i18nString(UIStrings.selectToViewDetails);
+        }
+        this.#initialPlayersLoadedPromiseResolve();
     }
     markPlayerForDeletion(playerID) {
         // TODO(tmathmeyer): send this to chromium to save the storage space there too.
         this.deletedPlayers.add(playerID);
         this.detailPanels.delete(playerID);
+        const player = this.#playerIdsToPlayers.get(playerID);
+        if (player?.domNodeId) {
+            this.#domNodeIdsToPlayerIds.delete(player.domNodeId);
+        }
+        this.#playerIdsToPlayers.delete(playerID);
         this.sidebar.deletePlayer(playerID);
         this.downloadStore.deletePlayer(playerID);
         if (this.detailPanels.size === 0) {

@@ -118,13 +118,13 @@ describe('ExtensionTraceDataHandler', function () {
             it('gets data from individual entries', async () => {
                 // The first track is the one labeled 'An Extension Track'.
                 {
-                    const { track, properties } = extensionHandlerOutput.extensionTrackData[0].entriesByTrack['An Extension Track'][0].args;
+                    const { track, properties } = extensionHandlerOutput.extensionTrackData[0].entriesByTrack['An Extension Track'][0].devtoolsObj;
                     assert.strictEqual(JSON.stringify(properties), '[["Description","Something"]]');
                     assert.strictEqual(track, 'An Extension Track');
                 }
                 // Now look for 'Another Extension Track'.
                 {
-                    const { tooltipText, track, properties } = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'][0].args;
+                    const { tooltipText, track, properties } = extensionHandlerOutput.extensionTrackData[1].entriesByTrack['Another Extension Track'][0].devtoolsObj;
                     assert.strictEqual(tooltipText, 'A hint if needed');
                     assert.strictEqual(track, 'Another Extension Track');
                     assert.strictEqual(JSON.stringify(properties), '[["Description","Something"],["Tip","A tip to improve this"]]');
@@ -134,7 +134,7 @@ describe('ExtensionTraceDataHandler', function () {
                 // The test example contains a track entry without a track field.
                 // Ensure it is discarded.
                 const allTrackEntries = extensionHandlerOutput.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
-                const validTrackEntries = allTrackEntries.filter(entry => entry.args.track);
+                const validTrackEntries = allTrackEntries.filter(entry => entry.devtoolsObj.track);
                 assert.lengthOf(validTrackEntries, allTrackEntries.length);
             });
             it('discards track data without a valid dataType field', async () => {
@@ -142,7 +142,7 @@ describe('ExtensionTraceDataHandler', function () {
                 // value.
                 // Ensure it is discarded.
                 const allTrackEntries = extensionHandlerOutput.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
-                const validTrackEntries = allTrackEntries.filter(entry => entry.args.dataType === 'track-entry' || entry.args.dataType === undefined);
+                const validTrackEntries = allTrackEntries.filter(entry => entry.devtoolsObj.dataType === 'track-entry' || entry.devtoolsObj.dataType === undefined);
                 assert.lengthOf(validTrackEntries, allTrackEntries.length);
             });
         });
@@ -153,7 +153,7 @@ describe('ExtensionTraceDataHandler', function () {
             it('parses marker data correctly', async () => {
                 assert.lengthOf(extensionHandlerOutput.extensionMarkers, 1);
                 assert.strictEqual(extensionHandlerOutput.extensionMarkers[0].name, 'A custom mark');
-                const { tooltipText, properties } = extensionHandlerOutput.extensionMarkers[0].args;
+                const { tooltipText, properties } = extensionHandlerOutput.extensionMarkers[0].devtoolsObj;
                 assert.strictEqual(tooltipText, 'A mark');
                 assert.strictEqual(JSON.stringify(properties), '[["Description","This marks the start of a task"]]');
             });
@@ -171,14 +171,15 @@ describe('ExtensionTraceDataHandler', function () {
                     tid: Trace.Types.Events.ThreadID(1),
                     ts: Trace.Types.Timing.Micro(100),
                 };
-                assert.isNull(Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(performanceMarkEvent));
+                assert.isNull(Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(performanceMarkEvent)
+                    .devtoolsObj);
             });
             it('discards markers without a valid dataType field', async () => {
                 // The test example contains extension data with an invalid dataType
                 // value.
                 // Ensure it is discarded.
                 const allMarkers = extensionHandlerOutput.extensionMarkers;
-                const validTrackEntries = allMarkers.filter(entry => entry.args.dataType === 'marker');
+                const validTrackEntries = allMarkers.filter(entry => entry.devtoolsObj.dataType === 'marker');
                 assert.lengthOf(validTrackEntries, allMarkers.length);
             });
         });
@@ -635,7 +636,7 @@ describe('ExtensionTraceDataHandler', function () {
                 // The test example contains a track entry without a track field.
                 // Ensure it is discarded.
                 const allTrackEntries = extensionHandlerOutput.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
-                const validTrackEntries = allTrackEntries.filter(entry => entry.args.track);
+                const validTrackEntries = allTrackEntries.filter(entry => entry.devtoolsObj.track);
                 assert.lengthOf(validTrackEntries, allTrackEntries.length);
             });
         });

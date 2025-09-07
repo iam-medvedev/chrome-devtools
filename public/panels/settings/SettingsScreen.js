@@ -281,10 +281,18 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             window.clearTimeout(this.#updateSyncSectionTimerId);
             this.#updateSyncSectionTimerId = -1;
         }
-        Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(syncInfo => {
+        void Promise
+            .all([
+            new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)),
+            Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled ? Host.GdpClient.GdpClient.instance().getProfile() :
+                Promise.resolve(undefined),
+        ])
+            .then(([syncInfo, gdpProfile]) => {
             this.syncSection.data = {
                 syncInfo,
                 syncSetting: Common.Settings.moduleSetting('sync-preferences'),
+                receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges'),
+                gdpProfile: gdpProfile ?? undefined,
             };
             if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
                 this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);

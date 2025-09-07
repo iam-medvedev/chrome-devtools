@@ -29,8 +29,8 @@
  */
 import '../../core/dom_extension/dom_extension.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Lit from '../../ui/lit/lit.js';
-import { Constraints, Size } from './Geometry.js';
 import { createShadowRootWithCoreStyles } from './UIUtils.js';
 import { XWidget } from './XWidget.js';
 // Remember the original DOM mutation methods here, since we
@@ -621,7 +621,7 @@ export class Widget {
         return this.element.hasFocus();
     }
     calculateConstraints() {
-        return new Constraints();
+        return new Geometry.Constraints();
     }
     constraints() {
         if (typeof this.#constraints !== 'undefined') {
@@ -633,14 +633,15 @@ export class Widget {
         return this.#cachedConstraints;
     }
     setMinimumAndPreferredSizes(width, height, preferredWidth, preferredHeight) {
-        this.#constraints = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
+        this.#constraints =
+            new Geometry.Constraints(new Geometry.Size(width, height), new Geometry.Size(preferredWidth, preferredHeight));
         this.invalidateConstraints();
     }
     setMinimumSize(width, height) {
-        this.minimumSize = new Size(width, height);
+        this.minimumSize = new Geometry.Size(width, height);
     }
     set minimumSize(size) {
-        this.#constraints = new Constraints(size);
+        this.#constraints = new Geometry.Constraints(size);
         this.invalidateConstraints();
     }
     hasNonZeroConstraints() {
@@ -760,7 +761,7 @@ export class VBox extends Widget {
         this.contentElement.classList.add('vbox');
     }
     calculateConstraints() {
-        let constraints = new Constraints();
+        let constraints = new Geometry.Constraints();
         function updateForChild() {
             const child = this.constraints();
             constraints = constraints.widthToMax(child);
@@ -776,7 +777,7 @@ export class HBox extends Widget {
         this.contentElement.classList.add('hbox');
     }
     calculateConstraints() {
-        let constraints = new Constraints();
+        let constraints = new Geometry.Constraints();
         function updateForChild() {
             const child = this.constraints();
             constraints = constraints.addWidth(child);

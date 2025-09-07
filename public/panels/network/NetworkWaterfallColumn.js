@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -77,29 +78,31 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     static buildRequestTimeRangeStyle() {
         const styleMap = new Map();
-        styleMap.set("connecting" /* RequestTimeRangeNames.CONNECTING */, { fillStyle: RequestTimeRangeNameToColor["connecting" /* RequestTimeRangeNames.CONNECTING */] });
-        styleMap.set("ssl" /* RequestTimeRangeNames.SSL */, { fillStyle: RequestTimeRangeNameToColor["ssl" /* RequestTimeRangeNames.SSL */] });
-        styleMap.set("dns" /* RequestTimeRangeNames.DNS */, { fillStyle: RequestTimeRangeNameToColor["dns" /* RequestTimeRangeNames.DNS */] });
-        styleMap.set("proxy" /* RequestTimeRangeNames.PROXY */, { fillStyle: RequestTimeRangeNameToColor["proxy" /* RequestTimeRangeNames.PROXY */] });
-        styleMap.set("blocking" /* RequestTimeRangeNames.BLOCKING */, { fillStyle: RequestTimeRangeNameToColor["blocking" /* RequestTimeRangeNames.BLOCKING */] });
-        styleMap.set("push" /* RequestTimeRangeNames.PUSH */, { fillStyle: RequestTimeRangeNameToColor["push" /* RequestTimeRangeNames.PUSH */] });
-        styleMap.set("queueing" /* RequestTimeRangeNames.QUEUEING */, {
-            fillStyle: RequestTimeRangeNameToColor["queueing" /* RequestTimeRangeNames.QUEUEING */],
+        styleMap.set("connecting" /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */, { fillStyle: RequestTimeRangeNameToColor["connecting" /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */] });
+        styleMap.set("ssl" /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */, { fillStyle: RequestTimeRangeNameToColor["ssl" /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */] });
+        styleMap.set("dns" /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */, { fillStyle: RequestTimeRangeNameToColor["dns" /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */] });
+        styleMap.set("proxy" /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */, { fillStyle: RequestTimeRangeNameToColor["proxy" /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */] });
+        styleMap.set("blocking" /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */, { fillStyle: RequestTimeRangeNameToColor["blocking" /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */] });
+        styleMap.set("push" /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */, { fillStyle: RequestTimeRangeNameToColor["push" /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */] });
+        styleMap.set("queueing" /* NetworkTimeCalculator.RequestTimeRangeNames.QUEUEING */, {
+            fillStyle: RequestTimeRangeNameToColor["queueing" /* NetworkTimeCalculator.RequestTimeRangeNames.QUEUEING */],
             lineWidth: 2,
             borderColor: 'lightgrey',
         });
         // This ensures we always show at least 2 px for a request.
-        styleMap.set("receiving" /* RequestTimeRangeNames.RECEIVING */, {
-            fillStyle: RequestTimeRangeNameToColor["receiving" /* RequestTimeRangeNames.RECEIVING */],
+        styleMap.set("receiving" /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING */, {
+            fillStyle: RequestTimeRangeNameToColor["receiving" /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING */],
             lineWidth: 2,
             borderColor: '#03A9F4',
         });
-        styleMap.set("waiting" /* RequestTimeRangeNames.WAITING */, { fillStyle: RequestTimeRangeNameToColor["waiting" /* RequestTimeRangeNames.WAITING */] });
-        styleMap.set("receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */, { fillStyle: RequestTimeRangeNameToColor["receiving-push" /* RequestTimeRangeNames.RECEIVING_PUSH */] });
-        styleMap.set("serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */, { fillStyle: RequestTimeRangeNameToColor["serviceworker" /* RequestTimeRangeNames.SERVICE_WORKER */] });
-        styleMap.set("serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */, { fillStyle: RequestTimeRangeNameToColor["serviceworker-preparation" /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */] });
-        styleMap.set("serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */, {
-            fillStyle: RequestTimeRangeNameToColor["serviceworker-respondwith" /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */],
+        styleMap.set("waiting" /* NetworkTimeCalculator.RequestTimeRangeNames.WAITING */, { fillStyle: RequestTimeRangeNameToColor["waiting" /* NetworkTimeCalculator.RequestTimeRangeNames.WAITING */] });
+        styleMap.set("receiving-push" /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING_PUSH */, { fillStyle: RequestTimeRangeNameToColor["receiving-push" /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING_PUSH */] });
+        styleMap.set("serviceworker" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER */, { fillStyle: RequestTimeRangeNameToColor["serviceworker" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER */] });
+        styleMap.set("serviceworker-preparation" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */, {
+            fillStyle: RequestTimeRangeNameToColor["serviceworker-preparation" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */]
+        });
+        styleMap.set("serviceworker-respondwith" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */, {
+            fillStyle: RequestTimeRangeNameToColor["serviceworker-respondwith" /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */],
         });
         return styleMap;
     }
@@ -196,8 +199,8 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         let start;
         let end;
         if (useTimingBars) {
-            range = RequestTimingView.calculateRequestTimeRanges(request, 0)
-                .find(data => data.name === "total" /* RequestTimeRangeNames.TOTAL */);
+            range = NetworkTimeCalculator.calculateRequestTimeRanges(request, 0)
+                .find(data => data.name === "total" /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */);
             start = this.timeToPosition(range.start);
             end = this.timeToPosition(range.end);
         }
@@ -410,13 +413,13 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
     }
     getBarHeight(type) {
         switch (type) {
-            case "connecting" /* RequestTimeRangeNames.CONNECTING */:
-            case "ssl" /* RequestTimeRangeNames.SSL */:
-            case "dns" /* RequestTimeRangeNames.DNS */:
-            case "proxy" /* RequestTimeRangeNames.PROXY */:
-            case "blocking" /* RequestTimeRangeNames.BLOCKING */:
-            case "push" /* RequestTimeRangeNames.PUSH */:
-            case "queueing" /* RequestTimeRangeNames.QUEUEING */:
+            case "connecting" /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */:
+            case "ssl" /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */:
+            case "dns" /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */:
+            case "proxy" /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */:
+            case "blocking" /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */:
+            case "push" /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */:
+            case "queueing" /* NetworkTimeCalculator.RequestTimeRangeNames.QUEUEING */:
                 return 7;
             default:
                 return 13;
@@ -482,8 +485,8 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
             }
         }
         if (!this.calculator.startAtZero) {
-            const queueingRange = RequestTimingView.calculateRequestTimeRanges(request, 0)
-                .find(data => data.name === "total" /* RequestTimeRangeNames.TOTAL */);
+            const queueingRange = NetworkTimeCalculator.calculateRequestTimeRanges(request, 0)
+                .find(data => data.name === "total" /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */);
             const leftLabelWidth = labels ? context.measureText(labels.left).width : 0;
             const leftTextPlacedInBar = leftLabelWidth < ranges.mid - ranges.start;
             const wiskerTextPadding = 13;
@@ -505,11 +508,11 @@ export class NetworkWaterfallColumn extends UI.Widget.VBox {
         if (!request) {
             return;
         }
-        const ranges = RequestTimingView.calculateRequestTimeRanges(request, 0);
+        const ranges = NetworkTimeCalculator.calculateRequestTimeRanges(request, 0);
         let index = 0;
         for (const range of ranges) {
-            if (range.name === "total" /* RequestTimeRangeNames.TOTAL */ || range.name === "sending" /* RequestTimeRangeNames.SENDING */ ||
-                range.end - range.start === 0) {
+            if (range.name === "total" /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */ ||
+                range.name === "sending" /* NetworkTimeCalculator.RequestTimeRangeNames.SENDING */ || range.end - range.start === 0) {
                 continue;
             }
             const style = this.styleForTimeRangeName.get(range.name);

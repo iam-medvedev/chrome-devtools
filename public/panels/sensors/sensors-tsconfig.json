@@ -50,6 +50,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../mobile_throttling/bundle-tsconfig.json"
     },
     {

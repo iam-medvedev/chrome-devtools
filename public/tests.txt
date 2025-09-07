@@ -30,6 +30,7 @@ core/common/Throttler.test.js
 core/common/Trie.test.js
 core/dom_extension/DOMExtension.test.js
 core/host/AidaClient.test.js
+core/host/GdpClient.test.js
 core/i18n/ByteUtilities.test.js
 core/i18n/DevToolsLocale.test.js
 core/i18n/NumberFormatter.test.js
@@ -87,6 +88,7 @@ core/sdk/ServerTiming.test.js
 core/sdk/ServiceWorkerCacheModel.test.js
 core/sdk/ServiceWorkerManager.test.js
 core/sdk/SourceMap.test.js
+core/sdk/SourceMapCache.test.js
 core/sdk/SourceMapFunctionRanges.test.js
 core/sdk/SourceMapManager.test.js
 core/sdk/SourceMapScopeChainEntry.test.js
@@ -130,6 +132,8 @@ models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
+models/badges/Badge.test.js
+models/badges/UserBadges.test.js
 models/bindings/CompilerScriptMapping.test.js
 models/bindings/ContentProviderBasedProject.test.js
 models/bindings/DebuggerLanguagePlugins.test.js
@@ -151,6 +155,7 @@ models/extensions/HostUrlPattern.test.js
 models/extensions/LanguageExtensionEndpoint.test.js
 models/extensions/RecorderPluginManager.test.js
 models/formatter/ScriptFormatter.test.js
+models/geometry/Geometry.test.js
 models/har/Importer.test.js
 models/har/Log.test.js
 models/har/Writer.test.js
@@ -197,6 +202,7 @@ models/text_utils/TextCursor.test.js
 models/text_utils/TextRange.test.js
 models/text_utils/TextUtils.test.js
 models/text_utils/WasmDisassembly.test.js
+models/trace/EventsSerializer.test.js
 models/trace/ModelImpl.test.js
 models/trace/Processor.test.js
 models/trace/extras/FilmStrip.test.js
@@ -345,6 +351,7 @@ panels/changes/changes.test.js
 panels/common/AiCodeCompletionDisclaimer.test.js
 panels/common/AiCodeCompletionSummaryToolbar.test.js
 panels/common/AiCodeCompletionTeaser.test.js
+panels/common/BadgeNotification.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsolePrompt.test.js
@@ -480,6 +487,7 @@ panels/search/SearchResultsPane.test.js
 panels/search/SearchView.test.js
 panels/security/CookieControlsView.test.js
 panels/security/CookieReportView.test.js
+panels/security/IPProtectionView.test.js
 panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
 panels/settings/AISettingsTab.test.js
@@ -573,7 +581,6 @@ panels/timeline/utils/AICallTree.test.js
 panels/timeline/utils/EntityMapper.test.js
 panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/EntryNodes.test.js
-panels/timeline/utils/EventsSerializer.test.js
 panels/timeline/utils/FreshRecording.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
@@ -641,7 +648,6 @@ ui/legacy/ContextMenu.test.js
 ui/legacy/DockController.test.js
 ui/legacy/FilterBar.test.js
 ui/legacy/Fragment.test.js
-ui/legacy/Geometry.test.js
 ui/legacy/Infobar.test.js
 ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js

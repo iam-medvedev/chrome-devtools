@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
@@ -215,7 +216,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
             {
                 flavor: SDK.NetworkRequest.NetworkRequest,
                 createContext: () => {
-                    return new AiAssistanceModel.RequestContext(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest));
+                    return new AiAssistanceModel.RequestContext(sinon.createStubInstance(SDK.NetworkRequest.NetworkRequest), sinon.createStubInstance(NetworkTimeCalculator.NetworkTransferDurationCalculator));
                 },
                 action: 'drjones.network-floating-button'
             },
@@ -230,7 +231,7 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 flavor: TimelineUtils.AIContext.AgentFocus,
                 createContext: () => {
                     // @ts-expect-error: don't need any data.
-                    const context = AiAssistanceModel.PerformanceTraceContext.fromInsight(null, null, null);
+                    const context = AiAssistanceModel.PerformanceTraceContext.fromInsight(null, new Map());
                     sinon.stub(AiAssistanceModel.PerformanceTraceContext.prototype, 'getSuggestions')
                         .returns(Promise.resolve([{ title: 'test suggestion' }]));
                     return context;

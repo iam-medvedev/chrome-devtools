@@ -50,7 +50,7 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     protected repeatCountElement: UI.UIUtils.DevToolsSmallBubble | null;
     private requestResolver;
     private issueResolver;
-    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void);
+    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<HTMLElement | UI.TreeOutline.TreeElement>) => void);
     setInsight(insight: HTMLElement): void;
     element(): HTMLElement;
     wasShown(): void;
@@ -142,7 +142,7 @@ export declare class ConsoleGroupViewMessage extends ConsoleViewMessage {
     private expandGroupIcon;
     private readonly onToggle;
     private groupEndMessageInternal;
-    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onToggle: () => void, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void);
+    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onToggle: () => void, onResize: (arg0: Common.EventTarget.EventTargetEvent<HTMLElement | UI.TreeOutline.TreeElement>) => void);
     private setCollapsed;
     collapsed(): boolean;
     maybeHandleOnKeyDown(event: KeyboardEvent): boolean;
@@ -154,7 +154,7 @@ export declare class ConsoleGroupViewMessage extends ConsoleViewMessage {
 }
 export declare class ConsoleCommand extends ConsoleViewMessage {
     private formattedCommand;
-    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void);
+    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<HTMLElement | UI.TreeOutline.TreeElement>) => void);
     contentElement(): HTMLElement;
     private updateSearch;
 }
@@ -163,7 +163,7 @@ export declare class ConsoleCommandResult extends ConsoleViewMessage {
 }
 export declare class ConsoleTableMessageView extends ConsoleViewMessage {
     private dataGrid;
-    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<UI.TreeOutline.TreeElement>) => void);
+    constructor(consoleMessage: SDK.ConsoleModel.ConsoleMessage, linkifier: Components.Linkifier.Linkifier, requestResolver: Logs.RequestResolver.RequestResolver, issueResolver: IssuesManager.IssueResolver.IssueResolver, onResize: (arg0: Common.EventTarget.EventTargetEvent<HTMLElement | UI.TreeOutline.TreeElement>) => void);
     wasShown(): void;
     onResize(): void;
     contentElement(): HTMLElement;

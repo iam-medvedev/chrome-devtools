@@ -39,8 +39,11 @@ var ButtonDialog = class extends HTMLElement {
     if (!this.#dialog) {
       throw new Error("Dialog not found");
     }
-    this.state = "expanded";
-    void this.#dialog.setDialogVisible(true);
+    if (this.#data?.state === "disabled") {
+      void this.#dialog.setDialogVisible(false);
+    } else {
+      void this.#dialog.setDialogVisible(true);
+    }
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   #closeDialog(evt) {
@@ -48,7 +51,6 @@ var ButtonDialog = class extends HTMLElement {
       throw new Error("Dialog not found");
     }
     void this.#dialog.setDialogVisible(false);
-    this.state = "expanded";
     if (evt) {
       evt.stopImmediatePropagation();
     }
@@ -365,6 +367,9 @@ var Dialog = class extends HTMLElement {
   }
   set state(state) {
     this.#props.state = state;
+    if (this.#props.state === "collapsed" || this.#props.state === "disabled") {
+      this.#forceDialogCloseInDevToolsBound();
+    }
     this.#onStateChange();
   }
   #updateDialogBounds() {
@@ -403,11 +408,9 @@ var Dialog = class extends HTMLElement {
   }
   async setDialogVisible(show) {
     if (show) {
-      this.state = "expanded";
       await this.#showDialog();
       return;
     }
-    this.state = "collapsed";
     this.#closeDialog();
   }
   async #handlePointerEvent(evt) {

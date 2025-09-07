@@ -129,10 +129,7 @@ export declare class Renderer implements UI.UIUtils.Renderer {
     static instance(opts?: {
         forceNew: boolean;
     }): Renderer;
-    render(object: Object, options?: UI.UIUtils.Options): Promise<{
-        node: Node;
-        tree: UI.TreeOutline.TreeOutline | null;
-    } | null>;
+    render(object: Object, options?: UI.UIUtils.Options): Promise<UI.UIUtils.RenderedObject | null>;
 }
 export declare class ObjectPropertyValue implements UI.ContextMenu.Provider<Object> {
     element: Element;

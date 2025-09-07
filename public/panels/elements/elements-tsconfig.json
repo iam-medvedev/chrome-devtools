@@ -126,6 +126,9 @@
       "path": "../issues/bundle-tsconfig.json"
     },
     {
+      "path": "../media/bundle-tsconfig.json"
+    },
+    {
       "path": "../mobile_throttling/bundle-tsconfig.json"
     },
     {

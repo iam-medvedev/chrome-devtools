@@ -110,6 +110,9 @@ function getBottomCallFrameForEvent(event, traceParsedData) {
     const eventStackTrace = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
     return profileStackTrace?.callFrames[0] ?? eventStackTrace?.[0] ?? null;
 }
+export function isForcedReflowInsight(model) {
+    return model.insightKey === "ForcedReflow" /* InsightKeys.FORCED_REFLOW */;
+}
 export function generateInsight(traceParsedData, context) {
     const isWithinContext = (event) => {
         const frameId = Helpers.Trace.frameIDForEvent(event);

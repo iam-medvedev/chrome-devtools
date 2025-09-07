@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, EnvFunctionMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AttributeMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, defaultValueForCSSType, EnvFunctionMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, localEvalCSS, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframeRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -652,6 +652,10 @@ export class CSSMatchedStyles {
         const domCascade = this.#styleToDOMCascade.get(style);
         return domCascade ? domCascade.computeCSSVariable(style, variableName) : null;
     }
+    computeAttribute(style, attributeName, type) {
+        const domCascade = this.#styleToDOMCascade.get(style);
+        return domCascade ? domCascade.computeAttribute(style, attributeName, type) : null;
+    }
     resolveProperty(name, ownerStyle) {
         return this.#styleToDOMCascade.get(ownerStyle)?.resolveProperty(name, ownerStyle) ?? null;
     }
@@ -701,6 +705,7 @@ export class CSSMatchedStyles {
             new AutoBaseMatcher(),
             new BinOpMatcher(),
             new RelativeColorChannelMatcher(),
+            new AttributeMatcher(this, style),
             new EnvFunctionMatcher(this),
         ];
     }
@@ -976,11 +981,11 @@ class DOMInheritanceCascade {
         }
     }
     computeCSSVariable(style, variableName) {
+        this.ensureInitialized();
         const nodeCascade = this.#styleToNodeCascade.get(style);
         if (!nodeCascade) {
             return null;
         }
-        this.ensureInitialized();
         return this.innerComputeCSSVariable(nodeCascade, variableName);
     }
     innerComputeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
@@ -1013,7 +1018,56 @@ class DOMInheritanceCascade {
         if (!ast) {
             return null;
         }
-        // While computing CSS variable values we need to detect declaration cycles. Every declaration on the cycle is
+        return this.innerWalkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
+    }
+    computeAttribute(style, attributeName, type) {
+        this.ensureInitialized();
+        const nodeCascade = this.#styleToNodeCascade.get(style);
+        if (!nodeCascade) {
+            return null;
+        }
+        return this.innerComputeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
+    }
+    rawAttributeValue(style, attributeName) {
+        const node = this.#matchedStyles.nodeForStyle(style) ?? this.#matchedStyles.node();
+        if (!node) {
+            return null;
+        }
+        return node.getAttribute(attributeName) ?? null;
+    }
+    attributeValueAsType(style, attributeName, type) {
+        const rawValue = this.rawAttributeValue(style, attributeName);
+        if (rawValue === null) {
+            return null;
+        }
+        return localEvalCSS(rawValue, type);
+    }
+    attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord) {
+        const rawValue = this.rawAttributeValue(style, attributeName);
+        if (rawValue === null) {
+            return null;
+        }
+        const ast = PropertyParser.tokenizeDeclaration('--property', rawValue);
+        if (!ast) {
+            return null;
+        }
+        return this.innerWalkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
+    }
+    innerComputeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
+        if (type.isCSSTokens) {
+            const value = this.attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord);
+            if (value !== null && localEvalCSS(value, type.type) !== null) {
+                return value;
+            }
+            return null;
+        }
+        return this.attributeValueAsType(style, attributeName, type.type);
+    }
+    innerWalkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration) {
+        const record = sccRecord.add(outerNodeCascade, substitutionName);
+        const computedCSSVariablesMap = this.#computedCSSVariables;
+        const innerNodeCascade = this.#styleToNodeCascade.get(parentStyle);
+        // While computing CSS variable and attribute values we need to detect declaration cycles. Every declaration on the cycle is
         // invalid. However, var()s outside of the cycle that reference a property on the cycle are not automatically
         // invalid, but rather use the fallback value. We use a version of Tarjan's algorithm to detect cycles, which are
         // SCCs on the custom property dependency graph. Computing variable values is DFS. When encountering a previously
@@ -1021,68 +1075,110 @@ class DOMInheritanceCascade {
         // find a reference to a variable already on the stack. For each node we also keep track of the "root" of the
         // corresponding SCC, which is the node in that component with the smallest discovery time. This is determined by
         // bubbling up the minimum discovery time whenever we close a cycle.
-        const record = sccRecord.add(nodeCascade, variableName);
         const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [
             new BaseVariableMatcher(match => {
-                const parentStyle = definedValue.declaration.style;
-                const nodeCascade = this.#styleToNodeCascade.get(parentStyle);
-                if (!nodeCascade) {
-                    return null;
-                }
-                const childRecord = sccRecord.get(nodeCascade, match.name);
-                if (childRecord) {
-                    if (sccRecord.isInInProgressSCC(childRecord)) {
-                        // Cycle detected, update the root.
-                        record.updateRoot(childRecord);
-                        return null;
-                    }
-                    // We've seen the variable before, so we can look up the text directly.
-                    return this.#computedCSSVariables.get(nodeCascade)?.get(match.name)?.value ?? null;
-                }
-                const cssVariableValue = this.innerComputeCSSVariable(nodeCascade, match.name, sccRecord);
-                // Variable reference is resolved, so return it.
-                const newChildRecord = sccRecord.get(nodeCascade, match.name);
-                // The SCC record for the referenced variable may not exist if the var was already computed in a previous
-                // iteration. That means it's in a different SCC.
-                newChildRecord && record.updateRoot(newChildRecord);
-                if (cssVariableValue?.value !== undefined) {
-                    return cssVariableValue.value;
+                const { value, mayFallback } = recurseWithCycleDetection(match.name, nodeCascade => this.innerComputeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
+                if (!mayFallback || value !== null) {
+                    return value;
                 }
                 // Variable reference is not resolved, use the fallback.
                 if (!match.fallback) {
                     return null;
                 }
-                if (match.fallback.length === 0) {
-                    return '';
-                }
-                if (match.matching.hasUnresolvedVarsRange(match.fallback[0], match.fallback[match.fallback.length - 1])) {
-                    return null;
-                }
-                return match.matching.getComputedTextRange(match.fallback[0], match.fallback[match.fallback.length - 1]);
+                return evaluateFallback(match.fallback, match.matching);
             }),
-            new EnvFunctionMatcher(this.#matchedStyles)
+            new EnvFunctionMatcher(this.#matchedStyles),
+            new AttributeMatcher(this.#matchedStyles, parentStyle, match => {
+                const recordName = `attr(${match.name})`;
+                let attributeValue = null;
+                if (!match.isCSSTokens) {
+                    const { value, mayFallback } = recurseWithCycleDetection(recordName, () => this.attributeValueAsType(parentStyle, match.name, match.cssType()));
+                    if (value === null && !mayFallback) {
+                        return null;
+                    }
+                    attributeValue = value;
+                }
+                else {
+                    const { value, mayFallback } = recurseWithCycleDetection(recordName, nodeCascade => this.attributeValueWithSubstitutions(nodeCascade, parentStyle, match.name, sccRecord));
+                    if (value === null && !mayFallback) {
+                        return null;
+                    }
+                    if (value !== null && localEvalCSS(value, match.cssType()) !== null) {
+                        attributeValue = value;
+                    }
+                }
+                if (attributeValue !== null) {
+                    return attributeValue;
+                }
+                // Variable reference is not resolved, use the fallback.
+                if (!match.fallback || !match.isValidType) {
+                    // Except in this case, we use the default value for the type.
+                    return defaultValueForCSSType(match.type);
+                }
+                return evaluateFallback(match.fallback, match.matching);
+            })
         ]);
         const decl = PropertyParser.ASTUtils.siblings(PropertyParser.ASTUtils.declValue(matching.ast.tree));
-        const computedText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
+        const declText = decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
+        const hasUnresolvedSubstitutions = decl.length > 0 && matching.hasUnresolvedSubstitutionsRange(decl[0], decl[decl.length - 1]);
+        const computedText = hasUnresolvedSubstitutions ? null : declText;
+        const outerComputedCSSVariables = computedCSSVariablesMap.get(outerNodeCascade);
+        if (!outerComputedCSSVariables) {
+            return null;
+        }
         if (record.isRootEntry) {
             // Variables are kept on the stack until all descendents in the same SCC have been visited. That's the case when
             // completing the recursion on the root of the SCC.
             const scc = sccRecord.finishSCC(record);
             if (scc.length > 1) {
                 for (const entry of scc) {
-                    console.assert(entry.nodeCascade === nodeCascade, 'Circles should be within the cascade');
-                    computedCSSVariables.set(entry.name, null);
+                    console.assert(entry.nodeCascade === outerNodeCascade, 'Circles should be within the cascade');
+                    outerComputedCSSVariables.set(entry.name, null);
                 }
                 return null;
             }
         }
-        if (decl.length > 0 && matching.hasUnresolvedVarsRange(decl[0], decl[decl.length - 1])) {
-            computedCSSVariables.set(variableName, null);
+        if (computedText === null) {
+            outerComputedCSSVariables.set(substitutionName, null);
             return null;
         }
-        const cssVariableValue = { value: computedText, declaration: definedValue.declaration };
-        computedCSSVariables.set(variableName, cssVariableValue);
+        const cssVariableValue = { value: computedText, declaration };
+        outerComputedCSSVariables.set(substitutionName, cssVariableValue);
         return cssVariableValue;
+        function recurseWithCycleDetection(recordName, func) {
+            if (!innerNodeCascade) {
+                return { value: null, mayFallback: false };
+            }
+            const childRecord = sccRecord.get(innerNodeCascade, recordName);
+            if (childRecord) {
+                if (sccRecord.isInInProgressSCC(childRecord)) {
+                    // Cycle detected, update the root.
+                    record.updateRoot(childRecord);
+                    return { value: null, mayFallback: false };
+                }
+                // We've seen the variable before, so we can look up the text directly.
+                return {
+                    value: computedCSSVariablesMap.get(innerNodeCascade)?.get(recordName)?.value ?? null,
+                    mayFallback: false
+                };
+            }
+            const value = func(innerNodeCascade);
+            // Variable reference is resolved, so return it.
+            const newChildRecord = sccRecord.get(innerNodeCascade, recordName);
+            // The SCC record for the referenced variable may not exist if the var was already computed in a previous
+            // iteration. That means it's in a different SCC.
+            newChildRecord && record.updateRoot(newChildRecord);
+            return { value, mayFallback: true };
+        }
+        function evaluateFallback(fallback, matching) {
+            if (fallback.length === 0) {
+                return '';
+            }
+            if (matching.hasUnresolvedSubstitutionsRange(fallback[0], fallback[fallback.length - 1])) {
+                return null;
+            }
+            return matching.getComputedTextRange(fallback[0], fallback[fallback.length - 1]);
+        }
     }
     styles() {
         return Array.from(this.#styleToNodeCascade.keys());

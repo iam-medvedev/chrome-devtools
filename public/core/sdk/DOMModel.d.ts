@@ -7,6 +7,7 @@ import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
+export declare const ARIA_ATTRIBUTES: Set<string>;
 export declare class DOMNode {
     #private;
     ownerDocument: DOMDocument | null;

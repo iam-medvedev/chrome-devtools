@@ -1,7 +1,7 @@
 import * as Host from '../../core/host/host.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
-    aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
+    aidaAvailability?: Host.AidaClient.AidaAccessPreconditions;
     onAction: (event: Event) => void;
     onDismiss: (event: Event) => void;
 }

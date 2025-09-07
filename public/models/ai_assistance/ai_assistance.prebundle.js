@@ -19,5 +19,7 @@ export * from './data_formatters/FileFormatter.js';
 export * from './data_formatters/NetworkRequestFormatter.js';
 export * from './data_formatters/PerformanceInsightFormatter.js';
 export * from './data_formatters/PerformanceTraceFormatter.js';
+export * from './data_formatters/Types.js';
 export * from './ConversationHandler.js';
+export * from './injected.js';
 //# sourceMappingURL=ai_assistance.prebundle.js.map

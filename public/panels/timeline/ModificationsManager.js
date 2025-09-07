@@ -7,7 +7,6 @@ import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import * as AnnotationHelpers from './AnnotationHelpers.js';
 import { EntriesFilter } from './EntriesFilter.js';
-import * as Utils from './utils/utils.js';
 const modificationsManagerByTraceIndex = [];
 let activeManager;
 // Event dispatched after an annotation was added, removed or updated.
@@ -92,7 +91,7 @@ export class ModificationsManager extends EventTarget {
         this.#timelineBreadcrumbs = new TimelineComponents.Breadcrumbs.Breadcrumbs(traceBounds);
         this.#modifications = modifications || null;
         this.#parsedTrace = parsedTrace;
-        this.#eventsSerializer = new Utils.EventsSerializer.EventsSerializer();
+        this.#eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
         // This method is also called in SidebarAnnotationsTab, but calling this multiple times doesn't recreate the setting.
         // Instead, after the second call, the cached setting is returned.
         this.#annotationsHiddenSetting = Common.Settings.Settings.instance().moduleSetting('annotations-hidden');

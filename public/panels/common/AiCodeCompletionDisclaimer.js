@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import '../../ui/components/spinners/spinners.js';
 import '../../ui/components/tooltips/tooltips.js';
+import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Root from '../../core/root/root.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -37,7 +38,7 @@ const UIStringsNotTranslate = {
 };
 const lockedString = i18n.i18n.lockedString;
 export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-    if (!input.disclaimerTooltipId) {
+    if (input.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ || !input.disclaimerTooltipId) {
         render(nothing, target);
         return;
     }
@@ -102,11 +103,14 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     #loading = false;
     #loadingStartTime = 0;
     #spinnerLoadingTimeout;
+    #aidaAvailability;
+    #boundOnAidaAvailabilityChange;
     constructor(element, view = DEFAULT_SUMMARY_TOOLBAR_VIEW) {
         super(element);
         this.markAsExternallyManaged();
         this.#noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
+        this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         this.#view = view;
     }
     set disclaimerTooltipId(disclaimerTooltipId) {
@@ -139,6 +143,13 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
             }, remainingTime);
         }
     }
+    async #onAidaAvailabilityChange() {
+        const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+        if (currentAidaAvailability !== this.#aidaAvailability) {
+            this.#aidaAvailability = currentAidaAvailability;
+            this.requestUpdate();
+        }
+    }
     #onManageInSettingsTooltipClick() {
         this.#viewOutput.hideTooltip?.();
         void UI.ViewManager.ViewManager.instance().showView('chrome-ai');
@@ -147,8 +158,18 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
         this.#view({
             disclaimerTooltipId: this.#disclaimerTooltipId,
             noLogging: this.#noLogging,
+            aidaAvailability: this.#aidaAvailability,
             onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this),
         }, this.#viewOutput, this.contentElement);
+    }
+    wasShown() {
+        super.wasShown();
+        Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
+        void this.#onAidaAvailabilityChange();
+    }
+    willHide() {
+        super.willHide();
+        Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
     }
 }
 //# sourceMappingURL=AiCodeCompletionDisclaimer.js.map

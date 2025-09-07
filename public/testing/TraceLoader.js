@@ -224,6 +224,14 @@ export class TraceLoader {
         const traceContents = JSON.parse(contents);
         return traceContents;
     }
+    /**
+     * Karma test run in a single context if we load all the traces
+     * we risk getting out of memory
+     */
+    static resetCache() {
+        fileContentsCache.clear();
+        traceEngineCache.clear();
+    }
 }
 export async function fetchFileAsText(url) {
     const response = await fetch(url);

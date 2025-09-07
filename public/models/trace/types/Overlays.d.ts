@@ -1,4 +1,3 @@
-import type * as Lit from '../../../ui/lit/lit.js';
 import type { EntriesLinkState } from './File.js';
 import type { Micro, TraceWindowMicro } from './Timing.js';
 import type { Event, LegacyTimelineFrame, PageLoadEvent } from './TraceEvents.js';
@@ -72,7 +71,7 @@ export interface CandyStripedTimeRange {
  */
 export interface TimespanBreakdownEntryBreakdown {
     bounds: TraceWindowMicro;
-    label: string | Lit.LitTemplate;
+    label: string | HTMLElement;
     showDuration: boolean;
 }
 /**

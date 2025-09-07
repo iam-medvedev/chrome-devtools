@@ -188,6 +188,8 @@ var DISCLAIMER_TOOLTIP_ID = "sources-ai-code-completion-disclaimer-tooltip";
 var CITATIONS_TOOLTIP_ID = "sources-ai-code-completion-citations-tooltip";
 var AiCodeCompletionPlugin = class extends Plugin {
   #aidaClient;
+  #aidaAvailability;
+  #boundOnAidaAvailabilityChange;
   #aiCodeCompletion;
   #aiCodeCompletionSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
   #aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting("ai-code-completion-teaser-dismissed", false);
@@ -211,6 +213,9 @@ var AiCodeCompletionPlugin = class extends Plugin {
     }
     this.#boundEditorKeyDown = this.#editorKeyDown.bind(this);
     this.#boundOnAiCodeCompletionSettingChanged = this.#onAiCodeCompletionSettingChanged.bind(this);
+    this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
+    Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
+    void this.#onAidaAvailabilityChange();
     const showTeaser = !this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get();
     if (showTeaser) {
       this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
@@ -222,6 +227,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
   dispose() {
     this.#teaser = void 0;
     this.#aiCodeCompletionSetting.removeChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
+    Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
     this.#editor?.removeEventListener("keydown", this.#boundEditorKeyDown);
     this.#cleanupAiCodeCompletion();
     super.dispose();
@@ -355,23 +361,31 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#detachAiCodeCompletionTeaser();
       this.#teaser = void 0;
     }
-    this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
-      { aidaClient: this.#aidaClient },
-      this.#editor,
-      "sources"
-      /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */
-    );
-    this.#aiCodeCompletion.addEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
-    this.#aiCodeCompletion.addEventListener("ResponseReceived", this.#onAiResponseReceived, this);
+    if (!this.#aiCodeCompletion) {
+      this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
+        { aidaClient: this.#aidaClient },
+        this.#editor,
+        "sources"
+        /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */
+      );
+      this.#aiCodeCompletion.addEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
+      this.#aiCodeCompletion.addEventListener("ResponseReceived", this.#onAiResponseReceived, this);
+    }
     this.#createAiCodeCompletionDisclaimer();
     this.#createAiCodeCompletionCitationsToolbar();
   }
   #createAiCodeCompletionDisclaimer() {
+    if (this.#aiCodeCompletionDisclaimer) {
+      return;
+    }
     this.#aiCodeCompletionDisclaimer = new PanelCommon.AiCodeCompletionDisclaimer();
     this.#aiCodeCompletionDisclaimer.disclaimerTooltipId = DISCLAIMER_TOOLTIP_ID;
     this.#aiCodeCompletionDisclaimer.show(this.#aiCodeCompletionDisclaimerContainer, void 0, true);
   }
   #createAiCodeCompletionCitationsToolbar() {
+    if (this.#aiCodeCompletionCitationsToolbar) {
+      return;
+    }
     this.#aiCodeCompletionCitationsToolbar = new PanelCommon.AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, hasTopBorder: true });
     this.#aiCodeCompletionCitationsToolbar.show(this.#aiCodeCompletionCitationsToolbarContainer, void 0, true);
   }
@@ -398,10 +412,22 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#cleanupAiCodeCompletion();
     }
   }
+  async #onAidaAvailabilityChange() {
+    const currentAidaAvailability = await Host.AidaClient.AidaClient.checkAccessPreconditions();
+    if (currentAidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = currentAidaAvailability;
+      if (this.#aidaAvailability === "available") {
+        this.#onAiCodeCompletionSettingChanged();
+      } else if (this.#aiCodeCompletion) {
+        this.#cleanupAiCodeCompletion();
+      }
+    }
+  }
   #cleanupAiCodeCompletion() {
     this.#aiCodeCompletion?.removeEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
     this.#aiCodeCompletion?.removeEventListener("ResponseReceived", this.#onAiResponseReceived, this);
     this.#aiCodeCompletion?.remove();
+    this.#aiCodeCompletion = void 0;
     this.#aiCodeCompletionCitations = [];
     this.#aiCodeCompletionDisclaimerContainer.removeChildren();
     this.#aiCodeCompletionDisclaimer = void 0;
@@ -531,7 +557,15 @@ function aiCodeCompletionTeaserExtension(teaser) {
       return this.#teaserDecoration;
     }
   }, {
-    decorations: (v) => v.decorations
+    decorations: (v) => v.decorations,
+    eventHandlers: {
+      mousedown(event) {
+        if (event.target instanceof Node && teaser.contentElement.contains(event.target)) {
+          return true;
+        }
+        return false;
+      }
+    }
   });
   return teaserPlugin;
 }
@@ -3400,6 +3434,7 @@ import * as i18n15 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined3 } from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 import * as CodeMirror4 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IconButton3 from "./../../ui/components/icon_button/icon_button.js";
@@ -3494,7 +3529,7 @@ function findColorsAndCurves(state, from, to, onColor, onCurve) {
         if (parsedColor) {
           onColor(node.from, parsedColor, content);
         } else {
-          const parsedCurve = UI8.Geometry.CubicBezier.parse(content);
+          const parsedCurve = Geometry.CubicBezier.parse(content);
           if (parsedCurve) {
             onCurve(node.from, parsedCurve, content);
           }

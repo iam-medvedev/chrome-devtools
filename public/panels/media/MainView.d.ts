@@ -44,7 +44,6 @@ export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.T
     modelRemoved(model: MediaModel): void;
     private addEventListeners;
     private removeEventListeners;
-    private onPlayerCreated;
     private propertiesChanged;
     private eventsAdded;
     private messagesLogged;
@@ -54,6 +53,8 @@ export declare class MainView extends UI.Panel.PanelWithSidebar implements SDK.T
     onError(playerID: string, error: Protocol.Media.PlayerError): void;
     onMessage(playerID: string, message: Protocol.Media.PlayerMessage): void;
     onEvent(playerID: string, event: PlayerEvent): void;
+    selectPlayerByDOMNodeId(domNodeId: Protocol.DOM.BackendNodeId): void;
+    waitForInitialPlayers(): Promise<void>;
     private playerCreated;
     markPlayerForDeletion(playerID: string): void;
     markOtherPlayersForDeletion(playerID: string): void;

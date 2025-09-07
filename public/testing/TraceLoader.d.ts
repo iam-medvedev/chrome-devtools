@@ -73,5 +73,10 @@ export declare class TraceLoader {
         insights: Trace.Insights.Types.TraceInsightSets | null;
     }>;
     static loadTraceFileFromURL(url: URL): Promise<Trace.Types.File.TraceFile>;
+    /**
+     * Karma test run in a single context if we load all the traces
+     * we risk getting out of memory
+     */
+    static resetCache(): void;
 }
 export declare function fetchFileAsText(url: URL): Promise<string>;

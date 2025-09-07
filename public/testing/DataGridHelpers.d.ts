@@ -18,8 +18,14 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     set displayName(displayName: string);
     set filters(filters: import("../models/text_utils/TextUtils.js").ParsedFilter[]);
     get columns(): import("../ui/legacy/components/data_grid/DataGrid.js").ColumnDescriptor[];
+    addNodes(nodes: NodeList): void;
+    removeNodes(nodes: NodeList): void;
+    updateNode(node: Node, attributeName: string | null): void;
+    onChange(mutationList: MutationRecord[]): void;
     addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
+    #private: any;
+    set template(template: import("../ui/lit/lit.js").LitTemplate);
     accessKey: string;
     readonly accessKeyLabel: string;
     autocapitalize: string;

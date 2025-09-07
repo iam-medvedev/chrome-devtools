@@ -11,7 +11,7 @@ __export(ExtensionUI_exports, {
 });
 import * as ThemeSupport from "./../../../ui/legacy/theme_support/theme_support.js";
 function extensionEntryColor(event) {
-  const color = event.args.color;
+  const color = event.devtoolsObj.color;
   let themeColor = "--ref-palette-blue70";
   switch (color) {
     case "primary":

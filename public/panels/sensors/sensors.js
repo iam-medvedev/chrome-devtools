@@ -480,6 +480,7 @@ import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
@@ -1409,14 +1410,14 @@ var SensorsView = class extends UI2.Widget.VBox {
     event.consume(true);
     let axis, angle;
     if (event.shiftKey) {
-      axis = new UI2.Geometry.Vector(0, 0, 1);
+      axis = new Geometry.Vector(0, 0, 1);
       angle = (mouseMoveVector.x - this.mouseDownVector.x) * ShiftDragOrientationSpeed;
     } else {
-      axis = UI2.Geometry.crossProduct(this.mouseDownVector, mouseMoveVector);
-      angle = UI2.Geometry.calculateAngle(this.mouseDownVector, mouseMoveVector);
+      axis = Geometry.crossProduct(this.mouseDownVector, mouseMoveVector);
+      angle = Geometry.calculateAngle(this.mouseDownVector, mouseMoveVector);
     }
     const currentMatrix = new DOMMatrixReadOnly().rotateAxisAngle(-axis.x, axis.z, axis.y, angle).multiply(this.originalBoxMatrix);
-    const eulerAngles = UI2.Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
+    const eulerAngles = Geometry.EulerAngles.fromDeviceOrientationRotationMatrix(currentMatrix);
     const newOrientation = new SDK2.EmulationModel.DeviceOrientation(eulerAngles.alpha, eulerAngles.beta, eulerAngles.gamma);
     this.setDeviceOrientation(
       newOrientation,
@@ -1445,9 +1446,9 @@ var SensorsView = class extends UI2.Widget.VBox {
     const sphereY = (y - rect.top - rect.height / 2) / radius;
     const sqrSum = sphereX * sphereX + sphereY * sphereY;
     if (sqrSum > 0.5) {
-      return new UI2.Geometry.Vector(sphereX, sphereY, 0.5 / Math.sqrt(sqrSum));
+      return new Geometry.Vector(sphereX, sphereY, 0.5 / Math.sqrt(sqrSum));
     }
-    return new UI2.Geometry.Vector(sphereX, sphereY, Math.sqrt(1 - sqrSum));
+    return new Geometry.Vector(sphereX, sphereY, Math.sqrt(1 - sqrSum));
   }
   appendTouchControl() {
     const container = this.contentElement.createChild("div", "touch-section");

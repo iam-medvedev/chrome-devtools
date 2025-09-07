@@ -296,7 +296,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
         Root.Runtime.experiments.register("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */, 'Performance panel: enable saving traces as .gz');
-        Root.Runtime.experiments.register("timeline-ask-ai-full-button" /* Root.Runtime.ExperimentName.TIMELINE_ASK_AI_FULL_BUTTON */, 'Performance panel: enable new, more powerful Ask AI in trace view');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
             "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
@@ -424,6 +423,10 @@ export class MainImpl {
         // Required for legacy a11y layout tests
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
         this.#registerMessageSinkListener();
+        // Initialize `GDPClient` for Google Developer Program integration
+        if (Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+            void Host.GdpClient.GdpClient.instance().initialize();
+        }
         MainImpl.timeEnd('Main._createAppUI');
         const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
         if (!appProvider) {
@@ -754,20 +757,7 @@ export class MainMenuItem {
             dockController.setDockSide(side);
             contextMenu.discard();
         }
-        const aiPreregisteredView = UI.ViewManager.getRegisteredViewExtensionForID('freestyler');
-        if (aiPreregisteredView) {
-            let additionalElement = undefined;
-            const promotionId = aiPreregisteredView.featurePromotionId();
-            if (promotionId) {
-                additionalElement = UI.UIUtils.maybeCreateNewBadge(promotionId);
-            }
-            contextMenu.defaultSection().appendItem(aiPreregisteredView.title(), () => {
-                void UI.ViewManager.ViewManager.instance().showView('freestyler', true, false);
-                if (promotionId) {
-                    UI.UIUtils.PromotionManager.instance().recordFeatureInteraction(promotionId);
-                }
-            }, { additionalElement, jslogContext: 'freestyler' });
-        }
+        contextMenu.defaultSection().appendAction('freestyler.main-menu', undefined, /* optional */ true);
         if (dockController.dockSide() === "undocked" /* UI.DockController.DockState.UNDOCKED */) {
             const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
             if (mainTarget && mainTarget.type() === SDK.Target.Type.FRAME) {
@@ -789,6 +779,7 @@ export class MainMenuItem {
             const persistence = viewExtension.persistence();
             const title = viewExtension.title();
             const id = viewExtension.viewId();
+            const promotionId = viewExtension.featurePromotionId();
             if (id === 'issues-pane') {
                 moreTools.defaultSection().appendItem(title, () => {
                     Host.userMetrics.issuesPanelOpenedFrom(3 /* Host.UserMetrics.IssueOpener.HAMBURGER_MENU */);
@@ -802,13 +793,13 @@ export class MainMenuItem {
             if (location !== 'drawer-view' && location !== 'panel') {
                 continue;
             }
-            // Skip AI Assistance because we already show it in the main menu
-            if (id === 'freestyler') {
-                continue;
+            let additionalElement = undefined;
+            if (promotionId) {
+                additionalElement = UI.UIUtils.maybeCreateNewBadge(promotionId);
             }
             moreTools.defaultSection().appendItem(title, () => {
                 void UI.ViewManager.ViewManager.instance().showView(id, true, false);
-            }, { isPreviewFeature: viewExtension.isPreviewFeature(), jslogContext: id });
+            }, { additionalElement, isPreviewFeature: viewExtension.isPreviewFeature(), jslogContext: id });
         }
         const helpSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString(UIStrings.help), false, 'help');
         helpSubMenu.appendItemsAtLocation('mainMenuHelp');
@@ -896,18 +887,6 @@ export async function handleExternalRequestGenerator(input) {
         case 'PERFORMANCE_RELOAD_GATHER_INSIGHTS': {
             const TimelinePanel = await import('../../panels/timeline/timeline.js');
             return TimelinePanel.TimelinePanel.TimelinePanel.handleExternalRecordRequest();
-        }
-        case 'PERFORMANCE_ANALYZE_INSIGHT': {
-            const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
-            const TimelinePanel = await import('../../panels/timeline/timeline.js');
-            const traceModel = TimelinePanel.TimelinePanel.TimelinePanel.instance().model;
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-            return await conversationHandler.handleExternalRequest({
-                conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */,
-                prompt: input.args.prompt,
-                insightTitle: input.args.insightTitle,
-                traceModel,
-            });
         }
         case 'PERFORMANCE_ANALYZE': {
             const TimelinePanel = await import('../../panels/timeline/timeline.js');

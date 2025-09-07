@@ -3,5 +3,5 @@ import { CategorizedBreakpointsSidebarPane } from './CategorizedBreakpointsSideb
 export declare class CSPViolationBreakpointsSidebarPane extends CategorizedBreakpointsSidebarPane {
     constructor();
     protected getBreakpointFromPausedDetails(details: SDK.DebuggerModel.DebuggerPausedDetails): SDK.CategorizedBreakpoint.CategorizedBreakpoint | null;
-    protected toggleBreakpoint(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void;
+    protected onBreakpointChanged(breakpoint: SDK.CategorizedBreakpoint.CategorizedBreakpoint, enabled: boolean): void;
 }

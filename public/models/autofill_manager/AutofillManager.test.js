@@ -4,21 +4,15 @@
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as AutofillManager from './autofill_manager.js';
 describeWithMockConnection('AutofillManager', () => {
     let target;
     let model;
     let autofillManager;
-    let showViewStub;
     beforeEach(() => {
         target = createTarget();
         model = target.model(SDK.AutofillModel.AutofillModel);
-        showViewStub = sinon.stub(UI.ViewManager.ViewManager.instance(), 'showView').resolves();
         autofillManager = AutofillManager.AutofillManager.AutofillManager.instance({ forceNew: true });
-    });
-    afterEach(() => {
-        showViewStub.restore();
     });
     describe('emits AddressFormFilled events', () => {
         const assertAutofillManagerEvent = async (inEvent, outEvent) => {
@@ -26,7 +20,6 @@ describeWithMockConnection('AutofillManager', () => {
             autofillManager.addEventListener("AddressFormFilled" /* AutofillManager.AutofillManager.Events.ADDRESS_FORM_FILLED */, event => dispatchedAutofillEvents.push(event.data));
             model.dispatchEventToListeners("AddressFormFilled" /* SDK.AutofillModel.Events.ADDRESS_FORM_FILLED */, { autofillModel: model, event: inEvent });
             await new Promise(resolve => setTimeout(resolve, 0));
-            sinon.assert.calledOnceWithExactly(showViewStub, 'autofill-view');
             assert.deepEqual(dispatchedAutofillEvents, [outEvent]);
         };
         it('with a single match', async () => {

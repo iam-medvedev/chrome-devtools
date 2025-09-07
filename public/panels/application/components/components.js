@@ -502,17 +502,17 @@ var UIStrings = {
    */
   cookieDisabled: "Back/forward cache is disabled because cookies are disabled on a page that uses `Cache-Control: no-store`.",
   /**
-   * @description Description text for not restored reason WebRTCSticky.
+   * @description Description text for not restored reason WebRTCUsedWithCCNS.
    */
-  webRTCSticky: "Back/forward cache is disabled because WebRTC has been used.",
+  webRTCUsedWithCCNS: "Back/forward cache is disabled because WebRTC has been used.",
   /**
-   * @description Description text for not restored reason WebTransportSticky.
+   * @description Description text for not restored reason WebTransportUsedWithCCNS.
    */
-  webTransportSticky: "Back/forward cache is disabled because WebTransport has been used.",
+  webTransportUsedWithCCNS: "Back/forward cache is disabled because WebTransport has been used.",
   /**
-   * @description Description text for not restored reason WebSocketSticky.
+   * @description Description text for not restored reason WebSocketUsedWithCCNS.
    */
-  webSocketSticky: "Back/forward cache is disabled because WebSocket has been used."
+  webSocketUsedWithCCNS: "Back/forward cache is disabled because WebSocket has been used."
 };
 var str_ = i18n.i18n.registerUIStrings("panels/application/components/BackForwardCacheStrings.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
@@ -648,9 +648,9 @@ var NotRestoredReasonDescription = {
   JsNetworkRequestReceivedCacheControlNoStoreResource: { name: i18nLazyString(UIStrings.jsNetworkRequestReceivedCacheControlNoStoreResource) },
   IndexedDBEvent: { name: i18nLazyString(UIStrings.indexedDBEvent) },
   CookieDisabled: { name: i18nLazyString(UIStrings.cookieDisabled) },
-  WebRTCSticky: { name: i18nLazyString(UIStrings.webRTCSticky) },
-  WebTransportSticky: { name: i18nLazyString(UIStrings.webTransportSticky) },
-  WebSocketSticky: { name: i18nLazyString(UIStrings.webSocketSticky) },
+  WebRTCUsedWithCCNS: { name: i18nLazyString(UIStrings.webRTCUsedWithCCNS) },
+  WebTransportUsedWithCCNS: { name: i18nLazyString(UIStrings.webTransportUsedWithCCNS) },
+  WebSocketUsedWithCCNS: { name: i18nLazyString(UIStrings.webSocketUsedWithCCNS) },
   HTTPAuthRequired: { name: i18n.i18n.lockedLazyString("HTTPAuthRequired") },
   CookieFlushed: { name: i18n.i18n.lockedLazyString("CookieFlushed") },
   SmartCard: { name: i18n.i18n.lockedLazyString("SmartCard") },
@@ -3844,7 +3844,7 @@ iframe.widget {
   display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
-.highlighted-search-result {
+.highlighted-search-result,::highlight(highlighted-search-result) {
   border-radius: 1px;
   background-color: var(--sys-color-yellow-container);
   outline: 1px solid var(--sys-color-yellow-container);
@@ -4029,10 +4029,11 @@ input[type='range']:disabled::-webkit-slider-thumb {
   }
 }
 
-.highlighted-search-result.current-search-result {
+.highlighted-search-result.current-search-result,::highlight(current-search-result) {
   /* Note: this value is used in light & dark mode */
   --override-current-search-result-background-color: rgb(255 127 0 / 80%);
 
+  outline: 1px solid var(--sys-color-yellow-container);
   border-radius: 1px;
   padding: 1px;
   margin: -1px;

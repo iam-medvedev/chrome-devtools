@@ -614,7 +614,7 @@ describeWithMockConnection('StylePropertyTreeElement', () => {
                 assert.exists(ast);
                 const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [new SDK.CSSPropertyParserMatchers.VariableMatcher(stylePropertyTreeElement.matchedStyles(), stylePropertyTreeElement.property.ownerStyle)]);
                 const res = {
-                    hasUnresolvedVars: matching.hasUnresolvedVars(ast.tree),
+                    hasUnresolvedVars: matching.hasUnresolvedSubstitutions(ast.tree),
                     computedText: matching.getComputedText(ast.tree),
                 };
                 return res;

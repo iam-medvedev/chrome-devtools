@@ -34,7 +34,7 @@ export declare function sortTraceEventsInPlace(events: Types.Events.Event[]): vo
  * ordered input arrays.
  */
 export declare function mergeEventsInOrder<T1 extends Types.Events.Event, T2 extends Types.Events.Event>(eventsArray1: readonly T1[], eventsArray2: readonly T2[]): Array<T1 | T2>;
-export declare function parseDevtoolsDetails(timingDetail: string, key: string): Types.Extensions.ExtensionDataPayload | Types.Extensions.ExtensionTrackEntryPayloadDeeplink | null;
+export declare function parseDevtoolsDetails(timingDetail: string, key: string): Types.Extensions.DevToolsObj | Types.Extensions.ExtensionTrackEntryPayloadDeeplink | null;
 export declare function getNavigationForTraceEvent(event: Types.Events.Event, eventFrameId: string, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Events.NavigationStart | null;
 export declare function extractId(event: Types.Events.PairableAsync | Types.Events.SyntheticEventPair<Types.Events.PairableAsync>): string | undefined;
 export declare function activeURLForFrameAtTime(frameId: string, time: Types.Timing.Micro, rendererProcessesByFrame: Map<string, Map<Types.Events.ProcessID, Array<{

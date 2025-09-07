@@ -82,6 +82,9 @@ describe('SourceMapManager', () => {
         createPageResourceLoadInitiator() {
             return { target: this.target, frameId: null, initiatorUrl: null };
         }
+        debugId() {
+            return null;
+        }
     }
     describe('attachSourceMap', () => {
         it('catches attempts to attach twice for the same client', async () => {

@@ -2030,17 +2030,19 @@ var Renderer = class _Renderer {
     if (!(object instanceof SDK3.RemoteObject.RemoteObject)) {
       throw new Error("Can't render " + object);
     }
-    options = options || { title: void 0, editable: void 0 };
-    const title = options.title;
+    const title = options?.title;
     const section = new ObjectPropertiesSection(object, title);
     if (!title) {
       section.titleLessMode();
     }
-    section.editable = Boolean(options.editable);
-    if (options.expand) {
+    section.editable = Boolean(options?.editable);
+    if (options?.expand) {
       section.firstChild()?.expand();
     }
-    return { node: section.element, tree: section };
+    return {
+      element: section.element,
+      forceSelect: section.forceSelect.bind(section)
+    };
   }
 };
 var ObjectPropertyValue = class {
@@ -2297,6 +2299,7 @@ __export(ObjectPopoverHelper_exports, {
 import * as i18n7 from "./../../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../../core/platform/platform.js";
 import * as SDK4 from "./../../../../core/sdk/sdk.js";
+import * as Geometry from "./../../../../models/geometry/geometry.js";
 import * as UI5 from "./../../legacy.js";
 import * as Components from "./../utils/utils.js";
 
@@ -2417,7 +2420,7 @@ var ObjectPopoverHelper = class _ObjectPopoverHelper {
         popoverContentElement.appendChild(section.element);
       }
       popoverContentElement.dataset.stableNameForTest = "object-popover-content";
-      popover.setMaxContentSize(new UI5.Geometry.Size(300, 250));
+      popover.setMaxContentSize(new Geometry.Size(300, 250));
       popover.setSizeBehavior(
         "SetExactSize"
         /* UI.GlassPane.SizeBehavior.SET_EXACT_SIZE */

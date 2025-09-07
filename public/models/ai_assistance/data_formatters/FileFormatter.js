@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Bindings from '../../bindings/bindings.js';
+import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import { NetworkRequestFormatter } from './NetworkRequestFormatter.js';
 const MAX_FILE_SIZE = 10000;
 /**
@@ -55,8 +56,10 @@ export class FileFormatter {
         ];
         const resource = Bindings.ResourceUtils.resourceForURL(this.#file.url());
         if (resource?.request) {
+            const calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
+            calculator.updateBoundaries(resource.request);
             lines.push(`Request initiator chain:
-${new NetworkRequestFormatter(resource.request).formatRequestInitiatorChain()}`);
+${new NetworkRequestFormatter(resource.request, calculator).formatRequestInitiatorChain()}`);
         }
         lines.push(`File content:
 ${this.#formatFileContent()}`);

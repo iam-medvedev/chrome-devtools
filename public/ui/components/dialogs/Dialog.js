@@ -162,6 +162,10 @@ export class Dialog extends HTMLElement {
     }
     set state(state) {
         this.#props.state = state;
+        // Handles teardown process in case dialog is collapsed or disabled
+        if (this.#props.state === "collapsed" /* DialogState.COLLAPSED */ || this.#props.state === "disabled" /* DialogState.DISABLED */) {
+            this.#forceDialogCloseInDevToolsBound();
+        }
         this.#onStateChange();
     }
     #updateDialogBounds() {
@@ -200,11 +204,9 @@ export class Dialog extends HTMLElement {
     }
     async setDialogVisible(show) {
         if (show) {
-            this.state = "expanded" /* DialogState.EXPANDED */;
             await this.#showDialog();
             return;
         }
-        this.state = "collapsed" /* DialogState.COLLAPSED */;
         this.#closeDialog();
     }
     async #handlePointerEvent(evt) {

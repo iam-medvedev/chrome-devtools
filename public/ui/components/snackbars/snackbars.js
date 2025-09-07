@@ -110,6 +110,7 @@ var DEFAULT_AUTO_DISMISS_MS = 5e3;
 var LONG_ACTION_THRESHOLD = 15;
 var Snackbar = class _Snackbar extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
+  #container;
   #timeout = null;
   #isLongAction = false;
   #actionButtonClickHandler;
@@ -182,9 +183,10 @@ var Snackbar = class _Snackbar extends HTMLElement {
   set actionButtonClickHandler(actionButtonClickHandler) {
     this.#actionButtonClickHandler = actionButtonClickHandler;
   }
-  constructor(properties) {
+  constructor(properties, container) {
     super();
     this.message = properties.message;
+    this.#container = container || UI.InspectorView.InspectorView.instance().element;
     if (properties.closable) {
       this.closable = properties.closable;
     }
@@ -196,8 +198,8 @@ var Snackbar = class _Snackbar extends HTMLElement {
       }
     }
   }
-  static show(properties) {
-    const snackbar = new _Snackbar(properties);
+  static show(properties, container) {
+    const snackbar = new _Snackbar(properties, container);
     _Snackbar.snackbarQueue.push(snackbar);
     if (_Snackbar.snackbarQueue.length === 1) {
       snackbar.#show();
@@ -205,7 +207,7 @@ var Snackbar = class _Snackbar extends HTMLElement {
     return snackbar;
   }
   #show() {
-    UI.InspectorView.InspectorView.instance().element.appendChild(this);
+    this.#container.appendChild(this);
     if (this.#timeout) {
       window.clearTimeout(this.#timeout);
     }

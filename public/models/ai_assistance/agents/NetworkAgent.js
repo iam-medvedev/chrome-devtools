@@ -4,7 +4,6 @@
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Root from '../../../core/root/root.js';
-import * as PanelUtils from '../../../panels/utils/utils.js';
 import { NetworkRequestFormatter } from '../data_formatters/NetworkRequestFormatter.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /**
@@ -80,9 +79,11 @@ const UIStringsNotTranslate = {
 const lockedString = i18n.i18n.lockedString;
 export class RequestContext extends ConversationContext {
     #request;
-    constructor(request) {
+    #calculator;
+    constructor(request, calculator) {
         super();
         this.#request = request;
+        this.#calculator = calculator;
     }
     getOrigin() {
         return new URL(this.#request.url()).origin;
@@ -90,8 +91,8 @@ export class RequestContext extends ConversationContext {
     getItem() {
         return this.#request;
     }
-    getIcon() {
-        return PanelUtils.PanelUtils.getIconForNetworkRequest(this.#request);
+    get calculator() {
+        return this.#calculator;
     }
     getTitle() {
         return this.#request.name();
@@ -122,19 +123,20 @@ export class NetworkAgent extends AiAgent {
         yield {
             type: "context" /* ResponseType.CONTEXT */,
             title: lockedString(UIStringsNotTranslate.analyzingNetworkData),
-            details: createContextDetailsForNetworkAgent(selectedNetworkRequest.getItem()),
+            details: createContextDetailsForNetworkAgent(selectedNetworkRequest),
         };
     }
     async enhanceQuery(query, selectedNetworkRequest) {
         const networkEnchantmentQuery = selectedNetworkRequest ?
-            `# Selected network request \n${new NetworkRequestFormatter(selectedNetworkRequest.getItem())
+            `# Selected network request \n${new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator)
                 .formatNetworkRequest()}\n\n# User request\n\n` :
             '';
         return `${networkEnchantmentQuery}${query}`;
     }
 }
-function createContextDetailsForNetworkAgent(request) {
-    const formatter = new NetworkRequestFormatter(request);
+function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
+    const request = selectedNetworkRequest.getItem();
+    const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
     const requestContextDetail = {
         title: lockedString(UIStringsNotTranslate.request),
         text: lockedString(UIStringsNotTranslate.requestUrl) + ': ' + request.url() + '\n\n' +

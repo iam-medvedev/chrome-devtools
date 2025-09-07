@@ -1,7 +1,7 @@
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { type AidaClientResult, type AidaCodeCompleteResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type FunctionCallEvent, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
+import { type AidaClientResult, type AidaCodeCompleteResult, type CanShowSurveyResult, type ChangeEvent, type ClickEvent, type ContextMenuDescriptor, type DispatchHttpRequestRequest, type DispatchHttpRequestResult, type DoAidaConversationResult, type DragEvent, type EnumeratedHistogram, type EventTypes, type ExtensionDescriptor, type FunctionCallEvent, type HoverEvent, type ImpressionEvent, type InspectorFrontendHostAPI, type KeyDownEvent, type LoadNetworkResourceResult, type ResizeEvent, type SettingAccessEvent, type ShowSurveyResult, type SyncInformation } from './InspectorFrontendHostAPI.js';
 /**
  * The InspectorFrontendHostStub is a stub interface used the frontend is loaded like a webpage. Examples:
  *   - devtools://devtools/bundled/devtools_app.html
@@ -129,6 +129,7 @@ export declare class InspectorFrontendHostStub implements InspectorFrontendHostA
     doAidaConversation(_request: string, _streamId: number, callback: (result: DoAidaConversationResult) => void): void;
     registerAidaClientEvent(_request: string, callback: (result: AidaClientResult) => void): void;
     aidaCodeComplete(_request: string, callback: (result: AidaCodeCompleteResult) => void): void;
+    dispatchHttpRequest(_request: DispatchHttpRequestRequest, callback: (result: DispatchHttpRequestResult) => void): void;
     recordImpression(_event: ImpressionEvent): void;
     recordResize(_event: ResizeEvent): void;
     recordClick(_event: ClickEvent): void;

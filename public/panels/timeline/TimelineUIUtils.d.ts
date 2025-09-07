@@ -37,7 +37,14 @@ export declare class TimelineUIUtils {
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static maybeCreateLinkElement(link: Trace.Types.Extensions.ExtensionTrackEntryPayloadDeeplink): HTMLElement | null;
+    static maybeCreateLinkElement(url: string): HTMLElement | null;
+    /**
+     * Takes an input string and parses it to look for links. It does this by
+     * looking for URLs in the input string. The returned fragment will contain
+     * the same string but with any links wrapped in clickable links. The text
+     * of the link is the URL, so the visible string to the user is unchanged.
+     */
+    static parseStringForLinks(rawString: string): DocumentFragment;
     static buildTraceEventDetails(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event, linkifier: LegacyComponents.Linkifier.Linkifier, canShowPieChart: boolean, entityMapper: Utils.EntityMapper.EntityMapper | null): Promise<DocumentFragment>;
     static statsForTimeRange(events: Trace.Types.Events.Event[], startTime: Trace.Types.Timing.Milli, endTime: Trace.Types.Timing.Milli): TimeRangeCategoryStats;
     private static renderEventJson;

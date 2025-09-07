@@ -61,6 +61,9 @@
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/persistence/bundle-tsconfig.json"
     },
     {
@@ -74,6 +77,9 @@
     },
     {
       "path": "../common/bundle-tsconfig.json"
+    },
+    {
+      "path": "../network/bundle-tsconfig.json"
     },
     {
       "path": "../network/forward/bundle-tsconfig.json"

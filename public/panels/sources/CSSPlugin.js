@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -110,7 +111,7 @@ function findColorsAndCurves(state, from, to, onColor, onCurve) {
                     onColor(node.from, parsedColor, content);
                 }
                 else {
-                    const parsedCurve = UI.Geometry.CubicBezier.parse(content);
+                    const parsedCurve = Geometry.CubicBezier.parse(content);
                     if (parsedCurve) {
                         onCurve(node.from, parsedCurve, content);
                     }

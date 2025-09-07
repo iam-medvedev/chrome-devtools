@@ -12,12 +12,15 @@ export class AgentFocus {
             traceMetadata,
         });
     }
-    static fromInsight(parsedTrace, insight, insightSetBounds) {
+    static fromInsight(parsedTrace, insights, traceMetadata, insight) {
+        // Currently only support a single insight set. Pick the first one with a navigation.
+        const insightSet = [...insights.values()].filter(insightSet => insightSet.navigation).at(0) ?? null;
         return new AgentFocus({
             type: 'insight',
             parsedTrace,
+            insightSet,
+            traceMetadata,
             insight,
-            insightSetBounds,
         });
     }
     static fromCallTree(callTree) {

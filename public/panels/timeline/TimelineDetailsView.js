@@ -248,18 +248,14 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
     /**
      * Updates the UI shown in the Summary tab, and updates the UI to select the
      * summary tab.
-     * @param node this is passed as an additional piece of DOM that will be
-     *     rendered in the summary view. This is a temporary ability to allow
-     *     incremental migration to the UI Eng vision.
      */
-    async updateSummaryAndSelectTab(node) {
+    async updateSummaryPane() {
         const allTabs = this.tabbedPane.otherTabs(Tab.Details);
         for (let i = 0; i < allTabs.length; ++i) {
             if (!this.rangeDetailViews.has(allTabs[i])) {
                 this.tabbedPane.closeTab(allTabs[i]);
             }
         }
-        this.#summaryContent.node = node ?? null;
         this.#summaryContent.requestUpdate();
         await this.#summaryContent.updateComplete;
     }
@@ -298,7 +294,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
      */
     scheduleUpdateContentsFromWindow(forceImmediateUpdate = false) {
         if (!this.#parsedTrace) {
-            void this.updateSummaryAndSelectTab(null);
+            void this.updateSummaryPane();
             return;
         }
         if (forceImmediateUpdate) {
@@ -341,11 +337,12 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (!this.#parsedTrace) {
             return;
         }
+        this.#summaryContent.selectedRange = null;
         this.#summaryContent.selectedEvent = event;
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
         this.#summaryContent.linkifier = this.detailsLinkifier;
         this.#summaryContent.target = targetForEvent(this.#parsedTrace, event);
-        await this.updateSummaryAndSelectTab(null);
+        await this.updateSummaryPane();
         this.appendExtraDetailsTabsForTraceEvent(event);
     }
     async setSelection(selection) {
@@ -456,11 +453,13 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (!this.#selectedEvents || !this.#parsedTrace || !this.#entityMapper) {
             return;
         }
-        const minBoundsMilli = Trace.Helpers.Timing.traceWindowMilliSeconds(this.#parsedTrace.Meta.traceBounds).min;
-        const aggregatedStats = TimelineUIUtils.statsForTimeRange(this.#selectedEvents, startTime, endTime);
-        const startOffset = startTime - minBoundsMilli;
-        const endOffset = endTime - minBoundsMilli;
-        const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, this.#selectedEvents, this.#thirdPartyTree);
+        this.#summaryContent.selectedEvent = null;
+        this.#summaryContent.selectedRange = {
+            events: this.#selectedEvents,
+            thirdPartyTree: this.#thirdPartyTree,
+            startTime,
+            endTime,
+        };
         // This is a bit of a hack as we are midway through migrating this to
         // the new UI Eng vision.
         // The 3P tree view will only bother to update its DOM if it has a
@@ -468,7 +467,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         // (so the 3P Tree View is attached to the DOM) and then we tell it to
         // update.
         // This will be fixed once we migrate this component fully to the new vision (b/407751379)
-        void this.updateSummaryAndSelectTab(summaryDetailElem).then(() => {
+        void this.updateSummaryPane().then(() => {
             this.#thirdPartyTree.updateContents(this.selection || selectionFromRangeMilliSeconds(startTime, endTime));
         });
         // Find all recalculate style events data from range
@@ -497,8 +496,8 @@ const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
         <style>${detailsViewStyles}</style>
-        ${input.node ?? nothing}
         ${Directives.until(renderSelectedEventDetails(input))}
+        ${input.selectedRange ? generateRangeSummaryDetails(input) : nothing}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.RelatedInsightChips.RelatedInsightChips, {
         activeEvent: input.selectedEvent,
         eventToInsightsMap: input.eventToRelatedInsightsMap,
@@ -508,7 +507,6 @@ const SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
 };
 class SummaryView extends UI.Widget.Widget {
     #view;
-    node = null;
     selectedEvent = null;
     eventToRelatedInsightsMap = null;
     parsedTrace = null;
@@ -517,13 +515,13 @@ class SummaryView extends UI.Widget.Widget {
     target = null;
     linkifier = null;
     filmStrip = null;
+    selectedRange = null;
     constructor(element, view = SUMMARY_DEFAULT_VIEW) {
         super(element);
         this.#view = view;
     }
     performUpdate() {
         this.#view({
-            node: this.node,
             selectedEvent: this.selectedEvent,
             eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
             parsedTrace: this.parsedTrace,
@@ -531,9 +529,23 @@ class SummaryView extends UI.Widget.Widget {
             entityMapper: this.entityMapper,
             target: this.target,
             linkifier: this.linkifier,
-            filmStrip: this.filmStrip
+            filmStrip: this.filmStrip,
+            selectedRange: this.selectedRange,
         }, {}, this.contentElement);
     }
+}
+function generateRangeSummaryDetails(input) {
+    const { parsedTrace, selectedRange } = input;
+    if (!selectedRange || !parsedTrace) {
+        return nothing;
+    }
+    const minBoundsMilli = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+    const { events, startTime, endTime, thirdPartyTree } = selectedRange;
+    const aggregatedStats = TimelineUIUtils.statsForTimeRange(events, startTime, endTime);
+    const startOffset = startTime - minBoundsMilli;
+    const endOffset = endTime - minBoundsMilli;
+    const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, events, thirdPartyTree);
+    return html `${summaryDetailElem}`;
 }
 async function renderSelectedEventDetails(input) {
     const { selectedEvent, parsedTrace, linkifier } = input;

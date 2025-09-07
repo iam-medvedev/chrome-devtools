@@ -4,12 +4,12 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as HAR from '../../models/har/har.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { type EventTypes, NetworkGroupNode, type NetworkLogViewInterface, type NetworkNode, NetworkRequestNode } from './NetworkDataGridNode.js';
 import { NetworkLogViewColumns } from './NetworkLogViewColumns.js';
-import { type NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 declare const NetworkLogView_base: (new (...args: any[]) => {
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends keyof EventTypes>(eventType: T): Promise<EventTypes[T]>;
@@ -130,9 +130,9 @@ export declare class NetworkLogView extends NetworkLogView_base implements SDK.T
     clearFilmStripFrame(): void;
     private refreshIfNeeded;
     private invalidateAllItems;
-    timeCalculator(): NetworkTimeCalculator;
-    calculator(): NetworkTimeCalculator;
-    setCalculator(x: NetworkTimeCalculator): void;
+    timeCalculator(): NetworkTimeCalculator.NetworkTransferTimeCalculator;
+    calculator(): NetworkTimeCalculator.NetworkTimeCalculator;
+    setCalculator(x: NetworkTimeCalculator.NetworkTimeCalculator): void;
     private loadEventFired;
     private domContentLoadedEventFired;
     wasShown(): void;

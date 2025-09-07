@@ -1978,7 +1978,7 @@ function extractConsoleAPIExtensionEntries() {
     }
     const timeStampName = String(currentTimeStamp.args.data.name ?? currentTimeStamp.args.data.message);
     timeStampByName.set(timeStampName, currentTimeStamp);
-    const extensionData = extensionDataInConsoleTimeStamp(currentTimeStamp);
+    const { devtoolsObj: extensionData, userDetail } = extensionDataInConsoleTimeStamp(currentTimeStamp);
     const start = currentTimeStamp.args.data.start;
     const end = currentTimeStamp.args.data.end;
     if (!extensionData && !start && !end) {
@@ -1996,7 +1996,8 @@ function extractConsoleAPIExtensionEntries() {
         ...currentTimeStamp,
         name: timeStampName,
         cat: "devtools.extension",
-        args: extensionData,
+        devtoolsObj: extensionData,
+        userDetail,
         rawSourceEvent: currentTimeStamp,
         dur: Types13.Timing.Micro(entryEndTime - entryStartTime),
         ts: entryStartTime,
@@ -2021,69 +2022,67 @@ function extractConsoleAPIExtensionEntries() {
 }
 function extractPerformanceAPIExtensionEntries(timings) {
   for (const timing of timings) {
-    const extensionPayload = extensionDataInPerformanceTiming(timing);
-    if (!extensionPayload) {
+    const { devtoolsObj, userDetail } = extensionDataInPerformanceTiming(timing);
+    if (!devtoolsObj) {
       continue;
     }
     const extensionSyntheticEntry = {
       name: timing.name,
-      ph: Types13.Extensions.isExtensionPayloadMarker(extensionPayload) ? "I" : "X",
+      ph: Types13.Extensions.isExtensionPayloadMarker(devtoolsObj) ? "I" : "X",
       pid: timing.pid,
       tid: timing.tid,
       ts: timing.ts,
       dur: timing.dur,
       cat: "devtools.extension",
-      args: extensionPayload,
+      devtoolsObj,
+      userDetail,
       rawSourceEvent: Types13.Events.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing
     };
-    if (Types13.Extensions.isExtensionPayloadMarker(extensionPayload)) {
+    if (Types13.Extensions.isExtensionPayloadMarker(devtoolsObj)) {
       const extensionMarker = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(extensionSyntheticEntry);
       extensionMarkers.push(extensionMarker);
       continue;
     }
-    if (Types13.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
+    if (Types13.Extensions.isExtensionEntryObj(extensionSyntheticEntry.devtoolsObj)) {
       const extensionTrackEntry = Helpers9.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent(extensionSyntheticEntry);
       extensionTrackEntries.push(extensionTrackEntry);
       continue;
     }
   }
 }
-function extensionPayloadForConsoleApi(timing) {
-  if (!timing.args.data || !("devtools" in timing.args.data)) {
-    return null;
-  }
-  return Helpers9.Trace.parseDevtoolsDetails(`{"additionalContext": ${timing.args.data.devtools} }`, "additionalContext");
-}
 function extensionDataInPerformanceTiming(timing) {
   const timingDetail = Types13.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
   if (!timingDetail) {
-    return null;
+    return { devtoolsObj: null, userDetail: null };
   }
-  return Helpers9.Trace.parseDevtoolsDetails(timingDetail, "devtools");
+  const devtoolsObj = Helpers9.Trace.parseDevtoolsDetails(timingDetail, "devtools");
+  let userDetail = null;
+  try {
+    userDetail = JSON.parse(timingDetail);
+    delete userDetail.devtools;
+  } catch {
+  }
+  return { devtoolsObj, userDetail };
 }
 function extensionDataInConsoleTimeStamp(timeStamp) {
-  if (!timeStamp.args.data) {
-    return null;
+  if (!timeStamp.args.data || !timeStamp.args.data.track) {
+    return { devtoolsObj: null, userDetail: null };
   }
-  const trackName = timeStamp.args.data.track;
-  if (trackName === "" || trackName === void 0) {
-    return null;
+  let userDetail = null;
+  try {
+    userDetail = JSON.parse(timeStamp.args.data?.devtools || '""');
+  } catch {
   }
-  let additionalContext;
-  const payload = extensionPayloadForConsoleApi(timeStamp);
-  if (payload) {
-    additionalContext = payload;
-  }
-  return {
+  const devtoolsObj = {
     // the color is defaulted to primary if it's value isn't one from
     // the defined palette (see ExtensionUI::extensionEntryColor) so
     // we don't need to check the value is valid here.
     color: String(timeStamp.args.data.color),
-    track: String(trackName),
+    track: String(timeStamp.args.data.track),
     dataType: "track-entry",
-    trackGroup: timeStamp.args.data.trackGroup !== void 0 ? String(timeStamp.args.data.trackGroup) : void 0,
-    additionalContext
+    trackGroup: timeStamp.args.data.trackGroup !== void 0 ? String(timeStamp.args.data.trackGroup) : void 0
   };
+  return { devtoolsObj, userDetail };
 }
 function data12() {
   return {

@@ -3566,6 +3566,11 @@ var UIStrings11 = {
    */
   enableSync: "Enable settings sync",
   /**
+   * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
+   * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
+   */
+  receiveBadges: "Receive badges",
+  /**
    * @description A command available in the command menu to perform searches, for example in the
    * elements panel, as user types, rather than only when they press Enter.
    */
@@ -4126,6 +4131,15 @@ Common7.Settings.registerSettingExtension({
   settingName: "sync-preferences",
   settingType: "boolean",
   title: i18nLazyString11(UIStrings11.enableSync),
+  defaultValue: false,
+  reloadRequired: true
+});
+Common7.Settings.registerSettingExtension({
+  category: "ACCOUNT",
+  settingName: "receive-gdp-badges",
+  settingType: "boolean",
+  storageType: "Synced",
+  title: i18nLazyString11(UIStrings11.receiveBadges),
   defaultValue: false,
   reloadRequired: true
 });
@@ -5925,7 +5939,6 @@ UI16.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString17(UIStrings17.showAiAssistance),
   title: i18nLazyString17(UIStrings17.aiAssistance),
   order: 10,
-  isPreviewFeature: true,
   featurePromotionId: "ai-assistance",
   persistence: "closeable",
   hasToolbar: false,
@@ -5959,6 +5972,20 @@ Common12.Settings.registerSettingExtension({
     }
     return { disabled: false };
   }
+});
+UI16.ActionRegistration.registerActionExtension({
+  actionId: "freestyler.main-menu",
+  contextTypes() {
+    return [];
+  },
+  category: "GLOBAL",
+  title: titleForAiAssistanceActions,
+  featurePromotionId: "ai-assistance",
+  async loadActionDelegate() {
+    const AiAssistance = await loadAiAssistanceModule();
+    return new AiAssistance.ActionDelegate();
+  },
+  condition: (config) => isAnyFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config)
 });
 UI16.ActionRegistration.registerActionExtension({
   actionId: "freestyler.elements-floating-button",

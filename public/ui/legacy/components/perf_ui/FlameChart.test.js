@@ -1438,7 +1438,7 @@ describeWithEnvironment('FlameChart', () => {
         class FakeProviderWithExtensionColors extends FakeFlameChartProvider {
             entryColor(entryIndex) {
                 const color = colorPalette[entryIndex % paletteLength];
-                return Extensions.ExtensionUI.extensionEntryColor({ args: { color } });
+                return Extensions.ExtensionUI.extensionEntryColor({ devtoolsObj: { color } });
             }
             maxStackDepth() {
                 return paletteLength + 1;

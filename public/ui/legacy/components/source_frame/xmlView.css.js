@@ -9,10 +9,12 @@ export default `/*
  * found in the LICENSE file.
  */
 
+@scope to (devtools-widget > *) {
 .shadow-xml-view {
   user-select: text;
   overflow: auto;
-  padding: 2px 4px;
+  padding: 0;
+}
 }
 
 /*# sourceURL=${import.meta.resolve('./xmlView.css')} */`;

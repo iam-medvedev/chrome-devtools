@@ -37,17 +37,17 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
-import { Directives, render } from '../lit/lit.js';
+import * as Lit from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import { ActionRegistry } from './ActionRegistry.js';
 import * as ARIAUtils from './ARIAUtils.js';
 import checkboxTextLabelStyles from './checkboxTextLabel.css.js';
 import confirmDialogStyles from './confirmDialog.css.js';
 import { Dialog } from './Dialog.js';
-import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
 import inlineButtonStyles from './inlineButton.css.js';
 import inspectorCommonStyles from './inspectorCommon.css.js';
@@ -55,6 +55,7 @@ import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import smallBubbleStyles from './smallBubble.css.js';
 import { Tooltip } from './Tooltip.js';
 import { Widget } from './Widget.js';
+const { Directives, render } = Lit;
 const UIStrings = {
     /**
      * @description label to open link externally
@@ -772,7 +773,7 @@ export function measurePreferredSize(element, containerElement) {
     else {
         element.remove();
     }
-    return new Size(result.width, result.height);
+    return new Geometry.Size(result.width, result.height);
 }
 class InvokeOnceHandlers {
     handlers;
@@ -1847,12 +1848,53 @@ export function bindToAction(actionName) {
         e.onclick = () => action.execute();
     });
 }
+class InterceptBindingDirective extends Lit.Directive.Directive {
+    static #interceptedBindings = new WeakMap();
+    constructor(part) {
+        super(part);
+        if (part.type !== Lit.Directive.PartType.EVENT) {
+            throw new Error('This directive is for event bindings only');
+        }
+    }
+    update(part, [listener]) {
+        let eventListeners = InterceptBindingDirective.#interceptedBindings.get(part.element);
+        if (!eventListeners) {
+            eventListeners = new Map();
+            InterceptBindingDirective.#interceptedBindings.set(part.element, eventListeners);
+        }
+        eventListeners.set(part.name, listener);
+        return this.render(listener);
+    }
+    render(_listener) {
+        return undefined;
+    }
+    static attachEventListeners(templateElement, renderedElement) {
+        const eventListeners = InterceptBindingDirective.#interceptedBindings.get(templateElement);
+        if (!eventListeners) {
+            return;
+        }
+        for (const [name, listener] of eventListeners) {
+            renderedElement.addEventListener(name, listener);
+        }
+    }
+}
 export class HTMLElementWithLightDOMTemplate extends HTMLElement {
+    static on = Lit.Directive.directive(InterceptBindingDirective);
     #mutationObserver = new MutationObserver(this.#onChange.bind(this));
     #contentTemplate = null;
     constructor() {
         super();
         this.#mutationObserver.observe(this, { childList: true, attributes: true, subtree: true, characterData: true });
+    }
+    static cloneNode(node) {
+        const clone = node.cloneNode(false);
+        for (const child of node.childNodes) {
+            clone.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
+        }
+        if (node instanceof Element && clone instanceof Element) {
+            InterceptBindingDirective.attachEventListeners(node, clone);
+        }
+        return clone;
     }
     set template(template) {
         if (!this.#contentTemplate) {
@@ -1865,13 +1907,16 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
         render(template, this.#contentTemplate.content);
     }
     #onChange(mutationList) {
+        this.onChange(mutationList);
         for (const mutation of mutationList) {
             this.removeNodes(mutation.removedNodes);
             this.addNodes(mutation.addedNodes);
-            this.updateNodes(mutation.target, mutation.attributeName);
+            this.updateNode(mutation.target, mutation.attributeName);
         }
     }
-    updateNodes(_node, _attributeName) {
+    onChange(_mutationList) {
+    }
+    updateNode(_node, _attributeName) {
     }
     addNodes(_nodes) {
     }

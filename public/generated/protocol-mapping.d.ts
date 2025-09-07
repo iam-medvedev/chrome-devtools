@@ -3255,6 +3255,13 @@ export namespace ProtocolMapping {
       returnType: Protocol.Network.GetIPProtectionProxyStatusResponse;
     };
     /**
+     * Sets bypass IP Protection Proxy boolean.
+     */
+    'Network.setIPProtectionProxyBypassEnabled': {
+      paramsType: [Protocol.Network.SetIPProtectionProxyBypassEnabledRequest];
+      returnType: void;
+    };
+    /**
      * Sets a list of content encodings that will be accepted. Empty list means no encoding is accepted.
      */
     'Network.setAcceptedEncodings': {
@@ -3743,7 +3750,8 @@ export namespace ProtocolMapping {
      *
      * To generate bundle id for proxy mode:
      * 1. Generate 32 random bytes.
-     * 2. Add a specific suffix 0x00 at the end.
+     * 2. Add a specific suffix at the end following the documentation
+     *    https://github.com/WICG/isolated-web-apps/blob/main/Scheme.md#suffix
      * 3. Encode the entire sequence using Base32 without padding.
      *
      * If Chrome is not in IWA dev

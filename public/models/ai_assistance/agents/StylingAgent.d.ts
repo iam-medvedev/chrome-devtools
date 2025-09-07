@@ -1,7 +1,6 @@
 import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import { type TemplateResult } from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, MultimodalInputType, type ParsedResponse, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect, contextNode }: {
@@ -22,12 +21,10 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     constructor(node: SDK.DOMModel.DOMNode);
     getOrigin(): string;
     getItem(): SDK.DOMModel.DOMNode;
-    getIcon(): undefined;
-    getTitle(opts: {
-        disabled: boolean;
-    }): string | TemplateResult;
+    getTitle(): string;
     getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
 }
+type Relation = 'currentElement' | 'parentElement';
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -52,6 +49,14 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
         canceled: boolean;
     }>;
     static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
+    getComputedStyles(relations: Relation[], properties: string[], _options?: {
+        signal?: AbortSignal;
+        approved?: boolean;
+    }): Promise<FunctionCallHandlerResult<unknown>>;
+    getAuthoredStyles(relations: Relation[], properties: string[], _options?: {
+        signal?: AbortSignal;
+        approved?: boolean;
+    }): Promise<FunctionCallHandlerResult<unknown>>;
     executeAction(action: string, options?: {
         signal?: AbortSignal;
         approved?: boolean;

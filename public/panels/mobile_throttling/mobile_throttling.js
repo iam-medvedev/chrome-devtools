@@ -247,11 +247,11 @@ var UIStrings2 = {
   /**
    * @description Text to indicate Save-Data override is set to Enabled.
    */
-  saveDataOn: "'Save-Data': force on",
+  saveDataOn: "'Save-Data': on",
   /**
    * @description Text to indicate Save-Data override is set to Disabled.
    */
-  saveDataOff: "'Save-Data': force off",
+  saveDataOff: "'Save-Data': off",
   /**
    * @description Tooltip text for an select element that overrides navigator.connection.saveData on the page
    */

@@ -41,6 +41,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as HAR from '../../models/har/har.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
@@ -57,7 +58,6 @@ import { NetworkGroupNode, NetworkRequestNode, } from './NetworkDataGridNode.js'
 import { NetworkFrameGrouper } from './NetworkFrameGrouper.js';
 import networkLogViewStyles from './networkLogView.css.js';
 import { NetworkLogViewColumns } from './NetworkLogViewColumns.js';
-import { NetworkTimeBoundary, NetworkTransferDurationCalculator, NetworkTransferTimeCalculator, } from './NetworkTimeCalculator.js';
 const UIStrings = {
     /**
      * @description Text in Network Log View of the Network panel
@@ -549,8 +549,8 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         this.rowHeightInternal = 0;
         updateRowHeight.call(this);
-        this.timeCalculatorInternal = new NetworkTransferTimeCalculator();
-        this.durationCalculator = new NetworkTransferDurationCalculator();
+        this.timeCalculatorInternal = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
+        this.durationCalculator = new NetworkTimeCalculator.NetworkTransferDurationCalculator();
         this.calculatorInternal = this.timeCalculatorInternal;
         this.columnsInternal = new NetworkLogViewColumns(this, this.timeCalculatorInternal, this.durationCalculator, networkLogLargeRowsSetting);
         this.columnsInternal.show(this.element);
@@ -897,7 +897,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         }
         else {
             this.timeFilter = NetworkLogView.requestTimeFilter.bind(null, start, end);
-            this.timeCalculatorInternal.setWindow(new NetworkTimeBoundary(start, end));
+            this.timeCalculatorInternal.setWindow(new NetworkTimeCalculator.NetworkTimeBoundary(start, end));
         }
         this.filterRequests();
     }

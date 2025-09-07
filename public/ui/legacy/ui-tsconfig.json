@@ -44,7 +44,6 @@
     "../../../../../../front_end/ui/legacy/FilterSuggestionBuilder.ts",
     "../../../../../../front_end/ui/legacy/ForwardedInputEventHandler.ts",
     "../../../../../../front_end/ui/legacy/Fragment.ts",
-    "../../../../../../front_end/ui/legacy/Geometry.ts",
     "../../../../../../front_end/ui/legacy/GlassPane.ts",
     "../../../../../../front_end/ui/legacy/Infobar.ts",
     "../../../../../../front_end/ui/legacy/InplaceEditor.ts",
@@ -110,6 +109,9 @@
       "path": "../../core/sdk/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {
@@ -123,6 +125,9 @@
     },
     {
       "path": "../components/helpers/bundle-tsconfig.json"
+    },
+    {
+      "path": "../components/highlighting/bundle-tsconfig.json"
     },
     {
       "path": "../components/icon_button/bundle-tsconfig.json"

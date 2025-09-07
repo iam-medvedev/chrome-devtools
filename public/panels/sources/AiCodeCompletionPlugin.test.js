@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Host from '../../core/host/host.js';
 import * as AiCodeCompletion from '../../models/ai_code_completion/ai_code_completion.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -12,6 +13,7 @@ import { AiCodeCompletionPlugin } from './sources.js';
 describeWithEnvironment('AiCodeCompletionPlugin', () => {
     let uiSourceCode;
     let clock;
+    let checkAccessPreconditionsStub;
     beforeEach(() => {
         clock = sinon.useFakeTimers();
         updateHostConfig({
@@ -21,6 +23,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
         });
         uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
         uiSourceCode.contentType.returns(Common.ResourceType.resourceTypes.Script);
+        checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
     });
     afterEach(() => {
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-teaser-dismissed').set(false);
@@ -37,7 +40,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
         }));
         plugin.editorInitialized(editor);
         renderElementIntoDOM(editor);
-        return editor;
+        return { editor, plugin };
     }
     describe('accepts', () => {
         it('holds true for scripts', () => {
@@ -58,14 +61,14 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
     });
     describe('teaser decoration', () => {
         it('shows teaser when cursor is at the end of the line', async () => {
-            const editor = createEditorWithPlugin('Hello');
+            const { editor } = createEditorWithPlugin('Hello');
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
             await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
                 AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
             assert.isNotNull(editor.editor.dom.querySelector('.cm-placeholder'));
         });
         it('hides teaser when cursor is not at the end of the line', async () => {
-            const editor = createEditorWithPlugin('Hello');
+            const { editor } = createEditorWithPlugin('Hello');
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
             await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
                 AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
@@ -76,7 +79,7 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
             assert.isNull(editor.editor.dom.querySelector('.cm-placeholder'));
         });
         it('hides teaser when text is selected', async () => {
-            const editor = createEditorWithPlugin('Hello');
+            const { editor } = createEditorWithPlugin('Hello');
             editor.dispatch({ changes: { from: 5, insert: 'W' }, selection: { anchor: 6 } });
             await clock.tickAsync(AiCodeCompletion.AiCodeCompletion.AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS +
                 AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS + 1);
@@ -86,11 +89,41 @@ describeWithEnvironment('AiCodeCompletionPlugin', () => {
         });
     });
     it('triggers code completion on text change', async () => {
-        const editor = createEditorWithPlugin('');
+        const { editor } = createEditorWithPlugin('');
         Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
         const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
         editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
         sinon.assert.called(onTextChangedStub);
+        assert.deepEqual(onTextChangedStub.firstCall.args, ['Hello', '', 5, undefined]);
+    });
+    it('triggers code completion when AIDA becomes available', async () => {
+        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
+        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
+        const { editor } = createEditorWithPlugin('');
+        await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
+        editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
+        sinon.assert.notCalled(onTextChangedStub);
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        await clock.tickAsync(0);
+        editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
+        sinon.assert.calledOnce(onTextChangedStub);
+        assert.deepEqual(onTextChangedStub.firstCall.args, ['HelloBye', '', 8, undefined]);
+    });
+    it('does not trigger code completion when AIDA becomes unavailable', async () => {
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        const onTextChangedStub = sinon.stub(AiCodeCompletion.AiCodeCompletion.AiCodeCompletion.prototype, 'onTextChanged');
+        Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
+        const { editor } = createEditorWithPlugin('');
+        await clock.tickAsync(0); // for the initial onAidaAvailabilityChange call
+        editor.dispatch({ changes: { from: 0, insert: 'Hello' }, selection: { anchor: 5 } });
+        sinon.assert.calledOnce(onTextChangedStub);
+        checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+        await Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+        await clock.tickAsync(0);
+        editor.dispatch({ changes: { from: 5, insert: 'Bye' }, selection: { anchor: 8 } });
+        sinon.assert.calledOnce(onTextChangedStub);
         assert.deepEqual(onTextChangedStub.firstCall.args, ['Hello', '', 5, undefined]);
     });
 });

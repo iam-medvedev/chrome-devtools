@@ -14,9 +14,12 @@ describeWithMockConnection('ConsoleContextSelector', () => {
     let consolePrompt;
     let keyBinding;
     let evaluateOnTarget;
+    let checkAccessPreconditionsStub;
     let editor;
     beforeEach(() => {
         sinon.stub(Host.AidaClient.HostConfigTracker.instance(), 'pollAidaAvailability').callsFake(async () => { });
+        checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
+        checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
         updateHostConfig({
             devToolsAiCodeCompletion: {
                 enabled: true,
@@ -119,6 +122,30 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         assert.exists(consolePrompt['aiCodeCompletion']);
         setting.set(false);
         assert.isUndefined(consolePrompt['aiCodeCompletion']);
+    });
+    describe('onAidaAvailabilityChange', () => {
+        it('sets up AI completion when AIDA becomes available', async () => {
+            Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
+            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.isUndefined(consolePrompt['aiCodeCompletion']);
+            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.exists(consolePrompt['aiCodeCompletion']);
+        });
+        it('cleans up AI completion when AIDA becomes unavailable', async () => {
+            Common.Settings.Settings.instance().settingForTest('ai-code-completion-enabled').set(true);
+            checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.exists(consolePrompt['aiCodeCompletion']);
+            checkAccessPreconditionsStub.resolves("no-account-email" /* Host.AidaClient.AidaAccessPreconditions.NO_ACCOUNT_EMAIL */);
+            Host.AidaClient.HostConfigTracker.instance().dispatchEventToListeners("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */);
+            await new Promise(resolve => setTimeout(resolve, 0));
+            assert.isUndefined(consolePrompt['aiCodeCompletion']);
+        });
     });
     it('sends console history in the request to AIDA', () => {
         const mockAidaClient = sinon.createStubInstance(Host.AidaClient.AidaClient, {

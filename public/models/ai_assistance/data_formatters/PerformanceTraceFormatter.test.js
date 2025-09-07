@@ -6,13 +6,13 @@ import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { SnapshotTester } from '../../../testing/SnapshotTester.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
-import { PerformanceTraceFormatter } from '../ai_assistance.js';
+import { PERF_AGENT_UNIT_FORMATTERS, PerformanceTraceFormatter } from '../ai_assistance.js';
 async function createFormatter(context, name) {
     const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(context, name);
     assert.isOk(insights);
     const focus = TimelineUtils.AIContext.AgentFocus.full(parsedTrace, insights, metadata);
-    const eventsSerializer = new TimelineUtils.EventsSerializer.EventsSerializer();
-    const formatter = new PerformanceTraceFormatter(focus, eventsSerializer);
+    const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+    const formatter = new PerformanceTraceFormatter(PERF_AGENT_UNIT_FORMATTERS, focus, eventsSerializer);
     return { formatter, parsedTrace };
 }
 describeWithEnvironment('PerformanceTraceFormatter', () => {
@@ -75,7 +75,7 @@ describeWithEnvironment('PerformanceTraceFormatter', () => {
     });
     it('formatCallTree', async function () {
         const { formatter, parsedTrace } = await createFormatter(this, 'long-task-from-worker-thread.json.gz');
-        const event = new TimelineUtils.EventsSerializer.EventsSerializer().eventForKey('r-62', parsedTrace);
+        const event = new Trace.EventsSerializer.EventsSerializer().eventForKey('r-62', parsedTrace);
         const tree = TimelineUtils.AICallTree.AICallTree.fromEvent(event, parsedTrace);
         assert.exists(tree);
         const output = formatter.formatCallTree(tree);

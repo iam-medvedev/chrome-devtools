@@ -5,6 +5,7 @@ export declare class ThirdParties extends BaseInsightComponent<ThirdPartiesInsig
     #private;
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     renderContent(): Lit.LitTemplate;
 }
 declare global {

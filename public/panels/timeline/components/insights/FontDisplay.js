@@ -14,6 +14,9 @@ export class FontDisplay extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-font-display`;
     internalName = 'font-display';
     #overlayForRequest = new Map();
+    hasAskAiSupport() {
+        return true;
+    }
     createOverlays() {
         this.#overlayForRequest.clear();
         if (!this.model) {

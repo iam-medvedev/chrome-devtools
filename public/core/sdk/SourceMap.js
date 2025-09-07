@@ -88,6 +88,7 @@ export class SourceMap {
     #sourceInfos = [];
     #sourceInfoByURL = new Map();
     #scopesInfo = null;
+    #debugId;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
@@ -97,6 +98,7 @@ export class SourceMap {
         this.#compiledURLInternal = compiledURL;
         this.#sourceMappingURL = sourceMappingURL;
         this.#baseURL = (Common.ParsedURL.schemeIs(sourceMappingURL, 'data:')) ? compiledURL : sourceMappingURL;
+        this.#debugId = 'debugId' in payload ? payload.debugId : undefined;
         this.#mappingsInternal = null;
         if ('sections' in this.#json) {
             if (this.#json.sections.find(section => 'url' in section)) {
@@ -137,6 +139,9 @@ export class SourceMap {
     }
     url() {
         return this.#sourceMappingURL;
+    }
+    debugId() {
+        return this.#debugId ?? null;
     }
     sourceURLs() {
         return [...this.#sourceInfoByURL.keys()];

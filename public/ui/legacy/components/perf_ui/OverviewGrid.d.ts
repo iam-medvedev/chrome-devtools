@@ -1,14 +1,14 @@
 import * as Common from '../../../../core/common/common.js';
-import { type Calculator } from './TimelineGrid.js';
+import type * as NetworkTimeCalculator from '../../../../models/network_time_calculator/network_time_calculator.js';
 export declare class OverviewGrid {
     element: HTMLDivElement;
     private readonly grid;
     private readonly window;
-    constructor(prefix: string, calculator?: Calculator);
+    constructor(prefix: string, calculator?: NetworkTimeCalculator.Calculator);
     enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
     clientWidth(): number;
-    updateDividers(calculator: Calculator): void;
+    updateDividers(calculator: NetworkTimeCalculator.Calculator): void;
     addEventDividers(dividers: Element[]): void;
     removeEventDividers(): void;
     reset(): void;
@@ -52,7 +52,7 @@ export declare class Window extends Common.ObjectWrapper.ObjectWrapper<EventType
     private resizeEnabled?;
     private clickHandler?;
     private resizerParentOffsetLeft?;
-    constructor(parentElement: HTMLElement, dividersLabelBarElement?: Element, calculator?: Calculator);
+    constructor(parentElement: HTMLElement, dividersLabelBarElement?: Element, calculator?: NetworkTimeCalculator.Calculator);
     enableCreateBreadcrumbsButton(): HTMLElement;
     set showingScreenshots(isShowing: boolean);
     private onResizerClicked;

@@ -1,7 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { buildPropertyDefinitionText, buildPropertyName, buildPropertyValue, isBlockContainer, isFlexContainer, isGridContainer, isInlineElement, isMasonryContainer, isMulticolContainer, isPossiblyReplacedElement, } from './CSSRuleValidatorHelper.js';
@@ -86,9 +85,6 @@ export class Hint {
     }
 }
 export class CSSRuleValidator {
-    getMetricType() {
-        return 0 /* Host.UserMetrics.CSSHintType.OTHER */;
-    }
     #affectedProperties;
     constructor(affectedProperties) {
         this.#affectedProperties = affectedProperties;
@@ -100,9 +96,6 @@ export class CSSRuleValidator {
 export class AlignContentValidator extends CSSRuleValidator {
     constructor() {
         super(['align-content', 'place-content']);
-    }
-    getMetricType() {
-        return 1 /* Host.UserMetrics.CSSHintType.ALIGN_CONTENT */;
     }
     getHint(_propertyName, computedStyles) {
         if (!computedStyles) {
@@ -142,9 +135,6 @@ export class FlexItemValidator extends CSSRuleValidator {
     constructor() {
         super(['flex', 'flex-basis', 'flex-grow', 'flex-shrink']);
     }
-    getMetricType() {
-        return 2 /* Host.UserMetrics.CSSHintType.FLEX_ITEM */;
-    }
     getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
@@ -167,9 +157,6 @@ export class FlexItemValidator extends CSSRuleValidator {
 export class FlexContainerValidator extends CSSRuleValidator {
     constructor() {
         super(['flex-direction', 'flex-flow', 'flex-wrap']);
-    }
-    getMetricType() {
-        return 3 /* Host.UserMetrics.CSSHintType.FLEX_CONTAINER */;
     }
     getHint(propertyName, computedStyles) {
         if (!computedStyles) {
@@ -203,9 +190,6 @@ export class GridContainerValidator extends CSSRuleValidator {
             'grid-template-rows',
         ]);
     }
-    getMetricType() {
-        return 4 /* Host.UserMetrics.CSSHintType.GRID_CONTAINER */;
-    }
     getHint(propertyName, computedStyles) {
         if (isGridContainer(computedStyles) || isMasonryContainer(computedStyles)) {
             return;
@@ -232,9 +216,6 @@ export class GridItemValidator extends CSSRuleValidator {
             'grid-row-start',
         ]);
     }
-    getMetricType() {
-        return 5 /* Host.UserMetrics.CSSHintType.GRID_ITEM */;
-    }
     getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
@@ -260,9 +241,6 @@ export class FlexOrGridItemValidator extends CSSRuleValidator {
             'order',
         ]);
     }
-    getMetricType() {
-        return 12 /* Host.UserMetrics.CSSHintType.FLEX_OR_GRID_ITEM */;
-    }
     getHint(propertyName, _computedStyles, parentComputedStyles) {
         if (!parentComputedStyles) {
             return;
@@ -286,9 +264,6 @@ export class FlexGridValidator extends CSSRuleValidator {
     constructor() {
         // justify-content is specified to affect multicol, but we don't implement that yet.
         super(['justify-content']);
-    }
-    getMetricType() {
-        return 6 /* Host.UserMetrics.CSSHintType.FLEX_GRID */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         if (!computedStyles) {
@@ -333,9 +308,6 @@ export class MulticolFlexGridValidator extends CSSRuleValidator {
             'grid-row-gap',
         ]);
     }
-    getMetricType() {
-        return 7 /* Host.UserMetrics.CSSHintType.MULTICOL_FLEX_GRID */;
-    }
     getHint(propertyName, computedStyles) {
         if (!computedStyles) {
             return;
@@ -364,9 +336,6 @@ export class PaddingValidator extends CSSRuleValidator {
             'padding-bottom',
             'padding-left',
         ]);
-    }
-    getMetricType() {
-        return 8 /* Host.UserMetrics.CSSHintType.PADDING */;
     }
     getHint(propertyName, computedStyles) {
         const display = computedStyles?.get('display');
@@ -404,9 +373,6 @@ export class PositionValidator extends CSSRuleValidator {
             'left',
         ]);
     }
-    getMetricType() {
-        return 9 /* Host.UserMetrics.CSSHintType.POSITION */;
-    }
     getHint(propertyName, computedStyles) {
         const position = computedStyles?.get('position');
         if (!position) {
@@ -431,9 +397,6 @@ export class ZIndexValidator extends CSSRuleValidator {
         super([
             'z-index',
         ]);
-    }
-    getMetricType() {
-        return 10 /* Host.UserMetrics.CSSHintType.Z_INDEX */;
     }
     getHint(propertyName, computedStyles, parentComputedStyles) {
         const position = computedStyles?.get('position');
@@ -467,9 +430,6 @@ export class SizingValidator extends CSSRuleValidator {
             'height',
         ]);
     }
-    getMetricType() {
-        return 11 /* Host.UserMetrics.CSSHintType.SIZING */;
-    }
     getHint(propertyName, computedStyles, _parentComputedStyles, nodeName) {
         if (!computedStyles || !nodeName) {
             return;
@@ -500,9 +460,6 @@ export class FontVariationSettingsValidator extends CSSRuleValidator {
         super([
             'font-variation-settings',
         ]);
-    }
-    getMetricType() {
-        return 13 /* Host.UserMetrics.CSSHintType.FONT_VARIATION_SETTINGS */;
     }
     getHint(_propertyName, computedStyles, _parentComputedStyles, _nodeName, fontFaces) {
         if (!computedStyles) {

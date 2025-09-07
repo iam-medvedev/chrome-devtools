@@ -46,11 +46,8 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     /**
      * Updates the UI shown in the Summary tab, and updates the UI to select the
      * summary tab.
-     * @param node this is passed as an additional piece of DOM that will be
-     *     rendered in the summary view. This is a temporary ability to allow
-     *     incremental migration to the UI Eng vision.
      */
-    private updateSummaryAndSelectTab;
+    private updateSummaryPane;
     private updateContents;
     private appendTab;
     headerElement(): Element;

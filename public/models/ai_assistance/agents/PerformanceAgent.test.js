@@ -6,11 +6,11 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
-import { getInsightOrError, getInsightSetOrError } from '../../../testing/InsightHelpers.js';
+import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../../trace/trace.js';
-import { PerformanceAgent, PerformanceInsightFormatter, PerformanceTraceContext, TraceEventFormatter } from '../ai_assistance.js';
+import { PERF_AGENT_UNIT_FORMATTERS, PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
 describeWithEnvironment('PerformanceAgent', () => {
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({
@@ -200,7 +200,6 @@ const FAKE_LCP_MODEL = {
     state: 'fail',
     frameId: '123',
 };
-const FAKE_INSIGHT_SET_BOUNDS = Trace.Helpers.Timing.traceWindowFromMicroSeconds(0, 0);
 const FAKE_INP_MODEL = {
     insightKey: "INPBreakdown" /* Trace.Insights.Types.InsightKeys.INP_BREAKDOWN */,
     strings: {},
@@ -211,24 +210,25 @@ const FAKE_INP_MODEL = {
     frameId: '123',
 };
 const FAKE_PARSED_TRACE = {
-    Meta: { traceBounds: { min: 0, max: 10 } },
+    Meta: { traceBounds: { min: 0, max: 10 }, mainFrameURL: 'https://www.example.com' },
 };
+const FAKE_INSIGHTS = new Map();
+const FAKE_METADATA = {};
 function createAgentForInsightConversation(opts = {}) {
     return new PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() }, "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */);
 }
 describeWithEnvironment('PerformanceAgent – insight focus', () => {
     it('uses the min and max bounds of the trace as the origin', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+        const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
         assert.isOk(insights);
         const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
         const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-        const insightSet = getInsightSetOrError(insights, firstNav);
-        const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-        assert.strictEqual(context.getOrigin(), 'insight-658799706428-658804825864');
+        const context = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, lcpBreakdown);
+        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
     });
     it('outputs the right title for the selected insight', async () => {
-        const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
-        assert.strictEqual(context.getTitle(), 'Insight: LCP breakdown');
+        const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INSIGHTS, FAKE_METADATA, FAKE_LCP_MODEL);
+        assert.strictEqual(context.getTitle(), 'Trace: www.example.com');
     });
     // See b/405054694 for context on why we do this.
     describe('parsing text responses', () => {
@@ -270,8 +270,10 @@ code
         });
     });
     describe('handleContextDetails', () => {
-        it('outputs the right context for the initial query from the user', async () => {
-            const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
+        it('outputs the right context for the initial query from the user', async function () {
+            const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            assert.isOk(insights);
+            const context = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, FAKE_LCP_MODEL);
             const agent = createAgentForInsightConversation({
                 aidaClient: mockAidaClient([[{
                             explanation: 'This is the answer',
@@ -280,7 +282,8 @@ code
                             }
                         }]])
             });
-            const expectedDetailText = new PerformanceInsightFormatter(FAKE_PARSED_TRACE, FAKE_LCP_MODEL).formatInsight();
+            const expectedDetailText = new PerformanceTraceFormatter(PERF_AGENT_UNIT_FORMATTERS, context.getItem(), new Trace.EventsSerializer.EventsSerializer())
+                .formatTraceSummary();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             assert.deepEqual(responses, [
                 {
@@ -291,9 +294,9 @@ code
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
-                    title: 'Analyzing insight: LCP breakdown',
+                    title: 'Analyzing trace',
                     details: [
-                        { title: 'LCP breakdown', text: expectedDetailText },
+                        { title: 'Trace', text: expectedDetailText },
                     ],
                 },
                 {
@@ -314,20 +317,16 @@ code
             const agent = createAgentForInsightConversation({
                 aidaClient: {},
             });
-            const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
-            const extraContext = new PerformanceInsightFormatter(FAKE_PARSED_TRACE, FAKE_LCP_MODEL).formatInsight();
+            const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INSIGHTS, FAKE_METADATA, FAKE_LCP_MODEL);
             const finalQuery = await agent.enhanceQuery('What is this?', context);
-            const expected = `${extraContext}
-
-# User question for you to answer:
-What is this?`;
+            const expected = `User clicked on the LCPBreakdown insight, and then asked a question.\n\n# User question for you to answer:\nWhat is this?`;
             assert.strictEqual(finalQuery, expected);
         });
         it('does not add the context for follow-up queries with the same context', async () => {
             const agent = createAgentForInsightConversation({
                 aidaClient: {},
             });
-            const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
+            const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INSIGHTS, FAKE_METADATA, FAKE_LCP_MODEL);
             await agent.enhanceQuery('What is this?', context);
             const finalQuery = await agent.enhanceQuery('Help me understand?', context);
             const expected = `# User question for you to answer:
@@ -338,30 +337,34 @@ Help me understand?`;
             const agent = createAgentForInsightConversation({
                 aidaClient: {},
             });
-            const context1 = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
-            const context2 = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INP_MODEL, FAKE_INSIGHT_SET_BOUNDS);
+            const context1 = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INSIGHTS, FAKE_METADATA, FAKE_LCP_MODEL);
+            const context2 = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_INSIGHTS, FAKE_METADATA, FAKE_INP_MODEL);
             const firstQuery = await agent.enhanceQuery('Q1', context1);
             const secondQuery = await agent.enhanceQuery('Q2', context1);
             const thirdQuery = await agent.enhanceQuery('Q3', context2);
-            assert.include(firstQuery, '## Insight Title: LCP breakdown');
-            assert.notInclude(secondQuery, '## Insight Title');
-            assert.include(thirdQuery, '## Insight Title: INP breakdown');
+            assert.include(firstQuery, 'User clicked on the LCPBreakdown');
+            assert.notInclude(secondQuery, 'User clicked on the');
+            assert.include(thirdQuery, 'User clicked on the INPBreakdown');
         });
     });
     describe('function calls', () => {
-        it('calls getNetworkActivitySummary and logs the response bytes size', async function () {
+        it('can call getNetworkTrackSummary', async function () {
             const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAINetworkSummaryResponseSize');
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+            const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(insights);
             const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
+            const bounds = parsedTrace.Meta.traceBounds;
             const agent = createAgentForInsightConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkActivitySummary', args: {} }] }], [{ explanation: 'done' }]
+                    [{
+                            explanation: '',
+                            functionCalls: [{ name: 'getNetworkTrackSummary', args: { min: bounds.min, max: bounds.max } }]
+                        }],
+                    [{ explanation: 'done' }]
                 ])
             });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
+            const context = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
             // Find the requests we expect the handler to have returned.
@@ -371,15 +374,15 @@ Help me understand?`;
                 'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.css',
                 'https://via.placeholder.com/50.jpg', 'https://via.placeholder.com/2000.jpg'
             ];
-            const requests = expectedRequestUrls.map(url => {
+            expectedRequestUrls.forEach(url => {
                 const match = parsedTrace.NetworkRequests.byTime.find(r => r.args.data.url === url);
                 assert.isOk(match, `no request found for ${url}`);
-                return match;
             });
-            const expectedRequestsOutput = TraceEventFormatter.networkRequests(requests, parsedTrace);
+            const formatter = new PerformanceTraceFormatter(PERF_AGENT_UNIT_FORMATTERS, context.getItem(), new Trace.EventsSerializer.EventsSerializer());
+            const expectedRequestsOutput = formatter.formatNetworkTrackSummary(bounds);
             const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedRequestsOutput);
             sinon.assert.calledWith(metricsSpy, expectedBytesSize);
-            const expectedOutput = JSON.stringify({ requests: expectedRequestsOutput });
+            const expectedOutput = JSON.stringify({ summary: expectedRequestsOutput });
             const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
             assert.exists(titleResponse);
             assert.strictEqual(titleResponse.title, 'Investigating network activity…');
@@ -387,229 +390,90 @@ Help me understand?`;
             assert.deepEqual(action, {
                 type: 'action',
                 output: expectedOutput,
-                code: 'getNetworkActivitySummary()',
+                code: 'getNetworkTrackSummary({min: 658799706428, max: 658804825864})',
                 canceled: false
             });
         });
-        it('can call getNetworkRequestDetail to get detail about a single request', async function () {
-            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAINetworkRequestDetailResponseSize');
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+        it('can call getMainThreadTrackSummary', async function () {
+            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
+            const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(insights);
             const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const requestUrl = 'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.css';
+            const bounds = parsedTrace.Meta.traceBounds;
             const agent = createAgentForInsightConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkRequestDetail', args: { url: requestUrl } }] }],
+                    [{
+                            explanation: '',
+                            functionCalls: [{ name: 'getMainThreadTrackSummary', args: { min: bounds.min, max: bounds.max } }]
+                        }],
                     [{ explanation: 'done' }]
                 ])
             });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
-            assert.exists(titleResponse);
-            assert.strictEqual(titleResponse.title, `Investigating network request ${requestUrl}…`);
-            const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
-            const request = parsedTrace.NetworkRequests.byTime.find(r => r.args.data.url === requestUrl);
-            assert.isOk(request);
-            const expectedRequestOutput = TraceEventFormatter.networkRequests([request], parsedTrace, { verbose: true });
-            const expectedOutput = JSON.stringify({ request: expectedRequestOutput });
-            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedRequestOutput);
-            sinon.assert.calledWith(metricsSpy, expectedBytesSize);
-            assert.exists(action);
-            assert.deepEqual(action, {
-                type: 'action',
-                output: expectedOutput,
-                code: `getNetworkRequestDetail('${requestUrl}')`,
-                canceled: false
-            });
-        });
-        it('calls getMainThreadActivity', async function () {
-            const metricsSpy = sinon.spy(Host.userMetrics, 'performanceAIMainThreadActivityResponseSize');
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            assert.isOk(insights);
-            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const agent = createAgentForInsightConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getMainThreadActivity', args: {} }] }], [{ explanation: 'done' }]])
-            });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
+            const context = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, lcpBreakdown);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             const titleResponse = responses.find(response => response.type === "title" /* ResponseType.TITLE */);
             assert.exists(titleResponse);
             assert.strictEqual(titleResponse.title, 'Investigating main thread activity…');
             const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
             assert.exists(action);
-            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityForInsight(lcpBreakdown, insightSet.bounds, parsedTrace);
-            assert.isOk(expectedTree);
-            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedTree.serialize());
+            const formatter = new PerformanceTraceFormatter(PERF_AGENT_UNIT_FORMATTERS, context.getItem(), new Trace.EventsSerializer.EventsSerializer());
+            const summary = formatter.formatMainThreadTrackSummary(bounds);
+            assert.isOk(summary);
+            const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
             sinon.assert.calledWith(metricsSpy, expectedBytesSize);
-            const expectedOutput = JSON.stringify({ activity: expectedTree.serialize() });
+            const expectedOutput = JSON.stringify({ summary });
             assert.deepEqual(action, {
                 type: 'action',
                 output: expectedOutput,
-                code: 'getMainThreadActivity()',
+                code: 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
                 canceled: false
             });
         });
-        it('caches getNetworkActivitySummary calls and passes them to future requests as facts', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
-            assert.isOk(insights);
-            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const agent = createAgentForInsightConversation({
-                aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkActivitySummary', args: {} }] }], [{ explanation: 'done' }]
-                ])
-            });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            // Make the first query to trigger the getNetworkActivitySummary function
-            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
-            assert.exists(action);
-            assert.strictEqual(action.code, 'getNetworkActivitySummary()');
-            // Trigger another request so that the agent populates the facts.
-            await Array.fromAsync(agent.run('test 2', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-            const networkSummaryFact = Array.from(agent.currentFacts()).at(0);
-            assert.exists(networkSummaryFact);
-            const expectedRequestUrls = [
-                'https://chromedevtools.github.io/performance-stories/lcp-large-image/index.html',
-                'https://fonts.googleapis.com/css2?family=Poppins:ital,wght@1,800',
-                'https://chromedevtools.github.io/performance-stories/lcp-large-image/app.css',
-                'https://via.placeholder.com/50.jpg', 'https://via.placeholder.com/2000.jpg'
-            ];
-            // Ensure that each URL was in the fact as a way to validate the fact is accurate.
-            assert.isTrue(expectedRequestUrls.every(url => {
-                return networkSummaryFact.text.includes(url);
-            }));
-            // Now we make one more request; we do this to ensure that we don't add the same fact again.
-            await Array.fromAsync(agent.run('test 3', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-        });
-        it('caches getMainThreadActivity calls and passes them to future requests as facts', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            assert.isOk(insights);
-            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const agent = createAgentForInsightConversation({
-                aidaClient: mockAidaClient([[{ explanation: '', functionCalls: [{ name: 'getMainThreadActivity', args: {} }] }], [{ explanation: 'done' }]])
-            });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            // Make the first query to trigger the getMainThreadActivity function
-            const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
-            assert.exists(action);
-            assert.strictEqual(action.code, 'getMainThreadActivity()');
-            // Trigger another request so that the agent populates the facts.
-            await Array.fromAsync(agent.run('test 2', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-            const mainThreadActivityFact = Array.from(agent.currentFacts()).at(0);
-            assert.exists(mainThreadActivityFact);
-            const expectedTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityForInsight(lcpBreakdown, insightSet.bounds, parsedTrace);
-            assert.isOk(expectedTree);
-            assert.include(mainThreadActivityFact.text, expectedTree.serialize());
-            // Now we make one more request; we do this to ensure that we don't add the same fact again.
-            await Array.fromAsync(agent.run('test 3', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-        });
         it('will not send facts from a previous insight if the context changes', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+            const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(insights);
             const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
             const renderBlocking = getInsightOrError('RenderBlocking', insights, firstNav);
             const agent = createAgentForInsightConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadActivity', args: {} }] }],
+                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
                 ])
             });
-            const lcpContext = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            const renderBlockingContext = PerformanceTraceContext.fromInsight(parsedTrace, renderBlocking, insightSet.bounds);
+            const lcpContext = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, lcpBreakdown);
+            const renderBlockingContext = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, renderBlocking);
             // Populate the function calls for the LCP Context
             await Array.fromAsync(agent.run('test 1 LCP', { selected: lcpContext }));
+            assert.strictEqual(agent.currentFacts().size, 6); // always adds 6 facts for high-level summary of trace.
             await Array.fromAsync(agent.run('test 2 LCP', { selected: lcpContext }));
-            assert.strictEqual(agent.currentFacts().size, 1);
+            assert.strictEqual(agent.currentFacts().size, 7); // added the function call as a fact.
             // Now change the context and send a request.
             await Array.fromAsync(agent.run('test 1 RenderBlocking', { selected: renderBlockingContext }));
-            // Because the context changed, we should now not have any facts.
-            assert.strictEqual(agent.currentFacts().size, 0);
+            assert.strictEqual(agent.currentFacts().size, 6); // back to 6.
         });
-        it('will send multiple facts', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
+        it('will cache function calls as facts', async function () {
+            const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(insights);
             const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
             const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
             const agent = createAgentForInsightConversation({
                 aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadActivity', args: {} }] }],
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkActivitySummary', args: {} }] }], [{ explanation: 'done' }]
+                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
+                    [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }]
                 ])
             });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            // First query to populate the function calls
+            const context = PerformanceTraceContext.fromInsight(parsedTrace, insights, metadata, lcpBreakdown);
             await Array.fromAsync(agent.run('test 1', { selected: context }));
-            // Second query should have two facts
             await Array.fromAsync(agent.run('test 2', { selected: context }));
+            // First 6 are the always included high-level facts. The rests are from the function calls.
             assert.deepEqual(Array.from(agent.currentFacts(), fact => {
                 return fact.metadata.source;
-            }), ['getMainThreadActivity()', 'getNetworkActivitySummary()']);
-        });
-        it('sends network description text as a fact when `getNetworkActivitySummary` is called', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
-            assert.isOk(insights);
-            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const agent = createAgentForInsightConversation({
-                aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getNetworkActivitySummary', args: {} }] }],
-                ])
-            });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            await Array.fromAsync(agent.run('test 1', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-            const networkFormatDescriptionFact = Array.from(agent.currentFacts()).at(0);
-            assert.exists(networkFormatDescriptionFact);
-            assert.deepEqual(networkFormatDescriptionFact.text, TraceEventFormatter.networkDataFormatDescription);
-        });
-        it('sends main thread activity description text as a fact when `getMainThreadActivity` is called', async function () {
-            const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
-            assert.isOk(insights);
-            const [firstNav] = parsedTrace.Meta.mainFrameNavigations;
-            const insightSet = getInsightSetOrError(insights, firstNav);
-            const lcpBreakdown = getInsightOrError('LCPBreakdown', insights, firstNav);
-            const agent = createAgentForInsightConversation({
-                aidaClient: mockAidaClient([
-                    [{ explanation: '', functionCalls: [{ name: 'getMainThreadActivity', args: {} }] }],
-                ]),
-            });
-            const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown, insightSet.bounds);
-            await Array.fromAsync(agent.run('test 1', { selected: context }));
-            assert.strictEqual(agent.currentFacts().size, 1);
-            const mainThreadActivityDescriptionFact = Array.from(agent.currentFacts()).at(0);
-            assert.exists(mainThreadActivityDescriptionFact);
-            const expectedFormatDescription = `The tree is represented as a call frame with a root task and a series of children.
-The format of each callframe is:
-
-  'id;name;duration;selfTime;urlIndex;childRange;[S]'
-
-The fields are:
-
-* id: A unique numerical identifier for the call frame.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: **Optional marker.** The letter 'S' appears at the end of the line **only** for the single call frame selected by the user.`;
-            assert.deepEqual(mainThreadActivityDescriptionFact.text, expectedFormatDescription);
+            }), [
+                'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools',
+                'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
+                'getNetworkTrackSummary({min: 197695826524, max: 197698633660})'
+            ]);
         });
     });
 });

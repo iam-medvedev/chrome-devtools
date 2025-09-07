@@ -5,6 +5,7 @@
 import * as Common from '../../../../core/common/common.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import * as Geometry from '../../../../models/geometry/geometry.js';
 import * as VisualLogging from '../../../visual_logging/visual_logging.js';
 import * as UI from '../../legacy.js';
 import cssShadowEditorStyles from './cssShadowEditor.css.js';
@@ -324,8 +325,8 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     dragStart(event) {
         this.xySlider.focus();
         this.updateCanvas(true);
-        this.canvasOrigin = new UI.Geometry.Point(this.xySlider.getBoundingClientRect().left + this.halfCanvasSize, this.xySlider.getBoundingClientRect().top + this.halfCanvasSize);
-        const clickedPoint = new UI.Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
+        this.canvasOrigin = new Geometry.Point(this.xySlider.getBoundingClientRect().left + this.halfCanvasSize, this.xySlider.getBoundingClientRect().top + this.halfCanvasSize);
+        const clickedPoint = new Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
         const thumbPoint = this.sliderThumbPosition();
         if (clickedPoint.distanceTo(thumbPoint) >= sliderThumbRadius) {
             this.dragMove(event);
@@ -333,7 +334,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         return true;
     }
     dragMove(event) {
-        let point = new UI.Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
+        let point = new Geometry.Point(event.x - this.canvasOrigin.x, event.y - this.canvasOrigin.y);
         if (event.shiftKey) {
             point = this.snapToClosestDirection(point);
         }
@@ -407,7 +408,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     }
     constrainPoint(point, max) {
         if (Math.abs(point.x) <= max && Math.abs(point.y) <= max) {
-            return new UI.Geometry.Point(point.x, point.y);
+            return new Geometry.Point(point.x, point.y);
         }
         return point.scale(max / Math.max(Math.abs(point.x), Math.abs(point.y)));
     }
@@ -415,8 +416,8 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         let minDistance = Number.MAX_VALUE;
         let closestPoint = point;
         const directions = [
-            new UI.Geometry.Point(0, -1), new UI.Geometry.Point(1, -1), new UI.Geometry.Point(1, 0),
-            new UI.Geometry.Point(1, 1), // Southeast
+            new Geometry.Point(0, -1), new Geometry.Point(1, -1), new Geometry.Point(1, 0),
+            new Geometry.Point(1, 1), // Southeast
         ];
         for (const direction of directions) {
             const projection = point.projectOn(direction);
@@ -431,7 +432,7 @@ export class CSSShadowEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     sliderThumbPosition() {
         const x = (this.model.offsetX().amount / maxRange) * this.innerCanvasSize;
         const y = (this.model.offsetY().amount / maxRange) * this.innerCanvasSize;
-        return this.constrainPoint(new UI.Geometry.Point(x, y), this.innerCanvasSize);
+        return this.constrainPoint(new Geometry.Point(x, y), this.innerCanvasSize);
     }
 }
 //# sourceMappingURL=CSSShadowEditor.js.map

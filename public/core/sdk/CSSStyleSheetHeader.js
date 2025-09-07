@@ -160,5 +160,8 @@ export class CSSStyleSheetHeader {
             initiatorUrl: this.hasSourceURL ? Platform.DevToolsPath.EmptyUrlString : this.sourceURL,
         };
     }
+    debugId() {
+        return null;
+    }
 }
 //# sourceMappingURL=CSSStyleSheetHeader.js.map

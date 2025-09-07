@@ -72,7 +72,7 @@ describeWithMockConnection('ThrottlingManager', () => {
             const select = MobileThrottling.ThrottlingManager.ThrottlingManager.instance({ forceNew: true })
                 .createSaveDataOverrideSelector();
             const options = select.options();
-            assert.deepEqual(options.map(option => option.textContent), ['\'Save-Data\': default', '\'Save-Data\': force on', '\'Save-Data\': force off']);
+            assert.deepEqual(options.map(option => option.textContent), ['\'Save-Data\': default', '\'Save-Data\': on', '\'Save-Data\': off']);
             let emulationModelSpy = spyCall(emulationModel, 'setDataSaverOverride');
             select.select(options[0]);
             select.element.dispatchEvent(new Event('change'));

@@ -4908,15 +4908,14 @@ var RequestResponseView = class extends UI12.Widget.VBox {
 // gen/front_end/panels/network/RequestTimingView.js
 var RequestTimingView_exports = {};
 __export(RequestTimingView_exports, {
-  ConnectionSetupRangeNames: () => ConnectionSetupRangeNames,
-  RequestTimingView: () => RequestTimingView,
-  ServiceWorkerRangeNames: () => ServiceWorkerRangeNames
+  RequestTimingView: () => RequestTimingView
 });
 import * as Common8 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n23 from "./../../core/i18n/i18n.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as Logs4 from "./../../models/logs/logs.js";
+import * as NetworkTimeCalculator from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as ObjectUI2 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
@@ -5422,95 +5421,6 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
         return name;
     }
   }
-  static calculateRequestTimeRanges(request, navigationStart) {
-    const result = [];
-    function addRange(name, start, end) {
-      if (start < Number.MAX_VALUE && start <= end) {
-        result.push({ name, start, end });
-      }
-    }
-    function firstPositive(numbers) {
-      for (let i = 0; i < numbers.length; ++i) {
-        if (numbers[i] > 0) {
-          return numbers[i];
-        }
-      }
-      return void 0;
-    }
-    function addOffsetRange(name, start, end) {
-      if (start >= 0 && end >= 0) {
-        addRange(name, startTime + start / 1e3, startTime + end / 1e3);
-      }
-    }
-    function addMaybeNegativeOffsetRange(name, start, end) {
-      addRange(name, startTime + start / 1e3, startTime + end / 1e3);
-    }
-    const timing = request.timing;
-    if (!timing) {
-      const start = request.issueTime() !== -1 ? request.issueTime() : request.startTime !== -1 ? request.startTime : 0;
-      const hasDifferentIssueAndStartTime = request.issueTime() !== -1 && request.startTime !== -1 && request.issueTime() !== request.startTime;
-      const middle = request.responseReceivedTime === -1 ? hasDifferentIssueAndStartTime ? request.startTime : Number.MAX_VALUE : request.responseReceivedTime;
-      const end = request.endTime === -1 ? Number.MAX_VALUE : request.endTime;
-      addRange("total", start, end);
-      addRange("blocking", start, middle);
-      const state = request.responseReceivedTime === -1 ? "connecting" : "receiving";
-      addRange(state, middle, end);
-      return result;
-    }
-    const issueTime = request.issueTime();
-    const startTime = timing.requestTime;
-    const endTime = firstPositive([request.endTime, request.responseReceivedTime]) || startTime;
-    addRange("total", issueTime < startTime ? issueTime : startTime, endTime);
-    if (timing.pushStart) {
-      const pushEnd = timing.pushEnd || endTime;
-      if (pushEnd > navigationStart) {
-        addRange("push", Math.max(timing.pushStart, navigationStart), pushEnd);
-      }
-    }
-    if (issueTime < startTime) {
-      addRange("queueing", issueTime, startTime);
-    }
-    const responseReceived = (request.responseReceivedTime - startTime) * 1e3;
-    if (request.fetchedViaServiceWorker) {
-      addOffsetRange("blocking", 0, timing.workerStart);
-      addOffsetRange("serviceworker-preparation", timing.workerStart, timing.workerReady);
-      addOffsetRange("serviceworker-respondwith", timing.workerFetchStart, timing.workerRespondWithSettled);
-      addOffsetRange("serviceworker", timing.workerReady, timing.sendEnd);
-      addOffsetRange("waiting", timing.sendEnd, responseReceived);
-    } else if (!timing.pushStart) {
-      const blockingEnd = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart, responseReceived]) || 0;
-      addOffsetRange("blocking", 0, blockingEnd);
-      addOffsetRange("proxy", timing.proxyStart, timing.proxyEnd);
-      addOffsetRange("dns", timing.dnsStart, timing.dnsEnd);
-      addOffsetRange("connecting", timing.connectStart, timing.connectEnd);
-      addOffsetRange("ssl", timing.sslStart, timing.sslEnd);
-      addOffsetRange("sending", timing.sendStart, timing.sendEnd);
-      addOffsetRange("waiting", Math.max(timing.sendEnd, timing.connectEnd, timing.dnsEnd, timing.proxyEnd, blockingEnd), responseReceived);
-    }
-    const { serviceWorkerRouterInfo } = request;
-    if (serviceWorkerRouterInfo) {
-      if (timing.workerRouterEvaluationStart) {
-        let routerEvaluationEnd = timing.sendStart;
-        if (serviceWorkerRouterInfo?.matchedSourceType === "cache" && timing.workerCacheLookupStart) {
-          routerEvaluationEnd = timing.workerCacheLookupStart;
-        } else if (serviceWorkerRouterInfo?.actualSourceType === "fetch-event") {
-          routerEvaluationEnd = timing.workerStart;
-        }
-        addMaybeNegativeOffsetRange("serviceworker-routerevaluation", timing.workerRouterEvaluationStart, routerEvaluationEnd);
-      }
-      if (timing.workerCacheLookupStart) {
-        let cacheLookupEnd = timing.sendStart;
-        if (serviceWorkerRouterInfo?.actualSourceType === "cache") {
-          cacheLookupEnd = timing.receiveHeadersStart;
-        }
-        addMaybeNegativeOffsetRange("serviceworker-cachelookup", timing.workerCacheLookupStart, cacheLookupEnd);
-      }
-    }
-    if (request.endTime !== -1) {
-      addRange(timing.pushStart ? "receiving-push" : "receiving", request.responseReceivedTime, endTime);
-    }
-    return result;
-  }
   static createTimingTable(request, calculator) {
     const tableElement = document.createElement("table");
     tableElement.classList.add("network-timing-table");
@@ -5519,7 +5429,7 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
     colgroup.createChild("col", "labels");
     colgroup.createChild("col", "bars");
     colgroup.createChild("col", "duration");
-    const timeRanges = _RequestTimingView.calculateRequestTimeRanges(request, calculator.minimumBoundary());
+    const timeRanges = NetworkTimeCalculator.calculateRequestTimeRanges(request, calculator.minimumBoundary());
     const startTime = timeRanges.map((r) => r.start).reduce((a, b) => Math.min(a, b));
     const endTime = timeRanges.map((r) => r.end).reduce((a, b) => Math.max(a, b));
     const scale = 100 / (endTime - startTime);
@@ -5558,11 +5468,11 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
         if (!queueingHeader) {
           queueingHeader = createHeader(i18nString12(UIStrings12.resourceScheduling));
         }
-      } else if (ConnectionSetupRangeNames.has(rangeName)) {
+      } else if (NetworkTimeCalculator.ConnectionSetupRangeNames.has(rangeName)) {
         if (!connectionHeader) {
           connectionHeader = createHeader(i18nString12(UIStrings12.connectionStart));
         }
-      } else if (ServiceWorkerRangeNames.has(rangeName)) {
+      } else if (NetworkTimeCalculator.ServiceWorkerRangeNames.has(rangeName)) {
         if (!serviceworkerHeader) {
           serviceworkerHeader = createHeader("Service Worker");
         }
@@ -5828,21 +5738,6 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
     }
   }
 };
-var ServiceWorkerRangeNames = /* @__PURE__ */ new Set([
-  "serviceworker",
-  "serviceworker-preparation",
-  "serviceworker-respondwith",
-  "serviceworker-routerevaluation",
-  "serviceworker-cachelookup"
-]);
-var ConnectionSetupRangeNames = /* @__PURE__ */ new Set([
-  "queueing",
-  "blocking",
-  "connecting",
-  "dns",
-  "proxy",
-  "ssl"
-]);
 
 // gen/front_end/panels/network/ResourceDirectSocketChunkView.js
 var ResourceDirectSocketChunkView_exports = {};
@@ -6780,234 +6675,8 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
   }
 };
 
-// gen/front_end/panels/network/NetworkTimeCalculator.js
-var NetworkTimeCalculator_exports = {};
-__export(NetworkTimeCalculator_exports, {
-  NetworkTimeBoundary: () => NetworkTimeBoundary,
-  NetworkTimeCalculator: () => NetworkTimeCalculator,
-  NetworkTransferDurationCalculator: () => NetworkTransferDurationCalculator,
-  NetworkTransferTimeCalculator: () => NetworkTransferTimeCalculator
-});
-import * as Common13 from "./../../core/common/common.js";
-import * as i18n33 from "./../../core/i18n/i18n.js";
-var UIStrings17 = {
-  /**
-   * @description Latency download total format in Network Time Calculator of the Network panel
-   * @example {20ms} PH1
-   * @example {20ms} PH2
-   * @example {40ms} PH3
-   */
-  sLatencySDownloadSTotal: "{PH1} latency, {PH2} download ({PH3} total)",
-  /**
-   * @description Latency format in Network Time Calculator of the Network panel
-   * @example {20ms} PH1
-   */
-  sLatency: "{PH1} latency",
-  /**
-   * @description Duration of the download in ms/s shown for a completed network request.
-   * @example {5ms} PH1
-   */
-  sDownload: "{PH1} download",
-  /**
-   * @description From service worker format in Network Time Calculator of the Network panel
-   * @example {20ms latency} PH1
-   */
-  sFromServiceworker: "{PH1} (from `ServiceWorker`)",
-  /**
-   * @description From cache format in Network Time Calculator of the Network panel
-   * @example {20ms latency} PH1
-   */
-  sFromCache: "{PH1} (from cache)"
-};
-var str_17 = i18n33.i18n.registerUIStrings("panels/network/NetworkTimeCalculator.ts", UIStrings17);
-var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var NetworkTimeBoundary = class {
-  minimum;
-  maximum;
-  constructor(minimum, maximum) {
-    this.minimum = minimum;
-    this.maximum = maximum;
-  }
-  equals(other) {
-    return this.minimum === other.minimum && this.maximum === other.maximum;
-  }
-};
-var NetworkTimeCalculator = class extends Common13.ObjectWrapper.ObjectWrapper {
-  #minimumBoundary = -1;
-  #maximumBoundary = -1;
-  #boundaryChangedEventThrottler = new Common13.Throttler.Throttler(0);
-  #window = null;
-  #workingArea;
-  startAtZero;
-  constructor(startAtZero) {
-    super();
-    this.startAtZero = startAtZero;
-  }
-  setWindow(window2) {
-    this.#window = window2;
-    this.boundaryChanged();
-  }
-  computePosition(time) {
-    return (time - this.minimumBoundary()) / this.boundarySpan() * (this.#workingArea || 0);
-  }
-  formatValue(value, precision) {
-    return i18n33.TimeUtilities.secondsToString(value, Boolean(precision));
-  }
-  minimumBoundary() {
-    return this.#window ? this.#window.minimum : this.#minimumBoundary;
-  }
-  zeroTime() {
-    return this.#minimumBoundary;
-  }
-  maximumBoundary() {
-    return this.#window ? this.#window.maximum : this.#maximumBoundary;
-  }
-  boundary() {
-    return new NetworkTimeBoundary(this.minimumBoundary(), this.maximumBoundary());
-  }
-  boundarySpan() {
-    return this.maximumBoundary() - this.minimumBoundary();
-  }
-  reset() {
-    this.#minimumBoundary = -1;
-    this.#maximumBoundary = -1;
-    this.boundaryChanged();
-  }
-  value() {
-    return 0;
-  }
-  setDisplayWidth(clientWidth) {
-    this.#workingArea = clientWidth;
-  }
-  computeBarGraphPercentages(request) {
-    let start;
-    let middle;
-    let end;
-    if (request.startTime !== -1) {
-      start = (request.startTime - this.minimumBoundary()) / this.boundarySpan() * 100;
-    } else {
-      start = 0;
-    }
-    if (request.responseReceivedTime !== -1) {
-      middle = (request.responseReceivedTime - this.minimumBoundary()) / this.boundarySpan() * 100;
-    } else {
-      middle = this.startAtZero ? start : 100;
-    }
-    if (request.endTime !== -1) {
-      end = (request.endTime - this.minimumBoundary()) / this.boundarySpan() * 100;
-    } else {
-      end = this.startAtZero ? middle : 100;
-    }
-    if (this.startAtZero) {
-      end -= start;
-      middle -= start;
-      start = 0;
-    }
-    return { start, middle, end };
-  }
-  boundaryChanged() {
-    void this.#boundaryChangedEventThrottler.schedule(async () => {
-      this.dispatchEventToListeners(
-        "BoundariesChanged"
-        /* Events.BOUNDARIES_CHANGED */
-      );
-    });
-  }
-  updateBoundariesForEventTime(eventTime) {
-    if (eventTime === -1 || this.startAtZero) {
-      return;
-    }
-    if (this.#maximumBoundary === void 0 || eventTime > this.#maximumBoundary) {
-      this.#maximumBoundary = eventTime;
-      this.boundaryChanged();
-    }
-  }
-  computeBarGraphLabels(request) {
-    let rightLabel = "";
-    if (request.responseReceivedTime !== -1 && request.endTime !== -1) {
-      rightLabel = i18n33.TimeUtilities.secondsToString(request.endTime - request.responseReceivedTime);
-    }
-    const hasLatency = request.latency > 0;
-    const leftLabel = hasLatency ? i18n33.TimeUtilities.secondsToString(request.latency) : rightLabel;
-    if (request.timing) {
-      return { left: leftLabel, right: rightLabel, tooltip: void 0 };
-    }
-    let tooltip;
-    if (hasLatency && rightLabel) {
-      const total = i18n33.TimeUtilities.secondsToString(request.duration);
-      tooltip = i18nString17(UIStrings17.sLatencySDownloadSTotal, { PH1: leftLabel, PH2: rightLabel, PH3: total });
-    } else if (hasLatency) {
-      tooltip = i18nString17(UIStrings17.sLatency, { PH1: leftLabel });
-    } else if (rightLabel) {
-      tooltip = i18nString17(UIStrings17.sDownload, { PH1: rightLabel });
-    }
-    if (request.fetchedViaServiceWorker) {
-      tooltip = i18nString17(UIStrings17.sFromServiceworker, { PH1: String(tooltip) });
-    } else if (request.cached()) {
-      tooltip = i18nString17(UIStrings17.sFromCache, { PH1: String(tooltip) });
-    }
-    return { left: leftLabel, right: rightLabel, tooltip };
-  }
-  updateBoundaries(request) {
-    const lowerBound = this.lowerBound(request);
-    const upperBound = this.upperBound(request);
-    let changed = false;
-    if (lowerBound !== -1 || this.startAtZero) {
-      changed = this.extendBoundariesToIncludeTimestamp(this.startAtZero ? 0 : lowerBound);
-    }
-    if (upperBound !== -1) {
-      changed = this.extendBoundariesToIncludeTimestamp(upperBound) || changed;
-    }
-    if (changed) {
-      this.boundaryChanged();
-    }
-  }
-  extendBoundariesToIncludeTimestamp(timestamp) {
-    const previousMinimumBoundary = this.#minimumBoundary;
-    const previousMaximumBoundary = this.#maximumBoundary;
-    const minOffset = MINIMUM_SPREAD;
-    if (this.#minimumBoundary === -1 || this.#maximumBoundary === -1) {
-      this.#minimumBoundary = timestamp;
-      this.#maximumBoundary = timestamp + minOffset;
-    } else {
-      this.#minimumBoundary = Math.min(timestamp, this.#minimumBoundary);
-      this.#maximumBoundary = Math.max(timestamp, this.#minimumBoundary + minOffset, this.#maximumBoundary);
-    }
-    return previousMinimumBoundary !== this.#minimumBoundary || previousMaximumBoundary !== this.#maximumBoundary;
-  }
-  lowerBound(_request) {
-    return 0;
-  }
-  upperBound(_request) {
-    return 0;
-  }
-};
-var MINIMUM_SPREAD = 0.1;
-var NetworkTransferTimeCalculator = class extends NetworkTimeCalculator {
-  constructor() {
-    super(false);
-  }
-  formatValue(value, precision) {
-    return i18n33.TimeUtilities.secondsToString(value - this.zeroTime(), Boolean(precision));
-  }
-  lowerBound(request) {
-    return request.issueTime();
-  }
-  upperBound(request) {
-    return request.endTime;
-  }
-};
-var NetworkTransferDurationCalculator = class extends NetworkTimeCalculator {
-  constructor() {
-    super(true);
-  }
-  formatValue(value, precision) {
-    return i18n33.TimeUtilities.secondsToString(value, Boolean(precision));
-  }
-  upperBound(request) {
-    return request.duration;
-  }
-};
+// gen/front_end/panels/network/network.prebundle.js
+import "./../../models/network_time_calculator/network_time_calculator.js";
 
 // gen/front_end/panels/network/NetworkLogView.js
 var NetworkLogView_exports = {};
@@ -7020,15 +6689,16 @@ __export(NetworkLogView_exports, {
   overrideFilter: () => overrideFilter
 });
 import "./../../ui/legacy/legacy.js";
-import * as Common17 from "./../../core/common/common.js";
+import * as Common16 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
-import * as i18n39 from "./../../core/i18n/i18n.js";
+import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as HAR from "./../../models/har/har.js";
 import * as Logs5 from "./../../models/logs/logs.js";
+import * as NetworkTimeCalculator4 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
 import * as NetworkForward3 from "./forward/forward.js";
@@ -7048,7 +6718,7 @@ __export(NetworkFrameGrouper_exports, {
   FrameGroupNode: () => FrameGroupNode,
   NetworkFrameGrouper: () => NetworkFrameGrouper
 });
-import * as Common14 from "./../../core/common/common.js";
+import * as Common13 from "./../../core/common/common.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as IconButton5 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
@@ -7083,7 +6753,7 @@ var FrameGroupNode = class extends NetworkGroupNode {
     this.frame = frame;
   }
   displayName() {
-    return new Common14.ParsedURL.ParsedURL(this.frame.url).domain() || this.frame.name || "<iframe>";
+    return new Common13.ParsedURL.ParsedURL(this.frame.url).domain() || this.frame.name || "<iframe>";
   }
   renderCell(cell, columnId) {
     super.renderCell(cell, columnId);
@@ -7577,8 +7247,8 @@ var NetworkLogViewColumns_exports = {};
 __export(NetworkLogViewColumns_exports, {
   NetworkLogViewColumns: () => NetworkLogViewColumns
 });
-import * as Common16 from "./../../core/common/common.js";
-import * as i18n37 from "./../../core/i18n/i18n.js";
+import * as Common15 from "./../../core/common/common.js";
+import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as IconButton6 from "./../../ui/components/icon_button/icon_button.js";
 import * as DataGrid7 from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
@@ -7591,7 +7261,7 @@ var NetworkManageCustomHeadersView_exports = {};
 __export(NetworkManageCustomHeadersView_exports, {
   NetworkManageCustomHeadersView: () => NetworkManageCustomHeadersView
 });
-import * as i18n35 from "./../../core/i18n/i18n.js";
+import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/network/networkManageCustomHeadersView.css.js
@@ -7634,7 +7304,7 @@ var networkManageCustomHeadersView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./networkManageCustomHeadersView.css")} */`;
 
 // gen/front_end/panels/network/NetworkManageCustomHeadersView.js
-var UIStrings18 = {
+var UIStrings17 = {
   /**
    * @description Text in Network Manage Custom Headers View of the Network panel
    */
@@ -7652,8 +7322,8 @@ var UIStrings18 = {
    */
   headerName: "Header Name"
 };
-var str_18 = i18n35.i18n.registerUIStrings("panels/network/NetworkManageCustomHeadersView.ts", UIStrings18);
-var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+var str_17 = i18n33.i18n.registerUIStrings("panels/network/NetworkManageCustomHeadersView.ts", UIStrings17);
+var i18nString17 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
 var NetworkManageCustomHeadersView = class extends UI19.Widget.VBox {
   list;
   columnConfigs;
@@ -7664,16 +7334,16 @@ var NetworkManageCustomHeadersView = class extends UI19.Widget.VBox {
   constructor(columnData, addHeaderColumnCallback, changeHeaderColumnCallback, removeHeaderColumnCallback) {
     super({ useShadowDom: true });
     this.registerRequiredCSS(networkManageCustomHeadersView_css_default);
-    this.contentElement.createChild("div", "header").textContent = i18nString18(UIStrings18.manageHeaderColumns);
+    this.contentElement.createChild("div", "header").textContent = i18nString17(UIStrings17.manageHeaderColumns);
     this.list = new UI19.ListWidget.ListWidget(this);
     this.list.registerRequiredCSS(networkManageCustomHeadersView_css_default);
     this.list.element.classList.add("custom-headers-list");
     const placeholder = document.createElement("div");
     placeholder.classList.add("custom-headers-list-list-empty");
-    placeholder.textContent = i18nString18(UIStrings18.noCustomHeaders);
+    placeholder.textContent = i18nString17(UIStrings17.noCustomHeaders);
     this.list.setEmptyPlaceholder(placeholder);
     this.list.show(this.contentElement);
-    this.contentElement.appendChild(UI19.UIUtils.createTextButton(i18nString18(UIStrings18.addCustomHeader), this.addButtonClicked.bind(this), {
+    this.contentElement.appendChild(UI19.UIUtils.createTextButton(i18nString17(UIStrings17.addCustomHeader), this.addButtonClicked.bind(this), {
       className: "add-button",
       jslogContext: "network.add-custom-header"
     }));
@@ -7737,7 +7407,7 @@ var NetworkManageCustomHeadersView = class extends UI19.Widget.VBox {
     this.editor = editor;
     const content = editor.contentElement();
     const titles = content.createChild("div", "custom-headers-edit-row");
-    titles.createChild("div", "custom-headers-header").textContent = i18nString18(UIStrings18.headerName);
+    titles.createChild("div", "custom-headers-header").textContent = i18nString17(UIStrings17.headerName);
     const fields = content.createChild("div", "custom-headers-edit-row");
     fields.createChild("div", "custom-headers-header").appendChild(editor.createInput("header", "text", "x-custom-header", validateHeader.bind(this)));
     return editor;
@@ -7757,7 +7427,8 @@ var NetworkWaterfallColumn_exports = {};
 __export(NetworkWaterfallColumn_exports, {
   NetworkWaterfallColumn: () => NetworkWaterfallColumn
 });
-import * as Common15 from "./../../core/common/common.js";
+import * as Common14 from "./../../core/common/common.js";
+import * as NetworkTimeCalculator3 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as RenderCoordinator2 from "./../../ui/components/render_coordinator/render_coordinator.js";
 import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI20 from "./../../ui/legacy/legacy.js";
@@ -7770,6 +7441,7 @@ __export(NetworkOverview_exports, {
   RequestTimeRangeNameToColor: () => RequestTimeRangeNameToColor
 });
 import * as SDK13 from "./../../core/sdk/sdk.js";
+import * as NetworkTimeCalculator2 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as Trace from "./../../models/trace/trace.js";
 import * as RenderCoordinator from "./../../ui/components/render_coordinator/render_coordinator.js";
 import * as PerfUI2 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
@@ -7874,14 +7546,14 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
   }
   update() {
     const calculator = this.calculator();
-    const newBoundary = new NetworkTimeBoundary(calculator.minimumBoundary(), calculator.maximumBoundary());
+    const newBoundary = new NetworkTimeCalculator2.NetworkTimeBoundary(calculator.minimumBoundary(), calculator.maximumBoundary());
     if (!this.lastBoundary || !newBoundary.equals(this.lastBoundary)) {
       const span = calculator.boundarySpan();
       while (this.span < span) {
         this.span *= 1.25;
       }
       calculator.setBounds(calculator.minimumBoundary(), Trace.Types.Timing.Milli(calculator.minimumBoundary() + this.span));
-      this.lastBoundary = new NetworkTimeBoundary(calculator.minimumBoundary(), calculator.maximumBoundary());
+      this.lastBoundary = new NetworkTimeCalculator2.NetworkTimeBoundary(calculator.minimumBoundary(), calculator.maximumBoundary());
     }
     const context = this.context();
     const linesByType = /* @__PURE__ */ new Map();
@@ -7923,7 +7595,7 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
       const request = requests[i];
       const band = this.bandId(request.connectionId);
       const y = band === -1 ? 0 : band % this.numBands + 1;
-      const timeRanges = RequestTimingView.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
+      const timeRanges = NetworkTimeCalculator2.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
       for (let j = 0; j < timeRanges.length; ++j) {
         const type = timeRanges[j].name;
         if (band !== -1 || type === "total") {
@@ -7937,55 +7609,55 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
     context.lineWidth = 2;
     drawLines(
       "total"
-      /* RequestTimeRangeNames.TOTAL */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
     );
     drawLines(
       "blocking"
-      /* RequestTimeRangeNames.BLOCKING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */
     );
     drawLines(
       "connecting"
-      /* RequestTimeRangeNames.CONNECTING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */
     );
     drawLines(
       "serviceworker"
-      /* RequestTimeRangeNames.SERVICE_WORKER */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER */
     );
     drawLines(
       "serviceworker-preparation"
-      /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
     );
     drawLines(
       "serviceworker-respondwith"
-      /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
     );
     drawLines(
       "push"
-      /* RequestTimeRangeNames.PUSH */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */
     );
     drawLines(
       "proxy"
-      /* RequestTimeRangeNames.PROXY */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */
     );
     drawLines(
       "dns"
-      /* RequestTimeRangeNames.DNS */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */
     );
     drawLines(
       "ssl"
-      /* RequestTimeRangeNames.SSL */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */
     );
     drawLines(
       "sending"
-      /* RequestTimeRangeNames.SENDING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SENDING */
     );
     drawLines(
       "waiting"
-      /* RequestTimeRangeNames.WAITING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.WAITING */
     );
     drawLines(
       "receiving"
-      /* RequestTimeRangeNames.RECEIVING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING */
     );
     if (this.highlightedRequest) {
       const size = 5;
@@ -7993,7 +7665,7 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
       const request = this.highlightedRequest;
       const band = this.bandId(request.connectionId);
       const y = (band === -1 ? 0 : band % this.numBands + 1) * BAND_HEIGHT + paddingTop;
-      const timeRanges = RequestTimingView.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
+      const timeRanges = NetworkTimeCalculator2.calculateRequestTimeRanges(request, this.calculator().minimumBoundary());
       context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue("--sys-color-tonal-container");
       const start = Trace.Types.Timing.Milli(timeRanges[0].start * 1e3);
       const end = Trace.Types.Timing.Milli(timeRanges[0].end * 1e3);
@@ -8048,59 +7720,59 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
 var RequestTimeRangeNameToColor = {
   [
     "total"
-    /* RequestTimeRangeNames.TOTAL */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
   ]: "--network-overview-total",
   [
     "blocking"
-    /* RequestTimeRangeNames.BLOCKING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */
   ]: "--network-overview-blocking",
   [
     "connecting"
-    /* RequestTimeRangeNames.CONNECTING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */
   ]: "--network-overview-connecting",
   [
     "serviceworker"
-    /* RequestTimeRangeNames.SERVICE_WORKER */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER */
   ]: "--network-overview-service-worker",
   [
     "serviceworker-preparation"
-    /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
   ]: "--network-overview-service-worker",
   [
     "serviceworker-respondwith"
-    /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
   ]: "--network-overview-service-worker-respond-with",
   [
     "push"
-    /* RequestTimeRangeNames.PUSH */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */
   ]: "--network-overview-push",
   [
     "proxy"
-    /* RequestTimeRangeNames.PROXY */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */
   ]: "--override-network-overview-proxy",
   [
     "dns"
-    /* RequestTimeRangeNames.DNS */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */
   ]: "--network-overview-dns",
   [
     "ssl"
-    /* RequestTimeRangeNames.SSL */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */
   ]: "--network-overview-ssl",
   [
     "sending"
-    /* RequestTimeRangeNames.SENDING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.SENDING */
   ]: "--override-network-overview-sending",
   [
     "waiting"
-    /* RequestTimeRangeNames.WAITING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.WAITING */
   ]: "--network-overview-waiting",
   [
     "receiving"
-    /* RequestTimeRangeNames.RECEIVING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING */
   ]: "--network-overview-receiving",
   [
     "queueing"
-    /* RequestTimeRangeNames.QUEUEING */
+    /* NetworkTimeCalculator.RequestTimeRangeNames.QUEUEING */
   ]: "--network-overview-queueing"
 };
 var BAND_HEIGHT = 3;
@@ -8214,32 +7886,32 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     const styleMap = /* @__PURE__ */ new Map();
     styleMap.set("connecting", { fillStyle: RequestTimeRangeNameToColor[
       "connecting"
-      /* RequestTimeRangeNames.CONNECTING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.CONNECTING */
     ] });
     styleMap.set("ssl", { fillStyle: RequestTimeRangeNameToColor[
       "ssl"
-      /* RequestTimeRangeNames.SSL */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SSL */
     ] });
     styleMap.set("dns", { fillStyle: RequestTimeRangeNameToColor[
       "dns"
-      /* RequestTimeRangeNames.DNS */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.DNS */
     ] });
     styleMap.set("proxy", { fillStyle: RequestTimeRangeNameToColor[
       "proxy"
-      /* RequestTimeRangeNames.PROXY */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.PROXY */
     ] });
     styleMap.set("blocking", { fillStyle: RequestTimeRangeNameToColor[
       "blocking"
-      /* RequestTimeRangeNames.BLOCKING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.BLOCKING */
     ] });
     styleMap.set("push", { fillStyle: RequestTimeRangeNameToColor[
       "push"
-      /* RequestTimeRangeNames.PUSH */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.PUSH */
     ] });
     styleMap.set("queueing", {
       fillStyle: RequestTimeRangeNameToColor[
         "queueing"
-        /* RequestTimeRangeNames.QUEUEING */
+        /* NetworkTimeCalculator.RequestTimeRangeNames.QUEUEING */
       ],
       lineWidth: 2,
       borderColor: "lightgrey"
@@ -8247,31 +7919,33 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     styleMap.set("receiving", {
       fillStyle: RequestTimeRangeNameToColor[
         "receiving"
-        /* RequestTimeRangeNames.RECEIVING */
+        /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING */
       ],
       lineWidth: 2,
       borderColor: "#03A9F4"
     });
     styleMap.set("waiting", { fillStyle: RequestTimeRangeNameToColor[
       "waiting"
-      /* RequestTimeRangeNames.WAITING */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.WAITING */
     ] });
     styleMap.set("receiving-push", { fillStyle: RequestTimeRangeNameToColor[
       "receiving-push"
-      /* RequestTimeRangeNames.RECEIVING_PUSH */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.RECEIVING_PUSH */
     ] });
     styleMap.set("serviceworker", { fillStyle: RequestTimeRangeNameToColor[
       "serviceworker"
-      /* RequestTimeRangeNames.SERVICE_WORKER */
+      /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER */
     ] });
-    styleMap.set("serviceworker-preparation", { fillStyle: RequestTimeRangeNameToColor[
-      "serviceworker-preparation"
-      /* RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
-    ] });
+    styleMap.set("serviceworker-preparation", {
+      fillStyle: RequestTimeRangeNameToColor[
+        "serviceworker-preparation"
+        /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_PREPARATION */
+      ]
+    });
     styleMap.set("serviceworker-respondwith", {
       fillStyle: RequestTimeRangeNameToColor[
         "serviceworker-respondwith"
-        /* RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
+        /* NetworkTimeCalculator.RequestTimeRangeNames.SERVICE_WORKER_RESPOND_WITH */
       ]
     });
     return styleMap;
@@ -8292,7 +7966,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     ]);
     const waitingStyleMap = /* @__PURE__ */ new Map();
     const downloadingStyleMap = /* @__PURE__ */ new Map();
-    for (const resourceType of Object.values(Common15.ResourceType.resourceTypes)) {
+    for (const resourceType of Object.values(Common14.ResourceType.resourceTypes)) {
       let color = baseResourceTypeColors.get(resourceType.name());
       if (!color) {
         color = baseResourceTypeColors.get("other");
@@ -8308,7 +7982,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     }
     return [waitingStyleMap, downloadingStyleMap];
     function toBorderColor(color) {
-      const parsedColor = Common15.Color.parse(color)?.as(
+      const parsedColor = Common14.Color.parse(color)?.as(
         "hsl"
         /* Common.Color.Format.HSL */
       );
@@ -8318,10 +7992,10 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
       let { s, l } = parsedColor;
       s /= 2;
       l -= Math.min(l, 0.2);
-      return new Common15.Color.HSL(parsedColor.h, s, l, parsedColor.alpha).asString();
+      return new Common14.Color.HSL(parsedColor.h, s, l, parsedColor.alpha).asString();
     }
     function toWaitingColor(color) {
-      const parsedColor = Common15.Color.parse(color)?.as(
+      const parsedColor = Common14.Color.parse(color)?.as(
         "hsl"
         /* Common.Color.Format.HSL */
       );
@@ -8330,7 +8004,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
       }
       let { l } = parsedColor;
       l *= 1.1;
-      return new Common15.Color.HSL(parsedColor.h, parsedColor.s, l, parsedColor.alpha).asString();
+      return new Common14.Color.HSL(parsedColor.h, parsedColor.s, l, parsedColor.alpha).asString();
     }
   }
   resetPaths() {
@@ -8369,14 +8043,14 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     if (!request) {
       return null;
     }
-    const useTimingBars = !Common15.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
+    const useTimingBars = !Common14.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
     let range;
     let start;
     let end;
     if (useTimingBars) {
-      range = RequestTimingView.calculateRequestTimeRanges(request, 0).find(
+      range = NetworkTimeCalculator3.calculateRequestTimeRanges(request, 0).find(
         (data) => data.name === "total"
-        /* RequestTimeRangeNames.TOTAL */
+        /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
       );
       start = this.timeToPosition(range.start);
       end = this.timeToPosition(range.end);
@@ -8499,7 +8173,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
   didDrawForTest() {
   }
   draw() {
-    const useTimingBars = !Common15.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
+    const useTimingBars = !Common14.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").get() && !this.calculator.startAtZero;
     const nodes = this.nodes;
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -8656,9 +8330,9 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
       }
     }
     if (!this.calculator.startAtZero) {
-      const queueingRange = RequestTimingView.calculateRequestTimeRanges(request, 0).find(
+      const queueingRange = NetworkTimeCalculator3.calculateRequestTimeRanges(request, 0).find(
         (data) => data.name === "total"
-        /* RequestTimeRangeNames.TOTAL */
+        /* NetworkTimeCalculator.RequestTimeRangeNames.TOTAL */
       );
       const leftLabelWidth = labels ? context.measureText(labels.left).width : 0;
       const leftTextPlacedInBar = leftLabelWidth < ranges.mid - ranges.start;
@@ -8680,7 +8354,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
     if (!request) {
       return;
     }
-    const ranges = RequestTimingView.calculateRequestTimeRanges(request, 0);
+    const ranges = NetworkTimeCalculator3.calculateRequestTimeRanges(request, 0);
     let index = 0;
     for (const range of ranges) {
       if (range.name === "total" || range.name === "sending" || range.end - range.start === 0) {
@@ -8709,7 +8383,7 @@ var NetworkWaterfallColumn = class _NetworkWaterfallColumn extends UI20.Widget.V
 };
 
 // gen/front_end/panels/network/NetworkLogViewColumns.js
-var UIStrings19 = {
+var UIStrings18 = {
   /**
    * @description Data grid name for Network Log data grids
    */
@@ -8839,9 +8513,9 @@ var UIStrings19 = {
    */
   remoteAddressSpace: "Remote Address Space"
 };
-var str_19 = i18n37.i18n.registerUIStrings("panels/network/NetworkLogViewColumns.ts", UIStrings19);
-var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
-var i18nLazyString3 = i18n37.i18n.getLazilyComputedLocalizedString.bind(void 0, str_19);
+var str_18 = i18n35.i18n.registerUIStrings("panels/network/NetworkLogViewColumns.ts", UIStrings18);
+var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+var i18nLazyString3 = i18n35.i18n.getLazilyComputedLocalizedString.bind(void 0, str_18);
 var NetworkLogViewColumns = class _NetworkLogViewColumns {
   networkLogView;
   persistentSettings;
@@ -8870,7 +8544,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
   scrollerTouchStartPos;
   constructor(networkLogView, timeCalculator, durationCalculator, networkLogLargeRowsSetting) {
     this.networkLogView = networkLogView;
-    this.persistentSettings = Common16.Settings.Settings.instance().createSetting("network-log-columns", {});
+    this.persistentSettings = Common15.Settings.Settings.instance().createSetting("network-log-columns", {});
     this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
     this.networkLogLargeRowsSetting.addChangeListener(this.updateRowsSize, this);
     this.eventDividers = /* @__PURE__ */ new Map();
@@ -8935,7 +8609,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.popoverHelper = new UI21.PopoverHelper.PopoverHelper(this.networkLogView.element, this.getPopoverRequest.bind(this), "network.initiator-stacktrace");
     this.popoverHelper.setTimeout(300, 300);
     this.dataGridInternal = new DataGrid7.SortableDataGrid.SortableDataGrid({
-      displayName: i18nString19(UIStrings19.networkLog),
+      displayName: i18nString18(UIStrings18.networkLog),
       columns: this.columns.map(_NetworkLogViewColumns.convertToDataGridDescriptor),
       deleteCallback: void 0,
       refreshCallback: void 0
@@ -9049,7 +8723,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     });
     this.waterfallHeaderElement.createChild("div", "hover-layer");
     const innerElement = this.waterfallHeaderElement.createChild("div");
-    innerElement.textContent = i18nString19(UIStrings19.waterfall);
+    innerElement.textContent = i18nString18(UIStrings18.waterfall);
     this.waterfallColumnSortIcon = new IconButton6.Icon.Icon();
     this.waterfallColumnSortIcon.className = "sort-order-icon";
     this.waterfallHeaderElement.createChild("div", "sort-order-icon-container").appendChild(this.waterfallColumnSortIcon);
@@ -9252,27 +8926,27 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
       contextMenu.headerSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, jslogContext: columnConfig.id });
     }
-    const responseSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString19(UIStrings19.responseHeaders), false, "response-headers");
+    const responseSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString18(UIStrings18.responseHeaders), false, "response-headers");
     const responseHeaders = columnConfigs.filter((columnConfig) => columnConfig.isResponseHeader);
     for (const columnConfig of responseHeaders) {
       const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
       responseSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, jslogContext: columnConfig.id });
     }
-    responseSubMenu.footerSection().appendItem(i18nString19(UIStrings19.manageHeaderColumns), this.manageResponseCustomHeaderDialog.bind(this), { jslogContext: "manage-header-columns" });
-    const requestSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString19(UIStrings19.requestHeaders), false, "request-headers");
+    responseSubMenu.footerSection().appendItem(i18nString18(UIStrings18.manageHeaderColumns), this.manageResponseCustomHeaderDialog.bind(this), { jslogContext: "manage-header-columns" });
+    const requestSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString18(UIStrings18.requestHeaders), false, "request-headers");
     const requestHeaders = columnConfigs.filter((columnConfig) => columnConfig.isRequestHeader);
     for (const columnConfig of requestHeaders) {
       const title = columnConfig.title instanceof Function ? columnConfig.title() : columnConfig.title;
       requestSubMenu.defaultSection().appendCheckboxItem(title, this.toggleColumnVisibility.bind(this, columnConfig), { checked: columnConfig.visible, jslogContext: columnConfig.id });
     }
-    requestSubMenu.footerSection().appendItem(i18nString19(UIStrings19.manageHeaderColumns), this.manageRequestCustomHeaderDialog.bind(this), { jslogContext: "manage-header-columns" });
+    requestSubMenu.footerSection().appendItem(i18nString18(UIStrings18.manageHeaderColumns), this.manageRequestCustomHeaderDialog.bind(this), { jslogContext: "manage-header-columns" });
     const waterfallSortIds = WaterfallSortIds;
-    const waterfallSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString19(UIStrings19.waterfall), false, "waterfall");
-    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), { checked: this.activeWaterfallSortId === waterfallSortIds.StartTime, jslogContext: "start-time" });
-    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), { checked: this.activeWaterfallSortId === waterfallSortIds.ResponseTime, jslogContext: "response-time" });
-    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), { checked: this.activeWaterfallSortId === waterfallSortIds.EndTime, jslogContext: "end-time" });
-    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration, jslogContext: "total-duration" });
-    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency, jslogContext: "latency" });
+    const waterfallSubMenu = contextMenu.footerSection().appendSubMenuItem(i18nString18(UIStrings18.waterfall), false, "waterfall");
+    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString18(UIStrings18.startTime), setWaterfallMode.bind(this, waterfallSortIds.StartTime), { checked: this.activeWaterfallSortId === waterfallSortIds.StartTime, jslogContext: "start-time" });
+    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString18(UIStrings18.responseTime), setWaterfallMode.bind(this, waterfallSortIds.ResponseTime), { checked: this.activeWaterfallSortId === waterfallSortIds.ResponseTime, jslogContext: "response-time" });
+    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString18(UIStrings18.endTime), setWaterfallMode.bind(this, waterfallSortIds.EndTime), { checked: this.activeWaterfallSortId === waterfallSortIds.EndTime, jslogContext: "end-time" });
+    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString18(UIStrings18.totalDuration), setWaterfallMode.bind(this, waterfallSortIds.Duration), { checked: this.activeWaterfallSortId === waterfallSortIds.Duration, jslogContext: "total-duration" });
+    waterfallSubMenu.defaultSection().appendCheckboxItem(i18nString18(UIStrings18.latency), setWaterfallMode.bind(this, waterfallSortIds.Latency), { checked: this.activeWaterfallSortId === waterfallSortIds.Latency, jslogContext: "latency" });
     function setWaterfallMode(sortId) {
       let calculator = this.calculatorsMap.get(
         "Time"
@@ -9470,8 +9144,8 @@ var DEFAULT_COLUMN_CONFIG = {
 var DEFAULT_COLUMNS = [
   {
     id: "name",
-    title: i18nLazyString3(UIStrings19.name),
-    subtitle: i18nLazyString3(UIStrings19.path),
+    title: i18nLazyString3(UIStrings18.name),
+    subtitle: i18nLazyString3(UIStrings18.path),
     visible: true,
     weight: 20,
     hideable: true,
@@ -9480,231 +9154,231 @@ var DEFAULT_COLUMNS = [
   },
   {
     id: "path",
-    title: i18nLazyString3(UIStrings19.path),
+    title: i18nLazyString3(UIStrings18.path),
     hideable: true,
     hideableGroup: "path",
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "pathname")
   },
   {
     id: "url",
-    title: i18nLazyString3(UIStrings19.url),
+    title: i18nLazyString3(UIStrings18.url),
     hideable: true,
     hideableGroup: "path",
     sortingFunction: NetworkRequestNode.RequestURLComparator
   },
   {
     id: "method",
-    title: i18nLazyString3(UIStrings19.method),
+    title: i18nLazyString3(UIStrings18.method),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "requestMethod")
   },
   {
     id: "status",
-    title: i18nLazyString3(UIStrings19.status),
+    title: i18nLazyString3(UIStrings18.status),
     visible: true,
-    subtitle: i18nLazyString3(UIStrings19.text),
+    subtitle: i18nLazyString3(UIStrings18.text),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "statusCode")
   },
   {
     id: "protocol",
-    title: i18nLazyString3(UIStrings19.protocol),
+    title: i18nLazyString3(UIStrings18.protocol),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "protocol")
   },
   {
     id: "scheme",
-    title: i18nLazyString3(UIStrings19.scheme),
+    title: i18nLazyString3(UIStrings18.scheme),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "scheme")
   },
   {
     id: "domain",
-    title: i18nLazyString3(UIStrings19.domain),
+    title: i18nLazyString3(UIStrings18.domain),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "domain")
   },
   {
     id: "remote-address",
-    title: i18nLazyString3(UIStrings19.remoteAddress),
+    title: i18nLazyString3(UIStrings18.remoteAddress),
     weight: 10,
     align: "right",
     sortingFunction: NetworkRequestNode.RemoteAddressComparator
   },
   {
     id: "remote-address-space",
-    title: i18nLazyString3(UIStrings19.remoteAddressSpace),
+    title: i18nLazyString3(UIStrings18.remoteAddressSpace),
     visible: false,
     weight: 10,
     sortingFunction: NetworkRequestNode.RemoteAddressSpaceComparator
   },
   {
     id: "type",
-    title: i18nLazyString3(UIStrings19.type),
+    title: i18nLazyString3(UIStrings18.type),
     visible: true,
     sortingFunction: NetworkRequestNode.TypeComparator
   },
   {
     id: "initiator",
-    title: i18nLazyString3(UIStrings19.initiator),
+    title: i18nLazyString3(UIStrings18.initiator),
     visible: true,
     weight: 10,
     sortingFunction: NetworkRequestNode.InitiatorComparator
   },
   {
     id: "initiator-address-space",
-    title: i18nLazyString3(UIStrings19.initiatorAddressSpace),
+    title: i18nLazyString3(UIStrings18.initiatorAddressSpace),
     visible: false,
     weight: 10,
     sortingFunction: NetworkRequestNode.InitiatorAddressSpaceComparator
   },
   {
     id: "cookies",
-    title: i18nLazyString3(UIStrings19.cookies),
+    title: i18nLazyString3(UIStrings18.cookies),
     align: "right",
     sortingFunction: NetworkRequestNode.RequestCookiesCountComparator
   },
   {
     id: "set-cookies",
-    title: i18nLazyString3(UIStrings19.setCookies),
+    title: i18nLazyString3(UIStrings18.setCookies),
     align: "right",
     sortingFunction: NetworkRequestNode.ResponseCookiesCountComparator
   },
   {
     id: "size",
-    title: i18nLazyString3(UIStrings19.size),
+    title: i18nLazyString3(UIStrings18.size),
     visible: true,
-    subtitle: i18nLazyString3(UIStrings19.content),
+    subtitle: i18nLazyString3(UIStrings18.content),
     align: "right",
     sortingFunction: NetworkRequestNode.SizeComparator
   },
   {
     id: "time",
-    title: i18nLazyString3(UIStrings19.time),
+    title: i18nLazyString3(UIStrings18.time),
     visible: true,
-    subtitle: i18nLazyString3(UIStrings19.latency),
+    subtitle: i18nLazyString3(UIStrings18.latency),
     align: "right",
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "duration")
   },
-  { id: "priority", title: i18nLazyString3(UIStrings19.priority), sortingFunction: NetworkRequestNode.PriorityComparator },
+  { id: "priority", title: i18nLazyString3(UIStrings18.priority), sortingFunction: NetworkRequestNode.PriorityComparator },
   {
     id: "connection-id",
-    title: i18nLazyString3(UIStrings19.connectionId),
+    title: i18nLazyString3(UIStrings18.connectionId),
     sortingFunction: NetworkRequestNode.RequestPropertyComparator.bind(null, "connectionId")
   },
   {
     id: "response-header-cache-control",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Cache-Control"),
+    title: i18n35.i18n.lockedLazyString("Cache-Control"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "cache-control")
   },
   {
     id: "response-header-connection",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Connection"),
+    title: i18n35.i18n.lockedLazyString("Connection"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "connection")
   },
   {
     id: "response-header-content-encoding",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Content-Encoding"),
+    title: i18n35.i18n.lockedLazyString("Content-Encoding"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "content-encoding")
   },
   {
     id: "response-header-content-length",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Content-Length"),
+    title: i18n35.i18n.lockedLazyString("Content-Length"),
     align: "right",
     sortingFunction: NetworkRequestNode.ResponseHeaderNumberComparator.bind(null, "content-length")
   },
   {
     id: "response-header-etag",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("ETag"),
+    title: i18n35.i18n.lockedLazyString("ETag"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "etag")
   },
   {
     id: "response-header-has-overrides",
-    title: i18nLazyString3(UIStrings19.hasOverrides),
+    title: i18nLazyString3(UIStrings18.hasOverrides),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "has-overrides")
   },
   {
     id: "response-header-keep-alive",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Keep-Alive"),
+    title: i18n35.i18n.lockedLazyString("Keep-Alive"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "keep-alive")
   },
   {
     id: "response-header-last-modified",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Last-Modified"),
+    title: i18n35.i18n.lockedLazyString("Last-Modified"),
     sortingFunction: NetworkRequestNode.ResponseHeaderDateComparator.bind(null, "last-modified")
   },
   {
     id: "response-header-server",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Server"),
+    title: i18n35.i18n.lockedLazyString("Server"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "server")
   },
   {
     id: "response-header-vary",
     isResponseHeader: true,
-    title: i18n37.i18n.lockedLazyString("Vary"),
+    title: i18n35.i18n.lockedLazyString("Vary"),
     sortingFunction: NetworkRequestNode.ResponseHeaderStringComparator.bind(null, "vary")
   },
   {
     id: "request-header-accept",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Accept"),
+    title: i18n35.i18n.lockedLazyString("Accept"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "accept")
   },
   {
     id: "request-header-accept-encoding",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Accept-Encoding"),
+    title: i18n35.i18n.lockedLazyString("Accept-Encoding"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "accept-encoding")
   },
   {
     id: "request-header-accept-language",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Accept-Language"),
+    title: i18n35.i18n.lockedLazyString("Accept-Language"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "accept-language")
   },
   {
     id: "request-header-content-type",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Content-Type"),
+    title: i18n35.i18n.lockedLazyString("Content-Type"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "Content-Type")
   },
   {
     id: "request-header-origin",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Origin"),
+    title: i18n35.i18n.lockedLazyString("Origin"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "origin")
   },
   {
     id: "request-header-referer",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Referer"),
+    title: i18n35.i18n.lockedLazyString("Referer"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "referer")
   },
   {
     id: "request-header-sec-fetch-dest",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Sec-Fetch-Dest"),
+    title: i18n35.i18n.lockedLazyString("Sec-Fetch-Dest"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "sec-fetch-dest")
   },
   {
     id: "request-header-sec-fetch-mode",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("Sec-Fetch-Mode"),
+    title: i18n35.i18n.lockedLazyString("Sec-Fetch-Mode"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "sec-fetch-mode")
   },
   {
     id: "request-header-user-agent",
     isRequestHeader: true,
-    title: i18n37.i18n.lockedLazyString("User-Agent"),
+    title: i18n35.i18n.lockedLazyString("User-Agent"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "user-agent")
   },
   // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
   {
     id: "waterfall",
-    title: i18nLazyString3(UIStrings19.waterfall),
+    title: i18nLazyString3(UIStrings18.waterfall),
     allowInSortByEvenWhenHidden: true
   }
 ];
@@ -9719,7 +9393,7 @@ var WaterfallSortIds;
 })(WaterfallSortIds || (WaterfallSortIds = {}));
 
 // gen/front_end/panels/network/NetworkLogView.js
-var UIStrings20 = {
+var UIStrings19 = {
   /**
    * @description Text in Network Log View of the Network panel
    */
@@ -10136,9 +9810,9 @@ var UIStrings20 = {
    */
   assessSecurityHeaders: "Assess security headers"
 };
-var str_20 = i18n39.i18n.registerUIStrings("panels/network/NetworkLogView.ts", UIStrings20);
-var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
-var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventMixin(UI22.Widget.VBox) {
+var str_19 = i18n37.i18n.registerUIStrings("panels/network/NetworkLogView.ts", UIStrings19);
+var i18nString19 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
+var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventMixin(UI22.Widget.VBox) {
   networkInvertFilterSetting;
   networkHideDataURLSetting;
   networkHideChromeExtensions;
@@ -10187,15 +9861,15 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.element.id = "network-container";
     this.element.classList.add("no-node-selected");
     this.networkRequestToNode = /* @__PURE__ */ new WeakMap();
-    this.networkInvertFilterSetting = Common17.Settings.Settings.instance().createSetting("network-invert-filter", false);
-    this.networkHideDataURLSetting = Common17.Settings.Settings.instance().createSetting("network-hide-data-url", false);
-    this.networkHideChromeExtensions = Common17.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
-    this.networkShowBlockedCookiesOnlySetting = Common17.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
-    this.networkOnlyBlockedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
-    this.networkOnlyThirdPartySetting = Common17.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
-    this.networkOnlyIPProtectedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
-    this.networkResourceTypeFiltersSetting = Common17.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
-    this.networkShowOptionsToGenerateHarWithSensitiveData = Common17.Settings.Settings.instance().createSetting("network.show-options-to-generate-har-with-sensitive-data", false);
+    this.networkInvertFilterSetting = Common16.Settings.Settings.instance().createSetting("network-invert-filter", false);
+    this.networkHideDataURLSetting = Common16.Settings.Settings.instance().createSetting("network-hide-data-url", false);
+    this.networkHideChromeExtensions = Common16.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
+    this.networkShowBlockedCookiesOnlySetting = Common16.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
+    this.networkOnlyBlockedRequestsSetting = Common16.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
+    this.networkOnlyThirdPartySetting = Common16.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.networkOnlyIPProtectedRequestsSetting = Common16.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
+    this.networkResourceTypeFiltersSetting = Common16.Settings.Settings.instance().createSetting("network-resource-type-filters", {});
+    this.networkShowOptionsToGenerateHarWithSensitiveData = Common16.Settings.Settings.instance().createSetting("network.show-options-to-generate-har-with-sensitive-data", false);
     this.progressBarContainer = progressBarContainer;
     this.networkLogLargeRowsSetting = networkLogLargeRowsSetting;
     this.networkLogLargeRowsSetting.addChangeListener(updateRowHeight.bind(this), this);
@@ -10204,8 +9878,8 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     }
     this.rowHeightInternal = 0;
     updateRowHeight.call(this);
-    this.timeCalculatorInternal = new NetworkTransferTimeCalculator();
-    this.durationCalculator = new NetworkTransferDurationCalculator();
+    this.timeCalculatorInternal = new NetworkTimeCalculator4.NetworkTransferTimeCalculator();
+    this.durationCalculator = new NetworkTimeCalculator4.NetworkTransferDurationCalculator();
     this.calculatorInternal = this.timeCalculatorInternal;
     this.columnsInternal = new NetworkLogViewColumns(this, this.timeCalculatorInternal, this.durationCalculator, networkLogLargeRowsSetting);
     this.columnsInternal.show(this.element);
@@ -10227,12 +9901,12 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.textFilterUI = new UI22.FilterBar.TextFilterUI();
     this.textFilterUI.addEventListener("FilterChanged", this.filterChanged, this);
     filterBar.addFilter(this.textFilterUI);
-    this.invertFilterUI = new UI22.FilterBar.CheckboxFilterUI(i18nString20(UIStrings20.invertFilter), true, this.networkInvertFilterSetting, "invert-filter");
+    this.invertFilterUI = new UI22.FilterBar.CheckboxFilterUI(i18nString19(UIStrings19.invertFilter), true, this.networkInvertFilterSetting, "invert-filter");
     this.invertFilterUI.addEventListener("FilterChanged", this.filterChanged.bind(this), this);
-    UI22.Tooltip.Tooltip.install(this.invertFilterUI.element(), i18nString20(UIStrings20.invertsFilter));
+    UI22.Tooltip.Tooltip.install(this.invertFilterUI.element(), i18nString19(UIStrings19.invertsFilter));
     filterBar.addFilter(this.invertFilterUI);
     filterBar.addDivider();
-    const filterItems = Object.entries(Common17.ResourceType.resourceCategories).map(([key, category]) => ({
+    const filterItems = Object.entries(Common16.ResourceType.resourceCategories).map(([key, category]) => ({
       name: category.name,
       label: () => category.shortTitle(),
       title: category.title(),
@@ -10242,7 +9916,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     this.moreFiltersDropDownUI.addEventListener("FilterChanged", this.filterChanged, this);
     filterBar.addFilter(this.moreFiltersDropDownUI);
     this.resourceCategoryFilterUI = new UI22.FilterBar.NamedBitSetFilterUI(filterItems, this.networkResourceTypeFiltersSetting);
-    UI22.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString20(UIStrings20.requestTypesToInclude));
+    UI22.ARIAUtils.setLabel(this.resourceCategoryFilterUI.element(), i18nString19(UIStrings19.requestTypesToInclude));
     this.resourceCategoryFilterUI.addEventListener("FilterChanged", this.filterChanged.bind(this), this);
     filterBar.addFilter(this.resourceCategoryFilterUI);
     this.filterParser = new TextUtils7.TextUtils.FilterParser(searchKeys);
@@ -10258,23 +9932,23 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     ));
     this.summaryToolbarInternal = this.element.createChild("devtools-toolbar", "network-summary-bar");
     this.summaryToolbarInternal.setAttribute("role", "status");
-    new UI22.DropTarget.DropTarget(this.element, [UI22.DropTarget.Type.File], i18nString20(UIStrings20.dropHarFilesHere), this.handleDrop.bind(this));
-    Common17.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").addChangeListener(this.invalidateAllItems.bind(this, false), this);
+    new UI22.DropTarget.DropTarget(this.element, [UI22.DropTarget.Type.File], i18nString19(UIStrings19.dropHarFilesHere), this.handleDrop.bind(this));
+    Common16.Settings.Settings.instance().moduleSetting("network-color-code-resource-types").addChangeListener(this.invalidateAllItems.bind(this, false), this);
     SDK14.TargetManager.TargetManager.instance().observeModels(SDK14.NetworkManager.NetworkManager, this, { scoped: true });
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.RequestAdded, this.onRequestUpdated, this);
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.RequestUpdated, this.onRequestUpdated, this);
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.RequestRemoved, this.onRequestRemoved, this);
     Logs5.NetworkLog.NetworkLog.instance().addEventListener(Logs5.NetworkLog.Events.Reset, this.reset, this);
     this.updateGroupByFrame();
-    Common17.Settings.Settings.instance().moduleSetting("network.group-by-frame").addChangeListener(() => this.updateGroupByFrame());
+    Common16.Settings.Settings.instance().moduleSetting("network.group-by-frame").addChangeListener(() => this.updateGroupByFrame());
     this.filterBar = filterBar;
-    this.textFilterSetting = Common17.Settings.Settings.instance().createSetting("network-text-filter", "");
+    this.textFilterSetting = Common16.Settings.Settings.instance().createSetting("network-text-filter", "");
     if (this.textFilterSetting.get()) {
       this.textFilterUI.setValue(this.textFilterSetting.get());
     }
   }
   updateGroupByFrame() {
-    const value = Common17.Settings.Settings.instance().moduleSetting("network.group-by-frame").get();
+    const value = Common16.Settings.Settings.instance().moduleSetting("network.group-by-frame").get();
     this.setGrouping(value ? "Frame" : null);
   }
   static sortSearchValues(key, values) {
@@ -10454,7 +10128,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     }
   }
   async onLoadFromFile(file) {
-    const outputStream = new Common17.StringOutputStream.StringOutputStream();
+    const outputStream = new Common16.StringOutputStream.StringOutputStream();
     const reader = new Bindings2.FileUtils.ChunkedFileReader(
       file,
       /* chunkSize */
@@ -10478,7 +10152,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     Logs5.NetworkLog.NetworkLog.instance().importRequests(HAR.Importer.Importer.requestsFromHARLog(harRoot.log));
   }
   harLoadFailed(message) {
-    Common17.Console.Console.instance().error("Failed to load HAR file with following error: " + message);
+    Common16.Console.Console.instance().error("Failed to load HAR file with following error: " + message);
   }
   setGrouping(groupKey) {
     if (this.activeGroupLookup) {
@@ -10530,7 +10204,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       resourceTreeModel.removeEventListener(SDK14.ResourceTreeModel.Events.Load, this.loadEventFired, this);
       resourceTreeModel.removeEventListener(SDK14.ResourceTreeModel.Events.DOMContentLoaded, this.domContentLoadedEventFired, this);
     }
-    const preserveLog = Common17.Settings.Settings.instance().moduleSetting("network-log.preserve-log").get();
+    const preserveLog = Common16.Settings.Settings.instance().moduleSetting("network-log.preserve-log").get();
     if (!preserveLog) {
       this.reset();
     }
@@ -10544,7 +10218,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       this.timeCalculatorInternal.setWindow(null);
     } else {
       this.timeFilter = _NetworkLogView.requestTimeFilter.bind(null, start, end);
-      this.timeCalculatorInternal.setWindow(new NetworkTimeBoundary(start, end));
+      this.timeCalculatorInternal.setWindow(new NetworkTimeCalculator4.NetworkTimeBoundary(start, end));
     }
     this.filterRequests();
   }
@@ -10600,10 +10274,10 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     const actionName = this.recording ? "inspector-main.reload" : "network.toggle-recording";
     const action = actionRegistry.hasAction(actionName) ? actionRegistry.getAction(actionName) : null;
     const shortcutTitle = UI22.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(actionName) ?? "";
-    const header = this.recording ? i18nString20(UIStrings20.recordingNetworkActivity) : i18nString20(UIStrings20.noNetworkActivityRecorded);
-    const instruction = this.recording ? UIStrings20.performARequestOrHitSToRecordThe : UIStrings20.recordToDisplayNetworkActivity;
-    const buttonText = this.recording ? i18nString20(UIStrings20.reloadPage) : i18nString20(UIStrings20.startRecording);
-    const description = i18nString20(instruction, {
+    const header = this.recording ? i18nString19(UIStrings19.recordingNetworkActivity) : i18nString19(UIStrings19.noNetworkActivityRecorded);
+    const instruction = this.recording ? UIStrings19.performARequestOrHitSToRecordThe : UIStrings19.recordToDisplayNetworkActivity;
+    const buttonText = this.recording ? i18nString19(UIStrings19.reloadPage) : i18nString19(UIStrings19.startRecording);
+    const description = i18nString19(instruction, {
       PH1: buttonText,
       PH2: shortcutTitle
     });
@@ -10626,7 +10300,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       this.recordingHint.detach();
       this.recordingHint = null;
     }
-    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString20(UIStrings20.networkDataAvailable));
+    UI22.ARIAUtils.LiveAnnouncer.alert(i18nString19(UIStrings19.networkDataAvailable));
   }
   setHidden(value) {
     this.columnsInternal.setHidden(value);
@@ -10730,7 +10404,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
         selectedResourceSize += requestResourceSize;
       }
       const networkManager = SDK14.NetworkManager.NetworkManager.forRequest(request);
-      if (networkManager && request.url() === networkManager.target().inspectedURL() && request.resourceType() === Common17.ResourceType.resourceTypes.Document && networkManager.target().parentTarget()?.type() !== SDK14.Target.Type.FRAME) {
+      if (networkManager && request.url() === networkManager.target().inspectedURL() && request.resourceType() === Common16.ResourceType.resourceTypes.Document && networkManager.target().parentTarget()?.type() !== SDK14.Target.Type.FRAME) {
         baseTime = request.fromPrefetchCache() ? request.issueTime() : request.startTime;
       }
       if (request.endTime > maxTime) {
@@ -10749,35 +10423,35 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       return toolbarText.element;
     };
     if (selectedNodeNumber !== nodeCount) {
-      appendChunk(i18nString20(UIStrings20.sSRequests, { PH1: selectedNodeNumber, PH2: nodeCount }));
+      appendChunk(i18nString19(UIStrings19.sSRequests, { PH1: selectedNodeNumber, PH2: nodeCount }));
       this.summaryToolbarInternal.appendSeparator();
-      appendChunk(i18nString20(UIStrings20.sSTransferred, {
-        PH1: i18n39.ByteUtilities.formatBytesToKb(selectedTransferSize),
-        PH2: i18n39.ByteUtilities.formatBytesToKb(transferSize)
-      }), i18nString20(UIStrings20.sBSBTransferredOverNetwork, { PH1: selectedTransferSize, PH2: transferSize }));
+      appendChunk(i18nString19(UIStrings19.sSTransferred, {
+        PH1: i18n37.ByteUtilities.formatBytesToKb(selectedTransferSize),
+        PH2: i18n37.ByteUtilities.formatBytesToKb(transferSize)
+      }), i18nString19(UIStrings19.sBSBTransferredOverNetwork, { PH1: selectedTransferSize, PH2: transferSize }));
       this.summaryToolbarInternal.appendSeparator();
-      appendChunk(i18nString20(UIStrings20.sSResources, {
-        PH1: i18n39.ByteUtilities.formatBytesToKb(selectedResourceSize),
-        PH2: i18n39.ByteUtilities.formatBytesToKb(resourceSize)
-      }), i18nString20(UIStrings20.sBSBResourcesLoadedByThePage, { PH1: selectedResourceSize, PH2: resourceSize }));
+      appendChunk(i18nString19(UIStrings19.sSResources, {
+        PH1: i18n37.ByteUtilities.formatBytesToKb(selectedResourceSize),
+        PH2: i18n37.ByteUtilities.formatBytesToKb(resourceSize)
+      }), i18nString19(UIStrings19.sBSBResourcesLoadedByThePage, { PH1: selectedResourceSize, PH2: resourceSize }));
     } else {
-      appendChunk(i18nString20(UIStrings20.sRequests, { PH1: nodeCount }));
+      appendChunk(i18nString19(UIStrings19.sRequests, { PH1: nodeCount }));
       this.summaryToolbarInternal.appendSeparator();
-      appendChunk(i18nString20(UIStrings20.sTransferred, { PH1: i18n39.ByteUtilities.bytesToString(transferSize) }), i18nString20(UIStrings20.sBTransferredOverNetwork, { PH1: transferSize }));
+      appendChunk(i18nString19(UIStrings19.sTransferred, { PH1: i18n37.ByteUtilities.bytesToString(transferSize) }), i18nString19(UIStrings19.sBTransferredOverNetwork, { PH1: transferSize }));
       this.summaryToolbarInternal.appendSeparator();
-      appendChunk(i18nString20(UIStrings20.sResources, { PH1: i18n39.ByteUtilities.bytesToString(resourceSize) }), i18nString20(UIStrings20.sBResourcesLoadedByThePage, { PH1: resourceSize }));
+      appendChunk(i18nString19(UIStrings19.sResources, { PH1: i18n37.ByteUtilities.bytesToString(resourceSize) }), i18nString19(UIStrings19.sBResourcesLoadedByThePage, { PH1: resourceSize }));
     }
     if (baseTime !== -1 && maxTime !== -1) {
       this.summaryToolbarInternal.appendSeparator();
-      appendChunk(i18nString20(UIStrings20.finishS, { PH1: i18n39.TimeUtilities.secondsToString(maxTime - baseTime) }));
+      appendChunk(i18nString19(UIStrings19.finishS, { PH1: i18n37.TimeUtilities.secondsToString(maxTime - baseTime) }));
       if (this.mainRequestDOMContentLoadedTime !== -1 && this.mainRequestDOMContentLoadedTime > baseTime) {
         this.summaryToolbarInternal.appendSeparator();
-        const domContentLoadedText = i18nString20(UIStrings20.domcontentloadedS, { PH1: i18n39.TimeUtilities.secondsToString(this.mainRequestDOMContentLoadedTime - baseTime) });
+        const domContentLoadedText = i18nString19(UIStrings19.domcontentloadedS, { PH1: i18n37.TimeUtilities.secondsToString(this.mainRequestDOMContentLoadedTime - baseTime) });
         appendChunk(domContentLoadedText).style.color = `var(${_NetworkLogView.getDCLEventColor()})`;
       }
       if (this.mainRequestLoadTime !== -1) {
         this.summaryToolbarInternal.appendSeparator();
-        const loadText = i18nString20(UIStrings20.loadS, { PH1: i18n39.TimeUtilities.secondsToString(this.mainRequestLoadTime - baseTime) });
+        const loadText = i18nString19(UIStrings19.loadS, { PH1: i18n37.TimeUtilities.secondsToString(this.mainRequestLoadTime - baseTime) });
         appendChunk(loadText).style.color = `var(${_NetworkLogView.getLoadEventColor()})`;
       }
     }
@@ -11108,7 +10782,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
   handleContextMenuForRequest(contextMenu, request) {
     contextMenu.appendApplicableItems(request);
     const filtered = this.filterBar.hasActiveFilter();
-    const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString20(UIStrings20.copy), false, "copy");
+    const copyMenu = contextMenu.clipboardSection().appendSubMenuItem(i18nString19(UIStrings19.copy), false, "copy");
     if (request) {
       const openAiAssistanceId = "drjones.network-panel-context";
       if (UI22.ActionRegistry.ActionRegistry.instance().hasAction(openAiAssistanceId)) {
@@ -11119,27 +10793,27 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
         if (Root.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
           const action = UI22.ActionRegistry.ActionRegistry.instance().getAction(openAiAssistanceId);
           const submenu = contextMenu.footerSection().appendSubMenuItem(action.title(), false, openAiAssistanceId, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
-          submenu.defaultSection().appendAction(openAiAssistanceId, i18nString20(UIStrings20.startAChat));
-          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainPurpose), "What is the purpose of this request?", openAiAssistanceId + ".purpose");
-          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainSlowness), "Why is this request taking so long?", openAiAssistanceId + ".slowness");
-          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.explainFailures), "Why is the request failing?", openAiAssistanceId + ".failures");
-          appendSubmenuPromptAction(submenu, action, i18nString20(UIStrings20.assessSecurityHeaders), "Are there any security headers present?", openAiAssistanceId + ".security");
+          submenu.defaultSection().appendAction(openAiAssistanceId, i18nString19(UIStrings19.startAChat));
+          appendSubmenuPromptAction(submenu, action, i18nString19(UIStrings19.explainPurpose), "What is the purpose of this request?", openAiAssistanceId + ".purpose");
+          appendSubmenuPromptAction(submenu, action, i18nString19(UIStrings19.explainSlowness), "Why is this request taking so long?", openAiAssistanceId + ".slowness");
+          appendSubmenuPromptAction(submenu, action, i18nString19(UIStrings19.explainFailures), "Why is the request failing?", openAiAssistanceId + ".failures");
+          appendSubmenuPromptAction(submenu, action, i18nString19(UIStrings19.assessSecurityHeaders), "Are there any security headers present?", openAiAssistanceId + ".security");
         } else if (Root.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled) {
           contextMenu.footerSection().appendAction(openAiAssistanceId, void 0, false, void 0, Root.Runtime.hostConfig.devToolsAiAssistanceNetworkAgent?.featureName);
         } else {
           contextMenu.footerSection().appendAction(openAiAssistanceId);
         }
       }
-      copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyURL), Host9.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host9.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: "copy-url" });
-      copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedURLs) : i18nString20(UIStrings20.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: "copy-all-urls" });
+      copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyURL), Host9.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host9.InspectorFrontendHost.InspectorFrontendHostInstance, request.contentURL()), { jslogContext: "copy-url" });
+      copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedURLs) : i18nString19(UIStrings19.copyAllURLs), this.copyAllURLs.bind(this), { jslogContext: "copy-all-urls" });
       if (request.requestHeadersText()) {
-        copyMenu.saveSection().appendItem(i18nString20(UIStrings20.copyRequestHeaders), _NetworkLogView.copyRequestHeaders.bind(null, request), { jslogContext: "copy-request-headers" });
+        copyMenu.saveSection().appendItem(i18nString19(UIStrings19.copyRequestHeaders), _NetworkLogView.copyRequestHeaders.bind(null, request), { jslogContext: "copy-request-headers" });
       }
       if (request.responseHeadersText) {
-        copyMenu.saveSection().appendItem(i18nString20(UIStrings20.copyResponseHeaders), _NetworkLogView.copyResponseHeaders.bind(null, request), { jslogContext: "copy-response-headers" });
+        copyMenu.saveSection().appendItem(i18nString19(UIStrings19.copyResponseHeaders), _NetworkLogView.copyResponseHeaders.bind(null, request), { jslogContext: "copy-response-headers" });
       }
       if (request.finished) {
-        copyMenu.saveSection().appendItem(i18nString20(UIStrings20.copyResponse), _NetworkLogView.copyResponse.bind(null, request), { jslogContext: "copy-response" });
+        copyMenu.saveSection().appendItem(i18nString19(UIStrings19.copyResponse), _NetworkLogView.copyResponse.bind(null, request), { jslogContext: "copy-response" });
       }
       const initiator = request.initiator();
       if (initiator) {
@@ -11147,7 +10821,7 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
         if (stack) {
           const stackTraceText = computeStackTraceText(stack);
           if (stackTraceText !== "") {
-            copyMenu.saveSection().appendItem(i18nString20(UIStrings20.copyStacktrace), () => {
+            copyMenu.saveSection().appendItem(i18nString19(UIStrings19.copyStacktrace), () => {
               Host9.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(stackTraceText);
             }, { jslogContext: "copy-stacktrace" });
           }
@@ -11155,52 +10829,52 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       }
       const disableIfBlob = request.isBlobRequest();
       if (Host9.Platform.isWin()) {
-        copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsCurlCmd), this.copyCurlCommand.bind(this, request, "win"), { disabled: disableIfBlob, jslogContext: "copy-as-curl-cmd" });
-        copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsCurlBash), this.copyCurlCommand.bind(this, request, "unix"), { disabled: disableIfBlob, jslogContext: "copy-as-curl-bash" });
+        copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsCurlCmd), this.copyCurlCommand.bind(this, request, "win"), { disabled: disableIfBlob, jslogContext: "copy-as-curl-cmd" });
+        copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsCurlBash), this.copyCurlCommand.bind(this, request, "unix"), { disabled: disableIfBlob, jslogContext: "copy-as-curl-bash" });
       } else {
-        copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsCurl), this.copyCurlCommand.bind(this, request, "unix"), { disabled: disableIfBlob, jslogContext: "copy-as-curl" });
+        copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsCurl), this.copyCurlCommand.bind(this, request, "unix"), { disabled: disableIfBlob, jslogContext: "copy-as-curl" });
       }
-      copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsPowershell), this.copyPowerShellCommand.bind(this, request), { disabled: disableIfBlob, jslogContext: "copy-as-powershell" });
-      copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsFetch), this.copyFetchCall.bind(
+      copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsPowershell), this.copyPowerShellCommand.bind(this, request), { disabled: disableIfBlob, jslogContext: "copy-as-powershell" });
+      copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsFetch), this.copyFetchCall.bind(
         this,
         request,
         0
         /* FetchStyle.BROWSER */
       ), { disabled: disableIfBlob, jslogContext: "copy-as-fetch" });
-      copyMenu.defaultSection().appendItem(i18nString20(UIStrings20.copyAsNodejsFetch), this.copyFetchCall.bind(
+      copyMenu.defaultSection().appendItem(i18nString19(UIStrings19.copyAsNodejsFetch), this.copyFetchCall.bind(
         this,
         request,
         1
         /* FetchStyle.NODE_JS */
       ), { disabled: disableIfBlob, jslogContext: "copy-as-nodejs-fetch" });
       if (Host9.Platform.isWin()) {
-        copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsCurlCmd) : i18nString20(UIStrings20.copyAllAsCurlCmd), this.copyAllCurlCommand.bind(this, "win"), { jslogContext: "copy-all-as-curl-cmd" });
-        copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsCurlBash) : i18nString20(UIStrings20.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, "unix"), { jslogContext: "copy-all-as-curl-bash" });
+        copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsCurlCmd) : i18nString19(UIStrings19.copyAllAsCurlCmd), this.copyAllCurlCommand.bind(this, "win"), { jslogContext: "copy-all-as-curl-cmd" });
+        copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsCurlBash) : i18nString19(UIStrings19.copyAllAsCurlBash), this.copyAllCurlCommand.bind(this, "unix"), { jslogContext: "copy-all-as-curl-bash" });
       } else {
-        copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsCurl) : i18nString20(UIStrings20.copyAllAsCurl), this.copyAllCurlCommand.bind(this, "unix"), { jslogContext: "copy-all-as-curl" });
+        copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsCurl) : i18nString19(UIStrings19.copyAllAsCurl), this.copyAllCurlCommand.bind(this, "unix"), { jslogContext: "copy-all-as-curl" });
       }
-      copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsPowershell) : i18nString20(UIStrings20.copyAllAsPowershell), this.copyAllPowerShellCommand.bind(this), { jslogContext: "copy-all-as-powershell" });
-      copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsFetch) : i18nString20(UIStrings20.copyAllAsFetch), this.copyAllFetchCall.bind(
+      copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsPowershell) : i18nString19(UIStrings19.copyAllAsPowershell), this.copyAllPowerShellCommand.bind(this), { jslogContext: "copy-all-as-powershell" });
+      copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsFetch) : i18nString19(UIStrings19.copyAllAsFetch), this.copyAllFetchCall.bind(
         this,
         0
         /* FetchStyle.BROWSER */
       ), { jslogContext: "copy-all-as-fetch" });
-      copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsNodejsFetch) : i18nString20(UIStrings20.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(
+      copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsNodejsFetch) : i18nString19(UIStrings19.copyAllAsNodejsFetch), this.copyAllFetchCall.bind(
         this,
         1
         /* FetchStyle.NODE_JS */
       ), { jslogContext: "copy-all-as-nodejs-fetch" });
     }
-    copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsHarSanitized) : i18nString20(UIStrings20.copyAllAsHarSanitized), this.copyAllAsHAR.bind(this, { sanitize: true }), { jslogContext: "copy-all-as-har" });
+    copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsHarSanitized) : i18nString19(UIStrings19.copyAllAsHarSanitized), this.copyAllAsHAR.bind(this, { sanitize: true }), { jslogContext: "copy-all-as-har" });
     if (this.networkShowOptionsToGenerateHarWithSensitiveData.get()) {
-      copyMenu.footerSection().appendItem(filtered ? i18nString20(UIStrings20.copyAllListedAsHarWithSensitiveData) : i18nString20(UIStrings20.copyAllAsHarWithSensitiveData), this.copyAllAsHAR.bind(this, { sanitize: false }), { jslogContext: "copy-all-as-har-with-sensitive-data" });
+      copyMenu.footerSection().appendItem(filtered ? i18nString19(UIStrings19.copyAllListedAsHarWithSensitiveData) : i18nString19(UIStrings19.copyAllAsHarWithSensitiveData), this.copyAllAsHAR.bind(this, { sanitize: false }), { jslogContext: "copy-all-as-har-with-sensitive-data" });
     }
-    contextMenu.overrideSection().appendItem(i18nString20(UIStrings20.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), {
+    contextMenu.overrideSection().appendItem(i18nString19(UIStrings19.overrideHeaders), this.#handleCreateResponseHeaderOverrideClick.bind(this, request), {
       disabled: Persistence.NetworkPersistenceManager.NetworkPersistenceManager.isForbiddenNetworkUrl(request.url()),
       jslogContext: "override-headers"
     });
-    contextMenu.editSection().appendItem(i18nString20(UIStrings20.clearBrowserCache), this.clearBrowserCache.bind(this), { jslogContext: "clear-browser-cache" });
-    contextMenu.editSection().appendItem(i18nString20(UIStrings20.clearBrowserCookies), this.clearBrowserCookies.bind(this), { jslogContext: "clear-browser-cookies" });
+    contextMenu.editSection().appendItem(i18nString19(UIStrings19.clearBrowserCache), this.clearBrowserCache.bind(this), { jslogContext: "clear-browser-cache" });
+    contextMenu.editSection().appendItem(i18nString19(UIStrings19.clearBrowserCookies), this.clearBrowserCookies.bind(this), { jslogContext: "clear-browser-cookies" });
     if (request) {
       let addBlockedURL = function(url) {
         patterns.push({ enabled: true, url });
@@ -11217,27 +10891,27 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       let patterns = manager.blockedPatterns();
       const urlWithoutScheme = request.parsedURL.urlWithoutScheme();
       if (urlWithoutScheme && !patterns.find((pattern) => pattern.url === urlWithoutScheme)) {
-        contextMenu.debugSection().appendItem(i18nString20(UIStrings20.blockRequestUrl), addBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "block-request-url" });
+        contextMenu.debugSection().appendItem(i18nString19(UIStrings19.blockRequestUrl), addBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "block-request-url" });
       } else if (urlWithoutScheme) {
         const croppedURL = Platform9.StringUtilities.trimMiddle(urlWithoutScheme, maxBlockedURLLength);
-        contextMenu.debugSection().appendItem(i18nString20(UIStrings20.unblockS, { PH1: croppedURL }), removeBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "unblock" });
+        contextMenu.debugSection().appendItem(i18nString19(UIStrings19.unblockS, { PH1: croppedURL }), removeBlockedURL.bind(null, urlWithoutScheme), { jslogContext: "unblock" });
       }
       const domain = request.parsedURL.domain();
       if (domain && !patterns.find((pattern) => pattern.url === domain)) {
-        contextMenu.debugSection().appendItem(i18nString20(UIStrings20.blockRequestDomain), addBlockedURL.bind(null, domain), { jslogContext: "block-request-domain" });
+        contextMenu.debugSection().appendItem(i18nString19(UIStrings19.blockRequestDomain), addBlockedURL.bind(null, domain), { jslogContext: "block-request-domain" });
       } else if (domain) {
         const croppedDomain = Platform9.StringUtilities.trimMiddle(domain, maxBlockedURLLength);
-        contextMenu.debugSection().appendItem(i18nString20(UIStrings20.unblockS, { PH1: croppedDomain }), removeBlockedURL.bind(null, domain), { jslogContext: "unblock" });
+        contextMenu.debugSection().appendItem(i18nString19(UIStrings19.unblockS, { PH1: croppedDomain }), removeBlockedURL.bind(null, domain), { jslogContext: "unblock" });
       }
       if (SDK14.NetworkManager.NetworkManager.canReplayRequest(request)) {
-        contextMenu.debugSection().appendItem(i18nString20(UIStrings20.replayXhr), SDK14.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "replay-xhr" });
+        contextMenu.debugSection().appendItem(i18nString19(UIStrings19.replayXhr), SDK14.NetworkManager.NetworkManager.replayRequest.bind(null, request), { jslogContext: "replay-xhr" });
       }
     }
   }
   harRequests() {
     const requests = Logs5.NetworkLog.NetworkLog.instance().requests().filter((request) => this.applyFilter(request));
     return requests.filter(_NetworkLogView.getHTTPRequestsFilter).filter((request) => {
-      return request.finished || request.resourceType() === Common17.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime;
+      return request.finished || request.resourceType() === Common16.ResourceType.resourceTypes.WebSocket && request.responseReceivedTime;
     });
   }
   async copyAllAsHAR(options) {
@@ -11283,10 +10957,10 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
       return;
     }
     const url = mainTarget.inspectedURL();
-    const parsedURL = Common17.ParsedURL.ParsedURL.fromString(url);
+    const parsedURL = Common16.ParsedURL.ParsedURL.fromString(url);
     const filename = parsedURL ? parsedURL.host : "network-log";
     const stream = new Bindings2.FileUtils.FileOutputStream();
-    if (!await stream.open(Common17.ParsedURL.ParsedURL.concatenate(filename, ".har"))) {
+    if (!await stream.open(Common16.ParsedURL.ParsedURL.concatenate(filename, ".har"))) {
       return;
     }
     const progressIndicator = this.progressBarContainer.createChild("devtools-progress");
@@ -11298,24 +10972,24 @@ var NetworkLogView = class _NetworkLogView extends Common17.ObjectWrapper.eventM
     const requestLocation = NetworkForward3.UIRequestLocation.UIRequestLocation.responseHeaderMatch(request, { name: "", value: "" });
     const networkPersistenceManager = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance();
     if (networkPersistenceManager.project()) {
-      Common17.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
+      Common16.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
       await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
-      await Common17.Revealer.reveal(requestLocation);
+      await Common16.Revealer.reveal(requestLocation);
     } else {
       UI22.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(async () => {
         await Sources.SourcesNavigator.OverridesNavigatorView.instance().setupNewWorkspace();
         await networkPersistenceManager.getOrCreateHeadersUISourceCodeFromUrl(request.url());
-        await Common17.Revealer.reveal(requestLocation);
+        await Common16.Revealer.reveal(requestLocation);
       });
     }
   }
   clearBrowserCache() {
-    if (confirm(i18nString20(UIStrings20.areYouSureYouWantToClearBrowser))) {
+    if (confirm(i18nString19(UIStrings19.areYouSureYouWantToClearBrowser))) {
       SDK14.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCache();
     }
   }
   clearBrowserCookies() {
-    if (confirm(i18nString20(UIStrings20.areYouSureYouWantToClearBrowserCookies))) {
+    if (confirm(i18nString19(UIStrings19.areYouSureYouWantToClearBrowserCookies))) {
       SDK14.NetworkManager.MultitargetNetworkManager.instance().clearBrowserCookies();
     }
   }
@@ -11783,7 +11457,7 @@ var overrideFilter = {
   content: "content",
   headers: "headers"
 };
-var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
+var MoreFiltersDropDownUI = class extends Common16.ObjectWrapper.ObjectWrapper {
   filterElement;
   dropDownButton;
   networkHideDataURLSetting;
@@ -11796,12 +11470,12 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
   activeFiltersCountAdorner;
   constructor() {
     super();
-    this.networkHideDataURLSetting = Common17.Settings.Settings.instance().createSetting("network-hide-data-url", false);
-    this.networkHideChromeExtensionsSetting = Common17.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
-    this.networkShowBlockedCookiesOnlySetting = Common17.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
-    this.networkOnlyBlockedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
-    this.networkOnlyThirdPartySetting = Common17.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
-    this.networkOnlyIPProtectedRequestsSetting = Common17.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
+    this.networkHideDataURLSetting = Common16.Settings.Settings.instance().createSetting("network-hide-data-url", false);
+    this.networkHideChromeExtensionsSetting = Common16.Settings.Settings.instance().createSetting("network-hide-chrome-extensions", false);
+    this.networkShowBlockedCookiesOnlySetting = Common16.Settings.Settings.instance().createSetting("network-show-blocked-cookies-only-setting", false);
+    this.networkOnlyBlockedRequestsSetting = Common16.Settings.Settings.instance().createSetting("network-only-blocked-requests", false);
+    this.networkOnlyThirdPartySetting = Common16.Settings.Settings.instance().createSetting("network-only-third-party-setting", false);
+    this.networkOnlyIPProtectedRequestsSetting = Common16.Settings.Settings.instance().createSetting("network-only-ip-protected-requests", false);
     this.filterElement = document.createElement("div");
     this.filterElement.setAttribute("aria-label", "Show only/hide requests dropdown");
     this.filterElement.setAttribute("jslog", `${VisualLogging13.dropDown("more-filters").track({ click: true })}`);
@@ -11826,8 +11500,8 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
       /* keepOpen=*/
       true
     );
-    this.dropDownButton.setTitle(i18nString20(UIStrings20.showOnlyHideRequests));
-    this.dropDownButton.setText(i18nString20(UIStrings20.moreFilters));
+    this.dropDownButton.setTitle(i18nString19(UIStrings19.showOnlyHideRequests));
+    this.dropDownButton.setText(i18nString19(UIStrings19.moreFilters));
     this.dropDownButton.setAdorner(this.activeFiltersCountAdorner);
     this.filterElement.appendChild(this.dropDownButton.element);
     this.dropDownButton.element.classList.add("dropdown-filterbar");
@@ -11848,48 +11522,48 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
     if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
       this.networkOnlyIPProtectedRequestsSetting.addChangeListener(this.#onSettingChanged.bind(this));
     }
-    contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
+    contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.hideDataUrls), () => this.networkHideDataURLSetting.set(!this.networkHideDataURLSetting.get()), {
       checked: this.networkHideDataURLSetting.get(),
-      tooltip: i18nString20(UIStrings20.hidesDataAndBlobUrls),
+      tooltip: i18nString19(UIStrings19.hidesDataAndBlobUrls),
       jslogContext: "hide-data-urls"
     });
-    contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.chromeExtensions), () => this.networkHideChromeExtensionsSetting.set(!this.networkHideChromeExtensionsSetting.get()), {
+    contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.chromeExtensions), () => this.networkHideChromeExtensionsSetting.set(!this.networkHideChromeExtensionsSetting.get()), {
       checked: this.networkHideChromeExtensionsSetting.get(),
-      tooltip: i18nString20(UIStrings20.hideChromeExtension),
+      tooltip: i18nString19(UIStrings19.hideChromeExtension),
       jslogContext: "hide-extension-urls"
     });
     contextMenu.defaultSection().appendSeparator();
-    contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.hasBlockedCookies), () => this.networkShowBlockedCookiesOnlySetting.set(!this.networkShowBlockedCookiesOnlySetting.get()), {
+    contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.hasBlockedCookies), () => this.networkShowBlockedCookiesOnlySetting.set(!this.networkShowBlockedCookiesOnlySetting.get()), {
       checked: this.networkShowBlockedCookiesOnlySetting.get(),
-      tooltip: i18nString20(UIStrings20.onlyShowRequestsWithBlockedCookies),
+      tooltip: i18nString19(UIStrings19.onlyShowRequestsWithBlockedCookies),
       jslogContext: "only-blocked-response-cookies"
     });
-    contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.blockedRequests), () => this.networkOnlyBlockedRequestsSetting.set(!this.networkOnlyBlockedRequestsSetting.get()), {
+    contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.blockedRequests), () => this.networkOnlyBlockedRequestsSetting.set(!this.networkOnlyBlockedRequestsSetting.get()), {
       checked: this.networkOnlyBlockedRequestsSetting.get(),
-      tooltip: i18nString20(UIStrings20.onlyShowBlockedRequests),
+      tooltip: i18nString19(UIStrings19.onlyShowBlockedRequests),
       jslogContext: "only-blocked-requests"
     });
     if (Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
-      contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
+      contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.ippRequests), () => this.networkOnlyIPProtectedRequestsSetting.set(!this.networkOnlyIPProtectedRequestsSetting.get()), {
         checked: this.networkOnlyIPProtectedRequestsSetting.get(),
-        tooltip: i18nString20(UIStrings20.onlyShowIPProtectedRequests),
+        tooltip: i18nString19(UIStrings19.onlyShowIPProtectedRequests),
         jslogContext: "only-ip-protected-requests"
       });
     }
-    contextMenu.defaultSection().appendCheckboxItem(i18nString20(UIStrings20.thirdParty), () => this.networkOnlyThirdPartySetting.set(!this.networkOnlyThirdPartySetting.get()), {
+    contextMenu.defaultSection().appendCheckboxItem(i18nString19(UIStrings19.thirdParty), () => this.networkOnlyThirdPartySetting.set(!this.networkOnlyThirdPartySetting.get()), {
       checked: this.networkOnlyThirdPartySetting.get(),
-      tooltip: i18nString20(UIStrings20.onlyShowThirdPartyRequests),
+      tooltip: i18nString19(UIStrings19.onlyShowThirdPartyRequests),
       jslogContext: "only-3rd-party-requests"
     });
   }
   selectedFilters() {
     const filters = [
-      ...this.networkHideDataURLSetting.get() ? [i18nString20(UIStrings20.hideDataUrls)] : [],
-      ...this.networkHideChromeExtensionsSetting.get() ? [i18nString20(UIStrings20.chromeExtensions)] : [],
-      ...this.networkShowBlockedCookiesOnlySetting.get() ? [i18nString20(UIStrings20.hasBlockedCookies)] : [],
-      ...this.networkOnlyBlockedRequestsSetting.get() ? [i18nString20(UIStrings20.blockedRequests)] : [],
-      ...this.networkOnlyThirdPartySetting.get() ? [i18nString20(UIStrings20.thirdParty)] : [],
-      ...Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled && this.networkOnlyIPProtectedRequestsSetting.get() ? [i18nString20(UIStrings20.ippRequests)] : []
+      ...this.networkHideDataURLSetting.get() ? [i18nString19(UIStrings19.hideDataUrls)] : [],
+      ...this.networkHideChromeExtensionsSetting.get() ? [i18nString19(UIStrings19.chromeExtensions)] : [],
+      ...this.networkShowBlockedCookiesOnlySetting.get() ? [i18nString19(UIStrings19.hasBlockedCookies)] : [],
+      ...this.networkOnlyBlockedRequestsSetting.get() ? [i18nString19(UIStrings19.blockedRequests)] : [],
+      ...this.networkOnlyThirdPartySetting.get() ? [i18nString19(UIStrings19.thirdParty)] : [],
+      ...Root.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled && this.networkOnlyIPProtectedRequestsSetting.get() ? [i18nString19(UIStrings19.ippRequests)] : []
     ];
     return filters;
   }
@@ -11902,7 +11576,7 @@ var MoreFiltersDropDownUI = class extends Common17.ObjectWrapper.ObjectWrapper {
     if (this.selectedFilters().length) {
       this.dropDownButton.setTitle(this.selectedFilters().join(", "));
     } else {
-      this.dropDownButton.setTitle(i18nString20(UIStrings20.showOnlyHideRequests));
+      this.dropDownButton.setTitle(i18nString19(UIStrings19.showOnlyHideRequests));
     }
   }
   isActive() {
@@ -11919,18 +11593,18 @@ __export(NetworkSearchScope_exports, {
   NetworkSearchResult: () => NetworkSearchResult,
   NetworkSearchScope: () => NetworkSearchScope
 });
-import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
 import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
 import * as NetworkForward4 from "./forward/forward.js";
-var UIStrings21 = {
+var UIStrings20 = {
   /**
    * @description Text for web URLs
    */
   url: "URL"
 };
-var str_21 = i18n41.i18n.registerUIStrings("panels/network/NetworkSearchScope.ts", UIStrings21);
-var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
+var str_20 = i18n39.i18n.registerUIStrings("panels/network/NetworkSearchScope.ts", UIStrings20);
+var i18nString20 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var NetworkSearchScope = class _NetworkSearchScope {
   #networkLog;
   constructor(networkLog) {
@@ -12058,7 +11732,7 @@ var NetworkSearchResult = class {
   matchLabel(index) {
     const location = this.locations[index];
     if (location.isUrlMatch) {
-      return i18nString21(UIStrings21.url);
+      return i18nString20(UIStrings20.url);
     }
     const header = location?.header?.header;
     if (header) {
@@ -12089,12 +11763,13 @@ __export(NetworkPanel_exports, {
   SearchNetworkView: () => SearchNetworkView
 });
 import "./../../ui/legacy/legacy.js";
-import * as Common18 from "./../../core/common/common.js";
+import * as Common17 from "./../../core/common/common.js";
 import * as Host10 from "./../../core/host/host.js";
-import * as i18n43 from "./../../core/i18n/i18n.js";
+import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as Logs6 from "./../../models/logs/logs.js";
+import * as NetworkTimeCalculator5 from "./../../models/network_time_calculator/network_time_calculator.js";
 import * as Trace2 from "./../../models/trace/trace.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as NetworkForward5 from "./forward/forward.js";
@@ -12288,7 +11963,7 @@ devtools-request-headers {
 /*# sourceURL=${import.meta.resolve("./networkPanel.css")} */`;
 
 // gen/front_end/panels/network/NetworkPanel.js
-var UIStrings22 = {
+var UIStrings21 = {
   /**
    * @description Text to close something
    */
@@ -12415,8 +12090,8 @@ var UIStrings22 = {
    */
   moreNetworkConditions: "More network conditions\u2026"
 };
-var str_22 = i18n43.i18n.registerUIStrings("panels/network/NetworkPanel.ts", UIStrings22);
-var i18nString22 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
+var str_21 = i18n41.i18n.registerUIStrings("panels/network/NetworkPanel.ts", UIStrings21);
+var i18nString21 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
 var networkPanelInstance;
 var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
   networkLogShowOverviewSetting;
@@ -12452,9 +12127,9 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     super("network");
     this.registerRequiredCSS(networkPanel_css_default);
     this.displayScreenshotDelay = displayScreenshotDelay;
-    this.networkLogShowOverviewSetting = Common18.Settings.Settings.instance().createSetting("network-log-show-overview", true);
-    this.networkLogLargeRowsSetting = Common18.Settings.Settings.instance().createSetting("network-log-large-rows", false);
-    this.networkRecordFilmStripSetting = Common18.Settings.Settings.instance().createSetting("network-record-film-strip-setting", false);
+    this.networkLogShowOverviewSetting = Common17.Settings.Settings.instance().createSetting("network-log-show-overview", true);
+    this.networkLogLargeRowsSetting = Common17.Settings.Settings.instance().createSetting("network-log-large-rows", false);
+    this.networkRecordFilmStripSetting = Common17.Settings.Settings.instance().createSetting("network-record-film-strip-setting", false);
     this.toggleRecordAction = UI23.ActionRegistry.ActionRegistry.instance().getAction("network.toggle-recording");
     this.networkItemView = null;
     this.filmStripView = null;
@@ -12473,8 +12148,8 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     this.filterBar.show(panel3.contentElement);
     this.filterBar.addEventListener("Changed", this.handleFilterChanged.bind(this));
     const settingsPane = panel3.contentElement.createChild("div", "network-settings-pane");
-    settingsPane.append(UI23.SettingsUI.createSettingCheckbox(i18nString22(UIStrings22.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString22(UIStrings22.showMoreInformationInRequestRows)), UI23.SettingsUI.createSettingCheckbox(i18nString22(UIStrings22.groupByFrame), Common18.Settings.Settings.instance().moduleSetting("network.group-by-frame"), i18nString22(UIStrings22.groupRequestsByTopLevelRequest)), UI23.SettingsUI.createSettingCheckbox(i18nString22(UIStrings22.showOverview), this.networkLogShowOverviewSetting, i18nString22(UIStrings22.showOverviewOfNetworkRequests)), UI23.SettingsUI.createSettingCheckbox(i18nString22(UIStrings22.captureScreenshots), this.networkRecordFilmStripSetting, i18nString22(UIStrings22.captureScreenshotsWhenLoadingA)));
-    this.showSettingsPaneSetting = Common18.Settings.Settings.instance().createSetting("network-show-settings-toolbar", false);
+    settingsPane.append(UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.useLargeRequestRows), this.networkLogLargeRowsSetting, i18nString21(UIStrings21.showMoreInformationInRequestRows)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.groupByFrame), Common17.Settings.Settings.instance().moduleSetting("network.group-by-frame"), i18nString21(UIStrings21.groupRequestsByTopLevelRequest)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.showOverview), this.networkLogShowOverviewSetting, i18nString21(UIStrings21.showOverviewOfNetworkRequests)), UI23.SettingsUI.createSettingCheckbox(i18nString21(UIStrings21.captureScreenshots), this.networkRecordFilmStripSetting, i18nString21(UIStrings21.captureScreenshotsWhenLoadingA)));
+    this.showSettingsPaneSetting = Common17.Settings.Settings.instance().createSetting("network-show-settings-toolbar", false);
     settingsPane.classList.toggle("hidden", !this.showSettingsPaneSetting.get());
     this.showSettingsPaneSetting.addChangeListener(() => settingsPane.classList.toggle("hidden", !this.showSettingsPaneSetting.get()));
     this.filmStripPlaceholderElement = panel3.contentElement.createChild("div", "network-film-strip-placeholder");
@@ -12484,7 +12159,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     this.networkOverview = new NetworkOverview();
     this.overviewPane.setOverviewControls([this.networkOverview]);
     this.overviewPlaceholderElement = panel3.contentElement.createChild("div");
-    this.calculator = new NetworkTransferTimeCalculator();
+    this.calculator = new NetworkTimeCalculator5.NetworkTransferTimeCalculator();
     this.splitWidget = new UI23.SplitWidget.SplitWidget(true, false, "network-panel-split-view-state");
     this.splitWidget.hideMain();
     this.splitWidget.show(panel3.contentElement);
@@ -12509,7 +12184,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
       event.consume();
       void VisualLogging14.logKeyDown(event.currentTarget, event, "hide-sidebar");
     });
-    const closeSidebar = new UI23.Toolbar.ToolbarButton(i18nString22(UIStrings22.close), "cross");
+    const closeSidebar = new UI23.Toolbar.ToolbarButton(i18nString21(UIStrings21.close), "cross");
     closeSidebar.addEventListener("Click", () => splitWidget.hideSidebar());
     closeSidebar.element.setAttribute("jslog", `${VisualLogging14.close().track({ click: true })}`);
     tabbedPane.rightToolbar().appendToolbarItem(closeSidebar);
@@ -12534,8 +12209,8 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     this.networkLogShowOverviewSetting.addChangeListener(this.toggleShowOverview, this);
     this.networkLogLargeRowsSetting.addChangeListener(this.toggleLargerRequests, this);
     this.networkRecordFilmStripSetting.addChangeListener(this.toggleRecordFilmStrip, this);
-    this.preserveLogSetting = Common18.Settings.Settings.instance().moduleSetting("network-log.preserve-log");
-    this.recordLogSetting = Common18.Settings.Settings.instance().moduleSetting("network-log.record-log");
+    this.preserveLogSetting = Common17.Settings.Settings.instance().moduleSetting("network-log.preserve-log");
+    this.recordLogSetting = Common17.Settings.Settings.instance().moduleSetting("network-log.record-log");
     this.recordLogSetting.addChangeListener(({ data }) => this.toggleRecord(data));
     this.throttlingSelect = this.createThrottlingConditionsSelect();
     this.setupToolbarButtons(splitWidget);
@@ -12588,7 +12263,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     await action.execute();
   }
   setupToolbarButtons(splitWidget) {
-    const searchToggle = new UI23.Toolbar.ToolbarToggle(i18nString22(UIStrings22.search), "search", void 0, "search");
+    const searchToggle = new UI23.Toolbar.ToolbarToggle(i18nString21(UIStrings21.search), "search", void 0, "search");
     function updateSidebarToggle() {
       const isSidebarShowing = splitWidget.showMode() !== "OnlyMain";
       searchToggle.setToggled(isSidebarShowing);
@@ -12607,28 +12282,28 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     });
     this.panelToolbar.appendToolbarItem(searchToggle);
     this.panelToolbar.appendSeparator();
-    this.panelToolbar.appendToolbarItem(new UI23.Toolbar.ToolbarSettingCheckbox(this.preserveLogSetting, i18nString22(UIStrings22.doNotClearLogOnPageReload), i18nString22(UIStrings22.preserveLog)));
+    this.panelToolbar.appendToolbarItem(new UI23.Toolbar.ToolbarSettingCheckbox(this.preserveLogSetting, i18nString21(UIStrings21.doNotClearLogOnPageReload), i18nString21(UIStrings21.preserveLog)));
     this.panelToolbar.appendSeparator();
-    const disableCacheCheckbox = new UI23.Toolbar.ToolbarSettingCheckbox(Common18.Settings.Settings.instance().moduleSetting("cache-disabled"), i18nString22(UIStrings22.disableCacheWhileDevtoolsIsOpen), i18nString22(UIStrings22.disableCache));
+    const disableCacheCheckbox = new UI23.Toolbar.ToolbarSettingCheckbox(Common17.Settings.Settings.instance().moduleSetting("cache-disabled"), i18nString21(UIStrings21.disableCacheWhileDevtoolsIsOpen), i18nString21(UIStrings21.disableCache));
     this.panelToolbar.appendToolbarItem(disableCacheCheckbox);
     this.panelToolbar.appendToolbarItem(this.throttlingSelect);
-    const networkConditionsButton = new UI23.Toolbar.ToolbarButton(i18nString22(UIStrings22.moreNetworkConditions), "network-settings", void 0, "network-conditions");
+    const networkConditionsButton = new UI23.Toolbar.ToolbarButton(i18nString21(UIStrings21.moreNetworkConditions), "network-settings", void 0, "network-conditions");
     networkConditionsButton.addEventListener("Click", () => {
       void UI23.ViewManager.ViewManager.instance().showView("network.config");
     }, this);
     this.panelToolbar.appendToolbarItem(networkConditionsButton);
     this.rightToolbar.appendToolbarItem(new UI23.Toolbar.ToolbarItem(this.progressBarContainer));
     this.rightToolbar.appendSeparator();
-    this.rightToolbar.appendToolbarItem(new UI23.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString22(UIStrings22.networkSettings), "gear-filled", "network-settings"));
+    this.rightToolbar.appendToolbarItem(new UI23.Toolbar.ToolbarSettingToggle(this.showSettingsPaneSetting, "gear", i18nString21(UIStrings21.networkSettings), "gear-filled", "network-settings"));
     const exportHarContextMenu = (contextMenu) => {
-      contextMenu.defaultSection().appendItem(i18nString22(UIStrings22.exportHarSanitized), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), { jslogContext: "export-har" });
-      contextMenu.defaultSection().appendItem(i18nString22(UIStrings22.exportHarWithSensitiveData), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: false }), { jslogContext: "export-har-with-sensitive-data" });
+      contextMenu.defaultSection().appendItem(i18nString21(UIStrings21.exportHarSanitized), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), { jslogContext: "export-har" });
+      contextMenu.defaultSection().appendItem(i18nString21(UIStrings21.exportHarWithSensitiveData), this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: false }), { jslogContext: "export-har-with-sensitive-data" });
     };
     this.panelToolbar.appendSeparator();
-    const importHarButton = new UI23.Toolbar.ToolbarButton(i18nString22(UIStrings22.importHarFile), "import", void 0, "import-har");
+    const importHarButton = new UI23.Toolbar.ToolbarButton(i18nString21(UIStrings21.importHarFile), "import", void 0, "import-har");
     importHarButton.addEventListener("Click", () => this.fileSelectorElement.click(), this);
     this.panelToolbar.appendToolbarItem(importHarButton);
-    const exportHarButton = new UI23.Toolbar.ToolbarButton(i18nString22(UIStrings22.exportHarSanitized), "download", void 0, "export-har");
+    const exportHarButton = new UI23.Toolbar.ToolbarButton(i18nString21(UIStrings21.exportHarSanitized), "download", void 0, "export-har");
     exportHarButton.addEventListener("Click", this.networkLogView.exportAll.bind(this.networkLogView, { sanitize: true }), this);
     this.panelToolbar.appendToolbarItem(exportHarButton);
     const exportHarMenuButton = new UI23.Toolbar.ToolbarMenuButton(
@@ -12640,9 +12315,9 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
       "export-har-menu",
       "download"
     );
-    exportHarMenuButton.setTitle(i18nString22(UIStrings22.exportHar));
+    exportHarMenuButton.setTitle(i18nString21(UIStrings21.exportHar));
     this.panelToolbar.appendToolbarItem(exportHarMenuButton);
-    const networkShowOptionsToGenerateHarWithSensitiveData = Common18.Settings.Settings.instance().createSetting("network.show-options-to-generate-har-with-sensitive-data", false);
+    const networkShowOptionsToGenerateHarWithSensitiveData = Common17.Settings.Settings.instance().createSetting("network.show-options-to-generate-har-with-sensitive-data", false);
     const updateShowOptionsToGenerateHarWithSensitiveData = () => {
       const showOptionsToGenerateHarWithSensitiveData = networkShowOptionsToGenerateHarWithSensitiveData.get();
       exportHarButton.setVisible(!showOptionsToGenerateHarWithSensitiveData);
@@ -12654,7 +12329,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
   createThrottlingConditionsSelect() {
     const toolbarItem = new UI23.Toolbar.ToolbarItem(document.createElement("div"));
     toolbarItem.setMaxWidth(160);
-    MobileThrottling2.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString22(UIStrings22.throttling));
+    MobileThrottling2.NetworkThrottlingSelector.NetworkThrottlingSelect.createForGlobalConditions(toolbarItem.element, i18nString21(UIStrings21.throttling));
     return toolbarItem;
   }
   toggleRecord(toggled) {
@@ -12747,7 +12422,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     if (this.filmStripView) {
       this.filmStripView.reset();
       if (reloadShortcut) {
-        this.filmStripView.setStatusText(i18nString22(UIStrings22.hitSToReloadAndCaptureFilmstrip, { PH1: reloadShortcut.title() }));
+        this.filmStripView.setStatusText(i18nString21(UIStrings21.hitSToReloadAndCaptureFilmstrip, { PH1: reloadShortcut.title() }));
       }
     }
   }
@@ -12851,17 +12526,17 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
   }
   appendApplicableItems(event, contextMenu, target) {
     const appendRevealItem = (request) => {
-      contextMenu.revealSection().appendItem(i18nString22(UIStrings22.openInNetworkPanel), () => UI23.ViewManager.ViewManager.instance().showView("network").then(this.networkLogView.resetFilter.bind(this.networkLogView)).then(this.revealAndHighlightRequest.bind(this, request)), { jslogContext: "reveal-in-network" });
+      contextMenu.revealSection().appendItem(i18nString21(UIStrings21.openInNetworkPanel), () => UI23.ViewManager.ViewManager.instance().showView("network").then(this.networkLogView.resetFilter.bind(this.networkLogView)).then(this.revealAndHighlightRequest.bind(this, request)), { jslogContext: "reveal-in-network" });
     };
     const appendRevealItemMissingData = () => {
-      contextMenu.revealSection().appendItem(i18nString22(UIStrings22.openInNetworkPanelMissingRequest), () => {
+      contextMenu.revealSection().appendItem(i18nString21(UIStrings21.openInNetworkPanelMissingRequest), () => {
       }, {
         disabled: true,
         jslogContext: "reveal-in-network"
       });
     };
     const appendRevealItemAndSelect = (request) => {
-      contextMenu.revealSection().appendItem(i18nString22(UIStrings22.openInNetworkPanel), () => UI23.ViewManager.ViewManager.instance().showView("network").then(this.networkLogView.resetFilter.bind(this.networkLogView)).then(this.selectAndActivateRequest.bind(
+      contextMenu.revealSection().appendItem(i18nString21(UIStrings21.openInNetworkPanel), () => UI23.ViewManager.ViewManager.instance().showView("network").then(this.networkLogView.resetFilter.bind(this.networkLogView)).then(this.selectAndActivateRequest.bind(
         this,
         request.networkRequest,
         "headers-component",
@@ -12991,7 +12666,7 @@ var FilmStripRecorder = class {
   startRecording() {
     this.#collectedTraceEvents = [];
     this.#filmStripView.reset();
-    this.#filmStripView.setStatusText(i18nString22(UIStrings22.recordingFrames));
+    this.#filmStripView.setStatusText(i18nString21(UIStrings21.recordingFrames));
     const tracingManager = SDK15.TargetManager.TargetManager.instance().scopeTarget()?.model(Tracing.TracingManager.TracingManager);
     if (this.#tracingManager || !tracingManager) {
       return;
@@ -13013,7 +12688,7 @@ var FilmStripRecorder = class {
       this.#resourceTreeModel.suspendReload();
     }
     this.#callback = callback;
-    this.#filmStripView.setStatusText(i18nString22(UIStrings22.fetchingFrames));
+    this.#filmStripView.setStatusText(i18nString21(UIStrings21.fetchingFrames));
   }
 };
 var ActionDelegate2 = class {
@@ -13077,7 +12752,7 @@ var RequestLocationRevealer = class {
 var searchNetworkViewInstance;
 var SearchNetworkView = class _SearchNetworkView extends Search.SearchView.SearchView {
   constructor() {
-    super("network", new Common18.Throttler.Throttler(
+    super("network", new Common17.Throttler.Throttler(
       /* timeoutMs */
       200
     ));
@@ -13113,7 +12788,6 @@ export {
   NetworkOverview_exports as NetworkOverview,
   NetworkPanel_exports as NetworkPanel,
   NetworkSearchScope_exports as NetworkSearchScope,
-  NetworkTimeCalculator_exports as NetworkTimeCalculator,
   NetworkWaterfallColumn_exports as NetworkWaterfallColumn,
   RequestCookiesView_exports as RequestCookiesView,
   RequestHTMLView_exports as RequestHTMLView,

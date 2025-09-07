@@ -29,10 +29,10 @@
  */
 import * as Common from '../../../../core/common/common.js';
 import * as Platform from '../../../../core/platform/platform.js';
+import type * as NetworkTimeCalculator from '../../../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
-import { type Calculator } from './TimelineGrid.js';
 export declare const ARROW_SIDE = 8;
 export declare const EDIT_ICON_WIDTH = 16;
 export declare const enum HoverType {
@@ -114,7 +114,7 @@ declare const FlameChart_base: (new (...args: any[]) => {
     hasEventListeners(eventType: keyof EventTypes): boolean;
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
-export declare class FlameChart extends FlameChart_base implements Calculator, ChartViewportDelegate {
+export declare class FlameChart extends FlameChart_base implements NetworkTimeCalculator.Calculator, ChartViewportDelegate {
     #private;
     private readonly flameChartDelegate;
     private chartViewport;

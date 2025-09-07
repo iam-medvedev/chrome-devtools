@@ -162,6 +162,7 @@
       <include file="Images/frame-crossed.svg" name="IMAGES_FRAME_CROSSED_SVG" resource_path="Images/frame-crossed.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame-icon.svg" name="IMAGES_FRAME_ICON_SVG" resource_path="Images/frame-icon.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame.svg" name="IMAGES_FRAME_SVG" resource_path="Images/frame.svg" type="BINDATA" compress="false"/>
+      <include file="Images/gdp-logo-standalone.svg" name="IMAGES_GDP_LOGO_STANDALONE_SVG" resource_path="Images/gdp-logo-standalone.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear-filled.svg" name="IMAGES_GEAR_FILLED_SVG" resource_path="Images/gear-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear.svg" name="IMAGES_GEAR_SVG" resource_path="Images/gear.svg" type="BINDATA" compress="false"/>
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>
@@ -213,6 +214,7 @@
       <include file="Images/list.svg" name="IMAGES_LIST_SVG" resource_path="Images/list.svg" type="BINDATA" compress="false"/>
       <include file="Images/location-on.svg" name="IMAGES_LOCATION_ON_SVG" resource_path="Images/location-on.svg" type="BINDATA" compress="false"/>
       <include file="Images/lock.svg" name="IMAGES_LOCK_SVG" resource_path="Images/lock.svg" type="BINDATA" compress="false"/>
+      <include file="Images/mark-email-unread.svg" name="IMAGES_MARK_EMAIL_UNREAD_SVG" resource_path="Images/mark-email-unread.svg" type="BINDATA" compress="false"/>
       <include file="Images/match-case.svg" name="IMAGES_MATCH_CASE_SVG" resource_path="Images/match-case.svg" type="BINDATA" compress="false"/>
       <include file="Images/match-whole-word.svg" name="IMAGES_MATCH_WHOLE_WORD_SVG" resource_path="Images/match-whole-word.svg" type="BINDATA" compress="false"/>
       <include file="Images/memory.svg" name="IMAGES_MEMORY_SVG" resource_path="Images/memory.svg" type="BINDATA" compress="false"/>
@@ -299,6 +301,7 @@
       <include file="Images/triangle-left.svg" name="IMAGES_TRIANGLE_LEFT_SVG" resource_path="Images/triangle-left.svg" type="BINDATA" compress="false"/>
       <include file="Images/triangle-right.svg" name="IMAGES_TRIANGLE_RIGHT_SVG" resource_path="Images/triangle-right.svg" type="BINDATA" compress="false"/>
       <include file="Images/triangle-up.svg" name="IMAGES_TRIANGLE_UP_SVG" resource_path="Images/triangle-up.svg" type="BINDATA" compress="false"/>
+      <include file="Images/trophy.svg" name="IMAGES_TROPHY_SVG" resource_path="Images/trophy.svg" type="BINDATA" compress="false"/>
       <include file="Images/tune.svg" name="IMAGES_TUNE_SVG" resource_path="Images/tune.svg" type="BINDATA" compress="false"/>
       <include file="Images/undo.svg" name="IMAGES_UNDO_SVG" resource_path="Images/undo.svg" type="BINDATA" compress="false"/>
       <include file="Images/warning-filled.svg" name="IMAGES_WARNING_FILLED_SVG" resource_path="Images/warning-filled.svg" type="BINDATA" compress="false"/>
@@ -398,6 +401,7 @@
       <include file="models/emulation/emulation.js" name="MODELS_EMULATION_EMULATION_JS" resource_path="models/emulation/emulation.js" type="BINDATA" compress="false"/>
       <include file="models/extensions/extensions.js" name="MODELS_EXTENSIONS_EXTENSIONS_JS" resource_path="models/extensions/extensions.js" type="BINDATA" compress="false"/>
       <include file="models/formatter/formatter.js" name="MODELS_FORMATTER_FORMATTER_JS" resource_path="models/formatter/formatter.js" type="BINDATA" compress="false"/>
+      <include file="models/geometry/geometry.js" name="MODELS_GEOMETRY_GEOMETRY_JS" resource_path="models/geometry/geometry.js" type="BINDATA" compress="false"/>
       <include file="models/har/har.js" name="MODELS_HAR_HAR_JS" resource_path="models/har/har.js" type="BINDATA" compress="false"/>
       <include file="models/heap_snapshot_model/heap_snapshot_model.js" name="MODELS_HEAP_SNAPSHOT_MODEL_HEAP_SNAPSHOT_MODEL_JS" resource_path="models/heap_snapshot_model/heap_snapshot_model.js" type="BINDATA" compress="false"/>
       <include file="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" name="MODELS_ISSUES_MANAGER_DESCRIPTIONS_COEPCOOPSANDBOXEDIFRAMECANNOTNAVIGATETOCOOPPAGE_MD" resource_path="models/issues_manager/descriptions/CoepCoopSandboxedIframeCannotNavigateToCoopPage.md" type="BINDATA" compress="false"/>
@@ -590,6 +594,7 @@
       <include file="models/live-metrics/web-vitals-injected/web-vitals-injected.generated.js" name="MODELS_LIVE_METRICS_WEB_VITALS_INJECTED_WEB_VITALS_INJECTED_GENERATED_JS" resource_path="models/live-metrics/web-vitals-injected/web-vitals-injected.generated.js" type="BINDATA" compress="false"/>
       <include file="models/logs/logs-meta.js" name="MODELS_LOGS_LOGS_META_JS" resource_path="models/logs/logs-meta.js" type="BINDATA" compress="false"/>
       <include file="models/logs/logs.js" name="MODELS_LOGS_LOGS_JS" resource_path="models/logs/logs.js" type="BINDATA" compress="false"/>
+      <include file="models/network_time_calculator/network_time_calculator.js" name="MODELS_NETWORK_TIME_CALCULATOR_NETWORK_TIME_CALCULATOR_JS" resource_path="models/network_time_calculator/network_time_calculator.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/persistence-meta.js" name="MODELS_PERSISTENCE_PERSISTENCE_META_JS" resource_path="models/persistence/persistence-meta.js" type="BINDATA" compress="false"/>
       <include file="models/persistence/persistence.js" name="MODELS_PERSISTENCE_PERSISTENCE_JS" resource_path="models/persistence/persistence.js" type="BINDATA" compress="false"/>
       <include file="models/project_settings/project_settings.js" name="MODELS_PROJECT_SETTINGS_PROJECT_SETTINGS_JS" resource_path="models/project_settings/project_settings.js" type="BINDATA" compress="false"/>

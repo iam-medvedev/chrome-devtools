@@ -8,6 +8,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
@@ -204,7 +205,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
       <style>${cssOverviewCompletedViewStyles}</style>
       <devtools-split-view direction="column" sidebar-position="first" sidebar-initial-size="200">
         <devtools-widget slot="sidebar" .widgetConfig=${widgetConfig(CSSOverviewSidebarPanel, {
-        minimumSize: new UI.Geometry.Size(100, 25),
+        minimumSize: new Geometry.Size(100, 25),
         items: [
             { name: i18nString(UIStrings.overviewSummary), id: 'summary' },
             { name: i18nString(UIStrings.colors), id: 'colors' },

@@ -1,6 +1,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
-import { Constraints } from './Geometry.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import { ToolbarButton } from './Toolbar.js';
 import { Widget, WidgetElement } from './Widget.js';
 declare const SplitWidget_base: (new (...args: any[]) => {
@@ -11,45 +11,12 @@ declare const SplitWidget_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof Widget;
 export declare class SplitWidget extends SplitWidget_base {
-    private sidebarElementInternal;
-    private mainElement;
-    private resizerElementInternal;
-    private resizerElementSize;
-    private readonly resizerWidget;
-    private defaultSidebarWidth;
-    private defaultSidebarHeight;
-    private readonly constraintsInDip;
-    private resizeStartSizeDIP;
+    #private;
     private setting;
-    private totalSizeCSS;
-    private totalSizeOtherDimensionCSS;
-    private mainWidgetInternal;
-    private sidebarWidgetInternal;
-    private animationFrameHandle;
-    private animationCallback;
-    private showSidebarButtonTitle;
-    private hideSidebarButtonTitle;
-    private shownSidebarString;
-    private hiddenSidebarString;
-    private showHideSidebarButton;
-    private isVerticalInternal;
-    private sidebarMinimized;
-    private detaching;
-    private sidebarSizeDIP;
-    private savedSidebarSizeDIP;
-    private secondIsSidebar;
-    private shouldSaveShowMode;
-    private savedVerticalMainSize;
-    private savedHorizontalMainSize;
-    private showModeInternal;
-    private savedShowMode;
-    private autoAdjustOrientation;
     constructor(isVertical: boolean, secondIsSidebar: boolean, settingName?: string, defaultSidebarWidth?: number, defaultSidebarHeight?: number, constraintsInDip?: boolean, element?: SplitWidgetElement);
     isVertical(): boolean;
     setVertical(isVertical: boolean): void;
     setAutoAdjustOrientation(autoAdjustOrientation: boolean): void;
-    private innerSetVertical;
-    private updateLayout;
     setMainWidget(widget: Widget): void;
     setSidebarWidget(widget: Widget): void;
     mainWidget(): Widget | null;
@@ -66,9 +33,7 @@ export declare class SplitWidget extends SplitWidget_base {
     hideSidebar(animate?: boolean): void;
     setSidebarMinimized(minimized: boolean): void;
     isSidebarMinimized(): boolean;
-    private showOnly;
-    private showFinishedForTest;
-    private removeAllLayoutProperties;
+    protected showFinishedForTest(): void;
     showBoth(animate?: boolean): void;
     setResizable(resizable: boolean): void;
     forceSetSidebarWidth(width: number): void;
@@ -76,42 +41,21 @@ export declare class SplitWidget extends SplitWidget_base {
     setSidebarSize(size: number): void;
     sidebarSize(): number;
     totalSize(): number;
-    /**
-     * Returns total size in DIP.
-     */
-    private totalSizeDIP;
-    private updateShowMode;
-    private innerSetSidebarSizeDIP;
-    private animate;
-    private cancelAnimation;
-    private applyConstraints;
     wasShown(): void;
     willHide(): void;
     onResize(): void;
     onLayout(): void;
-    calculateConstraints(): Constraints;
-    private maybeAutoAdjustOrientation;
-    private onResizeStart;
-    private onResizeUpdate;
-    private onResizeEnd;
+    calculateConstraints(): Geometry.Constraints;
     hideDefaultResizer(noSplitter?: boolean): void;
     installResizer(resizerElement: Element): void;
     uninstallResizer(resizerElement: Element): void;
     toggleResizer(resizer: Element, on: boolean): void;
-    private settingForOrientation;
-    private preferredSidebarSizeDIP;
-    private restoreSidebarSizeFromSettings;
-    private restoreAndApplyShowModeFromSettings;
-    private saveShowModeToSettings;
-    private saveSetting;
-    private forceUpdateLayout;
-    private onZoomChanged;
+    onZoomChanged(): void;
     createShowHideSidebarButton(showTitle: Common.UIString.LocalizedString, hideTitle: Common.UIString.LocalizedString, shownString: Common.UIString.LocalizedString, hiddenString: Common.UIString.LocalizedString, jslogContext?: string): ToolbarButton;
     /**
      * @returns true if this call makes the sidebar visible, and false otherwise.
      */
     toggleSidebar(): boolean;
-    private updateShowHideSidebarButton;
 }
 export declare class SplitWidgetElement extends WidgetElement<SplitWidget> {
     static readonly observedAttributes: string[];

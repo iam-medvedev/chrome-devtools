@@ -4,9 +4,9 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 import * as Utils from './utils/utils.js';
@@ -119,7 +119,7 @@ export class LayoutShiftsTrackAppender {
         if (Trace.Types.Events.isSyntheticLayoutShift(event)) {
             // Screenshots are max 500x500 naturally, but on a laptop in dock-to-right, 500px tall usually doesn't fit.
             // In the future, we may investigate a way to dynamically scale this tooltip content per available space.
-            const maxSize = new UI.Geometry.Size(510, 400);
+            const maxSize = new Geometry.Size(510, 400);
             const vizElem = LayoutShiftsTrackAppender.createShiftViz(event, this.#parsedTrace, maxSize);
             if (vizElem) {
                 info.additionalElements.push(vizElem);

@@ -1,6 +1,6 @@
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { NetworkNode } from './NetworkDataGridNode.js';
-import type { NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     private canvas;
     private canvasPosition;
@@ -26,7 +26,7 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     private readonly hoverDetailsStyle;
     private readonly pathForStyle;
     private textLayers;
-    constructor(calculator: NetworkTimeCalculator);
+    constructor(calculator: NetworkTimeCalculator.NetworkTimeCalculator);
     private static buildRequestTimeRangeStyle;
     private static buildResourceTypeStyle;
     private resetPaths;
@@ -40,7 +40,7 @@ export declare class NetworkWaterfallColumn extends UI.Widget.VBox {
     setRowHeight(height: number): void;
     setHeaderHeight(height: number): void;
     setRightPadding(padding: number): void;
-    setCalculator(calculator: NetworkTimeCalculator): void;
+    setCalculator(calculator: NetworkTimeCalculator.NetworkTimeCalculator): void;
     getNodeFromPoint(y: number): NetworkNode | null;
     scheduleDraw(): void;
     update(scrollTop?: number, eventDividers?: Map<string, number[]>, nodes?: NetworkNode[]): void;

@@ -88,11 +88,25 @@ export default `/*
     font: var(--sys-typescale-body4-regular);
   }
 
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--sys-size-4);
+    padding-bottom: var(--sys-size-4);
+    padding-left: var(--sys-size-8);
+  }
+
+  h3 {
+    font: var(--sys-typescale-body4-medium);
+    margin: 0;
+  }
+
   .main-text {
     color: var(--sys-color-on-surface);
   }
 
-  .body-subtext {
+  .subtext {
     color: var(--sys-color-on-surface-subtle);
   }
 
@@ -109,7 +123,25 @@ export default `/*
   }
 
   devtools-data-grid {
-  flex: auto;
+    flex: auto;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+  }
+
+  .status-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .green-status-icon {
+    color: var(--sys-color-green);
+  }
+
+  .red-status-icon {
+    color: var(--sys-color-error);
   }
 }
 

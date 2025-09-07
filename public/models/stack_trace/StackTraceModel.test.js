@@ -138,6 +138,18 @@ describeWithMockConnection('StackTraceModel', () => {
             catch {
             }
         });
+        it('forwards missing debug info', async () => {
+            const { model } = setup();
+            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
+                    url: f.url,
+                    name: f.functionName,
+                    line: f.lineNumber,
+                    column: f.columnNumber,
+                    missingDebugInfo: { type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */ },
+                }]));
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames: [protocolCallFrame('foo.js:1:foo:1:10')] }, translateFn);
+            assert.strictEqual(stackTrace.syncFragment.frames[0].missingDebugInfo?.type, "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */);
+        });
     });
     describe('scriptInfoChanged', () => {
         const createUpdatedSpy = (stackTrace) => {
@@ -237,6 +249,22 @@ describeWithMockConnection('StackTraceModel', () => {
             sinon.assert.calledOnceWithMatch(translateSpy, fullCallFrames, model.target());
             sinon.assert.calledOnce(updatedSpyFull);
             sinon.assert.calledOnce(updatedSpySubSet);
+        });
+        it('forwards missing debug info', async () => {
+            const { model } = setup();
+            const translateFn = (frames, _target) => Promise.resolve(frames.map(f => [{
+                    url: f.url,
+                    name: f.functionName,
+                    line: f.lineNumber,
+                    column: f.columnNumber,
+                    missingDebugInfo: { type: "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */ },
+                }]));
+            const stackTrace = await model.createFromProtocolRuntime({ callFrames: [protocolCallFrame('foo.js:1:foo:1:10')] }, identityTranslateFn);
+            assert.isUndefined(stackTrace.syncFragment.frames[0].missingDebugInfo);
+            const script = { scriptId: '1', sourceURL: 'bar.js' };
+            await model.scriptInfoChanged(script, translateFn);
+            const frame = stackTrace.syncFragment.frames[0];
+            assert.strictEqual(frame.missingDebugInfo?.type, "NO_INFO" /* StackTrace.StackTrace.MissingDebugInfoType.NO_INFO */);
         });
     });
 });

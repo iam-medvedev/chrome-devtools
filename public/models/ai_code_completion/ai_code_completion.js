@@ -325,6 +325,9 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       clearTimeout(this.#renderingTimeout);
       this.#renderingTimeout = void 0;
     }
+    this.#editor.dispatch({
+      effects: TextEditor.Config.setAiAutoCompleteSuggestion.of(null)
+    });
   }
 };
 export {

@@ -323,6 +323,9 @@ export class Script {
     createPageResourceLoadInitiator() {
         return { target: this.target(), frameId: this.frameId, initiatorUrl: this.embedderName() };
     }
+    debugId() {
+        return this.buildId;
+    }
     rawLocationToRelativeLocation(rawLocation) {
         let { lineNumber, columnNumber } = rawLocation;
         if (!this.hasSourceURL && this.isInlineScript()) {

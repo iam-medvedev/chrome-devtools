@@ -38,6 +38,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Logs from '../../models/logs/logs.js';
+import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
@@ -52,7 +53,6 @@ import { NetworkLogView } from './NetworkLogView.js';
 import { NetworkOverview } from './NetworkOverview.js';
 import networkPanelStyles from './networkPanel.css.js';
 import { NetworkSearchScope } from './NetworkSearchScope.js';
-import { NetworkTransferTimeCalculator } from './NetworkTimeCalculator.js';
 const UIStrings = {
     /**
      * @description Text to close something
@@ -254,7 +254,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         this.networkOverview = new NetworkOverview();
         this.overviewPane.setOverviewControls([this.networkOverview]);
         this.overviewPlaceholderElement = panel.contentElement.createChild('div');
-        this.calculator = new NetworkTransferTimeCalculator();
+        this.calculator = new NetworkTimeCalculator.NetworkTransferTimeCalculator();
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, false, 'network-panel-split-view-state');
         this.splitWidget.hideMain();
         this.splitWidget.show(panel.contentElement);

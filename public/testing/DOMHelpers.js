@@ -1,6 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Buttons from '../ui/components/buttons/buttons.js';
 import * as UI from '../ui/legacy/legacy.js';
 import { checkForPendingActivity } from './TrackAsyncOperations.js';
 const TEST_CONTAINER_ID = '__devtools-test-container-id';
@@ -15,6 +16,10 @@ export function renderElementIntoDOM(element, renderOptions = {}) {
     const allowMultipleChildren = Boolean(renderOptions.allowMultipleChildren);
     if (container.childNodes.length !== 0 && !allowMultipleChildren) {
         throw new Error(`renderElementIntoDOM expects the container to be empty ${container.innerHTML}`);
+    }
+    if (renderOptions.includeCommonStyles) {
+        container.appendChild(document.createElement('style')).textContent = UI.inspectorCommonStyles;
+        container.appendChild(document.createElement('style')).textContent = Buttons.textButtonStyles;
     }
     if (element instanceof Node) {
         container.appendChild(element);

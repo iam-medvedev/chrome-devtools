@@ -4,10 +4,91 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/models/trace/EventsSerializer.js
+var EventsSerializer_exports = {};
+__export(EventsSerializer_exports, {
+  EventsSerializer: () => EventsSerializer
+});
+import * as Helpers from "./helpers/helpers.js";
+import * as Types from "./types/types.js";
+var EventsSerializer = class _EventsSerializer {
+  #modifiedProfileCallByKey = /* @__PURE__ */ new Map();
+  keyForEvent(event) {
+    if (Types.Events.isProfileCall(event)) {
+      return `${"p"}-${event.pid}-${event.tid}-${Types.Events.SampleIndex(event.sampleIndex)}-${event.nodeId}`;
+    }
+    if (Types.Events.isLegacyTimelineFrame(event)) {
+      return `${"l"}-${event.index}`;
+    }
+    const rawEvents = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+    const key = Types.Events.isSyntheticBased(event) ? `${"s"}-${rawEvents.indexOf(event.rawSourceEvent)}` : `${"r"}-${rawEvents.indexOf(event)}`;
+    if (key.length < 3) {
+      return null;
+    }
+    return key;
+  }
+  eventForKey(key, parsedTrace) {
+    const eventValues = Types.File.traceEventKeyToValues(key);
+    if (_EventsSerializer.isProfileCallKey(eventValues)) {
+      return this.#getModifiedProfileCallByKeyValues(eventValues, parsedTrace);
+    }
+    if (_EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
+      const event = parsedTrace.Frames.frames.at(eventValues.rawIndex);
+      if (!event) {
+        throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
+      }
+      return event;
+    }
+    if (_EventsSerializer.isSyntheticEventKey(eventValues)) {
+      const syntheticEvents = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
+      const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
+      if (!syntheticEvent) {
+        throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
+      }
+      return syntheticEvent;
+    }
+    if (_EventsSerializer.isRawEventKey(eventValues)) {
+      const rawEvents = Helpers.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
+      return rawEvents[eventValues.rawIndex];
+    }
+    throw new Error(`Unknown trace event serializable key values: ${eventValues.join("-")}`);
+  }
+  static isProfileCallKey(key) {
+    return key.type === "p";
+  }
+  static isLegacyTimelineFrameKey(key) {
+    return key.type === "l";
+  }
+  static isRawEventKey(key) {
+    return key.type === "r";
+  }
+  static isSyntheticEventKey(key) {
+    return key.type === "s";
+  }
+  #getModifiedProfileCallByKeyValues(key, parsedTrace) {
+    const cacheResult = this.#modifiedProfileCallByKey.get(key);
+    if (cacheResult) {
+      return cacheResult;
+    }
+    const profileCallsInThread = parsedTrace.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
+    if (!profileCallsInThread) {
+      throw new Error(`Unknown profile call serializable key: ${key}`);
+    }
+    const match = profileCallsInThread?.find((e) => {
+      return e.sampleIndex === key.sampleIndex && e.nodeId === key.protocol;
+    });
+    if (!match) {
+      throw new Error(`Unknown profile call serializable key: ${JSON.stringify(key)}`);
+    }
+    this.#modifiedProfileCallByKey.set(key, match);
+    return match;
+  }
+};
+
 // gen/front_end/models/trace/trace.prebundle.js
 import * as Extras from "./extras/extras.js";
 import * as Handlers4 from "./handlers/handlers.js";
-import * as Helpers3 from "./helpers/helpers.js";
+import * as Helpers4 from "./helpers/helpers.js";
 import * as Insights2 from "./insights/insights.js";
 import * as Lantern3 from "./lantern/lantern.js";
 
@@ -359,7 +440,7 @@ __export(ModelImpl_exports, {
 });
 import * as Platform from "./../../core/platform/platform.js";
 import * as Handlers3 from "./handlers/handlers.js";
-import * as Helpers2 from "./helpers/helpers.js";
+import * as Helpers3 from "./helpers/helpers.js";
 
 // gen/front_end/models/trace/Processor.js
 var Processor_exports = {};
@@ -369,10 +450,10 @@ __export(Processor_exports, {
   sortHandlers: () => sortHandlers
 });
 import * as Handlers2 from "./handlers/handlers.js";
-import * as Helpers from "./helpers/helpers.js";
+import * as Helpers2 from "./helpers/helpers.js";
 import * as Insights from "./insights/insights.js";
 import * as Lantern2 from "./lantern/lantern.js";
-import * as Types2 from "./types/types.js";
+import * as Types3 from "./types/types.js";
 var TraceParseProgressEvent = class _TraceParseProgressEvent extends Event {
   data;
   static eventName = "traceparseprogress";
@@ -392,11 +473,11 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
   // the model handlers the user passes in and the Meta handler.
   #traceHandlers;
   #status = "IDLE";
-  #modelConfiguration = Types2.Configuration.defaults();
+  #modelConfiguration = Types3.Configuration.defaults();
   #data = null;
   #insights = null;
   static createWithAllHandlers() {
-    return new _TraceProcessor(Handlers2.ModelHandlers, Types2.Configuration.defaults());
+    return new _TraceProcessor(Handlers2.ModelHandlers, Types3.Configuration.defaults());
   }
   /**
    * This function is kept for testing with `stub`.
@@ -628,10 +709,10 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     };
     const weights = Insights.Common.calculateMetricWeightsForSorting(insightSet, metadata);
     const observedLcpMicro = Insights.Common.getLCP(insightSet)?.value;
-    const observedLcp = observedLcpMicro ? Helpers.Timing.microToMilli(observedLcpMicro) : Types2.Timing.Milli(0);
+    const observedLcp = observedLcpMicro ? Helpers2.Timing.microToMilli(observedLcpMicro) : Types3.Timing.Milli(0);
     const observedCls = Insights.Common.getCLS(insightSet).value;
     const observedInpMicro = Insights.Common.getINP(insightSet)?.value;
-    const observedInp = observedInpMicro ? Helpers.Timing.microToMilli(observedInpMicro) : Types2.Timing.Milli(200);
+    const observedInp = observedInpMicro ? Helpers2.Timing.microToMilli(observedInpMicro) : Types3.Timing.Milli(200);
     const observedLcpScore = observedLcp !== void 0 ? Insights.Common.evaluateLCPMetricScore(observedLcp) : void 0;
     const observedInpScore = Insights.Common.evaluateINPMetricScore(observedInp);
     const observedClsScore = Insights.Common.evaluateCLSMetricScore(observedCls);
@@ -686,7 +767,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get(context.navigationId) ?? parsedTrace.Meta.mainFrameURL;
       navigation = context.navigation;
     } else {
-      id = Types2.Events.NO_NAVIGATION;
+      id = Types3.Events.NO_NAVIGATION;
       urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get("") ?? parsedTrace.Meta.mainFrameURL;
     }
     const insightSetModel = {};
@@ -710,8 +791,8 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       }
       Object.assign(insightSetModel, { [name]: model });
     }
-    const isNavigation = id === Types2.Events.NO_NAVIGATION;
-    const trivialThreshold = Helpers.Timing.milliToMicro(Types2.Timing.Milli(5e3));
+    const isNavigation = id === Types3.Events.NO_NAVIGATION;
+    const trivialThreshold = Helpers2.Timing.milliToMicro(Types3.Timing.Milli(5e3));
     const everyInsightPasses = Object.values(insightSetModel).filter((model) => !(model instanceof Error)).every((model) => model.state === "pass");
     const noLcp = !insightSetModel.LCPBreakdown.lcpEvent;
     const noInp = !insightSetModel.INPBreakdown.longestInteractionEvent;
@@ -750,7 +831,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     for (const [index, navigation] of navigations.entries()) {
       const min = navigation.ts;
       const max = index + 1 < navigations.length ? navigations[index + 1].ts : parsedTrace.Meta.traceBounds.max;
-      const bounds = Helpers.Timing.traceWindowFromMicroSeconds(min, max);
+      const bounds = Helpers2.Timing.traceWindowFromMicroSeconds(min, max);
       this.#computeInsightsForNavigation(navigation, bounds, parsedTrace, traceEvents, options);
     }
   }
@@ -758,7 +839,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
    * Computes insights for the period before the first navigation, or for the entire trace if no navigations exist.
    */
   #computeInsightsForInitialTracePeriod(parsedTrace, navigations, options) {
-    const bounds = navigations.length > 0 ? Helpers.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, navigations[0].ts) : parsedTrace.Meta.traceBounds;
+    const bounds = navigations.length > 0 ? Helpers2.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, navigations[0].ts) : parsedTrace.Meta.traceBounds;
     const context = {
       bounds,
       frameId: parsedTrace.Meta.mainFrameId
@@ -838,14 +919,14 @@ function sortHandlers(traceHandlers) {
 }
 
 // gen/front_end/models/trace/ModelImpl.js
-import * as Types3 from "./types/types.js";
+import * as Types4 from "./types/types.js";
 var Model = class _Model extends EventTarget {
   #traces = [];
   #nextNumberByDomain = /* @__PURE__ */ new Map();
   #recordingsAvailable = [];
   #lastRecordingIndex = 0;
   #processor;
-  #config = Types3.Configuration.defaults();
+  #config = Types4.Configuration.defaults();
   static createWithAllHandlers(config) {
     return new _Model(Handlers3.ModelHandlers, config);
   }
@@ -906,7 +987,7 @@ var Model = class _Model extends EventTarget {
       metadata,
       parsedTrace: null,
       traceInsights: null,
-      syntheticEventsManager: Helpers2.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents)
+      syntheticEventsManager: Helpers3.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents)
     };
     try {
       const parseConfig = {
@@ -943,7 +1024,7 @@ var Model = class _Model extends EventTarget {
     let recordingName = `Trace ${this.#lastRecordingIndex}`;
     let origin = null;
     if (file.parsedTrace) {
-      origin = Helpers2.Trace.extractOriginFromTrace(file.parsedTrace.Meta.mainFrameURL);
+      origin = Helpers3.Trace.extractOriginFromTrace(file.parsedTrace.Meta.mainFrameURL);
       if (origin) {
         const nextSequenceForDomain = Platform.MapUtilities.getWithDefault(this.#nextNumberByDomain, origin, () => 1);
         recordingName = `${origin} (${nextSequenceForDomain})`;
@@ -1006,16 +1087,17 @@ function isModelUpdateDataComplete(eventData) {
 }
 
 // gen/front_end/models/trace/trace.prebundle.js
-import * as Types4 from "./types/types.js";
+import * as Types5 from "./types/types.js";
 export {
+  EventsSerializer_exports as EventsSerializer,
   Extras,
   Handlers4 as Handlers,
-  Helpers3 as Helpers,
+  Helpers4 as Helpers,
   Insights2 as Insights,
   Lantern3 as Lantern,
   LanternComputationData_exports as LanternComputationData,
   Processor_exports as Processor,
   ModelImpl_exports as TraceModel,
-  Types4 as Types
+  Types5 as Types
 };
 //# sourceMappingURL=trace.js.map

@@ -1,12 +1,11 @@
 import './Toolbar.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
-import { Directives, type LitTemplate } from '../lit/lit.js';
-import { Size } from './Geometry.js';
+import * as Lit from '../lit/lit.js';
 import type { ToolbarButton } from './Toolbar.js';
-import type { TreeOutline } from './Treeoutline.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-checkbox': CheckboxLabel;
@@ -15,6 +14,7 @@ declare global {
         'dt-small-bubble': DevToolsSmallBubble;
     }
 }
+declare const Directives: typeof Lit.Directives;
 export declare const highlightedSearchResultClassName = "highlighted-search-result";
 export declare const highlightedCurrentSearchResultClassName = "current-search-result";
 export declare function installDragHandle(element: Element, elementDragStart: ((arg0: MouseEvent) => boolean) | null, elementDrag: (arg0: MouseEvent) => void, elementDragEnd: ((arg0: MouseEvent) => void) | null, cursor: string | null, hoverCursor?: string | null, startDelay?: number, mouseDownPreventDefault?: boolean): void;
@@ -58,7 +58,7 @@ export declare function runCSSAnimationOnce(element: Element, className: string)
 export declare function highlightRangesWithStyleClass(element: Element, resultRanges: TextUtils.TextRange.SourceRange[], styleClass: string, changes?: HighlightChange[]): Element[];
 export declare function applyDomChanges(domChanges: HighlightChange[]): void;
 export declare function revertDomChanges(domChanges: HighlightChange[]): void;
-export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Size;
+export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Geometry.Size;
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
 export declare function invokeOnceAfterBatchUpdate(object: Object, method: () => void): void;
@@ -210,15 +210,13 @@ export declare class ConfirmDialog {
     static show(message: string, header?: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
 }
 export declare function createInlineButton(toolbarButton: ToolbarButton): Element;
+export interface RenderedObject {
+    element: HTMLElement;
+    forceSelect(): void;
+}
 export declare abstract class Renderer {
-    abstract render(object: Object, options?: Options): Promise<{
-        node: Node;
-        tree: TreeOutline | null;
-    } | null>;
-    static render(object: Object, options?: Options): Promise<{
-        node: Node;
-        tree: TreeOutline | null;
-    } | null>;
+    abstract render(object: Object, options?: Options): Promise<RenderedObject | null>;
+    static render(object: Object, options?: Options): Promise<RenderedObject | null>;
 }
 export declare function formatTimestamp(timestamp: number, full: boolean): string;
 export interface Options {
@@ -319,11 +317,22 @@ export declare class PromotionManager {
  */
 export declare function maybeCreateNewBadge(promotionId: string): HTMLDivElement | undefined;
 export declare function bindToAction(actionName: string): ReturnType<typeof Directives.ref>;
+declare class InterceptBindingDirective extends Lit.Directive.Directive {
+    #private;
+    constructor(part: Lit.Directive.PartInfo);
+    update(part: Lit.Directive.EventPart, [listener]: [(e: Event) => void]): undefined;
+    render(_listener: (e: Event) => void): undefined;
+    static attachEventListeners(templateElement: Element, renderedElement: Element): void;
+}
 export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
     #private;
+    static readonly on: (_listener: (e: Event) => void) => Lit.Directive.DirectiveResult<typeof InterceptBindingDirective>;
     constructor();
-    set template(template: LitTemplate);
-    protected updateNodes(_node: Node, _attributeName: string | null): void;
+    static cloneNode(node: Node): Node;
+    set template(template: Lit.LitTemplate);
+    protected onChange(_mutationList: MutationRecord[]): void;
+    protected updateNode(_node: Node, _attributeName: string | null): void;
     protected addNodes(_nodes: NodeList | Node[]): void;
     protected removeNodes(_nodes: NodeList): void;
 }
+export {};

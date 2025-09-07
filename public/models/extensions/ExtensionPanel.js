@@ -28,9 +28,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 /* eslint-disable rulesdir/no-imperative-dom-api */
+// TODO(crbug.com/442509324): remove UI dependency
+// eslint-disable-next-line rulesdir/no-imports-in-directory
 import '../../ui/legacy/legacy.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+// TODO(crbug.com/442509324): remove UI dependency
+// eslint-disable-next-line rulesdir/no-imports-in-directory
 import * as UI from '../../ui/legacy/legacy.js';
 import { ExtensionNotifierView, ExtensionView } from './ExtensionView.js';
 export class ExtensionPanel extends UI.Panel.Panel {
@@ -183,7 +187,7 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
                 callback();
                 return;
             }
-            objectPropertiesView.element.appendChild(result.node);
+            objectPropertiesView.element.appendChild(result.element);
             callback();
         });
     }

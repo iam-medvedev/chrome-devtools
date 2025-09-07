@@ -11,18 +11,19 @@ import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
-import * as SDK from "./../../core/sdk/sdk.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as Workspace5 from "./../../models/workspace/workspace.js";
+import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../network/forward/forward.js";
+import * as NetworkPanel from "./../network/network.js";
 import * as TimelinePanel from "./../timeline/timeline.js";
-import * as TimelineUtils from "./../timeline/utils/utils.js";
+import * as TimelineUtils2 from "./../timeline/utils/utils.js";
 
 // gen/front_end/panels/ai_assistance/aiAssistancePanel.css.js
 var aiAssistancePanel_css_default = `/*
@@ -71,7 +72,12 @@ import "./../../ui/components/spinners/spinners.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel2 from "./../../models/ai_assistance/ai_assistance.js";
+import * as Workspace5 from "./../../models/workspace/workspace.js";
+import * as ElementsPanel from "./../elements/elements.js";
+import * as TimelineUtils from "./../timeline/utils/utils.js";
+import * as PanelUtils from "./../utils/utils.js";
 import * as Marked from "./../../third_party/marked/marked.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
@@ -109,6 +115,7 @@ import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
+import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
@@ -467,7 +474,7 @@ var SelectWorkspaceDialog = class _SelectWorkspaceDialog extends UI.Widget.VBox 
   static show(onProjectSelected, currentProject) {
     const dialog = new UI.Dialog.Dialog("select-workspace");
     dialog.setAriaLabel(UIStringsNotTranslate.selectFolderAccessibleLabel);
-    dialog.setMaxContentSize(new UI.Geometry.Size(384, 340));
+    dialog.setMaxContentSize(new Geometry.Size(384, 340));
     dialog.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
@@ -926,7 +933,7 @@ var PatchWidget = class extends UI2.Widget.Widget {
         void UI2.ViewManager.ViewManager.instance().showView("chrome-ai");
       },
       ariaLabel: lockedString2(UIStringsNotTranslate2.freDisclaimerHeader),
-      learnMoreButtonTitle: lockedString2(UIStringsNotTranslate2.learnMore)
+      learnMoreButtonText: lockedString2(UIStringsNotTranslate2.learnMore)
     });
     if (result) {
       this.#aiPatchingFreCompletedSetting.set(true);
@@ -3301,6 +3308,36 @@ function renderImageChatMessage(inlineData) {
       <img src=${imageUrl} alt=${UIStringsNotTranslate4.imageInputSentToTheModel} />
     </x-link>`;
 }
+function renderContextIcon(context) {
+  if (!context) {
+    return Lit2.nothing;
+  }
+  const item = context.getItem();
+  if (item instanceof SDK.NetworkRequest.NetworkRequest) {
+    return PanelUtils.PanelUtils.getIconForNetworkRequest(item);
+  }
+  if (item instanceof Workspace5.UISourceCode.UISourceCode) {
+    return PanelUtils.PanelUtils.getIconForSourceFile(item);
+  }
+  if (item instanceof TimelineUtils.AIContext.AgentFocus) {
+    return html4`<devtools-icon name="performance" title="Performance"></devtools-icon>`;
+  }
+  if (item instanceof SDK.DOMModel.DOMNode) {
+    return Lit2.nothing;
+  }
+  return Lit2.nothing;
+}
+function renderContextTitle(context, disabled) {
+  const item = context.getItem();
+  if (item instanceof SDK.DOMModel.DOMNode) {
+    const hiddenClassList = item.classNames().filter((className) => className.startsWith(AiAssistanceModel2.AI_ASSISTANCE_CSS_CLASS_NAME));
+    return html4`<devtools-widget .widgetConfig=${UI4.Widget.widgetConfig(ElementsPanel.DOMLinkifier.DOMNodeLink, {
+      node: item,
+      options: { hiddenClassList, disabled }
+    })}></devtools-widget>`;
+  }
+  return context.getTitle();
+}
 function renderSelection({ selectedContext, inspectElementToggled, conversationType, isTextInputDisabled, onContextClick, onInspectElementClick }) {
   if (!conversationType) {
     return Lit2.nothing;
@@ -3345,8 +3382,8 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
       @keydown=${handleKeyDown}
       aria-description=${i18nString(UIStrings.revealContextDescription)}
     >
-      ${selectedContext?.getIcon() ? html4`${selectedContext?.getIcon()}` : Lit2.nothing}
-      <span class="title">${selectedContext?.getTitle({ disabled: isTextInputDisabled }) ?? lockedString4(UIStringsNotTranslate4.noElementSelected)}</span>
+      ${renderContextIcon(selectedContext)}
+      <span class="title">${selectedContext ? renderContextTitle(selectedContext, isTextInputDisabled) : lockedString4(UIStringsNotTranslate4.noElementSelected)}</span>
     </div>
   </div>`;
 }
@@ -4306,7 +4343,8 @@ function createRequestContext(request) {
   if (!request) {
     return null;
   }
-  return new AiAssistanceModel3.RequestContext(request);
+  const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
+  return new AiAssistanceModel3.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
   if (!focus) {
@@ -4496,22 +4534,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#viewOutput.chatView?.restoreScrollPosition();
     this.#viewOutput.chatView?.focusTextInput();
     void this.#handleAidaAvailabilityChange();
-    this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK.DOMModel.DOMNode)));
-    this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
-    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
-    this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace5.UISourceCode.UISourceCode));
+    this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK2.DOMModel.DOMNode)));
+    this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK2.NetworkRequest.NetworkRequest));
+    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(TimelineUtils2.AIContext.AgentFocus));
+    this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
     this.#updateConversationState({ agent: this.#conversationAgent });
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK2.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(TimelineUtils2.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     UI6.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
@@ -4521,15 +4559,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
-    UI6.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(Workspace5.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(SDK2.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(TimelineUtils2.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
-    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     if (this.#timelinePanelInstance) {
       this.#timelinePanelInstance.removeEventListener("IsViewingTrace", this.requestUpdate, this);
       this.#timelinePanelInstance = null;
@@ -4565,7 +4603,12 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (this.#selectedRequest?.getItem() === ev.data) {
       return;
     }
-    this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel3.RequestContext(ev.data) : null;
+    if (Boolean(ev.data)) {
+      const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
+      this.#selectedRequest = new AiAssistanceModel3.RequestContext(ev.data, calculator);
+    } else {
+      this.#selectedRequest = null;
+    }
     this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handlePerformanceTraceFlavorChange = (ev) => {
@@ -4810,7 +4853,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       }
       if (focus.type === "call-tree") {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
-        const trace = new SDK.TraceObject.RevealableEvent(event);
+        const trace = new SDK2.TraceObject.RevealableEvent(event);
         return Common4.Revealer.reveal(trace);
       }
       if (focus.type === "insight") {
@@ -4946,8 +4989,8 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       finalTitle = finalTitle.substring(0, maxTitleLength);
     }
     const filename = `${prefix}${finalTitle}${suffix}`;
-    await Workspace5.FileManager.FileManager.instance().save(filename, contentData, true);
-    Workspace5.FileManager.FileManager.instance().close(filename);
+    await Workspace6.FileManager.FileManager.instance().save(filename, contentData, true);
+    Workspace6.FileManager.FileManager.instance().close(filename);
   }
   async #openHistoricConversation(conversation) {
     if (this.#conversation === conversation) {
@@ -4961,11 +5004,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.newChatCreated));
   }
   async #handleTakeScreenshot() {
-    const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       throw new Error("Could not find main target");
     }
-    const model = mainTarget.model(SDK.ScreenCaptureModel.ScreenCaptureModel);
+    const model = mainTarget.model(SDK2.ScreenCaptureModel.ScreenCaptureModel);
     if (!model) {
       throw new Error("Could not find model");
     }
@@ -5302,6 +5345,7 @@ var ActionDelegate = class {
     switch (actionId) {
       case "freestyler.elements-floating-button":
       case "freestyler.element-panel-context":
+      case "freestyler.main-menu":
       case "drjones.network-floating-button":
       case "drjones.network-panel-context":
       case "drjones.performance-panel-full-context":

@@ -67,7 +67,17 @@ export declare function extractConsoleAPIExtensionEntries(): void;
  *                `UserTimingsHandler`.
  */
 export declare function extractPerformanceAPIExtensionEntries(timings: Array<Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark>): void;
-export declare function extensionDataInPerformanceTiming(timing: Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark): Types.Extensions.ExtensionDataPayload | null;
+/**
+ * Parses out the data in a performance.measure / mark call into two parts:
+ * 1. devtoolsObj: this is the data required to be passed by the user for the
+ *    event to be used to create a custom track in the performance panel.
+ * 2. userDetail: this is arbitrary data the user has attached to the event
+ *    that we show in the summary drawer.
+ */
+export declare function extensionDataInPerformanceTiming(timing: Types.Events.SyntheticUserTimingPair | Types.Events.PerformanceMark): {
+    devtoolsObj: Types.Extensions.DevToolsObj | null;
+    userDetail: Types.Extensions.JsonValue | null;
+};
 /**
  * Extracts extension data from a `console.timeStamp` event.
  *
@@ -88,6 +98,9 @@ export declare function extensionDataInPerformanceTiming(timing: Types.Events.Sy
  * @returns An `ExtensionTrackEntryPayload` object if the event contains
  *         valid extension data for a track entry, or `null` otherwise.
  */
-export declare function extensionDataInConsoleTimeStamp(timeStamp: Types.Events.ConsoleTimeStamp): Types.Extensions.ExtensionTrackEntryPayload | null;
+export declare function extensionDataInConsoleTimeStamp(timeStamp: Types.Events.ConsoleTimeStamp): {
+    devtoolsObj: Types.Extensions.DevToolsObjEntry | null;
+    userDetail: Types.Extensions.JsonValue | null;
+};
 export declare function data(): ExtensionTraceData;
 export declare function deps(): HandlerName[];

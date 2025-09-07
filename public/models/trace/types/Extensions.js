@@ -14,19 +14,22 @@ export const extensionPalette = [
     'error',
     'warning',
 ];
+/** Returns true if this is a devtoolsObj for a marker */
 export function isExtensionPayloadMarker(payload) {
     return payload.dataType === 'marker';
 }
-export function isExtensionPayloadTrackEntry(payload) {
+/** Returns true if this is a devtoolsObj for an entry (non-instant) */
+export function isExtensionEntryObj(payload) {
     const hasTrack = 'track' in payload && Boolean(payload.track);
     const validEntryType = payload.dataType === 'track-entry' || payload.dataType === undefined;
     return validEntryType && hasTrack;
 }
+/** Returns true if this is a devtoolsObj for a console.timeStamp */
 export function isConsoleTimestampPayloadTrackEntry(payload) {
     return payload.url !== undefined && payload.description !== undefined;
 }
 export function isValidExtensionPayload(payload) {
-    return isExtensionPayloadMarker(payload) || isExtensionPayloadTrackEntry(payload) ||
+    return isExtensionPayloadMarker(payload) || isExtensionEntryObj(payload) ||
         isConsoleTimestampPayloadTrackEntry(payload);
 }
 export function isSyntheticExtensionEntry(entry) {

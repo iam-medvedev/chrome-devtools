@@ -19,6 +19,7 @@ __export(Common_exports, {
   getINP: () => getINP,
   getInsight: () => getInsight,
   getLCP: () => getLCP,
+  insightBounds: () => insightBounds,
   isRequestCompressed: () => isRequestCompressed,
   isRequestServedFromBrowserCache: () => isRequestServedFromBrowserCache,
   metricSavingsForWastedBytes: () => metricSavingsForWastedBytes
@@ -348,6 +349,15 @@ function calculateDocFirstByteTs(docRequest) {
     return null;
   }
   return Types.Timing.Micro(Helpers.Timing.secondsToMicro(timing.requestTime) + Helpers.Timing.milliToMicro(timing.receiveHeadersStart ?? timing.receiveHeadersEnd));
+}
+function insightBounds(insight, insightSetBounds) {
+  const overlays = insight.createOverlays?.() ?? [];
+  const windows = overlays.map(Helpers.Timing.traceWindowFromOverlay).filter((bounds) => !!bounds);
+  const overlaysBounds = Helpers.Timing.combineTraceWindowsMicro(windows);
+  if (overlaysBounds) {
+    return overlaysBounds;
+  }
+  return insightSetBounds;
 }
 
 // gen/front_end/models/trace/insights/Models.js
@@ -1508,7 +1518,8 @@ __export(FontDisplay_exports, {
   UIStrings: () => UIStrings6,
   createOverlays: () => createOverlays6,
   generateInsight: () => generateInsight6,
-  i18nString: () => i18nString6
+  i18nString: () => i18nString6,
+  isFontDisplayInsight: () => isFontDisplayInsight
 });
 import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as Platform2 from "./../../../core/platform/platform.js";
@@ -1538,6 +1549,9 @@ function finalize6(partialModel) {
     state: partialModel.fonts.find((font) => font.wastedTime > 0) ? "fail" : "pass",
     ...partialModel
   };
+}
+function isFontDisplayInsight(model) {
+  return model.insightKey === "FontDisplay";
 }
 function generateInsight6(parsedTrace, context) {
   const fonts = [];
@@ -1590,7 +1604,8 @@ __export(ForcedReflow_exports, {
   createOverlayForEvents: () => createOverlayForEvents,
   createOverlays: () => createOverlays7,
   generateInsight: () => generateInsight7,
-  i18nString: () => i18nString7
+  i18nString: () => i18nString7,
+  isForcedReflowInsight: () => isForcedReflowInsight
 });
 import * as i18n13 from "./../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../core/platform/platform.js";
@@ -1695,6 +1710,9 @@ function getBottomCallFrameForEvent(event, traceParsedData) {
   const profileStackTrace = Extras2.StackTraceForEvent.get(event, traceParsedData);
   const eventStackTrace = Helpers8.Trace.getZeroIndexedStackTraceInEventPayload(event);
   return profileStackTrace?.callFrames[0] ?? eventStackTrace?.[0] ?? null;
+}
+function isForcedReflowInsight(model) {
+  return model.insightKey === "ForcedReflow";
 }
 function generateInsight7(traceParsedData, context) {
   const isWithinContext = (event) => {
@@ -3366,7 +3384,8 @@ __export(SlowCSSSelector_exports, {
   UIStrings: () => UIStrings16,
   createOverlays: () => createOverlays16,
   generateInsight: () => generateInsight16,
-  i18nString: () => i18nString16
+  i18nString: () => i18nString16,
+  isSlowCSSSelectorInsight: () => isSlowCSSSelectorInsight
 });
 import * as i18n31 from "./../../../core/i18n/i18n.js";
 import * as Helpers18 from "./../helpers/helpers.js";
@@ -3455,7 +3474,7 @@ var UIStrings16 = {
   /**
    * @description top CSS selector when ranked by elapsed time in ms
    */
-  topSelectorElapsedTime: "Top selector elaspsed time",
+  topSelectorElapsedTime: "Top selector elapsed time",
   /**
    * @description top CSS selector when ranked by match attempt
    */
@@ -3498,6 +3517,9 @@ function finalize16(partialModel) {
     state: partialModel.topSelectorElapsedMs && partialModel.topSelectorMatchAttempts ? "informative" : "pass",
     ...partialModel
   };
+}
+function isSlowCSSSelectorInsight(model) {
+  return model.insightKey === "SlowCSSSelector";
 }
 function generateInsight16(parsedTrace, context) {
   const selectorStatsData = parsedTrace.SelectorStats;
@@ -3547,7 +3569,8 @@ __export(ThirdParties_exports, {
   createOverlays: () => createOverlays17,
   createOverlaysForSummary: () => createOverlaysForSummary,
   generateInsight: () => generateInsight17,
-  i18nString: () => i18nString17
+  i18nString: () => i18nString17,
+  isThirdPartyInsight: () => isThirdPartyInsight
 });
 import * as i18n33 from "./../../../core/i18n/i18n.js";
 import * as ThirdPartyWeb from "./../../../third_party/third-party-web/third-party-web.js";
@@ -3593,6 +3616,9 @@ function finalize17(partialModel) {
     state: partialModel.entitySummaries.find((summary) => summary.entity !== partialModel.firstPartyEntity) ? "informative" : "pass",
     ...partialModel
   };
+}
+function isThirdPartyInsight(model) {
+  return model.insightKey === "ThirdParties";
 }
 function generateInsight17(parsedTrace, context) {
   const entitySummaries = Extras3.ThirdParties.summarizeByThirdParty(parsedTrace, context.bounds);

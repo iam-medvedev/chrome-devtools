@@ -7,7 +7,7 @@ import './EventSourceMessagesView.js';
 import './NetworkConfigView.js';
 import './NetworkDataGridNode.js';
 import './NetworkItemView.js';
-import './NetworkTimeCalculator.js';
+import '../../models/network_time_calculator/network_time_calculator.js';
 import './NetworkLogView.js';
 import './NetworkLogViewColumns.js';
 import './NetworkFrameGrouper.js';
@@ -38,7 +38,6 @@ import * as NetworkManageCustomHeadersView from './NetworkManageCustomHeadersVie
 import * as NetworkOverview from './NetworkOverview.js';
 import * as NetworkPanel from './NetworkPanel.js';
 import * as NetworkSearchScope from './NetworkSearchScope.js';
-import * as NetworkTimeCalculator from './NetworkTimeCalculator.js';
 import * as NetworkWaterfallColumn from './NetworkWaterfallColumn.js';
 import * as RequestCookiesView from './RequestCookiesView.js';
 import * as RequestHTMLView from './RequestHTMLView.js';
@@ -50,5 +49,5 @@ import * as RequestTimingView from './RequestTimingView.js';
 import * as ResourceDirectSocketChunkView from './ResourceDirectSocketChunkView.js';
 import * as ResourceWebSocketFrameView from './ResourceWebSocketFrameView.js';
 import * as SignedExchangeInfoView from './SignedExchangeInfoView.js';
-export { BinaryResourceView, BlockedURLsPane, EventSourceMessagesView, NetworkConfigView, NetworkDataGridNode, NetworkFrameGrouper, NetworkItemView, NetworkLogView, NetworkLogViewColumns, NetworkManageCustomHeadersView, NetworkOverview, NetworkPanel, NetworkSearchScope, NetworkTimeCalculator, NetworkWaterfallColumn, RequestCookiesView, RequestHTMLView, RequestInitiatorView, RequestPayloadView, RequestPreviewView, RequestResponseView, RequestTimingView, ResourceDirectSocketChunkView, ResourceWebSocketFrameView, SignedExchangeInfoView, };
+export { BinaryResourceView, BlockedURLsPane, EventSourceMessagesView, NetworkConfigView, NetworkDataGridNode, NetworkFrameGrouper, NetworkItemView, NetworkLogView, NetworkLogViewColumns, NetworkManageCustomHeadersView, NetworkOverview, NetworkPanel, NetworkSearchScope, NetworkWaterfallColumn, RequestCookiesView, RequestHTMLView, RequestInitiatorView, RequestPayloadView, RequestPreviewView, RequestResponseView, RequestTimingView, ResourceDirectSocketChunkView, ResourceWebSocketFrameView, SignedExchangeInfoView, };
 //# sourceMappingURL=network.prebundle.js.map

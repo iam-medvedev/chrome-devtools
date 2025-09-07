@@ -6,14 +6,11 @@ import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as ElementsPanel from '../../../panels/elements/elements.js';
-import * as UI from '../../../ui/legacy/legacy.js';
-import { html } from '../../../ui/lit/lit.js';
 import { ChangeManager } from '../ChangeManager.js';
 import { debugLog } from '../debug.js';
 import { EvaluateAction, formatError, SideEffectError } from '../EvaluateAction.js';
 import { ExtensionScope } from '../ExtensionScope.js';
-import { AI_ASSISTANCE_CSS_CLASS_NAME, FREESTYLER_WORLD_NAME } from '../injected.js';
+import { FREESTYLER_WORLD_NAME } from '../injected.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 /*
 * Strings that don't need to be translated at this time.
@@ -85,7 +82,7 @@ async function executeJsCode(functionDeclaration, { throwOnSideEffect, contextNo
     if (!contextNode) {
         throw new Error('Cannot execute JavaScript because of missing context node');
     }
-    const target = contextNode.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
+    const target = contextNode.domModel().target();
     if (!target) {
         throw new Error('Target is not found for executing code');
     }
@@ -130,13 +127,8 @@ export class NodeContext extends ConversationContext {
     getItem() {
         return this.#node;
     }
-    getIcon() {
-    }
-    getTitle(opts) {
-        const hiddenClassList = this.#node.classNames().filter(className => className.startsWith(AI_ASSISTANCE_CSS_CLASS_NAME));
-        const { DOMNodeLink } = ElementsPanel.DOMLinkifier;
-        const { widgetConfig } = UI.Widget;
-        return html `<devtools-widget .widgetConfig=${widgetConfig(DOMNodeLink, { node: this.#node, options: { hiddenClassList, disabled: opts.disabled } })}></devtools-widget>`;
+    getTitle() {
+        throw new Error('Not implemented');
     }
     async getSuggestions() {
         const layoutProps = await this.#node.domModel().cssModel().getLayoutPropertiesFromComputedStyle(this.#node.id);
@@ -181,6 +173,7 @@ export class NodeContext extends ConversationContext {
         return;
     }
 }
+const enableDedicatedStyleFunctions = false;
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -250,9 +243,93 @@ export class StylingAgent extends AiAgent {
         this.#changes = opts.changeManager || new ChangeManager();
         this.#execJs = opts.execJs ?? executeJsCode;
         this.#createExtensionScope = opts.createExtensionScope ?? ((changes) => {
-            return new ExtensionScope(changes, this.id);
+            return new ExtensionScope(changes, this.id, this.context?.getItem() ?? null);
         });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+        if (enableDedicatedStyleFunctions) {
+            this.declareFunction('getComputedStyles', {
+                description: 'Call this function to get the computed styles for the current or the parent element. Use executeJavaScript for more complex queries.',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: '',
+                    nullable: false,
+                    properties: {
+                        thought: {
+                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                            description: 'Explain why you want to get computed styles',
+                        },
+                        relations: {
+                            type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
+                            description: 'A list of relations describing which elements to query.',
+                            items: {
+                                type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                                description: 'Which element to query. Either \'currentElement\' or \'parentElement\'',
+                            }
+                        },
+                        properties: {
+                            type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
+                            description: 'One or more style property names to fetch',
+                            nullable: false,
+                            items: {
+                                type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                                description: 'A computed style property name to retrieve. For example, \'background-color\'.'
+                            }
+                        },
+                    }
+                },
+                displayInfoFromArgs: params => {
+                    return {
+                        title: 'Reading computed styles',
+                        thought: params.thought,
+                        action: `getComputedStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`,
+                    };
+                },
+                handler: async (params, options) => {
+                    return await this.getComputedStyles(params.relations, params.properties, options);
+                },
+            });
+            this.declareFunction('getAuthoredStyles', {
+                description: 'Call this function to get the styles as specified by the page author.',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: '',
+                    nullable: false,
+                    properties: {
+                        thought: {
+                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                            description: 'Explain why you want to get computed styles',
+                        },
+                        relations: {
+                            type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
+                            description: 'A list of relations describing which elements to query. Possible values: \'currentElement\', \'parentElement\'',
+                            items: {
+                                type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                                description: 'Which element to query. Either \'currentElement\' or \'parentElement\'',
+                            }
+                        },
+                        properties: {
+                            type: 5 /* Host.AidaClient.ParametersTypes.ARRAY */,
+                            description: 'One or more style property names to fetch',
+                            nullable: false,
+                            items: {
+                                type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                                description: 'A computed style property name to retrieve. For example, \'background-color\'.'
+                            }
+                        },
+                    }
+                },
+                displayInfoFromArgs: params => {
+                    return {
+                        title: 'Reading authored styles',
+                        thought: params.thought,
+                        action: `getAuthoredStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`,
+                    };
+                },
+                handler: async (params, options) => {
+                    return await this.getAuthoredStyles(params.relations, params.properties, options);
+                },
+            });
+        }
         this.declareFunction('executeJavaScript', {
             description: `This function allows you to run JavaScript code on the inspected page to access the element styles and page content.
 Call this function to gather additional information or modify the page state. Call this function enough times to investigate the user request.`,
@@ -411,7 +488,10 @@ const data = {
 }`;
         try {
             const result = await Promise.race([
-                this.#execJs(functionDeclaration, { throwOnSideEffect, contextNode: this.context?.getItem() || null }),
+                this.#execJs(functionDeclaration, {
+                    throwOnSideEffect,
+                    contextNode: this.context?.getItem() || null,
+                }),
                 new Promise((_, reject) => {
                     setTimeout(() => reject(new Error('Script execution exceeded the maximum allowed time.')), OBSERVATION_TIMEOUT);
                 }),
@@ -516,6 +596,71 @@ const data = {
         }
         return output.trim();
     }
+    #getSelectedNode() {
+        return this.context?.getItem() ?? null;
+    }
+    async getComputedStyles(relations, properties, _options) {
+        const result = {};
+        for (const relation of relations) {
+            result[relation] = {};
+            debugLog(`Action to execute: ${relation}`);
+            let selectedNode = this.#getSelectedNode();
+            if (!selectedNode) {
+                return { error: 'Error: Could not find the currently selected element.' };
+            }
+            if (relation === 'parentElement') {
+                selectedNode = selectedNode.parentNode;
+            }
+            if (!selectedNode) {
+                return { error: 'Error: Could not find the parent element.' };
+            }
+            const styles = await selectedNode.domModel().cssModel().getComputedStyle(selectedNode.id);
+            if (!styles) {
+                return { error: 'Error: Could not get computed styles.' };
+            }
+            for (const prop of properties) {
+                result[relation][prop] = styles.get(prop);
+            }
+        }
+        return {
+            result: JSON.stringify(result, null, 2),
+        };
+    }
+    async getAuthoredStyles(relations, properties, _options) {
+        const result = {};
+        for (const relation of relations) {
+            result[relation] = {};
+            debugLog(`Action to execute: ${relation}`);
+            let selectedNode = this.#getSelectedNode();
+            if (!selectedNode) {
+                return { error: 'Error: Could not find the currently selected element.' };
+            }
+            if (relation === 'parentElement') {
+                selectedNode = selectedNode.parentNode;
+            }
+            if (!selectedNode) {
+                return { error: 'Error: Could not find the parent element.' };
+            }
+            const matchedStyles = await selectedNode.domModel().cssModel().getMatchedStyles(selectedNode.id);
+            if (!matchedStyles) {
+                return { error: 'Error: Could not get computed styles.' };
+            }
+            for (const style of matchedStyles.nodeStyles()) {
+                for (const property of style.allProperties()) {
+                    if (!properties.includes(property.name)) {
+                        continue;
+                    }
+                    const state = matchedStyles.propertyState(property);
+                    if (state === "Active" /* SDK.CSSMatchedStyles.PropertyState.ACTIVE */) {
+                        result[relation][property.name] = property.value;
+                    }
+                }
+            }
+        }
+        return {
+            result: JSON.stringify(result, null, 2),
+        };
+    }
     async executeAction(action, options) {
         debugLog(`Action to execute: ${action}`);
         if (options?.approved === false) {
@@ -528,9 +673,12 @@ const data = {
                 error: 'Error: JavaScript execution is currently disabled.',
             };
         }
-        const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
-        const target = selectedNode?.domModel().target() ?? UI.Context.Context.instance().flavor(SDK.Target.Target);
-        if (target?.model(SDK.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
+        const selectedNode = this.#getSelectedNode();
+        if (!selectedNode) {
+            return { error: 'Error: no selected node found.' };
+        }
+        const target = selectedNode.domModel().target();
+        if (target.model(SDK.DebuggerModel.DebuggerModel)?.selectedCallFrame()) {
             return {
                 error: 'Error: Cannot evaluate JavaScript because the execution is paused on a breakpoint.',
             };

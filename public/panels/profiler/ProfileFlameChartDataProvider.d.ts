@@ -30,6 +30,7 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import type * as CPUProfile from '../../models/cpu_profile/cpu_profile.js';
+import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
@@ -88,7 +89,7 @@ export declare class ProfileFlameChart extends ProfileFlameChart_base implements
     supportsCaseSensitiveSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
-export declare class OverviewCalculator implements PerfUI.TimelineGrid.Calculator {
+export declare class OverviewCalculator implements NetworkTimeCalculator.Calculator {
     readonly formatter: (arg0: number, arg1?: number | undefined) => string;
     minimumBoundaries: number;
     maximumBoundaries: number;

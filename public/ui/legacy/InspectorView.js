@@ -131,8 +131,20 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/InspectorView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let inspectorViewInstance = null;
+const MIN_MAIN_PANEL_WIDTH = 240;
+const MIN_VERTICAL_DRAWER_WIDTH = 200;
+// Inspector need to have space for both main panel and the drawer + some slack for borders
+const MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER = 250;
+const MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER = 450;
+const MIN_INSPECTOR_HEIGHT = 72;
+export var DrawerOrientation;
+(function (DrawerOrientation) {
+    DrawerOrientation["VERTICAL"] = "vertical";
+    DrawerOrientation["HORIZONTAL"] = "horizontal";
+    DrawerOrientation["UNSET"] = "unset";
+})(DrawerOrientation || (DrawerOrientation = {}));
 export class InspectorView extends VBox {
-    drawerIsVerticalSetting;
+    drawerOrientationSetting;
     drawerSplitWidget;
     tabDelegate;
     drawerTabbedLocation;
@@ -151,12 +163,12 @@ export class InspectorView extends VBox {
     constructor() {
         super();
         GlassPane.setContainer(this.element);
-        this.setMinimumSize(250, 72);
+        this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
         // DevTools sidebar is a vertical split of main tab bar panels and a drawer.
-        this.drawerIsVerticalSetting =
-            Common.Settings.Settings.instance().createSetting('inspector.use-vertical-drawer-orientation', false);
-        this.drawerSplitWidget =
-            new SplitWidget(this.drawerIsVerticalSetting.get(), true, 'inspector.drawer-split-view-state', 200, 200);
+        this.drawerOrientationSetting =
+            Common.Settings.Settings.instance().createSetting('inspector.drawer-orientation', DrawerOrientation.UNSET);
+        const isVertical = this.drawerOrientationSetting.get() === DrawerOrientation.VERTICAL;
+        this.drawerSplitWidget = new SplitWidget(isVertical, true, 'inspector.drawer-split-view-state', 200, 200);
         this.drawerSplitWidget.hideSidebar();
         this.drawerSplitWidget.enableShowModeSaving();
         this.drawerSplitWidget.show(this.element);
@@ -169,7 +181,7 @@ export class InspectorView extends VBox {
         const moreTabsButton = this.drawerTabbedLocation.enableMoreTabsButton();
         moreTabsButton.setTitle(i18nString(UIStrings.moreTools));
         this.drawerTabbedPane = this.drawerTabbedLocation.tabbedPane();
-        this.setDrawerMinimumSize();
+        this.setDrawerRelatedMinimumSizes();
         this.drawerTabbedPane.element.classList.add('drawer-tabbed-pane');
         this.drawerTabbedPane.element.setAttribute('jslog', `${VisualLogging.drawer()}`);
         const closeDrawerButton = new ToolbarButton(i18nString(UIStrings.closeDrawer), 'cross');
@@ -178,7 +190,7 @@ export class InspectorView extends VBox {
         this.#toggleOrientationButton = new ToolbarButton(i18nString(UIStrings.toggleDrawerOrientation), this.drawerSplitWidget.isVertical() ? 'dock-bottom' : 'dock-right');
         this.#toggleOrientationButton.element.setAttribute('jslog', `${VisualLogging.toggle().track({ click: true })}`);
         this.#toggleOrientationButton.element.setAttribute('jslogcontext', 'toggle-drawer-orientation');
-        this.#toggleOrientationButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, this.toggleDrawerOrientation, this);
+        this.#toggleOrientationButton.addEventListener("Click" /* ToolbarButton.Events.CLICK */, () => this.toggleDrawerOrientation(), this);
         this.drawerTabbedPane.addEventListener(TabbedPaneEvents.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
         const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
         if (this.drawerSplitWidget.showMode() !== "OnlyMain" /* ShowMode.ONLY_MAIN */ && selectedDrawerTab) {
@@ -201,6 +213,7 @@ export class InspectorView extends VBox {
         // Create main area tabbed pane.
         this.tabbedLocation = ViewManager.instance().createTabbedLocation(Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront.bind(Host.InspectorFrontendHost.InspectorFrontendHostInstance), 'panel', true, true, Root.Runtime.Runtime.queryParam('panel'));
         this.tabbedPane = this.tabbedLocation.tabbedPane();
+        this.tabbedPane.setMinimumSize(MIN_MAIN_PANEL_WIDTH, 0);
         this.tabbedPane.element.classList.add('main-tabbed-pane');
         // The 'Inspect element' and 'Device mode' buttons in the tabs toolbar takes longer to load than
         // the tabs themselves, so a space equal to the buttons' total width is preemptively allocated
@@ -373,22 +386,33 @@ export class InspectorView extends VBox {
         this.emitDrawerChangeEvent(false);
         ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.drawerHidden));
     }
-    toggleDrawerOrientation() {
-        const drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
+    toggleDrawerOrientation({ force } = {}) {
+        let drawerWillBeVertical;
+        if (force) {
+            drawerWillBeVertical = force === DrawerOrientation.VERTICAL;
+        }
+        else {
+            drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
+        }
+        this.drawerOrientationSetting.set(drawerWillBeVertical ? DrawerOrientation.VERTICAL : DrawerOrientation.HORIZONTAL);
         this.#toggleOrientationButton.setGlyph(drawerWillBeVertical ? 'dock-bottom' : 'dock-right');
-        this.drawerIsVerticalSetting.set(drawerWillBeVertical);
         this.drawerSplitWidget.setVertical(drawerWillBeVertical);
-        this.setDrawerMinimumSize();
+        this.setDrawerRelatedMinimumSizes();
     }
-    setDrawerMinimumSize() {
+    isUserExplicitlyUpdatedDrawerOrientation() {
+        return this.drawerOrientationSetting.get() !== DrawerOrientation.UNSET;
+    }
+    setDrawerRelatedMinimumSizes() {
         const drawerIsVertical = this.drawerSplitWidget.isVertical();
         if (drawerIsVertical) {
             // Set minimum size when the drawer is vertical to ensure the buttons will always be
             // visible during resizing.
-            this.drawerTabbedPane.setMinimumSize(200, 27);
+            this.drawerTabbedPane.setMinimumSize(MIN_VERTICAL_DRAWER_WIDTH, 27);
+            this.setMinimumSize(MIN_INSPECTOR_WIDTH_VERTICAL_DRAWER, MIN_INSPECTOR_HEIGHT);
         }
         else {
             this.drawerTabbedPane.setMinimumSize(0, 27);
+            this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
         }
     }
     setDrawerMinimized(minimized) {

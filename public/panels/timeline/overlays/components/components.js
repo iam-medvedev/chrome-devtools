@@ -1018,7 +1018,7 @@ var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
       onLearnMoreClick: () => {
         UI.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/performance/annotations#auto-annotations");
       },
-      learnMoreButtonTitle: UIStringsNotTranslate.learnMoreButton
+      learnMoreButtonText: UIStringsNotTranslate.learnMoreButton
     });
     this.dispatchEvent(new LabelAnnotationsConsentDialogVisibilityChange(false));
     if (userConsented) {

@@ -31,6 +31,7 @@
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import layers3DViewStyles from './layers3DView.css.js';
@@ -303,7 +304,7 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
             .translate(-baseWidth / 2, -baseHeight / 2, 0);
         let bounds;
         for (let i = 0; i < this.rects.length; ++i) {
-            bounds = UI.Geometry.boundsForTransformedPoints(scaleAndRotationMatrix, this.rects[i].vertices, bounds);
+            bounds = Geometry.boundsForTransformedPoints(scaleAndRotationMatrix, this.rects[i].vertices, bounds);
         }
         if (bounds) {
             this.transformController.clampOffsets((paddingX - bounds.maxX) / window.devicePixelRatio, (canvasWidth - paddingX - bounds.minX) / window.devicePixelRatio, (paddingY - bounds.maxY) / window.devicePixelRatio, (canvasHeight - paddingY - bounds.minY) / window.devicePixelRatio);
@@ -1046,10 +1047,10 @@ export class Rectangle {
         // Vertices of the quad with transform matrix applied
         const points = [];
         for (i = 0; i < 4; ++i) {
-            points[i] = UI.Geometry.multiplyVectorByMatrixAndNormalize(new UI.Geometry.Vector(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]), matrix);
+            points[i] = Geometry.multiplyVectorByMatrixAndNormalize(new Geometry.Vector(this.vertices[i * 3], this.vertices[i * 3 + 1], this.vertices[i * 3 + 2]), matrix);
         }
         // Calculating quad plane normal
-        const normal = UI.Geometry.crossProduct(UI.Geometry.subtract(points[1], points[0]), UI.Geometry.subtract(points[2], points[1]));
+        const normal = Geometry.crossProduct(Geometry.subtract(points[1], points[0]), Geometry.subtract(points[2], points[1]));
         // General form of the equation of the quad plane: A * x + B * y + C * z + D = 0
         const A = normal.x;
         const B = normal.y;
@@ -1058,13 +1059,13 @@ export class Rectangle {
         // Finding t from the equation
         const t = -(D + A * x0 + B * y0) / C;
         // Point of the intersection
-        const pt = new UI.Geometry.Vector(x0, y0, t);
+        const pt = new Geometry.Vector(x0, y0, t);
         // Vectors from the intersection point to vertices of the quad
-        const tVects = points.map(UI.Geometry.subtract.bind(null, pt));
+        const tVects = points.map(Geometry.subtract.bind(null, pt));
         // Intersection point lies inside of the polygon if scalar products of normal of the plane and
         // cross products of successive tVects are all nonstrictly above or all nonstrictly below zero
         for (i = 0; i < tVects.length; ++i) {
-            const product = UI.Geometry.scalarProduct(normal, UI.Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
+            const product = Geometry.scalarProduct(normal, Geometry.crossProduct(tVects[i], tVects[(i + 1) % tVects.length]));
             if (product < 0) {
                 return undefined;
             }

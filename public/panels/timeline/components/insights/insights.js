@@ -345,7 +345,7 @@ var BaseInsightComponent = class extends HTMLElement {
   #insightsAskAiEnabled = false;
   #selected = false;
   #model = null;
-  #parsedTrace = null;
+  #agentFocus = null;
   #fieldMetrics = null;
   get model() {
     return this.#model;
@@ -401,8 +401,8 @@ var BaseInsightComponent = class extends HTMLElement {
     this.data.bounds = bounds;
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
-  set parsedTrace(parsedTrace) {
-    this.#parsedTrace = parsedTrace;
+  set agentFocus(agentFocus) {
+    this.#agentFocus = agentFocus;
   }
   set fieldMetrics(fieldMetrics) {
     this.#fieldMetrics = fieldMetrics;
@@ -555,15 +555,14 @@ var BaseInsightComponent = class extends HTMLElement {
     return null;
   }
   #askAIButtonClick() {
-    if (!this.#model || !this.#parsedTrace || !this.data.bounds) {
+    if (!this.#agentFocus) {
       return;
     }
     const actionId = "drjones.performance-insight-context";
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    const context = Utils.AIContext.AgentFocus.fromInsight(this.#parsedTrace, this.#model, this.data.bounds);
-    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, context);
+    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, this.#agentFocus);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
   }
@@ -1307,15 +1306,7 @@ var CLSCulprits = class extends BaseInsightComponent {
     if (!this.model) {
       return [];
     }
-    const overlays = this.model.createOverlays?.();
-    if (!overlays) {
-      return [];
-    }
-    const timespanOverlaySection = overlays.find((overlay) => overlay.type === "TIMESPAN_BREAKDOWN")?.sections[0];
-    if (timespanOverlaySection) {
-      timespanOverlaySection.label = html8`<div>${i18nString5(UIStrings5.worstLayoutShiftCluster)}</div>`;
-    }
-    return overlays;
+    return this.model.createOverlays?.() ?? [];
   }
   #clickEvent(event) {
     this.dispatchEvent(new EventReferenceClick(event));
@@ -1639,6 +1630,9 @@ var FontDisplay = class extends BaseInsightComponent {
   static litTagName = Lit12.StaticHtml.literal`devtools-performance-font-display`;
   internalName = "font-display";
   #overlayForRequest = /* @__PURE__ */ new Map();
+  hasAskAiSupport() {
+    return true;
+  }
   createOverlays() {
     this.#overlayForRequest.clear();
     if (!this.model) {
@@ -1706,6 +1700,9 @@ var { html: html13, nothing: nothing11 } = Lit13;
 var ForcedReflow = class extends BaseInsightComponent {
   static litTagName = Lit13.StaticHtml.literal`devtools-performance-forced-reflow`;
   internalName = "forced-reflow";
+  hasAskAiSupport() {
+    return true;
+  }
   mapToRow(data) {
     return {
       values: [this.#linkifyUrl(data.bottomUpData)],
@@ -2030,7 +2027,7 @@ var LCPDiscovery = class extends BaseInsightComponent {
     }
     const timespanOverlaySection = overlays.find((overlay) => overlay.type === "TIMESPAN_BREAKDOWN")?.sections[0];
     if (timespanOverlaySection) {
-      timespanOverlaySection.label = html17`<div class="discovery-delay"> ${this.#renderDiscoveryDelay(imageResults.discoveryDelay)}</div>`;
+      timespanOverlaySection.label = this.#renderDiscoveryDelay(imageResults.discoveryDelay);
     }
     return overlays;
   }
@@ -2540,6 +2537,9 @@ var SlowCSSSelector = class extends BaseInsightComponent {
   static litTagName = Lit22.StaticHtml.literal`devtools-performance-slow-css-selector`;
   internalName = "slow-css-selector";
   #selectorLocations = /* @__PURE__ */ new Map();
+  hasAskAiSupport() {
+    return true;
+  }
   async toSourceFileLocation(cssModel, selector) {
     if (!cssModel) {
       return void 0;
@@ -2689,6 +2689,9 @@ var ThirdParties = class extends BaseInsightComponent {
       };
     }
   };
+  hasAskAiSupport() {
+    return true;
+  }
   renderContent() {
     if (!this.model) {
       return Lit23.nothing;

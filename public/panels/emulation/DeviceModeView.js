@@ -7,6 +7,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { DeviceModeToolbar } from './DeviceModeToolbar.js';
@@ -191,7 +192,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     onResizeStart() {
         this.slowPositionStart = null;
         const rect = this.model.screenRect();
-        this.resizeStart = new UI.Geometry.Size(rect.width, rect.height);
+        this.resizeStart = new Geometry.Size(rect.width, rect.height);
     }
     onResizeUpdate(widthFactor, heightFactor, event) {
         if (event.data.shiftKey !== Boolean(this.slowPositionStart)) {
@@ -351,14 +352,14 @@ export class DeviceModeView extends UI.Widget.VBox {
         }
         const zoomFactor = UI.ZoomManager.ZoomManager.instance().zoomFactor();
         const rect = element.getBoundingClientRect();
-        const availableSize = new UI.Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
+        const availableSize = new Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
         this.model.setAvailableSize(availableSize, availableSize);
     }
     contentAreaResized() {
         const zoomFactor = UI.ZoomManager.ZoomManager.instance().zoomFactor();
         const rect = this.contentArea.getBoundingClientRect();
-        const availableSize = new UI.Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
-        const preferredSize = new UI.Geometry.Size(Math.max((rect.width - 2 * (this.handleWidth || 0)) * zoomFactor, 1), Math.max((rect.height - (this.handleHeight || 0)) * zoomFactor, 1));
+        const availableSize = new Geometry.Size(Math.max(rect.width * zoomFactor, 1), Math.max(rect.height * zoomFactor, 1));
+        const preferredSize = new Geometry.Size(Math.max((rect.width - 2 * (this.handleWidth || 0)) * zoomFactor, 1), Math.max((rect.height - (this.handleHeight || 0)) * zoomFactor, 1));
         this.model.setAvailableSize(availableSize, preferredSize);
     }
     measureHandles() {

@@ -2022,7 +2022,7 @@ export const NativeFunctions = [
     },
     {
         name: "read",
-        signatures: [["?formats"]],
+        signatures: [["?options"]],
         receivers: ["Clipboard"]
     },
     {
@@ -6080,10 +6080,6 @@ export const NativeFunctions = [
         receivers: ["Navigation"]
     },
     {
-        name: "AnimationTrigger",
-        signatures: [["?options"]]
-    },
-    {
         name: "addAnimation",
         signatures: [["animation"]]
     },
@@ -6105,6 +6101,10 @@ export const NativeFunctions = [
     },
     {
         name: "ScrollTimeline",
+        signatures: [["?options"]]
+    },
+    {
+        name: "TimelineTrigger",
         signatures: [["?options"]]
     },
     {
@@ -7583,11 +7583,11 @@ export const NativeFunctions = [
     },
     {
         name: "drawElement",
-        signatures: [["element", "x", "y", "?options"], ["element", "x", "y", "dwidth", "dheight", "?options"]]
+        signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
     },
     {
         name: "drawHTMLElement",
-        signatures: [["element", "x", "y", "?options"], ["element", "x", "y", "dwidth", "dheight", "?options"]]
+        signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
     },
     {
         name: "setHitTestRegions",

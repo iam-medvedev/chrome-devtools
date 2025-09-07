@@ -1,7 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
-import * as UI from '../../ui/legacy/legacy.js';
+import * as Geometry from '../geometry/geometry.js';
 import { type EmulatedDevice, type Mode } from './EmulatedDevices.js';
 export declare class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SDK.TargetManager.SDKModelObserver<SDK.EmulationModel.EmulationModel> {
     #private;
@@ -32,7 +32,7 @@ export declare class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper<
         errorMessage: (string | undefined);
     };
     get scaleSettingInternal(): Common.Settings.Setting<number>;
-    setAvailableSize(availableSize: UI.Geometry.Size, preferredSize: UI.Geometry.Size): void;
+    setAvailableSize(availableSize: Geometry.Size, preferredSize: Geometry.Size): void;
     emulate(type: Type, device: EmulatedDevice | null, mode: Mode | null, scale?: number): void;
     setWidth(width: number): void;
     setWidthAndScaleToFit(width: number): void;
@@ -49,7 +49,7 @@ export declare class DeviceModeModel extends Common.ObjectWrapper.ObjectWrapper<
     visiblePageRect(): Rect;
     scale(): number;
     fitScale(): number;
-    appliedDeviceSize(): UI.Geometry.Size;
+    appliedDeviceSize(): Geometry.Size;
     appliedDeviceScaleFactor(): number;
     appliedUserAgentType(): UA;
     isFullHeight(): boolean;

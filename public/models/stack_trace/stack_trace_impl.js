@@ -66,12 +66,14 @@ var FrameImpl = class {
   name;
   line;
   column;
-  constructor(url, uiSourceCode, name, line, column) {
+  missingDebugInfo;
+  constructor(url, uiSourceCode, name, line, column, missingDebugInfo) {
     this.url = url;
     this.uiSourceCode = uiSourceCode;
     this.name = name;
     this.line = line;
     this.column = column;
+    this.missingDebugInfo = missingDebugInfo;
   }
 };
 
@@ -247,7 +249,7 @@ var StackTraceModel = class _StackTraceModel extends SDK.SDKModel.SDKModel {
     console.assert(rawFrames.length === uiFrames.length, "Broken rawFramesToUIFrames implementation");
     let i = 0;
     for (const node of fragment.node.getCallStack()) {
-      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column));
+      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo));
     }
   }
   #affectedFragments(script) {

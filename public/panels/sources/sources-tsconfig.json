@@ -103,6 +103,9 @@
       "path": "../../models/formatter/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/geometry/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/issues_manager/bundle-tsconfig.json"
     },
     {

@@ -72,12 +72,12 @@ export declare class BottomUpTreeMatching extends TreeWalker {
     matchText(node: CodeMirror.SyntaxNode): void;
     hasMatches(...matchTypes: Array<Platform.Constructor.Constructor<Match>>): boolean;
     getMatch(node: CodeMirror.SyntaxNode): Match | undefined;
-    hasUnresolvedVars(node: CodeMirror.SyntaxNode): boolean;
-    hasUnresolvedVarsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
+    hasUnresolvedSubstitutions(node: CodeMirror.SyntaxNode): boolean;
+    hasUnresolvedSubstitutionsRange(from: CodeMirror.SyntaxNode, to: CodeMirror.SyntaxNode): boolean;
     getComputedText(node: CodeMirror.SyntaxNode, substitutionHook?: (match: Match) => string | null): string;
     getLonghandValuesCount(): number;
     getComputedLonghandName(to: CodeMirror.SyntaxNode): number;
-    getComputedPropertyValueText(): string;
+    getComputedPropertyValueText(substitutionHook?: (match: Match) => string | null): string;
     getComputedTextRange(from: CodeMirror.SyntaxNode | undefined, to: CodeMirror.SyntaxNode | undefined, substitutionHook?: (match: Match) => string | null): string;
 }
 export declare class ComputedText {
@@ -87,7 +87,7 @@ export declare class ComputedText {
     clear(): void;
     get chunkCount(): number;
     push(match: Match, offset: number): void;
-    hasUnresolvedVars(begin: number, end: number): boolean;
+    hasUnresolvedSubstitutions(begin: number, end: number): boolean;
     get(begin: number, end: number, substitutionHook?: (match: Match) => string | null): string;
     countTopLevelValues(begin: number, end: number): number;
 }

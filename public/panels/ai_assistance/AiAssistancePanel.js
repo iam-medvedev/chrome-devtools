@@ -17,6 +17,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../network/forward/forward.js';
+import * as NetworkPanel from '../network/network.js';
 import * as TimelinePanel from '../timeline/timeline.js';
 import * as TimelineUtils from '../timeline/utils/utils.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
@@ -364,7 +365,8 @@ function createRequestContext(request) {
     if (!request) {
         return null;
     }
-    return new AiAssistanceModel.RequestContext(request);
+    const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
+    return new AiAssistanceModel.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
     if (!focus) {
@@ -661,7 +663,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#selectedRequest?.getItem() === ev.data) {
             return;
         }
-        this.#selectedRequest = Boolean(ev.data) ? new AiAssistanceModel.RequestContext(ev.data) : null;
+        if (Boolean(ev.data)) {
+            const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
+            this.#selectedRequest = new AiAssistanceModel.RequestContext(ev.data, calculator);
+        }
+        else {
+            this.#selectedRequest = null;
+        }
         this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handlePerformanceTraceFlavorChange = (ev) => {
@@ -1435,6 +1443,7 @@ export class ActionDelegate {
         switch (actionId) {
             case 'freestyler.elements-floating-button':
             case 'freestyler.element-panel-context':
+            case 'freestyler.main-menu':
             case 'drjones.network-floating-button':
             case 'drjones.network-panel-context':
             case 'drjones.performance-panel-full-context':

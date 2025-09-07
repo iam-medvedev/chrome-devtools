@@ -1499,6 +1499,8 @@ export declare namespace Autofill {
     interface AddressField {
         /**
          * address field name, for example GIVEN_NAME.
+         * The full list of supported field names:
+         * https://source.chromium.org/chromium/chromium/src/+/main:components/autofill/core/browser/field_types.cc;l=38
          */
         name: string;
         /**
@@ -1584,9 +1586,13 @@ export declare namespace Autofill {
          */
         frameId?: Page.FrameId;
         /**
-         * Credit card information to fill out the form. Credit card data is not saved.
+         * Credit card information to fill out the form. Credit card data is not saved.  Mutually exclusive with `address`.
          */
-        card: CreditCard;
+        card?: CreditCard;
+        /**
+         * Address to fill out the form. Address data is not saved. Mutually exclusive with `card`.
+         */
+        address?: Address;
     }
     interface SetAddressesRequest {
         addresses: Address[];
@@ -10357,6 +10363,12 @@ export declare namespace Network {
          */
         status: IpProxyStatus;
     }
+    interface SetIPProtectionProxyBypassEnabledRequest {
+        /**
+         * Whether IP Proxy is being bypassed by devtools; false by default.
+         */
+        enabled: boolean;
+    }
     interface SetAcceptedEncodingsRequest {
         /**
          * List of accepted content encodings.
@@ -12535,6 +12547,7 @@ export declare namespace Page {
         DigitalCredentialsCreate = "digital-credentials-create",
         DigitalCredentialsGet = "digital-credentials-get",
         DirectSockets = "direct-sockets",
+        DirectSocketsMulticast = "direct-sockets-multicast",
         DirectSocketsPrivate = "direct-sockets-private",
         DisplayCapture = "display-capture",
         DocumentDomain = "document-domain",
@@ -13375,9 +13388,9 @@ export declare namespace Page {
         IndexedDBEvent = "IndexedDBEvent",
         Dummy = "Dummy",
         JsNetworkRequestReceivedCacheControlNoStoreResource = "JsNetworkRequestReceivedCacheControlNoStoreResource",
-        WebRTCSticky = "WebRTCSticky",
-        WebTransportSticky = "WebTransportSticky",
-        WebSocketSticky = "WebSocketSticky",
+        WebRTCUsedWithCCNS = "WebRTCUsedWithCCNS",
+        WebTransportUsedWithCCNS = "WebTransportUsedWithCCNS",
+        WebSocketUsedWithCCNS = "WebSocketUsedWithCCNS",
         SmartCard = "SmartCard",
         LiveMediaStreamTrack = "LiveMediaStreamTrack",
         UnloadHandler = "UnloadHandler",

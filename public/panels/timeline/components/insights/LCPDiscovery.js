@@ -32,8 +32,7 @@ export class LCPDiscovery extends BaseInsightComponent {
         }
         const timespanOverlaySection = overlays.find(overlay => overlay.type === 'TIMESPAN_BREAKDOWN')?.sections[0];
         if (timespanOverlaySection) {
-            timespanOverlaySection.label =
-                html `<div class="discovery-delay"> ${this.#renderDiscoveryDelay(imageResults.discoveryDelay)}</div>`;
+            timespanOverlaySection.label = this.#renderDiscoveryDelay(imageResults.discoveryDelay);
         }
         return overlays;
     }

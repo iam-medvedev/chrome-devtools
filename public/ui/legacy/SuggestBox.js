@@ -30,9 +30,9 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as ARIAUtils from './ARIAUtils.js';
-import { Size } from './Geometry.js';
 import { GlassPane } from './GlassPane.js';
 import { ListControl, ListMode } from './ListControl.js';
 import { ListModel } from './ListModel.js';
@@ -96,7 +96,7 @@ export class SuggestBox {
         const maxWidth = this.maxWidth(items);
         const length = this.maxItemsHeight ? Math.min(this.maxItemsHeight, items.length) : items.length;
         const maxHeight = length * this.rowHeight;
-        this.glassPane.setMaxContentSize(new Size(maxWidth, maxHeight));
+        this.glassPane.setMaxContentSize(new Geometry.Size(maxWidth, maxHeight));
     }
     maxWidth(items) {
         const kMaxWidth = 300;

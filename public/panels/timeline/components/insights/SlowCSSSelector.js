@@ -15,6 +15,9 @@ export class SlowCSSSelector extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-slow-css-selector`;
     internalName = 'slow-css-selector';
     #selectorLocations = new Map();
+    hasAskAiSupport() {
+        return true;
+    }
     async toSourceFileLocation(cssModel, selector) {
         if (!cssModel) {
             return undefined;

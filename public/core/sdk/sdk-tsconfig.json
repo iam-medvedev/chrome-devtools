@@ -101,6 +101,7 @@
     "../../../../../../front_end/core/sdk/ServiceWorkerCacheModel.ts",
     "../../../../../../front_end/core/sdk/ServiceWorkerManager.ts",
     "../../../../../../front_end/core/sdk/SourceMap.ts",
+    "../../../../../../front_end/core/sdk/SourceMapCache.ts",
     "../../../../../../front_end/core/sdk/SourceMapFunctionRanges.ts",
     "../../../../../../front_end/core/sdk/SourceMapManager.ts",
     "../../../../../../front_end/core/sdk/SourceMapScopeChainEntry.ts",

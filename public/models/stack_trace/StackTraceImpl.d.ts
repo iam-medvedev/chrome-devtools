@@ -31,5 +31,6 @@ export declare class FrameImpl implements StackTrace.StackTrace.Frame {
     readonly name?: string;
     readonly line: number;
     readonly column: number;
-    constructor(url: string | undefined, uiSourceCode: Workspace.UISourceCode.UISourceCode | undefined, name: string | undefined, line: number, column: number);
+    readonly missingDebugInfo?: StackTrace.StackTrace.MissingDebugInfo;
+    constructor(url: string | undefined, uiSourceCode: Workspace.UISourceCode.UISourceCode | undefined, name: string | undefined, line: number, column: number, missingDebugInfo?: StackTrace.StackTrace.MissingDebugInfo);
 }

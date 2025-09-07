@@ -1,8 +1,6 @@
 // Copyright 2023 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-import highlightingStyles from './highlighting.css.js';
 export class RangeWalker {
     root;
     #offset = 0;
@@ -53,15 +51,15 @@ export class RangeWalker {
         return range;
     }
 }
-export const HIGHLIGHT_REGISTRY = 'search-highlight';
+export const HIGHLIGHT_REGISTRY = 'highlighted-search-result';
+export const CURRENT_HIGHLIGHT_REGISTRY = 'current-search-result';
 let highlightManagerInstance;
 export class HighlightManager {
     #highlights = new Highlight();
+    #currentHighlights = new Highlight();
     constructor() {
-        const styleElement = document.createElement('style');
-        styleElement.textContent = highlightingStyles;
-        document.head.appendChild(styleElement);
         CSS.highlights.set(HIGHLIGHT_REGISTRY, this.#highlights);
+        CSS.highlights.set(CURRENT_HIGHLIGHT_REGISTRY, this.#currentHighlights);
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -76,17 +74,29 @@ export class HighlightManager {
     removeHighlights(ranges) {
         ranges.forEach(this.removeHighlight.bind(this));
     }
+    addCurrentHighlight(range) {
+        this.#currentHighlights.add(range);
+    }
+    addCurrentHighlights(ranges) {
+        ranges.forEach(this.addCurrentHighlight.bind(this));
+    }
     addHighlight(range) {
         this.#highlights.add(range);
     }
     removeHighlight(range) {
         this.#highlights.delete(range);
+        this.#currentHighlights.delete(range);
     }
-    highlightOrderedTextRanges(root, sourceRanges) {
+    highlightOrderedTextRanges(root, sourceRanges, isCurrent = false) {
         const rangeWalker = new RangeWalker(root);
         const ranges = sourceRanges.map(range => rangeWalker.nextRange(range.offset, range.length))
             .filter((r) => r !== null && !r.collapsed);
-        this.addHighlights(ranges);
+        if (isCurrent) {
+            this.addCurrentHighlights(ranges);
+        }
+        else {
+            this.addHighlights(ranges);
+        }
         return ranges;
     }
 }

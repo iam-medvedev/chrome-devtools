@@ -275,7 +275,7 @@ describeWithMockConnection('ConversationHandler', () => {
             assert.strictEqual(response.value.message, explanation);
             sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
         });
-        it('handles performance insight requests with an insight title', async function () {
+        it('handles performance requests', async function () {
             const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
                 aidaClient: mockAidaClient([[{ explanation }]]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
@@ -287,27 +287,13 @@ describeWithMockConnection('ConversationHandler', () => {
             Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: false, traceModel });
             const generator = await conversationHandler.handleExternalRequest({
                 prompt: 'Please help me debug this problem',
-                conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */,
-                insightTitle: 'LCP breakdown',
-                traceModel,
+                conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */,
+                data: Timeline.TimelinePanel.TimelinePanel.instance().getOrCreateExternalAIConversationData(),
             });
             let response = await generator.next();
-            assert.strictEqual(response.value.message, 'Analyzing insight: LCP breakdown');
+            assert.strictEqual(response.value.message, 'Analyzing trace');
             response = await generator.next();
             assert.strictEqual(response.value.message, explanation);
-        });
-        it('errors for performance insight requests with no insightTitle', async () => {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
-                aidaClient: mockAidaClient([[{ explanation }]]),
-                aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
-            });
-            const generator = await conversationHandler.handleExternalRequest({
-                prompt: 'Please help me debug this problem',
-                conversationType: "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */
-            });
-            const response = await generator.next();
-            assert.strictEqual(response.value.type, 'error');
-            assert.strictEqual(response.value.message, 'The insightTitle parameter is required for debugging a Performance Insight.');
         });
     });
 });

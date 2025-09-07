@@ -392,13 +392,13 @@ export declare const NotRestoredReasonDescription: {
     CookieDisabled: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
-    WebRTCSticky: {
+    WebRTCUsedWithCCNS: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
-    WebTransportSticky: {
+    WebTransportUsedWithCCNS: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
-    WebSocketSticky: {
+    WebSocketUsedWithCCNS: {
         name: () => import("../../../core/platform/UIString.js").LocalizedString;
     };
     HTTPAuthRequired: {

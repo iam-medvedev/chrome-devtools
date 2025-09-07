@@ -1476,6 +1476,7 @@ import * as Common7 from "./../../core/common/common.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined } from "./../../core/platform/platform.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
+import * as StackTrace from "./../stack_trace/stack_trace.js";
 import * as TextUtils5 from "./../text_utils/text_utils.js";
 import * as Workspace11 from "./../workspace/workspace.js";
 var UIStrings2 = {
@@ -2095,8 +2096,55 @@ var DebuggerLanguagePluginManager = class {
     }
     return ranges;
   }
-  async translateRawFramesStep(_rawFrames, _translatedFrames, _target) {
-    return false;
+  async translateRawFramesStep(rawFrames, translatedFrames, target) {
+    const frame = rawFrames[0];
+    const script = target.model(SDK7.DebuggerModel.DebuggerModel)?.scriptForId(frame.scriptId ?? "");
+    if (!script) {
+      return false;
+    }
+    const functionInfo = await this.getFunctionInfo(script, frame);
+    if (!functionInfo) {
+      return false;
+    }
+    rawFrames.shift();
+    if ("frames" in functionInfo && functionInfo.frames.length) {
+      const framePromises = functionInfo.frames.map(async ({ name }, index) => {
+        const rawLocation = new SDK7.DebuggerModel.Location(script.debuggerModel, script.scriptId, frame.lineNumber, frame.columnNumber, index);
+        const uiLocation = await this.rawLocationToUILocation(rawLocation);
+        return {
+          uiSourceCode: uiLocation?.uiSourceCode,
+          url: uiLocation ? void 0 : frame.url,
+          name,
+          line: uiLocation?.lineNumber ?? frame.lineNumber,
+          column: uiLocation?.columnNumber ?? frame.columnNumber
+        };
+      });
+      translatedFrames.push(await Promise.all(framePromises));
+      return true;
+    }
+    const mappedFrame = {
+      url: frame.url,
+      name: frame.functionName,
+      line: frame.lineNumber,
+      column: frame.columnNumber
+    };
+    if ("missingSymbolFiles" in functionInfo && functionInfo.missingSymbolFiles.length) {
+      translatedFrames.push([{
+        ...mappedFrame,
+        missingDebugInfo: {
+          type: "PARTIAL_INFO",
+          missingDebugFiles: functionInfo.missingSymbolFiles
+        }
+      }]);
+    } else {
+      translatedFrames.push([{
+        ...mappedFrame,
+        missingDebugInfo: {
+          type: "NO_INFO"
+        }
+      }]);
+    }
+    return true;
   }
   scriptsForUISourceCode(uiSourceCode) {
     for (const modelData of this.#debuggerModelToData.values()) {
@@ -2405,7 +2453,7 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 // gen/front_end/models/stack_trace/stack_trace_impl.js
 import * as Common8 from "./../../core/common/common.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
-import * as StackTrace from "./../stack_trace/stack_trace.js";
+import * as StackTrace2 from "./../stack_trace/stack_trace.js";
 var __defProp2 = Object.defineProperty;
 var __export2 = (target, all) => {
   for (var name in all)
@@ -2471,12 +2519,14 @@ var FrameImpl = class {
   name;
   line;
   column;
-  constructor(url, uiSourceCode, name, line, column) {
+  missingDebugInfo;
+  constructor(url, uiSourceCode, name, line, column, missingDebugInfo) {
     this.url = url;
     this.uiSourceCode = uiSourceCode;
     this.name = name;
     this.line = line;
     this.column = column;
+    this.missingDebugInfo = missingDebugInfo;
   }
 };
 var StackTraceModel_exports = {};
@@ -2644,7 +2694,7 @@ var StackTraceModel = class _StackTraceModel extends SDK8.SDKModel.SDKModel {
     console.assert(rawFrames.length === uiFrames.length, "Broken rawFramesToUIFrames implementation");
     let i = 0;
     for (const node of fragment.node.getCallStack()) {
-      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column));
+      node.frames = uiFrames[i++].map((frame) => new FrameImpl(frame.url, frame.uiSourceCode, frame.name, frame.line, frame.column, frame.missingDebugInfo));
     }
   }
   #affectedFragments(script) {
@@ -2799,6 +2849,7 @@ __export(ResourceScriptMapping_exports, {
 import * as Common10 from "./../../core/common/common.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as TextUtils6 from "./../text_utils/text_utils.js";
 import * as Workspace15 from "./../workspace/workspace.js";
@@ -3053,6 +3104,9 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
     void this.update();
   }
   workingCopyCommitted() {
+    if (Root.Runtime.hostConfig.devToolsLiveEdit?.enabled === false) {
+      return;
+    }
     if (this.uiSourceCode.project().canSetFileContent()) {
       return;
     }

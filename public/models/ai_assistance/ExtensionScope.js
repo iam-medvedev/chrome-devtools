@@ -4,7 +4,6 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import * as Bindings from '../bindings/bindings.js';
 import { AI_ASSISTANCE_CSS_CLASS_NAME, FREESTYLER_BINDING_NAME, FREESTYLER_WORLD_NAME, freestylerBinding, injectedFunctions } from './injected.js';
 /**
@@ -19,9 +18,8 @@ export class ExtensionScope {
     /** Don't use directly use the getter */
     #target;
     #bindingMutex = new Common.Mutex.Mutex();
-    constructor(changes, agentId) {
+    constructor(changes, agentId, selectedNode) {
         this.#changeManager = changes;
-        const selectedNode = UI.Context.Context.instance().flavor(SDK.DOMModel.DOMNode);
         const frameId = selectedNode?.frameId();
         const target = selectedNode?.domModel().target();
         this.#agentId = agentId;
@@ -29,14 +27,10 @@ export class ExtensionScope {
         this.#frameId = frameId;
     }
     get target() {
-        if (this.#target) {
-            return this.#target;
-        }
-        const target = UI.Context.Context.instance().flavor(SDK.Target.Target);
-        if (!target) {
+        if (!this.#target) {
             throw new Error('Target is not found for executing code');
         }
-        return target;
+        return this.#target;
     }
     get frameId() {
         if (this.#frameId) {

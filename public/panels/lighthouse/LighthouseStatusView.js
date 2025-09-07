@@ -4,6 +4,7 @@
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { RuntimeSettings } from './LighthouseController.js';
 import lighthouseDialogStyles from './lighthouseDialog.css.js';
@@ -187,7 +188,7 @@ export class StatusView {
         UI.ARIAUtils.markAsStatus(this.statusText);
         this.dialog.setDefaultFocusedElement(cancelButton);
         this.dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
-        this.dialog.setMaxContentSize(new UI.Geometry.Size(500, 400));
+        this.dialog.setMaxContentSize(new Geometry.Size(500, 400));
     }
     reset() {
         this.resetProgressBarClasses();

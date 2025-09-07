@@ -11,6 +11,7 @@ import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import { md } from '../utils/Helpers.js';
+import * as Utils from '../utils/utils.js';
 import { shouldRenderForCategory } from './insights/Helpers.js';
 import * as Insights from './insights/insights.js';
 import sidebarSingleInsightSetStyles from './sidebarSingleInsightSet.css.js';
@@ -346,6 +347,10 @@ export class SidebarSingleInsightSet extends HTMLElement {
         const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = SidebarSingleInsightSet.categorizeInsights(insightSets, insightSetKey, this.#data.activeCategory);
         const renderInsightComponent = (insightData) => {
             const { componentClass, model } = insightData;
+            if (!this.#data.parsedTrace || !this.#data.insights || !this.#data.traceMetadata) {
+                return html ``;
+            }
+            const agentFocus = Utils.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, this.#data.insights, this.#data.traceMetadata, model);
             // clang-format off
             return html `<div>
         <${componentClass.litTagName}
@@ -358,7 +363,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
           .model=${model}
           .bounds=${insightSet.bounds}
           .insightSetKey=${insightSetKey}
-          .parsedTrace=${this.#data.parsedTrace}
+          .agentFocus=${agentFocus}
           .fieldMetrics=${fieldMetrics}>
         </${componentClass.litTagName}>
       </div>`;

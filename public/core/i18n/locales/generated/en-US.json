@@ -1091,6 +1091,9 @@
   "entrypoints/main/main-meta.ts | previousPanel": {
     "message": "Previous panel"
   },
+  "entrypoints/main/main-meta.ts | receiveBadges": {
+    "message": "Receive badges"
+  },
   "entrypoints/main/main-meta.ts | reloadDevtools": {
     "message": "Reload DevTools"
   },
@@ -1670,6 +1673,21 @@
   "models/logs/NetworkLog.ts | anonymous": {
     "message": "<anonymous>"
   },
+  "models/network_time_calculator/NetworkTimeCalculator.ts | sDownload": {
+    "message": "{PH1} download"
+  },
+  "models/network_time_calculator/NetworkTimeCalculator.ts | sFromCache": {
+    "message": "{PH1} (from cache)"
+  },
+  "models/network_time_calculator/NetworkTimeCalculator.ts | sFromServiceworker": {
+    "message": "{PH1} (from ServiceWorker)"
+  },
+  "models/network_time_calculator/NetworkTimeCalculator.ts | sLatency": {
+    "message": "{PH1} latency"
+  },
+  "models/network_time_calculator/NetworkTimeCalculator.ts | sLatencySDownloadSTotal": {
+    "message": "{PH1} latency, {PH2} download ({PH3} total)"
+  },
   "models/persistence/EditFileSystemView.ts | enterAPath": {
     "message": "Enter a path"
   },
@@ -2181,7 +2199,7 @@
     "message": "CSS Selector costs"
   },
   "models/trace/insights/SlowCSSSelector.ts | topSelectorElapsedTime": {
-    "message": "Top selector elaspsed time"
+    "message": "Top selector elapsed time"
   },
   "models/trace/insights/SlowCSSSelector.ts | topSelectorMatchAttempt": {
     "message": "Top selector match attempt"
@@ -3671,7 +3689,7 @@
   "panels/application/components/BackForwardCacheStrings.ts | webRTC": {
     "message": "Pages with WebRTC cannot enter back/forward cache."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | webRTCSticky": {
+  "panels/application/components/BackForwardCacheStrings.ts | webRTCUsedWithCCNS": {
     "message": "Back/forward cache is disabled because WebRTC has been used."
   },
   "panels/application/components/BackForwardCacheStrings.ts | webShare": {
@@ -3680,13 +3698,13 @@
   "panels/application/components/BackForwardCacheStrings.ts | webSocket": {
     "message": "Pages with WebSocket cannot enter back/forward cache."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | webSocketSticky": {
+  "panels/application/components/BackForwardCacheStrings.ts | webSocketUsedWithCCNS": {
     "message": "Back/forward cache is disabled because WebSocket has been used."
   },
   "panels/application/components/BackForwardCacheStrings.ts | webTransport": {
     "message": "Pages with WebTransport cannot enter back/forward cache."
   },
-  "panels/application/components/BackForwardCacheStrings.ts | webTransportSticky": {
+  "panels/application/components/BackForwardCacheStrings.ts | webTransportUsedWithCCNS": {
     "message": "Back/forward cache is disabled because WebTransport has been used."
   },
   "panels/application/components/BackForwardCacheStrings.ts | webXR": {
@@ -5612,6 +5630,9 @@
   "panels/changes/CombinedDiffView.ts | copyFile": {
     "message": "Copy file {PH1} to clipboard"
   },
+  "panels/common/BadgeNotification.ts | dismiss": {
+    "message": "Dismiss"
+  },
   "panels/common/common.ts | allow": {
     "message": "Allow"
   },
@@ -5629,6 +5650,51 @@
   },
   "panels/common/FreDialog.ts | thingsToConsider": {
     "message": "Things to consider"
+  },
+  "panels/common/GdpSignUpDialog.ts | cancel": {
+    "message": "Cancel"
+  },
+  "panels/common/GdpSignUpDialog.ts | contentPolicy": {
+    "message": "Content Policy"
+  },
+  "panels/common/GdpSignUpDialog.ts | designedForSuccess": {
+    "message": "Designed for your success"
+  },
+  "panels/common/GdpSignUpDialog.ts | designedForSuccessBody": {
+    "message": "Grow your skills, build with AI, and showcase your achievements"
+  },
+  "panels/common/GdpSignUpDialog.ts | gdpDialogAriaLabel": {
+    "message": "Google Developer Program sign up dialog"
+  },
+  "panels/common/GdpSignUpDialog.ts | gdpSignUp": {
+    "message": "Google Developer Program"
+  },
+  "panels/common/GdpSignUpDialog.ts | keepUpdated": {
+    "message": "Keep me updated"
+  },
+  "panels/common/GdpSignUpDialog.ts | keepUpdatedBody": {
+    "message": "The latest DevTools features, event invites, and tailored insights directly in your inbox"
+  },
+  "panels/common/GdpSignUpDialog.ts | learnMore": {
+    "message": "Learn more"
+  },
+  "panels/common/GdpSignUpDialog.ts | privacyPolicy": {
+    "message": "Privacy Policy"
+  },
+  "panels/common/GdpSignUpDialog.ts | signUp": {
+    "message": "Sign up"
+  },
+  "panels/common/GdpSignUpDialog.ts | signUpFailed": {
+    "message": "Your Google Developer Program profile couldn’t be created. Please try again later."
+  },
+  "panels/common/GdpSignUpDialog.ts | termsOfService": {
+    "message": "Terms of Service"
+  },
+  "panels/common/GdpSignUpDialog.ts | thingsToConsider": {
+    "message": "Things to consider"
+  },
+  "panels/common/GdpSignUpDialog.ts | thingsToConsiderBody": {
+    "message": "By creating a Developer Profile, you agree to the {PH1}. Google’s {PH2} and {PH3} apply to your use of this service. The name on your Google Account and your interests will be used in your Google Developer Profile. Your name may appear where you contribute and can be changed at any time."
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Open Console to view {PH1}"
@@ -8715,10 +8781,10 @@
     "message": "Reset to the default value"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | saveDataOff": {
-    "message": "'Save-Data': force off"
+    "message": "'Save-Data': off"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | saveDataOn": {
-    "message": "'Save-Data': force on"
+    "message": "'Save-Data': on"
   },
   "panels/mobile_throttling/ThrottlingManager.ts | saveDataSettingTooltip": {
     "message": "Override the value reported by navigator.connection.saveData on the page"
@@ -9973,21 +10039,6 @@
   },
   "panels/network/NetworkSearchScope.ts | url": {
     "message": "URL"
-  },
-  "panels/network/NetworkTimeCalculator.ts | sDownload": {
-    "message": "{PH1} download"
-  },
-  "panels/network/NetworkTimeCalculator.ts | sFromCache": {
-    "message": "{PH1} (from cache)"
-  },
-  "panels/network/NetworkTimeCalculator.ts | sFromServiceworker": {
-    "message": "{PH1} (from ServiceWorker)"
-  },
-  "panels/network/NetworkTimeCalculator.ts | sLatency": {
-    "message": "{PH1} latency"
-  },
-  "panels/network/NetworkTimeCalculator.ts | sLatencySDownloadSTotal": {
-    "message": "{PH1} latency, {PH2} download ({PH3} total)"
   },
   "panels/network/RequestCookiesView.ts | cookiesThatWereReceivedFromThe": {
     "message": "Cookies that were received from the server in the 'set-cookie' header of the response"
@@ -11786,14 +11837,35 @@
   "panels/security/CookieReportView.ts | videoCookieTypeString": {
     "message": "Video"
   },
-  "panels/security/IPProtectionView.ts | cardDescription": {
-    "message": "Only when DevTools is open"
+  "panels/security/IPProtectionView.ts | AuthTokensUnavailable": {
+    "message": "Limit for authentication tokens was reached. IP Protection will be paused."
+  },
+  "panels/security/IPProtectionView.ts | Available": {
+    "message": "IP Protection is enabled and active."
+  },
+  "panels/security/IPProtectionView.ts | bypassDescription": {
+    "message": "Temporarily bypass IP protection for testing"
+  },
+  "panels/security/IPProtectionView.ts | BypassedByDevTools": {
+    "message": "IP Protection is being bypassed by DevTools."
+  },
+  "panels/security/IPProtectionView.ts | bypassTitle": {
+    "message": "Bypass IP Protection"
   },
   "panels/security/IPProtectionView.ts | cardTitle": {
-    "message": "Bypass IP Protection"
+    "message": "IP Protection Proxy Status"
+  },
+  "panels/security/IPProtectionView.ts | FeatureNotEnabled": {
+    "message": "IP Protection feature is not enabled."
   },
   "panels/security/IPProtectionView.ts | idColumn": {
     "message": "ID"
+  },
+  "panels/security/IPProtectionView.ts | MaskedDomainListNotEnabled": {
+    "message": "Masked Domain List feature is not enabled."
+  },
+  "panels/security/IPProtectionView.ts | MaskedDomainListNotPopulated": {
+    "message": "Masked Domain List is not populated."
   },
   "panels/security/IPProtectionView.ts | methodColumn": {
     "message": "Method"
@@ -11809,6 +11881,12 @@
   },
   "panels/security/IPProtectionView.ts | statusColumn": {
     "message": "Status"
+  },
+  "panels/security/IPProtectionView.ts | statusUnknown": {
+    "message": "Status unknown"
+  },
+  "panels/security/IPProtectionView.ts | Unavailable": {
+    "message": "IP Protection is unavailable."
   },
   "panels/security/IPProtectionView.ts | urlColumn": {
     "message": "URL"
@@ -12420,10 +12498,10 @@
     "message": "Boost your productivity with AI"
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendData": {
-    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data may be seen by human reviewers to improve this feature."
+    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data may be seen by human reviewers to improve this feature."
   },
   "panels/settings/AISettingsTab.ts | codeSuggestionsSendDataNoLogging": {
-    "message": "To generate annotation suggestions, your performance trace is sent to Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
+    "message": "To generate code suggestions, your console input, the history of your current console session, the currently inspected CSS, and the contents of the currently open file are shared with Google. This data will not be used to improve Google’s AI models. Your organization may change these settings at any time."
   },
   "panels/settings/AISettingsTab.ts | consoleInsightsSendsData": {
     "message": "To generate explanations, the console message, associated stack trace, related source code, and the associated network headers are sent to Google. This data may be seen by human reviewers to improve this feature."
@@ -12536,17 +12614,44 @@
   "panels/settings/AISettingsTab.ts | whenOn": {
     "message": "When on"
   },
+  "panels/settings/components/SyncSection.ts | gdpPremiumAnnualSubscription": {
+    "message": "Premium (Annual)"
+  },
+  "panels/settings/components/SyncSection.ts | gdpPremiumMonthlySubscription": {
+    "message": "Premium (Monthly)"
+  },
+  "panels/settings/components/SyncSection.ts | gdpProAnnualSubscription": {
+    "message": "Pro (Annual)"
+  },
+  "panels/settings/components/SyncSection.ts | gdpProMonthlySubscription": {
+    "message": "Pro (Monthly)"
+  },
+  "panels/settings/components/SyncSection.ts | gdpStandardPlan": {
+    "message": "Standard plan"
+  },
+  "panels/settings/components/SyncSection.ts | gdpUnknownSubscription": {
+    "message": "Unknown plan"
+  },
   "panels/settings/components/SyncSection.ts | notSignedIn": {
     "message": "You're not signed into Chrome."
   },
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
     "message": "To turn this setting on, you must first enable settings sync in Chrome."
   },
+  "panels/settings/components/SyncSection.ts | relevantDataDisclaimer": {
+    "message": "(Relevant data is sent to Google)"
+  },
   "panels/settings/components/SyncSection.ts | signedIn": {
     "message": "Signed into Chrome as:"
   },
+  "panels/settings/components/SyncSection.ts | signUp": {
+    "message": "Sign up"
+  },
   "panels/settings/components/SyncSection.ts | syncDisabled": {
     "message": "To turn this setting on, you must enable Chrome sync."
+  },
+  "panels/settings/components/SyncSection.ts | viewProfile": {
+    "message": "View profile"
   },
   "panels/settings/emulation/components/UserAgentClientHintsForm.ts | addBrand": {
     "message": "Add Brand"

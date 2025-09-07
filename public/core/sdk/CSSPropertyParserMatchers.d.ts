@@ -15,6 +15,7 @@ export declare class BaseVariableMatch implements Match {
     readonly computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null;
     constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[] | undefined, matching: BottomUpTreeMatching, computedTextCallback: (match: BaseVariableMatch, matching: BottomUpTreeMatching) => string | null);
     computedText(): string | null;
+    fallbackValue(): string | null;
 }
 declare const BaseVariableMatcher_base: {
     new (): {
@@ -33,7 +34,6 @@ export declare class VariableMatch extends BaseVariableMatch {
     readonly style: CSSStyleDeclaration;
     constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[] | undefined, matching: BottomUpTreeMatching, matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
     resolveVariable(): CSSVariableValue | null;
-    fallbackValue(): string | null;
 }
 declare const VariableMatcher_base: {
     new (): {
@@ -47,6 +47,37 @@ export declare class VariableMatcher extends VariableMatcher_base {
     readonly style: CSSStyleDeclaration;
     constructor(matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration);
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): VariableMatch | null;
+}
+export declare class AttributeMatch extends BaseVariableMatch {
+    readonly type: string | null;
+    readonly isCSSTokens: boolean;
+    readonly isValidType: boolean;
+    readonly rawValue: string | null;
+    readonly substitutionText: string | null;
+    readonly matchedStyles: CSSMatchedStyles;
+    readonly style: CSSStyleDeclaration;
+    constructor(text: string, node: CodeMirror.SyntaxNode, name: string, fallback: CodeMirror.SyntaxNode[] | undefined, matching: BottomUpTreeMatching, type: string | null, isCSSTokens: boolean, isValidType: boolean, rawValue: string | null, substitutionText: string | null, matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration, computedTextCallback: (match: AttributeMatch, matching: BottomUpTreeMatching) => string | null);
+    rawAttributeValue(): string | null;
+    cssType(): string;
+    resolveAttributeValue(): string | null;
+}
+export declare function localEvalCSS(value: string, type: string): string | null;
+export declare function isValidCSSType(type: string): boolean;
+export declare function defaultValueForCSSType(type: string | null): string | null;
+export declare const RAW_STRING_TYPE = "raw-string";
+declare const AttributeMatcher_base: {
+    new (): {
+        matchType: Platform.Constructor.ConstructorOrAbstract<AttributeMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): AttributeMatch | null;
+    };
+};
+export declare class AttributeMatcher extends AttributeMatcher_base {
+    private readonly matchedStyles;
+    private readonly style;
+    private readonly computedTextCallback?;
+    constructor(matchedStyles: CSSMatchedStyles, style: CSSStyleDeclaration, computedTextCallback?: ((match: AttributeMatch, matching: BottomUpTreeMatching) => string | null) | undefined);
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): AttributeMatch | null;
 }
 export declare class BinOpMatch implements Match {
     readonly text: string;

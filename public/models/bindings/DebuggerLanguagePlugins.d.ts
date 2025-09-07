@@ -87,7 +87,7 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
     }> | null>;
     uiLocationToRawLocations(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber?: number): Promise<SDK.DebuggerModel.Location[] | null>;
     uiLocationRangeToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, textRange: TextUtils.TextRange.TextRange): Promise<SDK.DebuggerModel.LocationRange[] | null>;
-    translateRawFramesStep(_rawFrames: StackTraceImpl.Trie.RawFrame[], _translatedFrames: Awaited<ReturnType<StackTraceImpl.StackTraceModel.TranslateRawFrames>>, _target: SDK.Target.Target): Promise<boolean>;
+    translateRawFramesStep(rawFrames: StackTraceImpl.Trie.RawFrame[], translatedFrames: Awaited<ReturnType<StackTraceImpl.StackTraceModel.TranslateRawFrames>>, target: SDK.Target.Target): Promise<boolean>;
     scriptsForUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode): SDK.Script.Script[];
     setDebugInfoURL(script: SDK.Script.Script, externalURL: Platform.DevToolsPath.UrlString): void;
     private parsedScriptSource;
@@ -96,7 +96,7 @@ export declare class DebuggerLanguagePluginManager implements SDK.TargetManager.
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | undefined>;
     resolveScopeChain(callFrame: SDK.DebuggerModel.CallFrame): Promise<SourceScope[] | null>;
-    getFunctionInfo(script: SDK.Script.Script, location: SDK.DebuggerModel.Location): Promise<{
+    getFunctionInfo(script: SDK.Script.Script, location: Pick<SDK.DebuggerModel.Location, 'columnNumber'>): Promise<{
         frames: Chrome.DevTools.FunctionInfo[];
         missingSymbolFiles: SDK.DebuggerModel.MissingDebugFiles[];
     } | {

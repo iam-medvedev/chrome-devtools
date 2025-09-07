@@ -68,7 +68,7 @@ export function extractConsoleAPIExtensionEntries() {
         }
         const timeStampName = String(currentTimeStamp.args.data.name ?? currentTimeStamp.args.data.message);
         timeStampByName.set(timeStampName, currentTimeStamp);
-        const extensionData = extensionDataInConsoleTimeStamp(currentTimeStamp);
+        const { devtoolsObj: extensionData, userDetail } = extensionDataInConsoleTimeStamp(currentTimeStamp);
         const start = currentTimeStamp.args.data.start;
         const end = currentTimeStamp.args.data.end;
         if (!extensionData && !start && !end) {
@@ -91,7 +91,8 @@ export function extractConsoleAPIExtensionEntries() {
                 ...currentTimeStamp,
                 name: timeStampName,
                 cat: 'devtools.extension',
-                args: extensionData,
+                devtoolsObj: extensionData,
+                userDetail,
                 rawSourceEvent: currentTimeStamp,
                 dur: Types.Timing.Micro(entryEndTime - entryStartTime),
                 ts: entryStartTime,
@@ -150,30 +151,31 @@ export function extractConsoleAPIExtensionEntries() {
  */
 export function extractPerformanceAPIExtensionEntries(timings) {
     for (const timing of timings) {
-        const extensionPayload = extensionDataInPerformanceTiming(timing);
-        if (!extensionPayload) {
+        const { devtoolsObj, userDetail } = extensionDataInPerformanceTiming(timing);
+        if (!devtoolsObj) {
             // Not an extension user timing.
             continue;
         }
         const extensionSyntheticEntry = {
             name: timing.name,
-            ph: Types.Extensions.isExtensionPayloadMarker(extensionPayload) ? "I" /* Types.Events.Phase.INSTANT */ :
+            ph: Types.Extensions.isExtensionPayloadMarker(devtoolsObj) ? "I" /* Types.Events.Phase.INSTANT */ :
                 "X" /* Types.Events.Phase.COMPLETE */,
             pid: timing.pid,
             tid: timing.tid,
             ts: timing.ts,
             dur: timing.dur,
             cat: 'devtools.extension',
-            args: extensionPayload,
+            devtoolsObj,
+            userDetail,
             rawSourceEvent: Types.Events.isSyntheticUserTiming(timing) ? timing.rawSourceEvent : timing,
         };
-        if (Types.Extensions.isExtensionPayloadMarker(extensionPayload)) {
+        if (Types.Extensions.isExtensionPayloadMarker(devtoolsObj)) {
             const extensionMarker = Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent(extensionSyntheticEntry);
             extensionMarkers.push(extensionMarker);
             continue;
         }
-        if (Types.Extensions.isExtensionPayloadTrackEntry(extensionSyntheticEntry.args)) {
+        if (Types.Extensions.isExtensionEntryObj(extensionSyntheticEntry.devtoolsObj)) {
             const extensionTrackEntry = Helpers.SyntheticEvents.SyntheticEventsManager
                 .registerSyntheticEvent(extensionSyntheticEntry);
             extensionTrackEntries.push(extensionTrackEntry);
@@ -181,18 +183,29 @@ export function extractPerformanceAPIExtensionEntries(timings) {
         }
     }
 }
-function extensionPayloadForConsoleApi(timing) {
-    if (!timing.args.data || !('devtools' in timing.args.data)) {
-        return null;
-    }
-    return Helpers.Trace.parseDevtoolsDetails(`{"additionalContext": ${timing.args.data.devtools} }`, 'additionalContext');
-}
+/**
+ * Parses out the data in a performance.measure / mark call into two parts:
+ * 1. devtoolsObj: this is the data required to be passed by the user for the
+ *    event to be used to create a custom track in the performance panel.
+ * 2. userDetail: this is arbitrary data the user has attached to the event
+ *    that we show in the summary drawer.
+ */
 export function extensionDataInPerformanceTiming(timing) {
     const timingDetail = Types.Events.isPerformanceMark(timing) ? timing.args.data?.detail : timing.args.data.beginEvent.args.detail;
     if (!timingDetail) {
-        return null;
+        return { devtoolsObj: null, userDetail: null };
     }
-    return Helpers.Trace.parseDevtoolsDetails(timingDetail, 'devtools');
+    const devtoolsObj = Helpers.Trace.parseDevtoolsDetails(timingDetail, 'devtools');
+    let userDetail = null;
+    try {
+        userDetail = JSON.parse(timingDetail);
+        delete userDetail.devtools;
+    }
+    catch {
+        // Nothing to do here, we still want to return the `devtools` part to make
+        // this a custom event, even if the user detail failed to parse.
+    }
+    return { devtoolsObj, userDetail };
 }
 /**
  * Extracts extension data from a `console.timeStamp` event.
@@ -215,28 +228,27 @@ export function extensionDataInPerformanceTiming(timing) {
  *         valid extension data for a track entry, or `null` otherwise.
  */
 export function extensionDataInConsoleTimeStamp(timeStamp) {
-    if (!timeStamp.args.data) {
-        return null;
+    if (!timeStamp.args.data || !timeStamp.args.data.track) {
+        return { devtoolsObj: null, userDetail: null };
     }
-    const trackName = timeStamp.args.data.track;
-    if (trackName === '' || trackName === undefined) {
-        return null;
+    let userDetail = null;
+    try {
+        // While it's in the trace as 'devtools', it's just the 7th argument to console.timeStamp(), stringified.
+        // If no data, fall back to falsy empty string.
+        userDetail = JSON.parse(timeStamp.args.data?.devtools || '""');
     }
-    let additionalContext;
-    const payload = extensionPayloadForConsoleApi(timeStamp);
-    if (payload) {
-        additionalContext = payload;
+    catch {
     }
-    return {
+    const devtoolsObj = {
         // the color is defaulted to primary if it's value isn't one from
         // the defined palette (see ExtensionUI::extensionEntryColor) so
         // we don't need to check the value is valid here.
         color: String(timeStamp.args.data.color),
-        track: String(trackName),
+        track: String(timeStamp.args.data.track),
         dataType: 'track-entry',
         trackGroup: timeStamp.args.data.trackGroup !== undefined ? String(timeStamp.args.data.trackGroup) : undefined,
-        additionalContext
     };
+    return { devtoolsObj, userDetail };
 }
 export function data() {
     return {

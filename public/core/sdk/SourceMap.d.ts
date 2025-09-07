@@ -20,8 +20,7 @@ export interface SourceMapV3Object {
     names?: string[];
     ignoreList?: number[];
     scopes?: string;
-    originalScopes?: string[];
-    generatedRanges?: string;
+    debugId?: string;
     x_google_linecount?: number;
     x_google_ignoreList?: number[];
     x_com_bloomberg_sourcesFunctionMappings?: string[];
@@ -61,6 +60,7 @@ export type SourceMapV3 = SourceMapV3Object | {
  * @returns the {@link SourceMapV3} representation of the {@link content}.
  */
 export declare function parseSourceMap(content: string): SourceMapV3;
+export type DebugId = Platform.Brand.Brand<string, 'DebugId'>;
 export declare class SourceMapEntry {
     readonly lineNumber: number;
     readonly columnNumber: number;
@@ -84,6 +84,7 @@ export declare class SourceMap {
     augmentWithScopes(scriptUrl: Platform.DevToolsPath.UrlString, ranges: NamedFunctionRange[]): void;
     compiledURL(): Platform.DevToolsPath.UrlString;
     url(): Platform.DevToolsPath.UrlString;
+    debugId(): DebugId | null;
     sourceURLs(): Platform.DevToolsPath.UrlString[];
     embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string | null;
     hasScopeInfo(): boolean;

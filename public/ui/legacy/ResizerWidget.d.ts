@@ -1,11 +1,6 @@
 import * as Common from '../../core/common/common.js';
 export declare class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private isEnabledInternal;
-    private elementsInternal;
-    private readonly installDragOnMouseDownBound;
-    private cursorInternal;
-    private startX?;
-    private startY?;
+    #private;
     constructor();
     isEnabled(): boolean;
     setEnabled(enabled: boolean): void;
@@ -13,15 +8,10 @@ export declare class ResizerWidget extends Common.ObjectWrapper.ObjectWrapper<Ev
     addElement(element: HTMLElement): void;
     removeElement(element: HTMLElement): void;
     updateElementCursors(): void;
-    private updateElementCursor;
     cursor(): string;
     setCursor(cursor: string): void;
-    private installDragOnMouseDown;
-    private dragStart;
     sendDragStart(x: number, y: number): void;
-    private drag;
     sendDragMove(startX: number, currentX: number, startY: number, currentY: number, shiftKey: boolean): void;
-    private dragEnd;
 }
 export declare const enum Events {
     RESIZE_START = "ResizeStart",
@@ -58,8 +48,7 @@ export interface EventTypes {
     [Events.RESIZE_END]: void;
 }
 export declare class SimpleResizerWidget extends ResizerWidget {
-    private isVerticalInternal;
-    constructor();
+    #private;
     isVertical(): boolean;
     /**
      * Vertical widget resizes height (along y-axis).

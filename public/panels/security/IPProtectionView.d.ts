@@ -3,6 +3,7 @@ import '../../ui/components/cards/cards.js';
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import '../../ui/components/buttons/buttons.js';
 import type * as Platform from '../../core/platform/platform.js';
+import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare const i18nString: (id: string, values?: import("../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
 interface MockNetworkRequest {
@@ -11,11 +12,17 @@ interface MockNetworkRequest {
     requestMethod: string;
     statusCode: number;
 }
-export type View = (input: IPProtectionView, output: IPProtectionView, target: HTMLElement) => void;
+export interface ViewInput {
+    status: Protocol.Network.IpProxyStatus | null;
+    proxyRequests: readonly MockNetworkRequest[];
+}
+export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class IPProtectionView extends UI.Widget.VBox {
     #private;
     constructor(element?: HTMLElement, view?: View);
+    wasShown(): Promise<void>;
+    willHide(): void;
     get proxyRequests(): readonly MockNetworkRequest[];
     performUpdate(): void;
 }

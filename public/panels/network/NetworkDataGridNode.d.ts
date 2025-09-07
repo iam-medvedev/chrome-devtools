@@ -1,11 +1,11 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as HAR from '../../models/har/har.js';
+import type * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import type { NetworkTimeCalculator } from './NetworkTimeCalculator.js';
 export declare const enum Events {
     RequestSelected = "RequestSelected",
     RequestActivated = "RequestActivated"
@@ -37,9 +37,9 @@ export interface NetworkLogViewInterface extends Common.EventTarget.EventTarget<
     addFilmStripFrames(times: number[]): void;
     selectFilmStripFrame(time: number): void;
     clearFilmStripFrame(): void;
-    timeCalculator(): NetworkTimeCalculator;
-    calculator(): NetworkTimeCalculator;
-    setCalculator(x: NetworkTimeCalculator): void;
+    timeCalculator(): NetworkTimeCalculator.NetworkTimeCalculator;
+    calculator(): NetworkTimeCalculator.NetworkTimeCalculator;
+    setCalculator(x: NetworkTimeCalculator.NetworkTimeCalculator): void;
     flatNodesList(): NetworkNode[];
     updateNodeBackground(): void;
     updateNodeSelectedClass(isSelected: boolean): void;

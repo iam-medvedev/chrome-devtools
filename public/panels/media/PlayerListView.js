@@ -59,6 +59,12 @@ export class PlayerListView extends UI.Widget.VBox {
         entry.$('icon').appendChild(IconButton.Icon.create('pause', 'media-player'));
         return entry;
     }
+    selectPlayerById(playerID) {
+        const fragment = this.playerEntryFragments.get(playerID);
+        if (fragment) {
+            this.selectPlayer(playerID, fragment.element());
+        }
+    }
     selectPlayer(playerID, element) {
         this.mainContainer.renderMainPanel(playerID);
         if (this.currentlySelectedEntry !== null) {

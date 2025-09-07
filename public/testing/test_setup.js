@@ -14,6 +14,7 @@ import * as UI from '../ui/legacy/legacy.js';
 import * as ThemeSupport from '../ui/legacy/theme_support/theme_support.js';
 import { cleanTestDOM, raf, setupTestDOM } from './DOMHelpers.js';
 import { createFakeSetting, resetHostConfig } from './EnvironmentHelpers.js';
+import { TraceLoader } from './TraceLoader.js';
 import { checkForPendingActivity, startTrackingAsyncActivity, stopTrackingAsyncActivity, } from './TrackAsyncOperations.js';
 const style = document.createElement('style');
 style.innerText =
@@ -22,7 +23,7 @@ document.head.append(style);
 document.documentElement.classList.add('platform-screenshot-test');
 const documentBodyElements = new Set();
 // Warm-up fonts to be readily available.
-before(async () => {
+before(async function () {
     const div = document.createElement('div');
     div.style.fontFamily = 'roboto';
     // Some latin characters to trigger the latin font file to be loaded.
@@ -32,6 +33,14 @@ before(async () => {
     document.body.append(div);
     await document.fonts.ready;
     div.remove();
+    // There is no way to provide after each file run via a test set up file.
+    // What we do instead is add and after all in all global test suits
+    // This is as close as we can get to after each file.
+    this.test?.parent?.suites.forEach(function (suite) {
+        suite.afterAll(function () {
+            TraceLoader.resetCache();
+        });
+    });
 });
 beforeEach(async () => {
     resetHostConfig();
@@ -73,10 +82,23 @@ function removeTextEditorTooltip() {
         document.body.removeChild(pane);
     }
 }
+/**
+ * If a test calls localEvalCSS, an element is created on demand for this
+ * purpose. This element is not removed from the DOM and will leak between tests
+ * if not removed.
+ */
+function removeCSSEvaluationElement() {
+    // Found in front_end/core/sdk/CSSPropertyParserMatchers.ts
+    const element = document.getElementById('css-evaluation-element');
+    if (element) {
+        document.body.removeChild(element);
+    }
+}
 afterEach(async function () {
     cleanTestDOM();
     removeGlassPanes();
     removeTextEditorTooltip();
+    removeCSSEvaluationElement();
     UI.ARIAUtils.LiveAnnouncer.removeAnnouncerElements(document.body);
     // Make sure all DOM clean up happens before the raf
     await raf();

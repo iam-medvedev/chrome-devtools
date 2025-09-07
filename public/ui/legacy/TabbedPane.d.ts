@@ -1,9 +1,9 @@
 import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as Geometry from '../../models/geometry/geometry.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import { ContextMenu } from './ContextMenu.js';
-import { Constraints } from './Geometry.js';
 import type { Toolbar } from './Toolbar.js';
 import { VBox, type Widget } from './Widget.js';
 declare const TabbedPane_base: (new (...args: any[]) => {
@@ -92,7 +92,7 @@ export declare class TabbedPane extends TabbedPane_base {
     wasHidden(): void;
     makeTabSlider(): void;
     private setTabSlider;
-    calculateConstraints(): Constraints;
+    calculateConstraints(): Geometry.Constraints;
     private updateTabElements;
     setPlaceholderElement(element: Element, focusedElement?: Element): void;
     waitForTabElementUpdate(): Promise<void>;
