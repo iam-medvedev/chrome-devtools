@@ -1,30 +1,51 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Trace from '../../../models/trace/trace.js';
+function getFirstInsightSet(insights) {
+    // Currently only support a single insight set. Pick the first one with a navigation.
+    // TODO(cjamcl): we should just give the agent the entire insight set, and give
+    // summary detail about all of them + the ability to query each.
+    return [...insights.values()].filter(insightSet => insightSet.navigation).at(0) ?? null;
+}
 export class AgentFocus {
-    static full(parsedTrace, insights, traceMetadata) {
-        // Currently only support a single insight set. Pick the first one with a navigation.
-        const insightSet = [...insights.values()].filter(insightSet => insightSet.navigation).at(0) ?? null;
+    static full(parsedTrace) {
+        if (!parsedTrace.insights) {
+            throw new Error('missing insights');
+        }
+        const insightSet = getFirstInsightSet(parsedTrace.insights);
         return new AgentFocus({
             type: 'full',
             parsedTrace,
             insightSet,
-            traceMetadata,
         });
     }
-    static fromInsight(parsedTrace, insights, traceMetadata, insight) {
-        // Currently only support a single insight set. Pick the first one with a navigation.
-        const insightSet = [...insights.values()].filter(insightSet => insightSet.navigation).at(0) ?? null;
+    static fromInsight(parsedTrace, insight) {
+        if (!parsedTrace.insights) {
+            throw new Error('missing insights');
+        }
+        const insightSet = getFirstInsightSet(parsedTrace.insights);
         return new AgentFocus({
             type: 'insight',
             parsedTrace,
             insightSet,
-            traceMetadata,
             insight,
         });
     }
     static fromCallTree(callTree) {
-        return new AgentFocus({ type: 'call-tree', parsedTrace: callTree.parsedTrace, callTree });
+        const insights = callTree.parsedTrace.insights;
+        // Select the insight set containing the call tree.
+        // If for some reason that fails, fallback to the first one.
+        let insightSet = null;
+        if (insights) {
+            const callTreeTimeRange = Trace.Helpers.Timing.traceWindowFromEvent(callTree.rootNode.event);
+            insightSet = insights.values().find(set => Trace.Helpers.Timing.boundsIncludeTimeRange({
+                timeRange: callTreeTimeRange,
+                bounds: set.bounds,
+            })) ??
+                getFirstInsightSet(insights);
+        }
+        return new AgentFocus({ type: 'call-tree', parsedTrace: callTree.parsedTrace, insightSet, callTree });
     }
     #data;
     constructor(data) {
@@ -36,11 +57,9 @@ export class AgentFocus {
 }
 export function getPerformanceAgentFocusFromModel(model) {
     const parsedTrace = model.parsedTrace();
-    const insights = model.traceInsights();
-    const traceMetadata = model.metadata();
-    if (!insights || !parsedTrace || !traceMetadata) {
+    if (!parsedTrace) {
         return null;
     }
-    return AgentFocus.full(parsedTrace, insights, traceMetadata);
+    return AgentFocus.full(parsedTrace);
 }
 //# sourceMappingURL=AIContext.js.map

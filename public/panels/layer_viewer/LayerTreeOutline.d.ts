@@ -37,7 +37,7 @@ export interface EventTypes {
     [Events.PAINT_PROFILER_REQUESTED]: Selection;
 }
 export declare class LayerTreeElement extends UI.TreeOutline.TreeElement {
-    treeOutlineInternal: LayerTreeOutline;
+    #private;
     layer: SDK.LayerTreeBase.Layer;
     constructor(tree: LayerTreeOutline, layer: SDK.LayerTreeBase.Layer);
     update(): void;

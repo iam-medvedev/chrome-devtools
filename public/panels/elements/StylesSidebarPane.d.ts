@@ -36,13 +36,11 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     private noMatchesElement;
     private sectionsContainer;
     sectionByElement: WeakMap<Node, StylePropertiesSection>;
-    private readonly swatchPopoverHelperInternal;
     readonly linkifier: Components.Linkifier.Linkifier;
     private readonly decorator;
     private lastRevealedProperty;
     private userOperation;
     isEditingStyle: boolean;
-    private filterRegexInternal;
     private isActivePropertyHighlighted;
     private initialUpdateCompleted;
     hasMatchedStyles: boolean;
@@ -131,7 +129,6 @@ export interface EventTypes {
 }
 export declare class SectionBlock {
     #private;
-    private readonly titleElementInternal;
     sections: StylePropertiesSection[];
     constructor(titleElement: Element | null, expandable?: boolean, expandedByDefault?: boolean);
     expand(expand: boolean): void;

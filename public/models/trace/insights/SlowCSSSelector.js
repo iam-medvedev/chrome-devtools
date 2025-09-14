@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -53,7 +53,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const slowCSSSelectorThreshold = 500; // 500us threshold for slow selectors
 function aggregateSelectorStats(data, context) {
     const selectorMap = new Map();
-    for (const [event, value] of data.dataForUpdateLayoutEvent) {
+    for (const [event, value] of data.dataForRecalcStyleEvent) {
         if (event.args.beginData?.frame !== context.frameId) {
             continue;
         }
@@ -90,8 +90,8 @@ function finalize(partialModel) {
 export function isSlowCSSSelectorInsight(model) {
     return model.insightKey === "SlowCSSSelector" /* InsightKeys.SLOW_CSS_SELECTOR */;
 }
-export function generateInsight(parsedTrace, context) {
-    const selectorStatsData = parsedTrace.SelectorStats;
+export function generateInsight(data, context) {
+    const selectorStatsData = data.SelectorStats;
     if (!selectorStatsData) {
         throw new Error('no selector stats data');
     }
@@ -121,7 +121,7 @@ export function generateInsight(parsedTrace, context) {
         });
     }
     return finalize({
-        // TODO: should we identify UpdateLayout events as linked to this insight?
+        // TODO: should we identify RecalcStyle events as linked to this insight?
         relatedEvents: [],
         totalElapsedMs: Types.Timing.Milli(totalElapsedUs / 1000.0),
         totalMatchAttempts,

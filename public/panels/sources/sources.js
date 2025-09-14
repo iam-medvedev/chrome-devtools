@@ -18,7 +18,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/dialog.css.js
 var dialog_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -277,6 +277,9 @@ var AiCodeCompletionPlugin = class extends Plugin {
     const query = doc.toString();
     const cursor = selection.main.head;
     let prefix = query.substring(0, cursor);
+    if (prefix.trim().length === 0) {
+      return;
+    }
     let suffix = query.substring(cursor);
     if (prefix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
       prefix = prefix.substring(prefix.length - AI_CODE_COMPLETION_CHARACTER_LIMIT);
@@ -650,7 +653,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/breakpointEditDialog.css.js
 var breakpointEditDialog_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -969,7 +972,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/breakpointsView.css.js
 var breakpointsView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2329,7 +2332,7 @@ import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/callStackSidebarPane.css.js
 var callStackSidebarPane_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3848,7 +3851,7 @@ import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/debuggerPausedMessage.css.js
 var debuggerPausedMessage_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3993,19 +3996,19 @@ var str_9 = i18n17.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.
 var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
 var i18nLazyString2 = i18n17.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
 var DebuggerPausedMessage = class _DebuggerPausedMessage {
-  elementInternal;
+  #element;
   contentElement;
   constructor() {
-    this.elementInternal = document.createElement("div");
-    this.elementInternal.classList.add("paused-message");
-    this.elementInternal.classList.add("flex-none");
-    this.elementInternal.setAttribute("jslog", `${VisualLogging7.dialog("debugger-paused")}`);
-    const root = UI9.UIUtils.createShadowRootWithCoreStyles(this.elementInternal, { cssFile: debuggerPausedMessage_css_default });
+    this.#element = document.createElement("div");
+    this.#element.classList.add("paused-message");
+    this.#element.classList.add("flex-none");
+    this.#element.setAttribute("jslog", `${VisualLogging7.dialog("debugger-paused")}`);
+    const root = UI9.UIUtils.createShadowRootWithCoreStyles(this.#element, { cssFile: debuggerPausedMessage_css_default });
     this.contentElement = root.createChild("div");
-    UI9.ARIAUtils.markAsPoliteLiveRegion(this.elementInternal, false);
+    UI9.ARIAUtils.markAsPoliteLiveRegion(this.#element, false);
   }
   element() {
-    return this.elementInternal;
+    return this.#element;
   }
   static descriptionWithoutStack(description) {
     const firstCallFrame = /^\s+at\s/m.exec(description);
@@ -4406,7 +4409,7 @@ var navigatorTree_css_default = `/*
 
 // gen/front_end/panels/sources/navigatorView.css.js
 var navigatorView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4862,7 +4865,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
   deployedNode;
   navigatorGroupByFolderSetting;
   navigatorGroupByAuthoredExperiment;
-  workspaceInternal;
+  #workspace;
   groupByFrame;
   groupByAuthored;
   groupByDomain;
@@ -4904,7 +4907,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
     SDK8.TargetManager.TargetManager.instance().addEventListener("NameChanged", this.targetNameChanged, this);
     SDK8.TargetManager.TargetManager.instance().observeTargets(this);
     this.resetWorkspace(Workspace9.Workspace.WorkspaceImpl.instance());
-    this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+    this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     Bindings5.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionAdded", this.frameAttributionAdded, this);
     Bindings5.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionRemoved", this.frameAttributionRemoved, this);
   }
@@ -5019,18 +5022,18 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
     }
   }
   resetWorkspace(workspace) {
-    if (this.workspaceInternal) {
-      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-      this.workspaceInternal.removeEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+    if (this.#workspace) {
+      this.#workspace.removeEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+      this.#workspace.removeEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+      this.#workspace.removeEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+      this.#workspace.removeEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
     }
-    this.workspaceInternal = workspace;
-    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-    this.workspaceInternal.addEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
-    this.workspaceInternal.projects().forEach(this.projectAdded.bind(this));
+    this.#workspace = workspace;
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+    this.#workspace.projects().forEach(this.projectAdded.bind(this));
     this.computeUniqueFileSystemProjectNames();
   }
   projectAddedCallback(event) {
@@ -5048,7 +5051,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
     }
   }
   workspace() {
-    return this.workspaceInternal;
+    return this.#workspace;
   }
   acceptProject(project) {
     return !project.isServiceProject();
@@ -5160,7 +5163,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
     }
   }
   computeUniqueFileSystemProjectNames() {
-    const fileSystemProjects = this.workspaceInternal.projectsForType(Workspace9.Workspace.projectTypes.FileSystem);
+    const fileSystemProjects = this.#workspace.projectsForType(Workspace9.Workspace.projectTypes.FileSystem);
     if (!fileSystemProjects.length) {
       return;
     }
@@ -5639,7 +5642,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
     this.reset(true);
     this.initGrouping();
     this.resetWorkspace(Workspace9.Workspace.WorkspaceImpl.instance());
-    this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+    this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
   }
   ignoreListChanged() {
     if (Root2.Runtime.experiments.isEnabled(
@@ -5663,7 +5666,7 @@ var NavigatorView = class _NavigatorView extends UI11.Widget.VBox {
   }
   resetForTest() {
     this.reset();
-    this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+    this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
   }
   discardFrame(frame, isAuthored) {
     if (isAuthored) {
@@ -5816,7 +5819,7 @@ var NavigatorSourceTreeElement = class extends UI11.TreeOutline.TreeElement {
   nodeType;
   node;
   navigatorView;
-  uiSourceCodeInternal;
+  #uiSourceCode;
   aiButtonContainer;
   constructor(navigatorView, uiSourceCode, title, node) {
     super("", false, uiSourceCode.contentType().name());
@@ -5828,16 +5831,16 @@ var NavigatorSourceTreeElement = class extends UI11.TreeOutline.TreeElement {
     UI11.ARIAUtils.setLabel(this.listItemElement, `${uiSourceCode.name()}, ${this.nodeType}`);
     Common10.EventTarget.fireEvent("source-tree-file-added", uiSourceCode.fullDisplayName());
     this.navigatorView = navigatorView;
-    this.uiSourceCodeInternal = uiSourceCode;
+    this.#uiSourceCode = uiSourceCode;
     this.updateIcon();
     this.titleElement.setAttribute("jslog", `${VisualLogging8.value("title").track({ change: true })}`);
   }
   updateIcon() {
-    const icon = PanelUtils.getIconForSourceFile(this.uiSourceCodeInternal);
+    const icon = PanelUtils.getIconForSourceFile(this.#uiSourceCode);
     this.setLeadingIcons([icon]);
   }
   updateAccessibleName() {
-    UI11.ARIAUtils.setLabel(this.listItemElement, `${this.uiSourceCodeInternal.name()}, ${this.nodeType}`);
+    UI11.ARIAUtils.setLabel(this.listItemElement, `${this.#uiSourceCode.name()}, ${this.nodeType}`);
   }
   createAiButton() {
     if (!UI11.ActionRegistry.ActionRegistry.instance().hasAction("drjones.sources-floating-button")) {
@@ -5862,7 +5865,7 @@ var NavigatorSourceTreeElement = class extends UI11.TreeOutline.TreeElement {
     }
   }
   get uiSourceCode() {
-    return this.uiSourceCodeInternal;
+    return this.#uiSourceCode;
   }
   onattach() {
     this.listItemElement.draggable = true;
@@ -5872,7 +5875,7 @@ var NavigatorSourceTreeElement = class extends UI11.TreeOutline.TreeElement {
     this.createAiButton();
   }
   shouldRenameOnMouseDown() {
-    if (!this.uiSourceCodeInternal.canRename()) {
+    if (!this.#uiSourceCode.canRename()) {
       return false;
     }
     if (!this.treeOutline) {
@@ -5897,7 +5900,7 @@ var NavigatorSourceTreeElement = class extends UI11.TreeOutline.TreeElement {
     if (!event.dataTransfer) {
       return;
     }
-    event.dataTransfer.setData("text/plain", this.uiSourceCodeInternal.url());
+    event.dataTransfer.setData("text/plain", this.#uiSourceCode.url());
     event.dataTransfer.effectAllowed = "copy";
   }
   onspace() {
@@ -6058,16 +6061,16 @@ var NavigatorRootTreeNode = class extends NavigatorTreeNode {
   }
 };
 var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
-  uiSourceCodeInternal;
+  #uiSourceCode;
   treeElement;
   eventListeners;
-  frameInternal;
+  #frame;
   constructor(navigatorView, uiSourceCode, frame) {
     super(navigatorView, "UISourceCode:" + uiSourceCode.canonicalScriptId(), Types.File);
-    this.uiSourceCodeInternal = uiSourceCode;
+    this.#uiSourceCode = uiSourceCode;
     this.treeElement = null;
     this.eventListeners = [];
-    this.frameInternal = frame;
+    this.#frame = frame;
     this.recursiveProperties.exclusivelySourceMapped = uiSourceCode.contentType().isFromSourceMap();
     if (uiSourceCode.contentType().isScript()) {
       this.recursiveProperties.exclusivelyThirdParty = uiSourceCode.isKnownThirdParty();
@@ -6075,50 +6078,50 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
     }
   }
   frame() {
-    return this.frameInternal;
+    return this.#frame;
   }
   uiSourceCode() {
-    return this.uiSourceCodeInternal;
+    return this.#uiSourceCode;
   }
   treeNode() {
     if (this.treeElement) {
       return this.treeElement;
     }
-    this.treeElement = new NavigatorSourceTreeElement(this.navigatorView, this.uiSourceCodeInternal, "", this);
+    this.treeElement = new NavigatorSourceTreeElement(this.navigatorView, this.#uiSourceCode, "", this);
     this.updateTitle();
     const updateTitleBound = this.updateTitle.bind(this, void 0);
     this.eventListeners = [
-      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.TitleChanged, updateTitleBound),
-      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
-      this.uiSourceCodeInternal.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
+      this.#uiSourceCode.addEventListener(Workspace9.UISourceCode.Events.TitleChanged, updateTitleBound),
+      this.#uiSourceCode.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
+      this.#uiSourceCode.addEventListener(Workspace9.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound)
     ];
     return this.treeElement;
   }
   updateTitle(ignoreIsDirty) {
-    const isIgnoreListed = Workspace9.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
-    if (this.uiSourceCodeInternal.contentType().isScript() || isIgnoreListed) {
+    const isIgnoreListed = Workspace9.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.#uiSourceCode);
+    if (this.#uiSourceCode.contentType().isScript() || isIgnoreListed) {
       this.recursiveProperties.exclusivelyIgnored = isIgnoreListed;
     }
     if (!this.treeElement) {
       return;
     }
-    let titleText = this.uiSourceCodeInternal.displayName();
-    if (!ignoreIsDirty && this.uiSourceCodeInternal.isDirty()) {
+    let titleText = this.#uiSourceCode.displayName();
+    if (!ignoreIsDirty && this.#uiSourceCode.isDirty()) {
       titleText = "*" + titleText;
     }
     this.treeElement.title = titleText;
     this.treeElement.updateIcon();
     this.treeElement.listItemElement.classList.toggle("is-ignore-listed", isIgnoreListed);
-    let tooltip = this.uiSourceCodeInternal.url();
-    if (this.uiSourceCodeInternal.contentType().isFromSourceMap()) {
-      tooltip = i18nString9(UIStrings10.sFromSourceMap, { PH1: this.uiSourceCodeInternal.displayName() });
+    let tooltip = this.#uiSourceCode.url();
+    if (this.#uiSourceCode.contentType().isFromSourceMap()) {
+      tooltip = i18nString9(UIStrings10.sFromSourceMap, { PH1: this.#uiSourceCode.displayName() });
     }
     if (isIgnoreListed) {
       tooltip = i18nString9(UIStrings10.sIgnoreListed, { PH1: tooltip });
     }
     this.treeElement.tooltip = tooltip;
     this.treeElement.updateAccessibleName();
-    this.updateId("UISourceCode:" + this.uiSourceCodeInternal.canonicalScriptId());
+    this.updateId("UISourceCode:" + this.#uiSourceCode.canonicalScriptId());
   }
   hasChildren() {
     return false;
@@ -6153,7 +6156,7 @@ var NavigatorUISourceCodeTreeNode = class extends NavigatorTreeNode {
         if (this.treeElement) {
           this.treeElement.title = newTitle;
         }
-        void this.uiSourceCodeInternal.rename(newTitle).then(renameCallback);
+        void this.#uiSourceCode.rename(newTitle).then(renameCallback);
         return;
       }
       afterEditing(true);
@@ -6632,33 +6635,9 @@ var EditingLocationHistoryEntry = class {
 
 // gen/front_end/panels/sources/sourcesView.css.js
 var sourcesView_css_default = `/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2013 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #sources-panel-sources-view {
@@ -7125,7 +7104,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
   }
   wasShown() {
     super.wasShown();
-    this.setEditable(this.canEditSourceInternal());
+    this.setEditable(this.#canEditSource());
   }
   willHide() {
     for (const plugin of this.plugins) {
@@ -7140,7 +7119,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
     const mimeType = binding ? binding.network.mimeType() : this.#uiSourceCode.mimeType();
     return Common11.ResourceType.ResourceType.simplifyContentType(mimeType);
   }
-  canEditSourceInternal() {
+  #canEditSource() {
     if (this.hasLoadError()) {
       return false;
     }
@@ -7171,7 +7150,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
     return this.#uiSourceCode.contentType() !== Common11.ResourceType.resourceTypes.Document;
   }
   onNetworkPersistenceChanged() {
-    this.setEditable(this.canEditSourceInternal());
+    this.setEditable(this.#canEditSource());
   }
   commitEditing() {
     if (!this.#uiSourceCode.isDirty()) {
@@ -7248,7 +7227,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
       PerformanceProfilePlugin,
       AiWarningInfobarPlugin
     ];
-    if (Boolean(Root3.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled)) {
+    if (Root3.Runtime.hostConfig.aidaAvailability?.enabled && Root3.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled) {
       sourceFramePluginsList.push(AiCodeCompletionPlugin);
     }
     return sourceFramePluginsList;
@@ -7289,7 +7268,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
     editor.dispatch({ effects: setRowMessages.of(RowMessages.create(messages)) });
   }
   updateStyle() {
-    this.setEditable(this.canEditSourceInternal());
+    this.setEditable(this.#canEditSource());
   }
   maybeSetContent(content) {
     if (this.textEditor.state.doc.toString() !== content.text) {
@@ -7736,7 +7715,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
   history;
   uriToUISourceCode;
   idToUISourceCode;
-  currentFileInternal;
+  #currentFile;
   currentView;
   scrollTimer;
   reentrantShow;
@@ -7767,7 +7746,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     this.updateFileTitle(binding.fileSystem);
     const networkTabId = this.tabIds.get(binding.network);
     let fileSystemTabId = this.tabIds.get(binding.fileSystem);
-    const wasSelectedInNetwork = this.currentFileInternal === binding.network;
+    const wasSelectedInNetwork = this.#currentFile === binding.network;
     const networkKey = historyItemKey(binding.network);
     const currentSelectionRange = this.history.selectionRange(networkKey);
     const currentScrollLineNumber = this.history.scrollLineNumber(networkKey);
@@ -7822,7 +7801,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     const binding = Persistence9.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     uiSourceCode = binding ? binding.fileSystem : uiSourceCode;
     const frame = UI15.Context.Context.instance().flavor(SourcesView);
-    if (frame?.currentSourceFrame()?.contentSet && this.currentFileInternal === uiSourceCode && frame?.currentUISourceCode() === uiSourceCode) {
+    if (frame?.currentSourceFrame()?.contentSet && this.#currentFile === uiSourceCode && frame?.currentUISourceCode() === uiSourceCode) {
       Common12.EventTarget.fireEvent("source-file-loaded", uiSourceCode.displayName(true));
     } else {
       this.innerShowFile(uiSourceCode, true);
@@ -7874,11 +7853,11 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
         clearTimeout(this.scrollTimer);
       }
       this.scrollTimer = window.setTimeout(() => this.previouslyViewedFilesSetting.set(this.history.toObject()), 100);
-      if (this.currentFileInternal) {
+      if (this.#currentFile) {
         const { editor } = this.currentView.textEditor;
         const topBlock = editor.lineBlockAtHeight(editor.scrollDOM.getBoundingClientRect().top - editor.documentTop);
         const topLine = editor.state.doc.lineAt(topBlock.from).number - 1;
-        this.history.updateScrollLineNumber(historyItemKey(this.currentFileInternal), topLine);
+        this.history.updateScrollLineNumber(historyItemKey(this.#currentFile), topLine);
       }
     }
   }
@@ -7887,12 +7866,12 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       const { main } = update.state.selection;
       const lineFrom = update.state.doc.lineAt(main.from), lineTo = update.state.doc.lineAt(main.to);
       const range = new TextUtils8.TextRange.TextRange(lineFrom.number - 1, main.from - lineFrom.from, lineTo.number - 1, main.to - lineTo.from);
-      if (this.currentFileInternal) {
-        this.history.updateSelectionRange(historyItemKey(this.currentFileInternal), range);
+      if (this.#currentFile) {
+        this.history.updateSelectionRange(historyItemKey(this.#currentFile), range);
       }
       this.previouslyViewedFilesSetting.set(this.history.toObject());
-      if (this.currentFileInternal) {
-        Extensions.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this.currentFileInternal.url(), range);
+      if (this.#currentFile) {
+        Extensions.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this.#currentFile.url(), range);
       }
     }
   }
@@ -7903,11 +7882,11 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     const canonicalSourceCode = this.canonicalUISourceCode(uiSourceCode);
     const binding = Persistence9.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     uiSourceCode = binding ? binding.fileSystem : uiSourceCode;
-    if (this.currentFileInternal === uiSourceCode) {
+    if (this.#currentFile === uiSourceCode) {
       return;
     }
     this.removeViewListeners();
-    this.currentFileInternal = uiSourceCode;
+    this.#currentFile = uiSourceCode;
     try {
       this.reentrantShow = true;
       const tabId2 = this.tabIds.get(canonicalSourceCode) || this.appendFileTab(canonicalSourceCode, userGesture);
@@ -7928,7 +7907,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       }
     }
     const eventData = {
-      currentFile: this.currentFileInternal,
+      currentFile: this.#currentFile,
       currentView: this.currentView,
       previousView,
       userGesture
@@ -8007,7 +7986,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     if (duplicated && uiSourceCode.project().type() !== Workspace15.Workspace.projectTypes.FileSystem) {
       uiSourceCode.disableEdit();
     }
-    if (this.currentFileInternal?.canonicalScriptId() === uiSourceCode.canonicalScriptId()) {
+    if (this.#currentFile?.canonicalScriptId() === uiSourceCode.canonicalScriptId()) {
       return;
     }
     const index = this.history.index(historyItemKey(uiSourceCode));
@@ -8021,12 +8000,12 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       this.innerShowFile(uiSourceCode, false);
       return;
     }
-    if (!this.currentFileInternal) {
+    if (!this.#currentFile) {
       return;
     }
-    const currentProjectIsSnippets = Snippets3.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.currentFileInternal);
+    const currentProjectIsSnippets = Snippets3.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.#currentFile);
     const addedProjectIsSnippets = Snippets3.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
-    if (this.history.index(historyItemKey(this.currentFileInternal)) && currentProjectIsSnippets && !addedProjectIsSnippets) {
+    if (this.history.index(historyItemKey(this.#currentFile)) && currentProjectIsSnippets && !addedProjectIsSnippets) {
       this.innerShowFile(uiSourceCode, false);
     }
   }
@@ -8121,10 +8100,10 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
   tabClosed(event) {
     const { tabId: tabId2, isUserGesture } = event.data;
     const uiSourceCode = this.files.get(tabId2);
-    if (this.currentFileInternal && this.currentFileInternal.canonicalScriptId() === uiSourceCode?.canonicalScriptId()) {
+    if (this.#currentFile && this.#currentFile.canonicalScriptId() === uiSourceCode?.canonicalScriptId()) {
       this.removeViewListeners();
       this.currentView = null;
-      this.currentFileInternal = null;
+      this.#currentFile = null;
     }
     if (uiSourceCode) {
       this.tabIds.delete(uiSourceCode);
@@ -8230,7 +8209,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     return "tab-" + tabId++;
   }
   currentFile() {
-    return this.currentFileInternal || null;
+    return this.#currentFile || null;
   }
 };
 var nextTooltipId = 1;
@@ -8395,12 +8374,12 @@ var UIStrings15 = {
 var str_15 = i18n29.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
 var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
-  searchableViewInternal;
+  #searchableView;
   sourceViewByUISourceCode;
   editorContainer;
   historyManager;
   #scriptViewToolbar;
-  bottomToolbarInternal;
+  #bottomToolbar;
   toolbarChangedListener;
   focusedPlaceholderElement;
   searchView;
@@ -8411,12 +8390,12 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     this.element.id = "sources-panel-sources-view";
     this.setMinimumAndPreferredSizes(88, 52, 150, 100);
     const workspace = Workspace17.Workspace.WorkspaceImpl.instance();
-    this.searchableViewInternal = new UI16.SearchableView.SearchableView(this, this, "sources-view-search-config");
-    this.searchableViewInternal.setMinimalSearchQuerySize(0);
-    this.searchableViewInternal.show(this.element);
+    this.#searchableView = new UI16.SearchableView.SearchableView(this, this, "sources-view-search-config");
+    this.#searchableView.setMinimalSearchQuerySize(0);
+    this.#searchableView.show(this.element);
     this.sourceViewByUISourceCode = /* @__PURE__ */ new Map();
     this.editorContainer = new TabbedEditorContainer(this, Common13.Settings.Settings.instance().createLocalSetting("previously-viewed-files", []), this.placeholderElement(), this.focusedPlaceholderElement);
-    this.editorContainer.show(this.searchableViewInternal.element);
+    this.editorContainer.show(this.#searchableView.element);
     this.editorContainer.addEventListener("EditorSelected", this.editorSelected, this);
     this.editorContainer.addEventListener("EditorClosed", this.editorClosed, this);
     this.historyManager = new EditingLocationHistoryManager(this);
@@ -8424,7 +8403,7 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     toolbarContainerElementInternal.setAttribute("jslog", `${VisualLogging10.toolbar("bottom")}`);
     this.#scriptViewToolbar = toolbarContainerElementInternal.createChild("devtools-toolbar");
     this.#scriptViewToolbar.style.flex = "auto";
-    this.bottomToolbarInternal = toolbarContainerElementInternal.createChild("devtools-toolbar");
+    this.#bottomToolbar = toolbarContainerElementInternal.createChild("devtools-toolbar");
     this.toolbarChangedListener = null;
     UI16.UIUtils.startBatchUpdate();
     workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
@@ -8525,7 +8504,7 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     return this.editorContainer.rightToolbar();
   }
   bottomToolbar() {
-    return this.bottomToolbarInternal;
+    return this.#bottomToolbar;
   }
   scriptViewToolbar() {
     return this.#scriptViewToolbar;
@@ -8539,7 +8518,7 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     super.willHide();
   }
   searchableView() {
-    return this.searchableViewInternal;
+    return this.#searchableView;
   }
   visibleView() {
     return this.editorContainer.visibleView;
@@ -8736,7 +8715,7 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     }
     this.removeToolbarChangedListener();
     this.updateScriptViewToolbarItems();
-    this.searchableViewInternal.resetSearch();
+    this.#searchableView.resetSearch();
     const data = {
       uiSourceCode,
       wasSelected
@@ -8750,10 +8729,10 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     }
     const currentSourceFrame = event.data.currentView instanceof UISourceCodeFrame ? event.data.currentView : null;
     if (currentSourceFrame) {
-      currentSourceFrame.setSearchableView(this.searchableViewInternal);
+      currentSourceFrame.setSearchableView(this.#searchableView);
     }
-    this.searchableViewInternal.setReplaceable(Boolean(currentSourceFrame?.canEditSource()));
-    this.searchableViewInternal.refreshSearch();
+    this.#searchableView.setReplaceable(Boolean(currentSourceFrame?.canEditSource()));
+    this.#searchableView.refreshSearch();
     this.updateToolbarChangedListener();
     this.updateScriptViewToolbarItems();
     const currentFile = this.editorContainer.currentFile();
@@ -8966,7 +8945,7 @@ import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/threadsSidebarPane.css.js
 var threadsSidebarPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -9299,7 +9278,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   splitWidget;
   editorView;
   navigatorTabbedLocation;
-  sourcesViewInternal;
+  #sourcesView;
   toggleNavigatorSidebarButton;
   toggleDebuggerSidebarButton;
   threadsSidebarPane;
@@ -9307,7 +9286,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   callstackPane;
   liveLocationPool;
   lastModificationTime;
-  pausedInternal;
+  #paused;
   switchToPausedTargetTimeout;
   executionLineLocation;
   sidebarPaneStack;
@@ -9358,11 +9337,11 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     } else {
       this.editorView.setSidebarWidget(tabbedPane);
     }
-    this.sourcesViewInternal = new SourcesView();
-    this.sourcesViewInternal.addEventListener("EditorSelected", this.editorSelected.bind(this));
+    this.#sourcesView = new SourcesView();
+    this.#sourcesView.addEventListener("EditorSelected", this.editorSelected.bind(this));
     this.toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton(i18nString16(UIStrings17.showNavigator), i18nString16(UIStrings17.hideNavigator), i18nString16(UIStrings17.navigatorShown), i18nString16(UIStrings17.navigatorHidden), "navigator");
     this.toggleDebuggerSidebarButton = this.splitWidget.createShowHideSidebarButton(i18nString16(UIStrings17.showDebugger), i18nString16(UIStrings17.hideDebugger), i18nString16(UIStrings17.debuggerShown), i18nString16(UIStrings17.debuggerHidden), "debugger");
-    this.editorView.setMainWidget(this.sourcesViewInternal);
+    this.editorView.setMainWidget(this.#sourcesView);
     this.threadsSidebarPane = null;
     this.watchSidebarPane = UI18.ViewManager.ViewManager.instance().view("sources.watch");
     this.callstackPane = CallStackSidebarPane.instance();
@@ -9391,21 +9370,21 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     return sourcesPanelInstance;
   }
   static updateResizerAndSidebarButtons(panel2) {
-    panel2.sourcesViewInternal.leftToolbar().removeToolbarItems();
-    panel2.sourcesViewInternal.rightToolbar().removeToolbarItems();
-    panel2.sourcesViewInternal.bottomToolbar().removeToolbarItems();
+    panel2.#sourcesView.leftToolbar().removeToolbarItems();
+    panel2.#sourcesView.rightToolbar().removeToolbarItems();
+    panel2.#sourcesView.bottomToolbar().removeToolbarItems();
     const isInWrapper = UI18.Context.Context.instance().flavor(QuickSourceView) && !UI18.InspectorView.InspectorView.instance().isDrawerMinimized();
     if (panel2.splitWidget.isVertical() || isInWrapper) {
-      panel2.splitWidget.uninstallResizer(panel2.sourcesViewInternal.scriptViewToolbar());
+      panel2.splitWidget.uninstallResizer(panel2.#sourcesView.scriptViewToolbar());
     } else {
-      panel2.splitWidget.installResizer(panel2.sourcesViewInternal.scriptViewToolbar());
+      panel2.splitWidget.installResizer(panel2.#sourcesView.scriptViewToolbar());
     }
     if (!isInWrapper) {
-      panel2.sourcesViewInternal.leftToolbar().appendToolbarItem(panel2.toggleNavigatorSidebarButton);
+      panel2.#sourcesView.leftToolbar().appendToolbarItem(panel2.toggleNavigatorSidebarButton);
       if (panel2.splitWidget.isVertical()) {
-        panel2.sourcesViewInternal.rightToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
+        panel2.#sourcesView.rightToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
       } else {
-        panel2.sourcesViewInternal.bottomToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
+        panel2.#sourcesView.bottomToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
       }
     }
   }
@@ -9433,7 +9412,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (debuggerModel.isPaused()) {
       this.showDebuggerPausedDetails(debuggerModel.debuggerPausedDetails());
     } else {
-      this.pausedInternal = false;
+      this.#paused = false;
       this.clearInterface();
       this.toggleDebuggerSidebarButton.setEnabled(true);
     }
@@ -9442,7 +9421,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     this.setTarget(target);
   }
   paused() {
-    return this.pausedInternal || false;
+    return this.#paused || false;
   }
   wasShown() {
     UI18.Context.Context.instance().setFlavor(_SourcesPanel, this);
@@ -9451,7 +9430,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
       UI18.InspectorView.InspectorView.instance().setDrawerMinimized(true);
       _SourcesPanel.updateResizerAndSidebarButtons(this);
     }
-    this.editorView.setMainWidget(this.sourcesViewInternal);
+    this.editorView.setMainWidget(this.#sourcesView);
   }
   willHide() {
     super.willHide();
@@ -9485,7 +9464,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
   }
   searchableView() {
-    return this.sourcesViewInternal.searchableView();
+    return this.#sourcesView.searchableView();
   }
   toggleNavigatorSidebar() {
     this.editorView.toggleSidebar();
@@ -9496,12 +9475,12 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   debuggerPaused(event) {
     const debuggerModel = event.data;
     const details = debuggerModel.debuggerPausedDetails();
-    if (!this.pausedInternal && Common14.Settings.Settings.instance().moduleSetting("auto-focus-on-debugger-paused-enabled").get()) {
+    if (!this.#paused && Common14.Settings.Settings.instance().moduleSetting("auto-focus-on-debugger-paused-enabled").get()) {
       void this.setAsCurrentPanel();
     }
     if (UI18.Context.Context.instance().flavor(SDK11.Target.Target) === debuggerModel.target()) {
       this.showDebuggerPausedDetails(details);
-    } else if (!this.pausedInternal) {
+    } else if (!this.#paused) {
       UI18.Context.Context.instance().setFlavor(SDK11.Target.Target, debuggerModel.target());
     }
   }
@@ -9516,7 +9495,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
   }
   showDebuggerPausedDetails(details) {
-    this.pausedInternal = true;
+    this.#paused = true;
     void this.updateDebuggerButtonsAndStatus();
     UI18.Context.Context.instance().setFlavor(SDK11.DebuggerModel.DebuggerPausedDetails, details);
     this.toggleDebuggerSidebarButton.setEnabled(false);
@@ -9547,9 +9526,9 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
       }
       if (byOverlayButton) {
         const details = UI18.Context.Context.instance().flavor(SDK11.DebuggerModel.DebuggerPausedDetails);
-        VisualLogging12.logClick(this.pausedInternal && details?.reason === "step" ? this.overlayLoggables.stepOverButton : this.overlayLoggables.resumeButton, new MouseEvent("click"));
+        VisualLogging12.logClick(this.#paused && details?.reason === "step" ? this.overlayLoggables.stepOverButton : this.overlayLoggables.resumeButton, new MouseEvent("click"));
       }
-      if (!this.pausedInternal) {
+      if (!this.#paused) {
         VisualLogging12.logResize(this.overlayLoggables.debuggerPausedMessage, new DOMRect(0, 0, 0, 0));
         this.overlayLoggables = void 0;
       }
@@ -9561,7 +9540,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (UI18.Context.Context.instance().flavor(SDK11.Target.Target) !== target) {
       return;
     }
-    this.pausedInternal = false;
+    this.#paused = false;
     this.clearInterface();
     this.toggleDebuggerSidebarButton.setEnabled(true);
     this.switchToPausedTargetTimeout = window.setTimeout(this.switchToPausedTarget.bind(this, debuggerModel), 500);
@@ -9574,7 +9553,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     void this.updateDebuggerButtonsAndStatus();
   }
   get visibleView() {
-    return this.sourcesViewInternal.visibleView();
+    return this.#sourcesView.visibleView();
   }
   showUISourceCode(uiSourceCode, location, omitFocus) {
     if (omitFocus) {
@@ -9584,7 +9563,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     } else {
       this.showEditor();
     }
-    this.sourcesViewInternal.showSourceLocation(uiSourceCode, location, omitFocus);
+    this.#sourcesView.showSourceLocation(uiSourceCode, location, omitFocus);
   }
   showEditor() {
     if (UI18.Context.Context.instance().flavor(QuickSourceView)) {
@@ -9649,7 +9628,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (window.performance.now() - this.lastModificationTime < lastModificationTimeout) {
       return;
     }
-    this.sourcesViewInternal.showSourceLocation(uiLocation.uiSourceCode, uiLocation, void 0, true);
+    this.#sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation, void 0, true);
   }
   async callFrameChanged() {
     const callFrame = UI18.Context.Context.instance().flavor(SDK11.DebuggerModel.CallFrame);
@@ -9670,7 +9649,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
       this.stepIntoAction.setEnabled(false);
       this.stepOutAction.setEnabled(false);
       this.stepAction.setEnabled(false);
-    } else if (this.pausedInternal) {
+    } else if (this.#paused) {
       this.togglePauseAction.setToggled(true);
       this.togglePauseAction.setEnabled(true);
       this.stepOverAction.setEnabled(true);
@@ -9703,7 +9682,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   }
   switchToPausedTarget(debuggerModel) {
     delete this.switchToPausedTargetTimeout;
-    if (this.pausedInternal || debuggerModel.isPaused()) {
+    if (this.#paused || debuggerModel.isPaused()) {
       return;
     }
     for (const debuggerModel2 of SDK11.TargetManager.TargetManager.instance().models(SDK11.DebuggerModel.DebuggerModel)) {
@@ -9714,7 +9693,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
   }
   runSnippet() {
-    const uiSourceCode = this.sourcesViewInternal.currentUISourceCode();
+    const uiSourceCode = this.#sourcesView.currentUISourceCode();
     if (uiSourceCode) {
       void Snippets4.ScriptSnippetFileSystem.evaluateScriptSnippet(uiSourceCode);
     }
@@ -9735,8 +9714,8 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (!debuggerModel) {
       return true;
     }
-    if (this.pausedInternal) {
-      this.pausedInternal = false;
+    if (this.#paused) {
+      this.#paused = false;
       debuggerModel.resume();
     } else {
       debuggerModel.pause();
@@ -9745,10 +9724,10 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     return true;
   }
   prepareToResume() {
-    if (!this.pausedInternal) {
+    if (!this.#paused) {
       return null;
     }
-    this.pausedInternal = false;
+    this.#paused = false;
     this.clearInterface();
     const target = UI18.Context.Context.instance().flavor(SDK11.Target.Target);
     return target ? target.model(SDK11.DebuggerModel.DebuggerModel) : null;
@@ -9812,7 +9791,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
   breakpointsActiveStateChanged() {
     const active = Common14.Settings.Settings.instance().moduleSetting("breakpoints-active").get();
     this.toggleBreakpointsActiveAction.setToggled(!active);
-    this.sourcesViewInternal.toggleBreakpointsActiveState(active);
+    this.#sourcesView.toggleBreakpointsActiveState(active);
   }
   createDebugToolbar() {
     const debugToolbar = document.createElement("devtools-toolbar");
@@ -10111,7 +10090,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
   }
   sourcesView() {
-    return this.sourcesViewInternal;
+    return this.#sourcesView;
   }
   handleDrop(dataTransfer) {
     const items = dataTransfer.items;
@@ -13377,7 +13356,7 @@ import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
 var scopeChainSidebarPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13585,7 +13564,7 @@ import * as Snippets5 from "./../snippets/snippets.js";
 
 // gen/front_end/panels/sources/sourcesNavigator.css.js
 var sourcesNavigator_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13982,7 +13961,7 @@ import * as ObjectUI4 from "./../../ui/legacy/components/object_ui/object_ui.js"
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14095,7 +14074,7 @@ import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
 var watchExpressionsSidebarPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14476,10 +14455,10 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   }
 };
 var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.ObjectWrapper {
-  treeElementInternal;
+  #treeElement;
   nameElement;
   valueElement;
-  expressionInternal;
+  #expression;
   expandController;
   element;
   editing;
@@ -14489,7 +14468,7 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   preventClickTimeout;
   constructor(expression, expandController, linkifier2) {
     super();
-    this.expressionInternal = expression;
+    this.#expression = expression;
     this.expandController = expandController;
     this.element = document.createElement("div");
     this.element.classList.add("watch-expression");
@@ -14500,10 +14479,10 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     this.update();
   }
   treeElement() {
-    return this.treeElementInternal;
+    return this.#treeElement;
   }
   expression() {
-    return this.expressionInternal;
+    return this.#expression;
   }
   async #evaluateExpression(executionContext, expression) {
     const callFrame = executionContext.debuggerModel.selectedCallFrame();
@@ -14531,8 +14510,8 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   }
   update() {
     const currentExecutionContext = UI26.Context.Context.instance().flavor(SDK15.RuntimeModel.ExecutionContext);
-    if (currentExecutionContext && this.expressionInternal) {
-      void this.#evaluateExpression(currentExecutionContext, this.expressionInternal).then((result) => {
+    if (currentExecutionContext && this.#expression) {
+      void this.#evaluateExpression(currentExecutionContext, this.#expression).then((result) => {
         if ("object" in result) {
           this.createWatchExpression(result.object, result.exceptionDetails);
         } else {
@@ -14545,15 +14524,15 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   }
   startEditing() {
     this.editing = true;
-    this.treeElementInternal.setDisableSelectFocus(true);
+    this.#treeElement.setDisableSelectFocus(true);
     this.element.removeChildren();
     const newDiv = this.element.createChild("div");
     newDiv.textContent = this.nameElement.textContent;
     this.textPrompt = new ObjectUI4.ObjectPropertiesSection.ObjectPropertyPrompt();
     this.textPrompt.renderAsBlock();
     const proxyElement = this.textPrompt.attachAndStartEditing(newDiv, this.finishEditing.bind(this));
-    this.treeElementInternal.listItemElement.classList.add("watch-expression-editing");
-    this.treeElementInternal.collapse();
+    this.#treeElement.listItemElement.classList.add("watch-expression-editing");
+    this.#treeElement.collapse();
     proxyElement.classList.add("watch-expression-text-prompt-proxy");
     proxyElement.addEventListener("keydown", this.promptKeyDown.bind(this), false);
     const selection = this.element.getComponentSelection();
@@ -14569,11 +14548,11 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
       event.consume(canceled);
     }
     this.editing = false;
-    this.treeElementInternal.setDisableSelectFocus(false);
-    this.treeElementInternal.listItemElement.classList.remove("watch-expression-editing");
+    this.#treeElement.setDisableSelectFocus(false);
+    this.#treeElement.listItemElement.classList.remove("watch-expression-editing");
     if (this.textPrompt) {
       this.textPrompt.detach();
-      const newExpression = canceled ? this.expressionInternal : this.textPrompt.text();
+      const newExpression = canceled ? this.#expression : this.textPrompt.text();
       this.textPrompt = void 0;
       this.element.removeChildren();
       this.updateExpression(newExpression);
@@ -14586,10 +14565,10 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     }
   }
   updateExpression(newExpression) {
-    if (this.expressionInternal) {
-      this.expandController.stopWatchSectionsWithId(this.expressionInternal);
+    if (this.#expression) {
+      this.expandController.stopWatchSectionsWithId(this.#expression);
     }
-    this.expressionInternal = newExpression;
+    this.#expression = newExpression;
     this.update();
     this.dispatchEventToListeners("ExpressionUpdated", this);
   }
@@ -14601,15 +14580,15 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   createWatchExpression(result, exceptionDetails) {
     this.result = result || null;
     this.element.removeChildren();
-    const oldTreeElement = this.treeElementInternal;
+    const oldTreeElement = this.#treeElement;
     this.createWatchExpressionTreeElement(result, exceptionDetails);
     if (oldTreeElement?.parent) {
       const root = oldTreeElement.parent;
       const index = root.indexOfChild(oldTreeElement);
       root.removeChild(oldTreeElement);
-      root.insertChild(this.treeElementInternal, index);
+      root.insertChild(this.#treeElement, index);
     }
-    this.treeElementInternal.select();
+    this.#treeElement.select();
   }
   createWatchExpressionHeader(expressionValue, exceptionDetails) {
     const headerElement = this.element.createChild("div", "watch-expression-header");
@@ -14630,8 +14609,8 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     });
     const titleElement = headerElement.createChild("div", "watch-expression-title tree-element-title");
     titleElement.appendChild(deleteButton);
-    this.nameElement = ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this.expressionInternal);
-    UI26.Tooltip.Tooltip.install(this.nameElement, this.expressionInternal);
+    this.nameElement = ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this.#expression);
+    UI26.Tooltip.Tooltip.install(this.nameElement, this.#expression);
     if (Boolean(exceptionDetails) || !expressionValue) {
       this.valueElement = document.createElement("span");
       this.valueElement.classList.add("watch-expression-error");
@@ -14655,18 +14634,18 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     const headerElement = this.createWatchExpressionHeader(expressionValue, exceptionDetails);
     if (!exceptionDetails && expressionValue && expressionValue.hasChildren && !expressionValue.customPreview()) {
       headerElement.classList.add("watch-expression-object-header");
-      this.treeElementInternal = new ObjectUI4.ObjectPropertiesSection.RootElement(expressionValue, this.linkifier);
-      this.expandController.watchSection(this.expressionInternal, this.treeElementInternal);
-      this.treeElementInternal.toggleOnClick = false;
-      this.treeElementInternal.listItemElement.addEventListener("click", this.onSectionClick.bind(this), false);
-      this.treeElementInternal.listItemElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
+      this.#treeElement = new ObjectUI4.ObjectPropertiesSection.RootElement(expressionValue, this.linkifier);
+      this.expandController.watchSection(this.#expression, this.#treeElement);
+      this.#treeElement.toggleOnClick = false;
+      this.#treeElement.listItemElement.addEventListener("click", this.onSectionClick.bind(this), false);
+      this.#treeElement.listItemElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
     } else {
       headerElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
-      this.treeElementInternal = new UI26.TreeOutline.TreeElement();
+      this.#treeElement = new UI26.TreeOutline.TreeElement();
     }
-    this.treeElementInternal.title = this.element;
-    this.treeElementInternal.listItemElement.classList.add("watch-expression-tree-item");
-    this.treeElementInternal.listItemElement.addEventListener("keydown", (event) => {
+    this.#treeElement.title = this.element;
+    this.#treeElement.listItemElement.classList.add("watch-expression-tree-item");
+    this.#treeElement.listItemElement.addEventListener("keydown", (event) => {
       if (event.key === "Enter" && !this.isEditing()) {
         this.startEditing();
         event.consume(true);
@@ -14685,13 +14664,13 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
       this.preventClickTimeout = void 0;
     }
     function handleClick() {
-      if (!this.treeElementInternal) {
+      if (!this.#treeElement) {
         return;
       }
-      if (this.treeElementInternal.expanded) {
-        this.treeElementInternal.collapse();
+      if (this.#treeElement.expanded) {
+        this.#treeElement.collapse();
       } else if (!this.editing) {
-        this.treeElementInternal.expand();
+        this.#treeElement.expand();
       }
     }
   }

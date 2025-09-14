@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -34,8 +34,8 @@
  */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Elements from '../../models/elements/elements.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
@@ -379,10 +379,8 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
     #nodeElementToIssues = new Map();
     constructor(omitRootDOMNode, selectEnabled, hideGutter) {
         super();
-        if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
-            this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
-            this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueAdded, this);
-        }
+        this.#issuesManager = IssuesManager.IssuesManager.IssuesManager.instance();
+        this.#issuesManager.addEventListener("IssueAdded" /* IssuesManager.IssuesManager.Events.ISSUE_ADDED */, this.#onIssueAdded, this);
         this.treeElementByNode = new WeakMap();
         const shadowContainer = document.createElement('div');
         this.shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutlineStyles, CodeHighlighter.codeHighlighterStyles] });
@@ -439,47 +437,45 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.showHTMLCommentsSetting = Common.Settings.Settings.instance().moduleSetting('show-html-comments');
         this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
         this.setUseLightSelectionColor(true);
-        if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
-            // TODO(changhaohan): refactor the popover to use tooltip component.
-            this.#popupHelper = new UI.PopoverHelper.PopoverHelper(this.elementInternal, event => {
-                const hoveredNode = event.composedPath()[0];
-                if (!hoveredNode?.matches('.violating-element')) {
-                    return null;
-                }
-                const issues = this.#nodeElementToIssues.get(hoveredNode);
-                if (!issues) {
-                    return null;
-                }
-                return {
-                    box: hoveredNode.boxInWindow(),
-                    show: async (popover) => {
-                        popover.setIgnoreLeftMargin(true);
-                        // clang-format off
-                        render(html `
-              <div class="squiggles-content">
-                ${issues.map(issue => {
-                            const elementIssueDetails = getElementIssueDetails(issue);
-                            if (!elementIssueDetails) {
-                                // This shouldn't happen, but add this if check to pass ts check.
-                                return nothing;
-                            }
-                            const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
-                            const openIssueEvent = () => Common.Revealer.reveal(issue);
-                            return html `
-                    <div class="squiggles-content-item">
-                    <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
-                    <x-link class="link" @click=${openIssueEvent}>${i18nString(UIStrings.viewIssue)}</x-link>
-                    <span>${elementIssueDetails.tooltip}</span>
-                    </div>`;
-                        })}
-              </div>`, popover.contentElement);
-                        // clang-format on
-                        return true;
-                    },
-                };
-            }, 'elements.issue');
-            this.#popupHelper.setTimeout(300);
-        }
+        // TODO(changhaohan): refactor the popover to use tooltip component.
+        this.#popupHelper = new UI.PopoverHelper.PopoverHelper(this.elementInternal, event => {
+            const hoveredNode = event.composedPath()[0];
+            if (!hoveredNode?.matches('.violating-element')) {
+                return null;
+            }
+            const issues = this.#nodeElementToIssues.get(hoveredNode);
+            if (!issues) {
+                return null;
+            }
+            return {
+                box: hoveredNode.boxInWindow(),
+                show: async (popover) => {
+                    popover.setIgnoreLeftMargin(true);
+                    // clang-format off
+                    render(html `
+            <div class="squiggles-content">
+              ${issues.map(issue => {
+                        const elementIssueDetails = getElementIssueDetails(issue);
+                        if (!elementIssueDetails) {
+                            // This shouldn't happen, but add this if check to pass ts check.
+                            return nothing;
+                        }
+                        const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
+                        const openIssueEvent = () => Common.Revealer.reveal(issue);
+                        return html `
+                  <div class="squiggles-content-item">
+                  <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
+                  <x-link class="link" @click=${openIssueEvent}>${i18nString(UIStrings.viewIssue)}</x-link>
+                  <span>${elementIssueDetails.tooltip}</span>
+                  </div>`;
+                    })}
+            </div>`, popover.contentElement);
+                    // clang-format on
+                    return true;
+                },
+            };
+        }, 'elements.issue');
+        this.#popupHelper.setTimeout(300);
     }
     static forDOMModel(domModel) {
         return elementsTreeOutlineByDOMModel.get(domModel) || null;
@@ -1105,6 +1101,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             if (!success) {
                 return;
             }
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
             // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
             this.runPendingUpdates();
             if (!index) {
@@ -1267,9 +1264,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         this.reset();
         if (domModel.existingDocument()) {
             this.rootDOMNode = domModel.existingDocument();
-            if (Root.Runtime.experiments.isEnabled("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */)) {
-                this.#addAllElementIssues();
-            }
+            this.#addAllElementIssues();
         }
     }
     attributeModified(event) {

@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
@@ -122,34 +122,6 @@ export class ThrottlingPresets {
         return [
             ThrottlingPresets.getOfflineConditions(),
         ];
-    }
-    static getRecommendedNetworkPreset(rtt) {
-        const RTT_COMPARISON_THRESHOLD = 200;
-        const RTT_MINIMUM = 60;
-        if (!Number.isFinite(rtt)) {
-            return null;
-        }
-        if (rtt < RTT_MINIMUM) {
-            return null;
-        }
-        let closestPreset = null;
-        let smallestDiff = Infinity;
-        for (const preset of ThrottlingPresets.networkPresets) {
-            const { targetLatency } = preset;
-            if (!targetLatency) {
-                continue;
-            }
-            const diff = Math.abs(targetLatency - rtt);
-            if (diff > RTT_COMPARISON_THRESHOLD) {
-                continue;
-            }
-            if (smallestDiff < diff) {
-                continue;
-            }
-            closestPreset = preset;
-            smallestDiff = diff;
-        }
-        return closestPreset;
     }
     static networkPresets = [
         SDK.NetworkManager.Fast4GConditions,

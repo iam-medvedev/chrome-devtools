@@ -6,14 +6,6 @@ import * as Workspace from "./../workspace/workspace.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  workspace: "Workspace",
-  /**
-   * @description Command for showing the Workspace tool in Settings
-   */
-  showWorkspace: "Show Workspace settings",
-  /**
    * @description Title of a setting under the Persistence category in Settings
    */
   enableLocalOverrides: "Enable Local Overrides",
@@ -56,18 +48,6 @@ async function loadPersistenceModule() {
   }
   return loadedPersistenceModule;
 }
-UI.ViewManager.registerViewExtension({
-  location: "settings-view",
-  id: "workspace",
-  title: i18nLazyString(UIStrings.workspace),
-  commandPrompt: i18nLazyString(UIStrings.showWorkspace),
-  order: 1,
-  async loadView() {
-    const Persistence = await loadPersistenceModule();
-    return new Persistence.WorkspaceSettingsTab.WorkspaceSettingsTab();
-  },
-  iconName: "folder"
-});
 Common.Settings.registerSettingExtension({
   category: "PERSISTENCE",
   title: i18nLazyString(UIStrings.enableLocalOverrides),

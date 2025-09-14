@@ -70,7 +70,6 @@ export declare class HeapSnapshotRetainerEdge implements HeapSnapshotItem {
     retainerIndex(): number;
     setRetainerIndex(retainerIndex: number): void;
     set edgeIndex(edgeIndex: number);
-    private nodeInternal;
     protected edge(): JSHeapSnapshotEdge;
     toString(): string;
     itemIndex(): number;
@@ -357,7 +356,6 @@ export declare abstract class HeapSnapshot {
     calculateSnapshotDiff(baseSnapshotId: string, baseSnapshotAggregates: Record<string, HeapSnapshotModel.HeapSnapshotModel.AggregateForDiff>): Record<string, HeapSnapshotModel.HeapSnapshotModel.Diff>;
     private calculateDiffForClass;
     private nodeForSnapshotObjectId;
-    classKeyFromClassKeyInternal(key: string | number): string;
     nodeClassKey(snapshotObjectId: number): string | null;
     idsOfObjectsWithName(name: string): number[];
     createEdgesProvider(nodeIndex: number): HeapSnapshotEdgesProvider;
@@ -469,6 +467,7 @@ export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     serialize(): HeapSnapshotModel.HeapSnapshotModel.Node;
 }
 export declare class JSHeapSnapshotEdge extends HeapSnapshotEdge {
+    #private;
     clone(): JSHeapSnapshotEdge;
     hasStringName(): boolean;
     isElement(): boolean;
@@ -479,8 +478,6 @@ export declare class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     isShortcut(): boolean;
     name(): string;
     toString(): string;
-    private hasStringNameInternal;
-    private nameInternal;
     private nameOrIndex;
     rawType(): number;
     nameIndex(): number;

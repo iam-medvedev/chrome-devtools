@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
@@ -25,7 +25,7 @@ export function stackTraceInEvent(event) {
     if (event.args?.stackTrace) {
         return event.args.stackTrace;
     }
-    if (Types.Events.isUpdateLayoutTree(event)) {
+    if (Types.Events.isRecalcStyle(event)) {
         return event.args.beginData?.stackTrace || null;
     }
     if (Types.Events.isLayout(event)) {
@@ -398,23 +398,45 @@ export function getZeroIndexedStackTraceInEventPayload(event) {
     if (!stack) {
         return null;
     }
-    return stack.map(callFrame => {
-        switch (event.name) {
-            case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
-            case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
-            case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
-            case "Layout" /* Types.Events.Name.LAYOUT */:
-            case "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */: {
-                return makeZeroBasedCallFrame(callFrame);
-            }
-            default: {
-                if (Types.Events.isUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
-                    return makeZeroBasedCallFrame(callFrame);
-                }
-            }
+    switch (event.name) {
+        case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
+        case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
+        case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
+        case "Layout" /* Types.Events.Name.LAYOUT */:
+        case "UpdateLayoutTree" /* Types.Events.Name.RECALC_STYLE */: {
+            return stack.map(makeZeroBasedCallFrame);
         }
-        return callFrame;
-    });
+        default: {
+            if (Types.Events.isUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
+                return stack.map(makeZeroBasedCallFrame);
+            }
+            return stack;
+        }
+    }
+}
+/**
+ * Same as getZeroIndexedStackTraceInEventPayload, but only returns the top call frame.
+ */
+export function getStackTraceTopCallFrameInEventPayload(event) {
+    const stack = stackTraceInEvent(event);
+    if (!stack || stack.length === 0) {
+        return null;
+    }
+    switch (event.name) {
+        case "ScheduleStyleRecalculation" /* Types.Events.Name.SCHEDULE_STYLE_RECALCULATION */:
+        case "InvalidateLayout" /* Types.Events.Name.INVALIDATE_LAYOUT */:
+        case "FunctionCall" /* Types.Events.Name.FUNCTION_CALL */:
+        case "Layout" /* Types.Events.Name.LAYOUT */:
+        case "UpdateLayoutTree" /* Types.Events.Name.RECALC_STYLE */: {
+            return makeZeroBasedCallFrame(stack[0]);
+        }
+        default: {
+            if (Types.Events.isUserTiming(event) || Types.Extensions.isSyntheticExtensionEntry(event)) {
+                return makeZeroBasedCallFrame(stack[0]);
+            }
+            return stack[0];
+        }
+    }
 }
 /**
  * Given a 1-based call frame creates a 0-based one.
@@ -452,7 +474,7 @@ function getRawLineAndColumnNumbersForEvent(event) {
     return { lineNumber, columnNumber };
 }
 export function frameIDForEvent(event) {
-    // There are a few events (for example UpdateLayoutTree, ParseHTML) that have
+    // There are a few events (for example RecalcStyle, ParseHTML) that have
     // the frame stored in args.beginData
     // Rather than list them all we just check for the presence of the field, so
     // we are robust against future trace events also doing this.
@@ -484,12 +506,12 @@ function topLevelEventIndexEndingAfter(events, time) {
     }
     return Math.max(index, 0);
 }
-export function findUpdateLayoutTreeEvents(events, startTime, endTime) {
+export function findRecalcStyleEvents(events, startTime, endTime) {
     const foundEvents = [];
     const startEventIndex = topLevelEventIndexEndingAfter(events, startTime);
     for (let i = startEventIndex; i < events.length; i++) {
         const event = events[i];
-        if (!Types.Events.isUpdateLayoutTree(event)) {
+        if (!Types.Events.isRecalcStyle(event)) {
             continue;
         }
         if (event.ts >= (endTime || Infinity)) {
@@ -703,7 +725,7 @@ export const VISIBLE_TRACE_EVENT_TYPES = new Set([
     "TimerInstall" /* Types.Events.Name.TIMER_INSTALL */,
     "TimerRemove" /* Types.Events.Name.TIMER_REMOVE */,
     "UpdateLayerTree" /* Types.Events.Name.UPDATE_LAYER_TREE */,
-    "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */,
+    "UpdateLayoutTree" /* Types.Events.Name.RECALC_STYLE */,
     "UserTiming" /* Types.Events.Name.USER_TIMING */,
     "V8Console::runTask" /* Types.Events.Name.V8_CONSOLE_RUN_TASK */,
     "v8.wasm.cachedModule" /* Types.Events.Name.WASM_CACHED_MODULE */,

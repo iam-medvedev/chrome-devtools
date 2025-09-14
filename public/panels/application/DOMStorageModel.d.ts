@@ -3,9 +3,8 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 export declare class DOMStorage extends Common.ObjectWrapper.ObjectWrapper<DOMStorage.EventTypes> {
+    #private;
     private readonly model;
-    private readonly storageKeyInternal;
-    private readonly isLocalStorageInternal;
     constructor(model: DOMStorageModel, storageKey: string, isLocalStorage: boolean);
     static storageId(storageKey: string, isLocalStorage: boolean): Protocol.DOMStorage.StorageId;
     get id(): Protocol.DOMStorage.StorageId;
@@ -43,8 +42,7 @@ export declare namespace DOMStorage {
     }
 }
 export declare class DOMStorageModel extends SDK.SDKModel.SDKModel<EventTypes> {
-    private readonly storageKeyManagerInternal;
-    private storagesInternal;
+    #private;
     readonly agent: ProtocolProxyApi.DOMStorageApi;
     private enabled?;
     constructor(target: SDK.Target.Target);

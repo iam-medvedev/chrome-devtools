@@ -33,7 +33,7 @@ export declare class EventListenersTreeElement extends UI.TreeOutline.TreeElemen
     addObjectEventListener(eventListener: SDK.DOMDebuggerModel.EventListener, object: SDK.RemoteObject.RemoteObject): void;
 }
 export declare class ObjectEventListenerBar extends UI.TreeOutline.TreeElement {
-    private eventListenerInternal;
+    #private;
     editable: boolean;
     private readonly changeCallback;
     private valueTitle?;

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/components/request_link_icon/request_link_icon.js';
@@ -378,13 +378,13 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
     };
     // If we have a stack trace, that is the most reliable way to get the initiator data and display a link to the source.
     if (hasStackTrace) {
-        const topFrame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(request)?.at(0) ?? null;
+        const topFrame = Trace.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(request) ?? null;
         if (topFrame) {
             link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, options);
         }
     }
     // If we do not, we can see if the network handler found an initiator and try to link by URL
-    const initiator = parsedTrace?.NetworkRequests.eventToInitiator.get(request);
+    const initiator = parsedTrace?.data.NetworkRequests.eventToInitiator.get(request);
     if (initiator) {
         link = linkifier.maybeLinkifyScriptLocation(target, null, // this would be the scriptId, but we don't have one. The linkifier will fallback to using the URL.
         initiator.args.data.url, undefined, // line number

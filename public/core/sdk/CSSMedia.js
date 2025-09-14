@@ -1,58 +1,58 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { CSSQuery } from './CSSQuery.js';
 export class CSSMediaQuery {
-    #activeInternal;
-    #expressionsInternal;
+    #active;
+    #expressions;
     constructor(payload) {
-        this.#activeInternal = payload.active;
-        this.#expressionsInternal = [];
+        this.#active = payload.active;
+        this.#expressions = [];
         for (let j = 0; j < payload.expressions.length; ++j) {
-            this.#expressionsInternal.push(CSSMediaQueryExpression.parsePayload(payload.expressions[j]));
+            this.#expressions.push(CSSMediaQueryExpression.parsePayload(payload.expressions[j]));
         }
     }
     static parsePayload(payload) {
         return new CSSMediaQuery(payload);
     }
     active() {
-        return this.#activeInternal;
+        return this.#active;
     }
     expressions() {
-        return this.#expressionsInternal;
+        return this.#expressions;
     }
 }
 export class CSSMediaQueryExpression {
-    #valueInternal;
-    #unitInternal;
-    #featureInternal;
-    #valueRangeInternal;
-    #computedLengthInternal;
+    #value;
+    #unit;
+    #feature;
+    #valueRange;
+    #computedLength;
     constructor(payload) {
-        this.#valueInternal = payload.value;
-        this.#unitInternal = payload.unit;
-        this.#featureInternal = payload.feature;
-        this.#valueRangeInternal = payload.valueRange ? TextUtils.TextRange.TextRange.fromObject(payload.valueRange) : null;
-        this.#computedLengthInternal = payload.computedLength || null;
+        this.#value = payload.value;
+        this.#unit = payload.unit;
+        this.#feature = payload.feature;
+        this.#valueRange = payload.valueRange ? TextUtils.TextRange.TextRange.fromObject(payload.valueRange) : null;
+        this.#computedLength = payload.computedLength || null;
     }
     static parsePayload(payload) {
         return new CSSMediaQueryExpression(payload);
     }
     value() {
-        return this.#valueInternal;
+        return this.#value;
     }
     unit() {
-        return this.#unitInternal;
+        return this.#unit;
     }
     feature() {
-        return this.#featureInternal;
+        return this.#feature;
     }
     valueRange() {
-        return this.#valueRangeInternal;
+        return this.#valueRange;
     }
     computedLength() {
-        return this.#computedLengthInternal;
+        return this.#computedLength;
     }
 }
 export class CSSMedia extends CSSQuery {

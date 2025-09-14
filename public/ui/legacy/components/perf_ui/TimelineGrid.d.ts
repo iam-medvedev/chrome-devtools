@@ -1,10 +1,9 @@
 import type * as NetworkTimeCalculator from '../../../../models/network_time_calculator/network_time_calculator.js';
 export declare class TimelineGrid {
+    #private;
     element: HTMLDivElement;
-    private readonly dividersElementInternal;
     private readonly gridHeaderElement;
     private eventDividersElement;
-    private dividersLabelBarElementInternal;
     constructor();
     static calculateGridOffsets(calculator: NetworkTimeCalculator.Calculator, freeZoneAtLeft?: number): DividersData;
     static drawCanvasGrid(context: CanvasRenderingContext2D, dividersData: DividersData): void;

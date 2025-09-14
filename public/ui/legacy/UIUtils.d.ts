@@ -61,7 +61,6 @@ export declare function revertDomChanges(domChanges: HighlightChange[]): void;
 export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Geometry.Size;
 export declare function startBatchUpdate(): void;
 export declare function endBatchUpdate(): void;
-export declare function invokeOnceAfterBatchUpdate(object: Object, method: () => void): void;
 export declare function animateFunction(window: Window, func: (...args: any[]) => void, params: Array<{
     from: number;
     to: number;

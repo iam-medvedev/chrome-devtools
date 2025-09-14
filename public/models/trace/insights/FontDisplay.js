@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -34,15 +34,15 @@ function finalize(partialModel) {
 export function isFontDisplayInsight(model) {
     return model.insightKey === "FontDisplay" /* InsightKeys.FONT_DISPLAY */;
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     const fonts = [];
-    for (const remoteFont of parsedTrace.LayoutShifts.remoteFonts) {
+    for (const remoteFont of data.LayoutShifts.remoteFonts) {
         const event = remoteFont.beginRemoteFontLoadEvent;
         if (!Helpers.Timing.eventIsInBounds(event, context.bounds)) {
             continue;
         }
         const requestId = `${event.pid}.${event.args.id}`;
-        const request = parsedTrace.NetworkRequests.byId.get(requestId);
+        const request = data.NetworkRequests.byId.get(requestId);
         if (!request) {
             continue;
         }

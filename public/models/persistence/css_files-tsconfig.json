@@ -4,7 +4,6 @@
         "outDir": "."
     },
     "files": [
-        "editFileSystemView.css.js",
-        "workspaceSettingsTab.css.js"
+        "editFileSystemView.css.js"
     ]
 }

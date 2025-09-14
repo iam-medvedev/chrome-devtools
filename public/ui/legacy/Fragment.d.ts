@@ -1,5 +1,5 @@
 export declare class Fragment {
-    private readonly elementInternal;
+    #private;
     private readonly elementsById;
     constructor(element: Element);
     element(): Element;

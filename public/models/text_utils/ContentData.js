@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -66,7 +66,11 @@ export class ContentData {
             throw new Error('Cannot interpret binary data as text');
         }
         const binaryString = window.atob(this.#contentAsBase64);
-        const bytes = Uint8Array.from(binaryString, m => m.codePointAt(0));
+        const len = binaryString.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
         this.#contentAsText = new TextDecoder(this.charset).decode(bytes);
         return this.#contentAsText;
     }

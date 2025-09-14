@@ -37,7 +37,7 @@ import * as UI2 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/resourceSourceFrame.css.js
 var resourceSourceFrame_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1070,14 +1070,14 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("ui/legacy/components/source_frame/ResourceSourceFrame.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var ResourceSourceFrame = class extends SourceFrameImpl {
-  resourceInternal;
+  #resource;
   #givenContentType;
   constructor(resource, givenContentType, options) {
     const isStreamingProvider = TextUtils3.ContentProvider.isStreamingContentProvider(resource);
     const lazyContent = isStreamingProvider ? () => resource.requestStreamingContent().then(TextUtils3.StreamingContentData.asContentDataOrError) : () => resource.requestContentData();
     super(lazyContent, options);
     this.#givenContentType = givenContentType;
-    this.resourceInternal = resource;
+    this.#resource = resource;
     if (isStreamingProvider) {
       void resource.requestStreamingContent().then((streamingContent) => {
         if (!TextUtils3.StreamingContentData.isError(streamingContent)) {
@@ -1095,11 +1095,11 @@ var ResourceSourceFrame = class extends SourceFrameImpl {
     return this.#givenContentType;
   }
   get resource() {
-    return this.resourceInternal;
+    return this.#resource;
   }
   populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
     super.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
-    contextMenu.appendApplicableItems(this.resourceInternal);
+    contextMenu.appendApplicableItems(this.#resource);
   }
 };
 var SearchableContainer = class extends UI2.Widget.VBox {
@@ -1285,7 +1285,7 @@ import * as UI4 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/fontView.css.js
 var fontView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1444,7 +1444,7 @@ import * as UI5 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/imageView.css.js
 var imageView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1699,7 +1699,7 @@ import * as ObjectUI from "./../object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/source_frame/jsonView.css.js
 var jsonView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1975,7 +1975,7 @@ import * as UI7 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/xmlTree.css.js
 var xmlTree_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2034,7 +2034,7 @@ ol.tree-outline {
 
 // gen/front_end/ui/legacy/components/source_frame/xmlView.css.js
 var xmlView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

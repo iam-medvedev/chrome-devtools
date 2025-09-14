@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -8,18 +8,18 @@ import * as Trace from '../trace.js';
 describeWithEnvironment('Trace helpers', function () {
     describe('extractOriginFromTrace', () => {
         it('extracts the origin of a parsed trace correctly', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.Meta.mainFrameURL);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.data.Meta.mainFrameURL);
             assert.strictEqual(origin, 'web.dev');
         });
         it('will remove the `www` if it is present', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
-            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.Meta.mainFrameURL);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
+            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.data.Meta.mainFrameURL);
             assert.strictEqual(origin, 'google.com');
         });
         it('returns null when no origin is found', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'missing-url.json.gz');
-            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.Meta.mainFrameURL);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'missing-url.json.gz');
+            const origin = Trace.Helpers.Trace.extractOriginFromTrace(parsedTrace.data.Meta.mainFrameURL);
             assert.isNull(origin);
         });
     });
@@ -85,8 +85,8 @@ describeWithEnvironment('Trace helpers', function () {
     });
     describe('getNavigationForTraceEvent', () => {
         it('returns the correct navigation for a request', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
-            const { NetworkRequests, Meta } = parsedTrace;
+            const parsedTrace = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
+            const { NetworkRequests, Meta } = parsedTrace.data;
             const request1 = NetworkRequests.byTime[0];
             const navigationForFirstRequest = Trace.Helpers.Trace.getNavigationForTraceEvent(request1, request1.args.data.frame, Meta.navigationsByFrameId);
             assert.isUndefined(navigationForFirstRequest?.ts);
@@ -95,8 +95,8 @@ describeWithEnvironment('Trace helpers', function () {
             assert.strictEqual(navigationForSecondRequest?.ts, Trace.Types.Timing.Micro(636471400029));
         });
         it('returns the correct navigation for a page load event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
-            const { Meta, PageLoadMetrics } = parsedTrace;
+            const parsedTrace = await TraceLoader.traceEngine(this, 'multiple-navigations.json.gz');
+            const { Meta, PageLoadMetrics } = parsedTrace.data;
             const firstNavigationId = Meta.navigationsByNavigationId.keys().next().value;
             const fcp = PageLoadMetrics.metricScoresByFrameId.get(Meta.mainFrameId)
                 ?.get(firstNavigationId)
@@ -333,11 +333,11 @@ describeWithEnvironment('Trace helpers', function () {
     });
     describe('activeURLForFrameAtTime', () => {
         it('extracts the active url for a frame at a given time', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
             const frameId = '1F729458403A23CF1D8D246095129AC4';
-            const firstURL = Trace.Helpers.Trace.activeURLForFrameAtTime(frameId, Trace.Types.Timing.Micro(251126654355), parsedTrace.Meta.rendererProcessesByFrame);
+            const firstURL = Trace.Helpers.Trace.activeURLForFrameAtTime(frameId, Trace.Types.Timing.Micro(251126654355), parsedTrace.data.Meta.rendererProcessesByFrame);
             assert.strictEqual(firstURL, 'about:blank');
-            const secondURL = Trace.Helpers.Trace.activeURLForFrameAtTime(frameId, Trace.Types.Timing.Micro(251126663398), parsedTrace.Meta.rendererProcessesByFrame);
+            const secondURL = Trace.Helpers.Trace.activeURLForFrameAtTime(frameId, Trace.Types.Timing.Micro(251126663398), parsedTrace.data.Meta.rendererProcessesByFrame);
             assert.strictEqual(secondURL, 'https://www.google.com');
         });
     });
@@ -452,7 +452,7 @@ describeWithEnvironment('Trace helpers', function () {
     });
     describe('frameIDForEvent', () => {
         it('returns the frame ID from beginData if the event has it', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const parseHTMLEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isParseHTML);
             assert.isOk(parseHTMLEvent);
             const frameId = Trace.Helpers.Trace.frameIDForEvent(parseHTMLEvent);
@@ -460,7 +460,7 @@ describeWithEnvironment('Trace helpers', function () {
             assert.strictEqual(frameId, parseHTMLEvent.args.beginData.frame);
         });
         it('returns the frame ID from args.data if the event has it', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const invalidateLayoutEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isInvalidateLayout);
             assert.isOk(invalidateLayoutEvent);
             const frameId = Trace.Helpers.Trace.frameIDForEvent(invalidateLayoutEvent);
@@ -468,24 +468,24 @@ describeWithEnvironment('Trace helpers', function () {
             assert.strictEqual(frameId, invalidateLayoutEvent.args.data.frame);
         });
         it('returns null if the event does not have a frame', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const v8CompileEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isV8Compile);
             assert.isOk(v8CompileEvent);
             const frameId = Trace.Helpers.Trace.frameIDForEvent(v8CompileEvent);
             assert.isNull(frameId);
         });
     });
-    describe('findUpdateLayoutTreeEvents', () => {
-        it('returns the set of UpdateLayoutTree events within the right time range', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'selector-stats.json.gz');
-            const mainThread = getMainThread(parsedTrace.Renderer);
-            const foundEvents = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(mainThread.entries, parsedTrace.Meta.traceBounds.min);
+    describe('findRecalcStyleEvents', () => {
+        it('returns the set of RecalcStyle events within the right time range', async function () {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'selector-stats.json.gz');
+            const mainThread = getMainThread(parsedTrace.data.Renderer);
+            const foundEvents = Trace.Helpers.Trace.findRecalcStyleEvents(mainThread.entries, parsedTrace.data.Meta.traceBounds.min);
             assert.lengthOf(foundEvents, 11);
             const lastEvent = foundEvents.at(-1);
             assert.isOk(lastEvent);
             // Check we can filter by endTime by making the endTime less than the start
             // time of the last event:
-            const filteredByEndTimeEvents = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(mainThread.entries, parsedTrace.Meta.traceBounds.min, Trace.Types.Timing.Micro(lastEvent.ts - 1_000));
+            const filteredByEndTimeEvents = Trace.Helpers.Trace.findRecalcStyleEvents(mainThread.entries, parsedTrace.data.Meta.traceBounds.min, Trace.Types.Timing.Micro(lastEvent.ts - 1_000));
             assert.lengthOf(filteredByEndTimeEvents, 10);
         });
     });
@@ -618,7 +618,7 @@ describeWithEnvironment('Trace helpers', function () {
     });
     describe('isTopLevelEvent', () => {
         it('is true for a RunTask event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const runTask = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isRunTask);
             assert.isOk(runTask);
             assert.isTrue(Trace.Helpers.Trace.isTopLevelEvent(runTask));
@@ -626,9 +626,9 @@ describeWithEnvironment('Trace helpers', function () {
     });
     describe('findNextEventAfterTimestamp', () => {
         it('gets the first screenshot after a trace', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'cls-multiple-frames.json.gz');
-            const screenshots = parsedTrace.Screenshots.legacySyntheticScreenshots ?? [];
-            const { clusters } = parsedTrace.LayoutShifts;
+            const parsedTrace = await TraceLoader.traceEngine(this, 'cls-multiple-frames.json.gz');
+            const screenshots = parsedTrace.data.Screenshots.legacySyntheticScreenshots ?? [];
+            const { clusters } = parsedTrace.data.LayoutShifts;
             const shifts = clusters.flatMap(cluster => cluster.events);
             assert.isAtLeast(shifts.length, 10);
             shifts.forEach((shift, i) => {

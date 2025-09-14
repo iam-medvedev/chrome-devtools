@@ -15,11 +15,9 @@ declare const SourcesView_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class SourcesView extends SourcesView_base implements TabbedEditorContainerDelegate, UI.SearchableView.Searchable, UI.SearchableView.Replaceable {
     #private;
-    private readonly searchableViewInternal;
     private readonly sourceViewByUISourceCode;
     editorContainer: TabbedEditorContainer;
     private readonly historyManager;
-    private readonly bottomToolbarInternal;
     private toolbarChangedListener;
     private readonly focusedPlaceholderElement?;
     private searchView?;

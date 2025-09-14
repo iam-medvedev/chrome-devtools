@@ -2,12 +2,10 @@ import * as Trace from '../../../models/trace/trace.js';
 import * as Insights from './insights/insights.js';
 import type { ActiveInsight } from './Sidebar.js';
 export interface SidebarSingleInsightSetData {
-    insights: Trace.Insights.Types.TraceInsightSets | null;
     insightSetKey: Trace.Types.Events.NavigationId | null;
     activeCategory: Trace.Insights.Types.InsightCategory;
     activeInsight: ActiveInsight | null;
-    parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
-    traceMetadata: Trace.Types.File.MetaData | null;
+    parsedTrace: Trace.TraceModel.ParsedTrace | null;
 }
 interface CategorizedInsightData {
     componentClass: typeof Insights.BaseInsightComponent.BaseInsightComponent<Trace.Insights.Types.InsightModel>;

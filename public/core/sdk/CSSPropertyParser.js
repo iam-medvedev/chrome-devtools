@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
@@ -60,7 +60,6 @@ export function splitByComma(value) {
 export function stripComments(value) {
     return value.replaceAll(/(\/\*(?:.|\s)*?\*\/)/g, '');
 }
-const cssParser = CodeMirror.css.cssLanguage.parser;
 function nodeText(node, text) {
     return nodeTextRange(node, node, text);
 }
@@ -487,6 +486,7 @@ export var ASTUtils;
     ASTUtils.equals = equals;
 })(ASTUtils || (ASTUtils = {}));
 function declaration(rule) {
+    const cssParser = CodeMirror.css.cssLanguage.parser;
     return cssParser.parse(rule).topNode.getChild('RuleSet')?.getChild('Block')?.getChild('Declaration') ?? null;
 }
 export function tokenizeDeclaration(propertyName, propertyValue) {

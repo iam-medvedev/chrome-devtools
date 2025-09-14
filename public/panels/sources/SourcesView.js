@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -46,12 +46,12 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/sources/SourcesView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    searchableViewInternal;
+    #searchableView;
     sourceViewByUISourceCode;
     editorContainer;
     historyManager;
     #scriptViewToolbar;
-    bottomToolbarInternal;
+    #bottomToolbar;
     toolbarChangedListener;
     focusedPlaceholderElement;
     searchView;
@@ -62,12 +62,12 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         this.element.id = 'sources-panel-sources-view';
         this.setMinimumAndPreferredSizes(88, 52, 150, 100);
         const workspace = Workspace.Workspace.WorkspaceImpl.instance();
-        this.searchableViewInternal = new UI.SearchableView.SearchableView(this, this, 'sources-view-search-config');
-        this.searchableViewInternal.setMinimalSearchQuerySize(0);
-        this.searchableViewInternal.show(this.element);
+        this.#searchableView = new UI.SearchableView.SearchableView(this, this, 'sources-view-search-config');
+        this.#searchableView.setMinimalSearchQuerySize(0);
+        this.#searchableView.show(this.element);
         this.sourceViewByUISourceCode = new Map();
         this.editorContainer = new TabbedEditorContainer(this, Common.Settings.Settings.instance().createLocalSetting('previously-viewed-files', []), this.placeholderElement(), this.focusedPlaceholderElement);
-        this.editorContainer.show(this.searchableViewInternal.element);
+        this.editorContainer.show(this.#searchableView.element);
         this.editorContainer.addEventListener("EditorSelected" /* TabbedEditorContainerEvents.EDITOR_SELECTED */, this.editorSelected, this);
         this.editorContainer.addEventListener("EditorClosed" /* TabbedEditorContainerEvents.EDITOR_CLOSED */, this.editorClosed, this);
         this.historyManager = new EditingLocationHistoryManager(this);
@@ -75,7 +75,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         toolbarContainerElementInternal.setAttribute('jslog', `${VisualLogging.toolbar('bottom')}`);
         this.#scriptViewToolbar = toolbarContainerElementInternal.createChild('devtools-toolbar');
         this.#scriptViewToolbar.style.flex = 'auto';
-        this.bottomToolbarInternal = toolbarContainerElementInternal.createChild('devtools-toolbar');
+        this.#bottomToolbar = toolbarContainerElementInternal.createChild('devtools-toolbar');
         this.toolbarChangedListener = null;
         UI.UIUtils.startBatchUpdate();
         workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
@@ -178,7 +178,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         return this.editorContainer.rightToolbar();
     }
     bottomToolbar() {
-        return this.bottomToolbarInternal;
+        return this.#bottomToolbar;
     }
     scriptViewToolbar() {
         return this.#scriptViewToolbar;
@@ -192,7 +192,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         super.willHide();
     }
     searchableView() {
-        return this.searchableViewInternal;
+        return this.#searchableView;
     }
     visibleView() {
         return this.editorContainer.visibleView;
@@ -395,7 +395,7 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         // SourcesNavigator does not need to update on EditorClosed.
         this.removeToolbarChangedListener();
         this.updateScriptViewToolbarItems();
-        this.searchableViewInternal.resetSearch();
+        this.#searchableView.resetSearch();
         const data = {
             uiSourceCode,
             wasSelected,
@@ -409,10 +409,10 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
         }
         const currentSourceFrame = event.data.currentView instanceof UISourceCodeFrame ? event.data.currentView : null;
         if (currentSourceFrame) {
-            currentSourceFrame.setSearchableView(this.searchableViewInternal);
+            currentSourceFrame.setSearchableView(this.#searchableView);
         }
-        this.searchableViewInternal.setReplaceable(Boolean(currentSourceFrame?.canEditSource()));
-        this.searchableViewInternal.refreshSearch();
+        this.#searchableView.setReplaceable(Boolean(currentSourceFrame?.canEditSource()));
+        this.#searchableView.refreshSearch();
         this.updateToolbarChangedListener();
         this.updateScriptViewToolbarItems();
         const currentFile = this.editorContainer.currentFile();

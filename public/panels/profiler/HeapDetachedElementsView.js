@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -121,18 +121,18 @@ export class DetachedElementsProfileType extends Common.ObjectWrapper.eventMixin
     static TypeId = 'DetachedElements';
 }
 export class DetachedElementsProfileHeader extends WritableProfileHeader {
-    heapProfilerModelInternal;
+    #heapProfilerModel;
     detachedElements;
     constructor(heapProfilerModel, type, detachedElements, title) {
         super(heapProfilerModel?.debuggerModel() ?? null, type, title || i18nString(UIStrings.detachedElementProfile, { PH1: type.nextProfileUid() }));
         this.detachedElements = detachedElements;
-        this.heapProfilerModelInternal = heapProfilerModel;
+        this.#heapProfilerModel = heapProfilerModel;
     }
     createView(dataDisplayDelegate) {
         return new DetachedElementsProfileView(dataDisplayDelegate, this);
     }
     heapProfilerModel() {
-        return this.heapProfilerModelInternal;
+        return this.#heapProfilerModel;
     }
     profileType() {
         return super.profileType();

@@ -65,13 +65,9 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/panel_feedback/panelFeedback.css.js
 var panelFeedback_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
- */
-
-/**
- * Copyright 2021 Google LLC. All rights reserved.
  */
 
 :host {
@@ -220,7 +216,7 @@ import { html as html3, nothing, render as render3 } from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/panel_feedback/previewToggle.css.js
 var previewToggle_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -18,7 +18,7 @@ import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryHighlightChipList.css.js
 var linearMemoryHighlightChipList_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -276,7 +276,7 @@ import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/linear_memory_inspector/components/valueInterpreterDisplay.css.js
 var valueInterpreterDisplay_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -740,7 +740,7 @@ import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/linear_memory_inspector/components/valueInterpreterSettings.css.js
 var valueInterpreterSettings_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -868,7 +868,7 @@ import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryValueInterpreter.css.js
 var linearMemoryValueInterpreter_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1079,7 +1079,7 @@ function parseAddress(address) {
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryViewer.css.js
 var linearMemoryViewer_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1397,7 +1397,7 @@ import { html as html6, nothing, render as render6 } from "./../../../ui/lit/lit
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryInspector.css.js
 var linearMemoryInspector_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1725,7 +1725,7 @@ import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryNavigator.css.js
 var linearMemoryNavigator_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

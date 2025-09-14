@@ -16,6 +16,7 @@ export declare enum ListMode {
     VariousHeightItems = "UI.ListMode.VariousHeightItems"
 }
 export declare class ListControl<T> {
+    #private;
     element: HTMLDivElement;
     private topElement;
     private bottomElement;
@@ -26,8 +27,6 @@ export declare class ListControl<T> {
     private bottomHeight;
     private model;
     private itemToElement;
-    private selectedIndexInternal;
-    private selectedItemInternal;
     private delegate;
     private readonly mode;
     private fixedHeight;

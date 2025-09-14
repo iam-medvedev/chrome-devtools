@@ -4,7 +4,6 @@ import * as UI from '../../legacy.js';
 import { type RevealPosition, SourceFrameImpl, type SourceFrameOptions } from './SourceFrame.js';
 export declare class ResourceSourceFrame extends SourceFrameImpl {
     #private;
-    private readonly resourceInternal;
     constructor(resource: TextUtils.ContentProvider.ContentProvider, givenContentType: string, options?: SourceFrameOptions);
     static createSearchableView(resource: TextUtils.ContentProvider.ContentProvider, contentType: string): UI.Widget.Widget;
     protected getContentType(): string;

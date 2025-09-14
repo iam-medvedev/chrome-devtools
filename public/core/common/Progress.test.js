@@ -1,11 +1,11 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from './common.js';
 const CompositeProgress = Common.Progress.CompositeProgress;
 const ProgressProxy = Common.Progress.ProgressProxy;
 class MockProgressIndicator {
-    isCanceledInternal = false;
+    #isCanceled = false;
     totalWork = 0;
     workCompleted = 0;
     title;
@@ -19,7 +19,7 @@ class MockProgressIndicator {
         return this.totalWork;
     }
     isCanceled() {
-        return this.isCanceledInternal;
+        return this.#isCanceled;
     }
     done() {
         return 'progress indicator: done';
@@ -41,7 +41,7 @@ class MockProgressIndicator {
     }
     // Test methods.
     cancel() {
-        this.isCanceledInternal = true;
+        this.#isCanceled = true;
     }
 }
 describe('Composite Progress Bar', () => {

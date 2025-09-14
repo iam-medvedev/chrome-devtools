@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { SecurityPanelSidebarTreeElement } from './SecurityPanelSidebarTreeElement.js';
@@ -11,29 +11,29 @@ export class ShowOriginEvent extends Event {
     }
 }
 export class OriginTreeElement extends SecurityPanelSidebarTreeElement {
-    #securityStateInternal;
+    #securityState;
     #renderTreeElement;
-    #originInternal = null;
+    #origin = null;
     constructor(className, renderTreeElement, origin = null) {
         super();
         this.#renderTreeElement = renderTreeElement;
-        this.#originInternal = origin;
+        this.#origin = origin;
         this.listItemElement.classList.add(className);
-        this.#securityStateInternal = null;
+        this.#securityState = null;
         this.setSecurityState("unknown" /* Protocol.Security.SecurityState.Unknown */);
     }
     setSecurityState(newSecurityState) {
-        this.#securityStateInternal = newSecurityState;
+        this.#securityState = newSecurityState;
         this.#renderTreeElement(this);
     }
     securityState() {
-        return this.#securityStateInternal;
+        return this.#securityState;
     }
     origin() {
-        return this.#originInternal;
+        return this.#origin;
     }
     showElement() {
-        this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#originInternal));
+        this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#origin));
     }
 }
 //# sourceMappingURL=OriginTreeElement.js.map

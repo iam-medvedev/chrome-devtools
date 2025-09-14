@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -62,14 +62,14 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/color_picker/Cont
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     contrastInfo;
-    elementInternal;
+    #element;
     toggleMainColorPicker;
     expandedChangedCallback;
     colorSelectedCallback;
-    expandedInternal;
+    #expanded;
     passesAA;
     contrastUnknown;
-    visibleInternal;
+    #visible;
     noContrastInfoAvailable;
     contrastValueBubble;
     contrastValue;
@@ -90,21 +90,21 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
     constructor(contrastInfo, contentElement, toggleMainColorPickerCallback, expandedChangedCallback, colorSelectedCallback) {
         super();
         this.contrastInfo = contrastInfo;
-        this.elementInternal = contentElement.createChild('div', 'spectrum-contrast-details collapsed');
+        this.#element = contentElement.createChild('div', 'spectrum-contrast-details collapsed');
         this.toggleMainColorPicker = toggleMainColorPickerCallback;
         this.expandedChangedCallback = expandedChangedCallback;
         this.colorSelectedCallback = colorSelectedCallback;
-        this.expandedInternal = false;
+        this.#expanded = false;
         this.passesAA = true;
         this.contrastUnknown = false;
         // This will not be visible if we don't get ContrastInfo,
         // e.g. for a non-font color property such as border-color.
-        this.visibleInternal = false;
+        this.#visible = false;
         // No contrast info message is created to show if it's not possible to provide the extended details.
         this.noContrastInfoAvailable = contentElement.createChild('div', 'no-contrast-info-available');
         this.noContrastInfoAvailable.textContent = i18nString(UIStrings.noContrastInformationAvailable);
         this.noContrastInfoAvailable.classList.add('hidden');
-        const contrastValueRow = this.elementInternal.createChild('div');
+        const contrastValueRow = this.#element.createChild('div');
         contrastValueRow.addEventListener('click', this.topRowClicked.bind(this));
         const contrastValueRowContents = contrastValueRow.createChild('div', 'container');
         UI.UIUtils.createTextChild(contrastValueRowContents, i18nString(UIStrings.contrastRatio));
@@ -123,7 +123,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         this.expandButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.expandButtonClicked.bind(this));
         UI.ARIAUtils.setExpanded(this.expandButton.element, false);
         expandToolbar.appendToolbarItem(this.expandButton);
-        this.expandedDetails = this.elementInternal.createChild('div', 'expanded-details');
+        this.expandedDetails = this.#element.createChild('div', 'expanded-details');
         UI.ARIAUtils.setControls(this.expandButton.element, this.expandedDetails);
         this.contrastThresholds = this.expandedDetails.createChild('div', 'contrast-thresholds');
         this.contrastAA = this.contrastThresholds.createChild('div', 'contrast-threshold');
@@ -137,7 +137,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         const bgColorContainer = this.expandedDetails.createChild('div', 'background-color');
         const pickerToolbar = bgColorContainer.createChild('devtools-toolbar', 'spectrum-eye-dropper');
         this.bgColorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleBackgroundColorPicker), 'color-picker', 'color-picker-filled');
-        this.bgColorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.toggleBackgroundColorPickerInternal.bind(this, undefined, true));
+        this.bgColorPickerButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, this.#toggleBackgroundColorPicker.bind(this, undefined, true));
         pickerToolbar.appendToolbarItem(this.bgColorPickerButton);
         this.bgColorPickedBound = this.bgColorPicked.bind(this);
         this.bgColorSwatch = new Swatch(bgColorContainer);
@@ -236,7 +236,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
                 }
             }
             labelAPCA.addEventListener('click', (_event) => ContrastDetails.showHelp());
-            this.elementInternal.classList.toggle('contrast-fail', !passesAPCA);
+            this.#element.classList.toggle('contrast-fail', !passesAPCA);
             this.contrastValueBubble.classList.toggle('contrast-aa', passesAPCA);
             this.bgColorSwatch.setColors(fgColor, bgColor);
             return;
@@ -300,7 +300,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
         [labelAA, labelAAA].forEach(e => e.addEventListener('click', () => ContrastDetails.showHelp()));
-        this.elementInternal.classList.toggle('contrast-fail', !this.passesAA);
+        this.#element.classList.toggle('contrast-fail', !this.passesAA);
         // show checkmark icon when passes AA, but not AAA
         this.contrastValueBubble.classList.toggle('contrast-aa', this.passesAA && !passesAAA);
         this.contrastValueBubble.classList.toggle('contrast-aaa', passesAAA);
@@ -309,14 +309,14 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         UI.UIUtils.openInNewTab('https://web.dev/color-and-contrast-accessibility/');
     }
     setVisible(visible) {
-        this.visibleInternal = visible;
-        this.elementInternal.classList.toggle('hidden', !visible);
+        this.#visible = visible;
+        this.#element.classList.toggle('hidden', !visible);
     }
     visible() {
-        return this.visibleInternal;
+        return this.#visible;
     }
     element() {
-        return this.elementInternal;
+        return this.#element;
     }
     expandButtonClicked() {
         const selection = this.contrastValueBubble.getComponentSelection();
@@ -334,39 +334,39 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         event.consume(true);
     }
     toggleExpanded() {
-        this.expandedInternal = !this.expandedInternal;
-        UI.ARIAUtils.setExpanded(this.expandButton.element, this.expandedInternal);
-        this.elementInternal.classList.toggle('collapsed', !this.expandedInternal);
-        if (this.expandedInternal) {
+        this.#expanded = !this.#expanded;
+        UI.ARIAUtils.setExpanded(this.expandButton.element, this.#expanded);
+        this.#element.classList.toggle('collapsed', !this.#expanded);
+        if (this.#expanded) {
             this.toggleMainColorPicker(false);
             this.expandButton.setGlyph('chevron-up');
             this.expandButton.setTitle(i18nString(UIStrings.showLess));
             if (this.contrastUnknown) {
-                this.toggleBackgroundColorPickerInternal(true);
+                this.#toggleBackgroundColorPicker(true);
             }
         }
         else {
-            this.toggleBackgroundColorPickerInternal(false);
+            this.#toggleBackgroundColorPicker(false);
             this.expandButton.setGlyph('chevron-down');
             this.expandButton.setTitle(i18nString(UIStrings.showMore));
         }
         this.expandedChangedCallback();
     }
     collapse() {
-        this.elementInternal.classList.remove('expanded');
-        this.toggleBackgroundColorPickerInternal(false);
+        this.#element.classList.remove('expanded');
+        this.#toggleBackgroundColorPicker(false);
         this.toggleMainColorPicker(false);
     }
     expanded() {
-        return this.expandedInternal;
+        return this.#expanded;
     }
     backgroundColorPickerEnabled() {
         return this.bgColorPickerButton.isToggled();
     }
     toggleBackgroundColorPicker(enabled) {
-        this.toggleBackgroundColorPickerInternal(enabled, false);
+        this.#toggleBackgroundColorPicker(enabled, false);
     }
-    toggleBackgroundColorPickerInternal(enabled, shouldTriggerEvent = true) {
+    #toggleBackgroundColorPicker(enabled, shouldTriggerEvent = true) {
         if (enabled === undefined) {
             enabled = this.bgColorPickerButton.isToggled();
         }
@@ -385,7 +385,7 @@ export class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper {
         const rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
         const color = Common.Color.Legacy.fromRGBA(rgba);
         this.contrastInfo.setBgColor(color);
-        this.toggleBackgroundColorPickerInternal(false);
+        this.#toggleBackgroundColorPicker(false);
         this.bgColorPickerButton.toggled(false);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
     }

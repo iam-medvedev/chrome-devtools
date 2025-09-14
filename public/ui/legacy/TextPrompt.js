@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -43,7 +43,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     proxyElement;
     proxyElementDisplay;
     autocompletionTimeout;
-    titleInternal;
+    #title;
     queryRange;
     previousText;
     currentSuggestion;
@@ -53,7 +53,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     loadCompletions;
     completionStopCharacters;
     usesSuggestionBuilder;
-    elementInternal;
+    #element;
     boundOnKeyDown;
     boundOnInput;
     boundOnMouseWheel;
@@ -66,13 +66,13 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
     blurListener;
     oldTabIndex;
     completeTimeout;
-    disableDefaultSuggestionForEmptyInputInternal;
+    #disableDefaultSuggestionForEmptyInput;
     jslogContext = undefined;
     constructor() {
         super();
         this.proxyElementDisplay = 'inline-block';
         this.autocompletionTimeout = DefaultAutocompletionTimeout;
-        this.titleInternal = '';
+        this.#title = '';
         this.queryRange = null;
         this.previousText = '';
         this.currentSuggestion = null;
@@ -99,7 +99,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
      * they should use the result of this method to attach listeners for bubbling events.
      */
     attach(element) {
-        return this.attachInternal(element);
+        return this.#attach(element);
     }
     /**
      * Clients should never attach any event listeners to the |element|. Instead,
@@ -108,15 +108,15 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
      * (since the "blur" event does not bubble.)
      */
     attachAndStartEditing(element, blurListener) {
-        const proxyElement = this.attachInternal(element);
+        const proxyElement = this.#attach(element);
         this.startEditing(blurListener);
         return proxyElement;
     }
-    attachInternal(element) {
+    #attach(element) {
         if (this.proxyElement) {
             throw new Error('Cannot attach an attached TextPrompt');
         }
-        this.elementInternal = element;
+        this.#element = element;
         this.boundOnKeyDown = this.onKeyDown.bind(this);
         this.boundOnInput = this.onInput.bind(this);
         this.boundOnMouseWheel = this.onMouseWheel.bind(this);
@@ -137,30 +137,30 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         if (this.jslogContext) {
             jslog = jslog.context(this.jslogContext);
         }
-        if (!this.elementInternal.hasAttribute('jslog')) {
-            this.elementInternal.setAttribute('jslog', `${jslog}`);
+        if (!this.#element.hasAttribute('jslog')) {
+            this.#element.setAttribute('jslog', `${jslog}`);
         }
-        this.elementInternal.classList.add('text-prompt');
-        ARIAUtils.markAsTextBox(this.elementInternal);
-        ARIAUtils.setAutocomplete(this.elementInternal, "both" /* ARIAUtils.AutocompleteInteractionModel.BOTH */);
-        ARIAUtils.setHasPopup(this.elementInternal, "listbox" /* ARIAUtils.PopupRole.LIST_BOX */);
-        this.elementInternal.setAttribute('contenteditable', 'plaintext-only');
+        this.#element.classList.add('text-prompt');
+        ARIAUtils.markAsTextBox(this.#element);
+        ARIAUtils.setAutocomplete(this.#element, "both" /* ARIAUtils.AutocompleteInteractionModel.BOTH */);
+        ARIAUtils.setHasPopup(this.#element, "listbox" /* ARIAUtils.PopupRole.LIST_BOX */);
+        this.#element.setAttribute('contenteditable', 'plaintext-only');
         this.element().addEventListener('keydown', this.boundOnKeyDown, false);
-        this.elementInternal.addEventListener('input', this.boundOnInput, false);
-        this.elementInternal.addEventListener('wheel', this.boundOnMouseWheel, false);
-        this.elementInternal.addEventListener('selectstart', this.boundClearAutocomplete, false);
-        this.elementInternal.addEventListener('blur', this.boundOnBlur, false);
+        this.#element.addEventListener('input', this.boundOnInput, false);
+        this.#element.addEventListener('wheel', this.boundOnMouseWheel, false);
+        this.#element.addEventListener('selectstart', this.boundClearAutocomplete, false);
+        this.#element.addEventListener('blur', this.boundOnBlur, false);
         this.suggestBox = new SuggestBox(this, 20);
-        if (this.titleInternal) {
-            Tooltip.install(this.proxyElement, this.titleInternal);
+        if (this.#title) {
+            Tooltip.install(this.proxyElement, this.#title);
         }
         return this.proxyElement;
     }
     element() {
-        if (!this.elementInternal) {
+        if (!this.#element) {
             throw new Error('Expected an already attached element!');
         }
-        return this.elementInternal;
+        return this.#element;
     }
     detach() {
         this.removeFromElement();
@@ -229,10 +229,10 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.element().focus();
     }
     title() {
-        return this.titleInternal;
+        return this.#title;
     }
     setTitle(title) {
-        this.titleInternal = title;
+        this.#title = title;
         if (this.proxyElement) {
             Tooltip.install(this.proxyElement, title);
         }
@@ -403,7 +403,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
             result = this.suggestBox.acceptSuggestion();
         }
         if (!result) {
-            result = this.acceptSuggestionInternal();
+            result = this.#acceptSuggestion();
         }
         if (this.usesSuggestionBuilder && result) {
             // Trigger autocompletions for text prompts using suggestion builders
@@ -483,7 +483,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         this.completionsReady(completionRequestId, (selection), wordQueryRange, Boolean(force), completions);
     }
     disableDefaultSuggestionForEmptyInput() {
-        this.disableDefaultSuggestionForEmptyInputInternal = true;
+        this.#disableDefaultSuggestionForEmptyInput = true;
     }
     boxForAnchorAtStart(selection, textRange) {
         const rangeCopy = selection.getRangeAt(0).cloneRange();
@@ -530,7 +530,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         beforeRange.setStart(this.element(), 0);
         beforeRange.setEnd(fullWordRange.startContainer, fullWordRange.startOffset);
         this.queryRange = new TextUtils.TextRange.TextRange(0, beforeRange.toString().length, 0, beforeRange.toString().length + fullWordRange.toString().length);
-        const shouldSelect = !this.disableDefaultSuggestionForEmptyInputInternal || Boolean(this.text());
+        const shouldSelect = !this.#disableDefaultSuggestionForEmptyInput || Boolean(this.text());
         if (this.suggestBox) {
             this.suggestBox.updateSuggestions(this.boxForAnchorAtStart(selection, fullWordRange), completions, shouldSelect, !this.isCaretAtEndOfPrompt(), this.text());
         }
@@ -543,9 +543,9 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     acceptSuggestion() {
-        this.acceptSuggestionInternal();
+        this.#acceptSuggestion();
     }
-    acceptSuggestionInternal() {
+    #acceptSuggestion() {
         if (!this.queryRange) {
             return false;
         }
@@ -605,7 +605,7 @@ export class TextPrompt extends Common.ObjectWrapper.ObjectWrapper {
                 }
                 foundNextText = true;
             }
-            node = node.traverseNextNode(this.elementInternal);
+            node = node.traverseNextNode(this.#element);
         }
         return true;
     }

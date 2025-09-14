@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -1874,5 +1874,43 @@ export function getPredefinedCondition(key) {
         return null;
     }
     return THROTTLING_CONDITIONS_LOOKUP.get(key) ?? null;
+}
+/**
+ * For the given Round Trip Time (in MilliSeconds), return the best throttling conditions.
+ */
+export function getRecommendedNetworkPreset(rtt) {
+    const RTT_COMPARISON_THRESHOLD = 200;
+    const RTT_MINIMUM = 60;
+    if (!Number.isFinite(rtt)) {
+        return null;
+    }
+    if (rtt < RTT_MINIMUM) {
+        return null;
+    }
+    // We pick from the set of presets in the panel but do not want to allow
+    // the "No Throttling" option to be picked.
+    const presets = THROTTLING_CONDITIONS_LOOKUP.values()
+        .filter(condition => {
+        return condition !== NoThrottlingConditions;
+    })
+        .toArray();
+    let closestPreset = null;
+    let smallestDiff = Infinity;
+    for (const preset of presets) {
+        const { targetLatency } = preset;
+        if (!targetLatency) {
+            continue;
+        }
+        const diff = Math.abs(targetLatency - rtt);
+        if (diff > RTT_COMPARISON_THRESHOLD) {
+            continue;
+        }
+        if (smallestDiff < diff) {
+            continue;
+        }
+        closestPreset = preset;
+        smallestDiff = diff;
+    }
+    return closestPreset;
 }
 //# sourceMappingURL=NetworkManager.js.map

@@ -11,7 +11,7 @@ __export(InspectElementModeController_exports, {
   ToggleSearchActionDelegate: () => ToggleSearchActionDelegate
 });
 import * as Common17 from "./../../core/common/common.js";
-import * as Root9 from "./../../core/root/root.js";
+import * as Root8 from "./../../core/root/root.js";
 import * as SDK20 from "./../../core/sdk/sdk.js";
 import * as UI23 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging13 from "./../../ui/visual_logging/visual_logging.js";
@@ -30,7 +30,7 @@ import * as Common16 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform10 from "./../../core/platform/platform.js";
-import * as Root8 from "./../../core/root/root.js";
+import * as Root7 from "./../../core/root/root.js";
 import * as SDK19 from "./../../core/sdk/sdk.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
@@ -169,7 +169,7 @@ function getNodeId(node) {
 
 // gen/front_end/panels/elements/accessibilityTreeView.css.js
 var accessibilityTreeView_css_default = `/**
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -868,7 +868,7 @@ import * as ElementsComponents4 from "./components/components.js";
 
 // gen/front_end/panels/elements/computedStyleSidebarPane.css.js
 var computedStyleSidebarPane_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -956,7 +956,7 @@ import { html as html2, render } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/platformFontsWidget.css.js
 var platformFontsWidget_css_default = `/**
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1421,7 +1421,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/layersWidget.css.js
 var layersWidget_css_default = `/**
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1629,6 +1629,7 @@ import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as Root from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
@@ -2281,7 +2282,7 @@ import * as UI7 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/elements/cssValueTraceView.css.js
 var cssValueTraceView_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2375,7 +2376,7 @@ var cssValueTraceView_css_default = `/*
 
 // gen/front_end/panels/elements/stylePropertiesTreeOutline.css.js
 var stylePropertiesTreeOutline_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4353,11 +4354,11 @@ function getPropertyRenderers(propertyName, style, stylesPane, matchedStyles, tr
 }
 var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeOutline.TreeElement {
   style;
-  matchedStylesInternal;
+  #matchedStyles;
   property;
-  inheritedInternal;
-  overloadedInternal;
-  parentPaneInternal;
+  #inherited;
+  #overloaded;
+  #parentPane;
   #parentSection;
   isShorthand;
   applyStyleThrottler = new Common3.Throttler.Throttler(0);
@@ -4379,12 +4380,12 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     const jslogContext = property.name.startsWith("--") ? "custom-property" : property.name;
     super("", isShorthand, jslogContext);
     this.style = property.ownerStyle;
-    this.matchedStylesInternal = matchedStyles;
+    this.#matchedStyles = matchedStyles;
     this.property = property;
-    this.inheritedInternal = inherited;
-    this.overloadedInternal = overloaded;
+    this.#inherited = inherited;
+    this.#overloaded = overloaded;
     this.selectable = false;
-    this.parentPaneInternal = stylesPane;
+    this.#parentPane = stylesPane;
     this.#parentSection = section3;
     this.isShorthand = isShorthand;
     this.newProperty = newProperty;
@@ -4399,8 +4400,8 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (!SDK6.CSSMetadata.cssMetadata().isGridNameAwareProperty(this.name)) {
       return /* @__PURE__ */ new Set();
     }
-    for (let node = this.parentPaneInternal.node()?.parentNode; node; node = node?.parentNode) {
-      const style = await this.parentPaneInternal.cssModel()?.getComputedStyle(node.id);
+    for (let node = this.#parentPane.node()?.parentNode; node; node = node?.parentNode) {
+      const style = await this.#parentPane.cssModel()?.getComputedStyle(node.id);
       const display = style?.get("display");
       const isGrid = display === "grid" || display === "inline-grid";
       if (!isGrid) {
@@ -4428,7 +4429,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return /* @__PURE__ */ new Set();
   }
   matchedStyles() {
-    return this.matchedStylesInternal;
+    return this.#matchedStyles;
   }
   getLonghand() {
     return this.parent instanceof _StylePropertyTreeElement && this.parent.isShorthand ? this.parent : null;
@@ -4438,16 +4439,16 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return !this.getLonghand() && hasSourceData;
   }
   inherited() {
-    return this.inheritedInternal;
+    return this.#inherited;
   }
   overloaded() {
-    return this.overloadedInternal;
+    return this.#overloaded;
   }
   setOverloaded(x) {
-    if (x === this.overloadedInternal) {
+    if (x === this.#overloaded) {
       return;
     }
-    this.overloadedInternal = x;
+    this.#overloaded = x;
     this.updateState();
   }
   setComputedStyles(computedStyles) {
@@ -4469,7 +4470,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return this.property.value;
   }
   updateFilter() {
-    const regex = this.parentPaneInternal.filterRegex();
+    const regex = this.#parentPane.filterRegex();
     const matches = regex !== null && (regex.test(this.property.name) || regex.test(this.property.value));
     this.listItemElement.classList.toggle("filter-match", matches);
     void this.onpopulate();
@@ -4533,10 +4534,10 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     }
   }
   node() {
-    return this.parentPaneInternal.node();
+    return this.#parentPane.node();
   }
   parentPane() {
-    return this.parentPaneInternal;
+    return this.#parentPane;
   }
   section() {
     return this.#parentSection;
@@ -4549,13 +4550,13 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (!oldStyleRange) {
       return;
     }
-    this.parentPaneInternal.setUserOperation(true);
+    this.#parentPane.setUserOperation(true);
     const success = await this.property.setDisabled(disabled);
-    this.parentPaneInternal.setUserOperation(false);
+    this.#parentPane.setUserOperation(false);
     if (!success) {
       return;
     }
-    this.matchedStylesInternal.resetActiveProperties();
+    this.#matchedStyles.resetActiveProperties();
     this.updatePane();
     this.styleTextAppliedForTest();
   }
@@ -4568,7 +4569,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (!parsedProperty || parsedProperty === this.property.value) {
       return staticLonghandProperties;
     }
-    const parsedLonghands = await this.parentPaneInternal.cssModel()?.agent.invoke_getLonghandProperties({ shorthandName: this.property.name, value: parsedProperty });
+    const parsedLonghands = await this.#parentPane.cssModel()?.agent.invoke_getLonghandProperties({ shorthandName: this.property.name, value: parsedProperty });
     if (!parsedLonghands || parsedLonghands.getError()) {
       return staticLonghandProperties;
     }
@@ -4591,15 +4592,15 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       let inherited = false;
       let overloaded = false;
       inherited = this.#parentSection.isPropertyInherited(name);
-      overloaded = this.matchedStylesInternal.propertyState(property) === "Overloaded";
+      overloaded = this.#matchedStyles.propertyState(property) === "Overloaded";
       const leadingProperty = leadingProperties.find((property2) => property2.name === name && property2.activeInStyle());
       if (leadingProperty) {
         overloaded = true;
       }
       const item2 = new _StylePropertyTreeElement({
-        stylesPane: this.parentPaneInternal,
+        stylesPane: this.#parentPane,
         section: this.#parentSection,
-        matchedStyles: this.matchedStylesInternal,
+        matchedStyles: this.#matchedStyles,
         property,
         isShorthand: false,
         inherited,
@@ -4615,7 +4616,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     this.updateTitle();
     this.listItemElement.addEventListener("mousedown", (event) => {
       if (event.button === 0) {
-        parentMap.set(this.parentPaneInternal, this);
+        parentMap.set(this.#parentPane, this);
       }
     }, false);
     this.listItemElement.addEventListener("mouseup", this.mouseUp.bind(this));
@@ -4654,9 +4655,9 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       return null;
     }
     const matching = SDK6.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [
-      new SDK6.CSSPropertyParserMatchers.VariableMatcher(this.matchedStylesInternal, style),
-      new SDK6.CSSPropertyParserMatchers.AttributeMatcher(this.matchedStylesInternal, style),
-      new SDK6.CSSPropertyParserMatchers.EnvFunctionMatcher(this.matchedStylesInternal)
+      new SDK6.CSSPropertyParserMatchers.VariableMatcher(this.#matchedStyles, style),
+      new SDK6.CSSPropertyParserMatchers.AttributeMatcher(this.#matchedStyles, style),
+      new SDK6.CSSPropertyParserMatchers.EnvFunctionMatcher(this.#matchedStyles)
     ]);
     const decl = SDK6.CSSPropertyParser.ASTUtils.siblings(SDK6.CSSPropertyParser.ASTUtils.declValue(matching.ast.tree));
     return decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : "";
@@ -4681,7 +4682,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       this.expandElement = IconButton.Icon.create("triangle-right", "expand-icon");
       this.expandElement.setAttribute("jslog", `${VisualLogging3.expand().track({ click: true })}`);
     }
-    const renderers = this.property.parsedOk ? getPropertyRenderers(this.name, this.style, this.parentPaneInternal, this.matchedStylesInternal, this, this.getComputedStyles() ?? /* @__PURE__ */ new Map()) : [];
+    const renderers = this.property.parsedOk ? getPropertyRenderers(this.name, this.style, this.#parentPane, this.#matchedStyles, this, this.getComputedStyles() ?? /* @__PURE__ */ new Map()) : [];
     if (Root.Runtime.experiments.isEnabled("font-editor") && this.property.parsedOk) {
       renderers.push(new FontRenderer(this));
     }
@@ -4696,14 +4697,14 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     UI8.UIUtils.createTextChild(this.listItemElement.createChild("span", "styles-clipboard-only"), indent.repeat(this.section().nestingLevel + 1) + (this.property.disabled ? "/* " : ""));
     this.listItemElement.appendChild(this.nameElement);
     if (this.property.name.startsWith("--") && !(this.property.ownerStyle.parentRule instanceof SDK6.CSSRule.CSSFunctionRule)) {
-      const contents = this.parentPaneInternal.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null);
+      const contents = this.#parentPane.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value ?? null);
       const tooltipId = this.getTooltipId("custom-property-decl");
       this.nameElement.setAttribute("aria-details", tooltipId);
       const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: this.nameElement, variant: "rich", id: tooltipId, jslogContext: "elements.css-var" });
       tooltip.appendChild(contents);
       tooltip.onbeforetoggle = (e) => {
         if (e.newState === "open") {
-          contents.value = this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value;
+          contents.value = this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value;
         }
       };
       this.listItemElement.appendChild(tooltip);
@@ -4725,7 +4726,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
           event.consume(true);
           return;
         }
-        const cssProperty = this.parentPaneInternal.webCustomData?.findCssProperty(this.name);
+        const cssProperty = this.#parentPane.webCustomData?.findCssProperty(this.name);
         if (!cssProperty) {
           event.consume(true);
           return;
@@ -4755,7 +4756,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       this.updateAuthoringHint();
     } else {
       this.listItemElement.classList.add("not-parsed-ok");
-      this.listItemElement.insertBefore(this.createExclamationMark(this.property, this.parentPaneInternal.getVariableParserError(this.matchedStyles(), this.property.name)), this.listItemElement.firstChild);
+      this.listItemElement.insertBefore(this.createExclamationMark(this.property, this.#parentPane.getVariableParserError(this.matchedStyles(), this.property.name)), this.listItemElement.firstChild);
       const invalidPropertyValue = SDK6.CSSMetadata.cssMetadata().isCSSPropertyName(this.property.name);
       if (invalidPropertyValue) {
         this.listItemElement.classList.add("invalid-property-value");
@@ -4891,7 +4892,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (this.node()?.isSVGNode()) {
       return;
     }
-    const cssModel = this.parentPaneInternal.cssModel();
+    const cssModel = this.#parentPane.cssModel();
     const fontFaces = cssModel?.fontFaces() || [];
     const localName = this.node()?.localName();
     for (const validator of cssRuleValidatorsMap.get(propertyName) || []) {
@@ -4916,8 +4917,8 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     }
   }
   mouseUp(event) {
-    const activeTreeElement = parentMap.get(this.parentPaneInternal);
-    parentMap.delete(this.parentPaneInternal);
+    const activeTreeElement = parentMap.get(this.#parentPane);
+    parentMap.delete(this.#parentPane);
     if (!activeTreeElement) {
       return;
     }
@@ -4957,14 +4958,14 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
   handleContextMenuEvent(context, event) {
     const contextMenu = new UI8.ContextMenu.ContextMenu(event);
     if (this.property.parsedOk && this.parent?.root) {
-      const sectionIndex = this.parentPaneInternal.focusedSectionIndex();
+      const sectionIndex = this.#parentPane.focusedSectionIndex();
       contextMenu.defaultSection().appendCheckboxItem(i18nString5(UIStrings5.togglePropertyAndContinueEditing), async () => {
         if (this.treeOutline) {
           const propertyIndex = this.treeOutline.rootElement().indexOfChild(this);
           this.editingCancelled(context);
           await this.toggleDisabled(!this.property.disabled);
           event.consume();
-          this.parentPaneInternal.continueEditingElement(sectionIndex, propertyIndex);
+          this.#parentPane.continueEditingElement(sectionIndex, propertyIndex);
         }
       }, { checked: !this.property.disabled, jslogContext: "toggle-property-and-continue-editing" });
     }
@@ -5128,7 +5129,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       void this.editingCommitted(text || "", context2, "");
     }
     this.originalPropertyText = this.property.propertyText || "";
-    this.parentPaneInternal.setEditingStyle(true);
+    this.#parentPane.setEditingStyle(true);
     selectedElement.parentElement?.scrollIntoViewIfNeeded(false);
     this.prompt = new CSSPropertyPrompt(this, context.isEditingName, Array.from(this.#gridNames ?? []));
     this.prompt.setAutocompletionTimeout(0);
@@ -5242,7 +5243,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return leftOffset;
   }
   async applyFreeFlowStyleTextEdit(context) {
-    if (!this.prompt || !this.parentPaneInternal.node()) {
+    if (!this.prompt || !this.#parentPane.node()) {
       return;
     }
     const enteredText = this.prompt.text();
@@ -5254,7 +5255,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (valueText.includes(";")) {
       return;
     }
-    const parentNode = this.parentPaneInternal.node();
+    const parentNode = this.#parentPane.node();
     if (parentNode) {
       const isPseudo = Boolean(parentNode.pseudoType());
       if (isPseudo) {
@@ -5290,7 +5291,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     if (editedElement?.parentElement) {
       editedElement.parentElement.classList.remove("child-editing");
     }
-    this.parentPaneInternal.setEditingStyle(false);
+    this.#parentPane.setEditingStyle(false);
   }
   editingCancelled(context) {
     this.removePrompt();
@@ -5372,7 +5373,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     }
     function moveToNextCallback(alreadyNew, valueChanged, section3) {
       if (!moveDirection) {
-        this.parentPaneInternal.resetFocus();
+        this.#parentPane.resetFocus();
         return;
       }
       if (moveTo && moveTo.parent) {
@@ -5464,8 +5465,8 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       this.parent?.removeChild(this);
       return;
     }
-    const currentNode = this.parentPaneInternal.node();
-    this.parentPaneInternal.setUserOperation(true);
+    const currentNode = this.#parentPane.node();
+    this.#parentPane.setUserOperation(true);
     styleText += Platform2.StringUtilities.findUnclosedCssQuote(styleText);
     styleText += ")".repeat(Platform2.StringUtilities.countUnmatchedLeftParentheses(styleText));
     if (styleText.length && !/;\s*$/.test(styleText)) {
@@ -5473,11 +5474,14 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     }
     const overwriteProperty = !this.newProperty || hasBeenEditedIncrementally;
     let success = await this.property.setText(styleText, majorChange, overwriteProperty);
+    if (success && majorChange) {
+      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
+    }
     if (hasBeenEditedIncrementally && majorChange && !success) {
       majorChange = false;
       success = await this.property.setText(this.originalPropertyText, majorChange, overwriteProperty);
     }
-    this.parentPaneInternal.setUserOperation(false);
+    this.#parentPane.setUserOperation(false);
     const updatedProperty = property || this.style.propertyAt(this.property.index);
     const isPropertyWithinBounds = this.property.index < this.style.allProperties().length;
     if (!success || !updatedProperty && isPropertyWithinBounds) {
@@ -5491,7 +5495,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       this.styleTextAppliedForTest();
       return;
     }
-    this.matchedStylesInternal.resetActiveProperties();
+    this.#matchedStyles.resetActiveProperties();
     this.hasBeenEditedIncrementally = true;
     const deleteProperty = majorChange && !styleText.length;
     if (deleteProperty) {
@@ -5678,6 +5682,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as Badges2 from "./../../models/badges/badges.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
 import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
@@ -5702,7 +5707,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/domLinkifier.css.js
 var domLinkifier_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6038,7 +6043,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
   navigable;
   selectorRefElement;
   hoverableSelectorsMode;
-  isHiddenInternal;
+  #isHidden;
   customPopulateCallback;
   nestingLevel = 0;
   #ancestorRuleListElement;
@@ -6179,7 +6184,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
       this.propertiesTreeOutline.element.classList.add("read-only");
     }
     this.hoverableSelectorsMode = false;
-    this.isHiddenInternal = false;
+    this.#isHidden = false;
     this.markSelectorMatches();
     this.onpopulate();
   }
@@ -6868,7 +6873,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     }
     const regex = this.parentPane.filterRegex();
     const hideRule = !hasMatchingChild && regex !== null && !regex.test(this.element.deepTextContent());
-    this.isHiddenInternal = hideRule;
+    this.#isHidden = hideRule;
     this.element.classList.toggle("hidden", hideRule);
     if (!hideRule && this.styleInternal.parentRule) {
       this.markSelectorHighlights();
@@ -6876,7 +6881,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
     return !hideRule;
   }
   isHidden() {
-    return this.isHiddenInternal;
+    return this.#isHidden;
   }
   markSelectorMatches() {
     const rule = this.styleInternal.parentRule;
@@ -7191,6 +7196,7 @@ var StylePropertiesSection = class _StylePropertiesSection {
       if (!success) {
         return Promise.resolve();
       }
+      Badges2.UserBadges.instance().recordAction(Badges2.BadgeAction.CSS_RULE_MODIFIED);
       return this.matchedStyles.recomputeMatchingSelectors(rule2).then(updateSourceRanges.bind(this, rule2));
     }
     function updateSourceRanges(rule2) {
@@ -7557,7 +7563,7 @@ var StylePropertyHighlighter = class {
 
 // gen/front_end/panels/elements/stylesSidebarPane.css.js
 var stylesSidebarPane_css_default = `/**
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7989,7 +7995,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common6.ObjectWrapper.e
   noMatchesElement;
   sectionsContainer;
   sectionByElement = /* @__PURE__ */ new WeakMap();
-  swatchPopoverHelperInternal = new InlineEditor3.SwatchPopoverHelper.SwatchPopoverHelper();
+  #swatchPopoverHelper = new InlineEditor3.SwatchPopoverHelper.SwatchPopoverHelper();
   linkifier = new Components2.Linkifier.Linkifier(
     MAX_LINK_LENGTH,
     /* useLinkDecorator */
@@ -7999,7 +8005,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common6.ObjectWrapper.e
   lastRevealedProperty = null;
   userOperation = false;
   isEditingStyle = false;
-  filterRegexInternal = null;
+  #filterRegex = null;
   isActivePropertyHighlighted = false;
   initialUpdateCompleted = false;
   hasMatchedStyles = false;
@@ -8034,7 +8040,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common6.ObjectWrapper.e
     this.sectionsContainer.contentElement.addEventListener("keydown", this.sectionsContainerKeyDown.bind(this), false);
     this.sectionsContainer.contentElement.addEventListener("focusin", this.sectionsContainerFocusChanged.bind(this), false);
     this.sectionsContainer.contentElement.addEventListener("focusout", this.sectionsContainerFocusChanged.bind(this), false);
-    this.swatchPopoverHelperInternal.addEventListener("WillShowPopover", this.hideAllPopovers, this);
+    this.#swatchPopoverHelper.addEventListener("WillShowPopover", this.hideAllPopovers, this);
     this.decorator = new StylePropertyHighlighter(this);
     this.contentElement.classList.add("styles-pane");
     UI12.Context.Context.instance().addFlavorChangeListener(SDK9.DOMModel.DOMNode, this.forceUpdate, this);
@@ -8058,7 +8064,7 @@ var StylesSidebarPane = class _StylesSidebarPane extends Common6.ObjectWrapper.e
     this.hideAllPopovers();
   }
   swatchPopoverHelper() {
-    return this.swatchPopoverHelperInternal;
+    return this.#swatchPopoverHelper;
   }
   setUserOperation(userOperation) {
     this.userOperation = userOperation;
@@ -8136,7 +8142,7 @@ ${allDeclarationText}
   }
   forceUpdate() {
     this.needsForceUpdate = true;
-    this.swatchPopoverHelperInternal.hide();
+    this.#swatchPopoverHelper.hide();
     this.#updateAbortController?.abort();
     this.resetCache();
     this.update();
@@ -8176,7 +8182,7 @@ ${allDeclarationText}
         break;
       }
     }
-    if (sectionToFocus && this.filterRegexInternal) {
+    if (sectionToFocus && this.#filterRegex) {
       sectionToFocus = sectionToFocus.findCurrentOrNextVisible(
         /* willIterateForward= */
         willIterateForward
@@ -8234,7 +8240,7 @@ ${allDeclarationText}
   onFilterChanged(event) {
     const regex = event.data ? new RegExp(Platform5.StringUtilities.escapeForRegExp(event.data), "i") : null;
     this.lastFilterChange = Date.now();
-    this.filterRegexInternal = regex;
+    this.#filterRegex = regex;
     this.updateFilter();
     this.resetFocus();
     setTimeout(() => {
@@ -8268,7 +8274,7 @@ ${allDeclarationText}
       }
       section3.update(section3 === editedSection);
     }
-    if (this.filterRegexInternal) {
+    if (this.#filterRegex) {
       this.updateFilter();
     }
     this.swatchPopoverHelper().reposition();
@@ -8619,7 +8625,7 @@ ${allDeclarationText}
       this.sectionBlocks[0].sections[0].element.focus();
     }
     this.sectionsContainerFocusChanged();
-    if (this.filterRegexInternal) {
+    if (this.#filterRegex) {
       this.updateFilter();
     } else {
       this.noMatchesElement.classList.toggle("hidden", this.sectionBlocks.length > 0);
@@ -8841,7 +8847,7 @@ ${allDeclarationText}
     }
   }
   filterRegex() {
-    return this.filterRegexInternal;
+    return this.#filterRegex;
   }
   updateFilter() {
     let hasAnyVisibleBlock = false;
@@ -8863,7 +8869,7 @@ ${allDeclarationText}
     UI12.Context.Context.instance().setFlavor(_StylesSidebarPane, null);
   }
   hideAllPopovers() {
-    this.swatchPopoverHelperInternal.hide();
+    this.#swatchPopoverHelper.hide();
     this.imagePreviewPopover.hide();
     if (this.activeCSSAngle) {
       this.activeCSSAngle.minify();
@@ -8997,12 +9003,12 @@ ${allDeclarationText}
 };
 var MAX_LINK_LENGTH = 23;
 var SectionBlock = class _SectionBlock {
-  titleElementInternal;
+  #titleElement;
   sections;
   #expanded = false;
   #icon;
   constructor(titleElement, expandable, expandedByDefault) {
-    this.titleElementInternal = titleElement;
+    this.#titleElement = titleElement;
     this.sections = [];
     this.#expanded = expandedByDefault ?? false;
     if (expandable && titleElement instanceof HTMLElement) {
@@ -9015,12 +9021,12 @@ var SectionBlock = class _SectionBlock {
     }
   }
   expand(expand2) {
-    if (!this.titleElementInternal || !this.#icon) {
+    if (!this.#titleElement || !this.#icon) {
       return;
     }
-    this.titleElementInternal.classList.toggle("empty-section", !expand2);
+    this.#titleElement.classList.toggle("empty-section", !expand2);
     this.#icon.name = expand2 ? "triangle-down" : "triangle-right";
-    UI12.ARIAUtils.setExpanded(this.titleElementInternal, expand2);
+    UI12.ARIAUtils.setExpanded(this.#titleElement, expand2);
     this.#expanded = expand2;
     this.sections.forEach((section3) => section3.element.classList.toggle("hidden", !expand2));
   }
@@ -9119,13 +9125,13 @@ var SectionBlock = class _SectionBlock {
       numVisibleSections += section3.updateFilter() ? 1 : 0;
       hasAnyVisibleSection = section3.updateFilter() || hasAnyVisibleSection;
     }
-    if (this.titleElementInternal) {
-      this.titleElementInternal.classList.toggle("hidden", !hasAnyVisibleSection);
+    if (this.#titleElement) {
+      this.#titleElement.classList.toggle("hidden", !hasAnyVisibleSection);
     }
     return numVisibleSections;
   }
   titleElement() {
-    return this.titleElementInternal;
+    return this.#titleElement;
   }
 };
 var IdleCallbackManager = class {
@@ -10457,17 +10463,17 @@ var alwaysShownComputedProperties = /* @__PURE__ */ new Set(["display", "height"
 
 // gen/front_end/panels/elements/ComputedStyleModel.js
 var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
-  nodeInternal;
-  cssModelInternal;
+  #node;
+  #cssModel;
   eventListeners;
   frameResizedTimer;
   computedStylePromise;
   currentTrackedNodeId;
   constructor() {
     super();
-    this.cssModelInternal = null;
+    this.#cssModel = null;
     this.eventListeners = [];
-    this.nodeInternal = UI15.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
+    this.#node = UI15.Context.Context.instance().flavor(SDK12.DOMModel.DOMNode);
     UI15.Context.Context.instance().addFlavorChangeListener(SDK12.DOMModel.DOMNode, this.onNodeChanged, this);
     UI15.Context.Context.instance().addFlavorChangeListener(StylesSidebarPane, this.evaluateTrackingComputedStyleUpdatesForNode, this);
     UI15.Context.Context.instance().addFlavorChangeListener(ComputedStyleWidget, this.evaluateTrackingComputedStyleUpdatesForNode, this);
@@ -10478,15 +10484,15 @@ var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
     UI15.Context.Context.instance().removeFlavorChangeListener(ComputedStyleWidget, this.evaluateTrackingComputedStyleUpdatesForNode, this);
   }
   node() {
-    return this.nodeInternal;
+    return this.#node;
   }
   cssModel() {
-    return this.cssModelInternal?.isEnabled() ? this.cssModelInternal : null;
+    return this.#cssModel?.isEnabled() ? this.#cssModel : null;
   }
   // This is a debounced method because the user might be navigated from Styles tab to Computed Style tab and vice versa.
   // For that case, we want to only run this function once.
   evaluateTrackingComputedStyleUpdatesForNode = Common9.Debouncer.debounce(() => {
-    if (!this.nodeInternal) {
+    if (!this.#node) {
       if (this.currentTrackedNodeId) {
         void this.cssModel()?.trackComputedStyleUpdatesForNode(void 0);
         this.currentTrackedNodeId = void 0;
@@ -10503,23 +10509,23 @@ var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
       }
       return;
     }
-    if (this.currentTrackedNodeId !== this.nodeInternal.id) {
-      void this.cssModel()?.trackComputedStyleUpdatesForNode(this.nodeInternal.id);
-      this.currentTrackedNodeId = this.nodeInternal.id;
+    if (this.currentTrackedNodeId !== this.#node.id) {
+      void this.cssModel()?.trackComputedStyleUpdatesForNode(this.#node.id);
+      this.currentTrackedNodeId = this.#node.id;
     }
   }, 100);
   onNodeChanged(event) {
-    this.nodeInternal = event.data;
-    this.updateModel(this.nodeInternal ? this.nodeInternal.domModel().cssModel() : null);
+    this.#node = event.data;
+    this.updateModel(this.#node ? this.#node.domModel().cssModel() : null);
     this.onCSSModelChanged(null);
     this.evaluateTrackingComputedStyleUpdatesForNode();
   }
   updateModel(cssModel) {
-    if (this.cssModelInternal === cssModel) {
+    if (this.#cssModel === cssModel) {
       return;
     }
     Common9.EventTarget.removeEventListeners(this.eventListeners);
-    this.cssModelInternal = cssModel;
+    this.#cssModel = cssModel;
     const domModel = cssModel ? cssModel.domModel() : null;
     const resourceTreeModel = cssModel ? cssModel.target().model(SDK12.ResourceTreeModel.ResourceTreeModel) : null;
     if (cssModel && domModel && resourceTreeModel) {
@@ -10543,7 +10549,7 @@ var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
   }
   onComputedStyleChanged(event) {
     delete this.computedStylePromise;
-    if (event?.data && "nodeId" in event.data && event.data.nodeId !== this.nodeInternal?.id) {
+    if (event?.data && "nodeId" in event.data && event.data.nodeId !== this.#node?.id) {
       return;
     }
     this.dispatchEventToListeners(
@@ -10553,7 +10559,7 @@ var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
   }
   onDOMModelChanged(event) {
     const node = event.data;
-    if (!this.nodeInternal || this.nodeInternal !== node && node.parentNode !== this.nodeInternal.parentNode && !node.isAncestor(this.nodeInternal)) {
+    if (!this.#node || this.#node !== node && node.parentNode !== this.#node.parentNode && !node.isAncestor(this.#node)) {
       return;
     }
     this.onCSSModelChanged(null);
@@ -10700,8 +10706,8 @@ __export(ElementsTreeOutline_exports, {
 });
 import * as Common13 from "./../../core/common/common.js";
 import * as i18n31 from "./../../core/i18n/i18n.js";
-import * as Root7 from "./../../core/root/root.js";
 import * as SDK16 from "./../../core/sdk/sdk.js";
+import * as Badges4 from "./../../models/badges/badges.js";
 import * as Elements from "./../../models/elements/elements.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
@@ -10872,6 +10878,7 @@ import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Root6 from "./../../core/root/root.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
+import * as Badges3 from "./../../models/badges/badges.js";
 import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as Adorners from "./../../ui/components/adorners/adorners.js";
@@ -11479,10 +11486,10 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
   gutterContainer;
   decorationsElement;
   searchQuery;
-  expandedChildrenLimitInternal;
+  #expandedChildrenLimit;
   decorationsThrottler;
   inClipboard;
-  hoveredInternal;
+  #hovered;
   editing;
   htmlEditElement;
   expandAllButtonElement;
@@ -11511,10 +11518,10 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     this.gutterContainer.append(gutterMenuIcon);
     this.decorationsElement = this.gutterContainer.createChild("div", "hidden");
     this.searchQuery = null;
-    this.expandedChildrenLimitInternal = InitialChildrenLimit;
+    this.#expandedChildrenLimit = InitialChildrenLimit;
     this.decorationsThrottler = new Common10.Throttler.Throttler(100);
     this.inClipboard = false;
-    this.hoveredInternal = false;
+    this.#hovered = false;
     this.editing = null;
     if (isClosingTag) {
       this.tagTypeContext = {
@@ -11609,7 +11616,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
   highlightSearchResults(searchQuery) {
     this.searchQuery = searchQuery;
     if (!this.editing) {
-      this.highlightSearchResultsInternal();
+      this.#highlightSearchResults();
     }
   }
   hideSearchHighlights() {
@@ -11624,10 +11631,10 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     this.listItemElement.classList.toggle("in-clipboard", inClipboard);
   }
   get hovered() {
-    return this.hoveredInternal;
+    return this.#hovered;
   }
   set hovered(isHovered) {
-    if (this.hoveredInternal === isHovered) {
+    if (this.#hovered === isHovered) {
       return;
     }
     if (isHovered && !this.aiButtonContainer) {
@@ -11636,7 +11643,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
       this.aiButtonContainer.remove();
       delete this.aiButtonContainer;
     }
-    this.hoveredInternal = isHovered;
+    this.#hovered = isHovered;
     if (this.listItemElement) {
       if (isHovered) {
         this.createSelection();
@@ -11693,10 +11700,10 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     this.treeOutline?.updateNodeElementToIssue(nodeElement, issues);
   }
   expandedChildrenLimit() {
-    return this.expandedChildrenLimitInternal;
+    return this.#expandedChildrenLimit;
   }
   setExpandedChildrenLimit(expandedChildrenLimit) {
-    this.expandedChildrenLimitInternal = expandedChildrenLimit;
+    this.#expandedChildrenLimit = expandedChildrenLimit;
   }
   createSlotLink(nodeShortcut) {
     if (!isOpeningTag(this.tagTypeContext)) {
@@ -11768,7 +11775,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     }
   }
   onattach() {
-    if (this.hoveredInternal) {
+    if (this.#hovered) {
       this.createSelection();
       this.listItemElement.classList.add("hovered");
     }
@@ -12470,6 +12477,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     }
     if (attributeName !== null && (attributeName.trim() || newText.trim()) && oldText !== newText) {
       this.nodeInternal.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
+      Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
       return;
     }
     this.updateTitle();
@@ -12513,6 +12521,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
       if (!treeOutline) {
         return;
       }
+      Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
       const newTreeItem = treeOutline.selectNodeAfterEdit(wasExpanded, error, newNode);
       moveToNextAttributeIfNeeded.call(newTreeItem);
     });
@@ -12574,7 +12583,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     for (const issue of this.#elementIssues.values()) {
       this.#applyIssueStyleAndTooltip(issue);
     }
-    this.highlightSearchResultsInternal();
+    this.#highlightSearchResults();
   }
   computeLeftIndent() {
     let treeElement = this.parent;
@@ -12595,9 +12604,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     if (this.nodeInternal.nodeType() !== Node.ELEMENT_NODE) {
       return;
     }
-    void this.decorationsThrottler.schedule(this.updateDecorationsInternal.bind(this));
+    void this.decorationsThrottler.schedule(this.#updateDecorations.bind(this));
   }
-  updateDecorationsInternal() {
+  #updateDecorations() {
     if (!this.treeOutline) {
       return Promise.resolve();
     }
@@ -12866,7 +12875,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const node = this.nodeInternal;
     const titleDOM = document.createDocumentFragment();
     const updateSearchHighlight = () => {
-      this.highlightSearchResultsInternal();
+      this.#highlightSearchResults();
     };
     switch (node.nodeType()) {
       case Node.ATTRIBUTE_NODE:
@@ -13089,7 +13098,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     }
     Host4.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(lines.join("\n"));
   }
-  highlightSearchResultsInternal() {
+  #highlightSearchResults() {
     this.hideSearchHighlights();
     if (!this.searchQuery) {
       return;
@@ -13193,9 +13202,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     }
   }
   updateAdorners(context) {
-    void context.adornersThrottler.schedule(this.updateAdornersInternal.bind(null, context));
+    void context.adornersThrottler.schedule(this.#updateAdorners.bind(null, context));
   }
-  updateAdornersInternal(context) {
+  #updateAdorners(context) {
     const adornerContainer = context.adornerContainer;
     if (!adornerContainer) {
       return Promise.resolve();
@@ -13258,6 +13267,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const adorner = this.adorn(config);
     const onClick = async () => {
       const { nodeIds } = await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: adorner.isActive() });
+      if (adorner.isActive()) {
+        Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+      }
       for (const closedPopoverNodeId of nodeIds) {
         const node2 = this.node().domModel().nodeForId(closedPopoverNodeId);
         const treeElement = node2 && this.treeOutline?.treeElementByNode.get(node2);
@@ -13288,6 +13300,9 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const onClick = () => {
       if (adorner.isActive()) {
         node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+        if (isSubgrid) {
+          Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+        }
       } else {
         node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
       }
@@ -13322,6 +13337,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     const onClick = () => {
       if (adorner.isActive()) {
         node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+        Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.MODERN_DOM_BADGE_CLICKED);
       } else {
         node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
       }
@@ -13427,6 +13443,7 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
       const model = node.domModel().overlayModel();
       if (adorner.isActive()) {
         model.highlightContainerQueryInPersistentOverlay(nodeId);
+        Badges3.UserBadges.instance().recordAction(Badges3.BadgeAction.MODERN_DOM_BADGE_CLICKED);
       } else {
         model.hideContainerQueryInPersistentOverlay(nodeId);
       }
@@ -13555,7 +13572,7 @@ VisualLogging8.registerParentProvider("elementsTreeOutline", loggingParentProvid
 
 // gen/front_end/panels/elements/elementsTreeOutline.css.js
 var elementsTreeOutline_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13949,7 +13966,7 @@ var str_14 = i18n27.i18n.registerUIStrings("panels/elements/ShortcutTreeElement.
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var ShortcutTreeElement = class extends UI17.TreeOutline.TreeElement {
   nodeShortcut;
-  hoveredInternal;
+  #hovered;
   constructor(nodeShortcut) {
     super("");
     this.listItemElement.createChild("div", "selection fill");
@@ -13995,13 +14012,13 @@ var ShortcutTreeElement = class extends UI17.TreeOutline.TreeElement {
     ElementsPanel.instance().registerAdorner(adorner);
   }
   get hovered() {
-    return Boolean(this.hoveredInternal);
+    return Boolean(this.#hovered);
   }
   set hovered(x) {
-    if (this.hoveredInternal === x) {
+    if (this.#hovered === x) {
       return;
     }
-    this.hoveredInternal = x;
+    this.#hovered = x;
     this.listItemElement.classList.toggle("hovered", x);
   }
   deferredNode() {
@@ -14455,13 +14472,8 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
   #nodeElementToIssues = /* @__PURE__ */ new Map();
   constructor(omitRootDOMNode, selectEnabled, hideGutter) {
     super();
-    if (Root7.Runtime.experiments.isEnabled(
-      "highlight-errors-elements-panel"
-      /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */
-    )) {
-      this.#issuesManager = IssuesManager2.IssuesManager.IssuesManager.instance();
-      this.#issuesManager.addEventListener("IssueAdded", this.#onIssueAdded, this);
-    }
+    this.#issuesManager = IssuesManager2.IssuesManager.IssuesManager.instance();
+    this.#issuesManager.addEventListener("IssueAdded", this.#onIssueAdded, this);
     this.treeElementByNode = /* @__PURE__ */ new WeakMap();
     const shadowContainer = document.createElement("div");
     this.shadowRoot = UI19.UIUtils.createShadowRootWithCoreStyles(shadowContainer, { cssFile: [elementsTreeOutline_css_default, CodeHighlighter3.codeHighlighterStyles] });
@@ -14518,46 +14530,41 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     this.showHTMLCommentsSetting = Common13.Settings.Settings.instance().moduleSetting("show-html-comments");
     this.showHTMLCommentsSetting.addChangeListener(this.onShowHTMLCommentsChange.bind(this));
     this.setUseLightSelectionColor(true);
-    if (Root7.Runtime.experiments.isEnabled(
-      "highlight-errors-elements-panel"
-      /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */
-    )) {
-      this.#popupHelper = new UI19.PopoverHelper.PopoverHelper(this.elementInternal, (event) => {
-        const hoveredNode = event.composedPath()[0];
-        if (!hoveredNode?.matches(".violating-element")) {
-          return null;
+    this.#popupHelper = new UI19.PopoverHelper.PopoverHelper(this.elementInternal, (event) => {
+      const hoveredNode = event.composedPath()[0];
+      if (!hoveredNode?.matches(".violating-element")) {
+        return null;
+      }
+      const issues = this.#nodeElementToIssues.get(hoveredNode);
+      if (!issues) {
+        return null;
+      }
+      return {
+        box: hoveredNode.boxInWindow(),
+        show: async (popover) => {
+          popover.setIgnoreLeftMargin(true);
+          render6(html9`
+            <div class="squiggles-content">
+              ${issues.map((issue) => {
+            const elementIssueDetails = getElementIssueDetails(issue);
+            if (!elementIssueDetails) {
+              return nothing3;
+            }
+            const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
+            const openIssueEvent = () => Common13.Revealer.reveal(issue);
+            return html9`
+                  <div class="squiggles-content-item">
+                  <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
+                  <x-link class="link" @click=${openIssueEvent}>${i18nString15(UIStrings16.viewIssue)}</x-link>
+                  <span>${elementIssueDetails.tooltip}</span>
+                  </div>`;
+          })}
+            </div>`, popover.contentElement);
+          return true;
         }
-        const issues = this.#nodeElementToIssues.get(hoveredNode);
-        if (!issues) {
-          return null;
-        }
-        return {
-          box: hoveredNode.boxInWindow(),
-          show: async (popover) => {
-            popover.setIgnoreLeftMargin(true);
-            render6(html9`
-              <div class="squiggles-content">
-                ${issues.map((issue) => {
-              const elementIssueDetails = getElementIssueDetails(issue);
-              if (!elementIssueDetails) {
-                return nothing3;
-              }
-              const issueKindIconName = IssueCounter.IssueCounter.getIssueKindIconName(issue.getKind());
-              const openIssueEvent = () => Common13.Revealer.reveal(issue);
-              return html9`
-                    <div class="squiggles-content-item">
-                    <devtools-icon .name=${issueKindIconName} @click=${openIssueEvent}></devtools-icon>
-                    <x-link class="link" @click=${openIssueEvent}>${i18nString15(UIStrings16.viewIssue)}</x-link>
-                    <span>${elementIssueDetails.tooltip}</span>
-                    </div>`;
-            })}
-              </div>`, popover.contentElement);
-            return true;
-          }
-        };
-      }, "elements.issue");
-      this.#popupHelper.setTimeout(300);
-    }
+      };
+    }, "elements.issue");
+    this.#popupHelper.setTimeout(300);
   }
   static forDOMModel(domModel) {
     return elementsTreeOutlineByDOMModel.get(domModel) || null;
@@ -15156,6 +15163,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
       if (!success) {
         return;
       }
+      Badges4.UserBadges.instance().recordAction(Badges4.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
       this.runPendingUpdates();
       if (!index) {
         return;
@@ -15311,12 +15319,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     this.reset();
     if (domModel.existingDocument()) {
       this.rootDOMNode = domModel.existingDocument();
-      if (Root7.Runtime.experiments.isEnabled(
-        "highlight-errors-elements-panel"
-        /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */
-      )) {
-        this.#addAllElementIssues();
-      }
+      this.#addAllElementIssues();
     }
   }
   attributeModified(event) {
@@ -15728,7 +15731,7 @@ import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/layoutPane.css.js
 var layoutPane_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16345,7 +16348,7 @@ import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/metricsSidebarPane.css.js
 var metricsSidebarPane_css_default = `/**
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16988,7 +16991,7 @@ var createAccessibilityTreeToggleButton = (isActive) => {
 var elementsPanelInstance;
 var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
   splitWidget;
-  searchableViewInternal;
+  #searchableView;
   mainContainer;
   domTreeContainer;
   splitMode;
@@ -17028,15 +17031,15 @@ var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
     this.splitWidget = new UI22.SplitWidget.SplitWidget(true, true, "elements-panel-split-view-state", 325, 325);
     this.splitWidget.addEventListener("SidebarSizeChanged", this.updateTreeOutlineVisibleWidth.bind(this));
     this.splitWidget.show(this.element);
-    this.searchableViewInternal = new UI22.SearchableView.SearchableView(this, null);
-    this.searchableViewInternal.setMinimalSearchQuerySize(0);
-    this.searchableViewInternal.setMinimumSize(25, 28);
-    this.searchableViewInternal.setPlaceholder(i18nString17(UIStrings18.findByStringSelectorOrXpath));
-    const stackElement = this.searchableViewInternal.element;
+    this.#searchableView = new UI22.SearchableView.SearchableView(this, null);
+    this.#searchableView.setMinimalSearchQuerySize(0);
+    this.#searchableView.setMinimumSize(25, 28);
+    this.#searchableView.setPlaceholder(i18nString17(UIStrings18.findByStringSelectorOrXpath));
+    const stackElement = this.#searchableView.element;
     this.mainContainer = document.createElement("div");
     this.domTreeContainer = document.createElement("div");
     const crumbsContainer = document.createElement("div");
-    if (Root8.Runtime.experiments.isEnabled("full-accessibility-tree")) {
+    if (Root7.Runtime.experiments.isEnabled("full-accessibility-tree")) {
       this.initializeFullAccessibilityTreeView();
     }
     this.mainContainer.appendChild(this.domTreeContainer);
@@ -17044,7 +17047,7 @@ var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
     stackElement.appendChild(crumbsContainer);
     UI22.ARIAUtils.markAsMain(this.domTreeContainer);
     UI22.ARIAUtils.setLabel(this.domTreeContainer, i18nString17(UIStrings18.domTreeExplorer));
-    this.splitWidget.setMainWidget(this.searchableViewInternal);
+    this.splitWidget.setMainWidget(this.#searchableView);
     this.splitMode = null;
     this.mainContainer.id = "main-content";
     this.domTreeContainer.id = "elements-content";
@@ -17098,7 +17101,7 @@ var ElementsPanel = class _ElementsPanel extends UI22.Panel.Panel {
     }
   }
   showDOMTree() {
-    this.splitWidget.setMainWidget(this.searchableViewInternal);
+    this.splitWidget.setMainWidget(this.#searchableView);
     const selectedNode = this.selectedDOMNode();
     if (!selectedNode) {
       return;
@@ -17197,7 +17200,7 @@ ${node.simpleSelector()} {}`, false);
     }
   }
   searchableView() {
-    return this.searchableViewInternal;
+    return this.#searchableView;
   }
   wasShown() {
     super.wasShown();
@@ -17264,7 +17267,7 @@ ${node.simpleSelector()} {}`, false);
     this.setupStyleTracking(domModel.cssModel());
   }
   documentUpdated(domModel) {
-    this.searchableViewInternal.cancelSearch();
+    this.#searchableView.cancelSearch();
     if (!domModel.existingDocument()) {
       if (this.isShowing()) {
         void domModel.requestDocument();
@@ -17313,7 +17316,7 @@ ${node.simpleSelector()} {}`, false);
   onSearchCanceled() {
     this.searchConfig = void 0;
     this.hideSearchHighlights();
-    this.searchableViewInternal.updateSearchMatchesCount(0);
+    this.#searchableView.updateSearchMatchesCount(0);
     this.currentSearchResultIndex = -1;
     delete this.searchResults;
     SDK19.DOMModel.DOMModel.cancelSearch();
@@ -17341,7 +17344,7 @@ ${node.simpleSelector()} {}`, false);
           this.searchResults.push({ domModel: domModels[i], index: j, node: void 0 });
         }
       }
-      this.searchableViewInternal.updateSearchMatchesCount(this.searchResults.length);
+      this.#searchableView.updateSearchMatchesCount(this.searchResults.length);
       if (!this.searchResults.length) {
         return;
       }
@@ -17395,7 +17398,7 @@ ${node.simpleSelector()} {}`, false);
       return;
     }
     const searchResult = searchResults[index];
-    this.searchableViewInternal.updateCurrentMatchIndex(index);
+    this.#searchableView.updateCurrentMatchIndex(index);
     if (searchResult.node === null) {
       return;
     }
@@ -18053,7 +18056,7 @@ var InspectElementModeController = class _InspectElementModeController {
 };
 var ToggleSearchActionDelegate = class {
   handleAction(_context, actionId) {
-    if (Root9.Runtime.Runtime.queryParam("isSharedWorker")) {
+    if (Root8.Runtime.Runtime.queryParam("isSharedWorker")) {
       return false;
     }
     inspectElementModeController = InspectElementModeController.instance();
@@ -18305,7 +18308,7 @@ import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/propertiesWidget.css.js
 var propertiesWidget_css_default = `/*
- * Copyright (c) 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18493,7 +18496,7 @@ import { html as html13, render as render10 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/nodeStackTraceWidget.css.js
 var nodeStackTraceWidget_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18571,7 +18574,7 @@ import * as VisualLogging16 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/classesPaneWidget.css.js
 var classesPaneWidget_css_default = `/**
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18941,7 +18944,7 @@ import * as VisualLogging17 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/elementStatePaneWidget.css.js
 var elementStatePaneWidget_css_default = `/**
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -12,6 +12,7 @@ export declare class SettingCheckbox extends HTMLElement {
     #private;
     set data(data: SettingCheckboxData);
     icon(): Lit.TemplateResult | undefined;
+    get checked(): boolean;
 }
 declare global {
     interface HTMLElementTagNameMap {

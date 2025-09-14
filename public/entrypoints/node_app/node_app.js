@@ -756,7 +756,7 @@ import * as UI4 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/node_app/nodeConnectionsPanel.css.js
 var nodeConnectionsPanel_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

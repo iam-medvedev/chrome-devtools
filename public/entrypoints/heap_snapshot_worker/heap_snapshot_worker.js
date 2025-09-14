@@ -171,7 +171,7 @@ var BottomUpAllocationNode = class _BottomUpAllocationNode {
   liveCount;
   liveSize;
   traceTopIds;
-  #callersInternal;
+  #callers;
   constructor(functionInfo) {
     this.functionInfo = functionInfo;
     this.allocationCount = 0;
@@ -179,13 +179,13 @@ var BottomUpAllocationNode = class _BottomUpAllocationNode {
     this.liveCount = 0;
     this.liveSize = 0;
     this.traceTopIds = [];
-    this.#callersInternal = [];
+    this.#callers = [];
   }
   addCaller(traceNode) {
     const functionInfo = traceNode.functionInfo;
     let result;
-    for (let i = 0; i < this.#callersInternal.length; i++) {
-      const caller = this.#callersInternal[i];
+    for (let i = 0; i < this.#callers.length; i++) {
+      const caller = this.#callers[i];
       if (caller.functionInfo === functionInfo) {
         result = caller;
         break;
@@ -193,15 +193,15 @@ var BottomUpAllocationNode = class _BottomUpAllocationNode {
     }
     if (!result) {
       result = new _BottomUpAllocationNode(functionInfo);
-      this.#callersInternal.push(result);
+      this.#callers.push(result);
     }
     return result;
   }
   callers() {
-    return this.#callersInternal;
+    return this.#callers;
   }
   hasCallers() {
-    return this.#callersInternal.length > 0;
+    return this.#callers.length > 0;
   }
 };
 var FunctionAllocationInfo = class {
@@ -415,7 +415,7 @@ var HeapSnapshotEdgeIterator = class {
 };
 var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
   snapshot;
-  #retainerIndexInternal;
+  #retainerIndex;
   #globalEdgeIndex;
   #retainingNodeIndex;
   #edgeInstance;
@@ -437,7 +437,7 @@ var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
     return this.edge().nameIndex();
   }
   node() {
-    return this.nodeInternal();
+    return this.#node();
   }
   nodeIndex() {
     if (typeof this.#retainingNodeIndex === "undefined") {
@@ -446,16 +446,16 @@ var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
     return this.#retainingNodeIndex;
   }
   retainerIndex() {
-    return this.#retainerIndexInternal;
+    return this.#retainerIndex;
   }
   setRetainerIndex(retainerIndex) {
-    if (retainerIndex === this.#retainerIndexInternal) {
+    if (retainerIndex === this.#retainerIndex) {
       return;
     }
     if (!this.snapshot.retainingEdges || !this.snapshot.retainingNodes) {
       throw new Error("Snapshot does not contain retaining edges or retaining nodes");
     }
-    this.#retainerIndexInternal = retainerIndex;
+    this.#retainerIndex = retainerIndex;
     this.#globalEdgeIndex = this.snapshot.retainingEdges[retainerIndex];
     this.#retainingNodeIndex = this.snapshot.retainingNodes[retainerIndex];
     this.#edgeInstance = null;
@@ -464,7 +464,7 @@ var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
   set edgeIndex(edgeIndex) {
     this.setRetainerIndex(edgeIndex);
   }
-  nodeInternal() {
+  #node() {
     if (!this.#nodeInstance) {
       this.#nodeInstance = this.snapshot.createNode(this.#retainingNodeIndex);
     }
@@ -480,7 +480,7 @@ var HeapSnapshotRetainerEdge = class _HeapSnapshotRetainerEdge {
     return this.edge().toString();
   }
   itemIndex() {
-    return this.#retainerIndexInternal;
+    return this.#retainerIndex;
   }
   serialize() {
     const node = this.node();
@@ -883,7 +883,7 @@ var HeapSnapshot = class _HeapSnapshot {
   #noDistance = -5;
   rootNodeIndexInternal = 0;
   #snapshotDiffs = {};
-  #aggregatesForDiffInternal;
+  #aggregatesForDiff;
   #aggregates = {};
   #aggregatesSortedFlags = {};
   profile;
@@ -1344,7 +1344,7 @@ var HeapSnapshot = class _HeapSnapshot {
       this.calculateClassesRetainedSize(aggregatesMap, filter);
       aggregates = /* @__PURE__ */ Object.create(null);
       for (const [classKey, aggregate] of aggregatesMap.entries()) {
-        const newKey = this.classKeyFromClassKeyInternal(classKey);
+        const newKey = this.#classKeyFromClassKey(classKey);
         aggregates[newKey] = aggregate;
       }
       if (key) {
@@ -1374,8 +1374,8 @@ var HeapSnapshot = class _HeapSnapshot {
     return this.#allocationProfile.serializeAllocationStack(allocationNodeId);
   }
   aggregatesForDiff(interfaceDefinitions) {
-    if (this.#aggregatesForDiffInternal?.interfaceDefinitions === interfaceDefinitions) {
-      return this.#aggregatesForDiffInternal.aggregates;
+    if (this.#aggregatesForDiff?.interfaceDefinitions === interfaceDefinitions) {
+      return this.#aggregatesForDiff.aggregates;
     }
     const originalInterfaceDefinitions = this.#interfaceDefinitions;
     this.applyInterfaceDefinitions(JSON.parse(interfaceDefinitions));
@@ -1395,7 +1395,7 @@ var HeapSnapshot = class _HeapSnapshot {
       }
       result[classKey] = { name: node.className(), indexes, ids, selfSizes };
     }
-    this.#aggregatesForDiffInternal = { interfaceDefinitions, aggregates: result };
+    this.#aggregatesForDiff = { interfaceDefinitions, aggregates: result };
     return result;
   }
   isUserRoot(_node) {
@@ -2289,13 +2289,13 @@ var HeapSnapshot = class _HeapSnapshot {
   // Converts an internal class key, suitable for categorizing within this
   // snapshot, to a public class key, which can be used in comparisons
   // between multiple snapshots.
-  classKeyFromClassKeyInternal(key) {
+  #classKeyFromClassKey(key) {
     return typeof key === "number" ? "," + this.strings[key] : key;
   }
   nodeClassKey(snapshotObjectId) {
     const node = this.nodeForSnapshotObjectId(snapshotObjectId);
     if (node) {
-      return this.classKeyFromClassKeyInternal(node.classKeyInternal());
+      return this.#classKeyFromClassKey(node.classKeyInternal());
     }
     return null;
   }
@@ -2449,7 +2449,7 @@ var HeapSnapshot = class _HeapSnapshot {
 var HeapSnapshotItemProvider = class {
   iterator;
   #indexProvider;
-  #isEmptyInternal;
+  #isEmpty;
   iterationOrder;
   currentComparator;
   #sortedPrefixLength;
@@ -2457,7 +2457,7 @@ var HeapSnapshotItemProvider = class {
   constructor(iterator, indexProvider) {
     this.iterator = iterator;
     this.#indexProvider = indexProvider;
-    this.#isEmptyInternal = !iterator.hasNext();
+    this.#isEmpty = !iterator.hasNext();
     this.iterationOrder = null;
     this.currentComparator = null;
     this.#sortedPrefixLength = 0;
@@ -2473,7 +2473,7 @@ var HeapSnapshotItemProvider = class {
     }
   }
   isEmpty() {
-    return this.#isEmptyInternal;
+    return this.#isEmpty;
   }
   serializeItemsRange(begin, end) {
     this.createIterationOrder();
@@ -3198,9 +3198,9 @@ var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
   }
   hasStringName() {
     if (!this.isShortcut()) {
-      return this.hasStringNameInternal();
+      return this.#hasStringName();
     }
-    return isNaN(parseInt(this.nameInternal(), 10));
+    return isNaN(parseInt(this.#name(), 10));
   }
   isElement() {
     return this.rawType() === this.snapshot.edgeElementType;
@@ -3221,7 +3221,7 @@ var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
     return this.rawType() === this.snapshot.edgeShortcutType;
   }
   name() {
-    const name = this.nameInternal();
+    const name = this.#name();
     if (!this.isShortcut()) {
       return String(name);
     }
@@ -3251,13 +3251,13 @@ var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
     }
     return "?" + name + "?";
   }
-  hasStringNameInternal() {
+  #hasStringName() {
     const type = this.rawType();
     const snapshot = this.snapshot;
     return type !== snapshot.edgeElementType && type !== snapshot.edgeHiddenType;
   }
-  nameInternal() {
-    return this.hasStringNameInternal() ? this.snapshot.strings[this.nameOrIndex()] : this.nameOrIndex();
+  #name() {
+    return this.#hasStringName() ? this.snapshot.strings[this.nameOrIndex()] : this.nameOrIndex();
   }
   nameOrIndex() {
     return this.edges.getValue(this.edgeIndex + this.snapshot.edgeNameOffset);
@@ -3266,7 +3266,7 @@ var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
     return this.edges.getValue(this.edgeIndex + this.snapshot.edgeTypeOffset);
   }
   nameIndex() {
-    if (!this.hasStringNameInternal()) {
+    if (!this.#hasStringName()) {
       throw new Error("Edge does not have string name");
     }
     return this.nameOrIndex();

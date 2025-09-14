@@ -20,7 +20,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/categorizedBreakpointsSidebarPane.css.js
 var categorizedBreakpointsSidebarPane_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -511,7 +511,7 @@ import * as Sources2 from "./../sources/sources.js";
 
 // gen/front_end/panels/browser_debugger/domBreakpointsSidebarPane.css.js
 var domBreakpointsSidebarPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1060,7 +1060,7 @@ import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/browser_debugger/xhrBreakpointsSidebarPane.css.js
 var xhrBreakpointsSidebarPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

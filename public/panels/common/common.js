@@ -1,5 +1,5 @@
 // gen/front_end/panels/common/common.prebundle.js
-import * as Host5 from "./../../core/host/host.js";
+import * as Host6 from "./../../core/host/host.js";
 import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
@@ -7,7 +7,7 @@ import * as UI7 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/common/common.css.js
 var common_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -68,7 +68,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/aiCodeCompletionTeaser.css.js
 var aiCodeCompletionTeaser_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -120,7 +120,7 @@ import * as Lit from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/common/freDialog.css.js
 var freDialog_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -524,8 +524,10 @@ var AiCodeCompletionTeaser = class extends UI2.Widget.Widget {
 
 // gen/front_end/panels/common/GdpSignUpDialog.js
 import "./../../ui/components/switch/switch.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
@@ -535,7 +537,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/gdpSignUpDialog.css.js
 var gdpSignUpDialog_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -664,7 +666,7 @@ var UIStrings2 = {
   /**
    * @description Body for the first section of the GDP sign up dialog.
    */
-  designedForSuccessBody: "Grow your skills, build with AI, and showcase your achievements",
+  designedForSuccessBody: "Grow your skills, build with AI, and receive badges you can showcase in your developer profile",
   /**
    * @description Title for the second section of the GDP sign up dialog.
    */
@@ -796,6 +798,9 @@ var GdpSignUpDialog = class _GdpSignUpDialog extends UI3.Widget.VBox {
     const emailPreference = this.#keepMeUpdated ? Host2.GdpClient.EmailPreference.ENABLED : Host2.GdpClient.EmailPreference.DISABLED;
     const result = await Host2.GdpClient.GdpClient.instance().createProfile({ user, emailPreference });
     if (result) {
+      Common2.Settings.Settings.instance().moduleSetting("receive-gdp-badges").set(true);
+      await Badges.UserBadges.instance().initialize();
+      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.GDP_SIGN_UP_COMPLETE);
       this.#dialog.hide();
     } else {
       Snackbars2.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.signUpFailed) }, this.#dialog.contentElement);
@@ -844,7 +849,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/aiCodeCompletionDisclaimer.css.js
 var aiCodeCompletionDisclaimer_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1075,7 +1080,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/aiCodeCompletionSummaryToolbar.css.js
 var aiCodeCompletionSummaryToolbar_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1294,7 +1299,11 @@ var AiCodeCompletionSummaryToolbar = class extends UI5.Widget.Widget {
 };
 
 // gen/front_end/panels/common/BadgeNotification.js
+import * as Common3 from "./../../core/common/common.js";
+import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as Badges2 from "./../../models/badges/badges.js";
+import * as WindowBoundsService from "./../../services/window_bounds/window_bounds.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
@@ -1302,7 +1311,7 @@ import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/badgeNotification.css.js
 var badgeNotification_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1310,8 +1319,6 @@ var badgeNotification_css_default = `/*
 @scope to (devtools-widget > *) {
   :scope {
     position: fixed;
-    bottom: var(--sys-size-5);
-    left: var(--sys-size-5);
     z-index: 9999;
     /* subtract var(--sys-size-5) * 2 so that there is equal space on the left and on the right in small screens */
     max-width: calc(100% - 2 * var(--sys-size-5));
@@ -1319,37 +1326,58 @@ var badgeNotification_css_default = `/*
 
   .container {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
     overflow: hidden;
-    width: var(--sys-size-33);
+    width: 485px;
     background: var(--sys-color-inverse-surface);
     box-shadow: var(--sys-elevation-level3);
     border-radius: var(--sys-shape-corner-small);
-    font: var(--sys-typescale-body4-medium);
+    font: var(--sys-typescale-body4-regular);
     animation: slideIn 100ms cubic-bezier(0, 0, 0.3, 1);
     box-sizing: border-box;
     max-width: 100%;
     padding: var(--sys-size-5) var(--sys-size-6) var(--sys-size-6) var(--sys-size-6);
   }
 
+  .action-and-text-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sys-size-3);
+  }
+
   .long-action-container {
     margin-left: auto;
+    /*
+    * Buttons have a 24px total height, which includes padding for the hover area.
+    * We apply a -3px vertical margin to compensate for this extra space.
+    * This ensures the component aligns based on the visual text height,
+    * not the full clickable bounding box.
+    */
+    margin-block: -3px;
   }
 
   .label-container {
     display: flex;
     width: 100%;
     align-items: center;
-    gap: var(--sys-size-5);
+    padding-block: var(--sys-size-3);
+    line-height: 18px;
+  }
+
+  .badge-container {
+    margin-right: 10px;
+    min-width: 64px;
+    height: 64px;
   }
 
   .badge-image {
-    margin-right: var(--sys-size-6);
-    width: 42px;
-    height: 42px;
+    width: 100%;
+    height: 100%;
     border-radius: var(--sys-shape-corner-full);
-    background: var(--sys-color-surface);
+  }
+
+  .badge-link {
+    color: var(--sys-color-inverse-primary);
   }
 
   .message {
@@ -1384,10 +1412,51 @@ var UIStrings3 = {
   /**
    * @description Title for close button
    */
-  dismiss: "Dismiss"
+  dismiss: "Dismiss",
+  /**
+   * @description Activity based badge award notification text
+   * @example {Badge Title} PH1
+   */
+  activityBasedBadgeAwardMessage: "You earned the {PH1} badge! It has been added to your Developer Profile.",
+  /**
+   * @description Action title for navigating to the badge settings in Google Developer Profile section
+   */
+  badgeSettings: "Badge settings",
+  /**
+   * @description Action title for opening the Google Developer Program profile page of the user in a new tab
+   */
+  viewProfile: "View profile",
+  /**
+   * @description Starter badge award notification text when the user has a Google Developer Program profile but did not enable receiving badges in DevTools yet
+   * @example {Badge Title} PH1
+   * @example {Google Developer Program link} PH2
+   */
+  starterBadgeAwardMessageSettingDisabled: "You earned the {PH1} badge for the {PH2}! Turn on badges to claim it.",
+  /**
+   * @description Starter badge award notification text when the user does not have a Google Developer Program profile.
+   * @example {Badge Title} PH1
+   * @example {Google Developer Program link} PH2
+   */
+  starterBadgeAwardMessageNoGdpProfile: "You earned the {PH1} badge for the {PH2}! Create a profile to claim your badge.",
+  /**
+   * @description Action title for snoozing the starter badge.
+   */
+  remindMeLater: "Remind me later",
+  /**
+   * @description Action title for enabling the "Receive badges" setting
+   */
+  receiveBadges: "Receive badges",
+  /**
+   * @description Action title for creating a Google Developer Program profle
+   */
+  createProfile: "Create profile"
 };
 var str_3 = i18n11.i18n.registerUIStrings("panels/common/BadgeNotification.ts", UIStrings3);
 var i18nString3 = i18n11.i18n.getLocalizedString.bind(void 0, str_3);
+var i18nFormatString = i18n11.i18n.getFormatLocalizedString.bind(void 0, str_3);
+var lockedString4 = i18n11.i18n.lockedString;
+var LEFT_OFFSET = 5;
+var BOTTOM_OFFSET = 5;
 var DEFAULT_VIEW3 = (input, _output, target) => {
   const actionButtons = input.actions.map((property) => {
     return html6`<devtools-button
@@ -1412,31 +1481,122 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   render6(html6`
     <style>${badgeNotification_css_default}</style>
     <div class="container">
+      <div class="badge-container">
+        <img class="badge-image" src=${input.imageUri}>
+      </div>
+      <div class="action-and-text-container">
         <div class="label-container">
-            <img class="badge-image" src=${input.imageUri}>
             <div class="message">${input.message}</div>
             ${crossButton}
         </div>
         <div class="long-action-container">${actionButtons}</div>
+      </div>
     </div>
   `, target);
 };
-var BadgeNotification = class _BadgeNotification extends UI6.Widget.Widget {
-  message = html6``;
+function revealBadgeSettings() {
+  void Common3.Revealer.reveal(Common3.Settings.moduleSetting("receive-gdp-badges"));
+}
+var BadgeNotification = class extends UI6.Widget.Widget {
+  message = "";
   imageUri = "";
   actions = [];
   #view;
   constructor(element, view = DEFAULT_VIEW3) {
     super(element);
     this.#view = view;
+    this.markAsRoot();
   }
-  static show(properties) {
-    const widget = new _BadgeNotification();
-    widget.message = properties.message;
-    widget.imageUri = properties.imageUri;
-    widget.actions = properties.actions;
-    widget.show(UI6.InspectorView.InspectorView.instance().element);
-    return widget;
+  async present(badge) {
+    if (badge.isStarterBadge) {
+      await this.#presentStarterBadge(badge);
+    } else {
+      this.#presentActivityBasedBadge(badge);
+    }
+  }
+  #positionNotification() {
+    const boundingRect = this.contentElement.getBoundingClientRect();
+    const container = WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    this.contentElement.positionAt(LEFT_OFFSET, container.clientHeight - boundingRect.height - BOTTOM_OFFSET, container);
+  }
+  #show(properties) {
+    this.message = properties.message;
+    this.imageUri = properties.imageUri;
+    this.actions = properties.actions;
+    this.requestUpdate();
+    this.show(document.body);
+    void this.updateComplete.then(() => {
+      this.#positionNotification();
+    });
+  }
+  async #presentStarterBadge(badge) {
+    const gdpProfile = await Host5.GdpClient.GdpClient.instance().getProfile();
+    const receiveBadgesSettingEnabled = Badges2.UserBadges.instance().isReceiveBadgesSettingEnabled();
+    const googleDeveloperProgramLink = UI6.XLink.XLink.create("https://developers.google.com/program", lockedString4("Google Developer Program"), "badge-link", void 0, "gdp.program-link");
+    if (gdpProfile && receiveBadgesSettingEnabled) {
+      this.#presentActivityBasedBadge(badge);
+      return;
+    }
+    if (gdpProfile && !receiveBadgesSettingEnabled) {
+      this.#show({
+        message: i18nFormatString(UIStrings3.starterBadgeAwardMessageSettingDisabled, { PH1: badge.title, PH2: googleDeveloperProgramLink }),
+        actions: [
+          {
+            label: i18nString3(UIStrings3.remindMeLater),
+            onClick: () => {
+            }
+          },
+          {
+            label: i18nString3(UIStrings3.receiveBadges),
+            onClick: () => {
+              this.#close();
+              revealBadgeSettings();
+            }
+          }
+        ],
+        imageUri: badge.imageUri
+      });
+      return;
+    }
+    this.#show({
+      message: i18nFormatString(UIStrings3.starterBadgeAwardMessageNoGdpProfile, { PH1: badge.title, PH2: googleDeveloperProgramLink }),
+      actions: [
+        {
+          label: i18nString3(UIStrings3.remindMeLater),
+          onClick: () => {
+          }
+        },
+        {
+          label: i18nString3(UIStrings3.createProfile),
+          onClick: () => {
+            this.#close();
+            GdpSignUpDialog.show();
+          }
+        }
+      ],
+      imageUri: badge.imageUri
+    });
+  }
+  #presentActivityBasedBadge(badge) {
+    this.#show({
+      message: i18nString3(UIStrings3.activityBasedBadgeAwardMessage, { PH1: badge.title }),
+      actions: [
+        {
+          label: i18nString3(UIStrings3.badgeSettings),
+          onClick: () => {
+            this.#close();
+            revealBadgeSettings();
+          }
+        },
+        {
+          label: i18nString3(UIStrings3.viewProfile),
+          onClick: () => {
+            UI6.UIUtils.openInNewTab(Host5.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK);
+          }
+        }
+      ],
+      imageUri: badge.imageUri
+    });
   }
   #close = () => {
     this.detach();
@@ -1520,7 +1680,7 @@ var TypeToAllowDialog = class {
         resolve(false);
       });
       dialog.show();
-      Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.SelfXssWarningDialogShown);
+      Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.SelfXssWarningDialogShown);
     });
     dialog.hide();
     return result;

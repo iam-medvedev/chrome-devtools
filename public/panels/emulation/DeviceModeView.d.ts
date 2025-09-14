@@ -61,7 +61,7 @@ export declare class DeviceModeView extends UI.Widget.VBox {
     private saveScreenshot;
 }
 export declare class Ruler extends UI.Widget.VBox {
-    private contentElementInternal;
+    #private;
     private readonly horizontal;
     private scale;
     private count;

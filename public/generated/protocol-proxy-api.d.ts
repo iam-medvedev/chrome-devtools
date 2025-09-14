@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1391,6 +1391,11 @@ declare namespace ProtocolProxyApi {
      * Fired when a node's scrollability state changes.
      */
     scrollableFlagUpdated(params: Protocol.DOM.ScrollableFlagUpdatedEvent): void;
+
+    /**
+     * Fired when a node's starting styles changes.
+     */
+    affectedByStartingStylesFlagUpdated(params: Protocol.DOM.AffectedByStartingStylesFlagUpdatedEvent): void;
 
     /**
      * Called when a pseudo element is removed from an element.

@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2010 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2010 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
@@ -40,7 +14,7 @@ import * as ARIAUtils from './ARIAUtils.js';
 import { ContextMenu } from './ContextMenu.js';
 import tabbedPaneStyles from './tabbedPane.css.js';
 import { Tooltip } from './Tooltip.js';
-import { installDragHandle, invokeOnceAfterBatchUpdate } from './UIUtils.js';
+import { installDragHandle } from './UIUtils.js';
 import { VBox } from './Widget.js';
 import { ZoomManager } from './ZoomManager.js';
 const UIStrings = {
@@ -85,11 +59,11 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/TabbedPane.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
-    headerElementInternal;
+    #headerElement;
     headerContentsElement;
     tabSlider;
     tabsElement;
-    contentElementInternal;
+    #contentElement;
     tabs;
     tabsHistory;
     tabsById;
@@ -109,8 +83,8 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     placeholderContainerElement;
     lastSelectedOverflowTab;
     measuredDropDownButtonWidth;
-    leftToolbarInternal;
-    rightToolbarInternal;
+    #leftToolbar;
+    #rightToolbar;
     allowTabReorder;
     automaticReorder;
     constructor(element) {
@@ -120,15 +94,15 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.contentElement.classList.add('tabbed-pane-shadow');
         this.contentElement.tabIndex = -1;
         this.setDefaultFocusedElement(this.contentElement);
-        this.headerElementInternal = this.contentElement.createChild('div', 'tabbed-pane-header');
-        this.headerContentsElement = this.headerElementInternal.createChild('div', 'tabbed-pane-header-contents');
+        this.#headerElement = this.contentElement.createChild('div', 'tabbed-pane-header');
+        this.headerContentsElement = this.#headerElement.createChild('div', 'tabbed-pane-header-contents');
         this.tabSlider = document.createElement('div');
         this.tabSlider.classList.add('tabbed-pane-tab-slider');
         this.tabsElement = this.headerContentsElement.createChild('div', 'tabbed-pane-header-tabs');
         this.tabsElement.setAttribute('role', 'tablist');
         this.tabsElement.addEventListener('keydown', this.keyDown.bind(this), false);
-        this.contentElementInternal = this.contentElement.createChild('div', 'tabbed-pane-content');
-        this.contentElementInternal.createChild('slot');
+        this.#contentElement = this.contentElement.createChild('div', 'tabbed-pane-content');
+        this.#contentElement.createChild('slot');
         this.tabs = [];
         this.tabsHistory = [];
         this.tabsById = new Map();
@@ -145,7 +119,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     }
     setCurrentTabLocked(locked) {
         this.currentTabLocked = locked;
-        this.headerElementInternal.classList.toggle('locked', this.currentTabLocked);
+        this.#headerElement.classList.toggle('locked', this.currentTabLocked);
     }
     setAutoSelectFirstItemOnShow(autoSelect) {
         this.autoSelectFirstItemOnShow = autoSelect;
@@ -196,10 +170,10 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
     }
     headerElement() {
-        return this.headerElementInternal;
+        return this.#headerElement;
     }
     tabbedPaneContentElement() {
-        return this.contentElementInternal;
+        return this.#contentElement;
     }
     setTabDelegate(delegate) {
         const tabs = this.tabs.slice();
@@ -226,7 +200,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         if (this.tabsHistory[0] === tab && this.isShowing()) {
             this.selectTab(tab.id, userGesture);
         }
-        this.updateTabElements();
+        this.requestUpdate();
     }
     closeTab(id, userGesture) {
         this.closeTabs([id], userGesture);
@@ -239,7 +213,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         for (let i = 0; i < ids.length; ++i) {
             this.innerCloseTab(ids[i], userGesture);
         }
-        this.updateTabElements();
+        this.requestUpdate();
         if (this.tabsHistory.length) {
             this.selectTab(this.tabsHistory[0].id, false);
         }
@@ -328,7 +302,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.currentTab = tab;
         this.tabsHistory.splice(this.tabsHistory.indexOf(tab), 1);
         this.tabsHistory.splice(0, 0, tab);
-        this.updateTabElements();
+        this.requestUpdate();
         if (focused || forceFocus) {
             this.focus();
         }
@@ -369,7 +343,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             return;
         }
         tab.setIcon(icon);
-        this.updateTabElements();
+        this.requestUpdate();
     }
     setTrailingTabIcon(id, icon) {
         const tab = this.tabsById.get(id);
@@ -384,7 +358,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             return;
         }
         tab.setSuffixElement(suffixElement);
-        this.updateTabElements();
+        this.requestUpdate();
     }
     setBadge(id, content) {
         const badge = document.createElement('span');
@@ -409,7 +383,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
     zoomChanged() {
         this.clearMeasuredWidths();
         if (this.isShowing()) {
-            this.updateTabElements();
+            this.requestUpdate();
         }
     }
     clearMeasuredWidths() {
@@ -425,7 +399,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         if (tab && tab.title !== tabTitle) {
             tab.title = tabTitle;
             ARIAUtils.setLabel(tab.tabElement, tabTitle);
-            this.updateTabElements();
+            this.requestUpdate();
         }
     }
     changeTabView(id, view) {
@@ -454,17 +428,17 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             this.clearMeasuredWidths();
             this.currentDevicePixelRatio = window.devicePixelRatio;
         }
-        this.updateTabElements();
+        this.requestUpdate();
     }
     headerResized() {
-        this.updateTabElements();
+        this.requestUpdate();
     }
     wasShown() {
         const effectiveTab = this.currentTab || this.tabsHistory[0];
         if (effectiveTab && this.autoSelectFirstItemOnShow) {
             this.selectTab(effectiveTab.id);
         }
-        this.updateTabElements();
+        this.requestUpdate();
         this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: true });
     }
     wasHidden() {
@@ -492,9 +466,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
         return constraints;
     }
-    updateTabElements() {
-        invokeOnceAfterBatchUpdate(this, this.innerUpdateTabElements);
-    }
     setPlaceholderElement(element, focusedElement) {
         this.placeholderElement = element;
         if (focusedElement) {
@@ -506,17 +477,16 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
     }
     async waitForTabElementUpdate() {
-        this.innerUpdateTabElements();
+        this.performUpdate();
     }
-    innerUpdateTabElements() {
+    performUpdate() {
         if (!this.isShowing()) {
             return;
         }
         if (!this.tabs.length) {
-            this.contentElementInternal.classList.add('has-no-tabs');
+            this.#contentElement.classList.add('has-no-tabs');
             if (this.placeholderElement && !this.placeholderContainerElement) {
-                this.placeholderContainerElement =
-                    this.contentElementInternal.createChild('div', 'tabbed-pane-placeholder fill');
+                this.placeholderContainerElement = this.#contentElement.createChild('div', 'tabbed-pane-placeholder fill');
                 this.placeholderContainerElement.appendChild(this.placeholderElement);
                 if (this.focusedPlaceholderElement) {
                     this.setDefaultFocusedElement(this.focusedPlaceholderElement);
@@ -524,7 +494,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             }
         }
         else {
-            this.contentElementInternal.classList.remove('has-no-tabs');
+            this.#contentElement.classList.remove('has-no-tabs');
             if (this.placeholderContainerElement) {
                 this.placeholderContainerElement.remove();
                 this.setDefaultFocusedElement(this.contentElement);
@@ -538,20 +508,20 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.updateTabSlider();
     }
     adjustToolbarWidth() {
-        if (!this.rightToolbarInternal || !this.measuredDropDownButtonWidth) {
+        if (!this.#rightToolbar || !this.measuredDropDownButtonWidth) {
             return;
         }
-        const leftToolbarWidth = this.leftToolbarInternal?.getBoundingClientRect().width ?? 0;
-        const rightToolbarWidth = this.rightToolbarInternal.getBoundingClientRect().width;
-        const totalWidth = this.headerElementInternal.getBoundingClientRect().width;
-        if (!this.rightToolbarInternal.hasCompactLayout() &&
+        const leftToolbarWidth = this.#leftToolbar?.getBoundingClientRect().width ?? 0;
+        const rightToolbarWidth = this.#rightToolbar.getBoundingClientRect().width;
+        const totalWidth = this.#headerElement.getBoundingClientRect().width;
+        if (!this.#rightToolbar.hasCompactLayout() &&
             totalWidth - rightToolbarWidth - leftToolbarWidth < this.measuredDropDownButtonWidth + 10) {
-            this.rightToolbarInternal.setCompactLayout(true);
+            this.#rightToolbar.setCompactLayout(true);
         }
-        else if (this.rightToolbarInternal.hasCompactLayout() &&
+        else if (this.#rightToolbar.hasCompactLayout() &&
             // Estimate the right toolbar size in non-compact mode as 2 times its compact size.
             totalWidth - 2 * rightToolbarWidth - leftToolbarWidth > this.measuredDropDownButtonWidth + 10) {
-            this.rightToolbarInternal.setCompactLayout(false);
+            this.#rightToolbar.setCompactLayout(false);
         }
     }
     showTabElement(index, tab) {
@@ -812,7 +782,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         tab.view.detach();
     }
     elementsToRestoreScrollPositionsFor() {
-        return [this.contentElementInternal];
+        return [this.#contentElement];
     }
     insertBefore(tab, index) {
         this.tabsElement.insertBefore(tab.tabElement, this.tabsElement.childNodes[index]);
@@ -826,20 +796,20 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.dispatchEventToListeners(Events.TabOrderChanged, eventData);
     }
     leftToolbar() {
-        if (!this.leftToolbarInternal) {
-            this.leftToolbarInternal = document.createElement('devtools-toolbar');
-            this.leftToolbarInternal.classList.add('tabbed-pane-left-toolbar');
-            this.headerElementInternal.insertBefore(this.leftToolbarInternal, this.headerElementInternal.firstChild);
+        if (!this.#leftToolbar) {
+            this.#leftToolbar = document.createElement('devtools-toolbar');
+            this.#leftToolbar.classList.add('tabbed-pane-left-toolbar');
+            this.#headerElement.insertBefore(this.#leftToolbar, this.#headerElement.firstChild);
         }
-        return this.leftToolbarInternal;
+        return this.#leftToolbar;
     }
     rightToolbar() {
-        if (!this.rightToolbarInternal) {
-            this.rightToolbarInternal = document.createElement('devtools-toolbar');
-            this.rightToolbarInternal.classList.add('tabbed-pane-right-toolbar');
-            this.headerElementInternal.appendChild(this.rightToolbarInternal);
+        if (!this.#rightToolbar) {
+            this.#rightToolbar = document.createElement('devtools-toolbar');
+            this.#rightToolbar.classList.add('tabbed-pane-right-toolbar');
+            this.#headerElement.appendChild(this.#rightToolbar);
         }
-        return this.rightToolbarInternal;
+        return this.#rightToolbar;
     }
     setAllowTabReorder(allow, automatic) {
         this.allowTabReorder = allow;
@@ -901,67 +871,67 @@ export class TabbedPaneTab {
     closeable;
     previewFeature = false;
     tabbedPane;
-    idInternal;
-    titleInternal;
-    tooltipInternal;
-    viewInternal;
+    #id;
+    #title;
+    #tooltip;
+    #view;
     shown;
     measuredWidth;
-    tabElementInternal;
+    #tabElement;
     icon = null;
     suffixElement = null;
-    widthInternal;
+    #width;
     delegate;
     titleElement;
     dragStartX;
-    jslogContextInternal;
+    #jslogContext;
     constructor(tabbedPane, id, title, closeable, previewFeature, view, tooltip, jslogContext) {
         this.closeable = closeable;
         this.previewFeature = previewFeature;
         this.tabbedPane = tabbedPane;
-        this.idInternal = id;
-        this.titleInternal = title;
-        this.tooltipInternal = tooltip;
-        this.viewInternal = view;
+        this.#id = id;
+        this.#title = title;
+        this.#tooltip = tooltip;
+        this.#view = view;
         this.shown = false;
-        this.jslogContextInternal = jslogContext;
+        this.#jslogContext = jslogContext;
     }
     get id() {
-        return this.idInternal;
+        return this.#id;
     }
     get title() {
-        return this.titleInternal;
+        return this.#title;
     }
     set title(title) {
-        if (title === this.titleInternal) {
+        if (title === this.#title) {
             return;
         }
-        this.titleInternal = title;
+        this.#title = title;
         if (this.titleElement) {
             this.titleElement.textContent = title;
-            const closeIconContainer = this.tabElementInternal?.querySelector('.close-button');
+            const closeIconContainer = this.#tabElement?.querySelector('.close-button');
             closeIconContainer?.setAttribute('title', i18nString(UIStrings.closeS, { PH1: title }));
             closeIconContainer?.setAttribute('aria-label', i18nString(UIStrings.closeS, { PH1: title }));
         }
         delete this.measuredWidth;
     }
     get jslogContext() {
-        return this.jslogContextInternal ?? (this.idInternal === 'console-view' ? 'console' : this.idInternal);
+        return this.#jslogContext ?? (this.#id === 'console-view' ? 'console' : this.#id);
     }
     isCloseable() {
         return this.closeable;
     }
     setIcon(icon) {
         this.icon = icon;
-        if (this.tabElementInternal && this.titleElement) {
-            this.createIconElement(this.tabElementInternal, this.titleElement, false);
+        if (this.#tabElement && this.titleElement) {
+            this.createIconElement(this.#tabElement, this.titleElement, false);
         }
         delete this.measuredWidth;
     }
     setSuffixElement(suffixElement) {
         this.suffixElement = suffixElement;
-        if (this.tabElementInternal && this.titleElement) {
-            this.createSuffixElement(this.tabElementInternal, this.titleElement, false);
+        if (this.#tabElement && this.titleElement) {
+            this.createSuffixElement(this.#tabElement, this.titleElement, false);
         }
         delete this.measuredWidth;
     }
@@ -976,32 +946,32 @@ export class TabbedPaneTab {
         return true;
     }
     get view() {
-        return this.viewInternal;
+        return this.#view;
     }
     set view(view) {
-        this.viewInternal = view;
+        this.#view = view;
     }
     get tooltip() {
-        return this.tooltipInternal;
+        return this.#tooltip;
     }
     set tooltip(tooltip) {
-        this.tooltipInternal = tooltip;
+        this.#tooltip = tooltip;
         if (this.titleElement) {
             Tooltip.install(this.titleElement, tooltip || '');
         }
     }
     get tabElement() {
-        if (!this.tabElementInternal) {
-            this.tabElementInternal = this.createTabElement(false);
+        if (!this.#tabElement) {
+            this.#tabElement = this.createTabElement(false);
         }
-        return this.tabElementInternal;
+        return this.#tabElement;
     }
     width() {
-        return this.widthInternal || 0;
+        return this.#width || 0;
     }
     setWidth(width) {
         this.tabElement.style.width = width === -1 ? '' : (width + 'px');
-        this.widthInternal = width;
+        this.#width = width;
     }
     setDelegate(delegate) {
         this.delegate = delegate;
@@ -1050,7 +1020,7 @@ export class TabbedPaneTab {
     createTabElement(measuring) {
         const tabElement = document.createElement('div');
         tabElement.classList.add('tabbed-pane-header-tab');
-        tabElement.id = 'tab-' + this.idInternal;
+        tabElement.id = 'tab-' + this.#id;
         ARIAUtils.markAsTab(tabElement);
         ARIAUtils.setSelected(tabElement, false);
         ARIAUtils.setLabel(tabElement, this.title);
@@ -1200,8 +1170,8 @@ export class TabbedPaneTab {
             return false;
         }
         this.dragStartX = event.pageX;
-        if (this.tabElementInternal) {
-            this.tabElementInternal.classList.add('dragging');
+        if (this.#tabElement) {
+            this.#tabElement.classList.add('dragging');
         }
         this.tabbedPane.tabSlider.remove();
         return true;
@@ -1210,11 +1180,11 @@ export class TabbedPaneTab {
         const tabElements = this.tabbedPane.tabsElement.childNodes;
         for (let i = 0; i < tabElements.length; ++i) {
             let tabElement = tabElements[i];
-            if (!this.tabElementInternal || tabElement === this.tabElementInternal) {
+            if (!this.#tabElement || tabElement === this.#tabElement) {
                 continue;
             }
-            const intersects = tabElement.offsetLeft + tabElement.clientWidth > this.tabElementInternal.offsetLeft &&
-                this.tabElementInternal.offsetLeft + this.tabElementInternal.clientWidth > tabElement.offsetLeft;
+            const intersects = tabElement.offsetLeft + tabElement.clientWidth > this.#tabElement.offsetLeft &&
+                this.#tabElement.offsetLeft + this.#tabElement.clientWidth > tabElement.offsetLeft;
             if (!intersects) {
                 continue;
             }
@@ -1226,13 +1196,13 @@ export class TabbedPaneTab {
                 tabElement = tabElement.nextSibling;
                 ++i;
             }
-            const oldOffsetLeft = this.tabElementInternal.offsetLeft;
+            const oldOffsetLeft = this.#tabElement.offsetLeft;
             this.tabbedPane.insertBefore(this, i);
-            this.dragStartX = dragStartX + this.tabElementInternal.offsetLeft - oldOffsetLeft;
+            this.dragStartX = dragStartX + this.#tabElement.offsetLeft - oldOffsetLeft;
             break;
         }
         const dragStartX = this.dragStartX;
-        const tabElement = this.tabElementInternal;
+        const tabElement = this.#tabElement;
         if (!tabElement.previousSibling && event.pageX - dragStartX < 0) {
             tabElement.style.setProperty('left', '0px');
             return;
@@ -1244,7 +1214,7 @@ export class TabbedPaneTab {
         tabElement.style.setProperty('left', (event.pageX - dragStartX) + 'px');
     }
     endTabDragging(_event) {
-        const tabElement = this.tabElementInternal;
+        const tabElement = this.#tabElement;
         tabElement.classList.remove('dragging');
         tabElement.style.removeProperty('left');
         delete this.dragStartX;

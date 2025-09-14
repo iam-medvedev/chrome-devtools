@@ -3,7 +3,7 @@ import { type CompatibilityTracksAppender, type TrackAppender, type TrackAppende
 export declare class AnimationsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace);
     appendTrackAtLevel(trackStartLevel: number, expanded?: boolean | undefined): number;
     colorForEvent(): string;
 }

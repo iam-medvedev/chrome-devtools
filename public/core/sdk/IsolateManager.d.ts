@@ -10,7 +10,6 @@ export declare class IsolateManager extends Common.ObjectWrapper.ObjectWrapper<E
     }): IsolateManager;
     observeIsolates(observer: Observer): void;
     modelAdded(model: RuntimeModel): void;
-    private modelAddedInternal;
     modelRemoved(model: RuntimeModel): void;
     isolateByModel(model: RuntimeModel): Isolate | null;
     isolates(): Iterable<Isolate>;
@@ -30,7 +29,6 @@ export interface EventTypes {
 export declare const MemoryTrendWindowMs = 120000;
 export declare class Isolate {
     #private;
-    readonly modelsInternal: Set<RuntimeModel>;
     constructor(id: string);
     id(): string;
     models(): Set<RuntimeModel>;

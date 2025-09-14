@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -92,8 +92,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
     selectedSearchResult;
     searchRegex;
     #parsedTrace;
-    #traceMetadata;
-    #traceInsightSets = null;
     #eventToRelatedInsightsMap = null;
     #selectedGroupName = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
@@ -153,7 +151,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.delegate = delegate;
         this.eventListeners = [];
         this.#parsedTrace = null;
-        this.#traceMetadata = null;
         const flameChartsContainer = new UI.Widget.VBox();
         flameChartsContainer.element.classList.add('flame-charts-container');
         // Create main and network flamecharts.
@@ -499,13 +496,15 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         });
     }
     #amendMarkerWithFieldData() {
-        if (!this.#traceMetadata?.cruxFieldData || !this.#traceInsightSets) {
+        const metadata = this.#parsedTrace?.metadata;
+        const insights = this.#parsedTrace?.insights;
+        if (!metadata?.cruxFieldData || !insights) {
             return;
         }
         const fieldMetricResultsByNavigationId = new Map();
-        for (const [key, insightSet] of this.#traceInsightSets) {
+        for (const [key, insightSet] of insights) {
             if (insightSet.navigation) {
-                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#traceMetadata, CrUXManager.CrUXManager.instance().getSelectedScope()));
+                fieldMetricResultsByNavigationId.set(key, Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, metadata, CrUXManager.CrUXManager.instance().getSelectedScope()));
             }
         }
         for (const marker of this.#markers) {
@@ -538,7 +537,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         }
         // Clear out any markers.
         this.bulkRemoveOverlays(this.#markers);
-        const markerEvents = parsedTrace.PageLoadMetrics.allMarkerEvents;
+        const markerEvents = parsedTrace.data.PageLoadMetrics.allMarkerEvents;
         // Set markers for Navigations, LCP, FCP, DCL, L.
         const markers = markerEvents.filter(event => event.name === "navigationStart" /* Trace.Types.Events.Name.NAVIGATION_START */ ||
             event.name === "largestContentfulPaint::Candidate" /* Trace.Types.Events.Name.MARK_LCP_CANDIDATE */ ||
@@ -548,7 +547,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#sortMarkersForPreferredVisualOrder(markers);
         const overlayByTs = new Map();
         markers.forEach(marker => {
-            const adjustedTimestamp = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.Meta.traceBounds, parsedTrace.Meta.navigationsByNavigationId, parsedTrace.Meta.navigationsByFrameId);
+            const adjustedTimestamp = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(marker, parsedTrace.data.Meta.traceBounds, parsedTrace.data.Meta.navigationsByNavigationId, parsedTrace.data.Meta.navigationsByFrameId);
             // If any of the markers overlap in timing, lets put them on the same marker.
             let matchingOverlay = false;
             for (const [ts, overlay] of overlayByTs.entries()) {
@@ -963,12 +962,12 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#selectedEvents = group ? this.mainDataProvider.groupTreeEvents(group) : null;
         this.#updateDetailViews();
     }
-    setModel(newParsedTrace, traceMetadata) {
+    setModel(newParsedTrace, eventToRelatedInsightsMap) {
         if (newParsedTrace === this.#parsedTrace) {
             return;
         }
         this.#parsedTrace = newParsedTrace;
-        this.#traceMetadata = traceMetadata;
+        this.#eventToRelatedInsightsMap = eventToRelatedInsightsMap;
         for (const dimmer of this.#flameChartDimmers) {
             dimmer.active = false;
             dimmer.mainChartIndices = [];
@@ -992,7 +991,7 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         this.#selectedGroupName = null;
         Common.EventTarget.removeEventListeners(this.eventListeners);
         this.#selectedEvents = null;
-        this.#entityMapper = new Utils.EntityMapper.EntityMapper(this.#parsedTrace);
+        this.#entityMapper = new Trace.EntityMapper.EntityMapper(this.#parsedTrace);
         // order is important: |reset| needs to be called after the trace
         // model has been set in the data providers.
         this.mainDataProvider.setModel(this.#parsedTrace, this.#entityMapper);
@@ -1027,15 +1026,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         const main = this.#mainPersistedGroupConfigSetting.get();
         const network = this.#networkPersistedGroupConfigSetting.get();
         return { main, network };
-    }
-    setInsights(insights, eventToRelatedInsightsMap) {
-        if (this.#traceInsightSets === insights) {
-            return;
-        }
-        this.#traceInsightSets = insights;
-        this.#eventToRelatedInsightsMap = eventToRelatedInsightsMap;
-        // The DetailsView is provided with the InsightSets, so make sure we update it.
-        this.#updateDetailViews();
     }
     reset() {
         if (this.networkDataProvider.isEmpty()) {
@@ -1074,7 +1064,6 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
         void this.detailsView.setModel({
             parsedTrace: this.#parsedTrace,
             selectedEvents: this.#selectedEvents,
-            traceInsightsSets: this.#traceInsightSets,
             eventToRelatedInsightsMap: this.#eventToRelatedInsightsMap,
             entityMapper: this.#entityMapper,
         });
@@ -1587,16 +1576,16 @@ export const FlameChartStyle = {
     textColor: '#333',
 };
 export class TimelineFlameChartMarker {
-    startTimeInternal;
+    #startTime;
     startOffset;
     style;
     constructor(startTime, startOffset, style) {
-        this.startTimeInternal = startTime;
+        this.#startTime = startTime;
         this.startOffset = startOffset;
         this.style = style;
     }
     startTime() {
-        return this.startTimeInternal;
+        return this.#startTime;
     }
     color() {
         return this.style.color;

@@ -7,7 +7,6 @@ import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { TimelineRegExp } from './TimelineFilters.js';
 import { type TimelineSelection } from './TimelineSelection.js';
-import * as Utils from './utils/utils.js';
 declare const TimelineTreeView_base: (new (...args: any[]) => {
     addEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
     once<T extends keyof TimelineTreeView.EventTypes>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
@@ -47,9 +46,9 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
     setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
-    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null, entityMappings?: Utils.EntityMapper.EntityMapper | null): void;
-    entityMapper(): Utils.EntityMapper.EntityMapper | null;
-    parsedTrace(): Trace.Handlers.Types.ParsedTrace | null;
+    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.TraceModel.ParsedTrace | null, entityMappings?: Trace.EntityMapper.EntityMapper | null): void;
+    entityMapper(): Trace.EntityMapper.EntityMapper | null;
+    parsedTrace(): Trace.TraceModel.ParsedTrace | null;
     init(): void;
     lastSelectedNode(): Trace.Extras.TraceTree.Node | null | undefined;
     updateContents(selection: TimelineSelection): void;

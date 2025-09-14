@@ -506,7 +506,7 @@ var IssueKindView = class extends UI2.TreeOutline.TreeElement {
 
 // gen/front_end/panels/issues/issuesPane.css.js
 var issuesPane_css_default = `/*
- * Copyright (c) 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -537,7 +537,7 @@ var issuesPane_css_default = `/*
 
 // gen/front_end/panels/issues/issuesTree.css.js
 var issuesTree_css_default = `/*
- * Copyright (c) 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

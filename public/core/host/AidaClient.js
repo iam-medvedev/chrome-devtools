@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -35,8 +35,6 @@ export var ClientFeature;
     ClientFeature[ClientFeature["CHROME_STYLING_AGENT"] = 2] = "CHROME_STYLING_AGENT";
     // Chrome AI Assistance Network Agent.
     ClientFeature[ClientFeature["CHROME_NETWORK_AGENT"] = 7] = "CHROME_NETWORK_AGENT";
-    // Chrome AI Assistance Performance Agent.
-    ClientFeature[ClientFeature["CHROME_PERFORMANCE_AGENT"] = 8] = "CHROME_PERFORMANCE_AGENT";
     // Chrome AI Annotations Performance Agent
     ClientFeature[ClientFeature["CHROME_PERFORMANCE_ANNOTATIONS_AGENT"] = 20] = "CHROME_PERFORMANCE_ANNOTATIONS_AGENT";
     // Chrome AI Assistance File Agent.
@@ -48,6 +46,8 @@ export var ClientFeature;
     // Removed features (for reference).
     // Chrome AI Assistance Performance Insights Agent.
     // CHROME_PERFORMANCE_INSIGHTS_AGENT = 13,
+    // Chrome AI Assistance Performance Agent (call trees).
+    // CHROME_PERFORMANCE_AGENT = 8,
 })(ClientFeature || (ClientFeature = {}));
 export var UserTier;
 (function (UserTier) {

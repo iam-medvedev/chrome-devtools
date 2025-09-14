@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -50,7 +50,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/elements/ShortcutTreeElement.ts
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
     nodeShortcut;
-    hoveredInternal;
+    #hovered;
     constructor(nodeShortcut) {
         super('');
         this.listItemElement.createChild('div', 'selection fill');
@@ -96,13 +96,13 @@ export class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
         ElementsPanel.instance().registerAdorner(adorner);
     }
     get hovered() {
-        return Boolean(this.hoveredInternal);
+        return Boolean(this.#hovered);
     }
     set hovered(x) {
-        if (this.hoveredInternal === x) {
+        if (this.#hovered === x) {
             return;
         }
-        this.hoveredInternal = x;
+        this.#hovered = x;
         this.listItemElement.classList.toggle('hovered', x);
     }
     deferredNode() {

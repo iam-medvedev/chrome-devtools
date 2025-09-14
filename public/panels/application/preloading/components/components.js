@@ -847,7 +847,7 @@ import * as PreloadingHelper from "./../helper/helper.js";
 
 // gen/front_end/panels/application/preloading/components/preloadingDetailsReportView.css.js
 var preloadingDetailsReportView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1226,7 +1226,7 @@ import * as VisualLogging2 from "./../../../../ui/visual_logging/visual_logging.
 
 // gen/front_end/panels/application/preloading/components/preloadingDisabledInfobar.css.js
 var preloadingDisabledInfobar_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1354,10 +1354,10 @@ var PreloadingDisabledInfobar = class extends LegacyWrapper5.LegacyWrapper.Wrapp
   }
   async #render() {
     await RenderCoordinator2.write("PreloadingDisabledInfobar render", () => {
-      Lit3.render(this.#renderInternal(), this.#shadow, { host: this });
+      Lit3.render(this.#renderTemplate(), this.#shadow, { host: this });
     });
   }
-  #renderInternal() {
+  #renderTemplate() {
     const forceEnabled = this.#data.disabledByHoldbackPrefetchSpeculationRules || this.#data.disabledByHoldbackPrerenderSpeculationRules;
     const disabled = this.#data.disabledByPreference || this.#data.disabledByDataSaver || this.#data.disabledByBatterySaver;
     let header;
@@ -1469,7 +1469,7 @@ import * as Lit4 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/preloading/components/preloadingGrid.css.js
 var preloadingGrid_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1699,7 +1699,7 @@ import * as Lit6 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/preloading/components/RuleSetDetailsView.css.js
 var RuleSetDetailsView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1847,7 +1847,7 @@ import * as PreloadingHelper2 from "./../helper/helper.js";
 
 // gen/front_end/panels/application/preloading/components/ruleSetGrid.css.js
 var ruleSetGrid_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2047,7 +2047,7 @@ import * as PreloadingHelper3 from "./../helper/helper.js";
 
 // gen/front_end/panels/application/preloading/components/usedPreloadingView.css.js
 var usedPreloadingView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2232,10 +2232,10 @@ var UsedPreloadingView = class extends LegacyWrapper15.LegacyWrapper.WrappableCo
   }
   async #render() {
     await RenderCoordinator4.write("UsedPreloadingView render", () => {
-      Lit8.render(this.#renderInternal(), this.#shadow, { host: this });
+      Lit8.render(this.#renderTemplate(), this.#shadow, { host: this });
     });
   }
-  #renderInternal() {
+  #renderTemplate() {
     return html8`
       <style>${usedPreloadingView_css_default}</style>
       <devtools-report>

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment, expectConsoleLogs } from '../../../testing/EnvironmentHelpers.js';
@@ -37,9 +37,9 @@ describeWithEnvironment('DocumentLatency', function () {
             Types.Timing.Milli(mainRequestEvent.args.data.timing.receiveHeadersEnd + 1000);
         traceEvents[mainRequestEventIndex] = mainRequestEvent;
         await processor.parse(traceEvents, { isCPUProfile: false, isFreshRecording: true });
-        const data = processor.parsedTrace;
+        const data = processor.data;
         if (!data) {
-            throw new Error('missing parsedTrace');
+            throw new Error('missing data');
         }
         const navigation = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const context = createContextForNavigation(data, navigation, data.Meta.mainFrameId);
@@ -65,9 +65,9 @@ describeWithEnvironment('DocumentLatency', function () {
         mainRequestEvent.args.data.headers = mainRequestEvent.args.data.headers?.filter(h => h.name !== 'content-encoding');
         traceEvents[mainRequestEventIndex] = mainRequestEvent;
         await processor.parse(traceEvents, { isCPUProfile: false, isFreshRecording: true });
-        const data = processor.parsedTrace;
+        const data = processor.data;
         if (!data) {
-            throw new Error('missing parsedTrace');
+            throw new Error('missing data');
         }
         const navigation = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const context = createContextForNavigation(data, navigation, data.Meta.mainFrameId);

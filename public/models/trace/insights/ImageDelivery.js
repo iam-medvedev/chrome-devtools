@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -127,25 +127,25 @@ function finalize(partialModel) {
 function estimateGIFPercentSavings(request) {
     return Math.round((29.1 * Math.log10(request.args.data.decodedBodyLength) - 100.7)) / 100;
 }
-function getDisplayedSize(parsedTrace, paintImage) {
+function getDisplayedSize(data, paintImage) {
     // Note: for traces made prior to metadata.hostDPR (which means no data in
     // paintEventToCorrectedDisplaySize), the displayed size unexpectedly ignores any
     // emulated DPR and so the results may be very misleading.
-    return parsedTrace.ImagePainting.paintEventToCorrectedDisplaySize.get(paintImage) ?? {
+    return data.ImagePainting.paintEventToCorrectedDisplaySize.get(paintImage) ?? {
         width: paintImage.args.data.width,
         height: paintImage.args.data.height,
     };
 }
-function getPixelCounts(parsedTrace, paintImage) {
-    const { width, height } = getDisplayedSize(parsedTrace, paintImage);
+function getPixelCounts(data, paintImage) {
+    const { width, height } = getDisplayedSize(data, paintImage);
     return {
         filePixels: paintImage.args.data.srcWidth * paintImage.args.data.srcHeight,
         displayedPixels: width * height,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
-    const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
+    const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
     const optimizableImages = [];
     for (const request of contextRequests) {
         if (request.args.data.resourceType !== 'Image') {
@@ -156,18 +156,18 @@ export function generateInsight(parsedTrace, context) {
         }
         // If the request was redirected, the image paints will have the pre-redirect URL.
         const url = request.args.data.redirects[0]?.url ?? request.args.data.url;
-        const imagePaints = parsedTrace.ImagePainting.paintImageEventForUrl.get(url)?.filter(isWithinContext);
+        const imagePaints = data.ImagePainting.paintImageEventForUrl.get(url)?.filter(isWithinContext);
         // This will filter out things like preloaded image requests where an image file is downloaded
         // but never rendered on the page.
         if (!imagePaints?.length) {
             continue;
         }
         const largestImagePaint = imagePaints.reduce((prev, curr) => {
-            const prevPixels = getPixelCounts(parsedTrace, prev).displayedPixels;
-            const currPixels = getPixelCounts(parsedTrace, curr).displayedPixels;
+            const prevPixels = getPixelCounts(data, prev).displayedPixels;
+            const currPixels = getPixelCounts(data, curr).displayedPixels;
             return prevPixels > currPixels ? prev : curr;
         });
-        const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels, } = getPixelCounts(parsedTrace, largestImagePaint);
+        const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels, } = getPixelCounts(data, largestImagePaint);
         // Decoded body length is almost always the right one to be using because of the below:
         //     `encodedDataLength = decodedBodyLength + headers`.
         // HOWEVER, there are some cases where an image is compressed again over the network and transfer size
@@ -208,7 +208,7 @@ export function generateInsight(parsedTrace, context) {
                 // This will compound the byte savings from any potential format changes with the image size
                 // optimization added here.
                 imageByteSavings += Math.round(wastedPixelRatio * (imageBytes - imageByteSavingsFromFormat));
-                const { width, height } = getDisplayedSize(parsedTrace, largestImagePaint);
+                const { width, height } = getDisplayedSize(data, largestImagePaint);
                 optimizations.push({
                     type: ImageOptimizationType.RESPONSIVE_SIZE,
                     byteSavings,

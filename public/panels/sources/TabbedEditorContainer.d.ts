@@ -18,7 +18,6 @@ export declare class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWr
     private readonly history;
     private readonly uriToUISourceCode;
     private readonly idToUISourceCode;
-    private currentFileInternal;
     private currentView;
     private scrollTimer?;
     private reentrantShow;

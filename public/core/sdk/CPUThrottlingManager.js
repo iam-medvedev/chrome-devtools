@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -33,13 +33,13 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 let throttlingManagerInstance;
 export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
-    #cpuThrottlingOptionInternal;
+    #cpuThrottlingOption;
     #calibratedThrottlingSetting;
-    #hardwareConcurrencyInternal;
+    #hardwareConcurrency;
     #pendingMainTargetPromise;
     constructor() {
         super();
-        this.#cpuThrottlingOptionInternal = NoThrottlingOption;
+        this.#cpuThrottlingOption = NoThrottlingOption;
         this.#calibratedThrottlingSetting = Common.Settings.Settings.instance().createSetting('calibrated-cpu-throttling', {}, "Global" /* Common.Settings.SettingStorageType.GLOBAL */);
         this.#calibratedThrottlingSetting.addChangeListener(this.#onCalibratedSettingChanged, this);
         TargetManager.instance().observeModels(EmulationModel, this);
@@ -52,18 +52,18 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         return throttlingManagerInstance;
     }
     cpuThrottlingRate() {
-        return this.#cpuThrottlingOptionInternal.rate();
+        return this.#cpuThrottlingOption.rate();
     }
     cpuThrottlingOption() {
-        return this.#cpuThrottlingOptionInternal;
+        return this.#cpuThrottlingOption;
     }
     #onCalibratedSettingChanged() {
         // If a calibrated option is selected, need to propagate new rate.
-        const currentOption = this.#cpuThrottlingOptionInternal;
+        const currentOption = this.#cpuThrottlingOption;
         if (!currentOption.calibratedDeviceType) {
             return;
         }
-        const rate = this.#cpuThrottlingOptionInternal.rate();
+        const rate = this.#cpuThrottlingOption.rate();
         if (rate === 0) {
             // This calibrated option is no longer valid.
             this.setCPUThrottlingOption(NoThrottlingOption);
@@ -75,21 +75,21 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         this.dispatchEventToListeners("RateChanged" /* Events.RATE_CHANGED */, rate);
     }
     setCPUThrottlingOption(option) {
-        if (option === this.#cpuThrottlingOptionInternal) {
+        if (option === this.#cpuThrottlingOption) {
             return;
         }
-        this.#cpuThrottlingOptionInternal = option;
+        this.#cpuThrottlingOption = option;
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
-            void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingOptionInternal.rate());
+            void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingOption.rate());
         }
-        this.dispatchEventToListeners("RateChanged" /* Events.RATE_CHANGED */, this.#cpuThrottlingOptionInternal.rate());
+        this.dispatchEventToListeners("RateChanged" /* Events.RATE_CHANGED */, this.#cpuThrottlingOption.rate());
     }
     setHardwareConcurrency(concurrency) {
-        this.#hardwareConcurrencyInternal = concurrency;
+        this.#hardwareConcurrency = concurrency;
         for (const emulationModel of TargetManager.instance().models(EmulationModel)) {
             void emulationModel.setHardwareConcurrency(concurrency);
         }
-        this.dispatchEventToListeners("HardwareConcurrencyChanged" /* Events.HARDWARE_CONCURRENCY_CHANGED */, this.#hardwareConcurrencyInternal);
+        this.dispatchEventToListeners("HardwareConcurrencyChanged" /* Events.HARDWARE_CONCURRENCY_CHANGED */, this.#hardwareConcurrency);
     }
     hasPrimaryPageTargetSet() {
         // In some environments, such as Node, trying to check if we have a page
@@ -131,11 +131,11 @@ export class CPUThrottlingManager extends Common.ObjectWrapper.ObjectWrapper {
         return result.value;
     }
     modelAdded(emulationModel) {
-        if (this.#cpuThrottlingOptionInternal !== NoThrottlingOption) {
-            void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingOptionInternal.rate());
+        if (this.#cpuThrottlingOption !== NoThrottlingOption) {
+            void emulationModel.setCPUThrottlingRate(this.#cpuThrottlingOption.rate());
         }
-        if (this.#hardwareConcurrencyInternal !== undefined) {
-            void emulationModel.setHardwareConcurrency(this.#hardwareConcurrencyInternal);
+        if (this.#hardwareConcurrency !== undefined) {
+            void emulationModel.setHardwareConcurrency(this.#hardwareConcurrency);
         }
         // If there are any callers blocked on a getHardwareConcurrency call, let's wake them now.
         if (this.#pendingMainTargetPromise) {

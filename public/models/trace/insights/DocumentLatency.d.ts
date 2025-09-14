@@ -62,5 +62,5 @@ export type DocumentLatencyInsightModel = InsightModel<typeof UIStrings, {
         documentRequest?: Types.Events.SyntheticNetworkRequest;
     };
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DocumentLatencyInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): DocumentLatencyInsightModel;
 export declare function createOverlays(model: DocumentLatencyInsightModel): Types.Overlays.Overlay[];

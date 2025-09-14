@@ -11,8 +11,8 @@ declare const ProfileLauncherView_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends Events.PROFILE_TYPE_SELECTED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class ProfileLauncherView extends ProfileLauncherView_base {
+    #private;
     readonly panel: ProfilesPanel;
-    private contentElementInternal;
     readonly selectedProfileTypeSetting: Common.Settings.Setting<string>;
     profileTypeHeaderElement: HTMLElement;
     readonly profileTypeSelectorForm: HTMLElement;

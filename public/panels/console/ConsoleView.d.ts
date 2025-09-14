@@ -9,7 +9,6 @@ import { ConsoleViewMessage } from './ConsoleViewMessage.js';
 import { type ConsoleViewportElement, type ConsoleViewportProvider } from './ConsoleViewport.js';
 export declare class ConsoleView extends UI.Widget.VBox implements UI.SearchableView.Searchable, ConsoleViewportProvider, SDK.TargetManager.SDKModelObserver<SDK.ConsoleModel.ConsoleModel> {
     #private;
-    private readonly searchableViewInternal;
     private readonly sidebar;
     private isSidebarOpen;
     private filter;

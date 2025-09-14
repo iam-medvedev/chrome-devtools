@@ -1,12 +1,12 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export class ElementUpdateRecord {
     modifiedAttributes;
     removedAttributes;
-    hasChangedChildrenInternal;
-    hasRemovedChildrenInternal;
-    charDataModifiedInternal;
+    #hasChangedChildren;
+    #hasRemovedChildren;
+    #charDataModified;
     attributeModified(attrName) {
         if (this.removedAttributes?.has(attrName)) {
             this.removedAttributes.delete(attrName);
@@ -26,17 +26,17 @@ export class ElementUpdateRecord {
         this.removedAttributes.add(attrName);
     }
     nodeInserted(_node) {
-        this.hasChangedChildrenInternal = true;
+        this.#hasChangedChildren = true;
     }
     nodeRemoved(_node) {
-        this.hasChangedChildrenInternal = true;
-        this.hasRemovedChildrenInternal = true;
+        this.#hasChangedChildren = true;
+        this.#hasRemovedChildren = true;
     }
     charDataModified() {
-        this.charDataModifiedInternal = true;
+        this.#charDataModified = true;
     }
     childrenModified() {
-        this.hasChangedChildrenInternal = true;
+        this.#hasChangedChildren = true;
     }
     isAttributeModified(attributeName) {
         return this.modifiedAttributes?.has(attributeName) ?? false;
@@ -46,13 +46,13 @@ export class ElementUpdateRecord {
             Boolean(this.removedAttributes.size);
     }
     isCharDataModified() {
-        return Boolean(this.charDataModifiedInternal);
+        return Boolean(this.#charDataModified);
     }
     hasChangedChildren() {
-        return Boolean(this.hasChangedChildrenInternal);
+        return Boolean(this.#hasChangedChildren);
     }
     hasRemovedChildren() {
-        return Boolean(this.hasRemovedChildrenInternal);
+        return Boolean(this.#hasRemovedChildren);
     }
 }
 //# sourceMappingURL=ElementUpdateRecord.js.map

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -6,17 +6,17 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { dispatchClickEvent, doubleRaf, raf, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { createTarget, deinitializeGlobalVars, expectConsoleLogs, initializeGlobalVars } from '../../testing/EnvironmentHelpers.js';
 import { clearMockConnectionResponseHandler, describeWithMockConnection, setMockConnectionResponseHandler, } from '../../testing/MockConnection.js';
 import { loadBasicSourceMapExample, setupPageResourceLoaderForSourceMap, } from '../../testing/SourceMapHelpers.js';
-import { allThreadEntriesInTrace, getBaseTraceParseModelData, getEventOfType, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceHandlerData, getEventOfType, getMainThread, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeMockSamplesHandlerData, makeProfileCall, } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from './timeline.js';
-import * as Utils from './utils/utils.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('TimelineUIUtils', function () {
     before(async () => {
@@ -50,7 +50,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('makes the script location of a call frame a full URL when the inspected target is not the same the call frame was taken from (e.g. a loaded file)', async function () {
             // The actual trace doesn't matter here, just need one so we can pass
             // it into buildDetailsNodeForTraceEvent
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
                 name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
                 ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
@@ -80,7 +80,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         it('makes the script location of a call frame a script name when the inspected target is the one the call frame was taken from', async function () {
             // The actual trace doesn't matter here, just need one so we can pass
             // it into buildDetailsNodeForTraceEvent
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
             const fakeFunctionCall = {
                 name: "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */,
                 ph: "X" /* Trace.Types.Events.Phase.COMPLETE */,
@@ -200,12 +200,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
             };
             // This only includes data used in the SourceMapsResolver and
             // TimelineUIUtils
-            const parsedTrace = getBaseTraceParseModelData({
+            const parsedTrace = getBaseTraceHandlerData({
                 Samples: makeMockSamplesHandlerData([profileCall]),
                 Workers: workersData,
                 Renderer: makeMockRendererHandlerData([profileCall]),
             });
-            const resolver = new Timeline.Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace);
+            const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
             await resolver.install();
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, profileCall, new Components.Linkifier.Linkifier(), false, null);
             const stackTraceData = getStackTraceForDetailsElement(details);
@@ -242,12 +242,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
             };
             // This only includes data used in the SourceMapsResolver and
             // TimelineUIUtils
-            const parsedTrace = getBaseTraceParseModelData({
+            const parsedTrace = getBaseTraceHandlerData({
                 Samples: makeMockSamplesHandlerData([profileCall]),
                 Workers: workersData,
                 Renderer: makeMockRendererHandlerData([functionCall]),
             });
-            const resolver = new Timeline.Utils.SourceMapsResolver.SourceMapsResolver(parsedTrace);
+            const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
             await resolver.install();
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, functionCall, new Components.Linkifier.Linkifier(), false, null);
             const detailsData = getRowDataForDetailsElement(details).find(row => row.title?.startsWith('Function'));
@@ -260,15 +260,15 @@ describeWithMockConnection('TimelineUIUtils', function () {
             error: ['Error: No LanguageSelector instance exists yet.'],
         });
         it('adjusts the time for a DCL event after a navigation', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const mainFrameID = parsedTrace.Meta.mainFrameId;
-            const dclEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(event => {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const mainFrameID = parsedTrace.data.Meta.mainFrameId;
+            const dclEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(event => {
                 return Trace.Types.Events.isMarkDOMContent(event) && event.args.data?.frame === mainFrameID;
             });
             if (!dclEvent) {
                 throw new Error('Could not find DCL event');
             }
-            const traceMinBound = parsedTrace.Meta.traceBounds.min;
+            const traceMinBound = parsedTrace.data.Meta.traceBounds.min;
             // Round the time to 2DP to avoid needlessly long expectation numbers!
             const unadjustedStartTimeMilliseconds = Trace.Helpers.Timing
                 .microToMilli(Trace.Types.Timing.Micro(dclEvent.ts - traceMinBound))
@@ -278,11 +278,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.strictEqual(adjustedTime.toFixed(2), String(178.92));
         });
         it('can adjust the times for events that are not PageLoad markers', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             // Use a performance.mark event. Exact event is unimportant except that
             // it should not be a Page Load event as those are covered by the tests
             // above.
-            const userMark = parsedTrace.UserTimings.performanceMarks.find(event => event.name === 'mark1');
+            const userMark = parsedTrace.data.UserTimings.performanceMarks.find(event => event.name === 'mark1');
             if (!userMark) {
                 throw new Error('Could not find user mark');
             }
@@ -383,12 +383,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
             }
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
-        it('should return the correct rgb value for a corresponding CSS variable', function () {
-            const parsedColor = Utils.EntryStyles.getCategoryStyles().scripting.getComputedColorValue();
-            assert.strictEqual('rgb(2 2 2)', parsedColor);
+        it('should return the right color', function () {
+            const parsedColor = Trace.Styles.getCategoryStyles().scripting.cssVariable;
+            assert.strictEqual(parsedColor, '--app-color-scripting');
         });
         it('should return the color as a CSS variable', function () {
-            const cssVariable = Utils.EntryStyles.getCategoryStyles().scripting.getCSSValue();
+            const cssVariable = Trace.Styles.getCategoryStyles().scripting.getCSSValue();
             assert.strictEqual('var(--app-color-scripting)', cssVariable);
         });
         it('treats the v8.parseOnBackgroundWaiting as scripting even though it would usually be idle', function () {
@@ -396,7 +396,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.strictEqual('rgb(2 2 2)', Timeline.TimelineUIUtils.TimelineUIUtils.eventColor(event));
         });
         it('assigns the correct color to the swatch of an event\'s title', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-web-font.json.gz');
             const events = allThreadEntriesInTrace(parsedTrace);
             const task = events.find(event => {
                 return event.name.includes('RunTask');
@@ -411,11 +411,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     describe('testContentMatching', () => {
         it('matches call frame events based on a regular expression and the contents of the event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
             // Find an event from the trace that represents some work that React did. This
             // event is not chosen for any particular reason other than it was the example
             // used in the bug report: crbug.com/1484504
-            const mainThread = getMainThread(parsedTrace.Renderer);
+            const mainThread = getMainThread(parsedTrace.data.Renderer);
             const performConcurrentWorkEvent = mainThread.entries.find(entry => {
                 if (Trace.Types.Events.isProfileCall(entry)) {
                     return entry.callFrame.functionName === 'performConcurrentWorkOnRoot';
@@ -425,13 +425,13 @@ describeWithMockConnection('TimelineUIUtils', function () {
             if (!performConcurrentWorkEvent) {
                 throw new Error('Could not find expected event');
             }
-            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(performConcurrentWorkEvent, /perfo/, parsedTrace));
+            assert.isTrue(Timeline.TimelineUIUtils.TimelineUIUtils.testContentMatching(performConcurrentWorkEvent, /perfo/, parsedTrace.data));
         });
     });
     describe('traceEventDetails', function () {
         it('shows the interaction ID and INP breakdown metrics for a given interaction', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
-            const interactionEvent = parsedTrace.UserInteractions.interactionEventsWithNoNesting.find(entry => {
+            const parsedTrace = await TraceLoader.traceEngine(this, 'one-second-interaction.json.gz');
+            const interactionEvent = parsedTrace.data.UserInteractions.interactionEventsWithNoNesting.find(entry => {
                 return entry.dur === 979974 && entry.type === 'click';
             });
             if (!interactionEvent) {
@@ -464,7 +464,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders all event data for a generic trace', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'generic-about-tracing.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'generic-about-tracing.json.gz');
             const event = allThreadEntriesInTrace(parsedTrace).find(entry => {
                 return entry.name === 'ThreadControllerImpl::RunTask';
             });
@@ -483,7 +483,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders invalidations correctly', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'style-invalidation-change-attribute.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'style-invalidation-change-attribute.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
             // Set up a fake DOM so that we can request nodes by backend Ids (even
             // though we return none, we need to mock these calls else the frontend
@@ -495,14 +495,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     nodeIds: [],
                 };
             });
-            const updateLayoutTreeEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
-                return Trace.Types.Events.isUpdateLayoutTree(event) &&
+            const recalcStyleEvent = allThreadEntriesInTrace(parsedTrace).find(event => {
+                return Trace.Types.Events.isRecalcStyle(event) &&
                     event.args.beginData?.stackTrace?.[0].functionName === 'testFuncs.changeAttributeAndDisplay';
             });
-            if (!updateLayoutTreeEvent) {
+            if (!recalcStyleEvent) {
                 throw new Error('Could not find update layout tree event');
             }
-            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, updateLayoutTreeEvent, new Components.Linkifier.Linkifier(), false, null);
+            const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, recalcStyleEvent, new Components.Linkifier.Linkifier(), false, null);
             const rowData = getRowDataForDetailsElement(details);
             assert.deepEqual(rowData, [
                 { title: 'Duration', value: '0.19\xA0ms' },
@@ -550,8 +550,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders details for performance.mark', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings-details.json.gz');
-            const mark = parsedTrace.UserTimings.performanceMarks[0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings-details.json.gz');
+            const mark = parsedTrace.data.UserTimings.performanceMarks[0];
             if (!mark) {
                 throw new Error('Could not find expected event');
             }
@@ -567,8 +567,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders details for performance.measure', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings-details.json.gz');
-            const measure = parsedTrace.UserTimings.performanceMeasures[0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings-details.json.gz');
+            const measure = parsedTrace.data.UserTimings.performanceMeasures[0];
             if (!measure) {
                 throw new Error('Could not find expected event');
             }
@@ -587,7 +587,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders details for a v8.compile ("Compile Script") event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'user-timings.json.gz');
             const compileEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isV8Compile);
             if (!compileEvent) {
                 throw new Error('Could not find expected event');
@@ -609,8 +609,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders the details for an extension entry properly', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
-            const extensionEntry = parsedTrace.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
             if (!extensionEntry) {
                 throw new Error('Could not find extension entry.');
             }
@@ -627,8 +627,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('can handle an extension entry having a `null` value', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
-            const extensionEntry = parsedTrace.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionEntry = parsedTrace.data.ExtensionTraceData.extensionTrackData[1].entriesByTrack['An Extension Track'][0];
             if (!extensionEntry) {
                 throw new Error('Could not find extension entry.');
             }
@@ -649,8 +649,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders the details for an extension marker properly', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
-            const extensionMark = parsedTrace.ExtensionTraceData.extensionMarkers[0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
+            const extensionMark = parsedTrace.data.ExtensionTraceData.extensionMarkers[0];
             if (!extensionMark) {
                 throw new Error('Could not find extension mark.');
             }
@@ -676,8 +676,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     return Timeline.CLSLinkifier.Linkifier.instance();
                 },
             });
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
-            const [process] = parsedTrace.Renderer.processes.values();
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const [process] = parsedTrace.data.Renderer.processes.values();
             const [thread] = process.threads.values();
             const profileCalls = thread.entries.filter(entry => Trace.Types.Events.isProfileCall(entry));
             if (!profileCalls) {
@@ -697,9 +697,9 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     return Timeline.CLSLinkifier.Linkifier.instance();
                 },
             });
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
-            const [process] = parsedTrace.Renderer.processes.values();
+            const [process] = parsedTrace.data.Renderer.processes.values();
             const [thread] = process.threads.values();
             const scheduleStyleRecalcs = thread.entries.filter(entry => Trace.Types.Events.isScheduleStyleRecalculation(entry));
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleStyleRecalcs[1], new Components.Linkifier.Linkifier(), false, null);
@@ -720,11 +720,11 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     return Timeline.CLSLinkifier.Linkifier.instance();
                 },
             });
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
-            const [process] = parsedTrace.Renderer.processes.values();
+            const [process] = parsedTrace.data.Renderer.processes.values();
             const [thread] = process.threads.values();
-            const stylesRecalc = thread.entries.filter(entry => entry.name === "UpdateLayoutTree" /* Trace.Types.Events.Name.UPDATE_LAYOUT_TREE */);
+            const stylesRecalc = thread.entries.filter(entry => entry.name === "UpdateLayoutTree" /* Trace.Types.Events.Name.RECALC_STYLE */);
             const details = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, stylesRecalc[3], new Components.Linkifier.Linkifier(), false, null);
             const stackTraceData = getStackTraceForDetailsElement(details);
             assert.deepEqual(stackTraceData, ['(anonymous) @ web.dev/js/app.js?v=1423cda3:1:183']);
@@ -761,15 +761,15 @@ describeWithMockConnection('TimelineUIUtils', function () {
             Trace.Handlers.ModelHandlers.UserTimings.handleEvent(measureTrace);
             await Trace.Handlers.ModelHandlers.UserTimings.finalize();
             const timingsData = Trace.Handlers.ModelHandlers.UserTimings.data();
-            const traceData = getBaseTraceParseModelData({ UserTimings: timingsData, Renderer: rendererHandlerData });
-            TraceLoader.initTraceBoundsManager(traceData);
-            return traceData;
+            const parsedTrace = getBaseTraceHandlerData({ UserTimings: timingsData, Renderer: rendererHandlerData });
+            TraceLoader.initTraceBoundsManager(parsedTrace);
+            return parsedTrace;
         }
         it('renders the stack trace of extension entries properly', async function () {
-            const traceData = await basicStackTraceParsedTrace();
-            const [function1, function2, function3] = allThreadEntriesInTrace(traceData).filter(Trace.Types.Events.isProfileCall);
-            const mark = allThreadEntriesInTrace(traceData).find(event => event.name === 'Mark');
-            const measure = allThreadEntriesInTrace(traceData).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const parsedTrace = await basicStackTraceParsedTrace();
+            const [function1, function2, function3] = allThreadEntriesInTrace(parsedTrace).filter(Trace.Types.Events.isProfileCall);
+            const mark = allThreadEntriesInTrace(parsedTrace).find(event => event.name === 'Mark');
+            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
             assert.exists(mark);
             assert.exists(measure);
             const markerExtensionEntry = {
@@ -780,7 +780,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 devtoolsObj: {},
                 rawSourceEvent: mark,
             };
-            const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, markerExtensionEntry, new Components.Linkifier.Linkifier(), false, null);
+            const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, markerExtensionEntry, new Components.Linkifier.Linkifier(), false, null);
             const markerStackTraceData = getStackTraceForDetailsElement(markerDetails);
             assert.exists(markerStackTraceData);
             assert.deepEqual(markerStackTraceData, [
@@ -799,7 +799,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                     ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
                 },
             };
-            const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, mockExtensionTrackEntry, new Components.Linkifier.Linkifier(), false, null);
+            const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mockExtensionTrackEntry, new Components.Linkifier.Linkifier(), false, null);
             const trackEntryStackTraceData = getStackTraceForDetailsElement(trackEntryDetails);
             assert.exists(trackEntryStackTraceData);
             assert.deepEqual(trackEntryStackTraceData, [
@@ -808,20 +808,20 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders the stack trace of user timings properly', async function () {
-            const traceData = await basicStackTraceParsedTrace();
-            const [function1, function2, function3] = allThreadEntriesInTrace(traceData).filter(Trace.Types.Events.isProfileCall);
-            const mark = allThreadEntriesInTrace(traceData).find(event => event.name === 'Mark');
-            const measure = allThreadEntriesInTrace(traceData).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
+            const parsedTrace = await basicStackTraceParsedTrace();
+            const [function1, function2, function3] = allThreadEntriesInTrace(parsedTrace).filter(Trace.Types.Events.isProfileCall);
+            const mark = allThreadEntriesInTrace(parsedTrace).find(event => event.name === 'Mark');
+            const measure = allThreadEntriesInTrace(parsedTrace).find(event => event.name === "UserTiming" /* Trace.Types.Events.Name.USER_TIMING */);
             assert.exists(mark);
             assert.exists(measure);
-            const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, mark, new Components.Linkifier.Linkifier(), false, null);
+            const markerDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, mark, new Components.Linkifier.Linkifier(), false, null);
             const markerStackTraceData = getStackTraceForDetailsElement(markerDetails);
             assert.exists(markerStackTraceData);
             assert.deepEqual(markerStackTraceData, [
                 `${function3.callFrame.functionName} @ `,
                 `${function1.callFrame.functionName} @ `,
             ]);
-            const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(traceData, measure, new Components.Linkifier.Linkifier(), false, null);
+            const trackEntryDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, measure, new Components.Linkifier.Linkifier(), false, null);
             const trackEntryStackTraceData = getStackTraceForDetailsElement(trackEntryDetails);
             assert.exists(trackEntryStackTraceData);
             assert.deepEqual(trackEntryStackTraceData, [
@@ -830,7 +830,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('renders the warning for a trace event in its details', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
             const events = allThreadEntriesInTrace(parsedTrace);
             const longTask = events.find(e => (e.dur || 0) > 1_000_000);
             if (!longTask) {
@@ -847,7 +847,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('includes the timeout for a RequestIdleCallback event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-timings.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-timings.json.gz');
             const events = allThreadEntriesInTrace(parsedTrace);
             const requestIdleCallback = events.find(e => {
                 return Trace.Types.Events.isRequestIdleCallback(e) && e.ts === 10041020329;
@@ -865,7 +865,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('shows information for the WebSocketCreate initiator when viewing a WebSocketSendHandshakeRequest event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
             const sendHandshake = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isWebSocketSendHandshakeRequest);
             if (!sendHandshake) {
@@ -883,7 +883,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.deepEqual(rowData, expectedRowData);
         });
         it('shows information for the events initiated by WebSocketCreate when viewing a WebSocketCreate event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-sockets.json.gz');
             TraceLoader.initTraceBoundsManager(parsedTrace);
             const sendHandshake = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isWebSocketCreate);
             if (!sendHandshake) {
@@ -904,7 +904,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.deepEqual(rowData, expectedRowData);
         });
         it('shows the aggregated time information for an event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
             const event = allThreadEntriesInTrace(parsedTrace).find(e => e.ts === 1020034919877 && e.name === 'RunTask');
             if (!event) {
                 throw new Error('Could not find renderer events');
@@ -921,7 +921,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.deepEqual(pieChartData, expectedPieChartData);
         });
         it('renders details for SchedulePostTaskCallback events', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
             const scheduleEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isSchedulePostTaskCallback);
             assert(scheduleEvent, 'Could not find SchedulePostTaskCallback event');
             const scheduleDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleEvent, new Components.Linkifier.Linkifier(), false, null);
@@ -937,14 +937,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
             ]);
         });
         it('lets the initiator be clicked on to select it', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
             // Make a stubbed TimelinePanel, and then ensure all instance() calls return it.
             const timelinePanel = sinon.createStubInstance(Timeline.TimelinePanel.TimelinePanel);
             sinon.stub(Timeline.TimelinePanel.TimelinePanel, 'instance').callsFake(() => timelinePanel);
             const scheduleEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isSchedulePostTaskCallback);
             assert(scheduleEvent, 'Could not find SchedulePostTaskCallback event');
             // This is the event initiated by the schedule event.
-            const postTaskEvent = parsedTrace.Initiators.initiatorToEvents.get(scheduleEvent)?.at(0);
+            const postTaskEvent = parsedTrace.data.Initiators.initiatorToEvents.get(scheduleEvent)?.at(0);
             assert.isOk(postTaskEvent);
             const scheduleDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, scheduleEvent, new Components.Linkifier.Linkifier(), false, null);
             const container = document.createElement('div');
@@ -958,7 +958,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             sinon.assert.calledOnceWithExactly(timelinePanel.select, Timeline.TimelineSelection.selectionFromEvent(postTaskEvent));
         });
         it('renders details for RunPostTaskCallback events', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'scheduler-post-task.json.gz');
             const runEvent = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isRunPostTaskCallback);
             assert(runEvent, 'Could not find RunPostTaskCallback event');
             const runDetails = await Timeline.TimelineUIUtils.TimelineUIUtils.buildTraceEventDetails(parsedTrace, runEvent, new Components.Linkifier.Linkifier(), false, null);
@@ -977,7 +977,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
         it('renders the stack trace of a profile call event', async function () {
             // uses source maps
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
             const jsCall = allThreadEntriesInTrace(parsedTrace)
                 .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
             assert.exists(jsCall);
@@ -1006,8 +1006,8 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
     });
     it('renders 3p details for profile call properly', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-        const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
         const jsCall = allThreadEntriesInTrace(parsedTrace)
             .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'z');
         assert.exists(jsCall);
@@ -1019,12 +1019,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
         });
     });
     it('can generate details for a frame with the old screenshots format', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const frame = parsedTrace.Frames.frames.at(0);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const frame = parsedTrace.data.Frames.frames.at(0);
         if (!frame) {
             throw new Error('Could not find expected frame');
         }
-        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace);
+        const filmStrip = Trace.Extras.FilmStrip.fromHandlerData(parsedTrace.data);
         const details = Timeline.TimelineUIUtils.TimelineUIUtils.generateDetailsContentForFrame(frame, filmStrip, filmStrip.frames[0]);
         const container = document.createElement('div');
         renderElementIntoDOM(container);
@@ -1047,12 +1047,12 @@ describeWithMockConnection('TimelineUIUtils', function () {
         assert.strictEqual(value, '37.85 ms (at 109.82 ms)');
     });
     it('can generate details for a frame with the new screenshots format', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-screenshot-source-ids.json.gz');
-        const frame = parsedTrace.Frames.frames.at(0);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-screenshot-source-ids.json.gz');
+        const frame = parsedTrace.data.Frames.frames.at(0);
         if (!frame) {
             throw new Error('Could not find expected frame');
         }
-        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(parsedTrace);
+        const filmStrip = Trace.Extras.FilmStrip.fromHandlerData(parsedTrace.data);
         const details = Timeline.TimelineUIUtils.TimelineUIUtils.generateDetailsContentForFrame(frame, filmStrip, filmStrip.frames[0]);
         const container = document.createElement('div');
         renderElementIntoDOM(container);
@@ -1076,14 +1076,14 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     describe('eventTitle', function () {
         it('renders the correct title for an EventTiming interaction event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
-            const interactionEvent = parsedTrace.UserInteractions.interactionEventsWithNoNesting[0];
+            const parsedTrace = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
+            const interactionEvent = parsedTrace.data.UserInteractions.interactionEventsWithNoNesting[0];
             const details = Timeline.TimelineUIUtils.TimelineUIUtils.eventTitle(interactionEvent);
             assert.deepEqual(details, 'Pointer');
         });
         it('will use the resolved function name for a profile node that has a sourcemap', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
-            const mainThread = getMainThread(parsedTrace.Renderer);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'slow-interaction-button-click.json.gz');
+            const mainThread = getMainThread(parsedTrace.data.Renderer);
             const profileEntry = mainThread.entries.find(entry => {
                 return Trace.Types.Events.isProfileCall(entry);
             });
@@ -1091,15 +1091,15 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 throw new Error('Could not find a profile entry');
             }
             // Fake that we resolved the entry's name from a sourcemap.
-            Timeline.Utils.SourceMapsResolver.SourceMapsResolver.storeResolvedCodeDataForCallFrame(profileEntry.callFrame, { name: 'resolved-function-test', devtoolsLocation: null, script: null });
+            SourceMapsResolver.SourceMapsResolver.storeResolvedCodeDataForCallFrame(profileEntry.callFrame, { name: 'resolved-function-test', devtoolsLocation: null, script: null });
             const title = Timeline.TimelineUIUtils.TimelineUIUtils.eventTitle(profileEntry);
             assert.strictEqual(title, 'resolved-function-test');
         });
     });
     describe('eventStyle', function () {
         it('returns the correct style for profile calls', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
-            const rendererHandler = parsedTrace.Renderer;
+            const parsedTrace = await TraceLoader.traceEngine(this, 'simple-js-program.json.gz');
+            const rendererHandler = parsedTrace.data.Renderer;
             if (!rendererHandler) {
                 throw new Error('RendererHandler is undefined');
             }
@@ -1108,7 +1108,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const profileCalls = thread.entries.filter(entry => Trace.Types.Events.isProfileCall(entry));
             const style = Timeline.TimelineUIUtils.TimelineUIUtils.eventStyle(profileCalls[0]);
             assert.strictEqual(style.category.name, 'scripting');
-            assert.strictEqual(style.category.color, 'rgb(250 204 21 / 100%)');
+            assert.strictEqual(style.category.cssVariable, '--app-color-scripting');
         });
     });
     describe('statsForTimeRange', () => {
@@ -1248,26 +1248,26 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     describe('isMarkerEvent', () => {
         it('is true for a timestamp event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
             const timestamp = allThreadEntriesInTrace(parsedTrace).find(Trace.Types.Events.isConsoleTimeStamp);
             assert.isOk(timestamp);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, timestamp));
         });
         it('is true for a Mark First Paint event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markFirstPaint = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstPaint);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markFirstPaint = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstPaint);
             assert.isOk(markFirstPaint);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markFirstPaint));
         });
         it('is true for a Mark FCP event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markFCPEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstContentfulPaint);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markFCPEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstContentfulPaint);
             assert.isOk(markFCPEvent);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markFCPEvent));
         });
         it('is false for a Mark FCP event not on the main frame', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markFCPEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstContentfulPaint);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markFCPEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isFirstContentfulPaint);
             assert.isOk(markFCPEvent);
             assert.isOk(markFCPEvent.args);
             // Now make a copy (so we do not mutate any data) and pretend it is not on the main frame.
@@ -1276,26 +1276,26 @@ describeWithMockConnection('TimelineUIUtils', function () {
             assert.isFalse(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, copyOfEvent));
         });
         it('is true for a MarkDOMContent event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markDOMContentEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkDOMContent);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markDOMContentEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkDOMContent);
             assert.isOk(markDOMContentEvent);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markDOMContentEvent));
         });
         it('is true for a MarkLoad event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markLoadEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkLoad);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markLoadEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkLoad);
             assert.isOk(markLoadEvent);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markLoadEvent));
         });
         it('is true for a LCP candiadate event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markLCPCandidate = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isLargestContentfulPaintCandidate);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markLCPCandidate = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isLargestContentfulPaintCandidate);
             assert.isOk(markLCPCandidate);
             assert.isTrue(Timeline.TimelineUIUtils.isMarkerEvent(parsedTrace, markLCPCandidate));
         });
         it('is false for a MarkDOMContent event not on outermost main frame', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
-            const markDOMContentEvent = parsedTrace.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkDOMContent);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-initial-url.json.gz');
+            const markDOMContentEvent = parsedTrace.data.PageLoadMetrics.allMarkerEvents.find(Trace.Types.Events.isMarkDOMContent);
             assert.isOk(markDOMContentEvent);
             assert.isOk(markDOMContentEvent.args);
             assert.isOk(markDOMContentEvent.args.data);
@@ -1348,24 +1348,24 @@ describeWithMockConnection('TimelineUIUtils', function () {
     });
     describe('buildDetailsNodeForMarkerEvents', () => {
         it('builds the right link for an LCP Event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const markLCPEvent = getEventOfType(parsedTrace.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isLargestContentfulPaintCandidate);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const markLCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isLargestContentfulPaintCandidate);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLCPEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/lcp/');
             assert.strictEqual(html.innerText, 'Learn more about largest contentful paint.');
         });
         it('builds the right link for an FCP Event', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const markFCPEvent = getEventOfType(parsedTrace.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isFirstContentfulPaint);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const markFCPEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isFirstContentfulPaint);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markFCPEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/first-contentful-paint/');
             assert.strictEqual(html.innerText, 'Learn more about first contentful paint.');
         });
         it('builds a generic event for other marker events', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-            const markLoadEvent = getEventOfType(parsedTrace.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isMarkLoad);
+            const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+            const markLoadEvent = getEventOfType(parsedTrace.data.PageLoadMetrics.allMarkerEvents, Trace.Types.Events.isMarkLoad);
             const html = Timeline.TimelineUIUtils.TimelineUIUtils.buildDetailsNodeForMarkerEvents(markLoadEvent);
             const url = html.querySelector('x-link')?.getAttribute('href');
             assert.strictEqual(url, 'https://web.dev/user-centric-performance-metrics/');
@@ -1411,6 +1411,53 @@ in the middle or at the end: <button class="devtools-link text-button link-style
             container.appendChild(fragment);
             assert.strictEqual(container.innerHTML, 'so data:text/html,%3Cscript%3Ealert%28%27hi%27%29%3B%3C%2Fscript%3E and www.site.com remain plain');
         });
+    });
+    describe('URL regex in parseStringForLinks', () => {
+        const urlRegex = Timeline.TimelineUIUtils.URL_REGEX;
+        const testCases = [
+            // Matching URLs:
+            { url: 'http://example.com', matches: true },
+            { url: 'https://example.com', matches: true },
+            { url: 'https://www.xn--examl-gsa.com', matches: true },
+            { url: 'https://example.com/path/to/resource', matches: true },
+            { url: 'https://example.com?query=param&another=param', matches: true },
+            { url: 'https://example.com#fragment', matches: true },
+            { url: 'ftp://files.example.com', matches: true },
+            { url: 'custom-scheme://resource/123', matches: true },
+            { url: 'ext://node/123', matches: true },
+            { url: 'http://a.z', matches: true },
+            { url: '9http://example.com', matches: true },
+            // URLs with trailing punctuation should still match the URL part.
+            { url: 'https://example.com(', matches: true },
+            { url: 'https://example.com)', matches: true },
+            { url: 'https://example.com[', matches: true },
+            { url: 'https://example.com]', matches: true },
+            { url: 'https://example.com{', matches: true },
+            { url: 'https://example.com}', matches: true },
+            { url: 'https://example.com,', matches: true },
+            { url: 'https://example.com:', matches: true },
+            { url: 'https://example.com;', matches: true },
+            { url: 'https://example.com.', matches: true },
+            { url: 'https://example.com!', matches: true },
+            { url: 'https://example.com?', matches: true },
+            // Non-matching strings:
+            { url: 'www.example.com', matches: false },
+            { url: 'example.com', matches: false },
+            { url: 'data:text/html,hello', matches: false },
+            { url: 'mailto:test@example.com', matches: false },
+            { url: 'javascript:void(0)', matches: false },
+            { url: 'not a url', matches: false },
+            { url: 'http://', matches: false },
+            { url: 'https://a', matches: false },
+            { url: 'http://a .com', matches: false },
+            { url: 'http://a".com', matches: false },
+            { url: 'ht://example.com)', matches: false }, // protocol must be 3 or more letters.
+        ];
+        for (const { url, matches } of testCases) {
+            it(`correctly validates "${url}" as ${matches ? 'matching' : 'not matching'}`, () => {
+                assert.strictEqual(urlRegex.test(url), matches);
+            });
+        }
     });
 });
 //# sourceMappingURL=TimelineUIUtils.test.js.map

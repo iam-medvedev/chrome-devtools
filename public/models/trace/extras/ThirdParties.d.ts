@@ -14,9 +14,9 @@ export interface URLSummary extends BaseSummary {
     url: string;
     request?: Types.Events.SyntheticNetworkRequest;
 }
-export declare function summarizeByThirdParty(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicro): EntitySummary[];
+export declare function summarizeByThirdParty(data: Handlers.Types.HandlerData, traceBounds: Types.Timing.TraceWindowMicro): EntitySummary[];
 /**
  * Used only by Lighthouse.
  */
-export declare function summarizeByURL(parsedTrace: Handlers.Types.ParsedTrace, traceBounds: Types.Timing.TraceWindowMicro): URLSummary[];
+export declare function summarizeByURL(data: Handlers.Types.HandlerData, traceBounds: Types.Timing.TraceWindowMicro): URLSummary[];
 export {};

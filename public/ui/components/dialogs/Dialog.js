@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -61,7 +61,7 @@ export class Dialog extends HTMLElement {
     #isPendingCloseDialog = false;
     #hitArea = new DOMRect(0, 0, 0, 0);
     #dialogClientRect = new DOMRect(0, 0, 0, 0);
-    #bestVerticalPositionInternal = null;
+    #bestVerticalPosition = null;
     #bestHorizontalAlignment = null;
     #devtoolsMutationObserver = new MutationObserver(mutations => {
         if (this.#props.expectedMutationsSelector) {
@@ -118,7 +118,7 @@ export class Dialog extends HTMLElement {
         this.#onStateChange();
     }
     get bestVerticalPosition() {
-        return this.#bestVerticalPositionInternal;
+        return this.#bestVerticalPosition;
     }
     get bestHorizontalAlignment() {
         return this.#bestHorizontalAlignment;
@@ -343,11 +343,11 @@ export class Dialog extends HTMLElement {
                 this.#bestHorizontalAlignment = this.#props.horizontalAlignment === "auto" /* DialogHorizontalAlignment.AUTO */ ?
                     this.#getBestHorizontalAlignment(absoluteAnchorBounds, devtoolsBounds) :
                     this.#props.horizontalAlignment;
-                this.#bestVerticalPositionInternal = this.#props.position === "auto" /* DialogVerticalPosition.AUTO */ ?
+                this.#bestVerticalPosition = this.#props.position === "auto" /* DialogVerticalPosition.AUTO */ ?
                     this.#getBestVerticalPosition(absoluteAnchorBounds, dialogHeight, devtoolsBounds) :
                     this.#props.position;
                 if (this.#bestHorizontalAlignment === "auto" /* DialogHorizontalAlignment.AUTO */ ||
-                    this.#bestVerticalPositionInternal === "auto" /* DialogVerticalPosition.AUTO */) {
+                    this.#bestVerticalPosition === "auto" /* DialogVerticalPosition.AUTO */) {
                     return;
                 }
                 this.#hitArea.height = anchorBottom - anchorTop + CONNECTOR_HEIGHT;
@@ -401,7 +401,7 @@ export class Dialog extends HTMLElement {
                     default:
                         Platform.assertNever(this.#bestHorizontalAlignment, `Unknown alignment type: ${this.#bestHorizontalAlignment}`);
                 }
-                switch (this.#bestVerticalPositionInternal) {
+                switch (this.#bestVerticalPosition) {
                     case "top" /* DialogVerticalPosition.TOP */: {
                         this.style.setProperty('--dialog-top', '0');
                         this.style.setProperty('--dialog-margin', 'auto');
@@ -419,7 +419,7 @@ export class Dialog extends HTMLElement {
                         break;
                     }
                     default:
-                        Platform.assertNever(this.#bestVerticalPositionInternal, `Unknown position type: ${this.#bestVerticalPositionInternal}`);
+                        Platform.assertNever(this.#bestVerticalPosition, `Unknown position type: ${this.#bestVerticalPosition}`);
                 }
                 dialog.close();
                 dialog.style.visibility = '';

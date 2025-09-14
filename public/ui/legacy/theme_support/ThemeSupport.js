@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -39,7 +39,7 @@ let themeSupportInstance;
 const themeValueByTargetByName = new Map();
 export class ThemeSupport extends EventTarget {
     setting;
-    themeNameInternal = 'default';
+    #themeName = 'default';
     computedStyleOfHTML = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
     #documentsToTheme = new Set([document]);
     #darkThemeMediaQuery;
@@ -119,7 +119,7 @@ export class ThemeSupport extends EventTarget {
         return themeValue;
     }
     themeName() {
-        return this.themeNameInternal;
+        return this.#themeName;
     }
     #applyTheme() {
         for (const document of this.#documentsToTheme) {
@@ -130,8 +130,8 @@ export class ThemeSupport extends EventTarget {
         const isForcedColorsMode = window.matchMedia('(forced-colors: active)').matches;
         const systemPreferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default';
         const useSystemPreferred = this.setting.get() === 'systemPreferred' || isForcedColorsMode;
-        this.themeNameInternal = useSystemPreferred ? systemPreferredTheme : this.setting.get();
-        document.documentElement.classList.toggle('theme-with-dark-background', this.themeNameInternal === 'dark');
+        this.#themeName = useSystemPreferred ? systemPreferredTheme : this.setting.get();
+        document.documentElement.classList.toggle('theme-with-dark-background', this.#themeName === 'dark');
         const useChromeTheme = Common.Settings.moduleSetting('chrome-theme-colors').get();
         const isIncognito = Root.Runtime.hostConfig.isOffTheRecord === true;
         // Baseline is the name of Chrome's default color theme and there are two of these: default and grayscale.

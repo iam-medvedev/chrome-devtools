@@ -52,5 +52,5 @@ export type SlowCSSSelectorInsightModel = InsightModel<typeof UIStrings, {
     topSelectorMatchAttempts: Types.Events.SelectorTiming | null;
 }>;
 export declare function isSlowCSSSelectorInsight(model: InsightModel): model is SlowCSSSelectorInsightModel;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): SlowCSSSelectorInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): SlowCSSSelectorInsightModel;
 export declare function createOverlays(_: SlowCSSSelectorInsightModel): Types.Overlays.Overlay[];

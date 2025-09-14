@@ -25,15 +25,13 @@ export type RecordingData = TraceRecordingHistoryItem | LandingPageHistoryItem;
 export interface NewHistoryRecordingData {
     data: TraceRecordingHistoryItem;
     filmStripForPreview: Trace.Extras.FilmStrip.Data | null;
-    parsedTrace: Trace.Handlers.Types.ParsedTrace;
-    metadata: Trace.Types.File.MetaData | null;
+    parsedTrace: Trace.TraceModel.ParsedTrace;
 }
 export declare class TimelineHistoryManager {
     #private;
     private recordings;
     private readonly action;
     private readonly nextNumberByDomain;
-    private readonly buttonInternal;
     private readonly allOverviews;
     private totalHeight;
     private enabled;

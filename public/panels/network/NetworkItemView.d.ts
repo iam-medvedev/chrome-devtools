@@ -13,7 +13,6 @@ export declare class NetworkItemView extends UI.TabbedPane.TabbedPane {
     private maybeAppendCookiesPanel;
     private maybeAppendPayloadPanel;
     private maybeShowErrorIconInTrustTokenTabHeader;
-    private selectTabInternal;
     private tabSelected;
     request(): SDK.NetworkRequest.NetworkRequest;
     revealResponseBody(position: SourceFrame.SourceFrame.RevealPosition): Promise<void>;

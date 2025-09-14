@@ -4,14 +4,14 @@ export interface FromTimeOnThreadOptions {
         pid: Trace.Types.Events.ProcessID;
         tid: Trace.Types.Events.ThreadID;
     };
-    parsedTrace: Trace.Handlers.Types.ParsedTrace;
+    parsedTrace: Trace.TraceModel.ParsedTrace;
     bounds: Trace.Types.Timing.TraceWindowMicro;
 }
 export declare class AICallTree {
     selectedNode: Trace.Extras.TraceTree.Node | null;
     rootNode: Trace.Extras.TraceTree.TopDownRootNode;
-    parsedTrace: Trace.Handlers.Types.ParsedTrace;
-    constructor(selectedNode: Trace.Extras.TraceTree.Node | null, rootNode: Trace.Extras.TraceTree.TopDownRootNode, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    parsedTrace: Trace.TraceModel.ParsedTrace;
+    constructor(selectedNode: Trace.Extras.TraceTree.Node | null, rootNode: Trace.Extras.TraceTree.TopDownRootNode, parsedTrace: Trace.TraceModel.ParsedTrace);
     static findEventsForThread({ thread, parsedTrace, bounds }: FromTimeOnThreadOptions): Trace.Types.Events.Event[] | null;
     static findMainThreadTasks({ thread, parsedTrace, bounds }: FromTimeOnThreadOptions): Trace.Types.Events.RunTask[] | null;
     /**
@@ -29,7 +29,7 @@ export declare class AICallTree {
      * This filters out other events we make such as SyntheticLayoutShifts which are not valid
      * If the event is not valid, or there is an unexpected error building the tree, `null` is returned.
      */
-    static fromEvent(selectedEvent: Trace.Types.Events.Event, parsedTrace: Trace.Handlers.Types.ParsedTrace): AICallTree | null;
+    static fromEvent(selectedEvent: Trace.Types.Events.Event, parsedTrace: Trace.TraceModel.ParsedTrace): AICallTree | null;
     /**
      * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
      * BFS is important here because the serialization process assumes that direct child nodes
@@ -63,7 +63,7 @@ export declare class AICallTree {
      */
     breadthFirstWalk(nodes: MapIterator<Trace.Extras.TraceTree.Node>, serializeNodeCallback: (currentNode: Trace.Extras.TraceTree.Node, nodeId: number, childrenStartingId?: number) => void): void;
     serialize(headerLevel?: number): string;
-    stringifyNode(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
+    stringifyNode(node: Trace.Extras.TraceTree.Node, nodeId: number, parsedTrace: Trace.TraceModel.ParsedTrace, selectedNode: Trace.Extras.TraceTree.Node | null, allUrls: string[], childStartingNodeIndex?: number): string;
     logDebug(): void;
 }
 /**

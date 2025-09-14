@@ -2,7 +2,6 @@
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
-import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -278,7 +277,7 @@ UI.ActionRegistration.registerActionExtension({
       shortcut: "Shift+Esc"
     }
   ],
-  experiment: "vertical-drawer"
+  condition: (config) => Boolean(config?.devToolsFlexibleLayout?.verticalDrawerEnabled)
 });
 UI.ActionRegistration.registerActionExtension({
   actionId: "main.next-tab",
@@ -2357,14 +2356,6 @@ import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 var UIStrings5 = {
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  workspace: "Workspace",
-  /**
-   * @description Command for showing the Workspace tool in Settings
-   */
-  showWorkspace: "Show Workspace settings",
-  /**
    * @description Title of a setting under the Persistence category in Settings
    */
   enableLocalOverrides: "Enable Local Overrides",
@@ -2407,18 +2398,6 @@ async function loadPersistenceModule() {
   }
   return loadedPersistenceModule;
 }
-UI3.ViewManager.registerViewExtension({
-  location: "settings-view",
-  id: "workspace",
-  title: i18nLazyString5(UIStrings5.workspace),
-  commandPrompt: i18nLazyString5(UIStrings5.showWorkspace),
-  order: 1,
-  async loadView() {
-    const Persistence = await loadPersistenceModule();
-    return new Persistence.WorkspaceSettingsTab.WorkspaceSettingsTab();
-  },
-  iconName: "folder"
-});
 Common5.Settings.registerSettingExtension({
   category: "PERSISTENCE",
   title: i18nLazyString5(UIStrings5.enableLocalOverrides),
@@ -2460,7 +2439,7 @@ UI3.ContextMenu.registerProvider({
 
 // gen/front_end/panels/browser_debugger/browser_debugger-meta.js
 import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as Root2 from "./../../core/root/root.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 var UIStrings6 = {
@@ -2660,7 +2639,7 @@ UI4.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString6(UIStrings6.showContentScripts),
   order: 5,
   persistence: "permanent",
-  condition: () => Root2.Runtime.getPathName() !== "/bundled/worker_app.html",
+  condition: () => Root.Runtime.getPathName() !== "/bundled/worker_app.html",
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesNavigator.ContentScriptsNavigatorView();
@@ -2838,7 +2817,7 @@ Common6.Settings.registerSettingExtension({
 
 // gen/front_end/panels/protocol_monitor/protocol_monitor-meta.js
 import * as i18n15 from "./../../core/i18n/i18n.js";
-import * as Root3 from "./../../core/root/root.js";
+import * as Root2 from "./../../core/root/root.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 var UIStrings8 = {
   /**
@@ -2881,7 +2860,7 @@ import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 import * as Common7 from "./../../core/common/common.js";
 import * as i18n32 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
+import * as Root3 from "./../../core/root/root.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI22 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
@@ -2967,7 +2946,15 @@ var UIStrings22 = {
   /**
    * @description Command for showing the AI innovation settings
    */
-  showAiInnovations: "Show AI innovations"
+  showAiInnovations: "Show AI innovations",
+  /**
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  workspace: "Workspace",
+  /**
+   * @description Command for showing the Workspace tool in Settings
+   */
+  showWorkspace: "Show Workspace settings"
 };
 var str_22 = i18n32.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings22);
 var i18nLazyString22 = i18n32.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
@@ -2989,6 +2976,18 @@ UI22.ViewManager.registerViewExtension({
     return new Settings22.SettingsScreen.GenericSettingsTab();
   },
   iconName: "gear"
+});
+UI22.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "workspace",
+  title: i18nLazyString22(UIStrings22.workspace),
+  commandPrompt: i18nLazyString22(UIStrings22.showWorkspace),
+  order: 1,
+  async loadView() {
+    const Settings22 = await loadSettingsModule();
+    return new Settings22.WorkspaceSettingsTab.WorkspaceSettingsTab();
+  },
+  iconName: "folder"
 });
 UI22.ViewManager.registerViewExtension({
   location: "settings-view",
@@ -3124,7 +3123,7 @@ Common7.Revealer.registerRevealer({
   contextTypes() {
     return [
       Common7.Settings.Setting,
-      Root4.Runtime.Experiment
+      Root3.Runtime.Experiment
     ];
   },
   destination: void 0,
@@ -5825,7 +5824,7 @@ Common10.Revealer.registerRevealer({
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common11 from "./../../core/common/common.js";
 import * as i18n26 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings13 = {
   /**

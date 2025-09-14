@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -174,7 +174,7 @@ describeWithMockConnection('ConversationHandler', () => {
                             title: 'Response',
                         },
                         {
-                            text: 'Queued at (timestamp): 0 μs\nStarted at (timestamp): 0 μs\nConnection start (stalled) (duration): -\nDuration (duration): -',
+                            text: 'Queued at (timestamp): 0 s\nStarted at (timestamp): 0 s\nConnection start (stalled) (duration): -\nDuration (duration): -',
                             title: 'Timing',
                         },
                         {

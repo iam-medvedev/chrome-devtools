@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
@@ -107,7 +107,6 @@ const REGISTERED_EXPERIMENTS = [
     'timeline-invalidation-tracking',
     "instrumentation-breakpoints" /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */,
     "header-overrides" /* Root.Runtime.ExperimentName.HEADER_OVERRIDES */,
-    "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
     "use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */,
     'font-editor',
     "timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */,
@@ -116,7 +115,6 @@ const REGISTERED_EXPERIMENTS = [
     "timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */,
     "timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */,
     "timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */,
-    "vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */,
 ];
 export async function initializeGlobalVars({ reset = true } = {}) {
     await initializeGlobalLocaleVars();

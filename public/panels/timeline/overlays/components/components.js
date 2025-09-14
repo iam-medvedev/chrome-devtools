@@ -19,7 +19,7 @@ import * as VisualLogging from "./../../../../ui/visual_logging/visual_logging.j
 
 // gen/front_end/panels/timeline/overlays/components/entriesLinkOverlay.css.js
 var entriesLinkOverlay_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -415,7 +415,7 @@ import * as PanelCommon from "./../../../common/common.js";
 
 // gen/front_end/panels/timeline/overlays/components/entryLabelOverlay.css.js
 var entryLabelOverlay_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1232,7 +1232,7 @@ import * as VisualLogging3 from "./../../../../ui/visual_logging/visual_logging.
 
 // gen/front_end/panels/timeline/overlays/components/timeRangeOverlay.css.js
 var timeRangeOverlay_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1525,7 +1525,7 @@ import * as Lit2 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/overlays/components/timespanBreakdownOverlay.css.js
 var timespanBreakdownOverlay_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

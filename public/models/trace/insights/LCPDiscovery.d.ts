@@ -49,7 +49,7 @@ export type LCPDiscoveryInsightModel = InsightModel<typeof UIStrings, {
     earliestDiscoveryTimeTs?: Types.Timing.Micro;
     checklist?: Checklist<'priorityHinted' | 'requestDiscoverable' | 'eagerlyLoaded'>;
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LCPDiscoveryInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): LCPDiscoveryInsightModel;
 interface LCPImageDiscoveryData {
     checklist: Exclude<LCPDiscoveryInsightModel['checklist'], undefined>;
     request: Types.Events.SyntheticNetworkRequest;

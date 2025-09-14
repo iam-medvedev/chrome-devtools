@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -47,8 +47,8 @@ describeWithEnvironment('TimelinePanel', function () {
         const events = await TraceLoader.rawEvents(this, 'extension-tracks-and-marks.json.gz');
         await timeline.loadingComplete(events, null, null);
         const tracksBeforeDisablingSetting = timeline.getFlameChart().getMainDataProvider().timelineData().groups;
-        const parsedTrace = traceModel.parsedTrace();
-        const extensionTracksInTrace = parsedTrace?.ExtensionTraceData.extensionTrackData;
+        const data = traceModel.parsedTrace()?.data;
+        const extensionTracksInTrace = data?.ExtensionTraceData.extensionTrackData;
         const extensionTrackInTraceNames = extensionTracksInTrace?.flatMap(track => track.isTrackGroup ? [...Object.keys(track.entriesByTrack), track.name] : track.name);
         assert.exists(extensionTrackInTraceNames);
         // Test that extension tracks from the trace model are rendered in
@@ -111,14 +111,14 @@ describeWithEnvironment('TimelinePanel', function () {
     it('keeps annotations after toggling the custom tracks setting and does not aria alert the user twice', async function () {
         const events = await TraceLoader.rawEvents(this, 'web-dev.json.gz');
         await timeline.loadingComplete(events, null, null);
-        const parsedTrace = traceModel.parsedTrace();
-        assert.isOk(parsedTrace?.Meta.traceBounds.min);
+        const data = traceModel.parsedTrace()?.data;
+        assert.isOk(data?.Meta.traceBounds.min);
         const modificationsManager = Timeline.ModificationsManager.ModificationsManager.activeManager();
         assert.isOk(modificationsManager);
         const ariaAlertStub = sinon.spy(UI.ARIAUtils.LiveAnnouncer, 'alert');
         // Add an annotation
         modificationsManager.createAnnotation({
-            bounds: Trace.Helpers.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, parsedTrace.Meta.traceBounds.max),
+            bounds: Trace.Helpers.Timing.traceWindowFromMicroSeconds(data.Meta.traceBounds.min, data.Meta.traceBounds.max),
             type: 'TIME_RANGE',
             label: '',
         }, { loadedFromFile: false, muteAriaNotifications: false });
@@ -137,9 +137,9 @@ describeWithEnvironment('TimelinePanel', function () {
     });
     it('clears out AI related contexts when the user presses "Clear"', async () => {
         const context = UI.Context.Context.instance();
-        const { AIContext, AICallTree } = Timeline.Utils;
-        const callTree = sinon.createStubInstance(AICallTree.AICallTree);
-        context.setFlavor(AIContext.AgentFocus, AIContext.AgentFocus.fromCallTree(callTree));
+        const { AIContext } = Timeline.Utils;
+        const mockParsedTrace = { insights: new Map() };
+        context.setFlavor(AIContext.AgentFocus, AIContext.AgentFocus.full(mockParsedTrace));
         const clearButton = timeline.element.querySelector('[aria-label="Clear"]');
         assert.isOk(clearButton);
         dispatchClickEvent(clearButton);
@@ -196,10 +196,10 @@ describeWithEnvironment('TimelinePanel', function () {
             for (const title of EXPECTED_INSIGHT_TITLES) {
                 assert.include(message, `### Insight Title: ${title}`);
             }
-            assert.include(message, `- Time to first byte: 7.9 ms (6.1% of total LCP time)
-- Resource load delay: 33.2 ms (25.7% of total LCP time)
-- Resource load duration: 14.7 ms (11.4% of total LCP time)
-- Element render delay: 73.4 ms (56.8% of total LCP time)`);
+            assert.include(message, `- Time to first byte: 7.9\xA0ms (6.1% of total LCP time)
+- Resource load delay: 33.2\xA0ms (25.7% of total LCP time)
+- Resource load duration: 14.7\xA0ms (11.4% of total LCP time)
+- Element render delay: 73.4\xA0ms (56.8% of total LCP time)`);
         });
         it('includes information on passing insights under a separate heading', async function () {
             const uiView = UI.ViewManager.ViewManager.instance({ forceNew: true });

@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -61,7 +61,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         if (!data) {
             return false;
         }
-        const frame = this.#parsedTrace.Frames.framesById[data.sourceFrameNumber];
+        const frame = this.#parsedTrace.data.Frames.framesById[data.sourceFrameNumber];
         if (!frame?.layerTree) {
             return false;
         }
@@ -74,7 +74,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         this.event = event;
         this.updateWhenVisible();
         if (Trace.Types.Events.isPaint(event)) {
-            const snapshot = this.#parsedTrace.LayerTree.paintsToSnapshots.get(event);
+            const snapshot = this.#parsedTrace.data.LayerTree.paintsToSnapshots.get(event);
             return Boolean(snapshot);
         }
         if (Trace.Types.Events.isRasterTask(event)) {
@@ -102,7 +102,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
         if (!target) {
             return null;
         }
-        const frame = this.#parsedTrace.Frames.framesById[data.sourceFrameNumber];
+        const frame = this.#parsedTrace.data.Frames.framesById[data.sourceFrameNumber];
         if (!frame?.layerTree) {
             return null;
         }
@@ -123,7 +123,7 @@ export class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidget {
             // snapshot to that paint event. That is why here if the event is a Paint
             // event, we look to see if it has had a matching picture event set for
             // it.
-            const snapshotEvent = this.#parsedTrace.LayerTree.paintsToSnapshots.get(this.event);
+            const snapshotEvent = this.#parsedTrace.data.LayerTree.paintsToSnapshots.get(this.event);
             if (snapshotEvent) {
                 const encodedData = snapshotEvent.args.snapshot.skp64;
                 snapshotPromise = this.paintProfilerModel.loadSnapshot(encodedData).then(snapshot => {

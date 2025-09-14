@@ -14,11 +14,10 @@ declare const TabbedPane_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof VBox;
 export declare class TabbedPane extends TabbedPane_base {
-    private readonly headerElementInternal;
+    #private;
     private readonly headerContentsElement;
     tabSlider: HTMLDivElement;
     readonly tabsElement: HTMLElement;
-    private readonly contentElementInternal;
     private tabs;
     private readonly tabsHistory;
     tabsById: Map<string, TabbedPaneTab>;
@@ -38,8 +37,6 @@ export declare class TabbedPane extends TabbedPane_base {
     private placeholderContainerElement?;
     private lastSelectedOverflowTab?;
     private measuredDropDownButtonWidth?;
-    private leftToolbarInternal?;
-    private rightToolbarInternal?;
     allowTabReorder?: boolean;
     private automaticReorder?;
     constructor(element?: HTMLElement);
@@ -93,10 +90,9 @@ export declare class TabbedPane extends TabbedPane_base {
     makeTabSlider(): void;
     private setTabSlider;
     calculateConstraints(): Geometry.Constraints;
-    private updateTabElements;
     setPlaceholderElement(element: Element, focusedElement?: Element): void;
     waitForTabElementUpdate(): Promise<void>;
-    private innerUpdateTabElements;
+    performUpdate(): void;
     private adjustToolbarWidth;
     private showTabElement;
     private hideTabElement;
@@ -147,23 +143,17 @@ export interface EventTypes {
     };
 }
 export declare class TabbedPaneTab {
+    #private;
     closeable: boolean;
     previewFeature: boolean;
     private readonly tabbedPane;
-    idInternal: string;
-    private titleInternal;
-    private tooltipInternal;
-    private viewInternal;
     shown: boolean;
     measuredWidth: number | undefined;
-    private tabElementInternal;
     private icon;
     private suffixElement;
-    private widthInternal?;
     private delegate?;
     private titleElement?;
     private dragStartX?;
-    private jslogContextInternal?;
     constructor(tabbedPane: TabbedPane, id: string, title: string, closeable: boolean, previewFeature: boolean, view: Widget, tooltip?: string, jslogContext?: string);
     get id(): string;
     get title(): string;

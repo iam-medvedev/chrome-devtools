@@ -44,6 +44,7 @@
     "../../../../../front_end/testing/ContextMenuHelpers.ts",
     "../../../../../front_end/testing/Cookies.ts",
     "../../../../../front_end/testing/DOMHelpers.ts",
+    "../../../../../front_end/testing/DOMHooks.ts",
     "../../../../../front_end/testing/DataGridHelpers.ts",
     "../../../../../front_end/testing/EnvironmentHelpers.ts",
     "../../../../../front_end/testing/ExpectStubCall.ts",
@@ -141,6 +142,9 @@
     },
     {
       "path": "../models/trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../models/trace_source_maps_resolver/bundle-tsconfig.json"
     },
     {
       "path": "../models/workspace/bundle-tsconfig.json"

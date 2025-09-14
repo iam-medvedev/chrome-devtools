@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export const knownContextValues = new Set([
@@ -1792,7 +1792,6 @@ export const knownContextValues = new Set([
     'hide-network-messages-true',
     'hide-player',
     'hide-repeating-children',
-    'highlight-errors-elements-panel',
     'highlight-node-on-hover-in-overlay',
     'history',
     'historyRedo',
@@ -2637,6 +2636,7 @@ export const knownContextValues = new Set([
     'node',
     'node-connection',
     'node-id',
+    'node-js-debugging',
     'node-removed',
     'nodes',
     'nominal',
@@ -2731,6 +2731,8 @@ export const knownContextValues = new Set([
     'override-content',
     'override-headers',
     'override-source-mapped-file-warning',
+    'overscroll-anchor-name',
+    'overscroll-area',
     'overscroll-behavior',
     'overscroll-behavior-block',
     'overscroll-behavior-inline',
@@ -3785,6 +3787,7 @@ export const knownContextValues = new Set([
     'timeline.ignore-list-new-regex.text',
     'timeline.ignore-list-pattern',
     'timeline.ignore-list-pattern.remove',
+    'timeline.insight-ask-ai.cache',
     'timeline.insight-ask-ai.cls-culprits',
     'timeline.insight-ask-ai.dismiss-field-mismatch',
     'timeline.insight-ask-ai.document-latency',
@@ -3800,7 +3803,6 @@ export const knownContextValues = new Set([
     'timeline.insight-ask-ai.legacy-javascript',
     'timeline.insight-ask-ai.long-critical-network-tree',
     'timeline.insight-ask-ai.modern-http',
-    'timeline.insight-ask-ai.network-dependency-tree',
     'timeline.insight-ask-ai.render-blocking-requests',
     'timeline.insight-ask-ai.slow-css-selector',
     'timeline.insight-ask-ai.third-parties',

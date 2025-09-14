@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -6,7 +6,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Logs from '../../models/logs/logs.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -235,28 +234,6 @@ export class ServiceWorkersView extends UI.Widget.VBox {
         this.eventListeners = new Map();
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.ServiceWorkerManager.ServiceWorkerManager, this);
         this.updateListVisibility();
-        const drawerChangeHandler = (event) => {
-            // @ts-expect-error: No support for custom event listener
-            const isDrawerOpen = event.detail?.isDrawerOpen;
-            if (this.manager && !isDrawerOpen) {
-                const { serviceWorkerNetworkRequestsPanelStatus: { isOpen, openedAt } } = this.manager;
-                if (isOpen) {
-                    const networkLocation = UI.ViewManager.ViewManager.instance().locationNameForViewId('network');
-                    UI.ViewManager.ViewManager.instance().showViewInLocation('network', networkLocation, false);
-                    void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([]));
-                    const currentTime = Date.now();
-                    const timeDifference = currentTime - openedAt;
-                    if (timeDifference < 2000) {
-                        Host.userMetrics.actionTaken(Host.UserMetrics.Action.ServiceWorkerNetworkRequestClosedQuickly);
-                    }
-                    this.manager.serviceWorkerNetworkRequestsPanelStatus = {
-                        isOpen: false,
-                        openedAt: 0,
-                    };
-                }
-            }
-        };
-        document.body.addEventListener("drawerchange" /* UI.InspectorView.Events.DRAWER_CHANGE */, drawerChangeHandler);
     }
     modelAdded(serviceWorkerManager) {
         if (serviceWorkerManager.target() !== SDK.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -645,36 +622,12 @@ export class Section {
         void this.manager.updateRegistration(this.registration.id);
     }
     networkRequestsClicked() {
-        const applicationTabLocation = UI.ViewManager.ViewManager.instance().locationNameForViewId('resources');
-        const networkTabLocation = applicationTabLocation === 'drawer-view' ? 'panel' : 'drawer-view';
-        UI.ViewManager.ViewManager.instance().showViewInLocation('network', networkTabLocation);
         void Common.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
             {
                 filterType: NetworkForward.UIFilter.FilterType.Is,
                 filterValue: "service-worker-intercepted" /* NetworkForward.UIFilter.IsFilterType.SERVICE_WORKER_INTERCEPTED */,
             },
         ]));
-        const requests = Logs.NetworkLog.NetworkLog.instance().requests();
-        let lastRequest = null;
-        if (Array.isArray(requests)) {
-            for (const request of requests) {
-                if (!lastRequest && request.fetchedViaServiceWorker) {
-                    lastRequest = request;
-                }
-                if (request.fetchedViaServiceWorker && lastRequest &&
-                    lastRequest.responseReceivedTime < request.responseReceivedTime) {
-                    lastRequest = request;
-                }
-            }
-        }
-        if (lastRequest) {
-            const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, "timing" /* NetworkForward.UIRequestLocation.UIRequestTabs.TIMING */, { clearFilter: false });
-            void Common.Revealer.reveal(requestLocation);
-        }
-        this.manager.serviceWorkerNetworkRequestsPanelStatus = {
-            isOpen: true,
-            openedAt: Date.now(),
-        };
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.ServiceWorkerNetworkRequestClicked);
     }
     push(data) {

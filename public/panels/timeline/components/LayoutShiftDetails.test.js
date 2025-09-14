@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../../testing/DOMHelpers.js';
@@ -7,12 +7,11 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as TimelineComponents from './components.js';
 describeWithMockConnection('LayoutShiftDetails', () => {
     it('correctly renders main shift details', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
-        const shiftEvent = parsedTrace.LayoutShifts.clusters[0].worstShiftEvent;
+        const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
+        const shiftEvent = parsedTrace.data.LayoutShifts.clusters[0].worstShiftEvent;
         assert.isOk(shiftEvent);
         const details = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
         details.event = shiftEvent;
-        details.traceInsightsSets = insights;
         details.parsedTrace = parsedTrace;
         details.isFreshRecording = false;
         renderElementIntoDOM(details);
@@ -30,12 +29,11 @@ describeWithMockConnection('LayoutShiftDetails', () => {
         assert.notInclude(content, 'Elements shifted');
     });
     it('correctly renders cluster details', async function () {
-        const { parsedTrace, insights } = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
-        const cluster = parsedTrace.LayoutShifts.clusters[0];
+        const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
+        const cluster = parsedTrace.data.LayoutShifts.clusters[0];
         assert.isNotNull(cluster);
         const details = new TimelineComponents.LayoutShiftDetails.LayoutShiftDetails();
         details.event = cluster;
-        details.traceInsightsSets = insights;
         details.parsedTrace = parsedTrace;
         details.isFreshRecording = false;
         renderElementIntoDOM(details);

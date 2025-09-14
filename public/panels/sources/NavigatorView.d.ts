@@ -27,7 +27,6 @@ export declare class NavigatorView extends UI.Widget.VBox implements SDK.TargetM
     private deployedNode?;
     private navigatorGroupByFolderSetting;
     private navigatorGroupByAuthoredExperiment?;
-    private workspaceInternal;
     private groupByFrame?;
     private groupByAuthored?;
     private groupByDomain?;
@@ -122,10 +121,10 @@ export declare class NavigatorFolderTreeElement extends UI.TreeOutline.TreeEleme
     private mouseLeave;
 }
 export declare class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
+    #private;
     readonly nodeType: string;
     readonly node: NavigatorUISourceCodeTreeNode;
     private readonly navigatorView;
-    uiSourceCodeInternal: Workspace.UISourceCode.UISourceCode;
     private aiButtonContainer?;
     constructor(navigatorView: NavigatorView, uiSourceCode: Workspace.UISourceCode.UISourceCode, title: string, node: NavigatorUISourceCodeTreeNode);
     updateIcon(): void;
@@ -189,10 +188,9 @@ export declare class NavigatorRootTreeNode extends NavigatorTreeNode {
     treeNode(): UI.TreeOutline.TreeElement;
 }
 export declare class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
-    uiSourceCodeInternal: Workspace.UISourceCode.UISourceCode;
+    #private;
     treeElement: NavigatorSourceTreeElement | null;
     private eventListeners;
-    private readonly frameInternal;
     constructor(navigatorView: NavigatorView, uiSourceCode: Workspace.UISourceCode.UISourceCode, frame: SDK.ResourceTreeModel.ResourceTreeFrame | null);
     frame(): SDK.ResourceTreeModel.ResourceTreeFrame | null;
     uiSourceCode(): Workspace.UISourceCode.UISourceCode;

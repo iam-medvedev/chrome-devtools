@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
@@ -24,22 +24,20 @@ function getPassedInsights(component) {
 }
 describeWithEnvironment('SidebarSingleInsightSet', () => {
     it('renders a list of insights', async function () {
-        const { insights, metadata, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        assert.isOk(insights);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        assert.isOk(parsedTrace.insights);
         // only one navigation in this trace.
-        assert.strictEqual(insights.size, 1);
+        assert.strictEqual(parsedTrace.insights.size, 1);
         // This is the navigationID from this trace.
         const navigationId = '8463DF94CD61B265B664E7F768183DE3';
-        assert.isTrue(insights.has(navigationId));
+        assert.isTrue(parsedTrace.insights.has(navigationId));
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
         component.data = {
-            insights,
             insightSetKey: navigationId,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: null,
             parsedTrace,
-            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component);
@@ -68,18 +66,16 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         ]);
     });
     it('does not render experimental insights by default', async function () {
-        const { parsedTrace, metadata, insights } = await TraceLoader.traceEngine(this, 'font-display.json.gz');
+        const parsedTrace = await TraceLoader.traceEngine(this, 'font-display.json.gz');
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
-        const firstNavigation = parsedTrace.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
+        const firstNavigation = parsedTrace.data.Meta.mainFrameNavigations.at(0)?.args.data?.navigationId;
         assert.isOk(firstNavigation);
         component.data = {
-            insights,
             insightSetKey: firstNavigation,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: null,
             parsedTrace,
-            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const userVisibleTitles = getUserVisibleInsights(component);
@@ -110,21 +106,20 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
         ]);
     });
     it('will render the active insight fully', async function () {
-        const { insights, metadata, parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        assert.isOk(insights);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        assert.isOk(parsedTrace.insights);
         // only one navigation in this trace.
-        assert.strictEqual(insights.size, 1);
+        assert.strictEqual(parsedTrace.insights.size, 1);
         // This is the navigationID from this trace.
         const navigationId = '8463DF94CD61B265B664E7F768183DE3';
-        assert.isTrue(insights.has(navigationId));
-        const model = insights.get(navigationId)?.model.LCPBreakdown;
+        assert.isTrue(parsedTrace.insights.has(navigationId));
+        const model = parsedTrace.insights.get(navigationId)?.model.LCPBreakdown;
         if (!model) {
             throw new Error('missing LCPBreakdown model');
         }
         const component = new Components.SidebarSingleInsightSet.SidebarSingleInsightSet();
         renderElementIntoDOM(component);
         component.data = {
-            insights,
             insightSetKey: navigationId,
             activeCategory: Trace.Insights.Types.InsightCategory.ALL,
             activeInsight: {
@@ -132,7 +127,6 @@ describeWithEnvironment('SidebarSingleInsightSet', () => {
                 insightSetKey: navigationId,
             },
             parsedTrace,
-            traceMetadata: metadata,
         };
         await RenderCoordinator.done();
         const expandedInsight = [...component.shadowRoot.querySelectorAll('[data-insight-name]')].find(insight => {

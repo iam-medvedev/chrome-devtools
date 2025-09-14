@@ -1,26 +1,26 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import { cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 export class CSSStyleDeclaration {
-    #cssModelInternal;
+    #cssModel;
     parentRule;
-    #allPropertiesInternal;
+    #allProperties;
     styleSheetId;
     range;
     cssText;
     #shorthandValues = new Map();
     #shorthandIsImportant = new Set();
     #activePropertyMap = new Map();
-    #leadingPropertiesInternal;
+    #leadingProperties;
     type;
     // For CSSStyles coming from animations,
     // This holds the name of the animation.
     #animationName;
     constructor(cssModel, parentRule, payload, type, animationName) {
-        this.#cssModelInternal = cssModel;
+        this.#cssModel = cssModel;
         this.parentRule = parentRule;
         this.#reinitialize(payload);
         this.type = type;
@@ -35,8 +35,8 @@ export class CSSStyleDeclaration {
         }
         else {
             this.range = this.range.rebaseAfterTextEdit(edit.oldRange, edit.newRange);
-            for (let i = 0; i < this.#allPropertiesInternal.length; ++i) {
-                this.#allPropertiesInternal[i].rebase(edit);
+            for (let i = 0; i < this.#allProperties.length; ++i) {
+                this.#allProperties[i].rebase(edit);
             }
         }
     }
@@ -55,7 +55,7 @@ export class CSSStyleDeclaration {
                 this.#shorthandIsImportant.add(shorthandEntries[i].name);
             }
         }
-        this.#allPropertiesInternal = [];
+        this.#allProperties = [];
         if (payload.cssText && this.range) {
             const longhands = [];
             for (const cssProperty of payload.cssProperties) {
@@ -63,20 +63,20 @@ export class CSSStyleDeclaration {
                 if (!range) {
                     continue;
                 }
-                const parsedProperty = CSSProperty.parsePayload(this, this.#allPropertiesInternal.length, cssProperty);
-                this.#allPropertiesInternal.push(parsedProperty);
+                const parsedProperty = CSSProperty.parsePayload(this, this.#allProperties.length, cssProperty);
+                this.#allProperties.push(parsedProperty);
                 for (const longhand of parsedProperty.getLonghandProperties()) {
                     longhands.push(longhand);
                 }
             }
             for (const longhand of longhands) {
-                longhand.index = this.#allPropertiesInternal.length;
-                this.#allPropertiesInternal.push(longhand);
+                longhand.index = this.#allProperties.length;
+                this.#allProperties.push(longhand);
             }
         }
         else {
             for (const cssProperty of payload.cssProperties) {
-                this.#allPropertiesInternal.push(CSSProperty.parsePayload(this, this.#allPropertiesInternal.length, cssProperty));
+                this.#allProperties.push(CSSProperty.parsePayload(this, this.#allProperties.length, cssProperty));
             }
         }
         this.#generateSyntheticPropertiesIfNeeded();
@@ -84,14 +84,14 @@ export class CSSStyleDeclaration {
         // TODO(changhaohan): verify if this #activePropertyMap is still necessary, or if it is
         // providing different information against the activeness in allPropertiesInternal.
         this.#activePropertyMap = new Map();
-        for (const property of this.#allPropertiesInternal) {
+        for (const property of this.#allProperties) {
             if (!property.activeInStyle()) {
                 continue;
             }
             this.#activePropertyMap.set(property.name, property);
         }
         this.cssText = payload.cssText;
-        this.#leadingPropertiesInternal = null;
+        this.#leadingProperties = null;
     }
     #generateSyntheticPropertiesIfNeeded() {
         if (this.range) {
@@ -101,12 +101,12 @@ export class CSSStyleDeclaration {
             return;
         }
         const propertiesSet = new Set();
-        for (const property of this.#allPropertiesInternal) {
+        for (const property of this.#allProperties) {
             propertiesSet.add(property.name);
         }
         const generatedProperties = [];
         // For style-based properties, generate #shorthands with values when possible.
-        for (const property of this.#allPropertiesInternal) {
+        for (const property of this.#allProperties) {
             // For style-based properties, try generating #shorthands.
             const shorthands = cssMetadata().getShorthands(property.name) || [];
             for (const shorthand of shorthands) {
@@ -124,17 +124,17 @@ export class CSSStyleDeclaration {
                 propertiesSet.add(shorthand);
             }
         }
-        this.#allPropertiesInternal = this.#allPropertiesInternal.concat(generatedProperties);
+        this.#allProperties = this.#allProperties.concat(generatedProperties);
     }
     #computeLeadingProperties() {
         function propertyHasRange(property) {
             return Boolean(property.range);
         }
         if (this.range) {
-            return this.#allPropertiesInternal.filter(propertyHasRange);
+            return this.#allProperties.filter(propertyHasRange);
         }
         const leadingProperties = [];
-        for (const property of this.#allPropertiesInternal) {
+        for (const property of this.#allProperties) {
             const shorthands = cssMetadata().getShorthands(property.name) || [];
             let belongToAnyShorthand = false;
             for (const shorthand of shorthands) {
@@ -150,16 +150,16 @@ export class CSSStyleDeclaration {
         return leadingProperties;
     }
     leadingProperties() {
-        if (!this.#leadingPropertiesInternal) {
-            this.#leadingPropertiesInternal = this.#computeLeadingProperties();
+        if (!this.#leadingProperties) {
+            this.#leadingProperties = this.#computeLeadingProperties();
         }
-        return this.#leadingPropertiesInternal;
+        return this.#leadingProperties;
     }
     target() {
-        return this.#cssModelInternal.target();
+        return this.#cssModel.target();
     }
     cssModel() {
-        return this.#cssModelInternal;
+        return this.#cssModel;
     }
     #computeInactiveProperties() {
         const activeProperties = new Map();
@@ -167,7 +167,7 @@ export class CSSStyleDeclaration {
         // 1. regular property, including shorthands
         // 2. longhand components from shorthands, in the order of their shorthands.
         const processedLonghands = new Set();
-        for (const property of this.#allPropertiesInternal) {
+        for (const property of this.#allProperties) {
             const metadata = cssMetadata();
             const canonicalName = metadata.canonicalPropertyName(property.name);
             if (property.disabled || !property.parsedOk) {
@@ -210,7 +210,7 @@ export class CSSStyleDeclaration {
         }
     }
     allProperties() {
-        return this.#allPropertiesInternal;
+        return this.#allProperties;
     }
     hasActiveProperty(name) {
         return this.#activePropertyMap.has(name);
@@ -253,7 +253,7 @@ export class CSSStyleDeclaration {
         if (!this.range || !this.styleSheetId) {
             return Promise.resolve(false);
         }
-        return this.#cssModelInternal.setStyleText(this.styleSheetId, this.range, text, majorChange);
+        return this.#cssModel.setStyleText(this.styleSheetId, this.range, text, majorChange);
     }
     insertPropertyAt(index, name, value, userCallback) {
         void this.newBlankProperty(index).setText(name + ': ' + value + ';', false, true).then(userCallback);

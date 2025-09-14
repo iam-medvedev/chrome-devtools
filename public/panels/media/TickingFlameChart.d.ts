@@ -19,15 +19,13 @@ export interface EventProperties {
  * Wrapper class for each event displayed on the timeline.
  */
 export declare class Event {
+    #private;
     private timelineData;
     private setLive;
     private readonly setComplete;
     private readonly updateMaxTime;
     private selfIndex;
-    private liveInternal;
     title: string;
-    private colorInternal;
-    private fontColorInternal;
     constructor(timelineData: PerfUI.FlameChart.FlameChartTimelineData, eventHandlers: EventHandlers, eventProperties?: EventProperties | undefined);
     /**
      * Render hovertext into the |htmlElement|
@@ -49,9 +47,9 @@ export declare class Event {
     get live(): boolean;
 }
 export declare class TickingFlameChart extends UI.Widget.VBox {
+    #private;
     private intervalTimer;
     private lastTimestamp;
-    private canTickInternal;
     private ticking;
     private isShown;
     private readonly bounds;

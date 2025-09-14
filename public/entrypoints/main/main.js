@@ -188,7 +188,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/main/globalAiButton.css.js
 var globalAiButton_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -373,11 +373,8 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     UI.ViewManager.ViewManager.instance().showViewInLocation("freestyler", "drawer-view");
     incrementClickCountSetting();
     const hasExplicitUserPreference = UI.InspectorView.InspectorView.instance().isUserExplicitlyUpdatedDrawerOrientation();
-    const isVerticalDrawerExperimentEnabled = Root.Runtime.experiments.isEnabled(
-      "vertical-drawer"
-      /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
-    );
-    if (isVerticalDrawerExperimentEnabled && !hasExplicitUserPreference) {
+    const isVerticalDrawerFeatureEnabled = Boolean(Root.Runtime.hostConfig.devToolsFlexibleLayout?.verticalDrawerEnabled);
+    if (isVerticalDrawerFeatureEnabled && !hasExplicitUserPreference) {
       UI.InspectorView.InspectorView.instance().showDrawer({
         focus: true,
         hasTargetDrawer: false
@@ -436,6 +433,7 @@ import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as AutofillManager from "./../../models/autofill_manager/autofill_manager.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
 import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
@@ -511,6 +509,7 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var loadedPanelCommonModule;
 var MainImpl = class _MainImpl {
   #readyForTestPromise = Promise.withResolvers();
   constructor() {
@@ -643,7 +642,6 @@ var MainImpl = class _MainImpl {
     Root2.Runtime.experiments.register("protocol-monitor", "Protocol Monitor", void 0, "https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor");
     Root2.Runtime.experiments.register("sampling-heap-profiler-timeline", "Sampling heap profiler timeline", true);
     Root2.Runtime.experiments.register("show-option-tp-expose-internals-in-heap-snapshot", "Show option to expose internals in heap snapshots");
-    Root2.Runtime.experiments.register("vertical-drawer", "Enable vertical drawer configuration");
     Root2.Runtime.experiments.register("timeline-invalidation-tracking", "Performance panel: invalidation tracking", true);
     Root2.Runtime.experiments.register("timeline-show-all-events", "Performance panel: show all events", true);
     Root2.Runtime.experiments.register("timeline-v8-runtime-call-stats", "Performance panel: V8 runtime call stats", true);
@@ -657,14 +655,12 @@ var MainImpl = class _MainImpl {
     Root2.Runtime.experiments.register("font-editor", "Enable new font editor within the Styles tab", void 0, "https://developer.chrome.com/blog/new-in-devtools-89/#font");
     Root2.Runtime.experiments.register("contrast-issues", "Enable automatic contrast issue reporting via the Issues panel", void 0, "https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast");
     Root2.Runtime.experiments.register("experimental-cookie-features", "Enable experimental cookie features");
-    Root2.Runtime.experiments.register("highlight-errors-elements-panel", "Highlights a violating node or attribute in the Elements panel DOM tree");
     Root2.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
     Root2.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
     Root2.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
     Root2.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
     Root2.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
-      "highlight-errors-elements-panel",
       ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? ["protocol-monitor"] : []
     ]);
     Root2.Runtime.experiments.cleanUpStaleExperiments();
@@ -785,6 +781,12 @@ var MainImpl = class _MainImpl {
     this.#registerMessageSinkListener();
     if (Root2.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
       void Host.GdpClient.GdpClient.instance().initialize();
+      void Badges.UserBadges.instance().initialize();
+      Badges.UserBadges.instance().addEventListener("BadgeTriggered", async (ev) => {
+        loadedPanelCommonModule ??= await import("./../../panels/common/common.js");
+        const badgeNotification = new loadedPanelCommonModule.BadgeNotification();
+        void badgeNotification.present(ev.data);
+      });
     }
     _MainImpl.timeEnd("Main._createAppUI");
     const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
@@ -999,9 +1001,9 @@ var SearchActionDelegate = class {
 };
 var mainMenuItemInstance;
 var MainMenuItem = class _MainMenuItem {
-  #itemInternal;
+  #item;
   constructor() {
-    this.#itemInternal = new UI2.Toolbar.ToolbarMenuButton(
+    this.#item = new UI2.Toolbar.ToolbarMenuButton(
       this.#handleContextMenu.bind(this),
       /* isIconDropdown */
       true,
@@ -1010,8 +1012,8 @@ var MainMenuItem = class _MainMenuItem {
       "main-menu",
       "dots-vertical"
     );
-    this.#itemInternal.element.classList.add("main-menu");
-    this.#itemInternal.setTitle(i18nString2(UIStrings2.customizeAndControlDevtools));
+    this.#item.element.classList.add("main-menu");
+    this.#item.setTitle(i18nString2(UIStrings2.customizeAndControlDevtools));
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -1021,7 +1023,7 @@ var MainMenuItem = class _MainMenuItem {
     return mainMenuItemInstance;
   }
   item() {
-    return this.#itemInternal;
+    return this.#item;
   }
   #handleContextMenu(contextMenu) {
     const dockController = UI2.DockController.DockController.instance();
@@ -1117,7 +1119,7 @@ var MainMenuItem = class _MainMenuItem {
       });
       contextMenu.headerSection().appendCustomItem(dockItemElement, "dock-side");
     }
-    const button = this.#itemInternal.element;
+    const button = this.#item.element;
     function setDockSide(side) {
       void dockController.once(
         "AfterDockSideChanged"

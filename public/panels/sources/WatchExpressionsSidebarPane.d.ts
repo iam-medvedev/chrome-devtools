@@ -30,10 +30,8 @@ export declare class WatchExpressionsSidebarPane extends UI.ThrottledWidget.Thro
 }
 export declare class WatchExpression extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    private treeElementInternal;
     private nameElement;
     private valueElement;
-    private expressionInternal;
     private readonly expandController;
     private element;
     private editing;

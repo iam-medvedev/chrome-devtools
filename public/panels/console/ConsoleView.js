@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -254,7 +254,7 @@ const MIN_HISTORY_LENGTH_FOR_DISABLING_SELF_XSS_WARNING = 5;
 const DISCLAIMER_TOOLTIP_ID = 'console-ai-code-completion-disclaimer-tooltip';
 const CITATIONS_TOOLTIP_ID = 'console-ai-code-completion-citations-tooltip';
 export class ConsoleView extends UI.Widget.VBox {
-    searchableViewInternal;
+    #searchableView;
     sidebar;
     isSidebarOpen;
     filter;
@@ -318,10 +318,10 @@ export class ConsoleView extends UI.Widget.VBox {
         super();
         this.setMinimumSize(0, 35);
         this.registerRequiredCSS(consoleViewStyles, objectValueStyles, CodeHighlighter.codeHighlighterStyles);
-        this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
-        this.searchableViewInternal.element.classList.add('console-searchable-view');
-        this.searchableViewInternal.setPlaceholder(i18nString(UIStrings.findStringInLogs));
-        this.searchableViewInternal.setMinimalSearchQuerySize(0);
+        this.#searchableView = new UI.SearchableView.SearchableView(this, null);
+        this.#searchableView.element.classList.add('console-searchable-view');
+        this.#searchableView.setPlaceholder(i18nString(UIStrings.findStringInLogs));
+        this.#searchableView.setMinimalSearchQuerySize(0);
         this.sidebar = new ConsoleSidebar();
         this.sidebar.addEventListener("FilterSelected" /* Events.FILTER_SELECTED */, this.onFilterChanged.bind(this));
         this.isSidebarOpen = false;
@@ -329,7 +329,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.consoleToolbarContainer = this.element.createChild('div', 'console-toolbar-container');
         this.consoleToolbarContainer.role = 'toolbar';
         this.splitWidget = new UI.SplitWidget.SplitWidget(true /* isVertical */, false /* secondIsSidebar */, 'console.sidebar.width', 100);
-        this.splitWidget.setMainWidget(this.searchableViewInternal);
+        this.splitWidget.setMainWidget(this.#searchableView);
         this.splitWidget.setSidebarWidget(this.sidebar);
         this.splitWidget.show(this.element);
         this.splitWidget.hideSidebar();
@@ -358,7 +358,7 @@ export class ConsoleView extends UI.Widget.VBox {
             this.filter.setLevelMenuOverridden(this.isSidebarOpen);
             this.onFilterChanged();
         });
-        this.contentsElement = this.searchableViewInternal.element;
+        this.contentsElement = this.#searchableView.element;
         this.element.classList.add('console-view');
         this.visibleViewMessages = [];
         this.hiddenByFilterCount = 0;
@@ -572,7 +572,7 @@ export class ConsoleView extends UI.Widget.VBox {
         this.immediatelyFilterMessagesForTest = true;
     }
     searchableView() {
-        return this.searchableViewInternal;
+        return this.#searchableView;
     }
     clearHistory() {
         this.prompt.history().clear();
@@ -806,7 +806,7 @@ export class ConsoleView extends UI.Widget.VBox {
         if (!shouldGoIntoGroup && !insertedInMiddle) {
             this.appendMessageToEnd(viewMessage, !shouldGroupSimilar /* crbug.com/1082963: prevent collapse of same messages when "Group similar" is false */);
             this.updateFilterStatus();
-            this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+            this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
         }
         else {
             this.needsFullUpdate = true;
@@ -1103,7 +1103,7 @@ export class ConsoleView extends UI.Widget.VBox {
             }
         }
         this.updateFilterStatus();
-        this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+        this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
         this.jumpToMatch(this.currentMatchRangeIndex); // Re-highlight current match.
         this.viewport.invalidate();
         this.messagesCountElement.setAttribute('aria-label', i18nString(UIStrings.filteredMessagesInConsole, { PH1: this.visibleViewMessages.length }));
@@ -1258,7 +1258,7 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     performSearch(searchConfig, shouldJump, jumpBackwards) {
         this.onSearchCanceled();
-        this.searchableViewInternal.updateSearchMatchesCount(0);
+        this.#searchableView.updateSearchMatchesCount(0);
         this.searchRegex = searchConfig.toSearchRegex(true).regex;
         this.regexMatchRanges = [];
         this.currentMatchRangeIndex = -1;
@@ -1295,7 +1295,7 @@ export class ConsoleView extends UI.Widget.VBox {
         for (; index < this.visibleViewMessages.length && Date.now() - startTime < 100; ++index) {
             this.searchMessage(index);
         }
-        this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+        this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
         if (typeof this.searchShouldJumpBackwards !== 'undefined' && this.regexMatchRanges.length) {
             this.jumpToMatch(this.searchShouldJumpBackwards ? -1 : 0);
             delete this.searchShouldJumpBackwards;
@@ -1342,7 +1342,7 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         index = Platform.NumberUtilities.mod(index, this.regexMatchRanges.length);
         this.currentMatchRangeIndex = index;
-        this.searchableViewInternal.updateCurrentMatchIndex(index);
+        this.#searchableView.updateCurrentMatchIndex(index);
         matchRange = this.regexMatchRanges[index];
         const message = this.visibleViewMessages[matchRange.messageIndex];
         const highlightNode = message.searchHighlightNode(matchRange.matchIndex);

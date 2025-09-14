@@ -19,7 +19,7 @@ import * as ComponentHelpers from "./../helpers/helpers.js";
 
 // gen/front_end/ui/components/chrome_link/chromeLink.css.js
 var chromeLink_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

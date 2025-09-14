@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -61,14 +61,9 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class ServiceWorkerManager extends SDKModel {
     #agent;
-    #registrationsInternal = new Map();
+    #registrations = new Map();
     #enabled = false;
     #forceUpdateSetting;
-    /** Status of service worker network requests panel */
-    serviceWorkerNetworkRequestsPanelStatus = {
-        isOpen: false,
-        openedAt: 0,
-    };
     constructor(target) {
         super(target);
         target.registerServiceWorkerDispatcher(new ServiceWorkerDispatcher(this));
@@ -94,11 +89,11 @@ export class ServiceWorkerManager extends SDKModel {
             return;
         }
         this.#enabled = false;
-        this.#registrationsInternal.clear();
+        this.#registrations.clear();
         await this.#agent.invoke_enable();
     }
     registrations() {
-        return this.#registrationsInternal;
+        return this.#registrations;
     }
     findVersion(versionId) {
         for (const registration of this.registrations().values()) {
@@ -110,12 +105,12 @@ export class ServiceWorkerManager extends SDKModel {
         return null;
     }
     deleteRegistration(registrationId) {
-        const registration = this.#registrationsInternal.get(registrationId);
+        const registration = this.#registrations.get(registrationId);
         if (!registration) {
             return;
         }
         if (registration.isRedundant()) {
-            this.#registrationsInternal.delete(registrationId);
+            this.#registrations.delete(registrationId);
             this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             return;
         }
@@ -126,14 +121,14 @@ export class ServiceWorkerManager extends SDKModel {
         void this.unregister(registration.scopeURL);
     }
     async updateRegistration(registrationId) {
-        const registration = this.#registrationsInternal.get(registrationId);
+        const registration = this.#registrations.get(registrationId);
         if (!registration) {
             return;
         }
         await this.#agent.invoke_updateRegistration({ scopeURL: registration.scopeURL });
     }
     async deliverPushMessage(registrationId, data) {
-        const registration = this.#registrationsInternal.get(registrationId);
+        const registration = this.#registrations.get(registrationId);
         if (!registration) {
             return;
         }
@@ -141,7 +136,7 @@ export class ServiceWorkerManager extends SDKModel {
         await this.#agent.invoke_deliverPushMessage({ origin, registrationId, data });
     }
     async dispatchSyncEvent(registrationId, tag, lastChance) {
-        const registration = this.#registrationsInternal.get(registrationId);
+        const registration = this.#registrations.get(registrationId);
         if (!registration) {
             return;
         }
@@ -149,7 +144,7 @@ export class ServiceWorkerManager extends SDKModel {
         await this.#agent.invoke_dispatchSyncEvent({ origin, registrationId, tag, lastChance });
     }
     async dispatchPeriodicSyncEvent(registrationId, tag) {
-        const registration = this.#registrationsInternal.get(registrationId);
+        const registration = this.#registrations.get(registrationId);
         if (!registration) {
             return;
         }
@@ -170,16 +165,16 @@ export class ServiceWorkerManager extends SDKModel {
     }
     workerRegistrationUpdated(registrations) {
         for (const payload of registrations) {
-            let registration = this.#registrationsInternal.get(payload.registrationId);
+            let registration = this.#registrations.get(payload.registrationId);
             if (!registration) {
                 registration = new ServiceWorkerRegistration(payload);
-                this.#registrationsInternal.set(payload.registrationId, registration);
+                this.#registrations.set(payload.registrationId, registration);
                 this.dispatchEventToListeners("RegistrationUpdated" /* Events.REGISTRATION_UPDATED */, registration);
                 continue;
             }
             registration.update(payload);
             if (registration.shouldBeRemoved()) {
-                this.#registrationsInternal.delete(registration.id);
+                this.#registrations.delete(registration.id);
                 this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             }
             else {
@@ -190,7 +185,7 @@ export class ServiceWorkerManager extends SDKModel {
     workerVersionUpdated(versions) {
         const registrations = new Set();
         for (const payload of versions) {
-            const registration = this.#registrationsInternal.get(payload.registrationId);
+            const registration = this.#registrations.get(payload.registrationId);
             if (!registration) {
                 continue;
             }
@@ -199,7 +194,7 @@ export class ServiceWorkerManager extends SDKModel {
         }
         for (const registration of registrations) {
             if (registration.shouldBeRemoved()) {
-                this.#registrationsInternal.delete(registration.id);
+                this.#registrations.delete(registration.id);
                 this.dispatchEventToListeners("RegistrationDeleted" /* Events.REGISTRATION_DELETED */, registration);
             }
             else {
@@ -208,7 +203,7 @@ export class ServiceWorkerManager extends SDKModel {
         }
     }
     workerErrorReported(payload) {
-        const registration = this.#registrationsInternal.get(payload.registrationId);
+        const registration = this.#registrations.get(payload.registrationId);
         if (!registration) {
             return;
         }
@@ -396,7 +391,7 @@ export class ServiceWorkerVersion {
     };
 })(ServiceWorkerVersion || (ServiceWorkerVersion = {}));
 export class ServiceWorkerRegistration {
-    #fingerprintInternal;
+    #fingerprint;
     id;
     scopeURL;
     securityOrigin;
@@ -408,7 +403,7 @@ export class ServiceWorkerRegistration {
         this.update(payload);
     }
     update(payload) {
-        this.#fingerprintInternal = Symbol('fingerprint');
+        this.#fingerprint = Symbol('fingerprint');
         this.id = payload.registrationId;
         this.scopeURL = payload.scopeURL;
         const parsedURL = new Common.ParsedURL.ParsedURL(payload.scopeURL);
@@ -416,7 +411,7 @@ export class ServiceWorkerRegistration {
         this.isDeleted = payload.isDeleted;
     }
     fingerprint() {
-        return this.#fingerprintInternal;
+        return this.#fingerprint;
     }
     versionsByMode() {
         const result = new Map();
@@ -426,7 +421,7 @@ export class ServiceWorkerRegistration {
         return result;
     }
     updateVersion(payload) {
-        this.#fingerprintInternal = Symbol('fingerprint');
+        this.#fingerprint = Symbol('fingerprint');
         let version = this.versions.get(payload.versionId);
         if (!version) {
             version = new ServiceWorkerVersion(this, payload);

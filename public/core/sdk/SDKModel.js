@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -7,13 +7,13 @@ const registeredModels = new Map();
 //                         all event emitters and sinks have been migrated.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class SDKModel extends Common.ObjectWrapper.ObjectWrapper {
-    #targetInternal;
+    #target;
     constructor(target) {
         super();
-        this.#targetInternal = target;
+        this.#target = target;
     }
     target() {
-        return this.#targetInternal;
+        return this.#target;
     }
     /**
      * Override this method to perform tasks that are required to suspend the

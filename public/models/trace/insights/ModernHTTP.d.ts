@@ -49,6 +49,6 @@ export declare function isModernHTTP(model: InsightModel): model is ModernHTTPIn
  * [3] https://www.cachefly.com/http-2-is-not-a-magic-bullet/
  */
 export declare function determineHttp1Requests(requests: Types.Events.SyntheticNetworkRequest[], entityMappings: Handlers.Helpers.EntityMappings, firstPartyEntity: Handlers.Helpers.Entity | null): Types.Events.SyntheticNetworkRequest[];
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ModernHTTPInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): ModernHTTPInsightModel;
 export declare function createOverlayForRequest(request: Types.Events.SyntheticNetworkRequest): Types.Overlays.EntryOutline;
 export declare function createOverlays(model: ModernHTTPInsightModel): Types.Overlays.Overlay[];

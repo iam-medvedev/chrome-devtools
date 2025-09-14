@@ -17,7 +17,7 @@ import * as SDK from "./../../../../core/sdk/sdk.js";
 
 // gen/front_end/ui/legacy/components/utils/imagePreview.css.js
 var imagePreview_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -258,7 +258,7 @@ import * as UI2 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/utils/jsUtils.css.js
 var jsUtils_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

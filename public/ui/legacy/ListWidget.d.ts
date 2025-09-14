@@ -39,8 +39,8 @@ export interface CustomEditorControl<T> extends HTMLElement {
 }
 export type EditorControl<T = string> = (HTMLInputElement | HTMLSelectElement | CustomEditorControl<T>);
 export declare class Editor<T> {
+    #private;
     element: HTMLDivElement;
-    private readonly contentElementInternal;
     private commitButton;
     private readonly cancelButton;
     private errorMessageContainer;

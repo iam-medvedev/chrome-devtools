@@ -17,7 +17,7 @@ export interface RenderFlameChartOptions {
      * name so that the TraceLoader can take care of loading and caching the
      * trace.
      */
-    traceFile: string | Trace.Handlers.Types.ParsedTrace;
+    fileNameOrParsedTrace: string | Trace.TraceModel.ParsedTrace;
     /**
      * Filter the tracks that will be rendered by their name. The name here is
      * the user visible name that is drawn onto the flame chart.
@@ -54,7 +54,7 @@ export declare function renderFlameChartIntoDOM(context: Mocha.Context | null, o
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider | Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider;
     target: HTMLElement;
-    parsedTrace: Trace.Handlers.Types.ParsedTrace;
+    parsedTrace: Trace.TraceModel.ParsedTrace;
 }>;
 /**
  * Draws the network track in the flame chart using the legacy system.
@@ -168,8 +168,7 @@ export declare function renderWidgetInVbox(widget: UI.Widget.Widget, opts?: {
     flexAuto?: boolean;
 }): void;
 export declare function getMainThread(data: Trace.Handlers.ModelHandlers.Renderer.RendererHandlerData): Trace.Handlers.ModelHandlers.Renderer.RendererThread;
-type ParsedTrace = Trace.Handlers.Types.ParsedTrace;
-export declare function getBaseTraceParseModelData(overrides?: Partial<ParsedTrace>): ParsedTrace;
+export declare function getBaseTraceHandlerData(overrides?: Partial<Trace.Handlers.Types.HandlerData>): Trace.TraceModel.ParsedTrace;
 /**
  * A helper that will query the given array of events and find the first event
  * matching the predicate. It will also assert that a match is found, which
@@ -193,7 +192,7 @@ export declare function getAllNetworkRequestsByHost(networkRequests: Trace.Types
  * reasonably expensive, so it's cached to avoid a huge impact on our test suite
  * speed.
  */
-export declare function allThreadEntriesInTrace(parsedTrace: Trace.Handlers.Types.ParsedTrace): Trace.Types.Events.Event[];
+export declare function allThreadEntriesInTrace(parsedTrace: Trace.TraceModel.ParsedTrace): Trace.Types.Events.Event[];
 export interface PerformanceAPIExtensionTestData {
     detail: {
         devtools?: Trace.Types.Extensions.DevToolsObj;
@@ -215,4 +214,3 @@ export interface ConsoleAPIExtensionTestData {
 }
 export declare function makeTimingEventWithPerformanceExtensionData({ name, ts: tsMicro, detail, dur: durMicro }: PerformanceAPIExtensionTestData): Trace.Types.Events.Event[];
 export declare function makeTimingEventWithConsoleExtensionData({ name, ts, start, end, track, trackGroup, color }: ConsoleAPIExtensionTestData): Trace.Types.Events.ConsoleTimeStamp;
-export {};

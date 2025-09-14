@@ -17,7 +17,7 @@ import { html, nothing, render } from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/components/accessibilityTreeNode.css.js
 var accessibilityTreeNode_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -296,7 +296,7 @@ import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/elements/components/computedStyleProperty.css.js
 var computedStyleProperty_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -481,7 +481,7 @@ import { html as html3, render as render3 } from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/components/computedStyleTrace.css.js
 var computedStyleTrace_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -616,7 +616,7 @@ import { Directives, html as html4, render as render4 } from "./../../../ui/lit/
 
 // gen/front_end/panels/elements/components/cssHintDetailsView.css.js
 var cssHintDetailsView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -710,7 +710,7 @@ import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/cssPropertyDocsView.css.js
 var cssPropertyDocsView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1370,7 +1370,7 @@ import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/cssQuery.css.js
 var cssQuery_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1439,7 +1439,7 @@ import * as Lit2 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/elements/components/cssVariableValueView.css.js
 var cssVariableValueView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1596,7 +1596,7 @@ import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/elementsBreadcrumbs.css.js
 var elementsBreadcrumbs_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2026,7 +2026,7 @@ import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/elementsTreeExpandButton.css.js
 var elementsTreeExpandButton_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2151,7 +2151,7 @@ import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/queryContainer.css.js
 var queryContainer_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2295,7 +2295,7 @@ import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/elements/components/stylePropertyEditor.css.js
 var stylePropertyEditor_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

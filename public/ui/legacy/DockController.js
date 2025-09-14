@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2012 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -52,14 +26,14 @@ const str_ = i18n.i18n.registerUIStrings('ui/legacy/DockController.ts', UIString
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let dockControllerInstance;
 export class DockController extends Common.ObjectWrapper.ObjectWrapper {
-    canDockInternal;
+    #canDock;
     closeButton;
     currentDockStateSetting;
     lastDockStateSetting;
-    dockSideInternal = undefined;
+    #dockSide = undefined;
     constructor(canDock) {
         super();
-        this.canDockInternal = canDock;
+        this.#canDock = canDock;
         this.closeButton = new ToolbarButton(i18nString(UIStrings.close), 'cross');
         this.closeButton.element.setAttribute('jslog', `${VisualLogging.close().track({ click: true })}`);
         this.closeButton.element.classList.add('close-devtools');
@@ -67,7 +41,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         this.currentDockStateSetting = Common.Settings.Settings.instance().moduleSetting('currentDockState');
         this.lastDockStateSetting = Common.Settings.Settings.instance().createSetting('last-dock-state', "bottom" /* DockState.BOTTOM */);
         if (!canDock) {
-            this.dockSideInternal = "undocked" /* DockState.UNDOCKED */;
+            this.#dockSide = "undocked" /* DockState.UNDOCKED */;
             this.closeButton.setVisible(false);
             return;
         }
@@ -87,7 +61,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         return dockControllerInstance;
     }
     initialize() {
-        if (!this.canDockInternal) {
+        if (!this.#canDock) {
             return;
         }
         this.dockSideChanged();
@@ -96,7 +70,7 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         this.setDockSide(this.currentDockStateSetting.get());
     }
     dockSide() {
-        return this.dockSideInternal;
+        return this.#dockSide;
     }
     /**
      * Whether the DevTools can be docked, used to determine if we show docking UI.
@@ -105,33 +79,33 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
      * Shouldn't be used as a heuristic for target connection state.
      */
     canDock() {
-        return this.canDockInternal;
+        return this.#canDock;
     }
     isVertical() {
-        return this.dockSideInternal === "right" /* DockState.RIGHT */ || this.dockSideInternal === "left" /* DockState.LEFT */;
+        return this.#dockSide === "right" /* DockState.RIGHT */ || this.#dockSide === "left" /* DockState.LEFT */;
     }
     setDockSide(dockSide) {
         if (states.indexOf(dockSide) === -1) {
             // If the side is invalid, default to a valid one
             dockSide = states[0];
         }
-        if (this.dockSideInternal === dockSide) {
+        if (this.#dockSide === dockSide) {
             return;
         }
-        if (this.dockSideInternal !== undefined) {
-            document.body.classList.remove(this.dockSideInternal);
+        if (this.#dockSide !== undefined) {
+            document.body.classList.remove(this.#dockSide);
         }
         document.body.classList.add(dockSide);
-        if (this.dockSideInternal) {
-            this.lastDockStateSetting.set(this.dockSideInternal);
+        if (this.#dockSide) {
+            this.lastDockStateSetting.set(this.#dockSide);
         }
-        const eventData = { from: this.dockSideInternal, to: dockSide };
+        const eventData = { from: this.#dockSide, to: dockSide };
         this.dispatchEventToListeners("BeforeDockSideChanged" /* Events.BEFORE_DOCK_SIDE_CHANGED */, eventData);
         console.timeStamp('DockController.setIsDocked');
-        this.dockSideInternal = dockSide;
+        this.#dockSide = dockSide;
         this.currentDockStateSetting.set(dockSide);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(dockSide !== "undocked" /* DockState.UNDOCKED */, this.setIsDockedResponse.bind(this, eventData));
-        this.closeButton.setVisible(this.dockSideInternal !== "undocked" /* DockState.UNDOCKED */);
+        this.closeButton.setVisible(this.#dockSide !== "undocked" /* DockState.UNDOCKED */);
         this.dispatchEventToListeners("DockSideChanged" /* Events.DOCK_SIDE_CHANGED */, eventData);
     }
     setIsDockedResponse(eventData) {
@@ -146,11 +120,11 @@ export class DockController extends Common.ObjectWrapper.ObjectWrapper {
         this.setDockSide(this.lastDockStateSetting.get());
     }
     announceDockLocation() {
-        if (this.dockSideInternal === "undocked" /* DockState.UNDOCKED */) {
+        if (this.#dockSide === "undocked" /* DockState.UNDOCKED */) {
             LiveAnnouncer.alert(i18nString(UIStrings.devtoolsUndocked));
         }
         else {
-            LiveAnnouncer.alert(i18nString(UIStrings.devToolsDockedTo, { PH1: this.dockSideInternal || '' }));
+            LiveAnnouncer.alert(i18nString(UIStrings.devToolsDockedTo, { PH1: this.#dockSide || '' }));
         }
     }
 }

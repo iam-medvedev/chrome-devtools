@@ -55,6 +55,7 @@
     "../../../../../../front_end/ui/legacy/ShortcutRegistry.test.ts",
     "../../../../../../front_end/ui/legacy/SplitWidget.test.ts",
     "../../../../../../front_end/ui/legacy/SuggestBox.test.ts",
+    "../../../../../../front_end/ui/legacy/TabbedPane.test.ts",
     "../../../../../../front_end/ui/legacy/Toolbar.test.ts",
     "../../../../../../front_end/ui/legacy/Treeoutline.test.ts",
     "../../../../../../front_end/ui/legacy/UIUtils.test.ts",

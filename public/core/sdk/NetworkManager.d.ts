@@ -328,3 +328,7 @@ export interface RequestUpdateDroppedEventData {
     mimeType: string;
     lastModified: Date | null;
 }
+/**
+ * For the given Round Trip Time (in MilliSeconds), return the best throttling conditions.
+ */
+export declare function getRecommendedNetworkPreset(rtt: number): Conditions | null;

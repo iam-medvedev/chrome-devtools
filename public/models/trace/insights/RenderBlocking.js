@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -76,10 +76,10 @@ function estimateSavingsWithGraphs(deferredIds, lanternContext) {
     minimalFCPGraph.request.transferSize = originalTransferSize;
     return Math.round(Math.max(estimateBeforeInline - estimateAfterInline, 0));
 }
-function hasImageLCP(parsedTrace, context) {
-    return parsedTrace.LargestImagePaint.lcpRequestByNavigationId.has(context.navigationId);
+function hasImageLCP(data, context) {
+    return data.LargestImagePaint.lcpRequestByNavigationId.has(context.navigationId);
 }
-function computeSavings(parsedTrace, context, renderBlockingRequests) {
+function computeSavings(data, context, renderBlockingRequests) {
     if (!context.lantern) {
         return;
     }
@@ -105,7 +105,7 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
     if (requestIdToWastedMs.size) {
         metricSavings.FCP = estimateSavingsWithGraphs(deferredNodeIds, context.lantern);
         // In most cases, render blocking resources only affect LCP if LCP isn't an image.
-        if (!hasImageLCP(parsedTrace, context)) {
+        if (!hasImageLCP(data, context)) {
             metricSavings.LCP = metricSavings.FCP;
         }
     }
@@ -122,13 +122,13 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     if (!context.navigation) {
         return finalize({
             renderBlockingRequests: [],
         });
     }
-    const firstPaintTs = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)
+    const firstPaintTs = data.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)
         ?.get(context.navigationId)
         ?.get("FP" /* Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */)
         ?.event?.ts;
@@ -139,7 +139,7 @@ export function generateInsight(parsedTrace, context) {
         });
     }
     let renderBlockingRequests = [];
-    for (const req of parsedTrace.NetworkRequests.byTime) {
+    for (const req of data.NetworkRequests.byTime) {
         if (req.args.data.frame !== context.frameId) {
             continue;
         }
@@ -163,12 +163,12 @@ export function generateInsight(parsedTrace, context) {
                 continue;
             }
         }
-        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
+        const navigation = Helpers.Trace.getNavigationForTraceEvent(req, context.frameId, data.Meta.navigationsByFrameId);
         if (navigation === context.navigation) {
             renderBlockingRequests.push(req);
         }
     }
-    const savings = computeSavings(parsedTrace, context, renderBlockingRequests);
+    const savings = computeSavings(data, context, renderBlockingRequests);
     // Sort by request duration for insights.
     renderBlockingRequests = renderBlockingRequests.sort((a, b) => {
         return b.dur - a.dur;

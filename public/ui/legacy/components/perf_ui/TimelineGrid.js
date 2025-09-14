@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -38,18 +38,18 @@ import timelineGridStyles from './timelineGrid.css.js';
 const labelMap = new Map();
 export class TimelineGrid {
     element;
-    dividersElementInternal;
+    #dividersElement;
     gridHeaderElement;
     eventDividersElement;
-    dividersLabelBarElementInternal;
+    #dividersLabelBarElement;
     constructor() {
         this.element = document.createElement('div');
         Platform.DOMUtilities.appendStyle(this.element, timelineGridStyles);
-        this.dividersElementInternal = this.element.createChild('div', 'resources-dividers');
+        this.#dividersElement = this.element.createChild('div', 'resources-dividers');
         this.gridHeaderElement = document.createElement('div');
         this.gridHeaderElement.classList.add('timeline-grid-header');
         this.eventDividersElement = this.gridHeaderElement.createChild('div', 'resources-event-dividers');
-        this.dividersLabelBarElementInternal = this.gridHeaderElement.createChild('div', 'resources-dividers-label-bar');
+        this.#dividersLabelBarElement = this.gridHeaderElement.createChild('div', 'resources-dividers-label-bar');
         this.element.appendChild(this.gridHeaderElement);
     }
     static calculateGridOffsets(calculator, freeZoneAtLeft) {
@@ -131,31 +131,31 @@ export class TimelineGrid {
         context.restore();
     }
     get dividersElement() {
-        return this.dividersElementInternal;
+        return this.#dividersElement;
     }
     get dividersLabelBarElement() {
-        return this.dividersLabelBarElementInternal;
+        return this.#dividersLabelBarElement;
     }
     updateDividers(calculator, freeZoneAtLeft) {
         const dividersData = TimelineGrid.calculateGridOffsets(calculator, freeZoneAtLeft);
         const dividerOffsets = dividersData.offsets;
         const precision = dividersData.precision;
-        const dividersElementClientWidth = this.dividersElementInternal.clientWidth;
+        const dividersElementClientWidth = this.#dividersElement.clientWidth;
         // Reuse divider elements and labels.
-        let divider = this.dividersElementInternal.firstChild;
-        let dividerLabelBar = this.dividersLabelBarElementInternal.firstChild;
+        let divider = this.#dividersElement.firstChild;
+        let dividerLabelBar = this.#dividersLabelBarElement.firstChild;
         for (let i = 0; i < dividerOffsets.length; ++i) {
             if (!divider) {
                 divider = document.createElement('div');
                 divider.className = 'resources-divider';
-                this.dividersElementInternal.appendChild(divider);
+                this.#dividersElement.appendChild(divider);
                 dividerLabelBar = document.createElement('div');
                 dividerLabelBar.className = 'resources-divider';
                 const label = document.createElement('div');
                 label.className = 'resources-divider-label';
                 labelMap.set(dividerLabelBar, label);
                 dividerLabelBar.appendChild(label);
-                this.dividersLabelBarElementInternal.appendChild(dividerLabelBar);
+                this.#dividersLabelBarElement.appendChild(dividerLabelBar);
             }
             const time = dividerOffsets[i].time;
             const position = dividerOffsets[i].position;
@@ -178,7 +178,7 @@ export class TimelineGrid {
         // Remove extras.
         while (divider) {
             const nextDivider = divider.nextSibling;
-            this.dividersElementInternal.removeChild(divider);
+            this.#dividersElement.removeChild(divider);
             if (nextDivider) {
                 divider = nextDivider;
             }
@@ -188,7 +188,7 @@ export class TimelineGrid {
         }
         while (dividerLabelBar) {
             const nextDivider = dividerLabelBar.nextSibling;
-            this.dividersLabelBarElementInternal.removeChild(dividerLabelBar);
+            this.#dividersLabelBarElement.removeChild(dividerLabelBar);
             if (nextDivider) {
                 dividerLabelBar = nextDivider;
             }
@@ -215,7 +215,7 @@ export class TimelineGrid {
         this.eventDividersElement.classList.remove('hidden');
     }
     setScrollTop(scrollTop) {
-        this.dividersLabelBarElementInternal.style.top = scrollTop + 'px';
+        this.#dividersLabelBarElement.style.top = scrollTop + 'px';
         this.eventDividersElement.style.top = scrollTop + 'px';
     }
 }

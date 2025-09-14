@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -214,26 +214,26 @@ export class LiveLocation extends LiveLocationWithPool {
     #lineNumber;
     #columnNumber;
     #info;
-    headerInternal;
+    #header;
     constructor(rawLocation, info, updateDelegate, locationPool) {
         super(updateDelegate, locationPool);
         this.url = rawLocation.url;
         this.#lineNumber = rawLocation.lineNumber;
         this.#columnNumber = rawLocation.columnNumber;
         this.#info = info;
-        this.headerInternal = null;
+        this.#header = null;
     }
     header() {
-        return this.headerInternal;
+        return this.#header;
     }
     setHeader(header) {
-        this.headerInternal = header;
+        this.#header = header;
     }
     async uiLocation() {
-        if (!this.headerInternal) {
+        if (!this.#header) {
             return null;
         }
-        const rawLocation = new SDK.CSSModel.CSSLocation(this.headerInternal, this.#lineNumber, this.#columnNumber);
+        const rawLocation = new SDK.CSSModel.CSSLocation(this.#header, this.#lineNumber, this.#columnNumber);
         return CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
     }
     dispose() {

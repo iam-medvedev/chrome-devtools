@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -258,7 +258,7 @@ export class ListWidget extends VBox {
 }
 export class Editor {
     element;
-    contentElementInternal;
+    #contentElement;
     commitButton;
     cancelButton;
     errorMessageContainer;
@@ -274,8 +274,8 @@ export class Editor {
         this.element.classList.add('editor-container');
         this.element.setAttribute('jslog', `${VisualLogging.pane('editor').track({ resize: true })}`);
         this.element.addEventListener('keydown', onKeyDown.bind(null, Platform.KeyboardUtilities.isEscKey, this.cancelClicked.bind(this)), false);
-        this.contentElementInternal = this.element.createChild('div', 'editor-content');
-        this.contentElementInternal.addEventListener('keydown', onKeyDown.bind(null, event => {
+        this.#contentElement = this.element.createChild('div', 'editor-content');
+        this.#contentElement.addEventListener('keydown', onKeyDown.bind(null, event => {
             if (event.key !== 'Enter') {
                 return false;
             }
@@ -307,7 +307,7 @@ export class Editor {
         }
     }
     contentElement() {
-        return this.contentElementInternal;
+        return this.#contentElement;
     }
     createInput(name, type, title, validator) {
         const input = (createInput('', type));

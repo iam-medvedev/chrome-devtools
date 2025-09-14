@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -26,7 +26,7 @@ export class OverlayModel extends SDKModel {
     #domModel;
     overlayAgent;
     #debuggerModel;
-    #inspectModeEnabledInternal = false;
+    #inspectModeEnabled = false;
     #hideHighlightTimeout = null;
     #defaultHighlighter;
     #highlighter;
@@ -40,7 +40,7 @@ export class OverlayModel extends SDKModel {
     #showViewportSizeOnResize = true;
     #persistentHighlighter;
     #sourceOrderHighlighter;
-    #sourceOrderModeActiveInternal = false;
+    #sourceOrderModeActive = false;
     #windowControls;
     constructor(target) {
         super(target);
@@ -199,15 +199,15 @@ export class OverlayModel extends SDKModel {
     }
     async setInspectMode(mode, showDetailedTooltip = true) {
         await this.#domModel.requestDocument();
-        this.#inspectModeEnabledInternal = mode !== "none" /* Protocol.Overlay.InspectMode.None */;
+        this.#inspectModeEnabled = mode !== "none" /* Protocol.Overlay.InspectMode.None */;
         this.dispatchEventToListeners("InspectModeWillBeToggled" /* Events.INSPECT_MODE_WILL_BE_TOGGLED */, this);
         void this.#highlighter.setInspectMode(mode, this.buildHighlightConfig('all', showDetailedTooltip));
     }
     inspectModeEnabled() {
-        return this.#inspectModeEnabledInternal;
+        return this.#inspectModeEnabled;
     }
     highlightInOverlay(data, mode, showInfo) {
-        if (this.#sourceOrderModeActiveInternal) {
+        if (this.#sourceOrderModeActive) {
             // Return early if the source order is currently being shown the in the
             // overlay, so that it is not cleared by the highlight
             return;
@@ -343,7 +343,7 @@ export class OverlayModel extends SDKModel {
         this.#sourceOrderHighlighter.hideSourceOrderHighlight();
     }
     setSourceOrderActive(isActive) {
-        this.#sourceOrderModeActiveInternal = isActive;
+        this.#sourceOrderModeActive = isActive;
     }
     delayedHideHighlight(delay) {
         if (this.#hideHighlightTimeout === null) {

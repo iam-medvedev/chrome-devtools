@@ -1,10 +1,10 @@
 import * as Common from '../../core/common/common.js';
 import { SuggestBox, type SuggestBoxDelegate, type Suggestion } from './SuggestBox.js';
 export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SuggestBoxDelegate {
+    #private;
     private proxyElement;
     private proxyElementDisplay;
     private autocompletionTimeout;
-    private titleInternal;
     private queryRange;
     private previousText;
     private currentSuggestion;
@@ -14,7 +14,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private loadCompletions;
     private completionStopCharacters;
     private usesSuggestionBuilder;
-    private elementInternal?;
     private boundOnKeyDown?;
     private boundOnInput?;
     private boundOnMouseWheel?;
@@ -27,7 +26,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private blurListener?;
     private oldTabIndex?;
     private completeTimeout?;
-    private disableDefaultSuggestionForEmptyInputInternal?;
     jslogContext: string | undefined;
     constructor();
     initialize(completions: (this: null, expression: string, filter: string, force?: boolean | undefined) => Promise<Suggestion[]>, stopCharacters?: string, usesSuggestionBuilder?: boolean): void;
@@ -45,7 +43,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
      * (since the "blur" event does not bubble.)
      */
     attachAndStartEditing(element: Element, blurListener: (arg0: Event) => void): Element;
-    private attachInternal;
     element(): HTMLElement;
     detach(): void;
     textWithCurrentSuggestion(): string;
@@ -77,7 +74,6 @@ export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<Event
     private completionsReady;
     applySuggestion(suggestion: Suggestion | null, isIntermediateSuggestion?: boolean): void;
     acceptSuggestion(): void;
-    private acceptSuggestionInternal;
     ownerElement(): Element;
     setDOMSelection(startColumn: number, endColumn: number): void;
     isSuggestBoxVisible(): boolean;

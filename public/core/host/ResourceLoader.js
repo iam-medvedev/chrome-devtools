@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -223,11 +223,11 @@ export const loadAsStream = function (url, headers, stream, callback, allowRemot
     }
     function dataURLDecodeSuccessful(text) {
         streamWrite(streamId, text);
-        finishedCallback({ statusCode: 200 });
+        finishedCallback(({ statusCode: 200 }));
     }
     function dataURLDecodeFailed(_xhrStatus) {
         const messageOverride = i18nString(UIStrings.decodingDataUrlFailed);
-        finishedCallback({ statusCode: 404, messageOverride });
+        finishedCallback(({ statusCode: 404, messageOverride }));
     }
 };
 //# sourceMappingURL=ResourceLoader.js.map

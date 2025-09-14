@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
@@ -9,9 +9,9 @@ describeWithEnvironment('TraceProcessor', function () {
         const processor = Trace.Processor.TraceProcessor.createWithAllHandlers();
         const file = await TraceLoader.rawEvents(this, 'basic.json.gz');
         // Check parsing after instantiation.
-        assert.isNull(processor.parsedTrace);
+        assert.isNull(processor.data);
         await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
-        assert.isNotNull(processor.parsedTrace);
+        assert.isNotNull(processor.data);
         // Check parsing without a reset.
         let thrown;
         try {
@@ -23,10 +23,10 @@ describeWithEnvironment('TraceProcessor', function () {
         assert.strictEqual(thrown?.message, 'Trace processor can\'t start parsing when not idle. Current state: FINISHED_PARSING');
         // Check parsing after reset.
         processor.reset();
-        assert.isNull(processor.parsedTrace);
+        assert.isNull(processor.data);
         assert.isNull(processor.insights);
         await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
-        assert.isNotNull(processor.parsedTrace);
+        assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
         // Cleanup.
         processor.reset();
@@ -46,13 +46,13 @@ describeWithEnvironment('TraceProcessor', function () {
         }
         assert.strictEqual(thrown?.message, 'Trace processor can\'t start parsing when not idle. Current state: PARSING');
         // Check if data is null immediately after resetting.
-        assert.isNull(processor.parsedTrace);
+        assert.isNull(processor.data);
         assert.isNull(processor.insights);
         await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
-        assert.isNotNull(processor.parsedTrace);
+        assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
         processor.reset();
-        assert.isNull(processor.parsedTrace);
+        assert.isNull(processor.data);
         assert.isNull(processor.insights);
         // Check resetting while parsing.
         try {
@@ -69,10 +69,10 @@ describeWithEnvironment('TraceProcessor', function () {
         }
         assert.strictEqual(thrown?.message, 'Trace processor can\'t reset while parsing.');
         // Check parsing after resetting while parsing.
-        assert.isNull(processor.parsedTrace);
+        assert.isNull(processor.data);
         assert.isNull(processor.insights);
         await processor.parse(file, { isFreshRecording: true, isCPUProfile: false });
-        assert.isNotNull(processor.parsedTrace);
+        assert.isNotNull(processor.data);
         assert.isNotNull(processor.insights);
     });
     it('can be given a subset of handlers to run and will run just those along with the meta handler', async function () {
@@ -81,8 +81,8 @@ describeWithEnvironment('TraceProcessor', function () {
         });
         const events = await TraceLoader.rawEvents(this, 'animation.json.gz');
         await processor.parse(events, { isFreshRecording: true, isCPUProfile: false });
-        assert.isNotNull(processor.parsedTrace);
-        assert.deepEqual(Object.keys(processor.parsedTrace || {}), ['Meta', 'Animations']);
+        assert.isNotNull(processor.data);
+        assert.deepEqual(Object.keys(processor.data || {}), ['Meta', 'Animations']);
     });
     it('does not error if the user does not enable the Meta handler when it is a dependency', async function () {
         assert.doesNotThrow(() => {

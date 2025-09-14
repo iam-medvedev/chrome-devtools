@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -20,7 +20,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/sdk/CSSStyleSheetHeader.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class CSSStyleSheetHeader {
-    #cssModelInternal;
+    #cssModel;
     id;
     frameId;
     sourceURL;
@@ -39,9 +39,9 @@ export class CSSStyleSheetHeader {
     ownerNode;
     sourceMapURL;
     loadingFailed;
-    #originalContentProviderInternal;
+    #originalContentProvider;
     constructor(cssModel, payload) {
-        this.#cssModelInternal = cssModel;
+        this.#cssModel = cssModel;
         this.id = payload.styleSheetId;
         this.frameId = payload.frameId;
         this.sourceURL = payload.sourceURL;
@@ -62,30 +62,30 @@ export class CSSStyleSheetHeader {
         }
         this.sourceMapURL = payload.sourceMapURL;
         this.loadingFailed = payload.loadingFailed ?? false;
-        this.#originalContentProviderInternal = null;
+        this.#originalContentProvider = null;
     }
     originalContentProvider() {
-        if (!this.#originalContentProviderInternal) {
+        if (!this.#originalContentProvider) {
             const lazyContent = (async () => {
-                const originalText = await this.#cssModelInternal.originalStyleSheetText(this);
+                const originalText = await this.#cssModel.originalStyleSheetText(this);
                 if (originalText === null) {
                     return { error: i18nString(UIStrings.couldNotFindTheOriginalStyle) };
                 }
                 return new TextUtils.ContentData.ContentData(originalText, /* isBase64=*/ false, 'text/css');
             });
-            this.#originalContentProviderInternal =
+            this.#originalContentProvider =
                 new TextUtils.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
         }
-        return this.#originalContentProviderInternal;
+        return this.#originalContentProvider;
     }
     setSourceMapURL(sourceMapURL) {
         this.sourceMapURL = sourceMapURL;
     }
     cssModel() {
-        return this.#cssModelInternal;
+        return this.#cssModel;
     }
     isAnonymousInlineStyleSheet() {
-        return !this.resourceURL() && !this.#cssModelInternal.sourceMapManager().sourceMapForClient(this);
+        return !this.resourceURL() && !this.#cssModel.sourceMapManager().sourceMapForClient(this);
     }
     isConstructedByNew() {
         return this.isConstructed && this.sourceURL.length === 0;
@@ -94,7 +94,7 @@ export class CSSStyleSheetHeader {
         return this.isViaInspector() ? this.viaInspectorResourceURL() : this.sourceURL;
     }
     getFrameURLPath() {
-        const model = this.#cssModelInternal.target().model(ResourceTreeModel);
+        const model = this.#cssModel.target().model(ResourceTreeModel);
         console.assert(Boolean(model));
         if (!model) {
             return '';
@@ -140,7 +140,7 @@ export class CSSStyleSheetHeader {
         return Common.ResourceType.resourceTypes.Stylesheet;
     }
     async requestContentData() {
-        const cssText = await this.#cssModelInternal.getStyleSheetText(this.id);
+        const cssText = await this.#cssModel.getStyleSheetText(this.id);
         if (cssText === null) {
             return { error: i18nString(UIStrings.thereWasAnErrorRetrievingThe) };
         }
@@ -155,7 +155,7 @@ export class CSSStyleSheetHeader {
     }
     createPageResourceLoadInitiator() {
         return {
-            target: this.#cssModelInternal.target(),
+            target: this.#cssModel.target(),
             frameId: this.frameId,
             initiatorUrl: this.hasSourceURL ? Platform.DevToolsPath.EmptyUrlString : this.sourceURL,
         };

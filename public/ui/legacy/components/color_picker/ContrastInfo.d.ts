@@ -1,13 +1,8 @@
 import * as Common from '../../../../core/common/common.js';
 export declare class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private readonly isNullInternal;
-    private contrastRatioInternal;
-    private contrastRatioAPCAInternal;
+    #private;
     private contrastRatioThresholds;
-    private readonly contrastRatioAPCAThresholdInternal;
     private fgColor;
-    private bgColorInternal;
-    private colorFormatInternal;
     constructor(contrastInfo: ContrastInfoType | null);
     isNull(): boolean;
     setColor(fgColor: Common.Color.Legacy, colorFormat?: Common.Color.Format): void;
@@ -17,7 +12,6 @@ export declare class ContrastInfo extends Common.ObjectWrapper.ObjectWrapper<Eve
     contrastRatioAPCA(): number | null;
     contrastRatioAPCAThreshold(): number | null;
     setBgColor(bgColor: Common.Color.Legacy): void;
-    private setBgColorInternal;
     bgColor(): Common.Color.Legacy | null;
     private updateContrastRatio;
     contrastRatioThreshold(level: string): number | null;

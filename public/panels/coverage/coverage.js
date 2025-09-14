@@ -525,39 +525,39 @@ function locationCompare(a, b) {
   return Number.parseInt(aLine, 10) - Number.parseInt(bLine, 10) || Number.parseInt(aPos, 10) - Number.parseInt(bPos, 10);
 }
 var URLCoverageInfo = class _URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
-  urlInternal;
+  #url;
   coverageInfoByLocation;
-  sizeInternal;
-  usedSizeInternal;
-  typeInternal;
-  isContentScriptInternal;
+  #size;
+  #usedSize;
+  #type;
+  #isContentScript;
   sourcesURLCoverageInfo = /* @__PURE__ */ new Map();
   sourceSegments;
   constructor(url) {
     super();
-    this.urlInternal = url;
+    this.#url = url;
     this.coverageInfoByLocation = /* @__PURE__ */ new Map();
-    this.sizeInternal = 0;
-    this.usedSizeInternal = 0;
-    this.isContentScriptInternal = false;
+    this.#size = 0;
+    this.#usedSize = 0;
+    this.#isContentScript = false;
   }
   url() {
-    return this.urlInternal;
+    return this.#url;
   }
   type() {
-    return this.typeInternal;
+    return this.#type;
   }
   size() {
-    return this.sizeInternal;
+    return this.#size;
   }
   usedSize() {
-    return this.usedSizeInternal;
+    return this.#usedSize;
   }
   unusedSize() {
-    return this.sizeInternal - this.usedSizeInternal;
+    return this.#size - this.#usedSize;
   }
   usedPercentage() {
-    if (this.sizeInternal === 0) {
+    if (this.#size === 0) {
       return 0;
     }
     if (!this.unusedSize() || !this.size()) {
@@ -566,13 +566,13 @@ var URLCoverageInfo = class _URLCoverageInfo extends Common.ObjectWrapper.Object
     return this.usedSize() / this.size();
   }
   unusedPercentage() {
-    if (this.sizeInternal === 0) {
+    if (this.#size === 0) {
       return 1;
     }
     return this.unusedSize() / this.size();
   }
   isContentScript() {
-    return this.isContentScriptInternal;
+    return this.#isContentScript;
   }
   entries() {
     return this.coverageInfoByLocation.values();
@@ -587,8 +587,8 @@ var URLCoverageInfo = class _URLCoverageInfo extends Common.ObjectWrapper.Object
     this.addToSizes(-entry.getUsedSize(), -entry.getSize());
   }
   addToSizes(usedSize, size) {
-    this.usedSizeInternal += usedSize;
-    this.sizeInternal += size;
+    this.#usedSize += usedSize;
+    this.#size += size;
     if (usedSize !== 0 || size !== 0) {
       this.dispatchEventToListeners(_URLCoverageInfo.Events.SizesChanged);
     }
@@ -600,15 +600,15 @@ var URLCoverageInfo = class _URLCoverageInfo extends Common.ObjectWrapper.Object
     const key = `${lineOffset}:${columnOffset}`;
     let entry = this.coverageInfoByLocation.get(key);
     if (type & 2 && !this.coverageInfoByLocation.size && contentProvider instanceof SDK.Script.Script) {
-      this.isContentScriptInternal = contentProvider.isContentScript();
+      this.#isContentScript = contentProvider.isContentScript();
     }
-    this.typeInternal |= type;
+    this.#type |= type;
     if (entry) {
       entry.addCoverageType(type);
       return entry;
     }
     if (type & 2 && !this.coverageInfoByLocation.size && contentProvider instanceof SDK.Script.Script) {
-      this.isContentScriptInternal = contentProvider.isContentScript();
+      this.#isContentScript = contentProvider.isContentScript();
     }
     entry = new CoverageInfo(contentProvider, contentLength, lineOffset, columnOffset, type, this);
     this.coverageInfoByLocation.set(key, entry);
@@ -881,7 +881,7 @@ import * as UI from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/coverage/coverageListView.css.js
 var coverageListView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1607,7 +1607,7 @@ var CoverageDecorationManager = class _CoverageDecorationManager {
 
 // gen/front_end/panels/coverage/coverageView.css.js
 var coverageView_css_default = `/*
- * Copyright (c) 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

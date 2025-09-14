@@ -3,7 +3,7 @@ import { type CompatibilityTracksAppender, type TrackAppender, type TrackAppende
 export declare class GPUTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace);
     /**
      * Appends into the flame chart data the data corresponding to the
      * GPU track.

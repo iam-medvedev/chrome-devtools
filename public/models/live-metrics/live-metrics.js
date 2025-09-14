@@ -407,7 +407,10 @@ var LiveMetrics = class _LiveMetrics extends Common.ObjectWrapper.ObjectWrapper 
     });
     await this.#killAllLiveMetricContexts();
     const source = await InjectedScript.get();
-    const { identifier } = await this.#target.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
+    if (!this.#target) {
+      return;
+    }
+    const { identifier } = await this.#target?.pageAgent().invoke_addScriptToEvaluateOnNewDocument({
       source,
       worldName: LIVE_METRICS_WORLD_NAME,
       runImmediately: true

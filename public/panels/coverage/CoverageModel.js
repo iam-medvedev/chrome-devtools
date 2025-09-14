@@ -1,4 +1,4 @@
-// Copyright (c) 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -551,40 +551,40 @@ function locationCompare(a, b) {
         Number.parseInt(aPos, 10) - Number.parseInt(bPos, 10);
 }
 export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
-    urlInternal;
+    #url;
     coverageInfoByLocation;
-    sizeInternal;
-    usedSizeInternal;
-    typeInternal;
-    isContentScriptInternal;
+    #size;
+    #usedSize;
+    #type;
+    #isContentScript;
     sourcesURLCoverageInfo = new Map();
     sourceSegments;
     constructor(url) {
         super();
-        this.urlInternal = url;
+        this.#url = url;
         this.coverageInfoByLocation = new Map();
-        this.sizeInternal = 0;
-        this.usedSizeInternal = 0;
-        this.isContentScriptInternal = false;
+        this.#size = 0;
+        this.#usedSize = 0;
+        this.#isContentScript = false;
     }
     url() {
-        return this.urlInternal;
+        return this.#url;
     }
     type() {
-        return this.typeInternal;
+        return this.#type;
     }
     size() {
-        return this.sizeInternal;
+        return this.#size;
     }
     usedSize() {
-        return this.usedSizeInternal;
+        return this.#usedSize;
     }
     unusedSize() {
-        return this.sizeInternal - this.usedSizeInternal;
+        return this.#size - this.#usedSize;
     }
     usedPercentage() {
         // Per convention, empty files are reported as 100 % uncovered
-        if (this.sizeInternal === 0) {
+        if (this.#size === 0) {
             return 0;
         }
         if (!this.unusedSize() || !this.size()) {
@@ -594,13 +594,13 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
     }
     unusedPercentage() {
         // Per convention, empty files are reported as 100 % uncovered
-        if (this.sizeInternal === 0) {
+        if (this.#size === 0) {
             return 1;
         }
         return this.unusedSize() / this.size();
     }
     isContentScript() {
-        return this.isContentScriptInternal;
+        return this.#isContentScript;
     }
     entries() {
         return this.coverageInfoByLocation.values();
@@ -615,8 +615,8 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
         this.addToSizes(-entry.getUsedSize(), -entry.getSize());
     }
     addToSizes(usedSize, size) {
-        this.usedSizeInternal += usedSize;
-        this.sizeInternal += size;
+        this.#usedSize += usedSize;
+        this.#size += size;
         if (usedSize !== 0 || size !== 0) {
             this.dispatchEventToListeners(URLCoverageInfo.Events.SizesChanged);
         }
@@ -629,16 +629,16 @@ export class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper {
         let entry = this.coverageInfoByLocation.get(key);
         if ((type & 2 /* CoverageType.JAVA_SCRIPT */) && !this.coverageInfoByLocation.size &&
             contentProvider instanceof SDK.Script.Script) {
-            this.isContentScriptInternal = (contentProvider).isContentScript();
+            this.#isContentScript = (contentProvider).isContentScript();
         }
-        this.typeInternal |= type;
+        this.#type |= type;
         if (entry) {
             entry.addCoverageType(type);
             return entry;
         }
         if ((type & 2 /* CoverageType.JAVA_SCRIPT */) && !this.coverageInfoByLocation.size &&
             contentProvider instanceof SDK.Script.Script) {
-            this.isContentScriptInternal = (contentProvider).isContentScript();
+            this.#isContentScript = (contentProvider).isContentScript();
         }
         entry = new CoverageInfo(contentProvider, contentLength, lineOffset, columnOffset, type, this);
         this.coverageInfoByLocation.set(key, entry);

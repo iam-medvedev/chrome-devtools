@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
@@ -74,7 +74,7 @@ function processForcedReflowWarning(event) {
     accomodateEventInStack(event, jsInvokeStack, /* pushEventToStack */ Types.Events.isJSInvocationEvent(event));
     if (jsInvokeStack.length) {
         // Current event falls inside a JS call.
-        if (event.name === "Layout" /* Types.Events.Name.LAYOUT */ || event.name === "UpdateLayoutTree" /* Types.Events.Name.UPDATE_LAYOUT_TREE */) {
+        if (event.name === "Layout" /* Types.Events.Name.LAYOUT */ || event.name === "UpdateLayoutTree" /* Types.Events.Name.RECALC_STYLE */) {
             // A forced reflow happened. However we need to check if
             // the threshold is surpassed to add a warning. Accumulate the
             // event to check for this after the current Task is over.

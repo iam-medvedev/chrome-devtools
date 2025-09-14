@@ -4,14 +4,11 @@ import * as TextUtils from '../text_utils/text_utils.js';
 import { type IsolatedFileSystemManager } from './IsolatedFileSystemManager.js';
 import { PlatformFileSystem, PlatformFileSystemType } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystem extends PlatformFileSystem {
+    #private;
     private readonly manager;
-    private readonly embedderPathInternal;
     private readonly domFileSystem;
     private readonly excludedFoldersSetting;
-    private excludedFoldersInternal;
     private readonly excludedEmbedderFolders;
-    private readonly initialFilePathsInternal;
-    private readonly initialGitFoldersInternal;
     private readonly fileLocks;
     constructor(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, domFileSystem: FileSystem, type: PlatformFileSystemType, automatic: boolean);
     static create(manager: IsolatedFileSystemManager, path: Platform.DevToolsPath.UrlString, embedderPath: Platform.DevToolsPath.RawPathString, type: PlatformFileSystemType, name: string, rootURL: string, automatic: boolean): Promise<IsolatedFileSystem | null>;

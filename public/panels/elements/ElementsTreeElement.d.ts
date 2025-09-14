@@ -33,10 +33,8 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private gutterContainer;
     private readonly decorationsElement;
     private searchQuery;
-    private expandedChildrenLimitInternal;
     private readonly decorationsThrottler;
     private inClipboard;
-    private hoveredInternal;
     private editing;
     private htmlEditElement?;
     expandAllButtonElement: UI.TreeOutline.TreeElement | null;
@@ -105,7 +103,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     updateTitle(updateRecord?: Elements.ElementUpdateRecord.ElementUpdateRecord | null): void;
     private computeLeftIndent;
     updateDecorations(): void;
-    private updateDecorationsInternal;
     private buildAttributeDOM;
     private linkifyElementByRelation;
     private buildPseudoElementDOM;
@@ -118,7 +115,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     private copyXPath;
     private copyFullXPath;
     copyStyles(): Promise<void>;
-    private highlightSearchResultsInternal;
     private editAsHTML;
     adorn({ name }: {
         name: string;
@@ -135,7 +131,6 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
      */
     removeAdornersByType(adornerType?: ElementsComponents.AdornerManager.RegisteredAdorners): void;
     private updateAdorners;
-    private updateAdornersInternal;
     updateStyleAdorners(): Promise<void>;
     pushPopoverAdorner(context: OpeningTagContext): void;
     pushGridAdorner(context: OpeningTagContext, isSubgrid: boolean): void;

@@ -17,5 +17,6 @@ export declare class UserBadges extends Common.ObjectWrapper.ObjectWrapper<Event
     initialize(): Promise<void>;
     recordAction(action: BadgeAction): void;
     reconcileBadgesFinishedForTest(): void;
+    isReceiveBadgesSettingEnabled(): boolean;
 }
 export {};

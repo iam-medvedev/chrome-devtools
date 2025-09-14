@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -330,7 +330,7 @@ export class NetworkPanel extends UI.Panel.Panel {
         }
         return networkPanelInstance;
     }
-    static revealAndFilter(filters) {
+    static async revealAndFilter(filters) {
         const panel = NetworkPanel.instance();
         let filterString = '';
         for (const filter of filters) {
@@ -341,8 +341,10 @@ export class NetworkPanel extends UI.Panel.Panel {
                 filterString += `${filter.filterValue} `;
             }
         }
+        await UI.ViewManager.ViewManager.instance().showView('network');
         panel.networkLogView.setTextFilterValue(filterString);
-        return UI.ViewManager.ViewManager.instance().showView('network');
+        panel.filterBar.setting().set(true);
+        panel.filterBar.focus();
     }
     throttlingSelectForTest() {
         return this.throttlingSelect;
@@ -746,12 +748,12 @@ export class FilmStripRecorder {
         }
         this.#tracingManager = null;
         await this.#traceEngine.parse(this.#collectedTraceEvents);
-        const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1);
+        const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1)?.data;
         if (!data) {
             return;
         }
         const zeroTimeInSeconds = Trace.Types.Timing.Seconds(this.#timeCalculator.minimumBoundary());
-        const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data, Trace.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
+        const filmStrip = Trace.Extras.FilmStrip.fromHandlerData(data, Trace.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
         if (this.#callback) {
             this.#callback(filmStrip);
         }

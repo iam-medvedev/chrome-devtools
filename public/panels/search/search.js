@@ -22,7 +22,7 @@ import * as UI from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/search/searchResultsPane.css.js
 var searchResultsPane_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -405,7 +405,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/search/searchView.css.js
 var searchView_css_default = `/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

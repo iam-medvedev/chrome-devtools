@@ -1717,7 +1717,7 @@ import * as CodeHighlighter3 from "./../code_highlighter/code_highlighter.js";
 
 // gen/front_end/ui/components/text_editor/textEditor.css.js
 var textEditor_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

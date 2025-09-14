@@ -456,7 +456,11 @@ var ContentData = class _ContentData {
       throw new Error("Cannot interpret binary data as text");
     }
     const binaryString = window.atob(this.#contentAsBase64);
-    const bytes = Uint8Array.from(binaryString, (m) => m.codePointAt(0));
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
     this.#contentAsText = new TextDecoder(this.charset).decode(bytes);
     return this.#contentAsText;
   }

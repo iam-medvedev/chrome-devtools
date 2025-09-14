@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../core/sdk/sdk.js';
@@ -40,16 +40,16 @@ export async function renderFlameChartIntoDOM(context, options) {
         ignoreListManager,
     });
     let parsedTrace = null;
-    if (typeof options.traceFile === 'string') {
-        parsedTrace = (await TraceLoader.traceEngine(context, options.traceFile)).parsedTrace;
+    if (typeof options.fileNameOrParsedTrace === 'string') {
+        parsedTrace = await TraceLoader.traceEngine(context, options.fileNameOrParsedTrace);
     }
     else {
-        parsedTrace = options.traceFile;
+        parsedTrace = options.fileNameOrParsedTrace;
     }
     if (options.preloadScreenshots) {
-        await Timeline.Utils.ImageCache.preload(parsedTrace.Screenshots.screenshots ?? []);
+        await Timeline.Utils.ImageCache.preload(parsedTrace?.data.Screenshots.screenshots ?? []);
     }
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
     const dataProvider = options.dataProvider === 'MAIN' ?
         new Timeline.TimelineFlameChartDataProvider.TimelineFlameChartDataProvider() :
         new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
@@ -66,8 +66,8 @@ export async function renderFlameChartIntoDOM(context, options) {
     }
     const delegate = new MockFlameChartDelegate();
     const flameChart = new PerfUI.FlameChart.FlameChart(dataProvider, delegate);
-    const minTime = options.customStartTime ?? Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
-    const maxTime = options.customEndTime ?? Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
+    const minTime = options.customStartTime ?? Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.min);
+    const maxTime = options.customEndTime ?? Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.max);
     flameChart.setWindowTimes(minTime, maxTime);
     flameChart.markAsRoot();
     const target = document.createElement('div');
@@ -95,10 +95,11 @@ export async function renderFlameChartIntoDOM(context, options) {
  */
 export async function getNetworkFlameChart(traceFileName, expanded) {
     await initializeGlobalVars();
-    const { parsedTrace } = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
-    const minTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
-    const maxTime = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.max);
+    const parsedTrace = await TraceLoader.traceEngine(/* context= */ null, traceFileName);
+    const data = parsedTrace.data;
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
+    const minTime = Trace.Helpers.Timing.microToMilli(data.Meta.traceBounds.min);
+    const maxTime = Trace.Helpers.Timing.microToMilli(data.Meta.traceBounds.max);
     const dataProvider = new Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider();
     dataProvider.setModel(parsedTrace, entityMapper);
     dataProvider.setWindowTimes(minTime, maxTime);
@@ -342,7 +343,7 @@ export function makeMockRendererHandlerData(entries, pid = 1, tid = 1) {
         entries,
         profileCalls: entries.filter(Trace.Types.Events.isProfileCall),
         layoutEvents: entries.filter(Trace.Types.Events.isLayout),
-        updateLayoutTreeEvents: entries.filter(Trace.Types.Events.isUpdateLayoutTree),
+        recalcStyleEvents: entries.filter(Trace.Types.Events.isRecalcStyle),
     };
     const mockProcess = {
         url: 'url',
@@ -512,8 +513,8 @@ export function getMainThread(data) {
     }
     return mainThread;
 }
-export function getBaseTraceParseModelData(overrides = {}) {
-    return {
+export function getBaseTraceHandlerData(overrides = {}) {
+    const data = {
         Animations: { animations: [] },
         AnimationFrames: {
             animationFrames: [],
@@ -658,7 +659,7 @@ export function getBaseTraceParseModelData(overrides = {}) {
             frames: new Map(),
         },
         SelectorStats: {
-            dataForUpdateLayoutEvent: new Map(),
+            dataForRecalcStyleEvent: new Map(),
             invalidatedNodeList: [],
         },
         Warnings: {
@@ -682,6 +683,14 @@ export function getBaseTraceParseModelData(overrides = {}) {
             scripts: [],
         },
         ...overrides,
+    };
+    return {
+        data,
+        insights: null,
+        traceEvents: [],
+        metadata: {},
+        // @ts-expect-error
+        syntheticEventsManager: null,
     };
 }
 /**
@@ -742,7 +751,7 @@ export function allThreadEntriesInTrace(parsedTrace) {
         return fromCache;
     }
     const allEvents = [];
-    for (const process of parsedTrace.Renderer.processes.values()) {
+    for (const process of parsedTrace.data.Renderer.processes.values()) {
         for (const thread of process.threads.values()) {
             for (const entry of thread.entries) {
                 allEvents.push(entry);

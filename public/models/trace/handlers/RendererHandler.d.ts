@@ -95,6 +95,6 @@ export interface RendererThread {
     entries: Types.Events.Event[];
     profileCalls: Types.Events.SyntheticProfileCall[];
     layoutEvents: Types.Events.Layout[];
-    updateLayoutTreeEvents: Types.Events.UpdateLayoutTree[];
+    recalcStyleEvents: Types.Events.RecalcStyle[];
     tree?: Helpers.TreeHelpers.TraceEntryTree;
 }

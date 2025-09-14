@@ -19,7 +19,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sensors/locationsSettingsTab.css.js
 var locationsSettingsTab_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -487,7 +487,7 @@ import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 
 // gen/front_end/panels/sensors/sensors.css.js
 var sensors_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

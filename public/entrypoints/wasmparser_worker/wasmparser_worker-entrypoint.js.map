@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["wasmparser_worker-entrypoint.prebundle.ts"],
-  "sourcesContent": ["// Copyright 2020 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as WasmParserWorker from './wasmparser_worker.js';\n\nself.onmessage = (event: {data: {method: string, params: {content: string}}}) => {\n  const method = event.data.method;\n\n  if (method !== 'disassemble') {\n    return;\n  }\n\n  self.postMessage(WasmParserWorker.WasmParserWorker.dissambleWASM(event.data.params, (message: unknown) => {\n    self.postMessage(message);\n  }));\n};\n\nself.postMessage('workerReady');\n"],
+  "sourcesContent": ["// Copyright 2020 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as WasmParserWorker from './wasmparser_worker.js';\n\nself.onmessage = (event: {data: {method: string, params: {content: string}}}) => {\n  const method = event.data.method;\n\n  if (method !== 'disassemble') {\n    return;\n  }\n\n  self.postMessage(WasmParserWorker.WasmParserWorker.dissambleWASM(event.data.params, (message: unknown) => {\n    self.postMessage(message);\n  }));\n};\n\nself.postMessage('workerReady');\n"],
   "mappings": ";AAIA,YAAY,sBAAsB;AAElC,KAAK,YAAY,CAAC,UAA8D;AAC9E,QAAM,SAAS,MAAM,KAAK;AAE1B,MAAI,WAAW,eAAe;AAC5B;EACF;AAEA,OAAK,YAA6B,kCAAiB,cAAc,MAAM,KAAK,QAAQ,CAAC,YAAoB;AACvG,SAAK,YAAY,OAAO;EAC1B,CAAC,CAAC;AACJ;AAEA,KAAK,YAAY,aAAa;",
   "names": []
 }

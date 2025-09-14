@@ -6,19 +6,19 @@ export declare abstract class TimelineEventOverview extends PerfUI.TimelineOverv
 }
 export declare class TimelineEventOverviewNetwork extends TimelineEventOverview {
     #private;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace);
     update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }
 export declare class TimelineEventOverviewCPUActivity extends TimelineEventOverview {
     #private;
     private backgroundCanvas;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace);
     resetCanvas(): void;
     update(): void;
 }
 export declare class TimelineEventOverviewResponsiveness extends TimelineEventOverview {
     #private;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace);
     update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }
 export declare class TimelineFilmStripOverview extends TimelineEventOverview {
@@ -39,7 +39,7 @@ export declare class TimelineFilmStripOverview extends TimelineEventOverview {
 export declare class TimelineEventOverviewMemory extends TimelineEventOverview {
     #private;
     private heapSizeLabel;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace);
     resetHeapSizeLabels(): void;
     update(start?: Trace.Types.Timing.Milli, end?: Trace.Types.Timing.Milli): void;
 }

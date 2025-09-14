@@ -21,7 +21,7 @@ import * as Lit from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/settings/settingDeprecationWarning.css.js
 var settingDeprecationWarning_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -70,7 +70,7 @@ import * as Input from "./../input/input.js";
 
 // gen/front_end/ui/components/settings/settingCheckbox.css.js
 var settingCheckbox_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -171,6 +171,12 @@ var SettingCheckbox = class extends HTMLElement {
     }
     return void 0;
   }
+  get checked() {
+    if (!this.#setting || this.#setting.disabledReasons().length > 0) {
+      return false;
+    }
+    return this.#setting.get();
+  }
   #render() {
     if (!this.#setting) {
       throw new Error('No "Setting" object provided for rendering');
@@ -188,7 +194,7 @@ var SettingCheckbox = class extends HTMLElement {
         <label title=${title}>
           <input
             type="checkbox"
-            .checked=${disabledReasons.length ? false : this.#setting.get()}
+            .checked=${this.checked}
             ?disabled=${this.#setting.disabled()}
             @change=${this.#checkboxChanged}
             jslog=${VisualLogging.toggle().track({ click: true }).context(this.#setting.name)}

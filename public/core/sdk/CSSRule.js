@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -223,17 +223,17 @@ export class CSSFontPaletteValuesRule extends CSSRule {
 }
 export class CSSKeyframesRule {
     #animationName;
-    #keyframesInternal;
+    #keyframes;
     constructor(cssModel, payload) {
         this.#animationName = new CSSValue(payload.animationName);
-        this.#keyframesInternal =
+        this.#keyframes =
             payload.keyframes.map(keyframeRule => new CSSKeyframeRule(cssModel, keyframeRule, this.#animationName.text));
     }
     name() {
         return this.#animationName;
     }
     keyframes() {
-        return this.#keyframesInternal;
+        return this.#keyframes;
     }
 }
 export class CSSKeyframeRule extends CSSRule {

@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2011 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2011 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 import { NodeURL } from './NodeURL.js';
 export const DevToolsStubErrorCode = -32015;
 // TODO(dgozman): we are not reporting generic errors in tests, but we should
@@ -355,7 +329,7 @@ export class SessionRouter {
 export class TargetBase {
     needsNodeJSPatching;
     sessionId;
-    routerInternal;
+    #router;
     #agents = new Map();
     #dispatchers = new Map();
     constructor(needsNodeJSPatching, parentTarget, sessionId, connection) {
@@ -365,8 +339,8 @@ export class TargetBase {
             throw new Error('Either connection or sessionId (but not both) must be supplied for a child target');
         }
         let router;
-        if (sessionId && parentTarget?.routerInternal) {
-            router = parentTarget.routerInternal;
+        if (sessionId && parentTarget && parentTarget.#router) {
+            router = parentTarget.#router;
         }
         else if (connection) {
             router = new SessionRouter(connection);
@@ -374,7 +348,7 @@ export class TargetBase {
         else {
             router = new SessionRouter(connectionFactory());
         }
-        this.routerInternal = router;
+        this.#router = router;
         router.registerSession(this, this.sessionId);
         for (const [domain, agentPrototype] of inspectorBackend.agentPrototypes) {
             const agent = Object.create((agentPrototype));
@@ -395,20 +369,20 @@ export class TargetBase {
         dispatcher.dispatch(method, eventMessage);
     }
     dispose(_reason) {
-        if (!this.routerInternal) {
+        if (!this.#router) {
             return;
         }
-        this.routerInternal.unregisterSession(this.sessionId);
-        this.routerInternal = null;
+        this.#router.unregisterSession(this.sessionId);
+        this.#router = null;
     }
     isDisposed() {
-        return !this.routerInternal;
+        return !this.#router;
     }
     markAsNodeJSForTest() {
         this.needsNodeJSPatching = true;
     }
     router() {
-        return this.routerInternal;
+        return this.#router;
     }
     // Agent accessors, keep alphabetically sorted.
     /**

@@ -2,7 +2,6 @@ import type { Size } from '../../models/geometry/geometry.js';
 import { Widget } from './Widget.js';
 export declare class GlassPane {
     #private;
-    private readonly widgetInternal;
     element: typeof Widget.prototype.element;
     contentElement: typeof Widget.prototype.contentElement;
     private readonly onMouseDownBound;

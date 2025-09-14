@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export function isNestableAsyncPhase(phase) {
@@ -172,8 +172,9 @@ export var SelectorTimingsKey;
 export function isSelectorStats(event) {
     return event.name === "SelectorStats" /* Name.SELECTOR_STATS */;
 }
-export function isUpdateLayoutTree(event) {
-    return event.name === "UpdateLayoutTree" /* Name.UPDATE_LAYOUT_TREE */;
+/** The real trace event is called 'UpdateLayoutTree' but we've aliased it for convenience. */
+export function isRecalcStyle(event) {
+    return event.name === "UpdateLayoutTree" /* Name.RECALC_STYLE */;
 }
 export function isLayout(event) {
     return event.name === "Layout" /* Name.LAYOUT */ && Boolean(event.args && 'beginData' in event.args);

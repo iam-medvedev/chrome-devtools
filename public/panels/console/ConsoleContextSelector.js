@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -28,16 +28,16 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ConsoleContextSelector {
     items;
     dropDown;
-    toolbarItemInternal;
+    #toolbarItem;
     constructor() {
         this.items = new UI.ListModel.ListModel();
         this.dropDown = new UI.SoftDropDown.SoftDropDown(this.items, this, 'javascript-context');
         this.dropDown.setRowHeight(36);
-        this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
-        this.toolbarItemInternal.setEnabled(false);
-        this.toolbarItemInternal.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
-        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, () => this.toolbarItemInternal.setEnabled(Boolean(this.items.length)));
-        this.toolbarItemInternal.element.classList.add('toolbar-has-dropdown');
+        this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.dropDown.element);
+        this.#toolbarItem.setEnabled(false);
+        this.#toolbarItem.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
+        this.items.addEventListener("ItemsReplaced" /* UI.ListModel.Events.ITEMS_REPLACED */, () => this.#toolbarItem.setEnabled(Boolean(this.items.length)));
+        this.#toolbarItem.element.classList.add('toolbar-has-dropdown');
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextChanged, this.onExecutionContextChanged, this, { scoped: true });
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
@@ -48,7 +48,7 @@ export class ConsoleContextSelector {
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.CallFrameSelected, this.callFrameSelectedInModel, this);
     }
     toolbarItem() {
-        return this.toolbarItemInternal;
+        return this.#toolbarItem;
     }
     highlightedItemChanged(_from, to, fromElement, toElement) {
         SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -207,10 +207,10 @@ export class ConsoleContextSelector {
         return !callFrameContext || item === callFrameContext;
     }
     itemSelected(item) {
-        this.toolbarItemInternal.element.classList.toggle('highlight', !this.isTopContext(item) && this.hasTopContext());
+        this.#toolbarItem.element.classList.toggle('highlight', !this.isTopContext(item) && this.hasTopContext());
         const title = item ? i18nString(UIStrings.javascriptContextS, { PH1: this.titleFor(item) }) :
             i18nString(UIStrings.javascriptContextNotSelected);
-        this.toolbarItemInternal.setTitle(title);
+        this.#toolbarItem.setTitle(title);
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, item);
     }
     callFrameSelectedInUI() {

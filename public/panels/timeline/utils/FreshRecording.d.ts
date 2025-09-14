@@ -10,6 +10,6 @@ export declare class Tracker {
     static instance(opts?: {
         forceNew: boolean;
     }): Tracker;
-    registerFreshRecording(data: Trace.Handlers.Types.ParsedTrace): void;
-    recordingIsFresh(data: Trace.Handlers.Types.ParsedTrace): boolean;
+    registerFreshRecording(data: Trace.TraceModel.ParsedTrace): void;
+    recordingIsFresh(data: Trace.TraceModel.ParsedTrace): boolean;
 }

@@ -1,10 +1,10 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
 import * as Lantern from './lantern/lantern.js';
-function createProcessedNavigation(parsedTrace, frameId, navigationId) {
-    const scoresByNav = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId);
+function createProcessedNavigation(data, frameId, navigationId) {
+    const scoresByNav = data.PageLoadMetrics.metricScoresByFrameId.get(frameId);
     if (!scoresByNav) {
         throw new Lantern.Core.LanternError('missing metric scores for frame');
     }
@@ -238,12 +238,12 @@ function linkInitiators(lanternRequests) {
         }
     }
 }
-function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
+function createNetworkRequests(trace, data, startTime = 0, endTime = Number.POSITIVE_INFINITY) {
     const workerThreads = findWorkerThreads(trace);
     const lanternRequestsNoRedirects = [];
-    for (const request of parsedTrace.NetworkRequests.byTime) {
+    for (const request of data.NetworkRequests.byTime) {
         if (request.ts >= startTime && request.ts < endTime) {
-            const lanternRequest = createLanternRequest(parsedTrace, workerThreads, request);
+            const lanternRequest = createLanternRequest(data, workerThreads, request);
             if (lanternRequest) {
                 lanternRequestsNoRedirects.push(lanternRequest);
             }
@@ -320,8 +320,8 @@ function createNetworkRequests(trace, parsedTrace, startTime = 0, endTime = Numb
     linkInitiators(lanternRequests);
     return lanternRequests;
 }
-function collectMainThreadEvents(trace, parsedTrace) {
-    const Meta = parsedTrace.Meta;
+function collectMainThreadEvents(trace, data) {
+    const Meta = data.Meta;
     const mainFramePids = Meta.mainFrameNavigations.length ? new Set(Meta.mainFrameNavigations.map(nav => nav.pid)) :
         Meta.topLevelRendererIds;
     const rendererPidToTid = new Map();
@@ -350,8 +350,8 @@ function collectMainThreadEvents(trace, parsedTrace) {
     }
     return trace.traceEvents.filter(e => rendererPidToTid.get(e.pid) === e.tid);
 }
-function createGraph(requests, trace, parsedTrace, url) {
-    const mainThreadEvents = collectMainThreadEvents(trace, parsedTrace);
+function createGraph(requests, trace, data, url) {
+    const mainThreadEvents = collectMainThreadEvents(trace, data);
     // url defines the initial request that the Lantern graph starts at (the root node) and the
     // main document request. These are equal if there are no redirects.
     if (!url) {

@@ -12,9 +12,9 @@ declare const FilterBar_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends FilterBarEvents.CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<FilterBarEventTypes, T>): void;
 }) & typeof HBox;
 export declare class FilterBar extends FilterBar_base {
+    #private;
     private enabled;
     private readonly stateSetting;
-    private readonly filterButtonInternal;
     private filters;
     private alwaysShowFilters?;
     private showingWidget?;

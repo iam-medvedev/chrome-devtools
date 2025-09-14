@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -40,6 +40,7 @@ import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
@@ -116,6 +117,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+let loadedPanelCommonModule;
 export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
     constructor() {
@@ -267,7 +269,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('protocol-monitor', 'Protocol Monitor', undefined, 'https://developer.chrome.com/blog/new-in-devtools-92/#protocol-monitor');
         Root.Runtime.experiments.register('sampling-heap-profiler-timeline', 'Sampling heap profiler timeline', true);
         Root.Runtime.experiments.register('show-option-tp-expose-internals-in-heap-snapshot', 'Show option to expose internals in heap snapshots');
-        Root.Runtime.experiments.register('vertical-drawer', 'Enable vertical drawer configuration');
         // Timeline
         Root.Runtime.experiments.register('timeline-invalidation-tracking', 'Performance panel: invalidation tracking', true);
         Root.Runtime.experiments.register('timeline-show-all-events', 'Performance panel: show all events', true);
@@ -288,8 +289,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('contrast-issues', 'Enable automatic contrast issue reporting via the Issues panel', undefined, 'https://developer.chrome.com/blog/new-in-devtools-90/#low-contrast');
         // New cookie features.
         Root.Runtime.experiments.register('experimental-cookie-features', 'Enable experimental cookie features');
-        // Highlights a violating node or attribute by rendering a squiggly line under it and adding a tooltip linking to the issues panel.
-        Root.Runtime.experiments.register("highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */, 'Highlights a violating node or attribute in the Elements panel DOM tree');
         // Change grouping of sources panel to use Authored/Deployed trees
         Root.Runtime.experiments.register("authored-deployed-grouping" /* Root.Runtime.ExperimentName.AUTHORED_DEPLOYED_GROUPING */, 'Group sources into authored and deployed trees', undefined, 'https://goo.gle/authored-deployed', 'https://goo.gle/authored-deployed-feedback');
         // Hide third party code (as determined by ignore lists or source maps)
@@ -298,7 +297,6 @@ export class MainImpl {
         Root.Runtime.experiments.register("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */, 'Performance panel: enable saving traces as .gz');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
-            "highlight-errors-elements-panel" /* Root.Runtime.ExperimentName.HIGHLIGHT_ERRORS_ELEMENTS_PANEL */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
         ]);
         Root.Runtime.experiments.cleanUpStaleExperiments();
@@ -423,9 +421,15 @@ export class MainImpl {
         // Required for legacy a11y layout tests
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
         this.#registerMessageSinkListener();
-        // Initialize `GDPClient` for Google Developer Program integration
+        // Initialize `GDPClient` and `UserBadges` for Google Developer Program integration
         if (Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
             void Host.GdpClient.GdpClient.instance().initialize();
+            void Badges.UserBadges.instance().initialize();
+            Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, async (ev) => {
+                loadedPanelCommonModule ??= await import('../../panels/common/common.js');
+                const badgeNotification = new loadedPanelCommonModule.BadgeNotification();
+                void badgeNotification.present(ev.data);
+            });
         }
         MainImpl.timeEnd('Main._createAppUI');
         const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
@@ -652,11 +656,11 @@ export class SearchActionDelegate {
 }
 let mainMenuItemInstance;
 export class MainMenuItem {
-    #itemInternal;
+    #item;
     constructor() {
-        this.#itemInternal = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'main-menu', 'dots-vertical');
-        this.#itemInternal.element.classList.add('main-menu');
-        this.#itemInternal.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
+        this.#item = new UI.Toolbar.ToolbarMenuButton(this.#handleContextMenu.bind(this), /* isIconDropdown */ true, /* useSoftMenu */ true, 'main-menu', 'dots-vertical');
+        this.#item.element.classList.add('main-menu');
+        this.#item.setTitle(i18nString(UIStrings.customizeAndControlDevtools));
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;
@@ -666,7 +670,7 @@ export class MainMenuItem {
         return mainMenuItemInstance;
     }
     item() {
-        return this.#itemInternal;
+        return this.#item;
     }
     #handleContextMenu(contextMenu) {
         const dockController = UI.DockController.DockController.instance();
@@ -751,7 +755,7 @@ export class MainMenuItem {
             });
             contextMenu.headerSection().appendCustomItem(dockItemElement, 'dock-side');
         }
-        const button = this.#itemInternal.element;
+        const button = this.#item.element;
         function setDockSide(side) {
             void dockController.once("AfterDockSideChanged" /* UI.DockController.Events.AFTER_DOCK_SIDE_CHANGED */).then(() => button.focus());
             dockController.setDockSide(side);

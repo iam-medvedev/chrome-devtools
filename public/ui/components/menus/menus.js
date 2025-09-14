@@ -22,7 +22,7 @@ import * as Dialogs from "./../dialogs/dialogs.js";
 
 // gen/front_end/ui/components/menus/menu.css.js
 var menu_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -67,7 +67,7 @@ var menu_css_default = `/*
 
 // gen/front_end/ui/components/menus/menuGroup.css.js
 var menuGroup_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -84,7 +84,7 @@ var menuGroup_css_default = `/*
 
 // gen/front_end/ui/components/menus/menuItem.css.js
 var menuItem_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -568,7 +568,7 @@ import * as Dialogs2 from "./../dialogs/dialogs.js";
 
 // gen/front_end/ui/components/menus/selectMenu.css.js
 var selectMenu_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -622,7 +622,7 @@ button:disabled {
 
 // gen/front_end/ui/components/menus/selectMenuButton.css.js
 var selectMenuButton_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
@@ -9,7 +9,7 @@ import * as SDK from '../../core/sdk/sdk.js';
  **/
 export function targetForEvent(parsedTrace, event) {
     const targetManager = SDK.TargetManager.TargetManager.instance();
-    const workerId = parsedTrace.Workers.workerIdByThread.get(event.tid);
+    const workerId = parsedTrace.data.Workers.workerIdByThread.get(event.tid);
     if (workerId) {
         return targetManager.targetById(workerId);
     }

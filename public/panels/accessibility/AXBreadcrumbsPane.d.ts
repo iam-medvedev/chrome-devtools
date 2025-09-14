@@ -28,17 +28,13 @@ export declare class AXBreadcrumbsPane extends AccessibilitySubPane {
     private contextMenuEventFired;
 }
 export declare class AXBreadcrumb {
-    private readonly axNodeInternal;
-    private readonly elementInternal;
-    private nodeElementInternal;
+    #private;
     private readonly nodeWrapper;
     private readonly selectionElement;
     private readonly childrenGroupElement;
     private readonly children;
     private hovered;
-    private preselectedInternal;
     private parent;
-    private inspectedInternal;
     expandLoggable: {};
     constructor(axNode: SDK.AccessibilityModel.AccessibilityNode, depth: number, inspected: boolean);
     element(): HTMLElement;

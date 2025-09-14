@@ -27,7 +27,6 @@ type RevealAndSelectNodeOpts = RevealAndSelectNodeOptsSelectionAndFocus & {
 export declare class ElementsPanel extends UI.Panel.Panel implements UI.SearchableView.Searchable, SDK.TargetManager.SDKModelObserver<SDK.DOMModel.DOMModel>, UI.View.ViewLocationResolver {
     #private;
     private splitWidget;
-    private readonly searchableViewInternal;
     private mainContainer;
     private domTreeContainer;
     private splitMode;

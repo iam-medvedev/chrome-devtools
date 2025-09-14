@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["heap_snapshot_worker-entrypoint.prebundle.ts"],
-  "sourcesContent": ["// Copyright 2020 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as HeapSnapshotWorker from './heap_snapshot_worker.js';\n\nconst dispatcher =\n    new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(self.postMessage.bind(self));\nself.addEventListener('message', dispatcher.dispatchMessage.bind(dispatcher), false);\nself.postMessage('workerReady');\n"],
+  "sourcesContent": ["// Copyright 2020 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport * as HeapSnapshotWorker from './heap_snapshot_worker.js';\n\nconst dispatcher =\n    new HeapSnapshotWorker.HeapSnapshotWorkerDispatcher.HeapSnapshotWorkerDispatcher(self.postMessage.bind(self));\nself.addEventListener('message', dispatcher.dispatchMessage.bind(dispatcher), false);\nself.postMessage('workerReady');\n"],
   "mappings": ";AAIA,YAAY,wBAAwB;AAEpC,IAAM,aACF,IAAuB,gDAA6B,6BAA6B,KAAK,YAAY,KAAK,IAAI,CAAC;AAChH,KAAK,iBAAiB,WAAW,WAAW,gBAAgB,KAAK,UAAU,GAAG,KAAK;AACnF,KAAK,YAAY,aAAa;",
   "names": []
 }

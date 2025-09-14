@@ -5,7 +5,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineComponents from './components/components.js';
 import { type TimelineEventOverview } from './TimelineEventOverview.js';
 export interface OverviewData {
-    parsedTrace: Trace.Handlers.Types.ParsedTrace;
+    parsedTrace: Trace.TraceModel.ParsedTrace;
     isCpuProfile?: boolean;
     settings: {
         showScreenshots: boolean;

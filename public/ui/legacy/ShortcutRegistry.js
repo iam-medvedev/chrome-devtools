@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -390,27 +390,27 @@ export class ShortcutRegistry {
     }
 }
 export class ShortcutTreeNode {
-    keyInternal;
-    actionsInternal;
-    chordsInternal;
+    #key;
+    #actions;
+    #chords;
     depth;
     constructor(key, depth = 0) {
-        this.keyInternal = key;
-        this.actionsInternal = [];
-        this.chordsInternal = new Map();
+        this.#key = key;
+        this.#actions = [];
+        this.#chords = new Map();
         this.depth = depth;
     }
     addAction(action) {
-        this.actionsInternal.push(action);
+        this.#actions.push(action);
     }
     key() {
-        return this.keyInternal;
+        return this.#key;
     }
     chords() {
-        return this.chordsInternal;
+        return this.#chords;
     }
     hasChords() {
-        return this.chordsInternal.size > 0;
+        return this.#chords.size > 0;
     }
     addKeyMapping(keys, action) {
         if (keys.length < this.depth) {
@@ -421,21 +421,21 @@ export class ShortcutTreeNode {
         }
         else {
             const key = keys[this.depth];
-            if (!this.chordsInternal.has(key)) {
-                this.chordsInternal.set(key, new ShortcutTreeNode(key, this.depth + 1));
+            if (!this.#chords.has(key)) {
+                this.#chords.set(key, new ShortcutTreeNode(key, this.depth + 1));
             }
-            this.chordsInternal.get(key).addKeyMapping(keys, action);
+            this.#chords.get(key).addKeyMapping(keys, action);
         }
     }
     getNode(key) {
-        return this.chordsInternal.get(key) || null;
+        return this.#chords.get(key) || null;
     }
     actions() {
-        return this.actionsInternal;
+        return this.#actions;
     }
     clear() {
-        this.actionsInternal = [];
-        this.chordsInternal = new Map();
+        this.#actions = [];
+        this.#chords = new Map();
     }
 }
 export class ForwardedShortcut {

@@ -1524,8 +1524,8 @@ export interface SelectorStats extends Complete {
     };
 }
 export declare function isSelectorStats(event: Event): event is SelectorStats;
-export interface UpdateLayoutTree extends Complete {
-    name: Name.UPDATE_LAYOUT_TREE;
+export interface RecalcStyle extends Complete {
+    name: Name.RECALC_STYLE;
     args: Args & {
         elementCount: number;
         beginData?: {
@@ -1535,7 +1535,8 @@ export interface UpdateLayoutTree extends Complete {
         };
     };
 }
-export declare function isUpdateLayoutTree(event: Event): event is UpdateLayoutTree;
+/** The real trace event is called 'UpdateLayoutTree' but we've aliased it for convenience. */
+export declare function isRecalcStyle(event: Event): event is RecalcStyle;
 export interface Layout extends Complete {
     name: Name.LAYOUT;
     args: Args & {
@@ -2117,7 +2118,8 @@ export declare const enum Name {
     CPPGC_SWEEP = "CppGC.IncrementalSweep",
     SCHEDULE_STYLE_RECALCULATION = "ScheduleStyleRecalculation",
     LAYOUT = "Layout",
-    UPDATE_LAYOUT_TREE = "UpdateLayoutTree",
+    /** The real trace event is called 'UpdateLayoutTree' but we've aliased it for convenience. */
+    RECALC_STYLE = "UpdateLayoutTree",
     INVALIDATE_LAYOUT = "InvalidateLayout",
     LAYOUT_INVALIDATION_TRACKING = "LayoutInvalidationTracking",
     COMPUTE_INTERSECTION = "ComputeIntersections",

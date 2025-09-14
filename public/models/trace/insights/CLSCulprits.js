@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -256,7 +256,7 @@ function getNextEvent(sourceEvents, targetEvent) {
  * An Iframe is considered a root cause if the iframe event occurs before a prePaint event
  * and within this prePaint event a layout shift(s) occurs.
  */
-function getIframeRootCauses(parsedTrace, iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
+function getIframeRootCauses(data, iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
     for (const iframeEvent of iframeCreatedEvents) {
         const nextPrePaint = getNextEvent(prePaintEvents, iframeEvent);
         // If no following prePaint, this is not a root cause.
@@ -282,7 +282,7 @@ function getIframeRootCauses(parsedTrace, iframeCreatedEvents, prePaintEvents, s
             if (domEvent?.args.frame) {
                 const frame = domEvent.args.frame;
                 let url;
-                const processes = parsedTrace.Meta.rendererProcessesByFrame.get(frame);
+                const processes = data.Meta.rendererProcessesByFrame.get(frame);
                 if (processes && processes.size > 0) {
                     url = [...processes.values()][0]?.[0].frame.url;
                 }
@@ -422,20 +422,20 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
-    const compositeAnimationEvents = parsedTrace.Animations.animations.filter(isWithinContext);
-    const iframeEvents = parsedTrace.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
-    const networkRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
-    const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinContext);
-    const unsizedImageEvents = parsedTrace.LayoutShifts.layoutImageUnsizedEvents.filter(isWithinContext);
+    const compositeAnimationEvents = data.Animations.animations.filter(isWithinContext);
+    const iframeEvents = data.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
+    const networkRequests = data.NetworkRequests.byTime.filter(isWithinContext);
+    const domLoadingEvents = data.LayoutShifts.domLoadingEvents.filter(isWithinContext);
+    const unsizedImageEvents = data.LayoutShifts.layoutImageUnsizedEvents.filter(isWithinContext);
     const clusterKey = context.navigation ? context.navigationId : Types.Events.NO_NAVIGATION;
-    const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
+    const clusters = data.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
     const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
     const worstCluster = clustersByScore.at(0);
     const layoutShifts = clusters.flatMap(cluster => cluster.events);
-    const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinContext);
-    const paintImageEvents = parsedTrace.LayoutShifts.paintImageEvents.filter(isWithinContext);
+    const prePaintEvents = data.LayoutShifts.prePaintEvents.filter(isWithinContext);
+    const paintImageEvents = data.LayoutShifts.paintImageEvents.filter(isWithinContext);
     // Get root causes.
     const rootCausesByShift = new Map();
     const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
@@ -443,7 +443,7 @@ export function generateInsight(parsedTrace, context) {
         rootCausesByShift.set(shift, { iframes: [], webFonts: [], nonCompositedAnimations: [], unsizedImages: [] });
     }
     // Populate root causes for rootCausesByShift.
-    getIframeRootCauses(parsedTrace, iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
+    getIframeRootCauses(data, iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
     getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
     getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsByPrePaint, rootCausesByShift);
     const animationFailures = getNonCompositedFailureRootCauses(compositeAnimationEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift);

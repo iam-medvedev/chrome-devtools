@@ -16,12 +16,12 @@ interface ViewInput {
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare class TimelineSelectorStatsView extends UI.Widget.VBox {
     #private;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, view?: View);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace | null, view?: View);
     performUpdate(): void;
     private getDescendentNodeCount;
     private updateInvalidationCount;
     private aggregateEvents;
-    setAggregatedEvents(events: Trace.Types.Events.UpdateLayoutTree[]): void;
+    setAggregatedEvents(events: Trace.Types.Events.RecalcStyle[]): void;
     private processSelectorTimings;
 }
 export {};

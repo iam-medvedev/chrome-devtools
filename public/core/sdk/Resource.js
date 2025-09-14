@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -6,17 +6,17 @@ import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 export class Resource {
     #resourceTreeModel;
-    #requestInternal;
-    #urlInternal;
-    #documentURLInternal;
-    #frameIdInternal;
-    #loaderIdInternal;
+    #request;
+    #url;
+    #documentURL;
+    #frameId;
+    #loaderId;
     #type;
-    #mimeTypeInternal;
-    #isGeneratedInternal;
-    #lastModifiedInternal;
-    #contentSizeInternal;
-    #parsedURLInternal;
+    #mimeType;
+    #isGenerated;
+    #lastModified;
+    #contentSize;
+    #parsedURL;
     #contentData = null;
     /**
      * There is always at most one CDP "getResourceContent" call in-flight. But once it's done
@@ -25,62 +25,62 @@ export class Resource {
     #pendingContentData = null;
     constructor(resourceTreeModel, request, url, documentURL, frameId, loaderId, type, mimeType, lastModified, contentSize) {
         this.#resourceTreeModel = resourceTreeModel;
-        this.#requestInternal = request;
+        this.#request = request;
         this.url = url;
-        this.#documentURLInternal = documentURL;
-        this.#frameIdInternal = frameId;
-        this.#loaderIdInternal = loaderId;
+        this.#documentURL = documentURL;
+        this.#frameId = frameId;
+        this.#loaderId = loaderId;
         this.#type = type || Common.ResourceType.resourceTypes.Other;
-        this.#mimeTypeInternal = mimeType;
-        this.#isGeneratedInternal = false;
-        this.#lastModifiedInternal = lastModified && Platform.DateUtilities.isValid(lastModified) ? lastModified : null;
-        this.#contentSizeInternal = contentSize;
+        this.#mimeType = mimeType;
+        this.#isGenerated = false;
+        this.#lastModified = lastModified && Platform.DateUtilities.isValid(lastModified) ? lastModified : null;
+        this.#contentSize = contentSize;
     }
     lastModified() {
-        if (this.#lastModifiedInternal || !this.#requestInternal) {
-            return this.#lastModifiedInternal;
+        if (this.#lastModified || !this.#request) {
+            return this.#lastModified;
         }
-        const lastModifiedHeader = this.#requestInternal.responseLastModified();
+        const lastModifiedHeader = this.#request.responseLastModified();
         const date = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
-        this.#lastModifiedInternal = date && Platform.DateUtilities.isValid(date) ? date : null;
-        return this.#lastModifiedInternal;
+        this.#lastModified = date && Platform.DateUtilities.isValid(date) ? date : null;
+        return this.#lastModified;
     }
     contentSize() {
-        if (typeof this.#contentSizeInternal === 'number' || !this.#requestInternal) {
-            return this.#contentSizeInternal;
+        if (typeof this.#contentSize === 'number' || !this.#request) {
+            return this.#contentSize;
         }
-        return this.#requestInternal.resourceSize;
+        return this.#request.resourceSize;
     }
     get request() {
-        return this.#requestInternal;
+        return this.#request;
     }
     get url() {
-        return this.#urlInternal;
+        return this.#url;
     }
     set url(x) {
-        this.#urlInternal = x;
-        this.#parsedURLInternal = new Common.ParsedURL.ParsedURL(x);
+        this.#url = x;
+        this.#parsedURL = new Common.ParsedURL.ParsedURL(x);
     }
     get parsedURL() {
-        return this.#parsedURLInternal;
+        return this.#parsedURL;
     }
     get documentURL() {
-        return this.#documentURLInternal;
+        return this.#documentURL;
     }
     get frameId() {
-        return this.#frameIdInternal;
+        return this.#frameId;
     }
     get loaderId() {
-        return this.#loaderIdInternal;
+        return this.#loaderId;
     }
     get displayName() {
-        return this.#parsedURLInternal ? this.#parsedURLInternal.displayName : '';
+        return this.#parsedURL ? this.#parsedURL.displayName : '';
     }
     resourceType() {
-        return this.#requestInternal ? this.#requestInternal.resourceType() : this.#type;
+        return this.#request ? this.#request.resourceType() : this.#type;
     }
     get mimeType() {
-        return this.#requestInternal ? this.#requestInternal.mimeType : this.#mimeTypeInternal;
+        return this.#request ? this.#request.mimeType : this.#mimeType;
     }
     get content() {
         if (this.#contentData?.isTextContent) {
@@ -89,13 +89,13 @@ export class Resource {
         return this.#contentData?.base64 ?? null;
     }
     get isGenerated() {
-        return this.#isGeneratedInternal;
+        return this.#isGenerated;
     }
     set isGenerated(val) {
-        this.#isGeneratedInternal = val;
+        this.#isGenerated = val;
     }
     contentURL() {
-        return this.#urlInternal;
+        return this.#url;
     }
     contentType() {
         if (this.resourceType() === Common.ResourceType.resourceTypes.Document &&
@@ -140,7 +140,7 @@ export class Resource {
         if (TextUtils.ContentData.ContentData.isError(contentData)) {
             return;
         }
-        image.src = contentData.asDataUrl() ?? this.#urlInternal;
+        image.src = contentData.asDataUrl() ?? this.#url;
     }
     async innerRequestContent() {
         if (this.request) {
@@ -155,10 +155,10 @@ export class Resource {
         return new TextUtils.ContentData.ContentData(response.content, response.base64Encoded, this.mimeType);
     }
     frame() {
-        return this.#frameIdInternal ? this.#resourceTreeModel.frameForId(this.#frameIdInternal) : null;
+        return this.#frameId ? this.#resourceTreeModel.frameForId(this.#frameId) : null;
     }
     statusCode() {
-        return this.#requestInternal ? this.#requestInternal.statusCode : 0;
+        return this.#request ? this.#request.statusCode : 0;
     }
 }
 //# sourceMappingURL=Resource.js.map

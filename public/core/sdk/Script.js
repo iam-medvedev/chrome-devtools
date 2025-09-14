@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -22,6 +22,10 @@ let scriptCacheInstance = null;
 export class Script {
     debuggerModel;
     scriptId;
+    /**
+     * The URL of the script. When `hasSourceURL` is true, this value comes from a `//# sourceURL=` directive. Otherwise,
+     * it's the original `src` URL from which the script was loaded.
+     */
     sourceURL;
     lineOffset;
     columnOffset;
@@ -29,17 +33,17 @@ export class Script {
     endColumn;
     executionContextId;
     hash;
-    #isContentScriptInternal;
-    #isLiveEditInternal;
+    #isContentScript;
+    #isLiveEdit;
     sourceMapURL;
     debugSymbols;
     hasSourceURL;
     contentLength;
     originStackTrace;
-    #codeOffsetInternal;
+    #codeOffset;
     #language;
     #contentPromise;
-    #embedderNameInternal;
+    #embedderName;
     isModule;
     buildId;
     constructor(debuggerModel, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURL, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
@@ -54,20 +58,20 @@ export class Script {
         this.buildId = buildId;
         this.executionContextId = executionContextId;
         this.hash = hash;
-        this.#isContentScriptInternal = isContentScript;
-        this.#isLiveEditInternal = isLiveEdit;
+        this.#isContentScript = isContentScript;
+        this.#isLiveEdit = isLiveEdit;
         this.sourceMapURL = sourceMapURL;
         this.debugSymbols = debugSymbols;
         this.hasSourceURL = hasSourceURL;
         this.contentLength = length;
         this.originStackTrace = originStackTrace;
-        this.#codeOffsetInternal = codeOffset;
+        this.#codeOffset = codeOffset;
         this.#language = scriptLanguage;
         this.#contentPromise = null;
-        this.#embedderNameInternal = embedderName;
+        this.#embedderName = embedderName;
     }
     embedderName() {
-        return this.#embedderNameInternal;
+        return this.#embedderName;
     }
     target() {
         return this.debuggerModel.target();
@@ -91,10 +95,10 @@ export class Script {
         return source.substr(0, sourceURLLineIndex);
     }
     isContentScript() {
-        return this.#isContentScriptInternal;
+        return this.#isContentScript;
     }
     codeOffset() {
-        return this.#codeOffsetInternal;
+        return this.#codeOffset;
     }
     isJavaScript() {
         return this.#language === "JavaScript" /* Protocol.Debugger.ScriptLanguage.JavaScript */;
@@ -109,7 +113,7 @@ export class Script {
         return this.debuggerModel.runtimeModel().executionContext(this.executionContextId);
     }
     isLiveEdit() {
-        return this.#isLiveEditInternal;
+        return this.#isLiveEdit;
     }
     contentURL() {
         return this.sourceURL;
@@ -182,7 +186,7 @@ export class Script {
     requestContentData() {
         if (!this.#contentPromise) {
             const fileSizeToCache = 65535; // We won't bother cacheing files under 64K
-            if (this.hash && !this.#isLiveEditInternal && this.contentLength > fileSizeToCache) {
+            if (this.hash && !this.#isLiveEdit && this.contentLength > fileSizeToCache) {
                 // For large files that aren't live edits and have a hash, we keep a content-addressed cache
                 // so we don't need to load multiple copies or disassemble wasm modules multiple times.
                 if (!scriptCacheInstance) {
@@ -200,7 +204,7 @@ export class Script {
                     this.columnOffset,
                     this.endLine,
                     this.endColumn,
-                    this.#codeOffsetInternal,
+                    this.#codeOffset,
                     this.hash,
                 ].join(':');
                 const cachedContentPromise = scriptCacheInstance.cache.get(fullHash)?.deref();
@@ -208,18 +212,18 @@ export class Script {
                     this.#contentPromise = cachedContentPromise;
                 }
                 else {
-                    this.#contentPromise = this.requestContentInternal();
+                    this.#contentPromise = this.#requestContent();
                     scriptCacheInstance.cache.set(fullHash, new WeakRef(this.#contentPromise));
                     scriptCacheInstance.registry.register(this.#contentPromise, fullHash);
                 }
             }
             else {
-                this.#contentPromise = this.requestContentInternal();
+                this.#contentPromise = this.#requestContent();
             }
         }
         return this.#contentPromise;
     }
-    async requestContentInternal() {
+    async #requestContent() {
         if (!this.scriptId) {
             return { error: i18nString(UIStrings.scriptRemovedOrDeleted) };
         }

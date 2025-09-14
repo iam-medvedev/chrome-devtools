@@ -4,6 +4,23 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/models/trace/insights/Cache.js
+var Cache_exports = {};
+__export(Cache_exports, {
+  UIStrings: () => UIStrings,
+  cachingDisabled: () => cachingDisabled,
+  computeCacheLifetimeInSeconds: () => computeCacheLifetimeInSeconds,
+  createOverlayForRequest: () => createOverlayForRequest,
+  createOverlays: () => createOverlays,
+  generateInsight: () => generateInsight,
+  getCombinedHeaders: () => getCombinedHeaders,
+  i18nString: () => i18nString,
+  isCacheInsight: () => isCacheInsight,
+  isCacheable: () => isCacheable
+});
+import * as i18n from "./../../../core/i18n/i18n.js";
+import * as Helpers2 from "./../helpers/helpers.js";
+
 // gen/front_end/models/trace/insights/Common.js
 var Common_exports = {};
 __export(Common_exports, {
@@ -360,45 +377,6 @@ function insightBounds(insight, insightSetBounds) {
   return insightSetBounds;
 }
 
-// gen/front_end/models/trace/insights/Models.js
-var Models_exports = {};
-__export(Models_exports, {
-  CLSCulprits: () => CLSCulprits_exports,
-  Cache: () => Cache_exports,
-  DOMSize: () => DOMSize_exports,
-  DocumentLatency: () => DocumentLatency_exports,
-  DuplicatedJavaScript: () => DuplicatedJavaScript_exports,
-  FontDisplay: () => FontDisplay_exports,
-  ForcedReflow: () => ForcedReflow_exports,
-  INPBreakdown: () => INPBreakdown_exports,
-  ImageDelivery: () => ImageDelivery_exports,
-  LCPBreakdown: () => LCPBreakdown_exports,
-  LCPDiscovery: () => LCPDiscovery_exports,
-  LegacyJavaScript: () => LegacyJavaScript_exports,
-  ModernHTTP: () => ModernHTTP_exports,
-  NetworkDependencyTree: () => NetworkDependencyTree_exports,
-  RenderBlocking: () => RenderBlocking_exports,
-  SlowCSSSelector: () => SlowCSSSelector_exports,
-  ThirdParties: () => ThirdParties_exports,
-  Viewport: () => Viewport_exports
-});
-
-// gen/front_end/models/trace/insights/Cache.js
-var Cache_exports = {};
-__export(Cache_exports, {
-  UIStrings: () => UIStrings,
-  cachingDisabled: () => cachingDisabled,
-  computeCacheLifetimeInSeconds: () => computeCacheLifetimeInSeconds,
-  createOverlayForRequest: () => createOverlayForRequest,
-  createOverlays: () => createOverlays,
-  generateInsight: () => generateInsight,
-  getCombinedHeaders: () => getCombinedHeaders,
-  i18nString: () => i18nString,
-  isCacheable: () => isCacheable
-});
-import * as i18n from "./../../../core/i18n/i18n.js";
-import * as Helpers2 from "./../helpers/helpers.js";
-
 // gen/front_end/models/trace/insights/types.js
 var types_exports = {};
 __export(types_exports, {
@@ -524,9 +502,12 @@ function cachingDisabled(headers, parsedCacheControl) {
   }
   return false;
 }
-function generateInsight(parsedTrace, context) {
+function isCacheInsight(model) {
+  return model.insightKey === "Cache";
+}
+function generateInsight(data, context) {
   const isWithinContext = (event) => Helpers2.Timing.eventIsInBounds(event, context.bounds);
-  const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
+  const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
   const results = [];
   let totalWastedBytes = 0;
   const wastedBytesByRequestId = /* @__PURE__ */ new Map();
@@ -579,6 +560,29 @@ function createOverlayForRequest(request) {
 function createOverlays(model) {
   return model.requests.map((req) => createOverlayForRequest(req.request));
 }
+
+// gen/front_end/models/trace/insights/Models.js
+var Models_exports = {};
+__export(Models_exports, {
+  CLSCulprits: () => CLSCulprits_exports,
+  Cache: () => Cache_exports,
+  DOMSize: () => DOMSize_exports,
+  DocumentLatency: () => DocumentLatency_exports,
+  DuplicatedJavaScript: () => DuplicatedJavaScript_exports,
+  FontDisplay: () => FontDisplay_exports,
+  ForcedReflow: () => ForcedReflow_exports,
+  INPBreakdown: () => INPBreakdown_exports,
+  ImageDelivery: () => ImageDelivery_exports,
+  LCPBreakdown: () => LCPBreakdown_exports,
+  LCPDiscovery: () => LCPDiscovery_exports,
+  LegacyJavaScript: () => LegacyJavaScript_exports,
+  ModernHTTP: () => ModernHTTP_exports,
+  NetworkDependencyTree: () => NetworkDependencyTree_exports,
+  RenderBlocking: () => RenderBlocking_exports,
+  SlowCSSSelector: () => SlowCSSSelector_exports,
+  ThirdParties: () => ThirdParties_exports,
+  Viewport: () => Viewport_exports
+});
 
 // gen/front_end/models/trace/insights/CLSCulprits.js
 var CLSCulprits_exports = {};
@@ -805,7 +809,7 @@ function getNextEvent(sourceEvents, targetEvent) {
   }
   return sourceEvents[index];
 }
-function getIframeRootCauses(parsedTrace, iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
+function getIframeRootCauses(data, iframeCreatedEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents) {
   for (const iframeEvent of iframeCreatedEvents) {
     const nextPrePaint = getNextEvent(prePaintEvents, iframeEvent);
     if (!nextPrePaint) {
@@ -827,7 +831,7 @@ function getIframeRootCauses(parsedTrace, iframeCreatedEvents, prePaintEvents, s
       if (domEvent?.args.frame) {
         const frame = domEvent.args.frame;
         let url;
-        const processes = parsedTrace.Meta.rendererProcessesByFrame.get(frame);
+        const processes = data.Meta.rendererProcessesByFrame.get(frame);
         if (processes && processes.size > 0) {
           url = [...processes.values()][0]?.[0].frame.url;
         }
@@ -944,26 +948,26 @@ function finalize2(partialModel) {
     ...partialModel
   };
 }
-function generateInsight2(parsedTrace, context) {
+function generateInsight2(data, context) {
   const isWithinContext = (event) => Helpers3.Timing.eventIsInBounds(event, context.bounds);
-  const compositeAnimationEvents = parsedTrace.Animations.animations.filter(isWithinContext);
-  const iframeEvents = parsedTrace.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
-  const networkRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
-  const domLoadingEvents = parsedTrace.LayoutShifts.domLoadingEvents.filter(isWithinContext);
-  const unsizedImageEvents = parsedTrace.LayoutShifts.layoutImageUnsizedEvents.filter(isWithinContext);
+  const compositeAnimationEvents = data.Animations.animations.filter(isWithinContext);
+  const iframeEvents = data.LayoutShifts.renderFrameImplCreateChildFrameEvents.filter(isWithinContext);
+  const networkRequests = data.NetworkRequests.byTime.filter(isWithinContext);
+  const domLoadingEvents = data.LayoutShifts.domLoadingEvents.filter(isWithinContext);
+  const unsizedImageEvents = data.LayoutShifts.layoutImageUnsizedEvents.filter(isWithinContext);
   const clusterKey = context.navigation ? context.navigationId : Types2.Events.NO_NAVIGATION;
-  const clusters = parsedTrace.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
+  const clusters = data.LayoutShifts.clustersByNavigationId.get(clusterKey) ?? [];
   const clustersByScore = clusters.toSorted((a, b) => b.clusterCumulativeScore - a.clusterCumulativeScore);
   const worstCluster = clustersByScore.at(0);
   const layoutShifts = clusters.flatMap((cluster) => cluster.events);
-  const prePaintEvents = parsedTrace.LayoutShifts.prePaintEvents.filter(isWithinContext);
-  const paintImageEvents = parsedTrace.LayoutShifts.paintImageEvents.filter(isWithinContext);
+  const prePaintEvents = data.LayoutShifts.prePaintEvents.filter(isWithinContext);
+  const paintImageEvents = data.LayoutShifts.paintImageEvents.filter(isWithinContext);
   const rootCausesByShift = /* @__PURE__ */ new Map();
   const shiftsByPrePaint = getShiftsByPrePaintEvents(layoutShifts, prePaintEvents);
   for (const shift of layoutShifts) {
     rootCausesByShift.set(shift, { iframes: [], webFonts: [], nonCompositedAnimations: [], unsizedImages: [] });
   }
-  getIframeRootCauses(parsedTrace, iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
+  getIframeRootCauses(data, iframeEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift, domLoadingEvents);
   getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
   getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsByPrePaint, rootCausesByShift);
   const animationFailures = getNonCompositedFailureRootCauses(compositeAnimationEvents, prePaintEvents, shiftsByPrePaint, rootCausesByShift);
@@ -1147,11 +1151,11 @@ function finalize3(partialModel) {
     ...partialModel
   };
 }
-function generateInsight3(parsedTrace, context) {
+function generateInsight3(data, context) {
   if (!context.navigation) {
     return finalize3({});
   }
-  const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
+  const documentRequest = data.NetworkRequests.byId.get(context.navigationId);
   if (!documentRequest) {
     return finalize3({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
   }
@@ -1251,7 +1255,8 @@ __export(DOMSize_exports, {
   UIStrings: () => UIStrings4,
   createOverlays: () => createOverlays4,
   generateInsight: () => generateInsight4,
-  i18nString: () => i18nString4
+  i18nString: () => i18nString4,
+  isDomSizeInsight: () => isDomSizeInsight
 });
 import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as Handlers2 from "./../handlers/handlers.js";
@@ -1327,12 +1332,15 @@ function finalize4(partialModel) {
     relatedEvents
   };
 }
-function generateInsight4(parsedTrace, context) {
+function isDomSizeInsight(model) {
+  return model.insightKey === "DOMSize";
+}
+function generateInsight4(data, context) {
   const isWithinContext = (event) => Helpers5.Timing.eventIsInBounds(event, context.bounds);
   const mainTid = context.navigation?.tid;
   const largeLayoutUpdates = [];
   const largeStyleRecalcs = [];
-  const threads = Handlers2.Threads.threadsInRenderer(parsedTrace.Renderer, parsedTrace.AuctionWorklets);
+  const threads = Handlers2.Threads.threadsInRenderer(data.Renderer, data.AuctionWorklets);
   for (const thread of threads) {
     if (thread.type !== "MAIN_THREAD") {
       continue;
@@ -1344,11 +1352,11 @@ function generateInsight4(parsedTrace, context) {
     } else if (thread.tid !== mainTid) {
       continue;
     }
-    const rendererThread = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid);
+    const rendererThread = data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid);
     if (!rendererThread) {
       continue;
     }
-    const { entries, layoutEvents, updateLayoutTreeEvents } = rendererThread;
+    const { entries, layoutEvents, recalcStyleEvents } = rendererThread;
     if (!entries.length) {
       continue;
     }
@@ -1367,7 +1375,7 @@ function generateInsight4(parsedTrace, context) {
         largeLayoutUpdates.push(event);
       }
     }
-    for (const event of updateLayoutTreeEvents) {
+    for (const event of recalcStyleEvents) {
       if (event.dur < DOM_SIZE_DURATION_THRESHOLD || !isWithinContext(event)) {
         continue;
       }
@@ -1391,7 +1399,7 @@ function generateInsight4(parsedTrace, context) {
       return { label, duration, size, event };
     })
   ].sort((a, b) => b.duration - a.duration).slice(0, 5);
-  const domStatsEvents = parsedTrace.DOMStats.domStatsByFrameId.get(context.frameId)?.filter(isWithinContext) ?? [];
+  const domStatsEvents = data.DOMStats.domStatsByFrameId.get(context.frameId)?.filter(isWithinContext) ?? [];
   let maxDOMStats;
   for (const domStats of domStatsEvents) {
     const navigationPid = context.navigation?.pid;
@@ -1462,8 +1470,8 @@ function finalize5(partialModel) {
 function isDuplicatedJavaScript(model) {
   return model.insightKey === "DuplicatedJavaScript";
 }
-function generateInsight5(parsedTrace, context) {
-  const scripts = parsedTrace.Scripts.scripts.filter((script) => {
+function generateInsight5(data, context) {
+  const scripts = data.Scripts.scripts.filter((script) => {
     if (script.frame !== context.frameId) {
       return false;
     }
@@ -1479,7 +1487,7 @@ function generateInsight5(parsedTrace, context) {
     }
   }
   const { duplication, duplicationGroupedByNodeModules } = Extras.ScriptDuplication.computeScriptDuplication({ scripts }, compressionRatios);
-  const scriptsWithDuplication = [...duplication.values().flatMap((data) => data.duplicates.map((d) => d.script))];
+  const scriptsWithDuplication = [...duplication.values().flatMap((data2) => data2.duplicates.map((d) => d.script))];
   const wastedBytesByRequestId = /* @__PURE__ */ new Map();
   for (const { duplicates } of duplication.values()) {
     for (let i = 1; i < duplicates.length; i++) {
@@ -1497,7 +1505,7 @@ function generateInsight5(parsedTrace, context) {
     duplicationGroupedByNodeModules,
     scriptsWithDuplication: [...new Set(scriptsWithDuplication)],
     scripts,
-    mainDocumentUrl: context.navigation?.args.data?.url ?? parsedTrace.Meta.mainFrameURL,
+    mainDocumentUrl: context.navigation?.args.data?.url ?? data.Meta.mainFrameURL,
     metricSavings: metricSavingsForWastedBytes(wastedBytesByRequestId, context),
     wastedBytes: wastedBytesByRequestId.values().reduce((acc, cur) => acc + cur, 0)
   });
@@ -1553,15 +1561,15 @@ function finalize6(partialModel) {
 function isFontDisplayInsight(model) {
   return model.insightKey === "FontDisplay";
 }
-function generateInsight6(parsedTrace, context) {
+function generateInsight6(data, context) {
   const fonts = [];
-  for (const remoteFont of parsedTrace.LayoutShifts.remoteFonts) {
+  for (const remoteFont of data.LayoutShifts.remoteFonts) {
     const event = remoteFont.beginRemoteFontLoadEvent;
     if (!Helpers7.Timing.eventIsInBounds(event, context.bounds)) {
       continue;
     }
     const requestId = `${event.pid}.${event.args.id}`;
-    const request = parsedTrace.NetworkRequests.byId.get(requestId);
+    const request = data.NetworkRequests.byId.get(requestId);
     if (!request) {
       continue;
     }
@@ -1708,8 +1716,8 @@ function finalize7(partialModel) {
 }
 function getBottomCallFrameForEvent(event, traceParsedData) {
   const profileStackTrace = Extras2.StackTraceForEvent.get(event, traceParsedData);
-  const eventStackTrace = Helpers8.Trace.getZeroIndexedStackTraceInEventPayload(event);
-  return profileStackTrace?.callFrames[0] ?? eventStackTrace?.[0] ?? null;
+  const eventTopCallFrame = Helpers8.Trace.getStackTraceTopCallFrameInEventPayload(event);
+  return profileStackTrace?.callFrames[0] ?? eventTopCallFrame ?? null;
 }
 function isForcedReflowInsight(model) {
   return model.insightKey === "ForcedReflow";
@@ -1873,22 +1881,22 @@ function finalize8(partialModel) {
 function estimateGIFPercentSavings(request) {
   return Math.round(29.1 * Math.log10(request.args.data.decodedBodyLength) - 100.7) / 100;
 }
-function getDisplayedSize(parsedTrace, paintImage) {
-  return parsedTrace.ImagePainting.paintEventToCorrectedDisplaySize.get(paintImage) ?? {
+function getDisplayedSize(data, paintImage) {
+  return data.ImagePainting.paintEventToCorrectedDisplaySize.get(paintImage) ?? {
     width: paintImage.args.data.width,
     height: paintImage.args.data.height
   };
 }
-function getPixelCounts(parsedTrace, paintImage) {
-  const { width, height } = getDisplayedSize(parsedTrace, paintImage);
+function getPixelCounts(data, paintImage) {
+  const { width, height } = getDisplayedSize(data, paintImage);
   return {
     filePixels: paintImage.args.data.srcWidth * paintImage.args.data.srcHeight,
     displayedPixels: width * height
   };
 }
-function generateInsight8(parsedTrace, context) {
+function generateInsight8(data, context) {
   const isWithinContext = (event) => Helpers9.Timing.eventIsInBounds(event, context.bounds);
-  const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
+  const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
   const optimizableImages = [];
   for (const request of contextRequests) {
     if (request.args.data.resourceType !== "Image") {
@@ -1898,16 +1906,16 @@ function generateInsight8(parsedTrace, context) {
       continue;
     }
     const url = request.args.data.redirects[0]?.url ?? request.args.data.url;
-    const imagePaints = parsedTrace.ImagePainting.paintImageEventForUrl.get(url)?.filter(isWithinContext);
+    const imagePaints = data.ImagePainting.paintImageEventForUrl.get(url)?.filter(isWithinContext);
     if (!imagePaints?.length) {
       continue;
     }
     const largestImagePaint = imagePaints.reduce((prev, curr) => {
-      const prevPixels = getPixelCounts(parsedTrace, prev).displayedPixels;
-      const currPixels = getPixelCounts(parsedTrace, curr).displayedPixels;
+      const prevPixels = getPixelCounts(data, prev).displayedPixels;
+      const currPixels = getPixelCounts(data, curr).displayedPixels;
       return prevPixels > currPixels ? prev : curr;
     });
-    const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels } = getPixelCounts(parsedTrace, largestImagePaint);
+    const { filePixels: imageFilePixels, displayedPixels: largestImageDisplayPixels } = getPixelCounts(data, largestImagePaint);
     const imageBytes = Math.min(request.args.data.decodedBodyLength, request.args.data.encodedDataLength);
     const bytesPerPixel = imageBytes / imageFilePixels;
     let optimizations = [];
@@ -1934,7 +1942,7 @@ function generateInsight8(parsedTrace, context) {
       const hadBreakpoints = largestImagePaint.args.data.isPicture || largestImagePaint.args.data.srcsetAttribute;
       if (!hadBreakpoints || byteSavings > BYTE_SAVINGS_THRESHOLD_RESPONSIVE_BREAKPOINTS) {
         imageByteSavings += Math.round(wastedPixelRatio * (imageBytes - imageByteSavingsFromFormat));
-        const { width, height } = getDisplayedSize(parsedTrace, largestImagePaint);
+        const { width, height } = getDisplayedSize(data, largestImagePaint);
         optimizations.push({
           type: ImageOptimizationType.RESPONSIVE_SIZE,
           byteSavings,
@@ -2049,8 +2057,8 @@ function finalize9(partialModel) {
     ...partialModel
   };
 }
-function generateInsight9(parsedTrace, context) {
-  const interactionEvents = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter((event) => {
+function generateInsight9(data, context) {
+  const interactionEvents = data.UserInteractions.interactionEventsWithNoNesting.filter((event) => {
     return Helpers10.Timing.eventIsInBounds(event, context.bounds);
   });
   if (!interactionEvents.length) {
@@ -2218,12 +2226,12 @@ function finalize10(partialModel) {
     relatedEvents
   };
 }
-function generateInsight10(parsedTrace, context) {
+function generateInsight10(data, context) {
   if (!context.navigation) {
     return finalize10({});
   }
-  const networkRequests = parsedTrace.NetworkRequests;
-  const frameMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
+  const networkRequests = data.NetworkRequests;
+  const frameMetrics = data.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
   if (!frameMetrics) {
     throw new Error("no frame metrics");
   }
@@ -2241,7 +2249,7 @@ function generateInsight10(parsedTrace, context) {
   }
   const lcpMs = Helpers11.Timing.microToMilli(metricScore.timing);
   const lcpTs = metricScore.event?.ts ? Helpers11.Timing.microToMilli(metricScore.event?.ts) : void 0;
-  const lcpRequest = parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
+  const lcpRequest = data.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
   const docRequest = networkRequests.byId.get(context.navigationId);
   if (!docRequest) {
     return finalize10({ lcpMs, lcpTs, lcpEvent, lcpRequest, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
@@ -2344,12 +2352,12 @@ function finalize11(partialModel) {
     relatedEvents
   };
 }
-function generateInsight11(parsedTrace, context) {
+function generateInsight11(data, context) {
   if (!context.navigation) {
     return finalize11({});
   }
-  const networkRequests = parsedTrace.NetworkRequests;
-  const frameMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
+  const networkRequests = data.NetworkRequests;
+  const frameMetrics = data.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
   if (!frameMetrics) {
     throw new Error("no frame metrics");
   }
@@ -2369,7 +2377,7 @@ function generateInsight11(parsedTrace, context) {
   if (!docRequest) {
     return finalize11({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
   }
-  const lcpRequest = parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
+  const lcpRequest = data.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
   if (!lcpRequest) {
     return finalize11({ lcpEvent });
   }
@@ -2494,8 +2502,8 @@ function finalize12(partialModel) {
 function isLegacyJavaScript(model) {
   return model.insightKey === "LegacyJavaScript";
 }
-function generateInsight12(parsedTrace, context) {
-  const scripts = parsedTrace.Scripts.scripts.filter((script) => {
+function generateInsight12(data, context) {
+  const scripts = data.Scripts.scripts.filter((script) => {
     if (script.frame !== context.frameId) {
       return false;
     }
@@ -2686,11 +2694,11 @@ function finalize13(partialModel) {
     relatedEvents: partialModel.http1Requests
   };
 }
-function generateInsight13(parsedTrace, context) {
+function generateInsight13(data, context) {
   const isWithinContext = (event) => Helpers15.Timing.eventIsInBounds(event, context.bounds);
-  const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
-  const entityMappings = parsedTrace.NetworkRequests.entityMappings;
-  const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+  const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
+  const entityMappings = data.NetworkRequests.entityMappings;
+  const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
   const firstPartyEntity = Handlers5.Helpers.getEntityForUrl(firstPartyUrl, entityMappings);
   const http1Requests = determineHttp1Requests(contextRequests, entityMappings, firstPartyEntity ?? null);
   return finalize13({
@@ -2836,7 +2844,7 @@ function isCritical(request, context) {
   request.args.data.mimeType.startsWith("image/")) {
     return false;
   }
-  const initiatorUrl = request.args.data.initiator?.url || Helpers16.Trace.getZeroIndexedStackTraceInEventPayload(request)?.at(0)?.url;
+  const initiatorUrl = request.args.data.initiator?.url || Helpers16.Trace.getStackTraceTopCallFrameInEventPayload(request)?.url;
   if (!initiatorUrl) {
     return false;
   }
@@ -3016,9 +3024,9 @@ function handleLinkResponseHeader(linkHeaderValue) {
   }
   return preconnectedOrigins;
 }
-function generatePreconnectedOrigins(parsedTrace, context, contextRequests, preconnectCandidates) {
+function generatePreconnectedOrigins(data, context, contextRequests, preconnectCandidates) {
   const preconnectedOrigins = [];
-  for (const event of parsedTrace.NetworkRequests.linkPreconnectEvents) {
+  for (const event of data.NetworkRequests.linkPreconnectEvents) {
     preconnectedOrigins.push({
       node_id: event.args.data.node_id,
       frame: event.args.data.frame,
@@ -3032,7 +3040,7 @@ function generatePreconnectedOrigins(parsedTrace, context, contextRequests, prec
       source: "DOM"
     });
   }
-  const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
+  const documentRequest = data.NetworkRequests.byId.get(context.navigationId);
   documentRequest?.args.data.responseHeaders?.forEach((header) => {
     if (header.name.toLowerCase() === "link") {
       const preconnectedOriginsFromResponseHeader = handleLinkResponseHeader(header.value);
@@ -3072,13 +3080,13 @@ function socketStartTimeIsBelowThreshold(request, mainResource) {
   const timeSinceMainEnd = Math.max(0, request.args.data.syntheticData.sendStartTime - mainResource.args.data.syntheticData.finishTime);
   return Helpers16.Timing.microToMilli(timeSinceMainEnd) < PRECONNECT_SOCKET_MAX_IDLE_IN_MS;
 }
-function candidateRequestsByOrigin(parsedTrace, mainResource, contextRequests, lcpGraphURLs) {
+function candidateRequestsByOrigin(data, mainResource, contextRequests, lcpGraphURLs) {
   const origins = /* @__PURE__ */ new Map();
   contextRequests.forEach((request) => {
     if (!hasValidTiming(request)) {
       return;
     }
-    if (parsedTrace.NetworkRequests.eventToInitiator.get(request) === mainResource) {
+    if (data.NetworkRequests.eventToInitiator.get(request) === mainResource) {
       return;
     }
     const url = new URL(request.args.data.url);
@@ -3103,11 +3111,11 @@ function candidateRequestsByOrigin(parsedTrace, mainResource, contextRequests, l
   });
   return origins;
 }
-function generatePreconnectCandidates(parsedTrace, context, contextRequests) {
+function generatePreconnectCandidates(data, context, contextRequests) {
   if (!context.lantern) {
     return [];
   }
-  const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
+  const documentRequest = data.NetworkRequests.byId.get(context.navigationId);
   if (!documentRequest) {
     return [];
   }
@@ -3126,7 +3134,7 @@ function generatePreconnectCandidates(parsedTrace, context, contextRequests) {
       fcpGraphURLs.add(node.request.url);
     }
   });
-  const groupedOrigins = candidateRequestsByOrigin(parsedTrace, documentRequest, contextRequests, lcpGraphURLs);
+  const groupedOrigins = candidateRequestsByOrigin(data, documentRequest, contextRequests, lcpGraphURLs);
   let maxWastedLcp = Types9.Timing.Milli(0);
   let maxWastedFcp = Types9.Timing.Milli(0);
   let preconnectCandidates = [];
@@ -3162,7 +3170,7 @@ function generatePreconnectCandidates(parsedTrace, context, contextRequests) {
 function isNetworkDependencyTree(model) {
   return model.insightKey === "NetworkDependencyTree";
 }
-function generateInsight14(parsedTrace, context) {
+function generateInsight14(data, context) {
   if (!context.navigation) {
     return finalize14({
       rootNodes: [],
@@ -3174,9 +3182,9 @@ function generateInsight14(parsedTrace, context) {
   }
   const { rootNodes, maxTime, fail, relatedEvents } = generateNetworkDependencyTree(context);
   const isWithinContext = (event) => Helpers16.Timing.eventIsInBounds(event, context.bounds);
-  const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
-  const preconnectCandidates = generatePreconnectCandidates(parsedTrace, context, contextRequests);
-  const preconnectedOrigins = generatePreconnectedOrigins(parsedTrace, context, contextRequests, preconnectCandidates);
+  const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
+  const preconnectCandidates = generatePreconnectCandidates(data, context, contextRequests);
+  const preconnectedOrigins = generatePreconnectedOrigins(data, context, contextRequests, preconnectCandidates);
   return finalize14({
     rootNodes,
     maxTime,
@@ -3274,10 +3282,10 @@ function estimateSavingsWithGraphs2(deferredIds, lanternContext) {
   minimalFCPGraph.request.transferSize = originalTransferSize;
   return Math.round(Math.max(estimateBeforeInline - estimateAfterInline, 0));
 }
-function hasImageLCP(parsedTrace, context) {
-  return parsedTrace.LargestImagePaint.lcpRequestByNavigationId.has(context.navigationId);
+function hasImageLCP(data, context) {
+  return data.LargestImagePaint.lcpRequestByNavigationId.has(context.navigationId);
 }
-function computeSavings(parsedTrace, context, renderBlockingRequests) {
+function computeSavings(data, context, renderBlockingRequests) {
   if (!context.lantern) {
     return;
   }
@@ -3300,7 +3308,7 @@ function computeSavings(parsedTrace, context, renderBlockingRequests) {
   }
   if (requestIdToWastedMs.size) {
     metricSavings.FCP = estimateSavingsWithGraphs2(deferredNodeIds, context.lantern);
-    if (!hasImageLCP(parsedTrace, context)) {
+    if (!hasImageLCP(data, context)) {
       metricSavings.LCP = metricSavings.FCP;
     }
   }
@@ -3317,13 +3325,13 @@ function finalize15(partialModel) {
     ...partialModel
   };
 }
-function generateInsight15(parsedTrace, context) {
+function generateInsight15(data, context) {
   if (!context.navigation) {
     return finalize15({
       renderBlockingRequests: []
     });
   }
-  const firstPaintTs = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)?.get(context.navigationId)?.get(
+  const firstPaintTs = data.PageLoadMetrics.metricScoresByFrameId.get(context.frameId)?.get(context.navigationId)?.get(
     "FP"
     /* Handlers.ModelHandlers.PageLoadMetrics.MetricName.FP */
   )?.event?.ts;
@@ -3334,7 +3342,7 @@ function generateInsight15(parsedTrace, context) {
     });
   }
   let renderBlockingRequests = [];
-  for (const req of parsedTrace.NetworkRequests.byTime) {
+  for (const req of data.NetworkRequests.byTime) {
     if (req.args.data.frame !== context.frameId) {
       continue;
     }
@@ -3352,12 +3360,12 @@ function generateInsight15(parsedTrace, context) {
         continue;
       }
     }
-    const navigation = Helpers17.Trace.getNavigationForTraceEvent(req, context.frameId, parsedTrace.Meta.navigationsByFrameId);
+    const navigation = Helpers17.Trace.getNavigationForTraceEvent(req, context.frameId, data.Meta.navigationsByFrameId);
     if (navigation === context.navigation) {
       renderBlockingRequests.push(req);
     }
   }
-  const savings = computeSavings(parsedTrace, context, renderBlockingRequests);
+  const savings = computeSavings(data, context, renderBlockingRequests);
   renderBlockingRequests = renderBlockingRequests.sort((a, b) => {
     return b.dur - a.dur;
   });
@@ -3485,7 +3493,7 @@ var i18nString16 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
 var slowCSSSelectorThreshold = 500;
 function aggregateSelectorStats(data, context) {
   const selectorMap = /* @__PURE__ */ new Map();
-  for (const [event, value] of data.dataForUpdateLayoutEvent) {
+  for (const [event, value] of data.dataForRecalcStyleEvent) {
     if (event.args.beginData?.frame !== context.frameId) {
       continue;
     }
@@ -3521,8 +3529,8 @@ function finalize16(partialModel) {
 function isSlowCSSSelectorInsight(model) {
   return model.insightKey === "SlowCSSSelector";
 }
-function generateInsight16(parsedTrace, context) {
-  const selectorStatsData = parsedTrace.SelectorStats;
+function generateInsight16(data, context) {
+  const selectorStatsData = data.SelectorStats;
   if (!selectorStatsData) {
     throw new Error("no selector stats data");
   }
@@ -3549,7 +3557,7 @@ function generateInsight16(parsedTrace, context) {
     });
   }
   return finalize16({
-    // TODO: should we identify UpdateLayout events as linked to this insight?
+    // TODO: should we identify RecalcStyle events as linked to this insight?
     relatedEvents: [],
     totalElapsedMs: Types10.Timing.Milli(totalElapsedUs / 1e3),
     totalMatchAttempts,
@@ -3620,10 +3628,10 @@ function finalize17(partialModel) {
 function isThirdPartyInsight(model) {
   return model.insightKey === "ThirdParties";
 }
-function generateInsight17(parsedTrace, context) {
-  const entitySummaries = Extras3.ThirdParties.summarizeByThirdParty(parsedTrace, context.bounds);
-  const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
-  const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || Handlers7.Helpers.makeUpEntity(parsedTrace.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
+function generateInsight17(data, context) {
+  const entitySummaries = Extras3.ThirdParties.summarizeByThirdParty(data, context.bounds);
+  const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
+  const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || Handlers7.Helpers.makeUpEntity(data.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
   return finalize17({
     relatedEvents: getRelatedEvents(entitySummaries, firstPartyEntity),
     firstPartyEntity,
@@ -3664,7 +3672,8 @@ __export(Viewport_exports, {
   UIStrings: () => UIStrings18,
   createOverlays: () => createOverlays18,
   generateInsight: () => generateInsight18,
-  i18nString: () => i18nString18
+  i18nString: () => i18nString18,
+  isViewportInsight: () => isViewportInsight
 });
 import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform6 from "./../../../core/platform/platform.js";
@@ -3696,14 +3705,17 @@ function finalize18(partialModel) {
     ...partialModel
   };
 }
-function generateInsight18(parsedTrace, context) {
-  const viewportEvent = parsedTrace.UserInteractions.parseMetaViewportEvents.find((event) => {
+function isViewportInsight(model) {
+  return model.insightKey === "Viewport";
+}
+function generateInsight18(data, context) {
+  const viewportEvent = data.UserInteractions.parseMetaViewportEvents.find((event) => {
     if (event.args.data.frame !== context.frameId) {
       return false;
     }
     return Helpers20.Timing.eventIsInBounds(event, context.bounds);
   });
-  const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter((event) => {
+  const compositorEvents = data.UserInteractions.beginCommitCompositorFrameEvents.filter((event) => {
     if (event.args.frame !== context.frameId) {
       return false;
     }
@@ -3720,7 +3732,7 @@ function generateInsight18(parsedTrace, context) {
   }
   for (const event of compositorEvents) {
     if (!event.args.is_mobile_optimized) {
-      const longPointerInteractions = [...parsedTrace.UserInteractions.interactionsOverThreshold.values()].filter((interaction) => Handlers8.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === "POINTER" && interaction.inputDelay >= 5e4);
+      const longPointerInteractions = [...data.UserInteractions.interactionsOverThreshold.values()].filter((interaction) => Handlers8.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === "POINTER" && interaction.inputDelay >= 5e4);
       const inputDelay = Math.max(0, ...longPointerInteractions.map((interaction) => interaction.inputDelay)) / 1e3;
       const inpMetricSavings = Platform6.NumberUtilities.clamp(inputDelay, 0, 300);
       return finalize18({
@@ -3752,8 +3764,10 @@ function createOverlays18(model) {
   });
 }
 export {
+  Cache_exports as Cache,
   Common_exports as Common,
   Models_exports as Models,
+  ModernHTTP_exports as ModernHTTP,
   Statistics_exports as Statistics,
   types_exports as Types
 };

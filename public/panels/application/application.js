@@ -149,7 +149,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/appManifestView.css.js
 var appManifestView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1385,7 +1385,7 @@ import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
 var emptyWidget_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1402,7 +1402,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/backgroundServiceView.css.js
 var backgroundServiceView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2013,25 +2013,25 @@ import * as Common3 from "./../../core/common/common.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 var DOMStorage = class _DOMStorage extends Common3.ObjectWrapper.ObjectWrapper {
   model;
-  storageKeyInternal;
-  isLocalStorageInternal;
+  #storageKey;
+  #isLocalStorage;
   constructor(model, storageKey, isLocalStorage) {
     super();
     this.model = model;
-    this.storageKeyInternal = storageKey;
-    this.isLocalStorageInternal = isLocalStorage;
+    this.#storageKey = storageKey;
+    this.#isLocalStorage = isLocalStorage;
   }
   static storageId(storageKey, isLocalStorage) {
     return { storageKey, isLocalStorage };
   }
   get id() {
-    return _DOMStorage.storageId(this.storageKeyInternal, this.isLocalStorageInternal);
+    return _DOMStorage.storageId(this.#storageKey, this.#isLocalStorage);
   }
   get storageKey() {
-    return this.storageKeyInternal;
+    return this.#storageKey;
   }
   get isLocalStorage() {
-    return this.isLocalStorageInternal;
+    return this.#isLocalStorage;
   }
   getItems() {
     return this.model.agent.invoke_getDOMStorageItems({ storageId: this.id }).then(({ entries }) => entries);
@@ -2047,14 +2047,14 @@ var DOMStorage = class _DOMStorage extends Common3.ObjectWrapper.ObjectWrapper {
   }
 };
 var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
-  storageKeyManagerInternal;
-  storagesInternal;
+  #storageKeyManager;
+  #storages;
   agent;
   enabled;
   constructor(target) {
     super(target);
-    this.storageKeyManagerInternal = target.model(SDK4.StorageKeyManager.StorageKeyManager);
-    this.storagesInternal = {};
+    this.#storageKeyManager = target.model(SDK4.StorageKeyManager.StorageKeyManager);
+    this.#storages = {};
     this.agent = target.domstorageAgent();
   }
   enable() {
@@ -2062,10 +2062,10 @@ var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
       return;
     }
     this.target().registerDOMStorageDispatcher(new DOMStorageDispatcher(this));
-    if (this.storageKeyManagerInternal) {
-      this.storageKeyManagerInternal.addEventListener("StorageKeyAdded", this.storageKeyAdded, this);
-      this.storageKeyManagerInternal.addEventListener("StorageKeyRemoved", this.storageKeyRemoved, this);
-      for (const storageKey of this.storageKeyManagerInternal.storageKeys()) {
+    if (this.#storageKeyManager) {
+      this.#storageKeyManager.addEventListener("StorageKeyAdded", this.storageKeyAdded, this);
+      this.#storageKeyManager.addEventListener("StorageKeyRemoved", this.storageKeyRemoved, this);
+      for (const storageKey of this.#storageKeyManager.storageKeys()) {
         this.addStorageKey(storageKey);
       }
     }
@@ -2078,7 +2078,7 @@ var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
     }
     for (const isLocal of [true, false]) {
       const key = this.storageKey(storageKey, isLocal);
-      const storage = this.storagesInternal[key];
+      const storage = this.#storages[key];
       if (!storage) {
         return;
       }
@@ -2093,9 +2093,9 @@ var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
   addStorageKey(storageKey) {
     for (const isLocal of [true, false]) {
       const key = this.storageKey(storageKey, isLocal);
-      console.assert(!this.storagesInternal[key]);
+      console.assert(!this.#storages[key]);
       const storage = new DOMStorage(this, storageKey, isLocal);
-      this.storagesInternal[key] = storage;
+      this.#storages[key] = storage;
       this.dispatchEventToListeners("DOMStorageAdded", storage);
     }
   }
@@ -2105,11 +2105,11 @@ var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
   removeStorageKey(storageKey) {
     for (const isLocal of [true, false]) {
       const key = this.storageKey(storageKey, isLocal);
-      const storage = this.storagesInternal[key];
+      const storage = this.#storages[key];
       if (!storage) {
         continue;
       }
-      delete this.storagesInternal[key];
+      delete this.#storages[key];
       this.dispatchEventToListeners("DOMStorageRemoved", storage);
     }
   }
@@ -2152,12 +2152,12 @@ var DOMStorageModel = class extends SDK4.SDKModel.SDKModel {
   }
   storageForId(storageId) {
     console.assert(Boolean(storageId.storageKey));
-    return this.storagesInternal[this.storageKey(storageId.storageKey || "", storageId.isLocalStorage)];
+    return this.#storages[this.storageKey(storageId.storageKey || "", storageId.isLocalStorage)];
   }
   storages() {
     const result = [];
-    for (const id in this.storagesInternal) {
-      result.push(this.storagesInternal[id]);
+    for (const id in this.#storages) {
+      result.push(this.#storages[id]);
     }
     return result;
   }
@@ -2192,24 +2192,24 @@ import * as Common4 from "./../../core/common/common.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 var ExtensionStorage = class extends Common4.ObjectWrapper.ObjectWrapper {
   #model;
-  #extensionIdInternal;
-  #nameInternal;
-  #storageAreaInternal;
+  #extensionId;
+  #name;
+  #storageArea;
   constructor(model, extensionId, name, storageArea) {
     super();
     this.#model = model;
-    this.#extensionIdInternal = extensionId;
-    this.#nameInternal = name;
-    this.#storageAreaInternal = storageArea;
+    this.#extensionId = extensionId;
+    this.#name = name;
+    this.#storageArea = storageArea;
   }
   get model() {
     return this.#model;
   }
   get extensionId() {
-    return this.#extensionIdInternal;
+    return this.#extensionId;
   }
   get name() {
-    return this.#nameInternal;
+    return this.#name;
   }
   // Returns a key that uniquely identifies this extension ID and storage area,
   // but which is not unique across targets, so we can identify two identical
@@ -2218,12 +2218,12 @@ var ExtensionStorage = class extends Common4.ObjectWrapper.ObjectWrapper {
     return `${this.extensionId}-${this.storageArea}`;
   }
   get storageArea() {
-    return this.#storageAreaInternal;
+    return this.#storageArea;
   }
   async getItems(keys) {
     const params = {
-      id: this.#extensionIdInternal,
-      storageArea: this.#storageAreaInternal
+      id: this.#extensionId,
+      storageArea: this.#storageArea
     };
     if (keys) {
       params.keys = keys;
@@ -2235,19 +2235,19 @@ var ExtensionStorage = class extends Common4.ObjectWrapper.ObjectWrapper {
     return response.data;
   }
   async setItem(key, value) {
-    const response = await this.#model.agent.invoke_setStorageItems({ id: this.#extensionIdInternal, storageArea: this.#storageAreaInternal, values: { [key]: value } });
+    const response = await this.#model.agent.invoke_setStorageItems({ id: this.#extensionId, storageArea: this.#storageArea, values: { [key]: value } });
     if (response.getError()) {
       throw new Error(response.getError());
     }
   }
   async removeItem(key) {
-    const response = await this.#model.agent.invoke_removeStorageItems({ id: this.#extensionIdInternal, storageArea: this.#storageAreaInternal, keys: [key] });
+    const response = await this.#model.agent.invoke_removeStorageItems({ id: this.#extensionId, storageArea: this.#storageArea, keys: [key] });
     if (response.getError()) {
       throw new Error(response.getError());
     }
   }
   async clear() {
-    const response = await this.#model.agent.invoke_clearStorageItems({ id: this.#extensionIdInternal, storageArea: this.#storageAreaInternal });
+    const response = await this.#model.agent.invoke_clearStorageItems({ id: this.#extensionId, storageArea: this.#storageArea });
     if (response.getError()) {
       throw new Error(response.getError());
     }
@@ -2262,34 +2262,34 @@ var ExtensionStorage = class extends Common4.ObjectWrapper.ObjectWrapper {
   }
 };
 var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
-  #runtimeModelInternal;
-  #storagesInternal;
+  #runtimeModel;
+  #storages;
   agent;
   #enabled;
   constructor(target) {
     super(target);
-    this.#runtimeModelInternal = target.model(SDK5.RuntimeModel.RuntimeModel);
-    this.#storagesInternal = /* @__PURE__ */ new Map();
+    this.#runtimeModel = target.model(SDK5.RuntimeModel.RuntimeModel);
+    this.#storages = /* @__PURE__ */ new Map();
     this.agent = target.extensionsAgent();
   }
   enable() {
     if (this.#enabled) {
       return;
     }
-    if (this.#runtimeModelInternal) {
-      this.#runtimeModelInternal.addEventListener(SDK5.RuntimeModel.Events.ExecutionContextCreated, this.#onExecutionContextCreated, this);
-      this.#runtimeModelInternal.addEventListener(SDK5.RuntimeModel.Events.ExecutionContextDestroyed, this.#onExecutionContextDestroyed, this);
-      this.#runtimeModelInternal.executionContexts().forEach(this.#executionContextCreated, this);
+    if (this.#runtimeModel) {
+      this.#runtimeModel.addEventListener(SDK5.RuntimeModel.Events.ExecutionContextCreated, this.#onExecutionContextCreated, this);
+      this.#runtimeModel.addEventListener(SDK5.RuntimeModel.Events.ExecutionContextDestroyed, this.#onExecutionContextDestroyed, this);
+      this.#runtimeModel.executionContexts().forEach(this.#executionContextCreated, this);
     }
     this.#enabled = true;
   }
   #getStoragesForExtension(id) {
-    const existingStorages = this.#storagesInternal.get(id);
+    const existingStorages = this.#storages.get(id);
     if (existingStorages) {
       return existingStorages;
     }
     const newStorages = /* @__PURE__ */ new Map();
-    this.#storagesInternal.set(id, newStorages);
+    this.#storages.set(id, newStorages);
     return newStorages;
   }
   #addExtension(id, name) {
@@ -2304,7 +2304,7 @@ var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
       const storage = new ExtensionStorage(this, id, name, storageArea);
       console.assert(!storages.get(storageArea));
       storage.getItems([]).then(() => {
-        if (this.#storagesInternal.get(id) !== storages) {
+        if (this.#storages.get(id) !== storages) {
           return;
         }
         if (storages.get(storageArea)) {
@@ -2317,7 +2317,7 @@ var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
     }
   }
   #removeExtension(id) {
-    const storages = this.#storagesInternal.get(id);
+    const storages = this.#storages.get(id);
     if (!storages) {
       return;
     }
@@ -2325,7 +2325,7 @@ var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
       storages.delete(key);
       this.dispatchEventToListeners("ExtensionStorageRemoved", storage);
     }
-    this.#storagesInternal.delete(id);
+    this.#storages.delete(id);
   }
   #executionContextCreated(context) {
     const extensionId = this.#extensionIdForContext(context);
@@ -2343,7 +2343,7 @@ var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
   #executionContextDestroyed(context) {
     const extensionId = this.#extensionIdForContext(context);
     if (extensionId) {
-      if (this.#runtimeModelInternal?.executionContexts().some((c) => this.#extensionIdForContext(c) === extensionId)) {
+      if (this.#runtimeModel?.executionContexts().some((c) => this.#extensionIdForContext(c) === extensionId)) {
         return;
       }
       this.#removeExtension(extensionId);
@@ -2353,11 +2353,11 @@ var ExtensionStorageModel = class extends SDK5.SDKModel.SDKModel {
     this.#executionContextDestroyed(event.data);
   }
   storageForIdAndArea(id, storageArea) {
-    return this.#storagesInternal.get(id)?.get(storageArea);
+    return this.#storages.get(id)?.get(storageArea);
   }
   storages() {
     const result = [];
-    for (const storages of this.#storagesInternal.values()) {
+    for (const storages of this.#storages.values()) {
       result.push(...storages.values());
     }
     return result;
@@ -2383,6 +2383,7 @@ var IndexedDBModel = class _IndexedDBModel extends SDK6.SDKModel.SDKModel {
   storageBucketModel;
   indexedDBAgent;
   storageAgent;
+  // Used in web tests
   databasesInternal;
   databaseNamesByStorageKeyAndBucket;
   updatedStorageBuckets;
@@ -2648,7 +2649,17 @@ var IndexedDBModel = class _IndexedDBModel extends SDK6.SDKModel.SDKModel {
     this.dispatchEventToListeners(Events2.DatabaseLoaded, { model: this, database: databaseModel, entriesUpdated });
   }
   loadObjectStoreData(databaseId, objectStoreName, idbKeyRange, skipCount, pageSize, callback) {
-    void this.requestData(databaseId, databaseId.name, objectStoreName, "", idbKeyRange, skipCount, pageSize, callback);
+    void this.requestData(
+      databaseId,
+      databaseId.name,
+      objectStoreName,
+      /* indexName=*/
+      void 0,
+      idbKeyRange,
+      skipCount,
+      pageSize,
+      callback
+    );
   }
   loadIndexData(databaseId, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, callback) {
     void this.requestData(databaseId, databaseId.name, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, callback);
@@ -2859,33 +2870,9 @@ import * as ApplicationComponents4 from "./components/components.js";
 
 // gen/front_end/panels/application/indexedDBViews.css.js
 var indexedDBViews_css_default = `/*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2012 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 .indexed-db-data-view .data-view-toolbar {
@@ -3641,7 +3628,7 @@ import * as ApplicationComponents5 from "./components/components.js";
 
 // gen/front_end/panels/application/interestGroupStorageView.css.js
 var interestGroupStorageView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3829,7 +3816,7 @@ import * as UI8 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/application/openedWindowDetailsView.css.js
 var openedWindowDetailsView_css_default = `/*
- * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4575,7 +4562,7 @@ function ruleSetTagOrLocationShort(ruleSet, pageURL2) {
 
 // gen/front_end/panels/application/preloading/preloadingView.css.js
 var preloadingView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4607,7 +4594,7 @@ var preloadingView_css_default = `/*
 
 // gen/front_end/panels/application/preloading/preloadingViewDropDown.css.js
 var preloadingViewDropDown_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5188,27 +5175,27 @@ var PreloadingTreeElementBase = class extends ApplicationPanelTreeElement {
   #viewConstructor;
   view;
   #path;
-  #selectedInternal;
+  #selected;
   constructor(panel, viewConstructor, path, title) {
     super(panel, title, false, "speculative-loads");
     this.#viewConstructor = viewConstructor;
     this.#path = path;
     const icon = IconButton6.Icon.create("speculative-loads");
     this.setLeadingIcons([icon]);
-    this.#selectedInternal = false;
+    this.#selected = false;
   }
   get itemURL() {
     return this.#path;
   }
   initialize(model) {
     this.#model = model;
-    if (this.#selectedInternal && !this.view) {
+    if (this.#selected && !this.view) {
       this.onselect(false);
     }
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this.#selectedInternal = true;
+    this.#selected = true;
     if (!this.#model) {
       return false;
     }
@@ -5222,14 +5209,14 @@ var PreloadingTreeElementBase = class extends ApplicationPanelTreeElement {
 var PreloadingSummaryTreeElement = class extends ExpandableApplicationPanelTreeElement {
   #model;
   #view;
-  #selectedInternal;
+  #selected;
   #ruleSet = null;
   #attempt = null;
   constructor(panel) {
     super(panel, i18nString11(UIStrings11.speculativeLoads), "", "", "preloading");
     const icon = IconButton6.Icon.create("speculative-loads");
     this.setLeadingIcons([icon]);
-    this.#selectedInternal = false;
+    this.#selected = false;
   }
   // Note that
   //
@@ -5251,13 +5238,13 @@ var PreloadingSummaryTreeElement = class extends ExpandableApplicationPanelTreeE
     this.#model = model;
     this.#ruleSet.initialize(model);
     this.#attempt.initialize(model);
-    if (this.#selectedInternal && !this.#view) {
+    if (this.#selected && !this.#view) {
       this.onselect(false);
     }
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this.#selectedInternal = true;
+    this.#selected = true;
     if (!this.#model) {
       return false;
     }
@@ -5499,7 +5486,7 @@ var ReportingApiTreeElement = class extends ApplicationPanelTreeElement {
 
 // gen/front_end/panels/application/resourcesSidebar.css.js
 var resourcesSidebar_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5589,7 +5576,7 @@ import * as ApplicationComponents8 from "./components/components.js";
 
 // gen/front_end/panels/application/serviceWorkerCacheViews.css.js
 var serviceWorkerCacheViews_css_default = `/*
- * Copyright 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6321,7 +6308,6 @@ import * as Common9 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
 import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK17 from "./../../core/sdk/sdk.js";
-import * as Logs from "./../../models/logs/logs.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
@@ -6332,7 +6318,7 @@ import * as ApplicationComponents9 from "./components/components.js";
 
 // gen/front_end/panels/application/serviceWorkersView.css.js
 var serviceWorkersView_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6492,7 +6478,7 @@ button.link:focus-visible {
 
 // gen/front_end/panels/application/serviceWorkerUpdateCycleView.css.js
 var serviceWorkerUpdateCycleView_css_default = `/*
- * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7133,27 +7119,6 @@ var ServiceWorkersView = class extends UI14.Widget.VBox {
     this.eventListeners = /* @__PURE__ */ new Map();
     SDK17.TargetManager.TargetManager.instance().observeModels(SDK17.ServiceWorkerManager.ServiceWorkerManager, this);
     this.updateListVisibility();
-    const drawerChangeHandler = (event) => {
-      const isDrawerOpen = event.detail?.isDrawerOpen;
-      if (this.manager && !isDrawerOpen) {
-        const { serviceWorkerNetworkRequestsPanelStatus: { isOpen, openedAt } } = this.manager;
-        if (isOpen) {
-          const networkLocation = UI14.ViewManager.ViewManager.instance().locationNameForViewId("network");
-          UI14.ViewManager.ViewManager.instance().showViewInLocation("network", networkLocation, false);
-          void Common9.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([]));
-          const currentTime = Date.now();
-          const timeDifference = currentTime - openedAt;
-          if (timeDifference < 2e3) {
-            Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.ServiceWorkerNetworkRequestClosedQuickly);
-          }
-          this.manager.serviceWorkerNetworkRequestsPanelStatus = {
-            isOpen: false,
-            openedAt: 0
-          };
-        }
-      }
-    };
-    document.body.addEventListener("drawerchange", drawerChangeHandler);
   }
   modelAdded(serviceWorkerManager) {
     if (serviceWorkerManager.target() !== SDK17.TargetManager.TargetManager.instance().primaryPageTarget()) {
@@ -7545,35 +7510,12 @@ var Section = class {
     void this.manager.updateRegistration(this.registration.id);
   }
   networkRequestsClicked() {
-    const applicationTabLocation = UI14.ViewManager.ViewManager.instance().locationNameForViewId("resources");
-    const networkTabLocation = applicationTabLocation === "drawer-view" ? "panel" : "drawer-view";
-    UI14.ViewManager.ViewManager.instance().showViewInLocation("network", networkTabLocation);
     void Common9.Revealer.reveal(NetworkForward.UIFilter.UIRequestFilter.filters([
       {
         filterType: NetworkForward.UIFilter.FilterType.Is,
         filterValue: "service-worker-intercepted"
       }
     ]));
-    const requests = Logs.NetworkLog.NetworkLog.instance().requests();
-    let lastRequest = null;
-    if (Array.isArray(requests)) {
-      for (const request of requests) {
-        if (!lastRequest && request.fetchedViaServiceWorker) {
-          lastRequest = request;
-        }
-        if (request.fetchedViaServiceWorker && lastRequest && lastRequest.responseReceivedTime < request.responseReceivedTime) {
-          lastRequest = request;
-        }
-      }
-    }
-    if (lastRequest) {
-      const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(lastRequest, "timing", { clearFilter: false });
-      void Common9.Revealer.reveal(requestLocation);
-    }
-    this.manager.serviceWorkerNetworkRequestsPanelStatus = {
-      isOpen: true,
-      openedAt: Date.now()
-    };
     Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.ServiceWorkerNetworkRequestClicked);
   }
   push(data) {
@@ -7667,7 +7609,7 @@ import * as ApplicationComponents10 from "./components/components.js";
 
 // gen/front_end/panels/application/sharedStorageEventsView.css.js
 var sharedStorageEventsView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8806,7 +8748,7 @@ import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/storageView.css.js
 var storageView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10276,11 +10218,11 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
   serviceName;
   view;
   model;
-  selectedInternal;
+  #selected;
   constructor(storagePanel, serviceName) {
     super(storagePanel, BackgroundServiceView.getUIString(serviceName), false, Platform6.StringUtilities.toKebabCase(serviceName));
     this.serviceName = serviceName;
-    this.selectedInternal = false;
+    this.#selected = false;
     this.view = null;
     this.model = null;
     const backgroundServiceIcon = IconButton13.Icon.create(this.getIconType());
@@ -10307,7 +10249,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
   }
   initialize(model) {
     this.model = model;
-    if (this.selectedInternal && !this.view) {
+    if (this.#selected && !this.view) {
       this.onselect(false);
     }
   }
@@ -10322,7 +10264,7 @@ var BackgroundServiceTreeElement = class extends ApplicationPanelTreeElement {
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this.selectedInternal = true;
+    this.#selected = true;
     if (!this.model) {
       return false;
     }
@@ -10910,24 +10852,24 @@ var ExtensionStorageTreeParentElement = class extends ApplicationPanelTreeElemen
 };
 var CookieTreeElement = class extends ApplicationPanelTreeElement {
   target;
-  cookieDomainInternal;
+  #cookieDomain;
   constructor(storagePanel, frame, cookieUrl) {
     super(storagePanel, cookieUrl.securityOrigin() || i18nString26(UIStrings26.localFiles), false, "cookies-for-frame");
     this.target = frame.resourceTreeModel().target();
-    this.cookieDomainInternal = cookieUrl.securityOrigin();
-    this.tooltip = i18nString26(UIStrings26.cookiesUsedByFramesFromS, { PH1: this.cookieDomainInternal });
+    this.#cookieDomain = cookieUrl.securityOrigin();
+    this.tooltip = i18nString26(UIStrings26.cookiesUsedByFramesFromS, { PH1: this.#cookieDomain });
     const icon = IconButton13.Icon.create("cookie");
     if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
       icon.name = "warning-filled";
-      this.tooltip = i18nString26(UIStrings26.thirdPartyPhaseout, { PH1: this.cookieDomainInternal });
+      this.tooltip = i18nString26(UIStrings26.thirdPartyPhaseout, { PH1: this.#cookieDomain });
     }
     this.setLeadingIcons([icon]);
   }
   get itemURL() {
-    return "cookies://" + this.cookieDomainInternal;
+    return "cookies://" + this.#cookieDomain;
   }
   cookieDomain() {
-    return this.cookieDomainInternal;
+    return this.#cookieDomain;
   }
   onattach() {
     super.onattach();
@@ -10935,12 +10877,12 @@ var CookieTreeElement = class extends ApplicationPanelTreeElement {
   }
   handleContextMenuEvent(event) {
     const contextMenu = new UI22.ContextMenu.ContextMenu(event);
-    contextMenu.defaultSection().appendItem(i18nString26(UIStrings26.clear), () => this.resourcesPanel.clearCookies(this.target, this.cookieDomainInternal), { jslogContext: "clear" });
+    contextMenu.defaultSection().appendItem(i18nString26(UIStrings26.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: "clear" });
     void contextMenu.show();
   }
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
-    this.resourcesPanel.showCookies(this.target, this.cookieDomainInternal);
+    this.resourcesPanel.showCookies(this.target, this.#cookieDomain);
     Host9.userMetrics.panelShown(Host9.UserMetrics.PanelCodes[Host9.UserMetrics.PanelCodes.cookies]);
     return false;
   }
@@ -11491,7 +11433,7 @@ import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/application/cookieItemsView.css.js
 var cookieItemsView_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

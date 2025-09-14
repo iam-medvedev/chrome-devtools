@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["device_mode_emulation_frame.prebundle.ts"],
-  "sourcesContent": ["// Copyright 2014 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport '../../core/dom_extension/dom_extension.js';\nimport '../../Images/Images.js';\n\nif (window.opener) {\n  const app = window.opener.Emulation.AdvancedApp.instance();\n  app.deviceModeEmulationFrameLoaded(document);\n}\n"],
+  "sourcesContent": ["// Copyright 2014 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\n\nimport '../../core/dom_extension/dom_extension.js';\nimport '../../Images/Images.js';\n\nif (window.opener) {\n  const app = window.opener.Emulation.AdvancedApp.instance();\n  app.deviceModeEmulationFrameLoaded(document);\n}\n"],
   "mappings": ";AAIA,OAAO;AACP,OAAO;AAEP,IAAI,OAAO,QAAQ;AACjB,QAAM,MAAM,OAAO,OAAO,UAAU,YAAY,SAAQ;AACxD,MAAI,+BAA+B,QAAQ;AAC7C;",
   "names": []
 }

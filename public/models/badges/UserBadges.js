@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
+import { AiExplorerBadge } from './AiExplorerBadge.js';
+import { CodeWhispererBadge } from './CodeWhispererBadge.js';
+import { DOMDetectiveBadge } from './DOMDetectiveBadge.js';
 import { SpeedsterBadge } from './SpeedsterBadge.js';
 import { StarterBadge } from './StarterBadge.js';
 let userBadgesInstance = undefined;
@@ -13,16 +16,18 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
     static BADGE_REGISTRY = [
         StarterBadge,
         SpeedsterBadge,
+        DOMDetectiveBadge,
+        CodeWhispererBadge,
+        AiExplorerBadge,
     ];
     constructor() {
         super();
         this.#receiveBadgesSetting = Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges');
         this.#receiveBadgesSetting.addChangeListener(this.#reconcileBadges, this);
-        this.#allBadges =
-            UserBadges.BADGE_REGISTRY.map(badgeCtor => new badgeCtor({
-                dispatchBadgeTriggeredEvent: this.#dispatchBadgeTriggeredEvent.bind(this),
-                badgeActionEventTarget: this.#badgeActionEventTarget,
-            }));
+        this.#allBadges = UserBadges.BADGE_REGISTRY.map(badgeCtor => new badgeCtor({
+            onTriggerBadge: this.#onTriggerBadge.bind(this),
+            badgeActionEventTarget: this.#badgeActionEventTarget,
+        }));
     }
     static instance({ forceNew } = { forceNew: false }) {
         if (!userBadgesInstance || forceNew) {
@@ -42,7 +47,27 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         // @ts-expect-error
         this.#badgeActionEventTarget.dispatchEventToListeners(action);
     }
-    #dispatchBadgeTriggeredEvent(badge) {
+    async #onTriggerBadge(badge) {
+        let shouldAwardBadge = false;
+        // By default, we award non-starter badges directly when they are triggered.
+        if (!badge.isStarterBadge) {
+            shouldAwardBadge = true;
+        }
+        else {
+            const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
+            const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting.get());
+            // If there is a GDP profile and the user has enabled receiving badges, we award the starter badge as well.
+            if (gdpProfile && receiveBadgesSettingEnabled) {
+                shouldAwardBadge = true;
+            }
+        }
+        // Awarding was needed and not successful, we don't show the notification
+        if (shouldAwardBadge) {
+            const result = await Host.GdpClient.GdpClient.instance().createAward({ name: badge.name });
+            if (!result) {
+                return;
+            }
+        }
         this.dispatchEventToListeners("BadgeTriggered" /* Events.BADGE_TRIGGERED */, badge);
     }
     #deactivateAllBadges() {
@@ -51,7 +76,6 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         });
     }
     // TODO(ergunsh): Implement starter badge dismissal, snooze count & timestamp checks.
-    // TODO(ergunsh): Implement checking for previously awarded badges.
     async #reconcileBadges() {
         const syncInfo = await new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
         // If the user is not signed in, do not activate any badges.
@@ -69,8 +93,28 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
             this.#deactivateAllBadges();
             return;
         }
-        const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting?.get());
+        let awardedBadgeNames = null;
+        if (gdpProfile) {
+            awardedBadgeNames = await Host.GdpClient.GdpClient.instance().getAwardedBadgeNames({ names: this.#allBadges.map(badge => badge.name) });
+            // This is a conservative approach. We bail out if `awardedBadgeNames` is null
+            // when there is a profile to prevent a negative user experience.
+            //
+            // A failure here (e.g., from a typo in a badge name) could cause us to
+            // re-trigger the "Receive badges" nudge for a user who has already earned the
+            // starter badge and opted out of receiving badges.
+            //
+            // The trade-off is, we silently failing to enable badge mechanism rather than annoying the user.
+            if (!awardedBadgeNames) {
+                this.#deactivateAllBadges();
+                return;
+            }
+        }
+        const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting.get());
         for (const badge of this.#allBadges) {
+            if (awardedBadgeNames?.has(badge.name)) {
+                badge.deactivate();
+                continue;
+            }
             const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile;
             const shouldActivateActivityBasedBadge = !badge.isStarterBadge && Boolean(gdpProfile) && receiveBadgesSettingEnabled;
             if (shouldActivateStarterBadge || shouldActivateActivityBasedBadge) {
@@ -83,6 +127,9 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         this.reconcileBadgesFinishedForTest();
     }
     reconcileBadgesFinishedForTest() {
+    }
+    isReceiveBadgesSettingEnabled() {
+        return Boolean(this.#receiveBadgesSetting.get());
     }
 }
 //# sourceMappingURL=UserBadges.js.map

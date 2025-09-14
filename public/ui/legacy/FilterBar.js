@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2013 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import './Toolbar.js';
 import * as Common from '../../core/common/common.js';
@@ -66,7 +40,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     enabled;
     stateSetting;
-    filterButtonInternal;
+    #filterButton;
     filters;
     alwaysShowFilters;
     showingWidget;
@@ -78,16 +52,16 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
         this.element.setAttribute('jslog', `${VisualLogging.toolbar('filter-bar')}`);
         this.stateSetting =
             Common.Settings.Settings.instance().createSetting('filter-bar-' + name + '-toggled', Boolean(visibleByDefault));
-        this.filterButtonInternal =
+        this.#filterButton =
             new ToolbarSettingToggle(this.stateSetting, 'filter', i18nString(UIStrings.filter), 'filter-filled', 'filter');
-        this.filterButtonInternal.element.style.setProperty('--dot-toggle-top', '13px');
-        this.filterButtonInternal.element.style.setProperty('--dot-toggle-left', '14px');
+        this.#filterButton.element.style.setProperty('--dot-toggle-top', '13px');
+        this.#filterButton.element.style.setProperty('--dot-toggle-left', '14px');
         this.filters = [];
         this.updateFilterBar();
         this.stateSetting.addChangeListener(this.updateFilterBar.bind(this));
     }
     filterButton() {
-        return this.filterButtonInternal;
+        return this.#filterButton;
     }
     addDivider() {
         const element = document.createElement('div');
@@ -102,7 +76,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     }
     setEnabled(enabled) {
         this.enabled = enabled;
-        this.filterButtonInternal.setEnabled(enabled);
+        this.#filterButton.setEnabled(enabled);
         this.updateFilterBar();
     }
     filterChanged() {
@@ -145,7 +119,7 @@ export class FilterBar extends Common.ObjectWrapper.eventMixin(HBox) {
     }
     updateFilterButton() {
         const isActive = this.hasActiveFilter();
-        this.filterButtonInternal.setChecked(isActive);
+        this.#filterButton.setChecked(isActive);
     }
     clear() {
         this.element.removeChildren();

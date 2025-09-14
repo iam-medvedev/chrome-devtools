@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -39,7 +39,7 @@ export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const IGNORE_THRESHOLD_IN_PERCENT = 0.925;
 function finalize(partialModel) {
     return {
-        insightKey: 'Cache',
+        insightKey: "Cache" /* InsightKeys.CACHE */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
@@ -143,9 +143,12 @@ export function cachingDisabled(headers, parsedCacheControl) {
     }
     return false;
 }
-export function generateInsight(parsedTrace, context) {
+export function isCacheInsight(model) {
+    return model.insightKey === "Cache" /* InsightKeys.CACHE */;
+}
+export function generateInsight(data, context) {
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
-    const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
+    const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
     const results = [];
     let totalWastedBytes = 0;
     const wastedBytesByRequestId = new Map();

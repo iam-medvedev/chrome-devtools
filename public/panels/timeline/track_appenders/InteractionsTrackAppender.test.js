@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
@@ -7,7 +7,7 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel, entityMapper);
     return compatibilityTracksAppender.interactionsTrackAppender();
 }
@@ -16,7 +16,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         const entryTypeByLevel = [];
         const entryData = [];
         const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
-        const { parsedTrace } = await TraceLoader.traceEngine(context, trace);
+        const parsedTrace = await TraceLoader.traceEngine(context, trace);
         const interactionsTrackAppender = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         interactionsTrackAppender.appendTrackAtLevel(0);
         return {
@@ -43,7 +43,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         });
         it('only shows the top level interactions', async function () {
             const { entryData, parsedTrace } = await renderTrackAppender(this, 'nested-interactions.json.gz');
-            assert.strictEqual(entryData.length, parsedTrace.UserInteractions.interactionEventsWithNoNesting.length);
+            assert.strictEqual(entryData.length, parsedTrace.data.UserInteractions.interactionEventsWithNoNesting.length);
         });
         it('creates a flamechart group', async function () {
             const { flameChartData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
@@ -52,7 +52,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         });
         it('adds all interactions with the correct start times', async function () {
             const { flameChartData, parsedTrace, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
-            const events = parsedTrace.UserInteractions.interactionEventsWithNoNesting;
+            const events = parsedTrace.data.UserInteractions.interactionEventsWithNoNesting;
             for (const event of events) {
                 const markerIndex = entryData.indexOf(event);
                 assert.exists(markerIndex);
@@ -61,7 +61,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
         });
         it('adds total times correctly', async function () {
             const { flameChartData, parsedTrace, entryData } = await renderTrackAppender(this, 'slow-interaction-button-click.json.gz');
-            const events = parsedTrace.UserInteractions.interactionEventsWithNoNesting;
+            const events = parsedTrace.data.UserInteractions.interactionEventsWithNoNesting;
             for (const event of events) {
                 const markerIndex = entryData.indexOf(event);
                 assert.exists(markerIndex);
@@ -72,7 +72,7 @@ describeWithEnvironment('InteractionsTrackAppender', function () {
     });
     it('candy-stripes and adds warning triangles to long interactions', async function () {
         const { parsedTrace, flameChartData, entryData } = await renderTrackAppender(this, 'one-second-interaction.json.gz');
-        const longInteraction = parsedTrace.UserInteractions.longestInteractionEvent;
+        const longInteraction = parsedTrace.data.UserInteractions.longestInteractionEvent;
         if (!longInteraction) {
             throw new Error('Could not find longest interaction');
         }

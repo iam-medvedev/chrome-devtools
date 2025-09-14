@@ -8,19 +8,19 @@ var __export = (target, all) => {
 var FilmStrip_exports = {};
 __export(FilmStrip_exports, {
   frameClosestToTimestamp: () => frameClosestToTimestamp,
-  fromParsedTrace: () => fromParsedTrace
+  fromHandlerData: () => fromHandlerData
 });
 import * as Platform from "./../../../core/platform/platform.js";
 var filmStripCache = /* @__PURE__ */ new WeakMap();
-function fromParsedTrace(parsedTrace, customZeroTime) {
+function fromHandlerData(data, customZeroTime) {
   const frames = [];
-  const zeroTime = typeof customZeroTime !== "undefined" ? customZeroTime : parsedTrace.Meta.traceBounds.min;
-  const spanTime = parsedTrace.Meta.traceBounds.range;
-  const fromCache = filmStripCache.get(parsedTrace)?.get(zeroTime);
+  const zeroTime = typeof customZeroTime !== "undefined" ? customZeroTime : data.Meta.traceBounds.min;
+  const spanTime = data.Meta.traceBounds.range;
+  const fromCache = filmStripCache.get(data)?.get(zeroTime);
   if (fromCache) {
     return fromCache;
   }
-  const screenshots = parsedTrace.Screenshots.screenshots ?? parsedTrace.Screenshots.legacySyntheticScreenshots ?? [];
+  const screenshots = data.Screenshots.screenshots ?? data.Screenshots.legacySyntheticScreenshots ?? [];
   for (const screenshotEvent of screenshots) {
     if (screenshotEvent.ts < zeroTime) {
       continue;
@@ -36,7 +36,7 @@ function fromParsedTrace(parsedTrace, customZeroTime) {
     spanTime,
     frames: Array.from(frames)
   };
-  const cachedForData = Platform.MapUtilities.getWithDefault(filmStripCache, parsedTrace, () => /* @__PURE__ */ new Map());
+  const cachedForData = Platform.MapUtilities.getWithDefault(filmStripCache, data, () => /* @__PURE__ */ new Map());
   cachedForData.set(zeroTime, result);
   return result;
 }
@@ -267,14 +267,14 @@ __export(StackTraceForEvent_exports, {
 import * as Helpers2 from "./../helpers/helpers.js";
 import * as Types2 from "./../types/types.js";
 var stackTraceForEventInTrace = /* @__PURE__ */ new Map();
-function clearCacheForTrace(parsedTrace) {
-  stackTraceForEventInTrace.delete(parsedTrace);
+function clearCacheForTrace(data) {
+  stackTraceForEventInTrace.delete(data);
 }
-function get(event, parsedTrace) {
-  let cacheForTrace = stackTraceForEventInTrace.get(parsedTrace);
+function get(event, data) {
+  let cacheForTrace = stackTraceForEventInTrace.get(data);
   if (!cacheForTrace) {
     cacheForTrace = /* @__PURE__ */ new Map();
-    stackTraceForEventInTrace.set(parsedTrace, cacheForTrace);
+    stackTraceForEventInTrace.set(data, cacheForTrace);
   }
   const resultFromCache = cacheForTrace.get(event);
   if (resultFromCache) {
@@ -282,11 +282,11 @@ function get(event, parsedTrace) {
   }
   let result = null;
   if (Types2.Extensions.isSyntheticExtensionEntry(event)) {
-    result = getForExtensionEntry(event, parsedTrace);
+    result = getForExtensionEntry(event, data);
   } else if (Types2.Events.isPerformanceMeasureBegin(event)) {
-    result = getForPerformanceMeasure(event, parsedTrace);
+    result = getForPerformanceMeasure(event, data);
   } else {
-    result = getForEvent(event, parsedTrace);
+    result = getForEvent(event, data);
     const payloadCallFrames = getTraceEventPayloadStackAsProtocolCallFrame(event).filter((callFrame) => !isNativeJSFunction(callFrame));
     if (!result.callFrames.length) {
       result.callFrames = payloadCallFrames;
@@ -301,17 +301,17 @@ function get(event, parsedTrace) {
   }
   return result;
 }
-function getForEvent(event, parsedTrace) {
-  const entryToNode = parsedTrace.Renderer.entryToNode.size > 0 ? parsedTrace.Renderer.entryToNode : parsedTrace.Samples.entryToNode;
+function getForEvent(event, data) {
+  const entryToNode = data.Renderer.entryToNode.size > 0 ? data.Renderer.entryToNode : data.Samples.entryToNode;
   const topStackTrace = { callFrames: [] };
   let stackTrace = topStackTrace;
   let currentEntry;
   let node = entryToNode.get(event);
-  const traceCache = stackTraceForEventInTrace.get(parsedTrace) || /* @__PURE__ */ new Map();
-  stackTraceForEventInTrace.set(parsedTrace, traceCache);
+  const traceCache = stackTraceForEventInTrace.get(data) || /* @__PURE__ */ new Map();
+  stackTraceForEventInTrace.set(data, traceCache);
   while (node) {
     if (!Types2.Events.isProfileCall(node.entry)) {
-      const maybeAsyncParent = parsedTrace.AsyncJSCalls.runEntryPointToScheduler.get(node.entry);
+      const maybeAsyncParent = data.AsyncJSCalls.runEntryPointToScheduler.get(node.entry);
       if (!maybeAsyncParent) {
         node = node.parent;
         continue;
@@ -334,7 +334,7 @@ function getForEvent(event, parsedTrace) {
     if (!isNativeJSFunction(currentEntry.callFrame)) {
       stackTrace.callFrames.push(currentEntry.callFrame);
     }
-    const maybeAsyncParentEvent = parsedTrace.AsyncJSCalls.asyncCallToScheduler.get(currentEntry);
+    const maybeAsyncParentEvent = data.AsyncJSCalls.asyncCallToScheduler.get(currentEntry);
     const maybeAsyncParentNode = maybeAsyncParentEvent && entryToNode.get(maybeAsyncParentEvent.scheduler);
     if (maybeAsyncParentNode) {
       stackTrace = addAsyncParentToStack(stackTrace, maybeAsyncParentEvent.taskName);
@@ -351,26 +351,26 @@ function addAsyncParentToStack(stackTrace, taskName) {
   parent.description = taskName;
   return parent;
 }
-function getForExtensionEntry(event, parsedTrace) {
+function getForExtensionEntry(event, data) {
   const rawEvent = event.rawSourceEvent;
   if (Types2.Events.isPerformanceMeasureBegin(rawEvent)) {
-    return getForPerformanceMeasure(rawEvent, parsedTrace);
+    return getForPerformanceMeasure(rawEvent, data);
   }
   if (!rawEvent) {
     return null;
   }
-  return get(rawEvent, parsedTrace);
+  return get(rawEvent, data);
 }
-function getForPerformanceMeasure(event, parsedTrace) {
+function getForPerformanceMeasure(event, data) {
   let rawEvent = event;
   if (event.args.traceId === void 0) {
     return null;
   }
-  rawEvent = parsedTrace.UserTimings.measureTraceByTraceId.get(event.args.traceId);
+  rawEvent = data.UserTimings.measureTraceByTraceId.get(event.args.traceId);
   if (!rawEvent) {
     return null;
   }
-  return get(rawEvent, parsedTrace);
+  return get(rawEvent, data);
 }
 function isNativeJSFunction({ columnNumber, lineNumber, url, scriptId }) {
   return lineNumber === -1 && columnNumber === -1 && url === "" && scriptId === "0";
@@ -1492,8 +1492,8 @@ function generateEventID(event) {
 }
 
 // gen/front_end/models/trace/extras/ThirdParties.js
-function collectMainThreadActivity(parsedTrace) {
-  const mainFrameMainThread = parsedTrace.Renderer.processes.values().find((p) => {
+function collectMainThreadActivity(data) {
+  const mainFrameMainThread = data.Renderer.processes.values().find((p) => {
     const url = p.url ?? "";
     return p.isOnMainFrame && !url.startsWith("about:") && !url.startsWith("chrome:");
   })?.threads.values().find((t) => t.name === "CrRendererMain");
@@ -1502,33 +1502,33 @@ function collectMainThreadActivity(parsedTrace) {
   }
   return mainFrameMainThread.entries;
 }
-function summarizeByThirdParty(parsedTrace, traceBounds) {
-  const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers5.Trace.eventTimeComparator);
+function summarizeByThirdParty(data, traceBounds) {
+  const mainThreadEvents = collectMainThreadActivity(data).sort(Helpers5.Trace.eventTimeComparator);
   const groupingFunction = (event) => {
-    const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(event);
+    const entity = data.Renderer.entityMappings.entityByEvent.get(event);
     return entity?.name ?? "";
   };
   const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
-  const summaries = summarizeBottomUpByEntity(node, parsedTrace);
+  const summaries = summarizeBottomUpByEntity(node, data);
   return summaries;
 }
-function summarizeByURL(parsedTrace, traceBounds) {
-  const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers5.Trace.eventTimeComparator);
+function summarizeByURL(data, traceBounds) {
+  const mainThreadEvents = collectMainThreadActivity(data).sort(Helpers5.Trace.eventTimeComparator);
   const groupingFunction = (event) => {
-    return Handlers2.Helpers.getNonResolvedURL(event, parsedTrace) ?? "";
+    return Handlers2.Helpers.getNonResolvedURL(event, data) ?? "";
   };
   const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
-  const summaries = summarizeBottomUpByURL(node, parsedTrace);
+  const summaries = summarizeBottomUpByURL(node, data);
   return summaries;
 }
-function summarizeBottomUpByEntity(root, parsedTrace) {
+function summarizeBottomUpByEntity(root, data) {
   const summaries = [];
   const topNodes = [...root.children().values()].flat();
   for (const node of topNodes) {
     if (node.id === "") {
       continue;
     }
-    const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(node.event);
+    const entity = data.Renderer.entityMappings.entityByEvent.get(node.event);
     if (!entity) {
       continue;
     }
@@ -1536,21 +1536,21 @@ function summarizeBottomUpByEntity(root, parsedTrace) {
       transferSize: node.transferSize,
       mainThreadTime: Types8.Timing.Milli(node.selfTime),
       entity,
-      relatedEvents: parsedTrace.Renderer.entityMappings.eventsByEntity.get(entity) ?? []
+      relatedEvents: data.Renderer.entityMappings.eventsByEntity.get(entity) ?? []
     };
     summaries.push(summary);
   }
   return summaries;
 }
-function summarizeBottomUpByURL(root, parsedTrace) {
+function summarizeBottomUpByURL(root, data) {
   const summaries = [];
-  const allRequests = parsedTrace.NetworkRequests.byTime;
+  const allRequests = data.NetworkRequests.byTime;
   const topNodes = [...root.children().values()].flat();
   for (const node of topNodes) {
     if (node.id === "" || typeof node.id !== "string") {
       continue;
     }
-    const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(node.event);
+    const entity = data.Renderer.entityMappings.entityByEvent.get(node.event);
     if (!entity) {
       continue;
     }

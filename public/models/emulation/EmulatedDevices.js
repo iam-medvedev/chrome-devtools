@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
@@ -43,7 +43,7 @@ export class EmulatedDevice {
     isFoldableScreen;
     verticalSpanned;
     horizontalSpanned;
-    #showInternal;
+    #show;
     #showByDefault;
     constructor() {
         this.title = '';
@@ -59,7 +59,7 @@ export class EmulatedDevice {
         this.isFoldableScreen = false;
         this.verticalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
         this.horizontalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
-        this.#showInternal = Show.Default;
+        this.#show = Show.Default;
         this.#showByDefault = true;
     }
     static fromJSONV1(json) {
@@ -224,7 +224,7 @@ export class EmulatedDevice {
             if (!Object.values(Show).includes(show)) {
                 throw new Error('Emulated device has wrong show mode: ' + show);
             }
-            result.#showInternal = show;
+            result.#show = show;
             return result;
         }
         catch {
@@ -310,7 +310,7 @@ export class EmulatedDevice {
         json['show-by-default'] = this.#showByDefault;
         json['dual-screen'] = this.isDualScreen;
         json['foldable-screen'] = this.isFoldableScreen;
-        json['show'] = this.#showInternal;
+        json['show'] = this.#show;
         if (this.userAgentMetadata) {
             json['user-agent-metadata'] = this.userAgentMetadata;
         }
@@ -385,16 +385,16 @@ export class EmulatedDevice {
         }
     }
     show() {
-        if (this.#showInternal === Show.Default) {
+        if (this.#show === Show.Default) {
             return this.#showByDefault;
         }
-        return this.#showInternal === Show.Always;
+        return this.#show === Show.Always;
     }
     setShow(show) {
-        this.#showInternal = show ? Show.Always : Show.Never;
+        this.#show = show ? Show.Always : Show.Never;
     }
     copyShowFrom(other) {
-        this.#showInternal = other.#showInternal;
+        this.#show = other.#show;
     }
     touch() {
         return this.capabilities.indexOf("touch" /* Capability.TOUCH */) !== -1;
@@ -428,18 +428,18 @@ var Show;
 let emulatedDevicesListInstance;
 export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
     #standardSetting;
-    #standardInternal;
+    #standard;
     #customSetting;
-    #customInternal;
+    #custom;
     constructor() {
         super();
         this.#standardSetting = Common.Settings.Settings.instance().createSetting('standard-emulated-device-list', []);
-        this.#standardInternal = new Set();
-        this.listFromJSONV1(this.#standardSetting.get(), this.#standardInternal);
+        this.#standard = new Set();
+        this.listFromJSONV1(this.#standardSetting.get(), this.#standard);
         this.updateStandardDevices();
         this.#customSetting = Common.Settings.Settings.instance().createSetting('custom-emulated-device-list', []);
-        this.#customInternal = new Set();
-        if (!this.listFromJSONV1(this.#customSetting.get(), this.#customInternal)) {
+        this.#custom = new Set();
+        if (!this.listFromJSONV1(this.#customSetting.get(), this.#custom)) {
             this.saveCustomDevices();
         }
     }
@@ -457,8 +457,8 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
                 devices.add(device);
             }
         }
-        this.copyShowValues(this.#standardInternal, devices);
-        this.#standardInternal = devices;
+        this.copyShowValues(this.#standard, devices);
+        this.#standard = devices;
         this.saveStandardDevices();
     }
     listFromJSONV1(jsonArray, result) {
@@ -485,31 +485,31 @@ export class EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
         return emulatedDevices;
     }
     standard() {
-        return [...this.#standardInternal];
+        return [...this.#standard];
     }
     custom() {
-        return [...this.#customInternal];
+        return [...this.#custom];
     }
     revealCustomSetting() {
         void Common.Revealer.reveal(this.#customSetting);
     }
     addCustomDevice(device) {
-        this.#customInternal.add(device);
+        this.#custom.add(device);
         this.saveCustomDevices();
     }
     removeCustomDevice(device) {
-        this.#customInternal.delete(device);
+        this.#custom.delete(device);
         this.saveCustomDevices();
     }
     saveCustomDevices() {
         const json = [];
-        this.#customInternal.forEach(device => json.push(device.toJSON()));
+        this.#custom.forEach(device => json.push(device.toJSON()));
         this.#customSetting.set(json);
         this.dispatchEventToListeners("CustomDevicesUpdated" /* Events.CUSTOM_DEVICES_UPDATED */);
     }
     saveStandardDevices() {
         const json = [];
-        this.#standardInternal.forEach(device => json.push(device.toJSON()));
+        this.#standard.forEach(device => json.push(device.toJSON()));
         this.#standardSetting.set(json);
         this.dispatchEventToListeners("StandardDevicesUpdated" /* Events.STANDARD_DEVICES_UPDATED */);
     }

@@ -3,11 +3,10 @@ import type { ActionDelegate } from './ActionRegistration.js';
 import type { Context } from './Context.js';
 import { type Provider, ToolbarButton, type ToolbarItem } from './Toolbar.js';
 export declare class DockController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private canDockInternal;
+    #private;
     readonly closeButton: ToolbarButton;
     private readonly currentDockStateSetting;
     private readonly lastDockStateSetting;
-    private dockSideInternal;
     constructor(canDock: boolean);
     static instance(opts?: {
         forceNew: boolean | null;

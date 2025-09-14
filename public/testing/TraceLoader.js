@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../core/common/common.js';
@@ -129,37 +129,34 @@ export class TraceLoader {
         // If we have results from the cache, we use those to ensure we keep the
         // tests speedy and don't re-parse trace files over and over again.
         if (fromCache) {
+            const parsedTrace = fromCache.parsedTrace;
             await wrapInTimeout(context, () => {
                 const syntheticEventsManager = fromCache.model.syntheticTraceEventsManager(0);
                 if (!syntheticEventsManager) {
                     throw new Error('Cached trace engine result did not have a synthetic events manager instance');
                 }
                 Trace.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
-                TraceLoader.initTraceBoundsManager(fromCache.parsedTrace);
+                TraceLoader.initTraceBoundsManager(parsedTrace);
                 Timeline.ModificationsManager.ModificationsManager.reset();
                 Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
             }, 4_000, 'Initializing state for cached trace');
-            return { parsedTrace: fromCache.parsedTrace, insights: fromCache.insights, metadata: fromCache.metadata };
+            return parsedTrace;
         }
         const fileContents = await wrapInTimeout(context, async () => {
             return await TraceLoader.fixtureContents(context, name);
         }, 15_000, `Loading fixtureContents for ${name}`);
-        const parsedTraceData = await wrapInTimeout(context, async () => {
+        const parsedTraceFileAndModel = await wrapInTimeout(context, async () => {
             return await TraceLoader.executeTraceEngineOnFileContents(fileContents, /* emulate fresh recording */ false, config);
         }, 15_000, `Executing traceEngine for ${name}`);
         const cacheByName = traceEngineCache.get(name) ?? new Map();
-        cacheByName.set(configCacheKey, parsedTraceData);
+        cacheByName.set(configCacheKey, parsedTraceFileAndModel);
         traceEngineCache.set(name, cacheByName);
-        TraceLoader.initTraceBoundsManager(parsedTraceData.parsedTrace);
+        TraceLoader.initTraceBoundsManager(parsedTraceFileAndModel.parsedTrace);
         await wrapInTimeout(context, () => {
             Timeline.ModificationsManager.ModificationsManager.reset();
-            Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceData.model, 0);
+            Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceFileAndModel.model, 0);
         }, 5_000, `Creating modification manager for ${name}`);
-        return {
-            parsedTrace: parsedTraceData.parsedTrace,
-            insights: parsedTraceData.insights,
-            metadata: parsedTraceData.metadata,
-        };
+        return parsedTraceFileAndModel.parsedTrace;
     }
     /**
      * Initialise the BoundsManager with the bounds from a trace.
@@ -167,12 +164,12 @@ export class TraceLoader {
      * level - rely on this being set. This is always set in the actual panel, but
      * parsing a trace in a test does not automatically set it.
      **/
-    static initTraceBoundsManager(data) {
+    static initTraceBoundsManager(parsedTrace) {
         TraceBounds.TraceBounds.BoundsManager
             .instance({
             forceNew: true,
         })
-            .resetWithNewBounds(data.Meta.traceBounds);
+            .resetWithNewBounds(parsedTrace.data.Meta.traceBounds);
     }
     static async executeTraceEngineOnFileContents(contents, emulateFreshRecording = false, traceEngineConfig) {
         const events = 'traceEvents' in contents ? contents.traceEvents : contents;
@@ -184,20 +181,15 @@ export class TraceLoader {
                 // When we receive the final update from the model, update the recording
                 // state back to waiting.
                 if (Trace.TraceModel.isModelUpdateDataComplete(data)) {
-                    const metadata = model.metadata(0);
                     const parsedTrace = model.parsedTrace(0);
-                    const insights = model.traceInsights(0);
-                    if (metadata && parsedTrace) {
-                        resolve({
-                            model,
-                            metadata,
-                            parsedTrace,
-                            insights,
-                        });
-                    }
-                    else {
+                    if (!parsedTrace) {
                         reject(new Error('Unable to load trace'));
+                        return;
                     }
+                    resolve({
+                        model,
+                        parsedTrace,
+                    });
                 }
             });
             void model

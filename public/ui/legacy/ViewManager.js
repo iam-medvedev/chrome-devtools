@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -474,14 +474,14 @@ const expandableContainerForView = new WeakMap();
 class Location {
     manager;
     revealCallback;
-    widgetInternal;
+    #widget;
     constructor(manager, widget, revealCallback) {
         this.manager = manager;
         this.revealCallback = revealCallback;
-        this.widgetInternal = widget;
+        this.#widget = widget;
     }
     widget() {
-        return this.widgetInternal;
+        return this.#widget;
     }
     reveal() {
         if (this.revealCallback) {
@@ -500,7 +500,7 @@ class Location {
 }
 const locationForView = new WeakMap();
 class TabbedLocation extends Location {
-    tabbedPaneInternal;
+    #tabbedPane;
     location;
     allowReorder;
     closeableTabSetting;
@@ -515,17 +515,17 @@ class TabbedLocation extends Location {
         }
         super(manager, tabbedPane, revealCallback);
         this.location = location;
-        this.tabbedPaneInternal = tabbedPane;
+        this.#tabbedPane = tabbedPane;
         this.allowReorder = allowReorder;
-        this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
-        this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabClosed, this.tabClosed, this);
-        this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
+        this.#tabbedPane.addEventListener(TabbedPaneEvents.TabSelected, this.tabSelected, this);
+        this.#tabbedPane.addEventListener(TabbedPaneEvents.TabClosed, this.tabClosed, this);
+        this.#tabbedPane.addEventListener(TabbedPaneEvents.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
         this.closeableTabSetting = Common.Settings.Settings.instance().createSetting('closeable-tabs', {});
         // As we give tabs the capability to be closed we also need to add them to the setting so they are still open
         // until the user decide to close them
         this.setOrUpdateCloseableTabsSetting();
         this.tabOrderSetting = Common.Settings.Settings.instance().createSetting(location + '-tab-order', {});
-        this.tabbedPaneInternal.addEventListener(TabbedPaneEvents.TabOrderChanged, this.persistTabOrder, this);
+        this.#tabbedPane.addEventListener(TabbedPaneEvents.TabOrderChanged, this.persistTabOrder, this);
         if (restoreSelection) {
             this.lastSelectedTabSetting = Common.Settings.Settings.instance().createSetting(location + '-selected-tab', '');
         }
@@ -544,14 +544,14 @@ class TabbedLocation extends Location {
         this.closeableTabSetting.set(newClosable);
     }
     widget() {
-        return this.tabbedPaneInternal;
+        return this.#tabbedPane;
     }
     tabbedPane() {
-        return this.tabbedPaneInternal;
+        return this.#tabbedPane;
     }
     enableMoreTabsButton() {
         const moreTabsButton = new ToolbarMenuButton(this.appendTabsToMenu.bind(this), /* isIconDropdown */ true, undefined, 'more-tabs', 'dots-vertical');
-        this.tabbedPaneInternal.leftToolbar().appendToolbarItem(moreTabsButton);
+        this.#tabbedPane.leftToolbar().appendToolbarItem(moreTabsButton);
         return moreTabsButton;
     }
     appendApplicableItems(locationName) {
@@ -581,9 +581,9 @@ class TabbedLocation extends Location {
         }
         // If a default tab was provided we open or select it
         if (this.defaultTab) {
-            if (this.tabbedPaneInternal.hasTab(this.defaultTab)) {
+            if (this.#tabbedPane.hasTab(this.defaultTab)) {
                 // If the tabbed pane already has the tab we just have to select it
-                this.tabbedPaneInternal.selectTab(this.defaultTab);
+                this.#tabbedPane.selectTab(this.defaultTab);
             }
             else {
                 // If the tab is not present already it can be because:
@@ -596,8 +596,8 @@ class TabbedLocation extends Location {
                 }
             }
         }
-        else if (this.lastSelectedTabSetting && this.tabbedPaneInternal.hasTab(this.lastSelectedTabSetting.get())) {
-            this.tabbedPaneInternal.selectTab(this.lastSelectedTabSetting.get());
+        else if (this.lastSelectedTabSetting && this.#tabbedPane.hasTab(this.lastSelectedTabSetting.get())) {
+            this.#tabbedPane.selectTab(this.lastSelectedTabSetting.get());
         }
     }
     appendTabsToMenu(contextMenu) {
@@ -644,15 +644,15 @@ class TabbedLocation extends Location {
         }
     }
     appendTab(view, index) {
-        this.tabbedPaneInternal.appendTab(view.viewId(), view.title(), new ContainerWidget(view), undefined, false, view.isCloseable() || view.isTransient(), view.isPreviewFeature(), index);
+        this.#tabbedPane.appendTab(view.viewId(), view.title(), new ContainerWidget(view), undefined, false, view.isCloseable() || view.isTransient(), view.isPreviewFeature(), index);
         const iconName = view.iconName();
         if (iconName) {
             const icon = IconButton.Icon.create(iconName);
-            this.tabbedPaneInternal.setTabIcon(view.viewId(), icon);
+            this.#tabbedPane.setTabIcon(view.viewId(), icon);
         }
     }
     appendView(view, insertBefore) {
-        if (this.tabbedPaneInternal.hasTab(view.viewId())) {
+        if (this.#tabbedPane.hasTab(view.viewId())) {
             return;
         }
         const oldLocation = locationForView.get(view);
@@ -663,7 +663,7 @@ class TabbedLocation extends Location {
         this.manager.views.set(view.viewId(), view);
         this.views.set(view.viewId(), view);
         let index = undefined;
-        const tabIds = this.tabbedPaneInternal.tabIds();
+        const tabIds = this.#tabbedPane.tabIds();
         if (this.allowReorder) {
             const orderSetting = this.tabOrderSetting.get();
             const order = orderSetting[view.viewId()];
@@ -696,34 +696,34 @@ class TabbedLocation extends Location {
     async showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
         this.appendView(view, insertBefore);
         if (shouldSelectTab) {
-            this.tabbedPaneInternal.selectTab(view.viewId(), userGesture);
+            this.#tabbedPane.selectTab(view.viewId(), userGesture);
         }
         if (!omitFocus) {
-            this.tabbedPaneInternal.focus();
+            this.#tabbedPane.focus();
         }
-        const widget = this.tabbedPaneInternal.tabView(view.viewId());
+        const widget = this.#tabbedPane.tabView(view.viewId());
         await widget.materialize();
     }
     removeView(view) {
-        if (!this.tabbedPaneInternal.hasTab(view.viewId())) {
+        if (!this.#tabbedPane.hasTab(view.viewId())) {
             return;
         }
         locationForView.delete(view);
         this.manager.views.delete(view.viewId());
-        this.tabbedPaneInternal.closeTab(view.viewId());
+        this.#tabbedPane.closeTab(view.viewId());
         this.views.delete(view.viewId());
     }
     isViewVisible(view) {
-        return this.tabbedPaneInternal.isShowing() && this.tabbedPaneInternal?.selectedTabId === view.viewId();
+        return this.#tabbedPane.isShowing() && this.#tabbedPane?.selectedTabId === view.viewId();
     }
     tabbedPaneVisibilityChanged(event) {
-        if (!this.tabbedPaneInternal.selectedTabId) {
+        if (!this.#tabbedPane.selectedTabId) {
             return;
         }
         this.manager.dispatchEventToListeners("ViewVisibilityChanged" /* Events.VIEW_VISIBILITY_CHANGED */, {
             location: this.location,
-            revealedViewId: event.data.isVisible ? this.tabbedPaneInternal.selectedTabId : undefined,
-            hiddenViewId: event.data.isVisible ? undefined : this.tabbedPaneInternal.selectedTabId,
+            revealedViewId: event.data.isVisible ? this.#tabbedPane.selectedTabId : undefined,
+            hiddenViewId: event.data.isVisible ? undefined : this.#tabbedPane.selectedTabId,
         });
     }
     tabSelected(event) {
@@ -750,7 +750,7 @@ class TabbedLocation extends Location {
         }
     }
     persistTabOrder() {
-        const tabIds = this.tabbedPaneInternal.tabIds();
+        const tabIds = this.#tabbedPane.tabIds();
         const tabOrders = {};
         for (let i = 0; i < tabIds.length; i++) {
             tabOrders[tabIds[i]] = (i + 1) * TabbedLocation.orderStep;

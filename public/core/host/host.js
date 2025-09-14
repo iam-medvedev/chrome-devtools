@@ -610,6 +610,9 @@ var InspectorFrontendHostStub = class {
       },
       devToolsIpProtectionPanelInDevTools: {
         enabled: false
+      },
+      devToolsFlexibleLayout: {
+        verticalDrawerEnabled: true
       }
     };
     if ("hostConfigForTesting" in globalThis) {
@@ -670,18 +673,24 @@ var InspectorFrontendHostStub = class {
     throw new Error("Soft context menu should be used");
   }
   /**
-   * **Hosted mode** is when DevTools is loaded over `http(s)://` rather than from `devtools://`.
-   * It does **not** indicate whether the frontend is connected to a valid CDP target.
+   * Think of **Hosted mode** as "non-embedded" mode; you can see a devtools frontend URL as the tab's URL. It's an atypical way that DevTools is run.
+   * Whereas in **Non-hosted** (aka "embedded"), DevTools is embedded and fully dockable. It's the common way DevTools is run.
    *
-   *  | Example case                                         | Mode           | Example URL                                                                   |
+   * **Hosted mode** == we're using the `InspectorFrontendHostStub`. impl. (@see `InspectorFrontendHostStub` class comment)
+   * Whereas with **non-hosted** mode, native `DevToolsEmbedderMessageDispatcher` is used for CDP and more.
+   *
+   * Relationships to other signals:
+   * - Hosted-ness does not indicate whether the frontend is _connected to a valid CDP target_.
+   * - Being _"dockable"_ (aka `canDock`) is typically aligned but technically orthogonal.
+   * - It's unrelated to the _tab's (main frame's) URL_. Though in non-hosted, the devtools frame origin will always be `devtools://devtools`.
+   *
+   *  | Example case                                         | Mode           | Example devtools                                                                   |
    *  | :--------------------------------------------------- | :------------- | :---------------------------------------------------------------------------- |
-   *  | typical devtools: (un)docked w/ native CDP bindings  | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?targetType=tab&...`            |
-   *  | tab href is `devtools://…?ws=…`                      | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?ws=localhost:9228/...`         |
-   *  | tab href is `devtools://…` but no connection         | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html`                               |
-   *  | tab href is `https://…?ws=` (connected)              | **Hosted**     | `https://chrome-devtools-frontend.appspot.com/serve_rev/@.../worker_app.html` |
-   *  | tab href is `http://…` but no connection             | **Hosted**     | `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/...`         |
-   *
-   * See also `canDock` which has similar semantics.
+   *  | tab URL: anything. embedded DevTools w/ native CDP bindings    | **NOT Hosted** | `devtools://devtools/bundled/devtools_app.html?targetType=tab&...`            |
+   *  | tab URL: `devtools://…?ws=…`                | **Hosted**     | `devtools://devtools/bundled/devtools_app.html?ws=localhost:9228/...`         |
+   *  | tab URL: `devtools://…` but no connection   | **Hosted**     | `devtools://devtools/bundled/devtools_app.html`                               |
+   *  | tab URL: `https://…` but no connection      | **Hosted**     | `https://chrome-devtools-frontend.appspot.com/serve_rev/@.../worker_app.html` |
+   *  | tab URL: `http://…?ws=` (connected)         | **Hosted**     | `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/...`         |
    */
   isHostedMode() {
     return true;
@@ -808,7 +817,6 @@ var ClientFeature;
   ClientFeature2[ClientFeature2["CHROME_CONSOLE_INSIGHTS"] = 1] = "CHROME_CONSOLE_INSIGHTS";
   ClientFeature2[ClientFeature2["CHROME_STYLING_AGENT"] = 2] = "CHROME_STYLING_AGENT";
   ClientFeature2[ClientFeature2["CHROME_NETWORK_AGENT"] = 7] = "CHROME_NETWORK_AGENT";
-  ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_AGENT"] = 8] = "CHROME_PERFORMANCE_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PERFORMANCE_ANNOTATIONS_AGENT"] = 20] = "CHROME_PERFORMANCE_ANNOTATIONS_AGENT";
   ClientFeature2[ClientFeature2["CHROME_FILE_AGENT"] = 9] = "CHROME_FILE_AGENT";
   ClientFeature2[ClientFeature2["CHROME_PATCH_AGENT"] = 12] = "CHROME_PATCH_AGENT";
@@ -1147,6 +1155,7 @@ var HostConfigTracker = class _HostConfigTracker extends Common3.ObjectWrapper.O
 var GdpClient_exports = {};
 __export(GdpClient_exports, {
   EmailPreference: () => EmailPreference,
+  GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK: () => GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK,
   GdpClient: () => GdpClient,
   SubscriptionStatus: () => SubscriptionStatus,
   SubscriptionTier: () => SubscriptionTier
@@ -1178,6 +1187,10 @@ var EmailPreference;
   EmailPreference2["ENABLED"] = "ENABLED";
   EmailPreference2["DISABLED"] = "DISABLED";
 })(EmailPreference || (EmailPreference = {}));
+function normalizeBadgeName(name) {
+  return name.replace(/profiles\/[^/]+\/awards\//, "profiles/me/awards/");
+}
+var GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 async function makeHttpRequest(request) {
   if (!Root3.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
     return null;
@@ -1226,17 +1239,54 @@ var GdpClient = class _GdpClient {
     this.#cachedEligibilityPromise = makeHttpRequest({ service: SERVICE_NAME, path: "/v1beta1/eligibility:check", method: "GET" });
     return await this.#cachedEligibilityPromise;
   }
+  /**
+   * @returns null if the request fails, the awarded badge names otherwise.
+   */
+  async getAwardedBadgeNames({ names }) {
+    const result = await makeHttpRequest({
+      service: SERVICE_NAME,
+      path: "/v1beta1/profiles/me/awards:batchGet",
+      method: "GET",
+      queryParams: {
+        allowMissing: "true",
+        names
+      }
+    });
+    if (!result) {
+      return null;
+    }
+    return new Set(result.awards?.map((award) => normalizeBadgeName(award.name)) ?? []);
+  }
   async isEligibleToCreateProfile() {
     return (await this.checkEligibility())?.createProfile === EligibilityStatus.ELIGIBLE;
   }
-  createProfile({ user, emailPreference }) {
-    return makeHttpRequest({
+  async createProfile({ user, emailPreference }) {
+    const result = await makeHttpRequest({
       service: SERVICE_NAME,
       path: "/v1beta1/profiles",
       method: "POST",
       body: JSON.stringify({
         user,
         newsletter_email: emailPreference
+      })
+    });
+    if (result) {
+      this.#clearCache();
+    }
+    return result;
+  }
+  #clearCache() {
+    this.#cachedProfilePromise = void 0;
+    this.#cachedEligibilityPromise = void 0;
+  }
+  createAward({ name }) {
+    return makeHttpRequest({
+      service: SERVICE_NAME,
+      path: "/v1beta1/profiles/me/awards",
+      method: "POST",
+      body: JSON.stringify({
+        awardingUri: "devtools://devtools",
+        name
       })
     });
   }
@@ -2078,14 +2128,12 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["instrumentation-breakpoints"] = 61] = "instrumentation-breakpoints";
   DevtoolsExperiments2[DevtoolsExperiments2["authored-deployed-grouping"] = 63] = "authored-deployed-grouping";
   DevtoolsExperiments2[DevtoolsExperiments2["just-my-code"] = 65] = "just-my-code";
-  DevtoolsExperiments2[DevtoolsExperiments2["highlight-errors-elements-panel"] = 73] = "highlight-errors-elements-panel";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
-  DevtoolsExperiments2[DevtoolsExperiments2["vertical-drawer"] = 107] = "vertical-drawer";
   DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 110] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
 var IssueExpanded;

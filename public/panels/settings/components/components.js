@@ -15,14 +15,16 @@ import "./../../../ui/components/tooltips/tooltips.js";
 import * as Host from "./../../../core/host/host.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
+import * as Badges from "./../../../models/badges/badges.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
 import * as Lit from "./../../../ui/lit/lit.js";
 import * as PanelCommon from "./../../common/common.js";
+import * as PanelUtils from "./../../utils/utils.js";
 
 // gen/front_end/panels/settings/components/syncSection.css.js
 var syncSection_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -203,7 +205,7 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("panels/settings/components/SyncSection.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var lockedString = i18n.i18n.lockedString;
-var { html } = Lit;
+var { html, Directives: { ref, createRef } } = Lit;
 function getGdpSubscriptionText(profile) {
   if (!profile.activeSubscription || profile.activeSubscription.subscriptionStatus !== Host.GdpClient.SubscriptionStatus.ENABLED) {
     return i18nString(UIStrings.gdpStandardPlan);
@@ -222,19 +224,26 @@ function getGdpSubscriptionText(profile) {
   }
 }
 var GDP_LOGO_IMAGE_URL = new URL("../../../Images/gdp-logo-standalone.svg", import.meta.url).toString();
-var GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.devsite.corp.google.com/profile/u/";
 var SyncSection = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #syncInfo = { isSyncActive: false };
   #syncSetting;
   #receiveBadgesSetting;
+  #receiveBadgesSettingContainerRef = createRef();
   #gdpProfile;
   set data(data) {
     this.#syncInfo = data.syncInfo;
     this.#syncSetting = data.syncSetting;
     this.#receiveBadgesSetting = data.receiveBadgesSetting;
-    this.#gdpProfile = data.gdpProfile;
+    void this.#updateGdpProfile();
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+  }
+  async highlightReceiveBadgesSetting() {
+    await ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    const element = this.#receiveBadgesSettingContainerRef.value;
+    if (element) {
+      PanelUtils.PanelUtils.highlightElement(element);
+    }
   }
   #render() {
     if (!this.#syncSetting) {
@@ -247,9 +256,17 @@ var SyncSection = class extends HTMLElement {
       <fieldset>
         ${renderAccountInfo(this.#syncInfo)}
         ${renderSettingCheckboxIfNeeded(this.#syncInfo, this.#syncSetting)}
-        ${renderGdpSectionIfNeeded({ receiveBadgesSetting: this.#receiveBadgesSetting, gdpProfile: this.#gdpProfile })}
+        ${renderGdpSectionIfNeeded({
+      receiveBadgesSetting: this.#receiveBadgesSetting,
+      receiveBadgesSettingContainerRef: this.#receiveBadgesSettingContainerRef,
+      gdpProfile: this.#gdpProfile
+    })}
       </fieldset>
     `, this.#shadow, { host: this });
+  }
+  async #updateGdpProfile() {
+    this.#gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile() ?? void 0;
+    void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
 };
 function renderSettingCheckboxIfNeeded(syncInfo, syncSetting) {
@@ -302,7 +319,7 @@ function renderAccountInfo(syncInfo) {
       </div>
     </div>`;
 }
-function renderGdpSectionIfNeeded({ receiveBadgesSetting, gdpProfile }) {
+function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingContainerRef, gdpProfile }) {
   if (!Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
     return Lit.nothing;
   }
@@ -323,12 +340,20 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, gdpProfile }) {
           <div class="plan-details">
             ${getGdpSubscriptionText(gdpProfile)}
             &nbsp;·&nbsp;
-            <x-link class="link" href=${GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK}>
+            <x-link class="link" href=${Host.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK}>
               ${i18nString(UIStrings.viewProfile)}
             </x-link></div>
             ${receiveBadgesSetting ? html`
-              <div class="setting-container">
-                <setting-checkbox class="setting-checkbox" .data=${{ setting: receiveBadgesSetting }}></setting-checkbox>
+              <div class="setting-container"  ${ref(receiveBadgesSettingContainerRef)}>
+                <setting-checkbox class="setting-checkbox" .data=${{ setting: receiveBadgesSetting }} @change=${(e) => {
+    const settingCheckbox = e.target;
+    void Badges.UserBadges.instance().initialize().then(() => {
+      if (!settingCheckbox.checked) {
+        return;
+      }
+      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.RECEIVE_BADGES_SETTING_ENABLED);
+    });
+  }}></setting-checkbox>
                 <span>${i18nString(UIStrings.relevantDataDisclaimer)}</span>
               </div>` : Lit.nothing}
         </div>

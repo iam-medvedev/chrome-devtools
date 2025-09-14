@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2012 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 // TODO(crbug.com/442509324): remove UI dependency
 // eslint-disable-next-line rulesdir/no-imports-in-directory
@@ -41,17 +15,17 @@ export class ExtensionPanel extends UI.Panel.Panel {
     server;
     id;
     panelToolbar;
-    searchableViewInternal;
+    #searchableView;
     constructor(server, panelName, id, pageURL) {
         super(panelName);
         this.server = server;
         this.id = id;
         this.setHideOnDetach();
         this.panelToolbar = this.element.createChild('devtools-toolbar', 'hidden');
-        this.searchableViewInternal = new UI.SearchableView.SearchableView(this, null);
-        this.searchableViewInternal.show(this.element);
+        this.#searchableView = new UI.SearchableView.SearchableView(this, null);
+        this.#searchableView.show(this.element);
         const extensionView = new ExtensionView(server, this.id, pageURL, 'extension');
-        extensionView.show(this.searchableViewInternal.element);
+        extensionView.show(this.#searchableView.element);
     }
     addToolbarItem(item) {
         this.panelToolbar.classList.remove('hidden');
@@ -59,10 +33,10 @@ export class ExtensionPanel extends UI.Panel.Panel {
     }
     onSearchCanceled() {
         this.server.notifySearchAction(this.id, "cancelSearch" /* ExtensionAPI.PrivateAPI.Panels.SearchAction.CancelSearch */);
-        this.searchableViewInternal.updateSearchMatchesCount(0);
+        this.#searchableView.updateSearchMatchesCount(0);
     }
     searchableView() {
-        return this.searchableViewInternal;
+        return this.#searchableView;
     }
     performSearch(searchConfig, _shouldJump, _jumpBackwards) {
         const query = searchConfig.query;
@@ -83,32 +57,32 @@ export class ExtensionPanel extends UI.Panel.Panel {
 }
 export class ExtensionButton {
     id;
-    toolbarButtonInternal;
+    #toolbarButton;
     constructor(server, id, iconURL, tooltip, disabled) {
         this.id = id;
-        this.toolbarButtonInternal = new UI.Toolbar.ToolbarButton('', '');
-        this.toolbarButtonInternal.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, server.notifyButtonClicked.bind(server, this.id));
+        this.#toolbarButton = new UI.Toolbar.ToolbarButton('', '');
+        this.#toolbarButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, server.notifyButtonClicked.bind(server, this.id));
         this.update(iconURL, tooltip, disabled);
     }
     update(iconURL, tooltip, disabled) {
         if (typeof iconURL === 'string') {
-            this.toolbarButtonInternal.setBackgroundImage(iconURL);
+            this.#toolbarButton.setBackgroundImage(iconURL);
         }
         if (typeof tooltip === 'string') {
-            this.toolbarButtonInternal.setTitle(tooltip);
+            this.#toolbarButton.setTitle(tooltip);
         }
         if (typeof disabled === 'boolean') {
-            this.toolbarButtonInternal.setEnabled(!disabled);
+            this.#toolbarButton.setEnabled(!disabled);
         }
     }
     toolbarButton() {
-        return this.toolbarButtonInternal;
+        return this.#toolbarButton;
     }
 }
 export class ExtensionSidebarPane extends UI.View.SimpleView {
-    panelNameInternal;
+    #panelName;
     server;
-    idInternal;
+    #id;
     extensionView;
     objectPropertiesView;
     constructor(server, panelName, title, id) {
@@ -117,19 +91,19 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
         const viewId = Platform.StringUtilities.toKebabCase(title);
         super({ title, viewId });
         this.element.classList.add('fill');
-        this.panelNameInternal = panelName;
+        this.#panelName = panelName;
         this.server = server;
-        this.idInternal = id;
+        this.#id = id;
     }
     id() {
-        return this.idInternal;
+        return this.#id;
     }
     panelName() {
-        return this.panelNameInternal;
+        return this.#panelName;
     }
     setObject(object, title, callback) {
         this.createObjectPropertiesView();
-        this.setObjectInternal(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
+        this.#setObject(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
     }
     setExpression(expression, title, evaluateOptions, securityOrigin, callback) {
         this.createObjectPropertiesView();
@@ -143,7 +117,7 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
         if (this.extensionView) {
             this.extensionView.detach(true);
         }
-        this.extensionView = new ExtensionView(this.server, this.idInternal, url, 'extension fill');
+        this.extensionView = new ExtensionView(this.server, this.#id, url, 'extension fill');
         this.extensionView.show(this.element);
         if (!this.element.style.height) {
             this.setHeight('150px');
@@ -160,7 +134,7 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
             callback();
         }
         else {
-            this.setObjectInternal(result, title, callback);
+            this.#setObject(result, title, callback);
         }
     }
     createObjectPropertiesView() {
@@ -171,10 +145,10 @@ export class ExtensionSidebarPane extends UI.View.SimpleView {
             this.extensionView.detach(true);
             delete this.extensionView;
         }
-        this.objectPropertiesView = new ExtensionNotifierView(this.server, this.idInternal);
+        this.objectPropertiesView = new ExtensionNotifierView(this.server, this.#id);
         this.objectPropertiesView.show(this.element);
     }
-    setObjectInternal(object, title, callback) {
+    #setObject(object, title, callback) {
         const objectPropertiesView = this.objectPropertiesView;
         // This may only happen if setPage() was called while we were evaluating the expression.
         if (!objectPropertiesView) {

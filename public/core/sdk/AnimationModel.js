@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -386,9 +386,9 @@ export var Events;
 })(Events || (Events = {}));
 export class AnimationImpl {
     #animationModel;
-    #payloadInternal; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
-    #sourceInternal; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
-    #playStateInternal;
+    #payload; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
+    #source; // Assertion is safe because only way to create `AnimationImpl` is to use `parsePayload` which calls `setPayload` and sets the value.
+    #playState;
     constructor(animationModel) {
         this.#animationModel = animationModel;
     }
@@ -408,12 +408,12 @@ export class AnimationImpl {
                 payload.viewOrScrollTimeline.endOffset /= devicePixelRatio;
             }
         }
-        this.#payloadInternal = payload;
-        if (this.#sourceInternal && payload.source) {
-            this.#sourceInternal.setPayload(payload.source);
+        this.#payload = payload;
+        if (this.#source && payload.source) {
+            this.#source.setPayload(payload.source);
         }
-        else if (!this.#sourceInternal && payload.source) {
-            this.#sourceInternal = new AnimationEffect(this.#animationModel, payload.source);
+        else if (!this.#source && payload.source) {
+            this.#source = new AnimationEffect(this.#animationModel, payload.source);
         }
     }
     // `startTime` and `duration` is represented as the
@@ -433,32 +433,32 @@ export class AnimationImpl {
         return (endOffset - startOffset) * (percentage / 100);
     }
     viewOrScrollTimeline() {
-        return this.#payloadInternal.viewOrScrollTimeline;
+        return this.#payload.viewOrScrollTimeline;
     }
     id() {
-        return this.#payloadInternal.id;
+        return this.#payload.id;
     }
     name() {
-        return this.#payloadInternal.name;
+        return this.#payload.name;
     }
     paused() {
-        return this.#payloadInternal.pausedState;
+        return this.#payload.pausedState;
     }
     playState() {
-        return this.#playStateInternal || this.#payloadInternal.playState;
+        return this.#playState || this.#payload.playState;
     }
     playbackRate() {
-        return this.#payloadInternal.playbackRate;
+        return this.#payload.playbackRate;
     }
     // For scroll driven animations, it returns the pixel offset in the scroll container
     // For time animations, it returns milliseconds.
     startTime() {
         const viewOrScrollTimeline = this.viewOrScrollTimeline();
         if (viewOrScrollTimeline) {
-            return this.percentageToPixels(this.playbackRate() > 0 ? this.#payloadInternal.startTime : 100 - this.#payloadInternal.startTime, viewOrScrollTimeline) +
+            return this.percentageToPixels(this.playbackRate() > 0 ? this.#payload.startTime : 100 - this.#payload.startTime, viewOrScrollTimeline) +
                 (this.viewOrScrollTimeline()?.startOffset ?? 0);
         }
-        return this.#payloadInternal.startTime;
+        return this.#payload.startTime;
     }
     // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
     // For time animations, it returns milliseconds.
@@ -495,15 +495,15 @@ export class AnimationImpl {
     currentTime() {
         const viewOrScrollTimeline = this.viewOrScrollTimeline();
         if (viewOrScrollTimeline) {
-            return this.percentageToPixels(this.#payloadInternal.currentTime, viewOrScrollTimeline);
+            return this.percentageToPixels(this.#payload.currentTime, viewOrScrollTimeline);
         }
-        return this.#payloadInternal.currentTime;
+        return this.#payload.currentTime;
     }
     source() {
-        return this.#sourceInternal;
+        return this.#source;
     }
     type() {
-        return this.#payloadInternal.type;
+        return this.#payload.type;
     }
     overlaps(animation) {
         // Infinite animations
@@ -524,14 +524,14 @@ export class AnimationImpl {
         return this.source().delay();
     }
     setTiming(duration, delay) {
-        void this.#sourceInternal.node().then(node => {
+        void this.#source.node().then(node => {
             if (!node) {
                 throw new Error('Unable to find node');
             }
             this.updateNodeStyle(duration, delay, node);
         });
-        this.#sourceInternal.durationInternal = duration;
-        this.#sourceInternal.delayInternal = delay;
+        this.#source.durationInternal = duration;
+        this.#source.delayInternal = delay;
         void this.#animationModel.agent.invoke_setTiming({ animationId: this.id(), duration, delay });
     }
     updateNodeStyle(duration, delay, node) {
@@ -560,7 +560,7 @@ export class AnimationImpl {
         return this.#animationModel.runtimeModel.createRemoteObject(payload.remoteObject);
     }
     cssId() {
-        return this.#payloadInternal.cssId || '';
+        return this.#payload.cssId || '';
     }
 }
 export class AnimationEffect {
@@ -568,19 +568,19 @@ export class AnimationEffect {
     #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.
     delayInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
     durationInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
-    #keyframesRuleInternal;
-    #deferredNodeInternal;
+    #keyframesRule;
+    #deferredNode;
     constructor(animationModel, payload) {
         this.#animationModel = animationModel;
         this.setPayload(payload);
     }
     setPayload(payload) {
         this.#payload = payload;
-        if (!this.#keyframesRuleInternal && payload.keyframesRule) {
-            this.#keyframesRuleInternal = new KeyframesRule(payload.keyframesRule);
+        if (!this.#keyframesRule && payload.keyframesRule) {
+            this.#keyframesRule = new KeyframesRule(payload.keyframesRule);
         }
-        else if (this.#keyframesRuleInternal && payload.keyframesRule) {
-            this.#keyframesRuleInternal.setPayload(payload.keyframesRule);
+        else if (this.#keyframesRule && payload.keyframesRule) {
+            this.#keyframesRule.setPayload(payload.keyframesRule);
         }
         this.delayInternal = payload.delay;
         this.durationInternal = payload.duration;
@@ -608,10 +608,10 @@ export class AnimationEffect {
         return this.#payload.fill;
     }
     node() {
-        if (!this.#deferredNodeInternal) {
-            this.#deferredNodeInternal = new DeferredDOMNode(this.#animationModel.target(), this.backendNodeId());
+        if (!this.#deferredNode) {
+            this.#deferredNode = new DeferredDOMNode(this.#animationModel.target(), this.backendNodeId());
         }
-        return this.#deferredNodeInternal.resolvePromise();
+        return this.#deferredNode.resolvePromise();
     }
     deferredNode() {
         return new DeferredDOMNode(this.#animationModel.target(), this.backendNodeId());
@@ -620,7 +620,7 @@ export class AnimationEffect {
         return this.#payload.backendNodeId;
     }
     keyframesRule() {
-        return this.#keyframesRuleInternal || null;
+        return this.#keyframesRule || null;
     }
     easing() {
         return this.#payload.easing;
@@ -628,18 +628,18 @@ export class AnimationEffect {
 }
 export class KeyframesRule {
     #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.;
-    #keyframesInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.;
+    #keyframes; // Assertion is safe because `setPayload` call in `constructor` sets the value.;
     constructor(payload) {
         this.setPayload(payload);
     }
     setPayload(payload) {
         this.#payload = payload;
-        if (!this.#keyframesInternal) {
-            this.#keyframesInternal = this.#payload.keyframes.map(keyframeStyle => new KeyframeStyle(keyframeStyle));
+        if (!this.#keyframes) {
+            this.#keyframes = this.#payload.keyframes.map(keyframeStyle => new KeyframeStyle(keyframeStyle));
         }
         else {
             this.#payload.keyframes.forEach((keyframeStyle, index) => {
-                this.#keyframesInternal[index]?.setPayload(keyframeStyle);
+                this.#keyframes[index]?.setPayload(keyframeStyle);
             });
         }
     }
@@ -647,27 +647,27 @@ export class KeyframesRule {
         return this.#payload.name;
     }
     keyframes() {
-        return this.#keyframesInternal;
+        return this.#keyframes;
     }
 }
 export class KeyframeStyle {
     #payload; // Assertion is safe because `setPayload` call in `constructor` sets the value.
-    #offsetInternal; // Assertion is safe because `setPayload` call in `constructor` sets the value.
+    #offset; // Assertion is safe because `setPayload` call in `constructor` sets the value.
     constructor(payload) {
         this.setPayload(payload);
     }
     setPayload(payload) {
         this.#payload = payload;
-        this.#offsetInternal = payload.offset;
+        this.#offset = payload.offset;
     }
     offset() {
-        return this.#offsetInternal;
+        return this.#offset;
     }
     setOffset(offset) {
-        this.#offsetInternal = offset * 100 + '%';
+        this.#offset = offset * 100 + '%';
     }
     offsetAsNumber() {
-        return parseFloat(this.#offsetInternal) / 100;
+        return parseFloat(this.#offset) / 100;
     }
     easing() {
         return this.#payload.easing;
@@ -675,24 +675,24 @@ export class KeyframeStyle {
 }
 export class AnimationGroup {
     #animationModel;
-    #idInternal;
-    #scrollNodeInternal;
-    #animationsInternal;
-    #pausedInternal;
+    #id;
+    #scrollNode;
+    #animations;
+    #paused;
     constructor(animationModel, id, animations) {
         this.#animationModel = animationModel;
-        this.#idInternal = id;
-        this.#animationsInternal = animations;
-        this.#pausedInternal = false;
+        this.#id = id;
+        this.#animations = animations;
+        this.#paused = false;
     }
     isScrollDriven() {
-        return Boolean(this.#animationsInternal[0]?.viewOrScrollTimeline());
+        return Boolean(this.#animations[0]?.viewOrScrollTimeline());
     }
     id() {
-        return this.#idInternal;
+        return this.#id;
     }
     animations() {
-        return this.#animationsInternal;
+        return this.#animations;
     }
     release() {
         this.#animationModel.animationGroups.delete(this.id());
@@ -702,16 +702,16 @@ export class AnimationGroup {
         function extractId(animation) {
             return animation.id();
         }
-        return this.#animationsInternal.map(extractId);
+        return this.#animations.map(extractId);
     }
     startTime() {
-        return this.#animationsInternal[0].startTime();
+        return this.#animations[0].startTime();
     }
     // For scroll driven animations, it returns the duration in pixels (i.e. after how many pixels of scroll the animation is going to end)
     // For time animations, it returns milliseconds.
     groupDuration() {
         let duration = 0;
-        for (const anim of this.#animationsInternal) {
+        for (const anim of this.#animations) {
             duration = Math.max(duration, anim.delayOrStartTime() + anim.iterationDuration());
         }
         return duration;
@@ -720,26 +720,26 @@ export class AnimationGroup {
     // For time animations, it returns milliseconds.
     finiteDuration() {
         let maxDuration = 0;
-        for (let i = 0; i < this.#animationsInternal.length; ++i) {
-            maxDuration = Math.max(maxDuration, this.#animationsInternal[i].finiteDuration());
+        for (let i = 0; i < this.#animations.length; ++i) {
+            maxDuration = Math.max(maxDuration, this.#animations[i].finiteDuration());
         }
         return maxDuration;
     }
     scrollOrientation() {
-        const timeline = this.#animationsInternal[0]?.viewOrScrollTimeline();
+        const timeline = this.#animations[0]?.viewOrScrollTimeline();
         if (!timeline) {
             return null;
         }
         return timeline.axis;
     }
     async scrollNode() {
-        if (this.#scrollNodeInternal) {
-            return this.#scrollNodeInternal;
+        if (this.#scrollNode) {
+            return this.#scrollNode;
         }
         if (!this.isScrollDriven()) {
             return null;
         }
-        const sourceNodeId = this.#animationsInternal[0]?.viewOrScrollTimeline()?.sourceNodeId;
+        const sourceNodeId = this.#animations[0]?.viewOrScrollTimeline()?.sourceNodeId;
         if (!sourceNodeId) {
             return null;
         }
@@ -748,25 +748,25 @@ export class AnimationGroup {
         if (!scrollNode) {
             return null;
         }
-        this.#scrollNodeInternal = new AnimationDOMNode(scrollNode);
-        return this.#scrollNodeInternal;
+        this.#scrollNode = new AnimationDOMNode(scrollNode);
+        return this.#scrollNode;
     }
     seekTo(currentTime) {
         void this.#animationModel.agent.invoke_seekAnimations({ animations: this.animationIds(), currentTime });
     }
     paused() {
-        return this.#pausedInternal;
+        return this.#paused;
     }
     togglePause(paused) {
-        if (paused === this.#pausedInternal) {
+        if (paused === this.#paused) {
             return;
         }
-        this.#pausedInternal = paused;
+        this.#paused = paused;
         void this.#animationModel.agent.invoke_setPaused({ animations: this.animationIds(), paused });
     }
     currentTimePromise() {
         let longestAnim = null;
-        for (const anim of this.#animationsInternal) {
+        for (const anim of this.#animations) {
             if (!longestAnim || anim.endTime() > longestAnim.endTime()) {
                 longestAnim = anim;
             }
@@ -783,11 +783,11 @@ export class AnimationGroup {
             const regularId = anim.type() === "WebAnimation" /* Protocol.Animation.AnimationType.WebAnimation */ ? anim.type() + anim.id() : anim.cssId();
             return regularId + timelineId;
         }
-        if (this.#animationsInternal.length !== group.#animationsInternal.length) {
+        if (this.#animations.length !== group.#animations.length) {
             return false;
         }
-        const left = this.#animationsInternal.map(extractId).sort();
-        const right = group.#animationsInternal.map(extractId).sort();
+        const left = this.#animations.map(extractId).sort();
+        const right = group.#animations.map(extractId).sort();
         for (let i = 0; i < left.length; i++) {
             if (left[i] !== right[i]) {
                 return false;
@@ -798,17 +798,17 @@ export class AnimationGroup {
     shouldInclude(group) {
         // We want to include the animations coming from the incoming group
         // inside this group if they were to be grouped if the events came at the same time.
-        const [firstIncomingAnimation] = group.#animationsInternal;
-        const [firstAnimation] = this.#animationsInternal;
+        const [firstIncomingAnimation] = group.#animations;
+        const [firstAnimation] = this.#animations;
         return shouldGroupAnimations(firstAnimation, firstIncomingAnimation);
     }
     appendAnimations(animations) {
-        this.#animationsInternal.push(...animations);
+        this.#animations.push(...animations);
     }
     rebaseTo(group) {
         this.#animationModel.releaseAnimations(this.animationIds());
-        this.#animationsInternal = group.#animationsInternal;
-        this.#scrollNodeInternal = undefined;
+        this.#animations = group.#animations;
+        this.#scrollNode = undefined;
     }
 }
 export class AnimationDispatcher {

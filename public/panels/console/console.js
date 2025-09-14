@@ -17,7 +17,7 @@ import * as UI from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/console/consoleContextSelector.css.js
 var consoleContextSelector_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -80,16 +80,16 @@ var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var ConsoleContextSelector = class {
   items;
   dropDown;
-  toolbarItemInternal;
+  #toolbarItem;
   constructor() {
     this.items = new UI.ListModel.ListModel();
     this.dropDown = new UI.SoftDropDown.SoftDropDown(this.items, this, "javascript-context");
     this.dropDown.setRowHeight(36);
-    this.toolbarItemInternal = new UI.Toolbar.ToolbarItem(this.dropDown.element);
-    this.toolbarItemInternal.setEnabled(false);
-    this.toolbarItemInternal.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
-    this.items.addEventListener("ItemsReplaced", () => this.toolbarItemInternal.setEnabled(Boolean(this.items.length)));
-    this.toolbarItemInternal.element.classList.add("toolbar-has-dropdown");
+    this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.dropDown.element);
+    this.#toolbarItem.setEnabled(false);
+    this.#toolbarItem.setTitle(i18nString(UIStrings.javascriptContextNotSelected));
+    this.items.addEventListener("ItemsReplaced", () => this.#toolbarItem.setEnabled(Boolean(this.items.length)));
+    this.#toolbarItem.element.classList.add("toolbar-has-dropdown");
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextCreated, this.onExecutionContextCreated, this, { scoped: true });
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextChanged, this.onExecutionContextChanged, this, { scoped: true });
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.RuntimeModel.RuntimeModel, SDK.RuntimeModel.Events.ExecutionContextDestroyed, this.onExecutionContextDestroyed, this, { scoped: true });
@@ -100,7 +100,7 @@ var ConsoleContextSelector = class {
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DebuggerModel.DebuggerModel, SDK.DebuggerModel.Events.CallFrameSelected, this.callFrameSelectedInModel, this);
   }
   toolbarItem() {
-    return this.toolbarItemInternal;
+    return this.#toolbarItem;
   }
   highlightedItemChanged(_from, to, fromElement, toElement) {
     SDK.OverlayModel.OverlayModel.hideDOMNodeHighlight();
@@ -257,9 +257,9 @@ var ConsoleContextSelector = class {
     return !callFrameContext || item2 === callFrameContext;
   }
   itemSelected(item2) {
-    this.toolbarItemInternal.element.classList.toggle("highlight", !this.isTopContext(item2) && this.hasTopContext());
+    this.#toolbarItem.element.classList.toggle("highlight", !this.isTopContext(item2) && this.hasTopContext());
     const title = item2 ? i18nString(UIStrings.javascriptContextS, { PH1: this.titleFor(item2) }) : i18nString(UIStrings.javascriptContextNotSelected);
-    this.toolbarItemInternal.setTitle(title);
+    this.#toolbarItem.setTitle(title);
     UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, item2);
   }
   callFrameSelectedInUI() {
@@ -645,7 +645,7 @@ import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -757,7 +757,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consolePinPane.css.js
 var consolePinPane_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1217,7 +1217,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/console/consoleSidebar.css.js
 var consoleSidebar_css_default = `/*
- * Copyright (c) 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4188,7 +4188,7 @@ var ConsoleViewport = class {
   element;
   topGapElement;
   topGapElementActive;
-  contentElementInternal;
+  #contentElement;
   bottomGapElement;
   bottomGapElementActive;
   provider;
@@ -4203,7 +4203,7 @@ var ConsoleViewport = class {
   muteCopyHandler;
   observer;
   observerConfig;
-  stickToBottomInternal;
+  #stickToBottom;
   selectionIsBackward;
   lastSelectedElement;
   cachedProviderElements;
@@ -4214,7 +4214,7 @@ var ConsoleViewport = class {
     this.topGapElement.style.height = "0px";
     this.topGapElement.style.color = "transparent";
     this.topGapElementActive = false;
-    this.contentElementInternal = this.element.createChild("div");
+    this.#contentElement = this.element.createChild("div");
     this.bottomGapElement = this.element.createChild("div");
     this.bottomGapElement.style.height = "0px";
     this.bottomGapElement.style.color = "transparent";
@@ -4227,11 +4227,11 @@ var ConsoleViewport = class {
     this.element.addEventListener("scroll", this.onScroll.bind(this), false);
     this.element.addEventListener("copy", this.onCopy.bind(this), false);
     this.element.addEventListener("dragstart", this.onDragStart.bind(this), false);
-    this.contentElementInternal.addEventListener("focusin", this.onFocusIn.bind(this), false);
-    this.contentElementInternal.addEventListener("focusout", this.onFocusOut.bind(this), false);
-    this.contentElementInternal.addEventListener("keydown", this.onKeyDown.bind(this), false);
+    this.#contentElement.addEventListener("focusin", this.onFocusIn.bind(this), false);
+    this.#contentElement.addEventListener("focusout", this.onFocusOut.bind(this), false);
+    this.#contentElement.addEventListener("keydown", this.onKeyDown.bind(this), false);
     this.virtualSelectedIndex = -1;
-    this.contentElementInternal.tabIndex = -1;
+    this.#contentElement.tabIndex = -1;
     this.firstActiveIndex = -1;
     this.lastActiveIndex = -1;
     this.renderedItems = [];
@@ -4242,16 +4242,16 @@ var ConsoleViewport = class {
     this.muteCopyHandler = false;
     this.observer = new MutationObserver(this.refresh.bind(this));
     this.observerConfig = { childList: true, subtree: true };
-    this.stickToBottomInternal = false;
+    this.#stickToBottom = false;
     this.selectionIsBackward = false;
   }
   stickToBottom() {
-    return this.stickToBottomInternal;
+    return this.#stickToBottom;
   }
   setStickToBottom(value) {
-    this.stickToBottomInternal = value;
-    if (this.stickToBottomInternal) {
-      this.observer.observe(this.contentElementInternal, this.observerConfig);
+    this.#stickToBottom = value;
+    if (this.#stickToBottom) {
+      this.observer.observe(this.#contentElement, this.observerConfig);
     } else {
       this.observer.disconnect();
     }
@@ -4285,7 +4285,7 @@ var ConsoleViewport = class {
       this.virtualSelectedIndex = this.firstActiveIndex + renderedIndex;
     }
     let focusLastChild = false;
-    if (this.virtualSelectedIndex === -1 && this.isOutsideViewport(event.relatedTarget) && event.target === this.contentElementInternal && this.itemCount) {
+    if (this.virtualSelectedIndex === -1 && this.isOutsideViewport(event.relatedTarget) && event.target === this.#contentElement && this.itemCount) {
       focusLastChild = true;
       this.virtualSelectedIndex = this.itemCount - 1;
       this.refresh();
@@ -4300,7 +4300,7 @@ var ConsoleViewport = class {
     this.updateFocusedItem();
   }
   isOutsideViewport(element) {
-    return element !== null && !element.isSelfOrDescendant(this.contentElementInternal);
+    return element !== null && !element.isSelfOrDescendant(this.#contentElement);
   }
   onDragStart(event) {
     const text = this.selectedText();
@@ -4351,7 +4351,7 @@ var ConsoleViewport = class {
   updateFocusedItem(focusLastChild) {
     const selectedElement = this.renderedElementAt(this.virtualSelectedIndex);
     const changed = this.lastSelectedElement !== selectedElement;
-    const containerHasFocus = this.contentElementInternal === Platform3.DOMUtilities.deepActiveElement(this.element.ownerDocument);
+    const containerHasFocus = this.#contentElement === Platform3.DOMUtilities.deepActiveElement(this.element.ownerDocument);
     if (this.lastSelectedElement && changed) {
       this.lastSelectedElement.classList.remove("console-selected");
     }
@@ -4368,15 +4368,15 @@ var ConsoleViewport = class {
         selectedElement.focus({ preventScroll: true });
       }
     }
-    if (this.itemCount && !this.contentElementInternal.hasFocus()) {
-      this.contentElementInternal.tabIndex = 0;
+    if (this.itemCount && !this.#contentElement.hasFocus()) {
+      this.#contentElement.tabIndex = 0;
     } else {
-      this.contentElementInternal.tabIndex = -1;
+      this.#contentElement.tabIndex = -1;
     }
     this.lastSelectedElement = selectedElement;
   }
   contentElement() {
-    return this.contentElementInternal;
+    return this.#contentElement;
   }
   invalidate() {
     delete this.cachedProviderElements;
@@ -4537,8 +4537,8 @@ var ConsoleViewport = class {
   refresh() {
     this.observer.disconnect();
     this.innerRefresh();
-    if (this.stickToBottomInternal) {
-      this.observer.observe(this.contentElementInternal, this.observerConfig);
+    if (this.#stickToBottom) {
+      this.observer.observe(this.#contentElement, this.observerConfig);
     }
   }
   innerRefresh() {
@@ -4550,7 +4550,7 @@ var ConsoleViewport = class {
         this.renderedItems[i].willHide();
       }
       this.renderedItems = [];
-      this.contentElementInternal.removeChildren();
+      this.#contentElement.removeChildren();
       this.topGapElement.style.height = "0px";
       this.bottomGapElement.style.height = "0px";
       this.firstActiveIndex = -1;
@@ -4564,7 +4564,7 @@ var ConsoleViewport = class {
     const visibleHeight = this.visibleHeight();
     const activeHeight = visibleHeight * 2;
     this.rebuildCumulativeHeightsIfNeeded();
-    if (this.stickToBottomInternal) {
+    if (this.#stickToBottom) {
       this.firstActiveIndex = Math.max(this.itemCount - Math.ceil(activeHeight / this.provider.minimumRowHeight()), 0);
       this.lastActiveIndex = this.itemCount - 1;
     } else {
@@ -4579,14 +4579,14 @@ var ConsoleViewport = class {
       this.bottomGapElement.style.height = bottomGapHeight + "px";
       this.topGapElementActive = Boolean(topGapHeight);
       this.bottomGapElementActive = Boolean(bottomGapHeight);
-      this.contentElementInternal.style.setProperty("height", "10000000px");
+      this.#contentElement.style.setProperty("height", "10000000px");
     }
     this.partialViewportUpdate(prepare.bind(this));
-    this.contentElementInternal.style.removeProperty("height");
+    this.#contentElement.style.removeProperty("height");
     if (shouldRestoreSelection) {
       this.restoreSelection(selection);
     }
-    if (this.stickToBottomInternal) {
+    if (this.#stickToBottom) {
       this.element.scrollTop = 1e7;
     }
   }
@@ -4610,7 +4610,7 @@ var ConsoleViewport = class {
       willBeHidden[i].element().remove();
     }
     const wasShown = [];
-    let anchor = this.contentElementInternal.firstChild;
+    let anchor = this.#contentElement.firstChild;
     for (const viewportElement of itemsToRender) {
       const element = viewportElement.element();
       if (element !== anchor) {
@@ -4618,7 +4618,7 @@ var ConsoleViewport = class {
         if (shouldCallWasShown) {
           wasShown.push(viewportElement);
         }
-        this.contentElementInternal.insertBefore(element, anchor);
+        this.#contentElement.insertBefore(element, anchor);
       } else {
         anchor = anchor.nextSibling;
       }
@@ -4628,7 +4628,7 @@ var ConsoleViewport = class {
     }
     this.renderedItems = Array.from(itemsToRender);
     if (hadFocus) {
-      this.contentElementInternal.focus();
+      this.#contentElement.focus();
     }
     this.updateFocusedItem();
   }
@@ -5030,7 +5030,7 @@ var MIN_HISTORY_LENGTH_FOR_DISABLING_SELF_XSS_WARNING = 5;
 var DISCLAIMER_TOOLTIP_ID = "console-ai-code-completion-disclaimer-tooltip";
 var CITATIONS_TOOLTIP_ID = "console-ai-code-completion-citations-tooltip";
 var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
-  searchableViewInternal;
+  #searchableView;
   sidebar;
   isSidebarOpen;
   filter;
@@ -5094,10 +5094,10 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     super();
     this.setMinimumSize(0, 35);
     this.registerRequiredCSS(consoleView_css_default, objectValue_css_default, CodeHighlighter3.codeHighlighterStyles);
-    this.searchableViewInternal = new UI6.SearchableView.SearchableView(this, null);
-    this.searchableViewInternal.element.classList.add("console-searchable-view");
-    this.searchableViewInternal.setPlaceholder(i18nString5(UIStrings5.findStringInLogs));
-    this.searchableViewInternal.setMinimalSearchQuerySize(0);
+    this.#searchableView = new UI6.SearchableView.SearchableView(this, null);
+    this.#searchableView.element.classList.add("console-searchable-view");
+    this.#searchableView.setPlaceholder(i18nString5(UIStrings5.findStringInLogs));
+    this.#searchableView.setMinimalSearchQuerySize(0);
     this.sidebar = new ConsoleSidebar();
     this.sidebar.addEventListener("FilterSelected", this.onFilterChanged.bind(this));
     this.isSidebarOpen = false;
@@ -5105,7 +5105,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     this.consoleToolbarContainer = this.element.createChild("div", "console-toolbar-container");
     this.consoleToolbarContainer.role = "toolbar";
     this.splitWidget = new UI6.SplitWidget.SplitWidget(true, false, "console.sidebar.width", 100);
-    this.splitWidget.setMainWidget(this.searchableViewInternal);
+    this.splitWidget.setMainWidget(this.#searchableView);
     this.splitWidget.setSidebarWidget(this.sidebar);
     this.splitWidget.show(this.element);
     this.splitWidget.hideSidebar();
@@ -5127,7 +5127,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       this.filter.setLevelMenuOverridden(this.isSidebarOpen);
       this.onFilterChanged();
     });
-    this.contentsElement = this.searchableViewInternal.element;
+    this.contentsElement = this.#searchableView.element;
     this.element.classList.add("console-view");
     this.visibleViewMessages = [];
     this.hiddenByFilterCount = 0;
@@ -5341,7 +5341,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     this.immediatelyFilterMessagesForTest = true;
   }
   searchableView() {
-    return this.searchableViewInternal;
+    return this.#searchableView;
   }
   clearHistory() {
     this.prompt.history().clear();
@@ -5562,7 +5562,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
         /* crbug.com/1082963: prevent collapse of same messages when "Group similar" is false */
       );
       this.updateFilterStatus();
-      this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+      this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
     } else {
       this.needsFullUpdate = true;
     }
@@ -5842,7 +5842,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       }
     }
     this.updateFilterStatus();
-    this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+    this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
     this.jumpToMatch(this.currentMatchRangeIndex);
     this.viewport.invalidate();
     this.messagesCountElement.setAttribute("aria-label", i18nString5(UIStrings5.filteredMessagesInConsole, { PH1: this.visibleViewMessages.length }));
@@ -5996,7 +5996,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   }
   performSearch(searchConfig, shouldJump, jumpBackwards) {
     this.onSearchCanceled();
-    this.searchableViewInternal.updateSearchMatchesCount(0);
+    this.#searchableView.updateSearchMatchesCount(0);
     this.searchRegex = searchConfig.toSearchRegex(true).regex;
     this.regexMatchRanges = [];
     this.currentMatchRangeIndex = -1;
@@ -6032,7 +6032,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     for (; index < this.visibleViewMessages.length && Date.now() - startTime < 100; ++index) {
       this.searchMessage(index);
     }
-    this.searchableViewInternal.updateSearchMatchesCount(this.regexMatchRanges.length);
+    this.#searchableView.updateSearchMatchesCount(this.regexMatchRanges.length);
     if (typeof this.searchShouldJumpBackwards !== "undefined" && this.regexMatchRanges.length) {
       this.jumpToMatch(this.searchShouldJumpBackwards ? -1 : 0);
       delete this.searchShouldJumpBackwards;
@@ -6078,7 +6078,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     }
     index = Platform4.NumberUtilities.mod(index, this.regexMatchRanges.length);
     this.currentMatchRangeIndex = index;
-    this.searchableViewInternal.updateCurrentMatchIndex(index);
+    this.#searchableView.updateCurrentMatchIndex(index);
     matchRange = this.regexMatchRanges[index];
     const message = this.visibleViewMessages[matchRange.messageIndex];
     const highlightNode = message.searchHighlightNode(matchRange.matchIndex);
@@ -6430,7 +6430,7 @@ var ConsoleRevealer = class {
 
 // gen/front_end/panels/console/consolePrompt.css.js
 var consolePrompt_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6507,7 +6507,7 @@ var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var AI_CODE_COMPLETION_CHARACTER_LIMIT = 2e4;
 var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Widget) {
   addCompletionsFromHistory;
-  historyInternal;
+  #history;
   initialText;
   editor;
   eagerPreviewElement;
@@ -6561,7 +6561,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     });
     this.registerRequiredCSS(consolePrompt_css_default);
     this.addCompletionsFromHistory = true;
-    this.historyInternal = new TextEditor3.AutocompleteHistory.AutocompleteHistory(Common8.Settings.Settings.instance().createLocalSetting("console-history", []));
+    this.#history = new TextEditor3.AutocompleteHistory.AutocompleteHistory(Common8.Settings.Settings.instance().createLocalSetting("console-history", []));
     this.initialText = "";
     this.eagerPreviewElement = document.createElement("div");
     this.eagerPreviewElement.classList.add("console-eager-preview");
@@ -6622,7 +6622,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       }
     });
     editorContainerElement.appendChild(this.editor);
-    this.#editorHistory = new TextEditor3.TextEditorHistory.TextEditorHistory(this.editor, this.historyInternal);
+    this.#editorHistory = new TextEditor3.TextEditorHistory.TextEditorHistory(this.editor, this.#history);
     if (this.hasFocus()) {
       this.focus();
     }
@@ -6671,6 +6671,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     const cursor = selection.main.head;
     const currentExecutionContext = UI8.Context.Context.instance().flavor(SDK7.RuntimeModel.ExecutionContext);
     let prefix = query.substring(0, cursor);
+    if (prefix.trim().length === 0) {
+      return;
+    }
     if (currentExecutionContext) {
       const consoleModel = currentExecutionContext.target().model(SDK7.ConsoleModel.ConsoleModel);
       if (consoleModel) {
@@ -6735,7 +6738,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     }
   }
   history() {
-    return this.historyInternal;
+    return this.#history;
   }
   clearAutocomplete() {
     CodeMirror2.closeCompletion(this.editor.editor);
@@ -6935,12 +6938,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
       this.detachAiCodeCompletionTeaser();
       this.teaser = void 0;
     }
-    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
-      { aidaClient: this.aidaClient },
-      this.editor,
-      "console"
-      /* AiCodeCompletion.AiCodeCompletion.Panel.CONSOLE */
-    );
+    this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, "console", ["\n\n"]);
     this.aiCodeCompletion.addEventListener("ResponseReceived", (event) => {
       this.aiCodeCompletionCitations = event.data.citations;
       this.dispatchEventToListeners("AiCodeCompletionResponseReceived", event.data);
@@ -6987,7 +6985,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     });
   }
   isAiCodeCompletionEnabled() {
-    return Boolean(Root4.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+    return Boolean(Root4.Runtime.hostConfig.aidaAvailability?.enabled && Root4.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
   }
   editorSetForTest() {
   }

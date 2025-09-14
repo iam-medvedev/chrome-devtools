@@ -23,7 +23,7 @@ import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/components/RequestHeadersView.css.js
 var RequestHeadersView_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -456,7 +456,7 @@ import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/network/components/EditableSpan.css.js
 var EditableSpan_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -581,7 +581,7 @@ import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/network/components/HeaderSectionRow.css.js
 var HeaderSectionRow_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1153,7 +1153,7 @@ import * as NetworkForward from "./../forward/forward.js";
 
 // gen/front_end/panels/network/components/RequestHeaderSection.css.js
 var RequestHeaderSection_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1354,7 +1354,7 @@ import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/network/components/ResponseHeaderSection.css.js
 var ResponseHeaderSection_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2388,7 +2388,7 @@ import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/network/components/RequestTrustTokensView.css.js
 var RequestTrustTokensView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2672,7 +2672,7 @@ import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/network/components/WebBundleInfoView.css.js
 var WebBundleInfoView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

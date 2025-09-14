@@ -43,7 +43,6 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     canSelectPanel(panelName: string): boolean;
     showPanel(panelName: string): Promise<void>;
     setPanelWarnings(tabId: string, warnings: string[]): void;
-    private emitDrawerChangeEvent;
     private getTabbedPaneForTabId;
     currentPanelDeprecated(): Widget | null;
     showDrawer({ focus, hasTargetDrawer }: {
@@ -87,7 +86,4 @@ export declare class InspectorViewTabDelegate implements TabbedPaneTabDelegate {
     moveToDrawer(tabId: string): void;
     moveToMainTabBar(tabId: string): void;
     onContextMenu(tabId: string, contextMenu: ContextMenu): void;
-}
-export declare const enum Events {
-    DRAWER_CHANGE = "drawerchange"
 }

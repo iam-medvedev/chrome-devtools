@@ -3,9 +3,9 @@ import * as UI from '../../legacy.js';
 import type * as Components from '../utils/utils.js';
 export declare const getObjectPropertiesSectionFrom: (element: Element) => ObjectPropertiesSection | undefined;
 export declare class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow {
+    #private;
     private readonly object;
     editable: boolean;
-    private readonly objectTreeElementInternal;
     titleElement: Element;
     skipProtoInternal?: boolean;
     constructor(object: SDK.RemoteObject.RemoteObject, title?: string | Element | null, linkifier?: Components.Linkifier.Linkifier, showOverflow?: boolean);

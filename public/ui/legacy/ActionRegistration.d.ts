@@ -6,8 +6,7 @@ export interface ActionDelegate {
     handleAction(context: Context, actionId: string, opts?: Record<string, unknown>): boolean;
 }
 export declare class Action extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private enabledInternal;
-    private toggledInternal;
+    #private;
     private actionRegistration;
     constructor(actionRegistration: ActionRegistration);
     id(): string;

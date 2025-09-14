@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
@@ -15,15 +15,15 @@ import * as Timeline from '../timeline.js';
 const { urlString } = Platform.DevToolsPath;
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
     setupIgnoreListManagerEnvironment();
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel, entityMapper);
     return { threadAppenders: compatibilityTracksAppender.threadAppenders(), compatibilityTracksAppender };
 }
 async function renderThreadAppendersFromTrace(context, trace) {
-    const { parsedTrace } = await TraceLoader.traceEngine(context, trace);
-    return renderThreadAppendersFromParsedData(parsedTrace);
+    const parsedTrace = await TraceLoader.traceEngine(context, trace);
+    return renderThreadAppendersFromParsedTrace(parsedTrace);
 }
-function renderThreadAppendersFromParsedData(parsedTrace) {
+function renderThreadAppendersFromParsedTrace(parsedTrace) {
     const entryTypeByLevel = [];
     const entryData = [];
     const flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
@@ -175,7 +175,7 @@ describeWithEnvironment('ThreadAppender', function () {
     });
     it('returns the correct title for a profile call', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
-        const rendererHandler = parsedTrace.Renderer;
+        const rendererHandler = parsedTrace.data.Renderer;
         if (!rendererHandler) {
             throw new Error('RendererHandler is undefined');
         }
@@ -192,7 +192,7 @@ describeWithEnvironment('ThreadAppender', function () {
     });
     it('will use the function name from the CPUProfile if it has been set', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
-        const { Renderer, Samples } = parsedTrace;
+        const { Renderer, Samples } = parsedTrace.data;
         const [process] = Renderer.processes.values();
         const [thread] = process.threads.values();
         const profileCalls = thread.entries.filter(Trace.Types.Events.isProfileCall);
@@ -249,7 +249,7 @@ describeWithEnvironment('ThreadAppender', function () {
     });
     it('shows the right time for a profile call when hovered', async function () {
         const { threadAppenders, parsedTrace } = await renderThreadAppendersFromTrace(this, 'simple-js-program.json.gz');
-        const rendererHandler = parsedTrace.Renderer;
+        const rendererHandler = parsedTrace.data.Renderer;
         if (!rendererHandler) {
             throw new Error('RendererHandler is undefined');
         }
@@ -384,20 +384,22 @@ describeWithEnvironment('ThreadAppender', function () {
             };
             // This only includes data used in the thread appender
             const mockParsedTrace = {
-                Renderer: rendererData,
-                Workers: workersData,
-                Warnings: warningsData,
-                AuctionWorklets: { worklets: new Map() },
-                Meta: {
-                    traceIsGeneric: false,
-                    navigationsByNavigationId: new Map(),
+                data: {
+                    Renderer: rendererData,
+                    Workers: workersData,
+                    Warnings: warningsData,
+                    AuctionWorklets: { worklets: new Map() },
+                    Meta: {
+                        traceIsGeneric: false,
+                        navigationsByNavigationId: new Map(),
+                    },
+                    NetworkRequests: { entityMappings: { entityByEvent: new Map(), eventsByEntity: new Map(), createdEntityCache: new Map() } },
+                    ExtensionTraceData: { entryToNode: new Map(), extensionMarkers: [], extensionTrackData: [] },
                 },
-                NetworkRequests: { entityMappings: { entityByEvent: new Map(), eventsByEntity: new Map(), createdEntityCache: new Map() } },
-                ExtensionTraceData: { entryToNode: new Map(), extensionMarkers: [], extensionTrackData: [] },
             };
             // Add the script to ignore list and then append the flamechart data
             ignoreListManager.ignoreListURL(SCRIPT_TO_IGNORE);
-            const { entryData, flameChartData, threadAppenders } = renderThreadAppendersFromParsedData(mockParsedTrace);
+            const { entryData, flameChartData, threadAppenders } = renderThreadAppendersFromParsedTrace(mockParsedTrace);
             const entryDataNames = entryData.map(entry => {
                 if (Trace.Types.Events.isProfileCall(entry)) {
                     return entry.callFrame.functionName;

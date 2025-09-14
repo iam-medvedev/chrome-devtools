@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -148,13 +148,13 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     noMatchesElement;
     sectionsContainer;
     sectionByElement = new WeakMap();
-    swatchPopoverHelperInternal = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
+    #swatchPopoverHelper = new InlineEditor.SwatchPopoverHelper.SwatchPopoverHelper();
     linkifier = new Components.Linkifier.Linkifier(MAX_LINK_LENGTH, /* useLinkDecorator */ true);
     decorator;
     lastRevealedProperty = null;
     userOperation = false;
     isEditingStyle = false;
-    filterRegexInternal = null;
+    #filterRegex = null;
     isActivePropertyHighlighted = false;
     initialUpdateCompleted = false;
     hasMatchedStyles = false;
@@ -185,7 +185,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.sectionsContainer.contentElement.addEventListener('keydown', this.sectionsContainerKeyDown.bind(this), false);
         this.sectionsContainer.contentElement.addEventListener('focusin', this.sectionsContainerFocusChanged.bind(this), false);
         this.sectionsContainer.contentElement.addEventListener('focusout', this.sectionsContainerFocusChanged.bind(this), false);
-        this.swatchPopoverHelperInternal.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
+        this.#swatchPopoverHelper.addEventListener("WillShowPopover" /* InlineEditor.SwatchPopoverHelper.Events.WILL_SHOW_POPOVER */, this.hideAllPopovers, this);
         this.decorator = new StylePropertyHighlighter(this);
         this.contentElement.classList.add('styles-pane');
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.forceUpdate, this);
@@ -211,7 +211,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         this.hideAllPopovers();
     }
     swatchPopoverHelper() {
-        return this.swatchPopoverHelperInternal;
+        return this.#swatchPopoverHelper;
     }
     setUserOperation(userOperation) {
         this.userOperation = userOperation;
@@ -295,7 +295,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     }
     forceUpdate() {
         this.needsForceUpdate = true;
-        this.swatchPopoverHelperInternal.hide();
+        this.#swatchPopoverHelper.hide();
         this.#updateAbortController?.abort();
         this.resetCache();
         this.update();
@@ -335,7 +335,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
                 break;
             }
         }
-        if (sectionToFocus && this.filterRegexInternal) {
+        if (sectionToFocus && this.#filterRegex) {
             sectionToFocus = sectionToFocus.findCurrentOrNextVisible(/* willIterateForward= */ willIterateForward);
         }
         if (sectionToFocus) {
@@ -389,7 +389,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
     onFilterChanged(event) {
         const regex = event.data ? new RegExp(Platform.StringUtilities.escapeForRegExp(event.data), 'i') : null;
         this.lastFilterChange = Date.now();
-        this.filterRegexInternal = regex;
+        this.#filterRegex = regex;
         this.updateFilter();
         this.resetFocus();
         setTimeout(() => {
@@ -424,7 +424,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             }
             section.update(section === editedSection);
         }
-        if (this.filterRegexInternal) {
+        if (this.#filterRegex) {
             this.updateFilter();
         }
         this.swatchPopoverHelper().reposition();
@@ -800,7 +800,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
             this.sectionBlocks[0].sections[0].element.focus();
         }
         this.sectionsContainerFocusChanged();
-        if (this.filterRegexInternal) {
+        if (this.#filterRegex) {
             this.updateFilter();
         }
         else {
@@ -1038,7 +1038,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         }
     }
     filterRegex() {
-        return this.filterRegexInternal;
+        return this.#filterRegex;
     }
     updateFilter() {
         let hasAnyVisibleBlock = false;
@@ -1060,7 +1060,7 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         UI.Context.Context.instance().setFlavor(StylesSidebarPane, null);
     }
     hideAllPopovers() {
-        this.swatchPopoverHelperInternal.hide();
+        this.#swatchPopoverHelper.hide();
         this.imagePreviewPopover.hide();
         if (this.activeCSSAngle) {
             this.activeCSSAngle.minify();
@@ -1196,12 +1196,12 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
 }
 const MAX_LINK_LENGTH = 23;
 export class SectionBlock {
-    titleElementInternal;
+    #titleElement;
     sections;
     #expanded = false;
     #icon;
     constructor(titleElement, expandable, expandedByDefault) {
-        this.titleElementInternal = titleElement;
+        this.#titleElement = titleElement;
         this.sections = [];
         this.#expanded = expandedByDefault ?? false;
         if (expandable && titleElement instanceof HTMLElement) {
@@ -1216,12 +1216,12 @@ export class SectionBlock {
         }
     }
     expand(expand) {
-        if (!this.titleElementInternal || !this.#icon) {
+        if (!this.#titleElement || !this.#icon) {
             return;
         }
-        this.titleElementInternal.classList.toggle('empty-section', !expand);
+        this.#titleElement.classList.toggle('empty-section', !expand);
         this.#icon.name = expand ? 'triangle-down' : 'triangle-right';
-        UI.ARIAUtils.setExpanded(this.titleElementInternal, expand);
+        UI.ARIAUtils.setExpanded(this.#titleElement, expand);
         this.#expanded = expand;
         this.sections.forEach(section => section.element.classList.toggle('hidden', !expand));
     }
@@ -1321,13 +1321,13 @@ export class SectionBlock {
             numVisibleSections += section.updateFilter() ? 1 : 0;
             hasAnyVisibleSection = section.updateFilter() || hasAnyVisibleSection;
         }
-        if (this.titleElementInternal) {
-            this.titleElementInternal.classList.toggle('hidden', !hasAnyVisibleSection);
+        if (this.#titleElement) {
+            this.#titleElement.classList.toggle('hidden', !hasAnyVisibleSection);
         }
         return numVisibleSections;
     }
     titleElement() {
-        return this.titleElementInternal;
+        return this.#titleElement;
     }
 }
 export class IdleCallbackManager {

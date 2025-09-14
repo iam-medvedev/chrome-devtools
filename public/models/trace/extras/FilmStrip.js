@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -7,15 +7,15 @@ import * as Platform from '../../../core/platform/platform.js';
 // 1. The trace parsed data object
 // 2. The start time.
 const filmStripCache = new WeakMap();
-export function fromParsedTrace(parsedTrace, customZeroTime) {
+export function fromHandlerData(data, customZeroTime) {
     const frames = [];
-    const zeroTime = typeof customZeroTime !== 'undefined' ? customZeroTime : parsedTrace.Meta.traceBounds.min;
-    const spanTime = parsedTrace.Meta.traceBounds.range;
-    const fromCache = filmStripCache.get(parsedTrace)?.get(zeroTime);
+    const zeroTime = typeof customZeroTime !== 'undefined' ? customZeroTime : data.Meta.traceBounds.min;
+    const spanTime = data.Meta.traceBounds.range;
+    const fromCache = filmStripCache.get(data)?.get(zeroTime);
     if (fromCache) {
         return fromCache;
     }
-    const screenshots = parsedTrace.Screenshots.screenshots ?? parsedTrace.Screenshots.legacySyntheticScreenshots ?? [];
+    const screenshots = data.Screenshots.screenshots ?? data.Screenshots.legacySyntheticScreenshots ?? [];
     for (const screenshotEvent of screenshots) {
         if (screenshotEvent.ts < zeroTime) {
             continue;
@@ -31,7 +31,7 @@ export function fromParsedTrace(parsedTrace, customZeroTime) {
         spanTime,
         frames: Array.from(frames),
     };
-    const cachedForData = Platform.MapUtilities.getWithDefault(filmStripCache, parsedTrace, () => new Map());
+    const cachedForData = Platform.MapUtilities.getWithDefault(filmStripCache, data, () => new Map());
     cachedForData.set(zeroTime, result);
     return result;
 }

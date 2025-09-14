@@ -17,28 +17,11 @@ import * as ComponentHelpers from "./../../../../ui/components/helpers/helpers.j
 import * as UI from "./../../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging from "./../../../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/timeline/utils/Helpers.js
-import "./../../../../ui/components/markdown_view/markdown_view.js";
-import * as Platform from "./../../../../core/platform/platform.js";
-import * as SDK from "./../../../../core/sdk/sdk.js";
-import * as CrUXManager from "./../../../../models/crux-manager/crux-manager.js";
-import * as Marked from "./../../../../third_party/marked/marked.js";
-import * as Lit from "./../../../../ui/lit/lit.js";
-import * as MobileThrottling from "./../../../mobile_throttling/mobile_throttling.js";
-var { html } = Lit;
-function md(markdown) {
-  const tokens = Marked.Marked.lexer(markdown);
-  const data = { tokens };
-  return html`<devtools-markdown-view .data=${data}></devtools-markdown-view>`;
-}
-
-// gen/front_end/panels/timeline/components/insights/BaseInsightComponent.js
 import * as Utils from "./../../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/insights/baseInsightComponent.css.js
 var baseInsightComponent_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -241,6 +224,26 @@ dd.dl-title {
 }
 
 /*# sourceURL=${import.meta.resolve("./baseInsightComponent.css")} */`;
+
+// gen/front_end/panels/timeline/components/insights/Helpers.js
+var Helpers_exports = {};
+__export(Helpers_exports, {
+  md: () => md,
+  shouldRenderForCategory: () => shouldRenderForCategory
+});
+import "./../../../../ui/components/markdown_view/markdown_view.js";
+import * as Trace from "./../../../../models/trace/trace.js";
+import * as Marked from "./../../../../third_party/marked/marked.js";
+import * as Lit from "./../../../../ui/lit/lit.js";
+var { html } = Lit;
+function shouldRenderForCategory(options) {
+  return options.activeCategory === Trace.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
+}
+function md(markdown) {
+  const tokens = Marked.Marked.lexer(markdown);
+  const data = { tokens };
+  return html`<devtools-markdown-view .data=${data}></devtools-markdown-view>`;
+}
 
 // gen/front_end/panels/timeline/components/insights/SidebarInsight.js
 var SidebarInsight_exports = {};
@@ -666,8 +669,8 @@ __export(EventRef_exports, {
   imageRef: () => imageRef
 });
 import * as i18n3 from "./../../../../core/i18n/i18n.js";
-import * as SDK2 from "./../../../../core/sdk/sdk.js";
-import * as Trace from "./../../../../models/trace/trace.js";
+import * as SDK from "./../../../../core/sdk/sdk.js";
+import * as Trace2 from "./../../../../models/trace/trace.js";
 import * as ComponentHelpers2 from "./../../../../ui/components/helpers/helpers.js";
 import * as Lit3 from "./../../../../ui/lit/lit.js";
 import * as Utils2 from "./../../utils/utils.js";
@@ -710,7 +713,7 @@ var EventRef = class extends HTMLElement {
 function eventRef(event, options) {
   let title = options?.title;
   let text = options?.text;
-  if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
+  if (Trace2.Types.Events.isSyntheticNetworkRequest(event)) {
     text = text ?? Utils2.Helpers.shortenUrl(new URL(event.args.data.url));
     title = title ?? event.args.data.url;
   } else if (!text) {
@@ -744,7 +747,7 @@ var ImageRef = class extends HTMLElement {
       return this.#imageDataUrl;
     }
     const originalUrl = this.#request.args.data.url;
-    const resource = SDK2.ResourceTreeModel.ResourceTreeModel.resourceForURL(originalUrl);
+    const resource = SDK.ResourceTreeModel.ResourceTreeModel.resourceForURL(originalUrl);
     if (!resource) {
       this.#imageDataUrl = null;
       return this.#imageDataUrl;
@@ -787,7 +790,7 @@ customElements.define("devtools-performance-image-ref", ImageRef);
 
 // gen/front_end/panels/timeline/components/insights/table.css.js
 var table_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1047,13 +1050,16 @@ customElements.define("devtools-performance-table", Table);
 
 // gen/front_end/panels/timeline/components/insights/Cache.js
 import * as i18n6 from "./../../../../core/i18n/i18n.js";
-import * as Trace2 from "./../../../../models/trace/trace.js";
+import * as Trace3 from "./../../../../models/trace/trace.js";
 import * as Lit5 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings3, i18nString: i18nString3, createOverlayForRequest } = Trace2.Insights.Models.Cache;
+var { UIStrings: UIStrings3, i18nString: i18nString3, createOverlayForRequest } = Trace3.Insights.Models.Cache;
 var { html: html5 } = Lit5;
 var Cache = class extends BaseInsightComponent {
   static litTagName = Lit5.StaticHtml.literal`devtools-performance-cache`;
   internalName = "cache";
+  hasAskAiSupport() {
+    return true;
+  }
   mapToRow(req) {
     return {
       values: [eventRef(req.request), i18n6.TimeUtilities.secondsToString(req.ttl)],
@@ -1102,7 +1108,7 @@ import * as Lit6 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/insights/checklist.css.js
 var checklist_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1202,7 +1208,7 @@ __export(NodeLink_exports, {
   NodeLink: () => NodeLink
 });
 import * as Common from "./../../../../core/common/common.js";
-import * as SDK3 from "./../../../../core/sdk/sdk.js";
+import * as SDK2 from "./../../../../core/sdk/sdk.js";
 import * as Buttons2 from "./../../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers5 from "./../../../../ui/components/helpers/helpers.js";
 import * as LegacyComponents from "./../../../../ui/legacy/components/utils/utils.js";
@@ -1241,8 +1247,8 @@ var NodeLink = class extends HTMLElement {
       }
       return fromCache;
     }
-    const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
-    const domModel = target?.model(SDK3.DOMModel.DOMModel);
+    const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const domModel = target?.model(SDK2.DOMModel.DOMModel);
     if (!domModel) {
       return void 0;
     }
@@ -1292,9 +1298,9 @@ customElements.define("devtools-performance-node-link", NodeLink);
 
 // gen/front_end/panels/timeline/components/insights/CLSCulprits.js
 import * as i18n9 from "./../../../../core/i18n/i18n.js";
-import * as Trace3 from "./../../../../models/trace/trace.js";
+import * as Trace4 from "./../../../../models/trace/trace.js";
 import * as Lit8 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings5, i18nString: i18nString5 } = Trace3.Insights.Models.CLSCulprits;
+var { UIStrings: UIStrings5, i18nString: i18nString5 } = Trace4.Insights.Models.CLSCulprits;
 var { html: html8 } = Lit8;
 var CLSCulprits = class extends BaseInsightComponent {
   static litTagName = Lit8.StaticHtml.literal`devtools-performance-cls-culprits`;
@@ -1347,7 +1353,7 @@ var CLSCulprits = class extends BaseInsightComponent {
     }
     const worstCluster = this.model.worstCluster;
     const culprits = this.model.topCulpritsByCluster.get(worstCluster) ?? [];
-    const ts = Trace3.Types.Timing.Micro(worstCluster.ts - this.bounds.min);
+    const ts = Trace4.Types.Timing.Micro(worstCluster.ts - this.bounds.min);
     const clusterTs = i18n9.TimeUtilities.formatMicroSecondsTime(ts);
     return html8`
       <div class="insight-section">
@@ -1391,13 +1397,16 @@ __export(DOMSize_exports, {
 });
 import "./../../../../ui/components/icon_button/icon_button.js";
 import * as i18n10 from "./../../../../core/i18n/i18n.js";
-import * as Trace4 from "./../../../../models/trace/trace.js";
+import * as Trace5 from "./../../../../models/trace/trace.js";
 import * as Lit10 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings6, i18nString: i18nString6 } = Trace4.Insights.Models.DOMSize;
+var { UIStrings: UIStrings6, i18nString: i18nString6 } = Trace5.Insights.Models.DOMSize;
 var { html: html10 } = Lit10;
 var DOMSize = class extends BaseInsightComponent {
   static litTagName = Lit10.StaticHtml.literal`devtools-performance-dom-size`;
   internalName = "dom-size";
+  hasAskAiSupport() {
+    return true;
+  }
   #renderNodeTable(domStatsData) {
     const rows = [];
     if (domStatsData.maxDepth) {
@@ -1498,20 +1507,20 @@ __export(DuplicatedJavaScript_exports, {
   DuplicatedJavaScript: () => DuplicatedJavaScript
 });
 import * as i18n11 from "./../../../../core/i18n/i18n.js";
-import * as Trace5 from "./../../../../models/trace/trace.js";
+import * as Trace6 from "./../../../../models/trace/trace.js";
 import * as Buttons3 from "./../../../../ui/components/buttons/buttons.js";
 import * as Lit11 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../../ui/visual_logging/visual_logging.js";
 import * as Utils3 from "./../../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/insights/ScriptRef.js
-import * as Platform2 from "./../../../../core/platform/platform.js";
+import * as Platform from "./../../../../core/platform/platform.js";
 import * as TimelineUtils from "./../../utils/utils.js";
 function scriptRef(script) {
   if (script.request) {
     if (script.inline) {
       return eventRef(script.request, {
-        text: `(inline) ${Platform2.StringUtilities.trimEndWithMaxLength(script.content ?? "", 15)}`
+        text: `(inline) ${Platform.StringUtilities.trimEndWithMaxLength(script.content ?? "", 15)}`
       });
     }
     return eventRef(script.request);
@@ -1524,13 +1533,13 @@ function scriptRef(script) {
     }
   }
   if (script.inline) {
-    return `(inline) ${Platform2.StringUtilities.trimEndWithMaxLength(script.content ?? "", 15)}`;
+    return `(inline) ${Platform.StringUtilities.trimEndWithMaxLength(script.content ?? "", 15)}`;
   }
   return `script id: ${script.scriptId}`;
 }
 
 // gen/front_end/panels/timeline/components/insights/DuplicatedJavaScript.js
-var { UIStrings: UIStrings7, i18nString: i18nString7 } = Trace5.Insights.Models.DuplicatedJavaScript;
+var { UIStrings: UIStrings7, i18nString: i18nString7 } = Trace6.Insights.Models.DuplicatedJavaScript;
 var { html: html11 } = Lit11;
 var DuplicatedJavaScript = class extends BaseInsightComponent {
   static litTagName = Lit11.StaticHtml.literal`devtools-performance-duplicated-javascript`;
@@ -1622,9 +1631,9 @@ __export(FontDisplay_exports, {
   FontDisplay: () => FontDisplay
 });
 import * as i18n12 from "./../../../../core/i18n/i18n.js";
-import * as Trace6 from "./../../../../models/trace/trace.js";
+import * as Trace7 from "./../../../../models/trace/trace.js";
 import * as Lit12 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings8, i18nString: i18nString8 } = Trace6.Insights.Models.FontDisplay;
+var { UIStrings: UIStrings8, i18nString: i18nString8 } = Trace7.Insights.Models.FontDisplay;
 var { html: html12 } = Lit12;
 var FontDisplay = class extends BaseInsightComponent {
   static litTagName = Lit12.StaticHtml.literal`devtools-performance-font-display`;
@@ -1691,11 +1700,11 @@ __export(ForcedReflow_exports, {
   ForcedReflow: () => ForcedReflow
 });
 import * as i18n13 from "./../../../../core/i18n/i18n.js";
-import * as Platform3 from "./../../../../core/platform/platform.js";
-import * as Trace7 from "./../../../../models/trace/trace.js";
+import * as Platform2 from "./../../../../core/platform/platform.js";
+import * as Trace8 from "./../../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../../ui/legacy/components/utils/utils.js";
 import * as Lit13 from "./../../../../ui/lit/lit.js";
-var { UIStrings: UIStrings9, i18nString: i18nString9, createOverlayForEvents } = Trace7.Insights.Models.ForcedReflow;
+var { UIStrings: UIStrings9, i18nString: i18nString9, createOverlayForEvents } = Trace8.Insights.Models.ForcedReflow;
 var { html: html13, nothing: nothing11 } = Lit13;
 var ForcedReflow = class extends BaseInsightComponent {
   static litTagName = Lit13.StaticHtml.literal`devtools-performance-forced-reflow`;
@@ -1745,7 +1754,7 @@ var ForcedReflow = class extends BaseInsightComponent {
     }
     const topLevelFunctionCallData = this.model.topLevelFunctionCallData;
     const bottomUpCallStackData = this.model.aggregatedBottomUpData;
-    const time = (us) => i18n13.TimeUtilities.millisToString(Platform3.Timing.microSecondsToMilliSeconds(us));
+    const time = (us) => i18n13.TimeUtilities.millisToString(Platform2.Timing.microSecondsToMilliSeconds(us));
     const rows = createLimitedRows(bottomUpCallStackData, this);
     return html13`
       ${topLevelFunctionCallData ? html13`
@@ -1757,7 +1766,7 @@ var ForcedReflow = class extends BaseInsightComponent {
       rows: [{
         values: [
           this.#linkifyUrl(topLevelFunctionCallData.topLevelFunctionCall),
-          time(Trace7.Types.Timing.Micro(topLevelFunctionCallData.totalReflowTime))
+          time(Trace8.Types.Timing.Micro(topLevelFunctionCallData.totalReflowTime))
         ],
         overlays: createOverlayForEvents(topLevelFunctionCallData.topLevelFunctionCallEvents, "INFO")
       }]
@@ -1777,16 +1786,6 @@ var ForcedReflow = class extends BaseInsightComponent {
   }
 };
 customElements.define("devtools-performance-forced-reflow", ForcedReflow);
-
-// gen/front_end/panels/timeline/components/insights/Helpers.js
-var Helpers_exports = {};
-__export(Helpers_exports, {
-  shouldRenderForCategory: () => shouldRenderForCategory
-});
-import * as Trace8 from "./../../../../models/trace/trace.js";
-function shouldRenderForCategory(options) {
-  return options.activeCategory === Trace8.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
-}
 
 // gen/front_end/panels/timeline/components/insights/ImageDelivery.js
 var ImageDelivery_exports = {};
@@ -1847,7 +1846,7 @@ __export(INPBreakdown_exports, {
   INPBreakdown: () => INPBreakdown
 });
 import * as i18n14 from "./../../../../core/i18n/i18n.js";
-import * as Platform4 from "./../../../../core/platform/platform.js";
+import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as Trace10 from "./../../../../models/trace/trace.js";
 import * as Lit15 from "./../../../../ui/lit/lit.js";
 var { UIStrings: UIStrings11, i18nString: i18nString11, createOverlaysForSubpart } = Trace10.Insights.Models.INPBreakdown;
@@ -1863,7 +1862,7 @@ var INPBreakdown = class extends BaseInsightComponent {
     if (!event) {
       return html15`<div class="insight-section">${i18nString11(UIStrings11.noInteractions)}</div>`;
     }
-    const time = (us) => i18n14.TimeUtilities.millisToString(Platform4.Timing.microSecondsToMilliSeconds(us));
+    const time = (us) => i18n14.TimeUtilities.millisToString(Platform3.Timing.microSecondsToMilliSeconds(us));
     return html15`
       <div class="insight-section">
         ${html15`<devtools-performance-table
@@ -2074,7 +2073,7 @@ __export(LegacyJavaScript_exports, {
 });
 import * as Common2 from "./../../../../core/common/common.js";
 import * as i18n18 from "./../../../../core/i18n/i18n.js";
-import * as SDK4 from "./../../../../core/sdk/sdk.js";
+import * as SDK3 from "./../../../../core/sdk/sdk.js";
 import * as Bindings from "./../../../../models/bindings/bindings.js";
 import * as Trace13 from "./../../../../models/trace/trace.js";
 import * as Lit18 from "./../../../../ui/lit/lit.js";
@@ -2090,15 +2089,15 @@ var LegacyJavaScript = class extends BaseInsightComponent {
     return true;
   }
   async #revealLocation(script, match) {
-    const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
+    const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!target) {
       return;
     }
-    const debuggerModel = target.model(SDK4.DebuggerModel.DebuggerModel);
+    const debuggerModel = target.model(SDK3.DebuggerModel.DebuggerModel);
     if (!debuggerModel) {
       return;
     }
-    const location = new SDK4.DebuggerModel.Location(debuggerModel, script.scriptId, match.line, match.column);
+    const location = new SDK3.DebuggerModel.Location(debuggerModel, script.scriptId, match.line, match.column);
     if (!location) {
       return;
     }
@@ -2208,7 +2207,7 @@ import * as Lit20 from "./../../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/insights/networkDependencyTreeInsight.css.js
 var networkDependencyTreeInsight_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2527,8 +2526,8 @@ __export(SlowCSSSelector_exports, {
 });
 import "./../../../../ui/components/linkifier/linkifier.js";
 import * as i18n21 from "./../../../../core/i18n/i18n.js";
-import * as Platform5 from "./../../../../core/platform/platform.js";
-import * as SDK5 from "./../../../../core/sdk/sdk.js";
+import * as Platform4 from "./../../../../core/platform/platform.js";
+import * as SDK4 from "./../../../../core/sdk/sdk.js";
 import * as Trace17 from "./../../../../models/trace/trace.js";
 import * as Lit22 from "./../../../../ui/lit/lit.js";
 var { UIStrings: UIStrings18, i18nString: i18nString18 } = Trace17.Insights.Models.SlowCSSSelector;
@@ -2591,9 +2590,9 @@ var SlowCSSSelector = class extends BaseInsightComponent {
     if (!this.model) {
       return Lit22.nothing;
     }
-    const target = SDK5.TargetManager.TargetManager.instance().primaryPageTarget();
-    const cssModel = target?.model(SDK5.CSSModel.CSSModel);
-    const time = (us) => i18n21.TimeUtilities.millisToString(Platform5.Timing.microSecondsToMilliSeconds(us));
+    const target = SDK4.TargetManager.TargetManager.instance().primaryPageTarget();
+    const cssModel = target?.model(SDK4.CSSModel.CSSModel);
+    const time = (us) => i18n21.TimeUtilities.millisToString(Platform4.Timing.microSecondsToMilliSeconds(us));
     if (!this.model.topSelectorMatchAttempts && !this.model.topSelectorElapsedMs) {
       return html22`<div class="insight-section">${i18nString18(UIStrings18.enableSelectorData)}</div>`;
     }
@@ -2752,6 +2751,9 @@ var { html: html24 } = Lit24;
 var Viewport = class extends BaseInsightComponent {
   static litTagName = Lit24.StaticHtml.literal`devtools-performance-viewport`;
   internalName = "viewport";
+  hasAskAiSupport() {
+    return true;
+  }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.INP ?? null;
   }

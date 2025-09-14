@@ -3742,16 +3742,16 @@ import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Acorn from "./../../third_party/acorn/acorn.js";
 var AcornTokenizer = class {
   #textCursor;
-  #tokenLineStartInternal;
-  #tokenLineEndInternal;
+  #tokenLineStart;
+  #tokenLineEnd;
   #tokens;
   #idx = 0;
   constructor(content, tokens) {
     this.#tokens = tokens;
     const contentLineEndings = Platform.StringUtilities.findLineEndingIndexes(content);
     this.#textCursor = new TextUtils.TextCursor.TextCursor(contentLineEndings);
-    this.#tokenLineStartInternal = 0;
-    this.#tokenLineEndInternal = 0;
+    this.#tokenLineStart = 0;
+    this.#tokenLineEnd = 0;
   }
   static punctuator(token, values) {
     return token.type !== Acorn.tokTypes.num && token.type !== Acorn.tokTypes.regexp && token.type !== Acorn.tokTypes.string && token.type !== Acorn.tokTypes.name && !token.type.keyword && (!values || token.type.label.length === 1 && values.indexOf(token.type.label) !== -1);
@@ -3777,9 +3777,9 @@ var AcornTokenizer = class {
       return null;
     }
     this.#textCursor.advance(token.start);
-    this.#tokenLineStartInternal = this.#textCursor.lineNumber();
+    this.#tokenLineStart = this.#textCursor.lineNumber();
     this.#textCursor.advance(token.end);
-    this.#tokenLineEndInternal = this.#textCursor.lineNumber();
+    this.#tokenLineEnd = this.#textCursor.lineNumber();
     return token;
   }
   peekToken() {
@@ -3790,10 +3790,10 @@ var AcornTokenizer = class {
     return token;
   }
   tokenLineStart() {
-    return this.#tokenLineStartInternal;
+    return this.#tokenLineStart;
   }
   tokenLineEnd() {
-    return this.#tokenLineEndInternal;
+    return this.#tokenLineEnd;
   }
 };
 var ECMA_VERSION = 2022;
@@ -4572,7 +4572,7 @@ function hasTokenInSet(tokenTypes, type) {
 }
 var HTMLModel = class {
   #state = "Initial";
-  #documentInternal;
+  #document;
   #stack;
   #tokens = [];
   #tokenIndex = 0;
@@ -4583,10 +4583,10 @@ var HTMLModel = class {
   #tagStartOffset;
   #tagEndOffset;
   constructor(text) {
-    this.#documentInternal = new FormatterElement("document");
-    this.#documentInternal.openTag = new Tag("document", 0, 0, /* @__PURE__ */ new Map(), true, false);
-    this.#documentInternal.closeTag = new Tag("document", text.length, text.length, /* @__PURE__ */ new Map(), false, false);
-    this.#stack = [this.#documentInternal];
+    this.#document = new FormatterElement("document");
+    this.#document.openTag = new Tag("document", 0, 0, /* @__PURE__ */ new Map(), true, false);
+    this.#document.closeTag = new Tag("document", text.length, text.length, /* @__PURE__ */ new Map(), false, false);
+    this.#stack = [this.#document];
     this.#build(text);
   }
   #build(text) {
@@ -4730,7 +4730,7 @@ var HTMLModel = class {
       const topElement = this.#stack[this.#stack.length - 1];
       if (topElement) {
         const tagSet = AutoClosingTags.get(topElement.name);
-        if (topElement !== this.#documentInternal && topElement.openTag?.selfClosingTag) {
+        if (topElement !== this.#document && topElement.openTag?.selfClosingTag) {
           this.#popElement(autocloseTag(topElement, topElement.openTag.endOffset));
         } else if (tagSet?.has(tag.name)) {
           this.#popElement(autocloseTag(topElement, tag.startOffset));
@@ -4776,7 +4776,7 @@ var HTMLModel = class {
     return this.#tokens[this.#tokenIndex++];
   }
   document() {
-    return this.#documentInternal;
+    return this.#document;
   }
 };
 var SelfClosingTags = /* @__PURE__ */ new Set([

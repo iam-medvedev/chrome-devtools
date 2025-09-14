@@ -52,6 +52,6 @@ export interface ForcedReflowAggregatedData {
     topLevelFunctionCallEvents: Types.Events.Event[];
 }
 export declare function isForcedReflowInsight(model: InsightModel): model is ForcedReflowInsightModel;
-export declare function generateInsight(traceParsedData: Handlers.Types.ParsedTrace, context: InsightSetContext): ForcedReflowInsightModel;
+export declare function generateInsight(traceParsedData: Handlers.Types.HandlerData, context: InsightSetContext): ForcedReflowInsightModel;
 export declare function createOverlays(model: ForcedReflowInsightModel): Types.Overlays.Overlay[];
 export declare function createOverlayForEvents(events: Types.Events.Event[], outlineReason?: 'ERROR' | 'INFO'): Types.Overlays.Overlay[];

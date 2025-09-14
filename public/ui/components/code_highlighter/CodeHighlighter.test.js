@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as CodeHighlighter from './code_highlighter.js';
@@ -51,6 +51,9 @@ describe('CodeHighlighter', () => {
 }`, 'text/javascript')),
         it('can highlight JavaScript with `import { default as name }` syntax', testHighlight(`
 [keyword import] {[keyword default] [keyword as] [definition name]} [keyword from] [string 'module'];
+`, 'text/javascript')),
+        it('can highlight JavaScript with `import defer` syntax', testHighlight(`
+[keyword import] [keyword defer] [definition feature] [keyword from] [string './some-feature.js'];
 `, 'text/javascript')),
         it('can highlight JavaScript with `new.target` syntax', testHighlight(`
 [keyword new].[property target]

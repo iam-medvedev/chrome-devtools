@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
@@ -6,13 +6,76 @@ import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Bindings from '../../../models/bindings/bindings.js';
 import * as Trace from '../../../models/trace/trace.js';
+import * as SourceMapsResolver from '../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../../models/workspace/workspace.js';
+import { createTarget } from '../../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, } from '../../../testing/MockConnection.js';
+import { MockProtocolBackend } from '../../../testing/MockScopeChain.js';
+import { encodeSourceMap } from '../../../testing/SourceMapEncoder.js';
 import { makeMockSamplesHandlerData, makeProfileCall, } from '../../../testing/TraceHelpers.js';
-import { // eslint-disable-line rulesdir/es-modules-import
-loadCodeLocationResolvingScenario, } from './SourceMapsResolver.test.js';
 import * as Utils from './utils.js';
 const { urlString } = Platform.DevToolsPath;
+export async function loadCodeLocationResolvingScenario() {
+    const target = createTarget();
+    const targetManager = SDK.TargetManager.TargetManager.instance();
+    const workspace = Workspace.Workspace.WorkspaceImpl.instance({ forceNew: true });
+    const resourceMapping = new Bindings.ResourceMapping.ResourceMapping(targetManager, workspace);
+    const ignoreListManager = Workspace.IgnoreListManager.IgnoreListManager.instance({ forceNew: true });
+    const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance({
+        forceNew: true,
+        resourceMapping,
+        targetManager,
+        ignoreListManager,
+    });
+    const backend = new MockProtocolBackend();
+    // The following mock data creates a source mapping from two authored
+    // scripts to a single complied script. One of the sources
+    // (ignored.ts) is marked as ignore listed in the source map.
+    const sourceRoot = 'http://example.com';
+    const scriptInfo = {
+        url: `${sourceRoot}/test.out.js`,
+        content: 'function f(x) {\n  console.log(x);\n}\nfunction ignore(y){\n console.log(y);\n}',
+    };
+    const authoredScriptName = 'test.ts';
+    const ignoredScriptName = 'ignored.ts';
+    const authoredScriptURL = `${sourceRoot}/${authoredScriptName}`;
+    const ignoreListedScriptURL = `${sourceRoot}/${ignoredScriptName}`;
+    const sourceMap = encodeSourceMap([
+        `0:9 => ${authoredScriptName}:0:1`,
+        `1:0 => ${authoredScriptName}:4:0`,
+        `1:2 => ${authoredScriptName}:4:2`,
+        `2:0 => ${authoredScriptName}:2:0`,
+        `3:0 => ${ignoredScriptName}:3:0`,
+    ], sourceRoot);
+    sourceMap.sources = [authoredScriptURL, ignoreListedScriptURL];
+    sourceMap.ignoreList = [1];
+    const sourceMapInfo = {
+        url: `${scriptInfo.url}.map`,
+        content: sourceMap,
+    };
+    // The following mock data creates content script
+    const contentScriptInfo = {
+        url: `${sourceRoot}/content-script.js`,
+        content: 'console.log("content script loaded");',
+        isContentScript: true,
+    };
+    // Load mock data in devtools
+    const [, , script, , contentScript] = await Promise.all([
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${authoredScriptURL}`, target),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${ignoreListedScriptURL}`, target),
+        backend.addScript(target, scriptInfo, sourceMapInfo),
+        debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${contentScriptInfo.url}`, target),
+        backend.addScript(target, contentScriptInfo, null),
+    ]);
+    return {
+        authoredScriptURL,
+        scriptId: script.scriptId,
+        genScriptURL: scriptInfo.url,
+        ignoreListedURL: ignoreListedScriptURL,
+        contentScriptURL: contentScriptInfo.url,
+        contentScriptId: contentScript.scriptId,
+    };
+}
 describeWithMockConnection('isIgnoreListedEntry', () => {
     it('uses url mappings to determine if an url is ignore listed', async () => {
         const { authoredScriptURL, genScriptURL, scriptId } = await loadCodeLocationResolvingScenario();
@@ -36,7 +99,8 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             Samples: makeMockSamplesHandlerData([profileCallWithMappings]),
             Workers: workersData,
         };
-        const resolver = new Utils.SourceMapsResolver.SourceMapsResolver(traceWithMappings);
+        const parsedTrace = { data: traceWithMappings };
+        const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithMappings));
     });
@@ -62,7 +126,8 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             Samples: makeMockSamplesHandlerData([profileCallWithMappings]),
             Workers: workersData,
         };
-        const resolver = new Utils.SourceMapsResolver.SourceMapsResolver(traceWithMappings);
+        const parsedTrace = { data: traceWithMappings };
+        const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithMappings));
         const ignoreKnownThirdPartySetting = Common.Settings.Settings.instance().moduleSetting('automatically-ignore-list-known-third-party-scripts');
@@ -96,7 +161,8 @@ describeWithMockConnection('isIgnoreListedEntry', () => {
             Samples: makeMockSamplesHandlerData([profileCallWithContentScript]),
             Workers: workersData,
         };
-        const resolver = new Utils.SourceMapsResolver.SourceMapsResolver(traceWithMappings);
+        const parsedTrace = { data: traceWithMappings };
+        const resolver = new SourceMapsResolver.SourceMapsResolver(parsedTrace);
         await resolver.install();
         assert.isTrue(Utils.IgnoreList.isIgnoreListedEntry(profileCallWithContentScript));
         const ignoreContentScriptSetting = Common.Settings.Settings.instance().moduleSetting('skip-content-scripts');

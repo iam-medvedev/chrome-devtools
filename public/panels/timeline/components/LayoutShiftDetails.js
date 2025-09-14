@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -9,7 +9,6 @@ import * as Buttons from '../../../ui/components/buttons/buttons.js';
 import * as LegacyComponents from '../../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
-import * as Utils from '../utils/utils.js';
 import * as Insights from './insights/insights.js';
 import layoutShiftDetailsStyles from './layoutShiftDetails.css.js';
 const { html, render } = Lit;
@@ -75,7 +74,6 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class LayoutShiftDetails extends UI.Widget.Widget {
     #view;
     #event = null;
-    #traceInsightsSets = null;
     #parsedTrace = null;
     #isFreshRecording = false;
     constructor(element, view = DEFAULT_VIEW) {
@@ -84,10 +82,6 @@ export class LayoutShiftDetails extends UI.Widget.Widget {
     }
     set event(event) {
         this.#event = event;
-        void this.requestUpdate();
-    }
-    set traceInsightsSets(traceInsightsSets) {
-        this.#traceInsightsSets = traceInsightsSets;
         void this.requestUpdate();
     }
     set parsedTrace(parsedTrace) {
@@ -123,7 +117,6 @@ export class LayoutShiftDetails extends UI.Widget.Widget {
     performUpdate() {
         this.#view({
             event: this.#event,
-            traceInsightsSets: this.#traceInsightsSets,
             parsedTrace: this.#parsedTrace,
             isFreshRecording: this.#isFreshRecording,
             togglePopover: e => this.#togglePopover(e),
@@ -136,7 +129,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         render(html ``, target);
         return;
     }
-    const title = Utils.EntryName.nameForEntry(input.event);
+    const title = Trace.Name.forEntry(input.event);
     // clang-format off
     render(html `
         <style>${layoutShiftDetailsStyles}</style>
@@ -153,7 +146,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           ${title}
         </div>
         ${Trace.Types.Events.isSyntheticLayoutShift(input.event) ?
-        renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
+        renderLayoutShiftDetails(input.event, input.parsedTrace.insights, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.parsedTrace.insights, input.parsedTrace, input.onEventClick)}
         </div>
       </div>
       `, target);
@@ -275,7 +268,7 @@ function renderShiftRow(currentShift, userHasSingleShiftSelected, parsedTrace, e
     // clang-format on
 }
 function renderStartTime(shift, userHasSingleShiftSelected, parsedTrace, onEventClick) {
-    const ts = Trace.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
+    const ts = Trace.Types.Timing.Micro(shift.ts - parsedTrace.data.Meta.traceBounds.min);
     if (userHasSingleShiftSelected) {
         return html `${i18n.TimeUtilities.preciseMillisToString(Helpers.Timing.microToMilli(ts))}`;
     }
@@ -289,7 +282,7 @@ function renderParentCluster(cluster, onEventClick, parsedTrace) {
     if (!cluster) {
         return Lit.nothing;
     }
-    const ts = Trace.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
+    const ts = Trace.Types.Timing.Micro(cluster.ts - (parsedTrace.data.Meta.traceBounds.min ?? 0));
     const clusterTs = i18n.TimeUtilities.formatMicroSecondsTime(ts);
     // clang-format off
     return html `

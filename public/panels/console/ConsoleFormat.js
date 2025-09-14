@@ -1,7 +1,6 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 // VGA color palette
 const ANSI_COLORS = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'gray'];
@@ -187,6 +186,10 @@ export const updateStyle = (currentStyle, styleToAdd) => {
     // The capture group is not intended to grab the whole URL exactly, just enough so we can check the scheme.
     const URL_REGEX = /url\([\'\"]?([^\)]*)/g;
     currentStyle.clear();
+    /* eslint-disable-next-line rulesdir/no-imperative-dom-api --
+     * We're not mutating the DOM here, but just need a temporary
+     * `<span>` to parse `styleToAdd` into a `CSSStyleDeclaration`.
+     **/
     const buffer = document.createElement('span');
     buffer.setAttribute('style', styleToAdd);
     for (const property of buffer.style) {

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -11,6 +11,7 @@ import '../../../ui/components/menus/menus.js';
 import './MetricCard.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
 import * as LiveMetrics from '../../../models/live-metrics/live-metrics.js';
@@ -22,8 +23,8 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as MobileThrottling from '../../mobile_throttling/mobile_throttling.js';
-import { getThrottlingRecommendations, md } from '../utils/Helpers.js';
+import { getThrottlingRecommendations } from '../utils/Helpers.js';
+import { md } from './insights/Helpers.js';
 import liveMetricsViewStyles from './liveMetricsView.css.js';
 import metricValueStyles from './metricValueStyles.css.js';
 import { CLS_THRESHOLDS, INP_THRESHOLDS, renderMetricValue } from './Utils.js';
@@ -345,7 +346,9 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #refreshFieldDataForCurrentPage() {
-        await this.#cruxManager.refresh();
+        if (!this.#isNode) {
+            await this.#cruxManager.refresh();
+        }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     connectedCallback() {
@@ -518,7 +521,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         if (rtt < RTT_MINIMUM) {
             return i18nString(UIStrings.tryDisablingThrottling);
         }
-        const conditions = MobileThrottling.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
+        const conditions = SDK.NetworkManager.getRecommendedNetworkPreset(rtt);
         if (!conditions) {
             return null;
         }

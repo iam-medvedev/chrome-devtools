@@ -968,17 +968,17 @@ var ExtensionPanel = class extends UI2.Panel.Panel {
   server;
   id;
   panelToolbar;
-  searchableViewInternal;
+  #searchableView;
   constructor(server, panelName, id, pageURL) {
     super(panelName);
     this.server = server;
     this.id = id;
     this.setHideOnDetach();
     this.panelToolbar = this.element.createChild("devtools-toolbar", "hidden");
-    this.searchableViewInternal = new UI2.SearchableView.SearchableView(this, null);
-    this.searchableViewInternal.show(this.element);
+    this.#searchableView = new UI2.SearchableView.SearchableView(this, null);
+    this.#searchableView.show(this.element);
     const extensionView = new ExtensionView(server, this.id, pageURL, "extension");
-    extensionView.show(this.searchableViewInternal.element);
+    extensionView.show(this.#searchableView.element);
   }
   addToolbarItem(item) {
     this.panelToolbar.classList.remove("hidden");
@@ -990,10 +990,10 @@ var ExtensionPanel = class extends UI2.Panel.Panel {
       "cancelSearch"
       /* ExtensionAPI.PrivateAPI.Panels.SearchAction.CancelSearch */
     );
-    this.searchableViewInternal.updateSearchMatchesCount(0);
+    this.#searchableView.updateSearchMatchesCount(0);
   }
   searchableView() {
-    return this.searchableViewInternal;
+    return this.#searchableView;
   }
   performSearch(searchConfig, _shouldJump, _jumpBackwards) {
     const query = searchConfig.query;
@@ -1022,51 +1022,51 @@ var ExtensionPanel = class extends UI2.Panel.Panel {
 };
 var ExtensionButton = class {
   id;
-  toolbarButtonInternal;
+  #toolbarButton;
   constructor(server, id, iconURL, tooltip, disabled) {
     this.id = id;
-    this.toolbarButtonInternal = new UI2.Toolbar.ToolbarButton("", "");
-    this.toolbarButtonInternal.addEventListener("Click", server.notifyButtonClicked.bind(server, this.id));
+    this.#toolbarButton = new UI2.Toolbar.ToolbarButton("", "");
+    this.#toolbarButton.addEventListener("Click", server.notifyButtonClicked.bind(server, this.id));
     this.update(iconURL, tooltip, disabled);
   }
   update(iconURL, tooltip, disabled) {
     if (typeof iconURL === "string") {
-      this.toolbarButtonInternal.setBackgroundImage(iconURL);
+      this.#toolbarButton.setBackgroundImage(iconURL);
     }
     if (typeof tooltip === "string") {
-      this.toolbarButtonInternal.setTitle(tooltip);
+      this.#toolbarButton.setTitle(tooltip);
     }
     if (typeof disabled === "boolean") {
-      this.toolbarButtonInternal.setEnabled(!disabled);
+      this.#toolbarButton.setEnabled(!disabled);
     }
   }
   toolbarButton() {
-    return this.toolbarButtonInternal;
+    return this.#toolbarButton;
   }
 };
 var ExtensionSidebarPane = class extends UI2.View.SimpleView {
-  panelNameInternal;
+  #panelName;
   server;
-  idInternal;
+  #id;
   extensionView;
   objectPropertiesView;
   constructor(server, panelName, title, id) {
     const viewId = Platform.StringUtilities.toKebabCase(title);
     super({ title, viewId });
     this.element.classList.add("fill");
-    this.panelNameInternal = panelName;
+    this.#panelName = panelName;
     this.server = server;
-    this.idInternal = id;
+    this.#id = id;
   }
   id() {
-    return this.idInternal;
+    return this.#id;
   }
   panelName() {
-    return this.panelNameInternal;
+    return this.#panelName;
   }
   setObject(object, title, callback) {
     this.createObjectPropertiesView();
-    this.setObjectInternal(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
+    this.#setObject(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
   }
   setExpression(expression, title, evaluateOptions, securityOrigin, callback) {
     this.createObjectPropertiesView();
@@ -1080,7 +1080,7 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
     if (this.extensionView) {
       this.extensionView.detach(true);
     }
-    this.extensionView = new ExtensionView(this.server, this.idInternal, url, "extension fill");
+    this.extensionView = new ExtensionView(this.server, this.#id, url, "extension fill");
     this.extensionView.show(this.element);
     if (!this.element.style.height) {
       this.setHeight("150px");
@@ -1095,7 +1095,7 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
     } else if (!result) {
       callback();
     } else {
-      this.setObjectInternal(result, title, callback);
+      this.#setObject(result, title, callback);
     }
   }
   createObjectPropertiesView() {
@@ -1106,10 +1106,10 @@ var ExtensionSidebarPane = class extends UI2.View.SimpleView {
       this.extensionView.detach(true);
       delete this.extensionView;
     }
-    this.objectPropertiesView = new ExtensionNotifierView(this.server, this.idInternal);
+    this.objectPropertiesView = new ExtensionNotifierView(this.server, this.#id);
     this.objectPropertiesView.show(this.element);
   }
-  setObjectInternal(object, title, callback) {
+  #setObject(object, title, callback) {
     const objectPropertiesView = this.objectPropertiesView;
     if (!objectPropertiesView) {
       callback("operation cancelled");
@@ -1659,7 +1659,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
   lastRequestId;
   registeredExtensions;
   status;
-  sidebarPanesInternal;
+  #sidebarPanes;
   extensionsEnabled;
   inspectedTabId;
   extensionAPITestHook;
@@ -1678,7 +1678,7 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     this.lastRequestId = 0;
     this.registeredExtensions = /* @__PURE__ */ new Map();
     this.status = new ExtensionStatus();
-    this.sidebarPanesInternal = [];
+    this.#sidebarPanes = [];
     this.extensionsEnabled = true;
     this.registerHandler("addRequestHeaders", this.onAddRequestHeaders.bind(this));
     this.registerHandler("createPanel", this.onCreatePanel.bind(this));
@@ -2128,13 +2128,13 @@ var ExtensionServer = class _ExtensionServer extends Common2.ObjectWrapper.Objec
     }
     const id = message.id;
     const sidebar = new ExtensionSidebarPane(this, message.panel, i18n.i18n.lockedString(message.title), id);
-    this.sidebarPanesInternal.push(sidebar);
+    this.#sidebarPanes.push(sidebar);
     this.clientObjects.set(id, sidebar);
     this.dispatchEventToListeners("SidebarPaneAdded", sidebar);
     return this.status.OK();
   }
   sidebarPanes() {
-    return this.sidebarPanesInternal;
+    return this.#sidebarPanes;
   }
   onSetSidebarHeight(message) {
     if (message.command !== "setSidebarHeight") {

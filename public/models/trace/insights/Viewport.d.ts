@@ -20,5 +20,6 @@ export type ViewportInsightModel = InsightModel<typeof UIStrings, {
     viewportEvent?: Types.Events.ParseMetaViewport;
     longPointerInteractions?: Types.Events.SyntheticInteractionPair[];
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ViewportInsightModel;
+export declare function isViewportInsight(model: InsightModel): model is ViewportInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): ViewportInsightModel;
 export declare function createOverlays(model: ViewportInsightModel): Types.Overlays.Overlay[];

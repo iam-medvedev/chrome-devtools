@@ -19,13 +19,11 @@ export declare class ChartViewport extends UI.Widget.VBox {
     #private;
     private readonly delegate;
     viewportElement: HTMLElement;
-    private alwaysShowVerticalScrollInternal;
     private rangeSelectionEnabled;
     private vScrollElement;
     private vScrollContent;
     private readonly selectionOverlay;
     private cursorElement;
-    private isDraggingInternal;
     private totalHeight;
     private offsetHeight;
     private scrollTop;

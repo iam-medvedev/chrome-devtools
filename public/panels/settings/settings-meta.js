@@ -91,7 +91,15 @@ var UIStrings2 = {
   /**
    * @description Command for showing the AI innovation settings
    */
-  showAiInnovations: "Show AI innovations"
+  showAiInnovations: "Show AI innovations",
+  /**
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  workspace: "Workspace",
+  /**
+   * @description Command for showing the Workspace tool in Settings
+   */
+  showWorkspace: "Show Workspace settings"
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
@@ -113,6 +121,18 @@ UI2.ViewManager.registerViewExtension({
     return new Settings2.SettingsScreen.GenericSettingsTab();
   },
   iconName: "gear"
+});
+UI2.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "workspace",
+  title: i18nLazyString2(UIStrings2.workspace),
+  commandPrompt: i18nLazyString2(UIStrings2.showWorkspace),
+  order: 1,
+  async loadView() {
+    const Settings2 = await loadSettingsModule();
+    return new Settings2.WorkspaceSettingsTab.WorkspaceSettingsTab();
+  },
+  iconName: "folder"
 });
 UI2.ViewManager.registerViewExtension({
   location: "settings-view",

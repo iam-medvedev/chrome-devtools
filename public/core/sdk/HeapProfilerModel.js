@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { RuntimeModel } from './RuntimeModel.js';
@@ -6,21 +6,21 @@ import { SDKModel } from './SDKModel.js';
 export class HeapProfilerModel extends SDKModel {
     #enabled;
     #heapProfilerAgent;
-    #runtimeModelInternal;
+    #runtimeModel;
     #samplingProfilerDepth;
     constructor(target) {
         super(target);
         target.registerHeapProfilerDispatcher(new HeapProfilerDispatcher(this));
         this.#enabled = false;
         this.#heapProfilerAgent = target.heapProfilerAgent();
-        this.#runtimeModelInternal = target.model(RuntimeModel);
+        this.#runtimeModel = target.model(RuntimeModel);
         this.#samplingProfilerDepth = 0;
     }
     debuggerModel() {
-        return this.#runtimeModelInternal.debuggerModel();
+        return this.#runtimeModel.debuggerModel();
     }
     runtimeModel() {
-        return this.#runtimeModelInternal;
+        return this.#runtimeModel;
     }
     async enable() {
         if (this.#enabled) {
@@ -73,7 +73,7 @@ export class HeapProfilerModel extends SDKModel {
         if (result.getError()) {
             return null;
         }
-        return this.#runtimeModelInternal.createRemoteObject(result.result);
+        return this.#runtimeModel.createRemoteObject(result.result);
     }
     async addInspectedHeapObject(snapshotObjectId) {
         const response = await this.#heapProfilerAgent.invoke_addInspectedHeapObject({ heapObjectId: snapshotObjectId });

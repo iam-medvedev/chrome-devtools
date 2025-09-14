@@ -28,6 +28,6 @@ export type ThirdPartiesInsightModel = InsightModel<typeof UIStrings, {
     firstPartyEntity?: Extras.ThirdParties.Entity;
 }>;
 export declare function isThirdPartyInsight(model: InsightModel): model is ThirdPartiesInsightModel;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ThirdPartiesInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): ThirdPartiesInsightModel;
 export declare function createOverlaysForSummary(summary: Extras.ThirdParties.EntitySummary): Types.Overlays.Overlay[];
 export declare function createOverlays(model: ThirdPartiesInsightModel): Types.Overlays.Overlay[];

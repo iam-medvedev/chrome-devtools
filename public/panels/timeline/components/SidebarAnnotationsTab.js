@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -11,7 +11,6 @@ import * as UI from '../../../ui/legacy/legacy.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as Utils from '../utils/utils.js';
 import { AnnotationHoverOut, HoverAnnotation, RemoveAnnotation, RevealAnnotation } from './Sidebar.js';
 import sidebarAnnotationsTabStyles from './sidebarAnnotationsTab.css.js';
 const { html, render } = Lit;
@@ -184,7 +183,7 @@ export class SidebarAnnotationsTab extends UI.Widget.Widget {
 function detailedAriaDescriptionForAnnotation(annotation) {
     switch (annotation.type) {
         case 'ENTRY_LABEL': {
-            const name = Utils.EntryName.nameForEntry(annotation.entry);
+            const name = Trace.Name.forEntry(annotation.entry);
             return i18nString(UIStrings.entryLabelDescriptionLabel, {
                 PH1: name,
                 PH2: annotation.label,
@@ -203,8 +202,8 @@ function detailedAriaDescriptionForAnnotation(annotation) {
                 // Only label it if it is completed.
                 return '';
             }
-            const nameFrom = Utils.EntryName.nameForEntry(annotation.entryFrom);
-            const nameTo = Utils.EntryName.nameForEntry(annotation.entryTo);
+            const nameFrom = Trace.Name.forEntry(annotation.entryFrom);
+            const nameTo = Trace.Name.forEntry(annotation.entryTo);
             return i18nString(UIStrings.entryLinkDescriptionLabel, {
                 PH1: nameFrom,
                 PH2: nameTo,
@@ -230,7 +229,7 @@ function findTextColorForContrast(bgColorText) {
 function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
     switch (annotation.type) {
         case 'ENTRY_LABEL': {
-            const entryName = Utils.EntryName.nameForEntry(annotation.entry);
+            const entryName = Trace.Name.forEntry(annotation.entry);
             const backgroundColor = annotationEntryToColorMap.get(annotation.entry) ?? '';
             const color = findTextColorForContrast(backgroundColor);
             const styleForAnnotationIdentifier = {
@@ -254,7 +253,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
       `;
         }
         case 'ENTRIES_LINK': {
-            const entryFromName = Utils.EntryName.nameForEntry(annotation.entryFrom);
+            const entryFromName = Trace.Name.forEntry(annotation.entryFrom);
             const fromBackgroundColor = annotationEntryToColorMap.get(annotation.entryFrom) ?? '';
             const fromTextColor = findTextColorForContrast(fromBackgroundColor);
             const styleForFromAnnotationIdentifier = {
@@ -291,7 +290,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
  */
 function renderEntryToIdentifier(annotation, annotationEntryToColorMap) {
     if (annotation.entryTo) {
-        const entryToName = Utils.EntryName.nameForEntry(annotation.entryTo);
+        const entryToName = Trace.Name.forEntry(annotation.entryTo);
         const toBackgroundColor = annotationEntryToColorMap.get(annotation.entryTo) ?? '';
         const toTextColor = findTextColorForContrast(toBackgroundColor);
         const styleForToAnnotationIdentifier = {

@@ -86,9 +86,8 @@ export interface TimelineOverview {
     setCalculator(calculator: TimelineOverviewCalculator): void;
 }
 export declare class TimelineOverviewBase extends UI.Widget.VBox implements TimelineOverview {
-    private calculatorInternal;
+    #private;
     private canvas;
-    private contextInternal;
     constructor();
     width(): number;
     height(): number;

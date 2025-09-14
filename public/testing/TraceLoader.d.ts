@@ -1,5 +1,9 @@
 import type * as Protocol from '../generated/protocol.js';
 import * as Trace from '../models/trace/trace.js';
+interface ParsedTraceAndModel {
+    parsedTrace: Trace.TraceModel.ParsedTrace;
+    model: Trace.TraceModel.Model;
+}
 export interface TraceEngineLoaderOptions {
     initTraceBounds: boolean;
 }
@@ -54,24 +58,15 @@ export declare class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration): Promise<{
-        parsedTrace: Trace.Handlers.Types.ParsedTrace;
-        insights: Trace.Insights.Types.TraceInsightSets | null;
-        metadata: Trace.Types.File.MetaData;
-    }>;
+    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration): Promise<Trace.TraceModel.ParsedTrace>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.
      * This isn't always required, but some of our code - particularly at the UI
      * level - rely on this being set. This is always set in the actual panel, but
      * parsing a trace in a test does not automatically set it.
      **/
-    static initTraceBoundsManager(data: Trace.Handlers.Types.ParsedTrace): void;
-    static executeTraceEngineOnFileContents(contents: Trace.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: Trace.Types.Configuration.Configuration): Promise<{
-        model: Trace.TraceModel.Model;
-        metadata: Trace.Types.File.MetaData;
-        parsedTrace: Trace.Handlers.Types.ParsedTrace;
-        insights: Trace.Insights.Types.TraceInsightSets | null;
-    }>;
+    static initTraceBoundsManager(parsedTrace: Trace.TraceModel.ParsedTrace): void;
+    static executeTraceEngineOnFileContents(contents: Trace.Types.File.Contents, emulateFreshRecording?: boolean, traceEngineConfig?: Trace.Types.Configuration.Configuration): Promise<ParsedTraceAndModel>;
     static loadTraceFileFromURL(url: URL): Promise<Trace.Types.File.TraceFile>;
     /**
      * Karma test run in a single context if we load all the traces
@@ -80,3 +75,4 @@ export declare class TraceLoader {
     static resetCache(): void;
 }
 export declare function fetchFileAsText(url: URL): Promise<string>;
+export {};

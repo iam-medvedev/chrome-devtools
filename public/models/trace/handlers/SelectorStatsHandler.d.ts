@@ -12,13 +12,13 @@ interface InvalidatedNode {
     ts: Types.Timing.Micro;
     tts?: Types.Timing.Micro;
     subtree: boolean;
-    lastUpdateLayoutTreeEventTs: Types.Timing.Micro;
+    lastRecalcStyleEventTs: Types.Timing.Micro;
 }
 export declare function reset(): void;
 export declare function handleEvent(event: Types.Events.Event): void;
 export declare function finalize(): Promise<void>;
 export interface SelectorStatsData {
-    dataForUpdateLayoutEvent: Map<Types.Events.UpdateLayoutTree, {
+    dataForRecalcStyleEvent: Map<Types.Events.RecalcStyle, {
         timings: Types.Events.SelectorTiming[];
     }>;
     invalidatedNodeList: InvalidatedNode[];

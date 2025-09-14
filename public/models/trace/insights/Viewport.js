@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -32,14 +32,17 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
-export function generateInsight(parsedTrace, context) {
-    const viewportEvent = parsedTrace.UserInteractions.parseMetaViewportEvents.find(event => {
+export function isViewportInsight(model) {
+    return model.insightKey === "Viewport" /* InsightKeys.VIEWPORT */;
+}
+export function generateInsight(data, context) {
+    const viewportEvent = data.UserInteractions.parseMetaViewportEvents.find(event => {
         if (event.args.data.frame !== context.frameId) {
             return false;
         }
         return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
-    const compositorEvents = parsedTrace.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
+    const compositorEvents = data.UserInteractions.beginCommitCompositorFrameEvents.filter(event => {
         if (event.args.frame !== context.frameId) {
             return false;
         }
@@ -61,7 +64,7 @@ export function generateInsight(parsedTrace, context) {
     for (const event of compositorEvents) {
         if (!event.args.is_mobile_optimized) {
             // Grab all the pointer events with at least 50ms of input delay.
-            const longPointerInteractions = [...parsedTrace.UserInteractions.interactionsOverThreshold.values()].filter(interaction => Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === 'POINTER' &&
+            const longPointerInteractions = [...data.UserInteractions.interactionsOverThreshold.values()].filter(interaction => Handlers.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === 'POINTER' &&
                 interaction.inputDelay >= 50_000);
             // The actual impact varies between 0 and 300.
             // Using inputDelay as the closest thing we have for measuring this, though inputDelay may be high for other reasons.

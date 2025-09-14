@@ -31,7 +31,7 @@ import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/developer_resources/developerResourcesListView.css.js
 var developerResourcesListView_css_default = `/*
- * Copyright (c) 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -298,7 +298,7 @@ var DeveloperResourcesListView = class extends UI.Widget.VBox {
 
 // gen/front_end/panels/developer_resources/developerResourcesView.css.js
 var developerResourcesView_css_default = `/*
- * Copyright (c) 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

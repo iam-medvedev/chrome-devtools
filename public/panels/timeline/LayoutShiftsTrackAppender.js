@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -51,7 +51,7 @@ export class LayoutShiftsTrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
-        if (this.#parsedTrace.LayoutShifts.clusters.length === 0) {
+        if (this.#parsedTrace.data.LayoutShifts.clusters.length === 0) {
             return trackStartLevel;
         }
         this.#appendTrackHeaderAtLevel(trackStartLevel, expanded);
@@ -81,9 +81,9 @@ export class LayoutShiftsTrackAppender {
      * layout shifts (the first available level to append more data).
      */
     #appendLayoutShiftsAtLevel(currentLevel) {
-        const allClusters = this.#parsedTrace.LayoutShifts.clusters;
+        const allClusters = this.#parsedTrace.data.LayoutShifts.clusters;
         this.#compatibilityBuilder.appendEventsAtLevel(allClusters, currentLevel, this);
-        const allLayoutShifts = this.#parsedTrace.LayoutShifts.clusters.flatMap(cluster => cluster.events);
+        const allLayoutShifts = this.#parsedTrace.data.LayoutShifts.clusters.flatMap(cluster => cluster.events);
         void this.preloadScreenshots(allLayoutShifts);
         return this.#compatibilityBuilder.appendEventsAtLevel(allLayoutShifts, currentLevel, this);
     }
@@ -193,7 +193,7 @@ export class LayoutShiftsTrackAppender {
     }
     static createShiftViz(event, parsedTrace, maxSize) {
         const screenshots = event.parsedData.screenshots;
-        const { viewportRect, devicePixelRatio: dpr } = parsedTrace.Meta;
+        const { viewportRect, devicePixelRatio: dpr } = parsedTrace.data.Meta;
         const vizContainer = document.createElement('div');
         vizContainer.classList.add('layout-shift-viz');
         const beforeImg = screenshots.before && Utils.ImageCache.getOrQueue(screenshots.before);

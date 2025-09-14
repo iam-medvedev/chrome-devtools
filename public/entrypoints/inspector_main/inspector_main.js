@@ -18,7 +18,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/entrypoints/inspector_main/renderingOptions.css.js
 var renderingOptions_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -295,7 +295,7 @@ import * as UI2 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/inspector_main/nodeIcon.css.js
 var nodeIcon_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -563,7 +563,7 @@ import * as UI3 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/entrypoints/inspector_main/outermostTargetSelector.css.js
 var outermostTargetSelector_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

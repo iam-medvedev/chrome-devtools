@@ -506,14 +506,12 @@ export declare enum DevtoolsExperiments {
     'instrumentation-breakpoints' = 61,
     'authored-deployed-grouping' = 63,
     'just-my-code' = 65,
-    'highlight-errors-elements-panel' = 73,
     'use-source-map-scopes' = 76,
     'timeline-show-postmessage-events' = 86,
     'timeline-save-as-gz' = 108,
     'timeline-enhanced-traces' = 90,
     'timeline-compiled-sources' = 91,
     'timeline-debug-mode' = 93,
-    'vertical-drawer' = 107,
     MAX_VALUE = 110
 }
 export declare enum IssueExpanded {

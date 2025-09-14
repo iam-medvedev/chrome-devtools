@@ -12,9 +12,9 @@ __export(ElementUpdateRecord_exports, {
 var ElementUpdateRecord = class {
   modifiedAttributes;
   removedAttributes;
-  hasChangedChildrenInternal;
-  hasRemovedChildrenInternal;
-  charDataModifiedInternal;
+  #hasChangedChildren;
+  #hasRemovedChildren;
+  #charDataModified;
   attributeModified(attrName) {
     if (this.removedAttributes?.has(attrName)) {
       this.removedAttributes.delete(attrName);
@@ -34,17 +34,17 @@ var ElementUpdateRecord = class {
     this.removedAttributes.add(attrName);
   }
   nodeInserted(_node) {
-    this.hasChangedChildrenInternal = true;
+    this.#hasChangedChildren = true;
   }
   nodeRemoved(_node) {
-    this.hasChangedChildrenInternal = true;
-    this.hasRemovedChildrenInternal = true;
+    this.#hasChangedChildren = true;
+    this.#hasRemovedChildren = true;
   }
   charDataModified() {
-    this.charDataModifiedInternal = true;
+    this.#charDataModified = true;
   }
   childrenModified() {
-    this.hasChangedChildrenInternal = true;
+    this.#hasChangedChildren = true;
   }
   isAttributeModified(attributeName) {
     return this.modifiedAttributes?.has(attributeName) ?? false;
@@ -53,13 +53,13 @@ var ElementUpdateRecord = class {
     return this.removedAttributes !== null && this.removedAttributes !== void 0 && Boolean(this.removedAttributes.size);
   }
   isCharDataModified() {
-    return Boolean(this.charDataModifiedInternal);
+    return Boolean(this.#charDataModified);
   }
   hasChangedChildren() {
-    return Boolean(this.hasChangedChildrenInternal);
+    return Boolean(this.#hasChangedChildren);
   }
   hasRemovedChildren() {
-    return Boolean(this.hasRemovedChildrenInternal);
+    return Boolean(this.#hasRemovedChildren);
   }
 };
 export {

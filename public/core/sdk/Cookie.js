@@ -1,21 +1,21 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 const OPAQUE_PARTITION_KEY = '<opaque>';
 export class Cookie {
-    #nameInternal;
-    #valueInternal;
-    #typeInternal;
+    #name;
+    #value;
+    #type;
     #attributes = new Map();
-    #sizeInternal = 0;
-    #priorityInternal;
+    #size = 0;
+    #priority;
     #cookieLine = null;
     #partitionKey;
     constructor(name, value, type, priority, partitionKey) {
-        this.#nameInternal = name;
-        this.#valueInternal = value;
-        this.#typeInternal = type;
-        this.#priorityInternal = (priority || 'Medium');
+        this.#name = name;
+        this.#value = value;
+        this.#type = type;
+        this.#priority = (priority || 'Medium');
         this.#partitionKey = partitionKey;
     }
     static fromProtocolCookie(protocolCookie) {
@@ -58,13 +58,13 @@ export class Cookie {
                 '-');
     }
     name() {
-        return this.#nameInternal;
+        return this.#name;
     }
     value() {
-        return this.#valueInternal;
+        return this.#value;
     }
     type() {
-        return this.#typeInternal;
+        return this.#type;
     }
     httpOnly() {
         return this.#attributes.has("http-only" /* Attribute.HTTP_ONLY */);
@@ -121,7 +121,7 @@ export class Cookie {
         this.setPartitionKey(OPAQUE_PARTITION_KEY, false);
     }
     priority() {
-        return this.#priorityInternal;
+        return this.#priority;
     }
     session() {
         // RFC 2965 suggests using Discard attribute to mark session cookies, but this does not seem to be widely used.
@@ -147,7 +147,7 @@ export class Cookie {
         return this.#attributes.get("source-scheme" /* Attribute.SOURCE_SCHEME */);
     }
     size() {
-        return this.#sizeInternal;
+        return this.#size;
     }
     /**
      * @deprecated
@@ -167,7 +167,7 @@ export class Cookie {
         return (this.secure() ? 'https://' : 'http://') + this.domain() + port + this.path();
     }
     setSize(size) {
-        this.#sizeInternal = size;
+        this.#size = size;
     }
     expiresDate(requestDate) {
         // RFC 6265 indicates that the max-age attribute takes precedence over the expires attribute
@@ -185,7 +185,7 @@ export class Cookie {
         }
         switch (key) {
             case "priority" /* Attribute.PRIORITY */:
-                this.#priorityInternal = value;
+                this.#priority = value;
                 break;
             default:
                 this.#attributes.set(key, value);

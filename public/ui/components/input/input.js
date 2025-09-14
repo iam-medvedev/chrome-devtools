@@ -1,6 +1,6 @@
 // gen/front_end/ui/components/input/checkbox.css.js
 var checkbox_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -54,7 +54,7 @@ input[type="checkbox"] {
 
 // gen/front_end/ui/components/input/textInput.css.js
 var textInput_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

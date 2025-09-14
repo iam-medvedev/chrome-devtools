@@ -21,9 +21,9 @@ export declare class EventsTimelineTreeView extends TimelineTreeView {
     onHover(node: Trace.Extras.TraceTree.Node | null): void;
 }
 export declare class Filters extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
     private readonly categoryFilter;
     private readonly durationFilter;
-    private readonly filtersInternal;
     constructor();
     filters(): Trace.Extras.TraceFilter.TraceFilter[];
     populateToolbar(toolbar: UI.Toolbar.Toolbar): void;

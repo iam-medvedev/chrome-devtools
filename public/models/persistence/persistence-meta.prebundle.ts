@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,14 +13,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import type * as Persistence from './persistence.js';
 
 const UIStrings = {
-  /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  workspace: 'Workspace',
-  /**
-   * @description Command for showing the Workspace tool in Settings
-   */
-  showWorkspace: 'Show Workspace settings',
   /**
    * @description Title of a setting under the Persistence category in Settings
    */
@@ -66,19 +58,6 @@ async function loadPersistenceModule(): Promise<typeof Persistence> {
   }
   return loadedPersistenceModule;
 }
-
-UI.ViewManager.registerViewExtension({
-  location: UI.ViewManager.ViewLocationValues.SETTINGS_VIEW,
-  id: 'workspace',
-  title: i18nLazyString(UIStrings.workspace),
-  commandPrompt: i18nLazyString(UIStrings.showWorkspace),
-  order: 1,
-  async loadView() {
-    const Persistence = await loadPersistenceModule();
-    return new Persistence.WorkspaceSettingsTab.WorkspaceSettingsTab();
-  },
-  iconName: 'folder',
-});
 
 Common.Settings.registerSettingExtension({
   category: Common.Settings.SettingCategory.PERSISTENCE,

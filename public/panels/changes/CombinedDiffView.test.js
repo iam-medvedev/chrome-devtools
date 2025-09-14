@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -12,7 +12,8 @@ import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createContentProviderUISourceCode, createFileSystemUISourceCode } from '../../testing/UISourceCodeHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
-import * as CombinedDiffView from './CombinedDiffView.js';
+import * as Changes from './changes.js';
+const { CombinedDiffView } = Changes;
 const { urlString } = Platform.DevToolsPath;
 const ORIGINAL_CONTENT = 'const data={original:true}';
 const URL = urlString `file:///workspace/example.html`;

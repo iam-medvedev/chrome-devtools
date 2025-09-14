@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -6,8 +6,9 @@ import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('Handler Threads helper', function () {
     it('returns all the threads for a trace that used tracing', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
-        const allThreads = Array.from(parsedTrace.Renderer.processes.values()).flatMap(process => {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev.json.gz');
+        const data = parsedTrace.data;
+        const allThreads = Array.from(data.Renderer.processes.values()).flatMap(process => {
             return Array.from(process.threads.values());
         });
         const expectedThreadNamesAndTypes = [
@@ -24,7 +25,7 @@ describeWithEnvironment('Handler Threads helper', function () {
             { name: 'ThreadPoolForegroundWorker', type: "THREAD_POOL" /* Trace.Handlers.Threads.ThreadType.THREAD_POOL */ },
             { name: 'CompositorTileWorker3', type: "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ },
         ];
-        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
+        const threads = Trace.Handlers.Threads.threadsInTrace(data);
         assert.strictEqual(threads.length, allThreads.length);
         assert.deepEqual(threads.map(thread => ({ name: thread.name, type: thread.type })), expectedThreadNamesAndTypes);
     });
@@ -35,10 +36,11 @@ describeWithEnvironment('Handler Threads helper', function () {
         const profile = await TraceLoader.rawCPUProfile(this, 'node-fibonacci-website.cpuprofile.gz');
         const contents = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.createFakeTraceFromCpuProfile(profile, Trace.Types.Events.ThreadID(1));
         const { parsedTrace } = await TraceLoader.executeTraceEngineOnFileContents(contents);
+        const data = parsedTrace.data;
         // Check that we did indeed parse this properly as a CPU Profile.
-        assert.strictEqual(parsedTrace.Renderer.processes.size, 0);
-        assert.strictEqual(parsedTrace.Samples.profilesInProcess.size, 1);
-        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
+        assert.strictEqual(data.Renderer.processes.size, 0);
+        assert.strictEqual(data.Samples.profilesInProcess.size, 1);
+        const threads = Trace.Handlers.Threads.threadsInTrace(data);
         assert.lengthOf(threads, 1);
         assert.strictEqual(threads.at(0)?.type, "CPU_PROFILE" /* Trace.Handlers.Threads.ThreadType.CPU_PROFILE */);
         assert.strictEqual(threads.at(0)?.entries.length, 875);

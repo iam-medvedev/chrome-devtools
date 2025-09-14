@@ -8,9 +8,9 @@ export declare class Category extends Trace.Extras.TraceFilter.TraceFilter {
     accept(event: Trace.Types.Events.Event): boolean;
 }
 export declare class TimelineRegExp extends Trace.Extras.TraceFilter.TraceFilter {
-    private regExpInternal;
+    #private;
     constructor(regExp?: RegExp);
     setRegExp(regExp: RegExp | null): void;
     regExp(): RegExp | null;
-    accept(event: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
+    accept(event: Trace.Types.Events.Event, handlerData?: Trace.Handlers.Types.HandlerData): boolean;
 }

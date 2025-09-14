@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -47,7 +47,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/source_frame/ResourceSourceFrame.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ResourceSourceFrame extends SourceFrameImpl {
-    resourceInternal;
+    #resource;
     #givenContentType;
     constructor(resource, givenContentType, options) {
         const isStreamingProvider = TextUtils.ContentProvider.isStreamingContentProvider(resource);
@@ -56,7 +56,7 @@ export class ResourceSourceFrame extends SourceFrameImpl {
             () => resource.requestContentData();
         super(lazyContent, options);
         this.#givenContentType = givenContentType;
-        this.resourceInternal = resource;
+        this.#resource = resource;
         if (isStreamingProvider) {
             void resource.requestStreamingContent().then(streamingContent => {
                 if (!TextUtils.StreamingContentData.isError(streamingContent)) {
@@ -74,11 +74,11 @@ export class ResourceSourceFrame extends SourceFrameImpl {
         return this.#givenContentType;
     }
     get resource() {
-        return this.resourceInternal;
+        return this.#resource;
     }
     populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber) {
         super.populateTextAreaContextMenu(contextMenu, lineNumber, columnNumber);
-        contextMenu.appendApplicableItems(this.resourceInternal);
+        contextMenu.appendApplicableItems(this.#resource);
     }
 }
 export class SearchableContainer extends UI.Widget.VBox {

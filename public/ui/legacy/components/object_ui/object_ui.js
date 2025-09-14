@@ -17,7 +17,7 @@ import * as UI4 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/object_ui/customPreviewComponent.css.js
 var customPreviewComponent_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -469,7 +469,7 @@ var maxLengthForEvaluation = 2e3;
 
 // gen/front_end/ui/legacy/components/object_ui/objectPropertiesSection.css.js
 var objectPropertiesSection_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -598,7 +598,7 @@ var objectPropertiesSection_css_default = `/*
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -800,7 +800,7 @@ var getObjectPropertiesSectionFrom = (element) => {
 var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOutline.TreeOutlineInShadow {
   object;
   editable;
-  objectTreeElementInternal;
+  #objectTreeElement;
   titleElement;
   skipProtoInternal;
   constructor(object, title, linkifier, showOverflow) {
@@ -812,8 +812,8 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
     }
     this.setFocusable(true);
     this.setShowSelectionOnKeyboardFocus(true);
-    this.objectTreeElementInternal = new RootElement(object, linkifier);
-    this.appendChild(this.objectTreeElementInternal);
+    this.#objectTreeElement = new RootElement(object, linkifier);
+    this.appendChild(this.#objectTreeElement);
     if (typeof title === "string" || !title) {
       this.titleElement = this.element.createChild("span");
       this.titleElement.textContent = title || "";
@@ -1142,13 +1142,13 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
     this.skipProtoInternal = true;
   }
   expand() {
-    this.objectTreeElementInternal.expand();
+    this.#objectTreeElement.expand();
   }
   setEditable(value) {
     this.editable = value;
   }
   objectTreeElement() {
-    return this.objectTreeElementInternal;
+    return this.#objectTreeElement;
   }
   enableContextMenu() {
     this.element.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), false);
@@ -1157,15 +1157,15 @@ var ObjectPropertiesSection = class _ObjectPropertiesSection extends UI3.TreeOut
     const contextMenu = new UI3.ContextMenu.ContextMenu(event);
     contextMenu.appendApplicableItems(this.object);
     if (this.object instanceof SDK3.RemoteObject.LocalJSONObject) {
-      contextMenu.viewSection().appendItem(i18nString2(UIStrings2.expandRecursively), this.objectTreeElementInternal.expandRecursively.bind(this.objectTreeElementInternal, EXPANDABLE_MAX_DEPTH), { jslogContext: "expand-recursively" });
-      contextMenu.viewSection().appendItem(i18nString2(UIStrings2.collapseChildren), this.objectTreeElementInternal.collapseChildren.bind(this.objectTreeElementInternal), { jslogContext: "collapse-children" });
+      contextMenu.viewSection().appendItem(i18nString2(UIStrings2.expandRecursively), this.#objectTreeElement.expandRecursively.bind(this.#objectTreeElement, EXPANDABLE_MAX_DEPTH), { jslogContext: "expand-recursively" });
+      contextMenu.viewSection().appendItem(i18nString2(UIStrings2.collapseChildren), this.#objectTreeElement.collapseChildren.bind(this.#objectTreeElement), { jslogContext: "collapse-children" });
     }
     void contextMenu.show();
   }
   titleLessMode() {
-    this.objectTreeElementInternal.listItemElement.classList.add("hidden");
-    this.objectTreeElementInternal.childrenListElement.classList.add("title-less-mode");
-    this.objectTreeElementInternal.expand();
+    this.#objectTreeElement.listItemElement.classList.add("hidden");
+    this.#objectTreeElement.childrenListElement.classList.add("title-less-mode");
+    this.#objectTreeElement.expand();
   }
 };
 var ARRAY_LOAD_THRESHOLD = 100;
@@ -2305,7 +2305,7 @@ import * as Components from "./../utils/utils.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectPopover.css.js
 var objectPopover_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

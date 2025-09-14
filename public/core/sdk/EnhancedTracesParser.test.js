@@ -1,5 +1,5 @@
 import { TraceLoader } from '../../testing/TraceLoader.js';
-import * as EnhancedTraces from './EnhancedTracesParser.js';
+import * as SDK from './sdk.js';
 describe('EnhancedTracesParser', () => {
     let enhancedTracesParser;
     const target1 = {
@@ -193,7 +193,8 @@ describe('EnhancedTracesParser', () => {
     };
     beforeEach(async function () {
         const events = await TraceLoader.rawEvents(this, 'enhanced-traces.json.gz');
-        enhancedTracesParser = new EnhancedTraces.EnhancedTracesParser({ traceEvents: events, metadata: {} });
+        enhancedTracesParser =
+            new SDK.EnhancedTracesParser.EnhancedTracesParser({ traceEvents: events, metadata: {} });
     });
     it('captures correct targets', async function () {
         const data = enhancedTracesParser.data();

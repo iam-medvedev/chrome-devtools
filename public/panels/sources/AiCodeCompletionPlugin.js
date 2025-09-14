@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -106,6 +106,9 @@ export class AiCodeCompletionPlugin extends Plugin {
         const query = doc.toString();
         const cursor = selection.main.head;
         let prefix = query.substring(0, cursor);
+        if (prefix.trim().length === 0) {
+            return;
+        }
         let suffix = query.substring(cursor);
         if (prefix.length > AI_CODE_COMPLETION_CHARACTER_LIMIT) {
             prefix = prefix.substring(prefix.length - AI_CODE_COMPLETION_CHARACTER_LIMIT);

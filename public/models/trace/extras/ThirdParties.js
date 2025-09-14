@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Handlers from '../handlers/handlers.js';
@@ -11,9 +11,9 @@ import * as TraceTree from './TraceTree.js';
  * Returns Main frame main thread events.
  * These events are inline with the ones used by selectedEvents() of TimelineTreeViews
  */
-function collectMainThreadActivity(parsedTrace) {
+function collectMainThreadActivity(data) {
     // TODO: Note b/402658800 could be an issue here.
-    const mainFrameMainThread = parsedTrace.Renderer.processes.values()
+    const mainFrameMainThread = data.Renderer.processes.values()
         .find(p => {
         const url = p.url ?? '';
         // Frame url checked a la CompatibilityTracksAppenders's addThreadAppenders
@@ -26,29 +26,29 @@ function collectMainThreadActivity(parsedTrace) {
     }
     return mainFrameMainThread.entries;
 }
-export function summarizeByThirdParty(parsedTrace, traceBounds) {
-    const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers.Trace.eventTimeComparator);
+export function summarizeByThirdParty(data, traceBounds) {
+    const mainThreadEvents = collectMainThreadActivity(data).sort(Helpers.Trace.eventTimeComparator);
     const groupingFunction = (event) => {
-        const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(event);
+        const entity = data.Renderer.entityMappings.entityByEvent.get(event);
         return entity?.name ?? '';
     };
     const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
-    const summaries = summarizeBottomUpByEntity(node, parsedTrace);
+    const summaries = summarizeBottomUpByEntity(node, data);
     return summaries;
 }
 /**
  * Used only by Lighthouse.
  */
-export function summarizeByURL(parsedTrace, traceBounds) {
-    const mainThreadEvents = collectMainThreadActivity(parsedTrace).sort(Helpers.Trace.eventTimeComparator);
+export function summarizeByURL(data, traceBounds) {
+    const mainThreadEvents = collectMainThreadActivity(data).sort(Helpers.Trace.eventTimeComparator);
     const groupingFunction = (event) => {
-        return Handlers.Helpers.getNonResolvedURL(event, parsedTrace) ?? '';
+        return Handlers.Helpers.getNonResolvedURL(event, data) ?? '';
     };
     const node = getBottomUpTree(mainThreadEvents, traceBounds, groupingFunction);
-    const summaries = summarizeBottomUpByURL(node, parsedTrace);
+    const summaries = summarizeBottomUpByURL(node, data);
     return summaries;
 }
-function summarizeBottomUpByEntity(root, parsedTrace) {
+function summarizeBottomUpByEntity(root, data) {
     const summaries = [];
     // Top nodes are the 3P entities.
     const topNodes = [...root.children().values()].flat();
@@ -56,7 +56,7 @@ function summarizeBottomUpByEntity(root, parsedTrace) {
         if (node.id === '') {
             continue;
         }
-        const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(node.event);
+        const entity = data.Renderer.entityMappings.entityByEvent.get(node.event);
         if (!entity) {
             continue;
         }
@@ -66,22 +66,22 @@ function summarizeBottomUpByEntity(root, parsedTrace) {
             transferSize: node.transferSize,
             mainThreadTime: Types.Timing.Milli(node.selfTime),
             entity,
-            relatedEvents: parsedTrace.Renderer.entityMappings.eventsByEntity.get(entity) ?? [],
+            relatedEvents: data.Renderer.entityMappings.eventsByEntity.get(entity) ?? [],
         };
         summaries.push(summary);
     }
     return summaries;
 }
-function summarizeBottomUpByURL(root, parsedTrace) {
+function summarizeBottomUpByURL(root, data) {
     const summaries = [];
-    const allRequests = parsedTrace.NetworkRequests.byTime;
+    const allRequests = data.NetworkRequests.byTime;
     // Top nodes are URLs.
     const topNodes = [...root.children().values()].flat();
     for (const node of topNodes) {
         if (node.id === '' || typeof node.id !== 'string') {
             continue;
         }
-        const entity = parsedTrace.Renderer.entityMappings.entityByEvent.get(node.event);
+        const entity = data.Renderer.entityMappings.entityByEvent.get(node.event);
         if (!entity) {
             continue;
         }

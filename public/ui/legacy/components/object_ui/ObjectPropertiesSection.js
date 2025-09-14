@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -137,7 +137,7 @@ export const getObjectPropertiesSectionFrom = (element) => {
 export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow {
     object;
     editable;
-    objectTreeElementInternal;
+    #objectTreeElement;
     titleElement;
     skipProtoInternal;
     constructor(object, title, linkifier, showOverflow) {
@@ -149,8 +149,8 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         }
         this.setFocusable(true);
         this.setShowSelectionOnKeyboardFocus(true);
-        this.objectTreeElementInternal = new RootElement(object, linkifier);
-        this.appendChild(this.objectTreeElementInternal);
+        this.#objectTreeElement = new RootElement(object, linkifier);
+        this.appendChild(this.#objectTreeElement);
         if (typeof title === 'string' || !title) {
             this.titleElement = this.element.createChild('span');
             this.titleElement.textContent = title || '';
@@ -494,13 +494,13 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         this.skipProtoInternal = true;
     }
     expand() {
-        this.objectTreeElementInternal.expand();
+        this.#objectTreeElement.expand();
     }
     setEditable(value) {
         this.editable = value;
     }
     objectTreeElement() {
-        return this.objectTreeElementInternal;
+        return this.#objectTreeElement;
     }
     enableContextMenu() {
         this.element.addEventListener('contextmenu', this.contextMenuEventFired.bind(this), false);
@@ -509,15 +509,15 @@ export class ObjectPropertiesSection extends UI.TreeOutline.TreeOutlineInShadow 
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         contextMenu.appendApplicableItems(this.object);
         if (this.object instanceof SDK.RemoteObject.LocalJSONObject) {
-            contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.objectTreeElementInternal.expandRecursively.bind(this.objectTreeElementInternal, EXPANDABLE_MAX_DEPTH), { jslogContext: 'expand-recursively' });
-            contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.objectTreeElementInternal.collapseChildren.bind(this.objectTreeElementInternal), { jslogContext: 'collapse-children' });
+            contextMenu.viewSection().appendItem(i18nString(UIStrings.expandRecursively), this.#objectTreeElement.expandRecursively.bind(this.#objectTreeElement, EXPANDABLE_MAX_DEPTH), { jslogContext: 'expand-recursively' });
+            contextMenu.viewSection().appendItem(i18nString(UIStrings.collapseChildren), this.#objectTreeElement.collapseChildren.bind(this.#objectTreeElement), { jslogContext: 'collapse-children' });
         }
         void contextMenu.show();
     }
     titleLessMode() {
-        this.objectTreeElementInternal.listItemElement.classList.add('hidden');
-        this.objectTreeElementInternal.childrenListElement.classList.add('title-less-mode');
-        this.objectTreeElementInternal.expand();
+        this.#objectTreeElement.listItemElement.classList.add('hidden');
+        this.#objectTreeElement.childrenListElement.classList.add('title-less-mode');
+        this.#objectTreeElement.expand();
     }
 }
 /** @constant */

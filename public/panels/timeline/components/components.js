@@ -99,7 +99,7 @@ import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/components/breadcrumbsUI.css.js
 var breadcrumbsUI_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -246,7 +246,7 @@ import * as MobileThrottling from "./../../mobile_throttling/mobile_throttling.j
 
 // gen/front_end/panels/timeline/components/cpuThrottlingSelector.css.js
 var cpuThrottlingSelector_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -504,7 +504,7 @@ var UIStrings3 = {
 var str_3 = i18n5.i18n.registerUIStrings("panels/timeline/components/DetailsView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 function buildWarningElementsForEvent(event, parsedTrace) {
-  const warnings = parsedTrace.Warnings.perEvent.get(event);
+  const warnings = parsedTrace.data.Warnings.perEvent.get(event);
   const warningElements = [];
   if (!warnings) {
     return warningElements;
@@ -546,7 +546,7 @@ function buildWarningElementsForEvent(event, parsedTrace) {
 }
 function buildRowsForWebSocketEvent(event, parsedTrace) {
   const rows = [];
-  const initiator = parsedTrace.Initiators.eventToInitiator.get(event);
+  const initiator = parsedTrace.data.Initiators.eventToInitiator.get(event);
   if (initiator && Trace2.Types.Events.isWebSocketCreate(initiator)) {
     rows.push({ key: i18n5.i18n.lockedString("URL"), value: initiator.args.data.url });
     if (initiator.args.data.websocketProtocol) {
@@ -629,7 +629,7 @@ import * as Lit3 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/exportTraceOptions.css.js
 var exportTraceOptions_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -902,7 +902,7 @@ import * as Lit4 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/originMap.css.js
 var originMap_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1193,7 +1193,7 @@ import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/timeline/components/fieldSettingsDialog.css.js
 var fieldSettingsDialog_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1660,7 +1660,7 @@ import * as Lit6 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/ignoreListSetting.css.js
 var ignoreListSetting_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1968,7 +1968,7 @@ import * as Lit7 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/interactionBreakdown.css.js
 var interactionBreakdown_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2052,12 +2052,11 @@ import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyComponents from "./../../../ui/legacy/components/utils/utils.js";
 import * as UI7 from "./../../../ui/legacy/legacy.js";
 import * as Lit8 from "./../../../ui/lit/lit.js";
-import * as Utils from "./../utils/utils.js";
 import * as Insights from "./insights/insights.js";
 
 // gen/front_end/panels/timeline/components/layoutShiftDetails.css.js
 var layoutShiftDetails_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2245,7 +2244,6 @@ var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
 var LayoutShiftDetails = class extends UI7.Widget.Widget {
   #view;
   #event = null;
-  #traceInsightsSets = null;
   #parsedTrace = null;
   #isFreshRecording = false;
   constructor(element, view = DEFAULT_VIEW) {
@@ -2254,10 +2252,6 @@ var LayoutShiftDetails = class extends UI7.Widget.Widget {
   }
   set event(event) {
     this.#event = event;
-    void this.requestUpdate();
-  }
-  set traceInsightsSets(traceInsightsSets) {
-    this.#traceInsightsSets = traceInsightsSets;
     void this.requestUpdate();
   }
   set parsedTrace(parsedTrace) {
@@ -2290,7 +2284,6 @@ var LayoutShiftDetails = class extends UI7.Widget.Widget {
   performUpdate() {
     this.#view({
       event: this.#event,
-      traceInsightsSets: this.#traceInsightsSets,
       parsedTrace: this.#parsedTrace,
       isFreshRecording: this.#isFreshRecording,
       togglePopover: (e) => this.#togglePopover(e),
@@ -2303,7 +2296,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
     render8(html8``, target);
     return;
   }
-  const title = Utils.EntryName.nameForEntry(input.event);
+  const title = Trace3.Name.forEntry(input.event);
   render8(html8`
         <style>${layoutShiftDetails_css_default}</style>
         <style>${Buttons4.textButtonStyles}</style>
@@ -2318,7 +2311,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           <div class="layout-shift-event-title"></div>
           ${title}
         </div>
-        ${Trace3.Types.Events.isSyntheticLayoutShift(input.event) ? renderLayoutShiftDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.traceInsightsSets, input.parsedTrace, input.onEventClick)}
+        ${Trace3.Types.Events.isSyntheticLayoutShift(input.event) ? renderLayoutShiftDetails(input.event, input.parsedTrace.insights, input.parsedTrace, input.isFreshRecording, input.onEventClick) : renderLayoutShiftClusterDetails(input.event, input.parsedTrace.insights, input.parsedTrace, input.onEventClick)}
         </div>
       </div>
       `, target);
@@ -2424,7 +2417,7 @@ function renderShiftRow(currentShift, userHasSingleShiftSelected, parsedTrace, e
       </tr>`;
 }
 function renderStartTime(shift, userHasSingleShiftSelected, parsedTrace, onEventClick) {
-  const ts = Trace3.Types.Timing.Micro(shift.ts - parsedTrace.Meta.traceBounds.min);
+  const ts = Trace3.Types.Timing.Micro(shift.ts - parsedTrace.data.Meta.traceBounds.min);
   if (userHasSingleShiftSelected) {
     return html8`${i18n17.TimeUtilities.preciseMillisToString(Helpers3.Timing.microToMilli(ts))}`;
   }
@@ -2436,7 +2429,7 @@ function renderParentCluster(cluster, onEventClick, parsedTrace) {
   if (!cluster) {
     return Lit8.nothing;
   }
-  const ts = Trace3.Types.Timing.Micro(cluster.ts - (parsedTrace?.Meta.traceBounds.min ?? 0));
+  const ts = Trace3.Types.Timing.Micro(cluster.ts - (parsedTrace.data.Meta.traceBounds.min ?? 0));
   const clusterTs = i18n17.TimeUtilities.formatMicroSecondsTime(ts);
   return html8`
       <span class="parent-cluster">${i18nString9(UIStrings9.parentCluster)}:<button type="button" class="timeline-link parent-cluster-link" @click=${() => onEventClick(cluster)}>${i18nString9(UIStrings9.cluster, { PH1: clusterTs })}</button>
@@ -2541,7 +2534,7 @@ import * as MobileThrottling2 from "./../../mobile_throttling/mobile_throttling.
 
 // gen/front_end/panels/timeline/components/networkThrottlingSelector.css.js
 var networkThrottlingSelector_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2767,7 +2760,7 @@ import * as Lit10 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/metricCard.css.js
 var metricCard_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3230,7 +3223,7 @@ function renderDetailedCompareText(options) {
 
 // gen/front_end/panels/timeline/components/metricValueStyles.css.js
 var metricValueStyles_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4042,10 +4035,11 @@ customElements.define("devtools-metric-card", MetricCard);
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
 import * as Common5 from "./../../../core/common/common.js";
 import * as i18n27 from "./../../../core/i18n/i18n.js";
+import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as CrUXManager9 from "./../../../models/crux-manager/crux-manager.js";
 import * as EmulationModel from "./../../../models/emulation/emulation.js";
 import * as LiveMetrics from "./../../../models/live-metrics/live-metrics.js";
-import * as Trace4 from "./../../../models/trace/trace.js";
+import * as Trace5 from "./../../../models/trace/trace.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
@@ -4053,17 +4047,11 @@ import * as RenderCoordinator2 from "./../../../ui/components/render_coordinator
 import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit12 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
-import * as MobileThrottling4 from "./../../mobile_throttling/mobile_throttling.js";
 
 // gen/front_end/panels/timeline/utils/Helpers.js
-import "./../../../ui/components/markdown_view/markdown_view.js";
 import * as Platform6 from "./../../../core/platform/platform.js";
 import * as SDK5 from "./../../../core/sdk/sdk.js";
 import * as CrUXManager7 from "./../../../models/crux-manager/crux-manager.js";
-import * as Marked from "./../../../third_party/marked/marked.js";
-import * as Lit11 from "./../../../ui/lit/lit.js";
-import * as MobileThrottling3 from "./../../mobile_throttling/mobile_throttling.js";
-var { html: html11 } = Lit11;
 function getThrottlingRecommendations() {
   let cpuOption = SDK5.CPUThrottlingManager.CalibratedMidTierMobileThrottlingOption;
   if (cpuOption.rate() === 0) {
@@ -4073,12 +4061,22 @@ function getThrottlingRecommendations() {
   const response = CrUXManager7.CrUXManager.instance().getSelectedFieldMetricData("round_trip_time");
   if (response?.percentiles) {
     const rtt = Number(response.percentiles.p75);
-    networkConditions = MobileThrottling3.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
+    networkConditions = SDK5.NetworkManager.getRecommendedNetworkPreset(rtt);
   }
   return {
     cpuOption,
     networkConditions
   };
+}
+
+// gen/front_end/panels/timeline/components/insights/Helpers.js
+import "./../../../ui/components/markdown_view/markdown_view.js";
+import * as Trace4 from "./../../../models/trace/trace.js";
+import * as Marked from "./../../../third_party/marked/marked.js";
+import * as Lit11 from "./../../../ui/lit/lit.js";
+var { html: html11 } = Lit11;
+function shouldRenderForCategory(options) {
+  return options.activeCategory === Trace4.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
 }
 function md(markdown) {
   const tokens = Marked.Marked.lexer(markdown);
@@ -4088,7 +4086,7 @@ function md(markdown) {
 
 // gen/front_end/panels/timeline/components/liveMetricsView.css.js
 var liveMetricsView_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4797,7 +4795,9 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
   }
   async #refreshFieldDataForCurrentPage() {
-    await this.#cruxManager.refresh();
+    if (!this.#isNode) {
+      await this.#cruxManager.refresh();
+    }
     void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
@@ -4831,10 +4831,10 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       return null;
     }
     return {
-      timeToFirstByte: Trace4.Types.Timing.Milli(ttfb),
-      resourceLoadDelay: Trace4.Types.Timing.Milli(loadDelay),
-      resourceLoadTime: Trace4.Types.Timing.Milli(loadDuration),
-      elementRenderDelay: Trace4.Types.Timing.Milli(renderDelay)
+      timeToFirstByte: Trace5.Types.Timing.Milli(ttfb),
+      resourceLoadDelay: Trace5.Types.Timing.Milli(loadDelay),
+      resourceLoadTime: Trace5.Types.Timing.Milli(loadDuration),
+      elementRenderDelay: Trace5.Types.Timing.Milli(renderDelay)
     };
   }
   #renderLcpCard() {
@@ -4956,7 +4956,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     if (rtt < RTT_MINIMUM) {
       return i18nString13(UIStrings14.tryDisablingThrottling);
     }
-    const conditions = MobileThrottling4.ThrottlingPresets.ThrottlingPresets.getRecommendedNetworkPreset(rtt);
+    const conditions = SDK6.NetworkManager.getRecommendedNetworkPreset(rtt);
     if (!conditions) {
       return null;
     }
@@ -5479,16 +5479,16 @@ __export(NetworkRequestDetails_exports, {
 });
 import "./../../../ui/components/request_link_icon/request_link_icon.js";
 import * as i18n31 from "./../../../core/i18n/i18n.js";
-import * as SDK6 from "./../../../core/sdk/sdk.js";
+import * as SDK7 from "./../../../core/sdk/sdk.js";
 import * as Helpers6 from "./../../../models/trace/helpers/helpers.js";
-import * as Trace6 from "./../../../models/trace/trace.js";
+import * as Trace7 from "./../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../ui/legacy/components/utils/utils.js";
 import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/networkRequestDetails.css.js
 var networkRequestDetails_css_default = `/*
- * Copyright (c) 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5637,7 +5637,7 @@ var networkRequestDetails_css_default = `/*
 
 // gen/front_end/panels/timeline/components/networkRequestTooltip.css.js
 var networkRequestTooltip_css_default = `/*
- * Copyright (c) 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5759,7 +5759,7 @@ __export(NetworkRequestTooltip_exports, {
 import "./../../../ui/components/icon_button/icon_button.js";
 import * as i18n29 from "./../../../core/i18n/i18n.js";
 import * as Platform7 from "./../../../core/platform/platform.js";
-import * as Trace5 from "./../../../models/trace/trace.js";
+import * as Trace6 from "./../../../models/trace/trace.js";
 import * as PerfUI from "./../../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
 import * as TimelineUtils from "./../utils/utils.js";
@@ -5906,7 +5906,7 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
         <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
-        ${Trace5.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ? html13`<div class="render-blocking"> ${i18nString14(UIStrings15.renderBlocking)} </div>` : Lit13.nothing}
+        ${Trace6.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ? html13`<div class="render-blocking"> ${i18nString14(UIStrings15.renderBlocking)} </div>` : Lit13.nothing}
         <div class="divider"></div>
 
         ${_NetworkRequestTooltip.renderTimings(this.#data.networkRequest)}
@@ -6049,7 +6049,7 @@ var NetworkRequestDetails = class extends UI10.Widget.Widget {
       const headerName = header.name.toLocaleLowerCase();
       if (headerName === "server-timing" || headerName === "server-timing-test") {
         header.name = "server-timing";
-        this.#serverTimings = SDK6.ServerTiming.ServerTiming.parseHeaders([header]);
+        this.#serverTimings = SDK7.ServerTiming.ServerTiming.parseHeaders([header]);
         break;
       }
     }
@@ -6137,7 +6137,7 @@ function renderURL(request) {
     maxLength: MAX_URL_LENGTH3
   };
   const linkifiedURL = LegacyComponents2.Linkifier.Linkifier.linkifyURL(request.args.data.url, options);
-  const networkRequest = SDK6.TraceObject.RevealableNetworkRequest.create(request);
+  const networkRequest = SDK7.TraceObject.RevealableNetworkRequest.create(request);
   if (networkRequest) {
     linkifiedURL.addEventListener("contextmenu", (event) => {
       const contextMenu = new UI10.ContextMenu.ContextMenu(event);
@@ -6260,7 +6260,7 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
   if (!linkifier) {
     return Lit14.nothing;
   }
-  const hasStackTrace = Trace6.Helpers.Trace.stackTraceInEvent(request) !== null;
+  const hasStackTrace = Trace7.Helpers.Trace.stackTraceInEvent(request) !== null;
   let link = null;
   const options = {
     tabStop: true,
@@ -6268,12 +6268,12 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
     inlineFrameIndex: 0
   };
   if (hasStackTrace) {
-    const topFrame = Trace6.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(request)?.at(0) ?? null;
+    const topFrame = Trace7.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(request) ?? null;
     if (topFrame) {
       link = linkifier.maybeLinkifyConsoleCallFrame(target, topFrame, options);
     }
   }
-  const initiator = parsedTrace?.NetworkRequests.eventToInitiator.get(request);
+  const initiator = parsedTrace?.data.NetworkRequests.eventToInitiator.get(request);
   if (initiator) {
     link = linkifier.maybeLinkifyScriptLocation(
       target,
@@ -6307,7 +6307,7 @@ import * as Lit15 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/relatedInsightChips.css.js
 var relatedInsightChips_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6513,17 +6513,16 @@ __export(SidebarAnnotationsTab_exports, {
 import * as Common6 from "./../../../core/common/common.js";
 import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
-import * as Trace7 from "./../../../models/trace/trace.js";
+import * as Trace8 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
 import * as UI12 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit16 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
-import * as Utils2 from "./../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/sidebarAnnotationsTab.css.js
 var sidebarAnnotationsTab_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6792,7 +6791,7 @@ var SidebarAnnotationsTab = class extends UI12.Widget.Widget {
 function detailedAriaDescriptionForAnnotation(annotation) {
   switch (annotation.type) {
     case "ENTRY_LABEL": {
-      const name = Utils2.EntryName.nameForEntry(annotation.entry);
+      const name = Trace8.Name.forEntry(annotation.entry);
       return i18nString17(UIStrings18.entryLabelDescriptionLabel, {
         PH1: name,
         PH2: annotation.label
@@ -6810,8 +6809,8 @@ function detailedAriaDescriptionForAnnotation(annotation) {
       if (!annotation.entryTo) {
         return "";
       }
-      const nameFrom = Utils2.EntryName.nameForEntry(annotation.entryFrom);
-      const nameTo = Utils2.EntryName.nameForEntry(annotation.entryTo);
+      const nameFrom = Trace8.Name.forEntry(annotation.entryFrom);
+      const nameTo = Trace8.Name.forEntry(annotation.entryTo);
       return i18nString17(UIStrings18.entryLinkDescriptionLabel, {
         PH1: nameFrom,
         PH2: nameTo
@@ -6834,7 +6833,7 @@ function findTextColorForContrast(bgColorText) {
 function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
   switch (annotation.type) {
     case "ENTRY_LABEL": {
-      const entryName = Utils2.EntryName.nameForEntry(annotation.entry);
+      const entryName = Trace8.Name.forEntry(annotation.entry);
       const backgroundColor = annotationEntryToColorMap.get(annotation.entry) ?? "";
       const color = findTextColorForContrast(backgroundColor);
       const styleForAnnotationIdentifier = {
@@ -6849,8 +6848,8 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
     }
     case "TIME_RANGE": {
       const minTraceBoundsMilli = TraceBounds3.TraceBounds.BoundsManager.instance().state()?.milli.entireTraceBounds.min ?? 0;
-      const timeRangeStartInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.min) - minTraceBoundsMilli);
-      const timeRangeEndInMs = Math.round(Trace7.Helpers.Timing.microToMilli(annotation.bounds.max) - minTraceBoundsMilli);
+      const timeRangeStartInMs = Math.round(Trace8.Helpers.Timing.microToMilli(annotation.bounds.min) - minTraceBoundsMilli);
+      const timeRangeEndInMs = Math.round(Trace8.Helpers.Timing.microToMilli(annotation.bounds.max) - minTraceBoundsMilli);
       return html16`
             <span class="annotation-identifier time-range">
               ${timeRangeStartInMs} - ${timeRangeEndInMs} ms
@@ -6858,7 +6857,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
       `;
     }
     case "ENTRIES_LINK": {
-      const entryFromName = Utils2.EntryName.nameForEntry(annotation.entryFrom);
+      const entryFromName = Trace8.Name.forEntry(annotation.entryFrom);
       const fromBackgroundColor = annotationEntryToColorMap.get(annotation.entryFrom) ?? "";
       const fromTextColor = findTextColorForContrast(fromBackgroundColor);
       const styleForFromAnnotationIdentifier = {
@@ -6882,7 +6881,7 @@ function renderAnnotationIdentifier(annotation, annotationEntryToColorMap) {
 }
 function renderEntryToIdentifier(annotation, annotationEntryToColorMap) {
   if (annotation.entryTo) {
-    const entryToName = Utils2.EntryName.nameForEntry(annotation.entryTo);
+    const entryToName = Trace8.Name.forEntry(annotation.entryTo);
     const toBackgroundColor = annotationEntryToColorMap.get(annotation.entryTo) ?? "";
     const toTextColor = findTextColorForContrast(toBackgroundColor);
     const styleForToAnnotationIdentifier = {
@@ -6990,20 +6989,12 @@ import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
-import * as Utils3 from "./../utils/utils.js";
-
-// gen/front_end/panels/timeline/components/insights/Helpers.js
-import * as Trace8 from "./../../../models/trace/trace.js";
-function shouldRenderForCategory(options) {
-  return options.activeCategory === Trace8.Insights.Types.InsightCategory.ALL || options.activeCategory === options.insightCategory;
-}
-
-// gen/front_end/panels/timeline/components/SidebarSingleInsightSet.js
+import * as Utils from "./../utils/utils.js";
 import * as Insights4 from "./insights/insights.js";
 
 // gen/front_end/panels/timeline/components/sidebarSingleInsightSet.css.js
 var sidebarSingleInsightSet_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7198,12 +7189,10 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   #shadow = this.attachShadow({ mode: "open" });
   #activeInsightElement = null;
   #data = {
-    insights: null,
     insightSetKey: null,
     activeCategory: Trace9.Insights.Types.InsightCategory.ALL,
     activeInsight: null,
-    parsedTrace: null,
-    traceMetadata: null
+    parsedTrace: null
   };
   #dismissedFieldMismatchNotice = false;
   #activeHighlightTimeout = -1;
@@ -7277,7 +7266,10 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   }
   // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
   #getLocalMetrics(insightSetKey) {
-    const insightSet = this.#data.insights?.get(insightSetKey);
+    if (!this.#data.parsedTrace) {
+      return {};
+    }
+    const insightSet = this.#data.parsedTrace.insights?.get(insightSetKey);
     if (!insightSet) {
       return {};
     }
@@ -7287,11 +7279,14 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     return { lcp, cls, inp };
   }
   #getFieldMetrics(insightSetKey) {
-    const insightSet = this.#data.insights?.get(insightSetKey);
+    if (!this.#data.parsedTrace) {
+      return null;
+    }
+    const insightSet = this.#data.parsedTrace.insights?.get(insightSetKey);
     if (!insightSet) {
       return null;
     }
-    const fieldMetricsResults = Trace9.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#data.traceMetadata, CrUXManager11.CrUXManager.instance().getSelectedScope());
+    const fieldMetricsResults = Trace9.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#data.parsedTrace.metadata, CrUXManager11.CrUXManager.instance().getSelectedScope());
     if (!fieldMetricsResults) {
       return null;
     }
@@ -7421,19 +7416,19 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     }
     return { shownInsights, passedInsights };
   }
-  #renderInsights(insightSets, insightSetKey) {
-    const insightSet = insightSets?.get(insightSetKey);
+  #renderInsights(insights, insightSetKey) {
+    const insightSet = insights?.get(insightSetKey);
     if (!insightSet) {
       return Lit17.nothing;
     }
     const fieldMetrics = this.#getFieldMetrics(insightSetKey);
-    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _SidebarSingleInsightSet.categorizeInsights(insightSets, insightSetKey, this.#data.activeCategory);
+    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _SidebarSingleInsightSet.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
     const renderInsightComponent = (insightData) => {
       const { componentClass, model } = insightData;
-      if (!this.#data.parsedTrace || !this.#data.insights || !this.#data.traceMetadata) {
+      if (!this.#data.parsedTrace?.insights) {
         return html17``;
       }
-      const agentFocus = Utils3.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, this.#data.insights, this.#data.traceMetadata, model);
+      const agentFocus = Utils.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, model);
       return html17`<div>
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
@@ -7465,8 +7460,8 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
     `;
   }
   #render() {
-    const { insights, insightSetKey } = this.#data;
-    if (!insights || !insightSetKey) {
+    const { parsedTrace, insightSetKey } = this.#data;
+    if (!parsedTrace?.insights || !insightSetKey) {
       Lit17.render(html17``, this.#shadow, { host: this });
       return;
     }
@@ -7474,7 +7469,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
       <style>${sidebarSingleInsightSet_css_default}</style>
       <div class="navigation">
         ${this.#renderMetrics(insightSetKey)}
-        ${this.#renderInsights(insights, insightSetKey)}
+        ${this.#renderInsights(parsedTrace.insights, insightSetKey)}
         </div>
       `, this.#shadow, { host: this });
   }
@@ -7486,12 +7481,12 @@ import * as Trace10 from "./../../../models/trace/trace.js";
 import * as Buttons8 from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
-import * as Utils4 from "./../utils/utils.js";
+import * as Utils2 from "./../utils/utils.js";
 import * as Insights6 from "./insights/insights.js";
 
 // gen/front_end/panels/timeline/components/sidebarInsightsTab.css.js
 var sidebarInsightsTab_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7569,8 +7564,6 @@ var { html: html18 } = Lit18;
 var SidebarInsightsTab = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #parsedTrace = null;
-  #traceMetadata = null;
-  #insights = null;
   #activeInsight = null;
   #selectedCategory = Trace10.Insights.Types.InsightCategory.ALL;
   /**
@@ -7587,26 +7580,9 @@ var SidebarInsightsTab = class extends HTMLElement {
     }
     this.#parsedTrace = data;
     this.#selectedInsightSetKey = null;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  set traceMetadata(data) {
-    if (data === this.#traceMetadata) {
-      return;
+    if (this.#parsedTrace?.insights) {
+      this.#selectedInsightSetKey = [...this.#parsedTrace.insights.keys()].at(0) ?? null;
     }
-    this.#traceMetadata = data;
-    this.#selectedInsightSetKey = null;
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
-  }
-  set insights(data) {
-    if (data === this.#insights) {
-      return;
-    }
-    this.#selectedInsightSetKey = null;
-    if (!data || !this.#parsedTrace) {
-      return;
-    }
-    this.#insights = new Map(data);
-    this.#selectedInsightSetKey = [...this.#insights.keys()].at(0) ?? null;
     void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   get activeInsight() {
@@ -7630,7 +7606,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetHovered(id) {
-    const data = this.#insights?.get(id);
+    const data = this.#parsedTrace?.insights?.get(id);
     data && this.dispatchEvent(new Insights6.SidebarInsight.InsightSetHovered(data.bounds));
   }
   #insightSetUnhovered() {
@@ -7638,7 +7614,7 @@ var SidebarInsightsTab = class extends HTMLElement {
   }
   #onZoomClick(event, id) {
     event.stopPropagation();
-    const data = this.#insights?.get(id);
+    const data = this.#parsedTrace?.insights?.get(id);
     if (!data) {
       return;
     }
@@ -7684,25 +7660,24 @@ var SidebarInsightsTab = class extends HTMLElement {
     set.highlightActiveInsight();
   }
   #render() {
-    if (!this.#parsedTrace || !this.#insights) {
+    if (!this.#parsedTrace?.insights) {
       Lit18.render(Lit18.nothing, this.#shadow, { host: this });
       return;
     }
-    const hasMultipleInsightSets = this.#insights.size > 1;
-    const labels = Utils4.Helpers.createUrlLabels([...this.#insights.values()].map(({ url }) => url));
+    const insights = this.#parsedTrace.insights;
+    const hasMultipleInsightSets = insights.size > 1;
+    const labels = Utils2.Helpers.createUrlLabels([...insights.values()].map(({ url }) => url));
     const contents = (
       // clang-format off
       html18`
       <style>${sidebarInsightsTab_css_default}</style>
       <div class="insight-sets-wrapper">
-        ${[...this.#insights.values()].map(({ id, url }, index) => {
+        ${[...insights.values()].map(({ id, url }, index) => {
         const data = {
-          insights: this.#insights,
           insightSetKey: id,
           activeCategory: this.#selectedCategory,
           activeInsight: this.#activeInsight,
-          parsedTrace: this.#parsedTrace,
-          traceMetadata: this.#traceMetadata
+          parsedTrace: this.#parsedTrace
         };
         const contents2 = html18`
             <devtools-performance-sidebar-single-navigation
@@ -7824,12 +7799,9 @@ var SidebarWidget = class extends UI13.Widget.VBox {
     const annotations = this.#annotationsView.deduplicatedAnnotations();
     this.#tabbedPane.setBadge("annotations", annotations.length > 0 ? annotations.length.toString() : null);
   }
-  setParsedTrace(parsedTrace, metadata) {
-    this.#insightsView.setParsedTrace(parsedTrace, metadata);
-  }
-  setInsights(insights) {
-    this.#insightsView.setInsights(insights);
-    this.#tabbedPane.setTabEnabled("insights", insights !== null && insights.size > 0);
+  setParsedTrace(parsedTrace) {
+    this.#insightsView.setParsedTrace(parsedTrace);
+    this.#tabbedPane.setTabEnabled("insights", Boolean(parsedTrace?.insights && parsedTrace.insights.size > 0));
   }
   setActiveInsight(activeInsight, opts) {
     this.#insightsView.setActiveInsight(activeInsight, opts);
@@ -7848,12 +7820,8 @@ var InsightsView = class extends UI13.Widget.VBox {
     this.element.classList.add("sidebar-insights");
     this.element.appendChild(this.#component);
   }
-  setParsedTrace(parsedTrace, metadata) {
+  setParsedTrace(parsedTrace) {
     this.#component.parsedTrace = parsedTrace;
-    this.#component.traceMetadata = metadata;
-  }
-  setInsights(data) {
-    this.#component.insights = data;
   }
   getActiveInsight() {
     return this.#component.activeInsight;
@@ -7899,7 +7867,7 @@ import * as Lit19 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
 var timelineSummary_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

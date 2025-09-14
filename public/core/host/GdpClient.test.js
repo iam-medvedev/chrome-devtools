@@ -13,7 +13,7 @@ describe('GdpClient', () => {
         });
         dispatchHttpRequestStub =
             sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'dispatchHttpRequest')
-                .callsFake((request, cb) => {
+                .callsFake((_, cb) => {
                 cb({
                     response: JSON.stringify({ name: 'profiles/id' }),
                     statusCode: 200,
@@ -30,6 +30,27 @@ describe('GdpClient', () => {
         await Host.GdpClient.GdpClient.instance().checkEligibility();
         await Host.GdpClient.GdpClient.instance().checkEligibility();
         sinon.assert.calledOnce(dispatchHttpRequestStub);
+    });
+    it('should clear cache after creating a profile', async () => {
+        await Host.GdpClient.GdpClient.instance().getProfile();
+        await Host.GdpClient.GdpClient.instance().createProfile({ user: 'test', emailPreference: Host.GdpClient.EmailPreference.ENABLED });
+        await Host.GdpClient.GdpClient.instance().getProfile();
+        await Host.GdpClient.GdpClient.instance().getProfile();
+        sinon.assert.calledThrice(dispatchHttpRequestStub);
+    });
+    it('`getAwardedBadgeNames` should normalize the badge names', async () => {
+        dispatchHttpRequestStub.callsFake((_, cb) => {
+            cb({
+                response: JSON.stringify({
+                    awards: [{
+                            name: '/profiles/some-obfuscated-id/awards/some-badge',
+                        }],
+                }),
+                statusCode: 200,
+            });
+        });
+        const result = await Host.GdpClient.GdpClient.instance().getAwardedBadgeNames({ names: [] });
+        assert.deepEqual(result, new Set(['/profiles/me/awards/some-badge']));
     });
     describe('when the integration is disabled', () => {
         it('should not make a request', async () => {

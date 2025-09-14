@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -803,23 +803,23 @@ export class Edit {
     }
 }
 export class CSSLocation {
-    #cssModelInternal;
+    #cssModel;
     styleSheetId;
     url;
     lineNumber;
     columnNumber;
     constructor(header, lineNumber, columnNumber) {
-        this.#cssModelInternal = header.cssModel();
+        this.#cssModel = header.cssModel();
         this.styleSheetId = header.id;
         this.url = header.resourceURL();
         this.lineNumber = lineNumber;
         this.columnNumber = columnNumber || 0;
     }
     cssModel() {
-        return this.#cssModelInternal;
+        return this.#cssModel;
     }
     header() {
-        return this.#cssModelInternal.styleSheetHeaderForId(this.styleSheetId);
+        return this.#cssModel.styleSheetHeaderForId(this.styleSheetId);
     }
 }
 class CSSDispatcher {

@@ -58,7 +58,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     constructor(delegate: TimelineModeViewDelegate);
     containingElement(): HTMLElement;
     dimThirdPartiesIfRequired(): void;
-    setMarkers(parsedTrace: Trace.Handlers.Types.ParsedTrace | null): void;
+    setMarkers(parsedTrace: Trace.TraceModel.ParsedTrace | null): void;
     setOverlays(overlays: Trace.Types.Overlays.Overlay[], options: Overlays.Overlays.TimelineOverlaySetOptions): void;
     hoverAnnotationInSidebar(annotation: Trace.Types.File.Annotation): void;
     sidebarAnnotationHoverOut(): void;
@@ -82,7 +82,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     getMainFlameChart(): PerfUI.FlameChart.FlameChart;
     getNetworkFlameChart(): PerfUI.FlameChart.FlameChart;
     updateSelectedGroup(flameChart: PerfUI.FlameChart.FlameChart, group: PerfUI.FlameChart.Group | null): void;
-    setModel(newParsedTrace: Trace.Handlers.Types.ParsedTrace, traceMetadata: Trace.Types.File.MetaData | null): void;
+    setModel(newParsedTrace: Trace.TraceModel.ParsedTrace, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     /**
      * Resets the state of the UI data and initializes it again with the
      * current parsed trace.
@@ -100,7 +100,6 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
      * order to save it to disk as part of the trace.
      */
     getPersistedConfigMetadata(): Trace.Types.File.PersistedTraceVisualConfig;
-    setInsights(insights: Trace.Insights.Types.TraceInsightSets | null, eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap): void;
     reset(): void;
     setupWindowTimes(): void;
     hasHiddenTracks(): boolean;
@@ -167,7 +166,7 @@ export declare const FlameChartStyle: {
     textColor: string;
 };
 export declare class TimelineFlameChartMarker implements PerfUI.FlameChart.FlameChartMarker {
-    private readonly startTimeInternal;
+    #private;
     private readonly startOffset;
     private style;
     constructor(startTime: number, startOffset: number, style: TimelineMarkerStyle);

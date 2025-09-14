@@ -25,7 +25,7 @@ import * as UI from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/data_grid/dataGrid.css.js
 var dataGrid_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -517,14 +517,14 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
   refreshCallback;
   dataTableHeaders;
   scrollContainerInternal;
-  dataContainerInternal;
+  #dataContainer;
   dataTable;
   inline;
   columnsArray;
   columns;
   visibleColumnsArray;
   cellClass;
-  dataTableHeadInternal;
+  #dataTableHead;
   headerRow;
   dataTableColumnGroup;
   dataTableBody;
@@ -543,7 +543,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
   elementToDataGridNode;
   disclosureColumnId;
   sortColumnCell;
-  rootNodeInternal;
+  #rootNode;
   editingNode;
   columnWeightsSetting;
   creationNode;
@@ -569,9 +569,9 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     this.deleteCallback = deleteCallback;
     this.refreshCallback = refreshCallback;
     this.dataTableHeaders = {};
-    this.dataContainerInternal = this.element.createChild("div", "data-container");
-    this.dataTable = this.dataContainerInternal.createChild("table", "data");
-    this.scrollContainerInternal = this.dataContainerInternal;
+    this.#dataContainer = this.element.createChild("div", "data-container");
+    this.dataTable = this.#dataContainer.createChild("table", "data");
+    this.scrollContainerInternal = this.#dataContainer;
     this.dataTable.addEventListener("dblclick", this.ondblclick.bind(this), false);
     this.dataTable.addEventListener("mousedown", this.mouseDownInDataTable.bind(this));
     this.dataTable.addEventListener("click", this.clickInDataTable.bind(this), true);
@@ -582,8 +582,8 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     columnsArray.forEach((column) => this.innerAddColumn(column));
     this.cellClass = null;
     this.dataTableColumnGroup = this.dataTable.createChild("colgroup");
-    this.dataTableHeadInternal = this.dataTable.createChild("thead");
-    this.headerRow = this.dataTableHeadInternal.createChild("tr");
+    this.#dataTableHead = this.dataTable.createChild("thead");
+    this.headerRow = this.#dataTableHead.createChild("tr");
     this.dataTableBody = this.dataTable.createChild("tbody");
     this.topFillerRow = this.dataTableBody.createChild("tr", "data-grid-filler-row revealed");
     UI.ARIAUtils.setHidden(this.topFillerRow, true);
@@ -609,15 +609,15 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     this.editCallback = editCallback;
   }
   firstSelectableNode() {
-    let firstSelectableNode = this.rootNodeInternal;
+    let firstSelectableNode = this.#rootNode;
     while (firstSelectableNode && !firstSelectableNode.selectable) {
       firstSelectableNode = firstSelectableNode.traverseNextNode(true) || void 0;
     }
     return firstSelectableNode;
   }
   lastSelectableNode() {
-    let lastSelectableNode = this.rootNodeInternal;
-    let iterator = this.rootNodeInternal;
+    let lastSelectableNode = this.#rootNode;
+    let iterator = this.#rootNode;
     while (iterator) {
       if (iterator.selectable) {
         lastSelectableNode = iterator;
@@ -714,7 +714,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     }
   }
   getNumberOfRows() {
-    return this.rootNodeInternal ? this.enumerateChildren(this.rootNodeInternal, [], 1).length : 0;
+    return this.#rootNode ? this.enumerateChildren(this.#rootNode, [], 1).length : 0;
   }
   updateGridAccessibleNameOnFocus() {
     let accessibleText;
@@ -726,7 +726,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
       const rowHeader = i18nString(UIStrings.sRowS, { PH1: this.displayName, PH2: expandText });
       accessibleText = `${rowHeader} ${this.selectedNode.nodeAccessibleText}`;
     } else {
-      if (!this.rootNodeInternal) {
+      if (!this.#rootNode) {
         return;
       }
       const numberOfRows = this.getNumberOfRows();
@@ -845,12 +845,12 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     }
   }
   setRootNode(rootNode) {
-    if (this.rootNodeInternal) {
-      this.rootNodeInternal.removeChildren();
-      this.rootNodeInternal.dataGrid = null;
-      this.rootNodeInternal.isRoot = false;
+    if (this.#rootNode) {
+      this.#rootNode.removeChildren();
+      this.#rootNode.dataGrid = null;
+      this.#rootNode.isRoot = false;
     }
-    this.rootNodeInternal = rootNode;
+    this.#rootNode = rootNode;
     rootNode.isRoot = true;
     rootNode.setHasChildren(false);
     rootNode.expandedInternal = true;
@@ -859,7 +859,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     rootNode.dataGrid = this;
   }
   rootNode() {
-    let rootNode = this.rootNodeInternal;
+    let rootNode = this.#rootNode;
     if (!rootNode) {
       rootNode = new DataGridNode();
       this.setRootNode(rootNode);
@@ -1139,10 +1139,10 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
       widths.push((this.columnsArray[i].title || "").length);
     }
     maxDescentLevel = maxDescentLevel || 0;
-    if (!this.rootNodeInternal) {
+    if (!this.#rootNode) {
       return;
     }
-    const children = this.enumerateChildren(this.rootNodeInternal, [], maxDescentLevel + 1);
+    const children = this.enumerateChildren(this.#rootNode, [], maxDescentLevel + 1);
     for (let i = 0; i < children.length; ++i) {
       const node = children[i];
       for (let j = 0; j < this.columnsArray.length; ++j) {
@@ -1187,7 +1187,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
   updateWidths() {
     if (!this.columnWidthsInitialized && this.element.offsetWidth) {
       const tableWidth = this.element.offsetWidth - this.cornerWidth;
-      const cells = this.dataTableHeadInternal.rows[0].cells;
+      const cells = this.#dataTableHead.rows[0].cells;
       const numColumns = cells.length - 1;
       for (let i = 0; i < numColumns; i++) {
         const column = this.visibleColumnsArray[i];
@@ -1247,7 +1247,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
   willHide() {
   }
   getPreferredWidth(columnIndex) {
-    return elementToPreferedWidthMap.get(this.dataTableColumnGroup.children[columnIndex]) || this.dataTableHeadInternal.rows[0].cells[columnIndex].offsetWidth;
+    return elementToPreferedWidthMap.get(this.dataTableColumnGroup.children[columnIndex]) || this.#dataTableHead.rows[0].cells[columnIndex].offsetWidth;
   }
   applyColumnWeights() {
     let tableWidth = this.element.offsetWidth - this.cornerWidth - 1;
@@ -1313,7 +1313,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
       }
     }
     for (let i = 0; i < numColumns - 1; i++) {
-      left[i] = (left[i - 1] || 0) + this.dataTableHeadInternal.rows[0].cells[i].offsetWidth;
+      left[i] = (left[i - 1] || 0) + this.#dataTableHead.rows[0].cells[i].offsetWidth;
     }
     for (let i = 0; i < numColumns - 1; i++) {
       let resizer = resizers[i];
@@ -1595,7 +1595,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
         });
       }
     }
-    if (target.isSelfOrDescendant(this.dataTableHeadInternal)) {
+    if (target.isSelfOrDescendant(this.#dataTableHead)) {
       if (this.headerContextMenuCallback) {
         this.headerContextMenuCallback(contextMenu);
       }
@@ -1761,10 +1761,10 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
   // then we report 0 height and the caller is expected to ensure their chosen scroll
   // container's height matches the visible scrollable data area as seen by the user.
   headerHeightInScroller() {
-    return this.scrollContainer === this.dataContainerInternal ? this.headerHeight() : 0;
+    return this.scrollContainer === this.#dataContainer ? this.headerHeight() : 0;
   }
   headerHeight() {
-    return this.dataTableHeadInternal.offsetHeight;
+    return this.#dataTableHead.offsetHeight;
   }
   revealNode(element) {
     element.scrollIntoViewIfNeeded(false);
@@ -1784,15 +1784,15 @@ var CenterResizerOverBorderAdjustment = 3;
 var DataGridNode = class {
   elementInternal = null;
   expandedInternal = false;
-  selectedInternal = false;
+  #selected = false;
   dirty = false;
   inactive = false;
   highlighted = false;
-  depthInternal;
+  #depth;
   revealedInternal;
   attachedInternal = false;
   savedPosition = null;
-  shouldRefreshChildrenInternal = true;
+  #shouldRefreshChildren = true;
   children = [];
   dataGrid = null;
   parent = null;
@@ -1804,11 +1804,11 @@ var DataGridNode = class {
   nodeAccessibleText = "";
   cellAccessibleTextMap = /* @__PURE__ */ new Map();
   isCreationNode = false;
-  dataInternal;
-  hasChildrenInternal;
+  #data;
+  #hasChildren;
   constructor(data, hasChildren) {
-    this.dataInternal = data || {};
-    this.hasChildrenInternal = hasChildren || false;
+    this.#data = data || {};
+    this.#hasChildren = hasChildren || false;
   }
   element() {
     if (!this.elementInternal) {
@@ -1824,7 +1824,7 @@ var DataGridNode = class {
     if (this.dataGrid) {
       this.dataGrid.elementToDataGridNode.set(this.elementInternal, this);
     }
-    if (this.hasChildrenInternal) {
+    if (this.#hasChildren) {
       this.elementInternal.classList.add("parent");
     }
     if (this.expanded) {
@@ -1863,7 +1863,7 @@ var DataGridNode = class {
     }
     const columnsArray = this.dataGrid.visibleColumnsArray;
     const accessibleTextArray = [];
-    if (this.hasChildrenInternal || !this.parent.isRoot) {
+    if (this.#hasChildren || !this.parent.isRoot) {
       accessibleTextArray.push(i18nString(UIStrings.levelS, { PH1: this.depth + 1 }));
     }
     for (let i = 0; i < columnsArray.length; ++i) {
@@ -1880,10 +1880,10 @@ var DataGridNode = class {
     element.appendChild(cornerCell);
   }
   get data() {
-    return this.dataInternal;
+    return this.#data;
   }
   set data(x) {
-    this.dataInternal = x || {};
+    this.#data = x || {};
     this.refresh();
   }
   get revealed() {
@@ -1959,44 +1959,44 @@ var DataGridNode = class {
     }
   }
   hasChildren() {
-    return this.hasChildrenInternal;
+    return this.#hasChildren;
   }
   setHasChildren(x) {
-    if (this.hasChildrenInternal === x) {
+    if (this.#hasChildren === x) {
       return;
     }
-    this.hasChildrenInternal = x;
+    this.#hasChildren = x;
     if (!this.elementInternal) {
       return;
     }
-    this.elementInternal.classList.toggle("parent", this.hasChildrenInternal);
-    this.elementInternal.classList.toggle("expanded", this.hasChildrenInternal && this.expanded);
+    this.elementInternal.classList.toggle("parent", this.#hasChildren);
+    this.elementInternal.classList.toggle("expanded", this.#hasChildren && this.expanded);
   }
   get depth() {
-    if (this.depthInternal !== void 0) {
-      return this.depthInternal;
+    if (this.#depth !== void 0) {
+      return this.#depth;
     }
     if (this.parent && !this.parent.isRoot) {
-      this.depthInternal = this.parent.depth + 1;
+      this.#depth = this.parent.depth + 1;
     } else {
-      this.depthInternal = 0;
+      this.#depth = 0;
     }
-    return this.depthInternal;
+    return this.#depth;
   }
   get leftPadding() {
     return this.depth * (this.dataGrid ? this.dataGrid.indentWidth : 1);
   }
   get shouldRefreshChildren() {
-    return this.shouldRefreshChildrenInternal;
+    return this.#shouldRefreshChildren;
   }
   set shouldRefreshChildren(x) {
-    this.shouldRefreshChildrenInternal = x;
+    this.#shouldRefreshChildren = x;
     if (x && this.expanded) {
       this.expand();
     }
   }
   get selected() {
-    return this.selectedInternal;
+    return this.#selected;
   }
   set selected(x) {
     if (x) {
@@ -2087,7 +2087,7 @@ var DataGridNode = class {
     this.insertChild(child, this.children.length);
   }
   resetNode(onlyCaches) {
-    delete this.depthInternal;
+    this.#depth = void 0;
     delete this.revealedInternal;
     if (onlyCaches) {
       return;
@@ -2126,13 +2126,13 @@ var DataGridNode = class {
     child.parent = this;
     child.dataGrid = this.dataGrid;
     child.recalculateSiblings(index);
-    child.shouldRefreshChildrenInternal = true;
+    child.#shouldRefreshChildren = true;
     let current = child.children[0];
     while (current) {
       current.resetNode(true);
       current.dataGrid = this.dataGrid;
       current.attachedInternal = false;
-      current.shouldRefreshChildrenInternal = true;
+      current.#shouldRefreshChildren = true;
       current = current.traverseNextNode(false, child, true);
     }
     if (this.expanded) {
@@ -2218,18 +2218,18 @@ var DataGridNode = class {
   populate() {
   }
   expand() {
-    if (!this.hasChildrenInternal || this.expandedInternal) {
+    if (!this.#hasChildren || this.expandedInternal) {
       return;
     }
     if (this.isRoot) {
       return;
     }
-    if (this.revealed && !this.shouldRefreshChildrenInternal) {
+    if (this.revealed && !this.#shouldRefreshChildren) {
       for (let i = 0; i < this.children.length; ++i) {
         this.children[i].revealed = true;
       }
     }
-    if (this.shouldRefreshChildrenInternal) {
+    if (this.#shouldRefreshChildren) {
       for (let i = 0; i < this.children.length; ++i) {
         this.children[i].detach();
       }
@@ -2243,7 +2243,7 @@ var DataGridNode = class {
           child.attach();
         }
       }
-      this.shouldRefreshChildrenInternal = false;
+      this.#shouldRefreshChildren = false;
     }
     if (this.elementInternal) {
       this.elementInternal.classList.add("expanded");
@@ -2280,7 +2280,7 @@ var DataGridNode = class {
     if (this.dataGrid.selectedNode) {
       this.dataGrid.selectedNode.deselect();
     }
-    this.selectedInternal = true;
+    this.#selected = true;
     this.dataGrid.selectedNode = this;
     if (this.elementInternal) {
       this.elementInternal.classList.add("selected");
@@ -2303,7 +2303,7 @@ var DataGridNode = class {
     if (!this.dataGrid || this.dataGrid.selectedNode !== this || !this.selected) {
       return;
     }
-    this.selectedInternal = false;
+    this.#selected = false;
     this.dataGrid.selectedNode = null;
     if (this.elementInternal) {
       this.elementInternal.classList.remove("selected");
@@ -2317,7 +2317,7 @@ var DataGridNode = class {
     }
   }
   traverseNextNode(skipHidden, stayWithin, dontPopulate, info) {
-    if (!dontPopulate && this.hasChildrenInternal) {
+    if (!dontPopulate && this.#hasChildren) {
       this.populate();
     }
     if (info) {
@@ -2351,11 +2351,11 @@ var DataGridNode = class {
   }
   traversePreviousNode(skipHidden, dontPopulate) {
     let node = !skipHidden || this.revealed ? this.previousSibling : null;
-    if (!dontPopulate && node?.hasChildrenInternal) {
+    if (!dontPopulate && node && node.#hasChildren) {
       node.populate();
     }
     while (node && (!skipHidden || node.revealed && node.expanded ? node.children[node.children.length - 1] : null)) {
-      if (!dontPopulate && node.hasChildrenInternal) {
+      if (!dontPopulate && node && node.#hasChildren) {
         node.populate();
       }
       node = !skipHidden || node.revealed && node.expanded ? node.children[node.children.length - 1] : null;
@@ -2369,7 +2369,7 @@ var DataGridNode = class {
     return this.parent;
   }
   isEventWithinDisclosureTriangle(event) {
-    if (!this.hasChildrenInternal) {
+    if (!this.#hasChildren) {
       return false;
     }
     const cell = UI.UIUtils.enclosingNodeOrSelfWithNodeName(event.target, "td");
@@ -3083,7 +3083,7 @@ var ShowMoreDataGridNode = class extends DataGridNode {
     this.showNext = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.showDBefore, { PH1: this.chunkSize }));
     this.showNext.addEventListener("click", this.showNextChunk.bind(this), false);
     this.showAll = UI2.UIUtils.createTextButton("");
-    this.showAll.addEventListener("click", this.showAllInternal.bind(this), false);
+    this.showAll.addEventListener("click", this.#showAll.bind(this), false);
     this.showLast = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.showDAfter, { PH1: this.chunkSize }));
     this.showLast.addEventListener("click", this.showLastChunk.bind(this), false);
     this.updateLabels();
@@ -3092,7 +3092,7 @@ var ShowMoreDataGridNode = class extends DataGridNode {
   showNextChunk() {
     void this.callback(this.startPosition, this.startPosition + this.chunkSize);
   }
-  showAllInternal() {
+  #showAll() {
     void this.callback(this.startPosition, this.endPosition);
   }
   showLastChunk() {

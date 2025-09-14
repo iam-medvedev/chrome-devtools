@@ -122,6 +122,11 @@ var NativeFunctions = [
     receivers: ["Clients", "BackgroundFetchManager"]
   },
   {
+    name: "get",
+    signatures: [["entry"]],
+    receivers: ["RouteMap"]
+  },
+  {
     name: "set",
     signatures: [["v"]],
     receivers: ["PropertyDescriptor"]
@@ -6102,6 +6107,10 @@ var NativeFunctions = [
     signatures: [["?options"]]
   },
   {
+    name: "EventTrigger",
+    signatures: [["?options"]]
+  },
+  {
     name: "KeyframeEffect",
     signatures: [["source"], ["target", "keyframes", "?options"]]
   },
@@ -6609,6 +6618,10 @@ var NativeFunctions = [
   {
     name: "Event",
     signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "setFormControlRange",
+    signatures: [["element", "start", "end"]]
   },
   {
     name: "MutationObserver",
@@ -7209,6 +7222,10 @@ var NativeFunctions = [
     signatures: [["callback"]]
   },
   {
+    name: "RouteEvent",
+    signatures: [["type"]]
+  },
+  {
     name: "Sanitizer",
     signatures: [["?configuration"]]
   },
@@ -7592,7 +7609,7 @@ var NativeFunctions = [
     signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
   },
   {
-    name: "drawHTMLElement",
+    name: "drawHTML",
     signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
   },
   {
@@ -8416,20 +8433,16 @@ var NativeFunctions = [
     signatures: [["extensions"]]
   },
   {
-    name: "createProcessor",
-    signatures: [["worker", "?options", "?transfer"]]
-  },
-  {
-    name: "readReceivedAcks",
-    signatures: [["maxCount"]]
-  },
-  {
-    name: "readSentRtp",
-    signatures: [["maxCount"]]
-  },
-  {
     name: "RTCSessionDescription",
     signatures: [["?descriptionInitDict"]]
+  },
+  {
+    name: "RtcTransport",
+    signatures: [["name"]]
+  },
+  {
+    name: "sendPackets",
+    signatures: [["packets"]]
   },
   {
     name: "revoke",
@@ -8882,7 +8895,7 @@ var NativeFunctions = [
     signatures: [["provokeMode"]]
   },
   {
-    name: "texHTMLElement2D",
+    name: "texHTML2D",
     signatures: [["target", "level", "internalformat", "format", "type", "element"]]
   },
   {
@@ -9271,6 +9284,10 @@ var NativeFunctions = [
   },
   {
     name: "XRInputSourcesChangeEvent",
+    signatures: [["type", "eventInitDict"]]
+  },
+  {
+    name: "XRLayerEvent",
     signatures: [["type", "eventInitDict"]]
   },
   {

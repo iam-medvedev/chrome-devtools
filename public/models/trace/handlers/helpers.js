@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ThirdPartyWeb from '../../../third_party/third-party-web/third-party-web.js';
@@ -21,7 +21,7 @@ export function getEntityForUrl(url, entityMappings) {
     }
     return entity;
 }
-export function getNonResolvedURL(entry, parsedTrace) {
+export function getNonResolvedURL(entry, handlerData) {
     if (Types.Events.isProfileCall(entry)) {
         return entry.callFrame.url;
     }
@@ -38,16 +38,16 @@ export function getNonResolvedURL(entry, parsedTrace) {
     if (Types.Events.isParseHTML(entry)) {
         return entry.args.beginData.url;
     }
-    if (parsedTrace) {
+    if (handlerData) {
         // DecodeImage events use the URL from the relevant PaintImage event.
         if (Types.Events.isDecodeImage(entry)) {
-            const paintEvent = parsedTrace.ImagePainting.paintImageForEvent.get(entry);
-            return paintEvent ? getNonResolvedURL(paintEvent, parsedTrace) : null;
+            const paintEvent = handlerData.ImagePainting.paintImageForEvent.get(entry);
+            return paintEvent ? getNonResolvedURL(paintEvent, handlerData) : null;
         }
         // DrawLazyPixelRef events use the URL from the relevant PaintImage event.
         if (Types.Events.isDrawLazyPixelRef(entry) && entry.args?.LazyPixelRef) {
-            const paintEvent = parsedTrace.ImagePainting.paintImageByDrawLazyPixelRef.get(entry.args.LazyPixelRef);
-            return paintEvent ? getNonResolvedURL(paintEvent, parsedTrace) : null;
+            const paintEvent = handlerData.ImagePainting.paintImageByDrawLazyPixelRef.get(entry.args.LazyPixelRef);
+            return paintEvent ? getNonResolvedURL(paintEvent, handlerData) : null;
         }
     }
     // For all other events, try to see if the URL is provided, else return null.
@@ -57,8 +57,8 @@ export function getNonResolvedURL(entry, parsedTrace) {
     // Many events don't have a url, but are associated with a request. Use the
     // request's url.
     const requestId = entry.args?.data?.requestId;
-    if (parsedTrace && requestId) {
-        const url = parsedTrace.NetworkRequests.byId.get(requestId)?.args.data.url;
+    if (handlerData && requestId) {
+        const url = handlerData.NetworkRequests.byId.get(requestId)?.args.data.url;
         if (url) {
             return url;
         }

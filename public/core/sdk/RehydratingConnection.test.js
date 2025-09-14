@@ -1,7 +1,7 @@
-// Copyright (c) 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Rehydrating from './RehydratingConnection.js';
+import * as SDK from './sdk.js';
 const mockTarget1 = {
     targetId: 'ABCDE',
     type: 'page',
@@ -90,7 +90,7 @@ describe('RehydratingSession', () => {
             this.messageQueue = [];
         }
     }
-    class RehydratingSessionForTest extends Rehydrating.RehydratingSession {
+    class RehydratingSessionForTest extends SDK.RehydratingConnection.RehydratingSession {
         sendMessageToFrontend(payload) {
             this.connection?.postToFrontend(payload);
         }

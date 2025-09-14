@@ -10,5 +10,4 @@ import * as PersistenceActions from './PersistenceActions.js';
 import * as Persistence from './PersistenceImpl.js';
 import * as PersistenceUtils from './PersistenceUtils.js';
 import * as PlatformFileSystem from './PlatformFileSystem.js';
-import * as WorkspaceSettingsTab from './WorkspaceSettingsTab.js';
-export { Automapping, AutomaticFileSystemManager, AutomaticFileSystemWorkspaceBinding, EditFileSystemView, FileSystemWorkspaceBinding, IsolatedFileSystem, IsolatedFileSystemManager, NetworkPersistenceManager, Persistence, PersistenceActions, PersistenceUtils, PlatformFileSystem, WorkspaceSettingsTab, };
+export { Automapping, AutomaticFileSystemManager, AutomaticFileSystemWorkspaceBinding, EditFileSystemView, FileSystemWorkspaceBinding, IsolatedFileSystem, IsolatedFileSystemManager, NetworkPersistenceManager, Persistence, PersistenceActions, PersistenceUtils, PlatformFileSystem, };

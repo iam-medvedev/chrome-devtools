@@ -34,7 +34,7 @@ function getEntityForUrl(url, entityMappings3) {
   }
   return entity;
 }
-function getNonResolvedURL(entry, parsedTrace) {
+function getNonResolvedURL(entry, handlerData) {
   if (Types.Events.isProfileCall(entry)) {
     return entry.callFrame.url;
   }
@@ -50,22 +50,22 @@ function getNonResolvedURL(entry, parsedTrace) {
   if (Types.Events.isParseHTML(entry)) {
     return entry.args.beginData.url;
   }
-  if (parsedTrace) {
+  if (handlerData) {
     if (Types.Events.isDecodeImage(entry)) {
-      const paintEvent = parsedTrace.ImagePainting.paintImageForEvent.get(entry);
-      return paintEvent ? getNonResolvedURL(paintEvent, parsedTrace) : null;
+      const paintEvent = handlerData.ImagePainting.paintImageForEvent.get(entry);
+      return paintEvent ? getNonResolvedURL(paintEvent, handlerData) : null;
     }
     if (Types.Events.isDrawLazyPixelRef(entry) && entry.args?.LazyPixelRef) {
-      const paintEvent = parsedTrace.ImagePainting.paintImageByDrawLazyPixelRef.get(entry.args.LazyPixelRef);
-      return paintEvent ? getNonResolvedURL(paintEvent, parsedTrace) : null;
+      const paintEvent = handlerData.ImagePainting.paintImageByDrawLazyPixelRef.get(entry.args.LazyPixelRef);
+      return paintEvent ? getNonResolvedURL(paintEvent, handlerData) : null;
     }
   }
   if (entry.args?.data?.url) {
     return entry.args.data.url;
   }
   const requestId = entry.args?.data?.requestId;
-  if (parsedTrace && requestId) {
-    const url = parsedTrace.NetworkRequests.byId.get(requestId)?.args.data.url;
+  if (handlerData && requestId) {
+    const url = handlerData.NetworkRequests.byId.get(requestId)?.args.data.url;
     if (url) {
       return url;
     }
@@ -1165,7 +1165,7 @@ async function finalize6() {
     requestsByTime.push(networkEvent);
     requestsById.set(networkEvent.args.data.requestId, networkEvent);
     addNetworkRequestToEntityMapping(networkEvent, entityMappings, request);
-    const initiatorUrl = networkEvent.args.data.initiator?.url || Helpers5.Trace.getZeroIndexedStackTraceInEventPayload(networkEvent)?.at(0)?.url;
+    const initiatorUrl = networkEvent.args.data.initiator?.url || Helpers5.Trace.getStackTraceTopCallFrameInEventPayload(networkEvent)?.url;
     if (initiatorUrl) {
       const events = networkRequestEventByInitiatorUrl.get(initiatorUrl) ?? [];
       events.push(networkEvent);
@@ -1444,7 +1444,7 @@ var makeRendererThread = () => ({
   entries: [],
   profileCalls: [],
   layoutEvents: [],
-  updateLayoutTreeEvents: []
+  recalcStyleEvents: []
 });
 var getOrCreateRendererProcess = (processes2, pid) => {
   return Platform5.MapUtilities.getWithDefault(processes2, pid, makeRendererProcess);
@@ -1494,10 +1494,10 @@ function handleEvent8(event) {
     const thread = getOrCreateRendererThread(process, event.tid);
     thread.layoutEvents.push(event);
   }
-  if (Types9.Events.isUpdateLayoutTree(event)) {
+  if (Types9.Events.isRecalcStyle(event)) {
     const process = getOrCreateRendererProcess(processes, event.pid);
     const thread = getOrCreateRendererThread(process, event.tid);
-    thread.updateLayoutTreeEvents.push(event);
+    thread.recalcStyleEvents.push(event);
   }
 }
 async function finalize8() {
@@ -2244,20 +2244,20 @@ function threadsInRenderer(rendererData, auctionWorkletsData) {
   }
   return foundThreads;
 }
-var threadsInTraceCache = /* @__PURE__ */ new WeakMap();
-function threadsInTrace(parsedTrace) {
-  const cached = threadsInTraceCache.get(parsedTrace);
+var threadsInHandlerDataCache = /* @__PURE__ */ new WeakMap();
+function threadsInTrace(handlerData) {
+  const cached = threadsInHandlerDataCache.get(handlerData);
   if (cached) {
     return cached;
   }
-  const threadsFromRenderer = threadsInRenderer(parsedTrace.Renderer, parsedTrace.AuctionWorklets);
+  const threadsFromRenderer = threadsInRenderer(handlerData.Renderer, handlerData.AuctionWorklets);
   if (threadsFromRenderer.length) {
-    threadsInTraceCache.set(parsedTrace, threadsFromRenderer);
+    threadsInHandlerDataCache.set(handlerData, threadsFromRenderer);
     return threadsFromRenderer;
   }
   const foundThreads = [];
-  if (parsedTrace.Samples.profilesInProcess.size) {
-    for (const [pid, process] of parsedTrace.Samples.profilesInProcess) {
+  if (handlerData.Samples.profilesInProcess.size) {
+    for (const [pid, process] of handlerData.Samples.profilesInProcess) {
       for (const [tid, thread] of process) {
         if (!thread.profileTree) {
           continue;
@@ -2272,12 +2272,12 @@ function threadsInTrace(parsedTrace) {
           processIsOnMainFrame: false,
           tree: thread.profileTree,
           type: "CPU_PROFILE",
-          entryToNode: parsedTrace.Samples.entryToNode
+          entryToNode: handlerData.Samples.entryToNode
         });
       }
     }
   }
-  threadsInTraceCache.set(parsedTrace, foundThreads);
+  threadsInHandlerDataCache.set(handlerData, foundThreads);
   return foundThreads;
 }
 
@@ -2837,7 +2837,7 @@ import * as Helpers13 from "./../helpers/helpers.js";
 import * as Types18 from "./../types/types.js";
 var lastScheduleStyleRecalcByFrame = /* @__PURE__ */ new Map();
 var lastInvalidationEventForFrame = /* @__PURE__ */ new Map();
-var lastUpdateLayoutTreeByFrame = /* @__PURE__ */ new Map();
+var lastRecalcByFrame = /* @__PURE__ */ new Map();
 var eventToInitiatorMap2 = /* @__PURE__ */ new Map();
 var initiatorToEventsMap = /* @__PURE__ */ new Map();
 var timerInstallEventsById = /* @__PURE__ */ new Map();
@@ -2847,7 +2847,7 @@ var schedulePostTaskCallbackEventsById = /* @__PURE__ */ new Map();
 function reset17() {
   lastScheduleStyleRecalcByFrame = /* @__PURE__ */ new Map();
   lastInvalidationEventForFrame = /* @__PURE__ */ new Map();
-  lastUpdateLayoutTreeByFrame = /* @__PURE__ */ new Map();
+  lastRecalcByFrame = /* @__PURE__ */ new Map();
   timerInstallEventsById = /* @__PURE__ */ new Map();
   eventToInitiatorMap2 = /* @__PURE__ */ new Map();
   initiatorToEventsMap = /* @__PURE__ */ new Map();
@@ -2864,9 +2864,9 @@ function storeInitiator(data31) {
 function handleEvent17(event) {
   if (Types18.Events.isScheduleStyleRecalculation(event)) {
     lastScheduleStyleRecalcByFrame.set(event.args.data.frame, event);
-  } else if (Types18.Events.isUpdateLayoutTree(event)) {
+  } else if (Types18.Events.isRecalcStyle(event)) {
     if (event.args.beginData) {
-      lastUpdateLayoutTreeByFrame.set(event.args.beginData.frame, event);
+      lastRecalcByFrame.set(event.args.beginData.frame, event);
       const scheduledStyleForFrame = lastScheduleStyleRecalcByFrame.get(event.args.beginData.frame);
       if (scheduledStyleForFrame) {
         storeInitiator({
@@ -2878,12 +2878,12 @@ function handleEvent17(event) {
   } else if (Types18.Events.isInvalidateLayout(event)) {
     let invalidationInitiator = event;
     if (!lastInvalidationEventForFrame.has(event.args.data.frame)) {
-      const lastUpdateLayoutTreeForFrame = lastUpdateLayoutTreeByFrame.get(event.args.data.frame);
-      if (lastUpdateLayoutTreeForFrame) {
-        const { endTime } = Helpers13.Timing.eventTimingsMicroSeconds(lastUpdateLayoutTreeForFrame);
-        const initiatorOfUpdateLayout = eventToInitiatorMap2.get(lastUpdateLayoutTreeForFrame);
-        if (initiatorOfUpdateLayout && endTime && endTime > event.ts) {
-          invalidationInitiator = initiatorOfUpdateLayout;
+      const lastRecalcStyleForFrame = lastRecalcByFrame.get(event.args.data.frame);
+      if (lastRecalcStyleForFrame) {
+        const { endTime } = Helpers13.Timing.eventTimingsMicroSeconds(lastRecalcStyleForFrame);
+        const initiatorOfRecalcStyle = eventToInitiatorMap2.get(lastRecalcStyleForFrame);
+        if (initiatorOfRecalcStyle && endTime && endTime > event.ts) {
+          invalidationInitiator = initiatorOfRecalcStyle;
         }
       }
     }
@@ -2974,84 +2974,106 @@ __export(InvalidationsHandler_exports, {
   reset: () => reset18
 });
 import * as Types19 from "./../types/types.js";
-var invalidationsForEvent = /* @__PURE__ */ new Map();
-var invalidationCountForEvent = /* @__PURE__ */ new Map();
-var lastRecalcStyleEvent = null;
-var hasPainted = false;
-var allInvalidationTrackingEvents = [];
+var frameStateByFrame = /* @__PURE__ */ new Map();
+var maxInvalidationsPerEvent = null;
 function reset18() {
-  invalidationsForEvent = /* @__PURE__ */ new Map();
-  invalidationCountForEvent = /* @__PURE__ */ new Map();
-  lastRecalcStyleEvent = null;
-  allInvalidationTrackingEvents = [];
-  hasPainted = false;
+  frameStateByFrame.clear();
   maxInvalidationsPerEvent = null;
 }
-var maxInvalidationsPerEvent = null;
 function handleUserConfig3(userConfig) {
   maxInvalidationsPerEvent = userConfig.maxInvalidationEventsPerEvent;
 }
-function addInvalidationToEvent(event, invalidation) {
-  const existingInvalidations = invalidationsForEvent.get(event) || [];
+function getState(frameId) {
+  let frameState = frameStateByFrame.get(frameId);
+  if (!frameState) {
+    frameState = {
+      invalidationsForEvent: /* @__PURE__ */ new Map(),
+      invalidationCountForEvent: /* @__PURE__ */ new Map(),
+      lastRecalcStyleEvent: null,
+      pendingInvalidations: [],
+      hasPainted: false
+    };
+    frameStateByFrame.set(frameId, frameState);
+  }
+  return frameState;
+}
+function getFrameId(event) {
+  if (Types19.Events.isRecalcStyle(event) || Types19.Events.isLayout(event)) {
+    return event.args.beginData?.frame ?? null;
+  }
+  return event.args?.data?.frame ?? null;
+}
+function addInvalidationToEvent(frameState, event, invalidation) {
+  const existingInvalidations = frameState.invalidationsForEvent.get(event) || [];
   existingInvalidations.push(invalidation);
   if (maxInvalidationsPerEvent !== null && existingInvalidations.length > maxInvalidationsPerEvent) {
     existingInvalidations.shift();
   }
-  invalidationsForEvent.set(event, existingInvalidations);
-  const count = invalidationCountForEvent.get(event) ?? 0;
-  invalidationCountForEvent.set(event, count + 1);
+  frameState.invalidationsForEvent.set(event, existingInvalidations);
+  const count = frameState.invalidationCountForEvent.get(event) ?? 0;
+  frameState.invalidationCountForEvent.set(event, count + 1);
 }
 function handleEvent18(event) {
   if (maxInvalidationsPerEvent === 0) {
     return;
   }
-  if (Types19.Events.isUpdateLayoutTree(event)) {
-    lastRecalcStyleEvent = event;
-    for (const invalidation of allInvalidationTrackingEvents) {
+  const frameId = getFrameId(event);
+  if (!frameId) {
+    return;
+  }
+  const thisFrame = getState(frameId);
+  if (Types19.Events.isRecalcStyle(event)) {
+    thisFrame.lastRecalcStyleEvent = event;
+    for (const invalidation of thisFrame.pendingInvalidations) {
       if (Types19.Events.isLayoutInvalidationTracking(invalidation)) {
         continue;
       }
-      const recalcFrameId = lastRecalcStyleEvent.args.beginData?.frame;
-      if (recalcFrameId && invalidation.args.data.frame === recalcFrameId) {
-        addInvalidationToEvent(event, invalidation);
-      }
+      addInvalidationToEvent(thisFrame, event, invalidation);
     }
     return;
   }
   if (Types19.Events.isInvalidationTracking(event)) {
-    if (hasPainted) {
-      allInvalidationTrackingEvents.length = 0;
-      lastRecalcStyleEvent = null;
-      hasPainted = false;
+    if (thisFrame.hasPainted) {
+      thisFrame.pendingInvalidations.length = 0;
+      thisFrame.lastRecalcStyleEvent = null;
+      thisFrame.hasPainted = false;
     }
-    if (lastRecalcStyleEvent && (Types19.Events.isScheduleStyleInvalidationTracking(event) || Types19.Events.isStyleRecalcInvalidationTracking(event) || Types19.Events.isStyleInvalidatorInvalidationTracking(event))) {
-      const recalcEndTime = lastRecalcStyleEvent.ts + (lastRecalcStyleEvent.dur || 0);
-      if (event.ts >= lastRecalcStyleEvent.ts && event.ts <= recalcEndTime && lastRecalcStyleEvent.args.beginData?.frame === event.args.data.frame) {
-        addInvalidationToEvent(lastRecalcStyleEvent, event);
+    if (thisFrame.lastRecalcStyleEvent && (Types19.Events.isScheduleStyleInvalidationTracking(event) || Types19.Events.isStyleRecalcInvalidationTracking(event) || Types19.Events.isStyleInvalidatorInvalidationTracking(event))) {
+      const recalcLastRecalc = thisFrame.lastRecalcStyleEvent;
+      const recalcEndTime = recalcLastRecalc.ts + (recalcLastRecalc.dur || 0);
+      if (event.ts >= recalcLastRecalc.ts && event.ts <= recalcEndTime) {
+        addInvalidationToEvent(thisFrame, recalcLastRecalc, event);
       }
     }
-    allInvalidationTrackingEvents.push(event);
+    thisFrame.pendingInvalidations.push(event);
     return;
   }
   if (Types19.Events.isPaint(event)) {
-    hasPainted = true;
+    thisFrame.hasPainted = true;
     return;
   }
   if (Types19.Events.isLayout(event)) {
-    const layoutFrame = event.args.beginData.frame;
-    for (const invalidation of allInvalidationTrackingEvents) {
+    for (const invalidation of thisFrame.pendingInvalidations) {
       if (!Types19.Events.isLayoutInvalidationTracking(invalidation)) {
         continue;
       }
-      if (invalidation.args.data.frame === layoutFrame) {
-        addInvalidationToEvent(event, invalidation);
-      }
+      addInvalidationToEvent(thisFrame, event, invalidation);
     }
   }
 }
 async function finalize18() {
 }
 function data18() {
+  const invalidationsForEvent = /* @__PURE__ */ new Map();
+  const invalidationCountForEvent = /* @__PURE__ */ new Map();
+  for (const frame of frameStateByFrame.values()) {
+    for (const [event, invalidations] of frame.invalidationsForEvent.entries()) {
+      invalidationsForEvent.set(event, invalidations);
+    }
+    for (const [event, count] of frame.invalidationCountForEvent.entries()) {
+      invalidationCountForEvent.set(event, count);
+    }
+  }
   return {
     invalidationsForEvent,
     invalidationCountForEvent
@@ -4203,14 +4225,14 @@ __export(SelectorStatsHandler_exports, {
   reset: () => reset27
 });
 import * as Types28 from "./../types/types.js";
-var lastUpdateLayoutTreeEvent = null;
+var lastRecalcStyleEvent = null;
 var lastInvalidatedNode = null;
-var selectorDataForUpdateLayoutTree = /* @__PURE__ */ new Map();
+var selectorDataForRecalcStyle = /* @__PURE__ */ new Map();
 var invalidatedNodeList = new Array();
 function reset27() {
-  lastUpdateLayoutTreeEvent = null;
+  lastRecalcStyleEvent = null;
   lastInvalidatedNode = null;
-  selectorDataForUpdateLayoutTree = /* @__PURE__ */ new Map();
+  selectorDataForRecalcStyle = /* @__PURE__ */ new Map();
   invalidatedNodeList = [];
 }
 function handleEvent27(event) {
@@ -4220,8 +4242,8 @@ function handleEvent27(event) {
       return;
     }
   }
-  if (Types28.Events.isSelectorStats(event) && lastUpdateLayoutTreeEvent && event.args.selector_stats) {
-    selectorDataForUpdateLayoutTree.set(lastUpdateLayoutTreeEvent, {
+  if (Types28.Events.isSelectorStats(event) && lastRecalcStyleEvent && event.args.selector_stats) {
+    selectorDataForRecalcStyle.set(lastRecalcStyleEvent, {
       timings: event.args.selector_stats.selector_timings
     });
     return;
@@ -4243,13 +4265,13 @@ function handleEvent27(event) {
         ts: event.ts,
         tts: event.tts,
         subtree: false,
-        lastUpdateLayoutTreeEventTs: lastUpdateLayoutTreeEvent ? lastUpdateLayoutTreeEvent.ts : Types28.Timing.Micro(0)
+        lastRecalcStyleEventTs: lastRecalcStyleEvent ? lastRecalcStyleEvent.ts : Types28.Timing.Micro(0)
       };
       invalidatedNodeList.push(lastInvalidatedNode);
     }
   }
-  if (Types28.Events.isUpdateLayoutTree(event)) {
-    lastUpdateLayoutTreeEvent = event;
+  if (Types28.Events.isRecalcStyle(event)) {
+    lastRecalcStyleEvent = event;
     return;
   }
 }
@@ -4257,7 +4279,7 @@ async function finalize27() {
 }
 function data27() {
   return {
-    dataForUpdateLayoutEvent: selectorDataForUpdateLayoutTree,
+    dataForRecalcStyleEvent: selectorDataForRecalcStyle,
     invalidatedNodeList
   };
 }

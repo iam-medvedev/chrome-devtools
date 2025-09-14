@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /**
@@ -26,22 +26,27 @@ function assertSnapshotContent(actual, expected) {
  */
 export class SnapshotTester {
     static #updateMode = null;
-    #snapshotUrl;
+    #snapshotPath;
     #expected = new Map();
     #actual = new Map();
     #anyFailures = false;
     #newTests = false;
     constructor(meta) {
-        this.#snapshotUrl = meta.url.replace('.test.js', '.snapshot.txt').split('?')[0];
+        // out/Default/gen/third_party/devtools-frontend/src/front_end/testing/SnapshotTester.test.js?8ee4f2b123e221040a4aa075a28d0e5b41d3d3ed
+        // ->
+        // front_end/testing/SnapshotTester.snapshot.txt
+        this.#snapshotPath =
+            meta.url.substring(meta.url.lastIndexOf('front_end')).replace('.test.js', '.snapshot.txt').split('?')[0];
     }
     async load() {
         if (SnapshotTester.#updateMode === null) {
             SnapshotTester.#updateMode = await this.#checkIfUpdateMode();
         }
-        const url = new URL(this.#snapshotUrl, import.meta.url);
+        const url = new URL('/snapshot', import.meta.url);
+        url.searchParams.set('snapshotPath', this.#snapshotPath);
         const response = await fetch(url);
         if (response.status === 404) {
-            console.warn(`Snapshot file not found: ${url.href}. Will create it for you.`);
+            console.warn(`Snapshot file not found: ${this.#snapshotPath}. Will create it for you.`);
             return;
         }
         if (response.status !== 200) {
@@ -68,14 +73,17 @@ export class SnapshotTester {
             this.#anyFailures = true;
             throw new Error(`snapshot assertion failed! new snapshot found (${title}), must run \`npm run test -- --on-diff=update ...\` to accept it.`);
         }
-        if (!SnapshotTester.#updateMode && actual !== expected) {
+        const isDifferent = actual !== expected;
+        if (isDifferent) {
             this.#anyFailures = true;
-            assertSnapshotContent(actual, expected);
+            if (!SnapshotTester.#updateMode) {
+                assertSnapshotContent(actual, expected);
+            }
         }
     }
     async #postUpdate() {
         const url = new URL('/update-snapshot', import.meta.url);
-        url.searchParams.set('snapshotUrl', this.#snapshotUrl);
+        url.searchParams.set('snapshotPath', this.#snapshotPath);
         const content = this.#serializeSnapshotFileContent();
         const response = await fetch(url, { method: 'POST', body: content });
         if (response.status !== 200) {

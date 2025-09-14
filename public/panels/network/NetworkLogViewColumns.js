@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -160,7 +160,7 @@ export class NetworkLogViewColumns {
     popupLinkifier;
     calculatorsMap;
     lastWheelTime;
-    dataGridInternal;
+    #dataGrid;
     splitWidget;
     waterfallColumn;
     activeScroller;
@@ -239,20 +239,20 @@ export class NetworkLogViewColumns {
         this.loadCustomColumnsAndSettings();
         this.popoverHelper = new UI.PopoverHelper.PopoverHelper(this.networkLogView.element, this.getPopoverRequest.bind(this), 'network.initiator-stacktrace');
         this.popoverHelper.setTimeout(300, 300);
-        this.dataGridInternal = new DataGrid.SortableDataGrid.SortableDataGrid(({
+        this.#dataGrid = new DataGrid.SortableDataGrid.SortableDataGrid(({
             displayName: i18nString(UIStrings.networkLog),
             columns: this.columns.map(NetworkLogViewColumns.convertToDataGridDescriptor),
             deleteCallback: undefined,
             refreshCallback: undefined,
         }));
-        this.dataGridScroller = this.dataGridInternal.scrollContainer;
+        this.dataGridScroller = this.#dataGrid.scrollContainer;
         this.updateColumns();
-        this.dataGridInternal.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortHandler, this);
-        this.dataGridInternal.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
+        this.#dataGrid.addEventListener("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */, this.sortHandler, this);
+        this.#dataGrid.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
         this.activeWaterfallSortId = WaterfallSortIds.StartTime;
-        this.dataGridInternal.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid.DataGrid.Order.Ascending);
+        this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid.DataGrid.Order.Ascending);
         this.splitWidget = new UI.SplitWidget.SplitWidget(true, true, 'network-panel-split-view-waterfall', 200);
-        const widget = this.dataGridInternal.asWidget();
+        const widget = this.#dataGrid.asWidget();
         widget.setMinimumSize(150, 0);
         this.splitWidget.setMainWidget(widget);
     }
@@ -269,11 +269,11 @@ export class NetworkLogViewColumns {
         this.dataGridScroller.addEventListener('touchend', this.onTouchEnd.bind(this));
         this.waterfallScroller = this.waterfallColumn.contentElement.createChild('div', 'network-waterfall-v-scroll');
         this.waterfallScrollerContent = this.waterfallScroller.createChild('div', 'network-waterfall-v-scroll-content');
-        this.dataGridInternal.addEventListener("PaddingChanged" /* DataGrid.DataGrid.Events.PADDING_CHANGED */, () => {
+        this.#dataGrid.addEventListener("PaddingChanged" /* DataGrid.DataGrid.Events.PADDING_CHANGED */, () => {
             this.waterfallScrollerWidthIsStale = true;
             this.syncScrollers();
         });
-        this.dataGridInternal.addEventListener("ViewportCalculated" /* DataGrid.ViewportDataGrid.Events.VIEWPORT_CALCULATED */, this.redrawWaterfallColumn.bind(this));
+        this.#dataGrid.addEventListener("ViewportCalculated" /* DataGrid.ViewportDataGrid.Events.VIEWPORT_CALCULATED */, this.redrawWaterfallColumn.bind(this));
         this.createWaterfallHeader();
         this.waterfallColumn.contentElement.classList.add('network-waterfall-view');
         this.waterfallColumn.setMinimumSize(100, 0);
@@ -324,7 +324,7 @@ export class NetworkLogViewColumns {
             return;
         }
         this.waterfallScrollerContent.style.height =
-            this.dataGridScroller.scrollHeight - this.dataGridInternal.headerHeight() + 'px';
+            this.dataGridScroller.scrollHeight - this.#dataGrid.headerHeight() + 'px';
         this.updateScrollerWidthIfNeeded();
         this.dataGridScroller.scrollTop = this.waterfallScroller.scrollTop;
     }
@@ -362,10 +362,10 @@ export class NetworkLogViewColumns {
             .appendChild(this.waterfallColumnSortIcon);
         function waterfallHeaderClicked() {
             const sortOrders = DataGrid.DataGrid.Order;
-            const wasSortedByWaterfall = this.dataGridInternal.sortColumnId() === 'waterfall';
-            const wasSortedAscending = this.dataGridInternal.isSortOrderAscending();
+            const wasSortedByWaterfall = this.#dataGrid.sortColumnId() === 'waterfall';
+            const wasSortedAscending = this.#dataGrid.isSortOrderAscending();
             const sortOrder = wasSortedByWaterfall && wasSortedAscending ? sortOrders.Descending : sortOrders.Ascending;
-            this.dataGridInternal.markColumnAsSortedBy('waterfall', sortOrder);
+            this.#dataGrid.markColumnAsSortedBy('waterfall', sortOrder);
             this.sortHandler();
         }
     }
@@ -377,8 +377,8 @@ export class NetworkLogViewColumns {
     }
     updateRowsSize() {
         const largeRows = Boolean(this.networkLogLargeRowsSetting.get());
-        this.dataGridInternal.element.classList.toggle('small', !largeRows);
-        this.dataGridInternal.scheduleUpdate();
+        this.#dataGrid.element.classList.toggle('small', !largeRows);
+        this.#dataGrid.scheduleUpdate();
         this.waterfallScrollerWidthIsStale = true;
         this.waterfallColumn.setRowHeight(largeRows ? 41 : 21);
         this.waterfallScroller.classList.toggle('small', !largeRows);
@@ -399,7 +399,7 @@ export class NetworkLogViewColumns {
         UI.ARIAUtils.setHidden(this.splitWidget.element, value);
     }
     dataGrid() {
-        return this.dataGridInternal;
+        return this.#dataGrid;
     }
     sortByCurrentColumn() {
         this.sortHandler();
@@ -409,15 +409,15 @@ export class NetworkLogViewColumns {
         // NetworkLogView can be empty until it has been invalidated (see
         // crbug.com/379762016).
         window.requestAnimationFrame(() => {
-            this.dataGridInternal.scheduleUpdate();
+            this.#dataGrid.scheduleUpdate();
         });
     }
     sortHandler() {
-        const columnId = this.dataGridInternal.sortColumnId();
+        const columnId = this.#dataGrid.sortColumnId();
         this.networkLogView.removeAllNodeHighlights();
         this.waterfallRequestsAreStale = true;
         if (columnId === 'waterfall') {
-            if (this.dataGridInternal.sortOrder() === DataGrid.DataGrid.Order.Ascending) {
+            if (this.#dataGrid.sortOrder() === DataGrid.DataGrid.Order.Ascending) {
                 this.waterfallColumnSortIcon.name = 'triangle-up';
             }
             else {
@@ -425,7 +425,7 @@ export class NetworkLogViewColumns {
             }
             this.waterfallColumnSortIcon.hidden = false;
             const sortFunction = NetworkRequestNode.RequestPropertyComparator.bind(null, this.activeWaterfallSortId);
-            this.dataGridInternal.sortNodes(sortFunction, !this.dataGridInternal.isSortOrderAscending());
+            this.#dataGrid.sortNodes(sortFunction, !this.#dataGrid.isSortOrderAscending());
             this.dataGridSortedForTest();
             return;
         }
@@ -439,13 +439,13 @@ export class NetworkLogViewColumns {
         if (!sortingFunction) {
             return;
         }
-        this.dataGridInternal.sortNodes(sortingFunction, !this.dataGridInternal.isSortOrderAscending());
+        this.#dataGrid.sortNodes(sortingFunction, !this.#dataGrid.isSortOrderAscending());
         this.dataGridSortedForTest();
     }
     dataGridSortedForTest() {
     }
     updateColumns() {
-        if (!this.dataGridInternal) {
+        if (!this.#dataGrid) {
             return;
         }
         const visibleColumns = new Set();
@@ -473,7 +473,7 @@ export class NetworkLogViewColumns {
             }
             this.setWaterfallVisibility(false);
         }
-        this.dataGridInternal.setColumnsVisibility(visibleColumns);
+        this.#dataGrid.setColumnsVisibility(visibleColumns);
     }
     switchViewMode(gridMode) {
         if (this.gridMode === gridMode) {
@@ -499,13 +499,13 @@ export class NetworkLogViewColumns {
             this.splitWidget.showBoth();
             this.activeScroller = this.waterfallScroller;
             this.waterfallScroller.scrollTop = this.dataGridScroller.scrollTop;
-            this.dataGridInternal.setScrollContainer(this.waterfallScroller);
+            this.#dataGrid.setScrollContainer(this.waterfallScroller);
         }
         else {
             this.networkLogView.removeAllNodeHighlights();
             this.splitWidget.hideSidebar();
             this.activeScroller = this.dataGridScroller;
-            this.dataGridInternal.setScrollContainer(this.dataGridScroller);
+            this.#dataGrid.setScrollContainer(this.dataGridScroller);
         }
     }
     saveColumnsSettings() {
@@ -610,7 +610,7 @@ export class NetworkLogViewColumns {
             }
             this.networkLogView.setCalculator(calculator);
             this.activeWaterfallSortId = sortId;
-            this.dataGridInternal.markColumnAsSortedBy('waterfall', DataGrid.DataGrid.Order.Ascending);
+            this.#dataGrid.markColumnAsSortedBy('waterfall', DataGrid.DataGrid.Order.Ascending);
             this.sortHandler();
         }
     }
@@ -649,7 +649,7 @@ export class NetworkLogViewColumns {
             return false;
         }
         this.columns.splice(index, 1);
-        this.dataGridInternal.removeColumn(headerId);
+        this.#dataGrid.removeColumn(headerId);
         this.saveColumnsSettings();
         this.updateColumns();
         return true;
@@ -682,8 +682,8 @@ export class NetworkLogViewColumns {
         // issues with Closure compiler.
         const columnConfig = columnConfigBase;
         this.columns.splice(index, 0, columnConfig);
-        if (this.dataGridInternal) {
-            this.dataGridInternal.addColumn(NetworkLogViewColumns.convertToDataGridDescriptor(columnConfig), index);
+        if (this.#dataGrid) {
+            this.#dataGrid.addColumn(NetworkLogViewColumns.convertToDataGridDescriptor(columnConfig), index);
         }
         this.saveColumnsSettings();
         this.updateColumns();

@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -198,7 +198,7 @@ function hasTokenInSet(tokenTypes, type) {
 }
 export class HTMLModel {
     #state = "Initial" /* ParseState.INITIAL */;
-    #documentInternal;
+    #document;
     #stack;
     #tokens = [];
     #tokenIndex = 0;
@@ -209,10 +209,10 @@ export class HTMLModel {
     #tagStartOffset;
     #tagEndOffset;
     constructor(text) {
-        this.#documentInternal = new FormatterElement('document');
-        this.#documentInternal.openTag = new Tag('document', 0, 0, new Map(), true, false);
-        this.#documentInternal.closeTag = new Tag('document', text.length, text.length, new Map(), false, false);
-        this.#stack = [this.#documentInternal];
+        this.#document = new FormatterElement('document');
+        this.#document.openTag = new Tag('document', 0, 0, new Map(), true, false);
+        this.#document.closeTag = new Tag('document', text.length, text.length, new Map(), false, false);
+        this.#stack = [this.#document];
         this.#build(text);
     }
     #build(text) {
@@ -378,7 +378,7 @@ export class HTMLModel {
             const topElement = this.#stack[this.#stack.length - 1];
             if (topElement) {
                 const tagSet = AutoClosingTags.get(topElement.name);
-                if (topElement !== this.#documentInternal && topElement.openTag?.selfClosingTag) {
+                if (topElement !== this.#document && topElement.openTag?.selfClosingTag) {
                     this.#popElement(autocloseTag(topElement, topElement.openTag.endOffset));
                 }
                 else if (tagSet?.has(tag.name)) {
@@ -425,7 +425,7 @@ export class HTMLModel {
         return this.#tokens[this.#tokenIndex++];
     }
     document() {
-        return this.#documentInternal;
+        return this.#document;
     }
 }
 const SelfClosingTags = new Set([

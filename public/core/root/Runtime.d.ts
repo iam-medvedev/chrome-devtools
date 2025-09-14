@@ -76,14 +76,12 @@ export declare const enum ExperimentName {
     INSTRUMENTATION_BREAKPOINTS = "instrumentation-breakpoints",
     AUTHORED_DEPLOYED_GROUPING = "authored-deployed-grouping",
     JUST_MY_CODE = "just-my-code",
-    HIGHLIGHT_ERRORS_ELEMENTS_PANEL = "highlight-errors-elements-panel",
     USE_SOURCE_MAP_SCOPES = "use-source-map-scopes",
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
     TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
-    TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz",
-    VERTICAL_DRAWER = "vertical-drawer"
+    TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz"
 }
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
@@ -209,6 +207,9 @@ interface GdpProfiles {
 interface LiveEdit {
     enabled: boolean;
 }
+interface DevToolsFlexibleLayout {
+    verticalDrawerEnabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -252,6 +253,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsGlobalAiButton: GlobalAiButton;
     devToolsGdpProfiles: GdpProfiles;
     devToolsLiveEdit: LiveEdit;
+    devToolsFlexibleLayout: DevToolsFlexibleLayout;
 }>;
 /**
  * The host configuration for this DevTools instance.

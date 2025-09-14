@@ -2,7 +2,7 @@ import glassPaneStyles from './glassPane.css.js';
 import { deepElementFromEvent, measuredScrollbarWidth } from './UIUtils.js';
 import { Widget } from './Widget.js';
 export class GlassPane {
-    widgetInternal;
+    #widget;
     element;
     contentElement;
     onMouseDownBound;
@@ -17,10 +17,10 @@ export class GlassPane {
     marginBehavior = "DefaultMargin" /* MarginBehavior.DEFAULT_MARGIN */;
     #ignoreLeftMargin = false;
     constructor(jslog) {
-        this.widgetInternal = new Widget({ jslog, useShadowDom: true });
-        this.widgetInternal.markAsRoot();
-        this.element = this.widgetInternal.element;
-        this.contentElement = this.widgetInternal.contentElement;
+        this.#widget = new Widget({ jslog, useShadowDom: true });
+        this.#widget.markAsRoot();
+        this.element = this.#widget.element;
+        this.contentElement = this.#widget.contentElement;
         this.registerRequiredCSS(glassPaneStyles);
         this.setPointerEventsBehavior("PierceGlassPane" /* PointerEventsBehavior.PIERCE_GLASS_PANE */);
         this.onMouseDownBound = this.onMouseDown.bind(this);
@@ -29,13 +29,13 @@ export class GlassPane {
         this.contentElement.setAttribute('jslog', jslog);
     }
     isShowing() {
-        return this.widgetInternal.isShowing();
+        return this.#widget.isShowing();
     }
     registerRequiredCSS(...cssFiles) {
-        this.widgetInternal.registerRequiredCSS(...cssFiles);
+        this.#widget.registerRequiredCSS(...cssFiles);
     }
     setDefaultFocusedElement(element) {
-        this.widgetInternal.setDefaultFocusedElement(element);
+        this.#widget.setDefaultFocusedElement(element);
     }
     setDimmed(dimmed) {
         this.element.classList.toggle('dimmed-pane', dimmed);
@@ -86,7 +86,7 @@ export class GlassPane {
         this.element.setAttribute('data-devtools-glass-pane', '');
         document.body.addEventListener('mousedown', this.onMouseDownBound, true);
         document.body.addEventListener('pointerdown', this.onMouseDownBound, true);
-        this.widgetInternal.show(document.body);
+        this.#widget.show(document.body);
         panes.add(this);
         this.positionContent();
     }
@@ -97,7 +97,7 @@ export class GlassPane {
         panes.delete(this);
         this.element.ownerDocument.body.removeEventListener('mousedown', this.onMouseDownBound, true);
         this.element.ownerDocument.body.removeEventListener('pointerdown', this.onMouseDownBound, true);
-        this.widgetInternal.detach();
+        this.#widget.detach();
         if (this.#onHideCallback) {
             this.#onHideCallback();
         }
@@ -254,10 +254,10 @@ export class GlassPane {
             this.contentElement.style.height = height + 'px';
         }
         this.contentElement.positionAt(positionX, positionY, container);
-        this.widgetInternal.doResize();
+        this.#widget.doResize();
     }
     widget() {
-        return this.widgetInternal;
+        return this.#widget;
     }
     static setContainer(element) {
         containers.set((element.ownerDocument), element);

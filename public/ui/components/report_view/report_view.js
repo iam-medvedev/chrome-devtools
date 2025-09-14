@@ -18,7 +18,7 @@ import { html, nothing, render } from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/report_view/report.css.js
 var report_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -50,7 +50,7 @@ var report_css_default = `/*
 
 // gen/front_end/ui/components/report_view/reportKey.css.js
 var reportKey_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -74,7 +74,7 @@ var reportKey_css_default = `/*
 
 // gen/front_end/ui/components/report_view/reportSection.css.js
 var reportSection_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -98,7 +98,7 @@ var reportSection_css_default = `/*
 
 // gen/front_end/ui/components/report_view/reportSectionDivider.css.js
 var reportSectionDivider_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -120,7 +120,7 @@ var reportSectionDivider_css_default = `/*
 
 // gen/front_end/ui/components/report_view/reportSectionHeader.css.js
 var reportSectionHeader_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -146,7 +146,7 @@ var reportSectionHeader_css_default = `/*
 
 // gen/front_end/ui/components/report_view/reportValue.css.js
 var reportValue_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

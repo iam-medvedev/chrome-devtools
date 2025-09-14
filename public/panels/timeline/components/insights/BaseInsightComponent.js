@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -10,9 +10,9 @@ import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js'
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import { md } from '../../utils/Helpers.js';
 import * as Utils from '../../utils/utils.js';
 import baseInsightComponentStyles from './baseInsightComponent.css.js';
+import { md } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
 const { html } = Lit;
 const UIStrings = {

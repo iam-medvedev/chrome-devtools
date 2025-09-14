@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -6,6 +6,7 @@ import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { AnimationsTrackAppender } from './AnimationsTrackAppender.js';
 import { getDurationString, getEventLevel } from './AppenderUtils.js';
@@ -30,7 +31,7 @@ function isShowPostMessageEventsEnabled() {
     return showPostMessageEvents;
 }
 export function entryIsVisibleInTimeline(entry, parsedTrace) {
-    if (parsedTrace?.Meta.traceIsGeneric) {
+    if (parsedTrace?.data.Meta.traceIsGeneric) {
         return true;
     }
     if (Trace.Types.Events.isUpdateCounters(entry)) {
@@ -53,7 +54,7 @@ export function entryIsVisibleInTimeline(entry, parsedTrace) {
     }
     // Default styles are globally defined for each event name. Some
     // events are hidden by default.
-    const eventStyle = TimelineUtils.EntryStyles.getEventStyle(entry.name);
+    const eventStyle = Trace.Styles.getEventStyle(entry.name);
     const eventIsTiming = Trace.Types.Events.isConsoleTime(entry) || Trace.Types.Events.isPerformanceMeasure(entry) ||
         Trace.Types.Events.isPerformanceMark(entry) || Trace.Types.Events.isConsoleTimeStamp(entry);
     return (eventStyle && !eventStyle.hidden) || eventIsTiming;
@@ -152,7 +153,7 @@ export class CompatibilityTracksAppender {
         if (!TimelinePanel.extensionDataVisibilitySetting().get()) {
             return;
         }
-        const tracks = this.#parsedTrace.ExtensionTraceData.extensionTrackData;
+        const tracks = this.#parsedTrace.data.ExtensionTraceData.extensionTrackData;
         for (const trackData of tracks) {
             this.#allTrackAppenders.push(new ExtensionTrackAppender(this, trackData));
         }
@@ -185,10 +186,10 @@ export class CompatibilityTracksAppender {
                     return 8;
             }
         };
-        const threads = Trace.Handlers.Threads.threadsInTrace(this.#parsedTrace);
+        const threads = Trace.Handlers.Threads.threadsInTrace(this.#parsedTrace.data);
         const showAllEvents = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
         for (const { pid, tid, name, type, entries, tree } of threads) {
-            if (this.#parsedTrace.Meta.traceIsGeneric) {
+            if (this.#parsedTrace.data.Meta.traceIsGeneric) {
                 // If the trace is generic, we just push all of the threads with no effort to differentiate them, hence
                 // overriding the thread type to be OTHER for all threads.
                 this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */, entries, tree));
@@ -198,7 +199,7 @@ export class CompatibilityTracksAppender {
             if ((name === 'Chrome_ChildIOThread' || name === 'Compositor' || name === 'GpuMemoryThread') && !showAllEvents) {
                 continue;
             }
-            const matchingWorklet = this.#parsedTrace.AuctionWorklets.worklets.get(pid);
+            const matchingWorklet = this.#parsedTrace.data.AuctionWorklets.worklets.get(pid);
             if (matchingWorklet) {
                 // Each AuctionWorklet has two key threads:
                 // 1. the Utility Thread
@@ -444,7 +445,7 @@ export class CompatibilityTracksAppender {
         if (track.titleForEvent) {
             return track.titleForEvent(event);
         }
-        return TimelineUtils.EntryName.nameForEntry(event, this.#parsedTrace);
+        return Trace.Name.forEntry(event, this.#parsedTrace);
     }
     /**
      * Returns the info shown when an event in the timeline is hovered.
@@ -467,8 +468,7 @@ export class CompatibilityTracksAppender {
             track.setPopoverInfo(event, info);
         }
         // If there's a url associated, add into additionalElements
-        const url = URL.parse(info.url ?? TimelineUtils.SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.#parsedTrace, event) ??
-            '');
+        const url = URL.parse(info.url ?? SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(this.#parsedTrace, event) ?? '');
         if (url) {
             const MAX_PATH_LENGTH = 45;
             const path = Platform.StringUtilities.trimMiddle(url.href.replace(url.origin, ''), MAX_PATH_LENGTH);
