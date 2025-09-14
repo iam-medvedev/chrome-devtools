@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -40,7 +40,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const AI_CODE_COMPLETION_CHARACTER_LIMIT = 20_000;
 export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
     addCompletionsFromHistory;
-    historyInternal;
+    #history;
     initialText;
     editor;
     eagerPreviewElement;
@@ -95,7 +95,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         });
         this.registerRequiredCSS(consolePromptStyles);
         this.addCompletionsFromHistory = true;
-        this.historyInternal = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('console-history', []));
+        this.#history = new TextEditor.AutocompleteHistory.AutocompleteHistory(Common.Settings.Settings.instance().createLocalSetting('console-history', []));
         this.initialText = '';
         this.eagerPreviewElement = document.createElement('div');
         this.eagerPreviewElement.classList.add('console-eager-preview');
@@ -156,7 +156,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             }
         });
         editorContainerElement.appendChild(this.editor);
-        this.#editorHistory = new TextEditor.TextEditorHistory.TextEditorHistory(this.editor, this.historyInternal);
+        this.#editorHistory = new TextEditor.TextEditorHistory.TextEditorHistory(this.editor, this.#history);
         if (this.hasFocus()) {
             this.focus();
         }
@@ -203,6 +203,9 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         const cursor = selection.main.head;
         const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
         let prefix = query.substring(0, cursor);
+        if (prefix.trim().length === 0) {
+            return;
+        }
         if (currentExecutionContext) {
             const consoleModel = currentExecutionContext.target().model(SDK.ConsoleModel.ConsoleModel);
             if (consoleModel) {
@@ -262,7 +265,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         }
     }
     history() {
-        return this.historyInternal;
+        return this.#history;
     }
     clearAutocomplete() {
         CodeMirror.closeCompletion(this.editor.editor);
@@ -458,7 +461,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.detachAiCodeCompletionTeaser();
             this.teaser = undefined;
         }
-        this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, "console" /* AiCodeCompletion.AiCodeCompletion.Panel.CONSOLE */);
+        this.aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.aidaClient }, this.editor, "console" /* AiCodeCompletion.AiCodeCompletion.Panel.CONSOLE */, ['\n\n']);
         this.aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, event => {
             this.aiCodeCompletionCitations = event.data.citations;
             this.dispatchEventToListeners("AiCodeCompletionResponseReceived" /* Events.AI_CODE_COMPLETION_RESPONSE_RECEIVED */, event.data);
@@ -507,7 +510,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         });
     }
     isAiCodeCompletionEnabled() {
-        return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+        return Boolean(Root.Runtime.hostConfig.aidaAvailability?.enabled && Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
     }
     editorSetForTest() {
     }

@@ -95,12 +95,8 @@ export interface EntryForExport {
     text: string | null;
 }
 export declare class URLCoverageInfo extends Common.ObjectWrapper.ObjectWrapper<URLCoverageInfo.EventTypes> {
-    private readonly urlInternal;
+    #private;
     private coverageInfoByLocation;
-    private sizeInternal;
-    private usedSizeInternal;
-    private typeInternal;
-    private isContentScriptInternal;
     sourcesURLCoverageInfo: Map<Platform.DevToolsPath.UrlString, SourceURLCoverageInfo>;
     sourceSegments: SourceSegment[] | undefined;
     constructor(url: Platform.DevToolsPath.UrlString);

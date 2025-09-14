@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -62,22 +62,13 @@ export class ModificationsManager extends EventTarget {
         if (!parsedTrace) {
             throw new Error('ModificationsManager was initialized without a corresponding trace data');
         }
-        const traceBounds = parsedTrace.Meta.traceBounds;
-        const traceEvents = traceModel.rawTraceEvents(traceIndex);
-        if (!traceEvents) {
-            throw new Error('ModificationsManager was initialized without a corresponding raw trace events array');
-        }
-        const syntheticEventsManager = traceModel.syntheticTraceEventsManager(traceIndex);
-        if (!syntheticEventsManager) {
-            throw new Error('ModificationsManager was initialized without a corresponding SyntheticEventsManager');
-        }
-        const metadata = traceModel.metadata(traceIndex);
+        const traceBounds = parsedTrace.data.Meta.traceBounds;
         const newModificationsManager = new ModificationsManager({
             parsedTrace,
             traceBounds,
-            rawTraceEvents: traceEvents,
-            modifications: metadata?.modifications,
-            syntheticEvents: syntheticEventsManager.getSyntheticTraces(),
+            rawTraceEvents: parsedTrace.traceEvents,
+            modifications: parsedTrace.metadata.modifications,
+            syntheticEvents: parsedTrace.syntheticEventsManager.getSyntheticTraces(),
         });
         modificationsManagerByTraceIndex[traceIndex] = newModificationsManager;
         activeManager = newModificationsManager;

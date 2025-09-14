@@ -1,8 +1,8 @@
 import * as Common from '../../core/common/common.js';
 import type * as Host from '../../core/host/host.js';
 export declare class ZoomManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
     private frontendHost;
-    private zoomFactorInternal;
     private constructor();
     static instance(opts?: {
         forceNew: boolean | null;

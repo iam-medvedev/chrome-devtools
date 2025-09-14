@@ -57,7 +57,7 @@ export declare const UIStrings: {
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => Common.UIString.LocalizedString;
 export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {
     largeLayoutUpdates: Types.Events.Layout[];
-    largeStyleRecalcs: Types.Events.UpdateLayoutTree[];
+    largeStyleRecalcs: Types.Events.RecalcStyle[];
     largeUpdates: Array<{
         label: Common.UIString.LocalizedString;
         duration: Types.Timing.Milli;
@@ -66,5 +66,6 @@ export type DOMSizeInsightModel = InsightModel<typeof UIStrings, {
     }>;
     maxDOMStats?: Types.Events.DOMStats;
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DOMSizeInsightModel;
+export declare function isDomSizeInsight(model: InsightModel): model is DOMSizeInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): DOMSizeInsightModel;
 export declare function createOverlays(model: DOMSizeInsightModel): Types.Overlays.Overlay[];

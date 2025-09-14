@@ -18,4 +18,4 @@ export declare function buildPersistedConfig(groups: readonly PerfUI.FlameChart.
  * trace with the exact same start time is very unlikely.
  * It's not impossible, but unlikely enough that we think the min trace bounds time is a good enough value to use as a uuid.
  */
-export declare function keyForTraceConfig(trace: Trace.Handlers.Types.ParsedTrace): Trace.Types.Timing.Micro;
+export declare function keyForTraceConfig(trace: Trace.Handlers.Types.HandlerData): Trace.Types.Timing.Micro;

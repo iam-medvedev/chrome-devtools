@@ -2,15 +2,13 @@ import '../../legacy.js';
 import * as Common from '../../../../core/common/common.js';
 import { type ContrastInfo } from './ContrastInfo.js';
 export declare class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
     private contrastInfo;
-    private readonly elementInternal;
     private readonly toggleMainColorPicker;
     private readonly expandedChangedCallback;
     private readonly colorSelectedCallback;
-    private expandedInternal;
     private passesAA;
     private contrastUnknown;
-    private visibleInternal;
     private readonly noContrastInfoAvailable;
     private readonly contrastValueBubble;
     private contrastValue;
@@ -46,7 +44,6 @@ export declare class ContrastDetails extends Common.ObjectWrapper.ObjectWrapper<
     expanded(): boolean;
     backgroundColorPickerEnabled(): boolean;
     toggleBackgroundColorPicker(enabled: boolean): void;
-    private toggleBackgroundColorPickerInternal;
     private bgColorPicked;
 }
 export declare const enum Events {

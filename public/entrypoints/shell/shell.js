@@ -2981,7 +2981,15 @@ var UIStrings22 = {
   /**
    * @description Command for showing the AI innovation settings
    */
-  showAiInnovations: "Show AI innovations"
+  showAiInnovations: "Show AI innovations",
+  /**
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  workspace: "Workspace",
+  /**
+   * @description Command for showing the Workspace tool in Settings
+   */
+  showWorkspace: "Show Workspace settings"
 };
 var str_22 = i18n32.i18n.registerUIStrings("panels/settings/settings-meta.ts", UIStrings22);
 var i18nLazyString22 = i18n32.i18n.getLazilyComputedLocalizedString.bind(void 0, str_22);
@@ -3003,6 +3011,18 @@ UI22.ViewManager.registerViewExtension({
     return new Settings22.SettingsScreen.GenericSettingsTab();
   },
   iconName: "gear"
+});
+UI22.ViewManager.registerViewExtension({
+  location: "settings-view",
+  id: "workspace",
+  title: i18nLazyString22(UIStrings22.workspace),
+  commandPrompt: i18nLazyString22(UIStrings22.showWorkspace),
+  order: 1,
+  async loadView() {
+    const Settings22 = await loadSettingsModule();
+    return new Settings22.WorkspaceSettingsTab.WorkspaceSettingsTab();
+  },
+  iconName: "folder"
 });
 UI22.ViewManager.registerViewExtension({
   location: "settings-view",
@@ -3206,14 +3226,6 @@ import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  workspace: "Workspace",
-  /**
-   * @description Command for showing the Workspace tool in Settings
-   */
-  showWorkspace: "Show Workspace settings",
-  /**
    * @description Title of a setting under the Persistence category in Settings
    */
   enableLocalOverrides: "Enable Local Overrides",
@@ -3256,18 +3268,6 @@ async function loadPersistenceModule() {
   }
   return loadedPersistenceModule;
 }
-UI9.ViewManager.registerViewExtension({
-  location: "settings-view",
-  id: "workspace",
-  title: i18nLazyString9(UIStrings9.workspace),
-  commandPrompt: i18nLazyString9(UIStrings9.showWorkspace),
-  order: 1,
-  async loadView() {
-    const Persistence = await loadPersistenceModule();
-    return new Persistence.WorkspaceSettingsTab.WorkspaceSettingsTab();
-  },
-  iconName: "folder"
-});
 Common5.Settings.registerSettingExtension({
   category: "PERSISTENCE",
   title: i18nLazyString9(UIStrings9.enableLocalOverrides),
@@ -3383,7 +3383,6 @@ Common6.Settings.registerSettingExtension({
 import * as Common7 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
 import * as i18n22 from "./../../core/i18n/i18n.js";
-import * as Root4 from "./../../core/root/root.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
@@ -3659,7 +3658,7 @@ UI10.ActionRegistration.registerActionExtension({
       shortcut: "Shift+Esc"
     }
   ],
-  experiment: "vertical-drawer"
+  condition: (config) => Boolean(config?.devToolsFlexibleLayout?.verticalDrawerEnabled)
 });
 UI10.ActionRegistration.registerActionExtension({
   actionId: "main.next-tab",
@@ -4285,7 +4284,7 @@ Common7.AppProvider.registerAppProvider({
 // gen/front_end/ui/legacy/components/perf_ui/perf_ui-meta.js
 import * as Common8 from "./../../core/common/common.js";
 import * as i18n24 from "./../../core/i18n/i18n.js";
-import * as Root5 from "./../../core/root/root.js";
+import * as Root4 from "./../../core/root/root.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 var UIStrings12 = {
   /**
@@ -5846,7 +5845,7 @@ for (const action of actions) {
 // gen/front_end/panels/ai_assistance/ai_assistance-meta.js
 import * as Common12 from "./../../core/common/common.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
-import * as Root6 from "./../../core/root/root.js";
+import * as Root5 from "./../../core/root/root.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
 var UIStrings17 = {
   /**
@@ -5928,7 +5927,7 @@ function isAnyFeatureAvailable(config) {
   return isStylingAgentFeatureAvailable(config) || isNetworkAgentFeatureAvailable(config) || isPerformanceAgentFeatureAvailable(config) || isFileAgentFeatureAvailable(config);
 }
 function titleForAiAssistanceActions() {
-  if (Root6.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled || Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
+  if (Root5.Runtime.hostConfig.devToolsAiDebugWithAi?.enabled || Root5.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
     return i18nLazyString17(UIStrings17.debugWithAi)();
   }
   return i18nLazyString17(UIStrings17.askAi)();

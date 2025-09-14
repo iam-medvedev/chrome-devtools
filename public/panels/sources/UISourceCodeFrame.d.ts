@@ -27,7 +27,6 @@ export declare class UISourceCodeFrame extends UISourceCodeFrame_base {
     wasShown(): void;
     willHide(): void;
     protected getContentType(): string;
-    canEditSourceInternal(): boolean;
     private onNetworkPersistenceChanged;
     commitEditing(): void;
     setContent(content: string): Promise<void>;

@@ -94,22 +94,23 @@ var TraceLoader = class _TraceLoader {
     const configCacheKey = Trace.Types.Configuration.configToCacheKey(config);
     const fromCache = traceEngineCache.get(name)?.get(configCacheKey);
     if (fromCache) {
+      const parsedTrace = fromCache.parsedTrace;
       await wrapInTimeout(context, () => {
         const syntheticEventsManager = fromCache.model.syntheticTraceEventsManager(0);
         if (!syntheticEventsManager) {
           throw new Error("Cached trace engine result did not have a synthetic events manager instance");
         }
         Trace.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
-        _TraceLoader.initTraceBoundsManager(fromCache.parsedTrace);
+        _TraceLoader.initTraceBoundsManager(parsedTrace);
         Timeline.ModificationsManager.ModificationsManager.reset();
         Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
       }, 4e3, "Initializing state for cached trace");
-      return { parsedTrace: fromCache.parsedTrace, insights: fromCache.insights, metadata: fromCache.metadata };
+      return parsedTrace;
     }
     const fileContents = await wrapInTimeout(context, async () => {
       return await _TraceLoader.fixtureContents(context, name);
     }, 15e3, `Loading fixtureContents for ${name}`);
-    const parsedTraceData = await wrapInTimeout(context, async () => {
+    const parsedTraceFileAndModel = await wrapInTimeout(context, async () => {
       return await _TraceLoader.executeTraceEngineOnFileContents(
         fileContents,
         /* emulate fresh recording */
@@ -118,18 +119,14 @@ var TraceLoader = class _TraceLoader {
       );
     }, 15e3, `Executing traceEngine for ${name}`);
     const cacheByName = traceEngineCache.get(name) ?? /* @__PURE__ */ new Map();
-    cacheByName.set(configCacheKey, parsedTraceData);
+    cacheByName.set(configCacheKey, parsedTraceFileAndModel);
     traceEngineCache.set(name, cacheByName);
-    _TraceLoader.initTraceBoundsManager(parsedTraceData.parsedTrace);
+    _TraceLoader.initTraceBoundsManager(parsedTraceFileAndModel.parsedTrace);
     await wrapInTimeout(context, () => {
       Timeline.ModificationsManager.ModificationsManager.reset();
-      Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceData.model, 0);
+      Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceFileAndModel.model, 0);
     }, 5e3, `Creating modification manager for ${name}`);
-    return {
-      parsedTrace: parsedTraceData.parsedTrace,
-      insights: parsedTraceData.insights,
-      metadata: parsedTraceData.metadata
-    };
+    return parsedTraceFileAndModel.parsedTrace;
   }
   /**
    * Initialise the BoundsManager with the bounds from a trace.
@@ -137,10 +134,10 @@ var TraceLoader = class _TraceLoader {
    * level - rely on this being set. This is always set in the actual panel, but
    * parsing a trace in a test does not automatically set it.
    **/
-  static initTraceBoundsManager(data) {
+  static initTraceBoundsManager(parsedTrace) {
     TraceBounds.TraceBounds.BoundsManager.instance({
       forceNew: true
-    }).resetWithNewBounds(data.Meta.traceBounds);
+    }).resetWithNewBounds(parsedTrace.data.Meta.traceBounds);
   }
   static async executeTraceEngineOnFileContents(contents, emulateFreshRecording = false, traceEngineConfig) {
     const events = "traceEvents" in contents ? contents.traceEvents : contents;
@@ -150,19 +147,15 @@ var TraceLoader = class _TraceLoader {
       model.addEventListener(Trace.TraceModel.ModelUpdateEvent.eventName, (event) => {
         const { data } = event;
         if (Trace.TraceModel.isModelUpdateDataComplete(data)) {
-          const metadata2 = model.metadata(0);
           const parsedTrace = model.parsedTrace(0);
-          const insights = model.traceInsights(0);
-          if (metadata2 && parsedTrace) {
-            resolve({
-              model,
-              metadata: metadata2,
-              parsedTrace,
-              insights
-            });
-          } else {
+          if (!parsedTrace) {
             reject(new Error("Unable to load trace"));
+            return;
           }
+          resolve({
+            model,
+            parsedTrace
+          });
         }
       });
       void model.parse(events, {
@@ -239,40 +232,40 @@ function toLanternTrace(traceEvents) {
     traceEvents
   };
 }
-async function runTrace(context, trace) {
+async function runTraceProcessor(context, trace) {
   TraceLoader.setTestTimeout(context);
   const processor = Trace2.Processor.TraceProcessor.createWithAllHandlers();
   await processor.parse(trace.traceEvents, { isCPUProfile: false, isFreshRecording: true });
-  if (!processor.parsedTrace) {
+  if (!processor.data) {
     throw new Error("No data");
   }
-  return processor.parsedTrace;
+  return processor.data;
 }
 async function getComputationDataFromFixture(context, { trace, settings, url }) {
   settings = settings ?? {};
   if (!settings.throttlingMethod) {
     settings.throttlingMethod = "simulate";
   }
-  const parsedTrace = await runTrace(context, trace);
-  const requests = Trace2.LanternComputationData.createNetworkRequests(trace, parsedTrace);
+  const data = await runTraceProcessor(context, trace);
+  const requests = Trace2.LanternComputationData.createNetworkRequests(trace, data);
   const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
   if (!networkAnalysis) {
     throw new Error("no networkAnalysis");
   }
-  const frameId = parsedTrace.Meta.mainFrameId;
-  const navigationId = parsedTrace.Meta.mainFrameNavigations[0].args.data?.navigationId;
+  const frameId = data.Meta.mainFrameId;
+  const navigationId = data.Meta.mainFrameNavigations[0].args.data?.navigationId;
   if (!navigationId) {
     throw new Error("no navigation id found");
   }
   return {
     simulator: Lantern.Simulation.Simulator.createSimulator({ ...settings, networkAnalysis }),
-    graph: Trace2.LanternComputationData.createGraph(requests, trace, parsedTrace, url),
-    processedNavigation: Trace2.LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId)
+    graph: Trace2.LanternComputationData.createGraph(requests, trace, data, url),
+    processedNavigation: Trace2.LanternComputationData.createProcessedNavigation(data, frameId, navigationId)
   };
 }
 export {
   getComputationDataFromFixture,
-  runTrace,
+  runTraceProcessor as runTrace,
   toLanternTrace
 };
 //# sourceMappingURL=testing.js.map

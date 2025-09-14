@@ -4,6 +4,7 @@ import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import { type NetworkNode } from './NetworkDataGridNode.js';
 import type { NetworkLogView } from './NetworkLogView.js';
 export declare class NetworkLogViewColumns {
+    #private;
     private networkLogView;
     private readonly persistentSettings;
     private readonly networkLogLargeRowsSetting;
@@ -16,7 +17,6 @@ export declare class NetworkLogViewColumns {
     private readonly popupLinkifier;
     private calculatorsMap;
     private lastWheelTime;
-    private dataGridInternal;
     private splitWidget;
     private waterfallColumn;
     private activeScroller;

@@ -1,4 +1,4 @@
-// Copyright (c) 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -206,7 +206,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
     #selectedGroup;
     #renderQueue;
     #defaultDuration;
-    #durationInternal;
+    #duration;
     #timelineControlsWidth;
     #nodesMap;
     #uiAnimations;
@@ -260,7 +260,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         const noEffectSelectedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEffectSelected), i18nString(UIStrings.selectAnEffectAboveToInspectAnd));
         noEffectSelectedPlaceholder.show(timelineHint);
         /** @constant */ this.#defaultDuration = 100;
-        this.#durationInternal = this.#defaultDuration;
+        this.#duration = this.#defaultDuration;
         this.#nodesMap = new Map();
         this.#uiAnimations = [];
         this.#groupBuffer = [];
@@ -497,10 +497,10 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.updateControlButton();
     }
     duration() {
-        return this.#durationInternal;
+        return this.#duration;
     }
     setDuration(duration) {
-        this.#durationInternal = duration;
+        this.#duration = duration;
         this.scheduleRedraw();
     }
     clearTimeline() {
@@ -514,7 +514,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         this.#nodesMap.clear();
         this.#animationsMap.clear();
         this.#animationsContainer.removeChildren();
-        this.#durationInternal = this.#defaultDuration;
+        this.#duration = this.#defaultDuration;
         this.#timelineScrubber.classList.add('hidden');
         this.#gridHeader.classList.remove('scrubber-enabled');
         this.#selectedGroup = null;

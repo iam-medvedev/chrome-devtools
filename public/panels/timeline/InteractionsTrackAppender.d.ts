@@ -4,7 +4,7 @@ import { type CompatibilityTracksAppender, type PopoverInfo, type TrackAppender,
 export declare class InteractionsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace, colorGenerator: Common.Color.Generator);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace, colorGenerator: Common.Color.Generator);
     /**
      * Appends into the flame chart data the data corresponding to the
      * interactions track.

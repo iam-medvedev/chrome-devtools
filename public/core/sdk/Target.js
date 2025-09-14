@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -6,14 +6,14 @@ import * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
 import { SDKModel } from './SDKModel.js';
 export class Target extends ProtocolClient.InspectorBackend.TargetBase {
-    #targetManagerInternal;
-    #nameInternal;
-    #inspectedURLInternal = Platform.DevToolsPath.EmptyUrlString;
+    #targetManager;
+    #name;
+    #inspectedURL = Platform.DevToolsPath.EmptyUrlString;
     #inspectedURLName = '';
     #capabilitiesMask;
-    #typeInternal;
-    #parentTargetInternal;
-    #idInternal;
+    #type;
+    #parentTarget;
+    #id;
     #modelByConstructor = new Map();
     #isSuspended;
     /**
@@ -28,13 +28,13 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
      * crbug.com/387258086).
      */
     #hasCrashed = false;
-    #targetInfoInternal;
+    #targetInfo;
     #creatingModels;
     constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection, targetInfo) {
         const needsNodeJSPatching = type === Type.NODE;
         super(needsNodeJSPatching, parentTarget, sessionId, connection);
-        this.#targetManagerInternal = targetManager;
-        this.#nameInternal = name;
+        this.#targetManager = targetManager;
+        this.#name = name;
         this.#capabilitiesMask = 0;
         switch (type) {
             case Type.FRAME:
@@ -89,11 +89,11 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
             case Type.NODE_WORKER:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ | 131072 /* Capability.IO */;
         }
-        this.#typeInternal = type;
-        this.#parentTargetInternal = parentTarget;
-        this.#idInternal = id;
+        this.#type = type;
+        this.#parentTarget = parentTarget;
+        this.#id = id;
         this.#isSuspended = suspended;
-        this.#targetInfoInternal = targetInfo;
+        this.#targetInfo = targetInfo;
     }
     createModels(required) {
         this.#creatingModels = true;
@@ -113,27 +113,27 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         this.#creatingModels = false;
     }
     id() {
-        return this.#idInternal;
+        return this.#id;
     }
     name() {
-        return this.#nameInternal || this.#inspectedURLName;
+        return this.#name || this.#inspectedURLName;
     }
     setName(name) {
-        if (this.#nameInternal === name) {
+        if (this.#name === name) {
             return;
         }
-        this.#nameInternal = name;
-        this.#targetManagerInternal.onNameChange(this);
+        this.#name = name;
+        this.#targetManager.onNameChange(this);
     }
     type() {
-        return this.#typeInternal;
+        return this.#type;
     }
     markAsNodeJSForTest() {
         super.markAsNodeJSForTest();
-        this.#typeInternal = Type.NODE;
+        this.#type = Type.NODE;
     }
     targetManager() {
-        return this.#targetManagerInternal;
+        return this.#targetManager;
     }
     hasAllCapabilities(capabilitiesMask) {
         // TODO(dgozman): get rid of this method, once we never observe targets with
@@ -141,11 +141,10 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         return (this.#capabilitiesMask & capabilitiesMask) === capabilitiesMask;
     }
     decorateLabel(label) {
-        return (this.#typeInternal === Type.Worker || this.#typeInternal === Type.ServiceWorker) ? '\u2699 ' + label :
-            label;
+        return (this.#type === Type.Worker || this.#type === Type.ServiceWorker) ? '\u2699 ' + label : label;
     }
     parentTarget() {
-        return this.#parentTargetInternal;
+        return this.#parentTarget;
     }
     outermostTarget() {
         let lastTarget = null;
@@ -160,7 +159,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
     }
     dispose(reason) {
         super.dispose(reason);
-        this.#targetManagerInternal.removeTarget(this);
+        this.#targetManager.removeTarget(this);
         for (const model of this.#modelByConstructor.values()) {
             model.dispose();
         }
@@ -175,7 +174,7 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 const model = new modelClass(this);
                 this.#modelByConstructor.set(modelClass, model);
                 if (!this.#creatingModels) {
-                    this.#targetManagerInternal.modelAdded(modelClass, model, this.#targetManagerInternal.isInScope(this));
+                    this.#targetManager.modelAdded(modelClass, model, this.#targetManager.isInScope(this));
                 }
             }
         }
@@ -185,15 +184,15 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         return this.#modelByConstructor;
     }
     inspectedURL() {
-        return this.#inspectedURLInternal;
+        return this.#inspectedURL;
     }
     setInspectedURL(inspectedURL) {
-        this.#inspectedURLInternal = inspectedURL;
+        this.#inspectedURL = inspectedURL;
         const parsedURL = Common.ParsedURL.ParsedURL.fromString(inspectedURL);
-        this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : '#' + this.#idInternal;
-        this.#targetManagerInternal.onInspectedURLChange(this);
-        if (!this.#nameInternal) {
-            this.#targetManagerInternal.onNameChange(this);
+        this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : '#' + this.#id;
+        this.#targetManager.onInspectedURLChange(this);
+        if (!this.#name) {
+            this.#targetManager.onNameChange(this);
         }
     }
     hasCrashed() {
@@ -239,10 +238,10 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
         return this.#isSuspended;
     }
     updateTargetInfo(targetInfo) {
-        this.#targetInfoInternal = targetInfo;
+        this.#targetInfo = targetInfo;
     }
     targetInfo() {
-        return this.#targetInfoInternal;
+        return this.#targetInfo;
     }
 }
 export var Type;

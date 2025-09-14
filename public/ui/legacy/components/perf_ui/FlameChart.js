@@ -190,7 +190,7 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     dragStartX;
     dragStartY;
     lastMouseOffsetY;
-    minimumBoundaryInternal;
+    #minimumBoundary;
     maxDragOffset;
     timelineLevels;
     visibleLevelOffsets;
@@ -3453,8 +3453,8 @@ export class FlameChart extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) 
     }
     updateBoundaries() {
         this.totalTime = this.dataProvider.totalTime();
-        this.minimumBoundaryInternal = this.dataProvider.minimumBoundary();
-        this.chartViewport.setBoundaries(this.minimumBoundaryInternal, this.totalTime);
+        this.#minimumBoundary = this.dataProvider.minimumBoundary();
+        this.chartViewport.setBoundaries(this.#minimumBoundary, this.totalTime);
     }
     updateHeight() {
         this.chartViewport.setContentHeight(this.totalContentHeight());

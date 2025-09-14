@@ -22,7 +22,7 @@ import * as UI from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/cookie_table/cookiesTable.css.js
 var cookiesTable_css_default = `/*
- * Copyright (c) 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -34,6 +34,7 @@ var cookiesTable_css_default = `/*
 .cookies-table devtools-icon {
   margin-right: 4px;
 }
+
 /*# sourceURL=${import.meta.resolve("./cookiesTable.css")} */`;
 
 // gen/front_end/ui/legacy/components/cookie_table/CookiesTable.js

@@ -915,7 +915,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/lighthouse/lighthousePanel.css.js
 var lighthousePanel_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1376,22 +1376,22 @@ var i18nString2 = i18n4.i18n.getLocalizedString.bind(void 0, str_2);
 var ReportSelector = class {
   renderNewLighthouseView;
   newLighthouseItem;
-  comboBoxInternal;
+  #comboBox;
   itemByOptionElement;
   constructor(renderNewLighthouseView) {
     this.renderNewLighthouseView = renderNewLighthouseView;
     this.newLighthouseItem = document.createElement("option");
-    this.comboBoxInternal = new UI2.Toolbar.ToolbarComboBox(this.handleChange.bind(this), i18nString2(UIStrings2.reports), "lighthouse-report");
+    this.#comboBox = new UI2.Toolbar.ToolbarComboBox(this.handleChange.bind(this), i18nString2(UIStrings2.reports), "lighthouse-report");
     this.itemByOptionElement = /* @__PURE__ */ new Map();
     this.setEmptyState();
   }
   setEmptyState() {
-    this.comboBoxInternal.removeOptions();
-    this.comboBoxInternal.setEnabled(false);
+    this.#comboBox.removeOptions();
+    this.#comboBox.setEnabled(false);
     this.newLighthouseItem = document.createElement("option");
     this.newLighthouseItem.label = i18nString2(UIStrings2.newReport);
-    this.comboBoxInternal.addOption(this.newLighthouseItem);
-    this.comboBoxInternal.select(this.newLighthouseItem);
+    this.#comboBox.addOption(this.newLighthouseItem);
+    this.#comboBox.select(this.newLighthouseItem);
   }
   handleChange(_event) {
     const item2 = this.selectedItem();
@@ -1402,26 +1402,26 @@ var ReportSelector = class {
     }
   }
   selectedItem() {
-    const option = this.comboBoxInternal.selectedOption();
+    const option = this.#comboBox.selectedOption();
     return this.itemByOptionElement.get(option);
   }
   hasItems() {
     return this.itemByOptionElement.size > 0;
   }
   comboBox() {
-    return this.comboBoxInternal;
+    return this.#comboBox;
   }
   prepend(item2) {
     const optionEl = item2.optionElement();
-    const selectEl = this.comboBoxInternal.element;
+    const selectEl = this.#comboBox.element;
     this.itemByOptionElement.set(optionEl, item2);
     selectEl.insertBefore(optionEl, selectEl.firstElementChild);
-    this.comboBoxInternal.setEnabled(true);
-    this.comboBoxInternal.select(optionEl);
+    this.#comboBox.setEnabled(true);
+    this.#comboBox.select(optionEl);
     item2.select();
   }
   clearAll() {
-    for (const elem of this.comboBoxInternal.options()) {
+    for (const elem of this.#comboBox.options()) {
       if (elem === this.newLighthouseItem) {
         continue;
       }
@@ -1431,7 +1431,7 @@ var ReportSelector = class {
     this.setEmptyState();
   }
   selectNewReport() {
-    this.comboBoxInternal.select(this.newLighthouseItem);
+    this.#comboBox.select(this.newLighthouseItem);
   }
 };
 var Item = class {
@@ -1473,7 +1473,7 @@ import * as UI4 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/lighthouse/lighthouseStartView.css.js
 var lighthouseStartView_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1731,7 +1731,7 @@ var i18nString3 = i18n6.i18n.getLocalizedString.bind(void 0, str_3);
 var StartView = class extends UI4.Widget.Widget {
   controller;
   panel;
-  settingsToolbarInternal;
+  #settingsToolbar;
   startButton;
   helpText;
   warningText;
@@ -1742,8 +1742,8 @@ var StartView = class extends UI4.Widget.Widget {
     this.registerRequiredCSS(lighthouseStartView_css_default);
     this.controller = controller;
     this.panel = panel;
-    this.settingsToolbarInternal = document.createElement("devtools-toolbar");
-    this.settingsToolbarInternal.classList.add("lighthouse-settings-toolbar");
+    this.#settingsToolbar = document.createElement("devtools-toolbar");
+    this.#settingsToolbar.classList.add("lighthouse-settings-toolbar");
     this.render();
   }
   populateRuntimeSettingAsRadio(settingName, label, parentElement) {
@@ -1789,8 +1789,9 @@ var StartView = class extends UI4.Widget.Widget {
     toolbar2.appendToolbarItem(control);
     if (runtimeSetting.learnMore) {
       const link = UI4.XLink.XLink.create(runtimeSetting.learnMore, i18nString3(UIStrings3.learnMore), "lighthouse-learn-more", void 0, "learn-more");
-      link.style.paddingLeft = "5px";
+      link.style.marginLeft = "5px";
       link.style.display = "inline-flex";
+      link.style.height = "revert";
       toolbar2.appendToolbarItem(new UI4.Toolbar.ToolbarItem(link));
     }
   }
@@ -1815,9 +1816,9 @@ var StartView = class extends UI4.Widget.Widget {
     UI4.ARIAUtils.setLabel(categoryFormElements, i18nString3(UIStrings3.categories));
   }
   render() {
-    this.populateRuntimeSettingAsToolbarCheckbox("lighthouse.clear-storage", this.settingsToolbarInternal);
-    this.populateRuntimeSettingAsToolbarCheckbox("lighthouse.enable-sampling", this.settingsToolbarInternal);
-    this.populateRuntimeSettingAsToolbarDropdown("lighthouse.throttling", this.settingsToolbarInternal);
+    this.populateRuntimeSettingAsToolbarCheckbox("lighthouse.clear-storage", this.#settingsToolbar);
+    this.populateRuntimeSettingAsToolbarCheckbox("lighthouse.enable-sampling", this.#settingsToolbar);
+    this.populateRuntimeSettingAsToolbarDropdown("lighthouse.throttling", this.#settingsToolbar);
     const { mode } = this.controller.getFlags();
     this.populateStartButton(mode);
     const fragment = UI4.Fragment.Fragment.build`
@@ -1935,7 +1936,7 @@ var StartView = class extends UI4.Widget.Widget {
     this.controller.recomputePageAuditability();
   }
   settingsToolbar() {
-    return this.settingsToolbarInternal;
+    return this.#settingsToolbar;
   }
 };
 
@@ -1954,7 +1955,7 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/lighthouse/lighthouseDialog.css.js
 var lighthouseDialog_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

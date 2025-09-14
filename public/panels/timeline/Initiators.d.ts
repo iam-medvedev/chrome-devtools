@@ -21,5 +21,5 @@ export interface InitiatorDataOptions {
  * entire chain: for each, we see if it had an initiator, and
  * work backwards to draw each one, as well as the events initiated directly by the entry.
  */
-export declare function initiatorsDataToDraw(parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedEvent: Trace.Types.Events.Event, hiddenEntries: Trace.Types.Events.Event[], expandableEntries: Trace.Types.Events.Event[]): readonly InitiatorData[];
-export declare function initiatorsDataToDrawForNetwork(parsedTrace: Trace.Handlers.Types.ParsedTrace, selectedEvent: Trace.Types.Events.Event): readonly InitiatorData[];
+export declare function initiatorsDataToDraw(parsedTrace: Trace.TraceModel.ParsedTrace, selectedEvent: Trace.Types.Events.Event, hiddenEntries: Trace.Types.Events.Event[], expandableEntries: Trace.Types.Events.Event[]): readonly InitiatorData[];
+export declare function initiatorsDataToDrawForNetwork(parsedTrace: Trace.TraceModel.ParsedTrace, selectedEvent: Trace.Types.Events.Event): readonly InitiatorData[];

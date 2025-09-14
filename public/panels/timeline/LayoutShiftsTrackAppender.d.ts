@@ -5,7 +5,7 @@ export declare const LAYOUT_SHIFT_SYNTHETIC_DURATION: Trace.Types.Timing.Micro;
 export declare class LayoutShiftsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace);
     /**
      * Appends into the flame chart data the data corresponding to the
      * layout shifts track.
@@ -24,5 +24,5 @@ export declare class LayoutShiftsTrackAppender implements TrackAppender {
     getDrawOverride(event: Trace.Types.Events.Event): DrawOverride | undefined;
     preloadScreenshots(events: Trace.Types.Events.SyntheticLayoutShift[]): Promise<Array<void | undefined>>;
     titleForEvent(_event: Trace.Types.Events.Event): string;
-    static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.Handlers.Types.ParsedTrace, maxSize: Geometry.Size): HTMLElement | undefined;
+    static createShiftViz(event: Trace.Types.Events.SyntheticLayoutShift, parsedTrace: Trace.TraceModel.ParsedTrace, maxSize: Geometry.Size): HTMLElement | undefined;
 }

@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -126,10 +126,10 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
     }
     async #render() {
         await RenderCoordinator.write('UsedPreloadingView render', () => {
-            Lit.render(this.#renderInternal(), this.#shadow, { host: this });
+            Lit.render(this.#renderTemplate(), this.#shadow, { host: this });
         });
     }
-    #renderInternal() {
+    #renderTemplate() {
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `

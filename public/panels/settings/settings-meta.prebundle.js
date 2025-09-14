@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './emulation/emulation-meta.js';
@@ -56,6 +56,14 @@ const UIStrings = {
      * @description Command for showing the AI innovation settings
      */
     showAiInnovations: 'Show AI innovations',
+    /**
+     * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+     */
+    workspace: 'Workspace',
+    /**
+     * @description Command for showing the Workspace tool in Settings
+     */
+    showWorkspace: 'Show Workspace settings',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/settings/settings-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -77,6 +85,18 @@ UI.ViewManager.registerViewExtension({
         return new Settings.SettingsScreen.GenericSettingsTab();
     },
     iconName: 'gear',
+});
+UI.ViewManager.registerViewExtension({
+    location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,
+    id: 'workspace',
+    title: i18nLazyString(UIStrings.workspace),
+    commandPrompt: i18nLazyString(UIStrings.showWorkspace),
+    order: 1,
+    async loadView() {
+        const Settings = await loadSettingsModule();
+        return new Settings.WorkspaceSettingsTab.WorkspaceSettingsTab();
+    },
+    iconName: 'folder',
 });
 UI.ViewManager.registerViewExtension({
     location: "settings-view" /* UI.ViewManager.ViewLocationValues.SETTINGS_VIEW */,

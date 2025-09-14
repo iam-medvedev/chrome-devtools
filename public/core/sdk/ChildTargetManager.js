@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
@@ -24,7 +24,7 @@ export class ChildTargetManager extends SDKModel {
     #targetManager;
     #parentTarget;
     #targetAgent;
-    #targetInfosInternal = new Map();
+    #targetInfos = new Map();
     #childTargetsBySessionId = new Map();
     #childTargetsById = new Map();
     #parallelConnections = new Map();
@@ -71,12 +71,12 @@ export class ChildTargetManager extends SDKModel {
         }
     }
     targetCreated({ targetInfo }) {
-        this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
+        this.#targetInfos.set(targetInfo.targetId, targetInfo);
         this.fireAvailableTargetsChanged();
         this.dispatchEventToListeners("TargetCreated" /* Events.TARGET_CREATED */, targetInfo);
     }
     targetInfoChanged({ targetInfo }) {
-        this.#targetInfosInternal.set(targetInfo.targetId, targetInfo);
+        this.#targetInfos.set(targetInfo.targetId, targetInfo);
         const target = this.#childTargetsById.get(targetInfo.targetId);
         if (target) {
             void target.setHasCrashed(false);
@@ -96,7 +96,7 @@ export class ChildTargetManager extends SDKModel {
         this.dispatchEventToListeners("TargetInfoChanged" /* Events.TARGET_INFO_CHANGED */, targetInfo);
     }
     targetDestroyed({ targetId }) {
-        this.#targetInfosInternal.delete(targetId);
+        this.#targetInfos.delete(targetId);
         this.fireAvailableTargetsChanged();
         this.dispatchEventToListeners("TargetDestroyed" /* Events.TARGET_DESTROYED */, targetId);
     }
@@ -107,7 +107,7 @@ export class ChildTargetManager extends SDKModel {
         }
     }
     fireAvailableTargetsChanged() {
-        TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AVAILABLE_TARGETS_CHANGED */, [...this.#targetInfosInternal.values()]);
+        TargetManager.instance().dispatchEventToListeners("AvailableTargetsChanged" /* TargetManagerEvents.AVAILABLE_TARGETS_CHANGED */, [...this.#targetInfos.values()]);
     }
     async getParentTargetId() {
         if (!this.#parentTargetId) {
@@ -225,7 +225,7 @@ export class ChildTargetManager extends SDKModel {
         return { connection, sessionId };
     }
     targetInfos() {
-        return Array.from(this.#targetInfosInternal.values());
+        return Array.from(this.#targetInfos.values());
     }
     static lastAnonymousTargetId = 0;
     static attachCallback;

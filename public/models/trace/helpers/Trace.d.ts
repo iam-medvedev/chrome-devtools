@@ -88,13 +88,17 @@ export declare function getZeroIndexedLineAndColumnForEvent(event: Types.Events.
  */
 export declare function getZeroIndexedStackTraceInEventPayload(event: Types.Events.Event): Types.Events.CallFrame[] | null;
 /**
+ * Same as getZeroIndexedStackTraceInEventPayload, but only returns the top call frame.
+ */
+export declare function getStackTraceTopCallFrameInEventPayload(event: Types.Events.Event): Types.Events.CallFrame | null;
+/**
  * Given a 1-based call frame creates a 0-based one.
  */
 export declare function makeZeroBasedCallFrame(callFrame: Types.Events.CallFrame): Types.Events.CallFrame;
 export declare function frameIDForEvent(event: Types.Events.Event): string | null;
 export declare function isTopLevelEvent(event: Types.Events.Event): boolean;
 export declare function isExtensionUrl(url: string): boolean;
-export declare function findUpdateLayoutTreeEvents(events: Types.Events.Event[], startTime: Types.Timing.Micro, endTime?: Types.Timing.Micro): Types.Events.UpdateLayoutTree[];
+export declare function findRecalcStyleEvents(events: Types.Events.Event[], startTime: Types.Timing.Micro, endTime?: Types.Timing.Micro): Types.Events.RecalcStyle[];
 export declare function findNextEventAfterTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;
 export declare function findPreviousEventBeforeTimestamp<T extends Types.Events.Event>(candidates: T[], ts: Types.Timing.Micro): T | null;
 export interface ForEachEventConfig {

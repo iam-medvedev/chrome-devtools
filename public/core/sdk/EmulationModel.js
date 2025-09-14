@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -10,7 +10,7 @@ export class EmulationModel extends SDKModel {
     #emulationAgent;
     #deviceOrientationAgent;
     #cssModel;
-    #overlayModelInternal;
+    #overlayModel;
     #mediaConfiguration;
     #cpuPressureEnabled;
     #touchEnabled;
@@ -23,9 +23,9 @@ export class EmulationModel extends SDKModel {
         this.#emulationAgent = target.emulationAgent();
         this.#deviceOrientationAgent = target.deviceOrientationAgent();
         this.#cssModel = target.model(CSSModel);
-        this.#overlayModelInternal = target.model(OverlayModel);
-        if (this.#overlayModelInternal) {
-            this.#overlayModelInternal.addEventListener("InspectModeWillBeToggled" /* Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => {
+        this.#overlayModel = target.model(OverlayModel);
+        if (this.#overlayModel) {
+            this.#overlayModel.addEventListener("InspectModeWillBeToggled" /* Events.INSPECT_MODE_WILL_BE_TOGGLED */, () => {
                 void this.updateTouch();
             }, this);
         }
@@ -192,7 +192,7 @@ export class EmulationModel extends SDKModel {
         }
     }
     overlayModel() {
-        return this.#overlayModelInternal;
+        return this.#overlayModel;
     }
     async setPressureSourceOverrideEnabled(enabled) {
         await this.#emulationAgent.invoke_setPressureSourceOverrideEnabled({ source: "cpu" /* Protocol.Emulation.PressureSource.Cpu */, enabled });
@@ -338,7 +338,7 @@ export class EmulationModel extends SDKModel {
                 configuration: "mobile" /* Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile */,
             };
         }
-        if (this.#overlayModelInternal && this.#overlayModelInternal.inspectModeEnabled()) {
+        if (this.#overlayModel && this.#overlayModel.inspectModeEnabled()) {
             configuration = {
                 enabled: false,
                 configuration: "mobile" /* Protocol.Emulation.SetEmitTouchEventsForMouseRequestConfiguration.Mobile */,

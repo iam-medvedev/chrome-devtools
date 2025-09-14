@@ -1,8 +1,8 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
-import { cleanTestDOM, raf } from './DOMHelpers.js';
+import { cleanTestDOM } from './DOMHooks.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from './EnvironmentHelpers.js';
 import { setMockResourceTree } from './ResourceTreeHelpers.js';
 // Note that we can't set the Function to the correct handler on the basis
@@ -91,8 +91,7 @@ async function disable() {
     }
     // Some Widgets rely on Global vars to be there so they
     // can properly remove state once they detach.
-    cleanTestDOM();
-    await raf();
+    await cleanTestDOM();
     await deinitializeGlobalVars();
     // @ts-expect-error Setting back to undefined as a hard reset.
     ProtocolClient.InspectorBackend.Connection.setFactory(undefined);

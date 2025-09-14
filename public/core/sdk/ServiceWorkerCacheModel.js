@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -19,7 +19,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
     cacheAgent;
     #storageAgent;
     #storageBucketModel;
-    #cachesInternal = new Map();
+    #caches = new Map();
     #storageKeysTracked = new Set();
     #storageBucketsUpdated = new Set();
     #throttler = new Common.Throttler.Throttler(2000);
@@ -48,9 +48,9 @@ export class ServiceWorkerCacheModel extends SDKModel {
         this.#enabled = true;
     }
     clearForStorageKey(storageKey) {
-        for (const [opaqueId, cache] of this.#cachesInternal.entries()) {
+        for (const [opaqueId, cache] of this.#caches.entries()) {
             if (cache.storageKey === storageKey) {
-                this.#cachesInternal.delete((opaqueId));
+                this.#caches.delete((opaqueId));
                 this.cacheRemoved((cache));
             }
         }
@@ -59,10 +59,10 @@ export class ServiceWorkerCacheModel extends SDKModel {
         }
     }
     refreshCacheNames() {
-        for (const cache of this.#cachesInternal.values()) {
+        for (const cache of this.#caches.values()) {
             this.cacheRemoved(cache);
         }
-        this.#cachesInternal.clear();
+        this.#caches.clear();
         const storageBuckets = this.#storageBucketModel.getBuckets();
         for (const storageBucket of storageBuckets) {
             void this.loadCacheNames(storageBucket.bucket);
@@ -74,7 +74,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
             console.error(`ServiceWorkerCacheAgent error deleting cache ${cache.toString()}: ${response.getError()}`);
             return;
         }
-        this.#cachesInternal.delete(cache.cacheId);
+        this.#caches.delete(cache.cacheId);
         this.cacheRemoved(cache);
     }
     async deleteCacheEntry(cache, request) {
@@ -91,13 +91,13 @@ export class ServiceWorkerCacheModel extends SDKModel {
         void this.requestAllEntries(cache, pathFilter, callback);
     }
     caches() {
-        return [...this.#cachesInternal.values()];
+        return [...this.#caches.values()];
     }
     dispose() {
-        for (const cache of this.#cachesInternal.values()) {
+        for (const cache of this.#caches.values()) {
             this.cacheRemoved(cache);
         }
-        this.#cachesInternal.clear();
+        this.#caches.clear();
         if (this.#enabled) {
             this.#storageBucketModel.removeEventListener("BucketAdded" /* StorageBucketsModelEvents.BUCKET_ADDED */, this.storageBucketAdded, this);
             this.#storageBucketModel.removeEventListener("BucketRemoved" /* StorageBucketsModelEvents.BUCKET_REMOVED */, this.storageBucketRemoved, this);
@@ -112,13 +112,13 @@ export class ServiceWorkerCacheModel extends SDKModel {
     }
     removeStorageBucket(storageBucket) {
         let storageKeyCount = 0;
-        for (const [opaqueId, cache] of this.#cachesInternal.entries()) {
+        for (const [opaqueId, cache] of this.#caches.entries()) {
             if (storageBucket.storageKey === cache.storageKey) {
                 storageKeyCount++;
             }
             if (cache.inBucket(storageBucket)) {
                 storageKeyCount--;
-                this.#cachesInternal.delete((opaqueId));
+                this.#caches.delete((opaqueId));
                 this.cacheRemoved((cache));
             }
         }
@@ -138,7 +138,7 @@ export class ServiceWorkerCacheModel extends SDKModel {
         function deleteAndSaveOldCaches(cache) {
             if (cache.inBucket(storageBucket) && !updatingCachesIds.has(cache.cacheId)) {
                 oldCaches.set(cache.cacheId, cache);
-                this.#cachesInternal.delete(cache.cacheId);
+                this.#caches.delete(cache.cacheId);
             }
         }
         const updatingCachesIds = new Set();
@@ -152,13 +152,13 @@ export class ServiceWorkerCacheModel extends SDKModel {
             }
             const cache = new Cache(this, storageBucket, cacheJson.cacheName, cacheJson.cacheId);
             updatingCachesIds.add(cache.cacheId);
-            if (this.#cachesInternal.has(cache.cacheId)) {
+            if (this.#caches.has(cache.cacheId)) {
                 continue;
             }
             newCaches.set(cache.cacheId, cache);
-            this.#cachesInternal.set(cache.cacheId, cache);
+            this.#caches.set(cache.cacheId, cache);
         }
-        this.#cachesInternal.forEach(deleteAndSaveOldCaches, this);
+        this.#caches.forEach(deleteAndSaveOldCaches, this);
         newCaches.forEach(this.cacheAdded, this);
         oldCaches.forEach(this.cacheRemoved, this);
     }

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -861,12 +861,12 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
     serviceName;
     view;
     model;
-    selectedInternal;
+    #selected;
     constructor(storagePanel, serviceName) {
         super(storagePanel, BackgroundServiceView.getUIString(serviceName), false, Platform.StringUtilities.toKebabCase(serviceName));
         this.serviceName = serviceName;
         /* Whether the element has been selected. */
-        this.selectedInternal = false;
+        this.#selected = false;
         this.view = null;
         this.model = null;
         const backgroundServiceIcon = IconButton.Icon.create(this.getIconType());
@@ -894,7 +894,7 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
     initialize(model) {
         this.model = model;
         // Show the view if the model was initialized after selection.
-        if (this.selectedInternal && !this.view) {
+        if (this.#selected && !this.view) {
             this.onselect(false);
         }
     }
@@ -909,7 +909,7 @@ export class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        this.selectedInternal = true;
+        this.#selected = true;
         if (!this.model) {
             return false;
         }
@@ -1513,25 +1513,25 @@ export class ExtensionStorageTreeParentElement extends ApplicationPanelTreeEleme
 }
 export class CookieTreeElement extends ApplicationPanelTreeElement {
     target;
-    cookieDomainInternal;
+    #cookieDomain;
     constructor(storagePanel, frame, cookieUrl) {
         super(storagePanel, cookieUrl.securityOrigin() || i18nString(UIStrings.localFiles), false, 'cookies-for-frame');
         this.target = frame.resourceTreeModel().target();
-        this.cookieDomainInternal = cookieUrl.securityOrigin();
-        this.tooltip = i18nString(UIStrings.cookiesUsedByFramesFromS, { PH1: this.cookieDomainInternal });
+        this.#cookieDomain = cookieUrl.securityOrigin();
+        this.tooltip = i18nString(UIStrings.cookiesUsedByFramesFromS, { PH1: this.#cookieDomain });
         const icon = IconButton.Icon.create('cookie');
         // Note that we cannot use `cookieDomainInternal` here since it contains scheme.
         if (IssuesManager.RelatedIssue.hasThirdPartyPhaseoutCookieIssueForDomain(cookieUrl.domain())) {
             icon.name = 'warning-filled';
-            this.tooltip = i18nString(UIStrings.thirdPartyPhaseout, { PH1: this.cookieDomainInternal });
+            this.tooltip = i18nString(UIStrings.thirdPartyPhaseout, { PH1: this.#cookieDomain });
         }
         this.setLeadingIcons([icon]);
     }
     get itemURL() {
-        return 'cookies://' + this.cookieDomainInternal;
+        return 'cookies://' + this.#cookieDomain;
     }
     cookieDomain() {
-        return this.cookieDomainInternal;
+        return this.#cookieDomain;
     }
     onattach() {
         super.onattach();
@@ -1539,12 +1539,12 @@ export class CookieTreeElement extends ApplicationPanelTreeElement {
     }
     handleContextMenuEvent(event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
-        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this.target, this.cookieDomainInternal), { jslogContext: 'clear' });
+        contextMenu.defaultSection().appendItem(i18nString(UIStrings.clear), () => this.resourcesPanel.clearCookies(this.target, this.#cookieDomain), { jslogContext: 'clear' });
         void contextMenu.show();
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        this.resourcesPanel.showCookies(this.target, this.cookieDomainInternal);
+        this.resourcesPanel.showCookies(this.target, this.#cookieDomain);
         Host.userMetrics.panelShown(Host.UserMetrics.PanelCodes[Host.UserMetrics.PanelCodes.cookies]);
         return false;
     }

@@ -32,12 +32,8 @@ export declare const enum Section {
     MIN = 2
 }
 export declare class MediaQueryUIModel {
+    #private;
     private cssMedia;
-    private readonly minWidthExpressionInternal;
-    private readonly maxWidthExpressionInternal;
-    private readonly activeInternal;
-    private readonly sectionInternal;
-    private rawLocationInternal?;
     constructor(cssMedia: SDK.CSSMedia.CSSMedia, minWidthExpression: SDK.CSSMedia.CSSMediaQueryExpression | null, maxWidthExpression: SDK.CSSMedia.CSSMediaQueryExpression | null, active: boolean);
     static createFromMediaQuery(cssMedia: SDK.CSSMedia.CSSMedia, mediaQuery: SDK.CSSMedia.CSSMediaQuery): MediaQueryUIModel | null;
     equals(other: MediaQueryUIModel): boolean;

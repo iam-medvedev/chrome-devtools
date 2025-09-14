@@ -103,9 +103,6 @@
       "path": "../../models/issues_manager/bundle-tsconfig.json"
     },
     {
-      "path": "../../models/logs/bundle-tsconfig.json"
-    },
-    {
       "path": "../../models/text_utils/bundle-tsconfig.json"
     },
     {

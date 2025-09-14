@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -12,7 +12,6 @@ import { Category, IsLong } from './TimelineFilters.js';
 import { selectionIsEvent } from './TimelineSelection.js';
 import { TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Text for the start time of an activity
@@ -114,15 +113,15 @@ export class EventsTimelineTreeView extends TimelineTreeView {
 export class Filters extends Common.ObjectWrapper.ObjectWrapper {
     categoryFilter;
     durationFilter;
-    filtersInternal;
+    #filters;
     constructor() {
         super();
         this.categoryFilter = new Category();
         this.durationFilter = new IsLong();
-        this.filtersInternal = [this.categoryFilter, this.durationFilter];
+        this.#filters = [this.categoryFilter, this.durationFilter];
     }
     filters() {
-        return this.filtersInternal;
+        return this.#filters;
     }
     populateToolbar(toolbar) {
         const durationFilterUI = new UI.Toolbar.ToolbarComboBox(durationFilterChanged.bind(this), i18nString(UIStrings.durationFilter), undefined, 'duration');
@@ -131,7 +130,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
         }
         toolbar.appendToolbarItem(durationFilterUI);
         const categoryFiltersUI = new Map();
-        const categories = Utils.EntryStyles.getCategoryStyles();
+        const categories = Trace.Styles.getCategoryStyles();
         for (const categoryName in categories) {
             const category = categories[categoryName];
             if (!category.visible) {
@@ -149,7 +148,7 @@ export class Filters extends Common.ObjectWrapper.ObjectWrapper {
             this.notifyFiltersChanged();
         }
         function categoriesFilterChanged(name) {
-            const categories = Utils.EntryStyles.getCategoryStyles();
+            const categories = Trace.Styles.getCategoryStyles();
             const checkBox = categoryFiltersUI.get(name);
             categories[name].hidden = !checkBox?.checked();
             this.notifyFiltersChanged();

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -55,8 +55,8 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
-export function generateInsight(parsedTrace, context) {
-    const interactionEvents = parsedTrace.UserInteractions.interactionEventsWithNoNesting.filter(event => {
+export function generateInsight(data, context) {
+    const interactionEvents = data.UserInteractions.interactionEventsWithNoNesting.filter(event => {
         return Helpers.Timing.eventIsInBounds(event, context.bounds);
     });
     if (!interactionEvents.length) {

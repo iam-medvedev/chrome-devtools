@@ -18,7 +18,7 @@ import * as CodeHighlighter from "./../code_highlighter/code_highlighter.js";
 
 // gen/front_end/ui/components/diff_view/diffView.css.js
 var diffView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

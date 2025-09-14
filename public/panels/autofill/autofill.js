@@ -23,7 +23,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/autofill/autofillView.css.js
 var autofillView_css_default = `/*
- * Copyright (c) 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

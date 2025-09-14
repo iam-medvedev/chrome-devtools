@@ -259,11 +259,7 @@ export declare function getPropertyRenderers(propertyName: string, style: SDK.CS
 export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #private;
     private readonly style;
-    private matchedStylesInternal;
     property: SDK.CSSProperty.CSSProperty;
-    private readonly inheritedInternal;
-    private overloadedInternal;
-    private parentPaneInternal;
     isShorthand: boolean;
     private readonly applyStyleThrottler;
     private newProperty;

@@ -5,7 +5,7 @@ import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
 const { createHiddenTracksOverlay } = Timeline.TrackConfigBanner;
-function fakeTrace() {
+function fakeParsedTrace() {
     // We don't need a real trace here; it is used as the cache key.
     // So to keep the tests lightweight, let's just fake it
     return {};
@@ -20,12 +20,12 @@ function overlayIsBottomBar(overlay) {
 }
 describeWithEnvironment('TrackConfigBanner', () => {
     it('creates the overlay if the user has not seen it for this trace', async () => {
-        const trace = fakeTrace();
+        const trace = fakeParsedTrace();
         const maybeOverlay = createHiddenTracksOverlay(trace, NO_OP_CALLBACKS);
         assert.isOk(overlayIsBottomBar(maybeOverlay));
     });
     it('re-uses the same infobar for the same trace', async () => {
-        const trace = fakeTrace();
+        const trace = fakeParsedTrace();
         const overlay1 = createHiddenTracksOverlay(trace, NO_OP_CALLBACKS);
         assert.isOk(overlayIsBottomBar(overlay1));
         const overlay2 = createHiddenTracksOverlay(trace, NO_OP_CALLBACKS);
@@ -33,8 +33,8 @@ describeWithEnvironment('TrackConfigBanner', () => {
         assert.strictEqual(overlay1.infobar, overlay2.infobar);
     });
     it('creates new infobars for each trace', async () => {
-        const trace1 = fakeTrace();
-        const trace2 = fakeTrace();
+        const trace1 = fakeParsedTrace();
+        const trace2 = fakeParsedTrace();
         const overlay1 = createHiddenTracksOverlay(trace1, NO_OP_CALLBACKS);
         assert.isOk(overlayIsBottomBar(overlay1));
         const overlay2 = createHiddenTracksOverlay(trace2, NO_OP_CALLBACKS);
@@ -42,7 +42,7 @@ describeWithEnvironment('TrackConfigBanner', () => {
         assert.notStrictEqual(overlay1.infobar, overlay2.infobar);
     });
     it('does not create a new overlay if the user has seen and dismissed it', async () => {
-        const trace = fakeTrace();
+        const trace = fakeParsedTrace();
         const overlay1 = createHiddenTracksOverlay(trace, NO_OP_CALLBACKS);
         assert.isOk(overlayIsBottomBar(overlay1));
         // This is equivalent to the user clicking the button to close it.

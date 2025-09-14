@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../../core/platform/platform.js';
@@ -44,7 +44,7 @@ const makeRendererThread = () => ({
     entries: [],
     profileCalls: [],
     layoutEvents: [],
-    updateLayoutTreeEvents: [],
+    recalcStyleEvents: [],
 });
 const getOrCreateRendererProcess = (processes, pid) => {
     return Platform.MapUtilities.getWithDefault(processes, pid, makeRendererProcess);
@@ -94,10 +94,10 @@ export function handleEvent(event) {
         const thread = getOrCreateRendererThread(process, event.tid);
         thread.layoutEvents.push(event);
     }
-    if (Types.Events.isUpdateLayoutTree(event)) {
+    if (Types.Events.isRecalcStyle(event)) {
         const process = getOrCreateRendererProcess(processes, event.pid);
         const thread = getOrCreateRendererThread(process, event.tid);
-        thread.updateLayoutTreeEvents.push(event);
+        thread.recalcStyleEvents.push(event);
     }
 }
 export async function finalize() {

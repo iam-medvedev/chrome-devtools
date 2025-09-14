@@ -2,6 +2,7 @@ import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as EmulationModel from '../../models/emulation/emulation.js';
 export declare class DeviceModeToolbar {
+    #private;
     private model;
     private readonly showMediaInspectorSetting;
     private readonly showRulersSetting;
@@ -10,7 +11,6 @@ export declare class DeviceModeToolbar {
     private readonly showUserAgentTypeSetting;
     private autoAdjustScaleSetting;
     private readonly lastMode;
-    private readonly elementInternal;
     private readonly emulatedDevicesList;
     private readonly persistenceSetting;
     private spanButton;

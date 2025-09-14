@@ -118,9 +118,7 @@ export declare class Widget {
     show(parentElement: Element, insertBefore?: Node | null, suppressOrphanWidgetError?: boolean): void;
     private attach;
     showWidget(): void;
-    private showWidgetInternal;
     hideWidget(): void;
-    private hideWidgetInternal;
     detach(overrideHideOnDetach?: boolean): void;
     detachChildWidgets(): void;
     elementsToRestoreScrollPositionsFor(): Element[];

@@ -343,14 +343,14 @@ var str_ = i18n.i18n.registerUIStrings("ui/legacy/components/color_picker/Contra
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.ObjectWrapper {
   contrastInfo;
-  elementInternal;
+  #element;
   toggleMainColorPicker;
   expandedChangedCallback;
   colorSelectedCallback;
-  expandedInternal;
+  #expanded;
   passesAA;
   contrastUnknown;
-  visibleInternal;
+  #visible;
   noContrastInfoAvailable;
   contrastValueBubble;
   contrastValue;
@@ -371,18 +371,18 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
   constructor(contrastInfo, contentElement, toggleMainColorPickerCallback, expandedChangedCallback, colorSelectedCallback) {
     super();
     this.contrastInfo = contrastInfo;
-    this.elementInternal = contentElement.createChild("div", "spectrum-contrast-details collapsed");
+    this.#element = contentElement.createChild("div", "spectrum-contrast-details collapsed");
     this.toggleMainColorPicker = toggleMainColorPickerCallback;
     this.expandedChangedCallback = expandedChangedCallback;
     this.colorSelectedCallback = colorSelectedCallback;
-    this.expandedInternal = false;
+    this.#expanded = false;
     this.passesAA = true;
     this.contrastUnknown = false;
-    this.visibleInternal = false;
+    this.#visible = false;
     this.noContrastInfoAvailable = contentElement.createChild("div", "no-contrast-info-available");
     this.noContrastInfoAvailable.textContent = i18nString(UIStrings.noContrastInformationAvailable);
     this.noContrastInfoAvailable.classList.add("hidden");
-    const contrastValueRow = this.elementInternal.createChild("div");
+    const contrastValueRow = this.#element.createChild("div");
     contrastValueRow.addEventListener("click", this.topRowClicked.bind(this));
     const contrastValueRowContents = contrastValueRow.createChild("div", "container");
     UI.UIUtils.createTextChild(contrastValueRowContents, i18nString(UIStrings.contrastRatio));
@@ -401,7 +401,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     this.expandButton.addEventListener("Click", this.expandButtonClicked.bind(this));
     UI.ARIAUtils.setExpanded(this.expandButton.element, false);
     expandToolbar.appendToolbarItem(this.expandButton);
-    this.expandedDetails = this.elementInternal.createChild("div", "expanded-details");
+    this.expandedDetails = this.#element.createChild("div", "expanded-details");
     UI.ARIAUtils.setControls(this.expandButton.element, this.expandedDetails);
     this.contrastThresholds = this.expandedDetails.createChild("div", "contrast-thresholds");
     this.contrastAA = this.contrastThresholds.createChild("div", "contrast-threshold");
@@ -415,7 +415,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     const bgColorContainer = this.expandedDetails.createChild("div", "background-color");
     const pickerToolbar = bgColorContainer.createChild("devtools-toolbar", "spectrum-eye-dropper");
     this.bgColorPickerButton = new UI.Toolbar.ToolbarToggle(i18nString(UIStrings.toggleBackgroundColorPicker), "color-picker", "color-picker-filled");
-    this.bgColorPickerButton.addEventListener("Click", this.toggleBackgroundColorPickerInternal.bind(this, void 0, true));
+    this.bgColorPickerButton.addEventListener("Click", this.#toggleBackgroundColorPicker.bind(this, void 0, true));
     pickerToolbar.appendToolbarItem(this.bgColorPickerButton);
     this.bgColorPickedBound = this.bgColorPicked.bind(this);
     this.bgColorSwatch = new Swatch(bgColorContainer);
@@ -511,7 +511,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
         }
       }
       labelAPCA.addEventListener("click", (_event) => _ContrastDetails.showHelp());
-      this.elementInternal.classList.toggle("contrast-fail", !passesAPCA);
+      this.#element.classList.toggle("contrast-fail", !passesAPCA);
       this.contrastValueBubble.classList.toggle("contrast-aa", passesAPCA);
       this.bgColorSwatch.setColors(fgColor, bgColor);
       return;
@@ -569,7 +569,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
       }
     }
     [labelAA, labelAAA].forEach((e) => e.addEventListener("click", () => _ContrastDetails.showHelp()));
-    this.elementInternal.classList.toggle("contrast-fail", !this.passesAA);
+    this.#element.classList.toggle("contrast-fail", !this.passesAA);
     this.contrastValueBubble.classList.toggle("contrast-aa", this.passesAA && !passesAAA);
     this.contrastValueBubble.classList.toggle("contrast-aaa", passesAAA);
   }
@@ -577,14 +577,14 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     UI.UIUtils.openInNewTab("https://web.dev/color-and-contrast-accessibility/");
   }
   setVisible(visible) {
-    this.visibleInternal = visible;
-    this.elementInternal.classList.toggle("hidden", !visible);
+    this.#visible = visible;
+    this.#element.classList.toggle("hidden", !visible);
   }
   visible() {
-    return this.visibleInternal;
+    return this.#visible;
   }
   element() {
-    return this.elementInternal;
+    return this.#element;
   }
   expandButtonClicked() {
     const selection = this.contrastValueBubble.getComponentSelection();
@@ -602,38 +602,38 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     event.consume(true);
   }
   toggleExpanded() {
-    this.expandedInternal = !this.expandedInternal;
-    UI.ARIAUtils.setExpanded(this.expandButton.element, this.expandedInternal);
-    this.elementInternal.classList.toggle("collapsed", !this.expandedInternal);
-    if (this.expandedInternal) {
+    this.#expanded = !this.#expanded;
+    UI.ARIAUtils.setExpanded(this.expandButton.element, this.#expanded);
+    this.#element.classList.toggle("collapsed", !this.#expanded);
+    if (this.#expanded) {
       this.toggleMainColorPicker(false);
       this.expandButton.setGlyph("chevron-up");
       this.expandButton.setTitle(i18nString(UIStrings.showLess));
       if (this.contrastUnknown) {
-        this.toggleBackgroundColorPickerInternal(true);
+        this.#toggleBackgroundColorPicker(true);
       }
     } else {
-      this.toggleBackgroundColorPickerInternal(false);
+      this.#toggleBackgroundColorPicker(false);
       this.expandButton.setGlyph("chevron-down");
       this.expandButton.setTitle(i18nString(UIStrings.showMore));
     }
     this.expandedChangedCallback();
   }
   collapse() {
-    this.elementInternal.classList.remove("expanded");
-    this.toggleBackgroundColorPickerInternal(false);
+    this.#element.classList.remove("expanded");
+    this.#toggleBackgroundColorPicker(false);
     this.toggleMainColorPicker(false);
   }
   expanded() {
-    return this.expandedInternal;
+    return this.#expanded;
   }
   backgroundColorPickerEnabled() {
     return this.bgColorPickerButton.isToggled();
   }
   toggleBackgroundColorPicker(enabled) {
-    this.toggleBackgroundColorPickerInternal(enabled, false);
+    this.#toggleBackgroundColorPicker(enabled, false);
   }
-  toggleBackgroundColorPickerInternal(enabled, shouldTriggerEvent = true) {
+  #toggleBackgroundColorPicker(enabled, shouldTriggerEvent = true) {
     if (enabled === void 0) {
       enabled = this.bgColorPickerButton.isToggled();
     }
@@ -651,7 +651,7 @@ var ContrastDetails = class _ContrastDetails extends Common2.ObjectWrapper.Objec
     const rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
     const color = Common2.Color.Legacy.fromRGBA(rgba);
     this.contrastInfo.setBgColor(color);
-    this.toggleBackgroundColorPickerInternal(false);
+    this.#toggleBackgroundColorPicker(false);
     this.bgColorPickerButton.toggled(false);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
   }
@@ -704,47 +704,47 @@ __export(ContrastInfo_exports, {
 });
 import * as Common3 from "./../../../../core/common/common.js";
 var ContrastInfo = class extends Common3.ObjectWrapper.ObjectWrapper {
-  isNullInternal;
-  contrastRatioInternal;
-  contrastRatioAPCAInternal;
+  #isNull;
+  #contrastRatio;
+  #contrastRatioAPCA;
   contrastRatioThresholds;
-  contrastRatioAPCAThresholdInternal;
+  #contrastRatioAPCAThreshold;
   fgColor;
-  bgColorInternal;
-  colorFormatInternal;
+  #bgColor;
+  #colorFormat;
   constructor(contrastInfo) {
     super();
-    this.isNullInternal = true;
-    this.contrastRatioInternal = null;
-    this.contrastRatioAPCAInternal = null;
+    this.#isNull = true;
+    this.#contrastRatio = null;
+    this.#contrastRatioAPCA = null;
     this.contrastRatioThresholds = null;
-    this.contrastRatioAPCAThresholdInternal = 0;
+    this.#contrastRatioAPCAThreshold = 0;
     this.fgColor = null;
-    this.bgColorInternal = null;
+    this.#bgColor = null;
     if (!contrastInfo) {
       return;
     }
     if (!contrastInfo.computedFontSize || !contrastInfo.computedFontWeight) {
       return;
     }
-    this.isNullInternal = false;
+    this.#isNull = false;
     this.contrastRatioThresholds = Common3.ColorUtils.getContrastThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
-    this.contrastRatioAPCAThresholdInternal = Common3.ColorUtils.getAPCAThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
+    this.#contrastRatioAPCAThreshold = Common3.ColorUtils.getAPCAThreshold(contrastInfo.computedFontSize, contrastInfo.computedFontWeight);
     if (!contrastInfo.backgroundColors || contrastInfo.backgroundColors.length !== 1) {
       return;
     }
     const bgColorText = contrastInfo.backgroundColors[0];
     const bgColor = Common3.Color.parse(bgColorText)?.asLegacyColor();
     if (bgColor) {
-      this.setBgColorInternal(bgColor);
+      this.#setBgColor(bgColor);
     }
   }
   isNull() {
-    return this.isNullInternal;
+    return this.#isNull;
   }
   setColor(fgColor, colorFormat) {
     this.fgColor = fgColor;
-    this.colorFormatInternal = colorFormat;
+    this.#colorFormat = colorFormat;
     this.updateContrastRatio();
     this.dispatchEventToListeners(
       "ContrastInfoUpdated"
@@ -752,53 +752,53 @@ var ContrastInfo = class extends Common3.ObjectWrapper.ObjectWrapper {
     );
   }
   colorFormat() {
-    return this.colorFormatInternal;
+    return this.#colorFormat;
   }
   color() {
     return this.fgColor;
   }
   contrastRatio() {
-    return this.contrastRatioInternal;
+    return this.#contrastRatio;
   }
   contrastRatioAPCA() {
-    return this.contrastRatioAPCAInternal;
+    return this.#contrastRatioAPCA;
   }
   contrastRatioAPCAThreshold() {
-    return this.contrastRatioAPCAThresholdInternal;
+    return this.#contrastRatioAPCAThreshold;
   }
   setBgColor(bgColor) {
-    this.setBgColorInternal(bgColor);
+    this.#setBgColor(bgColor);
     this.dispatchEventToListeners(
       "ContrastInfoUpdated"
       /* Events.CONTRAST_INFO_UPDATED */
     );
   }
-  setBgColorInternal(bgColor) {
-    this.bgColorInternal = bgColor;
+  #setBgColor(bgColor) {
+    this.#bgColor = bgColor;
     if (!this.fgColor) {
       return;
     }
     const fgRGBA = this.fgColor.rgba();
     if (bgColor.hasAlpha()) {
       const blendedRGBA = Common3.ColorUtils.blendColors(bgColor.rgba(), fgRGBA);
-      this.bgColorInternal = new Common3.Color.Legacy(
+      this.#bgColor = new Common3.Color.Legacy(
         blendedRGBA,
         "rgba"
         /* Common.Color.Format.RGBA */
       );
     }
-    this.contrastRatioInternal = Common3.ColorUtils.contrastRatio(fgRGBA, this.bgColorInternal.rgba());
-    this.contrastRatioAPCAInternal = Common3.ColorUtils.contrastRatioAPCA(this.fgColor.rgba(), this.bgColorInternal.rgba());
+    this.#contrastRatio = Common3.ColorUtils.contrastRatio(fgRGBA, this.#bgColor.rgba());
+    this.#contrastRatioAPCA = Common3.ColorUtils.contrastRatioAPCA(this.fgColor.rgba(), this.#bgColor.rgba());
   }
   bgColor() {
-    return this.bgColorInternal;
+    return this.#bgColor;
   }
   updateContrastRatio() {
-    if (!this.bgColorInternal || !this.fgColor) {
+    if (!this.#bgColor || !this.fgColor) {
       return;
     }
-    this.contrastRatioInternal = Common3.ColorUtils.contrastRatio(this.fgColor.rgba(), this.bgColorInternal.rgba());
-    this.contrastRatioAPCAInternal = Common3.ColorUtils.contrastRatioAPCA(this.fgColor.rgba(), this.bgColorInternal.rgba());
+    this.#contrastRatio = Common3.ColorUtils.contrastRatio(this.fgColor.rgba(), this.#bgColor.rgba());
+    this.#contrastRatioAPCA = Common3.ColorUtils.contrastRatioAPCA(this.fgColor.rgba(), this.#bgColor.rgba());
   }
   contrastRatioThreshold(level) {
     if (!this.contrastRatioThresholds) {
@@ -1086,7 +1086,7 @@ import * as UI4 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/color_picker/spectrum.css.js
 var spectrum_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1956,7 +1956,7 @@ function getColorFromHsva(gamut, hsva) {
   }
 }
 var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
-  colorInternal;
+  #color;
   gamut = "srgb";
   colorElement;
   colorDragElement;
@@ -2005,7 +2005,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   dragElement;
   dragHotSpotX;
   dragHotSpotY;
-  colorNameInternal;
+  #colorName;
   colorFormat = "rgb";
   eyeDropperAbortController = null;
   isFormatPickerShown = false;
@@ -2015,7 +2015,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   // selected form the palettes. That time, we don't
   // want to return the value of the variable but the
   // actual variable string.
-  colorStringInternal;
+  #colorString;
   constructor(contrastInfo) {
     super({ useShadowDom: true });
     this.registerRequiredCSS(spectrum_css_default);
@@ -2302,7 +2302,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     }
     this.palettePanelShowing = show;
     this.contentElement.classList.toggle("palette-panel-showing", show);
-    this.focusInternal();
+    this.#focus();
   }
   onCloseBtnKeydown(event) {
     if (Platform3.KeyboardUtilities.isEscKey(event) || Platform3.KeyboardUtilities.isEnterOrSpaceKey(event)) {
@@ -2324,7 +2324,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   /**
    * (Suppress warning about preventScroll)
    */
-  focusInternal() {
+  #focus() {
     if (!this.isShowing()) {
       return;
     }
@@ -2389,7 +2389,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       this.deleteIconToolbar.remove();
     }
     this.togglePalettePanel(false);
-    this.focusInternal();
+    this.#focus();
   }
   showLightnessShades(colorElement, colorText, _event) {
     function closeLightnessShades(element) {
@@ -2697,24 +2697,24 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     this.innerSetColor(color, "", void 0, void 0, ChangeSource.Other);
   }
   get color() {
-    if (this.colorInternal) {
-      return this.colorInternal;
+    if (this.#color) {
+      return this.#color;
     }
     return getColorFromHsva(this.gamut, this.hsv);
   }
   innerSetColor(colorOrHsv, colorString, colorName, colorFormat, changeSource) {
     if (colorString !== void 0) {
-      this.colorStringInternal = colorString;
+      this.#colorString = colorString;
     }
     if (colorFormat !== void 0) {
       this.colorFormat = convertColorFormat(colorFormat);
       this.gamut = doesFormatSupportDisplayP3(this.colorFormat) ? "display-p3" : "srgb";
     }
     if (Array.isArray(colorOrHsv)) {
-      this.colorInternal = void 0;
+      this.#color = void 0;
       this.hsv = colorOrHsv;
     } else if (colorOrHsv !== void 0) {
-      this.colorInternal = colorOrHsv;
+      this.#color = colorOrHsv;
       const oldHue = this.hsv ? this.hsv[0] : null;
       this.hsv = getHsvFromColor(this.gamut, colorOrHsv);
       if (oldHue !== null && colorOrHsv.as(
@@ -2724,7 +2724,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
         this.hsv[0] = oldHue;
       }
     }
-    this.colorNameInternal = colorName;
+    this.#colorName = colorName;
     if (this.contrastInfo) {
       this.contrastInfo.setColor(Common6.Color.Legacy.fromHSVA(this.hsv), this.colorFormat);
     }
@@ -2738,11 +2738,11 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     }
   }
   colorName() {
-    return this.colorNameInternal;
+    return this.#colorName;
   }
   colorString() {
-    if (this.colorStringInternal) {
-      return this.colorStringInternal;
+    if (this.#colorString) {
+      return this.#colorString;
     }
     const color = this.color;
     let colorString = this.colorFormat && this.colorFormat !== color.format() ? color.asString(this.colorFormat) : color.getAuthoredText() ?? color.asString();

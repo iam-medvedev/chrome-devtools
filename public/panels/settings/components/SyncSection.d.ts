@@ -7,11 +7,11 @@ export interface SyncSectionData {
     syncInfo: Host.InspectorFrontendHostAPI.SyncInformation;
     syncSetting: Common.Settings.Setting<boolean>;
     receiveBadgesSetting: Common.Settings.Setting<boolean>;
-    gdpProfile?: Host.GdpClient.Profile;
 }
 export declare class SyncSection extends HTMLElement {
     #private;
     set data(data: SyncSectionData);
+    highlightReceiveBadgesSetting(): Promise<void>;
 }
 declare global {
     interface HTMLElementTagNameMap {

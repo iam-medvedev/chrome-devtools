@@ -1,7 +1,7 @@
 {
   "version": 3,
   "sources": ["ndb_app.prebundle.ts"],
-  "sourcesContent": ["// Copyright 2018 The Chromium Authors. All rights reserved.\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\nimport '../shell/shell.js';\n\nimport * as Main from '../main/main.js';\n\nnew Main.MainImpl.MainImpl();\n"],
+  "sourcesContent": ["// Copyright 2018 The Chromium Authors\n// Use of this source code is governed by a BSD-style license that can be\n// found in the LICENSE file.\nimport '../shell/shell.js';\n\nimport * as Main from '../main/main.js';\n\nnew Main.MainImpl.MainImpl();\n"],
   "mappings": ";AAGA,OAAO;AAEP,YAAY,UAAU;AAEtB,IAAS,cAAS,SAAQ;",
   "names": []
 }

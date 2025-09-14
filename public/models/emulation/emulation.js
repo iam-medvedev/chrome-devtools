@@ -74,7 +74,7 @@ var EmulatedDevice = class _EmulatedDevice {
   isFoldableScreen;
   verticalSpanned;
   horizontalSpanned;
-  #showInternal;
+  #show;
   #showByDefault;
   constructor() {
     this.title = "";
@@ -94,7 +94,7 @@ var EmulatedDevice = class _EmulatedDevice {
     this.isFoldableScreen = false;
     this.verticalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
     this.horizontalSpanned = { width: 0, height: 0, outlineInsets: null, outlineImage: null, hinge: null };
-    this.#showInternal = Show.Default;
+    this.#show = Show.Default;
     this.#showByDefault = true;
   }
   static fromJSONV1(json) {
@@ -251,7 +251,7 @@ var EmulatedDevice = class _EmulatedDevice {
       if (!Object.values(Show).includes(show)) {
         throw new Error("Emulated device has wrong show mode: " + show);
       }
-      result.#showInternal = show;
+      result.#show = show;
       return result;
     } catch {
       return null;
@@ -336,7 +336,7 @@ var EmulatedDevice = class _EmulatedDevice {
     json["show-by-default"] = this.#showByDefault;
     json["dual-screen"] = this.isDualScreen;
     json["foldable-screen"] = this.isFoldableScreen;
-    json["show"] = this.#showInternal;
+    json["show"] = this.#show;
     if (this.userAgentMetadata) {
       json["user-agent-metadata"] = this.userAgentMetadata;
     }
@@ -411,16 +411,16 @@ var EmulatedDevice = class _EmulatedDevice {
     }
   }
   show() {
-    if (this.#showInternal === Show.Default) {
+    if (this.#show === Show.Default) {
       return this.#showByDefault;
     }
-    return this.#showInternal === Show.Always;
+    return this.#show === Show.Always;
   }
   setShow(show) {
-    this.#showInternal = show ? Show.Always : Show.Never;
+    this.#show = show ? Show.Always : Show.Never;
   }
   copyShowFrom(other) {
-    this.#showInternal = other.#showInternal;
+    this.#show = other.#show;
   }
   touch() {
     return this.capabilities.indexOf(
@@ -456,18 +456,18 @@ var Show;
 var emulatedDevicesListInstance;
 var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrapper.ObjectWrapper {
   #standardSetting;
-  #standardInternal;
+  #standard;
   #customSetting;
-  #customInternal;
+  #custom;
   constructor() {
     super();
     this.#standardSetting = Common.Settings.Settings.instance().createSetting("standard-emulated-device-list", []);
-    this.#standardInternal = /* @__PURE__ */ new Set();
-    this.listFromJSONV1(this.#standardSetting.get(), this.#standardInternal);
+    this.#standard = /* @__PURE__ */ new Set();
+    this.listFromJSONV1(this.#standardSetting.get(), this.#standard);
     this.updateStandardDevices();
     this.#customSetting = Common.Settings.Settings.instance().createSetting("custom-emulated-device-list", []);
-    this.#customInternal = /* @__PURE__ */ new Set();
-    if (!this.listFromJSONV1(this.#customSetting.get(), this.#customInternal)) {
+    this.#custom = /* @__PURE__ */ new Set();
+    if (!this.listFromJSONV1(this.#customSetting.get(), this.#custom)) {
       this.saveCustomDevices();
     }
   }
@@ -485,8 +485,8 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
         devices.add(device);
       }
     }
-    this.copyShowValues(this.#standardInternal, devices);
-    this.#standardInternal = devices;
+    this.copyShowValues(this.#standard, devices);
+    this.#standard = devices;
     this.saveStandardDevices();
   }
   listFromJSONV1(jsonArray, result) {
@@ -512,25 +512,25 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
     return emulatedDevices;
   }
   standard() {
-    return [...this.#standardInternal];
+    return [...this.#standard];
   }
   custom() {
-    return [...this.#customInternal];
+    return [...this.#custom];
   }
   revealCustomSetting() {
     void Common.Revealer.reveal(this.#customSetting);
   }
   addCustomDevice(device) {
-    this.#customInternal.add(device);
+    this.#custom.add(device);
     this.saveCustomDevices();
   }
   removeCustomDevice(device) {
-    this.#customInternal.delete(device);
+    this.#custom.delete(device);
     this.saveCustomDevices();
   }
   saveCustomDevices() {
     const json = [];
-    this.#customInternal.forEach((device) => json.push(device.toJSON()));
+    this.#custom.forEach((device) => json.push(device.toJSON()));
     this.#customSetting.set(json);
     this.dispatchEventToListeners(
       "CustomDevicesUpdated"
@@ -539,7 +539,7 @@ var EmulatedDevicesList = class _EmulatedDevicesList extends Common.ObjectWrappe
   }
   saveStandardDevices() {
     const json = [];
-    this.#standardInternal.forEach((device) => json.push(device.toJSON()));
+    this.#standard.forEach((device) => json.push(device.toJSON()));
     this.#standardSetting.set(json);
     this.dispatchEventToListeners(
       "StandardDevicesUpdated"
@@ -1803,47 +1803,47 @@ var str_2 = i18n3.i18n.registerUIStrings("models/emulation/DeviceModeModel.ts", 
 var i18nString = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var deviceModeModelInstance;
 var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.ObjectWrapper {
-  #screenRectInternal;
-  #visiblePageRectInternal;
+  #screenRect;
+  #visiblePageRect;
   #availableSize;
   #preferredSize;
   #initialized;
-  #appliedDeviceSizeInternal;
-  #appliedDeviceScaleFactorInternal;
-  #appliedUserAgentTypeInternal;
-  #scaleSettingInternal;
-  #scaleInternal;
+  #appliedDeviceSize;
+  #appliedDeviceScaleFactor;
+  #appliedUserAgentType;
+  #scaleSetting;
+  #scale;
   #widthSetting;
   #heightSetting;
-  #uaSettingInternal;
-  #deviceScaleFactorSettingInternal;
-  #deviceOutlineSettingInternal;
-  #toolbarControlsEnabledSettingInternal;
-  #typeInternal;
-  #deviceInternal;
-  #modeInternal;
-  #fitScaleInternal;
+  #uaSetting;
+  #deviceScaleFactorSetting;
+  #deviceOutlineSetting;
+  #toolbarControlsEnabledSetting;
+  #type;
+  #device;
+  #mode;
+  #fitScale;
   #touchEnabled;
   #touchMobile;
   #emulationModel;
   #onModelAvailable;
-  #outlineRectInternal;
+  #outlineRect;
   constructor() {
     super();
-    this.#screenRectInternal = new Rect(0, 0, 1, 1);
-    this.#visiblePageRectInternal = new Rect(0, 0, 1, 1);
+    this.#screenRect = new Rect(0, 0, 1, 1);
+    this.#visiblePageRect = new Rect(0, 0, 1, 1);
     this.#availableSize = new Geometry.Size(1, 1);
     this.#preferredSize = new Geometry.Size(1, 1);
     this.#initialized = false;
-    this.#appliedDeviceSizeInternal = new Geometry.Size(1, 1);
-    this.#appliedDeviceScaleFactorInternal = window.devicePixelRatio;
-    this.#appliedUserAgentTypeInternal = "Desktop";
-    this.#scaleSettingInternal = Common2.Settings.Settings.instance().createSetting("emulation.device-scale", 1);
-    if (!this.#scaleSettingInternal.get()) {
-      this.#scaleSettingInternal.set(1);
+    this.#appliedDeviceSize = new Geometry.Size(1, 1);
+    this.#appliedDeviceScaleFactor = window.devicePixelRatio;
+    this.#appliedUserAgentType = "Desktop";
+    this.#scaleSetting = Common2.Settings.Settings.instance().createSetting("emulation.device-scale", 1);
+    if (!this.#scaleSetting.get()) {
+      this.#scaleSetting.set(1);
     }
-    this.#scaleSettingInternal.addChangeListener(this.scaleSettingChanged, this);
-    this.#scaleInternal = 1;
+    this.#scaleSetting.addChangeListener(this.scaleSettingChanged, this);
+    this.#scale = 1;
     this.#widthSetting = Common2.Settings.Settings.instance().createSetting("emulation.device-width", 400);
     if (this.#widthSetting.get() < MinDeviceSize) {
       this.#widthSetting.set(MinDeviceSize);
@@ -1860,26 +1860,26 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       this.#heightSetting.set(MaxDeviceSize);
     }
     this.#heightSetting.addChangeListener(this.heightSettingChanged, this);
-    this.#uaSettingInternal = Common2.Settings.Settings.instance().createSetting(
+    this.#uaSetting = Common2.Settings.Settings.instance().createSetting(
       "emulation.device-ua",
       "Mobile"
       /* UA.MOBILE */
     );
-    this.#uaSettingInternal.addChangeListener(this.uaSettingChanged, this);
-    this.#deviceScaleFactorSettingInternal = Common2.Settings.Settings.instance().createSetting("emulation.device-scale-factor", 0);
-    this.#deviceScaleFactorSettingInternal.addChangeListener(this.deviceScaleFactorSettingChanged, this);
-    this.#deviceOutlineSettingInternal = Common2.Settings.Settings.instance().moduleSetting("emulation.show-device-outline");
-    this.#deviceOutlineSettingInternal.addChangeListener(this.deviceOutlineSettingChanged, this);
-    this.#toolbarControlsEnabledSettingInternal = Common2.Settings.Settings.instance().createSetting(
+    this.#uaSetting.addChangeListener(this.uaSettingChanged, this);
+    this.#deviceScaleFactorSetting = Common2.Settings.Settings.instance().createSetting("emulation.device-scale-factor", 0);
+    this.#deviceScaleFactorSetting.addChangeListener(this.deviceScaleFactorSettingChanged, this);
+    this.#deviceOutlineSetting = Common2.Settings.Settings.instance().moduleSetting("emulation.show-device-outline");
+    this.#deviceOutlineSetting.addChangeListener(this.deviceOutlineSettingChanged, this);
+    this.#toolbarControlsEnabledSetting = Common2.Settings.Settings.instance().createSetting(
       "emulation.toolbar-controls-enabled",
       true,
       "Session"
       /* Common.Settings.SettingStorageType.SESSION */
     );
-    this.#typeInternal = Type2.None;
-    this.#deviceInternal = null;
-    this.#modeInternal = null;
-    this.#fitScaleInternal = 1;
+    this.#type = Type2.None;
+    this.#device = null;
+    this.#mode = null;
+    this.#fitScale = 1;
     this.#touchEnabled = false;
     this.#touchMobile = false;
     this.#emulationModel = null;
@@ -1956,7 +1956,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     return { valid, errorMessage };
   }
   get scaleSettingInternal() {
-    return this.#scaleSettingInternal;
+    return this.#scaleSetting;
   }
   setAvailableSize(availableSize, preferredSize) {
     this.#availableSize = availableSize;
@@ -1965,19 +1965,19 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     this.calculateAndEmulate(false);
   }
   emulate(type, device, mode, scale) {
-    const resetPageScaleFactor = this.#typeInternal !== type || this.#deviceInternal !== device || this.#modeInternal !== mode;
-    this.#typeInternal = type;
+    const resetPageScaleFactor = this.#type !== type || this.#device !== device || this.#mode !== mode;
+    this.#type = type;
     if (type === Type2.Device && device && mode) {
       console.assert(Boolean(device) && Boolean(mode), "Must pass device and mode for device emulation");
-      this.#modeInternal = mode;
-      this.#deviceInternal = device;
+      this.#mode = mode;
+      this.#device = device;
       if (this.#initialized) {
         const orientation = device.orientationByName(mode.orientation);
-        this.#scaleSettingInternal.set(scale || this.calculateFitScale(orientation.width, orientation.height, this.currentOutline(), this.currentInsets()));
+        this.#scaleSetting.set(scale || this.calculateFitScale(orientation.width, orientation.height, this.currentOutline(), this.currentInsets()));
       }
     } else {
-      this.#deviceInternal = null;
-      this.#modeInternal = null;
+      this.#device = null;
+      this.#mode = null;
     }
     if (type !== Type2.None) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.DeviceModeEnabled);
@@ -1991,7 +1991,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   }
   setWidthAndScaleToFit(width) {
     width = Math.max(Math.min(width, MaxDeviceSize), 1);
-    this.#scaleSettingInternal.set(this.calculateFitScale(width, this.#heightSetting.get()));
+    this.#scaleSetting.set(this.calculateFitScale(width, this.#heightSetting.get()));
     this.#widthSetting.set(width);
   }
   setHeight(height) {
@@ -2004,62 +2004,62 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
   }
   setHeightAndScaleToFit(height) {
     height = Math.max(Math.min(height, MaxDeviceSize), 0);
-    this.#scaleSettingInternal.set(this.calculateFitScale(this.#widthSetting.get(), height));
+    this.#scaleSetting.set(this.calculateFitScale(this.#widthSetting.get(), height));
     this.#heightSetting.set(height);
   }
   setScale(scale) {
-    this.#scaleSettingInternal.set(scale);
+    this.#scaleSetting.set(scale);
   }
   device() {
-    return this.#deviceInternal;
+    return this.#device;
   }
   mode() {
-    return this.#modeInternal;
+    return this.#mode;
   }
   type() {
-    return this.#typeInternal;
+    return this.#type;
   }
   screenImage() {
-    return this.#deviceInternal && this.#modeInternal ? this.#deviceInternal.modeImage(this.#modeInternal) : "";
+    return this.#device && this.#mode ? this.#device.modeImage(this.#mode) : "";
   }
   outlineImage() {
-    return this.#deviceInternal && this.#modeInternal && this.#deviceOutlineSettingInternal.get() ? this.#deviceInternal.outlineImage(this.#modeInternal) : "";
+    return this.#device && this.#mode && this.#deviceOutlineSetting.get() ? this.#device.outlineImage(this.#mode) : "";
   }
   outlineRect() {
-    return this.#outlineRectInternal || null;
+    return this.#outlineRect || null;
   }
   screenRect() {
-    return this.#screenRectInternal;
+    return this.#screenRect;
   }
   visiblePageRect() {
-    return this.#visiblePageRectInternal;
+    return this.#visiblePageRect;
   }
   scale() {
-    return this.#scaleInternal;
+    return this.#scale;
   }
   fitScale() {
-    return this.#fitScaleInternal;
+    return this.#fitScale;
   }
   appliedDeviceSize() {
-    return this.#appliedDeviceSizeInternal;
+    return this.#appliedDeviceSize;
   }
   appliedDeviceScaleFactor() {
-    return this.#appliedDeviceScaleFactorInternal;
+    return this.#appliedDeviceScaleFactor;
   }
   appliedUserAgentType() {
-    return this.#appliedUserAgentTypeInternal;
+    return this.#appliedUserAgentType;
   }
   isFullHeight() {
     return !this.#heightSetting.get();
   }
   isMobile() {
-    switch (this.#typeInternal) {
+    switch (this.#type) {
       case Type2.Device:
-        return this.#deviceInternal ? this.#deviceInternal.mobile() : false;
+        return this.#device ? this.#device.mobile() : false;
       case Type2.None:
         return false;
       case Type2.Responsive:
-        return this.#uaSettingInternal.get() === "Mobile" || this.#uaSettingInternal.get() === "Mobile (no touch)";
+        return this.#uaSetting.get() === "Mobile" || this.#uaSetting.get() === "Mobile (no touch)";
     }
     return false;
   }
@@ -2067,26 +2067,26 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     return Common2.Settings.Settings.instance().createSetting("emulation.show-device-mode", false);
   }
   scaleSetting() {
-    return this.#scaleSettingInternal;
+    return this.#scaleSetting;
   }
   uaSetting() {
-    return this.#uaSettingInternal;
+    return this.#uaSetting;
   }
   deviceScaleFactorSetting() {
-    return this.#deviceScaleFactorSettingInternal;
+    return this.#deviceScaleFactorSetting;
   }
   deviceOutlineSetting() {
-    return this.#deviceOutlineSettingInternal;
+    return this.#deviceOutlineSetting;
   }
   toolbarControlsEnabledSetting() {
-    return this.#toolbarControlsEnabledSettingInternal;
+    return this.#toolbarControlsEnabledSetting;
   }
   reset() {
-    this.#deviceScaleFactorSettingInternal.set(0);
-    this.#scaleSettingInternal.set(1);
+    this.#deviceScaleFactorSetting.set(0);
+    this.#scaleSetting.set(1);
     this.setWidth(400);
     this.setHeight(0);
-    this.#uaSettingInternal.set(
+    this.#uaSetting.set(
       "Mobile"
       /* UA.MOBILE */
     );
@@ -2142,33 +2142,33 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     this.calculateAndEmulate(false);
   }
   preferredScaledWidth() {
-    return Math.floor(this.#preferredSize.width / (this.#scaleSettingInternal.get() || 1));
+    return Math.floor(this.#preferredSize.width / (this.#scaleSetting.get() || 1));
   }
   preferredScaledHeight() {
-    return Math.floor(this.#preferredSize.height / (this.#scaleSettingInternal.get() || 1));
+    return Math.floor(this.#preferredSize.height / (this.#scaleSetting.get() || 1));
   }
   currentOutline() {
     let outline = new Insets(0, 0, 0, 0);
-    if (this.#typeInternal !== Type2.Device || !this.#deviceInternal || !this.#modeInternal) {
+    if (this.#type !== Type2.Device || !this.#device || !this.#mode) {
       return outline;
     }
-    const orientation = this.#deviceInternal.orientationByName(this.#modeInternal.orientation);
-    if (this.#deviceOutlineSettingInternal.get()) {
+    const orientation = this.#device.orientationByName(this.#mode.orientation);
+    if (this.#deviceOutlineSetting.get()) {
       outline = orientation.outlineInsets || outline;
     }
     return outline;
   }
   currentInsets() {
-    if (this.#typeInternal !== Type2.Device || !this.#modeInternal) {
+    if (this.#type !== Type2.Device || !this.#mode) {
       return new Insets(0, 0, 0, 0);
     }
-    return this.#modeInternal.insets;
+    return this.#mode.insets;
   }
   getScreenOrientationType() {
-    if (!this.#modeInternal) {
+    if (!this.#mode) {
       throw new Error("Mode required to get orientation type.");
     }
-    switch (this.#modeInternal.orientation) {
+    switch (this.#mode.orientation) {
       case VerticalSpanned:
       case Vertical:
         return "portraitPrimary";
@@ -2187,26 +2187,26 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     if (overlayModel) {
       this.showHingeIfApplicable(overlayModel);
     }
-    if (this.#typeInternal === Type2.Device && this.#deviceInternal && this.#modeInternal) {
-      const orientation = this.#deviceInternal.orientationByName(this.#modeInternal.orientation);
+    if (this.#type === Type2.Device && this.#device && this.#mode) {
+      const orientation = this.#device.orientationByName(this.#mode.orientation);
       const outline = this.currentOutline();
       const insets = this.currentInsets();
-      this.#fitScaleInternal = this.calculateFitScale(orientation.width, orientation.height, outline, insets);
+      this.#fitScale = this.calculateFitScale(orientation.width, orientation.height, outline, insets);
       if (mobile) {
-        this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Mobile" : "Mobile (no touch)";
+        this.#appliedUserAgentType = this.#device.touch() ? "Mobile" : "Mobile (no touch)";
       } else {
-        this.#appliedUserAgentTypeInternal = this.#deviceInternal.touch() ? "Desktop (touch)" : "Desktop";
+        this.#appliedUserAgentType = this.#device.touch() ? "Desktop (touch)" : "Desktop";
       }
-      this.applyDeviceMetrics(new Geometry.Size(orientation.width, orientation.height), insets, outline, this.#scaleSettingInternal.get(), this.#deviceInternal.deviceScaleFactor, mobile, this.getScreenOrientationType(), resetPageScaleFactor);
-      this.applyUserAgent(this.#deviceInternal.userAgent, this.#deviceInternal.userAgentMetadata);
-      this.applyTouch(this.#deviceInternal.touch(), mobile);
-    } else if (this.#typeInternal === Type2.None) {
-      this.#fitScaleInternal = this.calculateFitScale(this.#availableSize.width, this.#availableSize.height);
-      this.#appliedUserAgentTypeInternal = "Desktop";
+      this.applyDeviceMetrics(new Geometry.Size(orientation.width, orientation.height), insets, outline, this.#scaleSetting.get(), this.#device.deviceScaleFactor, mobile, this.getScreenOrientationType(), resetPageScaleFactor);
+      this.applyUserAgent(this.#device.userAgent, this.#device.userAgentMetadata);
+      this.applyTouch(this.#device.touch(), mobile);
+    } else if (this.#type === Type2.None) {
+      this.#fitScale = this.calculateFitScale(this.#availableSize.width, this.#availableSize.height);
+      this.#appliedUserAgentType = "Desktop";
       this.applyDeviceMetrics(this.#availableSize, new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), 1, 0, mobile, null, resetPageScaleFactor);
       this.applyUserAgent("", null);
       this.applyTouch(false, false);
-    } else if (this.#typeInternal === Type2.Responsive) {
+    } else if (this.#type === Type2.Responsive) {
       let screenWidth = this.#widthSetting.get();
       if (!screenWidth || screenWidth > this.preferredScaledWidth()) {
         screenWidth = this.preferredScaledWidth();
@@ -2216,18 +2216,18 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
         screenHeight = this.preferredScaledHeight();
       }
       const defaultDeviceScaleFactor = mobile ? defaultMobileScaleFactor : 0;
-      this.#fitScaleInternal = this.calculateFitScale(this.#widthSetting.get(), this.#heightSetting.get());
-      this.#appliedUserAgentTypeInternal = this.#uaSettingInternal.get();
-      this.applyDeviceMetrics(new Geometry.Size(screenWidth, screenHeight), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), this.#scaleSettingInternal.get(), this.#deviceScaleFactorSettingInternal.get() || defaultDeviceScaleFactor, mobile, screenHeight >= screenWidth ? "portraitPrimary" : "landscapePrimary", resetPageScaleFactor);
+      this.#fitScale = this.calculateFitScale(this.#widthSetting.get(), this.#heightSetting.get());
+      this.#appliedUserAgentType = this.#uaSetting.get();
+      this.applyDeviceMetrics(new Geometry.Size(screenWidth, screenHeight), new Insets(0, 0, 0, 0), new Insets(0, 0, 0, 0), this.#scaleSetting.get(), this.#deviceScaleFactorSetting.get() || defaultDeviceScaleFactor, mobile, screenHeight >= screenWidth ? "portraitPrimary" : "landscapePrimary", resetPageScaleFactor);
       this.applyUserAgent(mobile ? defaultMobileUserAgent : "", mobile ? defaultMobileUserAgentMetadata : null);
       this.applyTouch(
-        this.#uaSettingInternal.get() === "Desktop (touch)" || this.#uaSettingInternal.get() === "Mobile",
-        this.#uaSettingInternal.get() === "Mobile"
+        this.#uaSetting.get() === "Desktop (touch)" || this.#uaSetting.get() === "Mobile",
+        this.#uaSetting.get() === "Mobile"
         /* UA.MOBILE */
       );
     }
     if (overlayModel) {
-      overlayModel.setShowViewportSizeOnResize(this.#typeInternal === Type2.None);
+      overlayModel.setShowViewportSizeOnResize(this.#type === Type2.None);
     }
     this.dispatchEventToListeners(
       "Updated"
@@ -2258,7 +2258,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     return scale / 100;
   }
   setSizeAndScaleToFit(width, height) {
-    this.#scaleSettingInternal.set(this.calculateFitScale(width, height));
+    this.#scaleSetting.set(this.calculateFitScale(width, height));
     this.setWidth(width);
     this.setHeight(height);
   }
@@ -2273,19 +2273,19 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     const positionX = insets.left;
     const positionY = insets.top;
     const screenOrientationAngle = screenOrientation === "landscapePrimary" ? 90 : 0;
-    this.#appliedDeviceSizeInternal = screenSize;
-    this.#appliedDeviceScaleFactorInternal = deviceScaleFactor || window.devicePixelRatio;
-    this.#screenRectInternal = new Rect(Math.max(0, (this.#availableSize.width - screenSize.width * scale) / 2), outline.top * scale, screenSize.width * scale, screenSize.height * scale);
-    this.#outlineRectInternal = new Rect(this.#screenRectInternal.left - outline.left * scale, 0, (outline.left + screenSize.width + outline.right) * scale, (outline.top + screenSize.height + outline.bottom) * scale);
-    this.#visiblePageRectInternal = new Rect(positionX * scale, positionY * scale, Math.min(pageWidth * scale, this.#availableSize.width - this.#screenRectInternal.left - positionX * scale), Math.min(pageHeight * scale, this.#availableSize.height - this.#screenRectInternal.top - positionY * scale));
-    this.#scaleInternal = scale;
+    this.#appliedDeviceSize = screenSize;
+    this.#appliedDeviceScaleFactor = deviceScaleFactor || window.devicePixelRatio;
+    this.#screenRect = new Rect(Math.max(0, (this.#availableSize.width - screenSize.width * scale) / 2), outline.top * scale, screenSize.width * scale, screenSize.height * scale);
+    this.#outlineRect = new Rect(this.#screenRect.left - outline.left * scale, 0, (outline.left + screenSize.width + outline.right) * scale, (outline.top + screenSize.height + outline.bottom) * scale);
+    this.#visiblePageRect = new Rect(positionX * scale, positionY * scale, Math.min(pageWidth * scale, this.#availableSize.width - this.#screenRect.left - positionX * scale), Math.min(pageHeight * scale, this.#availableSize.height - this.#screenRect.top - positionY * scale));
+    this.#scale = scale;
     const displayFeature = this.getDisplayFeature();
     if (!displayFeature) {
       if (scale === 1 && this.#availableSize.width >= screenSize.width && this.#availableSize.height >= screenSize.height) {
         pageWidth = 0;
         pageHeight = 0;
       }
-      if (this.#visiblePageRectInternal.width === pageWidth * scale && this.#visiblePageRectInternal.height === pageHeight * scale && Number.isInteger(pageWidth * scale) && Number.isInteger(pageHeight * scale)) {
+      if (this.#visiblePageRect.width === pageWidth * scale && this.#visiblePageRect.height === pageHeight * scale && Number.isInteger(pageWidth * scale) && Number.isInteger(pageHeight * scale)) {
         pageWidth = 0;
         pageHeight = 0;
       }
@@ -2363,8 +2363,8 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
       mobile: false
     };
     if (fullSize && this.#emulationModel) {
-      if (this.#deviceInternal && this.#modeInternal) {
-        const orientation = this.#deviceInternal.orientationByName(this.#modeInternal.orientation);
+      if (this.#device && this.#mode) {
+        const orientation = this.#device.orientationByName(this.#mode.orientation);
         deviceMetrics.width = orientation.width;
         deviceMetrics.height = orientation.height;
         const dispFeature = this.getDisplayFeature();
@@ -2388,7 +2388,7 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     }
   }
   showHingeIfApplicable(overlayModel) {
-    const orientation = this.#deviceInternal && this.#modeInternal ? this.#deviceInternal.orientationByName(this.#modeInternal.orientation) : null;
+    const orientation = this.#device && this.#mode ? this.#device.orientationByName(this.#mode.orientation) : null;
     if (orientation?.hinge) {
       overlayModel.showHingeForDualScreen(orientation.hinge);
       return;
@@ -2396,10 +2396,10 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     overlayModel.showHingeForDualScreen(null);
   }
   getDisplayFeatureOrientation() {
-    if (!this.#modeInternal) {
+    if (!this.#mode) {
       throw new Error("Mode required to get display feature orientation.");
     }
-    switch (this.#modeInternal.orientation) {
+    switch (this.#mode.orientation) {
       case VerticalSpanned:
       case Vertical:
         return "vertical";
@@ -2410,18 +2410,18 @@ var DeviceModeModel = class _DeviceModeModel extends Common2.ObjectWrapper.Objec
     }
   }
   getDisplayFeature() {
-    if (!this.#deviceInternal || !this.#modeInternal || this.#modeInternal.orientation !== VerticalSpanned && this.#modeInternal.orientation !== HorizontalSpanned) {
+    if (!this.#device || !this.#mode || this.#mode.orientation !== VerticalSpanned && this.#mode.orientation !== HorizontalSpanned) {
       return null;
     }
-    const orientation = this.#deviceInternal.orientationByName(this.#modeInternal.orientation);
+    const orientation = this.#device.orientationByName(this.#mode.orientation);
     if (!orientation?.hinge) {
       return null;
     }
     const hinge = orientation.hinge;
     return {
       orientation: this.getDisplayFeatureOrientation(),
-      offset: this.#modeInternal.orientation === VerticalSpanned ? hinge.x : hinge.y,
-      maskLength: this.#modeInternal.orientation === VerticalSpanned ? hinge.width : hinge.height
+      offset: this.#mode.orientation === VerticalSpanned ? hinge.x : hinge.y,
+      maskLength: this.#mode.orientation === VerticalSpanned ? hinge.width : hinge.height
     };
   }
 };

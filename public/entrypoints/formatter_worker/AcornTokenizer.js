@@ -1,4 +1,4 @@
-// Copyright (c) 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -31,16 +31,16 @@ import * as Acorn from '../../third_party/acorn/acorn.js';
  */
 export class AcornTokenizer {
     #textCursor;
-    #tokenLineStartInternal;
-    #tokenLineEndInternal;
+    #tokenLineStart;
+    #tokenLineEnd;
     #tokens;
     #idx = 0;
     constructor(content, tokens) {
         this.#tokens = tokens;
         const contentLineEndings = Platform.StringUtilities.findLineEndingIndexes(content);
         this.#textCursor = new TextUtils.TextCursor.TextCursor(contentLineEndings);
-        this.#tokenLineStartInternal = 0;
-        this.#tokenLineEndInternal = 0;
+        this.#tokenLineStart = 0;
+        this.#tokenLineEnd = 0;
     }
     static punctuator(token, values) {
         return token.type !== Acorn.tokTypes.num && token.type !== Acorn.tokTypes.regexp &&
@@ -70,9 +70,9 @@ export class AcornTokenizer {
             return null;
         }
         this.#textCursor.advance(token.start);
-        this.#tokenLineStartInternal = this.#textCursor.lineNumber();
+        this.#tokenLineStart = this.#textCursor.lineNumber();
         this.#textCursor.advance(token.end);
-        this.#tokenLineEndInternal = this.#textCursor.lineNumber();
+        this.#tokenLineEnd = this.#textCursor.lineNumber();
         return token;
     }
     peekToken() {
@@ -83,10 +83,10 @@ export class AcornTokenizer {
         return token;
     }
     tokenLineStart() {
-        return this.#tokenLineStartInternal;
+        return this.#tokenLineStart;
     }
     tokenLineEnd() {
-        return this.#tokenLineEndInternal;
+        return this.#tokenLineEnd;
     }
 }
 export const ECMA_VERSION = 2022;

@@ -672,7 +672,7 @@ var NotRestoredReasonDescription = {
 
 // gen/front_end/panels/application/components/backForwardCacheView.css.js
 var backForwardCacheView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1259,7 +1259,7 @@ import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/bounceTrackingMitigationsView.css.js
 var bounceTrackingMitigationsView_css_default = `/*
- * Copyright (c) 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1463,7 +1463,7 @@ import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/reportingApiGrid.css.js
 var reportingApiGrid_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1581,7 +1581,7 @@ import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/stackTraceLinkButton.css.js
 var stackTraceLinkButton_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1601,7 +1601,7 @@ button.link {
 
 // gen/front_end/panels/application/components/stackTraceRow.css.js
 var stackTraceRow_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1819,7 +1819,7 @@ import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/frameDetailsReportView.css.js
 var frameDetailsReportView_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1950,7 +1950,7 @@ import * as Lit5 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/badge.css.js
 var badge_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1979,7 +1979,7 @@ var badge_css_default = `/*
 
 // gen/front_end/panels/application/components/originTrialTokenRows.css.js
 var originTrialTokenRows_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2011,7 +2011,7 @@ var originTrialTokenRows_css_default = `/*
 
 // gen/front_end/panels/application/components/originTrialTreeView.css.js
 var originTrialTreeView_css_default = `/*
- * Copyright (c) 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2314,7 +2314,7 @@ import * as VisualLogging5 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/permissionsPolicySection.css.js
 var permissionsPolicySection_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3342,7 +3342,7 @@ import * as Lit8 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/interestGroupAccessGrid.css.js
 var interestGroupAccessGrid_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3498,7 +3498,7 @@ import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/protocolHandlersView.css.js
 var protocolHandlersView_css_default = `/*
- * Copyright (c) 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3699,7 +3699,7 @@ import * as Root2 from "./../../../core/root/root.js";
 
 // gen/front_end/ui/legacy/inspectorCommon.css.js
 var inspectorCommon_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4480,7 +4480,7 @@ devtools-toolbar {
   .toolbar-dropdown-arrow {
     pointer-events: none;
     flex: none;
-    top: 2px;
+    top: var(--sys-size-1);
   }
 
   .toolbar-button.dark-text .toolbar-dropdown-arrow {
@@ -5138,7 +5138,7 @@ import * as Lit11 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/serviceWorkerRouterView.css.js
 var serviceWorkerRouterView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5249,7 +5249,7 @@ import * as VisualLogging9 from "./../../../ui/visual_logging/visual_logging.js"
 
 // gen/front_end/panels/application/components/sharedStorageAccessGrid.css.js
 var sharedStorageAccessGrid_css_default = `/*
- * Copyright (c) 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5450,7 +5450,7 @@ import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/application/components/sharedStorageMetadataView.css.js
 var sharedStorageMetadataView_css_default = `/*
- * Copyright (c) 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5831,7 +5831,7 @@ import * as VisualLogging10 from "./../../../ui/visual_logging/visual_logging.js
 
 // gen/front_end/panels/application/components/trustTokensView.css.js
 var trustTokensView_css_default = `/*
- * Copyright (c) 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

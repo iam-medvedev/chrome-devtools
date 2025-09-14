@@ -88,6 +88,7 @@ export declare class CSSMatchedStyles {
     availableCSSVariables(style: CSSStyleDeclaration): string[];
     computeCSSVariable(style: CSSStyleDeclaration, variableName: string): CSSVariableValue | null;
     computeAttribute(style: CSSStyleDeclaration, attributeName: string, type: CSSType): string | null;
+    rawAttributeValueFromStyle(style: CSSStyleDeclaration, attributeName: string): string | null;
     resolveProperty(name: string, ownerStyle: CSSStyleDeclaration): CSSProperty | null;
     resolveGlobalKeyword(property: CSSProperty, keyword: CSSWideKeyword): CSSValueSource | null;
     isInherited(style: CSSStyleDeclaration): boolean;

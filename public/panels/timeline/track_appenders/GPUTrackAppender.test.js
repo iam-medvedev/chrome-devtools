@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
@@ -8,7 +8,7 @@ import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel, entityMapper);
     return compatibilityTracksAppender.gpuTrackAppender();
 }
@@ -19,7 +19,7 @@ describeWithEnvironment('GPUTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        ({ parsedTrace } = await TraceLoader.traceEngine(this, 'threejs-gpu.json.gz'));
+        parsedTrace = await TraceLoader.traceEngine(this, 'threejs-gpu.json.gz');
         gpuTrackAppender = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         gpuTrackAppender.appendTrackAtLevel(0);
     });
@@ -41,7 +41,7 @@ describeWithEnvironment('GPUTrackAppender', function () {
             assert.strictEqual(flameChartData.groups[0].name, 'GPU');
         });
         it('adds start times correctly', () => {
-            const gpuEvents = parsedTrace.GPU.mainGPUThreadTasks;
+            const gpuEvents = parsedTrace.data.GPU.mainGPUThreadTasks;
             for (const event of gpuEvents) {
                 const index = entryData.indexOf(event);
                 assert.exists(index);
@@ -49,7 +49,7 @@ describeWithEnvironment('GPUTrackAppender', function () {
             }
         });
         it('adds total times correctly', () => {
-            const gpuEvents = parsedTrace.GPU.mainGPUThreadTasks;
+            const gpuEvents = parsedTrace.data.GPU.mainGPUThreadTasks;
             for (const event of gpuEvents) {
                 const index = entryData.indexOf(event);
                 assert.exists(index);
@@ -89,7 +89,7 @@ describeWithEnvironment('GPUTrackAppender', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('returns the correct color and title for GPU tasks', () => {
-            const gpuEvents = parsedTrace.GPU.mainGPUThreadTasks;
+            const gpuEvents = parsedTrace.data.GPU.mainGPUThreadTasks;
             for (const event of gpuEvents) {
                 assert.strictEqual(gpuTrackAppender.colorForEvent(event), 'rgb(6 6 6)');
             }

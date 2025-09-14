@@ -24,6 +24,7 @@
       <include file="Images/accelerometer-top.png" name="IMAGES_ACCELEROMETER_TOP_PNG" resource_path="Images/accelerometer-top.png" type="BINDATA" compress="false"/>
       <include file="Images/account-tree.svg" name="IMAGES_ACCOUNT_TREE_SVG" resource_path="Images/account-tree.svg" type="BINDATA" compress="false"/>
       <include file="Images/add-photo.svg" name="IMAGES_ADD_PHOTO_SVG" resource_path="Images/add-photo.svg" type="BINDATA" compress="false"/>
+      <include file="Images/ai-explorer-badge.svg" name="IMAGES_AI_EXPLORER_BADGE_SVG" resource_path="Images/ai-explorer-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-center.svg" name="IMAGES_ALIGN_CONTENT_CENTER_SVG" resource_path="Images/align-content-center.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-end.svg" name="IMAGES_ALIGN_CONTENT_END_SVG" resource_path="Images/align-content-end.svg" type="BINDATA" compress="false"/>
       <include file="Images/align-content-space-around.svg" name="IMAGES_ALIGN_CONTENT_SPACE_AROUND_SVG" resource_path="Images/align-content-space-around.svg" type="BINDATA" compress="false"/>
@@ -92,6 +93,7 @@
       <include file="Images/clear.svg" name="IMAGES_CLEAR_SVG" resource_path="Images/clear.svg" type="BINDATA" compress="false"/>
       <include file="Images/cloud.svg" name="IMAGES_CLOUD_SVG" resource_path="Images/cloud.svg" type="BINDATA" compress="false"/>
       <include file="Images/code-circle.svg" name="IMAGES_CODE_CIRCLE_SVG" resource_path="Images/code-circle.svg" type="BINDATA" compress="false"/>
+      <include file="Images/code-whisperer-badge.svg" name="IMAGES_CODE_WHISPERER_BADGE_SVG" resource_path="Images/code-whisperer-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/code.svg" name="IMAGES_CODE_SVG" resource_path="Images/code.svg" type="BINDATA" compress="false"/>
       <include file="Images/colon.svg" name="IMAGES_COLON_SVG" resource_path="Images/colon.svg" type="BINDATA" compress="false"/>
       <include file="Images/color-picker-filled.svg" name="IMAGES_COLOR_PICKER_FILLED_SVG" resource_path="Images/color-picker-filled.svg" type="BINDATA" compress="false"/>
@@ -115,6 +117,7 @@
       <include file="Images/devices.svg" name="IMAGES_DEVICES_SVG" resource_path="Images/devices.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools-thumbnail.svg" name="IMAGES_DEVTOOLS_THUMBNAIL_SVG" resource_path="Images/devtools-thumbnail.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools-tips.svg" name="IMAGES_DEVTOOLS_TIPS_SVG" resource_path="Images/devtools-tips.svg" type="BINDATA" compress="false"/>
+      <include file="Images/devtools-user-badge.svg" name="IMAGES_DEVTOOLS_USER_BADGE_SVG" resource_path="Images/devtools-user-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/devtools.svg" name="IMAGES_DEVTOOLS_SVG" resource_path="Images/devtools.svg" type="BINDATA" compress="false"/>
       <include file="Images/difference.svg" name="IMAGES_DIFFERENCE_SVG" resource_path="Images/difference.svg" type="BINDATA" compress="false"/>
       <include file="Images/dock-bottom.svg" name="IMAGES_DOCK_BOTTOM_SVG" resource_path="Images/dock-bottom.svg" type="BINDATA" compress="false"/>
@@ -123,6 +126,7 @@
       <include file="Images/dock-window.svg" name="IMAGES_DOCK_WINDOW_SVG" resource_path="Images/dock-window.svg" type="BINDATA" compress="false"/>
       <include file="Images/document.svg" name="IMAGES_DOCUMENT_SVG" resource_path="Images/document.svg" type="BINDATA" compress="false"/>
       <include file="Images/dog-paw.svg" name="IMAGES_DOG_PAW_SVG" resource_path="Images/dog-paw.svg" type="BINDATA" compress="false"/>
+      <include file="Images/dom-detective-badge.svg" name="IMAGES_DOM_DETECTIVE_BADGE_SVG" resource_path="Images/dom-detective-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/domain.svg" name="IMAGES_DOMAIN_SVG" resource_path="Images/domain.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-horizontal.svg" name="IMAGES_DOTS_HORIZONTAL_SVG" resource_path="Images/dots-horizontal.svg" type="BINDATA" compress="false"/>
       <include file="Images/dots-vertical.svg" name="IMAGES_DOTS_VERTICAL_SVG" resource_path="Images/dots-vertical.svg" type="BINDATA" compress="false"/>
@@ -274,6 +278,7 @@
       <include file="Images/snippet.svg" name="IMAGES_SNIPPET_SVG" resource_path="Images/snippet.svg" type="BINDATA" compress="false"/>
       <include file="Images/spark-info.svg" name="IMAGES_SPARK_INFO_SVG" resource_path="Images/spark-info.svg" type="BINDATA" compress="false"/>
       <include file="Images/speculative-loads.svg" name="IMAGES_SPECULATIVE_LOADS_SVG" resource_path="Images/speculative-loads.svg" type="BINDATA" compress="false"/>
+      <include file="Images/speedster-badge.svg" name="IMAGES_SPEEDSTER_BADGE_SVG" resource_path="Images/speedster-badge.svg" type="BINDATA" compress="false"/>
       <include file="Images/star.svg" name="IMAGES_STAR_SVG" resource_path="Images/star.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-into.svg" name="IMAGES_STEP_INTO_SVG" resource_path="Images/step-into.svg" type="BINDATA" compress="false"/>
       <include file="Images/step-out.svg" name="IMAGES_STEP_OUT_SVG" resource_path="Images/step-out.svg" type="BINDATA" compress="false"/>
@@ -393,6 +398,7 @@
       <include file="models/ai_assistance/ai_assistance.js" name="MODELS_AI_ASSISTANCE_AI_ASSISTANCE_JS" resource_path="models/ai_assistance/ai_assistance.js" type="BINDATA" compress="false"/>
       <include file="models/ai_code_completion/ai_code_completion.js" name="MODELS_AI_CODE_COMPLETION_AI_CODE_COMPLETION_JS" resource_path="models/ai_code_completion/ai_code_completion.js" type="BINDATA" compress="false"/>
       <include file="models/autofill_manager/autofill_manager.js" name="MODELS_AUTOFILL_MANAGER_AUTOFILL_MANAGER_JS" resource_path="models/autofill_manager/autofill_manager.js" type="BINDATA" compress="false"/>
+      <include file="models/badges/badges.js" name="MODELS_BADGES_BADGES_JS" resource_path="models/badges/badges.js" type="BINDATA" compress="false"/>
       <include file="models/bindings/bindings.js" name="MODELS_BINDINGS_BINDINGS_JS" resource_path="models/bindings/bindings.js" type="BINDATA" compress="false"/>
       <include file="models/breakpoints/breakpoints.js" name="MODELS_BREAKPOINTS_BREAKPOINTS_JS" resource_path="models/breakpoints/breakpoints.js" type="BINDATA" compress="false"/>
       <include file="models/cpu_profile/cpu_profile.js" name="MODELS_CPU_PROFILE_CPU_PROFILE_JS" resource_path="models/cpu_profile/cpu_profile.js" type="BINDATA" compress="false"/>
@@ -614,6 +620,7 @@
       <include file="models/trace/lantern/types/types.js" name="MODELS_TRACE_LANTERN_TYPES_TYPES_JS" resource_path="models/trace/lantern/types/types.js" type="BINDATA" compress="false"/>
       <include file="models/trace/trace.js" name="MODELS_TRACE_TRACE_JS" resource_path="models/trace/trace.js" type="BINDATA" compress="false"/>
       <include file="models/trace/types/types.js" name="MODELS_TRACE_TYPES_TYPES_JS" resource_path="models/trace/types/types.js" type="BINDATA" compress="false"/>
+      <include file="models/trace_source_maps_resolver/trace_source_maps_resolver.js" name="MODELS_TRACE_SOURCE_MAPS_RESOLVER_TRACE_SOURCE_MAPS_RESOLVER_JS" resource_path="models/trace_source_maps_resolver/trace_source_maps_resolver.js" type="BINDATA" compress="false"/>
       <include file="models/workspace/workspace.js" name="MODELS_WORKSPACE_WORKSPACE_JS" resource_path="models/workspace/workspace.js" type="BINDATA" compress="false"/>
       <include file="models/workspace_diff/workspace_diff.js" name="MODELS_WORKSPACE_DIFF_WORKSPACE_DIFF_JS" resource_path="models/workspace_diff/workspace_diff.js" type="BINDATA" compress="false"/>
       <include file="ndb_app.html" name="NDB_APP_HTML" resource_path="ndb_app.html" type="BINDATA" compress="false"/>

@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
@@ -26,14 +26,14 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
     #viewConstructor;
     view;
     #path;
-    #selectedInternal;
+    #selected;
     constructor(panel, viewConstructor, path, title) {
         super(panel, title, false, 'speculative-loads');
         this.#viewConstructor = viewConstructor;
         this.#path = path;
         const icon = IconButton.Icon.create('speculative-loads');
         this.setLeadingIcons([icon]);
-        this.#selectedInternal = false;
+        this.#selected = false;
         // TODO(https://crbug.com/1384419): Set link
     }
     get itemURL() {
@@ -42,13 +42,13 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
     initialize(model) {
         this.#model = model;
         // Show the view if the model was initialized after selection.
-        if (this.#selectedInternal && !this.view) {
+        if (this.#selected && !this.view) {
             this.onselect(false);
         }
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        this.#selectedInternal = true;
+        this.#selected = true;
         if (!this.#model) {
             return false;
         }
@@ -62,14 +62,14 @@ class PreloadingTreeElementBase extends ApplicationPanelTreeElement {
 export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTreeElement {
     #model;
     #view;
-    #selectedInternal;
+    #selected;
     #ruleSet = null;
     #attempt = null;
     constructor(panel) {
         super(panel, i18nString(UIStrings.speculativeLoads), '', '', 'preloading');
         const icon = IconButton.Icon.create('speculative-loads');
         this.setLeadingIcons([icon]);
-        this.#selectedInternal = false;
+        this.#selected = false;
         // TODO(https://crbug.com/1384419): Set link
     }
     // Note that
@@ -93,13 +93,13 @@ export class PreloadingSummaryTreeElement extends ExpandableApplicationPanelTree
         this.#ruleSet.initialize(model);
         this.#attempt.initialize(model);
         // Show the view if the model was initialized after selection.
-        if (this.#selectedInternal && !this.#view) {
+        if (this.#selected && !this.#view) {
             this.onselect(false);
         }
     }
     onselect(selectedByUser) {
         super.onselect(selectedByUser);
-        this.#selectedInternal = true;
+        this.#selected = true;
         if (!this.#model) {
             return false;
         }

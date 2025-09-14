@@ -90,6 +90,6 @@ export type ImageDeliveryInsightModel = InsightModel<typeof UIStrings, {
 export declare function isImageDelivery(model: InsightModel): model is ImageDeliveryInsightModel;
 export declare function getOptimizationMessage(optimization: ImageOptimization): string;
 export declare function getOptimizationMessageWithBytes(optimization: ImageOptimization): string;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): ImageDeliveryInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): ImageDeliveryInsightModel;
 export declare function createOverlayForRequest(request: Types.Events.SyntheticNetworkRequest): Types.Overlays.EntryOutline;
 export declare function createOverlays(model: ImageDeliveryInsightModel): Types.Overlays.Overlay[];

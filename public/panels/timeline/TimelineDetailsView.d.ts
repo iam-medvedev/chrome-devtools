@@ -6,7 +6,6 @@ import * as TimelineComponents from './components/components.js';
 import type { TimelineModeViewDelegate } from './TimelinePanel.js';
 import { type TimelineSelection } from './TimelineSelection.js';
 import { AggregatedTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
-import * as Utils from './utils/utils.js';
 declare const TimelineDetailsPane_base: (new (...args: any[]) => {
     addEventListener<T extends keyof TimelineTreeView.EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<TimelineTreeView.EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<TimelineTreeView.EventTypes, T>;
     once<T extends keyof TimelineTreeView.EventTypes>(eventType: T): Promise<TimelineTreeView.EventTypes[T]>;
@@ -37,11 +36,10 @@ export declare class TimelineDetailsPane extends TimelineDetailsPane_base {
     getDetailsContentElementForTest(): HTMLElement;
     revealEventInTreeView(event: Trace.Types.Events.Event | null): void;
     setModel(data: {
-        parsedTrace: Trace.Handlers.Types.ParsedTrace | null;
+        parsedTrace: Trace.TraceModel.ParsedTrace | null;
         selectedEvents: Trace.Types.Events.Event[] | null;
-        traceInsightsSets: Trace.Insights.Types.TraceInsightSets | null;
         eventToRelatedInsightsMap: TimelineComponents.RelatedInsightChips.EventToRelatedInsightsMap | null;
-        entityMapper: Utils.EntityMapper.EntityMapper | null;
+        entityMapper: Trace.EntityMapper.EntityMapper | null;
     }): Promise<void>;
     /**
      * Updates the UI shown in the Summary tab, and updates the UI to select the

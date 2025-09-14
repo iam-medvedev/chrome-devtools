@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -132,56 +132,56 @@ export class TracingLayer {
     parentLayerId;
     parentInternal;
     layerId;
-    nodeInternal;
-    offsetXInternal;
-    offsetYInternal;
-    widthInternal;
-    heightInternal;
-    childrenInternal;
-    quadInternal;
-    scrollRectsInternal;
-    gpuMemoryUsageInternal;
+    #node;
+    #offsetX;
+    #offsetY;
+    #width;
+    #height;
+    #children;
+    #quad;
+    #scrollRects;
+    #gpuMemoryUsage;
     paints;
     compositingReasons;
     compositingReasonIds;
-    drawsContentInternal;
+    #drawsContent;
     paintProfilerModel;
     constructor(paintProfilerModel, payload) {
         this.parentLayerId = null;
         this.parentInternal = null;
         this.layerId = '';
-        this.nodeInternal = null;
-        this.offsetXInternal = -1;
-        this.offsetYInternal = -1;
-        this.widthInternal = -1;
-        this.heightInternal = -1;
-        this.childrenInternal = [];
-        this.quadInternal = [];
-        this.scrollRectsInternal = [];
-        this.gpuMemoryUsageInternal = -1;
+        this.#node = null;
+        this.#offsetX = -1;
+        this.#offsetY = -1;
+        this.#width = -1;
+        this.#height = -1;
+        this.#children = [];
+        this.#quad = [];
+        this.#scrollRects = [];
+        this.#gpuMemoryUsage = -1;
         this.paints = [];
         this.compositingReasons = [];
         this.compositingReasonIds = [];
-        this.drawsContentInternal = false;
+        this.#drawsContent = false;
         this.paintProfilerModel = paintProfilerModel;
         this.reset(payload);
     }
     reset(payload) {
-        this.nodeInternal = null;
+        this.#node = null;
         this.layerId = String(payload.layer_id);
-        this.offsetXInternal = payload.position[0];
-        this.offsetYInternal = payload.position[1];
-        this.widthInternal = payload.bounds.width;
-        this.heightInternal = payload.bounds.height;
-        this.childrenInternal = [];
+        this.#offsetX = payload.position[0];
+        this.#offsetY = payload.position[1];
+        this.#width = payload.bounds.width;
+        this.#height = payload.bounds.height;
+        this.#children = [];
         this.parentLayerId = null;
         this.parentInternal = null;
-        this.quadInternal = payload.layer_quad || [];
+        this.#quad = payload.layer_quad || [];
         this.createScrollRects(payload);
         this.compositingReasons = payload.compositing_reasons || [];
         this.compositingReasonIds = payload.compositing_reason_ids || [];
-        this.drawsContentInternal = Boolean(payload.draws_content);
-        this.gpuMemoryUsageInternal = payload.gpu_memory_usage;
+        this.#drawsContent = Boolean(payload.draws_content);
+        this.#gpuMemoryUsage = payload.gpu_memory_usage;
         this.paints = [];
     }
     id() {
@@ -197,22 +197,22 @@ export class TracingLayer {
         return !this.parentId();
     }
     children() {
-        return this.childrenInternal;
+        return this.#children;
     }
     addChild(childParam) {
         const child = childParam;
         if (child.parentInternal) {
             console.assert(false, 'Child already has a parent');
         }
-        this.childrenInternal.push(child);
+        this.#children.push(child);
         child.parentInternal = this;
         child.parentLayerId = this.layerId;
     }
     setNode(node) {
-        this.nodeInternal = node;
+        this.#node = node;
     }
     node() {
-        return this.nodeInternal;
+        return this.#node;
     }
     nodeForSelfOrAncestor() {
         let layer = this;
@@ -224,22 +224,22 @@ export class TracingLayer {
         return null;
     }
     offsetX() {
-        return this.offsetXInternal;
+        return this.#offsetX;
     }
     offsetY() {
-        return this.offsetYInternal;
+        return this.#offsetY;
     }
     width() {
-        return this.widthInternal;
+        return this.#width;
     }
     height() {
-        return this.heightInternal;
+        return this.#height;
     }
     transform() {
         return null;
     }
     quad() {
-        return this.quadInternal;
+        return this.#quad;
     }
     anchorPoint() {
         return [0.5, 0.5, 0];
@@ -254,14 +254,14 @@ export class TracingLayer {
         return null;
     }
     scrollRects() {
-        return this.scrollRectsInternal;
+        return this.#scrollRects;
     }
     stickyPositionConstraint() {
         // TODO(smcgruer): Provide sticky layer information in traces.
         return null;
     }
     gpuMemoryUsage() {
-        return this.gpuMemoryUsageInternal;
+        return this.#gpuMemoryUsage;
     }
     snapshots() {
         return this.paints.map(async (paint) => {
@@ -318,7 +318,7 @@ export class TracingLayer {
         // SDK.LayerBaseTree.Layer.ScrollRectType and Protocol.LayerTree.ScrollRectType are the
         // same type, but we need to use the indirection of the nonPayloadScrollRects since
         // the ScrollRectType is defined as a string in SDK.LayerBaseTree.Layer.ScrollRectType.
-        this.scrollRectsInternal = nonPayloadScrollRects;
+        this.#scrollRects = nonPayloadScrollRects;
     }
     addPaintEvent(paint) {
         this.paints.push(paint);
@@ -330,7 +330,7 @@ export class TracingLayer {
         return Promise.resolve(this.compositingReasonIds);
     }
     drawsContent() {
-        return this.drawsContentInternal;
+        return this.#drawsContent;
     }
 }
 async function getPaintProfilerSnapshot(paintProfilerModel, paint) {

@@ -1,6 +1,33 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * Capture the original at point in creation of the module
+ * Unless something before this is loaded
+ * This should always be the original
+ */
+const originals = {
+    Promise,
+    requestAnimationFrame: requestAnimationFrame.bind(window),
+    requestIdleCallback: requestIdleCallback.bind(window),
+    setInterval: setInterval.bind(window),
+    setTimeout: setTimeout.bind(window),
+    cancelAnimationFrame: cancelAnimationFrame.bind(window),
+    clearInterval: clearInterval.bind(window),
+    clearTimeout: clearTimeout.bind(window),
+    cancelIdleCallback: cancelIdleCallback.bind(window)
+};
+const stubs = [];
+function stub(name, stubWith) {
+    window[name] = stubWith;
+    stubs.push({ name, stubWith });
+}
+function restoreAll() {
+    for (const { name } of stubs) {
+        window[name] = originals[name];
+    }
+    stubs.length = 0;
+}
 const asyncActivity = [];
 export function startTrackingAsyncActivity() {
     // Reset everything before starting a new tracking session.
@@ -28,11 +55,13 @@ export async function checkForPendingActivity(testName = '') {
         const pendingCount = asyncActivity.filter(a => a.pending).length;
         const totalCount = asyncActivity.length;
         try {
+            const PromiseConstructor = originals.Promise;
             // First we wait for the pending async activity to finish normally
-            await original(Promise).all(asyncActivity.filter(a => a.pending).map(a => original(Promise).race([
+            await PromiseConstructor.all(asyncActivity.filter(a => a.pending).map(a => PromiseConstructor.race([
                 a.promise,
-                new (original(Promise))((_, reject) => original(setTimeout)(() => {
+                new PromiseConstructor((resolve, reject) => originals.setTimeout(() => {
                     if (!a.pending) {
+                        resolve();
                         return;
                     }
                     // If something is still pending after some time, we try to
@@ -78,16 +107,16 @@ export function stopTrackingAsyncActivity() {
 function trackingRequestAnimationFrame(fn) {
     const activity = { type: 'requestAnimationFrame', pending: true, stack: getStack(new Error()) };
     let id = 0;
-    activity.promise = new (original((Promise)))(resolve => {
+    activity.promise = new originals.Promise(resolve => {
         activity.runImmediate = () => {
             fn(performance.now());
             activity.pending = false;
             resolve();
         };
-        id = original(requestAnimationFrame)(activity.runImmediate);
+        id = originals.requestAnimationFrame(activity.runImmediate);
         activity.id = 'a' + id;
         activity.cancelDelayed = () => {
-            original(cancelAnimationFrame)(id);
+            originals.cancelAnimationFrame(id);
             activity.pending = false;
             resolve();
         };
@@ -98,16 +127,16 @@ function trackingRequestAnimationFrame(fn) {
 function trackingRequestIdleCallback(fn, opts) {
     const activity = { type: 'requestIdleCallback', pending: true, stack: getStack(new Error()) };
     let id = 0;
-    activity.promise = new (original((Promise)))(resolve => {
+    activity.promise = new originals.Promise(resolve => {
         activity.runImmediate = (idleDeadline) => {
             fn(idleDeadline ?? { didTimeout: true, timeRemaining: () => 0 });
             activity.pending = false;
             resolve();
         };
-        id = original(requestIdleCallback)(activity.runImmediate, opts);
+        id = originals.requestIdleCallback(activity.runImmediate, opts);
         activity.id = 'd' + id;
         activity.cancelDelayed = () => {
-            original(cancelIdleCallback)(id);
+            originals.cancelIdleCallback(id);
             activity.pending = false;
             resolve();
         };
@@ -118,8 +147,9 @@ function trackingRequestIdleCallback(fn, opts) {
 function trackingSetTimeout(arg, time, ...params) {
     const activity = { type: 'setTimeout', pending: true, stack: getStack(new Error()) };
     let id;
-    activity.promise = new (original((Promise)))(resolve => {
+    activity.promise = new originals.Promise(resolve => {
         activity.runImmediate = () => {
+            originals.clearTimeout(id);
             if (typeof (arg) === 'function') {
                 arg(...params);
             }
@@ -129,10 +159,10 @@ function trackingSetTimeout(arg, time, ...params) {
             activity.pending = false;
             resolve();
         };
-        id = original(setTimeout)(activity.runImmediate, time);
+        id = originals.setTimeout(activity.runImmediate, time);
         activity.id = 't' + id;
         activity.cancelDelayed = () => {
-            original(clearTimeout)(id);
+            originals.clearTimeout(id);
             activity.pending = false;
             resolve();
         };
@@ -147,11 +177,11 @@ function trackingSetInterval(arg, time, ...params) {
         stack: getStack(new Error()),
     };
     let id = 0;
-    activity.promise = new (original((Promise)))(resolve => {
-        id = original(setInterval)(arg, time, ...params);
+    activity.promise = new originals.Promise(resolve => {
+        id = originals.setInterval(arg, time, ...params);
         activity.id = 'i' + id;
         activity.cancelDelayed = () => {
-            original(clearInterval)(id);
+            originals.clearInterval(id);
             activity.pending = false;
             resolve();
         };
@@ -184,17 +214,16 @@ const BasePromise = {
 // in a new asyncActivity entry on each iteration of checkForPendingActivity
 // which never settles.
 const TrackingPromise = Object.assign(function (arg) {
-    const originalPromiseType = original(Promise);
-    const promise = new (originalPromiseType)(arg);
+    const promise = new originals.Promise(arg);
     const activity = {
-        type: 'promise',
+        type: 'Promise',
         promise,
         stack: getStack(new Error()),
         pending: false,
     };
     promise.then = function (onFulfilled, onRejected) {
         activity.pending = true;
-        return originalPromiseType.prototype.then.apply(this, [
+        return originals.Promise.prototype.then.apply(this, [
             result => {
                 if (!onFulfilled) {
                     return this;
@@ -216,20 +245,5 @@ const TrackingPromise = Object.assign(function (arg) {
 }, BasePromise);
 function getStack(error) {
     return (error.stack ?? 'No stack').split('\n').slice(2).join('\n');
-}
-const stubs = [];
-function stub(name, stubWith) {
-    const original = window[name];
-    window[name] = stubWith;
-    stubs.push({ name, original, stubWith });
-}
-function original(stubWith) {
-    return stubs.find(s => s.stubWith === stubWith)?.original;
-}
-function restoreAll() {
-    for (const { name, original } of stubs) {
-        window[name] = original;
-    }
-    stubs.length = 0;
 }
 //# sourceMappingURL=TrackAsyncOperations.js.map

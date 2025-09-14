@@ -18,7 +18,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/eventDisplayTable.css.js
 var eventDisplayTable_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -254,34 +254,34 @@ function formatMillisecondsToSeconds(ms, decimalPlaces) {
   return `${Math.round(ms / roundPower) / denominatorPower} s`;
 }
 var Bounds = class {
-  minInternal;
-  maxInternal;
-  lowInternal;
-  highInternal;
+  #min;
+  #max;
+  #low;
+  #high;
   maxRange;
   minRange;
   constructor(initialLow, initialHigh, maxRange, minRange) {
-    this.minInternal = initialLow;
-    this.maxInternal = initialHigh;
-    this.lowInternal = this.minInternal;
-    this.highInternal = this.maxInternal;
+    this.#min = initialLow;
+    this.#max = initialHigh;
+    this.#low = this.#min;
+    this.#high = this.#max;
     this.maxRange = maxRange;
     this.minRange = minRange;
   }
   get low() {
-    return this.lowInternal;
+    return this.#low;
   }
   get high() {
-    return this.highInternal;
+    return this.#high;
   }
   get min() {
-    return this.minInternal;
+    return this.#min;
   }
   get max() {
-    return this.maxInternal;
+    return this.#max;
   }
   get range() {
-    return this.highInternal - this.lowInternal;
+    return this.#high - this.#low;
   }
   reassertBounds() {
     let needsAdjustment = true;
@@ -290,16 +290,16 @@ var Bounds = class {
       if (this.range < this.minRange) {
         needsAdjustment = true;
         const delta = (this.minRange - this.range) / 2;
-        this.highInternal += delta;
-        this.lowInternal -= delta;
+        this.#high += delta;
+        this.#low -= delta;
       }
-      if (this.lowInternal < this.minInternal) {
+      if (this.#low < this.#min) {
         needsAdjustment = true;
-        this.lowInternal = this.minInternal;
+        this.#low = this.#min;
       }
-      if (this.highInternal > this.maxInternal) {
+      if (this.#high > this.#max) {
         needsAdjustment = true;
-        this.highInternal = this.maxInternal;
+        this.#high = this.#max;
       }
     }
   }
@@ -307,39 +307,39 @@ var Bounds = class {
    * zoom out |amount| ticks at position [0, 1] along the current range of the timeline.
    */
   zoomOut(amount, position) {
-    const range = this.highInternal - this.lowInternal;
+    const range = this.#high - this.#low;
     const growSize = range * Math.pow(1.1, amount) - range;
     const lowEnd = growSize * position;
     const highEnd = growSize - lowEnd;
-    this.lowInternal -= lowEnd;
-    this.highInternal += highEnd;
+    this.#low -= lowEnd;
+    this.#high += highEnd;
     this.reassertBounds();
   }
   /**
    * zoom in |amount| ticks at position [0, 1] along the current range of the timeline.
    */
   zoomIn(amount, position) {
-    const range = this.highInternal - this.lowInternal;
+    const range = this.#high - this.#low;
     if (this.range <= this.minRange) {
       return;
     }
     const shrinkSize = range - range / Math.pow(1.1, amount);
     const lowEnd = shrinkSize * position;
     const highEnd = shrinkSize - lowEnd;
-    this.lowInternal += lowEnd;
-    this.highInternal -= highEnd;
+    this.#low += lowEnd;
+    this.#high -= highEnd;
     this.reassertBounds();
   }
   /**
    * Add Xms to the max value, and scroll the timeline forward if the end is in sight.
    */
   addMax(amount) {
-    const range = this.highInternal - this.lowInternal;
-    const isAtHighEnd = this.highInternal === this.maxInternal;
-    const isZoomedOut = this.lowInternal === this.minInternal || range >= this.maxRange;
-    this.maxInternal += amount;
+    const range = this.#high - this.#low;
+    const isAtHighEnd = this.#high === this.#max;
+    const isZoomedOut = this.#low === this.#min || range >= this.maxRange;
+    this.#max += amount;
     if (isAtHighEnd && isZoomedOut) {
-      this.highInternal = this.maxInternal;
+      this.#high = this.#max;
     }
     this.reassertBounds();
   }
@@ -347,8 +347,8 @@ var Bounds = class {
    * Attempt to push the maximum time up to |time| ms.
    */
   pushMaxAtLeastTo(time) {
-    if (this.maxInternal < time) {
-      this.addMax(time - this.maxInternal);
+    if (this.#max < time) {
+      this.addMax(time - this.#max);
       return true;
     }
     return false;
@@ -391,17 +391,17 @@ var Event = class {
   setComplete;
   updateMaxTime;
   selfIndex;
-  liveInternal;
+  #live;
   title;
-  colorInternal;
-  fontColorInternal;
+  #color;
+  #fontColor;
   constructor(timelineData, eventHandlers, eventProperties = { color: void 0, duration: void 0, level: 0, name: "", startTime: 0 }) {
     this.timelineData = timelineData;
     this.setLive = eventHandlers.setLive;
     this.setComplete = eventHandlers.setComplete;
     this.updateMaxTime = eventHandlers.updateMaxTime;
     this.selfIndex = this.timelineData.entryLevels.length;
-    this.liveInternal = false;
+    this.#live = false;
     const duration = eventProperties["duration"] === void 0 ? 0 : eventProperties["duration"];
     this.timelineData.entryLevels.push(eventProperties["level"] || 0);
     this.timelineData.entryStartTimes.push(eventProperties["startTime"] || 0);
@@ -410,8 +410,8 @@ var Event = class {
       this.endTime = -1;
     }
     this.title = eventProperties["name"] || "";
-    this.colorInternal = eventProperties["color"] || HotColorScheme[0];
-    this.fontColorInternal = calculateFontColor(this.colorInternal);
+    this.#color = eventProperties["color"] || HotColorScheme[0];
+    this.#fontColor = calculateFontColor(this.#color);
   }
   /**
    * Render hovertext into the |htmlElement|
@@ -420,7 +420,7 @@ var Event = class {
     htmlElement.createChild("span").textContent = `Name: ${this.title}`;
     htmlElement.createChild("br");
     const startTimeReadable = formatMillisecondsToSeconds(this.startTime, 2);
-    if (this.liveInternal) {
+    if (this.#live) {
       htmlElement.createChild("span").textContent = `Duration: ${startTimeReadable} - LIVE!`;
     } else if (!isNaN(this.duration)) {
       const durationReadable = formatMillisecondsToSeconds(this.duration + this.startTime, 2);
@@ -437,9 +437,9 @@ var Event = class {
   set endTime(time) {
     if (time === -1) {
       this.timelineData.entryTotalTimes[this.selfIndex] = this.setLive(this.selfIndex);
-      this.liveInternal = true;
+      this.#live = true;
     } else {
-      this.liveInternal = false;
+      this.#live = false;
       const duration = time - this.timelineData.entryStartTimes[this.selfIndex];
       this.timelineData.entryTotalTimes[this.selfIndex] = duration;
       this.setComplete(this.selfIndex);
@@ -453,14 +453,14 @@ var Event = class {
     this.timelineData.entryLevels[this.selfIndex] = level;
   }
   set color(color) {
-    this.colorInternal = color;
-    this.fontColorInternal = calculateFontColor(this.colorInternal);
+    this.#color = color;
+    this.#fontColor = calculateFontColor(this.#color);
   }
   get color() {
-    return this.colorInternal;
+    return this.#color;
   }
   get fontColor() {
-    return this.fontColorInternal;
+    return this.#fontColor;
   }
   get startTime() {
     return this.timelineData.entryStartTimes[this.selfIndex];
@@ -469,13 +469,13 @@ var Event = class {
     return this.timelineData.entryTotalTimes[this.selfIndex];
   }
   get live() {
-    return this.liveInternal;
+    return this.#live;
   }
 };
 var TickingFlameChart = class extends UI2.Widget.VBox {
   intervalTimer;
   lastTimestamp;
-  canTickInternal;
+  #canTick;
   ticking;
   isShown;
   bounds;
@@ -488,7 +488,7 @@ var TickingFlameChart = class extends UI2.Widget.VBox {
     super();
     this.intervalTimer = 0;
     this.lastTimestamp = 0;
-    this.canTickInternal = true;
+    this.#canTick = true;
     this.ticking = false;
     this.isShown = false;
     this.bounds = new Bounds(0, 1e3, 3e4, 1e3);
@@ -552,12 +552,12 @@ var TickingFlameChart = class extends UI2.Widget.VBox {
   }
   wasShown() {
     this.isShown = true;
-    if (this.canTickInternal && !this.ticking) {
+    if (this.#canTick && !this.ticking) {
       this.start();
     }
   }
   set canTick(allowed) {
-    this.canTickInternal = allowed;
+    this.#canTick = allowed;
     if (this.ticking && !allowed) {
       this.stop();
     }
@@ -608,14 +608,14 @@ var TickingFlameChartDataProvider = class {
   bounds;
   liveEvents;
   eventMap;
-  timelineDataInternal;
+  #timelineData;
   maxLevel;
   constructor(initialBounds, updateMaxTime) {
     this.updateMaxTimeHandle = updateMaxTime;
     this.bounds = initialBounds;
     this.liveEvents = /* @__PURE__ */ new Set();
     this.eventMap = /* @__PURE__ */ new Map();
-    this.timelineDataInternal = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
+    this.#timelineData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     this.maxLevel = 0;
   }
   hasTrackConfigurationMode() {
@@ -625,7 +625,7 @@ var TickingFlameChartDataProvider = class {
    * Add a group with |name| that can contain |depth| different tracks.
    */
   addGroup(name, depth) {
-    if (this.timelineDataInternal.groups) {
+    if (this.#timelineData.groups) {
       const newGroup = {
         name,
         startLevel: this.maxLevel,
@@ -634,7 +634,7 @@ var TickingFlameChartDataProvider = class {
         style: DefaultStyle(),
         track: null
       };
-      this.timelineDataInternal.groups.push(newGroup);
+      this.#timelineData.groups.push(newGroup);
       ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, () => {
         newGroup.style.color = getGroupDefaultTextColor();
       });
@@ -649,7 +649,7 @@ var TickingFlameChartDataProvider = class {
     if (properties["level"] > this.maxLevel) {
       throw new Error(`level ${properties["level"]} is above the maximum allowed of ${this.maxLevel}`);
     }
-    const event = new Event(this.timelineDataInternal, {
+    const event = new Event(this.#timelineData, {
       setLive: this.setLive.bind(this),
       setComplete: this.setComplete.bind(this),
       updateMaxTime: this.updateMaxTimeHandle
@@ -674,7 +674,7 @@ var TickingFlameChartDataProvider = class {
     return this.maxLevel + 1;
   }
   timelineData() {
-    return this.timelineDataInternal;
+    return this.#timelineData;
   }
   /**
    * time in milliseconds
@@ -885,7 +885,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerMessagesView.css.js
 var playerMessagesView_css_default = `/*
- * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1037,7 +1037,7 @@ var MessageLevelSelector = class {
   itemMap;
   hiddenLevels;
   bitFieldValue;
-  defaultTitleInternal;
+  #defaultTitle;
   customTitle;
   allTitle;
   elementsForItems;
@@ -1047,20 +1047,20 @@ var MessageLevelSelector = class {
     this.itemMap = /* @__PURE__ */ new Map();
     this.hiddenLevels = [];
     this.bitFieldValue = 7;
-    this.defaultTitleInternal = i18nString3(UIStrings3.default);
+    this.#defaultTitle = i18nString3(UIStrings3.default);
     this.customTitle = i18nString3(UIStrings3.custom);
     this.allTitle = i18nString3(UIStrings3.all);
     this.elementsForItems = /* @__PURE__ */ new WeakMap();
   }
   defaultTitle() {
-    return this.defaultTitleInternal;
+    return this.#defaultTitle;
   }
   setDefault(dropdown) {
     dropdown.selectItem(this.items.at(0));
   }
   populate() {
     this.items.insert(this.items.length, {
-      title: this.defaultTitleInternal,
+      title: this.#defaultTitle,
       overwrite: true,
       stringValue: "",
       value: 7,
@@ -1125,7 +1125,7 @@ var MessageLevelSelector = class {
       this.bitFieldValue ^= item2.value;
     }
     if (this.bitFieldValue === 7) {
-      return this.defaultTitleInternal;
+      return this.#defaultTitle;
     }
     if (this.bitFieldValue === 15) {
       return this.allTitle;
@@ -1306,7 +1306,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerPropertiesView.css.js
 var playerPropertiesView_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1973,7 +1973,7 @@ import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/media/playerListView.css.js
 var playerListView_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

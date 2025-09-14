@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -11,13 +11,13 @@ import { MinimalTimeWindowMs } from './FlameChart.js';
 export class ChartViewport extends UI.Widget.VBox {
     delegate;
     viewportElement;
-    alwaysShowVerticalScrollInternal;
+    #alwaysShowVerticalScroll;
     rangeSelectionEnabled;
     vScrollElement;
     vScrollContent;
     selectionOverlay;
     cursorElement;
-    isDraggingInternal;
+    #isDragging;
     totalHeight;
     offsetHeight;
     scrollTop;
@@ -52,7 +52,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.viewportElement.addEventListener('keyup', this.onChartKeyUp.bind(this), false);
         UI.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), '-webkit-grabbing', null);
         UI.UIUtils.installDragHandle(this.viewportElement, this.startRangeSelection.bind(this), this.rangeSelectionDragging.bind(this), this.endRangeSelection.bind(this), 'text', null);
-        this.alwaysShowVerticalScrollInternal = false;
+        this.#alwaysShowVerticalScroll = false;
         this.rangeSelectionEnabled = true;
         this.vScrollElement = this.contentElement.createChild('div', 'chart-viewport-v-scroll');
         this.vScrollContent = this.vScrollElement.createChild('div');
@@ -64,7 +64,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.rangeSelectionEnd = null;
     }
     alwaysShowVerticalScroll() {
-        this.alwaysShowVerticalScrollInternal = true;
+        this.#alwaysShowVerticalScroll = true;
         this.vScrollElement.classList.add('always-show-scrollbar');
     }
     disableRangeSelection() {
@@ -73,7 +73,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.rangeSelectionEnd = null;
     }
     isDragging() {
-        return this.isDraggingInternal;
+        return this.#isDragging;
     }
     elementsToRestoreScrollPositionsFor() {
         return [this.vScrollElement];
@@ -82,7 +82,7 @@ export class ChartViewport extends UI.Widget.VBox {
         return !this.vScrollElement.classList.contains('hidden');
     }
     updateScrollBar() {
-        const showScroll = this.alwaysShowVerticalScrollInternal || this.totalHeight > this.offsetHeight;
+        const showScroll = this.#alwaysShowVerticalScroll || this.totalHeight > this.offsetHeight;
         if (this.vScrollElement.classList.contains('hidden') !== showScroll) {
             return;
         }
@@ -99,7 +99,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.scrollTop = 0;
         this.rangeSelectionStart = null;
         this.rangeSelectionEnd = null;
-        this.isDraggingInternal = false;
+        this.#isDragging = false;
         this.dragStartPointX = 0;
         this.dragStartPointY = 0;
         this.dragStartScrollTop = 0;
@@ -221,7 +221,7 @@ export class ChartViewport extends UI.Widget.VBox {
         if (event.shiftKey) {
             return false;
         }
-        this.isDraggingInternal = true;
+        this.#isDragging = true;
         this.dragStartPointX = event.pageX;
         this.dragStartPointY = event.pageY;
         this.dragStartScrollTop = this.vScrollElement.scrollTop;
@@ -236,19 +236,19 @@ export class ChartViewport extends UI.Widget.VBox {
         this.vScrollElement.scrollTop = this.dragStartScrollTop + pixelScroll;
     }
     endDragging() {
-        this.isDraggingInternal = false;
+        this.#isDragging = false;
     }
     startRangeSelection(event) {
         if (!event.shiftKey || !this.rangeSelectionEnabled) {
             return false;
         }
-        this.isDraggingInternal = true;
+        this.#isDragging = true;
         this.selectionOffsetShiftX = event.offsetX - event.pageX;
         this.selectionStartX = event.offsetX;
         return true;
     }
     endRangeSelection() {
-        this.isDraggingInternal = false;
+        this.#isDragging = false;
         this.selectionStartX = null;
     }
     hideRangeSelection() {
@@ -314,7 +314,7 @@ export class ChartViewport extends UI.Widget.VBox {
         return this.offsetWidth / (this.visibleRightTime - this.visibleLeftTime);
     }
     showCursor(visible) {
-        this.cursorElement.classList.toggle('hidden', !visible || this.isDraggingInternal);
+        this.cursorElement.classList.toggle('hidden', !visible || this.#isDragging);
     }
     onChartKeyDown(keyboardEvent) {
         this.showCursor(keyboardEvent.shiftKey);

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -37,6 +37,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
@@ -318,10 +319,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     gutterContainer;
     decorationsElement;
     searchQuery;
-    expandedChildrenLimitInternal;
+    #expandedChildrenLimit;
     decorationsThrottler;
     inClipboard;
-    hoveredInternal;
+    #hovered;
     editing;
     htmlEditElement;
     expandAllButtonElement;
@@ -351,10 +352,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.gutterContainer.append(gutterMenuIcon);
         this.decorationsElement = this.gutterContainer.createChild('div', 'hidden');
         this.searchQuery = null;
-        this.expandedChildrenLimitInternal = InitialChildrenLimit;
+        this.#expandedChildrenLimit = InitialChildrenLimit;
         this.decorationsThrottler = new Common.Throttler.Throttler(100);
         this.inClipboard = false;
-        this.hoveredInternal = false;
+        this.#hovered = false;
         this.editing = null;
         if (isClosingTag) {
             this.tagTypeContext = { tagType: "CLOSING_TAG" /* TagType.CLOSING */ };
@@ -448,7 +449,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     highlightSearchResults(searchQuery) {
         this.searchQuery = searchQuery;
         if (!this.editing) {
-            this.highlightSearchResultsInternal();
+            this.#highlightSearchResults();
         }
     }
     hideSearchHighlights() {
@@ -463,10 +464,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.classList.toggle('in-clipboard', inClipboard);
     }
     get hovered() {
-        return this.hoveredInternal;
+        return this.#hovered;
     }
     set hovered(isHovered) {
-        if (this.hoveredInternal === isHovered) {
+        if (this.#hovered === isHovered) {
             return;
         }
         if (isHovered && !this.aiButtonContainer) {
@@ -476,7 +477,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             this.aiButtonContainer.remove();
             delete this.aiButtonContainer;
         }
-        this.hoveredInternal = isHovered;
+        this.#hovered = isHovered;
         if (this.listItemElement) {
             if (isHovered) {
                 this.createSelection();
@@ -535,10 +536,10 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         this.treeOutline?.updateNodeElementToIssue(nodeElement, issues);
     }
     expandedChildrenLimit() {
-        return this.expandedChildrenLimitInternal;
+        return this.#expandedChildrenLimit;
     }
     setExpandedChildrenLimit(expandedChildrenLimit) {
-        this.expandedChildrenLimitInternal = expandedChildrenLimit;
+        this.#expandedChildrenLimit = expandedChildrenLimit;
     }
     createSlotLink(nodeShortcut) {
         if (!isOpeningTag(this.tagTypeContext)) {
@@ -611,7 +612,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     onattach() {
-        if (this.hoveredInternal) {
+        if (this.#hovered) {
             this.createSelection();
             this.listItemElement.classList.add('hovered');
         }
@@ -1364,6 +1365,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         if (attributeName !== null && (attributeName.trim() || newText.trim()) && oldText !== newText) {
             this.nodeInternal.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
             return;
         }
         this.updateTitle();
@@ -1408,6 +1410,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             if (!treeOutline) {
                 return;
             }
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DOM_ELEMENT_OR_ATTRIBUTE_EDITED);
             const newTreeItem = treeOutline.selectNodeAfterEdit(wasExpanded, error, newNode);
             // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
@@ -1484,7 +1487,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         for (const issue of this.#elementIssues.values()) {
             this.#applyIssueStyleAndTooltip(issue);
         }
-        this.highlightSearchResultsInternal();
+        this.#highlightSearchResults();
     }
     computeLeftIndent() {
         let treeElement = this.parent;
@@ -1506,9 +1509,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (this.nodeInternal.nodeType() !== Node.ELEMENT_NODE) {
             return;
         }
-        void this.decorationsThrottler.schedule(this.updateDecorationsInternal.bind(this));
+        void this.decorationsThrottler.schedule(this.#updateDecorations.bind(this));
     }
-    updateDecorationsInternal() {
+    #updateDecorations() {
         if (!this.treeOutline) {
             return Promise.resolve();
         }
@@ -1797,7 +1800,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const node = this.nodeInternal;
         const titleDOM = document.createDocumentFragment();
         const updateSearchHighlight = () => {
-            this.highlightSearchResultsInternal();
+            this.#highlightSearchResults();
         };
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:
@@ -2027,7 +2030,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(lines.join('\n'));
     }
-    highlightSearchResultsInternal() {
+    #highlightSearchResults() {
         this.hideSearchHighlights();
         if (!this.searchQuery) {
             return;
@@ -2132,9 +2135,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     updateAdorners(context) {
-        void context.adornersThrottler.schedule(this.updateAdornersInternal.bind(null, context));
+        void context.adornersThrottler.schedule(this.#updateAdorners.bind(null, context));
     }
-    updateAdornersInternal(context) {
+    #updateAdorners(context) {
         const adornerContainer = context.adornerContainer;
         if (!adornerContainer) {
             return Promise.resolve();
@@ -2198,6 +2201,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const adorner = this.adorn(config);
         const onClick = async () => {
             const { nodeIds } = await node.domModel().agent.invoke_forceShowPopover({ nodeId, enable: adorner.isActive() });
+            if (adorner.isActive()) {
+                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+            }
             for (const closedPopoverNodeId of nodeIds) {
                 const node = this.node().domModel().nodeForId(closedPopoverNodeId);
                 const treeElement = node && this.treeOutline?.treeElementByNode.get(node);
@@ -2229,6 +2235,9 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const onClick = (() => {
             if (adorner.isActive()) {
                 node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+                if (isSubgrid) {
+                    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
+                }
             }
             else {
                 node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
@@ -2264,6 +2273,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         const onClick = (() => {
             if (adorner.isActive()) {
                 node.domModel().overlayModel().highlightGridInPersistentOverlay(nodeId);
+                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
             }
             else {
                 node.domModel().overlayModel().hideGridInPersistentOverlay(nodeId);
@@ -2372,6 +2382,7 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             const model = node.domModel().overlayModel();
             if (adorner.isActive()) {
                 model.highlightContainerQueryInPersistentOverlay(nodeId);
+                Badges.UserBadges.instance().recordAction(Badges.BadgeAction.MODERN_DOM_BADGE_CLICKED);
             }
             else {
                 model.hideContainerQueryInPersistentOverlay(nodeId);

@@ -86,9 +86,9 @@ export declare class ContainerWidget extends VBox {
     private wasShownForTest;
 }
 declare class Location {
+    #private;
     protected readonly manager: ViewManager;
     private readonly revealCallback;
-    private readonly widgetInternal;
     constructor(manager: ViewManager, widget: Widget, revealCallback?: (() => void));
     widget(): Widget;
     reveal(): void;

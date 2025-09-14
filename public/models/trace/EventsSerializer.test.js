@@ -1,11 +1,10 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { getMainThread } from '../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
-import * as EventsSerializer from './EventsSerializer.js';
-import * as Types from './types/types.js';
+import * as Trace from './trace.js';
 function findFirstEntry(allEntries, predicate) {
     const entry = allEntries.find(entry => predicate(entry));
     if (!entry) {
@@ -15,15 +14,15 @@ function findFirstEntry(allEntries, predicate) {
 }
 describeWithEnvironment('EventsSerializer', () => {
     it('correctly implements a bidirectional key <-> event mapping', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
-        const eventsSerializer = new EventsSerializer.EventsSerializer();
-        const mainThread = getMainThread(parsedTrace.Renderer);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'basic-stack.json.gz');
+        const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+        const mainThread = getMainThread(parsedTrace.data.Renderer);
         // Find first 'Timer Fired' entry in the trace
         const rawEntry = findFirstEntry(mainThread.entries, entry => {
             return entry.name === 'TimerFire';
         });
-        const syntheticEvent = parsedTrace.NetworkRequests.byTime[0];
-        const profileCall = findFirstEntry(mainThread.entries, entry => Types.Events.isProfileCall(entry));
+        const syntheticEvent = parsedTrace.data.NetworkRequests.byTime[0];
+        const profileCall = findFirstEntry(mainThread.entries, entry => Trace.Types.Events.isProfileCall(entry));
         const rawEntryKey = eventsSerializer.keyForEvent(rawEntry);
         const syntheticEventKey = eventsSerializer.keyForEvent(syntheticEvent);
         const profileCallKey = eventsSerializer.keyForEvent(profileCall);
@@ -43,9 +42,9 @@ describeWithEnvironment('EventsSerializer', () => {
         assert.strictEqual(resolvedProfileCall, profileCall);
     });
     it('correctly maps to and from legacy timeline frames', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
-        const eventsSerializer = new EventsSerializer.EventsSerializer();
-        const frame = parsedTrace.Frames.frames.at(0);
+        const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
+        const eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+        const frame = parsedTrace.data.Frames.frames.at(0);
         assert.isOk(frame);
         const frameKey = eventsSerializer.keyForEvent(frame);
         assert.isOk(frameKey);

@@ -2128,7 +2128,7 @@ Symbol.dispose ??= Symbol("dispose");
 Symbol.asyncDispose ??= Symbol("asyncDispose");
 var disposeSymbol = Symbol.dispose;
 var asyncDisposeSymbol = Symbol.asyncDispose;
-var DisposableStack = class _DisposableStack {
+var DisposableStackPolyfill = class _DisposableStackPolyfill {
   #disposed = false;
   #stack = [];
   /**
@@ -2221,7 +2221,7 @@ var DisposableStack = class _DisposableStack {
     if (this.#disposed) {
       throw new ReferenceError("A disposed stack can not use anything new");
     }
-    const stack = new _DisposableStack();
+    const stack = new _DisposableStackPolyfill();
     stack.#stack = this.#stack;
     this.#stack = [];
     this.#disposed = true;
@@ -2247,11 +2247,11 @@ var DisposableStack = class _DisposableStack {
       throw errors[0];
     } else if (errors.length > 1) {
       let suppressed = null;
-      for (const error of errors.reverse()) {
+      for (const error of errors) {
         if (suppressed === null) {
           suppressed = error;
         } else {
-          suppressed = new SuppressedError2(error, suppressed);
+          suppressed = new SuppressedErrorPolyfill(error, suppressed);
         }
       }
       throw suppressed;
@@ -2259,7 +2259,8 @@ var DisposableStack = class _DisposableStack {
   }
   [Symbol.toStringTag] = "DisposableStack";
 };
-var AsyncDisposableStack = class _AsyncDisposableStack {
+var DisposableStack = globalThis.DisposableStack ?? DisposableStackPolyfill;
+var AsyncDisposableStackPolyfill = class _AsyncDisposableStackPolyfill {
   #disposed = false;
   #stack = [];
   /**
@@ -2271,7 +2272,7 @@ var AsyncDisposableStack = class _AsyncDisposableStack {
   /**
    * Alias for `[Symbol.asyncDispose]()`.
    */
-  async dispose() {
+  async disposeAsync() {
     await this[asyncDisposeSymbol]();
   }
   /**
@@ -2362,7 +2363,7 @@ var AsyncDisposableStack = class _AsyncDisposableStack {
     if (this.#disposed) {
       throw new ReferenceError("A disposed stack can not use anything new");
     }
-    const stack = new _AsyncDisposableStack();
+    const stack = new _AsyncDisposableStackPolyfill();
     stack.#stack = this.#stack;
     this.#stack = [];
     this.#disposed = true;
@@ -2388,11 +2389,11 @@ var AsyncDisposableStack = class _AsyncDisposableStack {
       throw errors[0];
     } else if (errors.length > 1) {
       let suppressed = null;
-      for (const error of errors.reverse()) {
+      for (const error of errors) {
         if (suppressed === null) {
           suppressed = error;
         } else {
-          suppressed = new SuppressedError2(error, suppressed);
+          suppressed = new SuppressedErrorPolyfill(error, suppressed);
         }
       }
       throw suppressed;
@@ -2400,7 +2401,8 @@ var AsyncDisposableStack = class _AsyncDisposableStack {
   }
   [Symbol.toStringTag] = "AsyncDisposableStack";
 };
-var SuppressedError2 = class extends Error {
+var AsyncDisposableStack = globalThis.AsyncDisposableStack ?? AsyncDisposableStackPolyfill;
+var SuppressedErrorPolyfill = class extends Error {
   #error;
   #suppressed;
   constructor(error, suppressed, message = "An error was suppressed during disposal") {
@@ -2423,6 +2425,7 @@ var SuppressedError2 = class extends Error {
     return this.#suppressed;
   }
 };
+var SuppressedError2 = globalThis.SuppressedError ?? SuppressedErrorPolyfill;
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/EventEmitter.js
 var EventEmitter = class {
@@ -2547,7 +2550,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.19.0";
+var packageVersion = "24.20.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -3098,6 +3101,19 @@ var Browser = class extends EventEmitter {
     return await this.defaultBrowserContext().deleteCookie(...cookies);
   }
   /**
+   * Deletes cookies matching the provided filters from the default
+   * {@link BrowserContext}.
+   *
+   * @remarks
+   *
+   * Shortcut for
+   * {@link BrowserContext.deleteMatchingCookies |
+   * browser.defaultBrowserContext().deleteMatchingCookies()}.
+   */
+  async deleteMatchingCookies(...filters) {
+    return await this.defaultBrowserContext().deleteMatchingCookies(...filters);
+  }
+  /**
    * Whether Puppeteer is connected to this {@link Browser | browser}.
    *
    * @deprecated Use {@link Browser | Browser.connected}.
@@ -3331,8 +3347,9 @@ var BrowserContext = class extends EventEmitter {
     ), from(this.targets())).pipe(filterAsync(predicate), raceWith(timeout(ms))));
   }
   /**
-   * Removes cookie in the browser context
-   * @param cookies - {@link Cookie | cookie} to remove
+   * Removes cookie in this browser context.
+   *
+   * @param cookies - Complete {@link Cookie | cookie} object to be removed.
    */
   async deleteCookie(...cookies) {
     return await this.setCookie(...cookies.map((cookie) => {
@@ -3341,6 +3358,49 @@ var BrowserContext = class extends EventEmitter {
         expires: 1
       };
     }));
+  }
+  /**
+   * Deletes cookies matching the provided filters in this browser context.
+   *
+   * @param filters - {@link DeleteCookiesRequest}
+   */
+  async deleteMatchingCookies(...filters) {
+    const cookies = await this.cookies();
+    const cookiesToDelete = cookies.filter((cookie) => {
+      return filters.some((filter2) => {
+        if (filter2.name === cookie.name) {
+          if (filter2.domain !== void 0 && filter2.domain === cookie.domain) {
+            return true;
+          }
+          if (filter2.path !== void 0 && filter2.path === cookie.path) {
+            return true;
+          }
+          if (filter2.partitionKey !== void 0 && cookie.partitionKey !== void 0) {
+            if (typeof cookie.partitionKey !== "object") {
+              throw new Error("Unexpected string partition key");
+            }
+            if (typeof filter2.partitionKey === "string") {
+              if (filter2.partitionKey === cookie.partitionKey?.sourceOrigin) {
+                return true;
+              }
+            } else {
+              if (filter2.partitionKey.sourceOrigin === cookie.partitionKey?.sourceOrigin) {
+                return true;
+              }
+            }
+          }
+          if (filter2.url !== void 0) {
+            const url = new URL(filter2.url);
+            if (url.hostname === cookie.domain && url.pathname === cookie.path) {
+              return true;
+            }
+          }
+          return true;
+        }
+        return false;
+      });
+    });
+    await this.deleteCookie(...cookiesToDelete);
   }
   /**
    * Whether this {@link BrowserContext | browser context} is closed.
@@ -7409,6 +7469,33 @@ var EmulationManager = (() => {
   };
 })();
 
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/AsyncIterableUtil.js
+var AsyncIterableUtil = class {
+  static async *map(iterable, map2) {
+    for await (const value of iterable) {
+      yield await map2(value);
+    }
+  }
+  static async *flatMap(iterable, map2) {
+    for await (const value of iterable) {
+      yield* map2(value);
+    }
+  }
+  static async collect(iterable) {
+    const result = [];
+    for await (const value of iterable) {
+      result.push(value);
+    }
+    return result;
+  }
+  static async first(iterable) {
+    for await (const value of iterable) {
+      return value;
+    }
+    return;
+  }
+};
+
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/api/ElementHandleSymbol.js
 var _isElementHandle = Symbol("_isElementHandle");
 
@@ -7805,34 +7892,7 @@ var QueryHandler = class {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/AsyncIterableUtil.js
-var AsyncIterableUtil = class {
-  static async *map(iterable, map2) {
-    for await (const value of iterable) {
-      yield await map2(value);
-    }
-  }
-  static async *flatMap(iterable, map2) {
-    for await (const value of iterable) {
-      yield* map2(value);
-    }
-  }
-  static async collect(iterable) {
-    const result = [];
-    for await (const value of iterable) {
-      result.push(value);
-    }
-    return result;
-  }
-  static async first(iterable) {
-    for await (const value of iterable) {
-      return value;
-    }
-    return;
-  }
-};
-
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/AriaQueryHandler.js
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/AriaQueryHandler.js
 var isKnownAttribute = (attribute) => {
   return ["name", "role"].includes(attribute);
 };
@@ -11670,9 +11730,6 @@ var Accessibility = class {
     }
     const interestingNodes = /* @__PURE__ */ new Set();
     this.collectInterestingNodes(interestingNodes, defaultRoot, false);
-    if (!interestingNodes.has(needle)) {
-      return null;
-    }
     return this.serializeTree(needle, interestingNodes)[0] ?? null;
   }
   serializeTree(node, interestingNodes) {
@@ -11801,7 +11858,7 @@ var AXNode = class _AXNode {
     if (this.#hasFocusableChild()) {
       return false;
     }
-    if (this.#focusable && this.#name) {
+    if (this.#focusable && this.#name && this.#name !== "Document") {
       return true;
     }
     if (this.#role === "heading" && this.#name) {
@@ -13905,7 +13962,7 @@ var NetworkManager = class extends EventEmitter {
   async emulateNetworkConditions(networkConditions) {
     if (!this.#emulatedNetworkConditions) {
       this.#emulatedNetworkConditions = {
-        offline: false,
+        offline: networkConditions?.offline ?? false,
         upload: -1,
         download: -1,
         latency: 0
@@ -13914,6 +13971,7 @@ var NetworkManager = class extends EventEmitter {
     this.#emulatedNetworkConditions.upload = networkConditions ? networkConditions.upload : -1;
     this.#emulatedNetworkConditions.download = networkConditions ? networkConditions.download : -1;
     this.#emulatedNetworkConditions.latency = networkConditions ? networkConditions.latency : 0;
+    this.#emulatedNetworkConditions.offline = networkConditions?.offline ?? false;
     await this.#applyToAllClients(this.#applyNetworkConditions.bind(this));
   }
   async #applyToAllClients(fn) {

@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -32,7 +32,8 @@ export class EntriesFilter {
     #getEntryNode(entry) {
         // The entry might be either from the Samples handler or Renderer handler. So we need to check both handlers to find
         // the EntryNode.
-        return this.#parsedTrace.Samples.entryToNode.get(entry) ?? this.#parsedTrace.Renderer.entryToNode.get(entry);
+        return this.#parsedTrace.data.Samples.entryToNode.get(entry) ??
+            this.#parsedTrace.data.Renderer.entryToNode.get(entry);
     }
     /**
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.

@@ -25,5 +25,5 @@ export type DuplicatedJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     mainDocumentUrl: string;
 }>;
 export declare function isDuplicatedJavaScript(model: InsightModel): model is DuplicatedJavaScriptInsightModel;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): DuplicatedJavaScriptInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): DuplicatedJavaScriptInsightModel;
 export declare function createOverlays(model: DuplicatedJavaScriptInsightModel): Types.Overlays.Overlay[];

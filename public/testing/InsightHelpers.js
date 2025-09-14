@@ -1,27 +1,27 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../models/trace/trace.js';
 import { TraceLoader } from './TraceLoader.js';
 export async function processTrace(context, traceFile) {
-    const { parsedTrace, insights, metadata } = await TraceLoader.traceEngine(context, traceFile);
-    if (!insights) {
+    const parsedTrace = await TraceLoader.traceEngine(context, traceFile);
+    if (!parsedTrace.insights) {
         throw new Error('No insights');
     }
-    return { data: parsedTrace, insights, metadata };
+    return parsedTrace;
 }
-export function createContextForNavigation(parsedTrace, navigation, frameId) {
+export function createContextForNavigation(data, navigation, frameId) {
     if (!navigation.args.data?.navigationId) {
         throw new Error('expected navigationId');
     }
-    const navigationIndex = parsedTrace.Meta.mainFrameNavigations.indexOf(navigation);
+    const navigationIndex = data.Meta.mainFrameNavigations.indexOf(navigation);
     if (navigationIndex === -1) {
         throw new Error('unexpected navigation');
     }
     const min = navigation.ts;
-    const max = navigationIndex + 1 < parsedTrace.Meta.mainFrameNavigations.length ?
-        parsedTrace.Meta.mainFrameNavigations[navigationIndex + 1].ts :
-        parsedTrace.Meta.traceBounds.max;
+    const max = navigationIndex + 1 < data.Meta.mainFrameNavigations.length ?
+        data.Meta.mainFrameNavigations[navigationIndex + 1].ts :
+        data.Meta.traceBounds.max;
     const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
     return {
         bounds,

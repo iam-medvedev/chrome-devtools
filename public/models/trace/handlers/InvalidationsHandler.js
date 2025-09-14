@@ -1,34 +1,45 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-let invalidationsForEvent = new Map();
-let invalidationCountForEvent = new Map();
-let lastRecalcStyleEvent = null;
-// Used to track paints so we track invalidations correctly per paint.
-let hasPainted = false;
-let allInvalidationTrackingEvents = [];
+const frameStateByFrame = new Map();
+let maxInvalidationsPerEvent = null;
 export function reset() {
-    invalidationsForEvent = new Map();
-    invalidationCountForEvent = new Map();
-    lastRecalcStyleEvent = null;
-    allInvalidationTrackingEvents = [];
-    hasPainted = false;
+    frameStateByFrame.clear();
     maxInvalidationsPerEvent = null;
 }
-let maxInvalidationsPerEvent = null;
 export function handleUserConfig(userConfig) {
     maxInvalidationsPerEvent = userConfig.maxInvalidationEventsPerEvent;
 }
-function addInvalidationToEvent(event, invalidation) {
-    const existingInvalidations = invalidationsForEvent.get(event) || [];
+function getState(frameId) {
+    let frameState = frameStateByFrame.get(frameId);
+    if (!frameState) {
+        frameState = {
+            invalidationsForEvent: new Map(),
+            invalidationCountForEvent: new Map(),
+            lastRecalcStyleEvent: null,
+            pendingInvalidations: [],
+            hasPainted: false,
+        };
+        frameStateByFrame.set(frameId, frameState);
+    }
+    return frameState;
+}
+function getFrameId(event) {
+    if (Types.Events.isRecalcStyle(event) || Types.Events.isLayout(event)) {
+        return event.args.beginData?.frame ?? null;
+    }
+    return event.args?.data?.frame ?? null;
+}
+function addInvalidationToEvent(frameState, event, invalidation) {
+    const existingInvalidations = frameState.invalidationsForEvent.get(event) || [];
     existingInvalidations.push(invalidation);
     if (maxInvalidationsPerEvent !== null && existingInvalidations.length > maxInvalidationsPerEvent) {
         existingInvalidations.shift();
     }
-    invalidationsForEvent.set(event, existingInvalidations);
-    const count = invalidationCountForEvent.get(event) ?? 0;
-    invalidationCountForEvent.set(event, count + 1);
+    frameState.invalidationsForEvent.set(event, existingInvalidations);
+    const count = frameState.invalidationCountForEvent.get(event) ?? 0;
+    frameState.invalidationCountForEvent.set(event, count + 1);
 }
 export function handleEvent(event) {
     // Special case: if we have been configured to not store any invalidations,
@@ -37,69 +48,77 @@ export function handleEvent(event) {
     if (maxInvalidationsPerEvent === 0) {
         return;
     }
-    if (Types.Events.isUpdateLayoutTree(event)) {
-        lastRecalcStyleEvent = event;
+    const frameId = getFrameId(event);
+    if (!frameId) {
+        return;
+    }
+    const thisFrame = getState(frameId);
+    if (Types.Events.isRecalcStyle(event)) {
+        thisFrame.lastRecalcStyleEvent = event;
         // Associate any prior invalidations with this recalc event.
-        for (const invalidation of allInvalidationTrackingEvents) {
+        for (const invalidation of thisFrame.pendingInvalidations) {
             if (Types.Events.isLayoutInvalidationTracking(invalidation)) {
                 // LayoutInvalidation events cannot be associated with a LayoutTree
                 // event.
                 continue;
             }
-            const recalcFrameId = lastRecalcStyleEvent.args.beginData?.frame;
-            if (recalcFrameId && invalidation.args.data.frame === recalcFrameId) {
-                addInvalidationToEvent(event, invalidation);
-            }
+            addInvalidationToEvent(thisFrame, event, invalidation);
         }
         return;
     }
     if (Types.Events.isInvalidationTracking(event)) {
-        if (hasPainted) {
+        if (thisFrame.hasPainted) {
             // If we have painted, then we can clear out the list of all existing
             // invalidations, as we cannot associate them across frames.
-            allInvalidationTrackingEvents.length = 0;
-            lastRecalcStyleEvent = null;
-            hasPainted = false;
+            thisFrame.pendingInvalidations.length = 0;
+            thisFrame.lastRecalcStyleEvent = null;
+            thisFrame.hasPainted = false;
         }
-        // Style invalidation events can occur before and during recalc styles. When we get a recalc style event (aka UpdateLayoutTree), we check and associate any prior invalidations with it.
-        // But any invalidations that occur during a UpdateLayoutTree
+        // Style invalidation events can occur before and during recalc styles. When we get a recalc style event, we check and associate any prior invalidations with it.
+        // But any invalidations that occur during a RecalcStyle
         // event would be reported in trace events after. So each time we get an
         // invalidation that might be due to a style recalc, we check if the
         // timings overlap and if so associate them.
-        if (lastRecalcStyleEvent &&
+        if (thisFrame.lastRecalcStyleEvent &&
             (Types.Events.isScheduleStyleInvalidationTracking(event) ||
                 Types.Events.isStyleRecalcInvalidationTracking(event) ||
                 Types.Events.isStyleInvalidatorInvalidationTracking(event))) {
-            const recalcEndTime = lastRecalcStyleEvent.ts + (lastRecalcStyleEvent.dur || 0);
-            if (event.ts >= lastRecalcStyleEvent.ts && event.ts <= recalcEndTime &&
-                lastRecalcStyleEvent.args.beginData?.frame === event.args.data.frame) {
-                addInvalidationToEvent(lastRecalcStyleEvent, event);
+            const recalcLastRecalc = thisFrame.lastRecalcStyleEvent;
+            const recalcEndTime = recalcLastRecalc.ts + (recalcLastRecalc.dur || 0);
+            if (event.ts >= recalcLastRecalc.ts && event.ts <= recalcEndTime) {
+                addInvalidationToEvent(thisFrame, recalcLastRecalc, event);
             }
         }
-        allInvalidationTrackingEvents.push(event);
+        thisFrame.pendingInvalidations.push(event);
         return;
     }
     if (Types.Events.isPaint(event)) {
-        // Used to ensure that we do not create relationships across frames.
-        hasPainted = true;
+        thisFrame.hasPainted = true;
         return;
     }
     if (Types.Events.isLayout(event)) {
-        const layoutFrame = event.args.beginData.frame;
-        for (const invalidation of allInvalidationTrackingEvents) {
+        for (const invalidation of thisFrame.pendingInvalidations) {
             // The only invalidations that cause a Layout are LayoutInvalidations :)
             if (!Types.Events.isLayoutInvalidationTracking(invalidation)) {
                 continue;
             }
-            if (invalidation.args.data.frame === layoutFrame) {
-                addInvalidationToEvent(event, invalidation);
-            }
+            addInvalidationToEvent(thisFrame, event, invalidation);
         }
     }
 }
 export async function finalize() {
 }
 export function data() {
+    const invalidationsForEvent = new Map();
+    const invalidationCountForEvent = new Map();
+    for (const frame of frameStateByFrame.values()) {
+        for (const [event, invalidations] of frame.invalidationsForEvent.entries()) {
+            invalidationsForEvent.set(event, invalidations);
+        }
+        for (const [event, count] of frame.invalidationCountForEvent.entries()) {
+            invalidationCountForEvent.set(event, count);
+        }
+    }
     return {
         invalidationsForEvent,
         invalidationCountForEvent,

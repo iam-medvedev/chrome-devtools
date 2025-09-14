@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -90,12 +90,9 @@ export class SidebarWidget extends UI.Widget.VBox {
         const annotations = this.#annotationsView.deduplicatedAnnotations();
         this.#tabbedPane.setBadge('annotations', annotations.length > 0 ? annotations.length.toString() : null);
     }
-    setParsedTrace(parsedTrace, metadata) {
-        this.#insightsView.setParsedTrace(parsedTrace, metadata);
-    }
-    setInsights(insights) {
-        this.#insightsView.setInsights(insights);
-        this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, insights !== null && insights.size > 0);
+    setParsedTrace(parsedTrace) {
+        this.#insightsView.setParsedTrace(parsedTrace);
+        this.#tabbedPane.setTabEnabled("insights" /* SidebarTabs.INSIGHTS */, Boolean(parsedTrace?.insights && parsedTrace.insights.size > 0));
     }
     setActiveInsight(activeInsight, opts) {
         this.#insightsView.setActiveInsight(activeInsight, opts);
@@ -111,12 +108,8 @@ class InsightsView extends UI.Widget.VBox {
         this.element.classList.add('sidebar-insights');
         this.element.appendChild(this.#component);
     }
-    setParsedTrace(parsedTrace, metadata) {
+    setParsedTrace(parsedTrace) {
         this.#component.parsedTrace = parsedTrace;
-        this.#component.traceMetadata = metadata;
-    }
-    setInsights(data) {
-        this.#component.insights = data;
     }
     getActiveInsight() {
         return this.#component.activeInsight;

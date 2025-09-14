@@ -35,14 +35,14 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 let colorGeneratorInstance = null;
 export class ProfileFlameChartDataProvider {
-    colorGeneratorInternal;
+    #colorGenerator;
     maxStackDepthInternal;
     timelineDataInternal;
     entryNodes;
     #font;
     boldFont;
     constructor() {
-        this.colorGeneratorInternal = ProfileFlameChartDataProvider.colorGenerator();
+        this.#colorGenerator = ProfileFlameChartDataProvider.colorGenerator();
         this.maxStackDepthInternal = 0;
         this.timelineDataInternal = null;
         this.entryNodes = [];
@@ -99,7 +99,7 @@ export class ProfileFlameChartDataProvider {
         const node = this.entryNodes[entryIndex];
         // For idle and program, we want different 'shades of gray', so we fallback to functionName as scriptId = 0
         // For rest of nodes e.g eval scripts, if url is empty then scriptId will be guaranteed to be non-zero
-        return this.colorGeneratorInternal.colorForID(node.url || (node.scriptId !== '0' ? node.scriptId : node.functionName));
+        return this.#colorGenerator.colorForID(node.url || (node.scriptId !== '0' ? node.scriptId : node.functionName));
     }
     decorateEntry(_entryIndex, _context, _text, _barX, _barY, _barWidth, _barHeight) {
         return false;

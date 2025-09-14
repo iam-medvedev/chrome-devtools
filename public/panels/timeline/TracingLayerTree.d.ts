@@ -19,22 +19,13 @@ export declare class TracingFrameLayerTree {
     paints(): Trace.Types.Events.LegacyLayerPaintEvent[];
 }
 export declare class TracingLayer implements SDK.LayerTreeBase.Layer {
+    #private;
     private parentLayerId;
-    private parentInternal;
+    parentInternal: SDK.LayerTreeBase.Layer | null;
     private layerId;
-    private nodeInternal;
-    private offsetXInternal;
-    private offsetYInternal;
-    private widthInternal;
-    private heightInternal;
-    private childrenInternal;
-    private quadInternal;
-    private scrollRectsInternal;
-    private gpuMemoryUsageInternal;
     private paints;
     private compositingReasons;
     private compositingReasonIds;
-    private drawsContentInternal;
     private paintProfilerModel;
     constructor(paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel | null, payload: TracingLayerPayload);
     reset(payload: TracingLayerPayload): void;

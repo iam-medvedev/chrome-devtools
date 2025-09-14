@@ -35,7 +35,6 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ProfileFlameChartDataProvider implements PerfUI.FlameChart.FlameChartDataProvider {
     #private;
-    readonly colorGeneratorInternal: Common.Color.Generator;
     maxStackDepthInternal: number;
     timelineDataInternal: PerfUI.FlameChart.FlameChartTimelineData | null;
     entryNodes: CPUProfile.ProfileTreeModel.ProfileNode[];

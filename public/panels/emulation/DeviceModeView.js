@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -496,7 +496,7 @@ export class DeviceModeView extends UI.Widget.VBox {
     }
 }
 export class Ruler extends UI.Widget.VBox {
-    contentElementInternal;
+    #contentElement;
     horizontal;
     scale;
     count;
@@ -507,7 +507,7 @@ export class Ruler extends UI.Widget.VBox {
     constructor(horizontal, applyCallback) {
         super({ jslog: `${VisualLogging.deviceModeRuler().track({ click: true })}` });
         this.element.classList.add('device-mode-ruler');
-        this.contentElementInternal =
+        this.#contentElement =
             this.element.createChild('div', 'device-mode-ruler-content').createChild('div', 'device-mode-ruler-inner');
         this.horizontal = horizontal;
         this.scale = 1;
@@ -524,9 +524,9 @@ export class Ruler extends UI.Widget.VBox {
     }
     update() {
         const zoomFactor = UI.ZoomManager.ZoomManager.instance().zoomFactor();
-        const size = this.horizontal ? this.contentElementInternal.offsetWidth : this.contentElementInternal.offsetHeight;
+        const size = this.horizontal ? this.#contentElement.offsetWidth : this.#contentElement.offsetHeight;
         if (this.scale !== this.renderedScale || zoomFactor !== this.renderedZoomFactor) {
-            this.contentElementInternal.removeChildren();
+            this.#contentElement.removeChildren();
             this.count = 0;
             this.renderedScale = this.scale;
             this.renderedZoomFactor = zoomFactor;
@@ -551,7 +551,7 @@ export class Ruler extends UI.Widget.VBox {
         }
         for (let i = count; i < this.count; i++) {
             if (!(i % step)) {
-                const lastChild = this.contentElementInternal.lastChild;
+                const lastChild = this.#contentElement.lastChild;
                 if (lastChild) {
                     lastChild.remove();
                 }
@@ -561,7 +561,7 @@ export class Ruler extends UI.Widget.VBox {
             if (i % step) {
                 continue;
             }
-            const marker = this.contentElementInternal.createChild('div', 'device-mode-ruler-marker');
+            const marker = this.#contentElement.createChild('div', 'device-mode-ruler-marker');
             if (i) {
                 if (this.horizontal) {
                     marker.style.left = (5 * i) * this.scale / zoomFactor + 'px';

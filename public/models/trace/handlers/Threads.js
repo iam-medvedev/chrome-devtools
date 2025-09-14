@@ -49,7 +49,7 @@ export function threadsInRenderer(rendererData, auctionWorkletsData) {
     }
     return foundThreads;
 }
-const threadsInTraceCache = new WeakMap();
+const threadsInHandlerDataCache = new WeakMap();
 /**
  * Given trace parsed data, this helper will return a high level array of
  * ThreadData. This is useful because it allows you to get a list of threads
@@ -58,22 +58,22 @@ const threadsInTraceCache = new WeakMap();
  * for both trace types.
  * The resulting data is cached per-trace, so you can safely call this multiple times.
  */
-export function threadsInTrace(parsedTrace) {
-    const cached = threadsInTraceCache.get(parsedTrace);
+export function threadsInTrace(handlerData) {
+    const cached = threadsInHandlerDataCache.get(handlerData);
     if (cached) {
         return cached;
     }
     // If we have Renderer threads, we prefer to use those.
-    const threadsFromRenderer = threadsInRenderer(parsedTrace.Renderer, parsedTrace.AuctionWorklets);
+    const threadsFromRenderer = threadsInRenderer(handlerData.Renderer, handlerData.AuctionWorklets);
     if (threadsFromRenderer.length) {
-        threadsInTraceCache.set(parsedTrace, threadsFromRenderer);
+        threadsInHandlerDataCache.set(handlerData, threadsFromRenderer);
         return threadsFromRenderer;
     }
     // If it's a CPU Profile trace, there will be no Renderer threads.
     // We can fallback to using the data from the SamplesHandler.
     const foundThreads = [];
-    if (parsedTrace.Samples.profilesInProcess.size) {
-        for (const [pid, process] of parsedTrace.Samples.profilesInProcess) {
+    if (handlerData.Samples.profilesInProcess.size) {
+        for (const [pid, process] of handlerData.Samples.profilesInProcess) {
             for (const [tid, thread] of process) {
                 if (!thread.profileTree) {
                     // Drop threads where we could not create the tree; this indicates
@@ -91,12 +91,12 @@ export function threadsInTrace(parsedTrace) {
                     processIsOnMainFrame: false,
                     tree: thread.profileTree,
                     type: "CPU_PROFILE" /* ThreadType.CPU_PROFILE */,
-                    entryToNode: parsedTrace.Samples.entryToNode,
+                    entryToNode: handlerData.Samples.entryToNode,
                 });
             }
         }
     }
-    threadsInTraceCache.set(parsedTrace, foundThreads);
+    threadsInHandlerDataCache.set(handlerData, foundThreads);
     return foundThreads;
 }
 //# sourceMappingURL=Threads.js.map

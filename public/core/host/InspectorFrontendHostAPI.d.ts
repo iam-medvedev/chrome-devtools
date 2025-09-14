@@ -186,11 +186,13 @@ export type DispatchHttpRequestRequest = {
     service: string;
     path: string;
     method: 'GET';
+    queryParams?: Record<string, string | string[]>;
     body?: never;
 } | {
     service: string;
     path: string;
     method: 'POST';
+    queryParams?: Record<string, string | string[]>;
     body?: string;
 };
 interface DispatchHttpRequestSuccessResult {

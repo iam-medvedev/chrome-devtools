@@ -201,21 +201,21 @@ var str_2 = i18n3.i18n.registerUIStrings("models/persistence/IsolatedFileSystem.
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   manager;
-  embedderPathInternal;
+  #embedderPath;
   domFileSystem;
   excludedFoldersSetting;
-  excludedFoldersInternal;
+  #excludedFolders;
   excludedEmbedderFolders = [];
-  initialFilePathsInternal = /* @__PURE__ */ new Set();
-  initialGitFoldersInternal = /* @__PURE__ */ new Set();
+  #initialFilePaths = /* @__PURE__ */ new Set();
+  #initialGitFolders = /* @__PURE__ */ new Set();
   fileLocks = /* @__PURE__ */ new Map();
   constructor(manager, path, embedderPath, domFileSystem, type, automatic) {
     super(path, type, automatic);
     this.manager = manager;
-    this.embedderPathInternal = embedderPath;
+    this.#embedderPath = embedderPath;
     this.domFileSystem = domFileSystem;
     this.excludedFoldersSetting = Common2.Settings.Settings.instance().createLocalSetting("workspace-excluded-folders", {});
-    this.excludedFoldersInternal = new Set(this.excludedFoldersSetting.get()[path] || []);
+    this.#excludedFolders = new Set(this.excludedFoldersSetting.get()[path] || []);
   }
   static async create(manager, path, embedderPath, type, name, rootURL, automatic) {
     const domFileSystem = Host.InspectorFrontendHost.InspectorFrontendHostInstance.isolatedFileSystem(name, rootURL);
@@ -250,13 +250,13 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     }
   }
   initialFilePaths() {
-    return [...this.initialFilePathsInternal];
+    return [...this.#initialFilePaths];
   }
   initialGitFolders() {
-    return [...this.initialGitFoldersInternal];
+    return [...this.#initialGitFolders];
   }
   embedderPath() {
-    return this.embedderPathInternal;
+    return this.#embedderPath;
   }
   initializeFilePaths() {
     return new Promise((fulfill) => {
@@ -270,12 +270,12 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
             if (this.isFileExcluded(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath))) {
               continue;
             }
-            this.initialFilePathsInternal.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common2.ParsedURL.ParsedURL.substr(entry.fullPath, 1)));
+            this.#initialFilePaths.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(Common2.ParsedURL.ParsedURL.substr(entry.fullPath, 1)));
           } else {
             if (entry.fullPath.endsWith("/.git")) {
               const lastSlash = entry.fullPath.lastIndexOf("/");
               const parentFolder = Common2.ParsedURL.ParsedURL.substr(entry.fullPath, 1, lastSlash);
-              this.initialGitFoldersInternal.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(parentFolder));
+              this.#initialGitFolders.add(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(parentFolder));
             }
             if (this.isFileExcluded(Common2.ParsedURL.ParsedURL.concatenate(Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath), "/"))) {
               const url = Common2.ParsedURL.ParsedURL.concatenate(this.path(), Common2.ParsedURL.ParsedURL.rawPathToEncodedPathString(entry.fullPath));
@@ -528,16 +528,16 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   }
   saveExcludedFolders() {
     const settingValue = this.excludedFoldersSetting.get();
-    settingValue[this.path()] = [...this.excludedFoldersInternal];
+    settingValue[this.path()] = [...this.#excludedFolders];
     this.excludedFoldersSetting.set(settingValue);
   }
   addExcludedFolder(path) {
-    this.excludedFoldersInternal.add(path);
+    this.#excludedFolders.add(path);
     this.saveExcludedFolders();
     this.manager.dispatchEventToListeners(Events.ExcludedFolderAdded, path);
   }
   removeExcludedFolder(path) {
-    this.excludedFoldersInternal.delete(path);
+    this.#excludedFolders.delete(path);
     this.saveExcludedFolders();
     this.manager.dispatchEventToListeners(Events.ExcludedFolderRemoved, path);
   }
@@ -547,19 +547,19 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     this.excludedFoldersSetting.set(settingValue);
   }
   isFileExcluded(folderPath) {
-    if (this.excludedFoldersInternal.has(folderPath)) {
+    if (this.#excludedFolders.has(folderPath)) {
       return true;
     }
     const regex = this.manager.workspaceFolderExcludePatternSetting().asRegExp();
     return Boolean(regex?.test(Common2.ParsedURL.ParsedURL.encodedPathToRawPathString(folderPath)));
   }
   excludedFolders() {
-    return this.excludedFoldersInternal;
+    return this.#excludedFolders;
   }
   searchInPath(query, progress) {
     return new Promise((resolve) => {
       const requestId = this.manager.registerCallback(innerCallback);
-      Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this.embedderPathInternal, query);
+      Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this.#embedderPath, query);
       function innerCallback(files) {
         resolve(files.map((path) => Common2.ParsedURL.ParsedURL.rawPathToUrlString(path)));
         progress.incrementWorked(1);
@@ -569,7 +569,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
   indexContent(progress) {
     progress.setTotalWork(1);
     const requestId = this.manager.registerProgress(progress);
-    Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(requestId, this.embedderPathInternal, JSON.stringify(this.excludedEmbedderFolders));
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(requestId, this.#embedderPath, JSON.stringify(this.excludedEmbedderFolders));
   }
   mimeFromPath(path) {
     return Common2.ResourceType.ResourceType.mimeFromURL(path) || "text/plain";
@@ -717,15 +717,15 @@ var str_3 = i18n5.i18n.registerUIStrings("models/persistence/IsolatedFileSystemM
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var isolatedFileSystemManagerInstance;
 var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3.ObjectWrapper.ObjectWrapper {
-  fileSystemsInternal;
+  #fileSystems;
   callbacks;
   progresses;
-  workspaceFolderExcludePatternSettingInternal;
+  #workspaceFolderExcludePatternSetting;
   fileSystemRequestResolve;
   fileSystemsLoadedPromise;
   constructor() {
     super();
-    this.fileSystemsInternal = /* @__PURE__ */ new Map();
+    this.#fileSystems = /* @__PURE__ */ new Map();
     this.callbacks = /* @__PURE__ */ new Map();
     this.progresses = /* @__PURE__ */ new Map();
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host2.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.onFileSystemRemoved, this);
@@ -769,7 +769,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
       defaultExcludedFolders = defaultExcludedFolders.concat(defaultLinuxExcludedFolders);
     }
     const defaultExcludedFoldersPattern = defaultExcludedFolders.join("|");
-    this.workspaceFolderExcludePatternSettingInternal = Common3.Settings.Settings.instance().createRegExpSetting("workspace-folder-exclude-pattern", defaultExcludedFoldersPattern, Host2.Platform.isWin() ? "i" : "");
+    this.#workspaceFolderExcludePatternSetting = Common3.Settings.Settings.instance().createRegExpSetting("workspace-folder-exclude-pattern", defaultExcludedFoldersPattern, Host2.Platform.isWin() ? "i" : "");
     this.fileSystemRequestResolve = null;
     this.fileSystemsLoadedPromise = this.requestFileSystems();
   }
@@ -823,7 +823,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
       if (!fileSystem2) {
         return null;
       }
-      this.fileSystemsInternal.set(fileSystemURL, fileSystem2);
+      this.#fileSystems.set(fileSystemURL, fileSystem2);
       fileSystem2.addEventListener("file-system-error", this.#onFileSystemError, this);
       if (dispatchEvent) {
         this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem2);
@@ -832,7 +832,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     }
   }
   addPlatformFileSystem(fileSystemURL, fileSystem) {
-    this.fileSystemsInternal.set(fileSystemURL, fileSystem);
+    this.#fileSystems.set(fileSystemURL, fileSystem);
     fileSystem.addEventListener("file-system-error", this.#onFileSystemError, this);
     this.dispatchEventToListeners(Events.FileSystemAdded, fileSystem);
   }
@@ -862,11 +862,11 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
   onFileSystemRemoved(event) {
     const embedderPath = event.data;
     const fileSystemPath = Common3.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
-    const isolatedFileSystem = this.fileSystemsInternal.get(fileSystemPath);
+    const isolatedFileSystem = this.#fileSystems.get(fileSystemPath);
     if (!isolatedFileSystem) {
       return;
     }
-    this.fileSystemsInternal.delete(fileSystemPath);
+    this.#fileSystems.delete(fileSystemPath);
     isolatedFileSystem.removeEventListener("file-system-error", this.#onFileSystemError, this);
     isolatedFileSystem.fileSystemRemoved();
     this.dispatchEventToListeners(Events.FileSystemRemoved, isolatedFileSystem);
@@ -882,8 +882,8 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
       const paths = new Platform4.MapUtilities.Multimap();
       for (const embedderPath of embedderPaths) {
         const filePath = Common3.ParsedURL.ParsedURL.rawPathToUrlString(embedderPath);
-        for (const fileSystemPath of this.fileSystemsInternal.keys()) {
-          const fileSystem = this.fileSystemsInternal.get(fileSystemPath);
+        for (const fileSystemPath of this.#fileSystems.keys()) {
+          const fileSystem = this.#fileSystems.get(fileSystemPath);
           if (fileSystem?.isFileExcluded(Common3.ParsedURL.ParsedURL.rawPathToEncodedPathString(embedderPath))) {
             continue;
           }
@@ -898,13 +898,13 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     }
   }
   fileSystems() {
-    return [...this.fileSystemsInternal.values()];
+    return [...this.#fileSystems.values()];
   }
   fileSystem(fileSystemPath) {
-    return this.fileSystemsInternal.get(fileSystemPath) || null;
+    return this.#fileSystems.get(fileSystemPath) || null;
   }
   workspaceFolderExcludePatternSetting() {
-    return this.workspaceFolderExcludePatternSettingInternal;
+    return this.#workspaceFolderExcludePatternSetting;
   }
   registerCallback(callback) {
     const requestId = ++lastRequestId;
@@ -3255,7 +3255,7 @@ import { Directives, html, render } from "./../../ui/lit/lit.js";
 
 // gen/front_end/models/persistence/editFileSystemView.css.js
 var editFileSystemView_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3672,177 +3672,6 @@ function getScript(contentProvider) {
   }
   return Bindings3.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider)[0] ?? null;
 }
-
-// gen/front_end/models/persistence/WorkspaceSettingsTab.js
-var WorkspaceSettingsTab_exports = {};
-__export(WorkspaceSettingsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
-  WorkspaceSettingsTab: () => WorkspaceSettingsTab
-});
-import "./../../ui/legacy/legacy.js";
-import "./../../ui/components/buttons/buttons.js";
-import "./../../ui/components/cards/cards.js";
-import * as Common12 from "./../../core/common/common.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Buttons from "./../../ui/components/buttons/buttons.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
-import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/models/persistence/workspaceSettingsTab.css.js
-var workspaceSettingsTab_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-@scope to (devtools-widget > *) {
-  .mappings-info,
-  .folder-exclude-pattern {
-    height: var(--settings-single-item-height);
-  }
-
-  .mapping-view-container {
-    padding-left: 0;
-    padding-right: 0;
-  }
-
-  .folder-exclude-pattern {
-    display: flex;
-    align-items: center;
-
-    & > input {
-      flex: 1;
-    }
-  }
-
-  label {
-    padding-bottom: 0;
-  }
-
-  .mappings-info {
-    border: none;
-  }
-
-  .add-button-container {
-    max-width: var(--sys-size-35);
-    margin-left: var(--sys-size-8);
-    width: 100%;
-
-    & .add-folder {
-      min-width: var(--sys-size-31);
-      max-width: var(--sys-size-35);
-    }
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./workspaceSettingsTab.css")} */`;
-
-// gen/front_end/models/persistence/WorkspaceSettingsTab.js
-var UIStrings7 = {
-  /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  workspace: "Workspace",
-  /**
-   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  mappingsAreInferredAutomatically: "Mappings are inferred automatically.",
-  /**
-   * @description Text of the add button in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  addFolder: "Add folder",
-  /**
-   * @description Label element text content in Workspace Settings Tab of the Workspace settings in Settings
-   */
-  folderExcludePattern: "Exclude from workspace",
-  /**
-   * @description Label for an item to remove something
-   */
-  remove: "Remove"
-};
-var str_7 = i18n13.i18n.registerUIStrings("models/persistence/WorkspaceSettingsTab.ts", UIStrings7);
-var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var DEFAULT_VIEW2 = (input, _output, target) => {
-  render2(html2`
-    <style>${workspaceSettingsTab_css_default}</style>
-    <div class="settings-card-container-wrapper" jslog=${VisualLogging.pane("workspace")}>
-      <div class="settings-card-container">
-        <devtools-card heading=${i18nString7(UIStrings7.workspace)}>
-          <div class="folder-exclude-pattern">
-            <label for="workspace-setting-folder-exclude-pattern">${i18nString7(UIStrings7.folderExcludePattern)}</label>
-            <input
-              class="harmony-input"
-              jslog=${VisualLogging.textField().track({ keydown: "Enter", change: true }).context(input.excludePatternSetting.name)}
-              ${UI5.SettingsUI.bindToSetting(input.excludePatternSetting)}
-              id="workspace-setting-folder-exclude-pattern"></input>
-          </div>
-          <div class="mappings-info">${i18nString7(UIStrings7.mappingsAreInferredAutomatically)}</div>
-        </devtools-card>
-        ${input.fileSystems.map((fileSystem) => html2`
-          <devtools-card heading=${fileSystem.displayName}>
-            <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
-            <div class="mapping-view-container">
-              <devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
-              </devtools-widget>
-            </div>
-            <devtools-button
-              slot="heading-suffix"
-              .variant=${"outlined"}
-              jslog=${VisualLogging.action().track({ click: true }).context("settings.remove-file-system")}
-              @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString7(UIStrings7.remove)}</devtools-button>
-          </devtools-card>
-        `)}
-        <div class="add-button-container">
-          <devtools-button
-            class="add-folder"
-            .variant=${"outlined"}
-            jslog=${VisualLogging.action().track({ click: true }).context("sources.add-folder-to-workspace")}
-            @click=${input.onAddClicked}>${i18nString7(UIStrings7.addFolder)}</devtools-button>
-        </div>
-      </div>
-    </div>`, target);
-};
-var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
-  #view;
-  #eventListeners = [];
-  constructor(view = DEFAULT_VIEW2) {
-    super();
-    this.#view = view;
-  }
-  wasShown() {
-    this.#eventListeners = [
-      IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemAdded, this.requestUpdate.bind(this)),
-      IsolatedFileSystemManager.instance().addEventListener(Events.FileSystemRemoved, this.requestUpdate.bind(this))
-    ];
-    this.requestUpdate();
-  }
-  willHide() {
-    Common12.EventTarget.removeEventListeners(this.#eventListeners);
-    this.#eventListeners = [];
-  }
-  performUpdate() {
-    const input = {
-      excludePatternSetting: IsolatedFileSystemManager.instance().workspaceFolderExcludePatternSetting(),
-      onAddClicked: () => IsolatedFileSystemManager.instance().addFileSystem(),
-      onRemoveClicked: (fs) => IsolatedFileSystemManager.instance().removeFileSystem(fs),
-      fileSystems: IsolatedFileSystemManager.instance().fileSystems().filter((fileSystem) => {
-        const networkPersistenceProject = NetworkPersistenceManager.instance().project();
-        return fileSystem instanceof IsolatedFileSystem && (!networkPersistenceProject || IsolatedFileSystemManager.instance().fileSystem(networkPersistenceProject.fileSystemPath()) !== fileSystem);
-      }).map((fileSystem) => {
-        const displayName = _WorkspaceSettingsTab.#getFilename(fileSystem);
-        return { displayName, fileSystem };
-      }).sort((fs1, fs2) => fs1.displayName.localeCompare(fs2.displayName))
-    };
-    this.#view(input, {}, this.contentElement);
-  }
-  static #getFilename(fileSystem) {
-    const fileSystemPath = fileSystem.path();
-    const lastIndexOfSlash = fileSystemPath.lastIndexOf("/");
-    const lastPathComponent = fileSystemPath.substring(lastIndexOfSlash + 1);
-    return decodeURIComponent(lastPathComponent);
-  }
-};
 export {
   Automapping_exports as Automapping,
   AutomaticFileSystemManager_exports as AutomaticFileSystemManager,
@@ -3855,7 +3684,6 @@ export {
   PersistenceImpl_exports as Persistence,
   PersistenceActions_exports as PersistenceActions,
   PersistenceUtils_exports as PersistenceUtils,
-  PlatformFileSystem_exports as PlatformFileSystem,
-  WorkspaceSettingsTab_exports as WorkspaceSettingsTab
+  PlatformFileSystem_exports as PlatformFileSystem
 };
 //# sourceMappingURL=persistence.js.map

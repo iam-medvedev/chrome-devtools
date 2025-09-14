@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2013 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import '../../ui/components/cards/cards.js';
@@ -212,6 +186,7 @@ export class GenericSettingsTab extends UI.Widget.VBox {
     settingToControl = new Map();
     containerElement;
     #updateSyncSectionTimerId = -1;
+    #syncSectionUpdatePromise = null;
     constructor() {
         super({ jslog: `${VisualLogging.pane('preferences')}` });
         this.element.classList.add('settings-tab-container');
@@ -281,23 +256,18 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             window.clearTimeout(this.#updateSyncSectionTimerId);
             this.#updateSyncSectionTimerId = -1;
         }
-        void Promise
-            .all([
-            new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)),
-            Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled ? Host.GdpClient.GdpClient.instance().getProfile() :
-                Promise.resolve(undefined),
-        ])
-            .then(([syncInfo, gdpProfile]) => {
-            this.syncSection.data = {
-                syncInfo,
-                syncSetting: Common.Settings.moduleSetting('sync-preferences'),
-                receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges'),
-                gdpProfile: gdpProfile ?? undefined,
-            };
-            if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
-                this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
-            }
-        });
+        this.#syncSectionUpdatePromise =
+            new Promise(resolve => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve))
+                .then(syncInfo => {
+                this.syncSection.data = {
+                    syncInfo,
+                    syncSetting: Common.Settings.moduleSetting('sync-preferences'),
+                    receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges'),
+                };
+                if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
+                    this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
+                }
+            });
     }
     createExtensionSection(settings) {
         const sectionName = "EXTENSIONS" /* Common.Settings.SettingCategory.EXTENSIONS */;
@@ -342,6 +312,11 @@ export class GenericSettingsTab extends UI.Widget.VBox {
             const element = this.settingToControl.get(setting);
             if (element) {
                 PanelUtils.highlightElement(element);
+            }
+            else if (setting.name === 'receive-gdp-badges') {
+                void this.#syncSectionUpdatePromise?.then(() => {
+                    void this.syncSection.highlightReceiveBadgesSetting();
+                });
             }
         }
     }

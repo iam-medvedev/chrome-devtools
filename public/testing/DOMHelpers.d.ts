@@ -7,6 +7,7 @@
 import type * as Platform from '../core/platform/platform.js';
 import type * as NodeText from '../ui/components/node_text/node_text.js';
 import * as UI from '../ui/legacy/legacy.js';
+export declare const TEST_CONTAINER_ID = "__devtools-test-container-id";
 interface RenderOptions {
     allowMultipleChildren?: boolean;
     includeCommonStyles?: boolean;
@@ -15,16 +16,7 @@ interface RenderOptions {
  * Renders a given element into the DOM. By default it will error if it finds an element already rendered but this can be controlled via the options.
  **/
 export declare function renderElementIntoDOM<E extends Node | UI.Widget.Widget>(element: E, renderOptions?: RenderOptions): E;
-/**
- * Sets up the DOM for testing,
- * If not clean logs an error and cleans itself
- **/
-export declare const setupTestDOM: () => Promise<void>;
-/**
- * Completely cleans out the test DOM to ensure it's empty for the next test run.
- * This is run automatically between tests - you should not be manually calling this yourself.
- **/
-export declare const cleanTestDOM: () => void;
+export declare function removeChildren(node: Node): void;
 /**
  * Asserts that all elements of `nodeList` are at least of type `T`.
  */

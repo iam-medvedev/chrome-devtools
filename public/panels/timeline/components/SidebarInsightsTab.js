@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -14,8 +14,6 @@ const { html } = Lit;
 export class SidebarInsightsTab extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #parsedTrace = null;
-    #traceMetadata = null;
-    #insights = null;
     #activeInsight = null;
     #selectedCategory = Trace.Insights.Types.InsightCategory.ALL;
     /**
@@ -32,27 +30,10 @@ export class SidebarInsightsTab extends HTMLElement {
         }
         this.#parsedTrace = data;
         this.#selectedInsightSetKey = null;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    }
-    set traceMetadata(data) {
-        if (data === this.#traceMetadata) {
-            return;
+        if (this.#parsedTrace?.insights) {
+            /** Select the first set. Filtering out trivial sets was done back in {@link Trace.Processor.#computeInsightsForInitialTracePeriod} */
+            this.#selectedInsightSetKey = [...this.#parsedTrace.insights.keys()].at(0) ?? null;
         }
-        this.#traceMetadata = data;
-        this.#selectedInsightSetKey = null;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
-    }
-    set insights(data) {
-        if (data === this.#insights) {
-            return;
-        }
-        this.#selectedInsightSetKey = null;
-        if (!data || !this.#parsedTrace) {
-            return;
-        }
-        this.#insights = new Map(data);
-        /** Select the first set. Filtering out trivial sets was done back in {@link Trace.Processor.#computeInsightsForInitialTracePeriod} */
-        this.#selectedInsightSetKey = [...this.#insights.keys()].at(0) ?? null;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     get activeInsight() {
@@ -82,7 +63,7 @@ export class SidebarInsightsTab extends HTMLElement {
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #insightSetHovered(id) {
-        const data = this.#insights?.get(id);
+        const data = this.#parsedTrace?.insights?.get(id);
         data && this.dispatchEvent(new Insights.SidebarInsight.InsightSetHovered(data.bounds));
     }
     #insightSetUnhovered() {
@@ -90,7 +71,7 @@ export class SidebarInsightsTab extends HTMLElement {
     }
     #onZoomClick(event, id) {
         event.stopPropagation();
-        const data = this.#insights?.get(id);
+        const data = this.#parsedTrace?.insights?.get(id);
         if (!data) {
             return;
         }
@@ -141,25 +122,24 @@ export class SidebarInsightsTab extends HTMLElement {
         set.highlightActiveInsight();
     }
     #render() {
-        if (!this.#parsedTrace || !this.#insights) {
+        if (!this.#parsedTrace?.insights) {
             Lit.render(Lit.nothing, this.#shadow, { host: this });
             return;
         }
-        const hasMultipleInsightSets = this.#insights.size > 1;
-        const labels = Utils.Helpers.createUrlLabels([...this.#insights.values()].map(({ url }) => url));
+        const insights = this.#parsedTrace.insights;
+        const hasMultipleInsightSets = insights.size > 1;
+        const labels = Utils.Helpers.createUrlLabels([...insights.values()].map(({ url }) => url));
         const contents = 
         // clang-format off
         html `
       <style>${sidebarInsightsTabStyles}</style>
       <div class="insight-sets-wrapper">
-        ${[...this.#insights.values()].map(({ id, url }, index) => {
+        ${[...insights.values()].map(({ id, url }, index) => {
             const data = {
-                insights: this.#insights,
                 insightSetKey: id,
                 activeCategory: this.#selectedCategory,
                 activeInsight: this.#activeInsight,
                 parsedTrace: this.#parsedTrace,
-                traceMetadata: this.#traceMetadata,
             };
             const contents = html `
             <devtools-performance-sidebar-single-navigation

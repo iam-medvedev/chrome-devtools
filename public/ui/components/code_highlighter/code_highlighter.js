@@ -6,7 +6,7 @@ var __export = (target, all) => {
 
 // gen/front_end/ui/components/code_highlighter/codeHighlighter.css.js
 var codeHighlighter_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -1437,26 +1437,26 @@ var LiveLocation = class extends LiveLocationWithPool {
   #lineNumber;
   #columnNumber;
   #info;
-  headerInternal;
+  #header;
   constructor(rawLocation, info, updateDelegate, locationPool) {
     super(updateDelegate, locationPool);
     this.url = rawLocation.url;
     this.#lineNumber = rawLocation.lineNumber;
     this.#columnNumber = rawLocation.columnNumber;
     this.#info = info;
-    this.headerInternal = null;
+    this.#header = null;
   }
   header() {
-    return this.headerInternal;
+    return this.#header;
   }
   setHeader(header) {
-    this.headerInternal = header;
+    this.#header = header;
   }
   async uiLocation() {
-    if (!this.headerInternal) {
+    if (!this.#header) {
       return null;
     }
-    const rawLocation = new SDK6.CSSModel.CSSLocation(this.headerInternal, this.#lineNumber, this.#columnNumber);
+    const rawLocation = new SDK6.CSSModel.CSSLocation(this.#header, this.#lineNumber, this.#columnNumber);
     return CSSWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
   }
   dispose() {
@@ -1667,27 +1667,27 @@ var SourceScopeRemoteObject = class extends SDK7.RemoteObject.RemoteObjectImpl {
   }
 };
 var SourceScope = class {
-  #callFrameInternal;
-  #typeInternal;
-  #typeNameInternal;
-  #iconInternal;
-  #objectInternal;
+  #callFrame;
+  #type;
+  #typeName;
+  #icon;
+  #object;
   constructor(callFrame, stopId, type, typeName, icon, plugin) {
     if (icon && new URL(icon).protocol !== "data:") {
       throw new Error("The icon must be a data:-URL");
     }
-    this.#callFrameInternal = callFrame;
-    this.#typeInternal = type;
-    this.#typeNameInternal = typeName;
-    this.#iconInternal = icon;
-    this.#objectInternal = new SourceScopeRemoteObject(callFrame, stopId, plugin);
+    this.#callFrame = callFrame;
+    this.#type = type;
+    this.#typeName = typeName;
+    this.#icon = icon;
+    this.#object = new SourceScopeRemoteObject(callFrame, stopId, plugin);
   }
   async getVariableValue(name) {
-    for (let v = 0; v < this.#objectInternal.variables.length; ++v) {
-      if (this.#objectInternal.variables[v].name !== name) {
+    for (let v = 0; v < this.#object.variables.length; ++v) {
+      if (this.#object.variables[v].name !== name) {
         continue;
       }
-      const properties = await this.#objectInternal.getAllProperties(false, false);
+      const properties = await this.#object.getAllProperties(false, false);
       if (!properties.properties) {
         continue;
       }
@@ -1699,13 +1699,13 @@ var SourceScope = class {
     return null;
   }
   callFrame() {
-    return this.#callFrameInternal;
+    return this.#callFrame;
   }
   type() {
-    return this.#typeInternal;
+    return this.#type;
   }
   typeName() {
-    return this.#typeNameInternal;
+    return this.#typeName;
   }
   name() {
     return void 0;
@@ -1714,13 +1714,13 @@ var SourceScope = class {
     return null;
   }
   object() {
-    return this.#objectInternal;
+    return this.#object;
   }
   description() {
     return "";
   }
   icon() {
-    return this.#iconInternal;
+    return this.#icon;
   }
   extraProperties() {
     return [];
@@ -3068,9 +3068,9 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
   uiSourceCode;
   script;
   #scriptSource;
-  #isDivergingFromVMInternal;
-  #hasDivergedFromVMInternal;
-  #isMergingToVMInternal;
+  #isDivergingFromVM;
+  #hasDivergedFromVM;
+  #isMergingToVM;
   #updateMutex = new Common10.Mutex.Mutex();
   constructor(resourceScriptMapping, uiSourceCode, script) {
     super();
@@ -3153,19 +3153,19 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
   async update() {
     const release = await this.#updateMutex.acquire();
     const diverged = this.isDiverged();
-    if (diverged && !this.#hasDivergedFromVMInternal) {
+    if (diverged && !this.#hasDivergedFromVM) {
       await this.divergeFromVM();
-    } else if (!diverged && this.#hasDivergedFromVMInternal) {
+    } else if (!diverged && this.#hasDivergedFromVM) {
       await this.mergeToVM();
     }
     release();
   }
   async divergeFromVM() {
     if (this.script) {
-      this.#isDivergingFromVMInternal = true;
+      this.#isDivergingFromVM = true;
       await this.#resourceScriptMapping.debuggerWorkspaceBinding.updateLocations(this.script);
-      this.#isDivergingFromVMInternal = void 0;
-      this.#hasDivergedFromVMInternal = true;
+      this.#isDivergingFromVM = void 0;
+      this.#hasDivergedFromVM = true;
       this.dispatchEventToListeners(
         "DidDivergeFromVM"
         /* ResourceScriptFile.Events.DID_DIVERGE_FROM_VM */
@@ -3174,10 +3174,10 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
   }
   async mergeToVM() {
     if (this.script) {
-      this.#hasDivergedFromVMInternal = void 0;
-      this.#isMergingToVMInternal = true;
+      this.#hasDivergedFromVM = void 0;
+      this.#isMergingToVM = true;
       await this.#resourceScriptMapping.debuggerWorkspaceBinding.updateLocations(this.script);
-      this.#isMergingToVMInternal = void 0;
+      this.#isMergingToVM = void 0;
       this.dispatchEventToListeners(
         "DidMergeToVM"
         /* ResourceScriptFile.Events.DID_MERGE_TO_VM */
@@ -3185,13 +3185,13 @@ var ResourceScriptFile = class extends Common10.ObjectWrapper.ObjectWrapper {
     }
   }
   hasDivergedFromVM() {
-    return Boolean(this.#hasDivergedFromVMInternal);
+    return Boolean(this.#hasDivergedFromVM);
   }
   isDivergingFromVM() {
-    return Boolean(this.#isDivergingFromVMInternal);
+    return Boolean(this.#isDivergingFromVM);
   }
   isMergingToVM() {
-    return Boolean(this.#isMergingToVMInternal);
+    return Boolean(this.#isMergingToVM);
   }
   checkMapping() {
     if (!this.script || typeof this.#scriptSource !== "undefined") {
@@ -3783,26 +3783,26 @@ import * as TextUtils7 from "./../text_utils/text_utils.js";
 import * as Workspace19 from "./../workspace/workspace.js";
 var ChunkedFileReader = class {
   #file;
-  #fileSizeInternal;
-  #loadedSizeInternal;
+  #fileSize;
+  #loadedSize;
   #streamReader;
   #chunkSize;
   #chunkTransferredCallback;
   #decoder;
   #isCanceled;
-  #errorInternal;
+  #error;
   #transferFinished;
   #output;
   #reader;
   constructor(file, chunkSize, chunkTransferredCallback) {
     this.#file = file;
-    this.#fileSizeInternal = file.size;
-    this.#loadedSizeInternal = 0;
+    this.#fileSize = file.size;
+    this.#loadedSize = 0;
     this.#chunkSize = chunkSize ? chunkSize : Number.MAX_VALUE;
     this.#chunkTransferredCallback = chunkTransferredCallback;
     this.#decoder = new TextDecoder();
     this.#isCanceled = false;
-    this.#errorInternal = null;
+    this.#error = null;
     this.#streamReader = null;
   }
   async read(output) {
@@ -3828,10 +3828,10 @@ var ChunkedFileReader = class {
     this.#isCanceled = true;
   }
   loadedSize() {
-    return this.#loadedSizeInternal;
+    return this.#loadedSize;
   }
   fileSize() {
-    return this.#fileSizeInternal;
+    return this.#fileSize;
   }
   fileName() {
     if (!this.#file) {
@@ -3840,7 +3840,7 @@ var ChunkedFileReader = class {
     return this.#file.name;
   }
   error() {
-    return this.#errorInternal;
+    return this.#error;
   }
   onChunkLoaded(event) {
     if (this.#isCanceled) {
@@ -3854,8 +3854,8 @@ var ChunkedFileReader = class {
       return;
     }
     const buffer = this.#reader.result;
-    this.#loadedSizeInternal += buffer.byteLength;
-    const endOfFile = this.#loadedSizeInternal === this.#fileSizeInternal;
+    this.#loadedSize += buffer.byteLength;
+    const endOfFile = this.#loadedSize === this.#fileSize;
     void this.decodeChunkBuffer(buffer, endOfFile);
   }
   async decodeChunkBuffer(buffer, endOfFile) {
@@ -3883,7 +3883,7 @@ var ChunkedFileReader = class {
     this.#file = null;
     this.#reader = null;
     await this.#output.close();
-    this.#transferFinished(!this.#errorInternal);
+    this.#transferFinished(!this.#error);
   }
   async loadChunk() {
     if (!this.#output || !this.#file) {
@@ -3898,15 +3898,15 @@ var ChunkedFileReader = class {
       void this.decodeChunkBuffer(value.buffer, false);
     }
     if (this.#reader) {
-      const chunkStart = this.#loadedSizeInternal;
-      const chunkEnd = Math.min(this.#fileSizeInternal, chunkStart + this.#chunkSize);
+      const chunkStart = this.#loadedSize;
+      const chunkEnd = Math.min(this.#fileSize, chunkStart + this.#chunkSize);
       const nextPart = this.#file.slice(chunkStart, chunkEnd);
       this.#reader.readAsArrayBuffer(nextPart);
     }
   }
   onError(event) {
     const eventTarget = event.target;
-    this.#errorInternal = eventTarget.error;
+    this.#error = eventTarget.error;
     this.#transferFinished(false);
   }
 };

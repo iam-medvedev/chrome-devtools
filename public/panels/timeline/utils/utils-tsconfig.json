@@ -32,16 +32,12 @@
   "files": [
     "../../../../../../../front_end/panels/timeline/utils/AICallTree.ts",
     "../../../../../../../front_end/panels/timeline/utils/AIContext.ts",
-    "../../../../../../../front_end/panels/timeline/utils/EntityMapper.ts",
-    "../../../../../../../front_end/panels/timeline/utils/EntryName.ts",
     "../../../../../../../front_end/panels/timeline/utils/EntryNodes.ts",
-    "../../../../../../../front_end/panels/timeline/utils/EntryStyles.ts",
     "../../../../../../../front_end/panels/timeline/utils/FreshRecording.ts",
     "../../../../../../../front_end/panels/timeline/utils/Helpers.ts",
     "../../../../../../../front_end/panels/timeline/utils/IgnoreList.ts",
     "../../../../../../../front_end/panels/timeline/utils/ImageCache.ts",
     "../../../../../../../front_end/panels/timeline/utils/InsightAIContext.ts",
-    "../../../../../../../front_end/panels/timeline/utils/SourceMapsResolver.ts",
     "../../../../../../../front_end/panels/timeline/utils/Treemap.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -73,16 +69,13 @@
       "path": "../../../models/trace/bundle-tsconfig.json"
     },
     {
+      "path": "../../../models/trace_source_maps_resolver/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../../mobile_throttling/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../third_party/marked/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../../ui/components/markdown_view/bundle-tsconfig.json"
     },
     {
       "path": "../../../ui/legacy/bundle-tsconfig.json"

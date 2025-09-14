@@ -29,7 +29,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/security/cookieControlsView.css.js
 var cookieControlsView_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -501,7 +501,7 @@ import * as NetworkForward from "./../network/forward/forward.js";
 
 // gen/front_end/panels/security/cookieReportView.css.js
 var cookieReportView_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1026,7 +1026,7 @@ import * as Lit3 from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/security/ipProtectionView.css.js
 var ipProtectionView_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1628,7 +1628,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/security/lockIcon.css.js
 var lockIcon_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1689,7 +1689,7 @@ var lockIcon_css_default = `/*
 
 // gen/front_end/panels/security/mainView.css.js
 var mainView_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1911,38 +1911,38 @@ var ShowOriginEvent = class _ShowOriginEvent extends Event {
   }
 };
 var OriginTreeElement = class extends SecurityPanelSidebarTreeElement {
-  #securityStateInternal;
+  #securityState;
   #renderTreeElement;
-  #originInternal = null;
+  #origin = null;
   constructor(className, renderTreeElement, origin = null) {
     super();
     this.#renderTreeElement = renderTreeElement;
-    this.#originInternal = origin;
+    this.#origin = origin;
     this.listItemElement.classList.add(className);
-    this.#securityStateInternal = null;
+    this.#securityState = null;
     this.setSecurityState(
       "unknown"
       /* Protocol.Security.SecurityState.Unknown */
     );
   }
   setSecurityState(newSecurityState) {
-    this.#securityStateInternal = newSecurityState;
+    this.#securityState = newSecurityState;
     this.#renderTreeElement(this);
   }
   securityState() {
-    return this.#securityStateInternal;
+    return this.#securityState;
   }
   origin() {
-    return this.#originInternal;
+    return this.#origin;
   }
   showElement() {
-    this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#originInternal));
+    this.listItemElement.dispatchEvent(new ShowOriginEvent(this.#origin));
   }
 };
 
 // gen/front_end/panels/security/originView.css.js
 var originView_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2124,7 +2124,7 @@ var IPProtectionTreeElement = class extends SecurityPanelSidebarTreeElement {
 
 // gen/front_end/panels/security/sidebar.css.js
 var sidebar_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3802,16 +3802,16 @@ var SecurityOriginView = class extends UI6.Widget.VBox {
   }
 };
 var SecurityDetailsTable = class {
-  elementInternal;
+  #element;
   constructor() {
-    this.elementInternal = document.createElement("table");
-    this.elementInternal.classList.add("details-table");
+    this.#element = document.createElement("table");
+    this.#element.classList.add("details-table");
   }
   element() {
-    return this.elementInternal;
+    return this.#element;
   }
   addRow(key, value) {
-    const row = this.elementInternal.createChild("tr", "details-table-row");
+    const row = this.#element.createChild("tr", "details-table-row");
     row.createChild("td").textContent = key;
     const valueCell = row.createChild("td");
     if (typeof value === "string") {

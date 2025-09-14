@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -11,6 +11,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { ActiveFilters } from './ActiveFilters.js';
 import * as Extensions from './extensions/extensions.js';
@@ -206,7 +207,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
         if (!this.#parsedTrace) {
             return name;
         }
-        return name + ':@' + Trace.Handlers.Helpers.getNonResolvedURL(event, this.#parsedTrace);
+        return name + ':@' + Trace.Handlers.Helpers.getNonResolvedURL(event, this.#parsedTrace.data);
     }
     setSearchableView(searchableView) {
         this.searchableView = searchableView;
@@ -582,7 +583,7 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
             return;
         }
         const searchRegex = searchConfig.toSearchRegex();
-        this.searchResults = this.root.searchTree(event => TimelineUIUtils.testContentMatching(event, searchRegex.regex, this.#parsedTrace || undefined));
+        this.searchResults = this.root.searchTree(event => TimelineUIUtils.testContentMatching(event, searchRegex.regex, this.#parsedTrace?.data || undefined));
         this.searchableView.updateSearchMatchesCount(this.searchResults.length);
     }
     jumpToNextSearchResult() {
@@ -707,7 +708,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
                     }
                     const timings = event && Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
                     const startTime = timings?.startTime ?? 0;
-                    value = startTime - Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+                    value = startTime - Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.min);
                 }
                 break;
             case 'self':
@@ -840,15 +841,18 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         return name;
     }
     displayInfoForGroupNode(node) {
-        const categories = Utils.EntryStyles.getCategoryStyles();
+        const categories = Trace.Styles.getCategoryStyles();
         const color = TimelineUIUtils.eventColor(node.event);
         const unattributed = i18nString(UIStrings.unattributed);
         const id = typeof node.id === 'symbol' ? undefined : node.id;
         switch (this.groupBySetting.get()) {
             case AggregatedTimelineTreeView.GroupBy.Category: {
-                const idIsValid = id && Utils.EntryStyles.stringIsEventCategory(id);
+                const idIsValid = id && Trace.Styles.stringIsEventCategory(id);
                 const category = idIsValid ? categories[id] || categories['other'] : { title: unattributed, color: unattributed };
-                return { name: category.title, color: category.color, icon: undefined };
+                const color = category instanceof Trace.Styles.TimelineCategory ?
+                    ThemeSupport.ThemeSupport.instance().getComputedValue(category.cssVariable) :
+                    category.color;
+                return { name: category.title, color, icon: undefined };
             }
             case AggregatedTimelineTreeView.GroupBy.Domain:
             case AggregatedTimelineTreeView.GroupBy.Subdomain:
@@ -872,7 +876,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case AggregatedTimelineTreeView.GroupBy.URL:
                 break;
             case AggregatedTimelineTreeView.GroupBy.Frame: {
-                const frame = id ? this.parsedTrace()?.PageFrames.frames.get(id) : undefined;
+                const frame = id ? this.parsedTrace()?.data.PageFrames.frames.get(id) : undefined;
                 const frameName = frame ? TimelineUIUtils.displayNameForFrame(frame) : i18nString(UIStrings.page);
                 return { name: frameName, color, icon: undefined };
             }
@@ -944,12 +948,12 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
             case GroupBy.URL:
                 return (event) => {
                     const parsedTrace = this.parsedTrace();
-                    return parsedTrace ? Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace) ?? '' : '';
+                    return parsedTrace ? Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace.data) ?? '' : '';
                 };
             case GroupBy.Frame:
                 return (event) => {
                     const frameId = Trace.Helpers.Trace.frameIDForEvent(event);
-                    return frameId || this.parsedTrace()?.Meta.mainFrameId || '';
+                    return frameId || this.parsedTrace()?.data.Meta.mainFrameId || '';
                 };
             default:
                 console.assert(false, `Unexpected aggregation setting: ${groupBy}`);
@@ -964,7 +968,7 @@ export class AggregatedTimelineTreeView extends TimelineTreeView {
         if (!parsedTrace) {
             return '';
         }
-        const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace);
+        const url = Trace.Handlers.Helpers.getNonResolvedURL(event, parsedTrace.data);
         if (!url) {
             // We could have receiveDataEvents (that don't have a url), but that have been
             // attributed to an entity, let's check for these. This is used for ThirdParty grouping.

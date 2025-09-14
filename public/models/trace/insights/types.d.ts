@@ -125,5 +125,6 @@ export declare const enum InsightKeys {
     RENDER_BLOCKING = "RenderBlocking",
     SLOW_CSS_SELECTOR = "SlowCSSSelector",
     VIEWPORT = "Viewport",
-    MODERN_HTTP = "ModernHTTP"
+    MODERN_HTTP = "ModernHTTP",
+    CACHE = "Cache"
 }

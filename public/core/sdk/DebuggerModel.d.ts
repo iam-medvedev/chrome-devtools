@@ -19,7 +19,6 @@ export declare const WASM_SYMBOLS_PRIORITY: Protocol.Debugger.DebugSymbolsType[]
 export declare class DebuggerModel extends SDKModel<EventTypes> {
     #private;
     readonly agent: ProtocolProxyApi.DebuggerApi;
-    runtimeModelInternal: RuntimeModel;
     continueToLocationCallback: ((arg0: DebuggerPausedDetails) => boolean) | null;
     evaluateOnCallFrameCallback: ((arg0: CallFrame, arg1: EvaluationOptions) => Promise<EvaluationResult | null>) | null;
     constructor(target: Target);

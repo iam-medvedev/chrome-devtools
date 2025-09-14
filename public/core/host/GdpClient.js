@@ -29,6 +29,15 @@ export var EmailPreference;
     EmailPreference["ENABLED"] = "ENABLED";
     EmailPreference["DISABLED"] = "DISABLED";
 })(EmailPreference || (EmailPreference = {}));
+// The `batchGet` awards endpoint returns badge names with an
+// obfuscated user ID (e.g., `profiles/12345/awards/badge-name`).
+// This function normalizes them to use `me` instead of the ID
+// (e.g., `profiles/me/awards/badge-path`) to match the format
+// used for client-side requests.
+function normalizeBadgeName(name) {
+    return name.replace(/profiles\/[^/]+\/awards\//, 'profiles/me/awards/');
+}
+export const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = 'https://developers.google.com/profile/u/me';
 async function makeHttpRequest(request) {
     if (!Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
         return null;
@@ -78,17 +87,54 @@ export class GdpClient {
             makeHttpRequest({ service: SERVICE_NAME, path: '/v1beta1/eligibility:check', method: 'GET' });
         return await this.#cachedEligibilityPromise;
     }
+    /**
+     * @returns null if the request fails, the awarded badge names otherwise.
+     */
+    async getAwardedBadgeNames({ names }) {
+        const result = await makeHttpRequest({
+            service: SERVICE_NAME,
+            path: '/v1beta1/profiles/me/awards:batchGet',
+            method: 'GET',
+            queryParams: {
+                allowMissing: 'true',
+                names,
+            }
+        });
+        if (!result) {
+            return null;
+        }
+        return new Set(result.awards?.map(award => normalizeBadgeName(award.name)) ?? []);
+    }
     async isEligibleToCreateProfile() {
         return (await this.checkEligibility())?.createProfile === EligibilityStatus.ELIGIBLE;
     }
-    createProfile({ user, emailPreference }) {
-        return makeHttpRequest({
+    async createProfile({ user, emailPreference }) {
+        const result = await makeHttpRequest({
             service: SERVICE_NAME,
             path: '/v1beta1/profiles',
             method: 'POST',
             body: JSON.stringify({
                 user,
                 newsletter_email: emailPreference,
+            }),
+        });
+        if (result) {
+            this.#clearCache();
+        }
+        return result;
+    }
+    #clearCache() {
+        this.#cachedProfilePromise = undefined;
+        this.#cachedEligibilityPromise = undefined;
+    }
+    createAward({ name }) {
+        return makeHttpRequest({
+            service: SERVICE_NAME,
+            path: '/v1beta1/profiles/me/awards',
+            method: 'POST',
+            body: JSON.stringify({
+                awardingUri: 'devtools://devtools',
+                name,
             })
         });
     }

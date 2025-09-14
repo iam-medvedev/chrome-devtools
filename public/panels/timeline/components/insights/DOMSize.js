@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../../ui/components/icon_button/icon_button.js';
@@ -7,14 +7,17 @@ import './NodeLink.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import { md } from '../../utils/Helpers.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
+import { md } from './Helpers.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.DOMSize;
 const { html } = Lit;
 export class DOMSize extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-dom-size`;
     internalName = 'dom-size';
+    hasAskAiSupport() {
+        return true;
+    }
     #renderNodeTable(domStatsData) {
         const rows = [];
         if (domStatsData.maxDepth) {

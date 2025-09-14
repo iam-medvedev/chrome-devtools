@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../core/host/host.js';
@@ -11,7 +11,7 @@ import { Tooltip } from './Tooltip.js';
 import { copyLinkAddressLabel, MaxLengthForDisplayedURLs, openInNewTab, openLinkExternallyLabel, } from './UIUtils.js';
 import { XElement } from './XElement.js';
 export class XLink extends XElement {
-    hrefInternal;
+    #href;
     clickable;
     onClick;
     onKeyDown;
@@ -35,20 +35,20 @@ export class XLink extends XElement {
         this.setAttribute('tabindex', '0');
         this.setAttribute('target', '_blank');
         this.setAttribute('rel', 'noopener');
-        this.hrefInternal = null;
+        this.#href = null;
         this.clickable = true;
         this.onClick = (event) => {
             event.consume(true);
-            if (this.hrefInternal) {
-                openInNewTab(this.hrefInternal);
+            if (this.#href) {
+                openInNewTab(this.#href);
             }
             this.dispatchEvent(new Event('x-link-invoke'));
         };
         this.onKeyDown = (event) => {
             if (Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
                 event.consume(true);
-                if (this.hrefInternal) {
-                    openInNewTab(this.hrefInternal);
+                if (this.#href) {
+                    openInNewTab(this.#href);
                 }
             }
             this.dispatchEvent(new Event('x-link-invoke'));
@@ -59,7 +59,7 @@ export class XLink extends XElement {
         return XElement.observedAttributes.concat(['href', 'no-click', 'title', 'tabindex']);
     }
     get href() {
-        return this.hrefInternal;
+        return this.#href;
     }
     attributeChangedCallback(attr, oldValue, newValue) {
         if (attr === 'no-click') {
@@ -81,7 +81,7 @@ export class XLink extends XElement {
             }
             catch {
             }
-            this.hrefInternal = href;
+            this.#href = href;
             if (!this.hasAttribute('title')) {
                 Tooltip.install(this, newValue);
             }
@@ -97,7 +97,7 @@ export class XLink extends XElement {
         super.attributeChangedCallback(attr, oldValue, newValue);
     }
     updateClick() {
-        if (this.hrefInternal !== null && this.clickable) {
+        if (this.#href !== null && this.clickable) {
             this.addEventListener('click', this.onClick, false);
             this.addEventListener('keydown', this.onKeyDown, false);
             this.style.setProperty('cursor', 'pointer');

@@ -1,11 +1,28 @@
 import * as Trace from '../../trace/trace.js';
 import type { ConversationSuggestion } from '../agents/AiAgent.js';
-import type { UnitFormatters } from './Types.js';
 export declare class PerformanceInsightFormatter {
     #private;
-    constructor(formatters: UnitFormatters, parsedTrace: Trace.Handlers.Types.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
     insightIsSupported(): boolean;
     getSuggestions(): [ConversationSuggestion, ...ConversationSuggestion[]];
+    /**
+     * Create an AI prompt string out of the Cache Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within Cache to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Cache Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatCacheInsight(insight: Trace.Insights.Models.Cache.CacheInsightModel): string;
+    /**
+     * Create an AI prompt string out of the DOM Size model to use with Ask AI.
+     * Note: This function accesses the UIStrings within DomSize to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The DOM Size Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatDomSizeInsight(insight: Trace.Insights.Models.DOMSize.DOMSizeInsightModel): string;
     /**
      * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
      * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
@@ -52,6 +69,15 @@ export declare class PerformanceInsightFormatter {
      */
     formatThirdPartiesInsight(insight: Trace.Insights.Models.ThirdParties.ThirdPartiesInsightModel): string;
     /**
+     * Create an AI prompt string out of the Viewport [Mobile] Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within Viewport to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Network Dependency Tree Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatViewportInsight(insight: Trace.Insights.Models.Viewport.ViewportInsightModel): string;
+    /**
      * Formats and outputs the insight's data.
      * Pass `{headingLevel: X}` to determine what heading level to use for the
      * titles in the markdown output. The default is 2 (##).
@@ -67,8 +93,8 @@ export interface NetworkRequestFormatOptions {
 }
 export declare class TraceEventFormatter {
     #private;
-    static layoutShift(formatters: UnitFormatters, shift: Trace.Types.Events.SyntheticLayoutShift, index: number, parsedTrace: Trace.Handlers.Types.ParsedTrace, rootCauses?: Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData): string;
-    static networkRequests(formatters: UnitFormatters, requests: readonly Trace.Types.Events.SyntheticNetworkRequest[], parsedTrace: Trace.Handlers.Types.ParsedTrace, options?: NetworkRequestFormatOptions): string;
+    static layoutShift(shift: Trace.Types.Events.SyntheticLayoutShift, index: number, parsedTrace: Trace.TraceModel.ParsedTrace, rootCauses?: Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData): string;
+    static networkRequests(requests: readonly Trace.Types.Events.SyntheticNetworkRequest[], parsedTrace: Trace.TraceModel.ParsedTrace, options?: NetworkRequestFormatOptions): string;
     /**
      * Network requests format description that is sent to the model as a fact.
      */

@@ -5,10 +5,8 @@ import { IsolatedFileSystem } from './IsolatedFileSystem.js';
 import { type PlatformFileSystem } from './PlatformFileSystem.js';
 export declare class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    private readonly fileSystemsInternal;
     private readonly callbacks;
     private readonly progresses;
-    private readonly workspaceFolderExcludePatternSettingInternal;
     private fileSystemRequestResolve;
     private readonly fileSystemsLoadedPromise;
     private constructor();

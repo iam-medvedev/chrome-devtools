@@ -192,8 +192,8 @@ var UIStrings = {
 var str_ = i18n.i18n.registerUIStrings("ui/legacy/ActionRegistration.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
-  enabledInternal = true;
-  toggledInternal = false;
+  #enabled = true;
+  #toggled = false;
   actionRegistration;
   constructor(actionRegistration) {
     super();
@@ -220,14 +220,14 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
     return Boolean(this.actionRegistration.toggleWithRedColor);
   }
   setEnabled(enabled) {
-    if (this.enabledInternal === enabled) {
+    if (this.#enabled === enabled) {
       return;
     }
-    this.enabledInternal = enabled;
+    this.#enabled = enabled;
     this.dispatchEventToListeners("Enabled", enabled);
   }
   enabled() {
-    return this.enabledInternal;
+    return this.#enabled;
   }
   category() {
     return this.actionRegistration.category;
@@ -245,7 +245,7 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
     const options = this.actionRegistration.options;
     if (options) {
       for (const pair of options) {
-        if (pair.value !== this.toggledInternal) {
+        if (pair.value !== this.#toggled) {
           title = pair.title();
         }
       }
@@ -253,14 +253,14 @@ var Action = class extends Common2.ObjectWrapper.ObjectWrapper {
     return title;
   }
   toggled() {
-    return this.toggledInternal;
+    return this.#toggled;
   }
   setToggled(toggled) {
     console.assert(this.toggleable(), "Shouldn't be toggling an untoggleable action", this.id());
-    if (this.toggledInternal === toggled) {
+    if (this.#toggled === toggled) {
       return;
     }
-    this.toggledInternal = toggled;
+    this.#toggled = toggled;
     this.dispatchEventToListeners("Toggled", toggled);
   }
   options() {
@@ -544,7 +544,7 @@ import * as VisualLogging16 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/dialog.css.js
 var dialog_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -577,7 +577,7 @@ __export(GlassPane_exports, {
 
 // gen/front_end/ui/legacy/glassPane.css.js
 var glassPane_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -671,7 +671,6 @@ __export(UIUtils_exports, {
   initializeUIUtils: () => initializeUIUtils,
   installComponentRootStyles: () => installComponentRootStyles,
   installDragHandle: () => installDragHandle,
-  invokeOnceAfterBatchUpdate: () => invokeOnceAfterBatchUpdate,
   isBeingEdited: () => isBeingEdited,
   isEditing: () => isEditing,
   isElementValueModification: () => isElementValueModification,
@@ -1438,27 +1437,27 @@ var ShortcutRegistry = class _ShortcutRegistry {
   }
 };
 var ShortcutTreeNode = class _ShortcutTreeNode {
-  keyInternal;
-  actionsInternal;
-  chordsInternal;
+  #key;
+  #actions;
+  #chords;
   depth;
   constructor(key, depth = 0) {
-    this.keyInternal = key;
-    this.actionsInternal = [];
-    this.chordsInternal = /* @__PURE__ */ new Map();
+    this.#key = key;
+    this.#actions = [];
+    this.#chords = /* @__PURE__ */ new Map();
     this.depth = depth;
   }
   addAction(action6) {
-    this.actionsInternal.push(action6);
+    this.#actions.push(action6);
   }
   key() {
-    return this.keyInternal;
+    return this.#key;
   }
   chords() {
-    return this.chordsInternal;
+    return this.#chords;
   }
   hasChords() {
-    return this.chordsInternal.size > 0;
+    return this.#chords.size > 0;
   }
   addKeyMapping(keys, action6) {
     if (keys.length < this.depth) {
@@ -1468,21 +1467,21 @@ var ShortcutTreeNode = class _ShortcutTreeNode {
       this.addAction(action6);
     } else {
       const key = keys[this.depth];
-      if (!this.chordsInternal.has(key)) {
-        this.chordsInternal.set(key, new _ShortcutTreeNode(key, this.depth + 1));
+      if (!this.#chords.has(key)) {
+        this.#chords.set(key, new _ShortcutTreeNode(key, this.depth + 1));
       }
-      this.chordsInternal.get(key).addKeyMapping(keys, action6);
+      this.#chords.get(key).addKeyMapping(keys, action6);
     }
   }
   getNode(key) {
-    return this.chordsInternal.get(key) || null;
+    return this.#chords.get(key) || null;
   }
   actions() {
-    return this.actionsInternal;
+    return this.#actions;
   }
   clear() {
-    this.actionsInternal = [];
-    this.chordsInternal = /* @__PURE__ */ new Map();
+    this.#actions = [];
+    this.#chords = /* @__PURE__ */ new Map();
   }
 };
 var ForwardedShortcut = class _ForwardedShortcut {
@@ -1554,14 +1553,14 @@ var str_2 = i18n3.i18n.registerUIStrings("ui/legacy/DockController.ts", UIString
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var dockControllerInstance;
 var DockController = class _DockController extends Common4.ObjectWrapper.ObjectWrapper {
-  canDockInternal;
+  #canDock;
   closeButton;
   currentDockStateSetting;
   lastDockStateSetting;
-  dockSideInternal = void 0;
+  #dockSide = void 0;
   constructor(canDock) {
     super();
-    this.canDockInternal = canDock;
+    this.#canDock = canDock;
     this.closeButton = new ToolbarButton(i18nString2(UIStrings2.close), "cross");
     this.closeButton.element.setAttribute("jslog", `${VisualLogging2.close().track({ click: true })}`);
     this.closeButton.element.classList.add("close-devtools");
@@ -1573,7 +1572,7 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
       /* DockState.BOTTOM */
     );
     if (!canDock) {
-      this.dockSideInternal = "undocked";
+      this.#dockSide = "undocked";
       this.closeButton.setVisible(false);
       return;
     }
@@ -1599,7 +1598,7 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
     return dockControllerInstance;
   }
   initialize() {
-    if (!this.canDockInternal) {
+    if (!this.#canDock) {
       return;
     }
     this.dockSideChanged();
@@ -1608,7 +1607,7 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
     this.setDockSide(this.currentDockStateSetting.get());
   }
   dockSide() {
-    return this.dockSideInternal;
+    return this.#dockSide;
   }
   /**
    * Whether the DevTools can be docked, used to determine if we show docking UI.
@@ -1617,33 +1616,33 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
    * Shouldn't be used as a heuristic for target connection state.
    */
   canDock() {
-    return this.canDockInternal;
+    return this.#canDock;
   }
   isVertical() {
-    return this.dockSideInternal === "right" || this.dockSideInternal === "left";
+    return this.#dockSide === "right" || this.#dockSide === "left";
   }
   setDockSide(dockSide) {
     if (states.indexOf(dockSide) === -1) {
       dockSide = states[0];
     }
-    if (this.dockSideInternal === dockSide) {
+    if (this.#dockSide === dockSide) {
       return;
     }
-    if (this.dockSideInternal !== void 0) {
-      document.body.classList.remove(this.dockSideInternal);
+    if (this.#dockSide !== void 0) {
+      document.body.classList.remove(this.#dockSide);
     }
     document.body.classList.add(dockSide);
-    if (this.dockSideInternal) {
-      this.lastDockStateSetting.set(this.dockSideInternal);
+    if (this.#dockSide) {
+      this.lastDockStateSetting.set(this.#dockSide);
     }
-    const eventData = { from: this.dockSideInternal, to: dockSide };
+    const eventData = { from: this.#dockSide, to: dockSide };
     this.dispatchEventToListeners("BeforeDockSideChanged", eventData);
     console.timeStamp("DockController.setIsDocked");
-    this.dockSideInternal = dockSide;
+    this.#dockSide = dockSide;
     this.currentDockStateSetting.set(dockSide);
     Host3.InspectorFrontendHost.InspectorFrontendHostInstance.setIsDocked(dockSide !== "undocked", this.setIsDockedResponse.bind(this, eventData));
     this.closeButton.setVisible(
-      this.dockSideInternal !== "undocked"
+      this.#dockSide !== "undocked"
       /* DockState.UNDOCKED */
     );
     this.dispatchEventToListeners("DockSideChanged", eventData);
@@ -1660,10 +1659,10 @@ var DockController = class _DockController extends Common4.ObjectWrapper.ObjectW
     this.setDockSide(this.lastDockStateSetting.get());
   }
   announceDockLocation() {
-    if (this.dockSideInternal === "undocked") {
+    if (this.#dockSide === "undocked") {
       LiveAnnouncer.alert(i18nString2(UIStrings2.devtoolsUndocked));
     } else {
-      LiveAnnouncer.alert(i18nString2(UIStrings2.devToolsDockedTo, { PH1: this.dockSideInternal || "" }));
+      LiveAnnouncer.alert(i18nString2(UIStrings2.devToolsDockedTo, { PH1: this.#dockSide || "" }));
     }
   }
 };
@@ -1706,7 +1705,7 @@ import * as IconButton from "./../components/icon_button/icon_button.js";
 
 // gen/front_end/ui/legacy/infobar.css.js
 var infobar_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2898,7 +2897,7 @@ var Widget = class _Widget {
       }
       this.attach(currentWidget);
     }
-    this.showWidgetInternal(parentElement, insertBefore);
+    this.#showWidget(parentElement, insertBefore);
   }
   attach(parentWidget) {
     if (parentWidget === this.#parentWidget) {
@@ -2918,9 +2917,9 @@ var Widget = class _Widget {
     if (!this.element.parentElement) {
       throw new Error("Attempt to show widget that is not hidden using hideWidget().");
     }
-    this.showWidgetInternal(this.element.parentElement, this.element.nextSibling);
+    this.#showWidget(this.element.parentElement, this.element.nextSibling);
   }
-  showWidgetInternal(parentElement, insertBefore) {
+  #showWidget(parentElement, insertBefore) {
     let currentParent = parentElement;
     while (currentParent && !widgetMap.get(currentParent)) {
       currentParent = currentParent.parentElementOrShadowHost();
@@ -2962,9 +2961,9 @@ var Widget = class _Widget {
     if (!this.#visible) {
       return;
     }
-    this.hideWidgetInternal(false);
+    this.#hideWidget(false);
   }
-  hideWidgetInternal(removeFromDOM) {
+  #hideWidget(removeFromDOM) {
     this.#visible = false;
     const { parentElement } = this.element;
     if (this.parentIsShowing()) {
@@ -2999,7 +2998,7 @@ var Widget = class _Widget {
     }
     const removeFromDOM = overrideHideOnDetach || !this.shouldHideOnDetach();
     if (this.#visible) {
-      this.hideWidgetInternal(removeFromDOM);
+      this.#hideWidget(removeFromDOM);
     } else if (removeFromDOM) {
       const { parentElement } = this.element;
       if (parentElement) {
@@ -3345,11 +3344,11 @@ import * as Common6 from "./../../core/common/common.js";
 var zoomManagerInstance;
 var ZoomManager = class _ZoomManager extends Common6.ObjectWrapper.ObjectWrapper {
   frontendHost;
-  zoomFactorInternal;
+  #zoomFactor;
   constructor(window2, frontendHost) {
     super();
     this.frontendHost = frontendHost;
-    this.zoomFactorInternal = this.frontendHost.zoomFactor();
+    this.#zoomFactor = this.frontendHost.zoomFactor();
     window2.addEventListener("resize", this.onWindowResize.bind(this), true);
   }
   static instance(opts = { forceNew: null, win: null, frontendHost: null }) {
@@ -3366,19 +3365,19 @@ var ZoomManager = class _ZoomManager extends Common6.ObjectWrapper.ObjectWrapper
     zoomManagerInstance = void 0;
   }
   zoomFactor() {
-    return this.zoomFactorInternal;
+    return this.#zoomFactor;
   }
   cssToDIP(value) {
-    return value * this.zoomFactorInternal;
+    return value * this.#zoomFactor;
   }
   dipToCSS(valueDIP) {
-    return valueDIP / this.zoomFactorInternal;
+    return valueDIP / this.#zoomFactor;
   }
   onWindowResize() {
-    const oldZoomFactor = this.zoomFactorInternal;
-    this.zoomFactorInternal = this.frontendHost.zoomFactor();
-    if (oldZoomFactor !== this.zoomFactorInternal) {
-      this.dispatchEventToListeners("ZoomChanged", { from: oldZoomFactor, to: this.zoomFactorInternal });
+    const oldZoomFactor = this.#zoomFactor;
+    this.#zoomFactor = this.frontendHost.zoomFactor();
+    if (oldZoomFactor !== this.#zoomFactor) {
+      this.dispatchEventToListeners("ZoomChanged", { from: oldZoomFactor, to: this.#zoomFactor });
     }
   }
 };
@@ -4742,11 +4741,11 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("ui/legacy/TabbedPane.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
-  headerElementInternal;
+  #headerElement;
   headerContentsElement;
   tabSlider;
   tabsElement;
-  contentElementInternal;
+  #contentElement;
   tabs;
   tabsHistory;
   tabsById;
@@ -4766,8 +4765,8 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   placeholderContainerElement;
   lastSelectedOverflowTab;
   measuredDropDownButtonWidth;
-  leftToolbarInternal;
-  rightToolbarInternal;
+  #leftToolbar;
+  #rightToolbar;
   allowTabReorder;
   automaticReorder;
   constructor(element) {
@@ -4777,15 +4776,15 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.contentElement.classList.add("tabbed-pane-shadow");
     this.contentElement.tabIndex = -1;
     this.setDefaultFocusedElement(this.contentElement);
-    this.headerElementInternal = this.contentElement.createChild("div", "tabbed-pane-header");
-    this.headerContentsElement = this.headerElementInternal.createChild("div", "tabbed-pane-header-contents");
+    this.#headerElement = this.contentElement.createChild("div", "tabbed-pane-header");
+    this.headerContentsElement = this.#headerElement.createChild("div", "tabbed-pane-header-contents");
     this.tabSlider = document.createElement("div");
     this.tabSlider.classList.add("tabbed-pane-tab-slider");
     this.tabsElement = this.headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
     this.tabsElement.setAttribute("role", "tablist");
     this.tabsElement.addEventListener("keydown", this.keyDown.bind(this), false);
-    this.contentElementInternal = this.contentElement.createChild("div", "tabbed-pane-content");
-    this.contentElementInternal.createChild("slot");
+    this.#contentElement = this.contentElement.createChild("div", "tabbed-pane-content");
+    this.#contentElement.createChild("slot");
     this.tabs = [];
     this.tabsHistory = [];
     this.tabsById = /* @__PURE__ */ new Map();
@@ -4802,7 +4801,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   }
   setCurrentTabLocked(locked) {
     this.currentTabLocked = locked;
-    this.headerElementInternal.classList.toggle("locked", this.currentTabLocked);
+    this.#headerElement.classList.toggle("locked", this.currentTabLocked);
   }
   setAutoSelectFirstItemOnShow(autoSelect) {
     this.autoSelectFirstItemOnShow = autoSelect;
@@ -4852,10 +4851,10 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
   }
   headerElement() {
-    return this.headerElementInternal;
+    return this.#headerElement;
   }
   tabbedPaneContentElement() {
-    return this.contentElementInternal;
+    return this.#contentElement;
   }
   setTabDelegate(delegate) {
     const tabs = this.tabs.slice();
@@ -4881,7 +4880,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (this.tabsHistory[0] === tab && this.isShowing()) {
       this.selectTab(tab.id, userGesture);
     }
-    this.updateTabElements();
+    this.requestUpdate();
   }
   closeTab(id2, userGesture) {
     this.closeTabs([id2], userGesture);
@@ -4894,7 +4893,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     for (let i = 0; i < ids.length; ++i) {
       this.innerCloseTab(ids[i], userGesture);
     }
-    this.updateTabElements();
+    this.requestUpdate();
     if (this.tabsHistory.length) {
       this.selectTab(this.tabsHistory[0].id, false);
     }
@@ -4983,7 +4982,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.currentTab = tab;
     this.tabsHistory.splice(this.tabsHistory.indexOf(tab), 1);
     this.tabsHistory.splice(0, 0, tab);
-    this.updateTabElements();
+    this.requestUpdate();
     if (focused || forceFocus) {
       this.focus();
     }
@@ -5024,7 +5023,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       return;
     }
     tab.setIcon(icon);
-    this.updateTabElements();
+    this.requestUpdate();
   }
   setTrailingTabIcon(id2, icon) {
     const tab = this.tabsById.get(id2);
@@ -5039,7 +5038,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       return;
     }
     tab.setSuffixElement(suffixElement);
-    this.updateTabElements();
+    this.requestUpdate();
   }
   setBadge(id2, content) {
     const badge2 = document.createElement("span");
@@ -5064,7 +5063,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
   zoomChanged() {
     this.clearMeasuredWidths();
     if (this.isShowing()) {
-      this.updateTabElements();
+      this.requestUpdate();
     }
   }
   clearMeasuredWidths() {
@@ -5080,7 +5079,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (tab && tab.title !== tabTitle) {
       tab.title = tabTitle;
       setLabel(tab.tabElement, tabTitle);
-      this.updateTabElements();
+      this.requestUpdate();
     }
   }
   changeTabView(id2, view) {
@@ -5108,17 +5107,17 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       this.clearMeasuredWidths();
       this.currentDevicePixelRatio = window.devicePixelRatio;
     }
-    this.updateTabElements();
+    this.requestUpdate();
   }
   headerResized() {
-    this.updateTabElements();
+    this.requestUpdate();
   }
   wasShown() {
     const effectiveTab = this.currentTab || this.tabsHistory[0];
     if (effectiveTab && this.autoSelectFirstItemOnShow) {
       this.selectTab(effectiveTab.id);
     }
-    this.updateTabElements();
+    this.requestUpdate();
     this.dispatchEventToListeners(Events.PaneVisibilityChanged, { isVisible: true });
   }
   wasHidden() {
@@ -5145,9 +5144,6 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
     return constraints;
   }
-  updateTabElements() {
-    invokeOnceAfterBatchUpdate(this, this.innerUpdateTabElements);
-  }
   setPlaceholderElement(element, focusedElement) {
     this.placeholderElement = element;
     if (focusedElement) {
@@ -5159,23 +5155,23 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
   }
   async waitForTabElementUpdate() {
-    this.innerUpdateTabElements();
+    this.performUpdate();
   }
-  innerUpdateTabElements() {
+  performUpdate() {
     if (!this.isShowing()) {
       return;
     }
     if (!this.tabs.length) {
-      this.contentElementInternal.classList.add("has-no-tabs");
+      this.#contentElement.classList.add("has-no-tabs");
       if (this.placeholderElement && !this.placeholderContainerElement) {
-        this.placeholderContainerElement = this.contentElementInternal.createChild("div", "tabbed-pane-placeholder fill");
+        this.placeholderContainerElement = this.#contentElement.createChild("div", "tabbed-pane-placeholder fill");
         this.placeholderContainerElement.appendChild(this.placeholderElement);
         if (this.focusedPlaceholderElement) {
           this.setDefaultFocusedElement(this.focusedPlaceholderElement);
         }
       }
     } else {
-      this.contentElementInternal.classList.remove("has-no-tabs");
+      this.#contentElement.classList.remove("has-no-tabs");
       if (this.placeholderContainerElement) {
         this.placeholderContainerElement.remove();
         this.setDefaultFocusedElement(this.contentElement);
@@ -5189,17 +5185,17 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.updateTabSlider();
   }
   adjustToolbarWidth() {
-    if (!this.rightToolbarInternal || !this.measuredDropDownButtonWidth) {
+    if (!this.#rightToolbar || !this.measuredDropDownButtonWidth) {
       return;
     }
-    const leftToolbarWidth = this.leftToolbarInternal?.getBoundingClientRect().width ?? 0;
-    const rightToolbarWidth = this.rightToolbarInternal.getBoundingClientRect().width;
-    const totalWidth = this.headerElementInternal.getBoundingClientRect().width;
-    if (!this.rightToolbarInternal.hasCompactLayout() && totalWidth - rightToolbarWidth - leftToolbarWidth < this.measuredDropDownButtonWidth + 10) {
-      this.rightToolbarInternal.setCompactLayout(true);
-    } else if (this.rightToolbarInternal.hasCompactLayout() && // Estimate the right toolbar size in non-compact mode as 2 times its compact size.
+    const leftToolbarWidth = this.#leftToolbar?.getBoundingClientRect().width ?? 0;
+    const rightToolbarWidth = this.#rightToolbar.getBoundingClientRect().width;
+    const totalWidth = this.#headerElement.getBoundingClientRect().width;
+    if (!this.#rightToolbar.hasCompactLayout() && totalWidth - rightToolbarWidth - leftToolbarWidth < this.measuredDropDownButtonWidth + 10) {
+      this.#rightToolbar.setCompactLayout(true);
+    } else if (this.#rightToolbar.hasCompactLayout() && // Estimate the right toolbar size in non-compact mode as 2 times its compact size.
     totalWidth - 2 * rightToolbarWidth - leftToolbarWidth > this.measuredDropDownButtonWidth + 10) {
-      this.rightToolbarInternal.setCompactLayout(false);
+      this.#rightToolbar.setCompactLayout(false);
     }
   }
   showTabElement(index, tab) {
@@ -5455,7 +5451,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     tab.view.detach();
   }
   elementsToRestoreScrollPositionsFor() {
-    return [this.contentElementInternal];
+    return [this.#contentElement];
   }
   insertBefore(tab, index) {
     this.tabsElement.insertBefore(tab.tabElement, this.tabsElement.childNodes[index]);
@@ -5469,20 +5465,20 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.dispatchEventToListeners(Events.TabOrderChanged, eventData);
   }
   leftToolbar() {
-    if (!this.leftToolbarInternal) {
-      this.leftToolbarInternal = document.createElement("devtools-toolbar");
-      this.leftToolbarInternal.classList.add("tabbed-pane-left-toolbar");
-      this.headerElementInternal.insertBefore(this.leftToolbarInternal, this.headerElementInternal.firstChild);
+    if (!this.#leftToolbar) {
+      this.#leftToolbar = document.createElement("devtools-toolbar");
+      this.#leftToolbar.classList.add("tabbed-pane-left-toolbar");
+      this.#headerElement.insertBefore(this.#leftToolbar, this.#headerElement.firstChild);
     }
-    return this.leftToolbarInternal;
+    return this.#leftToolbar;
   }
   rightToolbar() {
-    if (!this.rightToolbarInternal) {
-      this.rightToolbarInternal = document.createElement("devtools-toolbar");
-      this.rightToolbarInternal.classList.add("tabbed-pane-right-toolbar");
-      this.headerElementInternal.appendChild(this.rightToolbarInternal);
+    if (!this.#rightToolbar) {
+      this.#rightToolbar = document.createElement("devtools-toolbar");
+      this.#rightToolbar.classList.add("tabbed-pane-right-toolbar");
+      this.#headerElement.appendChild(this.#rightToolbar);
     }
-    return this.rightToolbarInternal;
+    return this.#rightToolbar;
   }
   setAllowTabReorder(allow, automatic) {
     this.allowTabReorder = allow;
@@ -5538,67 +5534,67 @@ var TabbedPaneTab = class {
   closeable;
   previewFeature = false;
   tabbedPane;
-  idInternal;
-  titleInternal;
-  tooltipInternal;
-  viewInternal;
+  #id;
+  #title;
+  #tooltip;
+  #view;
   shown;
   measuredWidth;
-  tabElementInternal;
+  #tabElement;
   icon = null;
   suffixElement = null;
-  widthInternal;
+  #width;
   delegate;
   titleElement;
   dragStartX;
-  jslogContextInternal;
+  #jslogContext;
   constructor(tabbedPane, id2, title, closeable, previewFeature, view, tooltip, jslogContext) {
     this.closeable = closeable;
     this.previewFeature = previewFeature;
     this.tabbedPane = tabbedPane;
-    this.idInternal = id2;
-    this.titleInternal = title;
-    this.tooltipInternal = tooltip;
-    this.viewInternal = view;
+    this.#id = id2;
+    this.#title = title;
+    this.#tooltip = tooltip;
+    this.#view = view;
     this.shown = false;
-    this.jslogContextInternal = jslogContext;
+    this.#jslogContext = jslogContext;
   }
   get id() {
-    return this.idInternal;
+    return this.#id;
   }
   get title() {
-    return this.titleInternal;
+    return this.#title;
   }
   set title(title) {
-    if (title === this.titleInternal) {
+    if (title === this.#title) {
       return;
     }
-    this.titleInternal = title;
+    this.#title = title;
     if (this.titleElement) {
       this.titleElement.textContent = title;
-      const closeIconContainer = this.tabElementInternal?.querySelector(".close-button");
+      const closeIconContainer = this.#tabElement?.querySelector(".close-button");
       closeIconContainer?.setAttribute("title", i18nString4(UIStrings4.closeS, { PH1: title }));
       closeIconContainer?.setAttribute("aria-label", i18nString4(UIStrings4.closeS, { PH1: title }));
     }
     delete this.measuredWidth;
   }
   get jslogContext() {
-    return this.jslogContextInternal ?? (this.idInternal === "console-view" ? "console" : this.idInternal);
+    return this.#jslogContext ?? (this.#id === "console-view" ? "console" : this.#id);
   }
   isCloseable() {
     return this.closeable;
   }
   setIcon(icon) {
     this.icon = icon;
-    if (this.tabElementInternal && this.titleElement) {
-      this.createIconElement(this.tabElementInternal, this.titleElement, false);
+    if (this.#tabElement && this.titleElement) {
+      this.createIconElement(this.#tabElement, this.titleElement, false);
     }
     delete this.measuredWidth;
   }
   setSuffixElement(suffixElement) {
     this.suffixElement = suffixElement;
-    if (this.tabElementInternal && this.titleElement) {
-      this.createSuffixElement(this.tabElementInternal, this.titleElement, false);
+    if (this.#tabElement && this.titleElement) {
+      this.createSuffixElement(this.#tabElement, this.titleElement, false);
     }
     delete this.measuredWidth;
   }
@@ -5613,32 +5609,32 @@ var TabbedPaneTab = class {
     return true;
   }
   get view() {
-    return this.viewInternal;
+    return this.#view;
   }
   set view(view) {
-    this.viewInternal = view;
+    this.#view = view;
   }
   get tooltip() {
-    return this.tooltipInternal;
+    return this.#tooltip;
   }
   set tooltip(tooltip) {
-    this.tooltipInternal = tooltip;
+    this.#tooltip = tooltip;
     if (this.titleElement) {
       Tooltip.install(this.titleElement, tooltip || "");
     }
   }
   get tabElement() {
-    if (!this.tabElementInternal) {
-      this.tabElementInternal = this.createTabElement(false);
+    if (!this.#tabElement) {
+      this.#tabElement = this.createTabElement(false);
     }
-    return this.tabElementInternal;
+    return this.#tabElement;
   }
   width() {
-    return this.widthInternal || 0;
+    return this.#width || 0;
   }
   setWidth(width) {
     this.tabElement.style.width = width === -1 ? "" : width + "px";
-    this.widthInternal = width;
+    this.#width = width;
   }
   setDelegate(delegate) {
     this.delegate = delegate;
@@ -5684,7 +5680,7 @@ var TabbedPaneTab = class {
   createTabElement(measuring) {
     const tabElement = document.createElement("div");
     tabElement.classList.add("tabbed-pane-header-tab");
-    tabElement.id = "tab-" + this.idInternal;
+    tabElement.id = "tab-" + this.#id;
     markAsTab(tabElement);
     setSelected(tabElement, false);
     setLabel(tabElement, this.title);
@@ -5831,8 +5827,8 @@ var TabbedPaneTab = class {
       return false;
     }
     this.dragStartX = event.pageX;
-    if (this.tabElementInternal) {
-      this.tabElementInternal.classList.add("dragging");
+    if (this.#tabElement) {
+      this.#tabElement.classList.add("dragging");
     }
     this.tabbedPane.tabSlider.remove();
     return true;
@@ -5841,10 +5837,10 @@ var TabbedPaneTab = class {
     const tabElements = this.tabbedPane.tabsElement.childNodes;
     for (let i = 0; i < tabElements.length; ++i) {
       let tabElement2 = tabElements[i];
-      if (!this.tabElementInternal || tabElement2 === this.tabElementInternal) {
+      if (!this.#tabElement || tabElement2 === this.#tabElement) {
         continue;
       }
-      const intersects = tabElement2.offsetLeft + tabElement2.clientWidth > this.tabElementInternal.offsetLeft && this.tabElementInternal.offsetLeft + this.tabElementInternal.clientWidth > tabElement2.offsetLeft;
+      const intersects = tabElement2.offsetLeft + tabElement2.clientWidth > this.#tabElement.offsetLeft && this.#tabElement.offsetLeft + this.#tabElement.clientWidth > tabElement2.offsetLeft;
       if (!intersects) {
         continue;
       }
@@ -5856,13 +5852,13 @@ var TabbedPaneTab = class {
         tabElement2 = tabElement2.nextSibling;
         ++i;
       }
-      const oldOffsetLeft = this.tabElementInternal.offsetLeft;
+      const oldOffsetLeft = this.#tabElement.offsetLeft;
       this.tabbedPane.insertBefore(this, i);
-      this.dragStartX = dragStartX2 + this.tabElementInternal.offsetLeft - oldOffsetLeft;
+      this.dragStartX = dragStartX2 + this.#tabElement.offsetLeft - oldOffsetLeft;
       break;
     }
     const dragStartX = this.dragStartX;
-    const tabElement = this.tabElementInternal;
+    const tabElement = this.#tabElement;
     if (!tabElement.previousSibling && event.pageX - dragStartX < 0) {
       tabElement.style.setProperty("left", "0px");
       return;
@@ -5874,7 +5870,7 @@ var TabbedPaneTab = class {
     tabElement.style.setProperty("left", event.pageX - dragStartX + "px");
   }
   endTabDragging(_event) {
-    const tabElement = this.tabElementInternal;
+    const tabElement = this.#tabElement;
     tabElement.classList.remove("dragging");
     tabElement.style.removeProperty("left");
     delete this.dragStartX;
@@ -5908,7 +5904,7 @@ import * as IconButton3 from "./../components/icon_button/icon_button.js";
 import * as VisualLogging6 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/viewContainers.css.js
-var viewContainers_css_default = `/* Copyright 2025 The Chromium Authors. All rights reserved.
+var viewContainers_css_default = `/* Copyright 2025 The Chromium Authors
 Use of this source code is governed by a BSD-style license that can be
 found in the LICENSE file. */
 
@@ -6549,14 +6545,14 @@ var expandableContainerForView = /* @__PURE__ */ new WeakMap();
 var Location = class {
   manager;
   revealCallback;
-  widgetInternal;
+  #widget;
   constructor(manager, widget, revealCallback) {
     this.manager = manager;
     this.revealCallback = revealCallback;
-    this.widgetInternal = widget;
+    this.#widget = widget;
   }
   widget() {
-    return this.widgetInternal;
+    return this.#widget;
   }
   reveal() {
     if (this.revealCallback) {
@@ -6575,7 +6571,7 @@ var Location = class {
 };
 var locationForView = /* @__PURE__ */ new WeakMap();
 var TabbedLocation = class _TabbedLocation extends Location {
-  tabbedPaneInternal;
+  #tabbedPane;
   location;
   allowReorder;
   closeableTabSetting;
@@ -6590,15 +6586,15 @@ var TabbedLocation = class _TabbedLocation extends Location {
     }
     super(manager, tabbedPane, revealCallback);
     this.location = location;
-    this.tabbedPaneInternal = tabbedPane;
+    this.#tabbedPane = tabbedPane;
     this.allowReorder = allowReorder;
-    this.tabbedPaneInternal.addEventListener(Events.TabSelected, this.tabSelected, this);
-    this.tabbedPaneInternal.addEventListener(Events.TabClosed, this.tabClosed, this);
-    this.tabbedPaneInternal.addEventListener(Events.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
+    this.#tabbedPane.addEventListener(Events.TabSelected, this.tabSelected, this);
+    this.#tabbedPane.addEventListener(Events.TabClosed, this.tabClosed, this);
+    this.#tabbedPane.addEventListener(Events.PaneVisibilityChanged, this.tabbedPaneVisibilityChanged, this);
     this.closeableTabSetting = Common9.Settings.Settings.instance().createSetting("closeable-tabs", {});
     this.setOrUpdateCloseableTabsSetting();
     this.tabOrderSetting = Common9.Settings.Settings.instance().createSetting(location + "-tab-order", {});
-    this.tabbedPaneInternal.addEventListener(Events.TabOrderChanged, this.persistTabOrder, this);
+    this.#tabbedPane.addEventListener(Events.TabOrderChanged, this.persistTabOrder, this);
     if (restoreSelection) {
       this.lastSelectedTabSetting = Common9.Settings.Settings.instance().createSetting(location + "-selected-tab", "");
     }
@@ -6615,10 +6611,10 @@ var TabbedLocation = class _TabbedLocation extends Location {
     this.closeableTabSetting.set(newClosable);
   }
   widget() {
-    return this.tabbedPaneInternal;
+    return this.#tabbedPane;
   }
   tabbedPane() {
-    return this.tabbedPaneInternal;
+    return this.#tabbedPane;
   }
   enableMoreTabsButton() {
     const moreTabsButton = new ToolbarMenuButton(
@@ -6629,7 +6625,7 @@ var TabbedLocation = class _TabbedLocation extends Location {
       "more-tabs",
       "dots-vertical"
     );
-    this.tabbedPaneInternal.leftToolbar().appendToolbarItem(moreTabsButton);
+    this.#tabbedPane.leftToolbar().appendToolbarItem(moreTabsButton);
     return moreTabsButton;
   }
   appendApplicableItems(locationName) {
@@ -6657,16 +6653,16 @@ var TabbedLocation = class _TabbedLocation extends Location {
       }
     }
     if (this.defaultTab) {
-      if (this.tabbedPaneInternal.hasTab(this.defaultTab)) {
-        this.tabbedPaneInternal.selectTab(this.defaultTab);
+      if (this.#tabbedPane.hasTab(this.defaultTab)) {
+        this.#tabbedPane.selectTab(this.defaultTab);
       } else {
         const view = Array.from(this.views.values()).find((view2) => view2.viewId() === this.defaultTab);
         if (view) {
           void this.showView(view);
         }
       }
-    } else if (this.lastSelectedTabSetting && this.tabbedPaneInternal.hasTab(this.lastSelectedTabSetting.get())) {
-      this.tabbedPaneInternal.selectTab(this.lastSelectedTabSetting.get());
+    } else if (this.lastSelectedTabSetting && this.#tabbedPane.hasTab(this.lastSelectedTabSetting.get())) {
+      this.#tabbedPane.selectTab(this.lastSelectedTabSetting.get());
     }
   }
   appendTabsToMenu(contextMenu) {
@@ -6712,15 +6708,15 @@ var TabbedLocation = class _TabbedLocation extends Location {
     }
   }
   appendTab(view, index) {
-    this.tabbedPaneInternal.appendTab(view.viewId(), view.title(), new ContainerWidget(view), void 0, false, view.isCloseable() || view.isTransient(), view.isPreviewFeature(), index);
+    this.#tabbedPane.appendTab(view.viewId(), view.title(), new ContainerWidget(view), void 0, false, view.isCloseable() || view.isTransient(), view.isPreviewFeature(), index);
     const iconName = view.iconName();
     if (iconName) {
       const icon = IconButton3.Icon.create(iconName);
-      this.tabbedPaneInternal.setTabIcon(view.viewId(), icon);
+      this.#tabbedPane.setTabIcon(view.viewId(), icon);
     }
   }
   appendView(view, insertBefore) {
-    if (this.tabbedPaneInternal.hasTab(view.viewId())) {
+    if (this.#tabbedPane.hasTab(view.viewId())) {
       return;
     }
     const oldLocation = locationForView.get(view);
@@ -6731,7 +6727,7 @@ var TabbedLocation = class _TabbedLocation extends Location {
     this.manager.views.set(view.viewId(), view);
     this.views.set(view.viewId(), view);
     let index = void 0;
-    const tabIds = this.tabbedPaneInternal.tabIds();
+    const tabIds = this.#tabbedPane.tabIds();
     if (this.allowReorder) {
       const orderSetting = this.tabOrderSetting.get();
       const order = orderSetting[view.viewId()];
@@ -6763,34 +6759,34 @@ var TabbedLocation = class _TabbedLocation extends Location {
   async showView(view, insertBefore, userGesture, omitFocus, shouldSelectTab = true) {
     this.appendView(view, insertBefore);
     if (shouldSelectTab) {
-      this.tabbedPaneInternal.selectTab(view.viewId(), userGesture);
+      this.#tabbedPane.selectTab(view.viewId(), userGesture);
     }
     if (!omitFocus) {
-      this.tabbedPaneInternal.focus();
+      this.#tabbedPane.focus();
     }
-    const widget = this.tabbedPaneInternal.tabView(view.viewId());
+    const widget = this.#tabbedPane.tabView(view.viewId());
     await widget.materialize();
   }
   removeView(view) {
-    if (!this.tabbedPaneInternal.hasTab(view.viewId())) {
+    if (!this.#tabbedPane.hasTab(view.viewId())) {
       return;
     }
     locationForView.delete(view);
     this.manager.views.delete(view.viewId());
-    this.tabbedPaneInternal.closeTab(view.viewId());
+    this.#tabbedPane.closeTab(view.viewId());
     this.views.delete(view.viewId());
   }
   isViewVisible(view) {
-    return this.tabbedPaneInternal.isShowing() && this.tabbedPaneInternal?.selectedTabId === view.viewId();
+    return this.#tabbedPane.isShowing() && this.#tabbedPane?.selectedTabId === view.viewId();
   }
   tabbedPaneVisibilityChanged(event) {
-    if (!this.tabbedPaneInternal.selectedTabId) {
+    if (!this.#tabbedPane.selectedTabId) {
       return;
     }
     this.manager.dispatchEventToListeners("ViewVisibilityChanged", {
       location: this.location,
-      revealedViewId: event.data.isVisible ? this.tabbedPaneInternal.selectedTabId : void 0,
-      hiddenViewId: event.data.isVisible ? void 0 : this.tabbedPaneInternal.selectedTabId
+      revealedViewId: event.data.isVisible ? this.#tabbedPane.selectedTabId : void 0,
+      hiddenViewId: event.data.isVisible ? void 0 : this.#tabbedPane.selectedTabId
     });
   }
   tabSelected(event) {
@@ -6817,7 +6813,7 @@ var TabbedLocation = class _TabbedLocation extends Location {
     }
   }
   persistTabOrder() {
-    const tabIds = this.tabbedPaneInternal.tabIds();
+    const tabIds = this.#tabbedPane.tabIds();
     const tabOrders = {};
     for (let i = 0; i < tabIds.length; i++) {
       tabOrders[tabIds[i]] = (i + 1) * _TabbedLocation.orderStep;
@@ -7048,10 +7044,7 @@ var InspectorView = class _InspectorView extends VBox {
     setLabel(drawerElement, i18nString7(UIStrings7.drawer));
     this.drawerSplitWidget.installResizer(this.drawerTabbedPane.headerElement());
     this.drawerSplitWidget.setSidebarWidget(this.drawerTabbedPane);
-    if (Root4.Runtime.experiments.isEnabled(
-      "vertical-drawer"
-      /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
-    )) {
+    if (Root4.Runtime.hostConfig.devToolsFlexibleLayout?.verticalDrawerEnabled) {
       this.drawerTabbedPane.rightToolbar().appendToolbarItem(this.#toggleOrientationButton);
     }
     this.drawerTabbedPane.rightToolbar().appendToolbarItem(closeDrawerButton);
@@ -7179,10 +7172,6 @@ var InspectorView = class _InspectorView extends VBox {
       tabbedPane.setTrailingTabIcon(tabId, icon);
     }
   }
-  emitDrawerChangeEvent(isDrawerOpen) {
-    const evt = new CustomEvent("drawerchange", { bubbles: true, cancelable: true, detail: { isDrawerOpen } });
-    document.body.dispatchEvent(evt);
-  }
   getTabbedPaneForTabId(tabId) {
     if (this.tabbedPane.hasTab(tabId)) {
       return this.tabbedPane;
@@ -7206,7 +7195,6 @@ var InspectorView = class _InspectorView extends VBox {
     } else {
       this.focusRestorer = null;
     }
-    this.emitDrawerChangeEvent(true);
     LiveAnnouncer.alert(i18nString7(UIStrings7.drawerShown));
   }
   drawerVisible() {
@@ -7220,10 +7208,12 @@ var InspectorView = class _InspectorView extends VBox {
       this.focusRestorer.restore();
     }
     this.drawerSplitWidget.hideSidebar(true);
-    this.emitDrawerChangeEvent(false);
     LiveAnnouncer.alert(i18nString7(UIStrings7.drawerHidden));
   }
   toggleDrawerOrientation({ force } = {}) {
+    if (!this.drawerTabbedPane.isShowing()) {
+      return;
+    }
     let drawerWillBeVertical;
     if (force) {
       drawerWillBeVertical = force === DrawerOrientation.VERTICAL;
@@ -7465,12 +7455,7 @@ var ActionDelegate = class {
         }
         return true;
       case "main.toggle-drawer-orientation":
-        if (Root4.Runtime.experiments.isEnabled(
-          "vertical-drawer"
-          /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */
-        )) {
-          InspectorView.instance().toggleDrawerOrientation();
-        }
+        InspectorView.instance().toggleDrawerOrientation();
         return true;
       case "main.next-tab":
         InspectorView.instance().tabbedPane.selectNextTab();
@@ -7511,7 +7496,7 @@ var InspectorViewTabDelegate = class {
 
 // gen/front_end/ui/legacy/softContextMenu.css.js
 var softContextMenu_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7861,7 +7846,7 @@ var SoftContextMenu = class _SoftContextMenu {
       subItems: void 0,
       subMenuTimer: void 0
     };
-    if (item8.jslogContext && !item8.element?.hasAttribute("jslog")) {
+    if (item8.jslogContext && item8.label) {
       if (item8.type === "checkbox") {
         menuItemElement.setAttribute("jslog", `${VisualLogging8.toggle().track({ click: true }).context(item8.jslogContext)}`);
       } else {
@@ -9361,8 +9346,8 @@ var ListControl = class {
   bottomHeight;
   model;
   itemToElement;
-  selectedIndexInternal;
-  selectedItemInternal;
+  #selectedIndex;
+  #selectedItem;
   delegate;
   mode;
   fixedHeight;
@@ -9380,8 +9365,8 @@ var ListControl = class {
     this.model = model;
     this.model.addEventListener("ItemsReplaced", this.replacedItemsInRange, this);
     this.itemToElement = /* @__PURE__ */ new Map();
-    this.selectedIndexInternal = -1;
-    this.selectedItemInternal = null;
+    this.#selectedIndex = -1;
+    this.#selectedItem = null;
     this.element.tabIndex = -1;
     this.element.addEventListener("click", this.onClick.bind(this), false);
     this.element.addEventListener("keydown", this.onKeyDown.bind(this), false);
@@ -9410,16 +9395,16 @@ var ListControl = class {
     const from = data.index;
     const to = from + data.removed.length;
     const keepSelectedIndex = data.keepSelectedIndex;
-    const oldSelectedItem = this.selectedItemInternal;
+    const oldSelectedItem = this.#selectedItem;
     const oldSelectedElement = oldSelectedItem !== null ? this.itemToElement.get(oldSelectedItem) || null : null;
     for (let i = 0; i < data.removed.length; i++) {
       this.itemToElement.delete(data.removed[i]);
     }
     this.invalidate(from, to, data.inserted);
-    if (this.selectedIndexInternal >= to) {
-      this.selectedIndexInternal += data.inserted - (to - from);
-      this.selectedItemInternal = this.model.at(this.selectedIndexInternal);
-    } else if (this.selectedIndexInternal >= from) {
+    if (this.#selectedIndex >= to) {
+      this.#selectedIndex += data.inserted - (to - from);
+      this.#selectedItem = this.model.at(this.#selectedIndex);
+    } else if (this.#selectedIndex >= from) {
       const selectableIndex = keepSelectedIndex ? from : from + data.inserted;
       let index = this.findFirstSelectable(selectableIndex, 1, false);
       if (index === -1) {
@@ -9441,15 +9426,15 @@ var ListControl = class {
     const item8 = this.model.at(index);
     this.itemToElement.delete(item8);
     this.invalidateRange(index, index + 1);
-    if (this.selectedIndexInternal !== -1) {
-      this.select(this.selectedIndexInternal, null, null);
+    if (this.#selectedIndex !== -1) {
+      this.select(this.#selectedIndex, null, null);
     }
   }
   refreshAllItems() {
     this.itemToElement.clear();
     this.invalidateRange(0, this.model.length);
-    if (this.selectedIndexInternal !== -1) {
-      this.select(this.selectedIndexInternal, null, null);
+    if (this.#selectedIndex !== -1) {
+      this.select(this.#selectedIndex, null, null);
     }
   }
   invalidateRange(from, to) {
@@ -9495,10 +9480,10 @@ var ListControl = class {
     this.scrollIntoView(index, center);
   }
   selectedItem() {
-    return this.selectedItemInternal;
+    return this.#selectedItem;
   }
   selectedIndex() {
-    return this.selectedIndexInternal;
+    return this.#selectedIndex;
   }
   selectItem(item8, center, dontScroll) {
     let index = -1;
@@ -9516,15 +9501,15 @@ var ListControl = class {
     if (index !== -1 && !dontScroll) {
       this.scrollIntoView(index, center);
     }
-    if (this.selectedIndexInternal !== index) {
+    if (this.#selectedIndex !== index) {
       this.select(index);
     }
   }
   selectPreviousItem(canWrap, center) {
-    if (this.selectedIndexInternal === -1 && !canWrap) {
+    if (this.#selectedIndex === -1 && !canWrap) {
       return false;
     }
-    let index = this.selectedIndexInternal === -1 ? this.model.length - 1 : this.selectedIndexInternal - 1;
+    let index = this.#selectedIndex === -1 ? this.model.length - 1 : this.#selectedIndex - 1;
     index = this.findFirstSelectable(index, -1, Boolean(canWrap));
     if (index !== -1) {
       this.scrollIntoView(index, center);
@@ -9534,10 +9519,10 @@ var ListControl = class {
     return false;
   }
   selectNextItem(canWrap, center) {
-    if (this.selectedIndexInternal === -1 && !canWrap) {
+    if (this.#selectedIndex === -1 && !canWrap) {
       return false;
     }
-    let index = this.selectedIndexInternal === -1 ? 0 : this.selectedIndexInternal + 1;
+    let index = this.#selectedIndex === -1 ? 0 : this.#selectedIndex + 1;
     index = this.findFirstSelectable(index, 1, Boolean(canWrap));
     if (index !== -1) {
       this.scrollIntoView(index, center);
@@ -9550,7 +9535,7 @@ var ListControl = class {
     if (this.mode === ListMode.NonViewport) {
       return false;
     }
-    let index = this.selectedIndexInternal === -1 ? this.model.length - 1 : this.selectedIndexInternal;
+    let index = this.#selectedIndex === -1 ? this.model.length - 1 : this.#selectedIndex;
     index = this.findPageSelectable(index, -1);
     if (index !== -1) {
       this.scrollIntoView(index, center);
@@ -9563,7 +9548,7 @@ var ListControl = class {
     if (this.mode === ListMode.NonViewport) {
       return false;
     }
-    let index = this.selectedIndexInternal === -1 ? 0 : this.selectedIndexInternal;
+    let index = this.#selectedIndex === -1 ? 0 : this.#selectedIndex;
     index = this.findPageSelectable(index, 1);
     if (index !== -1) {
       this.scrollIntoView(index, center);
@@ -9688,15 +9673,15 @@ var ListControl = class {
   }
   select(index, oldItem, oldElement) {
     if (oldItem === void 0) {
-      oldItem = this.selectedItemInternal;
+      oldItem = this.#selectedItem;
     }
     if (oldElement === void 0) {
       oldElement = this.itemToElement.get(oldItem) || null;
     }
-    this.selectedIndexInternal = index;
-    this.selectedItemInternal = index === -1 ? null : this.model.at(index);
-    const newItem = this.selectedItemInternal;
-    const newElement = this.selectedIndexInternal !== -1 ? this.elementAtIndex(index) : null;
+    this.#selectedIndex = index;
+    this.#selectedItem = index === -1 ? null : this.model.at(index);
+    const newItem = this.#selectedItem;
+    const newElement = this.#selectedIndex !== -1 ? this.elementAtIndex(index) : null;
     this.delegate.selectedItemChanged(oldItem, newItem, oldElement, newElement);
     if (!this.delegate.updateSelectedItemARIA(oldElement, newElement)) {
       if (oldElement) {
@@ -9964,33 +9949,9 @@ var ListModel = class extends Common12.ObjectWrapper.ObjectWrapper {
 
 // gen/front_end/ui/legacy/suggestBox.css.js
 var suggestBox_css_default = `/*
- * Copyright (C) 2011 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2011 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 :host {
@@ -10328,7 +10289,7 @@ var SuggestBox = class {
 
 // gen/front_end/ui/legacy/textPrompt.css.js
 var textPrompt_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -10414,7 +10375,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   proxyElement;
   proxyElementDisplay;
   autocompletionTimeout;
-  titleInternal;
+  #title;
   queryRange;
   previousText;
   currentSuggestion;
@@ -10424,7 +10385,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   loadCompletions;
   completionStopCharacters;
   usesSuggestionBuilder;
-  elementInternal;
+  #element;
   boundOnKeyDown;
   boundOnInput;
   boundOnMouseWheel;
@@ -10437,13 +10398,13 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   blurListener;
   oldTabIndex;
   completeTimeout;
-  disableDefaultSuggestionForEmptyInputInternal;
+  #disableDefaultSuggestionForEmptyInput;
   jslogContext = void 0;
   constructor() {
     super();
     this.proxyElementDisplay = "inline-block";
     this.autocompletionTimeout = DefaultAutocompletionTimeout;
-    this.titleInternal = "";
+    this.#title = "";
     this.queryRange = null;
     this.previousText = "";
     this.currentSuggestion = null;
@@ -10470,7 +10431,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
    * they should use the result of this method to attach listeners for bubbling events.
    */
   attach(element) {
-    return this.attachInternal(element);
+    return this.#attach(element);
   }
   /**
    * Clients should never attach any event listeners to the |element|. Instead,
@@ -10479,15 +10440,15 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
    * (since the "blur" event does not bubble.)
    */
   attachAndStartEditing(element, blurListener) {
-    const proxyElement = this.attachInternal(element);
+    const proxyElement = this.#attach(element);
     this.startEditing(blurListener);
     return proxyElement;
   }
-  attachInternal(element) {
+  #attach(element) {
     if (this.proxyElement) {
       throw new Error("Cannot attach an attached TextPrompt");
     }
-    this.elementInternal = element;
+    this.#element = element;
     this.boundOnKeyDown = this.onKeyDown.bind(this);
     this.boundOnInput = this.onInput.bind(this);
     this.boundOnMouseWheel = this.onMouseWheel.bind(this);
@@ -10508,38 +10469,38 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     if (this.jslogContext) {
       jslog = jslog.context(this.jslogContext);
     }
-    if (!this.elementInternal.hasAttribute("jslog")) {
-      this.elementInternal.setAttribute("jslog", `${jslog}`);
+    if (!this.#element.hasAttribute("jslog")) {
+      this.#element.setAttribute("jslog", `${jslog}`);
     }
-    this.elementInternal.classList.add("text-prompt");
-    markAsTextBox(this.elementInternal);
+    this.#element.classList.add("text-prompt");
+    markAsTextBox(this.#element);
     setAutocomplete(
-      this.elementInternal,
+      this.#element,
       "both"
       /* ARIAUtils.AutocompleteInteractionModel.BOTH */
     );
     setHasPopup(
-      this.elementInternal,
+      this.#element,
       "listbox"
       /* ARIAUtils.PopupRole.LIST_BOX */
     );
-    this.elementInternal.setAttribute("contenteditable", "plaintext-only");
+    this.#element.setAttribute("contenteditable", "plaintext-only");
     this.element().addEventListener("keydown", this.boundOnKeyDown, false);
-    this.elementInternal.addEventListener("input", this.boundOnInput, false);
-    this.elementInternal.addEventListener("wheel", this.boundOnMouseWheel, false);
-    this.elementInternal.addEventListener("selectstart", this.boundClearAutocomplete, false);
-    this.elementInternal.addEventListener("blur", this.boundOnBlur, false);
+    this.#element.addEventListener("input", this.boundOnInput, false);
+    this.#element.addEventListener("wheel", this.boundOnMouseWheel, false);
+    this.#element.addEventListener("selectstart", this.boundClearAutocomplete, false);
+    this.#element.addEventListener("blur", this.boundOnBlur, false);
     this.suggestBox = new SuggestBox(this, 20);
-    if (this.titleInternal) {
-      Tooltip.install(this.proxyElement, this.titleInternal);
+    if (this.#title) {
+      Tooltip.install(this.proxyElement, this.#title);
     }
     return this.proxyElement;
   }
   element() {
-    if (!this.elementInternal) {
+    if (!this.#element) {
       throw new Error("Expected an already attached element!");
     }
-    return this.elementInternal;
+    return this.#element;
   }
   detach() {
     this.removeFromElement();
@@ -10612,10 +10573,10 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.element().focus();
   }
   title() {
-    return this.titleInternal;
+    return this.#title;
   }
   setTitle(title) {
-    this.titleInternal = title;
+    this.#title = title;
     if (this.proxyElement) {
       Tooltip.install(this.proxyElement, title);
     }
@@ -10775,7 +10736,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
       result = this.suggestBox.acceptSuggestion();
     }
     if (!result) {
-      result = this.acceptSuggestionInternal();
+      result = this.#acceptSuggestion();
     }
     if (this.usesSuggestionBuilder && result) {
       this.autoCompleteSoon();
@@ -10852,7 +10813,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     this.completionsReady(completionRequestId, selection, wordQueryRange, Boolean(force), completions);
   }
   disableDefaultSuggestionForEmptyInput() {
-    this.disableDefaultSuggestionForEmptyInputInternal = true;
+    this.#disableDefaultSuggestionForEmptyInput = true;
   }
   boxForAnchorAtStart(selection, textRange) {
     const rangeCopy = selection.getRangeAt(0).cloneRange();
@@ -10897,7 +10858,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     beforeRange.setStart(this.element(), 0);
     beforeRange.setEnd(fullWordRange.startContainer, fullWordRange.startOffset);
     this.queryRange = new TextUtils.TextRange.TextRange(0, beforeRange.toString().length, 0, beforeRange.toString().length + fullWordRange.toString().length);
-    const shouldSelect = !this.disableDefaultSuggestionForEmptyInputInternal || Boolean(this.text());
+    const shouldSelect = !this.#disableDefaultSuggestionForEmptyInput || Boolean(this.text());
     if (this.suggestBox) {
       this.suggestBox.updateSuggestions(this.boxForAnchorAtStart(selection, fullWordRange), completions, shouldSelect, !this.isCaretAtEndOfPrompt(), this.text());
     }
@@ -10913,9 +10874,9 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
     }
   }
   acceptSuggestion() {
-    this.acceptSuggestionInternal();
+    this.#acceptSuggestion();
   }
-  acceptSuggestionInternal() {
+  #acceptSuggestion() {
     if (!this.queryRange) {
       return false;
     }
@@ -10978,7 +10939,7 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
         }
         foundNextText = true;
       }
-      node = node.traverseNextNode(this.elementInternal);
+      node = node.traverseNextNode(this.#element);
     }
     return true;
   }
@@ -11056,7 +11017,7 @@ var DefaultAutocompletionTimeout = 250;
 
 // gen/front_end/ui/legacy/toolbar.css.js
 var toolbar_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -11468,14 +11429,14 @@ var Toolbar = class _Toolbar extends HTMLElement {
 customElements.define("devtools-toolbar", Toolbar);
 var ToolbarItem = class extends Common14.ObjectWrapper.ObjectWrapper {
   element;
-  visibleInternal;
+  #visible;
   enabled;
   toolbar;
   title;
   constructor(element) {
     super();
     this.element = element;
-    this.visibleInternal = true;
+    this.#visible = true;
     this.enabled = true;
     this.toolbar = null;
   }
@@ -11502,14 +11463,14 @@ var ToolbarItem = class extends Common14.ObjectWrapper.ObjectWrapper {
     this.element.disabled = !enabled;
   }
   visible() {
-    return this.visibleInternal;
+    return this.#visible;
   }
   setVisible(x) {
-    if (this.visibleInternal === x) {
+    if (this.#visible === x) {
       return;
     }
     this.element.classList.toggle("hidden", !x);
-    this.visibleInternal = x;
+    this.#visible = x;
     if (this.toolbar && !(this instanceof ToolbarSeparator)) {
       this.toolbar.hideSeparatorDupes();
     }
@@ -11866,6 +11827,7 @@ var ToolbarMenuButton = class extends ToolbarItem {
   contextMenuHandler;
   useSoftMenu;
   keepOpen;
+  isIconDropdown;
   triggerTimeoutId;
   #triggerDelay = 200;
   constructor(contextMenuHandler, isIconDropdown, useSoftMenu, jslogContext, iconName, keepOpen) {
@@ -11894,6 +11856,7 @@ var ToolbarMenuButton = class extends ToolbarItem {
     this.contextMenuHandler = contextMenuHandler;
     this.useSoftMenu = Boolean(useSoftMenu);
     this.keepOpen = Boolean(keepOpen);
+    this.isIconDropdown = Boolean(isIconDropdown);
     markAsMenuButton(this.element);
   }
   setText(text) {
@@ -11946,10 +11909,11 @@ var ToolbarMenuButton = class extends ToolbarItem {
   }
   trigger(event) {
     delete this.triggerTimeoutId;
+    const horizontalPosition = this.isIconDropdown ? this.element.getBoundingClientRect().right : this.element.getBoundingClientRect().left;
     const contextMenu = new ContextMenu(event, {
       useSoftMenu: this.useSoftMenu,
       keepOpen: this.keepOpen,
-      x: this.element.getBoundingClientRect().right,
+      x: horizontalPosition,
       y: this.element.getBoundingClientRect().top + this.element.offsetHeight,
       // Without adding a delay, pointer events will be un-ignored too early, and a single click causes
       // the context menu to be closed and immediately re-opened on Windows (https://crbug.com/339560549).
@@ -12067,19 +12031,19 @@ var ToolbarComboBox = class extends ToolbarItem {
   }
 };
 var ToolbarSettingComboBox = class extends ToolbarComboBox {
-  optionsInternal;
+  #options;
   setting;
   muteSettingListener;
   constructor(options, setting, accessibleName) {
     super(null, accessibleName, void 0, setting.name);
-    this.optionsInternal = options;
+    this.#options = options;
     this.setting = setting;
     this.element.addEventListener("change", this.onSelectValueChange.bind(this), false);
     this.setOptions(options);
     setting.addChangeListener(this.onDevToolsSettingChanged, this);
   }
   setOptions(options) {
-    this.optionsInternal = options;
+    this.#options = options;
     this.element.removeChildren();
     for (let i = 0; i < options.length; ++i) {
       const dataOption = options[i];
@@ -12091,7 +12055,7 @@ var ToolbarSettingComboBox = class extends ToolbarComboBox {
     }
   }
   value() {
-    return this.optionsInternal[this.selectedIndex()].value;
+    return this.#options[this.selectedIndex()].value;
   }
   select(option) {
     const index = Array.prototype.indexOf.call(this.element, option);
@@ -12099,7 +12063,7 @@ var ToolbarSettingComboBox = class extends ToolbarComboBox {
   }
   setSelectedIndex(index) {
     super.setSelectedIndex(index);
-    const option = this.optionsInternal.at(index);
+    const option = this.#options.at(index);
     if (option) {
       this.setTitle(option.label);
     }
@@ -12120,8 +12084,8 @@ var ToolbarSettingComboBox = class extends ToolbarComboBox {
       return;
     }
     const value = this.setting.get();
-    for (let i = 0; i < this.optionsInternal.length; ++i) {
-      if (value === this.optionsInternal[i].value) {
+    for (let i = 0; i < this.#options.length; ++i) {
+      if (value === this.#options[i].value) {
         this.setSelectedIndex(i);
         break;
       }
@@ -12131,7 +12095,7 @@ var ToolbarSettingComboBox = class extends ToolbarComboBox {
    * Run when the user interacts with the <select> element.
    */
   onSelectValueChange(_event) {
-    const option = this.optionsInternal[this.selectedIndex()];
+    const option = this.#options[this.selectedIndex()];
     this.muteSettingListener = true;
     this.setting.set(option.value);
     this.muteSettingListener = false;
@@ -12200,7 +12164,7 @@ import * as VisualLogging15 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/checkboxTextLabel.css.js
 var checkboxTextLabel_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12291,7 +12255,7 @@ input {
 
 // gen/front_end/ui/legacy/confirmDialog.css.js
 var confirmDialog_css_default = `/*
- * Copyright (c) 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12348,7 +12312,7 @@ var confirmDialog_css_default = `/*
 
 // gen/front_end/ui/legacy/inlineButton.css.js
 var inlineButton_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -12374,7 +12338,7 @@ var inlineButton_css_default = `/*
 
 // gen/front_end/ui/legacy/inspectorCommon.css.js
 var inspectorCommon_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -13155,7 +13119,7 @@ devtools-toolbar {
   .toolbar-dropdown-arrow {
     pointer-events: none;
     flex: none;
-    top: 2px;
+    top: var(--sys-size-1);
   }
 
   .toolbar-button.dark-text .toolbar-dropdown-arrow {
@@ -13679,7 +13643,7 @@ devtools-toolbar {
 
 // gen/front_end/ui/legacy/smallBubble.css.js
 var smallBubble_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -14472,12 +14436,6 @@ function endBatchUpdate() {
     postUpdateHandlers.scheduleInvoke();
     postUpdateHandlers = null;
   }
-}
-function invokeOnceAfterBatchUpdate(object, method) {
-  if (!postUpdateHandlers) {
-    postUpdateHandlers = new InvokeOnceHandlers(true);
-  }
-  postUpdateHandlers.add(object, method);
 }
 function animateFunction(window2, func, params, duration, animationComplete) {
   const start = window2.performance.now();
@@ -15481,7 +15439,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
 
 // gen/front_end/ui/legacy/GlassPane.js
 var GlassPane = class _GlassPane {
-  widgetInternal;
+  #widget;
   element;
   contentElement;
   onMouseDownBound;
@@ -15496,10 +15454,10 @@ var GlassPane = class _GlassPane {
   marginBehavior = "DefaultMargin";
   #ignoreLeftMargin = false;
   constructor(jslog) {
-    this.widgetInternal = new Widget({ jslog, useShadowDom: true });
-    this.widgetInternal.markAsRoot();
-    this.element = this.widgetInternal.element;
-    this.contentElement = this.widgetInternal.contentElement;
+    this.#widget = new Widget({ jslog, useShadowDom: true });
+    this.#widget.markAsRoot();
+    this.element = this.#widget.element;
+    this.contentElement = this.#widget.contentElement;
     this.registerRequiredCSS(glassPane_css_default);
     this.setPointerEventsBehavior(
       "PierceGlassPane"
@@ -15511,13 +15469,13 @@ var GlassPane = class _GlassPane {
     this.contentElement.setAttribute("jslog", jslog);
   }
   isShowing() {
-    return this.widgetInternal.isShowing();
+    return this.#widget.isShowing();
   }
   registerRequiredCSS(...cssFiles) {
-    this.widgetInternal.registerRequiredCSS(...cssFiles);
+    this.#widget.registerRequiredCSS(...cssFiles);
   }
   setDefaultFocusedElement(element) {
-    this.widgetInternal.setDefaultFocusedElement(element);
+    this.#widget.setDefaultFocusedElement(element);
   }
   setDimmed(dimmed) {
     this.element.classList.toggle("dimmed-pane", dimmed);
@@ -15574,7 +15532,7 @@ var GlassPane = class _GlassPane {
     this.element.setAttribute("data-devtools-glass-pane", "");
     document2.body.addEventListener("mousedown", this.onMouseDownBound, true);
     document2.body.addEventListener("pointerdown", this.onMouseDownBound, true);
-    this.widgetInternal.show(document2.body);
+    this.#widget.show(document2.body);
     panes.add(this);
     this.positionContent();
   }
@@ -15585,7 +15543,7 @@ var GlassPane = class _GlassPane {
     panes.delete(this);
     this.element.ownerDocument.body.removeEventListener("mousedown", this.onMouseDownBound, true);
     this.element.ownerDocument.body.removeEventListener("pointerdown", this.onMouseDownBound, true);
-    this.widgetInternal.detach();
+    this.#widget.detach();
     if (this.#onHideCallback) {
       this.#onHideCallback();
     }
@@ -15731,10 +15689,10 @@ var GlassPane = class _GlassPane {
       this.contentElement.style.height = height + "px";
     }
     this.contentElement.positionAt(positionX, positionY, container);
-    this.widgetInternal.doResize();
+    this.#widget.doResize();
   }
   widget() {
-    return this.widgetInternal;
+    return this.#widget;
   }
   static setContainer(element) {
     containers.set(element.ownerDocument, element);
@@ -16262,7 +16220,7 @@ __export(DropTarget_exports, {
 
 // gen/front_end/ui/legacy/dropTarget.css.js
 var dropTarget_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16383,7 +16341,7 @@ import * as VisualLogging18 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/emptyWidget.css.js
 var emptyWidget_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -16421,13 +16379,13 @@ function setNodeData(node, value) {
   node.data = value;
 }
 var Fragment = class _Fragment {
-  elementInternal;
+  #element;
   elementsById = /* @__PURE__ */ new Map();
   constructor(element) {
-    this.elementInternal = element;
+    this.#element = element;
   }
   element() {
-    return this.elementInternal;
+    return this.#element;
   }
   $(elementId) {
     return this.elementsById.get(elementId);
@@ -16575,7 +16533,7 @@ var Fragment = class _Fragment {
       return value;
     }
     if (value instanceof _Fragment) {
-      return value.elementInternal;
+      return value.#element;
     }
     if (Array.isArray(value)) {
       const node = document.createDocumentFragment();
@@ -16599,7 +16557,7 @@ var html2 = (strings, ...vararg) => {
 
 // gen/front_end/ui/legacy/XLink.js
 var XLink = class extends XElement {
-  hrefInternal;
+  #href;
   clickable;
   onClick;
   onKeyDown;
@@ -16620,20 +16578,20 @@ var XLink = class extends XElement {
     this.setAttribute("tabindex", "0");
     this.setAttribute("target", "_blank");
     this.setAttribute("rel", "noopener");
-    this.hrefInternal = null;
+    this.#href = null;
     this.clickable = true;
     this.onClick = (event) => {
       event.consume(true);
-      if (this.hrefInternal) {
-        openInNewTab(this.hrefInternal);
+      if (this.#href) {
+        openInNewTab(this.#href);
       }
       this.dispatchEvent(new Event("x-link-invoke"));
     };
     this.onKeyDown = (event) => {
       if (Platform18.KeyboardUtilities.isEnterOrSpaceKey(event)) {
         event.consume(true);
-        if (this.hrefInternal) {
-          openInNewTab(this.hrefInternal);
+        if (this.#href) {
+          openInNewTab(this.#href);
         }
       }
       this.dispatchEvent(new Event("x-link-invoke"));
@@ -16643,7 +16601,7 @@ var XLink = class extends XElement {
     return XElement.observedAttributes.concat(["href", "no-click", "title", "tabindex"]);
   }
   get href() {
-    return this.hrefInternal;
+    return this.#href;
   }
   attributeChangedCallback(attr, oldValue, newValue) {
     if (attr === "no-click") {
@@ -16663,7 +16621,7 @@ var XLink = class extends XElement {
         }
       } catch {
       }
-      this.hrefInternal = href;
+      this.#href = href;
       if (!this.hasAttribute("title")) {
         Tooltip.install(this, newValue);
       }
@@ -16679,7 +16637,7 @@ var XLink = class extends XElement {
     super.attributeChangedCallback(attr, oldValue, newValue);
   }
   updateClick() {
-    if (this.hrefInternal !== null && this.clickable) {
+    if (this.#href !== null && this.clickable) {
       this.addEventListener("click", this.onClick, false);
       this.addEventListener("keydown", this.onKeyDown, false);
       this.style.setProperty("cursor", "pointer");
@@ -16795,33 +16753,9 @@ import * as VisualLogging19 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/filter.css.js
 var filter_css_default = `/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2013 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 .filter-bar,
@@ -16967,7 +16901,7 @@ var filter_css_default = `/*
   color: var(--sys-color-on-surface-subtle);
 
   .toolbar-dropdown-arrow {
-    top: var(--sys-size-2);
+    top: var(--sys-size-1);
   }
 
   &:hover {
@@ -17026,7 +16960,7 @@ var i18nString14 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var FilterBar = class extends Common16.ObjectWrapper.eventMixin(HBox) {
   enabled;
   stateSetting;
-  filterButtonInternal;
+  #filterButton;
   filters;
   alwaysShowFilters;
   showingWidget;
@@ -17037,15 +16971,15 @@ var FilterBar = class extends Common16.ObjectWrapper.eventMixin(HBox) {
     this.element.classList.add("filter-bar");
     this.element.setAttribute("jslog", `${VisualLogging19.toolbar("filter-bar")}`);
     this.stateSetting = Common16.Settings.Settings.instance().createSetting("filter-bar-" + name + "-toggled", Boolean(visibleByDefault));
-    this.filterButtonInternal = new ToolbarSettingToggle(this.stateSetting, "filter", i18nString14(UIStrings14.filter), "filter-filled", "filter");
-    this.filterButtonInternal.element.style.setProperty("--dot-toggle-top", "13px");
-    this.filterButtonInternal.element.style.setProperty("--dot-toggle-left", "14px");
+    this.#filterButton = new ToolbarSettingToggle(this.stateSetting, "filter", i18nString14(UIStrings14.filter), "filter-filled", "filter");
+    this.#filterButton.element.style.setProperty("--dot-toggle-top", "13px");
+    this.#filterButton.element.style.setProperty("--dot-toggle-left", "14px");
     this.filters = [];
     this.updateFilterBar();
     this.stateSetting.addChangeListener(this.updateFilterBar.bind(this));
   }
   filterButton() {
-    return this.filterButtonInternal;
+    return this.#filterButton;
   }
   addDivider() {
     const element = document.createElement("div");
@@ -17060,7 +16994,7 @@ var FilterBar = class extends Common16.ObjectWrapper.eventMixin(HBox) {
   }
   setEnabled(enabled) {
     this.enabled = enabled;
-    this.filterButtonInternal.setEnabled(enabled);
+    this.#filterButton.setEnabled(enabled);
     this.updateFilterBar();
   }
   filterChanged() {
@@ -17105,7 +17039,7 @@ var FilterBar = class extends Common16.ObjectWrapper.eventMixin(HBox) {
   }
   updateFilterButton() {
     const isActive = this.hasActiveFilter();
-    this.filterButtonInternal.setChecked(isActive);
+    this.#filterButton.setChecked(isActive);
   }
   clear() {
     this.element.removeChildren();
@@ -17691,7 +17625,7 @@ import * as VisualLogging20 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/listWidget.css.js
 var listWidget_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18097,7 +18031,7 @@ var ListWidget = class extends VBox {
 };
 var Editor = class {
   element;
-  contentElementInternal;
+  #contentElement;
   commitButton;
   cancelButton;
   errorMessageContainer;
@@ -18113,8 +18047,8 @@ var Editor = class {
     this.element.classList.add("editor-container");
     this.element.setAttribute("jslog", `${VisualLogging20.pane("editor").track({ resize: true })}`);
     this.element.addEventListener("keydown", onKeyDown.bind(null, Platform23.KeyboardUtilities.isEscKey, this.cancelClicked.bind(this)), false);
-    this.contentElementInternal = this.element.createChild("div", "editor-content");
-    this.contentElementInternal.addEventListener("keydown", onKeyDown.bind(null, (event) => {
+    this.#contentElement = this.element.createChild("div", "editor-content");
+    this.#contentElement.addEventListener("keydown", onKeyDown.bind(null, (event) => {
       if (event.key !== "Enter") {
         return false;
       }
@@ -18145,7 +18079,7 @@ var Editor = class {
     }
   }
   contentElement() {
-    return this.contentElementInternal;
+    return this.#contentElement;
   }
   createInput(name, type, title, validator) {
     const input = createInput("", type);
@@ -18321,7 +18255,7 @@ import * as VisualLogging22 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/popover.css.js
 var popover_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18481,7 +18415,7 @@ var PopoverHelper = class _PopoverHelper {
       return;
     }
     this.hidePopoverTimer = window.setTimeout(() => {
-      this.hidePopoverInternal();
+      this.#hidePopover();
       this.hidePopoverTimer = null;
     }, timeout);
   }
@@ -18493,7 +18427,7 @@ var PopoverHelper = class _PopoverHelper {
     this.showPopoverTimer = window.setTimeout(() => {
       this.showPopoverTimer = null;
       this.stopHidePopoverTimer();
-      this.hidePopoverInternal();
+      this.#hidePopover();
       const document2 = event.target.ownerDocument;
       this.showPopover(document2);
     }, timeout);
@@ -18510,9 +18444,9 @@ var PopoverHelper = class _PopoverHelper {
   }
   hidePopover() {
     this.stopShowPopoverTimer();
-    this.hidePopoverInternal();
+    this.#hidePopover();
   }
-  hidePopoverInternal() {
+  #hidePopover() {
     if (!this.hidePopoverCallback) {
       return;
     }
@@ -18578,7 +18512,7 @@ __export(ProgressIndicator_exports, {
 
 // gen/front_end/ui/legacy/progressIndicator.css.js
 var progressIndicator_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18682,7 +18616,7 @@ import { html as html6, render as render5 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/remoteDebuggingTerminatedScreen.css.js
 var remoteDebuggingTerminatedScreen_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -18791,7 +18725,7 @@ import * as VisualLogging23 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/reportView.css.js
 var reportView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19150,7 +19084,7 @@ __export(RootView_exports, {
 
 // gen/front_end/ui/legacy/rootView.css.js
 var rootView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19210,7 +19144,7 @@ import * as IconButton8 from "./../components/icon_button/icon_button.js";
 
 // gen/front_end/ui/legacy/searchableView.css.js
 var searchableView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -19960,7 +19894,7 @@ import * as VisualLogging25 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/softDropDown.css.js
 var softDropDown_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20001,7 +19935,7 @@ var softDropDown_css_default = `/*
 
 // gen/front_end/ui/legacy/softDropDownButton.css.js
 var softDropDownButton_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20024,7 +19958,7 @@ button.soft-dropdown {
   }
 
   devtools-icon {
-    top: var(--sys-size-2);
+    top: var(--sys-size-1);
   }
 }
 
@@ -20343,7 +20277,7 @@ import { html as html7, render as render6 } from "./../lit/lit.js";
 
 // gen/front_end/ui/legacy/targetCrashedScreen.css.js
 var targetCrashedScreen_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -20454,7 +20388,7 @@ import * as VisualLogging26 from "./../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/treeoutline.css.js
 var treeoutline_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

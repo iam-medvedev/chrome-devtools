@@ -22,10 +22,10 @@ export type HandlersWithMeta<T extends Record<string, Handler>> = {
 } & {
     [K in keyof T]: T[K];
 };
-export type ParsedTrace = Readonly<EnabledHandlerDataWithMeta<typeof ModelHandlers>>;
+export type HandlerData = Readonly<EnabledHandlerDataWithMeta<typeof ModelHandlers>>;
 type DeepWriteable<T> = {
     -readonly [P in keyof T]: DeepWriteable<T[P]>;
 };
-export type ParsedTraceMutable = DeepWriteable<ParsedTrace>;
+export type HandlerDataMutable = DeepWriteable<HandlerData>;
 export type Handlers = typeof ModelHandlers;
 export {};

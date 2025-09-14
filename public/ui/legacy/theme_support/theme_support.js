@@ -6,7 +6,7 @@ var themeSupportInstance;
 var themeValueByTargetByName = /* @__PURE__ */ new Map();
 var ThemeSupport = class _ThemeSupport extends EventTarget {
   setting;
-  themeNameInternal = "default";
+  #themeName = "default";
   computedStyleOfHTML = Common.Lazy.lazy(() => window.getComputedStyle(document.documentElement));
   #documentsToTheme = /* @__PURE__ */ new Set([document]);
   #darkThemeMediaQuery;
@@ -73,7 +73,7 @@ var ThemeSupport = class _ThemeSupport extends EventTarget {
     return themeValue;
   }
   themeName() {
-    return this.themeNameInternal;
+    return this.#themeName;
   }
   #applyTheme() {
     for (const document2 of this.#documentsToTheme) {
@@ -84,8 +84,8 @@ var ThemeSupport = class _ThemeSupport extends EventTarget {
     const isForcedColorsMode = window.matchMedia("(forced-colors: active)").matches;
     const systemPreferredTheme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default";
     const useSystemPreferred = this.setting.get() === "systemPreferred" || isForcedColorsMode;
-    this.themeNameInternal = useSystemPreferred ? systemPreferredTheme : this.setting.get();
-    document2.documentElement.classList.toggle("theme-with-dark-background", this.themeNameInternal === "dark");
+    this.#themeName = useSystemPreferred ? systemPreferredTheme : this.setting.get();
+    document2.documentElement.classList.toggle("theme-with-dark-background", this.#themeName === "dark");
     const useChromeTheme = Common.Settings.moduleSetting("chrome-theme-colors").get();
     const isIncognito = Root.Runtime.hostConfig.isOffTheRecord === true;
     if (isIncognito) {

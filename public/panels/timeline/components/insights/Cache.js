@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './Table.js';
@@ -13,6 +13,9 @@ const { html } = Lit;
 export class Cache extends BaseInsightComponent {
     static litTagName = Lit.StaticHtml.literal `devtools-performance-cache`;
     internalName = 'cache';
+    hasAskAiSupport() {
+        return true;
+    }
     mapToRow(req) {
         return {
             values: [eventRef(req.request), i18n.TimeUtilities.secondsToString(req.ttl)],

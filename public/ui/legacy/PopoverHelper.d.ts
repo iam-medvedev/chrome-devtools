@@ -1,5 +1,6 @@
 import { GlassPane } from './GlassPane.js';
 export declare class PopoverHelper {
+    #private;
     static createPopover: (jslogContext?: string) => GlassPane;
     private disableOnClick;
     private getRequest;
@@ -30,7 +31,6 @@ export declare class PopoverHelper {
     private stopShowPopoverTimer;
     isPopoverVisible(): boolean;
     hidePopover(): void;
-    private hidePopoverInternal;
     private showPopover;
     private stopHidePopoverTimer;
     dispose(): void;

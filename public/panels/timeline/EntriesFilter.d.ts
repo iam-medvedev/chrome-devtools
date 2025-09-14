@@ -12,7 +12,7 @@ import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
  */
 export declare class EntriesFilter {
     #private;
-    constructor(parsedTrace: Trace.Handlers.Types.ParsedTrace);
+    constructor(parsedTrace: Trace.TraceModel.ParsedTrace);
     /**
      * Checks which actions can be applied on an entry. This allows us to only show possible actions in the Context Menu.
      * For example, if an entry has no children, COLLAPSE_FUNCTION will not change the FlameChart, therefore there is no need to show this action as an option.

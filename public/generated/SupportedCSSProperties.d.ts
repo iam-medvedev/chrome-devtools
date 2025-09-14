@@ -104,6 +104,9 @@ export const generatedPropertyValues: {
     "animation-timing-function": {
         values: string[];
     };
+    "animation-trigger": {
+        values: string[];
+    };
     "app-region": {
         values: string[];
     };
@@ -654,6 +657,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     overlay: {
+        values: string[];
+    };
+    "overscroll-area": {
         values: string[];
     };
     "overscroll-behavior-x": {

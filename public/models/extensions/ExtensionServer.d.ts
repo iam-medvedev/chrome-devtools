@@ -38,7 +38,6 @@ export declare class ExtensionServer extends Common.ObjectWrapper.ObjectWrapper<
     private lastRequestId;
     private registeredExtensions;
     private status;
-    private readonly sidebarPanesInternal;
     private extensionsEnabled;
     private inspectedTabId?;
     private readonly extensionAPITestHook?;

@@ -1,11 +1,9 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Root from '../../../core/root/root.js';
 import * as Trace from '../../../models/trace/trace.js';
-import { nameForEntry } from './EntryName.js';
-import { visibleTypes } from './EntryStyles.js';
-import { SourceMapsResolver } from './SourceMapsResolver.js';
+import * as SourceMapsResolver from '../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 /** Iterates from a node down through its descendents. If the callback returns true, the loop stops. */
 function depthFirstWalk(nodes, callback) {
     for (const node of nodes) {
@@ -19,22 +17,20 @@ export class AICallTree {
     selectedNode;
     rootNode;
     parsedTrace;
-    constructor(selectedNode, rootNode, 
-    // TODO: see if we can avoid passing around this entire thing.
-    parsedTrace) {
+    constructor(selectedNode, rootNode, parsedTrace) {
         this.selectedNode = selectedNode;
         this.rootNode = rootNode;
         this.parsedTrace = parsedTrace;
     }
     static findEventsForThread({ thread, parsedTrace, bounds }) {
-        const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+        const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
         if (!threadEvents) {
             return null;
         }
         return threadEvents.filter(e => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
     }
     static findMainThreadTasks({ thread, parsedTrace, bounds }) {
-        const threadEvents = parsedTrace.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+        const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
         if (!threadEvents) {
             return null;
         }
@@ -51,7 +47,7 @@ export class AICallTree {
         if (!overlappingEvents) {
             return null;
         }
-        const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(visibleTypes());
+        const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes());
         // By default, we remove events whose duration is less than 0.5% of the total
         // range. So if the range is 10s, an event must be 0.05s+ to be included.
         // This does risk eliminating useful data when we pass it to the LLM, but
@@ -98,7 +94,7 @@ export class AICallTree {
             return null;
         }
         // First: check that the selected event is on the thread we have identified as the main thread.
-        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
+        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace.data);
         const thread = threads.find(t => t.pid === selectedEvent.pid && t.tid === selectedEvent.tid);
         if (!thread) {
             return null;
@@ -119,16 +115,17 @@ export class AICallTree {
         // information such as Layout Shift clusters.
         // We check Renderer + Samples to ensure we support CPU Profiles (which do
         // not populate the Renderer Handler)
-        if (!parsedTrace.Renderer.entryToNode.has(selectedEvent) && !parsedTrace.Samples.entryToNode.has(selectedEvent)) {
+        const data = parsedTrace.data;
+        if (!data.Renderer.entryToNode.has(selectedEvent) && !data.Samples.entryToNode.has(selectedEvent)) {
             return null;
         }
         const allEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
         const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
         const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
-        let threadEvents = parsedTrace.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
+        let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
         if (!threadEvents) {
             // None from the renderer: try the samples handler, this might be a CPU trace.
-            threadEvents = parsedTrace.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
+            threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
         }
         if (!threadEvents) {
             console.warn(`AICallTree: could not find thread for selected entry: ${selectedEvent}`);
@@ -140,7 +137,7 @@ export class AICallTree {
         // events here, otherwise the generated call tree will not match what the
         // user is seeing.
         if (!allEventsEnabled) {
-            filters.push(new Trace.Extras.TraceFilter.VisibleEventsFilter(visibleTypes()));
+            filters.push(new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes()));
         }
         // Build a tree bounded by the selected event's timestamps, and our other filters applied
         const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
@@ -266,7 +263,7 @@ export class AICallTree {
         // 1. ID
         const idStr = String(nodeId);
         // 2. Name
-        const name = nameForEntry(event, parsedTrace);
+        const name = Trace.Name.forEntry(event, parsedTrace);
         // Round milliseconds to one decimal place, return empty string if zero/undefined
         const roundToTenths = (num) => {
             if (!num) {
@@ -279,7 +276,7 @@ export class AICallTree {
         // 4. Self Time
         const selfTimeStr = roundToTenths(node.selfTime);
         // 5. URL Index
-        const url = SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
+        const url = SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
         let urlIndexStr = '';
         if (url) {
             const existingIndex = allUrls.indexOf(url);

@@ -46,9 +46,7 @@ export declare class ShortcutRegistry {
     private isDisabledDefault;
 }
 export declare class ShortcutTreeNode {
-    private readonly keyInternal;
-    private actionsInternal;
-    private chordsInternal;
+    #private;
     private readonly depth;
     constructor(key: number, depth?: number);
     addAction(action: string): void;

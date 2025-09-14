@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /*
@@ -81,10 +81,10 @@ export class SourceMapEntry {
 export class SourceMap {
     static retainRawSourceMaps = false;
     #json;
-    #compiledURLInternal;
+    #compiledURL;
     #sourceMappingURL;
     #baseURL;
-    #mappingsInternal;
+    #mappings;
     #sourceInfos = [];
     #sourceInfoByURL = new Map();
     #scopesInfo = null;
@@ -95,11 +95,11 @@ export class SourceMap {
      */
     constructor(compiledURL, sourceMappingURL, payload) {
         this.#json = payload;
-        this.#compiledURLInternal = compiledURL;
+        this.#compiledURL = compiledURL;
         this.#sourceMappingURL = sourceMappingURL;
         this.#baseURL = (Common.ParsedURL.schemeIs(sourceMappingURL, 'data:')) ? compiledURL : sourceMappingURL;
         this.#debugId = 'debugId' in payload ? payload.debugId : undefined;
-        this.#mappingsInternal = null;
+        this.#mappings = null;
         if ('sections' in this.#json) {
             if (this.#json.sections.find(section => 'url' in section)) {
                 Common.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
@@ -135,7 +135,7 @@ export class SourceMap {
         return this.#sourceInfos.findIndex(info => info.sourceURL === sourceURL);
     }
     compiledURL() {
-        return this.#compiledURLInternal;
+        return this.#compiledURL;
     }
     url() {
         return this.#sourceMappingURL;
@@ -282,25 +282,25 @@ export class SourceMap {
     }
     mappings() {
         this.#ensureMappingsProcessed();
-        return this.#mappingsInternal ?? [];
+        return this.#mappings ?? [];
     }
     reversedMappings(sourceURL) {
         this.#ensureMappingsProcessed();
         return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
     }
     #ensureMappingsProcessed() {
-        if (this.#mappingsInternal === null) {
-            this.#mappingsInternal = [];
+        if (this.#mappings === null) {
+            this.#mappings = [];
             try {
                 this.eachSection(this.parseMap.bind(this));
             }
             catch (e) {
                 console.error('Failed to parse source map', e);
-                this.#mappingsInternal = [];
+                this.#mappings = [];
             }
             // As per spec, mappings are not necessarily sorted.
             this.mappings().sort(SourceMapEntry.compare);
-            this.#computeReverseMappings(this.#mappingsInternal);
+            this.#computeReverseMappings(this.#mappings);
         }
         if (!SourceMap.retainRawSourceMaps) {
             this.#json = null;

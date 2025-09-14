@@ -130,6 +130,7 @@ models/ai_assistance/data_formatters/FileFormatter.test.js
 models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
+models/ai_assistance/data_formatters/UnitFormatters.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
 models/badges/Badge.test.js
@@ -186,7 +187,6 @@ models/persistence/NetworkPersistenceManager.test.js
 models/persistence/PersistenceAction.test.js
 models/persistence/PersistenceImpl.test.js
 models/persistence/PlatformFileSystem.test.js
-models/persistence/WorkspaceSettingsTab.test.js
 models/project_settings/ProjectSettingsModel.test.js
 models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
@@ -202,8 +202,10 @@ models/text_utils/TextCursor.test.js
 models/text_utils/TextRange.test.js
 models/text_utils/TextUtils.test.js
 models/text_utils/WasmDisassembly.test.js
+models/trace/EntityMapper.test.js
 models/trace/EventsSerializer.test.js
 models/trace/ModelImpl.test.js
+models/trace/Name.test.js
 models/trace/Processor.test.js
 models/trace/extras/FilmStrip.test.js
 models/trace/extras/MainThreadActivity.test.js
@@ -283,6 +285,7 @@ models/trace/lantern/simulation/Simulator.test.js
 models/trace/lantern/simulation/TCPConnection.test.js
 models/trace/types/File.test.js
 models/trace/types/TraceEvents.test.js
+models/trace_source_maps_resolver/SourceMapsResolver.test.js
 models/workspace/IgnoreListManager.test.js
 models/workspace/SearchConfig.test.js
 models/workspace/UISourceCode.test.js
@@ -352,6 +355,7 @@ panels/common/AiCodeCompletionDisclaimer.test.js
 panels/common/AiCodeCompletionSummaryToolbar.test.js
 panels/common/AiCodeCompletionTeaser.test.js
 panels/common/BadgeNotification.test.js
+panels/common/GdpSignUpDialog.test.js
 panels/console/ConsoleContextSelector.test.js
 panels/console/ConsoleFormat.test.js
 panels/console/ConsolePrompt.test.js
@@ -491,6 +495,7 @@ panels/security/IPProtectionView.test.js
 panels/security/SecurityModel.test.js
 panels/security/SecurityPanel.test.js
 panels/settings/AISettingsTab.test.js
+panels/settings/WorkspaceSettingsTab.test.js
 panels/settings/components/SyncSection.test.js
 panels/settings/emulation/components/UserAgentClientHintsForm.test.js
 panels/settings/emulation/utils/StructuredHeaders.test.js
@@ -578,15 +583,12 @@ panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
 panels/timeline/utils/AICallTree.test.js
-panels/timeline/utils/EntityMapper.test.js
-panels/timeline/utils/EntryName.test.js
 panels/timeline/utils/EntryNodes.test.js
 panels/timeline/utils/FreshRecording.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
 panels/timeline/utils/InsightAIContext.test.js
-panels/timeline/utils/SourceMapsResolver.test.js
 panels/timeline/utils/Treemap.test.js
 panels/utils/utils.test.js
 panels/web_audio/WebAudioView.test.js
@@ -657,6 +659,7 @@ ui/legacy/SettingsUI.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js
+ui/legacy/TabbedPane.test.js
 ui/legacy/Toolbar.test.js
 ui/legacy/Treeoutline.test.js
 ui/legacy/UIUtils.test.js

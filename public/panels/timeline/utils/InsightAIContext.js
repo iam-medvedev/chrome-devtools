@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../../models/trace/trace.js';
@@ -21,13 +21,13 @@ export class AIQueries {
         let mainThreadPID = null;
         let mainThreadTID = null;
         if (navigationId) {
-            const navigation = parsedTrace.Meta.navigationsByNavigationId.get(navigationId);
+            const navigation = parsedTrace.data.Meta.navigationsByNavigationId.get(navigationId);
             if (navigation?.args.data?.isOutermostMainFrame) {
                 mainThreadPID = navigation.pid;
                 mainThreadTID = navigation.tid;
             }
         }
-        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace);
+        const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace.data);
         const thread = threads.find(thread => {
             if (mainThreadPID && mainThreadTID) {
                 return thread.pid === mainThreadPID && thread.tid === mainThreadTID;

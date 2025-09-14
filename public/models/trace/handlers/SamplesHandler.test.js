@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -246,13 +246,13 @@ describeWithEnvironment('SamplesHandler', function () {
     describe('getProfileCallFunctionName', () => {
         // Find an event from the trace that represents some work. The use of
         // this specific call frame event is not for any real reason.
-        function getProfileEventAndNode(parsedTrace) {
-            const mainThread = getMainThread(parsedTrace.Renderer);
+        function getProfileEventAndNode(data) {
+            const mainThread = getMainThread(data.Renderer);
             let foundNode = null;
             let foundEntry = null;
             for (const entry of mainThread.entries) {
                 if (Trace.Types.Events.isProfileCall(entry) && entry.callFrame.functionName === 'performConcurrentWorkOnRoot') {
-                    const profile = parsedTrace.Samples.profilesInProcess.get(entry.pid)?.get(entry.tid);
+                    const profile = data.Samples.profilesInProcess.get(entry.pid)?.get(entry.tid);
                     const node = profile?.parsedProfile.nodeById(entry.nodeId);
                     if (node) {
                         foundNode = node;
@@ -273,26 +273,26 @@ describeWithEnvironment('SamplesHandler', function () {
             };
         }
         it('falls back to the call frame name if the ProfileNode name is empty', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
-            const { entry, profileNode } = getProfileEventAndNode(parsedTrace);
+            const { data } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const { entry, profileNode } = getProfileEventAndNode(data);
             // Store and then reset this: we are doing this to test the fallback to
             // the entry callFrame.functionName property. After the assertion we
             // reset this to avoid impacting other tests.
             const originalProfileNodeName = profileNode.functionName;
             profileNode.setFunctionName('');
-            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.Samples, entry), 'performConcurrentWorkOnRoot');
+            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(data.Samples, entry), 'performConcurrentWorkOnRoot');
             // St
             profileNode.setFunctionName(originalProfileNodeName);
         });
         it('uses the profile name if it has been set', async function () {
-            const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
-            const { entry, profileNode } = getProfileEventAndNode(parsedTrace);
+            const { data } = await TraceLoader.traceEngine(this, 'react-hello-world.json.gz');
+            const { entry, profileNode } = getProfileEventAndNode(data);
             // Store and then reset this: we are doing this to test the fallback to
             // the entry callFrame.functionName property. After the assertion we
             // reset this to avoid impacting other tests.
             const originalProfileNodeName = profileNode.functionName;
             profileNode.setFunctionName('testing-profile-name');
-            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(parsedTrace.Samples, entry), 'testing-profile-name');
+            assert.strictEqual(Trace.Handlers.ModelHandlers.Samples.getProfileCallFunctionName(data.Samples, entry), 'testing-profile-name');
             profileNode.setFunctionName(originalProfileNodeName);
         });
     });

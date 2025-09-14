@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -380,7 +380,7 @@ export class Widget {
             }
             this.attach(currentWidget);
         }
-        this.showWidgetInternal(parentElement, insertBefore);
+        this.#showWidget(parentElement, insertBefore);
     }
     attach(parentWidget) {
         if (parentWidget === this.#parentWidget) {
@@ -400,9 +400,9 @@ export class Widget {
         if (!this.element.parentElement) {
             throw new Error('Attempt to show widget that is not hidden using hideWidget().');
         }
-        this.showWidgetInternal(this.element.parentElement, this.element.nextSibling);
+        this.#showWidget(this.element.parentElement, this.element.nextSibling);
     }
-    showWidgetInternal(parentElement, insertBefore) {
+    #showWidget(parentElement, insertBefore) {
         let currentParent = parentElement;
         while (currentParent && !widgetMap.get(currentParent)) {
             currentParent = currentParent.parentElementOrShadowHost();
@@ -448,9 +448,9 @@ export class Widget {
         if (!this.#visible) {
             return;
         }
-        this.hideWidgetInternal(false);
+        this.#hideWidget(false);
     }
-    hideWidgetInternal(removeFromDOM) {
+    #hideWidget(removeFromDOM) {
         this.#visible = false;
         const { parentElement } = this.element;
         if (this.parentIsShowing()) {
@@ -493,7 +493,7 @@ export class Widget {
         // responsibility for the consequences.
         const removeFromDOM = overrideHideOnDetach || !this.shouldHideOnDetach();
         if (this.#visible) {
-            this.hideWidgetInternal(removeFromDOM);
+            this.#hideWidget(removeFromDOM);
         }
         else if (removeFromDOM) {
             const { parentElement } = this.element;

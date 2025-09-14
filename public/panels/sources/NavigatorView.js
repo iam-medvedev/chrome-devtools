@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2012 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2012 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -198,7 +172,7 @@ export class NavigatorView extends UI.Widget.VBox {
     deployedNode;
     navigatorGroupByFolderSetting;
     navigatorGroupByAuthoredExperiment;
-    workspaceInternal;
+    #workspace;
     groupByFrame;
     groupByAuthored;
     groupByDomain;
@@ -237,7 +211,7 @@ export class NavigatorView extends UI.Widget.VBox {
         SDK.TargetManager.TargetManager.instance().addEventListener("NameChanged" /* SDK.TargetManager.Events.NAME_CHANGED */, this.targetNameChanged, this);
         SDK.TargetManager.TargetManager.instance().observeTargets(this);
         this.resetWorkspace(Workspace.Workspace.WorkspaceImpl.instance());
-        this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+        this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
         Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionAdded" /* Bindings.NetworkProject.Events.FRAME_ATTRIBUTION_ADDED */, this.frameAttributionAdded, this);
         Bindings.NetworkProject.NetworkProjectManager.instance().addEventListener("FrameAttributionRemoved" /* Bindings.NetworkProject.Events.FRAME_ATTRIBUTION_REMOVED */, this.frameAttributionRemoved, this);
     }
@@ -360,18 +334,18 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     resetWorkspace(workspace) {
         // Clear old event listeners first.
-        if (this.workspaceInternal) {
-            this.workspaceInternal.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-            this.workspaceInternal.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-            this.workspaceInternal.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-            this.workspaceInternal.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+        if (this.#workspace) {
+            this.#workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+            this.#workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+            this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+            this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
         }
-        this.workspaceInternal = workspace;
-        this.workspaceInternal.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
-        this.workspaceInternal.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
-        this.workspaceInternal.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
-        this.workspaceInternal.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
-        this.workspaceInternal.projects().forEach(this.projectAdded.bind(this));
+        this.#workspace = workspace;
+        this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, this.uiSourceCodeAddedCallback, this);
+        this.#workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, this.uiSourceCodeRemovedCallback, this);
+        this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.projectAddedCallback, this);
+        this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.projectRemovedCallback, this);
+        this.#workspace.projects().forEach(this.projectAdded.bind(this));
         this.computeUniqueFileSystemProjectNames();
     }
     projectAddedCallback(event) {
@@ -389,7 +363,7 @@ export class NavigatorView extends UI.Widget.VBox {
         }
     }
     workspace() {
-        return this.workspaceInternal;
+        return this.#workspace;
     }
     acceptProject(project) {
         return !project.isServiceProject();
@@ -503,7 +477,7 @@ export class NavigatorView extends UI.Widget.VBox {
         }
     }
     computeUniqueFileSystemProjectNames() {
-        const fileSystemProjects = this.workspaceInternal.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
+        const fileSystemProjects = this.#workspace.projectsForType(Workspace.Workspace.projectTypes.FileSystem);
         if (!fileSystemProjects.length) {
             return;
         }
@@ -1008,7 +982,7 @@ export class NavigatorView extends UI.Widget.VBox {
         this.initGrouping();
         // Reset the workspace to repopulate filesystem folders.
         this.resetWorkspace(Workspace.Workspace.WorkspaceImpl.instance());
-        this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+        this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     }
     ignoreListChanged() {
         if (Root.Runtime.experiments.isEnabled("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */)) {
@@ -1031,7 +1005,7 @@ export class NavigatorView extends UI.Widget.VBox {
     }
     resetForTest() {
         this.reset();
-        this.workspaceInternal.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
+        this.#workspace.uiSourceCodes().forEach(this.addUISourceCode.bind(this));
     }
     discardFrame(frame, isAuthored) {
         if (isAuthored) {
@@ -1190,7 +1164,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
     nodeType;
     node;
     navigatorView;
-    uiSourceCodeInternal;
+    #uiSourceCode;
     aiButtonContainer;
     constructor(navigatorView, uiSourceCode, title, node) {
         super('', false, uiSourceCode.contentType().name());
@@ -1202,16 +1176,16 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         UI.ARIAUtils.setLabel(this.listItemElement, `${uiSourceCode.name()}, ${this.nodeType}`);
         Common.EventTarget.fireEvent('source-tree-file-added', uiSourceCode.fullDisplayName());
         this.navigatorView = navigatorView;
-        this.uiSourceCodeInternal = uiSourceCode;
+        this.#uiSourceCode = uiSourceCode;
         this.updateIcon();
         this.titleElement.setAttribute('jslog', `${VisualLogging.value('title').track({ change: true })}`);
     }
     updateIcon() {
-        const icon = PanelUtils.getIconForSourceFile(this.uiSourceCodeInternal);
+        const icon = PanelUtils.getIconForSourceFile(this.#uiSourceCode);
         this.setLeadingIcons([icon]);
     }
     updateAccessibleName() {
-        UI.ARIAUtils.setLabel(this.listItemElement, `${this.uiSourceCodeInternal.name()}, ${this.nodeType}`);
+        UI.ARIAUtils.setLabel(this.listItemElement, `${this.#uiSourceCode.name()}, ${this.nodeType}`);
     }
     createAiButton() {
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction('drjones.sources-floating-button')) {
@@ -1237,7 +1211,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     get uiSourceCode() {
-        return this.uiSourceCodeInternal;
+        return this.#uiSourceCode;
     }
     onattach() {
         this.listItemElement.draggable = true;
@@ -1247,7 +1221,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         this.createAiButton();
     }
     shouldRenameOnMouseDown() {
-        if (!this.uiSourceCodeInternal.canRename()) {
+        if (!this.#uiSourceCode.canRename()) {
             return false;
         }
         if (!this.treeOutline) {
@@ -1272,7 +1246,7 @@ export class NavigatorSourceTreeElement extends UI.TreeOutline.TreeElement {
         if (!event.dataTransfer) {
             return;
         }
-        event.dataTransfer.setData('text/plain', this.uiSourceCodeInternal.url());
+        event.dataTransfer.setData('text/plain', this.#uiSourceCode.url());
         event.dataTransfer.effectAllowed = 'copy';
     }
     onspace() {
@@ -1433,16 +1407,16 @@ export class NavigatorRootTreeNode extends NavigatorTreeNode {
     }
 }
 export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
-    uiSourceCodeInternal;
+    #uiSourceCode;
     treeElement;
     eventListeners;
-    frameInternal;
+    #frame;
     constructor(navigatorView, uiSourceCode, frame) {
         super(navigatorView, 'UISourceCode:' + uiSourceCode.canonicalScriptId(), Types.File);
-        this.uiSourceCodeInternal = uiSourceCode;
+        this.#uiSourceCode = uiSourceCode;
         this.treeElement = null;
         this.eventListeners = [];
-        this.frameInternal = frame;
+        this.#frame = frame;
         this.recursiveProperties.exclusivelySourceMapped = uiSourceCode.contentType().isFromSourceMap();
         if (uiSourceCode.contentType().isScript()) {
             // These properties affect ignore-listing menus and only matter when the UISourceCode is a script
@@ -1452,50 +1426,50 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
         }
     }
     frame() {
-        return this.frameInternal;
+        return this.#frame;
     }
     uiSourceCode() {
-        return this.uiSourceCodeInternal;
+        return this.#uiSourceCode;
     }
     treeNode() {
         if (this.treeElement) {
             return this.treeElement;
         }
-        this.treeElement = new NavigatorSourceTreeElement(this.navigatorView, this.uiSourceCodeInternal, '', this);
+        this.treeElement = new NavigatorSourceTreeElement(this.navigatorView, this.#uiSourceCode, '', this);
         this.updateTitle();
         const updateTitleBound = this.updateTitle.bind(this, undefined);
         this.eventListeners = [
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.TitleChanged, updateTitleBound),
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
-            this.uiSourceCodeInternal.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound),
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, updateTitleBound),
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, updateTitleBound),
+            this.#uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, updateTitleBound),
         ];
         return this.treeElement;
     }
     updateTitle(ignoreIsDirty) {
-        const isIgnoreListed = Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.uiSourceCodeInternal);
-        if (this.uiSourceCodeInternal.contentType().isScript() || isIgnoreListed) {
+        const isIgnoreListed = Workspace.IgnoreListManager.IgnoreListManager.instance().isUserOrSourceMapIgnoreListedUISourceCode(this.#uiSourceCode);
+        if (this.#uiSourceCode.contentType().isScript() || isIgnoreListed) {
             this.recursiveProperties.exclusivelyIgnored = isIgnoreListed;
         }
         if (!this.treeElement) {
             return;
         }
-        let titleText = this.uiSourceCodeInternal.displayName();
-        if (!ignoreIsDirty && this.uiSourceCodeInternal.isDirty()) {
+        let titleText = this.#uiSourceCode.displayName();
+        if (!ignoreIsDirty && this.#uiSourceCode.isDirty()) {
             titleText = '*' + titleText;
         }
         this.treeElement.title = titleText;
         this.treeElement.updateIcon();
         this.treeElement.listItemElement.classList.toggle('is-ignore-listed', isIgnoreListed);
-        let tooltip = this.uiSourceCodeInternal.url();
-        if (this.uiSourceCodeInternal.contentType().isFromSourceMap()) {
-            tooltip = i18nString(UIStrings.sFromSourceMap, { PH1: this.uiSourceCodeInternal.displayName() });
+        let tooltip = this.#uiSourceCode.url();
+        if (this.#uiSourceCode.contentType().isFromSourceMap()) {
+            tooltip = i18nString(UIStrings.sFromSourceMap, { PH1: this.#uiSourceCode.displayName() });
         }
         if (isIgnoreListed) {
             tooltip = i18nString(UIStrings.sIgnoreListed, { PH1: tooltip });
         }
         this.treeElement.tooltip = tooltip;
         this.treeElement.updateAccessibleName();
-        this.updateId('UISourceCode:' + this.uiSourceCodeInternal.canonicalScriptId());
+        this.updateId('UISourceCode:' + this.#uiSourceCode.canonicalScriptId());
     }
     hasChildren() {
         return false;
@@ -1532,7 +1506,7 @@ export class NavigatorUISourceCodeTreeNode extends NavigatorTreeNode {
                     this.treeElement.title = newTitle;
                 }
                 // necessary cast to RawPathString as alternative would be altering type of Config<T>
-                void this.uiSourceCodeInternal.rename(newTitle).then(renameCallback);
+                void this.#uiSourceCode.rename(newTitle).then(renameCallback);
                 return;
             }
             afterEditing(true);

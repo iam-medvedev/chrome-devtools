@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -19,22 +19,22 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ReportSelector {
     renderNewLighthouseView;
     newLighthouseItem;
-    comboBoxInternal;
+    #comboBox;
     itemByOptionElement;
     constructor(renderNewLighthouseView) {
         this.renderNewLighthouseView = renderNewLighthouseView;
         this.newLighthouseItem = document.createElement('option');
-        this.comboBoxInternal = new UI.Toolbar.ToolbarComboBox(this.handleChange.bind(this), i18nString(UIStrings.reports), 'lighthouse-report');
+        this.#comboBox = new UI.Toolbar.ToolbarComboBox(this.handleChange.bind(this), i18nString(UIStrings.reports), 'lighthouse-report');
         this.itemByOptionElement = new Map();
         this.setEmptyState();
     }
     setEmptyState() {
-        this.comboBoxInternal.removeOptions();
-        this.comboBoxInternal.setEnabled(false);
+        this.#comboBox.removeOptions();
+        this.#comboBox.setEnabled(false);
         this.newLighthouseItem = document.createElement('option');
         this.newLighthouseItem.label = i18nString(UIStrings.newReport);
-        this.comboBoxInternal.addOption(this.newLighthouseItem);
-        this.comboBoxInternal.select(this.newLighthouseItem);
+        this.#comboBox.addOption(this.newLighthouseItem);
+        this.#comboBox.select(this.newLighthouseItem);
     }
     handleChange(_event) {
         const item = this.selectedItem();
@@ -46,26 +46,26 @@ export class ReportSelector {
         }
     }
     selectedItem() {
-        const option = this.comboBoxInternal.selectedOption();
+        const option = this.#comboBox.selectedOption();
         return this.itemByOptionElement.get(option);
     }
     hasItems() {
         return this.itemByOptionElement.size > 0;
     }
     comboBox() {
-        return this.comboBoxInternal;
+        return this.#comboBox;
     }
     prepend(item) {
         const optionEl = item.optionElement();
-        const selectEl = this.comboBoxInternal.element;
+        const selectEl = this.#comboBox.element;
         this.itemByOptionElement.set(optionEl, item);
         selectEl.insertBefore(optionEl, selectEl.firstElementChild);
-        this.comboBoxInternal.setEnabled(true);
-        this.comboBoxInternal.select(optionEl);
+        this.#comboBox.setEnabled(true);
+        this.#comboBox.select(optionEl);
         item.select();
     }
     clearAll() {
-        for (const elem of this.comboBoxInternal.options()) {
+        for (const elem of this.#comboBox.options()) {
             if (elem === this.newLighthouseItem) {
                 continue;
             }
@@ -75,7 +75,7 @@ export class ReportSelector {
         this.setEmptyState();
     }
     selectNewReport() {
-        this.comboBoxInternal.select(this.newLighthouseItem);
+        this.#comboBox.select(this.newLighthouseItem);
     }
 }
 export class Item {

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -153,11 +153,11 @@ function finalize(partialModel) {
         ...partialModel,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     if (!context.navigation) {
         return finalize({});
     }
-    const documentRequest = parsedTrace.NetworkRequests.byId.get(context.navigationId);
+    const documentRequest = data.NetworkRequests.byId.get(context.navigationId);
     if (!documentRequest) {
         return finalize({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
     }

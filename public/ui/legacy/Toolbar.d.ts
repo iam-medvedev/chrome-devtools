@@ -75,8 +75,8 @@ export interface ToolbarButtonOptions {
     label?: () => Platform.UIString.LocalizedString;
 }
 export declare class ToolbarItem<T = any, E extends HTMLElement = HTMLElement> extends Common.ObjectWrapper.ObjectWrapper<T> {
+    #private;
     element: E;
-    private visibleInternal;
     enabled: boolean;
     toolbar: Toolbar | null;
     protected title?: string;
@@ -189,6 +189,7 @@ export declare class ToolbarMenuButton extends ToolbarItem<ToolbarButton.EventTy
     private readonly contextMenuHandler;
     private readonly useSoftMenu;
     private readonly keepOpen;
+    private readonly isIconDropdown;
     private triggerTimeoutId?;
     constructor(contextMenuHandler: (arg0: ContextMenu) => void, isIconDropdown?: boolean, useSoftMenu?: boolean, jslogContext?: string, iconName?: string, keepOpen?: boolean);
     setText(text: string): void;
@@ -236,7 +237,7 @@ export interface Option {
     label: string;
 }
 export declare class ToolbarSettingComboBox extends ToolbarComboBox {
-    private optionsInternal;
+    #private;
     private readonly setting;
     private muteSettingListener?;
     constructor(options: Option[], setting: Common.Settings.Setting<string>, accessibleName: string);

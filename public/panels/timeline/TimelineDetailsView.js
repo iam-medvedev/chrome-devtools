@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -71,7 +71,6 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
     updateContentsScheduled;
     lazySelectorStatsView;
     #parsedTrace = null;
-    #traceInsightsSets = null;
     #eventToRelatedInsightsMap = null;
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #thirdPartyTree = new ThirdPartyTreeViewWidget();
@@ -224,14 +223,12 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
             this.#parsedTrace = data.parsedTrace;
         }
         if (data.parsedTrace) {
-            this.#summaryContent.filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
-            this.#entityMapper = new Utils.EntityMapper.EntityMapper(data.parsedTrace);
+            this.#summaryContent.filmStrip = Trace.Extras.FilmStrip.fromHandlerData(data.parsedTrace.data);
+            this.#entityMapper = new Trace.EntityMapper.EntityMapper(data.parsedTrace);
         }
         this.#selectedEvents = data.selectedEvents;
-        this.#traceInsightsSets = data.traceInsightsSets;
         this.#eventToRelatedInsightsMap = data.eventToRelatedInsightsMap;
         this.#summaryContent.eventToRelatedInsightsMap = this.#eventToRelatedInsightsMap;
-        this.#summaryContent.traceInsightsSets = this.#traceInsightsSets;
         this.#summaryContent.parsedTrace = this.#parsedTrace;
         this.#summaryContent.entityMapper = this.#entityMapper;
         this.tabbedPane.closeTabs([Tab.PaintProfiler, Tab.LayerViewer], false);
@@ -427,7 +424,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         if (Trace.Types.Events.isPaint(event) || Trace.Types.Events.isRasterTask(event)) {
             this.showEventInPaintProfiler(event);
         }
-        if (Trace.Types.Events.isUpdateLayoutTree(event)) {
+        if (Trace.Types.Events.isRecalcStyle(event)) {
             this.showSelectorStatsForIndividualEvent(event);
         }
     }
@@ -473,7 +470,7 @@ export class TimelineDetailsPane extends Common.ObjectWrapper.eventMixin(UI.Widg
         // Find all recalculate style events data from range
         const isSelectorStatsEnabled = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false).get();
         if (this.#selectedEvents && isSelectorStatsEnabled) {
-            const eventsInRange = Trace.Helpers.Trace.findUpdateLayoutTreeEvents(this.#selectedEvents, Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
+            const eventsInRange = Trace.Helpers.Trace.findRecalcStyleEvents(this.#selectedEvents, Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
             if (eventsInRange.length > 0) {
                 this.showAggregatedSelectorStats(eventsInRange);
             }
@@ -510,7 +507,6 @@ class SummaryView extends UI.Widget.Widget {
     selectedEvent = null;
     eventToRelatedInsightsMap = null;
     parsedTrace = null;
-    traceInsightsSets = null;
     entityMapper = null;
     target = null;
     linkifier = null;
@@ -525,7 +521,6 @@ class SummaryView extends UI.Widget.Widget {
             selectedEvent: this.selectedEvent,
             eventToRelatedInsightsMap: this.eventToRelatedInsightsMap,
             parsedTrace: this.parsedTrace,
-            traceInsightsSets: this.traceInsightsSets,
             entityMapper: this.entityMapper,
             target: this.target,
             linkifier: this.linkifier,
@@ -539,7 +534,7 @@ function generateRangeSummaryDetails(input) {
     if (!selectedRange || !parsedTrace) {
         return nothing;
     }
-    const minBoundsMilli = Trace.Helpers.Timing.microToMilli(parsedTrace.Meta.traceBounds.min);
+    const minBoundsMilli = Trace.Helpers.Timing.microToMilli(parsedTrace.data.Meta.traceBounds.min);
     const { events, startTime, endTime, thirdPartyTree } = selectedRange;
     const aggregatedStats = TimelineUIUtils.statsForTimeRange(events, startTime, endTime);
     const startOffset = startTime - minBoundsMilli;
@@ -559,7 +554,6 @@ async function renderSelectedEventDetails(input) {
         return html `
       <devtools-widget data-layout-shift-details .widgetConfig=${UI.Widget.widgetConfig(TimelineComponents.LayoutShiftDetails.LayoutShiftDetails, {
             event: selectedEvent,
-            traceInsightsSets: input.traceInsightsSets,
             parsedTrace: input.parsedTrace,
             isFreshRecording: traceRecordingIsFresh,
         })}

@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -107,8 +107,8 @@ function finalize(partialModel) {
 }
 function getBottomCallFrameForEvent(event, traceParsedData) {
     const profileStackTrace = Extras.StackTraceForEvent.get(event, traceParsedData);
-    const eventStackTrace = Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
-    return profileStackTrace?.callFrames[0] ?? eventStackTrace?.[0] ?? null;
+    const eventTopCallFrame = Helpers.Trace.getStackTraceTopCallFrameInEventPayload(event);
+    return profileStackTrace?.callFrames[0] ?? eventTopCallFrame ?? null;
 }
 export function isForcedReflowInsight(model) {
     return model.insightKey === "ForcedReflow" /* InsightKeys.FORCED_REFLOW */;

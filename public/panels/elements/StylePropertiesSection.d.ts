@@ -33,7 +33,6 @@ export declare class StylePropertiesSection {
     navigable: boolean | null | undefined;
     protected readonly selectorRefElement: HTMLElement;
     private hoverableSelectorsMode;
-    private isHiddenInternal;
     protected customPopulateCallback: () => void;
     nestingLevel: number;
     nextEditorTriggerButtonIdx: number;

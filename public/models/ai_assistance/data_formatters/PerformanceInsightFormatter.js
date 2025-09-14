@@ -1,14 +1,15 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../../core/common/common.js';
 import * as Trace from '../../trace/trace.js';
 import { NetworkRequestFormatter, } from './NetworkRequestFormatter.js';
+import { bytes, micros, millis } from './UnitFormatters.js';
 /**
  * For a given frame ID and navigation ID, returns the LCP Event and the LCP Request, if the resource was an image.
  */
 function getLCPData(parsedTrace, frameId, navigationId) {
-    const navMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
+    const navMetrics = parsedTrace.data.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
     if (!navMetrics) {
         return null;
     }
@@ -22,24 +23,22 @@ function getLCPData(parsedTrace, frameId, navigationId) {
     }
     return {
         lcpEvent,
-        lcpRequest: parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(navigationId),
+        lcpRequest: parsedTrace.data.LargestImagePaint.lcpRequestByNavigationId.get(navigationId),
         metricScore: metric,
     };
 }
 export class PerformanceInsightFormatter {
     #insight;
     #parsedTrace;
-    #unitFormatters;
-    constructor(formatters, parsedTrace, insight) {
+    constructor(parsedTrace, insight) {
         this.#insight = insight;
         this.#parsedTrace = parsedTrace;
-        this.#unitFormatters = formatters;
     }
     #formatMilli(x) {
         if (x === undefined) {
             return '';
         }
-        return this.#unitFormatters.millis(x);
+        return millis(x);
     }
     #formatMicro(x) {
         if (x === undefined) {
@@ -69,7 +68,7 @@ export class PerformanceInsightFormatter {
         ];
         if (lcpRequest) {
             parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
-            const request = TraceEventFormatter.networkRequests(this.#unitFormatters, [lcpRequest], this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
+            const request = TraceEventFormatter.networkRequests([lcpRequest], this.#parsedTrace, { verbose: true, customTitle: 'LCP resource network request' });
             parts.push(request);
         }
         else {
@@ -156,6 +155,74 @@ export class PerformanceInsightFormatter {
             default:
                 throw new Error('Unknown insight key');
         }
+    }
+    /**
+     * Create an AI prompt string out of the Cache Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within Cache to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Cache Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatCacheInsight(insight) {
+        if (insight.requests.length === 0) {
+            return Trace.Insights.Models.Cache.UIStrings.noRequestsToCache + '.';
+        }
+        let output = 'The following resources were associated with ineffficient cache policies:\n';
+        for (const entry of insight.requests) {
+            output += `\n- ${entry.request.args.data.url}`;
+            output += `\n  - Cache Time to Live (TTL): ${entry.ttl} seconds`;
+            output += `\n  - Wasted bytes: ${bytes(entry.wastedBytes)}`;
+        }
+        output += '\n\n' + Trace.Insights.Models.Cache.UIStrings.description;
+        return output;
+    }
+    /**
+     * Create an AI prompt string out of the DOM Size model to use with Ask AI.
+     * Note: This function accesses the UIStrings within DomSize to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The DOM Size Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatDomSizeInsight(insight) {
+        if (insight.state === 'pass') {
+            return 'No DOM size issues were detected.';
+        }
+        let output = Trace.Insights.Models.DOMSize.UIStrings.description + '\n';
+        if (insight.maxDOMStats) {
+            output += '\n' + Trace.Insights.Models.DOMSize.UIStrings.statistic + ':\n\n';
+            const maxDepthStats = insight.maxDOMStats.args.data.maxDepth;
+            const maxChildrenStats = insight.maxDOMStats.args.data.maxChildren;
+            output += Trace.Insights.Models.DOMSize.UIStrings.totalElements + ': ' +
+                insight.maxDOMStats.args.data.totalElements + '.\n';
+            if (maxDepthStats) {
+                output += Trace.Insights.Models.DOMSize.UIStrings.maxDOMDepth + ': ' + maxDepthStats.depth +
+                    ` nodes, starting with element '${maxDepthStats.nodeName}'` +
+                    ' (node id: ' + maxDepthStats.nodeId + ').\n';
+            }
+            if (maxChildrenStats) {
+                output += Trace.Insights.Models.DOMSize.UIStrings.maxChildren + ': ' + maxChildrenStats.numChildren +
+                    `, for parent '${maxChildrenStats.nodeName}'` +
+                    ' (node id: ' + maxChildrenStats.nodeId + ').\n';
+            }
+        }
+        if (insight.largeLayoutUpdates.length > 0 || insight.largeStyleRecalcs.length > 0) {
+            output += `\nLarge layout updates/style calculations:\n`;
+        }
+        if (insight.largeLayoutUpdates.length > 0) {
+            for (const update of insight.largeLayoutUpdates) {
+                output += `\n  - Layout update: Duration: ${this.#formatMicro(update.dur)},`;
+                output += ` with ${update.args.beginData.dirtyObjects} of ${update.args.beginData.totalObjects} nodes needing layout.`;
+            }
+        }
+        if (insight.largeStyleRecalcs.length > 0) {
+            for (const recalc of insight.largeStyleRecalcs) {
+                output += `\n  - Style recalculation: Duration: ${this.#formatMicro(recalc.dur)}, `;
+                output += `with ${recalc.args.elementCount} elements affected.`;
+            }
+        }
+        return output;
     }
     /**
      * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
@@ -353,7 +420,7 @@ export class PerformanceInsightFormatter {
             output += `The following list contains the largest transfer sizes by a 3rd party script:\n\n`;
             for (const entry of thirdPartyTransferSizeEntries) {
                 if (entry.transferSize > 0) {
-                    output += `- ${entry.entity.name}: ${this.#unitFormatters.bytes(entry.transferSize)}\n`;
+                    output += `- ${entry.entity.name}: ${bytes(entry.transferSize)}\n`;
                 }
             }
             output += '\n';
@@ -368,6 +435,29 @@ export class PerformanceInsightFormatter {
             output += '\n';
         }
         output += Trace.Insights.Models.ThirdParties.UIStrings.description;
+        return output;
+    }
+    /**
+     * Create an AI prompt string out of the Viewport [Mobile] Insight model to use with Ask AI.
+     * Note: This function accesses the UIStrings within Viewport to help build the
+     * AI prompt, but does not (and should not) call i18nString to localize these strings. They
+     * should all be sent in English (at least for now).
+     * @param insight The Network Dependency Tree Insight Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatViewportInsight(insight) {
+        let output = '';
+        output += 'The webpage is ' + (insight.mobileOptimized ? 'already' : 'not') + ' optimized for mobile viewing.\n';
+        const hasMetaTag = insight.viewportEvent;
+        if (hasMetaTag) {
+            output += `\nThe viewport meta tag was found: \`${insight.viewportEvent?.args?.data.content}\`.`;
+        }
+        else {
+            output += `\nThe viewport meta tag is missing.`;
+        }
+        if (!hasMetaTag) {
+            output += '\n\n' + Trace.Insights.Models.Viewport.UIStrings.description;
+        }
         return output;
     }
     /**
@@ -403,16 +493,16 @@ ${this.#links()}`;
                 const optimizations = image.optimizations
                     .map(optimization => {
                     const message = Trace.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
-                    const byteSavings = this.#unitFormatters.bytes(optimization.byteSavings);
+                    const byteSavings = bytes(optimization.byteSavings);
                     return `${message} (Est ${byteSavings})`;
                 })
                     .join('\n');
                 return `### ${image.request.args.data.url}
-- Potential savings: ${this.#unitFormatters.bytes(image.byteSavings)}
+- Potential savings: ${bytes(image.byteSavings)}
 - Optimizations:\n${optimizations}`;
             })
                 .join('\n\n');
-            return `Total potential savings: ${this.#unitFormatters.bytes(this.#insight.wastedBytes)}
+            return `Total potential savings: ${bytes(this.#insight.wastedBytes)}
 
 The following images could be optimized:\n\n${imageDetails}`;
         }
@@ -463,7 +553,7 @@ The result of the checks for this insight are:
 ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED' : 'FAILED'}`).join('\n')}`;
         }
         if (Trace.Insights.Models.RenderBlocking.isRenderBlocking(this.#insight)) {
-            const requestSummary = TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.renderBlockingRequests, this.#parsedTrace);
+            const requestSummary = TraceEventFormatter.networkRequests(this.#insight.renderBlockingRequests, this.#parsedTrace);
             if (requestSummary.length === 0) {
                 return 'There are no network requests that are render blocking.';
             }
@@ -494,7 +584,7 @@ ${requestSummary}`;
             });
             return `${this.#lcpMetricSharedContext()}
 
-${TraceEventFormatter.networkRequests(this.#unitFormatters, [documentRequest], this.#parsedTrace, {
+${TraceEventFormatter.networkRequests([documentRequest], this.#parsedTrace, {
                 verbose: true,
                 customTitle: 'Document network request'
             })}
@@ -519,13 +609,13 @@ ${checklistBulletPoints.map(point => `- ${point.name}: ${point.passed ? 'PASSED'
             if (!worstCluster) {
                 return '';
             }
-            const baseTime = this.#parsedTrace.Meta.traceBounds.min;
+            const baseTime = this.#parsedTrace.data.Meta.traceBounds.min;
             const clusterTimes = {
                 start: worstCluster.ts - baseTime,
                 end: worstCluster.ts + worstCluster.dur - baseTime,
             };
             const shiftsFormatted = worstCluster.events.map((layoutShift, index) => {
-                return TraceEventFormatter.layoutShift(this.#unitFormatters, layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
+                return TraceEventFormatter.layoutShift(layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
             });
             return `The worst layout shift cluster was the cluster that started at ${this.#formatMicro(clusterTimes.start)} and ended at ${this.#formatMicro(clusterTimes.end)}, with a duration of ${this.#formatMicro(worstCluster.dur)}.
 The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
@@ -535,8 +625,8 @@ ${shiftsFormatted.join('\n')}`;
         }
         if (Trace.Insights.Models.ModernHTTP.isModernHTTP(this.#insight)) {
             const requestSummary = (this.#insight.http1Requests.length === 1) ?
-                TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) :
-                TraceEventFormatter.networkRequests(this.#unitFormatters, this.#insight.http1Requests, this.#parsedTrace);
+                TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace, { verbose: true }) :
+                TraceEventFormatter.networkRequests(this.#insight.http1Requests, this.#parsedTrace);
             if (requestSummary.length === 0) {
                 return 'There are no requests that were served over a legacy HTTP protocol.';
             }
@@ -571,6 +661,12 @@ ${result.matches.map(match => `Line: ${match.line}, Column: ${match.column}, Nam
 Legacy JavaScript by file:
 ${filesFormatted}`;
         }
+        if (Trace.Insights.Models.Cache.isCacheInsight(this.#insight)) {
+            return this.formatCacheInsight(this.#insight);
+        }
+        if (Trace.Insights.Models.DOMSize.isDomSizeInsight(this.#insight)) {
+            return this.formatDomSizeInsight(this.#insight);
+        }
         if (Trace.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
             return this.formatFontDisplayInsight(this.#insight);
         }
@@ -585,6 +681,9 @@ ${filesFormatted}`;
         }
         if (Trace.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
             return this.formatThirdPartiesInsight(this.#insight);
+        }
+        if (Trace.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
+            return this.formatViewportInsight(this.#insight);
         }
         return '';
     }
@@ -606,7 +705,7 @@ ${filesFormatted}`;
             case 'DocumentLatency':
                 return '- https://web.dev/articles/optimize-ttfb';
             case 'DOMSize':
-                return '';
+                return '- https://developer.chrome.com/docs/lighthouse/performance/dom-size/';
             case 'DuplicatedJavaScript':
                 return '';
             case 'FontDisplay':
@@ -639,9 +738,9 @@ ${filesFormatted}`;
             case 'ThirdParties':
                 return '- https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/';
             case 'Viewport':
-                return '';
+                return '- https://developer.chrome.com/blog/300ms-tap-delay-gone-away/';
             case 'Cache':
-                return '';
+                return '- https://web.dev/uses-long-cache-ttl/';
             case 'ModernHTTP':
                 return '- https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2';
             case 'LegacyJavaScript':
@@ -662,7 +761,11 @@ ${filesFormatted}`;
 2. Did the server respond in 600ms or less? We want developers to aim for as close to 100ms as possible, but our threshold for this insight is 600ms.
 3. Was there compression applied to the response to minimize the transfer size?`;
             case 'DOMSize':
-                return '';
+                return `This insight evaluates some key metrics about the Document Object Model (DOM) and identifies excess in the DOM tree, for example:
+- The maximum number of elements within the DOM.
+- The maximum number of children for any given element.
+- Excessive depth of the DOM structure.
+- The largest layout and style recalculation events.`;
             case 'DuplicatedJavaScript':
                 return `This insight identifies large, duplicated JavaScript modules that are present in your application and create redundant code.
   This wastes network bandwidth and slows down your page, as the user's browser must download and process the same code multiple times.`;
@@ -708,9 +811,9 @@ It is important that all of these checks pass to minimize the delay between the 
             case 'ThirdParties':
                 return 'This insight analyzes the performance impact of resources loaded from third-party servers and aggregates the performance cost, in terms of download transfer sizes and total amount of time that third party scripts spent executing on the main thread.';
             case 'Viewport':
-                return '';
+                return 'The insight identifies web pages that are not specifying the viewport meta tag for mobile devies, which avoids the artificial 300-350ms delay designed to help differentiate between tap and double-click.';
             case 'Cache':
-                return '';
+                return 'This insight identifies static resources that are not cached effectively by the browser.';
             case 'ModernHTTP':
                 return `Modern HTTP protocols, such as HTTP/2, are more efficient than older versions like HTTP/1.1 because they allow for multiple requests and responses to be sent over a single network connection, significantly improving page load performance by reducing latency and overhead. This insight identifies requests that can be upgraded to a modern HTTP protocol.
 
@@ -728,8 +831,8 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
     }
 }
 export class TraceEventFormatter {
-    static layoutShift(formatters, shift, index, parsedTrace, rootCauses) {
-        const baseTime = parsedTrace.Meta.traceBounds.min;
+    static layoutShift(shift, index, parsedTrace, rootCauses) {
+        const baseTime = parsedTrace.data.Meta.traceBounds.min;
         const potentialRootCauses = [];
         if (rootCauses) {
             rootCauses.iframes.forEach(iframe => potentialRootCauses.push(`An iframe (id: ${iframe.frame}, url: ${iframe.url ?? 'unknown'} was injected into the page)`));
@@ -757,12 +860,12 @@ export class TraceEventFormatter {
             '- No potential root causes identified';
         const startTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(shift.ts - baseTime));
         return `### Layout shift ${index + 1}:
-- Start time: ${formatters.millis(startTime)}
+- Start time: ${millis(startTime)}
 - Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
 ${rootCauseText}`;
     }
     // Stringify network requests for the LLM model.
-    static networkRequests(formatters, requests, parsedTrace, options) {
+    static networkRequests(requests, parsedTrace, options) {
         if (requests.length === 0) {
             return '';
         }
@@ -778,11 +881,10 @@ ${rootCauseText}`;
         // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
         // format description.
         if (verbose) {
-            return requests
-                .map(request => this.#networkRequestVerbosely(formatters, request, parsedTrace, options?.customTitle))
+            return requests.map(request => this.#networkRequestVerbosely(request, parsedTrace, options?.customTitle))
                 .join('\n');
         }
-        return this.#networkRequestsArrayCompressed(formatters, requests, parsedTrace);
+        return this.#networkRequestsArrayCompressed(requests, parsedTrace);
     }
     /**
      * This is the data passed to a network request when the Performance Insights
@@ -792,13 +894,13 @@ ${rootCauseText}`;
      * Security; be careful about adding new data here. If you are in doubt please
      * talk to jacktfranklin@.
      */
-    static #networkRequestVerbosely(formatters, request, parsedTrace, customTitle) {
+    static #networkRequestVerbosely(request, parsedTrace, customTitle) {
         const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
         const titlePrefix = `## ${customTitle ?? 'Network request'}`;
         // Note: unlike other agents, we do have the ability to include
         // cross-origins, hence why we do not sanitize the URLs here.
-        const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
-        const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
+        const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+        const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
         // Gets all the timings for this request, relative to the base time.
         // Note that this is the start time, not total time. E.g. "queuedAt: X"
         // means that the request was queued at Xms, not that it queued for Xms.
@@ -811,7 +913,7 @@ ${rootCauseText}`;
         const mainThreadProcessingDuration = startTimesForLifecycle.processingCompletedAt - startTimesForLifecycle.downloadCompletedAt;
         const downloadTime = syntheticData.finishTime - syntheticData.downloadStart;
         const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
-        const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(request);
+        const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(request);
         const priorityLines = [];
         if (initialPriority === priority) {
             priorityLines.push(`Priority: ${priority}`);
@@ -823,21 +925,21 @@ ${rootCauseText}`;
         const redirects = request.args.data.redirects.map((redirect, index) => {
             const startTime = redirect.ts - baseTime;
             return `#### Redirect ${index + 1}: ${redirect.url}
-- Start time: ${formatters.micros(startTime)}
-- Duration: ${formatters.micros(redirect.dur)}`;
+- Start time: ${micros(startTime)}
+- Duration: ${micros(redirect.dur)}`;
         });
         const initiators = this.#getInitiatorChain(parsedTrace, request);
         const initiatorUrls = initiators.map(initiator => initiator.args.data.url);
         return `${titlePrefix}: ${url}
 Timings:
-- Queued at: ${formatters.micros(startTimesForLifecycle.queuedAt)}
-- Request sent at: ${formatters.micros(startTimesForLifecycle.requestSentAt)}
-- Download complete at: ${formatters.micros(startTimesForLifecycle.downloadCompletedAt)}
-- Main thread processing completed at: ${formatters.micros(startTimesForLifecycle.processingCompletedAt)}
+- Queued at: ${micros(startTimesForLifecycle.queuedAt)}
+- Request sent at: ${micros(startTimesForLifecycle.requestSentAt)}
+- Download complete at: ${micros(startTimesForLifecycle.downloadCompletedAt)}
+- Main thread processing completed at: ${micros(startTimesForLifecycle.processingCompletedAt)}
 Durations:
-- Download time: ${formatters.micros(downloadTime)}
-- Main thread processing time: ${formatters.micros(mainThreadProcessingDuration)}
-- Total duration: ${formatters.micros(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
+- Download time: ${micros(downloadTime)}
+- Main thread processing time: ${micros(mainThreadProcessingDuration)}
+- Total duration: ${micros(request.dur)}${initiator ? `\nInitiator: ${initiator.args.data.url}` : ''}
 Redirects:${redirects.length ? '\n' + redirects.join('\n') : ' no redirects'}
 Status code: ${statusCode}
 MIME Type: ${mimeType}
@@ -864,7 +966,7 @@ ${NetworkRequestFormatter.formatHeaders('Response headers', responseHeaders ?? [
     // needs to be provided, which is not worth sending if only one network request is being stringified.
     // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
     // format description.
-    static #networkRequestsArrayCompressed(formatters, requests, parsedTrace) {
+    static #networkRequestsArrayCompressed(requests, parsedTrace) {
         const networkDataString = `
 Network requests data:
 
@@ -873,7 +975,7 @@ Network requests data:
         const allRequestsText = requests
             .map(request => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-            return this.#networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex);
+            return this.#networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex);
         })
             .join('\n');
         const urlsMapString = 'allUrls = ' +
@@ -923,17 +1025,17 @@ The order of headers corresponds to an internal fixed list. If a header is not p
      *
      * See `networkDataFormatDescription` above for specifics.
      */
-    static #networkRequestCompressedFormat(formatters, urlIndex, request, parsedTrace, urlIdToIndex) {
+    static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
         const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol, } = request.args.data;
-        const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.Meta.navigationsByFrameId);
-        const baseTime = navigationForEvent?.ts ?? parsedTrace.Meta.traceBounds.min;
-        const queuedTime = formatters.micros(request.ts - baseTime);
-        const requestSentTime = formatters.micros(syntheticData.sendStartTime - baseTime);
-        const downloadCompleteTime = formatters.micros(syntheticData.finishTime - baseTime);
-        const processingCompleteTime = formatters.micros(request.ts + request.dur - baseTime);
-        const totalDuration = formatters.micros(request.dur);
-        const downloadDuration = formatters.micros(syntheticData.finishTime - syntheticData.downloadStart);
-        const mainThreadProcessingDuration = formatters.micros(request.ts + request.dur - syntheticData.finishTime);
+        const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+        const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
+        const queuedTime = micros(request.ts - baseTime);
+        const requestSentTime = micros(syntheticData.sendStartTime - baseTime);
+        const downloadCompleteTime = micros(syntheticData.finishTime - baseTime);
+        const processingCompleteTime = micros(request.ts + request.dur - baseTime);
+        const totalDuration = micros(request.dur);
+        const downloadDuration = micros(syntheticData.finishTime - syntheticData.downloadStart);
+        const mainThreadProcessingDuration = micros(request.ts + request.dur - syntheticData.finishTime);
         const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? 't' : 'f';
         const finalPriority = priority;
         const headerValues = responseHeaders
@@ -945,8 +1047,8 @@ The order of headers corresponds to an internal fixed list. If a header is not p
         const redirects = request.args.data.redirects
             .map(redirect => {
             const urlIndex = TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
-            const redirectStartTime = formatters.micros(redirect.ts - baseTime);
-            const redirectDuration = formatters.micros(redirect.dur);
+            const redirectStartTime = micros(redirect.ts - baseTime);
+            const redirectDuration = micros(redirect.dur);
             return `[${urlIndex}|${redirectStartTime}|${redirectDuration}]`;
         })
             .join(',');
@@ -979,7 +1081,7 @@ The order of headers corresponds to an internal fixed list. If a header is not p
         const initiators = [];
         let cur = request;
         while (cur) {
-            const initiator = parsedTrace.NetworkRequests.eventToInitiator.get(cur);
+            const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(cur);
             if (initiator) {
                 // Should never happen, but if it did that would be an infinite loop.
                 if (initiators.includes(initiator)) {

@@ -14,7 +14,7 @@ import { html, render } from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/dialogs/buttonDialog.css.js
 var buttonDialog_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -140,7 +140,7 @@ import * as Buttons from "./../buttons/buttons.js";
 
 // gen/front_end/ui/components/dialogs/dialog.css.js
 var dialog_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -267,7 +267,7 @@ var Dialog = class extends HTMLElement {
   #isPendingCloseDialog = false;
   #hitArea = new DOMRect(0, 0, 0, 0);
   #dialogClientRect = new DOMRect(0, 0, 0, 0);
-  #bestVerticalPositionInternal = null;
+  #bestVerticalPosition = null;
   #bestHorizontalAlignment = null;
   #devtoolsMutationObserver = new MutationObserver((mutations) => {
     if (this.#props.expectedMutationsSelector) {
@@ -323,7 +323,7 @@ var Dialog = class extends HTMLElement {
     this.#onStateChange();
   }
   get bestVerticalPosition() {
-    return this.#bestVerticalPositionInternal;
+    return this.#bestVerticalPosition;
   }
   get bestHorizontalAlignment() {
     return this.#bestHorizontalAlignment;
@@ -522,8 +522,8 @@ var Dialog = class extends HTMLElement {
         }
         const { width: dialogWidth, height: dialogHeight } = dialog2.getBoundingClientRect();
         this.#bestHorizontalAlignment = this.#props.horizontalAlignment === "auto" ? this.#getBestHorizontalAlignment(absoluteAnchorBounds, devtoolsBounds) : this.#props.horizontalAlignment;
-        this.#bestVerticalPositionInternal = this.#props.position === "auto" ? this.#getBestVerticalPosition(absoluteAnchorBounds, dialogHeight, devtoolsBounds) : this.#props.position;
-        if (this.#bestHorizontalAlignment === "auto" || this.#bestVerticalPositionInternal === "auto") {
+        this.#bestVerticalPosition = this.#props.position === "auto" ? this.#getBestVerticalPosition(absoluteAnchorBounds, dialogHeight, devtoolsBounds) : this.#props.position;
+        if (this.#bestHorizontalAlignment === "auto" || this.#bestVerticalPosition === "auto") {
           return;
         }
         this.#hitArea.height = anchorBottom - anchorTop + CONNECTOR_HEIGHT;
@@ -566,7 +566,7 @@ var Dialog = class extends HTMLElement {
           default:
             Platform.assertNever(this.#bestHorizontalAlignment, `Unknown alignment type: ${this.#bestHorizontalAlignment}`);
         }
-        switch (this.#bestVerticalPositionInternal) {
+        switch (this.#bestVerticalPosition) {
           case "top": {
             this.style.setProperty("--dialog-top", "0");
             this.style.setProperty("--dialog-margin", "auto");
@@ -584,7 +584,7 @@ var Dialog = class extends HTMLElement {
             break;
           }
           default:
-            Platform.assertNever(this.#bestVerticalPositionInternal, `Unknown position type: ${this.#bestVerticalPositionInternal}`);
+            Platform.assertNever(this.#bestVerticalPosition, `Unknown position type: ${this.#bestVerticalPosition}`);
         }
         dialog2.close();
         dialog2.style.visibility = "";
@@ -762,7 +762,7 @@ import { html as html3, nothing as nothing2, render as render3 } from "./../../l
 
 // gen/front_end/ui/components/dialogs/shortcutDialog.css.js
 var shortcutDialog_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

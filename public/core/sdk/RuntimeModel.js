@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -11,7 +11,7 @@ import { Type } from './Target.js';
 export class RuntimeModel extends SDKModel {
     agent;
     #executionContextById = new Map();
-    #executionContextComparatorInternal = ExecutionContext.comparator;
+    #executionContextComparator = ExecutionContext.comparator;
     constructor(target) {
         super(target);
         this.agent = target.runtimeAgent();
@@ -39,13 +39,13 @@ export class RuntimeModel extends SDKModel {
         return [...this.#executionContextById.values()].sort(this.executionContextComparator());
     }
     setExecutionContextComparator(comparator) {
-        this.#executionContextComparatorInternal = comparator;
+        this.#executionContextComparator = comparator;
     }
     /**
      * comparator
      */
     executionContextComparator() {
-        return this.#executionContextComparatorInternal;
+        return this.#executionContextComparator;
     }
     defaultExecutionContext() {
         for (const context of this.executionContexts()) {
@@ -363,7 +363,7 @@ export class ExecutionContext {
     id;
     uniqueId;
     name;
-    #labelInternal;
+    #label;
     origin;
     isDefault;
     runtimeModel;
@@ -373,13 +373,13 @@ export class ExecutionContext {
         this.id = id;
         this.uniqueId = uniqueId;
         this.name = name;
-        this.#labelInternal = null;
+        this.#label = null;
         this.origin = origin;
         this.isDefault = isDefault;
         this.runtimeModel = runtimeModel;
         this.debuggerModel = runtimeModel.debuggerModel();
         this.frameId = frameId;
-        this.setLabelInternal('');
+        this.#setLabel('');
     }
     target() {
         return this.runtimeModel.target();
@@ -513,23 +513,23 @@ export class ExecutionContext {
         return response.getError() ? [] : response.names;
     }
     label() {
-        return this.#labelInternal;
+        return this.#label;
     }
     setLabel(label) {
-        this.setLabelInternal(label);
+        this.#setLabel(label);
         this.runtimeModel.dispatchEventToListeners(Events.ExecutionContextChanged, this);
     }
-    setLabelInternal(label) {
+    #setLabel(label) {
         if (label) {
-            this.#labelInternal = label;
+            this.#label = label;
             return;
         }
         if (this.name) {
-            this.#labelInternal = this.name;
+            this.#label = this.name;
             return;
         }
         const parsedUrl = Common.ParsedURL.ParsedURL.fromString(this.origin);
-        this.#labelInternal = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
+        this.#label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : '';
     }
 }
 SDKModel.register(RuntimeModel, { capabilities: 4 /* Capability.JS */, autostart: true });

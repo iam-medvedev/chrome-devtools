@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /*
@@ -152,15 +152,15 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('core/common/ResourceType.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
 export class ResourceType {
-    #nameInternal;
-    #titleInternal;
-    #categoryInternal;
-    #isTextTypeInternal;
+    #name;
+    #title;
+    #category;
+    #isTextType;
     constructor(name, title, category, isTextType) {
-        this.#nameInternal = name;
-        this.#titleInternal = title;
-        this.#categoryInternal = category;
-        this.#isTextTypeInternal = isTextType;
+        this.#name = name;
+        this.#title = title;
+        this.#category = category;
+        this.#isTextType = isTextType;
     }
     static fromMimeType(mimeType) {
         if (!mimeType) {
@@ -261,49 +261,49 @@ export class ResourceType {
         return 'text/javascript+plain';
     }
     name() {
-        return this.#nameInternal;
+        return this.#name;
     }
     title() {
-        return this.#titleInternal();
+        return this.#title();
     }
     category() {
-        return this.#categoryInternal;
+        return this.#category;
     }
     isTextType() {
-        return this.#isTextTypeInternal;
+        return this.#isTextType;
     }
     isScript() {
-        return this.#nameInternal === 'script' || this.#nameInternal === 'sm-script';
+        return this.#name === 'script' || this.#name === 'sm-script';
     }
     hasScripts() {
         return this.isScript() || this.isDocument();
     }
     isStyleSheet() {
-        return this.#nameInternal === 'stylesheet' || this.#nameInternal === 'sm-stylesheet';
+        return this.#name === 'stylesheet' || this.#name === 'sm-stylesheet';
     }
     hasStyleSheets() {
         return this.isStyleSheet() || this.isDocument();
     }
     isDocument() {
-        return this.#nameInternal === 'document';
+        return this.#name === 'document';
     }
     isDocumentOrScriptOrStyleSheet() {
         return this.isDocument() || this.isScript() || this.isStyleSheet();
     }
     isFont() {
-        return this.#nameInternal === 'font';
+        return this.#name === 'font';
     }
     isImage() {
-        return this.#nameInternal === 'image';
+        return this.#name === 'image';
     }
     isFromSourceMap() {
-        return this.#nameInternal.startsWith('sm-');
+        return this.#name.startsWith('sm-');
     }
     isWebbundle() {
-        return this.#nameInternal === 'webbundle';
+        return this.#name === 'webbundle';
     }
     toString() {
-        return this.#nameInternal;
+        return this.#name;
     }
     canonicalMimeType() {
         if (this.isDocument()) {

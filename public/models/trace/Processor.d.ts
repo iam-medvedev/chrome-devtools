@@ -22,7 +22,7 @@ export declare class TraceProcessor extends EventTarget {
     constructor(traceHandlers: Partial<Handlers.Types.Handlers>, modelConfiguration?: Types.Configuration.Configuration);
     reset(): void;
     parse(traceEvents: readonly Types.Events.Event[], options: Types.Configuration.ParseOptions): Promise<void>;
-    get parsedTrace(): Handlers.Types.ParsedTrace | null;
+    get data(): Handlers.Types.HandlerData | null;
     get insights(): Insights.Types.TraceInsightSets | null;
     /**
      * Sort the insight models based on the impact of each insight's estimated savings, additionally weighted by the

@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -260,10 +260,10 @@ export class WatchExpressionsSidebarPane extends UI.ThrottledWidget.ThrottledWid
     }
 }
 export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
-    treeElementInternal;
+    #treeElement;
     nameElement;
     valueElement;
-    expressionInternal;
+    #expression;
     expandController;
     element;
     editing;
@@ -273,7 +273,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     preventClickTimeout;
     constructor(expression, expandController, linkifier) {
         super();
-        this.expressionInternal = expression;
+        this.#expression = expression;
         this.expandController = expandController;
         this.element = document.createElement('div');
         this.element.classList.add('watch-expression');
@@ -284,10 +284,10 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         this.update();
     }
     treeElement() {
-        return this.treeElementInternal;
+        return this.#treeElement;
     }
     expression() {
-        return this.expressionInternal;
+        return this.#expression;
     }
     async #evaluateExpression(executionContext, expression) {
         const callFrame = executionContext.debuggerModel.selectedCallFrame();
@@ -313,8 +313,8 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     }
     update() {
         const currentExecutionContext = UI.Context.Context.instance().flavor(SDK.RuntimeModel.ExecutionContext);
-        if (currentExecutionContext && this.expressionInternal) {
-            void this.#evaluateExpression(currentExecutionContext, this.expressionInternal).then(result => {
+        if (currentExecutionContext && this.#expression) {
+            void this.#evaluateExpression(currentExecutionContext, this.#expression).then(result => {
                 if ('object' in result) {
                     this.createWatchExpression(result.object, result.exceptionDetails);
                 }
@@ -329,15 +329,15 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     }
     startEditing() {
         this.editing = true;
-        this.treeElementInternal.setDisableSelectFocus(true);
+        this.#treeElement.setDisableSelectFocus(true);
         this.element.removeChildren();
         const newDiv = this.element.createChild('div');
         newDiv.textContent = this.nameElement.textContent;
         this.textPrompt = new ObjectUI.ObjectPropertiesSection.ObjectPropertyPrompt();
         this.textPrompt.renderAsBlock();
         const proxyElement = this.textPrompt.attachAndStartEditing(newDiv, this.finishEditing.bind(this));
-        this.treeElementInternal.listItemElement.classList.add('watch-expression-editing');
-        this.treeElementInternal.collapse();
+        this.#treeElement.listItemElement.classList.add('watch-expression-editing');
+        this.#treeElement.collapse();
         proxyElement.classList.add('watch-expression-text-prompt-proxy');
         proxyElement.addEventListener('keydown', this.promptKeyDown.bind(this), false);
         const selection = this.element.getComponentSelection();
@@ -353,11 +353,11 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
             event.consume(canceled);
         }
         this.editing = false;
-        this.treeElementInternal.setDisableSelectFocus(false);
-        this.treeElementInternal.listItemElement.classList.remove('watch-expression-editing');
+        this.#treeElement.setDisableSelectFocus(false);
+        this.#treeElement.listItemElement.classList.remove('watch-expression-editing');
         if (this.textPrompt) {
             this.textPrompt.detach();
-            const newExpression = canceled ? this.expressionInternal : this.textPrompt.text();
+            const newExpression = canceled ? this.#expression : this.textPrompt.text();
             this.textPrompt = undefined;
             this.element.removeChildren();
             this.updateExpression(newExpression);
@@ -370,10 +370,10 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     updateExpression(newExpression) {
-        if (this.expressionInternal) {
-            this.expandController.stopWatchSectionsWithId(this.expressionInternal);
+        if (this.#expression) {
+            this.expandController.stopWatchSectionsWithId(this.#expression);
         }
-        this.expressionInternal = newExpression;
+        this.#expression = newExpression;
         this.update();
         this.dispatchEventToListeners("ExpressionUpdated" /* Events.EXPRESSION_UPDATED */, this);
     }
@@ -385,15 +385,15 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     createWatchExpression(result, exceptionDetails) {
         this.result = result || null;
         this.element.removeChildren();
-        const oldTreeElement = this.treeElementInternal;
+        const oldTreeElement = this.#treeElement;
         this.createWatchExpressionTreeElement(result, exceptionDetails);
         if (oldTreeElement?.parent) {
             const root = oldTreeElement.parent;
             const index = root.indexOfChild(oldTreeElement);
             root.removeChild(oldTreeElement);
-            root.insertChild(this.treeElementInternal, index);
+            root.insertChild(this.#treeElement, index);
         }
-        this.treeElementInternal.select();
+        this.#treeElement.select();
     }
     createWatchExpressionHeader(expressionValue, exceptionDetails) {
         const headerElement = this.element.createChild('div', 'watch-expression-header');
@@ -414,9 +414,8 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         });
         const titleElement = headerElement.createChild('div', 'watch-expression-title tree-element-title');
         titleElement.appendChild(deleteButton);
-        this.nameElement =
-            ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this.expressionInternal);
-        UI.Tooltip.Tooltip.install(this.nameElement, this.expressionInternal);
+        this.nameElement = ObjectUI.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this.#expression);
+        UI.Tooltip.Tooltip.install(this.nameElement, this.#expression);
         if (Boolean(exceptionDetails) || !expressionValue) {
             this.valueElement = document.createElement('span');
             this.valueElement.classList.add('watch-expression-error');
@@ -441,19 +440,19 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         const headerElement = this.createWatchExpressionHeader(expressionValue, exceptionDetails);
         if (!exceptionDetails && expressionValue && expressionValue.hasChildren && !expressionValue.customPreview()) {
             headerElement.classList.add('watch-expression-object-header');
-            this.treeElementInternal = new ObjectUI.ObjectPropertiesSection.RootElement(expressionValue, this.linkifier);
-            this.expandController.watchSection(this.expressionInternal, this.treeElementInternal);
-            this.treeElementInternal.toggleOnClick = false;
-            this.treeElementInternal.listItemElement.addEventListener('click', this.onSectionClick.bind(this), false);
-            this.treeElementInternal.listItemElement.addEventListener('dblclick', this.dblClickOnWatchExpression.bind(this));
+            this.#treeElement = new ObjectUI.ObjectPropertiesSection.RootElement(expressionValue, this.linkifier);
+            this.expandController.watchSection(this.#expression, this.#treeElement);
+            this.#treeElement.toggleOnClick = false;
+            this.#treeElement.listItemElement.addEventListener('click', this.onSectionClick.bind(this), false);
+            this.#treeElement.listItemElement.addEventListener('dblclick', this.dblClickOnWatchExpression.bind(this));
         }
         else {
             headerElement.addEventListener('dblclick', this.dblClickOnWatchExpression.bind(this));
-            this.treeElementInternal = new UI.TreeOutline.TreeElement();
+            this.#treeElement = new UI.TreeOutline.TreeElement();
         }
-        this.treeElementInternal.title = this.element;
-        this.treeElementInternal.listItemElement.classList.add('watch-expression-tree-item');
-        this.treeElementInternal.listItemElement.addEventListener('keydown', event => {
+        this.#treeElement.title = this.element;
+        this.#treeElement.listItemElement.classList.add('watch-expression-tree-item');
+        this.#treeElement.listItemElement.addEventListener('keydown', event => {
             if (event.key === 'Enter' && !this.isEditing()) {
                 this.startEditing();
                 event.consume(true);
@@ -474,14 +473,14 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
             this.preventClickTimeout = undefined;
         }
         function handleClick() {
-            if (!this.treeElementInternal) {
+            if (!this.#treeElement) {
                 return;
             }
-            if (this.treeElementInternal.expanded) {
-                this.treeElementInternal.collapse();
+            if (this.#treeElement.expanded) {
+                this.#treeElement.collapse();
             }
             else if (!this.editing) {
-                this.treeElementInternal.expand();
+                this.#treeElement.expand();
             }
         }
     }

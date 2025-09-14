@@ -1,10 +1,8 @@
 import type * as SDK from '../../core/sdk/sdk.js';
 export declare class ElementUpdateRecord {
+    #private;
     private modifiedAttributes?;
     private removedAttributes?;
-    private hasChangedChildrenInternal?;
-    private hasRemovedChildrenInternal?;
-    private charDataModifiedInternal?;
     attributeModified(attrName: string): void;
     attributeRemoved(attrName: string): void;
     nodeInserted(_node: SDK.DOMModel.DOMNode): void;

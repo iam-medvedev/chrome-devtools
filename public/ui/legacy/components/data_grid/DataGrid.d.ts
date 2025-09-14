@@ -2,6 +2,7 @@ import * as Common from '../../../../core/common/common.js';
 import * as UI from '../../legacy.js';
 import type { DataGridInternalToken } from './DataGridElement.js';
 export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<EventTypes<T>> {
+    #private;
     element: HTMLDivElement;
     displayName: string;
     private editCallback;
@@ -9,14 +10,12 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     refreshCallback: (() => void) | undefined;
     private dataTableHeaders;
     scrollContainerInternal: Element;
-    private dataContainerInternal;
     private readonly dataTable;
     protected inline: boolean;
     private columnsArray;
     columns: Record<string, ColumnDescriptor>;
     visibleColumnsArray: ColumnDescriptor[];
     cellClass: string | null;
-    private dataTableHeadInternal;
     private readonly headerRow;
     private readonly dataTableColumnGroup;
     dataTableBody: Element;
@@ -35,7 +34,6 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     elementToDataGridNode: WeakMap<Node, DataGridNode<T>>;
     disclosureColumnId?: string;
     private sortColumnCell?;
-    private rootNodeInternal?;
     private editingNode?;
     private columnWeightsSetting?;
     creationNode?: DataGridNode<any>;
@@ -178,15 +176,12 @@ export declare class DataGridNode<T> {
     #private;
     elementInternal: HTMLElement | null;
     expandedInternal: boolean;
-    private selectedInternal;
     private dirty;
     private inactive;
     private highlighted;
-    private depthInternal;
     revealedInternal: boolean | undefined;
     protected attachedInternal: boolean;
     private savedPosition;
-    private shouldRefreshChildrenInternal;
     children: Array<DataGridNode<T>>;
     dataGrid: DataGridImpl<T> | null;
     parent: DataGridNode<T> | null;
@@ -197,8 +192,6 @@ export declare class DataGridNode<T> {
     nodeAccessibleText: string;
     cellAccessibleTextMap: Map<string, string>;
     isCreationNode: boolean;
-    private dataInternal;
-    private hasChildrenInternal;
     constructor(data?: DataGridData | null, hasChildren?: boolean);
     element(): Element;
     protected createElement(): HTMLElement;

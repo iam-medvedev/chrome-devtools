@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -622,6 +622,23 @@ describe('CSSMatchedStyles', () => {
         assert.strictEqual(matchedStyles.resolveProperty('--f', styles[1])?.value, 'F');
         assert.strictEqual(matchedStyles.resolveProperty('color', styles[0])?.value, 'y');
         assert.isNull(matchedStyles.resolveProperty('background-color', styles[0]));
+    });
+    it('reads attributes from the parent node of a pseudo-element', async () => {
+        const node = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        node.id = 1;
+        node.nodeType.returns(Node.ELEMENT_NODE);
+        node.getAttribute.callsFake((name) => `parent-${name}`);
+        const pseudoElement = sinon.createStubInstance(SDK.DOMModel.DOMNode);
+        pseudoElement.id = 2;
+        pseudoElement.nodeType.returns(Node.ELEMENT_NODE);
+        pseudoElement.parentNode = node;
+        pseudoElement.pseudoType.returns('before');
+        const matchedStyles = await getMatchedStyles({
+            matchedPayload: [ruleMatch('div::before', { content: 'attr(data-content)' })],
+            node: pseudoElement,
+        });
+        const property = matchedStyles.rawAttributeValueFromStyle(matchedStyles.nodeStyles()[0], 'data-content');
+        assert.strictEqual(property, 'parent-data-content');
     });
     it('evaluates variables with attr() calls in the same way as blink', async () => {
         const attributes = [

@@ -7,7 +7,6 @@ import { LayoutShiftsTrackAppender } from './LayoutShiftsTrackAppender.js';
 import { ThreadAppender } from './ThreadAppender.js';
 import { EntryType } from './TimelineFlameChartDataProvider.js';
 import { TimingsTrackAppender } from './TimingsTrackAppender.js';
-import * as TimelineUtils from './utils/utils.js';
 export interface PopoverInfo {
     title: string;
     formattedTime: string;
@@ -15,7 +14,7 @@ export interface PopoverInfo {
     warningElements: HTMLSpanElement[];
     additionalElements: HTMLElement[];
 }
-export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.Handlers.Types.ParsedTrace): boolean;
+export declare function entryIsVisibleInTimeline(entry: Trace.Types.Events.Event, parsedTrace?: Trace.TraceModel.ParsedTrace): boolean;
 /**
  * Track appenders add the data of each track into the timeline flame
  * chart. Each track appender also implements functions tha allow the
@@ -116,7 +115,7 @@ export declare class CompatibilityTracksAppender {
      * system.
      * @param entityMapper 3P entity data for the trace.
      */
-    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.Handlers.Types.ParsedTrace, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[], entityMapper: TimelineUtils.EntityMapper.EntityMapper | null);
+    constructor(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, parsedTrace: Trace.TraceModel.ParsedTrace, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[], entityMapper: Trace.EntityMapper.EntityMapper | null);
     reset(): void;
     setFlameChartDataAndEntryData(flameChartData: PerfUI.FlameChart.FlameChartTimelineData, entryData: Trace.Types.Events.Event[], legacyEntryTypeByLevel: EntryType[]): void;
     getFlameChartTimelineData(): PerfUI.FlameChart.FlameChartTimelineData;

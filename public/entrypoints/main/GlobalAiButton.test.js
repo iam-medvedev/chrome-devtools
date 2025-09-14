@@ -1,8 +1,7 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import * as Root from '../../core/root/root.js';
 import { renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -55,10 +54,11 @@ describeWithEnvironment('GlobalAiButton', () => {
         });
         describe('with vertical drawer experiment', () => {
             beforeEach(() => {
-                Root.Runtime.experiments.setEnabled("vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */, true);
-            });
-            afterEach(() => {
-                Root.Runtime.experiments.setEnabled("vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */, false);
+                updateHostConfig({
+                    devToolsFlexibleLayout: {
+                        verticalDrawerEnabled: true,
+                    },
+                });
             });
             it('toggles drawer if experiment is on and user has no preference', async () => {
                 const { view } = await createWidget();
@@ -76,7 +76,11 @@ describeWithEnvironment('GlobalAiButton', () => {
             });
         });
         it('does not toggle drawer if experiment is off', async () => {
-            Root.Runtime.experiments.setEnabled("vertical-drawer" /* Root.Runtime.ExperimentName.VERTICAL_DRAWER */, false);
+            updateHostConfig({
+                devToolsFlexibleLayout: {
+                    verticalDrawerEnabled: false,
+                },
+            });
             const { view } = await createWidget();
             isUserExplicitlyUpdatedDrawerOrientationStub.returns(false);
             view.input.onClick();

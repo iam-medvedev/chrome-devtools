@@ -52,6 +52,9 @@
       "path": "../../common/bundle-tsconfig.json"
     },
     {
+      "path": "../../utils/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../ui/components/chrome_link/bundle-tsconfig.json"
     },
     {

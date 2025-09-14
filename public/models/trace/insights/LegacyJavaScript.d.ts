@@ -30,6 +30,6 @@ export type LegacyJavaScriptInsightModel = InsightModel<typeof UIStrings, {
     legacyJavaScriptResults: LegacyJavaScriptResults;
 }>;
 export declare function isLegacyJavaScript(model: InsightModel): model is LegacyJavaScriptInsightModel;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LegacyJavaScriptInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): LegacyJavaScriptInsightModel;
 export declare function createOverlays(model: LegacyJavaScriptInsightModel): Types.Overlays.Overlay[];
 export {};

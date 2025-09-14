@@ -59,11 +59,8 @@ export declare class Model extends EventTarget {
      * Returns the parsed trace data indexed by the order in which it was stored.
      * If no index is given, the last stored parsed data is returned.
      */
-    parsedTrace(index?: number): Handlers.Types.ParsedTrace | null;
-    traceInsights(index?: number): Insights.Types.TraceInsightSets | null;
-    metadata(index?: number): Types.File.MetaData | null;
+    parsedTrace(index?: number): ParsedTrace | null;
     overrideModifications(index: number, newModifications: Types.File.Modifications): void;
-    rawTraceEvents(index?: number): readonly Types.Events.Event[] | null;
     syntheticTraceEventsManager(index?: number): Helpers.SyntheticEvents.SyntheticEventsManager | null;
     size(): number;
     deleteTraceByIndex(recordingIndex: number): void;
@@ -71,13 +68,14 @@ export declare class Model extends EventTarget {
     resetProcessor(): void;
 }
 /**
- * This parsed trace file is used by the Model. It keeps multiple instances
+ * This parsed trace is used by the Model. It keeps multiple instances
  * of these so that the user can swap between them. The key is that it is
  * essentially the TraceFile plus whatever the model has parsed from it.
  */
-export type ParsedTraceFile = Types.File.TraceFile & {
-    parsedTrace: Handlers.Types.ParsedTrace | null;
-    traceInsights: Insights.Types.TraceInsightSets | null;
+export type ParsedTrace = Types.File.TraceFile & {
+    data: Handlers.Types.HandlerData;
+    /** Is null for CPU profiles. */
+    insights: Insights.Types.TraceInsightSets | null;
     syntheticEventsManager: Helpers.SyntheticEvents.SyntheticEventsManager;
 };
 export declare const enum ModelUpdateType {

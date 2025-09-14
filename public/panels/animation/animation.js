@@ -50,7 +50,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/animation/animationTimeline.css.js
 var animationTimeline_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -791,7 +791,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
   #selectedGroup;
   #renderQueue;
   #defaultDuration;
-  #durationInternal;
+  #duration;
   #timelineControlsWidth;
   #nodesMap;
   #uiAnimations;
@@ -845,7 +845,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     const noEffectSelectedPlaceholder = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noEffectSelected), i18nString(UIStrings.selectAnEffectAboveToInspectAnd));
     noEffectSelectedPlaceholder.show(timelineHint);
     this.#defaultDuration = 100;
-    this.#durationInternal = this.#defaultDuration;
+    this.#duration = this.#defaultDuration;
     this.#nodesMap = /* @__PURE__ */ new Map();
     this.#uiAnimations = [];
     this.#groupBuffer = [];
@@ -1076,10 +1076,10 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.updateControlButton();
   }
   duration() {
-    return this.#durationInternal;
+    return this.#duration;
   }
   setDuration(duration) {
-    this.#durationInternal = duration;
+    this.#duration = duration;
     this.scheduleRedraw();
   }
   clearTimeline() {
@@ -1093,7 +1093,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.#nodesMap.clear();
     this.#animationsMap.clear();
     this.#animationsContainer.removeChildren();
-    this.#durationInternal = this.#defaultDuration;
+    this.#duration = this.#defaultDuration;
     this.#timelineScrubber.classList.add("hidden");
     this.#gridHeader.classList.remove("scrubber-enabled");
     this.#selectedGroup = null;
@@ -1654,7 +1654,7 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("panels/animation/AnimationUI.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var AnimationUI = class _AnimationUI {
-  #animationInternal;
+  #animation;
   #timeline;
   #keyframes;
   #nameElement;
@@ -1672,9 +1672,9 @@ var AnimationUI = class _AnimationUI {
   #keyframeMoved;
   #downMouseX;
   constructor(animation, timeline2, parentElement) {
-    this.#animationInternal = animation;
+    this.#animation = animation;
     this.#timeline = timeline2;
-    const keyframesRule = this.#animationInternal.source().keyframesRule();
+    const keyframesRule = this.#animation.source().keyframesRule();
     if (keyframesRule) {
       this.#keyframes = keyframesRule.keyframes();
       if (animation.viewOrScrollTimeline() && animation.playbackRate() < 0) {
@@ -1682,21 +1682,21 @@ var AnimationUI = class _AnimationUI {
       }
     }
     this.#nameElement = parentElement.createChild("div", "animation-name");
-    this.#nameElement.textContent = this.#animationInternal.name();
+    this.#nameElement.textContent = this.#animation.name();
     this.#svg = UI2.UIUtils.createSVGChild(parentElement, "svg", "animation-ui");
     this.#svg.setAttribute("height", Options.AnimationSVGHeight.toString());
     this.#svg.style.marginLeft = "-" + Options.AnimationMargin + "px";
     this.#svg.addEventListener("contextmenu", this.onContextMenu.bind(this));
     this.#activeIntervalGroup = UI2.UIUtils.createSVGChild(this.#svg, "g");
     this.#activeIntervalGroup.setAttribute("jslog", `${VisualLogging2.animationClip().track({ drag: true })}`);
-    if (!this.#animationInternal.viewOrScrollTimeline()) {
+    if (!this.#animation.viewOrScrollTimeline()) {
       UI2.UIUtils.installDragHandle(this.#activeIntervalGroup, this.mouseDown.bind(this, "AnimationDrag", null), this.mouseMove.bind(this), this.mouseUp.bind(this), "-webkit-grabbing", "-webkit-grab");
       _AnimationUI.installDragHandleKeyboard(this.#activeIntervalGroup, this.keydownMove.bind(this, "AnimationDrag", null));
     }
     this.#cachedElements = [];
     this.#movementInMs = 0;
     this.#keyboardMovementRateMs = 50;
-    this.#color = _AnimationUI.colorForAnimation(this.#animationInternal);
+    this.#color = _AnimationUI.colorForAnimation(this.#animation);
   }
   static colorForAnimation(animation) {
     const names = Array.from(Colors.keys());
@@ -1716,7 +1716,7 @@ var AnimationUI = class _AnimationUI {
     element.addEventListener("keydown", elementDrag, false);
   }
   animation() {
-    return this.#animationInternal;
+    return this.#animation;
   }
   get nameElement() {
     return this.#nameElement;
@@ -1750,17 +1750,17 @@ var AnimationUI = class _AnimationUI {
       this.#delayLine = this.createLine(parentElement, "animation-delay-line");
       this.#endDelayLine = this.createLine(parentElement, "animation-delay-line");
     }
-    const fill = this.#animationInternal.source().fill();
+    const fill = this.#animation.source().fill();
     this.#delayLine.classList.toggle("animation-fill", fill === "backwards" || fill === "both");
     const margin = Options.AnimationMargin;
     this.#delayLine.setAttribute("x1", margin.toString());
     this.#delayLine.setAttribute("x2", (this.delayOrStartTime() * this.#timeline.pixelTimeRatio() + margin).toFixed(2));
     const forwardsFill = fill === "forwards" || fill === "both";
     this.#endDelayLine.classList.toggle("animation-fill", forwardsFill);
-    const leftMargin = Math.min(this.#timeline.width(), (this.delayOrStartTime() + this.duration() * this.#animationInternal.source().iterations()) * this.#timeline.pixelTimeRatio());
+    const leftMargin = Math.min(this.#timeline.width(), (this.delayOrStartTime() + this.duration() * this.#animation.source().iterations()) * this.#timeline.pixelTimeRatio());
     this.#endDelayLine.style.transform = "translateX(" + leftMargin.toFixed(2) + "px)";
     this.#endDelayLine.setAttribute("x1", margin.toString());
-    this.#endDelayLine.setAttribute("x2", forwardsFill ? (this.#timeline.width() - leftMargin + margin).toFixed(2) : (this.#animationInternal.source().endDelay() * this.#timeline.pixelTimeRatio() + margin).toFixed(2));
+    this.#endDelayLine.setAttribute("x2", forwardsFill ? (this.#timeline.width() - leftMargin + margin).toFixed(2) : (this.#animation.source().endDelay() * this.#timeline.pixelTimeRatio() + margin).toFixed(2));
   }
   drawPoint(iteration, parentElement, x, keyframeIndex, attachEvents) {
     if (this.#cachedElements[iteration].keyframePoints[keyframeIndex]) {
@@ -1812,7 +1812,7 @@ var AnimationUI = class _AnimationUI {
     }
     const group = cache[keyframeIndex];
     group.tabIndex = 0;
-    UI2.ARIAUtils.setLabel(group, i18nString2(UIStrings2.sSlider, { PH1: this.#animationInternal.name() }));
+    UI2.ARIAUtils.setLabel(group, i18nString2(UIStrings2.sSlider, { PH1: this.#animation.name() }));
     group.style.transform = "translateX(" + leftDistance.toFixed(2) + "px)";
     if (easing === "linear") {
       group.style.fill = this.#color;
@@ -1840,7 +1840,7 @@ var AnimationUI = class _AnimationUI {
     this.#nameElement.style.transform = "translateX(" + (Math.max(this.delayOrStartTime(), 0) * this.#timeline.pixelTimeRatio() + Options.AnimationMargin).toFixed(2) + "px)";
     this.#nameElement.style.width = (this.duration() * this.#timeline.pixelTimeRatio()).toFixed(2) + "px";
     this.drawDelayLine(this.#svg);
-    if (this.#animationInternal.type() === "CSSTransition") {
+    if (this.#animation.type() === "CSSTransition") {
       this.renderTransition();
       return;
     }
@@ -1851,7 +1851,7 @@ var AnimationUI = class _AnimationUI {
     const iterationWidth = this.duration() * this.#timeline.pixelTimeRatio();
     let iteration;
     const invisibleAreaWidth = this.delayOrStartTime() < 0 ? -this.delayOrStartTime() * this.#timeline.pixelTimeRatio() : 0;
-    for (iteration = 1; iteration < this.#animationInternal.source().iterations() && iterationWidth * (iteration - 1) < invisibleAreaWidth + this.#timeline.width() && (iterationWidth > 0 || this.#animationInternal.source().iterations() !== Infinity); iteration++) {
+    for (iteration = 1; iteration < this.#animation.source().iterations() && iterationWidth * (iteration - 1) < invisibleAreaWidth + this.#timeline.width() && (iterationWidth > 0 || this.#animation.source().iterations() !== Infinity); iteration++) {
       this.renderIteration(this.#tailGroup, iteration);
     }
     while (iteration < this.#cachedElements.length) {
@@ -1867,7 +1867,7 @@ var AnimationUI = class _AnimationUI {
       this.#cachedElements[0] = { animationLine: null, keyframePoints: {}, keyframeRender: {}, group: null };
     }
     this.drawAnimationLine(0, activeIntervalGroup);
-    this.renderKeyframe(0, 0, activeIntervalGroup, Options.AnimationMargin, this.duration() * this.#timeline.pixelTimeRatio(), this.#animationInternal.source().easing());
+    this.renderKeyframe(0, 0, activeIntervalGroup, Options.AnimationMargin, this.duration() * this.#timeline.pixelTimeRatio(), this.#animation.source().easing());
     this.drawPoint(0, activeIntervalGroup, Options.AnimationMargin, 0, true);
     this.drawPoint(0, activeIntervalGroup, this.duration() * this.#timeline.pixelTimeRatio() + Options.AnimationMargin, -1, true);
   }
@@ -1899,14 +1899,14 @@ var AnimationUI = class _AnimationUI {
     this.drawPoint(iteration, group, this.duration() * this.#timeline.pixelTimeRatio() + Options.AnimationMargin, -1, iteration === 0);
   }
   delayOrStartTime() {
-    let delay = this.#animationInternal.delayOrStartTime();
+    let delay = this.#animation.delayOrStartTime();
     if (this.#mouseEventType === "AnimationDrag" || this.#mouseEventType === "StartEndpointMove") {
       delay += this.#movementInMs;
     }
     return delay;
   }
   duration() {
-    let duration = this.#animationInternal.iterationDuration();
+    let duration = this.#animation.iterationDuration();
     if (this.#mouseEventType === "FinishEndpointMove") {
       duration += this.#movementInMs;
     } else if (this.#mouseEventType === "StartEndpointMove") {
@@ -1921,7 +1921,7 @@ var AnimationUI = class _AnimationUI {
     let offset = this.#keyframes[i].offsetAsNumber();
     if (this.#mouseEventType === "KeyframeMove" && i === this.#keyframeMoved) {
       console.assert(i > 0 && i < this.#keyframes.length - 1, "First and last keyframe cannot be moved");
-      offset += this.#movementInMs / this.#animationInternal.iterationDuration();
+      offset += this.#movementInMs / this.#animation.iterationDuration();
       offset = Math.max(offset, this.#keyframes[i - 1].offsetAsNumber());
       offset = Math.min(offset, this.#keyframes[i + 1].offsetAsNumber());
     }
@@ -1966,7 +1966,7 @@ var AnimationUI = class _AnimationUI {
         this.#keyframes[this.#keyframeMoved].setOffset(this.offset(this.#keyframeMoved));
       }
     } else {
-      this.#animationInternal.setTiming(this.duration(), this.delayOrStartTime());
+      this.#animation.setTiming(this.duration(), this.delayOrStartTime());
     }
     this.#movementInMs = 0;
     this.redraw();
@@ -1995,7 +1995,7 @@ var AnimationUI = class _AnimationUI {
         this.#keyframes[this.#keyframeMoved].setOffset(this.offset(this.#keyframeMoved));
       }
     } else {
-      this.#animationInternal.setTiming(this.duration(), this.delayOrStartTime());
+      this.#animation.setTiming(this.duration(), this.delayOrStartTime());
     }
     this.setMovementAndRedraw(0);
     this.#mouseEventType = void 0;
@@ -2011,7 +2011,7 @@ var AnimationUI = class _AnimationUI {
       contextMenu.appendApplicableItems(remoteObject);
       void contextMenu.show();
     }
-    void this.#animationInternal.remoteObjectPromise().then(showContextMenu);
+    void this.#animation.remoteObjectPromise().then(showContextMenu);
     event.consume(true);
   }
 };

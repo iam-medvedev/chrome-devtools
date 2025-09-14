@@ -1,8 +1,8 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { allThreadEntriesInTrace, getBaseTraceParseModelData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall } from '../../../testing/TraceHelpers.js';
+import { allThreadEntriesInTrace, getBaseTraceHandlerData, makeCompleteEvent, makeInstantEvent, makeMockRendererHandlerData, makeProfileCall } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../trace.js';
 function shapeStackTraceAsArray(stackTrace) {
@@ -18,23 +18,24 @@ function shapeStackTraceAsArray(stackTrace) {
     return stackTraceAsArray;
 }
 function parsedTraceFromEvents(events) {
-    return getBaseTraceParseModelData({ Renderer: makeMockRendererHandlerData(events) });
+    return getBaseTraceHandlerData({ Renderer: makeMockRendererHandlerData(events) });
 }
 describeWithEnvironment('StackTraceForTraceEvent', function () {
     let parsedTrace;
+    let data;
     beforeEach(async function () {
-        const traceEngineData = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
-        parsedTrace = traceEngineData.parsedTrace;
-        Trace.Extras.StackTraceForEvent.clearCacheForTrace(parsedTrace);
+        parsedTrace = await TraceLoader.traceEngine(this, 'async-js-calls.json.gz');
+        data = parsedTrace.data;
+        Trace.Extras.StackTraceForEvent.clearCacheForTrace(data);
     });
     afterEach(async () => {
-        Trace.Extras.StackTraceForEvent.clearCacheForTrace(parsedTrace);
+        Trace.Extras.StackTraceForEvent.clearCacheForTrace(data);
     });
     it('correctly builds the stack trace of a profile call when it only has a synchronous stack trace.', async function () {
         const jsCall = allThreadEntriesInTrace(parsedTrace)
             .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'startExample');
         assert.exists(jsCall);
-        const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
+        const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, data);
         assert.exists(stackTrace);
         const stackTraceArray = shapeStackTraceAsArray(stackTrace);
         assert.lengthOf(stackTraceArray, 1);
@@ -54,7 +55,7 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         const jsCall = allThreadEntriesInTrace(parsedTrace)
             .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
         assert.exists(jsCall);
-        const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
+        const stackTrace = Trace.Extras.StackTraceForEvent.get(jsCall, data);
         assert.exists(stackTrace);
         const stackTraceArray = shapeStackTraceAsArray(stackTrace);
         assert.lengthOf(stackTraceArray, 4);
@@ -108,11 +109,11 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         const fooCall = allThreadEntriesInTrace(parsedTrace)
             .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'foo');
         assert.exists(fooCall);
-        const result = parsedTrace.AsyncJSCalls.asyncCallToScheduler.get(fooCall);
+        const result = data.AsyncJSCalls.asyncCallToScheduler.get(fooCall);
         assert.exists(result);
         const { scheduler: parentOfFoo } = result;
         // Compute stack trace of foo's parent
-        const stackTraceOfParent = Trace.Extras.StackTraceForEvent.get(parentOfFoo, parsedTrace);
+        const stackTraceOfParent = Trace.Extras.StackTraceForEvent.get(parentOfFoo, data);
         assert.exists(stackTraceOfParent);
         const stackTraceArray = shapeStackTraceAsArray(stackTraceOfParent);
         assert.lengthOf(stackTraceArray, 1);
@@ -123,7 +124,7 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         bottomFrame.functionName = 'Overriden name';
         // Compute stack trace of foo, ensure the cache calculated with
         // its parent is used.
-        const stackTraceOfFoo = Trace.Extras.StackTraceForEvent.get(fooCall, parsedTrace);
+        const stackTraceOfFoo = Trace.Extras.StackTraceForEvent.get(fooCall, data);
         assert.exists(stackTraceOfFoo);
         const stackTraceArray2 = shapeStackTraceAsArray(stackTraceOfFoo);
         assert.deepEqual(stackTraceArray2, [
@@ -159,8 +160,8 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         const jsCall = allThreadEntriesInTrace(parsedTrace)
             .find(e => Trace.Types.Events.isProfileCall(e) && e.callFrame.functionName === 'baz');
         assert.exists(jsCall);
-        const stackTraceForExtensionProfileCall = Trace.Extras.StackTraceForEvent.get(jsCall, parsedTrace);
-        const measureTraceId = [...parsedTrace.UserTimings.measureTraceByTraceId.keys()].at(0);
+        const stackTraceForExtensionProfileCall = Trace.Extras.StackTraceForEvent.get(jsCall, data);
+        const measureTraceId = [...data.UserTimings.measureTraceByTraceId.keys()].at(0);
         if (!measureTraceId) {
             throw new Error('Performance measure trace was not found');
         }
@@ -180,7 +181,7 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
                 ph: "b" /* Trace.Types.Events.Phase.ASYNC_NESTABLE_START */,
             },
         };
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, parsedTrace);
+        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, data);
         assert.exists(stackTraceForExtensionEntry);
         assert.deepEqual(shapeStackTraceAsArray(stackTraceForExtensionEntry), shapeStackTraceAsArray(stackTraceForExtensionProfileCall));
     });
@@ -206,7 +207,7 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
             track: 'track',
         };
         timestamp.args = { data: extensionData };
-        const trace = parsedTraceFromEvents([profileCall, timestamp]);
+        const parsedTrace = parsedTraceFromEvents([profileCall, timestamp]);
         const mockExtensionEntry = {
             ts: timestamp.ts,
             name: 'Entry',
@@ -218,7 +219,7 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
             pid,
             tid,
         };
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, trace);
+        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(mockExtensionEntry, parsedTrace.data);
         assert.exists(stackTraceForExtensionEntry);
         assert.deepEqual(shapeStackTraceAsArray(stackTraceForExtensionEntry), [
             { callFrames: [profileCall.callFrame], description: undefined },
@@ -237,14 +238,14 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         profileCall1.callFrame.lineNumber = 0;
         profileCall2.callFrame.columnNumber = 0;
         profileCall2.callFrame.lineNumber = 0;
-        const traceEvent = makeCompleteEvent("UpdateLayoutTree" /* Trace.Types.Events.Name.UPDATE_LAYOUT_TREE */, 100, 10, '', pid, tid);
+        const traceEvent = makeCompleteEvent("UpdateLayoutTree" /* Trace.Types.Events.Name.RECALC_STYLE */, 100, 10, '', pid, tid);
         const payloadCallStack = [
             { columnNumber: payloadColumnNumber, functionName: 'bar', lineNumber: payloadLineNumber, scriptId: '115', url: '' },
             { columnNumber: payloadColumnNumber, functionName: 'foo', lineNumber: payloadLineNumber, scriptId: '115', url: '' },
         ];
         traceEvent.args = { elementCount: 1, beginData: { frame: '', stackTrace: payloadCallStack } };
-        const trace = parsedTraceFromEvents([profileCall1, profileCall2, traceEvent]);
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(traceEvent, trace);
+        const parsedTrace = parsedTraceFromEvents([profileCall1, profileCall2, traceEvent]);
+        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(traceEvent, parsedTrace.data);
         assert.exists(stackTraceForExtensionEntry);
         assert.deepEqual(shapeStackTraceAsArray(stackTraceForExtensionEntry), [
             {
@@ -257,10 +258,10 @@ describeWithEnvironment('StackTraceForTraceEvent', function () {
         ]);
     });
     it('obtains the stack trace for a trace event triggered by an async JS call', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'react-console-timestamp.json.gz');
-        const containerExtensionEntry = parsedTrace.ExtensionTraceData.extensionTrackData[0].entriesByTrack['Primary'].find(e => e.name === 'Container');
+        const { data } = await TraceLoader.traceEngine(this, 'react-console-timestamp.json.gz');
+        const containerExtensionEntry = data.ExtensionTraceData.extensionTrackData[0].entriesByTrack['Primary'].find(e => e.name === 'Container');
         assert.exists(containerExtensionEntry);
-        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(containerExtensionEntry, parsedTrace);
+        const stackTraceForExtensionEntry = Trace.Extras.StackTraceForEvent.get(containerExtensionEntry, data);
         assert.exists(stackTraceForExtensionEntry);
         const prettyStack = shapeStackTraceAsArray(stackTraceForExtensionEntry)
             .map(stack => ({ ...stack, callFrames: stack.callFrames.map(frame => ({ ...frame, url: '' })) }));

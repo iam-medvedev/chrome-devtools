@@ -574,7 +574,7 @@ import * as UI3 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/bezierEditor.css.js
 var bezierEditor_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1022,7 +1022,7 @@ import * as VisualLogging4 from "./../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/colorMixSwatch.css.js
 var colorMixSwatch_css_default = `/*
- * Copyright 2022 The Chromium Authors. All rights reserved.
+ * Copyright 2022 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1145,7 +1145,7 @@ import * as VisualLogging5 from "./../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/colorSwatch.css.js
 var colorSwatch_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1329,7 +1329,7 @@ import * as VisualLogging6 from "./../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngleEditor.css.js
 var cssAngleEditor_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1690,7 +1690,7 @@ import * as Lit4 from "./../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngleSwatch.css.js
 var cssAngleSwatch_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1757,7 +1757,7 @@ import * as Lit5 from "./../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssAngle.css.js
 var cssAngle_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2010,7 +2010,7 @@ import * as UI5 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowEditor.css.js
 var cssShadowEditor_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2556,7 +2556,7 @@ import * as UI7 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/fontEditor.css.js
 var fontEditor_css_default = `/*
- * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3860,7 +3860,7 @@ import * as VisualLogging9 from "./../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/linkSwatch.css.js
 var linkSwatch_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3951,7 +3951,7 @@ import { html as html7, render as render7 } from "./../../../lit/lit.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/cssShadowSwatch.css.js
 var cssShadowSwatch_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4005,7 +4005,7 @@ import * as UI8 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/inline_editor/swatchPopover.css.js
 var swatchPopover_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

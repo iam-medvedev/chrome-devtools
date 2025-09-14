@@ -26,7 +26,7 @@ import "./../../../Images/Images.js";
 
 // gen/front_end/ui/components/icon_button/icon.css.js
 var icon_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -244,7 +244,7 @@ import * as Lit from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/icon_button/iconButton.css.js
 var iconButton_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -377,7 +377,7 @@ import { Directives as Directives2, html as html2, render as render2 } from "./.
 
 // gen/front_end/ui/components/icon_button/fileSourceIcon.css.js
 var fileSourceIcon_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

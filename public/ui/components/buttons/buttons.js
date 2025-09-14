@@ -15,7 +15,7 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/buttons/button.css.js
 var button_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -659,7 +659,7 @@ import * as Lit2 from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/buttons/floatingButton.css.js
 var floatingButton_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -813,7 +813,7 @@ customElements.define("devtools-floating-button", FloatingButton);
 
 // gen/front_end/ui/components/buttons/textButton.css.js
 var textButton_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

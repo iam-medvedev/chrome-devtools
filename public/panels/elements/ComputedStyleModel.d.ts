@@ -1,8 +1,7 @@
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 export declare class ComputedStyleModel extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    private nodeInternal;
-    private cssModelInternal;
+    #private;
     private eventListeners;
     private frameResizedTimer?;
     private computedStylePromise?;

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -95,8 +95,8 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/ActionRegistration.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class Action extends Common.ObjectWrapper.ObjectWrapper {
-    enabledInternal = true;
-    toggledInternal = false;
+    #enabled = true;
+    #toggled = false;
     actionRegistration;
     constructor(actionRegistration) {
         super();
@@ -123,14 +123,14 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
         return Boolean(this.actionRegistration.toggleWithRedColor);
     }
     setEnabled(enabled) {
-        if (this.enabledInternal === enabled) {
+        if (this.#enabled === enabled) {
             return;
         }
-        this.enabledInternal = enabled;
+        this.#enabled = enabled;
         this.dispatchEventToListeners("Enabled" /* Events.ENABLED */, enabled);
     }
     enabled() {
-        return this.enabledInternal;
+        return this.#enabled;
     }
     category() {
         return this.actionRegistration.category;
@@ -153,7 +153,7 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
             // two options can be active at a given moment and the 'toggled' property of the action along
             // with the 'value' of the options are used to determine which one it is.
             for (const pair of options) {
-                if (pair.value !== this.toggledInternal) {
+                if (pair.value !== this.#toggled) {
                     title = pair.title();
                 }
             }
@@ -161,14 +161,14 @@ export class Action extends Common.ObjectWrapper.ObjectWrapper {
         return title;
     }
     toggled() {
-        return this.toggledInternal;
+        return this.#toggled;
     }
     setToggled(toggled) {
         console.assert(this.toggleable(), 'Shouldn\'t be toggling an untoggleable action', this.id());
-        if (this.toggledInternal === toggled) {
+        if (this.#toggled === toggled) {
             return;
         }
-        this.toggledInternal = toggled;
+        this.#toggled = toggled;
         this.dispatchEventToListeners("Toggled" /* Events.TOGGLED */, toggled);
     }
     options() {

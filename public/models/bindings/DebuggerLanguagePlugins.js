@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -192,27 +192,27 @@ class SourceScopeRemoteObject extends SDK.RemoteObject.RemoteObjectImpl {
     }
 }
 export class SourceScope {
-    #callFrameInternal;
-    #typeInternal;
-    #typeNameInternal;
-    #iconInternal;
-    #objectInternal;
+    #callFrame;
+    #type;
+    #typeName;
+    #icon;
+    #object;
     constructor(callFrame, stopId, type, typeName, icon, plugin) {
         if (icon && new URL(icon).protocol !== 'data:') {
             throw new Error('The icon must be a data:-URL');
         }
-        this.#callFrameInternal = callFrame;
-        this.#typeInternal = type;
-        this.#typeNameInternal = typeName;
-        this.#iconInternal = icon;
-        this.#objectInternal = new SourceScopeRemoteObject(callFrame, stopId, plugin);
+        this.#callFrame = callFrame;
+        this.#type = type;
+        this.#typeName = typeName;
+        this.#icon = icon;
+        this.#object = new SourceScopeRemoteObject(callFrame, stopId, plugin);
     }
     async getVariableValue(name) {
-        for (let v = 0; v < this.#objectInternal.variables.length; ++v) {
-            if (this.#objectInternal.variables[v].name !== name) {
+        for (let v = 0; v < this.#object.variables.length; ++v) {
+            if (this.#object.variables[v].name !== name) {
                 continue;
             }
-            const properties = await this.#objectInternal.getAllProperties(false, false);
+            const properties = await this.#object.getAllProperties(false, false);
             if (!properties.properties) {
                 continue;
             }
@@ -224,13 +224,13 @@ export class SourceScope {
         return null;
     }
     callFrame() {
-        return this.#callFrameInternal;
+        return this.#callFrame;
     }
     type() {
-        return this.#typeInternal;
+        return this.#type;
     }
     typeName() {
-        return this.#typeNameInternal;
+        return this.#typeName;
     }
     name() {
         return undefined;
@@ -239,13 +239,13 @@ export class SourceScope {
         return null;
     }
     object() {
-        return this.#objectInternal;
+        return this.#object;
     }
     description() {
         return '';
     }
     icon() {
-        return this.#iconInternal;
+        return this.#icon;
     }
     extraProperties() {
         return [];

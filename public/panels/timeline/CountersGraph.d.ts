@@ -20,11 +20,12 @@ export declare class CountersGraph extends UI.Widget.VBox {
     currentValuesBar?: HTMLElement;
     private markerXPosition?;
     constructor(delegate: TimelineModeViewDelegate);
-    setModel(parsedTrace: Trace.Handlers.Types.ParsedTrace | null, events: Trace.Types.Events.Event[] | null): void;
+    setModel(parsedTrace: Trace.TraceModel.ParsedTrace | null, events: Trace.Types.Events.Event[] | null): void;
     private createCurrentValuesBar;
     private createCounter;
     resizerElement(): Element | null;
     private resize;
+    performUpdate(): Promise<void> | void;
     draw(): void;
     private onClick;
     private onMouseLeave;
@@ -79,10 +80,8 @@ export declare class CounterUI {
     visible(): boolean;
 }
 export declare class Calculator implements Calculator {
-    private minimumBoundaryInternal;
-    private maximumBoundaryInternal;
+    #private;
     private workingArea;
-    private zeroTimeInternal;
     constructor();
     setZeroTime(time: number): void;
     computePosition(time: number): number;

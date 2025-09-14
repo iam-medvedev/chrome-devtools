@@ -6,6 +6,8 @@ import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
 import { protocolCallFrame, stringifyStackTrace } from '../../testing/StackTraceHelpers.js';
 import * as StackTrace from './stack_trace.js';
+// TODO(crbug.com/444191656): Expose a `testing` bundle.
+// eslint-disable-next-line rulesdir/es-modules-import
 import * as StackTraceImpl from './stack_trace_impl.js';
 describeWithMockConnection('StackTraceModel', () => {
     const identityTranslateFn = (frames, _target) => Promise.resolve(frames.map(f => [{

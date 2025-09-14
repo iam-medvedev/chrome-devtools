@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 // We limit the amount of predecessors to 10; on large traces with large JS
@@ -14,8 +14,8 @@ const MAX_PREDECESSOR_INITIATOR_LIMIT = 10;
  */
 export function initiatorsDataToDraw(parsedTrace, selectedEvent, hiddenEntries, expandableEntries) {
     const initiatorsData = [
-        ...findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.Initiators.eventToInitiator),
-        ...findInitiatorDataDirectSuccessors(selectedEvent, parsedTrace.Initiators.initiatorToEvents),
+        ...findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.data.Initiators.eventToInitiator),
+        ...findInitiatorDataDirectSuccessors(selectedEvent, parsedTrace.data.Initiators.initiatorToEvents),
     ];
     // For each InitiatorData, call a function that makes sure that neither the initiator or initiated entry is hidden.
     // If they are, it will reassign the event or initiator to the closest ancestor.
@@ -23,7 +23,7 @@ export function initiatorsDataToDraw(parsedTrace, selectedEvent, hiddenEntries, 
     return initiatorsData;
 }
 export function initiatorsDataToDrawForNetwork(parsedTrace, selectedEvent) {
-    return findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.NetworkRequests.eventToInitiator);
+    return findInitiatorDataPredecessors(parsedTrace, selectedEvent, parsedTrace.data.NetworkRequests.eventToInitiator);
 }
 function findInitiatorDataPredecessors(parsedTrace, selectedEvent, eventToInitiator) {
     const initiatorsData = [];
@@ -46,7 +46,7 @@ function findInitiatorDataPredecessors(parsedTrace, selectedEvent, eventToInitia
             visited.add(currentEvent);
             continue;
         }
-        const nodeForCurrentEvent = parsedTrace.Renderer.entryToNode.get(currentEvent);
+        const nodeForCurrentEvent = parsedTrace.data.Renderer.entryToNode.get(currentEvent);
         if (!nodeForCurrentEvent) {
             // Should not happen - if it does something odd is going
             // on so let's give up.
@@ -77,7 +77,7 @@ function findInitiatorDataDirectSuccessors(selectedEvent, initiatorToEvents) {
  */
 function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEntries, hiddenEntries, parsedTrace) {
     if (hiddenEntries.includes(initiatorData.event)) {
-        let nextParent = parsedTrace.Renderer.entryToNode.get(initiatorData.event)?.parent;
+        let nextParent = parsedTrace.data.Renderer.entryToNode.get(initiatorData.event)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }
@@ -85,7 +85,7 @@ function getClosestVisibleInitiatorEntriesAncestors(initiatorData, expandableEnt
         initiatorData.isEntryHidden = true;
     }
     if (hiddenEntries.includes(initiatorData.initiator)) {
-        let nextParent = parsedTrace.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
+        let nextParent = parsedTrace.data.Renderer.entryToNode.get(initiatorData.initiator)?.parent;
         while (nextParent?.entry && !expandableEntries.includes(nextParent?.entry)) {
             nextParent = nextParent.parent ?? undefined;
         }

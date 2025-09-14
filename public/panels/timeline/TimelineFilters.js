@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Trace from '../../models/trace/trace.js';
@@ -19,19 +19,19 @@ export class Category extends Trace.Extras.TraceFilter.TraceFilter {
     }
 }
 export class TimelineRegExp extends Trace.Extras.TraceFilter.TraceFilter {
-    regExpInternal;
+    #regExp;
     constructor(regExp) {
         super();
         this.setRegExp(regExp || null);
     }
     setRegExp(regExp) {
-        this.regExpInternal = regExp;
+        this.#regExp = regExp;
     }
     regExp() {
-        return this.regExpInternal;
+        return this.#regExp;
     }
-    accept(event, parsedTrace) {
-        return !this.regExpInternal || TimelineUIUtils.testContentMatching(event, this.regExpInternal, parsedTrace);
+    accept(event, handlerData) {
+        return !this.#regExp || TimelineUIUtils.testContentMatching(event, this.#regExp, handlerData);
     }
 }
 //# sourceMappingURL=TimelineFilters.js.map

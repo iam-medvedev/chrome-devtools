@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -214,9 +214,8 @@ export class AttributeMatcher extends matcherBase(AttributeMatch) {
         const isValidType = type === null || isValidCSSType(type);
         isCSSTokens = isCSSTokens && isValidType;
         const attrName = matching.ast.text(nameNode);
+        const rawValue = this.matchedStyles.rawAttributeValueFromStyle(this.style, attrName);
         let substitutionText = null;
-        const domNode = this.matchedStyles.nodeForStyle(this.style) ?? this.matchedStyles.node();
-        const rawValue = domNode.getAttribute(attrName) ?? null;
         if (rawValue !== null) {
             substitutionText = isCSSTokens ? rawValue : localEvalCSS(rawValue, type ?? RAW_STRING_TYPE);
         }

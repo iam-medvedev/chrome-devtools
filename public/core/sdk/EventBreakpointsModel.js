@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { CategorizedBreakpoint } from './CategorizedBreakpoint.js';
@@ -35,7 +35,7 @@ class EventListenerBreakpoint extends CategorizedBreakpoint {
 }
 let eventBreakpointManagerInstance;
 export class EventBreakpointsManager {
-    #eventListenerBreakpointsInternal = [];
+    #eventListenerBreakpoints = [];
     constructor() {
         this.createInstrumentationBreakpoints("auction-worklet" /* Category.AUCTION_WORKLET */, [
             "beforeBidderWorkletBiddingStart" /* InstrumentationNames.BEFORE_BIDDER_WORKLET_BIDDING_START */,
@@ -99,21 +99,21 @@ export class EventBreakpointsManager {
     }
     createInstrumentationBreakpoints(category, instrumentationNames) {
         for (const instrumentationName of instrumentationNames) {
-            this.#eventListenerBreakpointsInternal.push(new EventListenerBreakpoint(category, instrumentationName));
+            this.#eventListenerBreakpoints.push(new EventListenerBreakpoint(category, instrumentationName));
         }
     }
     eventListenerBreakpoints() {
-        return this.#eventListenerBreakpointsInternal.slice();
+        return this.#eventListenerBreakpoints.slice();
     }
     resolveEventListenerBreakpoint({ eventName }) {
         if (!eventName.startsWith(EventListenerBreakpoint.instrumentationPrefix)) {
             return null;
         }
         const instrumentationName = eventName.substring(EventListenerBreakpoint.instrumentationPrefix.length);
-        return this.#eventListenerBreakpointsInternal.find(b => b.name === instrumentationName) || null;
+        return this.#eventListenerBreakpoints.find(b => b.name === instrumentationName) || null;
     }
     modelAdded(eventBreakpointModel) {
-        for (const breakpoint of this.#eventListenerBreakpointsInternal) {
+        for (const breakpoint of this.#eventListenerBreakpoints) {
             if (breakpoint.enabled()) {
                 breakpoint.updateOnModel(eventBreakpointModel);
             }

@@ -28,10 +28,11 @@ __export(Trace_exports, {
   extractSampleTraceId: () => extractSampleTraceId,
   findNextEventAfterTimestamp: () => findNextEventAfterTimestamp,
   findPreviousEventBeforeTimestamp: () => findPreviousEventBeforeTimestamp,
-  findUpdateLayoutTreeEvents: () => findUpdateLayoutTreeEvents,
+  findRecalcStyleEvents: () => findRecalcStyleEvents,
   forEachEvent: () => forEachEvent,
   frameIDForEvent: () => frameIDForEvent,
   getNavigationForTraceEvent: () => getNavigationForTraceEvent,
+  getStackTraceTopCallFrameInEventPayload: () => getStackTraceTopCallFrameInEventPayload,
   getZeroIndexedLineAndColumnForEvent: () => getZeroIndexedLineAndColumnForEvent,
   getZeroIndexedStackTraceInEventPayload: () => getZeroIndexedStackTraceInEventPayload,
   isExtensionUrl: () => isExtensionUrl,
@@ -311,7 +312,7 @@ function stackTraceInEvent(event) {
   if (event.args?.stackTrace) {
     return event.args.stackTrace;
   }
-  if (Types2.Events.isUpdateLayoutTree(event)) {
+  if (Types2.Events.isRecalcStyle(event)) {
     return event.args.beginData?.stackTrace || null;
   }
   if (Types2.Events.isLayout(event)) {
@@ -596,23 +597,42 @@ function getZeroIndexedStackTraceInEventPayload(event) {
   if (!stack) {
     return null;
   }
-  return stack.map((callFrame) => {
-    switch (event.name) {
-      case "ScheduleStyleRecalculation":
-      case "InvalidateLayout":
-      case "FunctionCall":
-      case "Layout":
-      case "UpdateLayoutTree": {
-        return makeZeroBasedCallFrame(callFrame);
-      }
-      default: {
-        if (Types2.Events.isUserTiming(event) || Types2.Extensions.isSyntheticExtensionEntry(event)) {
-          return makeZeroBasedCallFrame(callFrame);
-        }
-      }
+  switch (event.name) {
+    case "ScheduleStyleRecalculation":
+    case "InvalidateLayout":
+    case "FunctionCall":
+    case "Layout":
+    case "UpdateLayoutTree": {
+      return stack.map(makeZeroBasedCallFrame);
     }
-    return callFrame;
-  });
+    default: {
+      if (Types2.Events.isUserTiming(event) || Types2.Extensions.isSyntheticExtensionEntry(event)) {
+        return stack.map(makeZeroBasedCallFrame);
+      }
+      return stack;
+    }
+  }
+}
+function getStackTraceTopCallFrameInEventPayload(event) {
+  const stack = stackTraceInEvent(event);
+  if (!stack || stack.length === 0) {
+    return null;
+  }
+  switch (event.name) {
+    case "ScheduleStyleRecalculation":
+    case "InvalidateLayout":
+    case "FunctionCall":
+    case "Layout":
+    case "UpdateLayoutTree": {
+      return makeZeroBasedCallFrame(stack[0]);
+    }
+    default: {
+      if (Types2.Events.isUserTiming(event) || Types2.Extensions.isSyntheticExtensionEntry(event)) {
+        return makeZeroBasedCallFrame(stack[0]);
+      }
+      return stack[0];
+    }
+  }
 }
 function makeZeroBasedCallFrame(callFrame) {
   const normalizedCallFrame = { ...callFrame };
@@ -660,12 +680,12 @@ function topLevelEventIndexEndingAfter(events, time) {
   }
   return Math.max(index, 0);
 }
-function findUpdateLayoutTreeEvents(events, startTime, endTime) {
+function findRecalcStyleEvents(events, startTime, endTime) {
   const foundEvents = [];
   const startEventIndex = topLevelEventIndexEndingAfter(events, startTime);
   for (let i = startEventIndex; i < events.length; i++) {
     const event = events[i];
-    if (!Types2.Events.isUpdateLayoutTree(event)) {
+    if (!Types2.Events.isRecalcStyle(event)) {
       continue;
     }
     if (event.ts >= (endTime || Infinity)) {

@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -40,8 +40,8 @@ function finalize(partialModel) {
 export function isLegacyJavaScript(model) {
     return model.insightKey === "LegacyJavaScript" /* InsightKeys.LEGACY_JAVASCRIPT */;
 }
-export function generateInsight(parsedTrace, context) {
-    const scripts = parsedTrace.Scripts.scripts.filter(script => {
+export function generateInsight(data, context) {
+    const scripts = data.Scripts.scripts.filter(script => {
         if (script.frame !== context.frameId) {
             return false;
         }

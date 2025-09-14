@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -290,24 +290,24 @@ export class MediaQueryInspector extends UI.Widget.Widget {
 }
 export class MediaQueryUIModel {
     cssMedia;
-    minWidthExpressionInternal;
-    maxWidthExpressionInternal;
-    activeInternal;
-    sectionInternal;
-    rawLocationInternal;
+    #minWidthExpression;
+    #maxWidthExpression;
+    #active;
+    #section;
+    #rawLocation;
     constructor(cssMedia, minWidthExpression, maxWidthExpression, active) {
         this.cssMedia = cssMedia;
-        this.minWidthExpressionInternal = minWidthExpression;
-        this.maxWidthExpressionInternal = maxWidthExpression;
-        this.activeInternal = active;
+        this.#minWidthExpression = minWidthExpression;
+        this.#maxWidthExpression = maxWidthExpression;
+        this.#active = active;
         if (maxWidthExpression && !minWidthExpression) {
-            this.sectionInternal = 0 /* Section.MAX */;
+            this.#section = 0 /* Section.MAX */;
         }
         else if (minWidthExpression && maxWidthExpression) {
-            this.sectionInternal = 1 /* Section.MIN_MAX */;
+            this.#section = 1 /* Section.MIN_MAX */;
         }
         else {
-            this.sectionInternal = 2 /* Section.MIN */;
+            this.#section = 2 /* Section.MIN */;
         }
     }
     static createFromMediaQuery(cssMedia, mediaQuery) {
@@ -401,25 +401,25 @@ export class MediaQueryUIModel {
         return thisMinLength - otherMinLength || otherMaxLength - thisMaxLength;
     }
     section() {
-        return this.sectionInternal;
+        return this.#section;
     }
     mediaText() {
         return this.cssMedia.text || '';
     }
     rawLocation() {
-        if (!this.rawLocationInternal) {
-            this.rawLocationInternal = this.cssMedia.rawLocation();
+        if (!this.#rawLocation) {
+            this.#rawLocation = this.cssMedia.rawLocation();
         }
-        return this.rawLocationInternal;
+        return this.#rawLocation;
     }
     minWidthExpression() {
-        return this.minWidthExpressionInternal;
+        return this.#minWidthExpression;
     }
     maxWidthExpression() {
-        return this.maxWidthExpressionInternal;
+        return this.#maxWidthExpression;
     }
     active() {
-        return this.activeInternal;
+        return this.#active;
     }
 }
 //# sourceMappingURL=MediaQueryInspector.js.map

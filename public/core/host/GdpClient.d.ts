@@ -23,6 +23,20 @@ export declare enum EmailPreference {
 interface CheckElibigilityResponse {
     createProfile: EligibilityStatus;
 }
+export interface Award {
+    name: string;
+    badge: {
+        title: string;
+        description: string;
+        imageUri: string;
+        deletableByUser: boolean;
+    };
+    title: string;
+    description: string;
+    imageUri: string;
+    createTime: string;
+    awardingUri: string;
+}
 export interface Profile {
     name: string;
     activeSubscription?: {
@@ -30,6 +44,7 @@ export interface Profile {
         subscriptionTier: SubscriptionTier | string;
     };
 }
+export declare const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 export declare class GdpClient {
     #private;
     private constructor();
@@ -39,10 +54,19 @@ export declare class GdpClient {
     initialize(): Promise<void>;
     getProfile(): Promise<Profile | null>;
     checkEligibility(): Promise<CheckElibigilityResponse | null>;
+    /**
+     * @returns null if the request fails, the awarded badge names otherwise.
+     */
+    getAwardedBadgeNames({ names }: {
+        names: string[];
+    }): Promise<Set<string> | null>;
     isEligibleToCreateProfile(): Promise<boolean>;
     createProfile({ user, emailPreference }: {
         user: string;
         emailPreference: EmailPreference;
     }): Promise<Profile | null>;
+    createAward({ name }: {
+        name: string;
+    }): Promise<Award | null>;
 }
 export {};

@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
@@ -10,9 +10,9 @@ describeWithEnvironment('DOMStatsHandler', () => {
         Trace.Handlers.ModelHandlers.Meta.reset();
     });
     it('should get DOM stats for each frame', async function () {
-        const { parsedTrace } = await TraceLoader.traceEngine(this, 'multi-frame-dom-stats.json.gz');
-        const { mainFrameId } = parsedTrace.Meta;
-        const { domStatsByFrameId } = parsedTrace.DOMStats;
+        const { data } = await TraceLoader.traceEngine(this, 'multi-frame-dom-stats.json.gz');
+        const { mainFrameId } = data.Meta;
+        const { domStatsByFrameId } = data.DOMStats;
         assert.strictEqual(domStatsByFrameId.size, 2);
         const mainFrameStats = domStatsByFrameId.get(mainFrameId).at(-1);
         const mainFrameData = mainFrameStats.args.data;

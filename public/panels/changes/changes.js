@@ -32,7 +32,7 @@ import * as Snippets from "./../snippets/snippets.js";
 
 // gen/front_end/panels/changes/changesSidebar.css.js
 var changesSidebar_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -196,7 +196,7 @@ var UISourceCodeTreeElement = class extends UI.TreeOutline.TreeElement {
 
 // gen/front_end/panels/changes/changesView.css.js
 var changesView_css_default = `/*
- * Copyright (c) 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -254,7 +254,7 @@ import * as PanelUtils from "./../utils/utils.js";
 
 // gen/front_end/panels/changes/combinedDiffView.css.js
 var combinedDiffView_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -19,7 +19,7 @@ import * as UI from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/network/binaryResourceView.css.js
 var binaryResourceView_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -236,7 +236,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/blockedURLsPane.css.js
 var blockedURLsPane_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -591,7 +591,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/eventSourceMessagesView.css.js
 var eventSourceMessagesView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -790,7 +790,7 @@ import * as EmulationComponents from "./../settings/emulation/components/compone
 
 // gen/front_end/panels/network/networkConfigView.css.js
 var networkConfigView_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2999,7 +2999,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/requestCookiesView.css.js
 var requestCookiesView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3028,6 +3028,7 @@ var requestCookiesView_css_default = `/*
   margin-bottom: 16px;
   flex: none;
 }
+
 /*# sourceURL=${import.meta.resolve("./requestCookiesView.css")} */`;
 
 // gen/front_end/panels/network/RequestCookiesView.js
@@ -3307,7 +3308,7 @@ import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/requestInitiatorView.css.js
 var requestInitiatorView_css_default = `/*
- * Copyright (c) 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3321,7 +3322,7 @@ var requestInitiatorView_css_default = `/*
 
 // gen/front_end/panels/network/requestInitiatorViewTree.css.js
 var requestInitiatorViewTree_css_default = `/*
- * Copyright (c) 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3496,7 +3497,7 @@ import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectPropertiesSection.css.js
 var objectPropertiesSection_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3625,7 +3626,7 @@ var objectPropertiesSection_css_default = `/*
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3737,7 +3738,7 @@ import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/requestPayloadTree.css.js
 var requestPayloadTree_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3858,7 +3859,7 @@ var requestPayloadTree_css_default = `/*
 
 // gen/front_end/panels/network/requestPayloadView.css.js
 var requestPayloadView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4297,7 +4298,7 @@ import { html, nothing, render as render2 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/network/requestHTMLView.css.js
 var requestHTMLView_css_default = `/*
- * Copyright (c) 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4364,7 +4365,7 @@ import * as UI10 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/network/signedExchangeInfoTree.css.js
 var signedExchangeInfoTree_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4463,7 +4464,7 @@ var signedExchangeInfoTree_css_default = `/*
 
 // gen/front_end/panels/network/signedExchangeInfoView.css.js
 var signedExchangeInfoView_css_default = `/*
- * Copyright (c) 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4922,7 +4923,7 @@ import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/networkTimingTable.css.js
 var networkTimingTable_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5765,7 +5766,7 @@ import * as UI14 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/network/resourceChunkView.css.js
 var resourceChunkView_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6338,8 +6339,8 @@ var opCodeDescriptions = function() {
 var ResourceFrameNode = class extends DataGridItem {
   frame;
   isTextFrame;
-  dataTextInternal;
-  binaryViewInternal;
+  #dataText;
+  #binaryView;
   constructor(frame) {
     let length = String(frame.text.length);
     const time = new Date(frame.time * 1e3);
@@ -6364,8 +6365,8 @@ var ResourceFrameNode = class extends DataGridItem {
     super({ data: description, length, time: timeNode });
     this.frame = frame;
     this.isTextFrame = isTextFrame;
-    this.dataTextInternal = dataText;
-    this.binaryViewInternal = null;
+    this.#dataText = dataText;
+    this.#binaryView = null;
   }
   createCells(element) {
     element.classList.toggle("resource-chunk-view-row-error", this.frame.type === SDK10.NetworkRequest.WebSocketFrameType.Error);
@@ -6377,18 +6378,18 @@ var ResourceFrameNode = class extends DataGridItem {
     return 21;
   }
   dataText() {
-    return this.dataTextInternal;
+    return this.#dataText;
   }
   binaryView() {
     if (this.isTextFrame || this.frame.type === SDK10.NetworkRequest.WebSocketFrameType.Error) {
       return null;
     }
-    if (!this.binaryViewInternal) {
-      if (this.dataTextInternal.length > 0) {
-        this.binaryViewInternal = new BinaryResourceView(TextUtils6.StreamingContentData.StreamingContentData.from(new TextUtils6.ContentData.ContentData(this.dataTextInternal, true, "applicaiton/octet-stream")), Platform6.DevToolsPath.EmptyUrlString, Common11.ResourceType.resourceTypes.WebSocket);
+    if (!this.#binaryView) {
+      if (this.#dataText.length > 0) {
+        this.#binaryView = new BinaryResourceView(TextUtils6.StreamingContentData.StreamingContentData.from(new TextUtils6.ContentData.ContentData(this.#dataText, true, "applicaiton/octet-stream")), Platform6.DevToolsPath.EmptyUrlString, Common11.ResourceType.resourceTypes.WebSocket);
       }
     }
-    return this.binaryViewInternal;
+    return this.#binaryView;
   }
   getTime() {
     return this.frame.time;
@@ -6579,7 +6580,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     this.maybeAppendCookiesPanel();
     this.maybeShowErrorIconInTrustTokenTabHeader();
     if (this.#initialTab) {
-      this.selectTabInternal(this.#initialTab);
+      this.#selectTab(this.#initialTab);
       this.#initialTab = void 0;
     }
   }
@@ -6638,7 +6639,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
       this.setTabIcon("trust-tokens", icon);
     }
   }
-  selectTabInternal(tabId) {
+  #selectTab(tabId) {
     if (!this.selectTab(tabId)) {
       window.setTimeout(() => {
         if (!this.selectTab(tabId)) {
@@ -6657,14 +6658,14 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     return this.#request;
   }
   async revealResponseBody(position) {
-    this.selectTabInternal(
+    this.#selectTab(
       "response"
       /* NetworkForward.UIRequestLocation.UIRequestTabs.RESPONSE */
     );
     await this.#responseView?.revealPosition(position);
   }
   revealHeader(section4, header) {
-    this.selectTabInternal(
+    this.#selectTab(
       "headers-component"
       /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */
     );
@@ -6770,33 +6771,9 @@ var FrameGroupNode = class extends NetworkGroupNode {
 
 // gen/front_end/panels/network/networkLogView.css.js
 var networkLogView_css_default = `/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * Copyright 2013 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 .network-log-grid.data-grid {
@@ -7266,7 +7243,7 @@ import * as UI19 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/network/networkManageCustomHeadersView.css.js
 var networkManageCustomHeadersView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -7782,7 +7759,7 @@ var BORDER_WIDTH = 1;
 
 // gen/front_end/panels/network/networkWaterfallColumn.css.js
 var networkWaterfallColumn_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -8529,7 +8506,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
   popupLinkifier;
   calculatorsMap;
   lastWheelTime;
-  dataGridInternal;
+  #dataGrid;
   splitWidget;
   waterfallColumn;
   activeScroller;
@@ -8608,20 +8585,20 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.loadCustomColumnsAndSettings();
     this.popoverHelper = new UI21.PopoverHelper.PopoverHelper(this.networkLogView.element, this.getPopoverRequest.bind(this), "network.initiator-stacktrace");
     this.popoverHelper.setTimeout(300, 300);
-    this.dataGridInternal = new DataGrid7.SortableDataGrid.SortableDataGrid({
+    this.#dataGrid = new DataGrid7.SortableDataGrid.SortableDataGrid({
       displayName: i18nString18(UIStrings18.networkLog),
       columns: this.columns.map(_NetworkLogViewColumns.convertToDataGridDescriptor),
       deleteCallback: void 0,
       refreshCallback: void 0
     });
-    this.dataGridScroller = this.dataGridInternal.scrollContainer;
+    this.dataGridScroller = this.#dataGrid.scrollContainer;
     this.updateColumns();
-    this.dataGridInternal.addEventListener("SortingChanged", this.sortHandler, this);
-    this.dataGridInternal.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
+    this.#dataGrid.addEventListener("SortingChanged", this.sortHandler, this);
+    this.#dataGrid.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
     this.activeWaterfallSortId = WaterfallSortIds.StartTime;
-    this.dataGridInternal.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid7.DataGrid.Order.Ascending);
+    this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid7.DataGrid.Order.Ascending);
     this.splitWidget = new UI21.SplitWidget.SplitWidget(true, true, "network-panel-split-view-waterfall", 200);
-    const widget = this.dataGridInternal.asWidget();
+    const widget = this.#dataGrid.asWidget();
     widget.setMinimumSize(150, 0);
     this.splitWidget.setMainWidget(widget);
   }
@@ -8638,11 +8615,11 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.dataGridScroller.addEventListener("touchend", this.onTouchEnd.bind(this));
     this.waterfallScroller = this.waterfallColumn.contentElement.createChild("div", "network-waterfall-v-scroll");
     this.waterfallScrollerContent = this.waterfallScroller.createChild("div", "network-waterfall-v-scroll-content");
-    this.dataGridInternal.addEventListener("PaddingChanged", () => {
+    this.#dataGrid.addEventListener("PaddingChanged", () => {
       this.waterfallScrollerWidthIsStale = true;
       this.syncScrollers();
     });
-    this.dataGridInternal.addEventListener("ViewportCalculated", this.redrawWaterfallColumn.bind(this));
+    this.#dataGrid.addEventListener("ViewportCalculated", this.redrawWaterfallColumn.bind(this));
     this.createWaterfallHeader();
     this.waterfallColumn.contentElement.classList.add("network-waterfall-view");
     this.waterfallColumn.setMinimumSize(100, 0);
@@ -8692,7 +8669,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     if (!this.waterfallColumn.isShowing()) {
       return;
     }
-    this.waterfallScrollerContent.style.height = this.dataGridScroller.scrollHeight - this.dataGridInternal.headerHeight() + "px";
+    this.waterfallScrollerContent.style.height = this.dataGridScroller.scrollHeight - this.#dataGrid.headerHeight() + "px";
     this.updateScrollerWidthIfNeeded();
     this.dataGridScroller.scrollTop = this.waterfallScroller.scrollTop;
   }
@@ -8729,10 +8706,10 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.waterfallHeaderElement.createChild("div", "sort-order-icon-container").appendChild(this.waterfallColumnSortIcon);
     function waterfallHeaderClicked() {
       const sortOrders = DataGrid7.DataGrid.Order;
-      const wasSortedByWaterfall = this.dataGridInternal.sortColumnId() === "waterfall";
-      const wasSortedAscending = this.dataGridInternal.isSortOrderAscending();
+      const wasSortedByWaterfall = this.#dataGrid.sortColumnId() === "waterfall";
+      const wasSortedAscending = this.#dataGrid.isSortOrderAscending();
       const sortOrder = wasSortedByWaterfall && wasSortedAscending ? sortOrders.Descending : sortOrders.Ascending;
-      this.dataGridInternal.markColumnAsSortedBy("waterfall", sortOrder);
+      this.#dataGrid.markColumnAsSortedBy("waterfall", sortOrder);
       this.sortHandler();
     }
   }
@@ -8744,8 +8721,8 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
   }
   updateRowsSize() {
     const largeRows = Boolean(this.networkLogLargeRowsSetting.get());
-    this.dataGridInternal.element.classList.toggle("small", !largeRows);
-    this.dataGridInternal.scheduleUpdate();
+    this.#dataGrid.element.classList.toggle("small", !largeRows);
+    this.#dataGrid.scheduleUpdate();
     this.waterfallScrollerWidthIsStale = true;
     this.waterfallColumn.setRowHeight(largeRows ? 41 : 21);
     this.waterfallScroller.classList.toggle("small", !largeRows);
@@ -8762,29 +8739,29 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     UI21.ARIAUtils.setHidden(this.splitWidget.element, value);
   }
   dataGrid() {
-    return this.dataGridInternal;
+    return this.#dataGrid;
   }
   sortByCurrentColumn() {
     this.sortHandler();
   }
   filterChanged() {
     window.requestAnimationFrame(() => {
-      this.dataGridInternal.scheduleUpdate();
+      this.#dataGrid.scheduleUpdate();
     });
   }
   sortHandler() {
-    const columnId = this.dataGridInternal.sortColumnId();
+    const columnId = this.#dataGrid.sortColumnId();
     this.networkLogView.removeAllNodeHighlights();
     this.waterfallRequestsAreStale = true;
     if (columnId === "waterfall") {
-      if (this.dataGridInternal.sortOrder() === DataGrid7.DataGrid.Order.Ascending) {
+      if (this.#dataGrid.sortOrder() === DataGrid7.DataGrid.Order.Ascending) {
         this.waterfallColumnSortIcon.name = "triangle-up";
       } else {
         this.waterfallColumnSortIcon.name = "triangle-down";
       }
       this.waterfallColumnSortIcon.hidden = false;
       const sortFunction = NetworkRequestNode.RequestPropertyComparator.bind(null, this.activeWaterfallSortId);
-      this.dataGridInternal.sortNodes(sortFunction, !this.dataGridInternal.isSortOrderAscending());
+      this.#dataGrid.sortNodes(sortFunction, !this.#dataGrid.isSortOrderAscending());
       this.dataGridSortedForTest();
       return;
     }
@@ -8798,13 +8775,13 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     if (!sortingFunction) {
       return;
     }
-    this.dataGridInternal.sortNodes(sortingFunction, !this.dataGridInternal.isSortOrderAscending());
+    this.#dataGrid.sortNodes(sortingFunction, !this.#dataGrid.isSortOrderAscending());
     this.dataGridSortedForTest();
   }
   dataGridSortedForTest() {
   }
   updateColumns() {
-    if (!this.dataGridInternal) {
+    if (!this.#dataGrid) {
       return;
     }
     const visibleColumns = /* @__PURE__ */ new Set();
@@ -8825,7 +8802,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       }
       this.setWaterfallVisibility(false);
     }
-    this.dataGridInternal.setColumnsVisibility(visibleColumns);
+    this.#dataGrid.setColumnsVisibility(visibleColumns);
   }
   switchViewMode(gridMode) {
     if (this.gridMode === gridMode) {
@@ -8851,12 +8828,12 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       this.splitWidget.showBoth();
       this.activeScroller = this.waterfallScroller;
       this.waterfallScroller.scrollTop = this.dataGridScroller.scrollTop;
-      this.dataGridInternal.setScrollContainer(this.waterfallScroller);
+      this.#dataGrid.setScrollContainer(this.waterfallScroller);
     } else {
       this.networkLogView.removeAllNodeHighlights();
       this.splitWidget.hideSidebar();
       this.activeScroller = this.dataGridScroller;
-      this.dataGridInternal.setScrollContainer(this.dataGridScroller);
+      this.#dataGrid.setScrollContainer(this.dataGridScroller);
     }
   }
   saveColumnsSettings() {
@@ -8961,7 +8938,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       }
       this.networkLogView.setCalculator(calculator);
       this.activeWaterfallSortId = sortId;
-      this.dataGridInternal.markColumnAsSortedBy("waterfall", DataGrid7.DataGrid.Order.Ascending);
+      this.#dataGrid.markColumnAsSortedBy("waterfall", DataGrid7.DataGrid.Order.Ascending);
       this.sortHandler();
     }
   }
@@ -9006,7 +8983,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
       return false;
     }
     this.columns.splice(index, 1);
-    this.dataGridInternal.removeColumn(headerId);
+    this.#dataGrid.removeColumn(headerId);
     this.saveColumnsSettings();
     this.updateColumns();
     return true;
@@ -9036,8 +9013,8 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     });
     const columnConfig = columnConfigBase;
     this.columns.splice(index, 0, columnConfig);
-    if (this.dataGridInternal) {
-      this.dataGridInternal.addColumn(_NetworkLogViewColumns.convertToDataGridDescriptor(columnConfig), index);
+    if (this.#dataGrid) {
+      this.#dataGrid.addColumn(_NetworkLogViewColumns.convertToDataGridDescriptor(columnConfig), index);
     }
     this.saveColumnsSettings();
     this.updateColumns();
@@ -12233,7 +12210,7 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
     }
     return networkPanelInstance;
   }
-  static revealAndFilter(filters) {
+  static async revealAndFilter(filters) {
     const panel3 = _NetworkPanel.instance();
     let filterString = "";
     for (const filter of filters) {
@@ -12243,8 +12220,10 @@ var NetworkPanel = class _NetworkPanel extends UI23.Panel.Panel {
         filterString += `${filter.filterValue} `;
       }
     }
+    await UI23.ViewManager.ViewManager.instance().showView("network");
     panel3.networkLogView.setTextFilterValue(filterString);
-    return UI23.ViewManager.ViewManager.instance().showView("network");
+    panel3.filterBar.setting().set(true);
+    panel3.filterBar.focus();
   }
   throttlingSelectForTest() {
     return this.throttlingSelect;
@@ -12643,12 +12622,12 @@ var FilmStripRecorder = class {
     }
     this.#tracingManager = null;
     await this.#traceEngine.parse(this.#collectedTraceEvents);
-    const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1);
+    const data = this.#traceEngine.parsedTrace(this.#traceEngine.size() - 1)?.data;
     if (!data) {
       return;
     }
     const zeroTimeInSeconds = Trace2.Types.Timing.Seconds(this.#timeCalculator.minimumBoundary());
-    const filmStrip = Trace2.Extras.FilmStrip.fromParsedTrace(data, Trace2.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
+    const filmStrip = Trace2.Extras.FilmStrip.fromHandlerData(data, Trace2.Helpers.Timing.secondsToMicro(zeroTimeInSeconds));
     if (this.#callback) {
       this.#callback(filmStrip);
     }

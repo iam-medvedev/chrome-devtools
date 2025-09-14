@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { raf, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
@@ -19,10 +19,10 @@ class FakeTimelineModeViewDelegate {
 }
 async function renderCountersGraphForMainThread(context) {
     const timelineModeViewDelegate = new FakeTimelineModeViewDelegate();
-    const { parsedTrace } = await TraceLoader.traceEngine(context, 'web-dev-with-commit.json.gz');
+    const parsedTrace = await TraceLoader.traceEngine(context, 'web-dev-with-commit.json.gz');
     const countersGraph = new Timeline.CountersGraph.CountersGraph(timelineModeViewDelegate);
     renderElementIntoDOM(countersGraph);
-    const mainThread = getMainThread(parsedTrace.Renderer);
+    const mainThread = getMainThread(parsedTrace.data.Renderer);
     countersGraph.setModel(parsedTrace, mainThread.entries);
     await raf();
     return { countersGraph, parsedTrace };

@@ -111,10 +111,10 @@ export declare class ApplicationPanelSidebar extends UI.Widget.VBox implements S
     private onmouseleave;
 }
 export declare class BackgroundServiceTreeElement extends ApplicationPanelTreeElement {
+    #private;
     private serviceName;
     private view;
     private model;
-    private selectedInternal;
     constructor(storagePanel: ResourcesPanel, serviceName: Protocol.BackgroundService.ServiceName);
     private getIconType;
     initialize(model: BackgroundServiceModel | null): void;
@@ -247,8 +247,8 @@ export declare class ExtensionStorageTreeParentElement extends ApplicationPanelT
     get itemURL(): Platform.DevToolsPath.UrlString;
 }
 export declare class CookieTreeElement extends ApplicationPanelTreeElement {
+    #private;
     private readonly target;
-    private readonly cookieDomainInternal;
     constructor(storagePanel: ResourcesPanel, frame: SDK.ResourceTreeModel.ResourceTreeFrame, cookieUrl: Common.ParsedURL.ParsedURL);
     get itemURL(): Platform.DevToolsPath.UrlString;
     cookieDomain(): string;

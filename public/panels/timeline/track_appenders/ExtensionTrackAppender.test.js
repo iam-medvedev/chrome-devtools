@@ -1,17 +1,17 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { // eslint-disable-line rulesdir/es-modules-import
 createTraceExtensionDataFromPerformanceAPITestInput, } from '../../../models/trace/handlers/ExtensionTraceDataHandler.test.js';
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
-import { getBaseTraceParseModelData } from '../../../testing/TraceHelpers.js';
+import { getBaseTraceHandlerData } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../../ui/legacy/theme_support/theme_support.js';
 import * as Timeline from '../timeline.js';
 function initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel) {
-    const entityMapper = new Timeline.Utils.EntityMapper.EntityMapper(parsedTrace);
+    const entityMapper = new Trace.EntityMapper.EntityMapper(parsedTrace);
     const compatibilityTracksAppender = new Timeline.CompatibilityTracksAppender.CompatibilityTracksAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel, entityMapper);
     return compatibilityTracksAppender.allVisibleTrackAppenders().filter(track => track.appenderName === 'Extension');
 }
@@ -22,7 +22,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     let flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
     let entryTypeByLevel = [];
     beforeEach(async function () {
-        ({ parsedTrace } = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz'));
+        parsedTrace = await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz');
         extensionTrackAppenders = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
         let level = 0;
         extensionTrackAppenders.forEach(appender => {
@@ -51,14 +51,16 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             assert.strictEqual(flameChartData.groups[2].style.nestingLevel, 0);
         });
         it('adds start times correctly', function () {
-            const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const allExtensionTrackEntries = parsedTrace.data.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack))
+                .flat(2);
             for (let i = 0; i < allExtensionTrackEntries.length; ++i) {
                 const event = allExtensionTrackEntries[i];
                 assert.strictEqual(flameChartData.entryStartTimes[i], Trace.Helpers.Timing.microToMilli(event.ts));
             }
         });
         it('adds total times correctly', function () {
-            const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const allExtensionTrackEntries = parsedTrace.data.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack))
+                .flat(2);
             for (let i = 0; i < allExtensionTrackEntries.length; i++) {
                 const event = allExtensionTrackEntries[i];
                 if (Trace.Types.Events.isMarkerEvent(event)) {
@@ -97,7 +99,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
                 },
             ];
             const traceExtensionData = await createTraceExtensionDataFromPerformanceAPITestInput(extensionData);
-            const testParsedTrace = getBaseTraceParseModelData({ ExtensionTraceData: traceExtensionData });
+            const testParsedTrace = getBaseTraceHandlerData({ ExtensionTraceData: traceExtensionData });
             entryData = [];
             flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
             entryTypeByLevel = [];
@@ -140,7 +142,8 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             ThemeSupport.ThemeSupport.clearThemeCache();
         });
         it('returns the correct color and title for extension entries', function () {
-            const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const allExtensionTrackEntries = parsedTrace.data.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack))
+                .flat(2);
             for (const event of allExtensionTrackEntries) {
                 assert.strictEqual(extensionTrackAppenders[0].titleForEvent(event), event.name);
                 if (event.devtoolsObj.color === 'tertiary') {
@@ -184,7 +187,7 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
             flameChartData = PerfUI.FlameChart.FlameChartTimelineData.createEmpty();
             entryTypeByLevel = [];
             Timeline.TimelinePanel.TimelinePanel.extensionDataVisibilitySetting().set(false);
-            parsedTrace = (await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz')).parsedTrace;
+            parsedTrace = (await TraceLoader.traceEngine(this, 'extension-tracks-and-marks.json.gz'));
             extensionTrackAppenders = initTrackAppender(flameChartData, parsedTrace, entryData, entryTypeByLevel);
             let level = 0;
             extensionTrackAppenders.forEach(appender => {
@@ -196,7 +199,8 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
     });
     describe('titleForEvent', function () {
         it('returns the title for an entry correctly', function () {
-            const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const allExtensionTrackEntries = parsedTrace.data.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack))
+                .flat(2);
             const title = extensionTrackAppenders[0].titleForEvent(allExtensionTrackEntries[0]);
             assert.strictEqual(title, 'An extension measurement');
         });
@@ -210,7 +214,8 @@ describeWithEnvironment('ExtensionTrackAppender', function () {
                 additionalElements: [],
                 url: null,
             };
-            const allExtensionTrackEntries = parsedTrace.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack)).flat(2);
+            const allExtensionTrackEntries = parsedTrace.data.ExtensionTraceData.extensionTrackData.map(track => Object.values(track.entriesByTrack))
+                .flat(2);
             extensionTrackAppenders[0].setPopoverInfo(allExtensionTrackEntries[0], info);
             assert.strictEqual(info.title, 'A hint if needed');
             // The i18n encodes spaces using the u00A0 unicode character.

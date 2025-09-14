@@ -19,7 +19,7 @@ import { html, render } from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/issue_counter/issueCounter.css.js
 var issueCounter_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -238,7 +238,7 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/issue_counter/issueLinkIcon.css.js
 var issueLinkIcon_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -13,7 +13,7 @@ import * as Lit from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/recorder/components/controlButton.css.js
 var controlButton_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -163,7 +163,7 @@ import * as Models from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/createRecordingView.css.js
 var createRecordingView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -564,7 +564,7 @@ import * as Models2 from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/recordingListView.css.js
 var recordingListView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -858,7 +858,7 @@ import * as Extensions from "./../extensions/extensions.js";
 
 // gen/front_end/panels/recorder/components/extensionView.css.js
 var extensionView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1137,7 +1137,9 @@ var ReplaySection = class extends HTMLElement {
       this.#settings.speed = speed;
       this.#settings.replayExtension = "";
     }
-    Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
+    if (replaySpeedToMetricSpeedMap[speed]) {
+      Host.userMetrics.recordingReplaySpeed(replaySpeedToMetricSpeedMap[speed]);
+    }
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
   #handleSelectButtonClick(event) {
@@ -1210,7 +1212,7 @@ import * as Models3 from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/recordingView.css.js
 var recordingView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2534,29 +2536,23 @@ import * as Models4 from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/selectButton.css.js
 var selectButton_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
 .select-button {
   display: flex;
-  gap: 12px;
+  gap: var(--sys-size-6);
+}
+
+.groups-label {
+  display: inline-block;
+  padding: 0 var(--sys-size-4) var(--sys-size-4) 0;
 }
 
 .select-button devtools-button {
   position: relative; /* Needed for outline to appear on top of the next element */
-}
-
-.select-button devtools-select-menu {
-  position: relative;
-  top: var(--sys-size-1);
-  height: var(--sys-size-9);
-}
-
-.select-menu-item-content-with-icon {
-  display: flex;
-  align-items: center;
 }
 
 /*# sourceURL=${import.meta.resolve("./selectButton.css")} */`;
@@ -2675,26 +2671,43 @@ var SelectButton = class extends HTMLElement {
     };
     const buttonVariant = this.#props.variant === "outlined" ? "outlined" : "primary";
     const menuLabel = selectedItem.buttonLabel ? selectedItem.buttonLabel() : selectedItem.label();
-    Lit7.render(html7`
-      <style>${UI3.inspectorCommonStyles}</style>
-      <style>${selectButton_css_default}</style>
-      <div class="select-button" title=${ifDefined2(this.#getTitle(menuLabel))}>
-      <select
-      class=${classMap(classes)}
-      ?disabled=${this.#props.disabled}
-      jslog=${VisualLogging6.dropDown("network-conditions").track({ change: true })}
-      @change=${this.#handleSelectMenuSelect}>
-        ${hasGroups ? this.#props.groups.map((group) => this.#renderSelectGroup(group, selectedItem)) : this.#props.items.map((item4) => this.#renderSelectItem(item4, selectedItem))}
-    </select>
-        ${selectedItem ? html7`
-        <devtools-button
-            .disabled=${this.#props.disabled}
-            .variant=${buttonVariant}
-            .iconName=${selectedItem.buttonIconName}
-            @click=${this.#handleClick}>
-            ${this.#props.buttonLabel}
-        </devtools-button>` : ""}
-      </div>`, this.#shadow, { host: this });
+    Lit7.render(html7` <style>
+          ${UI3.inspectorCommonStyles}
+        </style>
+        <style>
+          ${selectButton_css_default}
+        </style>
+        <div
+          class="select-button"
+          title=${ifDefined2(this.#getTitle(menuLabel))}
+        >
+          <label>
+            ${this.#props.groups.length > 1 ? html7`
+                  <div
+                    class="groups-label"
+                    >${this.#props.groups.map((group) => {
+      return group.name;
+    }).join(" & ")}</div>` : Lit7.nothing}
+            <select
+              class=${classMap(classes)}
+              ?disabled=${this.#props.disabled}
+              jslog=${VisualLogging6.dropDown("network-conditions").track({
+      change: true
+    })}
+              @change=${this.#handleSelectMenuSelect}
+            >
+              ${hasGroups ? this.#props.groups.map((group) => this.#renderSelectGroup(group, selectedItem)) : this.#props.items.map((item4) => this.#renderSelectItem(item4, selectedItem))}
+            </select>
+          </label>
+          ${selectedItem ? html7` <devtools-button
+                .disabled=${this.#props.disabled}
+                .variant=${buttonVariant}
+                .iconName=${selectedItem.buttonIconName}
+                @click=${this.#handleClick}
+              >
+                ${this.#props.buttonLabel}
+              </devtools-button>` : ""}
+        </div>`, this.#shadow, { host: this });
   };
 };
 customElements.define("devtools-select-button", SelectButton);
@@ -2719,7 +2732,7 @@ import * as Util from "./../util/util.js";
 
 // gen/front_end/panels/recorder/components/stepEditor.css.js
 var stepEditor_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3916,7 +3929,7 @@ import * as Lit9 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/recorder/components/timelineSection.css.js
 var timelineSection_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -4090,6 +4103,7 @@ var TimelineSection = class extends HTMLElement {
     Lit9.render(html9`
       <style>${timelineSection_css_default}</style>
       <div class=${Lit9.Directives.classMap(classes)}>
+        <div class="overlay"></div>
         <div class="icon"><slot name="icon"></slot></div>
         <svg width="24" height="100%" class="bar">
           <rect class="line" x="7" y="0" width="2" height="100%" />
@@ -4112,7 +4126,7 @@ import * as Models6 from "./../models/models.js";
 
 // gen/front_end/panels/recorder/components/stepView.css.js
 var stepView_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

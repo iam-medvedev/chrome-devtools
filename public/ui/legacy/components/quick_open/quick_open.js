@@ -40,7 +40,7 @@ import * as UI from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/quick_open/filteredListWidget.css.js
 var filteredListWidget_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -918,9 +918,9 @@ var str_3 = i18n5.i18n.registerUIStrings("ui/legacy/components/quick_open/Comman
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var commandMenuInstance;
 var CommandMenu = class _CommandMenu {
-  commandsInternal;
+  #commands;
   constructor() {
-    this.commandsInternal = [];
+    this.#commands = [];
     this.loadCommands();
   }
   static instance(opts = { forceNew: null }) {
@@ -1059,7 +1059,7 @@ var CommandMenu = class _CommandMenu {
         id: view.viewId(),
         featurePromotionId: view.featurePromotionId()
       };
-      this.commandsInternal.push(_CommandMenu.createRevealViewCommand(options));
+      this.#commands.push(_CommandMenu.createRevealViewCommand(options));
     }
     const settingsRegistrations = Common2.Settings.Settings.instance().getRegisteredSettings();
     for (const settingRegistration of settingsRegistrations) {
@@ -1069,12 +1069,12 @@ var CommandMenu = class _CommandMenu {
       }
       for (const pair of options) {
         const setting = Common2.Settings.Settings.instance().moduleSetting(settingRegistration.settingName);
-        this.commandsInternal.push(_CommandMenu.createSettingCommand(setting, pair.title(), pair.value));
+        this.#commands.push(_CommandMenu.createSettingCommand(setting, pair.title(), pair.value));
       }
     }
   }
   commands() {
-    return this.commandsInternal;
+    return this.#commands;
   }
 };
 var CommandMenuProvider = class extends Provider {

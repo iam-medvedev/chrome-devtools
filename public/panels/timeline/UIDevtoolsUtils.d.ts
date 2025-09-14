@@ -1,8 +1,8 @@
-import * as Utils from './utils/utils.js';
+import * as Trace from '../../models/trace/trace.js';
 export declare class UIDevtoolsUtils {
     static isUiDevTools(): boolean;
-    static categorizeEvents(): Record<string, Utils.EntryStyles.TimelineRecordStyle>;
-    static categories(): Utils.EntryStyles.CategoryPalette;
+    static categorizeEvents(): Record<string, Trace.Styles.TimelineRecordStyle>;
+    static categories(): Trace.Styles.CategoryPalette;
     static getMainCategoriesList(): string[];
 }
 export declare enum RecordType {

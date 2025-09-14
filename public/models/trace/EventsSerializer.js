@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Helpers from './helpers/helpers.js';
@@ -27,7 +27,7 @@ export class EventsSerializer {
             return this.#getModifiedProfileCallByKeyValues(eventValues, parsedTrace);
         }
         if (EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
-            const event = parsedTrace.Frames.frames.at(eventValues.rawIndex);
+            const event = parsedTrace.data.Frames.frames.at(eventValues.rawIndex);
             if (!event) {
                 throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
             }
@@ -64,7 +64,7 @@ export class EventsSerializer {
         if (cacheResult) {
             return cacheResult;
         }
-        const profileCallsInThread = parsedTrace.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
+        const profileCallsInThread = parsedTrace.data.Renderer.processes.get(key.processID)?.threads.get(key.threadID)?.profileCalls;
         if (!profileCallsInThread) {
             throw new Error(`Unknown profile call serializable key: ${(key)}`);
         }

@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -73,7 +73,7 @@ class MessageLevelSelector {
     itemMap;
     hiddenLevels;
     bitFieldValue;
-    defaultTitleInternal;
+    #defaultTitle;
     customTitle;
     allTitle;
     elementsForItems;
@@ -83,20 +83,20 @@ class MessageLevelSelector {
         this.itemMap = new Map();
         this.hiddenLevels = [];
         this.bitFieldValue = 7 /* MessageLevelBitfield.DEFAULT */;
-        this.defaultTitleInternal = i18nString(UIStrings.default);
+        this.#defaultTitle = i18nString(UIStrings.default);
         this.customTitle = i18nString(UIStrings.custom);
         this.allTitle = i18nString(UIStrings.all);
         this.elementsForItems = new WeakMap();
     }
     defaultTitle() {
-        return this.defaultTitleInternal;
+        return this.#defaultTitle;
     }
     setDefault(dropdown) {
         dropdown.selectItem(this.items.at(0));
     }
     populate() {
         this.items.insert(this.items.length, {
-            title: this.defaultTitleInternal,
+            title: this.#defaultTitle,
             overwrite: true,
             stringValue: '',
             value: 7 /* MessageLevelBitfield.DEFAULT */,
@@ -165,7 +165,7 @@ class MessageLevelSelector {
             this.bitFieldValue ^= item.value;
         }
         if (this.bitFieldValue === 7 /* MessageLevelBitfield.DEFAULT */) {
-            return this.defaultTitleInternal;
+            return this.#defaultTitle;
         }
         if (this.bitFieldValue === 15 /* MessageLevelBitfield.ALL */) {
             return this.allTitle;

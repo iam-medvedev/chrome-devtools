@@ -4,10 +4,7 @@ export declare function formatMillisecondsToSeconds(ms: number, decimalPlaces: n
  * kept in a separate file for unit testing.
  */
 export declare class Bounds {
-    private minInternal;
-    private maxInternal;
-    private lowInternal;
-    private highInternal;
+    #private;
     private readonly maxRange;
     private readonly minRange;
     constructor(initialLow: number, initialHigh: number, maxRange: number, minRange: number);

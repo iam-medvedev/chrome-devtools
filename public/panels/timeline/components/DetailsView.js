@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -66,7 +66,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/DetailsView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export function buildWarningElementsForEvent(event, parsedTrace) {
-    const warnings = parsedTrace.Warnings.perEvent.get(event);
+    const warnings = parsedTrace.data.Warnings.perEvent.get(event);
     const warningElements = [];
     if (!warnings) {
         return warningElements;
@@ -108,7 +108,7 @@ export function buildWarningElementsForEvent(event, parsedTrace) {
 }
 export function buildRowsForWebSocketEvent(event, parsedTrace) {
     const rows = [];
-    const initiator = parsedTrace.Initiators.eventToInitiator.get(event);
+    const initiator = parsedTrace.data.Initiators.eventToInitiator.get(event);
     if (initiator && Trace.Types.Events.isWebSocketCreate(initiator)) {
         // The initiator will be a WebSocketCreate, but this check helps TypeScript to understand.
         rows.push({ key: i18n.i18n.lockedString('URL'), value: initiator.args.data.url });

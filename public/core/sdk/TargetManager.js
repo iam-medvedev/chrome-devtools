@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -6,11 +6,13 @@ import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import { StubConnection } from './Connections.js';
+import { RehydratingConnection } from './RehydratingConnection.js';
 import { SDKModel } from './SDKModel.js';
 import { Target, Type as TargetType } from './Target.js';
 let targetManagerInstance;
 export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
-    #targetsInternal;
+    #targets;
     #observers;
     /* eslint-disable @typescript-eslint/no-explicit-any */
     #modelListeners;
@@ -18,18 +20,18 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     #scopedObservers;
     /* eslint-enable @typescript-eslint/no-explicit-any */
     #isSuspended;
-    #browserTargetInternal;
+    #browserTarget;
     #scopeTarget;
     #defaultScopeSet;
     #scopeChangeListeners;
     constructor() {
         super();
-        this.#targetsInternal = new Set();
+        this.#targets = new Set();
         this.#observers = new Set();
         this.#modelListeners = new Platform.MapUtilities.Multimap();
         this.#modelObservers = new Platform.MapUtilities.Multimap();
         this.#isSuspended = false;
-        this.#browserTargetInternal = null;
+        this.#browserTarget = null;
         this.#scopeTarget = null;
         this.#scopedObservers = new WeakSet();
         this.#defaultScopeSet = false;
@@ -60,7 +62,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#isSuspended = true;
         this.dispatchEventToListeners("SuspendStateChanged" /* Events.SUSPEND_STATE_CHANGED */);
-        const suspendPromises = Array.from(this.#targetsInternal.values(), target => target.suspend(reason));
+        const suspendPromises = Array.from(this.#targets.values(), target => target.suspend(reason));
         await Promise.all(suspendPromises);
     }
     async resumeAllTargets() {
@@ -69,7 +71,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#isSuspended = false;
         this.dispatchEventToListeners("SuspendStateChanged" /* Events.SUSPEND_STATE_CHANGED */);
-        const resumePromises = Array.from(this.#targetsInternal.values(), target => target.resume());
+        const resumePromises = Array.from(this.#targets.values(), target => target.resume());
         await Promise.all(resumePromises);
     }
     allTargetsSuspended() {
@@ -77,7 +79,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     models(modelClass, opts) {
         const result = [];
-        for (const target of this.#targetsInternal) {
+        for (const target of this.#targets) {
             if (opts?.scoped && !this.isInScope(target)) {
                 continue;
             }
@@ -156,7 +158,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         if (opts?.scoped) {
             this.#scopedObservers.add(targetObserver);
         }
-        for (const target of this.#targetsInternal) {
+        for (const target of this.#targets) {
             if (!opts?.scoped || this.isInScope(target)) {
                 targetObserver.targetAdded(target);
             }
@@ -173,7 +175,7 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
             void target.pageAgent().invoke_waitForDebugger();
         }
         target.createModels(new Set(this.#modelObservers.keysArray()));
-        this.#targetsInternal.add(target);
+        this.#targets.add(target);
         const inScope = this.isInScope(target);
         // Iterate over a copy. #observers might be modified during iteration.
         for (const observer of [...this.#observers]) {
@@ -200,11 +202,11 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         return target;
     }
     removeTarget(target) {
-        if (!this.#targetsInternal.has(target)) {
+        if (!this.#targets.has(target)) {
             return;
         }
         const inScope = this.isInScope(target);
-        this.#targetsInternal.delete(target);
+        this.#targets.delete(target);
         for (const modelClass of target.models().keys()) {
             const model = target.models().get(modelClass);
             assertNotNullOrUndefined(model);
@@ -226,17 +228,17 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     targets() {
-        return [...this.#targetsInternal];
+        return [...this.#targets];
     }
     targetById(id) {
         // TODO(dgozman): add a map #id -> #target.
         return this.targets().find(target => target.id() === id) || null;
     }
     rootTarget() {
-        if (this.#targetsInternal.size === 0) {
+        if (this.#targets.size === 0) {
             return null;
         }
-        return this.#targetsInternal.values().next().value ?? null;
+        return this.#targets.values().next().value ?? null;
     }
     primaryPageTarget() {
         let target = this.rootTarget();
@@ -248,29 +250,44 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
         return target;
     }
     browserTarget() {
-        return this.#browserTargetInternal;
+        return this.#browserTarget;
+    }
+    /**
+     * If this returns true, the target is not connected to a legit CDP server.
+     * However, it's not exhaustive, so some `false` responses may be misleading.
+     *    (eg., tab URL of `devtools://devtools/bundled/devtools_app.html` uses a MainConnection but has no CDP server behind it).
+     */
+    hasFakeConnection() {
+        // There _may_ be a race condition hiding here on the router/connection creation.
+        // So we play it safe and consider "no connection yet" as "not fake".
+        const connection = this.primaryPageTarget()?.router()?.connection();
+        if (!connection) {
+            return false;
+        }
+        const isFakeConnection = (connection instanceof StubConnection) || (connection instanceof RehydratingConnection);
+        return isFakeConnection;
     }
     async maybeAttachInitialTarget() {
         if (!Boolean(Root.Runtime.Runtime.queryParam('browserConnection'))) {
             return false;
         }
-        if (!this.#browserTargetInternal) {
-            this.#browserTargetInternal = new Target(this, /* #id*/ 'main', /* #name*/ 'browser', TargetType.BROWSER, /* #parentTarget*/ null, 
+        if (!this.#browserTarget) {
+            this.#browserTarget = new Target(this, /* #id*/ 'main', /* #name*/ 'browser', TargetType.BROWSER, /* #parentTarget*/ null, 
             /* #sessionId */ '', /* suspended*/ false, /* #connection*/ null, /* targetInfo*/ undefined);
-            this.#browserTargetInternal.createModels(new Set(this.#modelObservers.keysArray()));
+            this.#browserTarget.createModels(new Set(this.#modelObservers.keysArray()));
         }
         const targetId = await Host.InspectorFrontendHost.InspectorFrontendHostInstance.initialTargetId();
         // Do not await for Target.autoAttachRelated to return, as it goes throguh the renderer and we don't want to block early
         // at front-end initialization if a renderer is stuck. The rest of #target discovery and auto-attach process should happen
         // asynchronously upon Target.attachedToTarget.
-        void this.#browserTargetInternal.targetAgent().invoke_autoAttachRelated({
+        void this.#browserTarget.targetAgent().invoke_autoAttachRelated({
             targetId,
             waitForDebuggerOnStart: true,
         });
         return true;
     }
     clearAllTargetsForTest() {
-        this.#targetsInternal.clear();
+        this.#targets.clear();
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     isInScope(arg) {

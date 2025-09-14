@@ -15,5 +15,5 @@ export type HandlersWithFilmStrip = Handlers.Types.HandlersWithMeta<{
 export type HandlerDataWithScreenshots = Handlers.Types.EnabledHandlerDataWithMeta<{
     Screenshots: typeof Handlers.ModelHandlers.Screenshots;
 }>;
-export declare function fromParsedTrace(parsedTrace: HandlerDataWithScreenshots, customZeroTime?: Types.Timing.Micro): Data;
+export declare function fromHandlerData(data: HandlerDataWithScreenshots, customZeroTime?: Types.Timing.Micro): Data;
 export declare function frameClosestToTimestamp(filmStrip: Data, searchTimestamp: Types.Timing.Micro): Frame | null;

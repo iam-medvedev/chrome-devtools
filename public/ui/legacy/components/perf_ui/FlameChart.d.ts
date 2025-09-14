@@ -157,7 +157,6 @@ export declare class FlameChart extends FlameChart_base implements NetworkTimeCa
     private dragStartX;
     private dragStartY;
     private lastMouseOffsetY;
-    private minimumBoundaryInternal;
     private maxDragOffset;
     private timelineLevels?;
     private visibleLevelOffsets?;

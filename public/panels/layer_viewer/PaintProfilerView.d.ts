@@ -11,13 +11,13 @@ declare const PaintProfilerView_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends Events.WINDOW_CHANGED>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.HBox;
 export declare class PaintProfilerView extends PaintProfilerView_base {
+    #private;
     private canvasContainer;
     private readonly progressBanner;
     private pieChart;
     private readonly showImageCallback;
     private canvas;
     private context;
-    private readonly selectionWindowInternal;
     private readonly innerBarWidth;
     private minBarHeight;
     private readonly barPaddingWidth;

@@ -2,7 +2,7 @@ import * as Platform from '../../core/platform/platform.js';
 import type { ContextMenu, Provider } from './ContextMenu.js';
 import { XElement } from './XElement.js';
 export declare class XLink extends XElement {
-    hrefInternal: Platform.DevToolsPath.UrlString | null;
+    #private;
     private clickable;
     private readonly onClick;
     private readonly onKeyDown;

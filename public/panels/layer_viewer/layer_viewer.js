@@ -18,7 +18,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/layer_viewer/layerDetailsView.css.js
 var layerDetailsView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -87,10 +87,10 @@ var LayerView = class {
 };
 var Selection = class {
   typeInternal;
-  layerInternal;
+  #layer;
   constructor(type, layer) {
     this.typeInternal = type;
-    this.layerInternal = layer;
+    this.#layer = layer;
   }
   static isEqual(a, b) {
     return a && b ? a.isEqual(b) : a === b;
@@ -99,7 +99,7 @@ var Selection = class {
     return this.typeInternal;
   }
   layer() {
-    return this.layerInternal;
+    return this.#layer;
   }
   isEqual(_other) {
     return false;
@@ -125,29 +125,29 @@ var ScrollRectSelection = class extends Selection {
   }
 };
 var SnapshotSelection = class extends Selection {
-  snapshotInternal;
+  #snapshot;
   constructor(layer, snapshot) {
     super("Snapshot", layer);
-    this.snapshotInternal = snapshot;
+    this.#snapshot = snapshot;
   }
   isEqual(other) {
-    return other.typeInternal === "Snapshot" && this.layer().id() === other.layer().id() && this.snapshotInternal === other.snapshotInternal;
+    return other.typeInternal === "Snapshot" && this.layer().id() === other.layer().id() && this.#snapshot === other.#snapshot;
   }
   snapshot() {
-    return this.snapshotInternal;
+    return this.#snapshot;
   }
 };
 var LayerViewHost = class {
   views;
   selectedObject;
   hoveredObject;
-  showInternalLayersSettingInternal;
+  #showInternalLayersSetting;
   snapshotLayers;
   constructor() {
     this.views = [];
     this.selectedObject = null;
     this.hoveredObject = null;
-    this.showInternalLayersSettingInternal = Common.Settings.Settings.instance().createSetting("layers-show-internal-layers", false);
+    this.#showInternalLayersSetting = Common.Settings.Settings.instance().createSetting("layers-show-internal-layers", false);
     this.snapshotLayers = /* @__PURE__ */ new Map();
   }
   registerView(layerView) {
@@ -200,8 +200,8 @@ var LayerViewHost = class {
   }
   showContextMenu(contextMenu, selection) {
     contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.showInternalLayers), this.toggleShowInternalLayers.bind(this), {
-      checked: this.showInternalLayersSettingInternal.get(),
-      jslogContext: this.showInternalLayersSettingInternal.name
+      checked: this.#showInternalLayersSetting.get(),
+      jslogContext: this.#showInternalLayersSetting.name
     });
     const node = selection?.layer()?.nodeForSelfOrAncestor();
     if (node) {
@@ -210,10 +210,10 @@ var LayerViewHost = class {
     void contextMenu.show();
   }
   showInternalLayersSetting() {
-    return this.showInternalLayersSettingInternal;
+    return this.#showInternalLayersSetting;
   }
   toggleShowInternalLayers() {
-    this.showInternalLayersSettingInternal.set(!this.showInternalLayersSettingInternal.get());
+    this.#showInternalLayersSetting.set(!this.#showInternalLayersSetting.get());
   }
   toggleNodeHighlight(node) {
     if (node) {
@@ -544,7 +544,7 @@ import * as UI2 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/layer_viewer/layerTreeOutline.css.js
 var layerTreeOutline_css_default = `/*
- * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -771,11 +771,11 @@ var LayerTreeOutline = class extends Common3.ObjectWrapper.eventMixin(UI2.TreeOu
 var LayerTreeElement = class extends UI2.TreeOutline.TreeElement {
   // Watch out: This is different from treeOutline that
   // LayerTreeElement inherits from UI.TreeOutline.TreeElement.
-  treeOutlineInternal;
+  #treeOutline;
   layer;
   constructor(tree, layer) {
     super();
-    this.treeOutlineInternal = tree;
+    this.#treeOutline = tree;
     this.layer = layer;
     layerToTreeElement.set(layer, this);
     this.update();
@@ -789,7 +789,7 @@ var LayerTreeElement = class extends UI2.TreeOutline.TreeElement {
     this.title = title;
   }
   onselect() {
-    this.treeOutlineInternal.selectedNodeChanged(this);
+    this.#treeOutline.selectedNodeChanged(this);
     return false;
   }
   setHovered(hovered) {
@@ -829,7 +829,7 @@ import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/layer_viewer/layers3DView.css.js
 var layers3DView_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -889,11 +889,11 @@ var str_4 = i18n7.i18n.registerUIStrings("panels/layer_viewer/TransformControlle
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
   mode;
-  scaleInternal;
-  offsetXInternal;
-  offsetYInternal;
-  rotateXInternal;
-  rotateYInternal;
+  #scale;
+  #offsetX;
+  #offsetY;
+  #rotateX;
+  #rotateY;
   oldRotateX;
   oldRotateY;
   originX;
@@ -910,11 +910,11 @@ var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
    */
   constructor(element, disableRotate, preventDefaultOnMouseDown = true) {
     super();
-    this.scaleInternal = 1;
-    this.offsetXInternal = 0;
-    this.offsetYInternal = 0;
-    this.rotateXInternal = 0;
-    this.rotateYInternal = 0;
+    this.#scale = 1;
+    this.#offsetX = 0;
+    this.#offsetY = 0;
+    this.#rotateX = 0;
+    this.#rotateY = 0;
     this.oldRotateX = 0;
     this.oldRotateY = 0;
     this.originX = 0;
@@ -1015,11 +1015,11 @@ var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
     );
   }
   reset() {
-    this.scaleInternal = 1;
-    this.offsetXInternal = 0;
-    this.offsetYInternal = 0;
-    this.rotateXInternal = 0;
-    this.rotateYInternal = 0;
+    this.#scale = 1;
+    this.#offsetX = 0;
+    this.#offsetY = 0;
+    this.#rotateX = 0;
+    this.#rotateY = 0;
   }
   setMode(mode) {
     if (this.mode === mode) {
@@ -1044,42 +1044,42 @@ var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
   setScaleConstraints(minScale, maxScale) {
     this.minScale = minScale;
     this.maxScale = maxScale;
-    this.scaleInternal = Platform2.NumberUtilities.clamp(this.scaleInternal, minScale, maxScale);
+    this.#scale = Platform2.NumberUtilities.clamp(this.#scale, minScale, maxScale);
   }
   clampOffsets(minX, maxX, minY, maxY) {
-    this.offsetXInternal = Platform2.NumberUtilities.clamp(this.offsetXInternal, minX, maxX);
-    this.offsetYInternal = Platform2.NumberUtilities.clamp(this.offsetYInternal, minY, maxY);
+    this.#offsetX = Platform2.NumberUtilities.clamp(this.#offsetX, minX, maxX);
+    this.#offsetY = Platform2.NumberUtilities.clamp(this.#offsetY, minY, maxY);
   }
   scale() {
-    return this.scaleInternal;
+    return this.#scale;
   }
   offsetX() {
-    return this.offsetXInternal;
+    return this.#offsetX;
   }
   offsetY() {
-    return this.offsetYInternal;
+    return this.#offsetY;
   }
   rotateX() {
-    return this.rotateXInternal;
+    return this.#rotateX;
   }
   rotateY() {
-    return this.rotateYInternal;
+    return this.#rotateY;
   }
   onScale(scaleFactor, x, y) {
-    scaleFactor = Platform2.NumberUtilities.clamp(this.scaleInternal * scaleFactor, this.minScale, this.maxScale) / this.scaleInternal;
-    this.scaleInternal *= scaleFactor;
-    this.offsetXInternal -= (x - this.offsetXInternal) * (scaleFactor - 1);
-    this.offsetYInternal -= (y - this.offsetYInternal) * (scaleFactor - 1);
+    scaleFactor = Platform2.NumberUtilities.clamp(this.#scale * scaleFactor, this.minScale, this.maxScale) / this.#scale;
+    this.#scale *= scaleFactor;
+    this.#offsetX -= (x - this.#offsetX) * (scaleFactor - 1);
+    this.#offsetY -= (y - this.#offsetY) * (scaleFactor - 1);
     this.postChangeEvent();
   }
   onPan(offsetX, offsetY) {
-    this.offsetXInternal += offsetX;
-    this.offsetYInternal += offsetY;
+    this.#offsetX += offsetX;
+    this.#offsetY += offsetY;
     this.postChangeEvent();
   }
   onRotate(rotateX, rotateY) {
-    this.rotateXInternal = rotateX;
-    this.rotateYInternal = rotateY;
+    this.#rotateX = rotateX;
+    this.#rotateY = rotateY;
     this.postChangeEvent();
   }
   async onKeyboardZoom(zoomFactor) {
@@ -1090,7 +1090,7 @@ var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
     const panStepInPixels = 6;
     const rotateStepInDegrees = 5;
     if (this.mode === "Rotate") {
-      this.onRotate(this.rotateXInternal + yMultiplier * rotateStepInDegrees, this.rotateYInternal + xMultiplier * rotateStepInDegrees);
+      this.onRotate(this.#rotateX + yMultiplier * rotateStepInDegrees, this.#rotateY + xMultiplier * rotateStepInDegrees);
     } else {
       this.onPan(xMultiplier * panStepInPixels, yMultiplier * panStepInPixels);
     }
@@ -1117,8 +1117,8 @@ var TransformController = class extends Common4.ObjectWrapper.ObjectWrapper {
     this.element.focus();
     this.originX = event.clientX;
     this.originY = event.clientY;
-    this.oldRotateX = this.rotateXInternal;
-    this.oldRotateY = this.rotateYInternal;
+    this.oldRotateX = this.#rotateX;
+    this.oldRotateY = this.#rotateY;
     return true;
   }
   onDragEnd() {
@@ -2153,7 +2153,7 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/layer_viewer/paintProfiler.css.js
 var paintProfiler_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2231,7 +2231,7 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
   showImageCallback;
   canvas;
   context;
-  selectionWindowInternal;
+  #selectionWindow;
   innerBarWidth;
   minBarHeight;
   barPaddingWidth;
@@ -2258,8 +2258,8 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
     this.showImageCallback = showImageCallback;
     this.canvas = this.canvasContainer.createChild("canvas", "fill");
     this.context = this.canvas.getContext("2d");
-    this.selectionWindowInternal = new PerfUI.OverviewGrid.Window(this.canvasContainer);
-    this.selectionWindowInternal.addEventListener("WindowChanged", this.onWindowChanged, this);
+    this.#selectionWindow = new PerfUI.OverviewGrid.Window(this.canvasContainer);
+    this.#selectionWindow.addEventListener("WindowChanged", this.onWindowChanged, this);
     this.innerBarWidth = 4 * window.devicePixelRatio;
     this.minBarHeight = window.devicePixelRatio;
     this.barPaddingWidth = 2 * window.devicePixelRatio;
@@ -2349,10 +2349,10 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
     if (!snapshot) {
       this.update();
       this.populatePieChart(0, []);
-      this.selectionWindowInternal.setResizeEnabled(false);
+      this.#selectionWindow.setResizeEnabled(false);
       return;
     }
-    this.selectionWindowInternal.setResizeEnabled(true);
+    this.#selectionWindow.setResizeEnabled(true);
     this.progressBanner.classList.remove("hidden");
     this.updateImage();
     const profiles = await snapshot.profile(clipRect);
@@ -2486,8 +2486,8 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
     if (!this.log) {
       return null;
     }
-    const screenLeft = (this.selectionWindowInternal.windowLeftRatio || 0) * this.canvas.width;
-    const screenRight = (this.selectionWindowInternal.windowRightRatio || 0) * this.canvas.width;
+    const screenLeft = (this.#selectionWindow.windowLeftRatio || 0) * this.canvas.width;
+    const screenRight = (this.#selectionWindow.windowRightRatio || 0) * this.canvas.width;
     const barLeft = Math.floor(screenLeft / this.outerBarWidth);
     const barRight = Math.floor((screenRight + this.innerBarWidth - this.barPaddingWidth / 2) / this.outerBarWidth);
     const stepLeft = Platform4.NumberUtilities.clamp(barLeft * this.samplesPerBar, 0, this.log.length - 1);
@@ -2521,8 +2521,8 @@ var PaintProfilerView = class _PaintProfilerView extends Common6.ObjectWrapper.e
     }
     this.snapshot = null;
     this.profiles = null;
-    this.selectionWindowInternal.reset();
-    this.selectionWindowInternal.setResizeEnabled(false);
+    this.#selectionWindow.reset();
+    this.#selectionWindow.setResizeEnabled(false);
   }
 };
 var PaintProfilerCommandLogView = class extends UI5.ThrottledWidget.ThrottledWidget {

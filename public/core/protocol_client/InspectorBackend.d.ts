@@ -127,7 +127,6 @@ export declare class TargetBase {
     #private;
     needsNodeJSPatching: boolean;
     readonly sessionId: string;
-    routerInternal: SessionRouter | null;
     constructor(needsNodeJSPatching: boolean, parentTarget: TargetBase | null, sessionId: string, connection: Connection | null);
     dispatch(eventMessage: EventMessage): void;
     dispose(_reason: string): void;

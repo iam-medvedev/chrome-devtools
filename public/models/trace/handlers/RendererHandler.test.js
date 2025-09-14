@@ -1,7 +1,6 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Utils from '../../../panels/timeline/utils/utils.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { getAllNodes, getEventsIn, getRootAt, makeBeginEvent, makeCompleteEvent, makeEndEvent, makeInstantEvent, prettyPrint, } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
@@ -11,8 +10,8 @@ const SUB_FRAME_PID = 2236065;
 const SUB_FRAME_PID_2 = 2236084;
 const SUB_FRAME_PID_3 = 2236123;
 async function handleEventsFromTraceFile(context, file) {
-    const { parsedTrace } = await TraceLoader.traceEngine(context, file);
-    return parsedTrace;
+    const parsedTrace = await TraceLoader.traceEngine(context, file);
+    return parsedTrace.data;
 }
 describeWithEnvironment('RendererHandler', function () {
     it('finds all the renderers in a real world profile', async () => {
@@ -144,7 +143,7 @@ describeWithEnvironment('RendererHandler', function () {
         const isInstant = (event) => Trace.Types.Events.isInstant(event);
         const isLong = (event) => Trace.Types.Events.isComplete(event) && event.dur > 1000;
         const isIncluded = (node, event) => (!isRoot(node) || isInstant(event) || isLong(event)) &&
-            Boolean(Utils.EntryStyles.getEventStyle(event.name));
+            Boolean(Trace.Styles.getEventStyle(event.name));
         assert.strictEqual(prettyPrint(tree, isIncluded), `
 ............
 -RunTask [2.21ms]
@@ -339,7 +338,7 @@ describeWithEnvironment('RendererHandler', function () {
         if (!tree) {
             assert(false, 'Main thread has no tree of events');
         }
-        const isIncluded = (_node, event) => Boolean(Utils.EntryStyles.getEventStyle(event.name));
+        const isIncluded = (_node, event) => Boolean(Trace.Styles.getEventStyle(event.name));
         assert.strictEqual(prettyPrint(tree, isIncluded), `
 -RunTask [0.13ms]
 -RunTask [0.005ms]
@@ -808,7 +807,7 @@ describeWithEnvironment('RendererHandler', function () {
                 throw new Error('Tree not found');
             }
             const onlyLongTasksPredicate = (_node, event) => Boolean(event.dur && event.dur > 1000) &&
-                Boolean(Utils.EntryStyles.getEventStyle(event.name));
+                Boolean(Trace.Styles.getEventStyle(event.name));
             assert.strictEqual(prettyPrint(thread.tree, onlyLongTasksPredicate), `
 .............
 -RunTask [17.269ms]

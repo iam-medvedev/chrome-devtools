@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { SDKModel } from './SDKModel.js';
@@ -7,38 +7,38 @@ export class SecurityOriginManager extends SDKModel {
     // 'chrome-error://chromewebdata/', and |this.#mainSecurityOriginInternal| stores
     // its origin. In this situation, the original unreachable URL's security
     // origin will be stored in |this.#unreachableMainSecurityOriginInternal|.
-    #mainSecurityOriginInternal = '';
-    #unreachableMainSecurityOriginInternal = '';
-    #securityOriginsInternal = new Set();
+    #mainSecurityOrigin = '';
+    #unreachableMainSecurityOrigin = '';
+    #securityOrigins = new Set();
     updateSecurityOrigins(securityOrigins) {
-        const oldOrigins = this.#securityOriginsInternal;
-        this.#securityOriginsInternal = securityOrigins;
+        const oldOrigins = this.#securityOrigins;
+        this.#securityOrigins = securityOrigins;
         for (const origin of oldOrigins) {
-            if (!this.#securityOriginsInternal.has(origin)) {
+            if (!this.#securityOrigins.has(origin)) {
                 this.dispatchEventToListeners(Events.SecurityOriginRemoved, origin);
             }
         }
-        for (const origin of this.#securityOriginsInternal) {
+        for (const origin of this.#securityOrigins) {
             if (!oldOrigins.has(origin)) {
                 this.dispatchEventToListeners(Events.SecurityOriginAdded, origin);
             }
         }
     }
     securityOrigins() {
-        return [...this.#securityOriginsInternal];
+        return [...this.#securityOrigins];
     }
     mainSecurityOrigin() {
-        return this.#mainSecurityOriginInternal;
+        return this.#mainSecurityOrigin;
     }
     unreachableMainSecurityOrigin() {
-        return this.#unreachableMainSecurityOriginInternal;
+        return this.#unreachableMainSecurityOrigin;
     }
     setMainSecurityOrigin(securityOrigin, unreachableSecurityOrigin) {
-        this.#mainSecurityOriginInternal = securityOrigin;
-        this.#unreachableMainSecurityOriginInternal = unreachableSecurityOrigin || null;
+        this.#mainSecurityOrigin = securityOrigin;
+        this.#unreachableMainSecurityOrigin = unreachableSecurityOrigin || null;
         this.dispatchEventToListeners(Events.MainSecurityOriginChanged, {
-            mainSecurityOrigin: this.#mainSecurityOriginInternal,
-            unreachableMainSecurityOrigin: this.#unreachableMainSecurityOriginInternal,
+            mainSecurityOrigin: this.#mainSecurityOrigin,
+            unreachableMainSecurityOrigin: this.#unreachableMainSecurityOrigin,
         });
     }
 }

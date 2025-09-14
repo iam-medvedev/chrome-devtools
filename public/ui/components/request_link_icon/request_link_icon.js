@@ -20,7 +20,7 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/request_link_icon/requestLinkIcon.css.js
 var requestLinkIcon_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

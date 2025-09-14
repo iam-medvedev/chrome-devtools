@@ -1,39 +1,13 @@
-/*
- * Copyright (C) 2013 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2013 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Geometry from '../../models/geometry/geometry.js';
 export class LayerTreeModel extends SDK.SDKModel.SDKModel {
     layerTreeAgent;
     paintProfilerModel;
-    layerTreeInternal;
+    #layerTree;
     throttler;
     enabled;
     lastPaintRectByLayerId;
@@ -47,7 +21,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
         if (resourceTreeModel) {
             resourceTreeModel.addEventListener(SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
         }
-        this.layerTreeInternal = null;
+        this.#layerTree = null;
         this.throttler = new Common.Throttler.Throttler(20);
     }
     async disable() {
@@ -66,13 +40,13 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
     }
     async forceEnable() {
         this.lastPaintRectByLayerId = new Map();
-        if (!this.layerTreeInternal) {
-            this.layerTreeInternal = new AgentLayerTree(this);
+        if (!this.#layerTree) {
+            this.#layerTree = new AgentLayerTree(this);
         }
         await this.layerTreeAgent.invoke_enable();
     }
     layerTree() {
-        return this.layerTreeInternal;
+        return this.#layerTree;
     }
     async layerTreeChanged(layers) {
         if (!this.enabled) {
@@ -81,7 +55,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
         void this.throttler.schedule(this.innerSetLayers.bind(this, layers));
     }
     async innerSetLayers(layers) {
-        const layerTree = this.layerTreeInternal;
+        const layerTree = this.#layerTree;
         await layerTree.setLayers(layers);
         if (!this.lastPaintRectByLayerId) {
             this.lastPaintRectByLayerId = new Map();
@@ -100,7 +74,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
         if (!this.enabled) {
             return;
         }
-        const layerTree = this.layerTreeInternal;
+        const layerTree = this.#layerTree;
         const layer = layerTree.layerById(layerId);
         if (!layer) {
             if (!this.lastPaintRectByLayerId) {
@@ -113,7 +87,7 @@ export class LayerTreeModel extends SDK.SDKModel.SDKModel {
         this.dispatchEventToListeners(Events.LayerPainted, layer);
     }
     onPrimaryPageChanged() {
-        this.layerTreeInternal = null;
+        this.#layerTree = null;
         if (this.enabled) {
             void this.forceEnable();
         }
@@ -198,16 +172,17 @@ export class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     }
 }
 export class AgentLayer {
+    // Used in Web tests
     scrollRectsInternal;
-    quadInternal;
-    childrenInternal;
-    parentInternal;
+    #quad;
+    #children;
+    #parent;
     layerPayload;
     layerTreeModel;
-    nodeInternal;
-    lastPaintRectInternal;
-    paintCountInternal;
-    stickyPositionConstraintInternal;
+    #node;
+    #lastPaintRect;
+    #paintCount;
+    #stickyPositionConstraint;
     constructor(layerTreeModel, layerPayload) {
         this.layerTreeModel = layerTreeModel;
         this.reset(layerPayload);
@@ -219,33 +194,33 @@ export class AgentLayer {
         return this.layerPayload.parentLayerId || null;
     }
     parent() {
-        return this.parentInternal;
+        return this.#parent;
     }
     isRoot() {
         return !this.parentId();
     }
     children() {
-        return this.childrenInternal;
+        return this.#children;
     }
     addChild(childParam) {
         const child = childParam;
-        if (child.parentInternal) {
+        if (child.#parent) {
             console.assert(false, 'Child already has a parent');
         }
-        this.childrenInternal.push(child);
-        child.parentInternal = this;
+        this.#children.push(child);
+        child.#parent = this;
     }
     setNode(node) {
-        this.nodeInternal = node;
+        this.#node = node;
     }
     node() {
-        return this.nodeInternal || null;
+        return this.#node || null;
     }
     nodeForSelfOrAncestor() {
         let layer = this;
-        for (; layer; layer = layer.parentInternal) {
-            if (layer.nodeInternal) {
-                return layer.nodeInternal;
+        for (; layer; layer = layer.#parent) {
+            if (layer.#node) {
+                return layer.#node;
             }
         }
         return null;
@@ -266,7 +241,7 @@ export class AgentLayer {
         return this.layerPayload.transform || null;
     }
     quad() {
-        return this.quadInternal;
+        return this.#quad;
     }
     anchorPoint() {
         return [
@@ -279,19 +254,19 @@ export class AgentLayer {
         return this.layerPayload.invisible || false;
     }
     paintCount() {
-        return this.paintCountInternal || this.layerPayload.paintCount;
+        return this.#paintCount || this.layerPayload.paintCount;
     }
     lastPaintRect() {
-        return this.lastPaintRectInternal || null;
+        return this.#lastPaintRect || null;
     }
     setLastPaintRect(lastPaintRect) {
-        this.lastPaintRectInternal = lastPaintRect;
+        this.#lastPaintRect = lastPaintRect;
     }
     scrollRects() {
         return this.scrollRectsInternal;
     }
     stickyPositionConstraint() {
-        return this.stickyPositionConstraintInternal || null;
+        return this.#stickyPositionConstraint || null;
     }
     async requestCompositingReasons() {
         const reasons = await this.layerTreeModel.layerTreeAgent.invoke_compositingReasons({ layerId: this.id() });
@@ -318,17 +293,17 @@ export class AgentLayer {
         return [promise];
     }
     didPaint(rect) {
-        this.lastPaintRectInternal = rect;
-        this.paintCountInternal = this.paintCount() + 1;
+        this.#lastPaintRect = rect;
+        this.#paintCount = this.paintCount() + 1;
     }
     reset(layerPayload) {
-        this.nodeInternal = null;
-        this.childrenInternal = [];
-        this.parentInternal = null;
-        this.paintCountInternal = 0;
+        this.#node = null;
+        this.#children = [];
+        this.#parent = null;
+        this.#paintCount = 0;
         this.layerPayload = layerPayload;
         this.scrollRectsInternal = this.layerPayload.scrollRects || [];
-        this.stickyPositionConstraintInternal = this.layerPayload.stickyPositionConstraint ?
+        this.#stickyPositionConstraint = this.layerPayload.stickyPositionConstraint ?
             new SDK.LayerTreeBase.StickyPositionConstraint(this.layerTreeModel.layerTree(), this.layerPayload.stickyPositionConstraint) :
             null;
     }
@@ -356,16 +331,16 @@ export class AgentLayer {
     }
     calculateQuad(parentTransform) {
         const matrix = this.calculateTransformToViewport(parentTransform);
-        this.quadInternal = [];
+        this.#quad = [];
         const vertices = this.createVertexArrayForRect(this.layerPayload.width, this.layerPayload.height);
         for (let i = 0; i < 4; ++i) {
             const point = Geometry.multiplyVectorByMatrixAndNormalize(new Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
-            this.quadInternal.push(point.x, point.y);
+            this.#quad.push(point.x, point.y);
         }
         function calculateQuadForLayer(layer) {
             layer.calculateQuad(matrix);
         }
-        this.childrenInternal.forEach(calculateQuadForLayer);
+        this.#children.forEach(calculateQuadForLayer);
     }
 }
 class LayerTreeDispatcher {

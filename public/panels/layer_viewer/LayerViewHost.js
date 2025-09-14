@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -16,10 +16,10 @@ export class LayerView {
 }
 export class Selection {
     typeInternal;
-    layerInternal;
+    #layer;
     constructor(type, layer) {
         this.typeInternal = type;
-        this.layerInternal = layer;
+        this.#layer = layer;
     }
     static isEqual(a, b) {
         return a && b ? a.isEqual(b) : a === b;
@@ -28,7 +28,7 @@ export class Selection {
         return this.typeInternal;
     }
     layer() {
-        return this.layerInternal;
+        return this.#layer;
     }
     isEqual(_other) {
         return false;
@@ -55,30 +55,30 @@ export class ScrollRectSelection extends Selection {
     }
 }
 export class SnapshotSelection extends Selection {
-    snapshotInternal;
+    #snapshot;
     constructor(layer, snapshot) {
         super("Snapshot" /* Type.SNAPSHOT */, layer);
-        this.snapshotInternal = snapshot;
+        this.#snapshot = snapshot;
     }
     isEqual(other) {
         return other.typeInternal === "Snapshot" /* Type.SNAPSHOT */ && this.layer().id() === other.layer().id() &&
-            this.snapshotInternal === other.snapshotInternal;
+            this.#snapshot === other.#snapshot;
     }
     snapshot() {
-        return this.snapshotInternal;
+        return this.#snapshot;
     }
 }
 export class LayerViewHost {
     views;
     selectedObject;
     hoveredObject;
-    showInternalLayersSettingInternal;
+    #showInternalLayersSetting;
     snapshotLayers;
     constructor() {
         this.views = [];
         this.selectedObject = null;
         this.hoveredObject = null;
-        this.showInternalLayersSettingInternal =
+        this.#showInternalLayersSetting =
             Common.Settings.Settings.instance().createSetting('layers-show-internal-layers', false);
         this.snapshotLayers = new Map();
     }
@@ -132,8 +132,8 @@ export class LayerViewHost {
     }
     showContextMenu(contextMenu, selection) {
         contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.showInternalLayers), this.toggleShowInternalLayers.bind(this), {
-            checked: this.showInternalLayersSettingInternal.get(),
-            jslogContext: this.showInternalLayersSettingInternal.name,
+            checked: this.#showInternalLayersSetting.get(),
+            jslogContext: this.#showInternalLayersSetting.name,
         });
         const node = selection?.layer()?.nodeForSelfOrAncestor();
         if (node) {
@@ -142,10 +142,10 @@ export class LayerViewHost {
         void contextMenu.show();
     }
     showInternalLayersSetting() {
-        return this.showInternalLayersSettingInternal;
+        return this.#showInternalLayersSetting;
     }
     toggleShowInternalLayers() {
-        this.showInternalLayersSettingInternal.set(!this.showInternalLayersSettingInternal.get());
+        this.#showInternalLayersSetting.set(!this.#showInternalLayersSetting.get());
     }
     toggleNodeHighlight(node) {
         if (node) {

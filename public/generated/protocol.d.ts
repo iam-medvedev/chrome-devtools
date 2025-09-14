@@ -160,7 +160,8 @@ export declare namespace Accessibility {
      * - from 'live' to 'root': attributes which apply to nodes in live regions
      * - from 'autocomplete' to 'valuetext': attributes which apply to widgets
      * - from 'checked' to 'selected': states which apply to widgets
-     * - from 'activedescendant' to 'owns' - relationships between elements other than parent/child/sibling.
+     * - from 'activedescendant' to 'owns': relationships between elements other than parent/child/sibling
+     * - from 'activeFullscreenElement' to 'uninteresting': reasons why this noode is hidden
      */
     const enum AXPropertyName {
         Actions = "actions",
@@ -203,7 +204,24 @@ export declare namespace Accessibility {
         Flowto = "flowto",
         Labelledby = "labelledby",
         Owns = "owns",
-        Url = "url"
+        Url = "url",
+        ActiveFullscreenElement = "activeFullscreenElement",
+        ActiveModalDialog = "activeModalDialog",
+        ActiveAriaModalDialog = "activeAriaModalDialog",
+        AriaHiddenElement = "ariaHiddenElement",
+        AriaHiddenSubtree = "ariaHiddenSubtree",
+        EmptyAlt = "emptyAlt",
+        EmptyText = "emptyText",
+        InertElement = "inertElement",
+        InertSubtree = "inertSubtree",
+        LabelContainer = "labelContainer",
+        LabelFor = "labelFor",
+        NotRendered = "notRendered",
+        NotVisible = "notVisible",
+        PresentationalRole = "presentationalRole",
+        ProbablyPresentational = "probablyPresentational",
+        InactiveCarouselTabContent = "inactiveCarouselTabContent",
+        Uninteresting = "uninteresting"
     }
     /**
      * A node in the accessibility tree.
@@ -4245,6 +4263,7 @@ export declare namespace DOM {
         compatibilityMode?: CompatibilityMode;
         assignedSlot?: BackendNode;
         isScrollable?: boolean;
+        affectedByStartingStyles?: boolean;
     }
     /**
      * A structure to hold the top-level node of a detached tree and an array of its retained descendants.
@@ -5191,6 +5210,19 @@ export declare namespace DOM {
          * If the node is scrollable.
          */
         isScrollable: boolean;
+    }
+    /**
+     * Fired when a node's starting styles changes.
+     */
+    interface AffectedByStartingStylesFlagUpdatedEvent {
+        /**
+         * The id of the node.
+         */
+        nodeId: DOM.NodeId;
+        /**
+         * If the node has starting styles.
+         */
+        affectedByStartingStyles: boolean;
     }
     /**
      * Called when a pseudo element is removed from an element.
@@ -7647,9 +7679,9 @@ export declare namespace IndexedDB {
          */
         objectStoreName: string;
         /**
-         * Index name, empty string for object store data requests.
+         * Index name. If not specified or empty string, it performs an object store data request.
          */
-        indexName: string;
+        indexName?: string;
         /**
          * Number of records to skip.
          */
@@ -14800,6 +14832,11 @@ export declare namespace Preload {
          * @deprecated
          */
         errorMessage?: string;
+        /**
+         * For more details, see:
+         * https://github.com/WICG/nav-speculation/blob/main/speculation-rules-tags.md
+         */
+        tag?: string;
     }
     const enum RuleSetErrorType {
         SourceIsNotJsonObject = "SourceIsNotJsonObject",

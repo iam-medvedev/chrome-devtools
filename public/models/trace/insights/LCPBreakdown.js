@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -135,12 +135,12 @@ function finalize(partialModel) {
         relatedEvents,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     if (!context.navigation) {
         return finalize({});
     }
-    const networkRequests = parsedTrace.NetworkRequests;
-    const frameMetrics = parsedTrace.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
+    const networkRequests = data.NetworkRequests;
+    const frameMetrics = data.PageLoadMetrics.metricScoresByFrameId.get(context.frameId);
     if (!frameMetrics) {
         throw new Error('no frame metrics');
     }
@@ -157,7 +157,7 @@ export function generateInsight(parsedTrace, context) {
     const lcpMs = Helpers.Timing.microToMilli(metricScore.timing);
     // This helps position things on the timeline's UI accurately for a trace.
     const lcpTs = metricScore.event?.ts ? Helpers.Timing.microToMilli(metricScore.event?.ts) : undefined;
-    const lcpRequest = parsedTrace.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
+    const lcpRequest = data.LargestImagePaint.lcpRequestByNavigationId.get(context.navigationId);
     const docRequest = networkRequests.byId.get(context.navigationId);
     if (!docRequest) {
         return finalize({ lcpMs, lcpTs, lcpEvent, lcpRequest, warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });

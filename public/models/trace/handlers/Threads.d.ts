@@ -2,7 +2,7 @@ import type * as Helpers from '../helpers/helpers.js';
 import type * as Types from '../types/types.js';
 import type { AuctionWorkletsData } from './AuctionWorkletsHandler.js';
 import type * as Renderer from './RendererHandler.js';
-import type { ParsedTrace } from './types.js';
+import type { HandlerData } from './types.js';
 export interface ThreadData {
     pid: Types.Events.ProcessID;
     tid: Types.Events.ThreadID;
@@ -31,4 +31,4 @@ export declare function threadsInRenderer(rendererData: Renderer.RendererHandler
  * for both trace types.
  * The resulting data is cached per-trace, so you can safely call this multiple times.
  */
-export declare function threadsInTrace(parsedTrace: ParsedTrace): readonly ThreadData[];
+export declare function threadsInTrace(handlerData: HandlerData): readonly ThreadData[];

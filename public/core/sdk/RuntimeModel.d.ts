@@ -117,7 +117,6 @@ export declare class ExecutionContext {
     globalLexicalScopeNames(): Promise<string[] | null>;
     label(): string | null;
     setLabel(label: string): void;
-    private setLabelInternal;
 }
 export type EvaluationResult = {
     object: RemoteObject;

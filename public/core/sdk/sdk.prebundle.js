@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './SDKModel.js';
@@ -60,6 +60,7 @@ import * as PageResourceLoader from './PageResourceLoader.js';
 import * as PaintProfiler from './PaintProfiler.js';
 import * as PerformanceMetricsModel from './PerformanceMetricsModel.js';
 import * as PreloadingModel from './PreloadingModel.js';
+import * as RehydratingConnection from './RehydratingConnection.js';
 import * as RemoteObject from './RemoteObject.js';
 import * as Resource from './Resource.js';
 import * as ResourceTreeModel from './ResourceTreeModel.js';
@@ -84,5 +85,6 @@ import * as Target from './Target.js';
 import * as TargetManager from './TargetManager.js';
 import * as TraceObject from './TraceObject.js';
 import * as WebAuthnModel from './WebAuthnModel.js';
-export { AccessibilityModel, AnimationModel, AutofillModel, CategorizedBreakpoint, ChildTargetManager, CompilerSourceMappingContentProvider, Connections, ConsoleModel, Cookie, CookieModel, CookieParser, CPUProfilerModel, CPUThrottlingManager, CSSContainerQuery, CSSFontFace, CSSLayer, CSSMatchedStyles, CSSMedia, CSSMetadata, CSSModel, CSSProperty, CSSPropertyParser, CSSPropertyParserMatchers, CSSQuery, CSSRule, CSSScope, CSSStyleDeclaration, CSSStyleSheetHeader, CSSSupports, DebuggerModel, DOMDebuggerModel, DOMModel, EmulationModel, EnhancedTracesParser, EventBreakpointsModel, FrameAssociated, FrameManager, HeapProfilerModel, IOModel, IsolateManager, IssuesModel, LayerTreeBase, LogModel, NetworkManager, NetworkRequest, OverlayColorGenerator, OverlayModel, OverlayPersistentHighlighter, PageLoad, PageResourceLoader, PaintProfiler, PerformanceMetricsModel, PreloadingModel, RemoteObject, Resource, ResourceTreeModel, RuntimeModel, ScreenCaptureModel, Script, SDKModel, SecurityOriginManager, ServerSentEventProtocol, ServerTiming, ServiceWorkerCacheModel, ServiceWorkerManager, SourceMap, SourceMapCache, SourceMapFunctionRanges, SourceMapManager, SourceMapScopeChainEntry, SourceMapScopesInfo, StorageBucketsModel, StorageKeyManager, Target, TargetManager, TraceObject, WebAuthnModel, };
+export { AccessibilityModel, AnimationModel, AutofillModel, CategorizedBreakpoint, ChildTargetManager, CompilerSourceMappingContentProvider, Connections, ConsoleModel, Cookie, CookieModel, CookieParser, CPUProfilerModel, CPUThrottlingManager, CSSContainerQuery, CSSFontFace, CSSLayer, CSSMatchedStyles, CSSMedia, CSSMetadata, CSSModel, CSSProperty, CSSPropertyParser, CSSPropertyParserMatchers, CSSQuery, CSSRule, CSSScope, CSSStyleDeclaration, CSSStyleSheetHeader, CSSSupports, DebuggerModel, DOMDebuggerModel, DOMModel, EmulationModel, EnhancedTracesParser, EventBreakpointsModel, FrameAssociated, FrameManager, HeapProfilerModel, IOModel, IsolateManager, IssuesModel, LayerTreeBase, LogModel, NetworkManager, NetworkRequest, OverlayColorGenerator, OverlayModel, OverlayPersistentHighlighter, PageLoad, PageResourceLoader, PaintProfiler, PerformanceMetricsModel, PreloadingModel, RehydratingConnection, // TODO(crbug.com/444191656): Exported for tests.
+RemoteObject, Resource, ResourceTreeModel, RuntimeModel, ScreenCaptureModel, Script, SDKModel, SecurityOriginManager, ServerSentEventProtocol, ServerTiming, ServiceWorkerCacheModel, ServiceWorkerManager, SourceMap, SourceMapCache, SourceMapFunctionRanges, SourceMapManager, SourceMapScopeChainEntry, SourceMapScopesInfo, StorageBucketsModel, StorageKeyManager, Target, TargetManager, TraceObject, WebAuthnModel, };
 //# sourceMappingURL=sdk.prebundle.js.map

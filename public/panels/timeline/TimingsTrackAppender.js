@@ -37,7 +37,7 @@ export class TimingsTrackAppender {
         this.#colorGenerator = colorGenerator;
         this.#parsedTrace = parsedTrace;
         const extensionDataEnabled = TimelinePanel.extensionDataVisibilitySetting().get();
-        this.#extensionMarkers = extensionDataEnabled ? this.#parsedTrace.ExtensionTraceData.extensionMarkers : [];
+        this.#extensionMarkers = extensionDataEnabled ? this.#parsedTrace.data.ExtensionTraceData.extensionMarkers : [];
     }
     /**
      * Appends into the flame chart data the data corresponding to the
@@ -50,14 +50,15 @@ export class TimingsTrackAppender {
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
         const extensionMarkersAreEmpty = this.#extensionMarkers.length === 0;
-        const performanceMarks = this.#parsedTrace.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
-        const performanceMeasures = this.#parsedTrace.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
-        const timestampEvents = this.#parsedTrace.UserTimings.timestampEvents.filter(timeStamp => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp).devtoolsObj);
-        const consoleTimings = this.#parsedTrace.UserTimings.consoleTimings;
+        const performanceMarks = this.#parsedTrace.data.UserTimings.performanceMarks.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
+        const performanceMeasures = this.#parsedTrace.data.UserTimings.performanceMeasures.filter(m => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
+        const timestampEvents = this.#parsedTrace.data.UserTimings.timestampEvents.filter(timeStamp => !Trace.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp).devtoolsObj);
+        const consoleTimings = this.#parsedTrace.data.UserTimings.consoleTimings;
         if (extensionMarkersAreEmpty && performanceMarks.length === 0 && performanceMeasures.length === 0 &&
             timestampEvents.length === 0 && consoleTimings.length === 0) {
             return trackStartLevel;
         }
+        // TODO(paulirish): these 5 sets of events should be merged and sorted by start time. This would allow for a denser packing.
         this.#appendTrackHeaderAtLevel(trackStartLevel, expanded);
         let newLevel = this.#appendExtensionsAtLevel(trackStartLevel);
         newLevel = this.#compatibilityBuilder.appendEventsAtLevel(performanceMarks, newLevel, this);
@@ -75,7 +76,7 @@ export class TimingsTrackAppender {
      * appended.
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
-        const trackIsCollapsible = this.#parsedTrace.UserTimings.performanceMeasures.length > 0;
+        const trackIsCollapsible = this.#parsedTrace.data.UserTimings.performanceMeasures.length > 0;
         const style = buildGroupStyle({ useFirstLineForOverview: true, collapsible: trackIsCollapsible });
         const group = buildTrackHeader("timings" /* VisualLoggingTrackName.TIMINGS */, currentLevel, i18nString(UIStrings.timings), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
@@ -98,7 +99,7 @@ export class TimingsTrackAppender {
             // FlameChart.ts relies on us setting this to NaN
             this.#compatibilityBuilder.getFlameChartTimelineData().entryTotalTimes[index] = Number.NaN;
         }
-        const minTimeMs = Trace.Helpers.Timing.microToMilli(this.#parsedTrace.Meta.traceBounds.min);
+        const minTimeMs = Trace.Helpers.Timing.microToMilli(this.#parsedTrace.data.Meta.traceBounds.min);
         const flameChartMarkers = markers.map(marker => {
             // The timestamp for user timing trace events is set to the
             // start time passed by the user at the call site of the timing
@@ -232,7 +233,7 @@ export class TimingsTrackAppender {
         }
         if (Trace.Types.Events.isMarkerEvent(event) || Trace.Types.Events.isPerformanceMark(event) ||
             Trace.Types.Events.isConsoleTimeStamp(event) || isExtensibilityMarker) {
-            const timeOfEvent = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.Meta.traceBounds, this.#parsedTrace.Meta.navigationsByNavigationId, this.#parsedTrace.Meta.navigationsByFrameId);
+            const timeOfEvent = Trace.Helpers.Timing.timeStampForEventAdjustedByClosestNavigation(event, this.#parsedTrace.data.Meta.traceBounds, this.#parsedTrace.data.Meta.navigationsByNavigationId, this.#parsedTrace.data.Meta.navigationsByFrameId);
             info.formattedTime = getDurationString(timeOfEvent);
         }
     }

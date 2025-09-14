@@ -13,7 +13,7 @@ import * as CodeHighlighter from "./../code_highlighter/code_highlighter.js";
 
 // gen/front_end/ui/components/code_highlighter/codeHighlighter.css.js
 var codeHighlighter_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -124,7 +124,7 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/suggestion_input/suggestionInput.css.js
 var suggestionInput_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

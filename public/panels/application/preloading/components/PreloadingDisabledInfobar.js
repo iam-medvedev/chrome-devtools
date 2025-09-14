@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -102,10 +102,10 @@ export class PreloadingDisabledInfobar extends LegacyWrapper.LegacyWrapper.Wrapp
     }
     async #render() {
         await RenderCoordinator.write('PreloadingDisabledInfobar render', () => {
-            Lit.render(this.#renderInternal(), this.#shadow, { host: this });
+            Lit.render(this.#renderTemplate(), this.#shadow, { host: this });
         });
     }
-    #renderInternal() {
+    #renderTemplate() {
         const forceEnabled = this.#data.disabledByHoldbackPrefetchSpeculationRules || this.#data.disabledByHoldbackPrerenderSpeculationRules;
         const disabled = this.#data.disabledByPreference || this.#data.disabledByDataSaver || this.#data.disabledByBatterySaver;
         let header;

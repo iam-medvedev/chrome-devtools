@@ -1,9 +1,9 @@
 import * as UI from '../../ui/legacy/legacy.js';
 import type * as ReportRenderer from './LighthouseReporterTypes.js';
 export declare class ReportSelector {
+    #private;
     private readonly renderNewLighthouseView;
     private newLighthouseItem;
-    private readonly comboBoxInternal;
     private readonly itemByOptionElement;
     constructor(renderNewLighthouseView: () => void);
     private setEmptyState;

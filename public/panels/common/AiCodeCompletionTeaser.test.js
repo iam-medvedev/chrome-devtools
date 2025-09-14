@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
@@ -9,19 +9,19 @@ import { describeWithEnvironment, updateHostConfig } from '../../testing/Environ
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as AiCodeCompletionTeaser from './AiCodeCompletionTeaser.js';
-import * as FreDialog from './FreDialog.js';
+import * as PanelCommon from './common.js';
+const { AiCodeCompletionTeaser, FreDialog } = PanelCommon;
 describeWithEnvironment('AiCodeCompletionTeaser', () => {
     let showFreDialogStub;
     let checkAccessPreconditionsStub;
     beforeEach(() => {
-        showFreDialogStub = sinon.stub(FreDialog.FreDialog, 'show');
+        showFreDialogStub = sinon.stub(FreDialog, 'show');
         checkAccessPreconditionsStub = sinon.stub(Host.AidaClient.AidaClient, 'checkAccessPreconditions');
         checkAccessPreconditionsStub.resolves("available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
     });
     async function createTeaser() {
-        const view = createViewFunctionStub(AiCodeCompletionTeaser.AiCodeCompletionTeaser);
-        const widget = new AiCodeCompletionTeaser.AiCodeCompletionTeaser({ onDetach: sinon.stub() }, view);
+        const view = createViewFunctionStub(AiCodeCompletionTeaser);
+        const widget = new AiCodeCompletionTeaser({ onDetach: sinon.stub() }, view);
         widget.markAsRoot();
         renderElementIntoDOM(widget);
         await view.nextInput;

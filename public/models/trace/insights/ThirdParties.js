@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -53,11 +53,11 @@ function finalize(partialModel) {
 export function isThirdPartyInsight(model) {
     return model.insightKey === "ThirdParties" /* InsightKeys.THIRD_PARTIES */;
 }
-export function generateInsight(parsedTrace, context) {
-    const entitySummaries = Extras.ThirdParties.summarizeByThirdParty(parsedTrace, context.bounds);
-    const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+export function generateInsight(data, context) {
+    const entitySummaries = Extras.ThirdParties.summarizeByThirdParty(data, context.bounds);
+    const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
     const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) ||
-        Handlers.Helpers.makeUpEntity(parsedTrace.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
+        Handlers.Helpers.makeUpEntity(data.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
     return finalize({
         relatedEvents: getRelatedEvents(entitySummaries, firstPartyEntity),
         firstPartyEntity,

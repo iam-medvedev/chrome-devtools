@@ -5,4 +5,4 @@ import type * as Trace from '../../models/trace/trace.js';
  * return the target representing that worker. Otherwise, we return the primary
  * page's target.
  **/
-export declare function targetForEvent(parsedTrace: Trace.Handlers.Types.ParsedTrace, event: Trace.Types.Events.Event): SDK.Target.Target | null;
+export declare function targetForEvent(parsedTrace: Trace.TraceModel.ParsedTrace, event: Trace.Types.Events.Event): SDK.Target.Target | null;

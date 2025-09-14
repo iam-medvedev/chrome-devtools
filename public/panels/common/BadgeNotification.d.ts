@@ -1,5 +1,5 @@
+import * as Badges from '../../models/badges/badges.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import * as Lit from '../../ui/lit/lit.js';
 export interface BadgeNotificationAction {
     label: string;
     jslogContext?: string;
@@ -7,7 +7,7 @@ export interface BadgeNotificationAction {
     onClick: () => void;
 }
 export interface BadgeNotificationProperties {
-    message: Lit.LitTemplate;
+    message: HTMLElement | string;
     imageUri: string;
     actions: BadgeNotificationAction[];
 }
@@ -18,11 +18,11 @@ declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLE
 type View = typeof DEFAULT_VIEW;
 export declare class BadgeNotification extends UI.Widget.Widget {
     #private;
-    message: Lit.LitTemplate;
+    message: HTMLElement | string;
     imageUri: string;
     actions: BadgeNotificationAction[];
     constructor(element?: HTMLElement, view?: View);
-    static show(properties: BadgeNotificationProperties): BadgeNotification;
+    present(badge: Badges.Badge): Promise<void>;
     wasShown(): void;
     performUpdate(): void;
 }

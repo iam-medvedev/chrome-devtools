@@ -2,13 +2,12 @@ import * as Trace from '../../models/trace/trace.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
-import * as Utils from './utils/utils.js';
 export declare class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView {
     #private;
     protected autoSelectFirstChildOnRefresh: boolean;
     constructor();
     wasShown(): void;
-    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.Handlers.Types.ParsedTrace | null, entityMappings?: Utils.EntityMapper.EntityMapper | null): void;
+    setModelWithEvents(selectedEvents: Trace.Types.Events.Event[] | null, parsedTrace?: Trace.TraceModel.ParsedTrace | null, entityMappings?: Trace.EntityMapper.EntityMapper | null): void;
     buildTree(): Trace.Extras.TraceTree.Node;
     /**
      * Third party tree view doesn't require the select feature, as this expands the node.

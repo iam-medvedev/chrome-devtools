@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -135,8 +135,8 @@ const opCodeDescriptions = (function () {
 class ResourceFrameNode extends DataGridItem {
     frame;
     isTextFrame;
-    dataTextInternal;
-    binaryViewInternal;
+    #dataText;
+    #binaryView;
     constructor(frame) {
         let length = String(frame.text.length);
         const time = new Date(frame.time * 1000);
@@ -165,8 +165,8 @@ class ResourceFrameNode extends DataGridItem {
         super({ data: description, length, time: timeNode });
         this.frame = frame;
         this.isTextFrame = isTextFrame;
-        this.dataTextInternal = dataText;
-        this.binaryViewInternal = null;
+        this.#dataText = dataText;
+        this.#binaryView = null;
     }
     createCells(element) {
         element.classList.toggle('resource-chunk-view-row-error', this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Error);
@@ -178,18 +178,18 @@ class ResourceFrameNode extends DataGridItem {
         return 21;
     }
     dataText() {
-        return this.dataTextInternal;
+        return this.#dataText;
     }
     binaryView() {
         if (this.isTextFrame || this.frame.type === SDK.NetworkRequest.WebSocketFrameType.Error) {
             return null;
         }
-        if (!this.binaryViewInternal) {
-            if (this.dataTextInternal.length > 0) {
-                this.binaryViewInternal = new BinaryResourceView(TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(this.dataTextInternal, true, 'applicaiton/octet-stream')), Platform.DevToolsPath.EmptyUrlString, Common.ResourceType.resourceTypes.WebSocket);
+        if (!this.#binaryView) {
+            if (this.#dataText.length > 0) {
+                this.#binaryView = new BinaryResourceView(TextUtils.StreamingContentData.StreamingContentData.from(new TextUtils.ContentData.ContentData(this.#dataText, true, 'applicaiton/octet-stream')), Platform.DevToolsPath.EmptyUrlString, Common.ResourceType.resourceTypes.WebSocket);
             }
         }
-        return this.binaryViewInternal;
+        return this.#binaryView;
     }
     getTime() {
         return this.frame.time;

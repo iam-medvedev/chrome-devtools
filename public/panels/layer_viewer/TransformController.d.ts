@@ -2,12 +2,8 @@ import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class TransformController extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
+    #private;
     private mode;
-    private scaleInternal;
-    private offsetXInternal;
-    private offsetYInternal;
-    private rotateXInternal;
-    private rotateYInternal;
     private oldRotateX;
     private oldRotateY;
     private originX;

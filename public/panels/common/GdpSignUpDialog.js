@@ -1,9 +1,11 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/components/switch/switch.js';
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Geometry from '../../models/geometry/geometry.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
@@ -36,7 +38,7 @@ const UIStrings = {
     /**
      * @description Body for the first section of the GDP sign up dialog.
      */
-    designedForSuccessBody: 'Grow your skills, build with AI, and showcase your achievements',
+    designedForSuccessBody: 'Grow your skills, build with AI, and receive badges you can showcase in your developer profile',
     /**
      * @description Title for the second section of the GDP sign up dialog.
      */
@@ -170,6 +172,9 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
         const emailPreference = this.#keepMeUpdated ? Host.GdpClient.EmailPreference.ENABLED : Host.GdpClient.EmailPreference.DISABLED;
         const result = await Host.GdpClient.GdpClient.instance().createProfile({ user, emailPreference });
         if (result) {
+            Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges').set(true);
+            await Badges.UserBadges.instance().initialize();
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.GDP_SIGN_UP_COMPLETE);
             this.#dialog.hide();
         }
         else {

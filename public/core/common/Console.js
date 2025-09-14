@@ -1,17 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2014 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { ObjectWrapper } from './Object.js';
 import { reveal } from './Revealer.js';
 let consoleInstance;
 export class Console extends ObjectWrapper {
-    #messagesInternal;
+    #messages;
     /**
      * Instantiable via the instance() factory below.
      */
     constructor() {
         super();
-        this.#messagesInternal = [];
+        this.#messages = [];
     }
     static instance(opts) {
         if (!consoleInstance || opts?.forceNew) {
@@ -32,7 +32,7 @@ export class Console extends ObjectWrapper {
      */
     addMessage(text, level = "info" /* MessageLevel.INFO */, show = false, source) {
         const message = new Message(text, level, Date.now(), show, source);
-        this.#messagesInternal.push(message);
+        this.#messages.push(message);
         this.dispatchEventToListeners("messageAdded" /* Events.MESSAGE_ADDED */, message);
     }
     log(text) {
@@ -51,7 +51,7 @@ export class Console extends ObjectWrapper {
         this.addMessage(text, "error" /* MessageLevel.ERROR */, show);
     }
     messages() {
-        return this.#messagesInternal;
+        return this.#messages;
     }
     show() {
         void this.showPromise();

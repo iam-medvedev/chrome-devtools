@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -175,11 +175,11 @@ function finalize(partialModel) {
         relatedEvents: partialModel.http1Requests,
     };
 }
-export function generateInsight(parsedTrace, context) {
+export function generateInsight(data, context) {
     const isWithinContext = (event) => Helpers.Timing.eventIsInBounds(event, context.bounds);
-    const contextRequests = parsedTrace.NetworkRequests.byTime.filter(isWithinContext);
-    const entityMappings = parsedTrace.NetworkRequests.entityMappings;
-    const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? parsedTrace.Meta.mainFrameURL;
+    const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
+    const entityMappings = data.NetworkRequests.entityMappings;
+    const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
     const firstPartyEntity = Handlers.Helpers.getEntityForUrl(firstPartyUrl, entityMappings);
     const http1Requests = determineHttp1Requests(contextRequests, entityMappings, firstPartyEntity ?? null);
     return finalize({

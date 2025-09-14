@@ -34,6 +34,7 @@
     "../../../../../../front_end/panels/settings/FrameworkIgnoreListSettingsTab.ts",
     "../../../../../../front_end/panels/settings/KeybindsSettingsTab.ts",
     "../../../../../../front_end/panels/settings/SettingsScreen.ts",
+    "../../../../../../front_end/panels/settings/WorkspaceSettingsTab.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -49,10 +50,37 @@
       "path": "../../core/i18n/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/root/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../generated/protocol-tsconfig.json"
+    },
+    {
       "path": "../../models/ai_assistance/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/bindings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/breakpoints/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/persistence/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/project_settings/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/text_utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/cards/bundle-tsconfig.json"
@@ -70,7 +98,13 @@
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/lit/bundle-tsconfig.json"
     },
     {
       "path": "../utils/bundle-tsconfig.json"

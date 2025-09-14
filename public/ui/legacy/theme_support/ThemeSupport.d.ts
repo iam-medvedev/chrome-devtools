@@ -2,7 +2,6 @@ import * as Common from '../../../core/common/common.js';
 export declare class ThemeSupport extends EventTarget {
     #private;
     private setting;
-    private themeNameInternal;
     private computedStyleOfHTML;
     private constructor();
     static hasInstance(): boolean;

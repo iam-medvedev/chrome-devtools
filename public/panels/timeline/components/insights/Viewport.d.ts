@@ -6,6 +6,7 @@ import { BaseInsightComponent } from './BaseInsightComponent.js';
 export declare class Viewport extends BaseInsightComponent<ViewportInsightModel> {
     static readonly litTagName: Lit.StaticHtml.StaticValue;
     internalName: string;
+    protected hasAskAiSupport(): boolean;
     getEstimatedSavingsTime(): Trace.Types.Timing.Milli | null;
     renderContent(): Lit.LitTemplate;
 }

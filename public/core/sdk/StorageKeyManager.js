@@ -1,40 +1,40 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import { SDKModel } from './SDKModel.js';
 export class StorageKeyManager extends SDKModel {
-    #mainStorageKeyInternal;
-    #storageKeysInternal;
+    #mainStorageKey;
+    #storageKeys;
     constructor(target) {
         super(target);
-        this.#mainStorageKeyInternal = '';
-        this.#storageKeysInternal = new Set();
+        this.#mainStorageKey = '';
+        this.#storageKeys = new Set();
     }
     updateStorageKeys(storageKeys) {
-        const oldStorageKeys = this.#storageKeysInternal;
-        this.#storageKeysInternal = storageKeys;
+        const oldStorageKeys = this.#storageKeys;
+        this.#storageKeys = storageKeys;
         for (const storageKey of oldStorageKeys) {
-            if (!this.#storageKeysInternal.has(storageKey)) {
+            if (!this.#storageKeys.has(storageKey)) {
                 this.dispatchEventToListeners("StorageKeyRemoved" /* Events.STORAGE_KEY_REMOVED */, storageKey);
             }
         }
-        for (const storageKey of this.#storageKeysInternal) {
+        for (const storageKey of this.#storageKeys) {
             if (!oldStorageKeys.has(storageKey)) {
                 this.dispatchEventToListeners("StorageKeyAdded" /* Events.STORAGE_KEY_ADDED */, storageKey);
             }
         }
     }
     storageKeys() {
-        return [...this.#storageKeysInternal];
+        return [...this.#storageKeys];
     }
     mainStorageKey() {
-        return this.#mainStorageKeyInternal;
+        return this.#mainStorageKey;
     }
     setMainStorageKey(storageKey) {
-        this.#mainStorageKeyInternal = storageKey;
+        this.#mainStorageKey = storageKey;
         this.dispatchEventToListeners("MainStorageKeyChanged" /* Events.MAIN_STORAGE_KEY_CHANGED */, {
-            mainStorageKey: this.#mainStorageKeyInternal,
+            mainStorageKey: this.#mainStorageKey,
         });
     }
 }

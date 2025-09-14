@@ -6,6 +6,7 @@ import * as Badges from './badges.js';
 class TestBadge extends Badges.Badge {
     name = 'badges/test-badge';
     title = 'test-badge-title';
+    imageUri = 'image-uri';
     interestedActions = [
         Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED,
     ];
@@ -17,13 +18,13 @@ describe('Badge', () => {
     let badgeActionEventTarget;
     let testBadge;
     let handleActionSpy;
-    let dispatchBadgeTriggeredEventStub;
+    let onTriggerBadgeStub;
     beforeEach(() => {
         badgeActionEventTarget = new Common.ObjectWrapper.ObjectWrapper();
         handleActionSpy = sinon.spy(TestBadge.prototype, 'handleAction');
-        dispatchBadgeTriggeredEventStub = sinon.stub();
+        onTriggerBadgeStub = sinon.stub();
         testBadge = new TestBadge({
-            dispatchBadgeTriggeredEvent: dispatchBadgeTriggeredEventStub,
+            onTriggerBadge: onTriggerBadgeStub,
             badgeActionEventTarget,
         });
     });
@@ -52,11 +53,19 @@ describe('Badge', () => {
         badgeActionEventTarget.dispatchEventToListeners(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
         sinon.assert.notCalled(handleActionSpy);
     });
-    it('events received more than once only calls `dispatchBadgeTriggeredEvent` once', () => {
+    it('events received more than once only calls `onTriggerBadge` once', () => {
         testBadge.activate();
         badgeActionEventTarget.dispatchEventToListeners(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
         badgeActionEventTarget.dispatchEventToListeners(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
-        sinon.assert.calledOnce(dispatchBadgeTriggeredEventStub);
+        sinon.assert.calledOnce(onTriggerBadgeStub);
+    });
+    it('a badge can be re-triggered after it has been triggered and then re-activated', () => {
+        testBadge.activate();
+        badgeActionEventTarget.dispatchEventToListeners(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
+        sinon.assert.calledOnce(onTriggerBadgeStub);
+        testBadge.activate();
+        badgeActionEventTarget.dispatchEventToListeners(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
+        sinon.assert.calledTwice(onTriggerBadgeStub);
     });
 });
 //# sourceMappingURL=Badge.test.js.map

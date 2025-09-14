@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -6,7 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import { getCleanTextContentFromElements, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
-import * as RequestTimingView from './RequestTimingView.js';
+import * as Network from './network.js';
 const { urlString } = Platform.DevToolsPath;
 function createNetworkRequest(matchedSource, actualSource) {
     const request = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `http://devtools-frontend.test`, urlString ``, null, null, null);
@@ -104,7 +104,7 @@ describeWithLocale('ResourceTimingView', () => {
     });
     it('Timing table has router evaluation field with detail tabs', async () => {
         const request = createNetworkRequest("network" /* Protocol.Network.ServiceWorkerRouterSource.Network */, "network" /* Protocol.Network.ServiceWorkerRouterSource.Network */);
-        const component = new RequestTimingView.RequestTimingView(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));
+        const component = new Network.RequestTimingView.RequestTimingView(request, new NetworkTimeCalculator.NetworkTimeCalculator(true));
         const div = document.createElement('div');
         renderElementIntoDOM(div);
         component.markAsRoot();

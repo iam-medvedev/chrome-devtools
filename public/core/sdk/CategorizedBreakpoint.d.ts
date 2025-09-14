@@ -36,7 +36,6 @@ export declare class CategorizedBreakpoint {
      * to this name in the 'Debugger.paused' CDP event.
      */
     readonly name: string;
-    private enabledInternal;
     constructor(category: Category, name: string);
     category(): Category;
     enabled(): boolean;

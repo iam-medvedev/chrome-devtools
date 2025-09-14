@@ -738,7 +738,7 @@ import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
 
 // gen/front_end/ui/legacy/components/object_ui/objectValue.css.js
 var objectValue_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1105,17 +1105,17 @@ __export(ProfileHeader_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 var ProfileHeader = class extends Common.ObjectWrapper.ObjectWrapper {
-  profileTypeInternal;
+  #profileType;
   title;
   uid;
-  fromFileInternal;
+  #fromFile;
   tempFile;
   constructor(profileType, title) {
     super();
-    this.profileTypeInternal = profileType;
+    this.#profileType = profileType;
     this.title = title;
     this.uid = profileType.incrementProfileUid();
-    this.fromFileInternal = false;
+    this.#fromFile = false;
     this.tempFile = null;
   }
   setTitle(title) {
@@ -1123,7 +1123,7 @@ var ProfileHeader = class extends Common.ObjectWrapper.ObjectWrapper {
     this.dispatchEventToListeners("ProfileTitleChanged", this);
   }
   profileType() {
-    return this.profileTypeInternal;
+    return this.#profileType;
   }
   updateStatus(subtitle, wait) {
     this.dispatchEventToListeners("UpdateStatus", new StatusUpdate(subtitle, wait));
@@ -1154,10 +1154,10 @@ var ProfileHeader = class extends Common.ObjectWrapper.ObjectWrapper {
     throw new Error("Not implemented.");
   }
   fromFile() {
-    return this.fromFileInternal;
+    return this.#fromFile;
   }
   setFromFile() {
-    this.fromFileInternal = true;
+    this.#fromFile = true;
   }
   setProfile(_profile) {
   }
@@ -1171,18 +1171,18 @@ var StatusUpdate = class {
   }
 };
 var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
-  idInternal;
-  nameInternal;
+  #id;
+  #name;
   profiles;
-  profileBeingRecordedInternal;
-  nextProfileUidInternal;
+  #profileBeingRecorded;
+  #nextProfileUid;
   constructor(id, name) {
     super();
-    this.idInternal = id;
-    this.nameInternal = name;
+    this.#id = id;
+    this.#name = name;
     this.profiles = [];
-    this.profileBeingRecordedInternal = null;
-    this.nextProfileUidInternal = 1;
+    this.#profileBeingRecorded = null;
+    this.#nextProfileUid = 1;
     if (!window.opener) {
       window.addEventListener("pagehide", this.clearTempStorage.bind(this), false);
     }
@@ -1191,10 +1191,10 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
     return "";
   }
   nextProfileUid() {
-    return this.nextProfileUidInternal;
+    return this.#nextProfileUid;
   }
   incrementProfileUid() {
-    return this.nextProfileUidInternal++;
+    return this.#nextProfileUid++;
   }
   hasTemporaryView() {
     return false;
@@ -1206,13 +1206,13 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
     return "";
   }
   get id() {
-    return this.idInternal;
+    return this.#id;
   }
   get treeItemTitle() {
-    return this.nameInternal;
+    return this.#name;
   }
   get name() {
-    return this.nameInternal;
+    return this.#name;
   }
   buttonClicked() {
     return false;
@@ -1228,7 +1228,7 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
   }
   getProfiles() {
     function isFinished(profile) {
-      return this.profileBeingRecordedInternal !== profile;
+      return this.#profileBeingRecorded !== profile;
     }
     return this.profiles.filter(isFinished.bind(this));
   }
@@ -1270,10 +1270,10 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
     }
   }
   profileBeingRecorded() {
-    return this.profileBeingRecordedInternal;
+    return this.#profileBeingRecorded;
   }
   setProfileBeingRecorded(profile) {
-    this.profileBeingRecordedInternal = profile;
+    this.#profileBeingRecorded = profile;
   }
   profileBeingRecordedRemoved() {
   }
@@ -1282,12 +1282,12 @@ var ProfileType = class extends Common.ObjectWrapper.ObjectWrapper {
       this.disposeProfile(profile);
     }
     this.profiles = [];
-    this.nextProfileUidInternal = 1;
+    this.#nextProfileUid = 1;
   }
   disposeProfile(profile) {
     this.dispatchEventToListeners("remove-profile-header", profile);
     profile.dispose();
-    if (this.profileBeingRecordedInternal === profile) {
+    if (this.#profileBeingRecorded === profile) {
       this.profileBeingRecordedRemoved();
       this.setProfileBeingRecorded(null);
     }
@@ -1562,7 +1562,7 @@ var ListItem = class {
 
 // gen/front_end/panels/profiler/profileLauncherView.css.js
 var profileLauncherView_css_default = `/*
- * Copyright 2018 The Chromium Authors. All rights reserved.
+ * Copyright 2018 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1752,7 +1752,7 @@ var str_3 = i18n5.i18n.registerUIStrings("panels/profiler/ProfileLauncherView.ts
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var ProfileLauncherView = class extends Common3.ObjectWrapper.eventMixin(UI3.Widget.VBox) {
   panel;
-  contentElementInternal;
+  #contentElement;
   selectedProfileTypeSetting;
   profileTypeHeaderElement;
   profileTypeSelectorForm;
@@ -1768,20 +1768,20 @@ var ProfileLauncherView = class extends Common3.ObjectWrapper.eventMixin(UI3.Wid
     this.registerRequiredCSS(profileLauncherView_css_default);
     this.panel = profilesPanel;
     this.element.classList.add("profile-launcher-view");
-    this.contentElementInternal = this.element.createChild("div", "profile-launcher-view-content vbox");
-    const profileTypeSelectorElement = this.contentElementInternal.createChild("div", "vbox");
+    this.#contentElement = this.element.createChild("div", "profile-launcher-view-content vbox");
+    const profileTypeSelectorElement = this.#contentElement.createChild("div", "vbox");
     this.selectedProfileTypeSetting = Common3.Settings.Settings.instance().createSetting("selected-profile-type", "CPU");
     this.profileTypeHeaderElement = profileTypeSelectorElement.createChild("h1");
     this.profileTypeSelectorForm = profileTypeSelectorElement.createChild("form");
     UI3.ARIAUtils.markAsRadioGroup(this.profileTypeSelectorForm);
-    const isolateSelectorElement = this.contentElementInternal.createChild("div", "vbox profile-isolate-selector-block");
+    const isolateSelectorElement = this.#contentElement.createChild("div", "vbox profile-isolate-selector-block");
     isolateSelectorElement.createChild("h1").textContent = i18nString3(UIStrings3.selectJavascriptVmInstance);
     const isolateSelector = new IsolateSelector();
     const isolateSelectorElementChild = isolateSelectorElement.createChild("div", "vbox profile-launcher-target-list");
     isolateSelectorElementChild.classList.add("profile-launcher-target-list-container");
     isolateSelector.show(isolateSelectorElementChild);
     isolateSelectorElement.appendChild(isolateSelector.totalMemoryElement());
-    const buttonsDiv = this.contentElementInternal.createChild("div", "hbox profile-launcher-buttons");
+    const buttonsDiv = this.#contentElement.createChild("div", "hbox profile-launcher-buttons");
     this.controlButton = UI3.UIUtils.createTextButton("", this.controlButtonClicked.bind(this), {
       jslogContext: "profiler.heap-toggle-recording",
       variant: "primary"
@@ -2184,7 +2184,7 @@ var profilesPanel_css_default = `/*
 
 // gen/front_end/panels/profiler/profilesSidebarTree.css.js
 var profilesSidebarTree_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -3131,14 +3131,14 @@ import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI7 from "./../../ui/legacy/legacy.js";
 var colorGeneratorInstance = null;
 var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
-  colorGeneratorInternal;
+  #colorGenerator;
   maxStackDepthInternal;
   timelineDataInternal;
   entryNodes;
   #font;
   boldFont;
   constructor() {
-    this.colorGeneratorInternal = _ProfileFlameChartDataProvider.colorGenerator();
+    this.#colorGenerator = _ProfileFlameChartDataProvider.colorGenerator();
     this.maxStackDepthInternal = 0;
     this.timelineDataInternal = null;
     this.entryNodes = [];
@@ -3193,7 +3193,7 @@ var ProfileFlameChartDataProvider = class _ProfileFlameChartDataProvider {
   }
   entryColor(entryIndex) {
     const node = this.entryNodes[entryIndex];
-    return this.colorGeneratorInternal.colorForID(node.url || (node.scriptId !== "0" ? node.scriptId : node.functionName));
+    return this.#colorGenerator.colorForID(node.url || (node.scriptId !== "0" ? node.scriptId : node.functionName));
   }
   decorateEntry(_entryIndex, _context, _text, _barX, _barY, _barWidth, _barHeight) {
     return false;
@@ -4197,18 +4197,18 @@ var DetachedElementsProfileType = class extends Common7.ObjectWrapper.eventMixin
   static TypeId = "DetachedElements";
 };
 var DetachedElementsProfileHeader = class extends WritableProfileHeader {
-  heapProfilerModelInternal;
+  #heapProfilerModel;
   detachedElements;
   constructor(heapProfilerModel, type, detachedElements, title) {
     super(heapProfilerModel?.debuggerModel() ?? null, type, title || i18nString8(UIStrings8.detachedElementProfile, { PH1: type.nextProfileUid() }));
     this.detachedElements = detachedElements;
-    this.heapProfilerModelInternal = heapProfilerModel;
+    this.#heapProfilerModel = heapProfilerModel;
   }
   createView(dataDisplayDelegate) {
     return new DetachedElementsProfileView(dataDisplayDelegate, this);
   }
   heapProfilerModel() {
-    return this.heapProfilerModelInternal;
+    return this.#heapProfilerModel;
   }
   profileType() {
     return super.profileType();
@@ -9360,7 +9360,7 @@ import * as UI16 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/profiler/liveHeapProfile.css.js
 var liveHeapProfile_css_default = `/*
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

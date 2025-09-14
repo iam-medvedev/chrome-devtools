@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -184,7 +184,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
     }
     #setMarkers(parsedTrace) {
         const markers = new Map();
-        const { Meta } = parsedTrace;
+        const { Meta } = parsedTrace.data;
         // Only add markers for navigation start times.
         const navStartEvents = Meta.mainFrameNavigations;
         const minTimeInMilliseconds = Trace.Helpers.Timing.microToMilli(Meta.traceBounds.min);
@@ -195,7 +195,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.#overviewComponent.setMarkers(markers);
     }
     #setNavigationStartEvents(parsedTrace) {
-        this.#overviewComponent.setNavStartTimes(parsedTrace.Meta.mainFrameNavigations);
+        this.#overviewComponent.setNavStartTimes(parsedTrace.data.Meta.mainFrameNavigations);
     }
     getControls() {
         return this.#controls;
@@ -218,7 +218,7 @@ export class TimelineMiniMap extends Common.ObjectWrapper.eventMixin(UI.Widget.V
         this.#controls.push(new TimelineEventOverviewCPUActivity(data.parsedTrace));
         this.#controls.push(new TimelineEventOverviewNetwork(data.parsedTrace));
         if (data.settings.showScreenshots) {
-            const filmStrip = Trace.Extras.FilmStrip.fromParsedTrace(data.parsedTrace);
+            const filmStrip = Trace.Extras.FilmStrip.fromHandlerData(data.parsedTrace.data);
             if (filmStrip.frames.length) {
                 this.#controls.push(new TimelineFilmStripOverview(filmStrip));
             }

@@ -21,7 +21,7 @@ import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/markdown_view/codeBlock.css.js
 var codeBlock_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -363,7 +363,7 @@ import * as Lit2 from "./../../lit/lit.js";
 
 // gen/front_end/ui/components/markdown_view/markdownImage.css.js
 var markdownImage_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -445,7 +445,7 @@ import * as VisualLogging2 from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/markdown_view/markdownLink.css.js
 var markdownLink_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -584,7 +584,7 @@ import * as VisualLogging3 from "./../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/components/markdown_view/markdownView.css.js
 var markdownView_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

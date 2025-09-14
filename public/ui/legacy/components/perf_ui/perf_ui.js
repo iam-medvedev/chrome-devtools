@@ -501,7 +501,7 @@ import * as UI2 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/chartViewport.css.js
 var chartViewport_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -630,7 +630,7 @@ function drawIcon(context, x, y, width, pathData, iconColor = "--sys-color-on-su
 
 // gen/front_end/ui/legacy/components/perf_ui/flameChart.css.js
 var flameChart_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -758,7 +758,7 @@ import * as ThemeSupport5 from "./../../theme_support/theme_support.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/timelineGrid.css.js
 var timelineGrid_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -827,18 +827,18 @@ var timelineGrid_css_default = `/*
 var labelMap = /* @__PURE__ */ new Map();
 var TimelineGrid = class _TimelineGrid {
   element;
-  dividersElementInternal;
+  #dividersElement;
   gridHeaderElement;
   eventDividersElement;
-  dividersLabelBarElementInternal;
+  #dividersLabelBarElement;
   constructor() {
     this.element = document.createElement("div");
     Platform2.DOMUtilities.appendStyle(this.element, timelineGrid_css_default);
-    this.dividersElementInternal = this.element.createChild("div", "resources-dividers");
+    this.#dividersElement = this.element.createChild("div", "resources-dividers");
     this.gridHeaderElement = document.createElement("div");
     this.gridHeaderElement.classList.add("timeline-grid-header");
     this.eventDividersElement = this.gridHeaderElement.createChild("div", "resources-event-dividers");
-    this.dividersLabelBarElementInternal = this.gridHeaderElement.createChild("div", "resources-dividers-label-bar");
+    this.#dividersLabelBarElement = this.gridHeaderElement.createChild("div", "resources-dividers-label-bar");
     this.element.appendChild(this.gridHeaderElement);
   }
   static calculateGridOffsets(calculator, freeZoneAtLeft) {
@@ -910,30 +910,30 @@ var TimelineGrid = class _TimelineGrid {
     context.restore();
   }
   get dividersElement() {
-    return this.dividersElementInternal;
+    return this.#dividersElement;
   }
   get dividersLabelBarElement() {
-    return this.dividersLabelBarElementInternal;
+    return this.#dividersLabelBarElement;
   }
   updateDividers(calculator, freeZoneAtLeft) {
     const dividersData = _TimelineGrid.calculateGridOffsets(calculator, freeZoneAtLeft);
     const dividerOffsets = dividersData.offsets;
     const precision = dividersData.precision;
-    const dividersElementClientWidth = this.dividersElementInternal.clientWidth;
-    let divider = this.dividersElementInternal.firstChild;
-    let dividerLabelBar = this.dividersLabelBarElementInternal.firstChild;
+    const dividersElementClientWidth = this.#dividersElement.clientWidth;
+    let divider = this.#dividersElement.firstChild;
+    let dividerLabelBar = this.#dividersLabelBarElement.firstChild;
     for (let i = 0; i < dividerOffsets.length; ++i) {
       if (!divider) {
         divider = document.createElement("div");
         divider.className = "resources-divider";
-        this.dividersElementInternal.appendChild(divider);
+        this.#dividersElement.appendChild(divider);
         dividerLabelBar = document.createElement("div");
         dividerLabelBar.className = "resources-divider";
         const label = document.createElement("div");
         label.className = "resources-divider-label";
         labelMap.set(dividerLabelBar, label);
         dividerLabelBar.appendChild(label);
-        this.dividersLabelBarElementInternal.appendChild(dividerLabelBar);
+        this.#dividersLabelBarElement.appendChild(dividerLabelBar);
       }
       const time = dividerOffsets[i].time;
       const position = dividerOffsets[i].position;
@@ -955,7 +955,7 @@ var TimelineGrid = class _TimelineGrid {
     }
     while (divider) {
       const nextDivider = divider.nextSibling;
-      this.dividersElementInternal.removeChild(divider);
+      this.#dividersElement.removeChild(divider);
       if (nextDivider) {
         divider = nextDivider;
       } else {
@@ -964,7 +964,7 @@ var TimelineGrid = class _TimelineGrid {
     }
     while (dividerLabelBar) {
       const nextDivider = dividerLabelBar.nextSibling;
-      this.dividersLabelBarElementInternal.removeChild(dividerLabelBar);
+      this.#dividersLabelBarElement.removeChild(dividerLabelBar);
       if (nextDivider) {
         dividerLabelBar = nextDivider;
       } else {
@@ -990,7 +990,7 @@ var TimelineGrid = class _TimelineGrid {
     this.eventDividersElement.classList.remove("hidden");
   }
   setScrollTop(scrollTop) {
-    this.dividersLabelBarElementInternal.style.top = scrollTop + "px";
+    this.#dividersLabelBarElement.style.top = scrollTop + "px";
     this.eventDividersElement.style.top = scrollTop + "px";
   }
 };
@@ -1109,7 +1109,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   dragStartX;
   dragStartY;
   lastMouseOffsetY;
-  minimumBoundaryInternal;
+  #minimumBoundary;
   maxDragOffset;
   timelineLevels;
   visibleLevelOffsets;
@@ -4030,8 +4030,8 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
   }
   updateBoundaries() {
     this.totalTime = this.dataProvider.totalTime();
-    this.minimumBoundaryInternal = this.dataProvider.minimumBoundary();
-    this.chartViewport.setBoundaries(this.minimumBoundaryInternal, this.totalTime);
+    this.#minimumBoundary = this.dataProvider.minimumBoundary();
+    this.chartViewport.setBoundaries(this.#minimumBoundary, this.totalTime);
   }
   updateHeight() {
     this.chartViewport.setContentHeight(this.totalContentHeight());
@@ -4187,13 +4187,13 @@ var FlameChartTimelineData = class _FlameChartTimelineData {
 var ChartViewport = class extends UI2.Widget.VBox {
   delegate;
   viewportElement;
-  alwaysShowVerticalScrollInternal;
+  #alwaysShowVerticalScroll;
   rangeSelectionEnabled;
   vScrollElement;
   vScrollContent;
   selectionOverlay;
   cursorElement;
-  isDraggingInternal;
+  #isDragging;
   totalHeight;
   offsetHeight;
   scrollTop;
@@ -4228,7 +4228,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.viewportElement.addEventListener("keyup", this.onChartKeyUp.bind(this), false);
     UI2.UIUtils.installDragHandle(this.viewportElement, this.startDragging.bind(this), this.dragging.bind(this), this.endDragging.bind(this), "-webkit-grabbing", null);
     UI2.UIUtils.installDragHandle(this.viewportElement, this.startRangeSelection.bind(this), this.rangeSelectionDragging.bind(this), this.endRangeSelection.bind(this), "text", null);
-    this.alwaysShowVerticalScrollInternal = false;
+    this.#alwaysShowVerticalScroll = false;
     this.rangeSelectionEnabled = true;
     this.vScrollElement = this.contentElement.createChild("div", "chart-viewport-v-scroll");
     this.vScrollContent = this.vScrollElement.createChild("div");
@@ -4240,7 +4240,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.rangeSelectionEnd = null;
   }
   alwaysShowVerticalScroll() {
-    this.alwaysShowVerticalScrollInternal = true;
+    this.#alwaysShowVerticalScroll = true;
     this.vScrollElement.classList.add("always-show-scrollbar");
   }
   disableRangeSelection() {
@@ -4249,7 +4249,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.rangeSelectionEnd = null;
   }
   isDragging() {
-    return this.isDraggingInternal;
+    return this.#isDragging;
   }
   elementsToRestoreScrollPositionsFor() {
     return [this.vScrollElement];
@@ -4258,7 +4258,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     return !this.vScrollElement.classList.contains("hidden");
   }
   updateScrollBar() {
-    const showScroll = this.alwaysShowVerticalScrollInternal || this.totalHeight > this.offsetHeight;
+    const showScroll = this.#alwaysShowVerticalScroll || this.totalHeight > this.offsetHeight;
     if (this.vScrollElement.classList.contains("hidden") !== showScroll) {
       return;
     }
@@ -4275,7 +4275,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.scrollTop = 0;
     this.rangeSelectionStart = null;
     this.rangeSelectionEnd = null;
-    this.isDraggingInternal = false;
+    this.#isDragging = false;
     this.dragStartPointX = 0;
     this.dragStartPointY = 0;
     this.dragStartScrollTop = 0;
@@ -4393,7 +4393,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     if (event.shiftKey) {
       return false;
     }
-    this.isDraggingInternal = true;
+    this.#isDragging = true;
     this.dragStartPointX = event.pageX;
     this.dragStartPointY = event.pageY;
     this.dragStartScrollTop = this.vScrollElement.scrollTop;
@@ -4408,19 +4408,19 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.vScrollElement.scrollTop = this.dragStartScrollTop + pixelScroll;
   }
   endDragging() {
-    this.isDraggingInternal = false;
+    this.#isDragging = false;
   }
   startRangeSelection(event) {
     if (!event.shiftKey || !this.rangeSelectionEnabled) {
       return false;
     }
-    this.isDraggingInternal = true;
+    this.#isDragging = true;
     this.selectionOffsetShiftX = event.offsetX - event.pageX;
     this.selectionStartX = event.offsetX;
     return true;
   }
   endRangeSelection() {
-    this.isDraggingInternal = false;
+    this.#isDragging = false;
     this.selectionStartX = null;
   }
   hideRangeSelection() {
@@ -4485,7 +4485,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     return this.offsetWidth / (this.visibleRightTime - this.visibleLeftTime);
   }
   showCursor(visible) {
-    this.cursorElement.classList.toggle("hidden", !visible || this.isDraggingInternal);
+    this.cursorElement.classList.toggle("hidden", !visible || this.#isDragging);
   }
   onChartKeyDown(keyboardEvent) {
     this.showCursor(keyboardEvent.shiftKey);
@@ -4664,7 +4664,7 @@ import * as UI3 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/filmStripView.css.js
 var filmStripView_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -5340,7 +5340,7 @@ import * as UI4 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/overviewGrid.css.js
 var overviewGrid_css_default = `/*
- * Copyright (c) 2014 The Chromium Authors. All rights reserved.
+ * Copyright 2014 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6084,7 +6084,7 @@ import * as VisualLogging4 from "./../../../visual_logging/visual_logging.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/pieChart.css.js
 var pieChart_css_default = `/*
- * Copyright 2021 The Chromium Authors. All rights reserved.
+ * Copyright 2021 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6449,7 +6449,7 @@ import * as ThemeSupport9 from "./../../theme_support/theme_support.js";
 
 // gen/front_end/ui/legacy/components/perf_ui/timelineOverviewInfo.css.js
 var timelineOverviewInfo_css_default = `/*
- * Copyright 2017 The Chromium Authors. All rights reserved.
+ * Copyright 2017 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -6804,14 +6804,14 @@ var TimelineOverviewPane = class extends Common6.ObjectWrapper.eventMixin(UI5.Wi
   }
 };
 var TimelineOverviewBase = class extends UI5.Widget.VBox {
-  calculatorInternal;
+  #calculator;
   canvas;
-  contextInternal;
+  #context;
   constructor() {
     super();
-    this.calculatorInternal = null;
+    this.#calculator = null;
     this.canvas = this.element.createChild("canvas", "fill");
-    this.contextInternal = this.canvas.getContext("2d");
+    this.#context = this.canvas.getContext("2d");
   }
   width() {
     return this.canvas.width;
@@ -6820,13 +6820,13 @@ var TimelineOverviewBase = class extends UI5.Widget.VBox {
     return this.canvas.height;
   }
   context() {
-    if (!this.contextInternal) {
+    if (!this.#context) {
       throw new Error("Unable to retrieve canvas context");
     }
-    return this.contextInternal;
+    return this.#context;
   }
   calculator() {
-    return this.calculatorInternal;
+    return this.#calculator;
   }
   update() {
     throw new Error("Not implemented");
@@ -6840,7 +6840,7 @@ var TimelineOverviewBase = class extends UI5.Widget.VBox {
     return null;
   }
   setCalculator(calculator) {
-    this.calculatorInternal = calculator;
+    this.#calculator = calculator;
   }
   onClick(_event) {
     return false;

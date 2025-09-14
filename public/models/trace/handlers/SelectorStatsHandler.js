@@ -1,15 +1,15 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Types from '../types/types.js';
-let lastUpdateLayoutTreeEvent = null;
+let lastRecalcStyleEvent = null;
 let lastInvalidatedNode = null;
-let selectorDataForUpdateLayoutTree = new Map();
+let selectorDataForRecalcStyle = new Map();
 let invalidatedNodeList = new Array();
 export function reset() {
-    lastUpdateLayoutTreeEvent = null;
+    lastRecalcStyleEvent = null;
     lastInvalidatedNode = null;
-    selectorDataForUpdateLayoutTree = new Map();
+    selectorDataForRecalcStyle = new Map();
     invalidatedNodeList = [];
 }
 export function handleEvent(event) {
@@ -28,8 +28,8 @@ export function handleEvent(event) {
             return;
         }
     }
-    if (Types.Events.isSelectorStats(event) && lastUpdateLayoutTreeEvent && event.args.selector_stats) {
-        selectorDataForUpdateLayoutTree.set(lastUpdateLayoutTreeEvent, {
+    if (Types.Events.isSelectorStats(event) && lastRecalcStyleEvent && event.args.selector_stats) {
+        selectorDataForRecalcStyle.set(lastRecalcStyleEvent, {
             timings: event.args.selector_stats.selector_timings,
         });
         return;
@@ -51,13 +51,13 @@ export function handleEvent(event) {
                 ts: event.ts,
                 tts: event.tts,
                 subtree: false,
-                lastUpdateLayoutTreeEventTs: lastUpdateLayoutTreeEvent ? lastUpdateLayoutTreeEvent.ts : Types.Timing.Micro(0),
+                lastRecalcStyleEventTs: lastRecalcStyleEvent ? lastRecalcStyleEvent.ts : Types.Timing.Micro(0),
             };
             invalidatedNodeList.push(lastInvalidatedNode);
         }
     }
-    if (Types.Events.isUpdateLayoutTree(event)) {
-        lastUpdateLayoutTreeEvent = event;
+    if (Types.Events.isRecalcStyle(event)) {
+        lastRecalcStyleEvent = event;
         return;
     }
 }
@@ -65,7 +65,7 @@ export async function finalize() {
 }
 export function data() {
     return {
-        dataForUpdateLayoutEvent: selectorDataForUpdateLayoutTree,
+        dataForRecalcStyleEvent: selectorDataForRecalcStyle,
         invalidatedNodeList,
     };
 }

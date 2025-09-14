@@ -498,7 +498,7 @@ import { html, render } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/cssOverviewProcessingView.css.js
 var cssOverviewProcessingView_css_default = `/**
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -595,7 +595,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/css_overview/cssOverviewCompletedView.css.js
 var cssOverviewCompletedView_css_default = `/**
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -967,7 +967,7 @@ import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/css_overview/cssOverviewSidebarPanel.css.js
 var cssOverviewSidebarPanel_css_default = `/**
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2038,7 +2038,7 @@ import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/css_overview/cssOverviewStartView.css.js
 var cssOverviewStartView_css_default = `/**
- * Copyright 2019 The Chromium Authors. All rights reserved.
+ * Copyright 2019 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

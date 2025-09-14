@@ -3,7 +3,6 @@ import * as Trace from '../../models/trace/trace.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 import * as Components from './components/components.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -32,7 +31,7 @@ export class InteractionsTrackAppender {
      * appended the track's events.
      */
     appendTrackAtLevel(trackStartLevel, expanded) {
-        if (this.#parsedTrace.UserInteractions.interactionEvents.length === 0) {
+        if (this.#parsedTrace.data.UserInteractions.interactionEvents.length === 0) {
             return trackStartLevel;
         }
         this.#appendTrackHeaderAtLevel(trackStartLevel, expanded);
@@ -48,7 +47,7 @@ export class InteractionsTrackAppender {
      * appended.
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
-        const trackIsCollapsible = this.#parsedTrace.UserInteractions.interactionEvents.length > 0;
+        const trackIsCollapsible = this.#parsedTrace.data.UserInteractions.interactionEvents.length > 0;
         const style = buildGroupStyle({ collapsible: trackIsCollapsible, useDecoratorsForOverview: true });
         const group = buildTrackHeader("interactions" /* VisualLoggingTrackName.INTERACTIONS */, currentLevel, i18nString(UIStrings.interactions), style, 
         /* selectable= */ true, expanded);
@@ -64,7 +63,7 @@ export class InteractionsTrackAppender {
      * interactions (the first available level to append more data).
      */
     #appendInteractionsAtLevel(trackStartLevel) {
-        const { interactionEventsWithNoNesting, interactionsOverThreshold } = this.#parsedTrace.UserInteractions;
+        const { interactionEventsWithNoNesting, interactionsOverThreshold } = this.#parsedTrace.data.UserInteractions;
         const addCandyStripeToLongInteraction = (event, index) => {
             // Each interaction that we drew that is over the INP threshold needs to be
             // candy-striped.
@@ -105,7 +104,7 @@ export class InteractionsTrackAppender {
      * Gets the color an event added by this appender should be rendered with.
      */
     colorForEvent(event) {
-        let idForColorGeneration = Utils.EntryName.nameForEntry(event, this.#parsedTrace);
+        let idForColorGeneration = Trace.Name.forEntry(event, this.#parsedTrace);
         if (Trace.Types.Events.isSyntheticInteraction(event)) {
             // Append the ID so that we vary the colours, ensuring that two events of
             // the same type are coloured differently.

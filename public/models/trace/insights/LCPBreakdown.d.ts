@@ -79,6 +79,6 @@ export type LCPBreakdownInsightModel = InsightModel<typeof UIStrings, {
     lcpRequest?: Types.Events.SyntheticNetworkRequest;
     subparts?: LCPSubparts;
 }>;
-export declare function generateInsight(parsedTrace: Handlers.Types.ParsedTrace, context: InsightSetContext): LCPBreakdownInsightModel;
+export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): LCPBreakdownInsightModel;
 export declare function createOverlays(model: LCPBreakdownInsightModel): Types.Overlays.Overlay[];
 export {};

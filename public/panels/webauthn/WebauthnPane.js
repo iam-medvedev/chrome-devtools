@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/legacy/legacy.js';
@@ -470,6 +470,7 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
     #model;
     #newAuthenticatorOptions = {
         protocol: "ctap2" /* Protocol.WebAuthn.AuthenticatorProtocol.Ctap2 */,
+        ctap2Version: "ctap2_1" /* Protocol.WebAuthn.Ctap2Version.Ctap2_1 */,
         transport: "usb" /* Protocol.WebAuthn.AuthenticatorTransport.Usb */,
         hasResidentKey: false,
         hasUserVerification: false,

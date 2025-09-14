@@ -12,7 +12,7 @@ export declare const SORT_ORDER_PAGE_LOAD_MARKERS: Readonly<Record<string, numbe
 export declare class TimingsTrackAppender implements TrackAppender {
     #private;
     readonly appenderName: TrackAppenderName;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace, colorGenerator: Common.Color.Generator);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace, colorGenerator: Common.Color.Generator);
     /**
      * Appends into the flame chart data the data corresponding to the
      * timings track.

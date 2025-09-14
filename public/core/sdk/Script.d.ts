@@ -12,6 +12,10 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     #private;
     debuggerModel: DebuggerModel;
     scriptId: Protocol.Runtime.ScriptId;
+    /**
+     * The URL of the script. When `hasSourceURL` is true, this value comes from a `//# sourceURL=` directive. Otherwise,
+     * it's the original `src` URL from which the script was loaded.
+     */
     sourceURL: Platform.DevToolsPath.UrlString;
     lineOffset: number;
     columnOffset: number;
@@ -42,7 +46,6 @@ export declare class Script implements TextUtils.ContentProvider.ContentProvider
     private loadTextContent;
     private loadWasmContent;
     requestContentData(): Promise<TextUtils.ContentData.ContentDataOrError>;
-    private requestContentInternal;
     getWasmBytecode(): Promise<ArrayBuffer>;
     originalContentProvider(): TextUtils.ContentProvider.ContentProvider;
     searchInContent(query: string, caseSensitive: boolean, isRegex: boolean): Promise<TextUtils.ContentProvider.SearchMatch[]>;

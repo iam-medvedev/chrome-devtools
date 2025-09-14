@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 export * from './debug.js';
@@ -19,7 +19,7 @@ export * from './data_formatters/FileFormatter.js';
 export * from './data_formatters/NetworkRequestFormatter.js';
 export * from './data_formatters/PerformanceInsightFormatter.js';
 export * from './data_formatters/PerformanceTraceFormatter.js';
-export * from './data_formatters/Types.js';
+export * from './data_formatters/UnitFormatters.js';
 export * from './ConversationHandler.js';
 export * from './injected.js';
 //# sourceMappingURL=ai_assistance.prebundle.js.map

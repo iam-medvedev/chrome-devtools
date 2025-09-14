@@ -22,7 +22,6 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private splitWidget;
     editorView: UI.SplitWidget.SplitWidget;
     private navigatorTabbedLocation;
-    sourcesViewInternal: SourcesView;
     private readonly toggleNavigatorSidebarButton;
     private readonly toggleDebuggerSidebarButton;
     private threadsSidebarPane;
@@ -30,7 +29,6 @@ export declare class SourcesPanel extends UI.Panel.Panel implements UI.ContextMe
     private readonly callstackPane;
     private liveLocationPool;
     private lastModificationTime;
-    private pausedInternal?;
     private switchToPausedTargetTimeout?;
     private executionLineLocation?;
     private sidebarPaneStack?;

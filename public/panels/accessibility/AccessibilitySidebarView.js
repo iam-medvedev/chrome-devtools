@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2015 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -11,8 +11,8 @@ import { AXBreadcrumbsPane } from './AXBreadcrumbsPane.js';
 import { SourceOrderPane } from './SourceOrderView.js';
 let accessibilitySidebarViewInstance;
 export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget {
-    nodeInternal;
-    axNodeInternal;
+    #node;
+    #axNode;
     skipNextPullNode;
     sidebarPaneStack;
     breadcrumbsSubPane;
@@ -22,8 +22,8 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
     constructor(throttlingTimeout) {
         super(false /* useShadowDom */, throttlingTimeout);
         this.element.classList.add('accessibility-sidebar-view');
-        this.nodeInternal = null;
-        this.axNodeInternal = null;
+        this.#node = null;
+        this.#axNode = null;
         this.skipNextPullNode = false;
         this.sidebarPaneStack = UI.ViewManager.ViewManager.instance().createStackLocation();
         this.breadcrumbsSubPane = new AXBreadcrumbsPane(this);
@@ -45,21 +45,21 @@ export class AccessibilitySidebarView extends UI.ThrottledWidget.ThrottledWidget
         return accessibilitySidebarViewInstance;
     }
     node() {
-        return this.nodeInternal;
+        return this.#node;
     }
     axNode() {
-        return this.axNodeInternal;
+        return this.#axNode;
     }
     setNode(node, fromAXTree) {
         this.skipNextPullNode = Boolean(fromAXTree);
-        this.nodeInternal = node;
+        this.#node = node;
         this.update();
     }
     accessibilityNodeCallback(axNode) {
         if (!axNode) {
             return;
         }
-        this.axNodeInternal = axNode;
+        this.#axNode = axNode;
         if (axNode.isDOMNode()) {
             void this.sidebarPaneStack.showView(this.ariaSubPane, this.axNodeSubPane);
         }

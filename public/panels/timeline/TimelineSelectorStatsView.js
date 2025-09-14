@@ -1,4 +1,4 @@
-// Copyright 2024 The Chromium Authors. All rights reserved.
+// Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
@@ -258,7 +258,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         if (!this.#parsedTrace) {
             return;
         }
-        const invalidatedNodes = this.#parsedTrace.SelectorStats.invalidatedNodeList;
+        const invalidatedNodes = this.#parsedTrace.data.SelectorStats.invalidatedNodeList;
         const invalidatedNodeMap = new Map();
         const frameIdBackendNodeIdsMap = new Map();
         for (const { frame, backendNodeId } of invalidatedNodes) {
@@ -277,7 +277,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             // aggregate invalidated nodes per (Selector + Recalc timestamp + Frame)
             for (const selector of invalidatedNode.selectorList) {
                 const key = [
-                    selector.selector, selector.styleSheetId, invalidatedNode.frame, invalidatedNode.lastUpdateLayoutTreeEventTs
+                    selector.selector, selector.styleSheetId, invalidatedNode.frame, invalidatedNode.lastRecalcStyleEventTs
                 ].join('-');
                 if (invalidatedNodeMap.has(key)) {
                     const nodes = invalidatedNodeMap.get(key);
@@ -289,7 +289,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
             }
         }
         for (const event of events) {
-            const selectorStats = event ? this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event) : undefined;
+            const selectorStats = event ? this.#parsedTrace.data.SelectorStats.dataForRecalcStyleEvent.get(event) : undefined;
             if (!selectorStats) {
                 continue;
             }
@@ -346,7 +346,7 @@ export class TimelineSelectorStatsView extends UI.Widget.VBox {
         await this.updateInvalidationCount(events);
         for (let i = 0; i < events.length; i++) {
             const event = events[i];
-            const selectorStats = event ? this.#parsedTrace.SelectorStats.dataForUpdateLayoutEvent.get(event) : undefined;
+            const selectorStats = event ? this.#parsedTrace.data.SelectorStats.dataForRecalcStyleEvent.get(event) : undefined;
             if (!selectorStats) {
                 continue;
             }

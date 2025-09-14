@@ -1,8 +1,8 @@
 import type * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare class ShortcutTreeElement extends UI.TreeOutline.TreeElement {
+    #private;
     private readonly nodeShortcut;
-    private hoveredInternal?;
     constructor(nodeShortcut: SDK.DOMModel.DOMNodeShortcut);
     addRevealAdorner(): void;
     get hovered(): boolean;

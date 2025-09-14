@@ -229,7 +229,7 @@ var DeviceModeToolbar = class {
   showUserAgentTypeSetting;
   autoAdjustScaleSetting;
   lastMode;
-  elementInternal;
+  #element;
   emulatedDevicesList;
   persistenceSetting;
   spanButton;
@@ -260,10 +260,10 @@ var DeviceModeToolbar = class {
     this.showUserAgentTypeSetting.addChangeListener(this.updateUserAgentTypeVisibility, this);
     this.autoAdjustScaleSetting = Common.Settings.Settings.instance().createSetting("emulation.auto-adjust-scale", true);
     this.lastMode = /* @__PURE__ */ new Map();
-    this.elementInternal = document.createElement("div");
-    this.elementInternal.classList.add("device-mode-toolbar");
-    this.elementInternal.setAttribute("jslog", `${VisualLogging.toolbar("device-mode").track({ resize: true })}`);
-    const mainToolbar = this.elementInternal.createChild("devtools-toolbar", "main-toolbar");
+    this.#element = document.createElement("div");
+    this.#element.classList.add("device-mode-toolbar");
+    this.#element.setAttribute("jslog", `${VisualLogging.toolbar("device-mode").track({ resize: true })}`);
+    const mainToolbar = this.#element.createChild("devtools-toolbar", "main-toolbar");
     this.appendDeviceSelectMenu(mainToolbar);
     this.widthInput = new EmulationComponents.DeviceSizeInputElement.SizeInputElement(i18nString(UIStrings.width), { jslogContext: "width" });
     this.widthInput.addEventListener("sizechanged", ({ size: width }) => {
@@ -284,7 +284,7 @@ var DeviceModeToolbar = class {
     this.appendDimensionInputs(mainToolbar);
     this.appendDisplaySettings(mainToolbar);
     this.appendDevicePositionItems(mainToolbar);
-    const optionsToolbar = this.elementInternal.createChild("devtools-toolbar", "device-mode-toolbar-options");
+    const optionsToolbar = this.#element.createChild("devtools-toolbar", "device-mode-toolbar-options");
     optionsToolbar.wrappable = true;
     this.fillOptionsToolbar(optionsToolbar);
     this.emulatedDevicesList = EmulationModel.EmulatedDevices.EmulatedDevicesList.instance();
@@ -620,7 +620,7 @@ var DeviceModeToolbar = class {
     return `${(this.model.scale() * 100).toFixed(0)}`;
   }
   element() {
-    return this.elementInternal;
+    return this.#element;
   }
   update() {
     if (this.model.type() !== this.cachedModelType) {
@@ -722,7 +722,7 @@ var DeviceModeToolbar = class {
 
 // gen/front_end/panels/emulation/deviceModeView.css.js
 var deviceModeView_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1112,7 +1112,7 @@ import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/emulation/mediaQueryInspector.css.js
 var mediaQueryInspector_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1512,22 +1512,22 @@ var MediaQueryInspector = class extends UI2.Widget.Widget {
 };
 var MediaQueryUIModel = class _MediaQueryUIModel {
   cssMedia;
-  minWidthExpressionInternal;
-  maxWidthExpressionInternal;
-  activeInternal;
-  sectionInternal;
-  rawLocationInternal;
+  #minWidthExpression;
+  #maxWidthExpression;
+  #active;
+  #section;
+  #rawLocation;
   constructor(cssMedia, minWidthExpression, maxWidthExpression, active) {
     this.cssMedia = cssMedia;
-    this.minWidthExpressionInternal = minWidthExpression;
-    this.maxWidthExpressionInternal = maxWidthExpression;
-    this.activeInternal = active;
+    this.#minWidthExpression = minWidthExpression;
+    this.#maxWidthExpression = maxWidthExpression;
+    this.#active = active;
     if (maxWidthExpression && !minWidthExpression) {
-      this.sectionInternal = 0;
+      this.#section = 0;
     } else if (minWidthExpression && maxWidthExpression) {
-      this.sectionInternal = 1;
+      this.#section = 1;
     } else {
-      this.sectionInternal = 2;
+      this.#section = 2;
     }
   }
   static createFromMediaQuery(cssMedia, mediaQuery) {
@@ -1613,25 +1613,25 @@ var MediaQueryUIModel = class _MediaQueryUIModel {
     return thisMinLength - otherMinLength || otherMaxLength - thisMaxLength;
   }
   section() {
-    return this.sectionInternal;
+    return this.#section;
   }
   mediaText() {
     return this.cssMedia.text || "";
   }
   rawLocation() {
-    if (!this.rawLocationInternal) {
-      this.rawLocationInternal = this.cssMedia.rawLocation();
+    if (!this.#rawLocation) {
+      this.#rawLocation = this.cssMedia.rawLocation();
     }
-    return this.rawLocationInternal;
+    return this.#rawLocation;
   }
   minWidthExpression() {
-    return this.minWidthExpressionInternal;
+    return this.#minWidthExpression;
   }
   maxWidthExpression() {
-    return this.maxWidthExpressionInternal;
+    return this.#maxWidthExpression;
   }
   active() {
-    return this.activeInternal;
+    return this.#active;
   }
 };
 
@@ -2109,7 +2109,7 @@ var DeviceModeView = class extends UI3.Widget.VBox {
   }
 };
 var Ruler = class extends UI3.Widget.VBox {
-  contentElementInternal;
+  #contentElement;
   horizontal;
   scale;
   count;
@@ -2120,7 +2120,7 @@ var Ruler = class extends UI3.Widget.VBox {
   constructor(horizontal, applyCallback) {
     super({ jslog: `${VisualLogging3.deviceModeRuler().track({ click: true })}` });
     this.element.classList.add("device-mode-ruler");
-    this.contentElementInternal = this.element.createChild("div", "device-mode-ruler-content").createChild("div", "device-mode-ruler-inner");
+    this.#contentElement = this.element.createChild("div", "device-mode-ruler-content").createChild("div", "device-mode-ruler-inner");
     this.horizontal = horizontal;
     this.scale = 1;
     this.count = 0;
@@ -2136,9 +2136,9 @@ var Ruler = class extends UI3.Widget.VBox {
   }
   update() {
     const zoomFactor = UI3.ZoomManager.ZoomManager.instance().zoomFactor();
-    const size = this.horizontal ? this.contentElementInternal.offsetWidth : this.contentElementInternal.offsetHeight;
+    const size = this.horizontal ? this.#contentElement.offsetWidth : this.#contentElement.offsetHeight;
     if (this.scale !== this.renderedScale || zoomFactor !== this.renderedZoomFactor) {
-      this.contentElementInternal.removeChildren();
+      this.#contentElement.removeChildren();
       this.count = 0;
       this.renderedScale = this.scale;
       this.renderedZoomFactor = zoomFactor;
@@ -2163,7 +2163,7 @@ var Ruler = class extends UI3.Widget.VBox {
     }
     for (let i = count; i < this.count; i++) {
       if (!(i % step)) {
-        const lastChild = this.contentElementInternal.lastChild;
+        const lastChild = this.#contentElement.lastChild;
         if (lastChild) {
           lastChild.remove();
         }
@@ -2173,7 +2173,7 @@ var Ruler = class extends UI3.Widget.VBox {
       if (i % step) {
         continue;
       }
-      const marker = this.contentElementInternal.createChild("div", "device-mode-ruler-marker");
+      const marker = this.#contentElement.createChild("div", "device-mode-ruler-marker");
       if (i) {
         if (this.horizontal) {
           marker.style.left = 5 * i * this.scale / zoomFactor + "px";
@@ -2340,7 +2340,7 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/emulation/inspectedPagePlaceholder.css.js
 var inspectedPagePlaceholder_css_default = `/*
- * Copyright 2016 The Chromium Authors. All rights reserved.
+ * Copyright 2016 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

@@ -92,7 +92,7 @@ export declare class SecurityOriginView extends UI.Widget.VBox {
     setSecurityState(newSecurityState: Protocol.Security.SecurityState): void;
 }
 export declare class SecurityDetailsTable {
-    private readonly elementInternal;
+    #private;
     constructor();
     element(): HTMLTableElement;
     addRow(key: string, value: string | Node): void;

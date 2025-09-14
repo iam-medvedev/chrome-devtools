@@ -5,7 +5,7 @@ export declare class ThreadAppender implements TrackAppender {
     readonly appenderName: TrackAppenderName;
     readonly threadType: Trace.Handlers.Threads.ThreadType;
     readonly isOnMainFrame: boolean;
-    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.Handlers.Types.ParsedTrace, processId: Trace.Types.Events.ProcessID, threadId: Trace.Types.Events.ThreadID, threadName: string | null, type: Trace.Handlers.Threads.ThreadType, entries: readonly Trace.Types.Events.Event[], tree: Trace.Helpers.TreeHelpers.TraceEntryTree);
+    constructor(compatibilityBuilder: CompatibilityTracksAppender, parsedTrace: Trace.TraceModel.ParsedTrace, processId: Trace.Types.Events.ProcessID, threadId: Trace.Types.Events.ThreadID, threadName: string | null, type: Trace.Handlers.Threads.ThreadType, entries: readonly Trace.Types.Events.Event[], tree: Trace.Helpers.TreeHelpers.TraceEntryTree);
     processId(): Trace.Types.Events.ProcessID;
     threadId(): Trace.Types.Events.ThreadID;
     /**

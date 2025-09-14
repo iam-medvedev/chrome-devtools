@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -9,7 +9,6 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import thirdPartyTreeViewStyles from './thirdPartyTreeView.css.js';
 import * as TimelineTreeView from './TimelineTreeView.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Unattributed text for an unattributed entity.
@@ -74,7 +73,7 @@ export class ThirdPartyTreeViewWidget extends TimelineTreeView.TimelineTreeView 
         // of visible event types, but also include network events, which by
         // default are not in the set of visible entries (as they are not shown on
         // the main flame chart).
-        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Utils.EntryStyles.visibleTypes().concat(["SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));
+        const filter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes().concat(["SyntheticNetworkRequest" /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */]));
         const node = new Trace.Extras.TraceTree.BottomUpRootNode(relatedEvents, {
             textFilter: this.textFilter(),
             filters: [filter],

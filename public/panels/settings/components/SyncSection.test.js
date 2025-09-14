@@ -1,4 +1,4 @@
-// Copyright 2021 The Chromium Authors. All rights reserved.
+// Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
@@ -7,6 +7,10 @@ import { createFakeSetting, describeWithLocale, updateHostConfig } from '../../.
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as SettingComponents from '../../../ui/components/settings/settings.js';
 import * as PanelComponents from './components.js';
+// TODO(crbug.com/442543412): Add tests for calling `UserBadges.initialize()` and recording an action after
+// the setting is enabled. We currently don't have tests for these because we'll need to re-write them
+// anyways with the widget framework (and using `view.onSettingChanged` kind of approach instead of
+// emitting the change custom event).
 async function renderSyncSection(data) {
     const section = new PanelComponents.SyncSection.SyncSection();
     renderElementIntoDOM(section);
@@ -127,6 +131,8 @@ describeWithLocale('SyncSection', () => {
             updateHostConfig({});
         });
         it('renders the sign-up state when the user does not have a GDP profile', async () => {
+            const gdpClient = Host.GdpClient.GdpClient.instance();
+            sinon.stub(gdpClient, 'getProfile').resolves(null);
             const syncSetting = createFakeSetting('setting', true);
             const receiveBadgesSetting = createFakeSetting('receive-badges', true);
             const { shadowRoot } = await renderSyncSection({
@@ -137,7 +143,6 @@ describeWithLocale('SyncSection', () => {
                 },
                 syncSetting,
                 receiveBadgesSetting,
-                gdpProfile: undefined, // No profile
             });
             const gdpSection = shadowRoot.querySelector('.gdp-profile-container');
             assert.instanceOf(gdpSection, HTMLElement);
@@ -149,9 +154,13 @@ describeWithLocale('SyncSection', () => {
             assert.include(brandHeader.innerText, 'Google Developer Program');
         });
         it('renders the profile details with standard plan', async () => {
+            const gdpClient = Host.GdpClient.GdpClient.instance();
+            sinon.stub(gdpClient, 'getProfile').resolves({
+                name: 'test-profile',
+                activeSubscription: undefined,
+            });
             const syncSetting = createFakeSetting('setting', true);
             const receiveBadgesSetting = createFakeSetting('receive-badges', true);
-            const gdpProfile = { name: 'profile-name' }; // No active subscription
             const { shadowRoot } = await renderSyncSection({
                 syncInfo: {
                     isSyncActive: true,
@@ -160,7 +169,6 @@ describeWithLocale('SyncSection', () => {
                 },
                 syncSetting,
                 receiveBadgesSetting,
-                gdpProfile,
             });
             const gdpSection = shadowRoot.querySelector('.gdp-profile-container');
             assert.instanceOf(gdpSection, HTMLElement);
@@ -197,15 +205,16 @@ describeWithLocale('SyncSection', () => {
         ];
         for (const { tier, expectedText } of subscriptionTiers) {
             it(`renders the profile details with ${expectedText} plan`, async () => {
+                const gdpClient = Host.GdpClient.GdpClient.instance();
+                sinon.stub(gdpClient, 'getProfile').resolves({
+                    name: 'test-profile',
+                    activeSubscription: {
+                        subscriptionTier: tier,
+                        subscriptionStatus: Host.GdpClient.SubscriptionStatus.ENABLED,
+                    },
+                });
                 const syncSetting = createFakeSetting('setting', true);
                 const receiveBadgesSetting = createFakeSetting('receive-badges', true);
-                const gdpProfile = {
-                    name: 'profile-name',
-                    activeSubscription: {
-                        subscriptionStatus: Host.GdpClient.SubscriptionStatus.ENABLED,
-                        subscriptionTier: tier,
-                    },
-                };
                 const { shadowRoot } = await renderSyncSection({
                     syncInfo: {
                         isSyncActive: true,
@@ -214,7 +223,6 @@ describeWithLocale('SyncSection', () => {
                     },
                     syncSetting,
                     receiveBadgesSetting,
-                    gdpProfile,
                 });
                 const gdpSection = shadowRoot.querySelector('.gdp-profile-container');
                 assert.instanceOf(gdpSection, HTMLElement);

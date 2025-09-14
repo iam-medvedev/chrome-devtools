@@ -246,6 +246,7 @@ __export(TraceEvents_exports, {
   isProfileCall: () => isProfileCall,
   isProfileChunk: () => isProfileChunk,
   isRasterTask: () => isRasterTask,
+  isRecalcStyle: () => isRecalcStyle,
   isReceivedDataEvent: () => isReceivedDataEvent,
   isRemoteFontLoaded: () => isRemoteFontLoaded,
   isRenderFrameImplCreateChildFrame: () => isRenderFrameImplCreateChildFrame,
@@ -289,7 +290,6 @@ __export(TraceEvents_exports, {
   isTracingStartedInBrowser: () => isTracingStartedInBrowser,
   isUpdateCounters: () => isUpdateCounters,
   isUpdateLayer: () => isUpdateLayer,
-  isUpdateLayoutTree: () => isUpdateLayoutTree,
   isUserTiming: () => isUserTiming,
   isUserTimingMeasure: () => isUserTimingMeasure,
   isV8Compile: () => isV8Compile,
@@ -466,7 +466,7 @@ var SelectorTimingsKey;
 function isSelectorStats(event) {
   return event.name === "SelectorStats";
 }
-function isUpdateLayoutTree(event) {
+function isRecalcStyle(event) {
   return event.name === "UpdateLayoutTree";
 }
 function isLayout(event) {

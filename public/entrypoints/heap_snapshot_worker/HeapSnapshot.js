@@ -1,32 +1,6 @@
-/*
- * Copyright (C) 2011 Google Inc. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are
- * met:
- *
- *     * Redistributions of source code must retain the above copyright
- * notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above
- * copyright notice, this list of conditions and the following disclaimer
- * in the documentation and/or other materials provided with the
- * distribution.
- *     * Neither the name of Google Inc. nor the names of its
- * contributors may be used to endorse or promote products derived from
- * this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
+// Copyright 2011 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 /* eslint-disable rulesdir/prefer-private-class-members */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -145,7 +119,7 @@ export class HeapSnapshotEdgeIterator {
 }
 export class HeapSnapshotRetainerEdge {
     snapshot;
-    #retainerIndexInternal;
+    #retainerIndex;
     #globalEdgeIndex;
     #retainingNodeIndex;
     #edgeInstance;
@@ -167,7 +141,7 @@ export class HeapSnapshotRetainerEdge {
         return this.edge().nameIndex();
     }
     node() {
-        return this.nodeInternal();
+        return this.#node();
     }
     nodeIndex() {
         if (typeof this.#retainingNodeIndex === 'undefined') {
@@ -176,16 +150,16 @@ export class HeapSnapshotRetainerEdge {
         return this.#retainingNodeIndex;
     }
     retainerIndex() {
-        return this.#retainerIndexInternal;
+        return this.#retainerIndex;
     }
     setRetainerIndex(retainerIndex) {
-        if (retainerIndex === this.#retainerIndexInternal) {
+        if (retainerIndex === this.#retainerIndex) {
             return;
         }
         if (!this.snapshot.retainingEdges || !this.snapshot.retainingNodes) {
             throw new Error('Snapshot does not contain retaining edges or retaining nodes');
         }
-        this.#retainerIndexInternal = retainerIndex;
+        this.#retainerIndex = retainerIndex;
         this.#globalEdgeIndex = this.snapshot.retainingEdges[retainerIndex];
         this.#retainingNodeIndex = this.snapshot.retainingNodes[retainerIndex];
         this.#edgeInstance = null;
@@ -194,7 +168,7 @@ export class HeapSnapshotRetainerEdge {
     set edgeIndex(edgeIndex) {
         this.setRetainerIndex(edgeIndex);
     }
-    nodeInternal() {
+    #node() {
         if (!this.#nodeInstance) {
             this.#nodeInstance = this.snapshot.createNode(this.#retainingNodeIndex);
         }
@@ -210,7 +184,7 @@ export class HeapSnapshotRetainerEdge {
         return this.edge().toString();
     }
     itemIndex() {
-        return this.#retainerIndexInternal;
+        return this.#retainerIndex;
     }
     serialize() {
         const node = this.node();
@@ -643,7 +617,7 @@ export class HeapSnapshot {
     #noDistance = -5;
     rootNodeIndexInternal = 0;
     #snapshotDiffs = {};
-    #aggregatesForDiffInternal;
+    #aggregatesForDiff;
     #aggregates = {};
     #aggregatesSortedFlags = {};
     profile;
@@ -1138,7 +1112,7 @@ export class HeapSnapshot {
             // for class keys.
             aggregates = Object.create(null);
             for (const [classKey, aggregate] of aggregatesMap.entries()) {
-                const newKey = this.classKeyFromClassKeyInternal(classKey);
+                const newKey = this.#classKeyFromClassKey(classKey);
                 aggregates[newKey] = aggregate;
             }
             if (key) {
@@ -1168,8 +1142,8 @@ export class HeapSnapshot {
         return this.#allocationProfile.serializeAllocationStack(allocationNodeId);
     }
     aggregatesForDiff(interfaceDefinitions) {
-        if (this.#aggregatesForDiffInternal?.interfaceDefinitions === interfaceDefinitions) {
-            return this.#aggregatesForDiffInternal.aggregates;
+        if (this.#aggregatesForDiff?.interfaceDefinitions === interfaceDefinitions) {
+            return this.#aggregatesForDiff.aggregates;
         }
         // Temporarily apply the interface definitions from the other snapshot.
         const originalInterfaceDefinitions = this.#interfaceDefinitions;
@@ -1190,7 +1164,7 @@ export class HeapSnapshot {
             }
             result[classKey] = { name: node.className(), indexes, ids, selfSizes };
         }
-        this.#aggregatesForDiffInternal = { interfaceDefinitions, aggregates: result };
+        this.#aggregatesForDiff = { interfaceDefinitions, aggregates: result };
         return result;
     }
     isUserRoot(_node) {
@@ -2200,13 +2174,13 @@ export class HeapSnapshot {
     // Converts an internal class key, suitable for categorizing within this
     // snapshot, to a public class key, which can be used in comparisons
     // between multiple snapshots.
-    classKeyFromClassKeyInternal(key) {
+    #classKeyFromClassKey(key) {
         return typeof key === 'number' ? (',' + this.strings[key]) : key;
     }
     nodeClassKey(snapshotObjectId) {
         const node = this.nodeForSnapshotObjectId(snapshotObjectId);
         if (node) {
-            return this.classKeyFromClassKeyInternal(node.classKeyInternal());
+            return this.#classKeyFromClassKey(node.classKeyInternal());
         }
         return null;
     }
@@ -2367,7 +2341,7 @@ export class HeapSnapshot {
 export class HeapSnapshotItemProvider {
     iterator;
     #indexProvider;
-    #isEmptyInternal;
+    #isEmpty;
     iterationOrder;
     currentComparator;
     #sortedPrefixLength;
@@ -2375,7 +2349,7 @@ export class HeapSnapshotItemProvider {
     constructor(iterator, indexProvider) {
         this.iterator = iterator;
         this.#indexProvider = indexProvider;
-        this.#isEmptyInternal = !iterator.hasNext();
+        this.#isEmpty = !iterator.hasNext();
         this.iterationOrder = null;
         this.currentComparator = null;
         this.#sortedPrefixLength = 0;
@@ -2391,7 +2365,7 @@ export class HeapSnapshotItemProvider {
         }
     }
     isEmpty() {
-        return this.#isEmptyInternal;
+        return this.#isEmpty;
     }
     serializeItemsRange(begin, end) {
         this.createIterationOrder();
@@ -3194,10 +3168,10 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     }
     hasStringName() {
         if (!this.isShortcut()) {
-            return this.hasStringNameInternal();
+            return this.#hasStringName();
         }
         // @ts-expect-error parseInt is successful against numbers.
-        return isNaN(parseInt(this.nameInternal(), 10));
+        return isNaN(parseInt(this.#name(), 10));
     }
     isElement() {
         return this.rawType() === this.snapshot.edgeElementType;
@@ -3218,7 +3192,7 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
         return this.rawType() === this.snapshot.edgeShortcutType;
     }
     name() {
-        const name = this.nameInternal();
+        const name = this.#name();
         if (!this.isShortcut()) {
             return String(name);
         }
@@ -3249,13 +3223,13 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
         }
         return '?' + name + '?';
     }
-    hasStringNameInternal() {
+    #hasStringName() {
         const type = this.rawType();
         const snapshot = this.snapshot;
         return type !== snapshot.edgeElementType && type !== snapshot.edgeHiddenType;
     }
-    nameInternal() {
-        return this.hasStringNameInternal() ? this.snapshot.strings[this.nameOrIndex()] : this.nameOrIndex();
+    #name() {
+        return this.#hasStringName() ? this.snapshot.strings[this.nameOrIndex()] : this.nameOrIndex();
     }
     nameOrIndex() {
         return this.edges.getValue(this.edgeIndex + this.snapshot.edgeNameOffset);
@@ -3264,7 +3238,7 @@ export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
         return this.edges.getValue(this.edgeIndex + this.snapshot.edgeTypeOffset);
     }
     nameIndex() {
-        if (!this.hasStringNameInternal()) {
+        if (!this.#hasStringName()) {
             throw new Error('Edge does not have string name');
         }
         return this.nameOrIndex();

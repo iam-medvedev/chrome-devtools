@@ -7,6 +7,7 @@
         "aiSettingsTab.css.js",
         "frameworkIgnoreListSettingsTab.css.js",
         "keybindsSettingsTab.css.js",
-        "settingsScreen.css.js"
+        "settingsScreen.css.js",
+        "workspaceSettingsTab.css.js"
     ]
 }

@@ -1,7 +1,8 @@
 import { Badge, BadgeAction } from './Badge.js';
 export declare class SpeedsterBadge extends Badge {
-    readonly name = "awards/speedster";
+    readonly name = "profiles/me/awards/developers.google.com%2Fprofile%2Fbadges%2Factivity%2Fchrome-devtools%2Fspeedster";
     readonly title = "Speedster";
     readonly interestedActions: readonly [BadgeAction.PERFORMANCE_INSIGHT_CLICKED];
+    readonly imageUri: string;
     handleAction(_action: BadgeAction): void;
 }

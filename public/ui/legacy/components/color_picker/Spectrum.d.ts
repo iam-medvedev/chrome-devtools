@@ -12,7 +12,6 @@ declare const Spectrum_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.VBox;
 export declare class Spectrum extends Spectrum_base {
     #private;
-    private colorInternal?;
     private gamut;
     private colorElement;
     private colorDragElement;
@@ -61,11 +60,9 @@ export declare class Spectrum extends Spectrum_base {
     private dragElement?;
     private dragHotSpotX?;
     private dragHotSpotY?;
-    private colorNameInternal?;
     private colorFormat;
     private eyeDropperAbortController;
     private isFormatPickerShown;
-    private colorStringInternal?;
     constructor(contrastInfo?: ContrastInfo | null);
     private dragStart;
     private contrastDetailsBackgroundColorPickerToggled;
@@ -74,10 +71,6 @@ export declare class Spectrum extends Spectrum_base {
     private togglePalettePanel;
     private onCloseBtnKeydown;
     private onSliderKeydown;
-    /**
-     * (Suppress warning about preventScroll)
-     */
-    private focusInternal;
     private createPaletteColor;
     private showPalette;
     private showLightnessShades;

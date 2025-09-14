@@ -29,7 +29,7 @@ import * as PanelComponents from "./components/components.js";
 
 // gen/front_end/panels/settings/settingsScreen.css.js
 var settingsScreen_css_default = `/*
- * Copyright (c) 2015 The Chromium Authors. All rights reserved.
+ * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -410,6 +410,7 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
   settingToControl = /* @__PURE__ */ new Map();
   containerElement;
   #updateSyncSectionTimerId = -1;
+  #syncSectionUpdatePromise = null;
   constructor() {
     super({ jslog: `${VisualLogging.pane("preferences")}` });
     this.element.classList.add("settings-tab-container");
@@ -475,15 +476,11 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
       window.clearTimeout(this.#updateSyncSectionTimerId);
       this.#updateSyncSectionTimerId = -1;
     }
-    void Promise.all([
-      new Promise((resolve) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)),
-      Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled ? Host.GdpClient.GdpClient.instance().getProfile() : Promise.resolve(void 0)
-    ]).then(([syncInfo, gdpProfile]) => {
+    this.#syncSectionUpdatePromise = new Promise((resolve) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve)).then((syncInfo) => {
       this.syncSection.data = {
         syncInfo,
         syncSetting: Common.Settings.moduleSetting("sync-preferences"),
-        receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting("receive-gdp-badges"),
-        gdpProfile: gdpProfile ?? void 0
+        receiveBadgesSetting: Common.Settings.Settings.instance().moduleSetting("receive-gdp-badges")
       };
       if (!syncInfo.isSyncActive || !syncInfo.arePreferencesSynced) {
         this.#updateSyncSectionTimerId = window.setTimeout(this.updateSyncSection.bind(this), 500);
@@ -533,6 +530,10 @@ var GenericSettingsTab = class _GenericSettingsTab extends UI.Widget.VBox {
       const element = this.settingToControl.get(setting);
       if (element) {
         PanelUtils.highlightElement(element);
+      } else if (setting.name === "receive-gdp-badges") {
+        void this.#syncSectionUpdatePromise?.then(() => {
+          void this.syncSection.highlightReceiveBadgesSetting();
+        });
       }
     }
   }
@@ -729,382 +730,27 @@ var Revealer = class {
   }
 };
 
-// gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
-var FrameworkIgnoreListSettingsTab_exports = {};
-__export(FrameworkIgnoreListSettingsTab_exports, {
-  FrameworkIgnoreListSettingsTab: () => FrameworkIgnoreListSettingsTab
-});
-import "./../../ui/components/cards/cards.js";
-import * as Common2 from "./../../core/common/common.js";
-import * as i18n3 from "./../../core/i18n/i18n.js";
-import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
-var frameworkIgnoreListSettingsTab_css_default = `/*
- * Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-.ignore-list-option {
-  flex: none;
-  display: flex;
-  align-items: center;
-  height: var(--sys-size-13);
-}
-
-.ignore-list-option devtools-button {
-  cursor: pointer;
-  position: relative;
-  top: var(--sys-size-2);
-  margin-left: var(--sys-size-2);
-}
-
-.add-button {
-  padding: var(--sys-size-5) var(--sys-size-6);
-  align-self: flex-start;
-  flex: none;
-}
-
-.ignore-list {
-  flex: 0 1 auto;
-}
-
-.enable-ignore-listing,
-.ignore-list-item,
-.general-exclusion-group {
-  padding-left: var(--sys-size-4);
-}
-
-.custom-exclusion-group {
-  padding-left: 0;
-  padding-right: 0;
-}
-
-.ignore-list-item {
-  height: var(--sys-size-13);
-  display: flex;
-  align-items: center;
-  position: relative;
-  flex: auto 1 1;
-}
-
-.ignore-list-pattern {
-  flex: auto;
-}
-
-.ignore-list-item > devtools-checkbox {
-  width: 100%;
-}
-
-.ignore-list-item .ignore-list-pattern {
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  user-select: none;
-  color: var(--sys-color-on-surface);
-  overflow: hidden;
-}
-
-.ignore-list-edit-row {
-  flex: none;
-  display: flex;
-  flex-direction: row;
-  margin: 6px 5px;
-  align-items: center;
-}
-
-.ignore-list-edit-row input,
-.ignore-list-edit-row select {
-  width: 100%;
-  text-align: inherit;
-}
-
-.list:has(.ignore-list-empty),
-.list:has(.ignore-list-edit-row),
-.list:has(.ignore-list-item) {
-  border: none;
-}
-
-.editor-container:has(.ignore-list-edit-row) {
-  background: var(--sys-color-surface1);
-  border-radius: 10px;
-}
-
-.ignore-list.list-editing ~ .add-button {
-  display: none;
-}
-
-.devtools-link:has(devtools-icon) {
-  margin-left: 6px;
-}
-
-/*# sourceURL=${import.meta.resolve("./frameworkIgnoreListSettingsTab.css")} */`;
-
-// gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
-var UIStrings2 = {
-  /**
-   * @description Header text content in Framework Ignore List Settings Tab of the Settings for enabling or disabling ignore listing
-   */
-  frameworkIgnoreList: "Ignore listing",
-  /**
-   * @description Checkbox label in Framework Ignore List Settings Tab of the Settings
-   */
-  ignoreListingDescription: "When enabled, the debugger will skip over ignore-listed scripts and will ignore exceptions that only affect them and the Performance panel will collapse matching flamechart items.",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  ignoreListContentScripts: "Content scripts injected by extensions",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  ignoreListAnonymousScripts: "Anonymous scripts from eval or console",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  automaticallyIgnoreListKnownThirdPartyScripts: "Known third-party scripts from source maps",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  enableIgnoreListing: "Enable ignore listing",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  enableIgnoreListingTooltip: "Uncheck to disable all ignore listing",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  generalExclusionRules: "General exclusion rules",
-  /**
-   * @description Text in Framework Ignore List Settings Tab of the Settings
-   */
-  customExclusionRules: "Custom exclusion rules",
-  /**
-   * @description Text of the add pattern button in Framework Ignore List Settings Tab of the Settings
-   */
-  addPattern: "Add regex rule",
-  /**
-   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings
-   */
-  addFilenamePattern: "Add a regular expression rule for the script's URL",
-  /**
-   * @description Pattern title in Framework Ignore List Settings Tab of the Settings
-   * @example {ad.*?} PH1
-   */
-  ignoreScriptsWhoseNamesMatchS: "Ignore scripts whose names match ''{PH1}''",
-  /**
-   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings. It labels the input
-   * field used to add new or edit existing regular expressions that match file names to ignore in the debugger.
-   */
-  pattern: "Add a regular expression rule for the script's URL",
-  /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern must not be empty
-   */
-  patternCannotBeEmpty: "Rule can't be empty",
-  /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern already exits
-   */
-  patternAlreadyExists: "Rule already exists",
-  /**
-   * @description Error message in Framework Ignore List settings pane that declares pattern must be a valid regular expression
-   */
-  patternMustBeAValidRegular: "Rule must be a valid regular expression",
-  /**
-   * @description Text that is usually a hyperlink to more documentation
-   */
-  learnMore: "Learn more"
-};
-var str_2 = i18n3.i18n.registerUIStrings("panels/settings/FrameworkIgnoreListSettingsTab.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var FrameworkIgnoreListSettingsTab = class extends UI2.Widget.VBox {
-  list;
-  setting;
-  editor;
-  constructor() {
-    super({
-      jslog: `${VisualLogging2.pane("blackbox")}`,
-      useShadowDom: true
-    });
-    this.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default, settingsScreen_css_default);
-    const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
-    settingsContent.classList.add("settings-card-container", "ignore-list-settings");
-    const ignoreListingDescription = document.createElement("span");
-    ignoreListingDescription.textContent = i18nString2(UIStrings2.ignoreListingDescription);
-    const enabledSetting = Common2.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
-    const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
-    enableIgnoreListing.appendChild(UI2.SettingsUI.createSettingCheckbox(i18nString2(UIStrings2.enableIgnoreListing), enabledSetting));
-    UI2.Tooltip.Tooltip.install(enableIgnoreListing, i18nString2(UIStrings2.enableIgnoreListingTooltip));
-    const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
-    enableIgnoreListingCard.heading = i18nString2(UIStrings2.frameworkIgnoreList);
-    enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
-    const generalExclusionGroup = this.createSettingGroup();
-    generalExclusionGroup.classList.add("general-exclusion-group");
-    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI2.SettingsUI.createSettingCheckbox(i18nString2(UIStrings2.ignoreListContentScripts), Common2.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
-    const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
-    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(UI2.SettingsUI.createSettingCheckbox(i18nString2(UIStrings2.automaticallyIgnoreListKnownThirdPartyScripts), Common2.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
-    const automaticallyIgnoreLinkButton = new Buttons2.Button.Button();
-    automaticallyIgnoreLinkButton.data = {
-      iconName: "help",
-      variant: "icon",
-      size: "SMALL",
-      jslogContext: "learn-more",
-      title: i18nString2(UIStrings2.learnMore)
-    };
-    automaticallyIgnoreLinkButton.addEventListener("click", () => UI2.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
-    automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
-    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI2.SettingsUI.createSettingCheckbox(i18nString2(UIStrings2.ignoreListAnonymousScripts), Common2.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
-    const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    generalExclusionGroupCard.heading = i18nString2(UIStrings2.generalExclusionRules);
-    generalExclusionGroupCard.append(generalExclusionGroup);
-    const customExclusionGroup = this.createSettingGroup();
-    customExclusionGroup.classList.add("custom-exclusion-group");
-    const customExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    customExclusionGroupCard.heading = i18nString2(UIStrings2.customExclusionRules);
-    customExclusionGroupCard.append(customExclusionGroup);
-    this.list = new UI2.ListWidget.ListWidget(this);
-    this.list.element.classList.add("ignore-list");
-    this.list.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default);
-    const placeholder = document.createElement("div");
-    placeholder.classList.add("ignore-list-empty");
-    this.list.setEmptyPlaceholder(placeholder);
-    this.list.show(customExclusionGroup);
-    const addPatternButton = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.addPattern), this.addButtonClicked.bind(this), { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" });
-    UI2.ARIAUtils.setLabel(addPatternButton, i18nString2(UIStrings2.addFilenamePattern));
-    customExclusionGroup.appendChild(addPatternButton);
-    this.setting = Common2.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
-    this.setting.addChangeListener(this.settingUpdated, this);
-    const enabledChanged = () => {
-      const enabled = enabledSetting.get();
-      ignoreListContentScripts.disabled = !enabled;
-      automaticallyIgnoreList.disabled = !enabled;
-      automaticallyIgnoreLinkButton.disabled = !enabled;
-      ignoreListAnonymousScripts.disabled = !enabled;
-      addPatternButton.disabled = !enabled;
-      this.settingUpdated();
-    };
-    enabledSetting.addChangeListener(enabledChanged);
-    enabledChanged();
-  }
-  wasShown() {
-    super.wasShown();
-    this.settingUpdated();
-  }
-  settingUpdated() {
-    const editable = Common2.Settings.Settings.instance().moduleSetting("enable-ignore-listing").get();
-    this.list.clear();
-    const patterns = this.setting.getAsArray();
-    for (let i = 0; i < patterns.length; ++i) {
-      this.list.appendItem(patterns[i], editable);
-    }
-  }
-  addButtonClicked() {
-    this.list.addNewItem(this.setting.getAsArray().length, { pattern: "", disabled: false });
-  }
-  createSettingGroup() {
-    const group = document.createElement("div");
-    group.classList.add("ignore-list-option-group");
-    UI2.ARIAUtils.markAsGroup(group);
-    return group;
-  }
-  renderItem(item2, editable) {
-    const element = document.createElement("div");
-    const listSetting = this.setting;
-    const checkbox = UI2.UIUtils.CheckboxLabel.createWithStringLiteral(item2.pattern, !item2.disabled, "settings.ignore-list-pattern");
-    const helpText = i18nString2(UIStrings2.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
-    UI2.Tooltip.Tooltip.install(checkbox, helpText);
-    checkbox.ariaLabel = helpText;
-    checkbox.addEventListener("change", inputChanged, false);
-    checkbox.disabled = !editable;
-    element.appendChild(checkbox);
-    element.classList.add("ignore-list-item");
-    return element;
-    function inputChanged() {
-      const disabled = !checkbox.checked;
-      if (item2.disabled !== disabled) {
-        item2.disabled = disabled;
-        item2.disabledForUrl = void 0;
-        listSetting.setAsArray(listSetting.getAsArray());
-      }
-    }
-  }
-  removeItemRequested(_item, index) {
-    const patterns = this.setting.getAsArray();
-    patterns.splice(index, 1);
-    this.setting.setAsArray(patterns);
-  }
-  commitEdit(item2, editor, isNew) {
-    item2.pattern = editor.control("pattern").value.trim();
-    const list = this.setting.getAsArray();
-    if (isNew) {
-      list.push(item2);
-    }
-    this.setting.setAsArray(list);
-  }
-  beginEdit(item2) {
-    const editor = this.createEditor();
-    editor.control("pattern").value = item2.pattern;
-    return editor;
-  }
-  createEditor() {
-    if (this.editor) {
-      return this.editor;
-    }
-    const editor = new UI2.ListWidget.Editor();
-    this.editor = editor;
-    const content = editor.contentElement();
-    const titles = content.createChild("div", "ignore-list-edit-row");
-    titles.createChild("div", "ignore-list-pattern").textContent = i18nString2(UIStrings2.pattern);
-    const fields = content.createChild("div", "ignore-list-edit-row");
-    const pattern = editor.createInput("pattern", "text", "/framework\\.js$", patternValidator.bind(this));
-    UI2.ARIAUtils.setLabel(pattern, i18nString2(UIStrings2.pattern));
-    fields.createChild("div", "ignore-list-pattern").appendChild(pattern);
-    return editor;
-    function patternValidator(_item, index, input) {
-      const pattern2 = input.value.trim();
-      const patterns = this.setting.getAsArray();
-      if (!pattern2.length) {
-        return { valid: false, errorMessage: i18nString2(UIStrings2.patternCannotBeEmpty) };
-      }
-      for (let i = 0; i < patterns.length; ++i) {
-        if (i !== index && patterns[i].pattern === pattern2) {
-          return { valid: false, errorMessage: i18nString2(UIStrings2.patternAlreadyExists) };
-        }
-      }
-      let regex;
-      try {
-        regex = new RegExp(pattern2);
-      } catch {
-      }
-      if (!regex) {
-        return { valid: false, errorMessage: i18nString2(UIStrings2.patternMustBeAValidRegular) };
-      }
-      return { valid: true, errorMessage: void 0 };
-    }
-  }
-};
-
 // gen/front_end/panels/settings/AISettingsTab.js
 var AISettingsTab_exports = {};
 __export(AISettingsTab_exports, {
   AISettingsTab: () => AISettingsTab
 });
-import * as Common3 from "./../../core/common/common.js";
+import * as Common2 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
-import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Input from "./../../ui/components/input/input.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Switch from "./../../ui/components/switch/switch.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/aiSettingsTab.css.js
 var aiSettingsTab_css_default = `/*
- * Copyright 2024 The Chromium Authors. All rights reserved.
+ * Copyright 2024 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -1296,7 +942,7 @@ header {
 
 // gen/front_end/panels/settings/AISettingsTab.js
 var { html: html2, Directives: { ifDefined, classMap } } = Lit;
-var UIStrings3 = {
+var UIStrings2 = {
   /**
    * @description Header text for for a list of things to consider in the context of generative AI features
    */
@@ -1468,8 +1114,8 @@ var UIStrings3 = {
    */
   enableAiCodeSuggestions: "Enable AI code suggestions"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_2 = i18n3.i18n.registerUIStrings("panels/settings/AISettingsTab.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
   #shadow = this.attachShadow({ mode: "open" });
   #consoleInsightsSetting;
@@ -1484,20 +1130,20 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
   constructor() {
     super();
     try {
-      this.#consoleInsightsSetting = Common3.Settings.Settings.instance().moduleSetting("console-insights-enabled");
+      this.#consoleInsightsSetting = Common2.Settings.Settings.instance().moduleSetting("console-insights-enabled");
     } catch {
       this.#consoleInsightsSetting = void 0;
     }
     try {
-      this.#aiAssistanceSetting = Common3.Settings.Settings.instance().moduleSetting("ai-assistance-enabled");
+      this.#aiAssistanceSetting = Common2.Settings.Settings.instance().moduleSetting("ai-assistance-enabled");
     } catch {
       this.#aiAssistanceSetting = void 0;
     }
     if (Root2.Runtime.hostConfig.devToolsAiGeneratedTimelineLabels?.enabled) {
-      this.#aiAnnotationsSetting = Common3.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
+      this.#aiAnnotationsSetting = Common2.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
     }
     if (Root2.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled) {
-      this.#aiCodeCompletionSetting = Common3.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
+      this.#aiCodeCompletionSetting = Common2.Settings.Settings.instance().createSetting("ai-code-completion-enabled", false);
     }
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     this.#initSettings();
@@ -1514,17 +1160,17 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     const noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     if (this.#consoleInsightsSetting) {
       const consoleInsightsData = {
-        settingName: i18n5.i18n.lockedString("Console Insights"),
+        settingName: i18n3.i18n.lockedString("Console Insights"),
         iconName: "lightbulb-spark",
-        settingDescription: i18nString3(UIStrings3.helpUnderstandConsole),
-        enableSettingText: i18nString3(UIStrings3.enableConsoleInsights),
+        settingDescription: i18nString2(UIStrings2.helpUnderstandConsole),
+        enableSettingText: i18nString2(UIStrings2.enableConsoleInsights),
         settingItems: [
-          { iconName: "lightbulb", text: i18nString3(UIStrings3.explainConsole) },
-          { iconName: "code", text: i18nString3(UIStrings3.receiveSuggestions) }
+          { iconName: "lightbulb", text: i18nString2(UIStrings2.explainConsole) },
+          { iconName: "code", text: i18nString2(UIStrings2.receiveSuggestions) }
         ],
         toConsiderSettingItems: [{
           iconName: "google",
-          text: noLogging ? i18nString3(UIStrings3.consoleInsightsSendsDataNoLogging) : i18nString3(UIStrings3.consoleInsightsSendsData)
+          text: noLogging ? i18nString2(UIStrings2.consoleInsightsSendsDataNoLogging) : i18nString2(UIStrings2.consoleInsightsSendsData)
         }],
         learnMoreLink: {
           url: "https://developer.chrome.com/docs/devtools/console/understand-messages",
@@ -1539,17 +1185,17 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     if (this.#aiAssistanceSetting) {
       const aiAssistanceData = {
-        settingName: i18n5.i18n.lockedString("AI assistance"),
+        settingName: i18n3.i18n.lockedString("AI assistance"),
         iconName: "smart-assistant",
         settingDescription: this.#getAiAssistanceSettingDescription(),
-        enableSettingText: i18nString3(UIStrings3.enableAiAssistance),
+        enableSettingText: i18nString2(UIStrings2.enableAiAssistance),
         settingItems: [
           { iconName: "info", text: this.#getAiAssistanceSettingInfo() },
-          { iconName: "pen-spark", text: i18nString3(UIStrings3.receiveStylingSuggestions) }
+          { iconName: "pen-spark", text: i18nString2(UIStrings2.receiveStylingSuggestions) }
         ],
         toConsiderSettingItems: [{
           iconName: "google",
-          text: noLogging ? i18nString3(UIStrings3.freestylerSendsDataNoLogging) : i18nString3(UIStrings3.freestylerSendsData)
+          text: noLogging ? i18nString2(UIStrings2.freestylerSendsDataNoLogging) : i18nString2(UIStrings2.freestylerSendsData)
         }],
         learnMoreLink: {
           url: "https://developer.chrome.com/docs/devtools/ai-assistance",
@@ -1564,16 +1210,16 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     if (this.#aiAnnotationsSetting) {
       const aiAnnotationsData = {
-        settingName: i18n5.i18n.lockedString("Auto annotations"),
+        settingName: i18n3.i18n.lockedString("Auto annotations"),
         iconName: "pen-spark",
-        settingDescription: i18nString3(UIStrings3.aIAnnotationsFeatureDescription),
-        enableSettingText: i18nString3(UIStrings3.enableAiSuggestedAnnotations),
+        settingDescription: i18nString2(UIStrings2.aIAnnotationsFeatureDescription),
+        enableSettingText: i18nString2(UIStrings2.enableAiSuggestedAnnotations),
         settingItems: [
-          { iconName: "label-auto", text: i18nString3(UIStrings3.helpAnnotatePerformance) }
+          { iconName: "label-auto", text: i18nString2(UIStrings2.helpAnnotatePerformance) }
         ],
         toConsiderSettingItems: [{
           iconName: "google",
-          text: noLogging ? i18nString3(UIStrings3.generatedAiAnnotationsSendDataNoLogging) : i18nString3(UIStrings3.generatedAiAnnotationsSendData)
+          text: noLogging ? i18nString2(UIStrings2.generatedAiAnnotationsSendDataNoLogging) : i18nString2(UIStrings2.generatedAiAnnotationsSendData)
         }],
         learnMoreLink: {
           url: "https://developer.chrome.com/docs/devtools/performance/annotations#auto-annotations",
@@ -1588,14 +1234,14 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     if (this.#aiCodeCompletionSetting) {
       const aiCodeCompletionData = {
-        settingName: i18n5.i18n.lockedString("Code suggestions"),
+        settingName: i18n3.i18n.lockedString("Code suggestions"),
         iconName: "text-analysis",
-        settingDescription: i18nString3(UIStrings3.helpUnderstandCodeSuggestions),
-        enableSettingText: i18nString3(UIStrings3.enableAiCodeSuggestions),
-        settingItems: [{ iconName: "code", text: i18nString3(UIStrings3.asYouTypeCodeSuggestions) }],
+        settingDescription: i18nString2(UIStrings2.helpUnderstandCodeSuggestions),
+        enableSettingText: i18nString2(UIStrings2.enableAiCodeSuggestions),
+        settingItems: [{ iconName: "code", text: i18nString2(UIStrings2.asYouTypeCodeSuggestions) }],
         toConsiderSettingItems: [{
           iconName: "google",
-          text: noLogging ? i18nString3(UIStrings3.codeSuggestionsSendDataNoLogging) : i18nString3(UIStrings3.codeSuggestionsSendData)
+          text: noLogging ? i18nString2(UIStrings2.codeSuggestionsSendDataNoLogging) : i18nString2(UIStrings2.codeSuggestionsSendData)
         }],
         // TODO: Add a relevant link
         learnMoreLink: { url: "", linkJSLogContext: "learn-more.code-completion" },
@@ -1617,28 +1263,28 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
   #getAiAssistanceSettingDescription() {
     const { hostConfig } = Root2.Runtime;
     if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-      return i18nString3(UIStrings3.helpUnderstandStylingNetworkPerformanceAndFile);
+      return i18nString2(UIStrings2.helpUnderstandStylingNetworkPerformanceAndFile);
     }
     if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-      return i18nString3(UIStrings3.helpUnderstandStylingNetworkAndFile);
+      return i18nString2(UIStrings2.helpUnderstandStylingNetworkAndFile);
     }
     if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-      return i18nString3(UIStrings3.helpUnderstandStylingAndNetworkRequest);
+      return i18nString2(UIStrings2.helpUnderstandStylingAndNetworkRequest);
     }
-    return i18nString3(UIStrings3.helpUnderstandStyling);
+    return i18nString2(UIStrings2.helpUnderstandStyling);
   }
   #getAiAssistanceSettingInfo() {
     const { hostConfig } = Root2.Runtime;
     if (hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-      return i18nString3(UIStrings3.explainStylingNetworkPerformanceAndFile);
+      return i18nString2(UIStrings2.explainStylingNetworkPerformanceAndFile);
     }
     if (hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-      return i18nString3(UIStrings3.explainStylingNetworkAndFile);
+      return i18nString2(UIStrings2.explainStylingNetworkAndFile);
     }
     if (hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-      return i18nString3(UIStrings3.explainStylingAndNetworkRequest);
+      return i18nString2(UIStrings2.explainStylingAndNetworkRequest);
     }
-    return i18nString3(UIStrings3.explainStyling);
+    return i18nString2(UIStrings2.explainStyling);
   }
   #expandSetting(setting) {
     const settingData = this.#settingToParams.get(setting);
@@ -1663,9 +1309,9 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     }
     if (setting.name === "console-insights-enabled") {
       if (oldSettingValue) {
-        Common3.Settings.Settings.instance().createLocalSetting("console-insights-onboarding-finished", false).set(false);
+        Common2.Settings.Settings.instance().createLocalSetting("console-insights-onboarding-finished", false).set(false);
       } else {
-        Common3.Settings.Settings.instance().createSetting(
+        Common2.Settings.Settings.instance().createSetting(
           "console-insights-skip-reminder",
           true,
           "Session"
@@ -1687,22 +1333,22 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     `;
   }
   #renderSharedDisclaimer() {
-    const tosLink = UI3.XLink.XLink.create("https://policies.google.com/terms", i18nString3(UIStrings3.termsOfService), void 0, void 0, "terms-of-service");
-    const privacyNoticeLink = UI3.XLink.XLink.create("https://policies.google.com/privacy", i18nString3(UIStrings3.privacyNotice), void 0, void 0, "privacy-notice");
+    const tosLink = UI2.XLink.XLink.create("https://policies.google.com/terms", i18nString2(UIStrings2.termsOfService), void 0, void 0, "terms-of-service");
+    const privacyNoticeLink = UI2.XLink.XLink.create("https://policies.google.com/privacy", i18nString2(UIStrings2.privacyNotice), void 0, void 0, "privacy-notice");
     const noLogging = Root2.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue === Root2.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
     const bulletPoints = [
-      { icon: "psychiatry", text: i18nString3(UIStrings3.experimentalFeatures) },
+      { icon: "psychiatry", text: i18nString2(UIStrings2.experimentalFeatures) },
       {
         icon: "google",
-        text: noLogging ? i18nString3(UIStrings3.sendsDataToGoogleNoLogging) : i18nString3(UIStrings3.sendsDataToGoogle)
+        text: noLogging ? i18nString2(UIStrings2.sendsDataToGoogleNoLogging) : i18nString2(UIStrings2.sendsDataToGoogle)
       },
       {
         icon: "corporate-fare",
-        text: noLogging ? i18nString3(UIStrings3.dataCollectionNoLogging) : i18nString3(UIStrings3.dataCollection)
+        text: noLogging ? i18nString2(UIStrings2.dataCollectionNoLogging) : i18nString2(UIStrings2.dataCollection)
       },
       {
         icon: "policy",
-        text: html2`${i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.termsOfServicePrivacyNotice, {
+        text: html2`${i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.termsOfServicePrivacyNotice, {
           PH1: tosLink,
           PH2: privacyNoticeLink
         })}`
@@ -1710,8 +1356,8 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     ];
     return html2`
       <div class="shared-disclaimer">
-        <h2>${i18nString3(UIStrings3.boostYourProductivity)}</h2>
-        <h3 class="disclaimer-list-header">${i18nString3(UIStrings3.thingsToConsider)}</h3>
+        <h2>${i18nString2(UIStrings2.boostYourProductivity)}</h2>
+        <h3 class="disclaimer-list-header">${i18nString2(UIStrings2.thingsToConsider)}</h3>
         <div class="disclaimer-list">
           ${bulletPoints.map((item2) => this.#renderSharedDisclaimerItem(item2.icon, item2.text))}
         </div>
@@ -1752,7 +1398,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
         <div class="dropdown centered">
           <devtools-button
             .data=${{
-      title: settingData.settingExpandState.isSettingExpanded ? i18nString3(UIStrings3.showLess) : i18nString3(UIStrings3.showMore),
+      title: settingData.settingExpandState.isSettingExpanded ? i18nString2(UIStrings2.showLess) : i18nString2(UIStrings2.showMore),
       size: "SMALL",
       iconName: settingData.settingExpandState.isSettingExpanded ? "chevron-up" : "chevron-down",
       variant: "icon",
@@ -1777,19 +1423,19 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
       <div class=${classMap(detailsClasses)}>
         <div class="overflow-hidden">
           <div class="expansion-grid">
-            <h3 class="expansion-grid-whole-row">${i18nString3(UIStrings3.whenOn)}</h3>
+            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.whenOn)}</h3>
             ${settingData.settingItems.map((item2) => this.#renderSettingItem(item2))}
-            <h3 class="expansion-grid-whole-row">${i18nString3(UIStrings3.thingsToConsider)}</h3>
+            <h3 class="expansion-grid-whole-row">${i18nString2(UIStrings2.thingsToConsider)}</h3>
             ${settingData.toConsiderSettingItems.map((item2) => this.#renderSettingItem(item2))}
             <div class="expansion-grid-whole-row">
               <x-link
                 href=${settingData.learnMoreLink.url}
                 class="link"
                 tabindex=${tabindex}
-                jslog=${VisualLogging3.link(settingData.learnMoreLink.linkJSLogContext).track({
+                jslog=${VisualLogging2.link(settingData.learnMoreLink.linkJSLogContext).track({
       click: true
     })}
-              >${i18nString3(UIStrings3.learnMore)}</x-link>
+              >${i18nString2(UIStrings2.learnMore)}</x-link>
             </div>
           </div>
         </div>
@@ -1814,7 +1460,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     Lit.render(html2`
       <style>${Input.checkboxStyles}</style>
       <style>${aiSettingsTab_css_default}</style>
-      <div class="settings-container-wrapper" jslog=${VisualLogging3.pane("chrome-ai")}>
+      <div class="settings-container-wrapper" jslog=${VisualLogging2.pane("chrome-ai")}>
         ${this.#renderSharedDisclaimer()}
         ${this.#settingToParams.size > 0 ? html2`
           ${disabledReasons.length ? this.#renderDisabledExplainer(disabledReasons) : Lit.nothing}
@@ -1827,6 +1473,361 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
   }
 };
 customElements.define("devtools-settings-ai-settings-tab", AISettingsTab);
+
+// gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
+var FrameworkIgnoreListSettingsTab_exports = {};
+__export(FrameworkIgnoreListSettingsTab_exports, {
+  FrameworkIgnoreListSettingsTab: () => FrameworkIgnoreListSettingsTab
+});
+import "./../../ui/components/cards/cards.js";
+import * as Common3 from "./../../core/common/common.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
+var frameworkIgnoreListSettingsTab_css_default = `/*
+ * Copyright 2015 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.ignore-list-option {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: var(--sys-size-13);
+}
+
+.ignore-list-option devtools-button {
+  cursor: pointer;
+  position: relative;
+  top: var(--sys-size-2);
+  margin-left: var(--sys-size-2);
+}
+
+.add-button {
+  padding: var(--sys-size-5) var(--sys-size-6);
+  align-self: flex-start;
+  flex: none;
+}
+
+.ignore-list {
+  flex: 0 1 auto;
+}
+
+.enable-ignore-listing,
+.ignore-list-item,
+.general-exclusion-group {
+  padding-left: var(--sys-size-4);
+}
+
+.custom-exclusion-group {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.ignore-list-item {
+  height: var(--sys-size-13);
+  display: flex;
+  align-items: center;
+  position: relative;
+  flex: auto 1 1;
+}
+
+.ignore-list-pattern {
+  flex: auto;
+}
+
+.ignore-list-item > devtools-checkbox {
+  width: 100%;
+}
+
+.ignore-list-item .ignore-list-pattern {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  user-select: none;
+  color: var(--sys-color-on-surface);
+  overflow: hidden;
+}
+
+.ignore-list-edit-row {
+  flex: none;
+  display: flex;
+  flex-direction: row;
+  margin: 6px 5px;
+  align-items: center;
+}
+
+.ignore-list-edit-row input,
+.ignore-list-edit-row select {
+  width: 100%;
+  text-align: inherit;
+}
+
+.list:has(.ignore-list-empty),
+.list:has(.ignore-list-edit-row),
+.list:has(.ignore-list-item) {
+  border: none;
+}
+
+.editor-container:has(.ignore-list-edit-row) {
+  background: var(--sys-color-surface1);
+  border-radius: 10px;
+}
+
+.ignore-list.list-editing ~ .add-button {
+  display: none;
+}
+
+.devtools-link:has(devtools-icon) {
+  margin-left: 6px;
+}
+
+/*# sourceURL=${import.meta.resolve("./frameworkIgnoreListSettingsTab.css")} */`;
+
+// gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
+var UIStrings3 = {
+  /**
+   * @description Header text content in Framework Ignore List Settings Tab of the Settings for enabling or disabling ignore listing
+   */
+  frameworkIgnoreList: "Ignore listing",
+  /**
+   * @description Checkbox label in Framework Ignore List Settings Tab of the Settings
+   */
+  ignoreListingDescription: "When enabled, the debugger will skip over ignore-listed scripts and will ignore exceptions that only affect them and the Performance panel will collapse matching flamechart items.",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  ignoreListContentScripts: "Content scripts injected by extensions",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  ignoreListAnonymousScripts: "Anonymous scripts from eval or console",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  automaticallyIgnoreListKnownThirdPartyScripts: "Known third-party scripts from source maps",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  enableIgnoreListing: "Enable ignore listing",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  enableIgnoreListingTooltip: "Uncheck to disable all ignore listing",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  generalExclusionRules: "General exclusion rules",
+  /**
+   * @description Text in Framework Ignore List Settings Tab of the Settings
+   */
+  customExclusionRules: "Custom exclusion rules",
+  /**
+   * @description Text of the add pattern button in Framework Ignore List Settings Tab of the Settings
+   */
+  addPattern: "Add regex rule",
+  /**
+   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings
+   */
+  addFilenamePattern: "Add a regular expression rule for the script's URL",
+  /**
+   * @description Pattern title in Framework Ignore List Settings Tab of the Settings
+   * @example {ad.*?} PH1
+   */
+  ignoreScriptsWhoseNamesMatchS: "Ignore scripts whose names match ''{PH1}''",
+  /**
+   * @description Aria accessible name in Framework Ignore List Settings Tab of the Settings. It labels the input
+   * field used to add new or edit existing regular expressions that match file names to ignore in the debugger.
+   */
+  pattern: "Add a regular expression rule for the script's URL",
+  /**
+   * @description Error message in Framework Ignore List settings pane that declares pattern must not be empty
+   */
+  patternCannotBeEmpty: "Rule can't be empty",
+  /**
+   * @description Error message in Framework Ignore List settings pane that declares pattern already exits
+   */
+  patternAlreadyExists: "Rule already exists",
+  /**
+   * @description Error message in Framework Ignore List settings pane that declares pattern must be a valid regular expression
+   */
+  patternMustBeAValidRegular: "Rule must be a valid regular expression",
+  /**
+   * @description Text that is usually a hyperlink to more documentation
+   */
+  learnMore: "Learn more"
+};
+var str_3 = i18n5.i18n.registerUIStrings("panels/settings/FrameworkIgnoreListSettingsTab.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
+  list;
+  setting;
+  editor;
+  constructor() {
+    super({
+      jslog: `${VisualLogging3.pane("blackbox")}`,
+      useShadowDom: true
+    });
+    this.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default, settingsScreen_css_default);
+    const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
+    settingsContent.classList.add("settings-card-container", "ignore-list-settings");
+    const ignoreListingDescription = document.createElement("span");
+    ignoreListingDescription.textContent = i18nString3(UIStrings3.ignoreListingDescription);
+    const enabledSetting = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
+    const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
+    enableIgnoreListing.appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.enableIgnoreListing), enabledSetting));
+    UI3.Tooltip.Tooltip.install(enableIgnoreListing, i18nString3(UIStrings3.enableIgnoreListingTooltip));
+    const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
+    enableIgnoreListingCard.heading = i18nString3(UIStrings3.frameworkIgnoreList);
+    enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
+    const generalExclusionGroup = this.createSettingGroup();
+    generalExclusionGroup.classList.add("general-exclusion-group");
+    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
+    const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
+    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
+    const automaticallyIgnoreLinkButton = new Buttons3.Button.Button();
+    automaticallyIgnoreLinkButton.data = {
+      iconName: "help",
+      variant: "icon",
+      size: "SMALL",
+      jslogContext: "learn-more",
+      title: i18nString3(UIStrings3.learnMore)
+    };
+    automaticallyIgnoreLinkButton.addEventListener("click", () => UI3.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
+    automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
+    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
+    const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
+    generalExclusionGroupCard.heading = i18nString3(UIStrings3.generalExclusionRules);
+    generalExclusionGroupCard.append(generalExclusionGroup);
+    const customExclusionGroup = this.createSettingGroup();
+    customExclusionGroup.classList.add("custom-exclusion-group");
+    const customExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
+    customExclusionGroupCard.heading = i18nString3(UIStrings3.customExclusionRules);
+    customExclusionGroupCard.append(customExclusionGroup);
+    this.list = new UI3.ListWidget.ListWidget(this);
+    this.list.element.classList.add("ignore-list");
+    this.list.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default);
+    const placeholder = document.createElement("div");
+    placeholder.classList.add("ignore-list-empty");
+    this.list.setEmptyPlaceholder(placeholder);
+    this.list.show(customExclusionGroup);
+    const addPatternButton = UI3.UIUtils.createTextButton(i18nString3(UIStrings3.addPattern), this.addButtonClicked.bind(this), { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" });
+    UI3.ARIAUtils.setLabel(addPatternButton, i18nString3(UIStrings3.addFilenamePattern));
+    customExclusionGroup.appendChild(addPatternButton);
+    this.setting = Common3.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
+    this.setting.addChangeListener(this.settingUpdated, this);
+    const enabledChanged = () => {
+      const enabled = enabledSetting.get();
+      ignoreListContentScripts.disabled = !enabled;
+      automaticallyIgnoreList.disabled = !enabled;
+      automaticallyIgnoreLinkButton.disabled = !enabled;
+      ignoreListAnonymousScripts.disabled = !enabled;
+      addPatternButton.disabled = !enabled;
+      this.settingUpdated();
+    };
+    enabledSetting.addChangeListener(enabledChanged);
+    enabledChanged();
+  }
+  wasShown() {
+    super.wasShown();
+    this.settingUpdated();
+  }
+  settingUpdated() {
+    const editable = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing").get();
+    this.list.clear();
+    const patterns = this.setting.getAsArray();
+    for (let i = 0; i < patterns.length; ++i) {
+      this.list.appendItem(patterns[i], editable);
+    }
+  }
+  addButtonClicked() {
+    this.list.addNewItem(this.setting.getAsArray().length, { pattern: "", disabled: false });
+  }
+  createSettingGroup() {
+    const group = document.createElement("div");
+    group.classList.add("ignore-list-option-group");
+    UI3.ARIAUtils.markAsGroup(group);
+    return group;
+  }
+  renderItem(item2, editable) {
+    const element = document.createElement("div");
+    const listSetting = this.setting;
+    const checkbox = UI3.UIUtils.CheckboxLabel.createWithStringLiteral(item2.pattern, !item2.disabled, "settings.ignore-list-pattern");
+    const helpText = i18nString3(UIStrings3.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
+    UI3.Tooltip.Tooltip.install(checkbox, helpText);
+    checkbox.ariaLabel = helpText;
+    checkbox.addEventListener("change", inputChanged, false);
+    checkbox.disabled = !editable;
+    element.appendChild(checkbox);
+    element.classList.add("ignore-list-item");
+    return element;
+    function inputChanged() {
+      const disabled = !checkbox.checked;
+      if (item2.disabled !== disabled) {
+        item2.disabled = disabled;
+        item2.disabledForUrl = void 0;
+        listSetting.setAsArray(listSetting.getAsArray());
+      }
+    }
+  }
+  removeItemRequested(_item, index) {
+    const patterns = this.setting.getAsArray();
+    patterns.splice(index, 1);
+    this.setting.setAsArray(patterns);
+  }
+  commitEdit(item2, editor, isNew) {
+    item2.pattern = editor.control("pattern").value.trim();
+    const list = this.setting.getAsArray();
+    if (isNew) {
+      list.push(item2);
+    }
+    this.setting.setAsArray(list);
+  }
+  beginEdit(item2) {
+    const editor = this.createEditor();
+    editor.control("pattern").value = item2.pattern;
+    return editor;
+  }
+  createEditor() {
+    if (this.editor) {
+      return this.editor;
+    }
+    const editor = new UI3.ListWidget.Editor();
+    this.editor = editor;
+    const content = editor.contentElement();
+    const titles = content.createChild("div", "ignore-list-edit-row");
+    titles.createChild("div", "ignore-list-pattern").textContent = i18nString3(UIStrings3.pattern);
+    const fields = content.createChild("div", "ignore-list-edit-row");
+    const pattern = editor.createInput("pattern", "text", "/framework\\.js$", patternValidator.bind(this));
+    UI3.ARIAUtils.setLabel(pattern, i18nString3(UIStrings3.pattern));
+    fields.createChild("div", "ignore-list-pattern").appendChild(pattern);
+    return editor;
+    function patternValidator(_item, index, input) {
+      const pattern2 = input.value.trim();
+      const patterns = this.setting.getAsArray();
+      if (!pattern2.length) {
+        return { valid: false, errorMessage: i18nString3(UIStrings3.patternCannotBeEmpty) };
+      }
+      for (let i = 0; i < patterns.length; ++i) {
+        if (i !== index && patterns[i].pattern === pattern2) {
+          return { valid: false, errorMessage: i18nString3(UIStrings3.patternAlreadyExists) };
+        }
+      }
+      let regex;
+      try {
+        regex = new RegExp(pattern2);
+      } catch {
+      }
+      if (!regex) {
+        return { valid: false, errorMessage: i18nString3(UIStrings3.patternMustBeAValidRegular) };
+      }
+      return { valid: true, errorMessage: void 0 };
+    }
+  }
+};
 
 // gen/front_end/panels/settings/KeybindsSettingsTab.js
 var KeybindsSettingsTab_exports = {};
@@ -1846,7 +1847,7 @@ import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/keybindsSettingsTab.css.js
 var keybindsSettingsTab_css_default = `/*
- * Copyright 2020 The Chromium Authors. All rights reserved.
+ * Copyright 2020 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -2215,20 +2216,20 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
   updateSelectedItemARIA(_fromElement, _toElement) {
     return true;
   }
-  startEditing(action) {
-    this.list.selectItem(action);
+  startEditing(action2) {
+    this.list.selectItem(action2);
     if (this.editingItem) {
       this.stopEditing(this.editingItem);
     }
     UI4.UIUtils.markBeingEdited(this.list.element, true);
-    this.editingItem = action;
-    this.list.refreshItem(action);
+    this.editingItem = action2;
+    this.list.refreshItem(action2);
   }
-  stopEditing(action) {
+  stopEditing(action2) {
     UI4.UIUtils.markBeingEdited(this.list.element, false);
     this.editingItem = null;
     this.editingRow = null;
-    this.list.refreshItem(action);
+    this.list.refreshItem(action2);
     this.focus();
   }
   createListItems() {
@@ -2249,15 +2250,15 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
     });
     const items = [];
     let currentCategory;
-    actions.forEach((action) => {
-      if (action.id() === "elements.toggle-element-search") {
+    actions.forEach((action2) => {
+      if (action2.id() === "elements.toggle-element-search") {
         return;
       }
-      if (currentCategory !== action.category()) {
-        items.push(action.category());
+      if (currentCategory !== action2.category()) {
+        items.push(action2.category());
       }
-      items.push(action);
-      currentCategory = action.category();
+      items.push(action2);
+      currentCategory = action2.category();
     });
     return items;
   }
@@ -2557,9 +2558,9 @@ var ShortcutListItem = class {
         if (!UI4.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
           return;
         }
-        const action = UI4.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
-        const actionTitle = action.title();
-        const actionCategory = action.category();
+        const action2 = UI4.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
+        const actionTitle = action2.title();
+        const actionCategory = action2.category();
         errorMessageElement.textContent = i18nString4(UIStrings4.thisShortcutIsInUseByS, { PH1: actionCategory, PH2: actionTitle });
         return;
       }
@@ -2568,10 +2569,186 @@ var ShortcutListItem = class {
     });
   }
 };
+
+// gen/front_end/panels/settings/WorkspaceSettingsTab.js
+var WorkspaceSettingsTab_exports = {};
+__export(WorkspaceSettingsTab_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  WorkspaceSettingsTab: () => WorkspaceSettingsTab
+});
+import "./../../ui/legacy/legacy.js";
+import "./../../ui/components/buttons/buttons.js";
+import "./../../ui/components/cards/cards.js";
+import * as Common5 from "./../../core/common/common.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as Persistence from "./../../models/persistence/persistence.js";
+import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
+import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
+import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+
+// gen/front_end/panels/settings/workspaceSettingsTab.css.js
+var workspaceSettingsTab_css_default = `/*
+ * Copyright 2017 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  .mappings-info,
+  .folder-exclude-pattern {
+    height: var(--settings-single-item-height);
+  }
+
+  .mapping-view-container {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  .folder-exclude-pattern {
+    display: flex;
+    align-items: center;
+
+    & > input {
+      flex: 1;
+    }
+  }
+
+  label {
+    padding-bottom: 0;
+  }
+
+  .mappings-info {
+    border: none;
+  }
+
+  .add-button-container {
+    max-width: var(--sys-size-35);
+    margin-left: var(--sys-size-8);
+    width: 100%;
+
+    & .add-folder {
+      min-width: var(--sys-size-31);
+      max-width: var(--sys-size-35);
+    }
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./workspaceSettingsTab.css")} */`;
+
+// gen/front_end/panels/settings/WorkspaceSettingsTab.js
+var UIStrings5 = {
+  /**
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  workspace: "Workspace",
+  /**
+   * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  mappingsAreInferredAutomatically: "Mappings are inferred automatically.",
+  /**
+   * @description Text of the add button in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  addFolder: "Add folder",
+  /**
+   * @description Label element text content in Workspace Settings Tab of the Workspace settings in Settings
+   */
+  folderExcludePattern: "Exclude from workspace",
+  /**
+   * @description Label for an item to remove something
+   */
+  remove: "Remove"
+};
+var str_5 = i18n9.i18n.registerUIStrings("panels/settings/WorkspaceSettingsTab.ts", UIStrings5);
+var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var DEFAULT_VIEW = (input, _output, target) => {
+  render3(html3`
+    <style>${workspaceSettingsTab_css_default}</style>
+    <div class="settings-card-container-wrapper" jslog=${VisualLogging5.pane("workspace")}>
+      <div class="settings-card-container">
+        <devtools-card heading=${i18nString5(UIStrings5.workspace)}>
+          <div class="folder-exclude-pattern">
+            <label for="workspace-setting-folder-exclude-pattern">${i18nString5(UIStrings5.folderExcludePattern)}</label>
+            <input
+              class="harmony-input"
+              jslog=${VisualLogging5.textField().track({ keydown: "Enter", change: true }).context(input.excludePatternSetting.name)}
+              ${UI5.SettingsUI.bindToSetting(input.excludePatternSetting)}
+              id="workspace-setting-folder-exclude-pattern"></input>
+          </div>
+          <div class="mappings-info">${i18nString5(UIStrings5.mappingsAreInferredAutomatically)}</div>
+        </devtools-card>
+        ${input.fileSystems.map((fileSystem) => html3`
+          <devtools-card heading=${fileSystem.displayName}>
+            <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
+            <div class="mapping-view-container">
+              <devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(Persistence.EditFileSystemView.EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
+              </devtools-widget>
+            </div>
+            <devtools-button
+              slot="heading-suffix"
+              .variant=${"outlined"}
+              jslog=${VisualLogging5.action().track({ click: true }).context("settings.remove-file-system")}
+              @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString5(UIStrings5.remove)}</devtools-button>
+          </devtools-card>
+        `)}
+        <div class="add-button-container">
+          <devtools-button
+            class="add-folder"
+            .variant=${"outlined"}
+            jslog=${VisualLogging5.action().track({ click: true }).context("sources.add-folder-to-workspace")}
+            @click=${input.onAddClicked}>${i18nString5(UIStrings5.addFolder)}</devtools-button>
+        </div>
+      </div>
+    </div>`, target);
+};
+var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
+  #view;
+  #eventListeners = [];
+  constructor(view = DEFAULT_VIEW) {
+    super();
+    this.#view = view;
+  }
+  wasShown() {
+    this.#eventListeners = [
+      Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemAdded, this.requestUpdate.bind(this)),
+      Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemRemoved, this.requestUpdate.bind(this))
+    ];
+    this.requestUpdate();
+  }
+  willHide() {
+    Common5.EventTarget.removeEventListeners(this.#eventListeners);
+    this.#eventListeners = [];
+  }
+  performUpdate() {
+    const input = {
+      excludePatternSetting: Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().workspaceFolderExcludePatternSetting(),
+      onAddClicked: () => Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem(),
+      onRemoveClicked: (fs) => Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().removeFileSystem(fs),
+      fileSystems: Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().fileSystems().filter((fileSystem) => {
+        const networkPersistenceProject = Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
+        return fileSystem instanceof Persistence.IsolatedFileSystem.IsolatedFileSystem && (!networkPersistenceProject || Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().fileSystem(networkPersistenceProject.fileSystemPath()) !== fileSystem);
+      }).map((fileSystem) => {
+        const displayName = _WorkspaceSettingsTab.#getFilename(fileSystem);
+        return {
+          displayName,
+          fileSystem
+        };
+      }).sort((fs1, fs2) => fs1.displayName.localeCompare(fs2.displayName))
+    };
+    this.#view(input, {}, this.contentElement);
+  }
+  static #getFilename(fileSystem) {
+    const fileSystemPath = fileSystem.path();
+    const lastIndexOfSlash = fileSystemPath.lastIndexOf("/");
+    const lastPathComponent = fileSystemPath.substring(lastIndexOfSlash + 1);
+    return decodeURIComponent(lastPathComponent);
+  }
+};
 export {
   AISettingsTab_exports as AISettingsTab,
   FrameworkIgnoreListSettingsTab_exports as FrameworkIgnoreListSettingsTab,
   KeybindsSettingsTab_exports as KeybindsSettingsTab,
-  SettingsScreen_exports as SettingsScreen
+  SettingsScreen_exports as SettingsScreen,
+  WorkspaceSettingsTab_exports as WorkspaceSettingsTab
 };
 //# sourceMappingURL=settings.js.map

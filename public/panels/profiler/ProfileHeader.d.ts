@@ -3,10 +3,9 @@ import type * as Protocol from '../../generated/protocol.js';
 import type * as Bindings from '../../models/bindings/bindings.js';
 import type * as UI from '../../ui/legacy/legacy.js';
 export declare class ProfileHeader extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
-    readonly profileTypeInternal: ProfileType;
+    #private;
     title: string;
     uid: number;
-    fromFileInternal: boolean;
     tempFile: Bindings.TempFile.TempFile | null;
     constructor(profileType: ProfileType, title: string);
     setTitle(title: string): void;
@@ -40,11 +39,8 @@ export interface EventTypes {
     [Events.PROFILE_TITLE_CHANGED]: ProfileHeader;
 }
 export declare class ProfileType extends Common.ObjectWrapper.ObjectWrapper<ProfileEventTypes> {
-    readonly idInternal: string;
-    readonly nameInternal: string;
+    #private;
     profiles: ProfileHeader[];
-    profileBeingRecordedInternal: ProfileHeader | null;
-    nextProfileUidInternal: number;
     constructor(id: string, name: string);
     typeName(): string;
     nextProfileUid(): number;

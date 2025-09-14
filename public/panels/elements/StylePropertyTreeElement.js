@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -9,6 +9,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as IconButton from '../../ui/components/icon_button/icon_button.js';
@@ -1560,11 +1561,11 @@ export function getPropertyRenderers(propertyName, style, stylesPane, matchedSty
 }
 export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     style;
-    matchedStylesInternal;
+    #matchedStyles;
     property;
-    inheritedInternal;
-    overloadedInternal;
-    parentPaneInternal;
+    #inherited;
+    #overloaded;
+    #parentPane;
     #parentSection;
     isShorthand;
     applyStyleThrottler = new Common.Throttler.Throttler(0);
@@ -1587,12 +1588,12 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const jslogContext = property.name.startsWith('--') ? 'custom-property' : property.name;
         super('', isShorthand, jslogContext);
         this.style = property.ownerStyle;
-        this.matchedStylesInternal = matchedStyles;
+        this.#matchedStyles = matchedStyles;
         this.property = property;
-        this.inheritedInternal = inherited;
-        this.overloadedInternal = overloaded;
+        this.#inherited = inherited;
+        this.#overloaded = overloaded;
         this.selectable = false;
-        this.parentPaneInternal = stylesPane;
+        this.#parentPane = stylesPane;
         this.#parentSection = section;
         this.isShorthand = isShorthand;
         this.newProperty = newProperty;
@@ -1607,8 +1608,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!SDK.CSSMetadata.cssMetadata().isGridNameAwareProperty(this.name)) {
             return new Set();
         }
-        for (let node = this.parentPaneInternal.node()?.parentNode; node; node = node?.parentNode) {
-            const style = await this.parentPaneInternal.cssModel()?.getComputedStyle(node.id);
+        for (let node = this.#parentPane.node()?.parentNode; node; node = node?.parentNode) {
+            const style = await this.#parentPane.cssModel()?.getComputedStyle(node.id);
             const display = style?.get('display');
             const isGrid = display === 'grid' || display === 'inline-grid';
             if (!isGrid) {
@@ -1637,7 +1638,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return new Set();
     }
     matchedStyles() {
-        return this.matchedStylesInternal;
+        return this.#matchedStyles;
     }
     getLonghand() {
         return this.parent instanceof StylePropertyTreeElement && this.parent.isShorthand ? this.parent : null;
@@ -1647,16 +1648,16 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return !this.getLonghand() && hasSourceData;
     }
     inherited() {
-        return this.inheritedInternal;
+        return this.#inherited;
     }
     overloaded() {
-        return this.overloadedInternal;
+        return this.#overloaded;
     }
     setOverloaded(x) {
-        if (x === this.overloadedInternal) {
+        if (x === this.#overloaded) {
             return;
         }
-        this.overloadedInternal = x;
+        this.#overloaded = x;
         this.updateState();
     }
     setComputedStyles(computedStyles) {
@@ -1678,7 +1679,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return this.property.value;
     }
     updateFilter() {
-        const regex = this.parentPaneInternal.filterRegex();
+        const regex = this.#parentPane.filterRegex();
         const matches = regex !== null && (regex.test(this.property.name) || regex.test(this.property.value));
         this.listItemElement.classList.toggle('filter-match', matches);
         void this.onpopulate();
@@ -1749,10 +1750,10 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     node() {
-        return this.parentPaneInternal.node();
+        return this.#parentPane.node();
     }
     parentPane() {
-        return this.parentPaneInternal;
+        return this.#parentPane;
     }
     section() {
         return this.#parentSection;
@@ -1765,13 +1766,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!oldStyleRange) {
             return;
         }
-        this.parentPaneInternal.setUserOperation(true);
+        this.#parentPane.setUserOperation(true);
         const success = await this.property.setDisabled(disabled);
-        this.parentPaneInternal.setUserOperation(false);
+        this.#parentPane.setUserOperation(false);
         if (!success) {
             return;
         }
-        this.matchedStylesInternal.resetActiveProperties();
+        this.#matchedStyles.resetActiveProperties();
         this.updatePane();
         this.styleTextAppliedForTest();
     }
@@ -1784,7 +1785,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (!parsedProperty || parsedProperty === this.property.value) {
             return staticLonghandProperties;
         }
-        const parsedLonghands = await this.parentPaneInternal.cssModel()?.agent.invoke_getLonghandProperties({ shorthandName: this.property.name, value: parsedProperty });
+        const parsedLonghands = await this.#parentPane.cssModel()?.agent.invoke_getLonghandProperties({ shorthandName: this.property.name, value: parsedProperty });
         if (!parsedLonghands || parsedLonghands.getError()) {
             return staticLonghandProperties;
         }
@@ -1809,15 +1810,15 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             let inherited = false;
             let overloaded = false;
             inherited = this.#parentSection.isPropertyInherited(name);
-            overloaded = this.matchedStylesInternal.propertyState(property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */;
+            overloaded = this.#matchedStyles.propertyState(property) === "Overloaded" /* SDK.CSSMatchedStyles.PropertyState.OVERLOADED */;
             const leadingProperty = leadingProperties.find(property => property.name === name && property.activeInStyle());
             if (leadingProperty) {
                 overloaded = true;
             }
             const item = new StylePropertyTreeElement({
-                stylesPane: this.parentPaneInternal,
+                stylesPane: this.#parentPane,
                 section: this.#parentSection,
-                matchedStyles: this.matchedStylesInternal,
+                matchedStyles: this.#matchedStyles,
                 property,
                 isShorthand: false,
                 inherited,
@@ -1833,7 +1834,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.updateTitle();
         this.listItemElement.addEventListener('mousedown', event => {
             if (event.button === 0) {
-                parentMap.set(this.parentPaneInternal, this);
+                parentMap.set(this.#parentPane, this);
             }
         }, false);
         this.listItemElement.addEventListener('mouseup', this.mouseUp.bind(this));
@@ -1874,9 +1875,9 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return null;
         }
         const matching = SDK.CSSPropertyParser.BottomUpTreeMatching.walk(ast, [
-            new SDK.CSSPropertyParserMatchers.VariableMatcher(this.matchedStylesInternal, style),
-            new SDK.CSSPropertyParserMatchers.AttributeMatcher(this.matchedStylesInternal, style),
-            new SDK.CSSPropertyParserMatchers.EnvFunctionMatcher(this.matchedStylesInternal),
+            new SDK.CSSPropertyParserMatchers.VariableMatcher(this.#matchedStyles, style),
+            new SDK.CSSPropertyParserMatchers.AttributeMatcher(this.#matchedStyles, style),
+            new SDK.CSSPropertyParserMatchers.EnvFunctionMatcher(this.#matchedStyles),
         ]);
         const decl = SDK.CSSPropertyParser.ASTUtils.siblings(SDK.CSSPropertyParser.ASTUtils.declValue(matching.ast.tree));
         return decl.length > 0 ? matching.getComputedTextRange(decl[0], decl[decl.length - 1]) : '';
@@ -1902,7 +1903,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.expandElement.setAttribute('jslog', `${VisualLogging.expand().track({ click: true })}`);
         }
         const renderers = this.property.parsedOk ?
-            getPropertyRenderers(this.name, this.style, this.parentPaneInternal, this.matchedStylesInternal, this, this.getComputedStyles() ?? new Map()) :
+            getPropertyRenderers(this.name, this.style, this.#parentPane, this.#matchedStyles, this, this.getComputedStyles() ?? new Map()) :
             [];
         if (Root.Runtime.experiments.isEnabled('font-editor') && this.property.parsedOk) {
             renderers.push(new FontRenderer(this));
@@ -1919,14 +1920,14 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         this.listItemElement.appendChild(this.nameElement);
         if (this.property.name.startsWith('--') &&
             !(this.property.ownerStyle.parentRule instanceof SDK.CSSRule.CSSFunctionRule)) {
-            const contents = this.parentPaneInternal.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value ?? null);
+            const contents = this.#parentPane.getVariablePopoverContents(this.matchedStyles(), this.property.name, this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value ?? null);
             const tooltipId = this.getTooltipId('custom-property-decl');
             this.nameElement.setAttribute('aria-details', tooltipId);
             const tooltip = new Tooltips.Tooltip.Tooltip({ anchor: this.nameElement, variant: 'rich', id: tooltipId, jslogContext: 'elements.css-var' });
             tooltip.appendChild(contents);
             tooltip.onbeforetoggle = (e) => {
                 if (e.newState === 'open') {
-                    contents.value = this.matchedStylesInternal.computeCSSVariable(this.style, this.property.name)?.value;
+                    contents.value = this.#matchedStyles.computeCSSVariable(this.style, this.property.name)?.value;
                 }
             };
             this.listItemElement.appendChild(tooltip);
@@ -1949,7 +1950,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                     event.consume(true);
                     return;
                 }
-                const cssProperty = this.parentPaneInternal.webCustomData?.findCssProperty(this.name);
+                const cssProperty = this.#parentPane.webCustomData?.findCssProperty(this.name);
                 if (!cssProperty) {
                     event.consume(true);
                     return;
@@ -1982,7 +1983,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             // Avoid having longhands under an invalid shorthand.
             this.listItemElement.classList.add('not-parsed-ok');
             // Add a separate exclamation mark IMG element with a tooltip.
-            this.listItemElement.insertBefore(this.createExclamationMark(this.property, this.parentPaneInternal.getVariableParserError(this.matchedStyles(), this.property.name)), this.listItemElement.firstChild);
+            this.listItemElement.insertBefore(this.createExclamationMark(this.property, this.#parentPane.getVariableParserError(this.matchedStyles(), this.property.name)), this.listItemElement.firstChild);
             // When the property is valid but the property value is invalid,
             // add line-through only to the property value.
             const invalidPropertyValue = SDK.CSSMetadata.cssMetadata().isCSSPropertyName(this.property.name);
@@ -2133,7 +2134,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (this.node()?.isSVGNode()) {
             return;
         }
-        const cssModel = this.parentPaneInternal.cssModel();
+        const cssModel = this.#parentPane.cssModel();
         const fontFaces = cssModel?.fontFaces() || [];
         const localName = this.node()?.localName();
         for (const validator of cssRuleValidatorsMap.get(propertyName) || []) {
@@ -2158,8 +2159,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
     }
     mouseUp(event) {
-        const activeTreeElement = parentMap.get(this.parentPaneInternal);
-        parentMap.delete(this.parentPaneInternal);
+        const activeTreeElement = parentMap.get(this.#parentPane);
+        parentMap.delete(this.#parentPane);
         if (!activeTreeElement) {
             return;
         }
@@ -2202,7 +2203,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     handleContextMenuEvent(context, event) {
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
         if (this.property.parsedOk && this.parent?.root) {
-            const sectionIndex = this.parentPaneInternal.focusedSectionIndex();
+            const sectionIndex = this.#parentPane.focusedSectionIndex();
             contextMenu.defaultSection().appendCheckboxItem(i18nString(UIStrings.togglePropertyAndContinueEditing), async () => {
                 if (this.treeOutline) {
                     const propertyIndex = this.treeOutline.rootElement().indexOfChild(this);
@@ -2210,7 +2211,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
                     this.editingCancelled(context);
                     await this.toggleDisabled(!this.property.disabled);
                     event.consume();
-                    this.parentPaneInternal.continueEditingElement(sectionIndex, propertyIndex);
+                    this.#parentPane.continueEditingElement(sectionIndex, propertyIndex);
                 }
             }, { checked: !this.property.disabled, jslogContext: 'toggle-property-and-continue-editing' });
         }
@@ -2378,7 +2379,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             void this.editingCommitted(text || '', context, '');
         }
         this.originalPropertyText = this.property.propertyText || '';
-        this.parentPaneInternal.setEditingStyle(true);
+        this.#parentPane.setEditingStyle(true);
         selectedElement.parentElement?.scrollIntoViewIfNeeded(false);
         this.prompt = new CSSPropertyPrompt(this, context.isEditingName, Array.from(this.#gridNames ?? []));
         this.prompt.setAutocompletionTimeout(0);
@@ -2510,7 +2511,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return leftOffset;
     }
     async applyFreeFlowStyleTextEdit(context) {
-        if (!this.prompt || !this.parentPaneInternal.node()) {
+        if (!this.prompt || !this.#parentPane.node()) {
             return;
         }
         const enteredText = this.prompt.text();
@@ -2523,7 +2524,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         // Prevent destructive side-effects during live-edit. crbug.com/433889
-        const parentNode = this.parentPaneInternal.node();
+        const parentNode = this.#parentPane.node();
         if (parentNode) {
             const isPseudo = Boolean(parentNode.pseudoType());
             if (isPseudo) {
@@ -2562,7 +2563,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         if (editedElement?.parentElement) {
             editedElement.parentElement.classList.remove('child-editing');
         }
-        this.parentPaneInternal.setEditingStyle(false);
+        this.#parentPane.setEditingStyle(false);
     }
     editingCancelled(context) {
         this.removePrompt();
@@ -2665,7 +2666,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
          */
         function moveToNextCallback(alreadyNew, valueChanged, section) {
             if (!moveDirection) {
-                this.parentPaneInternal.resetFocus();
+                this.#parentPane.resetFocus();
                 return;
             }
             // User just tabbed through without changes.
@@ -2771,8 +2772,8 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.parent?.removeChild(this);
             return;
         }
-        const currentNode = this.parentPaneInternal.node();
-        this.parentPaneInternal.setUserOperation(true);
+        const currentNode = this.#parentPane.node();
+        this.#parentPane.setUserOperation(true);
         styleText += Platform.StringUtilities.findUnclosedCssQuote(styleText);
         styleText += ')'.repeat(Platform.StringUtilities.countUnmatchedLeftParentheses(styleText));
         // Append a ";" if the new text does not end in ";".
@@ -2782,12 +2783,15 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         }
         const overwriteProperty = !this.newProperty || hasBeenEditedIncrementally;
         let success = await this.property.setText(styleText, majorChange, overwriteProperty);
+        if (success && majorChange) {
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CSS_RULE_MODIFIED);
+        }
         // Revert to the original text if applying the new text failed
         if (hasBeenEditedIncrementally && majorChange && !success) {
             majorChange = false;
             success = await this.property.setText(this.originalPropertyText, majorChange, overwriteProperty);
         }
-        this.parentPaneInternal.setUserOperation(false);
+        this.#parentPane.setUserOperation(false);
         // TODO: using this.property.index to access its containing StyleDeclaration's property will result in
         // off-by-1 errors when the containing StyleDeclaration's respective property has already been deleted.
         // These referencing logic needs to be updated to be more robust.
@@ -2806,7 +2810,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             this.styleTextAppliedForTest();
             return;
         }
-        this.matchedStylesInternal.resetActiveProperties();
+        this.#matchedStyles.resetActiveProperties();
         this.hasBeenEditedIncrementally = true;
         // null check for updatedProperty before setting this.property as the code never expects this.property to be undefined or null.
         // This occurs when deleting the last index of a StylePropertiesSection as this.style._allProperties array gets updated

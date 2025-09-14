@@ -1,4 +1,4 @@
-// Copyright 2019 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
@@ -6,7 +6,7 @@ import { RuntimeModel } from './RuntimeModel.js';
 import { TargetManager } from './TargetManager.js';
 let isolateManagerInstance;
 export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
-    #isolatesInternal = new Map();
+    #isolates = new Map();
     /**
      * Contains null while the isolateId is being retrieved.
      */
@@ -31,14 +31,14 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
             void this.poll();
         }
         this.#observers.add(observer);
-        for (const isolate of this.#isolatesInternal.values()) {
+        for (const isolate of this.#isolates.values()) {
             observer.isolateAdded(isolate);
         }
     }
     modelAdded(model) {
-        void this.modelAddedInternal(model);
+        void this.#modelAdded(model);
     }
-    async modelAddedInternal(model) {
+    async #modelAdded(model) {
         this.#isolateIdByModel.set(model, null);
         const isolateId = await model.isolateId();
         if (!this.#isolateIdByModel.has(model)) {
@@ -50,13 +50,13 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
             return;
         }
         this.#isolateIdByModel.set(model, isolateId);
-        let isolate = this.#isolatesInternal.get(isolateId);
+        let isolate = this.#isolates.get(isolateId);
         if (!isolate) {
             isolate = new Isolate(isolateId);
-            this.#isolatesInternal.set(isolateId, isolate);
+            this.#isolates.set(isolateId, isolate);
         }
-        isolate.modelsInternal.add(model);
-        if (isolate.modelsInternal.size === 1) {
+        isolate.models().add(model);
+        if (isolate.models().size === 1) {
             for (const observer of this.#observers) {
                 observer.isolateAdded(isolate);
             }
@@ -73,12 +73,12 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
         if (!isolateId) {
             return;
         }
-        const isolate = this.#isolatesInternal.get(isolateId);
+        const isolate = this.#isolates.get(isolateId);
         if (!isolate) {
             return;
         }
-        isolate.modelsInternal.delete(model);
-        if (isolate.modelsInternal.size) {
+        isolate.models().delete(model);
+        if (isolate.models().size) {
             for (const observer of this.#observers) {
                 observer.isolateChanged(isolate);
             }
@@ -87,13 +87,13 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const observer of this.#observers) {
             observer.isolateRemoved(isolate);
         }
-        this.#isolatesInternal.delete(isolateId);
+        this.#isolates.delete(isolateId);
     }
     isolateByModel(model) {
-        return this.#isolatesInternal.get(this.#isolateIdByModel.get(model) || '') || null;
+        return this.#isolates.get(this.#isolateIdByModel.get(model) || '') || null;
     }
     isolates() {
-        return this.#isolatesInternal.values();
+        return this.#isolates.values();
     }
     async poll() {
         const pollId = this.#pollId;
@@ -106,25 +106,25 @@ export class IsolateManager extends Common.ObjectWrapper.ObjectWrapper {
 export const MemoryTrendWindowMs = 120e3;
 const PollIntervalMs = 2e3;
 export class Isolate {
-    #idInternal;
-    modelsInternal;
-    #usedHeapSizeInternal;
+    #id;
+    #models;
+    #usedHeapSize;
     #memoryTrend;
     constructor(id) {
-        this.#idInternal = id;
-        this.modelsInternal = new Set();
-        this.#usedHeapSizeInternal = 0;
+        this.#id = id;
+        this.#models = new Set();
+        this.#usedHeapSize = 0;
         const count = MemoryTrendWindowMs / PollIntervalMs;
         this.#memoryTrend = new MemoryTrend(count);
     }
     id() {
-        return this.#idInternal;
+        return this.#id;
     }
     models() {
-        return this.modelsInternal;
+        return this.#models;
     }
     runtimeModel() {
-        return this.modelsInternal.values().next().value || null;
+        return this.#models.values().next().value || null;
     }
     heapProfilerModel() {
         const runtimeModel = this.runtimeModel();
@@ -136,15 +136,15 @@ export class Isolate {
         if (!usage) {
             return;
         }
-        this.#usedHeapSizeInternal = usage.usedSize + (usage.embedderHeapUsedSize ?? 0) + (usage.backingStorageSize ?? 0);
-        this.#memoryTrend.add(this.#usedHeapSizeInternal);
+        this.#usedHeapSize = usage.usedSize + (usage.embedderHeapUsedSize ?? 0) + (usage.backingStorageSize ?? 0);
+        this.#memoryTrend.add(this.#usedHeapSize);
         IsolateManager.instance().dispatchEventToListeners("MemoryChanged" /* Events.MEMORY_CHANGED */, this);
     }
     samplesCount() {
         return this.#memoryTrend.count();
     }
     usedHeapSize() {
-        return this.#usedHeapSizeInternal;
+        return this.#usedHeapSize;
     }
     /**
      * bytes per millisecond

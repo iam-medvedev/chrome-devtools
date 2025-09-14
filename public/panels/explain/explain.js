@@ -248,7 +248,7 @@ function formatStackTrace(message) {
 
 // gen/front_end/panels/explain/components/consoleInsight.css.js
 var consoleInsight_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
@@ -647,7 +647,7 @@ details h3 {
 
 // gen/front_end/panels/explain/components/consoleInsightSourcesList.css.js
 var consoleInsightSourcesList_css_default = `/*
- * Copyright 2023 The Chromium Authors. All rights reserved.
+ * Copyright 2023 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */

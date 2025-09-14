@@ -1,4 +1,4 @@
-// Copyright 2023 The Chromium Authors. All rights reserved.
+// Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Handlers from './handlers/handlers.js';
@@ -196,7 +196,7 @@ export class TraceProcessor extends EventTarget {
         this.dispatchEvent(new TraceParseProgressEvent({ percent: 1 /* ProgressPhase.CLONE */ }));
         this.#data = parsedTrace;
     }
-    get parsedTrace() {
+    get data() {
         if (this.#status !== "FINISHED_PARSING" /* Status.FINISHED_PARSING */) {
             return null;
         }
@@ -208,15 +208,15 @@ export class TraceProcessor extends EventTarget {
         }
         return this.#insights;
     }
-    #createLanternContext(parsedTrace, traceEvents, frameId, navigationId, options) {
+    #createLanternContext(data, traceEvents, frameId, navigationId, options) {
         // Check for required handlers.
-        if (!parsedTrace.NetworkRequests || !parsedTrace.Workers || !parsedTrace.PageLoadMetrics) {
+        if (!data.NetworkRequests || !data.Workers || !data.PageLoadMetrics) {
             return;
         }
-        if (!parsedTrace.NetworkRequests.byTime.length) {
+        if (!data.NetworkRequests.byTime.length) {
             throw new Lantern.Core.LanternError('No network requests found in trace');
         }
-        const navStarts = parsedTrace.Meta.navigationsByFrameId.get(frameId);
+        const navStarts = data.Meta.navigationsByFrameId.get(frameId);
         const navStartIndex = navStarts?.findIndex(n => n.args.data?.navigationId === navigationId);
         if (!navStarts || navStartIndex === undefined || navStartIndex === -1) {
             throw new Lantern.Core.LanternError('Could not find navigation start');
@@ -229,9 +229,9 @@ export class TraceProcessor extends EventTarget {
         const trace = {
             traceEvents: boundedTraceEvents,
         };
-        const requests = LanternComputationData.createNetworkRequests(trace, parsedTrace, startTime, endTime);
-        const graph = LanternComputationData.createGraph(requests, trace, parsedTrace);
-        const processedNavigation = LanternComputationData.createProcessedNavigation(parsedTrace, frameId, navigationId);
+        const requests = LanternComputationData.createNetworkRequests(trace, data, startTime, endTime);
+        const graph = LanternComputationData.createGraph(requests, trace, data);
+        const processedNavigation = LanternComputationData.createProcessedNavigation(data, frameId, navigationId);
         const networkAnalysis = Lantern.Core.NetworkAnalyzer.analyze(requests);
         if (!networkAnalysis) {
             return;
@@ -345,24 +345,23 @@ export class TraceProcessor extends EventTarget {
         }
         insightSet.model = newModel;
     }
-    #computeInsightSet(parsedTrace, context, options) {
+    #computeInsightSet(data, context, options) {
         let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
-            urlString =
-                parsedTrace.Meta.finalDisplayUrlByNavigationId.get(context.navigationId) ?? parsedTrace.Meta.mainFrameURL;
+            urlString = data.Meta.finalDisplayUrlByNavigationId.get(context.navigationId) ?? data.Meta.mainFrameURL;
             navigation = context.navigation;
         }
         else {
             id = Types.Events.NO_NAVIGATION;
-            urlString = parsedTrace.Meta.finalDisplayUrlByNavigationId.get('') ?? parsedTrace.Meta.mainFrameURL;
+            urlString = data.Meta.finalDisplayUrlByNavigationId.get('') ?? data.Meta.mainFrameURL;
         }
         const insightSetModel = {};
         for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {
             let model;
             try {
                 options.logger?.start(`insights:${name}`);
-                model = insight.generateInsight(parsedTrace, context);
+                model = insight.generateInsight(data, context);
                 model.frameId = context.frameId;
                 const navId = context.navigation?.args.data?.navigationId;
                 if (navId) {
@@ -426,40 +425,40 @@ export class TraceProcessor extends EventTarget {
     /**
      * Run all the insights and set the result to `#insights`.
      */
-    #computeInsights(parsedTrace, traceEvents, options) {
+    #computeInsights(data, traceEvents, options) {
         // This insights map will be populated by the helper methods.
         this.#insights = new Map();
         // Filter main frame navigations to those that have the necessary data (frameId and navigationId).
         // TODO(cjamcl): Does this filtering makes the "use the next nav as the end time" logic potentially broken? Are navs without nav id or frame even real?
-        const navigations = parsedTrace.Meta.mainFrameNavigations.filter(navigation => navigation.args.frame && navigation.args.data?.navigationId);
-        this.#computeInsightsForInitialTracePeriod(parsedTrace, navigations, options);
+        const navigations = data.Meta.mainFrameNavigations.filter(navigation => navigation.args.frame && navigation.args.data?.navigationId);
+        this.#computeInsightsForInitialTracePeriod(data, navigations, options);
         for (const [index, navigation] of navigations.entries()) {
             const min = navigation.ts;
             // Use trace end for the last navigation, otherwise use the start of the next navigation.
-            const max = index + 1 < navigations.length ? navigations[index + 1].ts : parsedTrace.Meta.traceBounds.max;
+            const max = index + 1 < navigations.length ? navigations[index + 1].ts : data.Meta.traceBounds.max;
             const bounds = Helpers.Timing.traceWindowFromMicroSeconds(min, max);
-            this.#computeInsightsForNavigation(navigation, bounds, parsedTrace, traceEvents, options);
+            this.#computeInsightsForNavigation(navigation, bounds, data, traceEvents, options);
         }
     }
     /**
      * Computes insights for the period before the first navigation, or for the entire trace if no navigations exist.
      */
-    #computeInsightsForInitialTracePeriod(parsedTrace, navigations, options) {
+    #computeInsightsForInitialTracePeriod(data, navigations, options) {
         // Determine bounds: Use the period before the first navigation if navigations exist, otherwise use the entire trace bounds.
         const bounds = navigations.length > 0 ?
-            Helpers.Timing.traceWindowFromMicroSeconds(parsedTrace.Meta.traceBounds.min, navigations[0].ts) :
-            parsedTrace.Meta.traceBounds;
+            Helpers.Timing.traceWindowFromMicroSeconds(data.Meta.traceBounds.min, navigations[0].ts) :
+            data.Meta.traceBounds;
         const context = {
             bounds,
-            frameId: parsedTrace.Meta.mainFrameId,
+            frameId: data.Meta.mainFrameId,
             // No navigation or lantern context applies to this initial/no-navigation period.
         };
-        this.#computeInsightSet(parsedTrace, context, options);
+        this.#computeInsightSet(data, context, options);
     }
     /**
      * Computes insights for a specific navigation event.
      */
-    #computeInsightsForNavigation(navigation, bounds, parsedTrace, traceEvents, options) {
+    #computeInsightsForNavigation(navigation, bounds, data, traceEvents, options) {
         const frameId = navigation.args.frame;
         // Guaranteed by the filter in #computeInsights
         const navigationId = navigation.args.data?.navigationId;
@@ -469,7 +468,7 @@ export class TraceProcessor extends EventTarget {
         let lantern;
         try {
             options.logger?.start('insights:createLanternContext');
-            lantern = this.#createLanternContext(parsedTrace, traceEvents, frameId, navigationId, options);
+            lantern = this.#createLanternContext(data, traceEvents, frameId, navigationId, options);
         }
         catch (e) {
             // Handle Lantern errors gracefully
@@ -504,7 +503,7 @@ export class TraceProcessor extends EventTarget {
             navigationId,
             lantern,
         };
-        this.#computeInsightSet(parsedTrace, context, options);
+        this.#computeInsightSet(data, context, options);
     }
 }
 /**

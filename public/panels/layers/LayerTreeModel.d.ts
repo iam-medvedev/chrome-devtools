@@ -2,9 +2,9 @@ import * as SDK from '../../core/sdk/sdk.js';
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Protocol from '../../generated/protocol.js';
 export declare class LayerTreeModel extends SDK.SDKModel.SDKModel<EventTypes> {
+    #private;
     readonly layerTreeAgent: ProtocolProxyApi.LayerTreeApi;
     readonly paintProfilerModel: SDK.PaintProfiler.PaintProfilerModel;
-    private layerTreeInternal;
     private readonly throttler;
     private enabled?;
     private lastPaintRectByLayerId?;
@@ -33,16 +33,10 @@ export declare class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     private innerSetLayers;
 }
 export declare class AgentLayer implements SDK.LayerTreeBase.Layer {
+    #private;
     private scrollRectsInternal;
-    private quadInternal;
-    private childrenInternal;
-    private parentInternal;
     private layerPayload;
     private layerTreeModel;
-    private nodeInternal?;
-    lastPaintRectInternal?: Protocol.DOM.Rect;
-    private paintCountInternal?;
-    private stickyPositionConstraintInternal?;
     constructor(layerTreeModel: LayerTreeModel, layerPayload: Protocol.LayerTree.Layer);
     id(): Protocol.LayerTree.LayerId;
     parentId(): Protocol.LayerTree.LayerId | null;

@@ -2875,9 +2875,9 @@ var Nickname = class _Nickname extends ShortFormatColorBase {
 };
 var Legacy = class _Legacy {
   #rawParams;
-  #rgbaInternal;
+  #rgba;
   #authoredText;
-  #formatInternal;
+  #format;
   channels = [
     "r",
     "g",
@@ -2890,7 +2890,7 @@ var Legacy = class _Legacy {
       "hex"
       /* Format.HEX */
     ]: (self) => new _Legacy(
-      self.#rgbaInternal,
+      self.#rgba,
       "hex"
       /* Format.HEX */
     ),
@@ -2898,7 +2898,7 @@ var Legacy = class _Legacy {
       "hexa"
       /* Format.HEXA */
     ]: (self) => new _Legacy(
-      self.#rgbaInternal,
+      self.#rgba,
       "hexa"
       /* Format.HEXA */
     ),
@@ -2906,7 +2906,7 @@ var Legacy = class _Legacy {
       "rgb"
       /* Format.RGB */
     ]: (self) => new _Legacy(
-      self.#rgbaInternal,
+      self.#rgba,
       "rgb"
       /* Format.RGB */
     ),
@@ -2914,26 +2914,26 @@ var Legacy = class _Legacy {
       "rgba"
       /* Format.RGBA */
     ]: (self) => new _Legacy(
-      self.#rgbaInternal,
+      self.#rgba,
       "rgba"
       /* Format.RGBA */
     ),
     [
       "hsl"
       /* Format.HSL */
-    ]: (self) => new HSL(...rgbToHsl([self.#rgbaInternal[0], self.#rgbaInternal[1], self.#rgbaInternal[2]]), self.alpha),
+    ]: (self) => new HSL(...rgbToHsl([self.#rgba[0], self.#rgba[1], self.#rgba[2]]), self.alpha),
     [
       "hsla"
       /* Format.HSLA */
-    ]: (self) => new HSL(...rgbToHsl([self.#rgbaInternal[0], self.#rgbaInternal[1], self.#rgbaInternal[2]]), self.alpha),
+    ]: (self) => new HSL(...rgbToHsl([self.#rgba[0], self.#rgba[1], self.#rgba[2]]), self.alpha),
     [
       "hwb"
       /* Format.HWB */
-    ]: (self) => new HWB(...rgbToHwb([self.#rgbaInternal[0], self.#rgbaInternal[1], self.#rgbaInternal[2]]), self.alpha),
+    ]: (self) => new HWB(...rgbToHwb([self.#rgba[0], self.#rgba[1], self.#rgba[2]]), self.alpha),
     [
       "hwba"
       /* Format.HWBA */
-    ]: (self) => new HWB(...rgbToHwb([self.#rgbaInternal[0], self.#rgbaInternal[1], self.#rgbaInternal[2]]), self.alpha),
+    ]: (self) => new HWB(...rgbToHwb([self.#rgba[0], self.#rgba[1], self.#rgba[2]]), self.alpha),
     [
       "lch"
       /* Format.LCH */
@@ -2988,14 +2988,14 @@ var Legacy = class _Legacy {
     ]: (self) => new ColorFunction("xyz-d65", ...ColorConverter.xyzd50ToD65(...self.#toXyzd50()), self.alpha)
   };
   #toXyzd50() {
-    const [r, g, b] = this.#rgbaInternal;
+    const [r, g, b] = this.#rgba;
     return ColorConverter.srgbToXyzd50(r, g, b);
   }
   get alpha() {
     switch (this.format()) {
       case "hexa":
       case "rgba":
-        return this.#rgbaInternal[3];
+        return this.#rgba[3];
       default:
         return null;
     }
@@ -3009,7 +3009,7 @@ var Legacy = class _Legacy {
   }
   shortHex() {
     for (let i = 0; i < 4; ++i) {
-      const c = Math.round(this.#rgbaInternal[i] * 255);
+      const c = Math.round(this.#rgba[i] * 255);
       if (c % 17) {
         return null;
       }
@@ -3018,9 +3018,9 @@ var Legacy = class _Legacy {
   }
   constructor(rgba, format, authoredText) {
     this.#authoredText = authoredText || null;
-    this.#formatInternal = format;
+    this.#format = format;
     this.#rawParams = [rgba[0], rgba[1], rgba[2]];
-    this.#rgbaInternal = [
+    this.#rgba = [
       clamp(rgba[0], { min: 0, max: 1 }),
       clamp(rgba[1], { min: 0, max: 1 }),
       clamp(rgba[2], { min: 0, max: 1 }),
@@ -3078,10 +3078,10 @@ var Legacy = class _Legacy {
     return _Legacy.#conversions[format](this);
   }
   format() {
-    return this.#formatInternal;
+    return this.#format;
   }
   hasAlpha() {
-    return this.#rgbaInternal[3] !== 1;
+    return this.#rgba[3] !== 1;
   }
   detectHEXFormat() {
     const hasAlpha = this.hasAlpha();
@@ -3091,11 +3091,11 @@ var Legacy = class _Legacy {
     if (format) {
       return this.as(format).asString();
     }
-    return this.#stringify(format, this.#rgbaInternal[0], this.#rgbaInternal[1], this.#rgbaInternal[2]);
+    return this.#stringify(format, this.#rgba[0], this.#rgba[1], this.#rgba[2]);
   }
   #stringify(format, r, g, b) {
     if (!format) {
-      format = this.#formatInternal;
+      format = this.#format;
     }
     function toHexValue(value) {
       const hex = Math.round(value * 255).toString(16);
@@ -3106,14 +3106,14 @@ var Legacy = class _Legacy {
       case "rgba": {
         const start = Platform.StringUtilities.sprintf("rgb(%d %d %d", toRgbValue(r), toRgbValue(g), toRgbValue(b));
         if (this.hasAlpha()) {
-          return start + Platform.StringUtilities.sprintf(" / %d%)", Math.round(this.#rgbaInternal[3] * 100));
+          return start + Platform.StringUtilities.sprintf(" / %d%)", Math.round(this.#rgba[3] * 100));
         }
         return start + ")";
       }
       case "hex":
       case "hexa": {
         if (this.hasAlpha()) {
-          return Platform.StringUtilities.sprintf("#%s%s%s%s", toHexValue(r), toHexValue(g), toHexValue(b), toHexValue(this.#rgbaInternal[3])).toLowerCase();
+          return Platform.StringUtilities.sprintf("#%s%s%s%s", toHexValue(r), toHexValue(g), toHexValue(b), toHexValue(this.#rgba[3])).toLowerCase();
         }
         return Platform.StringUtilities.sprintf("#%s%s%s", toHexValue(r), toHexValue(g), toHexValue(b)).toLowerCase();
       }
@@ -3132,17 +3132,17 @@ var Legacy = class _Legacy {
     return this.#stringify(format, ...this.#rawParams);
   }
   isGamutClipped() {
-    return !equals(this.#rawParams.map(toRgbValue), [this.#rgbaInternal[0], this.#rgbaInternal[1], this.#rgbaInternal[2]].map(toRgbValue), WIDE_RANGE_EPSILON);
+    return !equals(this.#rawParams.map(toRgbValue), [this.#rgba[0], this.#rgba[1], this.#rgba[2]].map(toRgbValue), WIDE_RANGE_EPSILON);
   }
   rgba() {
-    return [...this.#rgbaInternal];
+    return [...this.#rgba];
   }
   canonicalRGBA() {
     const rgba = new Array(4);
     for (let i = 0; i < 3; ++i) {
-      rgba[i] = Math.round(this.#rgbaInternal[i] * 255);
+      rgba[i] = Math.round(this.#rgba[i] * 255);
     }
-    rgba[3] = this.#rgbaInternal[3];
+    rgba[3] = this.#rgba[3];
     return rgba;
   }
   toProtocolRGBA() {
@@ -3155,10 +3155,10 @@ var Legacy = class _Legacy {
   }
   invert() {
     const rgba = [0, 0, 0, 0];
-    rgba[0] = 1 - this.#rgbaInternal[0];
-    rgba[1] = 1 - this.#rgbaInternal[1];
-    rgba[2] = 1 - this.#rgbaInternal[2];
-    rgba[3] = this.#rgbaInternal[3];
+    rgba[0] = 1 - this.#rgba[0];
+    rgba[1] = 1 - this.#rgba[1];
+    rgba[2] = 1 - this.#rgba[2];
+    rgba[3] = this.#rgba[3];
     return new _Legacy(
       rgba,
       "rgba"
@@ -3170,7 +3170,7 @@ var Legacy = class _Legacy {
    * Note: We override with an alpha of 50% to enhance the dimming effect.
    */
   grayscale() {
-    const [r, g, b] = this.#rgbaInternal;
+    const [r, g, b] = this.#rgba;
     const gray = r * 0.299 + g * 0.587 + b * 0.114;
     return new _Legacy(
       [gray, gray, gray, 0.5],
@@ -3179,7 +3179,7 @@ var Legacy = class _Legacy {
     );
   }
   setAlpha(alpha) {
-    const rgba = [...this.#rgbaInternal];
+    const rgba = [...this.#rgba];
     rgba[3] = alpha;
     return new _Legacy(
       rgba,
@@ -3188,7 +3188,7 @@ var Legacy = class _Legacy {
     );
   }
   blendWith(fgColor) {
-    const rgba = blendColors(fgColor.#rgbaInternal, this.#rgbaInternal);
+    const rgba = blendColors(fgColor.#rgba, this.#rgba);
     return new _Legacy(
       rgba,
       "rgba"
@@ -3196,7 +3196,7 @@ var Legacy = class _Legacy {
     );
   }
   blendWithAlpha(alpha) {
-    const rgba = [...this.#rgbaInternal];
+    const rgba = [...this.#rgba];
     rgba[3] *= alpha;
     return new _Legacy(
       rgba,
@@ -3205,11 +3205,11 @@ var Legacy = class _Legacy {
     );
   }
   setFormat(format) {
-    this.#formatInternal = format;
+    this.#format = format;
   }
   equal(other) {
-    const legacy = other.as(this.#formatInternal);
-    return equals(toRgbValue(this.#rgbaInternal[0]), toRgbValue(legacy.#rgbaInternal[0]), WIDE_RANGE_EPSILON) && equals(toRgbValue(this.#rgbaInternal[1]), toRgbValue(legacy.#rgbaInternal[1]), WIDE_RANGE_EPSILON) && equals(toRgbValue(this.#rgbaInternal[2]), toRgbValue(legacy.#rgbaInternal[2]), WIDE_RANGE_EPSILON) && equals(this.#rgbaInternal[3], legacy.#rgbaInternal[3]);
+    const legacy = other.as(this.#format);
+    return equals(toRgbValue(this.#rgba[0]), toRgbValue(legacy.#rgba[0]), WIDE_RANGE_EPSILON) && equals(toRgbValue(this.#rgba[1]), toRgbValue(legacy.#rgba[1]), WIDE_RANGE_EPSILON) && equals(toRgbValue(this.#rgba[2]), toRgbValue(legacy.#rgba[2]), WIDE_RANGE_EPSILON) && equals(this.#rgba[3], legacy.#rgba[3]);
   }
 };
 var Regex = /((?:rgba?|hsla?|hwba?|lab|lch|oklab|oklch|color)\([^)]+\)|#[0-9a-fA-F]{8}|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3,4}|\b[a-zA-Z]+\b(?!-))/g;
@@ -3689,13 +3689,13 @@ var RevealerDestination = {
 // gen/front_end/core/common/Console.js
 var consoleInstance;
 var Console = class _Console extends ObjectWrapper {
-  #messagesInternal;
+  #messages;
   /**
    * Instantiable via the instance() factory below.
    */
   constructor() {
     super();
-    this.#messagesInternal = [];
+    this.#messages = [];
   }
   static instance(opts) {
     if (!consoleInstance || opts?.forceNew) {
@@ -3716,7 +3716,7 @@ var Console = class _Console extends ObjectWrapper {
    */
   addMessage(text, level = "info", show = false, source) {
     const message = new Message(text, level, Date.now(), show, source);
-    this.#messagesInternal.push(message);
+    this.#messages.push(message);
     this.dispatchEventToListeners("messageAdded", message);
   }
   log(text) {
@@ -3739,7 +3739,7 @@ var Console = class _Console extends ObjectWrapper {
     this.addMessage(text, "error", show);
   }
   messages() {
-    return this.#messagesInternal;
+    return this.#messages;
   }
   show() {
     void this.showPromise();
@@ -4047,8 +4047,8 @@ var ParsedURL = class _ParsedURL {
   folderPathComponents;
   lastPathComponent;
   blobInnerScheme;
-  #displayNameInternal;
-  #dataURLDisplayNameInternal;
+  #displayName;
+  #dataURLDisplayName;
   constructor(url) {
     this.isValid = false;
     this.url = url;
@@ -4352,8 +4352,8 @@ var ParsedURL = class _ParsedURL {
     return !this.beginsWithScheme(url) || this.beginsWithWindowsDriveLetter(url);
   }
   get displayName() {
-    if (this.#displayNameInternal) {
-      return this.#displayNameInternal;
+    if (this.#displayName) {
+      return this.#displayName;
     }
     if (this.isDataURL()) {
       return this.dataURLDisplayName();
@@ -4364,24 +4364,24 @@ var ParsedURL = class _ParsedURL {
     if (this.isAboutBlank()) {
       return this.url;
     }
-    this.#displayNameInternal = this.lastPathComponent;
-    if (!this.#displayNameInternal) {
-      this.#displayNameInternal = (this.host || "") + "/";
+    this.#displayName = this.lastPathComponent;
+    if (!this.#displayName) {
+      this.#displayName = (this.host || "") + "/";
     }
-    if (this.#displayNameInternal === "/") {
-      this.#displayNameInternal = this.url;
+    if (this.#displayName === "/") {
+      this.#displayName = this.url;
     }
-    return this.#displayNameInternal;
+    return this.#displayName;
   }
   dataURLDisplayName() {
-    if (this.#dataURLDisplayNameInternal) {
-      return this.#dataURLDisplayNameInternal;
+    if (this.#dataURLDisplayName) {
+      return this.#dataURLDisplayName;
     }
     if (!this.isDataURL()) {
       return "";
     }
-    this.#dataURLDisplayNameInternal = Platform2.StringUtilities.trimEndWithMaxLength(this.url, 20);
-    return this.#dataURLDisplayNameInternal;
+    this.#dataURLDisplayName = Platform2.StringUtilities.trimEndWithMaxLength(this.url, 20);
+    return this.#dataURLDisplayName;
   }
   isAboutBlank() {
     return this.url === "about:blank";
@@ -4769,15 +4769,15 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("core/common/ResourceType.ts", UIStrings2);
 var i18nLazyString2 = i18n3.i18n.getLazilyComputedLocalizedString.bind(void 0, str_2);
 var ResourceType = class {
-  #nameInternal;
-  #titleInternal;
-  #categoryInternal;
-  #isTextTypeInternal;
+  #name;
+  #title;
+  #category;
+  #isTextType;
   constructor(name, title, category, isTextType) {
-    this.#nameInternal = name;
-    this.#titleInternal = title;
-    this.#categoryInternal = category;
-    this.#isTextTypeInternal = isTextType;
+    this.#name = name;
+    this.#title = title;
+    this.#category = category;
+    this.#isTextType = isTextType;
   }
   static fromMimeType(mimeType) {
     if (!mimeType) {
@@ -4876,49 +4876,49 @@ var ResourceType = class {
     return "text/javascript+plain";
   }
   name() {
-    return this.#nameInternal;
+    return this.#name;
   }
   title() {
-    return this.#titleInternal();
+    return this.#title();
   }
   category() {
-    return this.#categoryInternal;
+    return this.#category;
   }
   isTextType() {
-    return this.#isTextTypeInternal;
+    return this.#isTextType;
   }
   isScript() {
-    return this.#nameInternal === "script" || this.#nameInternal === "sm-script";
+    return this.#name === "script" || this.#name === "sm-script";
   }
   hasScripts() {
     return this.isScript() || this.isDocument();
   }
   isStyleSheet() {
-    return this.#nameInternal === "stylesheet" || this.#nameInternal === "sm-stylesheet";
+    return this.#name === "stylesheet" || this.#name === "sm-stylesheet";
   }
   hasStyleSheets() {
     return this.isStyleSheet() || this.isDocument();
   }
   isDocument() {
-    return this.#nameInternal === "document";
+    return this.#name === "document";
   }
   isDocumentOrScriptOrStyleSheet() {
     return this.isDocument() || this.isScript() || this.isStyleSheet();
   }
   isFont() {
-    return this.#nameInternal === "font";
+    return this.#name === "font";
   }
   isImage() {
-    return this.#nameInternal === "image";
+    return this.#name === "image";
   }
   isFromSourceMap() {
-    return this.#nameInternal.startsWith("sm-");
+    return this.#name.startsWith("sm-");
   }
   isWebbundle() {
-    return this.#nameInternal === "webbundle";
+    return this.#name === "webbundle";
   }
   toString() {
-    return this.#nameInternal;
+    return this.#name;
   }
   canonicalMimeType() {
     if (this.isDocument()) {
@@ -5179,45 +5179,45 @@ var Segment = class {
   }
 };
 var SegmentedRange = class {
-  #segmentsInternal;
+  #segments;
   #mergeCallback;
   constructor(mergeCallback) {
-    this.#segmentsInternal = [];
+    this.#segments = [];
     this.#mergeCallback = mergeCallback;
   }
   append(newSegment) {
-    let startIndex = Platform3.ArrayUtilities.lowerBound(this.#segmentsInternal, newSegment, (a, b) => a.begin - b.begin);
+    let startIndex = Platform3.ArrayUtilities.lowerBound(this.#segments, newSegment, (a, b) => a.begin - b.begin);
     let endIndex = startIndex;
     let merged = null;
     if (startIndex > 0) {
-      const precedingSegment = this.#segmentsInternal[startIndex - 1];
+      const precedingSegment = this.#segments[startIndex - 1];
       merged = this.tryMerge(precedingSegment, newSegment);
       if (merged) {
         --startIndex;
         newSegment = merged;
-      } else if (this.#segmentsInternal[startIndex - 1].end >= newSegment.begin) {
+      } else if (this.#segments[startIndex - 1].end >= newSegment.begin) {
         if (newSegment.end < precedingSegment.end) {
-          this.#segmentsInternal.splice(startIndex, 0, new Segment(newSegment.end, precedingSegment.end, precedingSegment.data));
+          this.#segments.splice(startIndex, 0, new Segment(newSegment.end, precedingSegment.end, precedingSegment.data));
         }
         precedingSegment.end = newSegment.begin;
       }
     }
-    while (endIndex < this.#segmentsInternal.length && this.#segmentsInternal[endIndex].end <= newSegment.end) {
+    while (endIndex < this.#segments.length && this.#segments[endIndex].end <= newSegment.end) {
       ++endIndex;
     }
-    if (endIndex < this.#segmentsInternal.length) {
-      merged = this.tryMerge(newSegment, this.#segmentsInternal[endIndex]);
+    if (endIndex < this.#segments.length) {
+      merged = this.tryMerge(newSegment, this.#segments[endIndex]);
       if (merged) {
         endIndex++;
         newSegment = merged;
-      } else if (newSegment.intersects(this.#segmentsInternal[endIndex])) {
-        this.#segmentsInternal[endIndex].begin = newSegment.end;
+      } else if (newSegment.intersects(this.#segments[endIndex])) {
+        this.#segments[endIndex].begin = newSegment.end;
       }
     }
-    this.#segmentsInternal.splice(startIndex, endIndex - startIndex, newSegment);
+    this.#segments.splice(startIndex, endIndex - startIndex, newSegment);
   }
   segments() {
-    return this.#segmentsInternal;
+    return this.#segments;
   }
   tryMerge(first, second) {
     const merged = this.#mergeCallback && this.#mergeCallback(first, second);
@@ -5678,7 +5678,7 @@ var Setting = class {
   eventSupport;
   storage;
   #titleFunction;
-  #titleInternal;
+  #title;
   #registration = null;
   #requiresUserAction;
   #value;
@@ -5707,8 +5707,8 @@ var Setting = class {
     this.eventSupport.removeEventListener(this.name, listener, thisObject);
   }
   title() {
-    if (this.#titleInternal) {
-      return this.#titleInternal;
+    if (this.#title) {
+      return this.#title;
     }
     if (this.#titleFunction) {
       return this.#titleFunction();
@@ -5721,7 +5721,7 @@ var Setting = class {
     }
   }
   setTitle(title) {
-    this.#titleInternal = title;
+    this.#title = title;
   }
   setRequiresUserAction(requiresUserAction) {
     this.#requiresUserAction = requiresUserAction;
@@ -6687,17 +6687,17 @@ __export(StringOutputStream_exports, {
   StringOutputStream: () => StringOutputStream
 });
 var StringOutputStream = class {
-  #dataInternal;
+  #data;
   constructor() {
-    this.#dataInternal = "";
+    this.#data = "";
   }
   async write(chunk) {
-    this.#dataInternal += chunk;
+    this.#data += chunk;
   }
   async close() {
   }
   data() {
-    return this.#dataInternal;
+    return this.#data;
   }
 };
 

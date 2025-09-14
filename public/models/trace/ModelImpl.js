@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../../core/platform/platform.js';
@@ -78,14 +78,8 @@ export class Model extends EventTarget {
             this.dispatchEvent(new ModelUpdateEvent({ type: "PROGRESS_UPDATE" /* ModelUpdateType.PROGRESS_UPDATE */, data }));
         };
         this.#processor.addEventListener(TraceParseProgressEvent.eventName, onTraceUpdate);
-        // Create a parsed trace file.  It will be populated with data from the processor.
-        const file = {
-            traceEvents,
-            metadata,
-            parsedTrace: null,
-            traceInsights: null,
-            syntheticEventsManager: Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents),
-        };
+        // TODO(cjamcl): this.#processor.parse needs this to work. So it should either take it as input, or create it itself.
+        const syntheticEventsManager = Helpers.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents);
         try {
             // Wait for all outstanding promises before finishing the async execution,
             // but perform all tasks in parallel.
@@ -95,21 +89,11 @@ export class Model extends EventTarget {
                 metadata,
                 resolveSourceMap: config?.resolveSourceMap,
             };
-            if (!parseConfig.logger &&
-                (window.location.href.includes('devtools/bundled') || window.location.search.includes('debugFrontend'))) {
-                // Someone is debugging DevTools, enable the logger.
-                const times = {};
-                parseConfig.logger = {
-                    start(id) {
-                        times[id] = performance.now();
-                    },
-                    end(id) {
-                        performance.measure(id, { start: times[id] });
-                    },
-                };
-            }
             await this.#processor.parse(traceEvents, parseConfig);
-            this.#storeParsedFileData(file, this.#processor.parsedTrace, this.#processor.insights);
+            if (!this.#processor.data) {
+                throw new Error('processor did not parse trace');
+            }
+            const file = this.#storeAndCreateParsedTraceFile(syntheticEventsManager, traceEvents, metadata, this.#processor.data, this.#processor.insights);
             // We only push the file onto this.#traces here once we know it's valid
             // and there's been no errors in the parsing.
             this.#traces.push(file);
@@ -124,21 +108,23 @@ export class Model extends EventTarget {
             this.dispatchEvent(new ModelUpdateEvent({ type: "COMPLETE" /* ModelUpdateType.COMPLETE */, data: 'done' }));
         }
     }
-    #storeParsedFileData(file, data, insights) {
-        file.parsedTrace = data;
-        file.traceInsights = insights;
+    #storeAndCreateParsedTraceFile(syntheticEventsManager, traceEvents, metadata, data, traceInsights) {
         this.#lastRecordingIndex++;
         let recordingName = `Trace ${this.#lastRecordingIndex}`;
-        let origin = null;
-        if (file.parsedTrace) {
-            origin = Helpers.Trace.extractOriginFromTrace(file.parsedTrace.Meta.mainFrameURL);
-            if (origin) {
-                const nextSequenceForDomain = Platform.MapUtilities.getWithDefault(this.#nextNumberByDomain, origin, () => 1);
-                recordingName = `${origin} (${nextSequenceForDomain})`;
-                this.#nextNumberByDomain.set(origin, nextSequenceForDomain + 1);
-            }
+        const origin = Helpers.Trace.extractOriginFromTrace(data.Meta.mainFrameURL);
+        if (origin) {
+            const nextSequenceForDomain = Platform.MapUtilities.getWithDefault(this.#nextNumberByDomain, origin, () => 1);
+            recordingName = `${origin} (${nextSequenceForDomain})`;
+            this.#nextNumberByDomain.set(origin, nextSequenceForDomain + 1);
         }
         this.#recordingsAvailable.push(recordingName);
+        return {
+            traceEvents,
+            metadata,
+            data,
+            insights: traceInsights,
+            syntheticEventsManager,
+        };
     }
     lastTraceIndex() {
         return this.size() - 1;
@@ -148,21 +134,12 @@ export class Model extends EventTarget {
      * If no index is given, the last stored parsed data is returned.
      */
     parsedTrace(index = this.#traces.length - 1) {
-        return this.#traces.at(index)?.parsedTrace ?? null;
-    }
-    traceInsights(index = this.#traces.length - 1) {
-        return this.#traces.at(index)?.traceInsights ?? null;
-    }
-    metadata(index = this.#traces.length - 1) {
-        return this.#traces.at(index)?.metadata ?? null;
+        return this.#traces.at(index) ?? null;
     }
     overrideModifications(index, newModifications) {
         if (this.#traces[index]) {
             this.#traces[index].metadata.modifications = newModifications;
         }
-    }
-    rawTraceEvents(index = this.#traces.length - 1) {
-        return this.#traces.at(index)?.traceEvents ?? null;
     }
     syntheticTraceEventsManager(index = this.#traces.length - 1) {
         return this.#traces.at(index)?.syntheticEventsManager ?? null;

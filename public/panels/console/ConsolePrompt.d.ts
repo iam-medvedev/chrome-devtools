@@ -13,7 +13,6 @@ declare const ConsolePrompt_base: (new (...args: any[]) => {
 export declare class ConsolePrompt extends ConsolePrompt_base {
     #private;
     private addCompletionsFromHistory;
-    private historyInternal;
     private initialText;
     private editor;
     private readonly eagerPreviewElement;

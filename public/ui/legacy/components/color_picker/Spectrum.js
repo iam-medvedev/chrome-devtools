@@ -1,4 +1,4 @@
-// Copyright 2020 The Chromium Authors. All rights reserved.
+// Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
@@ -188,7 +188,7 @@ function getColorFromHsva(gamut, hsva) {
     }
 }
 export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
-    colorInternal;
+    #color;
     gamut = "srgb" /* SpectrumGamut.SRGB */;
     colorElement;
     colorDragElement;
@@ -237,7 +237,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     dragElement;
     dragHotSpotX;
     dragHotSpotY;
-    colorNameInternal;
+    #colorName;
     colorFormat = "rgb" /* Common.Color.Format.RGB */;
     eyeDropperAbortController = null;
     isFormatPickerShown = false;
@@ -247,7 +247,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     // selected form the palettes. That time, we don't
     // want to return the value of the variable but the
     // actual variable string.
-    colorStringInternal;
+    #colorString;
     constructor(contrastInfo) {
         super({ useShadowDom: true });
         this.registerRequiredCSS(spectrumStyles);
@@ -544,7 +544,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
         this.palettePanelShowing = show;
         this.contentElement.classList.toggle('palette-panel-showing', show);
-        this.focusInternal();
+        this.#focus();
     }
     onCloseBtnKeydown(event) {
         if (Platform.KeyboardUtilities.isEscKey(event) || Platform.KeyboardUtilities.isEnterOrSpaceKey(event)) {
@@ -566,7 +566,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     /**
      * (Suppress warning about preventScroll)
      */
-    focusInternal() {
+    #focus() {
         if (!this.isShowing()) {
             return;
         }
@@ -635,7 +635,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
             this.deleteIconToolbar.remove();
         }
         this.togglePalettePanel(false);
-        this.focusInternal();
+        this.#focus();
     }
     showLightnessShades(colorElement, colorText, _event) {
         function closeLightnessShades(element) {
@@ -949,8 +949,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.innerSetColor(color, '', undefined /* colorName */, undefined /* colorFormat */, ChangeSource.Other);
     }
     get color() {
-        if (this.colorInternal) {
-            return this.colorInternal;
+        if (this.#color) {
+            return this.#color;
         }
         return getColorFromHsva(this.gamut, this.hsv);
     }
@@ -962,7 +962,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         // * If we give "" as an argument to this funciton, it means
         // we want to clear the `colorStringInternal`.
         if (colorString !== undefined) {
-            this.colorStringInternal = colorString;
+            this.#colorString = colorString;
         }
         if (colorFormat !== undefined) {
             this.colorFormat = convertColorFormat(colorFormat);
@@ -983,11 +983,11 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         //   0 as well. Meaning that, when the user comes to white, the hue will be reset to
         //   `0` which will change the state of the color picker unintentionally.
         if (Array.isArray(colorOrHsv)) {
-            this.colorInternal = undefined;
+            this.#color = undefined;
             this.hsv = colorOrHsv;
         }
         else if (colorOrHsv !== undefined) {
-            this.colorInternal = colorOrHsv;
+            this.#color = colorOrHsv;
             const oldHue = this.hsv ? this.hsv[0] : null;
             this.hsv = getHsvFromColor(this.gamut, colorOrHsv);
             // When the hue is powerless in lch color space
@@ -1004,7 +1004,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
                 this.hsv[0] = oldHue;
             }
         }
-        this.colorNameInternal = colorName;
+        this.#colorName = colorName;
         if (this.contrastInfo) {
             this.contrastInfo.setColor(Common.Color.Legacy.fromHSVA(this.hsv), this.colorFormat);
         }
@@ -1018,7 +1018,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
     }
     colorName() {
-        return this.colorNameInternal;
+        return this.#colorName;
     }
     colorString() {
         // If the `colorStringInternal` exists and
@@ -1026,8 +1026,8 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         // Empty string check is important here since we use
         // that to point that the colorStringInternal is cleared
         // and should not be used.
-        if (this.colorStringInternal) {
-            return this.colorStringInternal;
+        if (this.#colorString) {
+            return this.#colorString;
         }
         const color = this.color;
         let colorString = this.colorFormat && this.colorFormat !== color.format() ?

@@ -1,4 +1,4 @@
-// Copyright 2025 The Chromium Authors. All rights reserved.
+// Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './Table.js';
@@ -7,9 +7,9 @@ import '../../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Trace from '../../../../models/trace/trace.js';
 import * as Lit from '../../../../ui/lit/lit.js';
-import { md } from '../../utils/Helpers.js';
 import { BaseInsightComponent } from './BaseInsightComponent.js';
 import { eventRef } from './EventRef.js';
+import { md } from './Helpers.js';
 import networkDependencyTreeInsightStyles from './networkDependencyTreeInsight.css.js';
 import { renderOthersLabel } from './Table.js';
 const { UIStrings, i18nString } = Trace.Insights.Models.NetworkDependencyTree;

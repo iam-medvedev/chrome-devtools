@@ -113,6 +113,9 @@
       "path": "../../models/trace/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/trace_source_maps_resolver/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
