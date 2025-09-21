@@ -437,6 +437,22 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
             node.domModel().cssModel().forcePseudoState(node, pseudoState, enabled);
         }
     }
+    highlightAttribute(attributeName) {
+        // If the attribute is not found, we highlight the tag name instead.
+        let animationElement = this.listItemElement.querySelector('.webkit-html-tag-name') ?? this.listItemElement;
+        if (this.nodeInternal.getAttribute(attributeName) !== undefined) {
+            const tag = this.listItemElement.getElementsByClassName('webkit-html-tag')[0];
+            const attributes = tag.getElementsByClassName('webkit-html-attribute');
+            for (const attribute of attributes) {
+                const attributeElement = attribute.getElementsByClassName('webkit-html-attribute-name')[0];
+                if (attributeElement.textContent === attributeName) {
+                    animationElement = attributeElement;
+                    break;
+                }
+            }
+        }
+        UI.UIUtils.runCSSAnimationOnce(animationElement, 'dom-update-highlight');
+    }
     isClosingTag() {
         return !isOpeningTag(this.tagTypeContext);
     }

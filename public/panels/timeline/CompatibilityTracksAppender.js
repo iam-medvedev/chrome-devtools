@@ -59,6 +59,8 @@ export function entryIsVisibleInTimeline(entry, parsedTrace) {
         Trace.Types.Events.isPerformanceMark(entry) || Trace.Types.Events.isConsoleTimeStamp(entry);
     return (eventStyle && !eventStyle.hidden) || eventIsTiming;
 }
+// These threads have no useful information. Omit them from the UI.
+const HIDDEN_THREAD_NAMES = new Set(['Chrome_ChildIOThread', 'Compositor', 'GpuMemoryThread', 'PerfettoTrace']);
 export const TrackNames = [
     'Animations',
     'Timings',
@@ -195,8 +197,7 @@ export class CompatibilityTracksAppender {
                 this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, "OTHER" /* Trace.Handlers.Threads.ThreadType.OTHER */, entries, tree));
                 continue;
             }
-            // These threads have no useful information. Omit them
-            if ((name === 'Chrome_ChildIOThread' || name === 'Compositor' || name === 'GpuMemoryThread') && !showAllEvents) {
+            if ((name && HIDDEN_THREAD_NAMES.has(name)) && !showAllEvents) {
                 continue;
             }
             const matchingWorklet = this.#parsedTrace.data.AuctionWorklets.worklets.get(pid);
@@ -436,7 +437,7 @@ export class CompatibilityTracksAppender {
         }
         // Historically all tracks would have a titleForEvent() method. However a
         // lot of these were duplicated so we worked on removing them in favour of
-        // the EntryName.nameForEntry method called below (see crbug.com/365047728).
+        // the Name.forEntry method called below (see crbug.com/365047728).
         // However, sometimes an appender needs to customise the titles slightly;
         // for example the LayoutShiftsTrackAppender does not show any titles as we
         // use diamonds to represent layout shifts.

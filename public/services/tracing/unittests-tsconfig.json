@@ -39,6 +39,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../front_end/services/tracing/FreshRecording.test.ts",
     "../../../../../../front_end/services/tracing/TracingManager.test.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",

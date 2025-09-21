@@ -481,10 +481,10 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
   }
   async setContentDataOrError(contentDataPromise) {
     const progressIndicator = document.createElement("devtools-progress");
-    progressIndicator.setTitle(i18nString(UIStrings.loading));
-    progressIndicator.setTotalWork(100);
+    progressIndicator.title = i18nString(UIStrings.loading);
+    progressIndicator.totalWork = 100;
     this.progressToolbarItem.element.appendChild(progressIndicator);
-    progressIndicator.setWorked(1);
+    progressIndicator.worked = 1;
     const contentData = await contentDataPromise;
     let error;
     let content;
@@ -507,8 +507,8 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
       content = null;
       this.wasmDisassemblyInternal = null;
     }
-    progressIndicator.setWorked(100);
-    progressIndicator.done();
+    progressIndicator.worked = 100;
+    progressIndicator.done = true;
     if (this.rawContent === content && error === void 0) {
       return;
     }
@@ -545,9 +545,9 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
     } else {
       this.positionToReveal = { ...position, shouldHighlight };
     }
-    this.innerRevealPositionIfNeeded();
+    this.#revealPositionIfNeeded();
   }
-  innerRevealPositionIfNeeded() {
+  #revealPositionIfNeeded() {
     if (!this.positionToReveal) {
       return;
     }
@@ -567,9 +567,9 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
   scrollToLine(line) {
     this.clearPositionToReveal();
     this.lineToScrollTo = line;
-    this.innerScrollToLineIfNeeded();
+    this.#scrollToLineIfNeeded();
   }
-  innerScrollToLineIfNeeded() {
+  #scrollToLineIfNeeded() {
     if (this.lineToScrollTo !== null) {
       if (this.loaded && this.isShowing()) {
         const { textEditor } = this;
@@ -581,9 +581,9 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
   }
   setSelection(textRange) {
     this.selectionToSet = textRange;
-    this.innerSetSelectionIfNeeded();
+    this.#setSelectionIfNeeded();
   }
-  innerSetSelectionIfNeeded() {
+  #setSelectionIfNeeded() {
     const sel = this.selectionToSet;
     if (sel && this.loaded && this.isShowing()) {
       const { textEditor } = this;
@@ -594,9 +594,9 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
     }
   }
   wasShownOrLoaded() {
-    this.innerRevealPositionIfNeeded();
-    this.innerSetSelectionIfNeeded();
-    this.innerScrollToLineIfNeeded();
+    this.#revealPositionIfNeeded();
+    this.#setSelectionIfNeeded();
+    this.#scrollToLineIfNeeded();
     this.textEditor.shadowRoot?.querySelector(".cm-lineNumbers")?.setAttribute("jslog", `${VisualLogging.gutter("line-numbers").track({ click: true })}`);
     this.textEditor.shadowRoot?.querySelector(".cm-foldGutter")?.setAttribute("jslog", `${VisualLogging.gutter("fold")}`);
     this.textEditor.setAttribute("jslog", `${VisualLogging.textField().track({ change: true })}`);
@@ -760,6 +760,9 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
     this.jumpToSearchResult(currentIndex - 1);
   }
   supportsCaseSensitiveSearch() {
+    return true;
+  }
+  supportsWholeWordSearch() {
     return true;
   }
   supportsRegexSearch() {
@@ -1931,18 +1934,17 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
   supportsCaseSensitiveSearch() {
     return true;
   }
+  supportsWholeWordSearch() {
+    return true;
+  }
   supportsRegexSearch() {
     return true;
   }
 };
 var ParsedJSON = class {
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data;
   prefix;
   suffix;
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   constructor(data, prefix, suffix) {
     this.data = data;
     this.prefix = prefix;
@@ -2319,6 +2321,9 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
     this.requestUpdate();
   }
   supportsCaseSensitiveSearch() {
+    return true;
+  }
+  supportsWholeWordSearch() {
     return true;
   }
   supportsRegexSearch() {

@@ -20,20 +20,20 @@ export class NetworkSearchScope {
     }
     performIndexing(progress) {
         queueMicrotask(() => {
-            progress.done();
+            progress.done = true;
         });
     }
     async performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback) {
         const promises = [];
         const requests = this.#networkLog.requests().filter(request => searchConfig.filePathMatchesFileQuery(request.url()));
-        progress.setTotalWork(requests.length);
+        progress.totalWork = requests.length;
         for (const request of requests) {
             const promise = this.searchRequest(searchConfig, request, progress);
             promises.push(promise);
         }
         const resultsWithNull = await Promise.all(promises);
         const results = (resultsWithNull.filter(result => result !== null));
-        if (progress.isCanceled()) {
+        if (progress.canceled) {
             searchFinishedCallback(false);
             return;
         }
@@ -42,12 +42,12 @@ export class NetworkSearchScope {
                 searchResultCallback(result);
             }
         }
-        progress.done();
+        progress.done = true;
         searchFinishedCallback(true);
     }
     async searchRequest(searchConfig, request, progress) {
         const bodyMatches = await NetworkSearchScope.#responseBodyMatches(searchConfig, request);
-        if (progress.isCanceled()) {
+        if (progress.canceled) {
             return null;
         }
         const locations = [];
@@ -67,7 +67,7 @@ export class NetworkSearchScope {
         for (const match of bodyMatches) {
             locations.push(NetworkForward.UIRequestLocation.UIRequestLocation.bodyMatch(request, match));
         }
-        progress.incrementWorked();
+        ++progress.worked;
         return new NetworkSearchResult(request, locations);
         function headerMatchesQuery(header) {
             return stringMatchesQuery(`${header.name}: ${header.value}`);

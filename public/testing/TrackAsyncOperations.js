@@ -17,34 +17,7 @@ const originals = {
     clearTimeout: clearTimeout.bind(window),
     cancelIdleCallback: cancelIdleCallback.bind(window)
 };
-const stubs = [];
-function stub(name, stubWith) {
-    window[name] = stubWith;
-    stubs.push({ name, stubWith });
-}
-function restoreAll() {
-    for (const { name } of stubs) {
-        window[name] = originals[name];
-    }
-    stubs.length = 0;
-}
 const asyncActivity = [];
-export function startTrackingAsyncActivity() {
-    // Reset everything before starting a new tracking session.
-    // Do this in case something went wrong with cleanup
-    stopTrackingAsyncActivity();
-    // We are tracking all asynchronous activity but let it run normally during
-    // the test.
-    stub('requestAnimationFrame', trackingRequestAnimationFrame);
-    stub('setTimeout', trackingSetTimeout);
-    stub('setInterval', trackingSetInterval);
-    stub('requestIdleCallback', trackingRequestIdleCallback);
-    stub('cancelAnimationFrame', id => cancelTrackingActivity('a' + id));
-    stub('clearTimeout', id => cancelTrackingActivity('t' + id));
-    stub('clearInterval', id => cancelTrackingActivity('i' + id));
-    stub('cancelIdleCallback', id => cancelTrackingActivity('d' + id));
-    stub('Promise', TrackingPromise);
-}
 export async function checkForPendingActivity(testName = '') {
     let stillPending = [];
     const wait = 5;
@@ -243,6 +216,47 @@ const TrackingPromise = Object.assign(function (arg) {
     asyncActivity.push(activity);
     return promise;
 }, BasePromise);
+const stubMethods = {
+    requestAnimationFrame: trackingRequestAnimationFrame,
+    setTimeout: trackingSetTimeout,
+    setInterval: trackingSetInterval,
+    requestIdleCallback: trackingRequestIdleCallback,
+    cancelAnimationFrame: id => cancelTrackingActivity('a' + id),
+    clearTimeout: id => cancelTrackingActivity('t' + id),
+    clearInterval: id => cancelTrackingActivity('i' + id),
+    cancelIdleCallback: id => cancelTrackingActivity('d' + id),
+    Promise: TrackingPromise,
+};
+export function startTrackingAsyncActivity() {
+    // Reset everything before starting a new tracking session.
+    // Do this in case something went wrong with cleanup
+    stopTrackingAsyncActivity();
+    // We are tracking all asynchronous activity but let it run normally during
+    // the test.
+    stub('requestAnimationFrame');
+    stub('setTimeout');
+    stub('setInterval');
+    stub('requestIdleCallback');
+    stub('cancelAnimationFrame');
+    stub('clearTimeout');
+    stub('clearInterval');
+    stub('cancelIdleCallback');
+    stub('Promise');
+}
+const stubs = new Set();
+function stub(name) {
+    window[name] = stubMethods[name];
+    stubs.add(name);
+}
+function restoreAll() {
+    for (const name of stubs) {
+        if (window[name] !== stubMethods[name]) {
+            throw new Error(`Unexpected stub for method ${name} found`);
+        }
+        window[name] = originals[name];
+    }
+    stubs.clear();
+}
 function getStack(error) {
     return (error.stack ?? 'No stack').split('\n').slice(2).join('\n');
 }

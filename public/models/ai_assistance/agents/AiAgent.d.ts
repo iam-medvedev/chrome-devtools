@@ -113,6 +113,8 @@ export interface ConversationSuggestion {
     title: string;
     jslogContext?: string;
 }
+/** At least one. */
+export type ConversationSuggestions = [ConversationSuggestion, ...ConversationSuggestion[]];
 export declare const enum ExternalRequestResponseType {
     ANSWER = "answer",
     NOTIFICATION = "notification",
@@ -142,7 +144,7 @@ export declare abstract class ConversationContext<T> {
      * It will be overridden in subclasses to fetch data related to the context item.
      */
     refresh(): Promise<void>;
-    getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
+    getSuggestions(): Promise<ConversationSuggestions | undefined>;
 }
 export type FunctionCallHandlerResult<Result> = {
     result: Result;

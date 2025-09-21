@@ -15,6 +15,8 @@ export declare class UserBadges extends Common.ObjectWrapper.ObjectWrapper<Event
         forceNew: boolean;
     }): UserBadges;
     initialize(): Promise<void>;
+    snoozeStarterBadge(): void;
+    dismissStarterBadge(): void;
     recordAction(action: BadgeAction): void;
     reconcileBadgesFinishedForTest(): void;
     isReceiveBadgesSettingEnabled(): boolean;

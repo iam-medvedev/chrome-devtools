@@ -228,7 +228,7 @@ export class NetworkConfigView extends UI.Widget.VBox {
             customSelectAndInput.select.value = 'custom';
             userAgentUpdateButtonStatusText.textContent = '';
         });
-        clientHints.addEventListener('clienthintssubmit', (event) => {
+        clientHints.addEventListener('clienthintssubmit', event => {
             const metaData = event.detail.value;
             const customUA = customUserAgentSetting.get();
             userAgentMetadataSetting.set(metaData);

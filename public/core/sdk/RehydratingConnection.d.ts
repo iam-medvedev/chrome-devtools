@@ -1,6 +1,7 @@
 import type * as Platform from '../platform/platform.js';
 import type * as ProtocolClient from '../protocol_client/protocol_client.js';
-import type { ProtocolMessage, RehydratingExecutionContext, RehydratingScript, RehydratingTarget, ServerMessage, TraceFile } from './RehydratingObject.js';
+import type { ProtocolMessage, RehydratingExecutionContext, RehydratingScript, RehydratingTarget, ServerMessage } from './RehydratingObject.js';
+import { TraceObject } from './TraceObject.js';
 export interface RehydratingConnectionInterface {
     postToFrontend: (arg: ServerMessage) => void;
 }
@@ -14,10 +15,15 @@ export declare class RehydratingConnection implements ProtocolClient.InspectorBa
     rehydratingConnectionState: RehydratingConnectionState;
     onDisconnect: ((arg0: string) => void) | null;
     onMessage: ((arg0: Object) => void) | null;
-    trace: TraceFile | null;
+    trace: TraceObject | null;
     sessions: Map<number, RehydratingSessionBase>;
     constructor(onConnectionLost: (message: Platform.UIString.LocalizedString) => void);
-    startHydration(trace: TraceFile): Promise<boolean>;
+    /**
+     * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
+     * the trace event and all necessary data to power a rehydrated session.
+     */
+    onReceiveHostWindowPayload(event: MessageEvent): void;
+    startHydration(trace: TraceObject): Promise<boolean>;
     setOnMessage(onMessage: (arg0: Object | string) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;
     sendRawMessage(message: string | object): void;
@@ -38,7 +44,7 @@ export declare class RehydratingSession extends RehydratingSessionBase {
     constructor(sessionId: number, target: RehydratingTarget, executionContexts: RehydratingExecutionContext[], scripts: RehydratingScript[], connection: RehydratingConnectionInterface);
     sendMessageToFrontend(payload: ServerMessage, attachSessionId?: boolean): void;
     handleFrontendMessageAsFakeCDPAgent(data: ProtocolMessage): void;
-    private sessionAttachToTarget;
+    declareSessionAttachedToTarget(): void;
     private handleRuntimeEnabled;
     private handleDebuggerGetScriptSource;
     private handleDebuggerEnable;

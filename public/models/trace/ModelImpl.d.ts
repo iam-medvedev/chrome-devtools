@@ -2,11 +2,6 @@ import * as Handlers from './handlers/handlers.js';
 import * as Helpers from './helpers/helpers.js';
 import type * as Insights from './insights/insights.js';
 import * as Types from './types/types.js';
-export interface ParseConfig {
-    metadata?: Types.File.MetaData;
-    isFreshRecording?: boolean;
-    resolveSourceMap?: Types.Configuration.ParseOptions['resolveSourceMap'];
-}
 /**
  * The Model is responsible for parsing arrays of raw trace events and storing the
  * resulting data. It can store multiple traces at once, and can return the data for
@@ -53,7 +48,7 @@ export declare class Model extends EventTarget {
      * });
      * void this.traceModel.parse(events);
      **/
-    parse(traceEvents: readonly Types.Events.Event[], config?: ParseConfig): Promise<void>;
+    parse(traceEvents: readonly Types.Events.Event[], config?: Types.Configuration.ParseOptions): Promise<void>;
     lastTraceIndex(): number;
     /**
      * Returns the parsed trace data indexed by the order in which it was stored.

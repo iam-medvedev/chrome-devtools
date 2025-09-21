@@ -353,8 +353,8 @@ export class CPUThrottlingCard {
         }
     }
     async runCalibration() {
-        this.progress.setWorked(0);
-        this.progress.setTotalWork(1);
+        this.progress.worked = 0;
+        this.progress.totalWork = 1;
         this.controller = new CalibrationController();
         try {
             if (!await this.controller.start()) {
@@ -362,7 +362,7 @@ export class CPUThrottlingCard {
                 return;
             }
             for await (const result of this.controller.iterator()) {
-                this.progress.setWorked(result.progress);
+                this.progress.worked = result.progress;
             }
         }
         catch (e) {
@@ -375,7 +375,7 @@ export class CPUThrottlingCard {
         if (result && (result.low || result.mid)) {
             this.setting.set(result);
             // Let the user bask in the glory of a 100% progress bar, for a bit.
-            this.progress.setWorked(1);
+            this.progress.worked = 1;
             await new Promise(resolve => setTimeout(resolve, 200));
         }
         this.state = 'cta';

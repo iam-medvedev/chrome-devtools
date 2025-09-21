@@ -28,11 +28,11 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
         this.layersById = new Map();
         this.setContentRoot(null);
         if (root) {
-            const convertedLayers = this.innerSetLayers(oldLayersById, root);
+            const convertedLayers = this.#setLayers(oldLayersById, root);
             this.setRoot(convertedLayers);
         }
         else if (layers) {
-            const processedLayers = layers.map(this.innerSetLayers.bind(this, oldLayersById));
+            const processedLayers = layers.map(this.#setLayers.bind(this, oldLayersById));
             const contentRoot = this.contentRoot();
             if (!contentRoot) {
                 throw new Error('Content root is not set.');
@@ -73,7 +73,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
             }
         }
     }
-    innerSetLayers(oldLayersById, payload) {
+    #setLayers(oldLayersById, payload) {
         let layer = oldLayersById.get(payload.layer_id);
         if (layer) {
             layer.reset(payload);
@@ -89,7 +89,7 @@ export class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
             this.setContentRoot(layer);
         }
         for (let i = 0; payload.children && i < payload.children.length; ++i) {
-            layer.addChild(this.innerSetLayers(oldLayersById, payload.children[i]));
+            layer.addChild(this.#setLayers(oldLayersById, payload.children[i]));
         }
         return layer;
     }

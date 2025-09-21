@@ -201,6 +201,9 @@ export class DOMTreeWidget extends UI.Widget.Widget {
     selectDOMNode(node, focus) {
         this.#viewOutput?.elementsTreeOutline?.selectDOMNode(node, focus);
     }
+    highlightNodeAttribute(node, attribute) {
+        this.#viewOutput?.elementsTreeOutline?.highlightNodeAttribute(node, attribute);
+    }
     setWordWrap(wrap) {
         this.#wrap = wrap;
         this.performUpdate();
@@ -832,6 +835,14 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             return;
         }
         treeElement.revealAndSelect(omitFocus);
+    }
+    highlightNodeAttribute(node, attribute) {
+        const treeElement = this.findTreeElement(node);
+        if (!treeElement) {
+            return;
+        }
+        treeElement.reveal();
+        treeElement.highlightAttribute(attribute);
     }
     treeElementFromEventInternal(event) {
         const scrollContainer = this.element.parentElement;
@@ -1525,7 +1536,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             return;
         }
         console.assert(!treeElement.isClosingTag());
-        this.innerUpdateChildren(treeElement);
+        this.#updateChildren(treeElement);
     }
     insertChildElement(treeElement, child, index, isClosingTag) {
         const newElement = this.createElementTreeElement(child, isClosingTag);
@@ -1548,7 +1559,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
             child.select();
         }
     }
-    innerUpdateChildren(treeElement) {
+    #updateChildren(treeElement) {
         if (this.treeElementsBeingUpdated.has(treeElement)) {
             return;
         }

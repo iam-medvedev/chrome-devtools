@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { buildGroupStyle, buildTrackHeader, getDurationString } from './AppenderUtils.js';
 import * as Extensions from './extensions/extensions.js';
@@ -27,7 +28,8 @@ export class ExtensionTrackAppender {
         if (totalEntryCount === 0) {
             return trackStartLevel;
         }
-        this.#appendTopLevelHeaderAtLevel(trackStartLevel, expanded);
+        const compact = !this.#extensionTopLevelTrack.isTrackGroup && totalEntryCount < 2;
+        this.#appendTopLevelHeaderAtLevel(trackStartLevel, compact, expanded);
         return this.#appendExtensionTrackData(trackStartLevel);
     }
     /**
@@ -36,8 +38,10 @@ export class ExtensionTrackAppender {
      * header corresponds to the track name, in the latter it corresponds
      * to the track group name.
      */
-    #appendTopLevelHeaderAtLevel(currentLevel, expanded) {
-        const style = buildGroupStyle({ shareHeaderLine: false, collapsible: true });
+    #appendTopLevelHeaderAtLevel(currentLevel, compact, expanded) {
+        const style = compact ?
+            buildGroupStyle({ shareHeaderLine: true, collapsible: 1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */ }) :
+            buildGroupStyle({ shareHeaderLine: false, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ });
         const headerTitle = this.#extensionTopLevelTrack.name;
         const jsLogContext = this.#extensionTopLevelTrack.name === '🅰️ Angular' ? "angular-track" /* VisualLoggingTrackName.ANGULAR_TRACK */ :
             "extension" /* VisualLoggingTrackName.EXTENSION */;
@@ -51,7 +55,12 @@ export class ExtensionTrackAppender {
      * corresponds to the track name itself, instead of the track name.
      */
     #appendSecondLevelHeader(trackStartLevel, headerTitle) {
-        const style = buildGroupStyle({ shareHeaderLine: false, padding: 2, nestingLevel: 1, collapsible: true });
+        const style = buildGroupStyle({
+            shareHeaderLine: false,
+            padding: 2,
+            nestingLevel: 1,
+            collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */
+        });
         const group = buildTrackHeader("extension" /* VisualLoggingTrackName.EXTENSION */, trackStartLevel, headerTitle, style, 
         /* selectable= */ true);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);

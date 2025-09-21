@@ -351,7 +351,7 @@ class DataGridElementNode extends SortableDataGridNode {
             const cell = cells[i];
             const column = this.#dataGridElement.columns[i];
             if (column.dataType === "Boolean" /* DataType.BOOLEAN */) {
-                this.data[column.id] = hasBooleanAttribute(cell, 'data-value');
+                this.data[column.id] = hasBooleanAttribute(cell, 'data-value') || cell.textContent === 'true';
             }
             else {
                 this.data[column.id] = cell.dataset.value ?? cell.textContent ?? '';
@@ -421,7 +421,9 @@ class DataGridElementNode extends SortableDataGridNode {
     createCell(columnId) {
         const index = this.#dataGridElement.columns.findIndex(({ id }) => id === columnId);
         if (this.#dataGridElement.columns[index].dataType === "Boolean" /* DataType.BOOLEAN */) {
-            return super.createCell(columnId);
+            const cell = super.createCell(columnId);
+            cell.setAttribute('part', `${columnId}-column`);
+            return cell;
         }
         const cell = this.createTD(columnId);
         cell.setAttribute('part', `${columnId}-column`);

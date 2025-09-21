@@ -579,7 +579,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     this.columnsArray = [];
     this.columns = {};
     this.visibleColumnsArray = columnsArray;
-    columnsArray.forEach((column) => this.innerAddColumn(column));
+    columnsArray.forEach((column) => this.#addColumn(column));
     this.cellClass = null;
     this.dataTableColumnGroup = this.dataTable.createChild("colgroup");
     this.#dataTableHead = this.dataTable.createChild("thead");
@@ -735,11 +735,11 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     }
     UI.ARIAUtils.LiveAnnouncer.alert(accessibleText);
   }
-  innerAddColumn(column, position) {
+  #addColumn(column, position) {
     column.defaultWeight = column.weight;
     const columnId = column.id;
     if (columnId in this.columns) {
-      this.innerRemoveColumn(columnId);
+      this.#removeColumn(columnId);
     }
     if (position === void 0) {
       position = this.columnsArray.length;
@@ -780,9 +780,9 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     }
   }
   addColumn(column, position) {
-    this.innerAddColumn(column, position);
+    this.#addColumn(column, position);
   }
-  innerRemoveColumn(columnId) {
+  #removeColumn(columnId) {
     const column = this.columns[columnId];
     if (!column) {
       return;
@@ -797,7 +797,7 @@ var DataGridImpl = class _DataGridImpl extends Common.ObjectWrapper.ObjectWrappe
     delete this.dataTableHeaders[columnId];
   }
   removeColumn(columnId) {
-    this.innerRemoveColumn(columnId);
+    this.#removeColumn(columnId);
   }
   setCellClass(cellClass) {
     this.cellClass = cellClass;
@@ -3453,7 +3453,7 @@ var DataGridElementNode = class _DataGridElementNode extends SortableDataGridNod
       const cell = cells[i];
       const column = this.#dataGridElement.columns[i];
       if (column.dataType === "Boolean") {
-        this.data[column.id] = hasBooleanAttribute(cell, "data-value");
+        this.data[column.id] = hasBooleanAttribute(cell, "data-value") || cell.textContent === "true";
       } else {
         this.data[column.id] = cell.dataset.value ?? cell.textContent ?? "";
       }
@@ -3521,7 +3521,9 @@ var DataGridElementNode = class _DataGridElementNode extends SortableDataGridNod
   createCell(columnId) {
     const index = this.#dataGridElement.columns.findIndex(({ id }) => id === columnId);
     if (this.#dataGridElement.columns[index].dataType === "Boolean") {
-      return super.createCell(columnId);
+      const cell2 = super.createCell(columnId);
+      cell2.setAttribute("part", `${columnId}-column`);
+      return cell2;
     }
     const cell = this.createTD(columnId);
     cell.setAttribute("part", `${columnId}-column`);

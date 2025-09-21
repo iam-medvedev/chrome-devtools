@@ -193,7 +193,7 @@ export class UserMetrics {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.LighthouseCategoryUsed" /* EnumeratedHistogram.LighthouseCategoryUsed */, type, 6 /* LighthouseCategoryUsed.MAX_VALUE */);
     }
     swatchActivated(swatch) {
-        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 11 /* SwatchType.MAX_VALUE */);
+        InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.SwatchActivated" /* EnumeratedHistogram.SwatchActivated */, swatch, 12 /* SwatchType.MAX_VALUE */);
     }
     animationPlaybackRateChanged(playbackRate) {
         InspectorFrontendHostInstance.recordEnumeratedHistogram("DevTools.AnimationPlaybackRateChanged" /* EnumeratedHistogram.AnimationPlaybackRateChanged */, playbackRate, 4 /* AnimationsPlaybackRate.MAX_VALUE */);
@@ -418,7 +418,12 @@ export var Action;
     Action[Action["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
     Action[Action["AiAssistanceOpenedFromPerformanceFullButton"] = 183] = "AiAssistanceOpenedFromPerformanceFullButton";
     Action[Action["AiCodeCompletionResponseServedFromCache"] = 184] = "AiCodeCompletionResponseServedFromCache";
-    Action[Action["MAX_VALUE"] = 185] = "MAX_VALUE";
+    Action[Action["AiCodeCompletionRequestTriggered"] = 185] = "AiCodeCompletionRequestTriggered";
+    Action[Action["AiCodeCompletionSuggestionDisplayed"] = 186] = "AiCodeCompletionSuggestionDisplayed";
+    Action[Action["AiCodeCompletionSuggestionAccepted"] = 187] = "AiCodeCompletionSuggestionAccepted";
+    Action[Action["AiCodeCompletionError"] = 188] = "AiCodeCompletionError";
+    Action[Action["AttributeLinkClicked"] = 189] = "AttributeLinkClicked";
+    Action[Action["MAX_VALUE"] = 190] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;
@@ -694,7 +699,6 @@ export var DevtoolsExperiments;
     DevtoolsExperiments[DevtoolsExperiments["just-my-code"] = 65] = "just-my-code";
     DevtoolsExperiments[DevtoolsExperiments["use-source-map-scopes"] = 76] = "use-source-map-scopes";
     DevtoolsExperiments[DevtoolsExperiments["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
-    DevtoolsExperiments[DevtoolsExperiments["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
     DevtoolsExperiments[DevtoolsExperiments["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
     DevtoolsExperiments[DevtoolsExperiments["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
     DevtoolsExperiments[DevtoolsExperiments["timeline-debug-mode"] = 93] = "timeline-debug-mode";

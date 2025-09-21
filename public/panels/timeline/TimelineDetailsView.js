@@ -8,6 +8,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
@@ -24,7 +25,6 @@ import { TimelineSelectorStatsView } from './TimelineSelectorStatsView.js';
 import { AggregatedTimelineTreeView, BottomUpTimelineTreeView, CallTreeTimelineTreeView, TimelineTreeView } from './TimelineTreeView.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
 import { TracingFrameLayerTree } from './TracingLayerTree.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Text for the summary view
@@ -547,7 +547,7 @@ async function renderSelectedEventDetails(input) {
     if (!selectedEvent || !parsedTrace || !linkifier) {
         return nothing;
     }
-    const traceRecordingIsFresh = parsedTrace ? Utils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
+    const traceRecordingIsFresh = parsedTrace ? Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
     if (Trace.Types.Events.isSyntheticLayoutShift(selectedEvent) ||
         Trace.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
         // clang-format off

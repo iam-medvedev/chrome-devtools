@@ -289,6 +289,9 @@ export class XMLView extends UI.Widget.Widget {
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return true;
+    }
     supportsRegexSearch() {
         return true;
     }

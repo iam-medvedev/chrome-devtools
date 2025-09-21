@@ -157,7 +157,7 @@ export async function finalize() {
 }
 export function data() {
     return {
-        worklets: new Map(createdSyntheticEvents),
+        worklets: createdSyntheticEvents,
     };
 }
 //# sourceMappingURL=AuctionWorkletsHandler.js.map

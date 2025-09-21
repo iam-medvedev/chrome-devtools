@@ -39,8 +39,10 @@ export declare const setAiAutoCompleteSuggestion: CM.StateEffectType<ActiveSugge
 interface ActiveSuggestion {
     text: string;
     from: number;
-    sampleId?: number;
+    sampleId: number;
     rpcGlobalId?: Host.AidaClient.RpcGlobalId;
+    startTime: number;
+    onImpression: (rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number, latency: number) => void;
 }
 export declare const aiAutoCompleteSuggestionState: CM.StateField<ActiveSuggestion | null>;
 export declare function hasActiveAiSuggestion(state: CM.EditorState): boolean;

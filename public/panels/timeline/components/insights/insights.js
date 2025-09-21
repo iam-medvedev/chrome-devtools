@@ -12,12 +12,13 @@ __export(BaseInsightComponent_exports, {
 import "./../../../../ui/components/markdown_view/markdown_view.js";
 import * as i18n from "./../../../../core/i18n/i18n.js";
 import * as Root from "./../../../../core/root/root.js";
+import * as AIAssistance from "./../../../../models/ai_assistance/ai_assistance.js";
+import * as Badges from "./../../../../models/badges/badges.js";
 import * as Buttons from "./../../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers from "./../../../../ui/components/helpers/helpers.js";
 import * as UI from "./../../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging from "./../../../../ui/visual_logging/visual_logging.js";
-import * as Utils from "./../../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/insights/baseInsightComponent.css.js
 var baseInsightComponent_css_default = `/*
@@ -417,17 +418,21 @@ var BaseInsightComponent = class extends HTMLElement {
     return { updateTraceWindow: true };
   }
   #dispatchInsightToggle() {
-    if (this.#selected) {
-      this.dispatchEvent(new InsightDeactivated());
-      const focus = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
-      if (focus && focus.data.type === "insight") {
-        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
-      }
-      return;
-    }
     if (!this.data.insightSetKey || !this.model) {
       return;
     }
+    const focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+    if (this.#selected) {
+      this.dispatchEvent(new InsightDeactivated());
+      if (focus) {
+        UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(null));
+      }
+      return;
+    }
+    if (focus) {
+      UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(this.model));
+    }
+    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
     this.sharedTableState.selectedRowEl?.classList.remove("selected");
     this.sharedTableState.selectedRowEl = null;
     this.sharedTableState.selectionIsSticky = false;
@@ -565,7 +570,13 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, this.#agentFocus);
+    let focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+    if (focus) {
+      focus = focus.withInsight(this.model);
+    } else {
+      focus = this.#agentFocus;
+    }
+    UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
   }
@@ -673,7 +684,7 @@ import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as Trace2 from "./../../../../models/trace/trace.js";
 import * as ComponentHelpers2 from "./../../../../ui/components/helpers/helpers.js";
 import * as Lit3 from "./../../../../ui/lit/lit.js";
-import * as Utils2 from "./../../utils/utils.js";
+import * as Utils from "./../../utils/utils.js";
 var { html: html3, Directives: { ifDefined } } = Lit3;
 var EventReferenceClick = class _EventReferenceClick extends Event {
   event;
@@ -714,7 +725,7 @@ function eventRef(event, options) {
   let title = options?.title;
   let text = options?.text;
   if (Trace2.Types.Events.isSyntheticNetworkRequest(event)) {
-    text = text ?? Utils2.Helpers.shortenUrl(new URL(event.args.data.url));
+    text = text ?? Utils.Helpers.shortenUrl(new URL(event.args.data.url));
     title = title ?? event.args.data.url;
   } else if (!text) {
     console.warn("No text given for eventRef");
@@ -1511,7 +1522,7 @@ import * as Trace6 from "./../../../../models/trace/trace.js";
 import * as Buttons3 from "./../../../../ui/components/buttons/buttons.js";
 import * as Lit11 from "./../../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../../ui/visual_logging/visual_logging.js";
-import * as Utils3 from "./../../utils/utils.js";
+import * as Utils2 from "./../../utils/utils.js";
 
 // gen/front_end/panels/timeline/components/insights/ScriptRef.js
 import * as Platform from "./../../../../core/platform/platform.js";
@@ -1559,10 +1570,10 @@ var DuplicatedJavaScript = class extends BaseInsightComponent {
       return;
     }
     if (!this.#treemapData) {
-      this.#treemapData = Utils3.Treemap.createTreemapData({ scripts: this.model.scripts }, this.model.duplication);
+      this.#treemapData = Utils2.Treemap.createTreemapData({ scripts: this.model.scripts }, this.model.duplication);
     }
     const windowNameSuffix = this.insightSetKey ?? "devtools";
-    Utils3.Treemap.openTreemap(this.#treemapData, this.model.mainDocumentUrl, windowNameSuffix);
+    Utils2.Treemap.openTreemap(this.#treemapData, this.model.mainDocumentUrl, windowNameSuffix);
   }
   getEstimatedSavingsTime() {
     return this.model?.metricSavings?.FCP ?? null;

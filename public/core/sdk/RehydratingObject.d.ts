@@ -1,36 +1,20 @@
 import type * as Protocol from '../../generated/protocol.js';
-import type { SourceMapV3 } from './SourceMap.js';
-export interface RehydratingScript {
-    scriptId: Protocol.Runtime.ScriptId;
-    isolate: string;
-    /** The script's `src` */
-    url: string;
-    executionContextId: Protocol.Runtime.ExecutionContextId;
-    startLine: number;
-    startColumn: number;
-    endLine: number;
-    endColumn: number;
-    hash: string;
-    isModule?: boolean;
-    hasSourceURL?: boolean;
-    sourceMapURL?: string;
-    /** The manually provided string via the `//# sourceURL` directive */
-    sourceURL?: string;
-    length?: number;
+export interface RehydratingScript extends Protocol.Debugger.ScriptParsedEvent {
     sourceText?: string;
-    auxData?: RehydratingExecutionContextAuxData;
-    pid?: number;
+    executionContextAuxData?: RehydratingExecutionContextAuxData;
+    isolate: string;
+    /** The manually provided string via the `//# sourceURL` directive. Meanwhile the `url` is the script's `src`  */
+    sourceURL?: string;
+    pid: number;
 }
 export interface RehydratingExecutionContextAuxData {
     frameId?: Protocol.Page.FrameId;
     isDefault?: boolean;
     type?: string;
 }
-export interface RehydratingExecutionContext {
-    id: Protocol.Runtime.ExecutionContextId;
-    origin: string;
+export interface RehydratingExecutionContext extends Protocol.Runtime.ExecutionContextDescription {
+    /** AKA V8ContextToken. https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/inspector/inspector_trace_events.cc;l=1229;drc=3c88f61e18b043e70c225d8d57c77832a85e7f58 */
     v8Context?: string;
-    name?: string;
     auxData?: RehydratingExecutionContextAuxData;
     isolate: string;
 }
@@ -64,13 +48,4 @@ export interface Session {
     target: RehydratingTarget;
     executionContexts: RehydratingExecutionContext[];
     scripts: RehydratingScript[];
-}
-export interface TraceFile {
-    traceEvents: readonly object[];
-    metadata: {
-        sourceMaps?: Array<{
-            sourceMapUrl: string;
-            sourceMap: SourceMapV3;
-        }>;
-    };
 }

@@ -1158,7 +1158,9 @@ __export(GdpClient_exports, {
   GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK: () => GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK,
   GdpClient: () => GdpClient,
   SubscriptionStatus: () => SubscriptionStatus,
-  SubscriptionTier: () => SubscriptionTier
+  SubscriptionTier: () => SubscriptionTier,
+  getGdpProfilesEnterprisePolicy: () => getGdpProfilesEnterprisePolicy,
+  isGdpProfilesAvailable: () => isGdpProfilesAvailable
 });
 import * as Root3 from "./../root/root.js";
 var SubscriptionStatus;
@@ -1192,7 +1194,7 @@ function normalizeBadgeName(name) {
 }
 var GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 async function makeHttpRequest(request) {
-  if (!Root3.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+  if (!isGdpProfilesAvailable()) {
     return null;
   }
   const response = await new Promise((resolve) => {
@@ -1306,6 +1308,16 @@ function setDebugGdpIntegrationEnabled(enabled) {
   } else {
     localStorage.removeItem("debugGdpIntegrationEnabled");
   }
+}
+function isGdpProfilesAvailable() {
+  const isBaseFeatureEnabled = Boolean(Root3.Runtime.hostConfig.devToolsGdpProfiles?.enabled);
+  const isBrandedBuild = Boolean(Root3.Runtime.hostConfig.devToolsGdpProfilesAvailability?.enabled);
+  const isOffTheRecordProfile = Root3.Runtime.hostConfig.isOffTheRecord;
+  const isDisabledByEnterprisePolicy = getGdpProfilesEnterprisePolicy() === Root3.Runtime.GdpProfilesEnterprisePolicyValue.DISABLED;
+  return isBaseFeatureEnabled && isBrandedBuild && !isOffTheRecordProfile && !isDisabledByEnterprisePolicy;
+}
+function getGdpProfilesEnterprisePolicy() {
+  return Root3.Runtime.hostConfig.devToolsGdpProfilesAvailability?.enterprisePolicyValue ?? Root3.Runtime.GdpProfilesEnterprisePolicyValue.DISABLED;
 }
 globalThis.setDebugGdpIntegrationEnabled = setDebugGdpIntegrationEnabled;
 
@@ -1651,7 +1663,7 @@ var UserMetrics = class {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
       "DevTools.SwatchActivated",
       swatch,
-      11
+      12
       /* SwatchType.MAX_VALUE */
     );
   }
@@ -1868,7 +1880,12 @@ var Action;
   Action2[Action2["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
   Action2[Action2["AiAssistanceOpenedFromPerformanceFullButton"] = 183] = "AiAssistanceOpenedFromPerformanceFullButton";
   Action2[Action2["AiCodeCompletionResponseServedFromCache"] = 184] = "AiCodeCompletionResponseServedFromCache";
-  Action2[Action2["MAX_VALUE"] = 185] = "MAX_VALUE";
+  Action2[Action2["AiCodeCompletionRequestTriggered"] = 185] = "AiCodeCompletionRequestTriggered";
+  Action2[Action2["AiCodeCompletionSuggestionDisplayed"] = 186] = "AiCodeCompletionSuggestionDisplayed";
+  Action2[Action2["AiCodeCompletionSuggestionAccepted"] = 187] = "AiCodeCompletionSuggestionAccepted";
+  Action2[Action2["AiCodeCompletionError"] = 188] = "AiCodeCompletionError";
+  Action2[Action2["AttributeLinkClicked"] = 189] = "AttributeLinkClicked";
+  Action2[Action2["MAX_VALUE"] = 190] = "MAX_VALUE";
 })(Action || (Action = {}));
 var PanelCodes;
 (function(PanelCodes2) {
@@ -2130,7 +2147,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["just-my-code"] = 65] = "just-my-code";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-save-as-gz"] = 108] = "timeline-save-as-gz";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";

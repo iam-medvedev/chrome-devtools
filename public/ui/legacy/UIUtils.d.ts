@@ -316,18 +316,19 @@ export declare class PromotionManager {
  */
 export declare function maybeCreateNewBadge(promotionId: string): HTMLDivElement | undefined;
 export declare function bindToAction(actionName: string): ReturnType<typeof Directives.ref>;
-declare class InterceptBindingDirective extends Lit.Directive.Directive {
+type BindingEventListener = (arg: any) => any;
+export declare class InterceptBindingDirective extends Lit.Directive.Directive {
     #private;
-    constructor(part: Lit.Directive.PartInfo);
-    update(part: Lit.Directive.EventPart, [listener]: [(e: Event) => void]): undefined;
-    render(_listener: (e: Event) => void): undefined;
+    update(part: Lit.Directive.Part, [listener]: [BindingEventListener]): unknown;
+    render(_listener: Function): undefined;
     static attachEventListeners(templateElement: Element, renderedElement: Element): void;
 }
+export declare const cloneCustomElement: <T extends HTMLElement>(element: T, deep?: boolean) => T;
 export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
     #private;
-    static readonly on: (_listener: (e: Event) => void) => Lit.Directive.DirectiveResult<typeof InterceptBindingDirective>;
     constructor();
     static cloneNode(node: Node): Node;
+    private static patchLitTemplate;
     set template(template: Lit.LitTemplate);
     protected onChange(_mutationList: MutationRecord[]): void;
     protected updateNode(_node: Node, _attributeName: string | null): void;

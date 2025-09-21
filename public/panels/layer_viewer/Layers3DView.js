@@ -629,11 +629,11 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
             this.updateScheduled = true;
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 this.updateScheduled = false;
-                this.innerUpdate();
+                this.#update();
             }));
         }
     }
-    innerUpdate() {
+    #update() {
         if (!this.layerTree?.root()) {
             this.failBanner.show(this.contentElement);
             return;

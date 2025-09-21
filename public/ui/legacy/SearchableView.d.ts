@@ -14,6 +14,7 @@ export declare class SearchableView extends VBox {
     private searchNavigationNextElement;
     private readonly replaceInputElement;
     private caseSensitiveButton;
+    private wholeWordButton;
     private regexButton;
     private replaceButtonElement;
     private replaceAllButtonElement;
@@ -23,8 +24,6 @@ export declare class SearchableView extends VBox {
     private valueChangedTimeoutId?;
     constructor(searchable: Searchable, replaceable: Replaceable | null, settingName?: string, element?: HTMLElement);
     static fromElement(element: Element | null): SearchableView | null;
-    private toggleCaseSensitiveSearch;
-    private toggleRegexSearch;
     private toggleReplace;
     private saveSetting;
     private loadSetting;
@@ -61,12 +60,15 @@ export declare class SearchableView extends VBox {
     private onValueChanged;
 }
 export interface Searchable {
+    currentQuery?: string;
+    currentSearchMatches?: number;
     onSearchCanceled(): void;
     onSearchClosed?: () => void;
     performSearch(searchConfig: SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
 export interface Replaceable {
@@ -80,7 +82,8 @@ export interface SearchRegexResult {
 export declare class SearchConfig {
     query: string;
     caseSensitive: boolean;
+    wholeWord: boolean;
     isRegex: boolean;
-    constructor(query: string, caseSensitive: boolean, isRegex: boolean);
+    constructor(query: string, caseSensitive: boolean, wholeWord: boolean, isRegex: boolean);
     toSearchRegex(global?: boolean): SearchRegexResult;
 }

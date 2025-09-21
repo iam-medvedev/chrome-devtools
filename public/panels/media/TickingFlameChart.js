@@ -15,7 +15,7 @@ function getGroupDefaultTextColor() {
 const DefaultStyle = () => ({
     height: 20,
     padding: 2,
-    collapsible: false,
+    collapsible: 1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */,
     font: defaultFont,
     color: getGroupDefaultTextColor(),
     backgroundColor: 'rgba(100 0 0 / 10%)',

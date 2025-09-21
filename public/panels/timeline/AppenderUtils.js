@@ -1,5 +1,6 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 const UIStrings = {
     /**
@@ -23,7 +24,7 @@ export function buildGroupStyle(extra) {
     const defaultGroupStyle = {
         padding: 4,
         height: 17,
-        collapsible: true,
+        collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */,
         color: ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-on-surface'),
         backgroundColor: ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container'),
         nestingLevel: 0,

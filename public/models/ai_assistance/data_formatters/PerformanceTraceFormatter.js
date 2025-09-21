@@ -1,8 +1,9 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
+import * as CrUXManager from '../../crux-manager/crux-manager.js';
 import * as Trace from '../../trace/trace.js';
+import { AIQueries } from '../performance/AIQueries.js';
 import { PerformanceInsightFormatter, TraceEventFormatter } from './PerformanceInsightFormatter.js';
 import { bytes, micros, millis } from './UnitFormatters.js';
 export class PerformanceTraceFormatter {
@@ -21,6 +22,70 @@ export class PerformanceTraceFormatter {
     serializeBounds(bounds) {
         return `{min: ${bounds.min}, max: ${bounds.max}}`;
     }
+    /**
+     * Fetching the Crux summary can error outside of DevTools, hence the
+     * try-catch around it here.
+     */
+    #getCruxTraceSummary(insightSet) {
+        if (insightSet === null) {
+            return [];
+        }
+        try {
+            const cruxScope = CrUXManager.CrUXManager.instance().getSelectedScope();
+            const parts = [];
+            const fieldMetrics = Trace.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
+            const fieldLcp = fieldMetrics?.lcp;
+            const fieldInp = fieldMetrics?.inp;
+            const fieldCls = fieldMetrics?.cls;
+            if (fieldLcp || fieldInp || fieldCls) {
+                parts.push('Metrics (field / real users):');
+                const serializeFieldMetricTimingResult = (fieldMetric) => {
+                    return `${Math.round(fieldMetric.value / 1000)} ms (scope: ${fieldMetric.pageScope})`;
+                };
+                const serializeFieldMetricNumberResult = (fieldMetric) => {
+                    return `${fieldMetric.value.toFixed(2)} (scope: ${fieldMetric.pageScope})`;
+                };
+                if (fieldLcp) {
+                    parts.push(`  - LCP: ${serializeFieldMetricTimingResult(fieldLcp)}`);
+                    const fieldLcpBreakdown = fieldMetrics?.lcpBreakdown;
+                    if (fieldLcpBreakdown &&
+                        (fieldLcpBreakdown.ttfb || fieldLcpBreakdown.loadDelay || fieldLcpBreakdown.loadDuration ||
+                            fieldLcpBreakdown.renderDelay)) {
+                        parts.push('  - LCP breakdown:');
+                        if (fieldLcpBreakdown.ttfb) {
+                            parts.push(`    - TTFB: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.ttfb)}`);
+                        }
+                        if (fieldLcpBreakdown.loadDelay) {
+                            parts.push(`    - Load delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDelay)}`);
+                        }
+                        if (fieldLcpBreakdown.loadDuration) {
+                            parts.push(`    - Load duration: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDuration)}`);
+                        }
+                        if (fieldLcpBreakdown.renderDelay) {
+                            parts.push(`    - Render delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.renderDelay)}`);
+                        }
+                    }
+                }
+                if (fieldInp) {
+                    parts.push(`  - INP: ${serializeFieldMetricTimingResult(fieldInp)}`);
+                }
+                if (fieldCls) {
+                    parts.push(`  - CLS: ${serializeFieldMetricNumberResult(fieldCls)}`);
+                }
+                parts.push('  - The above data is from CrUX–Chrome User Experience Report. It\'s how the page performs for real users.');
+                parts.push('  - The values shown above are the p75 measure of all real Chrome users');
+                parts.push('  - The scope indicates if the data came from the entire origin, or a specific url');
+                parts.push('  - Lab metrics describe how this specific page load performed, while field metrics are an aggregation ' +
+                    'of results from real-world users. Best practice is to prioritize metrics that are bad in field data. ' +
+                    'Lab metrics may be better or worse than fields metrics depending on the developer\'s machine, network, or the ' +
+                    'actions performed while tracing.');
+            }
+            return parts;
+        }
+        catch {
+            return [];
+        }
+    }
     formatTraceSummary() {
         const parsedTrace = this.#parsedTrace;
         const insightSet = this.#insightSet;
@@ -35,7 +100,7 @@ export class PerformanceTraceFormatter {
         parts.push('CPU throttling: ' + (traceMetadata.cpuThrottling ? `${traceMetadata.cpuThrottling}x` : 'none'));
         parts.push(`Network throttling: ${traceMetadata.networkThrottling ?? 'none'}`);
         if (lcp || cls || inp) {
-            parts.push('Metrics:');
+            parts.push('Metrics (lab / observed):');
             if (lcp) {
                 parts.push(`  - LCP: ${Math.round(lcp.value / 1000)} ms, event: ${this.serializeEvent(lcp.event)}`);
                 const subparts = insightSet?.model.LCPBreakdown.subparts;
@@ -43,6 +108,7 @@ export class PerformanceTraceFormatter {
                     const serializeSubpart = (subpart) => {
                         return `${micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
                     };
+                    parts.push('  - LCP breakdown:');
                     parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
                     if (subparts.loadDelay !== undefined) {
                         parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
@@ -62,7 +128,14 @@ export class PerformanceTraceFormatter {
             }
         }
         else {
-            parts.push('Metrics: n/a');
+            parts.push('Metrics (lab / observed): n/a');
+        }
+        const cruxParts = insightSet && this.#getCruxTraceSummary(insightSet);
+        if (cruxParts?.length) {
+            parts.push(...cruxParts);
+        }
+        else {
+            parts.push('Metrics (field / real users): n/a – no data for this page in CrUX');
         }
         if (insightSet) {
             parts.push('Available insights:');
@@ -152,7 +225,7 @@ export class PerformanceTraceFormatter {
         const parsedTrace = this.#parsedTrace;
         const insightSet = this.#insightSet;
         const bounds = parsedTrace.data.Meta.traceBounds;
-        const rootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace);
+        const rootNode = AIQueries.mainThreadActivityBottomUp(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace);
         if (!rootNode) {
             return '';
         }
@@ -191,7 +264,7 @@ export class PerformanceTraceFormatter {
         const parsedTrace = this.#parsedTrace;
         const insightSet = this.#insightSet;
         const bounds = parsedTrace.data.Meta.traceBounds;
-        const longestTaskTrees = TimelineUtils.InsightAIContext.AIQueries.longestTasks(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace, 3);
+        const longestTaskTrees = AIQueries.longestTasks(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace, 3);
         if (!longestTaskTrees || longestTaskTrees.length === 0) {
             return 'Longest tasks: none';
         }
@@ -238,12 +311,12 @@ export class PerformanceTraceFormatter {
     }
     formatMainThreadTrackSummary(bounds) {
         const results = [];
-        const topDownTree = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+        const topDownTree = AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
         if (topDownTree) {
             results.push('# Top-down main thread summary');
             results.push(this.formatCallTree(topDownTree, 2 /* headerLevel */));
         }
-        const bottomUpRootNode = TimelineUtils.InsightAIContext.AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+        const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
         if (bottomUpRootNode) {
             results.push('# Bottom-up main thread summary');
             results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));

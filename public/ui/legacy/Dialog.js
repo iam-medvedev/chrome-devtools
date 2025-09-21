@@ -29,6 +29,11 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.widget().setDefaultFocusedElement(this.contentElement);
         this.setPointerEventsBehavior("BlockedByGlassPane" /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */);
         this.setOutsideClickCallback(event => {
+            // If there are stacked dialogs, we only want to
+            // handle the outside click for the top most dialog.
+            if (Dialog.getInstance() !== this) {
+                return;
+            }
             this.hide();
             event.consume(true);
         });
@@ -36,19 +41,32 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         this.targetDocumentKeyDownHandler = this.onKeyDown.bind(this);
     }
     static hasInstance() {
-        return Boolean(Dialog.instance);
+        return Dialog.dialogs.length > 0;
     }
+    /**
+     * If there is only one dialog, returns that.
+     * If there are stacked dialogs, returns the topmost one.
+     */
     static getInstance() {
-        return Dialog.instance;
+        return Dialog.dialogs[Dialog.dialogs.length - 1] || null;
     }
-    show(where) {
+    /**
+     * `stack` parameter is needed for being able to open a dialog on top
+     * of an existing dialog. The main reason is, Settings Tab is
+     * implemented as a Dialog. So, if we want to open a dialog on the
+     * Settings Tab, we need to stack it on top of that dialog.
+     *
+     * @param where Container element of the dialog.
+     * @param stack Whether to open this dialog on top of an existing dialog.
+     */
+    show(where, stack) {
         const document = (where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument);
         this.targetDocument = document;
         this.targetDocument.addEventListener('keydown', this.targetDocumentKeyDownHandler, true);
-        if (Dialog.instance) {
-            Dialog.instance.hide();
+        if (!stack && Dialog.dialogs.length) {
+            Dialog.dialogs.forEach(dialog => dialog.hide());
         }
-        Dialog.instance = this;
+        Dialog.dialogs.push(this);
         this.disableTabIndexOnElements(document);
         super.show(document);
         this.focusRestorer = new WidgetFocusRestorer(this.widget());
@@ -63,7 +81,10 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
         }
         this.restoreTabIndexOnElements();
         this.dispatchEventToListeners("hidden" /* Events.HIDDEN */);
-        Dialog.instance = null;
+        const index = Dialog.dialogs.indexOf(this);
+        if (index !== -1) {
+            Dialog.dialogs.splice(index, 1);
+        }
     }
     setAriaLabel(label) {
         ARIAUtils.setLabel(this.contentElement, label);
@@ -139,6 +160,9 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
     }
     onKeyDown(event) {
         const keyboardEvent = event;
+        if (Dialog.getInstance() !== this) {
+            return;
+        }
         if (keyboardEvent.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
             if (this.escapeKeyCallback) {
                 this.escapeKeyCallback(event);
@@ -152,6 +176,6 @@ export class Dialog extends Common.ObjectWrapper.eventMixin(GlassPane) {
             }
         }
     }
-    static instance = null;
+    static dialogs = [];
 }
 //# sourceMappingURL=Dialog.js.map

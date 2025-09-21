@@ -80,6 +80,7 @@ export declare class ProfileDataGridTree implements UI.SearchableView.Searchable
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     jumpToSearchResult(index: number): void;
 }

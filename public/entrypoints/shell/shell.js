@@ -3568,7 +3568,7 @@ var UIStrings11 = {
    * @description Label for a checkbox in the settings UI. Allows developers to opt-in/opt-out
    * of receiving Google Developer Program (GDP) badges based on their activity in Chrome DevTools.
    */
-  receiveBadges: "Receive badges",
+  earnBadges: "Earn badges",
   /**
    * @description A command available in the command menu to perform searches, for example in the
    * elements panel, as user types, rather than only when they press Enter.
@@ -4138,7 +4138,7 @@ Common7.Settings.registerSettingExtension({
   settingName: "receive-gdp-badges",
   settingType: "boolean",
   storageType: "Synced",
-  title: i18nLazyString11(UIStrings11.receiveBadges),
+  title: i18nLazyString11(UIStrings11.earnBadges),
   defaultValue: false,
   reloadRequired: true
 });

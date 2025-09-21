@@ -73,6 +73,13 @@ var tooltip_css_default = `/*
 
 // gen/front_end/ui/components/tooltips/Tooltip.js
 var { html } = Lit;
+var PositionOption;
+(function(PositionOption2) {
+  PositionOption2["BOTTOM_SPAN_RIGHT"] = "bottom-span-right";
+  PositionOption2["BOTTOM_SPAN_LEFT"] = "bottom-span-left";
+  PositionOption2["TOP_SPAN_RIGHT"] = "top-span-right";
+  PositionOption2["TOP_SPAN_LEFT"] = "top-span-left";
+})(PositionOption || (PositionOption = {}));
 var positioningUtils = {
   bottomSpanRight: ({ anchorRect }) => {
     return {
@@ -133,24 +140,33 @@ var positioningUtils = {
     return rect1 && rect1.left === rect2.left && rect1.top === rect2.top && rect1.width === rect2.width && rect1.height === rect2.height;
   }
 };
-var proposedRectForRichTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect }) => {
-  let proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
-  if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-    return proposedRect;
+var proposedRectForRichTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) => {
+  const uniqueOrder = [
+    .../* @__PURE__ */ new Set([
+      ...preferredPositions,
+      ...Object.values(PositionOption)
+    ])
+  ];
+  for (const positionOption of uniqueOrder) {
+    let proposedRect2;
+    switch (positionOption) {
+      case PositionOption.BOTTOM_SPAN_RIGHT:
+        proposedRect2 = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
+        break;
+      case PositionOption.BOTTOM_SPAN_LEFT:
+        proposedRect2 = positioningUtils.bottomSpanLeft({ anchorRect, currentPopoverRect });
+        break;
+      case PositionOption.TOP_SPAN_RIGHT:
+        proposedRect2 = positioningUtils.topSpanRight({ anchorRect, currentPopoverRect });
+        break;
+      case PositionOption.TOP_SPAN_LEFT:
+        proposedRect2 = positioningUtils.topSpanLeft({ anchorRect, currentPopoverRect });
+    }
+    if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect: proposedRect2 })) {
+      return proposedRect2;
+    }
   }
-  proposedRect = positioningUtils.bottomSpanLeft({ anchorRect, currentPopoverRect });
-  if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-    return proposedRect;
-  }
-  proposedRect = positioningUtils.topSpanRight({ anchorRect, currentPopoverRect });
-  if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-    return proposedRect;
-  }
-  proposedRect = positioningUtils.topSpanLeft({ anchorRect, currentPopoverRect });
-  if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-    return proposedRect;
-  }
-  proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
+  const proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
   return positioningUtils.insetAdjustedRect({ anchorRect, currentPopoverRect, inspectorViewRect, proposedRect });
 };
 var proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect }) => {
@@ -226,6 +242,22 @@ var Tooltip = class _Tooltip extends HTMLElement {
   set jslogContext(jslogContext) {
     this.setAttribute("jslogcontext", jslogContext);
     this.#updateJslog();
+  }
+  get verticalDistanceIncrease() {
+    return this.hasAttribute("vertical-distance-increase") ? Number(this.getAttribute("vertical-distance-increase")) : 0;
+  }
+  set verticalDistanceIncrease(increase) {
+    this.setAttribute("vertical-distance-increase", increase.toString());
+  }
+  get preferSpanLeft() {
+    return this.hasAttribute("prefer-span-left");
+  }
+  set preferSpanLeft(value) {
+    if (value) {
+      this.setAttribute("prefer-span-left", "");
+    } else {
+      this.removeAttribute("prefer-span-left");
+    }
   }
   get anchor() {
     return this.#anchor;
@@ -311,9 +343,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     if (this.open && _Tooltip.lastOpenedTooltipId === this.id) {
       _Tooltip.lastOpenedTooltipId = null;
     }
-    this.#timeout = window.setTimeout(() => {
-      this.hidePopover();
-    }, this.hoverDelay);
+    this.hidePopover();
   };
   toggle = () => {
     if (!this.#closing) {
@@ -336,9 +366,11 @@ var Tooltip = class _Tooltip extends HTMLElement {
     this.#previousAnchorRect = anchorRect;
     this.#previousPopoverRect = currentPopoverRect;
     const inspectorViewRect = UI.InspectorView.InspectorView.instance().element.getBoundingClientRect();
-    const proposedPopoverRect = this.variant === "rich" ? proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect }) : proposedRectForSimpleTooltip({ inspectorViewRect, anchorRect, currentPopoverRect });
+    const preferredPositions = this.preferSpanLeft ? [PositionOption.BOTTOM_SPAN_LEFT, PositionOption.TOP_SPAN_LEFT] : [];
+    const proposedPopoverRect = this.variant === "rich" ? proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) : proposedRectForSimpleTooltip({ inspectorViewRect, anchorRect, currentPopoverRect });
     this.style.left = `${proposedPopoverRect.left}px`;
-    this.style.top = `${proposedPopoverRect.top}px`;
+    const actualVerticalOffset = anchorRect.top < proposedPopoverRect.top ? this.verticalDistanceIncrease : -this.verticalDistanceIncrease;
+    this.style.top = `${proposedPopoverRect.top + actualVerticalOffset}px`;
     this.style.visibility = "visible";
     requestAnimationFrame(this.#positionPopover);
   };

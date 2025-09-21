@@ -210,12 +210,14 @@ export class NodeFilter {
 export class SearchConfig {
     query;
     caseSensitive;
+    wholeWord;
     isRegex;
     shouldJump;
     jumpBackward;
-    constructor(query, caseSensitive, isRegex, shouldJump, jumpBackward) {
+    constructor(query, caseSensitive, wholeWord, isRegex, shouldJump, jumpBackward) {
         this.query = query;
         this.caseSensitive = caseSensitive;
+        this.wholeWord = wholeWord;
         this.isRegex = isRegex;
         this.shouldJump = shouldJump;
         this.jumpBackward = jumpBackward;

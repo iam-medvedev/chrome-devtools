@@ -4,12 +4,13 @@
 import * as Trace from '../../../models/trace/trace.js';
 import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js';
 import { defaultTraceEvent } from '../../../testing/TraceHelpers.js';
+import * as PerfUI from '../../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as Timeline from '../timeline.js';
 describeWithEnvironment('AppenderUtils', () => {
     const defaultGroupStyle = {
         padding: 4,
         height: 17,
-        collapsible: true,
+        collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */,
         // This color is same as --sys-color-on-surface in themeColors.css
         color: 'rgb(31 31 31 / 100%)',
         // This color is same as --sys-color-cdt-base-container in themeColors.css

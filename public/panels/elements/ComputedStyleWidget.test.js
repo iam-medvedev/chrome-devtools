@@ -55,6 +55,16 @@ describeWithMockConnection('ComputedStyleWidget', () => {
             renderElementIntoDOM(computedStyleWidget);
             return computedStyleWidget;
         }
+        it('renders colors correctly', async () => {
+            computedStyleWidget =
+                createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Animation, '--animation-name');
+            computedStyleWidget.update();
+            await computedStyleWidget.updateComplete;
+            const treeOutline = computedStyleWidget.contentElement.querySelector('devtools-tree-outline');
+            await treeOutline.expandRecursively(2);
+            const traceElement = await waitForTraceElement(treeOutline);
+            assert.strictEqual(traceElement?.innerText, 'red');
+        });
         it('renders trace element with correct selector for declarations coming from animations', async () => {
             computedStyleWidget =
                 createComputedStyleWidgetForTest(SDK.CSSStyleDeclaration.Type.Animation, '--animation-name');

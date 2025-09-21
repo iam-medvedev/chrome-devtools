@@ -16,11 +16,11 @@ function stubCreateProfileWithResolvers() {
     return { createProfileStub, createProfilePromise, resolveCreateProfile };
 }
 describeWithEnvironment('GdpSignUpDialog', () => {
-    async function createWidget() {
+    async function createWidget(options = {}) {
         const view = createViewFunctionStub(PanelCommon.GdpSignUpDialog);
         const dialog = new UI.Dialog.Dialog();
         const hideSpy = sinon.spy(dialog, 'hide');
-        const widget = new PanelCommon.GdpSignUpDialog({ dialog }, view);
+        const widget = new PanelCommon.GdpSignUpDialog({ dialog, onSuccess: options.onSuccess ?? (() => { }) }, view);
         widget.markAsRoot();
         renderElementIntoDOM(widget);
         await view.nextInput;
@@ -109,6 +109,21 @@ describeWithEnvironment('GdpSignUpDialog', () => {
             sinon.assert.notCalled(hideSpy);
             const finalInput = await view.nextInput;
             assert.isFalse(finalInput.isSigningUp);
+        });
+        it('calls onSuccess on successful sign up', async () => {
+            const { createProfileStub, createProfilePromise, resolveCreateProfile } = stubCreateProfileWithResolvers();
+            const onSuccessSpy = sinon.spy();
+            const { view, hideSpy } = await createWidget({ onSuccess: onSuccessSpy });
+            void view.input.onSignUpClick();
+            const nextInput = await view.nextInput;
+            assert.isTrue(nextInput.isSigningUp);
+            resolveCreateProfile({ name: 'test/name' });
+            await createProfilePromise;
+            // Wait for `Badges.UserBadges.instance().initialize` to resolve.
+            await new Promise(resolve => setTimeout(resolve, 0));
+            sinon.assert.calledOnce(createProfileStub);
+            sinon.assert.calledOnce(onSuccessSpy);
+            sinon.assert.calledOnce(hideSpy);
         });
     });
 });

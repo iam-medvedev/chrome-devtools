@@ -750,9 +750,6 @@ export class LinkableNameMatcher extends matcherBase(LinkableNameMatch) {
         if (!parentNode) {
             return null;
         }
-        if (parentNode.name === 'CallExpression' && node.name === 'VariableName') {
-            return new LinkableNameMatch(text, node, "function" /* LinkableNameProperties.FUNCTION */);
-        }
         if (!(propertyName && LinkableNameMatcher.isLinkableNameProperty(propertyName))) {
             return null;
         }
@@ -906,7 +903,7 @@ export class LengthMatcher extends matcherBase(LengthMatch) {
         return new LengthMatch(text, node, unit);
     }
 }
-export class MathFunctionMatch {
+export class BaseFunctionMatch {
     text;
     node;
     func;
@@ -917,6 +914,8 @@ export class MathFunctionMatch {
         this.func = func;
         this.args = args;
     }
+}
+export class MathFunctionMatch extends BaseFunctionMatch {
     isArithmeticFunctionCall() {
         const func = this.func;
         switch (func) {
@@ -967,6 +966,27 @@ export class MathFunctionMatcher extends matcherBase(MathFunctionMatch) {
             return null;
         }
         return match;
+    }
+}
+export class CustomFunctionMatch extends BaseFunctionMatch {
+}
+// clang-format off
+export class CustomFunctionMatcher extends matcherBase(CustomFunctionMatch) {
+    // clang-format on
+    matches(node, matching) {
+        if (node.name !== 'CallExpression') {
+            return null;
+        }
+        const callee = matching.ast.text(node.getChild('VariableName'));
+        if (!callee?.startsWith('--')) {
+            return null;
+        }
+        const args = ASTUtils.callArgs(node);
+        if (args.some(arg => arg.length === 0 || matching.hasUnresolvedSubstitutionsRange(arg[0], arg[arg.length - 1]))) {
+            return null;
+        }
+        const text = matching.ast.text(node);
+        return new CustomFunctionMatch(text, node, callee, args);
     }
 }
 export class FlexGridMatch {

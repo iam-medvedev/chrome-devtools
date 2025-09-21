@@ -149,7 +149,7 @@ describeWithEnvironment('Cache', function () {
         });
     });
     describe('generateInsight', () => {
-        it('generateInsight - no cacheable requests', async () => {
+        it('generateInsight - no cacheable requests', async function () {
             const { data, insights } = await processTrace(this, 'load-simple.json.gz');
             const insight = getInsightOrError('Cache', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
             const relatedEvents = insight.relatedEvents;
@@ -160,7 +160,7 @@ describeWithEnvironment('Cache', function () {
             assert.deepEqual(insight.wastedBytes, 0);
             assert.strictEqual(relatedEvents?.length, 0);
         });
-        it('generateInsight - cacheable requests', async () => {
+        it('generateInsight - cacheable requests', async function () {
             /**
              * Contains 4 network requests:
              * (1) page html request: not cacheable, Document resource type

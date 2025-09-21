@@ -48,6 +48,7 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     static visibleShadowRoots(node: SDK.DOMModel.DOMNode): SDK.DOMModel.DOMNode[];
     static canShowInlineText(node: SDK.DOMModel.DOMNode): boolean;
     static populateForcedPseudoStateItems(contextMenu: UI.ContextMenu.ContextMenu, node: SDK.DOMModel.DOMNode): void;
+    highlightAttribute(attributeName: string): void;
     isClosingTag(): boolean;
     node(): SDK.DOMModel.DOMNode;
     isEditing(): boolean;

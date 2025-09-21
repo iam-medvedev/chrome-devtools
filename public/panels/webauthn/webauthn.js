@@ -818,7 +818,7 @@ var WebauthnPaneImpl = class extends UI.Panel.Panel {
     this.requestUpdate();
   }
   async #handleAddAuthenticatorButton() {
-    const options = this.#newAuthenticatorOptions;
+    const options = { ...this.#newAuthenticatorOptions };
     if (this.#model) {
       const authenticatorId = await this.#addAuthenticator(options);
       this.#activeAuthId = authenticatorId;

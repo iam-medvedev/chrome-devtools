@@ -150,7 +150,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             Common.EventTarget.fireEvent('source-file-loaded', uiSourceCode.displayName(true));
         }
         else {
-            this.innerShowFile(uiSourceCode, true);
+            this.#showFile(uiSourceCode, true);
         }
     }
     closeFile(uiSourceCode) {
@@ -221,7 +221,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
             }
         }
     }
-    innerShowFile(uiSourceCode, userGesture) {
+    #showFile(uiSourceCode, userGesture) {
         if (this.reentrantShow) {
             return;
         }
@@ -355,7 +355,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         }
         // Select tab if this file was the last to be shown.
         if (!index) {
-            this.innerShowFile(uiSourceCode, false);
+            this.#showFile(uiSourceCode, false);
             return;
         }
         if (!this.#currentFile) {
@@ -364,7 +364,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         const currentProjectIsSnippets = Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.#currentFile);
         const addedProjectIsSnippets = Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
         if (this.history.index(historyItemKey(this.#currentFile)) && currentProjectIsSnippets && !addedProjectIsSnippets) {
-            this.innerShowFile(uiSourceCode, false);
+            this.#showFile(uiSourceCode, false);
         }
     }
     removeUISourceCode(uiSourceCode) {
@@ -480,7 +480,7 @@ export class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWrapper {
         const { tabId, isUserGesture } = event.data;
         const uiSourceCode = this.files.get(tabId);
         if (uiSourceCode) {
-            this.innerShowFile(uiSourceCode, isUserGesture);
+            this.#showFile(uiSourceCode, isUserGesture);
         }
     }
     addUISourceCodeListeners(uiSourceCode) {

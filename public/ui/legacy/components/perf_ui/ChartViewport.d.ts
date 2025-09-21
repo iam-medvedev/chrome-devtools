@@ -90,7 +90,7 @@ export declare class ChartViewport extends UI.Widget.VBox {
      * TODO(crbug.com/346312365): update the type definitions in ChartViewport.ts
      */
     setRangeSelection(startTime: number, endTime: number): void;
-    onClick(event: Event): void;
+    onClick(event: MouseEvent): void;
     private rangeSelectionDragging;
     private onScroll;
     private onMouseOut;

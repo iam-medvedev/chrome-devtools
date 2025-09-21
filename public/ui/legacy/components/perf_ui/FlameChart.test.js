@@ -37,7 +37,7 @@ describeWithEnvironment('FlameChart', () => {
     const defaultGroupStyle = {
         height: 17,
         padding: 4,
-        collapsible: false,
+        collapsible: 1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */,
         color: 'black',
         backgroundColor: 'grey',
         nestingLevel: 0,
@@ -374,7 +374,11 @@ describeWithEnvironment('FlameChart', () => {
                     {
                         name: 'Test Group 2',
                         startLevel: 2,
-                        style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                        style: {
+                            ...defaultGroupStyle,
+                            collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */,
+                            nestingLevel: 1
+                        },
                     },
                 ],
             });
@@ -850,22 +854,22 @@ describeWithEnvironment('FlameChart', () => {
                         {
                             name: 'Test Group 2',
                             startLevel: 2,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                            style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 1 },
                         },
                         {
                             name: 'Test Group 3',
                             startLevel: 3,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 2 },
+                            style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 2 },
                         },
                         {
                             name: 'Test Group 4',
                             startLevel: 4,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                            style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 1 },
                         },
                         {
                             name: 'Test Group 5',
                             startLevel: 5,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 0 },
+                            style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 0 },
                         },
                     ],
                 });
@@ -968,7 +972,7 @@ describeWithEnvironment('FlameChart', () => {
                         {
                             name: 'Test Group 2',
                             startLevel: 2,
-                            style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                            style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 1 },
                         },
                     ],
                 });
@@ -1032,7 +1036,7 @@ describeWithEnvironment('FlameChart', () => {
                 {
                     name: 'Test Group 2',
                     startLevel: 3,
-                    style: { ...defaultGroupStyle, collapsible: true, nestingLevel: 1 },
+                    style: { ...defaultGroupStyle, collapsible: 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */, nestingLevel: 1 },
                 },
             ];
             chartInstance.updateGroupTree(newGroups, root);
@@ -1291,6 +1295,22 @@ describeWithEnvironment('FlameChart', () => {
             },
         });
         await assertScreenshot('timeline/layout_shifts_track.png');
+    });
+    it('renders single/multi row correctly for timings and extension track', async function () {
+        await renderFlameChartIntoDOM(this, {
+            dataProvider: 'MAIN',
+            // This trace produces a Timings track and two Extension tracks, of which:
+            // My track 0: Has two timestamps (and therefore must expand/collapse).
+            // My Track 1: Has a single timestamp (and everything fits in a single row)
+            fileNameOrParsedTrace: 'collapsible-tracks.json.gz',
+            filterTracks(trackName) {
+                return trackName.startsWith('Extension') || trackName.startsWith('Timings');
+            },
+            expandTracks() {
+                return false;
+            },
+        });
+        await assertScreenshot('timeline/collapsible-tracks.png');
     });
     it('renders all the decoration types onto events', async () => {
         class FakeProviderWithDecorations extends FakeFlameChartProvider {

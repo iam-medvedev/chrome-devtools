@@ -65,7 +65,7 @@ describeWithEnvironment('NetworkDependencyTree', function () {
     it('Fail the audit when there at least one chain with at least two requests', () => {
         assert.isTrue(insight.fail);
     });
-    it('Does not fail the audit when there is only main doc request', async () => {
+    it('Does not fail the audit when there is only main doc request', async function () {
         // Need to load a file with only main doc in the the critical requests chains.
         const { data, insights } = await processTrace(this, 'image-delivery.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());

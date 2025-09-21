@@ -125,24 +125,25 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private prepareToLoadTimeline;
     private createFileSelector;
     private contextMenu;
-    /**
-     * Saves a trace file to disk.
-     * Pass `config.savingEnhancedTrace === true` to include source maps in the resulting metadata.
-     * Pass `config.addModifications === true` to include user modifications to the trace file, which includes:
-     *      1. Annotations
-     *      2. Filtering / collapsing of the flame chart.
-     *      3. Visual track configuration (re-ordering or hiding tracks).
-     */
     saveToFile(config: {
         includeScriptContent: boolean;
         includeSourceMaps: boolean;
+        /**
+         * Includes many things:
+         * 1. annotations
+         * 2. filtering / collapsing of the flame chart
+         * 3. visual track configuration (re-ordering or hiding tracks)
+         **/
         addModifications: boolean;
+        shouldCompress: boolean;
     }): Promise<void>;
     innerSaveToFile(traceEvents: readonly Trace.Types.Events.Event[], metadata: Trace.Types.File.MetaData, config: {
         includeScriptContent: boolean;
         includeSourceMaps: boolean;
         addModifications: boolean;
+        shouldCompress: boolean;
     }): Promise<void>;
+    handleSaveToFileAction(): Promise<void>;
     showHistoryDropdown(): Promise<void>;
     navigateHistory(direction: number): boolean;
     selectFileToLoad(): void;

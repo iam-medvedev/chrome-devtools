@@ -131,6 +131,8 @@ models/ai_assistance/data_formatters/NetworkRequestFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.js
 models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.js
 models/ai_assistance/data_formatters/UnitFormatters.test.js
+models/ai_assistance/performance/AICallTree.test.js
+models/ai_assistance/performance/AIQueries.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
 models/badges/Badge.test.js
@@ -582,13 +584,10 @@ panels/timeline/track_appenders/LayoutShiftsTrackAppender.test.js
 panels/timeline/track_appenders/NetworkTrackAppender.test.js
 panels/timeline/track_appenders/ThreadAppender.test.js
 panels/timeline/track_appenders/TimingsTrackAppender.test.js
-panels/timeline/utils/AICallTree.test.js
 panels/timeline/utils/EntryNodes.test.js
-panels/timeline/utils/FreshRecording.test.js
 panels/timeline/utils/Helpers.test.js
 panels/timeline/utils/IgnoreList.test.js
 panels/timeline/utils/ImageCache.test.js
-panels/timeline/utils/InsightAIContext.test.js
 panels/timeline/utils/Treemap.test.js
 panels/utils/utils.test.js
 panels/web_audio/WebAudioView.test.js
@@ -597,6 +596,8 @@ panels/webauthn/WebauthnPane.test.js
 panels/whats_new/ReleaseNote.test.js
 panels/whats_new/ReleaseNoteView.test.js
 services/trace_bounds/TraceBounds.test.js
+services/tracing/FreshRecording.test.js
+services/tracing/TracingManager.test.js
 third_party/chromium/client-variations/ClientVariations.test.js
 third_party/i18n/i18n.test.js
 ui/components/adorners/Adorner.test.js
@@ -647,6 +648,7 @@ ui/legacy/ARIAUtils.test.js
 ui/legacy/ActionRegistration.test.js
 ui/legacy/Context.test.js
 ui/legacy/ContextMenu.test.js
+ui/legacy/Dialog.test.js
 ui/legacy/DockController.test.js
 ui/legacy/FilterBar.test.js
 ui/legacy/Fragment.test.js
@@ -655,11 +657,13 @@ ui/legacy/InspectorView.test.js
 ui/legacy/KeyboardShortcut.test.js
 ui/legacy/ListModel.test.js
 ui/legacy/ListWidget.test.js
+ui/legacy/SearchableView.test.js
 ui/legacy/SettingsUI.test.js
 ui/legacy/ShortcutRegistry.test.js
 ui/legacy/SplitWidget.test.js
 ui/legacy/SuggestBox.test.js
 ui/legacy/TabbedPane.test.js
+ui/legacy/TextPrompt.test.js
 ui/legacy/Toolbar.test.js
 ui/legacy/Treeoutline.test.js
 ui/legacy/UIUtils.test.js

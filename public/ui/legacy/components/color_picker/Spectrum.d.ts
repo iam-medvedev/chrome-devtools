@@ -94,7 +94,6 @@ export declare class Spectrum extends Spectrum_base {
     setColor(color: Common.Color.Color): void;
     private colorSelected;
     get color(): Common.Color.Color;
-    private innerSetColor;
     colorName(): string | undefined;
     private colorString;
     private updateHelperLocations;

@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-const MAX_WORKERS = Math.max(2, navigator.hardwareConcurrency - 1);
 let formatterWorkerPoolInstance;
 export class FormatterWorkerPool {
     taskQueue;
@@ -24,11 +23,12 @@ export class FormatterWorkerPool {
         return worker;
     }
     processNextTask() {
+        const maxWorkers = Math.max(2, navigator.hardwareConcurrency - 1);
         if (!this.taskQueue.length) {
             return;
         }
         let freeWorker = [...this.workerTasks.keys()].find(worker => !this.workerTasks.get(worker));
-        if (!freeWorker && this.workerTasks.size < MAX_WORKERS) {
+        if (!freeWorker && this.workerTasks.size < maxWorkers) {
             freeWorker = this.createWorker();
         }
         if (!freeWorker) {

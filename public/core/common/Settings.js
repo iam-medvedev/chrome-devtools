@@ -95,7 +95,6 @@ export class Settings {
      * If you are creating a setting that you expect the user to control, and
      * sync, prefer {@see createSetting}
      */
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     moduleSetting(settingName) {
         const setting = this.moduleSettings.get(settingName);
@@ -493,7 +492,6 @@ export class Setting {
         this.storage.dumpSizes();
     }
 }
-// TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export class RegExpSetting extends Setting {
     #regexFlags;
@@ -539,6 +537,9 @@ export class RegExpSetting extends Setting {
         return this.#regex;
     }
 }
+// The VersionController does a lot of mapping and restructuring which often need
+// typecasting to any, allow it in there
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export class VersionController {
     static GLOBAL_VERSION_SETTING_NAME = 'inspectorVersion';
     static SYNCED_VERSION_SETTING_NAME = 'syncedInspectorVersion';
@@ -673,16 +674,12 @@ export class VersionController {
             const showMode = hidden ? 'OnlyMain' : 'Both';
             const newSetting = Settings.instance().createSetting(newName, {});
             const newValue = newSetting.get() || {};
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
             newValue.vertical = newValue.vertical || {};
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
             newValue.vertical.showMode = showMode;
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
             newValue.horizontal = newValue.horizontal || {};
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
             // @ts-expect-error
             newValue.horizontal.showMode = showMode;
             newSetting.set(newValue);
@@ -755,7 +752,6 @@ export class VersionController {
         const newList = [];
         for (let i = 0; i < list.length; ++i) {
             const value = list[i];
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const device = {};
             device['title'] = value['title'];
             device['type'] = 'unknown';
@@ -793,8 +789,6 @@ export class VersionController {
         Settings.instance().createSetting('networkConditions', defaultValue).set(defaultValue);
     }
     updateVersionFrom14To15() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const setting = Settings.instance().createLocalSetting('workspaceExcludedFolders', {});
         const oldValue = setting.get();
         const newValue = {};
@@ -807,8 +801,6 @@ export class VersionController {
         setting.set(newValue);
     }
     updateVersionFrom15To16() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const setting = Settings.instance().createSetting('InspectorView.panelOrder', {});
         const tabOrders = setting.get();
         for (const key of Object.keys(tabOrders)) {
@@ -817,8 +809,6 @@ export class VersionController {
         setting.set(tabOrders);
     }
     updateVersionFrom16To17() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const setting = Settings.instance().createSetting('networkConditionsCustomProfiles', []);
         const oldValue = setting.get();
         const newValue = [];
@@ -836,8 +826,6 @@ export class VersionController {
         setting.set(newValue);
     }
     updateVersionFrom17To18() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const setting = Settings.instance().createLocalSetting('workspaceExcludedFolders', {});
         const oldValue = setting.get();
         const newValue = {};
@@ -857,8 +845,6 @@ export class VersionController {
     }
     updateVersionFrom18To19() {
         const defaultColumns = { status: true, type: true, initiator: true, size: true, time: true };
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const visibleColumnSettings = Settings.instance().createSetting('networkLogColumnsVisibility', defaultColumns);
         const visibleColumns = visibleColumnSettings.get();
         visibleColumns.name = true;
@@ -888,8 +874,6 @@ export class VersionController {
         networkColumns.set(columns);
     }
     updateVersionFrom21To22() {
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const breakpointsSetting = Settings.instance().createLocalSetting('breakpoints', []);
         const breakpoints = breakpointsSetting.get();
         for (const breakpoint of breakpoints) {
@@ -909,8 +893,6 @@ export class VersionController {
     }
     updateVersionFrom24To25() {
         const defaultColumns = { status: true, type: true, initiator: true, size: true, time: true };
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const networkLogColumnsSetting = Settings.instance().createSetting('networkLogColumns', defaultColumns);
         const columns = networkLogColumnsSetting.get();
         delete columns.product;
@@ -921,8 +903,6 @@ export class VersionController {
         const urls = Object.keys(oldSetting.get());
         const textFilter = urls.map(url => `-url:${url}`).join(' ');
         if (textFilter) {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const textFilterSetting = Settings.instance().createSetting('console.textFilter', '');
             const suffix = textFilterSetting.get() ? ` ${textFilterSetting.get()}` : '';
             textFilterSetting.set(`${textFilter}${suffix}`);
@@ -931,8 +911,6 @@ export class VersionController {
     }
     updateVersionFrom26To27() {
         function renameKeyInObjectSetting(settingName, from, to) {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const setting = Settings.instance().createSetting(settingName, {});
             const value = setting.get();
             if (from in value) {
@@ -960,8 +938,6 @@ export class VersionController {
     }
     updateVersionFrom28To29() {
         function renameKeyInObjectSetting(settingName, from, to) {
-            // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const setting = Settings.instance().createSetting(settingName, {});
             const value = setting.get();
             if (from in value) {
@@ -1007,7 +983,6 @@ export class VersionController {
         // this change we synchronized the breakpoint only by URL, but since we don't
         // know on which resource type the given breakpoint was set, we just assume
         // 'script' here to keep things simple.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const breakpointsSetting = Settings.instance().createLocalSetting('breakpoints', []);
         const breakpoints = breakpointsSetting.get();
         for (const breakpoint of breakpoints) {
@@ -1016,11 +991,9 @@ export class VersionController {
         breakpointsSetting.set(breakpoints);
     }
     updateVersionFrom32To33() {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const previouslyViewedFilesSetting = Settings.instance().createLocalSetting('previouslyViewedFiles', []);
         let previouslyViewedFiles = previouslyViewedFilesSetting.get();
         // Discard old 'previouslyViewedFiles' items that don't have a 'url' property.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         previouslyViewedFiles = previouslyViewedFiles.filter((previouslyViewedFile) => 'url' in previouslyViewedFile);
         // Introduce the new 'resourceTypeName' property on previously viewed files.
         // Prior to this change we only keyed them based on the URL, but since we
@@ -1042,7 +1015,6 @@ export class VersionController {
         // the future.
         const logpointPrefix = '/** DEVTOOLS_LOGPOINT */ console.log(';
         const logpointSuffix = ')';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const breakpointsSetting = Settings.instance().createLocalSetting('breakpoints', []);
         const breakpoints = breakpointsSetting.get();
         for (const breakpoint of breakpoints) {
@@ -1059,7 +1031,6 @@ export class VersionController {
         // the future.
         const logpointPrefix = '/** DEVTOOLS_LOGPOINT */ console.log(';
         const logpointSuffix = ')';
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const breakpointsSetting = Settings.instance().createLocalSetting('breakpoints', []);
         const breakpoints = breakpointsSetting.get();
         for (const breakpoint of breakpoints) {

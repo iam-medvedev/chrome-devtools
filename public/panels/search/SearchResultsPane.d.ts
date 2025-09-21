@@ -6,6 +6,7 @@ export declare class SearchResultsPane extends UI.Widget.VBox {
     private readonly searchConfig;
     private readonly searchResults;
     private readonly treeElements;
+    private readonly initializedTreeElements;
     private treeOutline;
     private matchesExpandedCount;
     constructor(searchConfig: Workspace.SearchConfig.SearchConfig);
@@ -13,26 +14,14 @@ export declare class SearchResultsPane extends UI.Widget.VBox {
     showAllMatches(): void;
     collapseAllResults(): void;
     private addTreeElement;
-}
-export declare const matchesExpandedByDefault = 200;
-export declare const matchesShownAtOnce = 20;
-export declare class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
-    private searchConfig;
-    private searchResult;
-    private initialized;
-    toggleOnClick: boolean;
-    constructor(searchConfig: Workspace.SearchConfig.SearchConfig, searchResult: SearchResult);
-    onexpand(): void;
-    showAllMatches(): void;
     private updateMatchesUI;
-    onattach(): void;
-    private updateSearchMatches;
     private appendSearchMatches;
     private appendShowMoreMatchesElement;
-    private createContentSpan;
     private regexMatchRanges;
     private showMoreMatchesElementSelected;
 }
+export declare const matchesExpandedByDefault = 200;
+export declare const matchesShownAtOnce = 20;
 declare const DEFAULT_OPTS: {
     prefixLength: number;
     maxLength: number;

@@ -8594,7 +8594,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.dataGridScroller = this.#dataGrid.scrollContainer;
     this.updateColumns();
     this.#dataGrid.addEventListener("SortingChanged", this.sortHandler, this);
-    this.#dataGrid.setHeaderContextMenuCallback(this.innerHeaderContextMenu.bind(this));
+    this.#dataGrid.setHeaderContextMenuCallback(this.#headerContextMenu.bind(this));
     this.activeWaterfallSortId = WaterfallSortIds.StartTime;
     this.#dataGrid.markColumnAsSortedBy(INITIAL_SORT_COLUMN, DataGrid7.DataGrid.Order.Ascending);
     this.splitWidget = new UI21.SplitWidget.SplitWidget(true, true, "network-panel-split-view-waterfall", 200);
@@ -8695,7 +8695,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     this.waterfallHeaderElement.addEventListener("click", waterfallHeaderClicked.bind(this));
     this.waterfallHeaderElement.addEventListener("contextmenu", (event) => {
       const contextMenu = new UI21.ContextMenu.ContextMenu(event);
-      this.innerHeaderContextMenu(contextMenu);
+      this.#headerContextMenu(contextMenu);
       void contextMenu.show();
     });
     this.waterfallHeaderElement.createChild("div", "hover-layer");
@@ -8872,7 +8872,7 @@ var NetworkLogViewColumns = class _NetworkLogViewColumns {
     UI21.UIUtils.createTextChild(subtitleDiv, subtitle);
     return fragment;
   }
-  innerHeaderContextMenu(contextMenu) {
+  #headerContextMenu(contextMenu) {
     const columnConfigs = this.columns.filter((columnConfig) => columnConfig.hideable);
     const nonRequestResponseHeaders = columnConfigs.filter((columnConfig) => !columnConfig.isRequestHeader && !columnConfig.isResponseHeader);
     const hideableGroups = /* @__PURE__ */ new Map();
@@ -10942,7 +10942,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
     }
     const progressIndicator = this.progressBarContainer.createChild("devtools-progress");
     await HAR.Writer.Writer.write(stream, this.harRequests(), options, progressIndicator);
-    progressIndicator.done();
+    progressIndicator.done = true;
     void stream.close();
   }
   async #handleCreateResponseHeaderOverrideClick(request) {
@@ -11264,7 +11264,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
     const ignoredHeaders = /* @__PURE__ */ new Set(["accept-encoding", "host", "method", "path", "scheme", "version", "authority", "protocol"]);
     function escapeStringWin(str) {
       const encapsChars = '^"';
-      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/[^\S \r\n]/g, "^$&").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
+      return encapsChars + str.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/[^a-zA-Z0-9\s_\-:=+~'\/.',?;()*`]/g, "^$&").replace(/%(?=[a-zA-Z0-9_])/g, "%^").replace(/[^\S \r\n]/g, " ").replace(/\r?\n|\r/g, "^\n\n") + encapsChars;
     }
     function escapeStringPosix(str) {
       function escapeCharacter(x) {
@@ -11589,20 +11589,20 @@ var NetworkSearchScope = class _NetworkSearchScope {
   }
   performIndexing(progress) {
     queueMicrotask(() => {
-      progress.done();
+      progress.done = true;
     });
   }
   async performSearch(searchConfig, progress, searchResultCallback, searchFinishedCallback) {
     const promises = [];
     const requests = this.#networkLog.requests().filter((request) => searchConfig.filePathMatchesFileQuery(request.url()));
-    progress.setTotalWork(requests.length);
+    progress.totalWork = requests.length;
     for (const request of requests) {
       const promise = this.searchRequest(searchConfig, request, progress);
       promises.push(promise);
     }
     const resultsWithNull = await Promise.all(promises);
     const results = resultsWithNull.filter((result) => result !== null);
-    if (progress.isCanceled()) {
+    if (progress.canceled) {
       searchFinishedCallback(false);
       return;
     }
@@ -11611,12 +11611,12 @@ var NetworkSearchScope = class _NetworkSearchScope {
         searchResultCallback(result);
       }
     }
-    progress.done();
+    progress.done = true;
     searchFinishedCallback(true);
   }
   async searchRequest(searchConfig, request, progress) {
     const bodyMatches = await _NetworkSearchScope.#responseBodyMatches(searchConfig, request);
-    if (progress.isCanceled()) {
+    if (progress.canceled) {
       return null;
     }
     const locations = [];
@@ -11636,7 +11636,7 @@ var NetworkSearchScope = class _NetworkSearchScope {
     for (const match of bodyMatches) {
       locations.push(NetworkForward4.UIRequestLocation.UIRequestLocation.bodyMatch(request, match));
     }
-    progress.incrementWorked();
+    ++progress.worked;
     return new NetworkSearchResult(request, locations);
     function headerMatchesQuery(header) {
       return stringMatchesQuery(`${header.name}: ${header.value}`);

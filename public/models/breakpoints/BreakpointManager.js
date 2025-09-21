@@ -215,7 +215,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
             if (!BreakpointManager.isValidPositionInScript(lineNumber, columnNumber, script)) {
                 continue;
             }
-            this.innerSetBreakpoint(uiSourceCode, lineNumber, columnNumber, breakpoint.condition, breakpoint.enabled, breakpoint.isLogpoint, "RESTORED" /* BreakpointOrigin.OTHER */);
+            this.#setBreakpoint(uiSourceCode, lineNumber, columnNumber, breakpoint.condition, breakpoint.enabled, breakpoint.isLogpoint, "RESTORED" /* BreakpointOrigin.OTHER */);
         }
         this.storage.unmute();
     }
@@ -247,7 +247,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
             const uiLocation = new Workspace.UISourceCode.UILocation(compatibleUiSourceCode, lineNumber, columnNumber);
             const normalizedLocation = await this.debuggerWorkspaceBinding.normalizeUILocation(uiLocation);
             const breakpointLocation = BreakpointManager.breakpointLocationFromUiLocation(normalizedLocation);
-            const breakpoint = this.innerSetBreakpoint(normalizedLocation.uiSourceCode, breakpointLocation.lineNumber, breakpointLocation.columnNumber, condition, enabled, isLogpoint, origin);
+            const breakpoint = this.#setBreakpoint(normalizedLocation.uiSourceCode, breakpointLocation.lineNumber, breakpointLocation.columnNumber, condition, enabled, isLogpoint, origin);
             if (uiSourceCode === compatibleUiSourceCode) {
                 if (normalizedLocation.id() !== uiLocation.id()) {
                     // Only call this on the uiSourceCode that was initially selected for breakpoint setting.
@@ -259,7 +259,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         console.assert(primaryBreakpoint !== undefined, 'The passed uiSourceCode is expected to be a valid uiSourceCode');
         return primaryBreakpoint;
     }
-    innerSetBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, origin) {
+    #setBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, origin) {
         const url = BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode)?.sourceURL ?? uiSourceCode.url();
         const resourceTypeName = uiSourceCode.contentType().name();
         const storageState = { url, resourceTypeName, lineNumber, columnNumber, condition, enabled, isLogpoint };

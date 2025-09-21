@@ -10,13 +10,13 @@ describeWithEnvironment('DocumentLatency', function () {
     expectConsoleLogs({
         error: ['Error: missing metric scores for specified navigation'],
     });
-    it('reports savings for main document with redirects', async () => {
+    it('reports savings for main document with redirects', async function () {
         const { data, insights } = await processTrace(this, 'lantern/redirect/trace.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.redirectDuration, 1779);
         assert.deepEqual(insight.metricSavings, { FCP: 1779, LCP: 1779 });
     });
-    it('reports no savings for server with fast server response time', async () => {
+    it('reports no savings for server with fast server response time', async function () {
         const { data, insights } = await processTrace(this, 'lantern/paul/trace.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.serverResponseTime, 43);
@@ -48,7 +48,7 @@ describeWithEnvironment('DocumentLatency', function () {
         assert.isFalse(insight.data?.checklist.serverResponseIsFast.value);
         assert.deepEqual(insight.metricSavings, { FCP: 943, LCP: 943 });
     });
-    it('reports no compression savings for compressed text', async () => {
+    it('reports no compression savings for compressed text', async function () {
         const { data, insights } = await processTrace(this, 'lantern/paul/trace.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.uncompressedResponseBytes, 0);
@@ -75,7 +75,7 @@ describeWithEnvironment('DocumentLatency', function () {
         assert.strictEqual(insight.data?.uncompressedResponseBytes, 39799);
         assert.deepEqual(insight.metricSavings, { FCP: 0, LCP: 0 });
     });
-    it('reports savings for main document with many issues, many redirects', async () => {
+    it('reports savings for main document with many issues, many redirects', async function () {
         const { data, insights } = await processTrace(this, 'many-redirects.json.gz');
         const insight = getInsightOrError('DocumentLatency', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.strictEqual(insight.data?.redirectDuration, 6059);

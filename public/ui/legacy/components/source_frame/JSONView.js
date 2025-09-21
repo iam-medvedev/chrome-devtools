@@ -63,7 +63,7 @@ export class JSONView extends UI.Widget.VBox {
     static parseJSON(text) {
         let returnObj = null;
         if (text) {
-            returnObj = JSONView.extractJSON((text));
+            returnObj = JSONView.extractJSON(text);
         }
         if (!returnObj) {
             return Promise.resolve(null);
@@ -226,18 +226,17 @@ export class JSONView extends UI.Widget.VBox {
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return true;
+    }
     supportsRegexSearch() {
         return true;
     }
 }
 export class ParsedJSON {
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     data;
     prefix;
     suffix;
-    // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(data, prefix, suffix) {
         this.data = data;
         this.prefix = prefix;

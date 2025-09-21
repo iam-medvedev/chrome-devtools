@@ -472,6 +472,7 @@ export const generatedProperties = [
             "font-family",
             "font-feature-settings",
             "font-kerning",
+            "font-language-override",
             "font-optical-sizing",
             "font-palette",
             "font-size",
@@ -516,8 +517,8 @@ export const generatedProperties = [
             "inset-block-start",
             "inset-inline-end",
             "inset-inline-start",
-            "interest-hide-delay",
-            "interest-show-delay",
+            "interest-delay-end",
+            "interest-delay-start",
             "interpolate-size",
             "isolation",
             "item-tolerance",
@@ -599,6 +600,7 @@ export const generatedProperties = [
             "overscroll-behavior-inline",
             "overscroll-behavior-x",
             "overscroll-behavior-y",
+            "overscroll-position",
             "pad",
             "padding-block-end",
             "padding-block-start",
@@ -2262,7 +2264,8 @@ export const generatedProperties = [
             "font-size-adjust",
             "font-kerning",
             "font-feature-settings",
-            "font-variation-settings"
+            "font-variation-settings",
+            "font-language-override"
         ],
         "name": "font"
     },
@@ -2288,6 +2291,13 @@ export const generatedProperties = [
             "none"
         ],
         "name": "font-kerning"
+    },
+    {
+        "inherited": true,
+        "keywords": [
+            "normal"
+        ],
+        "name": "font-language-override"
     },
     {
         "inherited": true,
@@ -2750,16 +2760,16 @@ export const generatedProperties = [
     },
     {
         "longhands": [
-            "interest-show-delay",
-            "interest-hide-delay"
+            "interest-delay-start",
+            "interest-delay-end"
         ],
         "name": "interest-delay"
     },
     {
-        "name": "interest-hide-delay"
+        "name": "interest-delay-end"
     },
     {
-        "name": "interest-show-delay"
+        "name": "interest-delay-start"
     },
     {
         "inherited": true,
@@ -3381,6 +3391,12 @@ export const generatedProperties = [
             "none"
         ],
         "name": "overscroll-behavior-y"
+    },
+    {
+        "keywords": [
+            "none"
+        ],
+        "name": "overscroll-position"
     },
     {
         "name": "pad"
@@ -5652,6 +5668,11 @@ export const generatedPropertyValues = {
             "none"
         ]
     },
+    "font-language-override": {
+        "values": [
+            "normal"
+        ]
+    },
     "font-optical-sizing": {
         "values": [
             "auto",
@@ -6278,6 +6299,11 @@ export const generatedPropertyValues = {
         "values": [
             "auto",
             "contain",
+            "none"
+        ]
+    },
+    "overscroll-position": {
+        "values": [
             "none"
         ]
     },

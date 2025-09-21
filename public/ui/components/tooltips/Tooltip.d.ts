@@ -14,12 +14,18 @@ export interface TooltipProperties {
  * @property variant - reflects the `"variant"` attribute.
  * @property padding - reflects the `"padding"` attribute.
  * @property useClick - reflects the `"click"` attribute.
+ * @property verticalDistanceIncrease - reflects the `"vertical-distance-increase"` attribute.
+ * @property preferSpanLeft - reflects the `"prefer-span-left"` attribute.
  * @attribute id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
  * @attribute hover-delay - Hover length in ms before the tooltip is shown and hidden.
  * @attribute variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
  *                 `"rich"` for interactive content, background according to theme's surface.
  * @attribute padding - Which padding to use, defaults to `"small"`. Use `"large"` for richer content.
  * @attribute use-click - If present, the tooltip will be shown on click instead of on hover.
+ * @attribute vertical-distance-increase - The tooltip is moved vertically this many pixels further away from its anchor.
+ * @attribute prefer-span-left - If present, the tooltip's preferred position is `"span-left"` (The right
+ *                 side of the tooltip and its anchor are aligned. The tooltip expands to the left from
+ *                 there.). Applies to rich tooltips only.
  * @attribute use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus.
  *                    Requires a hotkey to open when fosed (Alt-down). When `"use-click"` is present
  *                    as well, use-click takes precedence.
@@ -42,6 +48,10 @@ export declare class Tooltip extends HTMLElement {
     set padding(padding: PaddingMode);
     get jslogContext(): string | null;
     set jslogContext(jslogContext: string);
+    get verticalDistanceIncrease(): number;
+    set verticalDistanceIncrease(increase: number);
+    get preferSpanLeft(): boolean;
+    set preferSpanLeft(value: boolean);
     get anchor(): HTMLElement | null;
     constructor(properties?: TooltipProperties);
     attributeChangedCallback(name: string, oldValue: string, newValue: string): void;

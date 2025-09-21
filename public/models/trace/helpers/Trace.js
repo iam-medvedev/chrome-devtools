@@ -281,7 +281,7 @@ export function matchEvents(unpairedEvents) {
     }
     return matchedPairs;
 }
-function getSyntheticId(event) {
+export function getSyntheticId(event) {
     const id = extractId(event);
     return id && `${event.cat}:${id}:${event.name}`;
 }
@@ -642,7 +642,7 @@ export function extractSampleTraceId(event) {
     }
     return event.args?.sampleTraceId ?? event.args?.data?.sampleTraceId ?? null;
 }
-// This exactly matches EntryStyles.visibleTypes. See the runtime verification in maybeInitSylesMap.
+// This exactly matches Trace.Styles.visibleTypes. See the runtime verification in maybeInitStylesMap.
 // TODO(crbug.com/410884528)
 export const VISIBLE_TRACE_EVENT_TYPES = new Set([
     "AbortPostTaskCallback" /* Types.Events.Name.ABORT_POST_TASK_CALLBACK */,

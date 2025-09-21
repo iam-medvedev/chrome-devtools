@@ -146,10 +146,11 @@ export declare class NodeFilter {
 export declare class SearchConfig {
     query: string;
     caseSensitive: boolean;
+    wholeWord: boolean;
     isRegex: boolean;
     shouldJump: boolean;
     jumpBackward: boolean;
-    constructor(query: string, caseSensitive: boolean, isRegex: boolean, shouldJump: boolean, jumpBackward: boolean);
+    constructor(query: string, caseSensitive: boolean, wholeWord: boolean, isRegex: boolean, shouldJump: boolean, jumpBackward: boolean);
     toSearchRegex(_global?: boolean): {
         regex: RegExp;
         fromQuery: boolean;

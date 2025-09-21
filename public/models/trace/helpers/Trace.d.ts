@@ -60,6 +60,7 @@ export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.Profil
  * @returns Map of the animation's ID to it's matching events.
  */
 export declare function matchEvents(unpairedEvents: Types.Events.PairableAsync[]): Map<string, MatchingPairableAsyncEvents>;
+export declare function getSyntheticId(event: Types.Events.PairableAsync): string | undefined;
 export declare function createSortedSyntheticEvents<T extends Types.Events.PairableAsync>(matchedPairs: Map<string, {
     begin: Types.Events.PairableAsyncBegin | null;
     end: Types.Events.PairableAsyncEnd | null;

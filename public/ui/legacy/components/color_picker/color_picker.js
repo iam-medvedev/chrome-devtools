@@ -2184,7 +2184,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       const positionFraction = (sliderPosition - hueAlphaLeft) / this.hueAlphaWidth;
       const newHue = 1 - positionFraction;
       hsva[0] = Platform3.NumberUtilities.clamp(newHue, 0, 1);
-      this.innerSetColor(hsva, "", void 0, void 0, ChangeSource.Other);
+      this.#setColor(hsva, "", void 0, void 0, ChangeSource.Other);
       const color = getColorFromHsva(this.gamut, hsva);
       const colorValues = color.as(
         "hsl"
@@ -2199,7 +2199,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       const positionFraction = (sliderPosition - hueAlphaLeft) / this.hueAlphaWidth;
       const newAlpha = Math.round(positionFraction * 100) / 100;
       hsva[3] = Platform3.NumberUtilities.clamp(newAlpha, 0, 1);
-      this.innerSetColor(hsva, "", void 0, void 0, ChangeSource.Other);
+      this.#setColor(hsva, "", void 0, void 0, ChangeSource.Other);
       const color = getColorFromHsva(this.gamut, hsva);
       const colorValues = color.as(
         "hsl"
@@ -2213,7 +2213,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       this.colorOffset = this.colorElement.getBoundingClientRect();
       hsva[1] = Platform3.NumberUtilities.clamp((colorPosition.x - this.colorOffset.left) / this.dragWidth, 0, 1);
       hsva[2] = Platform3.NumberUtilities.clamp(1 - (colorPosition.y - this.colorOffset.top) / this.dragHeight, 0, 1);
-      this.innerSetColor(hsva, "", void 0, void 0, ChangeSource.Other);
+      this.#setColor(hsva, "", void 0, void 0, ChangeSource.Other);
     }
     function getUpdatedColorPosition(dragElement, event) {
       const elementPosition = dragElement.getBoundingClientRect();
@@ -2599,7 +2599,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       const colorName = palette.colorNames[colorIndex];
       const color = Common6.Color.parse(colorText);
       if (color) {
-        this.innerSetColor(color, colorText, colorName, palette.matchUserFormat ? this.colorFormat : color.format(), ChangeSource.Other);
+        this.#setColor(color, colorText, colorName, palette.matchUserFormat ? this.colorFormat : color.format(), ChangeSource.Other);
       }
       return;
     }
@@ -2626,7 +2626,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     if (event instanceof MouseEvent || Platform3.KeyboardUtilities.isEnterOrSpaceKey(event)) {
       const color = Common6.Color.parse(shade);
       if (color) {
-        this.innerSetColor(color, shade, shade, color.format(), ChangeSource.Other);
+        this.#setColor(color, shade, shade, color.format(), ChangeSource.Other);
       }
       return;
     }
@@ -2685,7 +2685,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     this.showPalette(palette, false);
   }
   setColor(color) {
-    this.innerSetColor(color, "", void 0, color.format(), ChangeSource.Model);
+    this.#setColor(color, "", void 0, color.format(), ChangeSource.Model);
     const colorValues = color.as(
       "hsl"
       /* Common.Color.Format.HSL */
@@ -2694,7 +2694,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     UI4.ARIAUtils.setValueText(this.alphaElement, colorValues[3]);
   }
   colorSelected(color) {
-    this.innerSetColor(color, "", void 0, void 0, ChangeSource.Other);
+    this.#setColor(color, "", void 0, void 0, ChangeSource.Other);
   }
   get color() {
     if (this.#color) {
@@ -2702,7 +2702,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     }
     return getColorFromHsva(this.gamut, this.hsv);
   }
-  innerSetColor(colorOrHsv, colorString, colorName, colorFormat, changeSource) {
+  #setColor(colorOrHsv, colorString, colorName, colorFormat, changeSource) {
     if (colorString !== void 0) {
       this.#colorString = colorString;
     }
@@ -2862,7 +2862,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     const contextMenu = new FormatPickerContextMenu(this.color);
     this.isFormatPickerShown = true;
     await contextMenu.show(event, (newColor) => {
-      this.innerSetColor(newColor, void 0, void 0, newColor.format(), ChangeSource.Other);
+      this.#setColor(newColor, void 0, void 0, newColor.format(), ChangeSource.Other);
     });
     this.isFormatPickerShown = false;
   }
@@ -2878,7 +2878,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     if (!color) {
       return;
     }
-    this.innerSetColor(color, text, void 0, void 0, ChangeSource.Other);
+    this.#setColor(color, text, void 0, void 0, ChangeSource.Other);
     event.preventDefault();
   }
   #getValueSteppingForInput(element) {
@@ -2921,7 +2921,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     if (!color) {
       return;
     }
-    this.innerSetColor(color, void 0, void 0, colorFormat, ChangeSource.Input);
+    this.#setColor(color, void 0, void 0, colorFormat, ChangeSource.Input);
   }
   wasShown() {
     this.hueAlphaWidth = this.hueElement.offsetWidth;
@@ -2929,7 +2929,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     this.dragWidth = this.colorElement.offsetWidth;
     this.dragHeight = this.colorElement.offsetHeight;
     this.colorDragElementHeight = this.colorDragElement.offsetHeight / 2;
-    this.innerSetColor(void 0, void 0, void 0, void 0, ChangeSource.Model);
+    this.#setColor(void 0, void 0, void 0, void 0, ChangeSource.Model);
     if (!IS_NATIVE_EYE_DROPPER_AVAILABLE) {
       void this.toggleColorPicker(true);
     } else {
@@ -2965,7 +2965,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       try {
         const hexColor = await eyeDropper.open({ signal: this.eyeDropperAbortController.signal });
         const color = Common6.Color.parse(hexColor.sRGBHex);
-        this.innerSetColor(color ?? void 0, "", void 0, void 0, ChangeSource.Other);
+        this.#setColor(color ?? void 0, "", void 0, void 0, ChangeSource.Other);
       } catch (error) {
         if (error.name !== "AbortError") {
           console.error(error);
@@ -2980,7 +2980,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
   colorPicked({ data: rgbColor }) {
     const rgba = [rgbColor.r, rgbColor.g, rgbColor.b, (rgbColor.a / 2.55 | 0) / 100];
     const color = Common6.Color.Legacy.fromRGBA(rgba);
-    this.innerSetColor(color, "", void 0, void 0, ChangeSource.Other);
+    this.#setColor(color, "", void 0, void 0, ChangeSource.Other);
     Host2.InspectorFrontendHost.InspectorFrontendHostInstance.bringToFront();
   }
 };

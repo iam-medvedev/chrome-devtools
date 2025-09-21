@@ -31,7 +31,7 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/RenderBlocking.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function isRenderBlocking(insight) {
+export function isRenderBlockingInsight(insight) {
     return insight.insightKey === 'RenderBlocking';
 }
 // Because of the way we detect blocking stylesheets, asynchronously loaded

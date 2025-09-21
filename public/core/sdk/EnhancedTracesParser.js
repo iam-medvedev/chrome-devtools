@@ -27,7 +27,7 @@ export class EnhancedTracesParser {
     }
     parseEnhancedTrace() {
         for (const event of this.#trace.traceEvents) {
-            if (this.isTracingStartInBrowserEvent(event)) {
+            if (this.isTracingStartedInBrowser(event)) {
                 // constructs all targets by devtools.timeline TracingStartedInBrowser
                 const data = event.args?.data;
                 for (const frame of data.frames) {
@@ -53,7 +53,7 @@ export class EnhancedTracesParser {
                     this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
                 }
             }
-            else if (this.isTargetRundownEvent(event)) {
+            else if (this.isRundownScriptCompiled(event)) {
                 // Set up script to v8 context mapping
                 const data = event.args?.data;
                 this.#scriptToV8Context.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.v8context);
@@ -64,7 +64,7 @@ export class EnhancedTracesParser {
                     this.#targets.push({
                         targetId: frameId,
                         type: data.frameType,
-                        isolate: data.isolate,
+                        isolate: String(data.isolate),
                         pid: event.pid,
                         url: data.url,
                     });
@@ -80,34 +80,37 @@ export class EnhancedTracesParser {
                             isDefault: data.isDefault,
                             type: data.contextType,
                         },
-                        isolate: data.isolate,
+                        isolate: String(data.isolate),
+                        name: data.origin,
+                        uniqueId: `${data.v8context}-${data.isolate}`,
                     });
                 }
             }
-            else if (this.isScriptRundownEvent(event)) {
+            else if (this.isRundownScript(event)) {
                 this.#scriptRundownEvents.push(event);
                 const data = event.args.data;
                 // Add script
-                if (!this.#scripts.find(script => script.scriptId === String(data.scriptId) && script.isolate === data.isolate)) {
+                if (!this.#scripts.find(script => script.scriptId === String(data.scriptId) && script.isolate === String(data.isolate))) {
                     this.#scripts.push({
                         scriptId: String(data.scriptId),
-                        isolate: data.isolate,
+                        isolate: String(data.isolate),
+                        buildId: '',
                         executionContextId: data.executionContextId,
                         startLine: data.startLine ?? 0,
                         startColumn: data.startColumn ?? 0,
                         endLine: data.endLine ?? 0,
                         endColumn: data.endColumn ?? 0,
-                        hash: data.hash,
+                        hash: data.hash ?? '',
                         isModule: data.isModule,
-                        url: data.url,
+                        url: data.url ?? '',
                         hasSourceURL: data.hasSourceUrl,
-                        sourceURL: data.sourceUrl,
+                        sourceURL: data.sourceUrl ?? '',
                         sourceMapURL: data.sourceMapUrl,
                         pid: event.pid,
                     });
                 }
             }
-            else if (this.isScriptRundownSourceEvent(event)) {
+            else if (this.isRundownScriptSource(event)) {
                 // Set up script to source text and length mapping
                 const data = event.args.data;
                 const scriptIsolateId = this.getScriptIsolateId(data.isolate, data.scriptId);
@@ -166,10 +169,10 @@ export class EnhancedTracesParser {
             // put in the aux data
             const linkedExecutionContext = this.#executionContexts.find(context => context.id === script.executionContextId && context.isolate === script.isolate);
             if (linkedExecutionContext) {
-                script.auxData = linkedExecutionContext.auxData;
+                script.executionContextAuxData = linkedExecutionContext.auxData;
                 // If a script successfully mapped to an execution context and aux data, link script to frame
-                if (script.auxData?.frameId) {
-                    this.#scriptToFrame.set(scriptIsolateId, script.auxData?.frameId);
+                if (script.executionContextAuxData?.frameId) {
+                    this.#scriptToFrame.set(scriptIsolateId, script.executionContextAuxData?.frameId);
                 }
             }
         });
@@ -225,25 +228,25 @@ export class EnhancedTracesParser {
         return sourceMap;
     }
     getScriptIsolateId(isolate, scriptId) {
-        return scriptId + '@' + isolate;
+        return `${scriptId}@${isolate}`;
     }
     getExecutionContextIsolateId(isolate, executionContextId) {
-        return executionContextId + '@' + isolate;
+        return `${executionContextId}@${isolate}`;
     }
     isTraceEvent(event) {
-        return 'cat' in event && 'pid' in event &&
-            'args' in event && 'data' in event.args;
+        return 'cat' in event && 'pid' in event && 'args' in event &&
+            'data' in event.args;
     }
-    isTargetRundownEvent(event) {
+    isRundownScriptCompiled(event) {
         return this.isTraceEvent(event) && event.cat === 'disabled-by-default-devtools.target-rundown';
     }
-    isScriptRundownEvent(event) {
+    isRundownScript(event) {
         return this.isTraceEvent(event) && event.cat === 'disabled-by-default-devtools.v8-source-rundown';
     }
-    isScriptRundownSourceEvent(event) {
+    isRundownScriptSource(event) {
         return this.isTraceEvent(event) && event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
     }
-    isTracingStartInBrowserEvent(event) {
+    isTracingStartedInBrowser(event) {
         return this.isTraceEvent(event) && event.cat === 'disabled-by-default-devtools.timeline' &&
             event.name === 'TracingStartedInBrowser';
     }
@@ -279,8 +282,8 @@ export class EnhancedTracesParser {
         // Put all of the scripts under respective targets with collected information
         for (const script of scripts) {
             const scriptExecutionContextIsolateId = this.getExecutionContextIsolateId(script.isolate, script.executionContextId);
-            const scriptFrameId = script.auxData?.frameId;
-            if (script.auxData?.frameId && targetIds.has(scriptFrameId)) {
+            const scriptFrameId = script.executionContextAuxData?.frameId;
+            if (script.executionContextAuxData?.frameId && targetIds.has(scriptFrameId)) {
                 targetToScripts.get(scriptFrameId)?.push(script);
                 executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, scriptFrameId);
             }
@@ -328,12 +331,14 @@ export class EnhancedTracesParser {
                         id: script.executionContextId,
                         origin: '',
                         v8Context: '',
+                        name: '',
                         auxData: {
                             frameId: targetId,
                             isDefault: false,
                             type: 'type',
                         },
                         isolate: script.isolate,
+                        uniqueId: `${targetId}-${script.isolate}`,
                     };
                     executionContexts.push(artificialContext);
                 }

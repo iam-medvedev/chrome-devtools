@@ -11,7 +11,7 @@ __export(AnimationsTrackAppender_exports, {
 });
 import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Trace2 from "./../../models/trace/trace.js";
-import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI2 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport3 from "./../../ui/legacy/theme_support/theme_support.js";
 
 // gen/front_end/panels/timeline/AppenderUtils.js
@@ -25,6 +25,7 @@ __export(AppenderUtils_exports, {
 });
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Trace from "./../../models/trace/trace.js";
+import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
 var UIStrings = {
   /**
@@ -42,7 +43,7 @@ function buildGroupStyle(extra) {
   const defaultGroupStyle = {
     padding: 4,
     height: 17,
-    collapsible: true,
+    collapsible: 0,
     color: ThemeSupport.ThemeSupport.instance().getComputedValue("--sys-color-on-surface"),
     backgroundColor: ThemeSupport.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container"),
     nestingLevel: 0,
@@ -430,6 +431,7 @@ __export(ExtensionTrackAppender_exports, {
 });
 import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Trace4 from "./../../models/trace/trace.js";
+import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport5 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as Extensions from "./extensions/extensions.js";
 var UIStrings4 = {
@@ -453,7 +455,8 @@ var ExtensionTrackAppender = class {
     if (totalEntryCount === 0) {
       return trackStartLevel;
     }
-    this.#appendTopLevelHeaderAtLevel(trackStartLevel, expanded);
+    const compact = !this.#extensionTopLevelTrack.isTrackGroup && totalEntryCount < 2;
+    this.#appendTopLevelHeaderAtLevel(trackStartLevel, compact, expanded);
     return this.#appendExtensionTrackData(trackStartLevel);
   }
   /**
@@ -462,8 +465,16 @@ var ExtensionTrackAppender = class {
    * header corresponds to the track name, in the latter it corresponds
    * to the track group name.
    */
-  #appendTopLevelHeaderAtLevel(currentLevel, expanded) {
-    const style = buildGroupStyle({ shareHeaderLine: false, collapsible: true });
+  #appendTopLevelHeaderAtLevel(currentLevel, compact, expanded) {
+    const style = compact ? buildGroupStyle({
+      shareHeaderLine: true,
+      collapsible: 1
+      /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */
+    }) : buildGroupStyle({
+      shareHeaderLine: false,
+      collapsible: 0
+      /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */
+    });
     const headerTitle = this.#extensionTopLevelTrack.name;
     const jsLogContext = this.#extensionTopLevelTrack.name === "\u{1F170}\uFE0F Angular" ? "angular-track" : "extension";
     const group = buildTrackHeader(
@@ -483,7 +494,13 @@ var ExtensionTrackAppender = class {
    * corresponds to the track name itself, instead of the track name.
    */
   #appendSecondLevelHeader(trackStartLevel, headerTitle) {
-    const style = buildGroupStyle({ shareHeaderLine: false, padding: 2, nestingLevel: 1, collapsible: true });
+    const style = buildGroupStyle({
+      shareHeaderLine: false,
+      padding: 2,
+      nestingLevel: 1,
+      collapsible: 0
+      /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */
+    });
     const group = buildTrackHeader(
       "extension",
       trackStartLevel,
@@ -527,6 +544,7 @@ __export(GPUTrackAppender_exports, {
 });
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Trace5 from "./../../models/trace/trace.js";
+import * as PerfUI4 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport7 from "./../../ui/legacy/theme_support/theme_support.js";
 var UIStrings5 = {
   /**
@@ -572,7 +590,10 @@ var GPUTrackAppender = class {
    * @param expanded whether the track should be rendered expanded.
    */
   #appendTrackHeaderAtLevel(currentLevel, expanded) {
-    const style = buildGroupStyle({ collapsible: false });
+    const style = buildGroupStyle({
+      collapsible: 1
+      /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */
+    });
     const group = buildTrackHeader(
       "gpu",
       currentLevel,
@@ -608,7 +629,7 @@ __export(InteractionsTrackAppender_exports, {
 });
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Trace6 from "./../../models/trace/trace.js";
-import * as PerfUI2 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Components from "./components/components.js";
 var UIStrings6 = {
   /**
@@ -655,7 +676,10 @@ var InteractionsTrackAppender = class {
    */
   #appendTrackHeaderAtLevel(currentLevel, expanded) {
     const trackIsCollapsible = this.#parsedTrace.data.UserInteractions.interactionEvents.length > 0;
-    const style = buildGroupStyle({ collapsible: trackIsCollapsible, useDecoratorsForOverview: true });
+    const style = buildGroupStyle({
+      collapsible: trackIsCollapsible ? 0 : 1,
+      useDecoratorsForOverview: true
+    });
     const group = buildTrackHeader(
       "interactions",
       currentLevel,
@@ -741,6 +765,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Trace7 from "./../../models/trace/trace.js";
 import * as ComponentHelpers from "./../../ui/components/helpers/helpers.js";
+import * as PerfUI6 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport9 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as Utils from "./utils/utils.js";
 var UIStrings7 = {
@@ -794,7 +819,10 @@ var LayoutShiftsTrackAppender = class _LayoutShiftsTrackAppender {
    * appended.
    */
   #appendTrackHeaderAtLevel(currentLevel, expanded) {
-    const style = buildGroupStyle({ collapsible: false });
+    const style = buildGroupStyle({
+      collapsible: 1
+      /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */
+    });
     const group = buildTrackHeader(
       "layout-shifts",
       currentLevel,
@@ -985,7 +1013,7 @@ import * as Root from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Trace10 from "./../../models/trace/trace.js";
-import * as PerfUI4 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI8 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport11 from "./../../ui/legacy/theme_support/theme_support.js";
 
 // gen/front_end/panels/timeline/ModificationsManager.js
@@ -1006,7 +1034,7 @@ __export(EntriesFilter_exports, {
 });
 import * as Platform2 from "./../../core/platform/platform.js";
 import * as Trace8 from "./../../models/trace/trace.js";
-import * as PerfUI3 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI7 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 var EntriesFilter = class {
   #parsedTrace;
   // Track the set of invisible entries.
@@ -1843,7 +1871,10 @@ var ThreadAppender = class {
    */
   #appendTrackHeaderAtLevel(currentLevel) {
     const trackIsCollapsible = this.#entries.length > 0;
-    const style = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+    const style = buildGroupStyle({
+      shareHeaderLine: false,
+      collapsible: trackIsCollapsible ? 0 : 1
+    });
     if (this.#headerNestingLevel !== null) {
       style.nestingLevel = this.#headerNestingLevel;
     }
@@ -1890,7 +1921,10 @@ var ThreadAppender = class {
     const currentTrackCount = this.#compatibilityBuilder.getCurrentTrackCountForThreadType(threadType);
     if (currentTrackCount === 0) {
       const trackIsCollapsible = this.#entries.length > 0;
-      const headerStyle = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+      const headerStyle = buildGroupStyle({
+        shareHeaderLine: false,
+        collapsible: trackIsCollapsible ? 0 : 1
+      });
       const headerGroup = buildTrackHeader(
         null,
         trackStartLevel,
@@ -1902,7 +1936,12 @@ var ThreadAppender = class {
       );
       this.#compatibilityBuilder.getFlameChartTimelineData().groups.push(headerGroup);
     }
-    const titleStyle = buildGroupStyle({ padding: 2, nestingLevel: 1, collapsible: false });
+    const titleStyle = buildGroupStyle({
+      padding: 2,
+      nestingLevel: 1,
+      collapsible: 1
+      /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */
+    });
     const rasterizerTitle = this.threadType === "RASTERIZER" ? i18nString8(UIStrings8.rasterizerThreadS, { PH1: currentTrackCount + 1 }) : i18nString8(UIStrings8.threadPoolThreadS, { PH1: currentTrackCount + 1 });
     const visualLoggingName = this.#visualLoggingNameForThread();
     const titleGroup = buildTrackHeader(
@@ -2122,10 +2161,11 @@ __export(TimelineFlameChartDataProvider_exports, {
 import * as Common16 from "./../../core/common/common.js";
 import * as i18n54 from "./../../core/i18n/i18n.js";
 import * as Root6 from "./../../core/root/root.js";
+import * as AIAssistance2 from "./../../models/ai_assistance/ai_assistance.js";
 import * as Trace33 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver5 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace4 from "./../../models/workspace/workspace.js";
-import * as PerfUI13 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI17 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport25 from "./../../ui/legacy/theme_support/theme_support.js";
 
@@ -2285,11 +2325,12 @@ import * as Common15 from "./../../core/common/common.js";
 import * as i18n52 from "./../../core/i18n/i18n.js";
 import * as Platform15 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
+import * as AIAssistance from "./../../models/ai_assistance/ai_assistance.js";
 import * as CrUXManager5 from "./../../models/crux-manager/crux-manager.js";
 import * as Trace32 from "./../../models/trace/trace.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as TraceBounds15 from "./../../services/trace_bounds/trace_bounds.js";
-import * as PerfUI12 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI16 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineInsights2 from "./components/insights/insights.js";
@@ -2308,7 +2349,7 @@ import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Trace11 from "./../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../services/trace_bounds/trace_bounds.js";
-import * as PerfUI5 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI9 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings9 = {
   /**
@@ -2392,7 +2433,7 @@ var CountersGraph = class extends UI.Widget.VBox {
     this.canvasContainer.addEventListener("mousemove", this.onMouseMove.bind(this), true);
     this.canvasContainer.addEventListener("mouseleave", this.onMouseLeave.bind(this), true);
     this.canvasContainer.addEventListener("click", this.onClick.bind(this), true);
-    this.timelineGrid = new PerfUI5.TimelineGrid.TimelineGrid();
+    this.timelineGrid = new PerfUI9.TimelineGrid.TimelineGrid();
     this.canvasContainer.appendChild(this.timelineGrid.dividersElement);
     this.counters = [];
     this.counterUI = [];
@@ -2847,6 +2888,7 @@ import * as Platform13 from "./../../core/platform/platform.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as Trace29 from "./../../models/trace/trace.js";
 import * as TraceBounds13 from "./../../services/trace_bounds/trace_bounds.js";
+import * as Tracing5 from "./../../services/tracing/tracing.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
@@ -2897,6 +2939,7 @@ import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
 import * as Trace24 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver3 from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as TraceBounds11 from "./../../services/trace_bounds/trace_bounds.js";
+import * as Tracing4 from "./../../services/tracing/tracing.js";
 import * as CodeHighlighter from "./../../ui/components/code_highlighter/code_highlighter.js";
 
 // gen/front_end/ui/components/code_highlighter/codeHighlighter.css.js
@@ -3007,7 +3050,7 @@ var codeHighlighter_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./codeHighlighter.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
-import * as PerfUI9 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI13 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 
 // gen/front_end/ui/legacy/components/utils/imagePreview.css.js
 var imagePreview_css_default = `/*
@@ -3134,6 +3177,7 @@ import * as Common5 from "./../../core/common/common.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as Trace13 from "./../../models/trace/trace.js";
+import * as Tracing from "./../../services/tracing/tracing.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
@@ -3393,7 +3437,6 @@ var timelineTreeView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineTreeView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineTreeView.js
-import * as Utils3 from "./utils/utils.js";
 var UIStrings10 = {
   /**
    * @description Text for the performance of something
@@ -3966,6 +4009,9 @@ var TimelineTreeView = class extends Common5.ObjectWrapper.eventMixin(UI2.Widget
   supportsCaseSensitiveSearch() {
     return true;
   }
+  supportsWholeWordSearch() {
+    return true;
+  }
   supportsRegexSearch() {
     return true;
   }
@@ -4028,7 +4074,7 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       const parsedTrace = this.treeView.parsedTrace();
       const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
       const linkifier = this.treeView.linkifier;
-      const isFreshRecording = Boolean(parsedTrace && Utils3.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+      const isFreshRecording = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
       this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
       if (this.linkElement) {
         container.createChild("div", "activity-link").appendChild(this.linkElement);
@@ -4733,11 +4779,12 @@ import * as Trace23 from "./../../models/trace/trace.js";
 import * as SourceMapsResolver from "./../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace2 from "./../../models/workspace/workspace.js";
 import * as TraceBounds9 from "./../../services/trace_bounds/trace_bounds.js";
+import * as Tracing3 from "./../../services/tracing/tracing.js";
 import * as Adorners from "./../../ui/components/adorners/adorners.js";
 import * as Dialogs from "./../../ui/components/dialogs/dialogs.js";
 import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
-import * as PerfUI8 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI12 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI10 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport17 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
@@ -5168,7 +5215,7 @@ import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
 import * as Extensions3 from "./../../models/extensions/extensions.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as Trace16 from "./../../models/trace/trace.js";
-import * as Tracing from "./../../services/tracing/tracing.js";
+import * as Tracing2 from "./../../services/tracing/tracing.js";
 
 // gen/front_end/panels/timeline/RecordingMetadata.js
 var RecordingMetadata_exports = {};
@@ -5280,7 +5327,7 @@ var TimelineController = class {
   constructor(rootTarget, primaryPageTarget, client) {
     this.primaryPageTarget = primaryPageTarget;
     this.rootTarget = rootTarget;
-    this.tracingManager = rootTarget.model(Tracing.TracingManager.TracingManager);
+    this.tracingManager = rootTarget.model(Tracing2.TracingManager.TracingManager);
     this.client = client;
   }
   async dispose() {
@@ -5478,7 +5525,7 @@ __export(TimelineEventOverview_exports, {
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Trace17 from "./../../models/trace/trace.js";
 import * as TraceBounds5 from "./../../services/trace_bounds/trace_bounds.js";
-import * as PerfUI6 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI10 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport15 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
@@ -5504,7 +5551,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/TimelineEventOverview.ts", UIStrings15);
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var TimelineEventOverview = class extends PerfUI6.TimelineOverviewPane.TimelineOverviewBase {
+var TimelineEventOverview = class extends PerfUI10.TimelineOverviewPane.TimelineOverviewBase {
   constructor(id, title) {
     super();
     this.element.id = "timeline-overview-" + id;
@@ -6788,7 +6835,7 @@ __export(TimelineMiniMap_exports, {
 import * as Common9 from "./../../core/common/common.js";
 import * as Trace20 from "./../../models/trace/trace.js";
 import * as TraceBounds7 from "./../../services/trace_bounds/trace_bounds.js";
-import * as PerfUI7 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI11 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI8 from "./../../ui/legacy/legacy.js";
 import * as TimelineComponents2 from "./components/components.js";
 
@@ -6905,7 +6952,7 @@ var timelineMiniMap_css_default = `/*
 
 // gen/front_end/panels/timeline/TimelineMiniMap.js
 var TimelineMiniMap = class extends Common9.ObjectWrapper.eventMixin(UI8.Widget.VBox) {
-  #overviewComponent = new PerfUI7.TimelineOverviewPane.TimelineOverviewPane("timeline");
+  #overviewComponent = new PerfUI11.TimelineOverviewPane.TimelineOverviewPane("timeline");
   #controls = [];
   breadcrumbs = null;
   #breadcrumbsUI;
@@ -7839,7 +7886,7 @@ var UIDevtoolsController = class extends TimelineController {
 };
 
 // gen/front_end/panels/timeline/TimelinePanel.js
-import * as Utils4 from "./utils/utils.js";
+import * as Utils3 from "./utils/utils.js";
 var UIStrings20 = {
   /**
    * @description Text that appears when user drag and drop something (for example, a file) in Timeline Panel of the Performance panel
@@ -8431,7 +8478,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     cruxManager.removeEventListener("field-data-changed", this.#onFieldDataChanged, this);
   }
   #onFieldDataChanged() {
-    const recs = Utils4.Helpers.getThrottlingRecommendations();
+    const recs = Utils3.Helpers.getThrottlingRecommendations();
     this.cpuThrottlingSelect?.updateRecommendedOption(recs.cpuOption);
     if (this.networkThrottlingSelect) {
       this.networkThrottlingSelect.recommendedConditions = recs.networkConditions;
@@ -8547,13 +8594,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   getOrCreateExternalAIConversationData() {
     if (!this.#externalAIConversationData) {
       const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-      const focus = Utils4.AIContext.getPerformanceAgentFocusFromModel(this.model);
+      const focus = AiAssistanceModel.getPerformanceAgentFocusFromModel(this.model);
       if (!focus) {
         throw new Error("could not create performance agent focus");
       }
       const agent = conversationHandler.createAgent(
         "drjones-performance-full"
-        /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */
+        /* AiAssistanceModel.ConversationType.PERFORMANCE */
       );
       const conversation = new AiAssistanceModel.Conversation(
         "drjones-performance-full",
@@ -8565,6 +8612,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         true
       );
       const selected = new AiAssistanceModel.PerformanceTraceContext(focus);
+      selected.external = true;
       this.#externalAIConversationData = {
         conversationHandler,
         conversation,
@@ -8929,14 +8977,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     contextMenu.appendItemsAtLocation("timelineMenu");
     void contextMenu.show();
   }
-  /**
-   * Saves a trace file to disk.
-   * Pass `config.savingEnhancedTrace === true` to include source maps in the resulting metadata.
-   * Pass `config.addModifications === true` to include user modifications to the trace file, which includes:
-   *      1. Annotations
-   *      2. Filtering / collapsing of the flame chart.
-   *      3. Visual track configuration (re-ordering or hiding tracks).
-   */
   async saveToFile(config) {
     if (this.state !== "Idle") {
       return;
@@ -8954,7 +8994,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       scriptByIdMap.set(`${mapScript.isolate}.${mapScript.scriptId}`, mapScript);
     }
     const traceEvents = parsedTrace.traceEvents.map((event) => {
-      if (Trace23.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== "StubScriptCatchup") {
+      if (Trace23.Types.Events.isAnyScriptSourceEvent(event) && event.name !== "StubScriptCatchup") {
         const mappedScript = scriptByIdMap.get(`${event.args.data.isolate}.${event.args.data.scriptId}`);
         if (!config.includeScriptContent || mappedScript?.url && Trace23.Helpers.Trace.isExtensionUrl(mappedScript.url)) {
           return {
@@ -8979,7 +9019,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       await this.innerSaveToFile(traceEvents, metadata, {
         includeScriptContent: config.includeScriptContent,
         includeSourceMaps: config.includeSourceMaps,
-        addModifications: config.addModifications
+        addModifications: config.addModifications,
+        shouldCompress: config.shouldCompress
       });
     } catch (e) {
       const error = e instanceof Error ? e : new Error(e);
@@ -9012,10 +9053,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       throw new Error("Trace content empty");
     }
     let blob = new Blob(blobParts, { type: "application/json" });
-    if (Root4.Runtime.experiments.isEnabled(
-      "timeline-save-as-gz"
-      /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */
-    )) {
+    if (config.shouldCompress) {
       fileName = `${fileName}.gz`;
       const gzStream = Common10.Gzip.compressStream(blob.stream());
       blob = await new Response(gzStream, {
@@ -9049,6 +9087,16 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       a.click();
       URL.revokeObjectURL(url);
     }
+  }
+  async handleSaveToFileAction() {
+    const exportTraceOptionsElement = this.saveButton.element;
+    const state = exportTraceOptionsElement.state;
+    await this.saveToFile({
+      includeScriptContent: state.includeScriptContent,
+      includeSourceMaps: state.includeSourceMaps,
+      addModifications: state.includeAnnotations,
+      shouldCompress: state.shouldCompress
+    });
   }
   #filterMetadataSourceMaps(metadata) {
     if (!metadata.sourceMaps) {
@@ -9519,7 +9567,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.getNetworkDataProvider().reset();
     this.flameChart.reset();
     this.#changeView({ mode: "LANDING_PAGE" });
-    UI10.Context.Context.instance().setFlavor(Utils4.AIContext.AgentFocus, null);
+    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, null);
   }
   #hasActiveTrace() {
     return this.#viewMode.mode === "VIEWING_TRACE";
@@ -9557,7 +9605,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       return;
     }
     Trace23.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
-    PerfUI8.LineLevelProfile.Performance.instance().reset();
+    PerfUI12.LineLevelProfile.Performance.instance().reset();
     this.#minimapComponent.reset();
     const data = parsedTrace.data;
     TraceBounds9.TraceBounds.BoundsManager.instance().resetWithNewBounds(data.Meta.traceBounds);
@@ -9573,7 +9621,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.#searchableView.showWidget();
     const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
     this.#applyActiveFilters(parsedTrace.data.Meta.traceIsGeneric, exclusiveFilter);
-    this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
+    this.saveButton.element.updateContentVisibility({
+      annotationsExist: currentManager ? currentManager.getAnnotations()?.length > 0 : false
+    });
     currentManager?.addEventListener(AnnotationModifiedEvent.eventName, this.#onAnnotationModifiedEventBound);
     const topMostMainThreadAppender = this.flameChart.getMainDataProvider().compatibilityTracksAppenderInstance().threadAppenders().at(0);
     if (topMostMainThreadAppender) {
@@ -9587,7 +9637,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
       this.flameChart.bulkAddOverlays(currModificationManager.getOverlays());
     }
-    PerfUI8.LineLevelProfile.Performance.instance().reset();
+    PerfUI12.LineLevelProfile.Performance.instance().reset();
     if (parsedTrace.data.Samples.profilesInProcess.size) {
       const primaryPageTarget = SDK8.TargetManager.TargetManager.instance().primaryPageTarget();
       const cpuProfiles = Array.from(parsedTrace.data.Samples.profilesInProcess).flatMap(([_processId, threadsInProcess]) => {
@@ -9595,7 +9645,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         return profiles;
       });
       for (const profile of cpuProfiles) {
-        PerfUI8.LineLevelProfile.Performance.instance().appendCPUProfile(profile, primaryPageTarget);
+        PerfUI12.LineLevelProfile.Performance.instance().appendCPUProfile(profile, primaryPageTarget);
       }
     }
     this.#entityMapper = new Trace23.EntityMapper.EntityMapper(parsedTrace);
@@ -9647,6 +9697,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         );
       }
     }
+    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.full(parsedTrace));
   }
   #onAnnotationModifiedEvent(e) {
     const event = e;
@@ -9676,7 +9727,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const annotations = currentManager?.getAnnotations() ?? [];
     const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
     this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
-    this.saveButton.element.updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
+    this.saveButton.element.updateContentVisibility({
+      annotationsExist: currentManager ? currentManager.getAnnotations()?.length > 0 : false
+    });
   }
   /**
    * After the user imports / records a trace, we auto-show the sidebar.
@@ -9896,7 +9949,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         throw new Error(`Could not get trace data at index ${traceIndex}`);
       }
       if (recordingIsFresh) {
-        Utils4.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
+        Tracing3.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
       }
       this.#historyManager.addRecording({
         data: {
@@ -10041,7 +10094,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const config = {
       metadata: metadata ?? void 0,
       isFreshRecording,
-      resolveSourceMap: this.#createSourceMapResolver(isFreshRecording, metadata)
+      resolveSourceMap: this.#createSourceMapResolver(isFreshRecording, metadata),
+      isCPUProfile: metadata?.dataOrigin === "CPUProfile"
     };
     if (window.location.href.includes("devtools/bundled") || window.location.search.includes("debugFrontend")) {
       const times = {};
@@ -10382,7 +10436,7 @@ var ActionDelegate = class {
         panel.recordReload();
         return true;
       case "timeline.save-to-file":
-        void panel.saveToFile({ includeScriptContent: false, includeSourceMaps: false, addModifications: false });
+        void panel.handleSaveToFileAction();
         return true;
       case "timeline.load-from-file":
         panel.selectFileToLoad();
@@ -10414,7 +10468,7 @@ var SelectedInsight = class {
 };
 
 // gen/front_end/panels/timeline/TimelineUIUtils.js
-import * as Utils5 from "./utils/utils.js";
+import * as Utils4 from "./utils/utils.js";
 var UIStrings21 = {
   /**
    * @description Text that only contain a placeholder
@@ -10725,9 +10779,10 @@ var UIStrings21 = {
   /** Descriptive reason for why a user-provided animation failed to be optimized by the browser due to an unknown reason. Shown in a table with a list of other potential failure reasons.  */
   compositingFailedUnknownReason: "Unknown Reason",
   /**
-   * @description Text for the execution stack trace
+   * @description Text for the execution "stack trace". It is not technically a stack trace, because it points to the beginning of each function
+   * and not to each call site, so we call it a function stack instead to avoid confusion.
    */
-  stackTrace: "Stack trace",
+  functionStack: "Function stack",
   /**
    * @description Text used to show any invalidations for a particular event that caused the browser to have to do more work to update the page.
    * @example {2} PH1
@@ -11137,18 +11192,22 @@ var TimelineUIUtils = class _TimelineUIUtils {
     }
   }
   static maybeCreateLinkElement(url) {
-    const protocol = URL.parse(url)?.protocol;
-    if (!protocol || protocol.length === 0) {
+    const parsedURL = new Common11.ParsedURL.ParsedURL(url);
+    if (!parsedURL.scheme) {
       return null;
     }
     const splitResult = Common11.ParsedURL.ParsedURL.splitLineAndColumn(url);
     if (!splitResult) {
       return null;
     }
-    const { lineNumber, columnNumber } = splitResult;
-    const options = { text: url, lineNumber, columnNumber };
-    const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
-    return linkElement;
+    const { url: rawURL, lineNumber, columnNumber } = splitResult;
+    const options = {
+      lineNumber,
+      columnNumber,
+      showColumnNumber: true,
+      omitOrigin: true
+    };
+    return LegacyComponents.Linkifier.Linkifier.linkifyURL(rawURL, options);
   }
   /**
    * Takes an input string and parses it to look for links. It does this by
@@ -11172,7 +11231,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const maybeTarget = targetForEvent(parsedTrace, event);
     const { duration } = Trace24.Helpers.Timing.eventTimingsMicroSeconds(event);
     const selfTime = getEventSelfTime(event, parsedTrace);
-    const relatedNodesMap = await Utils5.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
+    const relatedNodesMap = await Utils4.EntryNodes.relatedDOMNodesForEvent(parsedTrace, event);
     let entityAppended = false;
     if (maybeTarget) {
       if (typeof event[previewElementSymbol] === "undefined") {
@@ -11272,7 +11331,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         }
       }
     }
-    const isFreshRecording = Boolean(parsedTrace && Utils5.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+    const isFreshRecording = Boolean(parsedTrace && Tracing4.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
     switch (event.name) {
       case "GCEvent":
       case "MajorGC":
@@ -11781,10 +11840,10 @@ var TimelineUIUtils = class _TimelineUIUtils {
   static async generateCauses(event, contentHelper, parsedTrace) {
     const { startTime } = Trace24.Helpers.Timing.eventTimingsMilliSeconds(event);
     let initiatorStackLabel = i18nString21(UIStrings21.initiatorStackTrace);
-    let stackLabel = i18nString21(UIStrings21.stackTrace);
+    let stackLabel = i18nString21(UIStrings21.functionStack);
     const stackTraceForEvent = Trace24.Extras.StackTraceForEvent.get(event, parsedTrace.data);
     if (stackTraceForEvent?.callFrames.length || stackTraceForEvent?.description || stackTraceForEvent?.parent) {
-      contentHelper.addSection(i18nString21(UIStrings21.stackTrace));
+      contentHelper.addSection(i18nString21(UIStrings21.functionStack));
       contentHelper.createChildStackTraceElement(stackTraceForEvent);
     } else {
       const stackTrace = Trace24.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event);
@@ -12040,7 +12099,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const element = document.createElement("div");
     element.classList.add("timeline-details-view-pie-chart-wrapper");
     element.classList.add("hbox");
-    const pieChart = new PerfUI9.PieChart.PieChart();
+    const pieChart = new PerfUI13.PieChart.PieChart();
     const slices = [];
     function appendLegendRow(title, value, color) {
       if (!value) {
@@ -12132,7 +12191,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       filmStripPreview.addEventListener("click", frameClicked.bind(null, filmStrip, filmStripFrame), false);
     }
     function frameClicked(filmStrip2, filmStripFrame2) {
-      PerfUI9.FilmStripView.Dialog.fromFilmStrip(filmStrip2, filmStripFrame2.index);
+      PerfUI13.FilmStripView.Dialog.fromFilmStrip(filmStrip2, filmStripFrame2.index);
     }
     return contentHelper.fragment;
   }
@@ -12251,7 +12310,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     if (!entity) {
       return null;
     }
-    const originWithEntity = Utils5.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
+    const originWithEntity = Utils4.Helpers.formatOriginWithEntity(parsedUrl, entity, true);
     return originWithEntity;
   }
 };
@@ -12844,10 +12903,10 @@ var TracingLayerTree = class extends SDK10.LayerTreeBase.LayerTreeBase {
     this.layersById = /* @__PURE__ */ new Map();
     this.setContentRoot(null);
     if (root) {
-      const convertedLayers = this.innerSetLayers(oldLayersById, root);
+      const convertedLayers = this.#setLayers(oldLayersById, root);
       this.setRoot(convertedLayers);
     } else if (layers) {
-      const processedLayers = layers.map(this.innerSetLayers.bind(this, oldLayersById));
+      const processedLayers = layers.map(this.#setLayers.bind(this, oldLayersById));
       const contentRoot = this.contentRoot();
       if (!contentRoot) {
         throw new Error("Content root is not set.");
@@ -12888,7 +12947,7 @@ var TracingLayerTree = class extends SDK10.LayerTreeBase.LayerTreeBase {
       }
     }
   }
-  innerSetLayers(oldLayersById, payload) {
+  #setLayers(oldLayersById, payload) {
     let layer = oldLayersById.get(payload.layer_id);
     if (layer) {
       layer.reset(payload);
@@ -12903,7 +12962,7 @@ var TracingLayerTree = class extends SDK10.LayerTreeBase.LayerTreeBase {
       this.setContentRoot(layer);
     }
     for (let i = 0; payload.children && i < payload.children.length; ++i) {
-      layer.addChild(this.innerSetLayers(oldLayersById, payload.children[i]));
+      layer.addChild(this.#setLayers(oldLayersById, payload.children[i]));
     }
     return layer;
   }
@@ -13397,7 +13456,7 @@ devtools-data-grid {
 /*# sourceURL=${import.meta.resolve("./timelineSelectorStatsView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineSelectorStatsView.js
-import * as Utils6 from "./utils/utils.js";
+import * as Utils5 from "./utils/utils.js";
 var UIStrings23 = {
   /**
    * @description Label for selector stats data table
@@ -13654,7 +13713,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
     }
     const invalidatedNodeIdMap = /* @__PURE__ */ new Map();
     for (const [frameId, backendNodeIds] of frameIdBackendNodeIdsMap) {
-      const backendNodeIdMap = await Utils6.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
+      const backendNodeIdMap = await Utils5.EntryNodes.domNodesForBackendIds(frameId, backendNodeIds);
       invalidatedNodeIdMap.set(frameId, backendNodeIdMap);
     }
     for (const invalidatedNode of invalidatedNodes) {
@@ -13819,7 +13878,6 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
 };
 
 // gen/front_end/panels/timeline/TimelineDetailsView.js
-import * as Utils7 from "./utils/utils.js";
 var UIStrings24 = {
   /**
    * @description Text for the summary view
@@ -14306,7 +14364,7 @@ async function renderSelectedEventDetails(input) {
   if (!selectedEvent || !parsedTrace || !linkifier) {
     return nothing;
   }
-  const traceRecordingIsFresh = parsedTrace ? Utils7.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
+  const traceRecordingIsFresh = parsedTrace ? Tracing5.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
   if (Trace29.Types.Events.isSyntheticLayoutShift(selectedEvent) || Trace29.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
     return html2`
       <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
@@ -14367,7 +14425,7 @@ import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Trace31 from "./../../models/trace/trace.js";
-import * as PerfUI11 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI15 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport23 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as TimelineComponents6 from "./components/components.js";
@@ -14379,7 +14437,7 @@ __export(NetworkTrackAppender_exports, {
 });
 import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as Trace30 from "./../../models/trace/trace.js";
-import * as PerfUI10 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
+import * as PerfUI14 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as ThemeSupport21 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as Components4 from "./components/components.js";
 var UIStrings25 = {
@@ -14400,7 +14458,7 @@ var NetworkTrackAppender = class {
   constructor(flameChartData, events) {
     this.#flameChartData = flameChartData;
     this.#events = events;
-    this.#font = `${PerfUI10.Font.DEFAULT_FONT_SIZE} ${PerfUI10.Font.getFontFamilyForCanvas()}`;
+    this.#font = `${PerfUI14.Font.DEFAULT_FONT_SIZE} ${PerfUI14.Font.getFontFamilyForCanvas()}`;
     ThemeSupport21.ThemeSupport.instance().addEventListener(ThemeSupport21.ThemeChangeEvent.eventName, () => {
       if (this.#group) {
         this.#group.style.color = ThemeSupport21.ThemeSupport.instance().getComputedValue("--sys-color-on-surface");
@@ -14662,7 +14720,7 @@ var TimelineFlameChartNetworkDataProvider = class {
     if (this.#timelineData && this.#timelineData.entryLevels.length !== 0) {
       return this.#timelineData;
     }
-    this.#timelineData = PerfUI11.FlameChart.FlameChartTimelineData.createEmpty();
+    this.#timelineData = PerfUI15.FlameChart.FlameChartTimelineData.createEmpty();
     if (!this.#parsedTrace) {
       return this.#timelineData;
     }
@@ -14935,7 +14993,7 @@ var TimelineFlameChartNetworkDataProvider = class {
       return;
     }
     this.#maxLevel = this.#networkTrackAppender.relayoutEntriesWithinBounds(this.#events, startTime, endTime);
-    this.#timelineData = PerfUI11.FlameChart.FlameChartTimelineData.create({
+    this.#timelineData = PerfUI15.FlameChart.FlameChartTimelineData.create({
       entryLevels: this.#timelineData?.entryLevels,
       entryTotalTimes: this.#timelineData?.entryTotalTimes,
       entryStartTimes: this.#timelineData?.entryStartTimes,
@@ -15292,7 +15350,7 @@ var timelineFlameChartView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineFlameChartView.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineFlameChartView.js
-import * as Utils9 from "./utils/utils.js";
+import * as Utils7 from "./utils/utils.js";
 var UIStrings26 = {
   /**
    * @description Text in Timeline Flame Chart View of the Performance panel
@@ -15437,7 +15495,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.mainDataProvider.setPersistedGroupConfigSetting(this.#mainPersistedGroupConfigSetting);
     this.mainDataProvider.addEventListener("DataChanged", () => this.mainFlameChart.scheduleUpdate());
     this.mainDataProvider.addEventListener("FlameChartItemHovered", (e) => this.detailsView.revealEventInTreeView(e.data));
-    this.mainFlameChart = new PerfUI12.FlameChart.FlameChart(this.mainDataProvider, this, {
+    this.mainFlameChart = new PerfUI16.FlameChart.FlameChart(this.mainDataProvider, this, {
       // The TimelineOverlays are used for selected elements
       selectedElementOutline: false,
       tooltipElement: this.#tooltipElement,
@@ -15453,7 +15511,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     });
     this.networkDataProvider = new TimelineFlameChartNetworkDataProvider();
     this.networkDataProvider.setPersistedGroupConfigSetting(this.#networkPersistedGroupConfigSetting);
-    this.networkFlameChart = new PerfUI12.FlameChart.FlameChart(this.networkDataProvider, this, {
+    this.networkFlameChart = new PerfUI16.FlameChart.FlameChart(this.networkDataProvider, this, {
       // The TimelineOverlays are used for selected elements
       selectedElementOutline: false,
       tooltipElement: this.#tooltipElement,
@@ -16048,10 +16106,10 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (!SHOULD_SHOW_EASTER_EGG) {
       return;
     }
-    if ([...this.element.childNodes].find((child) => child instanceof PerfUI12.BrickBreaker.BrickBreaker)) {
+    if ([...this.element.childNodes].find((child) => child instanceof PerfUI16.BrickBreaker.BrickBreaker)) {
       return;
     }
-    this.brickGame = new PerfUI12.BrickBreaker.BrickBreaker(this.mainFlameChart);
+    this.brickGame = new PerfUI16.BrickBreaker.BrickBreaker(this.mainFlameChart);
     this.brickGame.classList.add("brick-game");
     this.element.append(this.brickGame);
   }
@@ -16281,7 +16339,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (!target) {
       return;
     }
-    const nodeIds = Utils9.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
+    const nodeIds = Utils7.EntryNodes.nodeIdsForEvent(this.#parsedTrace, event);
     for (const nodeId of nodeIds) {
       new SDK15.DOMModel.DeferredDOMNode(target, nodeId).highlight();
     }
@@ -16364,18 +16422,21 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     if (this.#linkSelectionAnnotation && this.#linkSelectionAnnotation.state === "creation_not_started") {
       this.#clearLinkSelectionAnnotation(true);
     }
-    if (selectionIsEvent(selection) && this.#parsedTrace) {
-      requestAnimationFrame(() => {
-        if (!this.#parsedTrace) {
-          return;
-        }
-        const aiCallTree = Utils9.AICallTree.AICallTree.fromEvent(selection.event, this.#parsedTrace);
-        if (aiCallTree) {
-          const context = Utils9.AIContext.AgentFocus.fromCallTree(aiCallTree);
-          UI18.Context.Context.instance().setFlavor(Utils9.AIContext.AgentFocus, context);
-        }
-      });
-    }
+    requestAnimationFrame(() => {
+      if (!this.#parsedTrace) {
+        return;
+      }
+      const callTree = selectionIsEvent(selection) ? AIAssistance.AICallTree.fromEvent(selection.event, this.#parsedTrace) : null;
+      let focus = UI18.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+      if (focus) {
+        focus = focus.withCallTree(callTree);
+      } else if (callTree) {
+        focus = AIAssistance.AgentFocus.fromCallTree(callTree);
+      } else {
+        focus = null;
+      }
+      UI18.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
+    });
   }
   // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
   // their entry with a new UI. Because of that, their entries can no longer be "selected" in the timings track,
@@ -16523,7 +16584,7 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     }
     this.needsResizeToPreferredHeights = false;
     this.networkPane.element.classList.toggle("timeline-network-resizer-disabled", !this.networkDataProvider.isExpanded());
-    this.networkSplitWidget.setSidebarSize(this.networkDataProvider.preferredHeight() + this.splitResizer.clientHeight + PerfUI12.FlameChart.RulerHeight + 2);
+    this.networkSplitWidget.setSidebarSize(this.networkDataProvider.preferredHeight() + this.splitResizer.clientHeight + PerfUI16.FlameChart.RulerHeight + 2);
   }
   setSearchableView(searchableView) {
     this.searchableView = searchableView;
@@ -16544,6 +16605,9 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     this.#selectSearchResult(Platform15.NumberUtilities.mod(index - 1, this.searchResults.length));
   }
   supportsCaseSensitiveSearch() {
+    return true;
+  }
+  supportsWholeWordSearch() {
     return true;
   }
   supportsRegexSearch() {
@@ -16713,7 +16777,7 @@ function groupForLevel(groups, level) {
 }
 
 // gen/front_end/panels/timeline/TimelineFlameChartDataProvider.js
-import * as Utils10 from "./utils/utils.js";
+import * as Utils8 from "./utils/utils.js";
 var UIStrings27 = {
   /**
    * @description Text for rendering frames
@@ -16811,7 +16875,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   entryIndexToTitle = [];
   #lastInitiatorEntryIndex = -1;
   lastSelection = null;
-  #font = `${PerfUI13.Font.DEFAULT_FONT_SIZE} ${PerfUI13.Font.getFontFamilyForCanvas()}`;
+  #font = `${PerfUI17.Font.DEFAULT_FONT_SIZE} ${PerfUI17.Font.getFontFamilyForCanvas()}`;
   #eventIndexByEvent = /* @__PURE__ */ new WeakMap();
   #entityMapper = null;
   /**
@@ -16826,7 +16890,12 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     this.reset();
     [this.droppedFramePattern, this.partialFramePattern] = this.preparePatternCanvas();
     this.framesGroupStyle = this.buildGroupStyle({ useFirstLineForOverview: true });
-    this.screenshotsGroupStyle = this.buildGroupStyle({ useFirstLineForOverview: true, nestingLevel: 1, collapsible: false, itemsHeight: 150 });
+    this.screenshotsGroupStyle = this.buildGroupStyle({
+      useFirstLineForOverview: true,
+      nestingLevel: 1,
+      collapsible: 1,
+      itemsHeight: 150
+    });
     ThemeSupport25.ThemeSupport.instance().addEventListener(ThemeSupport25.ThemeChangeEvent.eventName, () => {
       const headers = [
         this.framesGroupStyle,
@@ -16837,7 +16906,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
         header.backgroundColor = ThemeSupport25.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container");
       }
     });
-    Utils10.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
+    Utils8.ImageCache.emitter.addEventListener("screenshot-loaded", () => this.dispatchEventToListeners(
       "DataChanged"
       /* Events.DATA_CHANGED */
     ));
@@ -16887,11 +16956,16 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     }
     const contextMenu = new UI19.ContextMenu.ContextMenu(mouseEvent);
     if (perfAIEntryPointEnabled && this.parsedTrace) {
-      const aiCallTree = Utils10.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
-      if (aiCallTree) {
+      const callTree = AIAssistance2.AICallTree.fromEvent(entry, this.parsedTrace);
+      if (callTree) {
+        let focus = UI19.Context.Context.instance().flavor(AIAssistance2.AgentFocus);
+        if (focus) {
+          focus = focus.withCallTree(callTree);
+        } else {
+          focus = AIAssistance2.AgentFocus.fromCallTree(callTree);
+        }
+        UI19.Context.Context.instance().setFlavor(AIAssistance2.AgentFocus, focus);
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
-        const context = Utils10.AIContext.AgentFocus.fromCallTree(aiCallTree);
-        UI19.Context.Context.instance().setFlavor(Utils10.AIContext.AgentFocus, context);
         if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
           let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {
             submenu2.defaultSection().appendItem(label, () => action3.execute({ prompt }), { disabled: !action3.enabled(), jslogContext });
@@ -16976,7 +17050,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!url) {
       return contextMenu;
     }
-    if (Utils10.IgnoreList.isIgnoreListedEntry(entry)) {
+    if (Utils8.IgnoreList.isIgnoreListedEntry(entry)) {
       contextMenu.defaultSection().appendItem(i18nString27(UIStrings27.removeScriptFromIgnoreList), () => {
         Workspace4.IgnoreListManager.IgnoreListManager.instance().unIgnoreListURL(url);
         this.#onIgnoreListChanged();
@@ -17053,7 +17127,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     const defaultGroupStyle = {
       padding: 4,
       height: 17,
-      collapsible: true,
+      collapsible: 0,
       color: ThemeSupport25.ThemeSupport.instance().getComputedValue("--sys-color-on-surface"),
       backgroundColor: ThemeSupport25.ThemeSupport.instance().getComputedValue("--sys-color-cdt-base-container"),
       nestingLevel: 0,
@@ -17095,7 +17169,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
    */
   #instantiateTimelineData() {
     if (!this.#timelineData) {
-      this.#timelineData = PerfUI13.FlameChart.FlameChartTimelineData.createEmpty();
+      this.#timelineData = PerfUI17.FlameChart.FlameChartTimelineData.createEmpty();
     }
     return this.#timelineData;
   }
@@ -17147,7 +17221,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   textColor(index) {
     const event = this.entryData[index];
-    return Utils10.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
+    return Utils8.IgnoreList.isIgnoreListedEntry(event) ? "#888" : FlameChartStyle.textColor;
   }
   entryFont(_index) {
     return this.#font;
@@ -17203,7 +17277,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!rebuild && this.#timelineData && this.#timelineData.entryLevels.length !== 0) {
       return this.#timelineData;
     }
-    this.#timelineData = PerfUI13.FlameChart.FlameChartTimelineData.createEmpty();
+    this.#timelineData = PerfUI17.FlameChart.FlameChartTimelineData.createEmpty();
     if (rebuild) {
       this.rebuildTimelineData();
     }
@@ -17329,7 +17403,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (!hasFrames && !hasScreenshots) {
       return;
     }
-    this.framesGroupStyle.collapsible = hasScreenshots;
+    this.framesGroupStyle.collapsible = hasScreenshots ? 0 : 1;
     const expanded = Root6.Runtime.Runtime.queryParam("flamechart-force-expand") === "frames";
     this.appendHeader(i18nString27(UIStrings27.frames), this.framesGroupStyle, false, expanded);
     this.entryTypeByLevel[this.currentLevel] = "Frame";
@@ -17524,7 +17598,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
   }
   async drawScreenshot(entryIndex, context, barX, barY, barWidth, barHeight) {
     const screenshot = this.entryData[entryIndex];
-    const image = Utils10.ImageCache.getOrQueue(screenshot);
+    const image = Utils8.ImageCache.getOrQueue(screenshot);
     if (!image) {
       return;
     }
@@ -17795,6 +17869,7 @@ __export(TimingsTrackAppender_exports, {
 });
 import * as i18n56 from "./../../core/i18n/i18n.js";
 import * as Trace34 from "./../../models/trace/trace.js";
+import * as PerfUI18 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Extensions5 from "./extensions/extensions.js";
 var UIStrings28 = {
   /**
@@ -17879,7 +17954,10 @@ var TimingsTrackAppender = class {
    */
   #appendTrackHeaderAtLevel(currentLevel, expanded) {
     const trackIsCollapsible = this.#parsedTrace.data.UserTimings.performanceMeasures.length > 0;
-    const style = buildGroupStyle({ useFirstLineForOverview: true, collapsible: trackIsCollapsible });
+    const style = buildGroupStyle({
+      useFirstLineForOverview: true,
+      collapsible: trackIsCollapsible ? 2 : 1
+    });
     const group = buildTrackHeader(
       "timings",
       currentLevel,
@@ -18061,6 +18139,7 @@ function entryIsVisibleInTimeline(entry, parsedTrace) {
   const eventIsTiming = Trace35.Types.Events.isConsoleTime(entry) || Trace35.Types.Events.isPerformanceMeasure(entry) || Trace35.Types.Events.isPerformanceMark(entry) || Trace35.Types.Events.isConsoleTimeStamp(entry);
   return eventStyle && !eventStyle.hidden || eventIsTiming;
 }
+var HIDDEN_THREAD_NAMES = /* @__PURE__ */ new Set(["Chrome_ChildIOThread", "Compositor", "GpuMemoryThread", "PerfettoTrace"]);
 var TrackNames = [
   "Animations",
   "Timings",
@@ -18197,7 +18276,7 @@ var CompatibilityTracksAppender = class {
         this.#threadAppenders.push(new ThreadAppender(this, this.#parsedTrace, pid, tid, name, "OTHER", entries, tree));
         continue;
       }
-      if ((name === "Chrome_ChildIOThread" || name === "Compositor" || name === "GpuMemoryThread") && !showAllEvents) {
+      if (name && HIDDEN_THREAD_NAMES.has(name) && !showAllEvents) {
         continue;
       }
       const matchingWorklet = this.#parsedTrace.data.AuctionWorklets.worklets.get(pid);
@@ -18459,7 +18538,7 @@ var CompatibilityTracksAppender = class {
 };
 
 // gen/front_end/panels/timeline/timeline.prebundle.js
-import * as Utils11 from "./utils/utils.js";
+import * as Utils9 from "./utils/utils.js";
 export {
   AnimationsTrackAppender_exports as AnimationsTrackAppender,
   AnnotationHelpers_exports as AnnotationHelpers,
@@ -18503,6 +18582,6 @@ export {
   TrackConfiguration_exports as TrackConfiguration,
   UIDevtoolsController_exports as UIDevtoolsController,
   UIDevtoolsUtils_exports as UIDevtoolsUtils,
-  Utils11 as Utils
+  Utils9 as Utils
 };
 //# sourceMappingURL=timeline.js.map

@@ -18,7 +18,6 @@ export declare class IsolatedFileSystemManager extends Common.ObjectWrapper.Obje
     addFileSystem(type?: string): Promise<IsolatedFileSystem | null>;
     removeFileSystem(fileSystem: PlatformFileSystem): void;
     waitForFileSystems(): Promise<IsolatedFileSystem[]>;
-    private innerAddFileSystem;
     addPlatformFileSystem(fileSystemURL: Platform.DevToolsPath.UrlString, fileSystem: PlatformFileSystem): void;
     private onFileSystemAdded;
     private onFileSystemRemoved;

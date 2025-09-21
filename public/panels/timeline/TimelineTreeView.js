@@ -7,6 +7,7 @@ import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
@@ -21,7 +22,6 @@ import { TimelineRegExp } from './TimelineFilters.js';
 import { rangeForSelection } from './TimelineSelection.js';
 import timelineTreeViewStyles from './timelineTreeView.css.js';
 import { TimelineUIUtils } from './TimelineUIUtils.js';
-import * as Utils from './utils/utils.js';
 const UIStrings = {
     /**
      * @description Text for the performance of something
@@ -603,6 +603,9 @@ export class TimelineTreeView extends Common.ObjectWrapper.eventMixin(UI.Widget.
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return true;
+    }
     supportsRegexSearch() {
         return true;
     }
@@ -674,7 +677,7 @@ export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
             const parsedTrace = this.treeView.parsedTrace();
             const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
             const linkifier = this.treeView.linkifier;
-            const isFreshRecording = Boolean(parsedTrace && Utils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+            const isFreshRecording = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
             this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
             if (this.linkElement) {
                 container.createChild('div', 'activity-link').appendChild(this.linkElement);

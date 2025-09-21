@@ -44,7 +44,6 @@ export declare class ConsoleViewport {
     private restoreSelection;
     private selectionContainsTable;
     refresh(): void;
-    private innerRefresh;
     private partialViewportUpdate;
     private selectedText;
     private textOffsetInNode;

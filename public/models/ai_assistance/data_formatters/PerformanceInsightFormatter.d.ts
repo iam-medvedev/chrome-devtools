@@ -1,10 +1,10 @@
 import * as Trace from '../../trace/trace.js';
-import type { ConversationSuggestion } from '../agents/AiAgent.js';
+import type { ConversationSuggestions } from '../agents/AiAgent.js';
 export declare class PerformanceInsightFormatter {
     #private;
     constructor(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
     insightIsSupported(): boolean;
-    getSuggestions(): [ConversationSuggestion, ...ConversationSuggestion[]];
+    getSuggestions(): ConversationSuggestions;
     /**
      * Create an AI prompt string out of the Cache Insight model to use with Ask AI.
      * Note: This function accesses the UIStrings within Cache to help build the
@@ -15,6 +15,18 @@ export declare class PerformanceInsightFormatter {
      */
     formatCacheInsight(insight: Trace.Insights.Models.Cache.CacheInsightModel): string;
     /**
+     * Create an AI prompt string out of the CLS Culprits Insight model to use with Ask AI.
+     * @param insight The CLS Culprits Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatClsCulpritsInsight(insight: Trace.Insights.Models.CLSCulprits.CLSCulpritsInsightModel): string;
+    /**
+     * Create an AI prompt string out of the Document Latency Insight model to use with Ask AI.
+     * @param insight The Document Latency Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatDocumentLatencyInsight(insight: Trace.Insights.Models.DocumentLatency.DocumentLatencyInsightModel): string;
+    /**
      * Create an AI prompt string out of the DOM Size model to use with Ask AI.
      * Note: This function accesses the UIStrings within DomSize to help build the
      * AI prompt, but does not (and should not) call i18nString to localize these strings. They
@@ -23,6 +35,12 @@ export declare class PerformanceInsightFormatter {
      * @returns a string formatted for sending to Ask AI.
      */
     formatDomSizeInsight(insight: Trace.Insights.Models.DOMSize.DOMSizeInsightModel): string;
+    /**
+     * Create an AI prompt string out of the Duplicated JavaScript Insight model to use with Ask AI.
+     * @param insight The Duplicated JavaScript Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatDuplicatedJavaScriptInsight(insight: Trace.Insights.Models.DuplicatedJavaScript.DuplicatedJavaScriptInsightModel): string;
     /**
      * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
      * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
@@ -42,6 +60,42 @@ export declare class PerformanceInsightFormatter {
      */
     formatForcedReflowInsight(insight: Trace.Insights.Models.ForcedReflow.ForcedReflowInsightModel): string;
     /**
+     * Create an AI prompt string out of the INP Brekdown Insight model to use with Ask AI.
+     * @param insight The INP Breakdown Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatImageDeliveryInsight(insight: Trace.Insights.Models.ImageDelivery.ImageDeliveryInsightModel): string;
+    /**
+     * Create an AI prompt string out of the INP Brekdown Insight model to use with Ask AI.
+     * @param insight The INP Breakdown Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatInpBreakdownInsight(insight: Trace.Insights.Models.INPBreakdown.INPBreakdownInsightModel): string;
+    /**
+     * Create an AI prompt string out of the LCP Brekdown Insight model to use with Ask AI.
+     * @param insight The LCP Breakdown Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatLcpBreakdownInsight(insight: Trace.Insights.Models.LCPBreakdown.LCPBreakdownInsightModel): string;
+    /**
+     * Create an AI prompt string out of the LCP Brekdown Insight model to use with Ask AI.
+     * @param insight The LCP Breakdown Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatLcpDiscoveryInsight(insight: Trace.Insights.Models.LCPDiscovery.LCPDiscoveryInsightModel): string;
+    /**
+     * Create an AI prompt string out of the Legacy JavaScript Insight model to use with Ask AI.
+     * @param insight The Legacy JavaScript Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatLegacyJavaScriptInsight(insight: Trace.Insights.Models.LegacyJavaScript.LegacyJavaScriptInsightModel): string;
+    /**
+     * Create an AI prompt string out of the Modern HTTP Insight model to use with Ask AI.
+     * @param insight The Modern HTTP Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatModernHttpInsight(insight: Trace.Insights.Models.ModernHTTP.ModernHTTPInsightModel): string;
+    /**
      * Create an AI prompt string out of the NetworkDependencyTree Insight model to use with Ask AI.
      * Note: This function accesses the UIStrings within NetworkDependencyTree to help build the
      * AI prompt, but does not (and should not) call i18nString to localize these strings. They
@@ -50,6 +104,12 @@ export declare class PerformanceInsightFormatter {
      * @returns a string formatted for sending to Ask AI.
      */
     formatNetworkDependencyTreeInsight(insight: Trace.Insights.Models.NetworkDependencyTree.NetworkDependencyTreeInsightModel): string;
+    /**
+     * Create an AI prompt string out of the Render Blocking Insight model to use with Ask AI.
+     * @param insight The Render Blocking Model to query.
+     * @returns a string formatted for sending to Ask AI.
+     */
+    formatRenderBlockingInsight(insight: Trace.Insights.Models.RenderBlocking.RenderBlockingInsightModel): string;
     /**
      * Create an AI prompt string out of the Slow CSS Selector Insight model to use with Ask AI.
      * Note: This function accesses the UIStrings within SlowCSSSelector to help build the

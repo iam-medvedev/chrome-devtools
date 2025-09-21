@@ -8,13 +8,13 @@ describe('AiAssistance', () => {
             assert.strictEqual(AiAssistance.seconds(1.234), '1.2\xA0s');
         });
         it('formats values < 1s as milliseconds', () => {
-            assert.strictEqual(AiAssistance.seconds(0.1234), '123.4\xA0ms');
+            assert.strictEqual(AiAssistance.seconds(0.1234), '123\xA0ms');
         });
         it('formats values < 1ms as milliseconds', () => {
             assert.strictEqual(AiAssistance.seconds(0.0001234), '0.1\xA0ms');
         });
         it('formats values < 100µs as microseconds with decimals', () => {
-            assert.strictEqual(AiAssistance.seconds(0.0000123), '12.3\xA0μs');
+            assert.strictEqual(AiAssistance.seconds(0.0000123), '12\xA0μs');
         });
         it('handles zero', () => {
             assert.strictEqual(AiAssistance.seconds(0), '0\xA0s');
@@ -26,7 +26,10 @@ describe('AiAssistance', () => {
     });
     describe('millis', () => {
         it('formats milliseconds', () => {
-            assert.strictEqual(AiAssistance.millis(123.45), '123.5\xA0ms');
+            assert.strictEqual(AiAssistance.millis(123.45), '123\xA0ms');
+        });
+        it('formats milliseconds of less than 1 with a decimal place', () => {
+            assert.strictEqual(AiAssistance.millis(0.12), '0.1\xA0ms');
         });
         it('handles zero', () => {
             assert.strictEqual(AiAssistance.millis(0), '0\xA0ms');
@@ -37,12 +40,12 @@ describe('AiAssistance', () => {
         });
     });
     describe('micros', () => {
-        it('formats microseconds < 100 with one decimal place', () => {
-            assert.strictEqual(AiAssistance.micros(12.34), '12.3\xA0μs');
+        it('formats microseconds < 100 aas microseconds', () => {
+            assert.strictEqual(AiAssistance.micros(12.34), '12\xA0μs');
         });
         it('formats microseconds >= 100 as milliseconds', () => {
             assert.strictEqual(AiAssistance.micros(123.4), '0.1\xA0ms');
-            assert.strictEqual(AiAssistance.micros(1234.5), '1.2\xA0ms');
+            assert.strictEqual(AiAssistance.micros(1234.5), '1\xA0ms');
         });
         it('formats 0 as an integer', () => {
             assert.strictEqual(AiAssistance.micros(0), '0\xA0μs');

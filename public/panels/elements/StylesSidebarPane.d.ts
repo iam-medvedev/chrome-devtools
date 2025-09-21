@@ -82,7 +82,6 @@ export declare class StylesSidebarPane extends StylesSidebarPane_base {
     getVariablePopoverContents(matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, variableName: string, computedValue: string | null): ElementsComponents.CSSVariableValueView.CSSVariableValueView;
     private fetchComputedStylesFor;
     onResize(): void;
-    private innerResize;
     private resetCache;
     private fetchMatchedCascade;
     setEditingStyle(editing: boolean): void;

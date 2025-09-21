@@ -41,6 +41,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as CodeHighlighter from '../../ui/components/code_highlighter/code_highlighter.js';
 // eslint-disable-next-line rulesdir/es-modules-import
 import codeHighlighterStyles from '../../ui/components/code_highlighter/codeHighlighter.css.js';
@@ -368,9 +369,10 @@ const UIStrings = {
     /** Descriptive reason for why a user-provided animation failed to be optimized by the browser due to an unknown reason. Shown in a table with a list of other potential failure reasons.  */
     compositingFailedUnknownReason: 'Unknown Reason',
     /**
-     * @description Text for the execution stack trace
+     * @description Text for the execution "stack trace". It is not technically a stack trace, because it points to the beginning of each function
+     * and not to each call site, so we call it a function stack instead to avoid confusion.
      */
-    stackTrace: 'Stack trace',
+    functionStack: 'Function stack',
     /**
      * @description Text used to show any invalidations for a particular event that caused the browser to have to do more work to update the page.
      * @example {2} PH1
@@ -814,18 +816,22 @@ export class TimelineUIUtils {
         }
     }
     static maybeCreateLinkElement(url) {
-        const protocol = URL.parse(url)?.protocol;
-        if (!protocol || protocol.length === 0) {
+        const parsedURL = new Common.ParsedURL.ParsedURL(url);
+        if (!parsedURL.scheme) {
             return null;
         }
         const splitResult = Common.ParsedURL.ParsedURL.splitLineAndColumn(url);
         if (!splitResult) {
             return null;
         }
-        const { lineNumber, columnNumber } = splitResult;
-        const options = { text: url, lineNumber, columnNumber };
-        const linkElement = LegacyComponents.Linkifier.Linkifier.linkifyURL(url, (options));
-        return linkElement;
+        const { url: rawURL, lineNumber, columnNumber } = splitResult;
+        const options = {
+            lineNumber,
+            columnNumber,
+            showColumnNumber: true,
+            omitOrigin: true,
+        };
+        return LegacyComponents.Linkifier.Linkifier.linkifyURL(rawURL, options);
     }
     /**
      * Takes an input string and parses it to look for links. It does this by
@@ -968,7 +974,7 @@ export class TimelineUIUtils {
                 }
             }
         }
-        const isFreshRecording = Boolean(parsedTrace && Utils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+        const isFreshRecording = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
         switch (event.name) {
             case "GCEvent" /* Trace.Types.Events.Name.GC */:
             case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
@@ -1501,10 +1507,10 @@ export class TimelineUIUtils {
     static async generateCauses(event, contentHelper, parsedTrace) {
         const { startTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(event);
         let initiatorStackLabel = i18nString(UIStrings.initiatorStackTrace);
-        let stackLabel = i18nString(UIStrings.stackTrace);
+        let stackLabel = i18nString(UIStrings.functionStack);
         const stackTraceForEvent = Trace.Extras.StackTraceForEvent.get(event, parsedTrace.data);
         if (stackTraceForEvent?.callFrames.length || stackTraceForEvent?.description || stackTraceForEvent?.parent) {
-            contentHelper.addSection(i18nString(UIStrings.stackTrace));
+            contentHelper.addSection(i18nString(UIStrings.functionStack));
             contentHelper.createChildStackTraceElement(stackTraceForEvent);
             // TODO(andoli): also build stack trace component for other events
             // that have a stack trace using the StackTraceForEvent helper.

@@ -17,23 +17,19 @@ export default `/*
     }
 
     .gdp-sign-up-dialog-header {
-        font: var(--sys-typescale-headline5);
-        color: var(--sys-color-on-surface);
-        display: flex;
-        align-items: center;
+        background-image: var(--image-file-gdp-logo-light);
+        height: 20px;
+        background-repeat: no-repeat;
+        background-size: contain;
         margin: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--sys-color-state-focus-ring);
+        }
     }
 
-    .gdp-sign-up-dialog-header::before {
-        content: '';
-        background-image: var(--image-file-gdp-logo-standalone);
-        display: inline-block;
-        width: 34px;
-        height: 15px;
-        background-size: contain;
-        background-repeat: no-repeat;
-        background-position: center;
-        margin-right: var(--sys-size-6);
+    :host-context(.theme-with-dark-background) & .gdp-sign-up-dialog-header {
+        background-image: var(--image-file-gdp-logo-dark);
     }
 
     .main-content {

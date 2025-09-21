@@ -40,7 +40,6 @@ export declare class TabbedEditorContainer extends Common.ObjectWrapper.ObjectWr
     private removeViewListeners;
     private onScrollChanged;
     private onEditorUpdate;
-    private innerShowFile;
     private titleForFile;
     private maybeCloseTab;
     closeTabs(ids: string[], forceCloseDirtyTabs?: boolean): void;

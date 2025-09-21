@@ -26,7 +26,7 @@ describeWithEnvironment('Common', function () {
             const clonedMetadata = structuredClone(metadata);
             return { insightSet, metadata: clonedMetadata };
         }
-        it('returns default weights when there is no field data', async () => {
+        it('returns default weights when there is no field data', async function () {
             const { insightSet, metadata } = await process(this, 'image-delivery.json.gz');
             // No field data defaults to even split of weights.
             metadata.cruxFieldData = undefined;
@@ -36,7 +36,7 @@ describeWithEnvironment('Common', function () {
             weights = calculateMetricWeightsForSorting(insightSet, metadata);
             assert.deepEqual(weights, { lcp: 1 / 3, inp: 1 / 3, cls: 1 / 3 });
         });
-        it('returns weights based on field data', async () => {
+        it('returns weights based on field data', async function () {
             const { insightSet, metadata } = await process(this, 'image-delivery.json.gz');
             const weights = calculateMetricWeightsForSorting(insightSet, metadata);
             assert.deepEqual(weights, { lcp: 0.07778127820223579, inp: 0.5504200439526509, cls: 0.37179867784511333 });

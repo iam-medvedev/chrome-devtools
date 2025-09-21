@@ -419,15 +419,14 @@ export function data() {
         prePaintEvents,
         layoutInvalidationEvents,
         scheduleStyleInvalidationEvents,
-        styleRecalcInvalidationEvents: [],
+        styleRecalcInvalidationEvents,
         renderFrameImplCreateChildFrameEvents,
         domLoadingEvents,
         layoutImageUnsizedEvents,
         remoteFonts,
         scoreRecords,
-        // TODO(crbug/41484172): change the type so no need to clone
-        backendNodeIds: [...backendNodeIds],
-        clustersByNavigationId: new Map(clustersByNavigationId),
+        backendNodeIds,
+        clustersByNavigationId,
         paintImageEvents,
     };
 }

@@ -2,79 +2,69 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as SDK from '../../core/sdk/sdk.js';
-import { renderElementIntoDOM } from '../../testing/DOMHelpers.js';
+import { assertScreenshot, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { createTarget, stubNoopSettings } from '../../testing/EnvironmentHelpers.js';
-import { describeWithMockConnection } from '../../testing/MockConnection.js';
+import { describeWithMockConnection, setMockConnectionResponseHandler } from '../../testing/MockConnection.js';
+import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
 import * as Accessibility from './accessibility.js';
 describeWithMockConnection('ARIAAttributesView', () => {
-    let target;
-    let domModel;
     let node;
-    let setAttributeValueSpy;
     beforeEach(() => {
+        setMockConnectionResponseHandler('Debugger.enable', () => ({}));
+        setMockConnectionResponseHandler('Storage.getStorageKeyForFrame', () => ({}));
         stubNoopSettings();
-        target = createTarget();
-        domModel = target.model(SDK.DOMModel.DOMModel);
+        const target = createTarget();
+        const domModel = target.model(SDK.DOMModel.DOMModel);
         node = new SDK.DOMModel.DOMNode(domModel);
         node.setAttributesPayload(['role', 'checkbox', 'aria-checked', 'true']);
-        setAttributeValueSpy = sinon.spy(node, 'setAttributeValue');
     });
-    const modifyAttribute = (view, childIndex, newValue) => {
-        const treeOutline = view.getTreeOutlineForTesting();
-        assert.exists(treeOutline);
-        const treeElement = treeOutline.rootElement().childAt(childIndex);
-        assert.exists(treeElement);
-        treeElement.listItemElement.querySelector('span')?.click();
-        const prompt = treeElement.getPromptForTesting();
-        assert.exists(prompt);
-        const proxyElement = prompt.element();
-        proxyElement.textContent = newValue;
-        proxyElement.dispatchEvent(new FocusEvent('blur'));
-    };
-    it('can modify an ARIA attribute value', () => {
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane();
-        renderElementIntoDOM(view);
+    it('can modify an ARIA attribute value', async () => {
+        const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
         view.setNode(node);
-        modifyAttribute(view, 1, 'false');
+        const input = await viewFunction.nextInput;
+        const ariaChecked = input.attributes.find(attr => attr.name === 'aria-checked');
+        assert.exists(ariaChecked);
+        const setAttributeValueSpy = sinon.spy(node, 'setAttributeValue');
+        input.onCommitEditing(ariaChecked, 'false');
         sinon.assert.calledOnceWithExactly(setAttributeValueSpy, 'aria-checked', 'false');
     });
-    it('can modify an ARIA role', () => {
-        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane();
-        renderElementIntoDOM(view);
+    it('can modify an ARIA role', async () => {
+        const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
         view.setNode(node);
-        modifyAttribute(view, 0, 'radio');
+        const input = await viewFunction.nextInput;
+        const role = input.attributes.find(attr => attr.name === 'role');
+        assert.exists(role);
+        const setAttributeValueSpy = sinon.spy(node, 'setAttributeValue');
+        input.onCommitEditing(role, 'radio');
         sinon.assert.calledOnceWithExactly(setAttributeValueSpy, 'role', 'radio');
     });
-});
-describe('ARIAAttributesTreeElement', () => {
-    it('should create a value element with the correct class and text content', () => {
-        const value = 'test value';
-        const element = Accessibility.ARIAAttributesView.ARIAAttributesTreeElement.createARIAValueElement(value);
-        assert.strictEqual(element.textContent, value);
-        assert.isTrue(element.classList.contains('monospace'));
+    it('autocompletes attributes', async () => {
+        const viewFunction = createViewFunctionStub(Accessibility.ARIAAttributesView.ARIAAttributesPane);
+        const view = new Accessibility.ARIAAttributesView.ARIAAttributesPane(viewFunction);
+        view.setNode(node);
+        const input = await viewFunction.nextInput;
+        const role = input.attributes.find(attr => attr.name === 'role');
+        assert.exists(role);
+        const ariaChecked = input.attributes.find(attr => attr.name === 'aria-checked');
+        assert.exists(ariaChecked);
+        assert.deepEqual(await input.propertyCompletions.get(ariaChecked), ['true', 'false', 'mixed', 'undefined']);
+        assert.isTrue(await input.propertyCompletions.has(role));
     });
-    it('should append a name element with the correct classes and text content', () => {
-        const parentPane = {};
-        const attribute = { name: 'aria-label', value: 'test' };
-        const target = {};
-        const treeElement = new Accessibility.ARIAAttributesView.ARIAAttributesTreeElement(parentPane, attribute, target);
-        treeElement.onattach();
-        treeElement.appendNameElement('aria-label');
-        const nameElement = treeElement.listItemElement.querySelector('.ax-name');
-        assert.exists(nameElement);
-        assert.strictEqual(nameElement.textContent, 'aria-label');
-        assert.isTrue(nameElement.classList.contains('monospace'));
-    });
-    it('should append a value element with the correct text content', () => {
-        const parentPane = {};
-        const attribute = { name: 'aria-label', value: 'test' };
-        const target = {};
-        const treeElement = new Accessibility.ARIAAttributesView.ARIAAttributesTreeElement(parentPane, attribute, target);
-        treeElement.onattach();
-        treeElement.appendAttributeValueElement('test');
-        const valueElement = treeElement.listItemElement.querySelector('span:not(.ax-name):not(.separator)');
-        assert.exists(valueElement);
-        assert.strictEqual(valueElement.textContent, 'test');
+    it('should render attributes', async () => {
+        const container = document.createElement('div');
+        renderElementIntoDOM(container, { includeCommonStyles: true });
+        const input = {
+            onStartEditing: sinon.stub(),
+            onCommitEditing: sinon.stub(),
+            onCancelEditing: sinon.stub(),
+            attributeBeingEdited: null,
+            attributes: node.attributes(),
+            propertyCompletions: new Map(),
+        };
+        Accessibility.ARIAAttributesView.DEFAULT_VIEW(input, {}, container);
+        await assertScreenshot('accessibility/aria-attributes.png');
     });
 });
 //# sourceMappingURL=ARIAAttributesView.test.js.map

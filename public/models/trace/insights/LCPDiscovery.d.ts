@@ -41,7 +41,7 @@ export declare const UIStrings: {
     readonly noLcpResource: "No LCP resource detected because the LCP is not an image";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function isLCPDiscovery(model: InsightModel): model is LCPDiscoveryInsightModel;
+export declare function isLCPDiscoveryInsight(model: InsightModel): model is LCPDiscoveryInsightModel;
 export type LCPDiscoveryInsightModel = InsightModel<typeof UIStrings, {
     lcpEvent?: Types.Events.LargestContentfulPaintCandidate;
     /** The network request for the LCP image, if there was one. */

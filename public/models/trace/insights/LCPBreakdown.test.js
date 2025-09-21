@@ -6,7 +6,7 @@ import { getFirstOrError, getInsightOrError, processTrace } from '../../../testi
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 describeWithEnvironment('LCPBreakdown', function () {
-    it('calculates text lcp breakdown', async () => {
+    it('calculates text lcp breakdown', async function () {
         const { data, insights } = await processTrace(this, 'lcp-web-font.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
@@ -17,7 +17,7 @@ describeWithEnvironment('LCPBreakdown', function () {
         const actual = Object.fromEntries(Object.entries(insight.subparts).map(([key, value]) => [key, value.range]));
         assert.deepEqual(actual, { ttfb: wantTtfb, renderDelay: wantRenderDelay });
     });
-    it('calculates text lcp breakdown (doc missing receiveHeadersStart)', async () => {
+    it('calculates text lcp breakdown (doc missing receiveHeadersStart)', async function () {
         const { data, insights } = await processTrace(this, 'web-dev.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
@@ -28,7 +28,7 @@ describeWithEnvironment('LCPBreakdown', function () {
         const actual = Object.fromEntries(Object.entries(insight.subparts).map(([key, value]) => [key, value.range]));
         assert.deepEqual(actual, { ttfb: wantTtfb, renderDelay: wantRenderDelay });
     });
-    it('calculates image lcp breakdown', async () => {
+    it('calculates image lcp breakdown', async function () {
         const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
@@ -44,7 +44,7 @@ describeWithEnvironment('LCPBreakdown', function () {
         };
         assert.deepEqual(subparts, { ttfb: '6.94', loadTime: '12.10', loadDelay: '33.74', renderDelay: '56.85' });
     });
-    it('calculates image lcp breakdown (doc missing receiveHeadersStart)', async () => {
+    it('calculates image lcp breakdown (doc missing receiveHeadersStart)', async function () {
         const { data, insights } = await processTrace(this, 'multiple-navigations.json.gz');
         const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
@@ -61,7 +61,7 @@ describeWithEnvironment('LCPBreakdown', function () {
         assert.deepEqual(subparts, { ttfb: '61.47', loadTime: '0.19', loadDelay: '47.74', renderDelay: '9.28' });
     });
     describe('warnings', function () {
-        it('warns when there is no lcp', async () => {
+        it('warns when there is no lcp', async function () {
             const { data, insights } = await processTrace(this, 'user-timings.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPBreakdown', insights, firstNav);
@@ -69,7 +69,7 @@ describeWithEnvironment('LCPBreakdown', function () {
             assert.isUndefined(insight.subparts);
             assert.strictEqual(insight.warnings?.[0], 'NO_LCP');
         });
-        it('no main document url', async () => {
+        it('no main document url', async function () {
             const { data, insights } = await processTrace(this, 'about-blank-first.json.gz');
             const firstNav = getFirstOrError(data.Meta.navigationsByNavigationId.values());
             const insight = getInsightOrError('LCPBreakdown', insights, firstNav);

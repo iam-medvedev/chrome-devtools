@@ -7315,7 +7315,6 @@ var Section = class {
     this.routerView = new ApplicationComponents9.ServiceWorkerRouterView.ServiceWorkerRouterView();
     this.networkRequests = new Buttons5.Button.Button();
     this.networkRequests.data = {
-      iconName: "bottom-panel-open",
       variant: "text",
       title: i18nString17(UIStrings17.networkRequests),
       jslogContext: "show-network-requests"

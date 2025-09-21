@@ -24,6 +24,7 @@ export function createContextForNavigation(data, navigation, frameId) {
         data.Meta.traceBounds.max;
     const bounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(min, max);
     return {
+        options: {},
         bounds,
         frameId,
         navigation,

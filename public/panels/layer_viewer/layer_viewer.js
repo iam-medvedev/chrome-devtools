@@ -1725,11 +1725,11 @@ var Layers3DView = class extends Common5.ObjectWrapper.eventMixin(UI4.Widget.VBo
       this.updateScheduled = true;
       requestAnimationFrame(() => requestAnimationFrame(() => {
         this.updateScheduled = false;
-        this.innerUpdate();
+        this.#update();
       }));
     }
   }
-  innerUpdate() {
+  #update() {
     if (!this.layerTree?.root()) {
       this.failBanner.show(this.contentElement);
       return;

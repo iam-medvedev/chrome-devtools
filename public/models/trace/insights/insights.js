@@ -592,7 +592,7 @@ __export(CLSCulprits_exports, {
   generateInsight: () => generateInsight2,
   getNonCompositedFailure: () => getNonCompositedFailure,
   i18nString: () => i18nString2,
-  isCLSCulprits: () => isCLSCulprits
+  isCLSCulpritsInsight: () => isCLSCulpritsInsight
 });
 import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
@@ -864,7 +864,7 @@ function getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsB
   });
   return rootCausesByShift;
 }
-function isCLSCulprits(insight) {
+function isCLSCulpritsInsight(insight) {
   return insight.insightKey === "CLSCulprits";
 }
 function getFontRootCauses(networkRequests, prePaintEvents, shiftsByPrePaint, rootCausesByShift) {
@@ -1018,7 +1018,7 @@ __export(DocumentLatency_exports, {
   createOverlays: () => createOverlays3,
   generateInsight: () => generateInsight3,
   i18nString: () => i18nString3,
-  isDocumentLatency: () => isDocumentLatency
+  isDocumentLatencyInsight: () => isDocumentLatencyInsight
 });
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Helpers4 from "./../helpers/helpers.js";
@@ -1078,7 +1078,7 @@ var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 var TOO_SLOW_THRESHOLD_MS = 600;
 var TARGET_MS = 100;
 var IGNORE_THRESHOLD_IN_BYTES = 1400;
-function isDocumentLatency(x) {
+function isDocumentLatencyInsight(x) {
   return x.insightKey === "DocumentLatency";
 }
 function getServerResponseTime(request, context) {
@@ -1155,6 +1155,7 @@ function generateInsight3(data, context) {
   if (!context.navigation) {
     return finalize3({});
   }
+  const millisToString = context.options.insightTimeFormatters?.milli ?? i18n5.TimeUtilities.millisToString;
   const documentRequest = data.NetworkRequests.byId.get(context.navigationId);
   if (!documentRequest) {
     return finalize3({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
@@ -1189,12 +1190,12 @@ function generateInsight3(data, context) {
         noRedirects: {
           label: noRedirects ? i18nString3(UIStrings3.passingRedirects) : i18nString3(UIStrings3.failedRedirects, {
             PH1: documentRequest.args.data.redirects.length,
-            PH2: i18n5.TimeUtilities.millisToString(redirectDuration)
+            PH2: millisToString(redirectDuration)
           }),
           value: noRedirects
         },
         serverResponseIsFast: {
-          label: serverResponseIsFast ? i18nString3(UIStrings3.passingServerResponseTime, { PH1: i18n5.TimeUtilities.millisToString(serverResponseTime) }) : i18nString3(UIStrings3.failedServerResponseTime, { PH1: i18n5.TimeUtilities.millisToString(serverResponseTime) }),
+          label: serverResponseIsFast ? i18nString3(UIStrings3.passingServerResponseTime, { PH1: millisToString(serverResponseTime) }) : i18nString3(UIStrings3.failedServerResponseTime, { PH1: millisToString(serverResponseTime) }),
           value: serverResponseIsFast
         },
         usesCompression: {
@@ -1433,7 +1434,7 @@ __export(DuplicatedJavaScript_exports, {
   createOverlays: () => createOverlays5,
   generateInsight: () => generateInsight5,
   i18nString: () => i18nString5,
-  isDuplicatedJavaScript: () => isDuplicatedJavaScript
+  isDuplicatedJavaScriptInsight: () => isDuplicatedJavaScriptInsight
 });
 import * as i18n9 from "./../../../core/i18n/i18n.js";
 import * as Extras from "./../extras/extras.js";
@@ -1467,7 +1468,7 @@ function finalize5(partialModel) {
     ...partialModel
   };
 }
-function isDuplicatedJavaScript(model) {
+function isDuplicatedJavaScriptInsight(model) {
   return model.insightKey === "DuplicatedJavaScript";
 }
 function generateInsight5(data, context) {
@@ -1779,7 +1780,7 @@ __export(ImageDelivery_exports, {
   getOptimizationMessage: () => getOptimizationMessage,
   getOptimizationMessageWithBytes: () => getOptimizationMessageWithBytes,
   i18nString: () => i18nString8,
-  isImageDelivery: () => isImageDelivery
+  isImageDeliveryInsight: () => isImageDeliveryInsight
 });
 import * as i18n15 from "./../../../core/i18n/i18n.js";
 import * as Helpers9 from "./../helpers/helpers.js";
@@ -1843,7 +1844,7 @@ var ImageOptimizationType;
   ImageOptimizationType2["VIDEO_FORMAT"] = "VIDEO_FORMAT";
   ImageOptimizationType2["RESPONSIVE_SIZE"] = "RESPONSIVE_SIZE";
 })(ImageOptimizationType || (ImageOptimizationType = {}));
-function isImageDelivery(model) {
+function isImageDeliveryInsight(model) {
   return model.insightKey === "ImageDelivery";
 }
 function getOptimizationMessage(optimization) {
@@ -2002,7 +2003,7 @@ __export(INPBreakdown_exports, {
   createOverlaysForSubpart: () => createOverlaysForSubpart,
   generateInsight: () => generateInsight9,
   i18nString: () => i18nString9,
-  isINPBreakdown: () => isINPBreakdown
+  isINPBreakdownInsight: () => isINPBreakdownInsight
 });
 import * as i18n17 from "./../../../core/i18n/i18n.js";
 import * as Helpers10 from "./../helpers/helpers.js";
@@ -2043,7 +2044,7 @@ var UIStrings9 = {
 };
 var str_9 = i18n17.i18n.registerUIStrings("models/trace/insights/INPBreakdown.ts", UIStrings9);
 var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-function isINPBreakdown(insight) {
+function isINPBreakdownInsight(insight) {
   return insight.insightKey === "INPBreakdown";
 }
 function finalize9(partialModel) {
@@ -2117,7 +2118,7 @@ __export(LCPBreakdown_exports, {
   createOverlays: () => createOverlays10,
   generateInsight: () => generateInsight10,
   i18nString: () => i18nString10,
-  isLCPBreakdown: () => isLCPBreakdown
+  isLCPBreakdownInsight: () => isLCPBreakdownInsight
 });
 import * as i18n19 from "./../../../core/i18n/i18n.js";
 import * as Handlers3 from "./../handlers/handlers.js";
@@ -2168,7 +2169,7 @@ var UIStrings10 = {
 };
 var str_10 = i18n19.i18n.registerUIStrings("models/trace/insights/LCPBreakdown.ts", UIStrings10);
 var i18nString10 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
-function isLCPBreakdown(model) {
+function isLCPBreakdownInsight(model) {
   return model.insightKey === "LCPBreakdown";
 }
 function anyValuesNaN(...values) {
@@ -2286,7 +2287,7 @@ __export(LCPDiscovery_exports, {
   generateInsight: () => generateInsight11,
   getImageData: () => getImageData,
   i18nString: () => i18nString11,
-  isLCPDiscovery: () => isLCPDiscovery
+  isLCPDiscoveryInsight: () => isLCPDiscoveryInsight
 });
 import * as i18n21 from "./../../../core/i18n/i18n.js";
 import * as Handlers4 from "./../handlers/handlers.js";
@@ -2333,7 +2334,7 @@ var UIStrings11 = {
 };
 var str_11 = i18n21.i18n.registerUIStrings("models/trace/insights/LCPDiscovery.ts", UIStrings11);
 var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
-function isLCPDiscovery(model) {
+function isLCPDiscoveryInsight(model) {
   return model.insightKey === "LCPDiscovery";
 }
 function finalize11(partialModel) {
@@ -2557,7 +2558,7 @@ __export(ModernHTTP_exports, {
   determineHttp1Requests: () => determineHttp1Requests,
   generateInsight: () => generateInsight13,
   i18nString: () => i18nString13,
-  isModernHTTP: () => isModernHTTP
+  isModernHTTPInsight: () => isModernHTTPInsight
 });
 import * as i18n25 from "./../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../core/platform/platform.js";
@@ -2587,7 +2588,7 @@ var UIStrings13 = {
 };
 var str_13 = i18n25.i18n.registerUIStrings("models/trace/insights/ModernHTTP.ts", UIStrings13);
 var i18nString13 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
-function isModernHTTP(model) {
+function isModernHTTPInsight(model) {
   return model.insightKey === "ModernHTTP";
 }
 function isMultiplexableStaticAsset(request, entityMappings, firstPartyEntity) {
@@ -2728,7 +2729,7 @@ __export(NetworkDependencyTree_exports, {
   generatePreconnectedOrigins: () => generatePreconnectedOrigins,
   handleLinkResponseHeader: () => handleLinkResponseHeader,
   i18nString: () => i18nString14,
-  isNetworkDependencyTree: () => isNetworkDependencyTree
+  isNetworkDependencyTreeInsight: () => isNetworkDependencyTreeInsight
 });
 import * as Common from "./../../../core/common/common.js";
 import * as i18n27 from "./../../../core/i18n/i18n.js";
@@ -3167,7 +3168,7 @@ function generatePreconnectCandidates(data, context, contextRequests) {
   preconnectCandidates = preconnectCandidates.sort((a, b) => b.wastedMs - a.wastedMs);
   return preconnectCandidates.slice(0, TOO_MANY_PRECONNECTS_THRESHOLD);
 }
-function isNetworkDependencyTree(model) {
+function isNetworkDependencyTreeInsight(model) {
   return model.insightKey === "NetworkDependencyTree";
 }
 function generateInsight14(data, context) {
@@ -3218,7 +3219,7 @@ __export(RenderBlocking_exports, {
   createOverlays: () => createOverlays15,
   generateInsight: () => generateInsight15,
   i18nString: () => i18nString15,
-  isRenderBlocking: () => isRenderBlocking
+  isRenderBlockingInsight: () => isRenderBlockingInsight
 });
 import * as i18n29 from "./../../../core/i18n/i18n.js";
 import * as Handlers6 from "./../handlers/handlers.js";
@@ -3247,7 +3248,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("models/trace/insights/RenderBlocking.ts", UIStrings15);
 var i18nString15 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-function isRenderBlocking(insight) {
+function isRenderBlockingInsight(insight) {
   return insight.insightKey === "RenderBlocking";
 }
 var MINIMUM_WASTED_MS = 50;

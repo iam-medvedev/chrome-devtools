@@ -213,16 +213,22 @@ export declare class LengthRenderer extends LengthRenderer_base {
     render(match: SDK.CSSPropertyParserMatchers.LengthMatch, context: RenderingContext): Node[];
     popOverAttachedForTest(): void;
 }
-declare const MathFunctionRenderer_base: abstract new () => {
-    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.MathFunctionMatch, any[]>;
-    render(_match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, _context: RenderingContext): Node[];
+declare const BaseFunctionRenderer_base: abstract new () => {
+    readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.BaseFunctionMatch<any>, any[]>;
+    render(_match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<any>, _context: RenderingContext): Node[];
 };
-export declare class MathFunctionRenderer extends MathFunctionRenderer_base {
+export declare class BaseFunctionRenderer extends BaseFunctionRenderer_base {
     #private;
     constructor(stylesPane: StylesSidebarPane, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, propertyName: string, treeElement: StylePropertyTreeElement | null);
-    render(match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Node[];
-    applyEvaluation(span: HTMLSpanElement, match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Promise<boolean>;
-    applyMathFunction(renderedArgs: HTMLElement[], match: SDK.CSSPropertyParserMatchers.MathFunctionMatch, context: RenderingContext): Promise<void>;
+    render(match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Node[];
+    applyEvaluation(span: HTMLSpanElement, match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<boolean>;
+    applyMathFunction(renderedArgs: HTMLElement[], match: SDK.CSSPropertyParserMatchers.BaseFunctionMatch<string>, context: RenderingContext): Promise<void>;
+}
+export declare class MathFunctionRenderer extends BaseFunctionRenderer {
+    readonly matchType: typeof SDK.CSSPropertyParserMatchers.MathFunctionMatch;
+}
+export declare class CustomFunctionRenderer extends BaseFunctionRenderer {
+    readonly matchType: typeof SDK.CSSPropertyParserMatchers.CustomFunctionMatch;
 }
 declare const AnchorFunctionRenderer_base: abstract new () => {
     readonly matchType: Platform.Constructor.Constructor<SDK.CSSPropertyParserMatchers.AnchorFunctionMatch, any[]>;
@@ -303,7 +309,6 @@ export declare class StylePropertyTreeElement extends UI.TreeOutline.TreeElement
     private updateExpandElement;
     refreshIfComputedValueChanged(): void;
     updateTitle(): void;
-    private innerUpdateTitle;
     createExclamationMark(property: SDK.CSSProperty.CSSProperty, title: HTMLElement | null): Element;
     getTracingTooltip(functionName: string, node: CodeMirror.SyntaxNode, matchedStyles: SDK.CSSMatchedStyles.CSSMatchedStyles, computedStyles: Map<string, string>, context: RenderingContext): Lit.TemplateResult;
     getTooltipId(key: string): string;

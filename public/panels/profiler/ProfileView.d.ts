@@ -54,6 +54,7 @@ export declare class ProfileView extends UI.View.SimpleView implements UI.Search
     refreshVisibleData(): void;
     searchableView(): UI.SearchableView.SearchableView;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     onSearchCanceled(): void;
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;

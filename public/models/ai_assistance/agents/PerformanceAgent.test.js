@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 import * as Host from '../../../core/host/host.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig } from '../../../testing/EnvironmentHelpers.js';
 import { getInsightOrError } from '../../../testing/InsightHelpers.js';
 import { allThreadEntriesInTrace } from '../../../testing/TraceHelpers.js';
 import { TraceLoader } from '../../../testing/TraceLoader.js';
 import * as Trace from '../../trace/trace.js';
-import { PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
+import { AICallTree, PerformanceAgent, PerformanceTraceContext, PerformanceTraceFormatter, } from '../ai_assistance.js';
 describeWithEnvironment('PerformanceAgent', () => {
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({
@@ -25,14 +24,14 @@ describeWithEnvironment('PerformanceAgent', () => {
             mockHostConfig('test model');
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
+            });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
+            });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
         });
         it('structure matches the snapshot', async () => {
@@ -41,7 +40,7 @@ describeWithEnvironment('PerformanceAgent', () => {
             const agent = new PerformanceAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
-            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
+            });
             await Array.fromAsync(agent.run('question', { selected: null }));
             setUserAgentForTesting();
             assert.deepEqual(agent.buildRequest({
@@ -85,7 +84,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
             // A basic Layout.
             const layoutEvt = allThreadEntriesInTrace(parsedTrace).find(event => event.ts === 465457096322);
             assert.exists(layoutEvt);
-            const aiCallTree = TimelineUtils.AICallTree.AICallTree.fromEvent(layoutEvt, parsedTrace);
+            const aiCallTree = AICallTree.fromEvent(layoutEvt, parsedTrace);
             assert.exists(aiCallTree);
             const agent = new PerformanceAgent({
                 aidaClient: mockAidaClient([[{
@@ -94,17 +93,11 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
                                 rpcGlobalId: 123,
                             },
                         }]]),
-            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
+            });
             const context = PerformanceTraceContext.fromCallTree(aiCallTree);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const expectedData = '\n\n' +
-                `
-
-
-# Call tree:
-
-1;Task;3;;;2
-2;Layout;3;3;;;S`.trim();
+            const expectedData = new PerformanceTraceFormatter(context.getItem(), new Trace.EventsSerializer.EventsSerializer())
+                .formatTraceSummary();
             assert.deepEqual(responses, [
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
@@ -114,9 +107,9 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
                 },
                 {
                     type: "context" /* ResponseType.CONTEXT */,
-                    title: 'Analyzing call tree',
+                    title: 'Analyzing trace',
                     details: [
-                        { title: 'Selected call tree', text: expectedData },
+                        { title: 'Trace', text: expectedData },
                     ],
                 },
                 {
@@ -146,7 +139,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
         it('does not send the serialized calltree again if it is a followup chat about the same calltree', async () => {
             const agent = new PerformanceAgent({
                 aidaClient: {},
-            }, "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */);
+            });
             const mockAiCallTree = {
                 serialize: () => 'Mock call tree',
                 parsedTrace: FAKE_PARSED_TRACE,
@@ -208,12 +201,17 @@ const FAKE_PARSED_TRACE = {
     metadata: FAKE_METADATA,
 };
 function createAgentForInsightConversation(opts = {}) {
-    return new PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() }, "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */);
+    return new PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() });
 }
-describeWithEnvironment('PerformanceAgent – insight focus', () => {
+describeWithEnvironment('PerformanceAgent', () => {
+    it('uses the min and max bounds of the trace as the origin', async function () {
+        const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
+        const context = PerformanceTraceContext.full(parsedTrace);
+        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
+    });
     it('outputs the right title for the selected insight', async () => {
         const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
-        assert.strictEqual(context.getTitle(), 'Trace: www.example.com');
+        assert.strictEqual(context.getTitle(), 'Trace: www.example.com – LCP breakdown');
     });
     // See b/405054694 for context on why we do this.
     describe('parsing text responses', () => {
@@ -459,13 +457,6 @@ code
                 'getNetworkTrackSummary({min: 197695826524, max: 197698633660})'
             ]);
         });
-    });
-});
-describeWithEnvironment('PerformanceAgent – all focus', () => {
-    it('uses the min and max bounds of the trace as the origin', async function () {
-        const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
-        const context = PerformanceTraceContext.full(parsedTrace);
-        assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
     });
 });
 //# sourceMappingURL=PerformanceAgent.test.js.map

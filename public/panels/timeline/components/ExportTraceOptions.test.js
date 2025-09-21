@@ -17,7 +17,7 @@ describeWithEnvironment('Export Trace Options ', () => {
             onExport: callback,
             buttonEnabled: false,
         };
-        exportTraceOptions.updateContentVisibility(true);
+        exportTraceOptions.updateContentVisibility({ annotationsExist: true });
         // Render component and wait for completion
         renderElementIntoDOM(exportTraceOptions);
         await RenderCoordinator.done();
@@ -41,34 +41,6 @@ describeWithEnvironment('Export Trace Options ', () => {
         const component = await renderExportTraceOptionsDialog();
         assert.isNotNull(component.shadowRoot);
     });
-    it('should execute onExport callback directly if no options are present', async () => {
-        Root.Runtime.experiments.setEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */, false);
-        Root.Runtime.experiments.setEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */, false);
-        let passedArgs = null;
-        let callbackExecuted = false;
-        // Override callback to capture arguments passed from component
-        const overridenCallback = (args) => {
-            callbackExecuted = true;
-            passedArgs = args;
-            return Promise.resolve();
-        };
-        const component = await renderExportTraceOptionsDialog(overridenCallback);
-        component.updateContentVisibility(false);
-        assert.isNotNull(component.shadowRoot);
-        await waitFor('devtools-button-dialog', component.shadowRoot);
-        const buttonDialog = component.shadowRoot.querySelector('devtools-button-dialog');
-        assert.isNotNull(buttonDialog);
-        assert.isNotNull(buttonDialog.shadowRoot);
-        const buttonFromDialog = buttonDialog.shadowRoot.querySelector('devtools-button');
-        assert.isNotNull(buttonFromDialog);
-        assert.isTrue(buttonFromDialog.disabled);
-        buttonFromDialog.disabled = false;
-        assert.isFalse(callbackExecuted);
-        buttonFromDialog.click();
-        await waitFor('devtools-button-dialog', component.shadowRoot);
-        assert.isTrue(callbackExecuted);
-        assert.isNotNull(passedArgs);
-    });
     it('should render all checkbox options when experiments are enabled', async () => {
         Root.Runtime.experiments.setEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */, true);
         Root.Runtime.experiments.setEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */, true);
@@ -86,7 +58,7 @@ describeWithEnvironment('Export Trace Options ', () => {
         const dialogContent = await waitFor('.export-trace-options-content', component.shadowRoot);
         assert.isNotNull(dialogContent);
         const regexRows = dialogContent.querySelectorAll('devtools-checkbox') || [];
-        assert.lengthOf(regexRows, 3);
+        assert.lengthOf(regexRows, 4);
         assert.isTrue(regexRows[0].checked);
         assert.isFalse(regexRows[1].checked);
         assert.isFalse(regexRows[2].checked);
@@ -95,7 +67,9 @@ describeWithEnvironment('Export Trace Options ', () => {
         Root.Runtime.experiments.setEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */, true);
         Root.Runtime.experiments.setEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */, false);
         const component = await renderExportTraceOptionsDialog();
-        component.updateContentVisibility(false);
+        component.updateContentVisibility({
+            annotationsExist: false
+        });
         assert.isNotNull(component.shadowRoot);
         await waitFor('devtools-button-dialog', component.shadowRoot);
         const buttonDialog = component.shadowRoot.querySelector('devtools-button-dialog');
@@ -127,7 +101,7 @@ describeWithEnvironment('Export Trace Options ', () => {
         const dialogContent = await waitFor('.export-trace-options-content', component.shadowRoot);
         assert.isNotNull(dialogContent);
         const regexRows = dialogContent.querySelectorAll('devtools-checkbox') || [];
-        assert.lengthOf(regexRows, 1);
+        assert.lengthOf(regexRows, 2);
     });
     it('should show sourcemaps checkbox only when experiment is enabled', async () => {
         Root.Runtime.experiments.setEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */, true);
@@ -146,7 +120,7 @@ describeWithEnvironment('Export Trace Options ', () => {
         const dialogContent = await waitFor('.export-trace-options-content', component.shadowRoot);
         assert.isNotNull(dialogContent);
         const regexRows = dialogContent.querySelectorAll('devtools-checkbox') || [];
-        assert.lengthOf(regexRows, 2);
+        assert.lengthOf(regexRows, 3);
     });
     it('should disable sourcemaps checkbox when script content is disabled', async () => {
         Root.Runtime.experiments.setEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */, true);
@@ -165,7 +139,7 @@ describeWithEnvironment('Export Trace Options ', () => {
         const dialogContent = await waitFor('.export-trace-options-content', component.shadowRoot);
         assert.isNotNull(dialogContent);
         let regexRows = dialogContent.querySelectorAll('devtools-checkbox') || [];
-        assert.lengthOf(regexRows, 3);
+        assert.lengthOf(regexRows, 4);
         assert.isTrue(regexRows[0].checked);
         assert.isFalse(regexRows[1].checked);
         assert.isFalse(regexRows[2].checked);
@@ -206,7 +180,7 @@ describeWithEnvironment('Export Trace Options ', () => {
         assert.isNotNull(dialogContent);
         const saveButton = dialogContent.querySelector('devtools-button');
         let regexRows = dialogContent.querySelectorAll('devtools-checkbox') || [];
-        assert.lengthOf(regexRows, 3);
+        assert.lengthOf(regexRows, 4);
         // Initial checkbox states: annotations=true, script=false, sourcemaps=false
         assert.isTrue(regexRows[0].checked);
         assert.isFalse(regexRows[1].checked);

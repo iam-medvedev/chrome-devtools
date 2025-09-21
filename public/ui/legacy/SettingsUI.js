@@ -86,10 +86,10 @@ const createSettingSelect = function (name, options, requiresReload, setting, su
         }
     }
 };
-export const bindToSetting = (setting, stringValidator) => {
-    if (typeof setting === 'string') {
-        setting = Common.Settings.Settings.instance().moduleSetting(setting);
-    }
+export const bindToSetting = (settingOrName, stringValidator) => {
+    const setting = typeof settingOrName === 'string' ?
+        Common.Settings.Settings.instance().moduleSetting(settingOrName) :
+        settingOrName;
     // We can't use `setValue` as the change listener directly, otherwise we won't
     // be able to remove it again.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

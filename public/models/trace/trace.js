@@ -660,6 +660,9 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     if (this.#status !== "IDLE") {
       throw new Error(`Trace processor can't start parsing when not idle. Current state: ${this.#status}`);
     }
+    if (typeof options.isCPUProfile === "undefined" && options.metadata) {
+      options.isCPUProfile = options.metadata.dataOrigin === "CPUProfile";
+    }
     options.logger?.start("total");
     try {
       this.#status = "PARSING";
@@ -873,7 +876,8 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     }
     insightSet.model = newModel;
   }
-  #computeInsightSet(data, context, options) {
+  #computeInsightSet(data, context) {
+    const logger = context.options.logger;
     let id, urlString, navigation;
     if (context.navigation) {
       id = context.navigationId;
@@ -887,7 +891,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     for (const [name, insight] of Object.entries(_TraceProcessor.getInsightRunners())) {
       let model;
       try {
-        options.logger?.start(`insights:${name}`);
+        logger?.start(`insights:${name}`);
         model = insight.generateInsight(data, context);
         model.frameId = context.frameId;
         const navId = context.navigation?.args.data?.navigationId;
@@ -900,7 +904,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       } catch (err) {
         model = err;
       } finally {
-        options.logger?.end(`insights:${name}`);
+        logger?.end(`insights:${name}`);
       }
       Object.assign(insightSetModel, { [name]: model });
     }
@@ -932,7 +936,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       this.#insights = /* @__PURE__ */ new Map();
     }
     this.#insights.set(insightSet.id, insightSet);
-    this.sortInsightSet(insightSet, options.metadata ?? null);
+    this.sortInsightSet(insightSet, context.options.metadata ?? null);
   }
   /**
    * Run all the insights and set the result to `#insights`.
@@ -954,11 +958,12 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
   #computeInsightsForInitialTracePeriod(data, navigations, options) {
     const bounds = navigations.length > 0 ? Helpers4.Timing.traceWindowFromMicroSeconds(data.Meta.traceBounds.min, navigations[0].ts) : data.Meta.traceBounds;
     const context = {
+      options,
       bounds,
       frameId: data.Meta.mainFrameId
       // No navigation or lantern context applies to this initial/no-navigation period.
     };
-    this.#computeInsightSet(data, context, options);
+    this.#computeInsightSet(data, context);
   }
   /**
    * Computes insights for a specific navigation event.
@@ -988,13 +993,14 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       options.logger?.end("insights:createLanternContext");
     }
     const context = {
+      options,
       bounds,
       frameId,
       navigation,
       navigationId,
       lantern
     };
-    this.#computeInsightSet(data, context, options);
+    this.#computeInsightSet(data, context);
   }
 };
 function sortHandlers(traceHandlers) {
@@ -1088,8 +1094,6 @@ var Model = class _Model extends EventTarget {
    **/
   async parse(traceEvents, config) {
     const metadata = config?.metadata || {};
-    const isFreshRecording = config?.isFreshRecording || false;
-    const isCPUProfile = metadata?.dataOrigin === "CPUProfile";
     const onTraceUpdate = (event) => {
       const { data } = event;
       this.dispatchEvent(new ModelUpdateEvent({ type: "PROGRESS_UPDATE", data }));
@@ -1097,13 +1101,7 @@ var Model = class _Model extends EventTarget {
     this.#processor.addEventListener(TraceParseProgressEvent.eventName, onTraceUpdate);
     const syntheticEventsManager = Helpers5.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents);
     try {
-      const parseConfig = {
-        isFreshRecording,
-        isCPUProfile,
-        metadata,
-        resolveSourceMap: config?.resolveSourceMap
-      };
-      await this.#processor.parse(traceEvents, parseConfig);
+      await this.#processor.parse(traceEvents, config ?? {});
       if (!this.#processor.data) {
         throw new Error("processor did not parse trace");
       }

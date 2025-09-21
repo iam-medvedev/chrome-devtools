@@ -9,6 +9,7 @@ export default `/*
  * found in the LICENSE file.
  */
 
+@scope to (devtools-widget > *) {
 .ax-name {
   color: var(--sys-color-token-attribute);
   flex-shrink: 0;
@@ -42,6 +43,7 @@ span.ax-internal-role {
 .info-message-overflow {
   overflow-x: hidden;
   white-space: normal;
+}
 }
 
 /*# sourceURL=${import.meta.resolve('./accessibilityProperties.css')} */`;

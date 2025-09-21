@@ -583,6 +583,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     supportsCaseSensitiveSearch() {
         return false;
     }
+    supportsWholeWordSearch() {
+        return false;
+    }
     supportsRegexSearch() {
         return false;
     }
@@ -630,6 +633,9 @@ export class ElementsPanel extends UI.Panel.Panel {
     }
     selectDOMNode(node, focus) {
         this.#domTreeWidget.selectDOMNode(node, focus);
+    }
+    highlightNodeAttribute(node, attribute) {
+        this.#domTreeWidget.highlightNodeAttribute(node, attribute);
     }
     selectAndShowSidebarTab(tabId) {
         if (!this.sidebarPaneView) {

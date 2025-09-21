@@ -60,7 +60,6 @@ export declare class TabbedPane extends TabbedPane_base {
     appendTab(id: string, tabTitle: string, view: Widget, tabTooltip?: string, userGesture?: boolean, isCloseable?: boolean, isPreviewFeature?: boolean, index?: number, jslogContext?: string): void;
     closeTab(id: string, userGesture?: boolean): void;
     closeTabs(ids: string[], userGesture?: boolean): void;
-    private innerCloseTab;
     hasTab(tabId: string): boolean;
     otherTabs(id: string): string[];
     tabsToTheRight(id: string): string[];

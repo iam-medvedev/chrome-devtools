@@ -33,14 +33,14 @@ describeWithEnvironment('SourceFrame', () => {
     }
     it('finds string by simple regex', async () => {
         const sourceFrame = await createSourceFrame('Example');
-        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('xa', /* caseSensitive */ false, /* isRegex */ true), true);
+        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('xa', /* caseSensitive */ false, /* wholeWord */ false, /* isRegex */ true), true);
         sourceFrame.jumpToSearchResult(0);
         assert.strictEqual(sourceFrame.textEditor.state.selection.main.from, 1);
         assert.strictEqual(sourceFrame.textEditor.state.selection.main.to, 3);
     });
     it('does not match always-empty match regex', async () => {
         const sourceFrame = await createSourceFrame('Example');
-        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('Z*', /* caseSensitive */ false, /* isRegex */ true), true);
+        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('Z*', /* caseSensitive */ false, /* wholeWord */ false, /* isRegex */ true), true);
         // Check that the search did not find anything.
         // We do this in a roundabout way: select the whole document, then try to select
         // the search result and finally verify that the whole document selection
@@ -53,7 +53,7 @@ describeWithEnvironment('SourceFrame', () => {
     });
     it('skips empty matches and finds non-empty match by regex', async () => {
         const sourceFrame = await createSourceFrame('Example');
-        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('a?', /* caseSensitive */ false, /* isRegex */ true), true);
+        sourceFrame.performSearch(new UI.SearchableView.SearchConfig('a?', /* caseSensitive */ false, /* wholeWord */ false, /* isRegex */ true), true);
         sourceFrame.jumpToSearchResult(0);
         assert.strictEqual(sourceFrame.textEditor.state.selection.main.from, 2);
         assert.strictEqual(sourceFrame.textEditor.state.selection.main.to, 3);

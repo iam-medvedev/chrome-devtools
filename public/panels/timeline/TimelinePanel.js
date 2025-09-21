@@ -46,6 +46,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
+import * as Tracing from '../../services/tracing/tracing.js';
 import * as Adorners from '../../ui/components/adorners/adorners.js';
 import * as Dialogs from '../../ui/components/dialogs/dialogs.js';
 import * as LegacyWrapper from '../../ui/components/legacy_wrapper/legacy_wrapper.js';
@@ -787,15 +788,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     getOrCreateExternalAIConversationData() {
         if (!this.#externalAIConversationData) {
             const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-            const focus = Utils.AIContext.getPerformanceAgentFocusFromModel(this.model);
+            const focus = AiAssistanceModel.getPerformanceAgentFocusFromModel(this.model);
             if (!focus) {
                 throw new Error('could not create performance agent focus');
             }
-            const agent = conversationHandler.createAgent("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */);
-            const conversation = new AiAssistanceModel.Conversation("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */, [], agent.id, 
+            const agent = conversationHandler.createAgent("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
+            const conversation = new AiAssistanceModel.Conversation("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */, [], agent.id, 
             /* isReadOnly */ true, 
             /* isExternal */ true);
             const selected = new AiAssistanceModel.PerformanceTraceContext(focus);
+            selected.external = true;
             this.#externalAIConversationData = {
                 conversationHandler,
                 conversation,
@@ -1145,14 +1147,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         contextMenu.appendItemsAtLocation('timelineMenu');
         void contextMenu.show();
     }
-    /**
-     * Saves a trace file to disk.
-     * Pass `config.savingEnhancedTrace === true` to include source maps in the resulting metadata.
-     * Pass `config.addModifications === true` to include user modifications to the trace file, which includes:
-     *      1. Annotations
-     *      2. Filtering / collapsing of the flame chart.
-     *      3. Visual track configuration (re-ordering or hiding tracks).
-     */
     async saveToFile(config) {
         if (this.state !== "Idle" /* State.IDLE */) {
             return;
@@ -1171,7 +1165,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             scriptByIdMap.set(`${mapScript.isolate}.${mapScript.scriptId}`, mapScript);
         }
         const traceEvents = parsedTrace.traceEvents.map(event => {
-            if (Trace.Types.Events.isAnyScriptCatchupEvent(event) && event.name !== 'StubScriptCatchup') {
+            if (Trace.Types.Events.isAnyScriptSourceEvent(event) && event.name !== 'StubScriptCatchup') {
                 const mappedScript = scriptByIdMap.get(`${event.args.data.isolate}.${event.args.data.scriptId}`);
                 // If the checkbox to include script content is not checked or if it comes from and
                 // extension we dont include the script content.
@@ -1206,7 +1200,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             await this.innerSaveToFile(traceEvents, metadata, {
                 includeScriptContent: config.includeScriptContent,
                 includeSourceMaps: config.includeSourceMaps,
-                addModifications: config.addModifications
+                addModifications: config.addModifications,
+                shouldCompress: config.shouldCompress,
             });
         }
         catch (e) {
@@ -1247,8 +1242,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             throw new Error('Trace content empty');
         }
         let blob = new Blob(blobParts, { type: 'application/json' });
-        // TODO: Enable by default and connect with upcoming SaveDialog
-        if (Root.Runtime.experiments.isEnabled("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */)) {
+        if (config.shouldCompress) {
             fileName = `${fileName}.gz`;
             const gzStream = Common.Gzip.compressStream(blob.stream());
             blob = await new Response(gzStream, {
@@ -1281,6 +1275,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             a.click();
             URL.revokeObjectURL(url);
         }
+    }
+    async handleSaveToFileAction() {
+        const exportTraceOptionsElement = this.saveButton.element;
+        const state = exportTraceOptionsElement.state;
+        await this.saveToFile({
+            includeScriptContent: state.includeScriptContent,
+            includeSourceMaps: state.includeSourceMaps,
+            addModifications: state.includeAnnotations,
+            shouldCompress: state.shouldCompress,
+        });
     }
     #filterMetadataSourceMaps(metadata) {
         if (!metadata.sourceMaps) {
@@ -1738,7 +1742,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.getNetworkDataProvider().reset();
         this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
-        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
+        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, null);
     }
     #hasActiveTrace() {
         return this.#viewMode.mode === 'VIEWING_TRACE';
@@ -1802,8 +1806,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.#searchableView.showWidget();
         const exclusiveFilter = this.#exclusiveFilterPerTrace.get(traceIndex) ?? null;
         this.#applyActiveFilters(parsedTrace.data.Meta.traceIsGeneric, exclusiveFilter);
-        this.saveButton.element
-            .updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
+        this.saveButton.element.updateContentVisibility({
+            annotationsExist: currentManager ? currentManager.getAnnotations()?.length > 0 : false
+        });
         // Add ModificationsManager listeners for annotations change to update the
         // Annotation Overlays.
         currentManager?.addEventListener(AnnotationModifiedEvent.eventName, this.#onAnnotationModifiedEventBound);
@@ -1886,6 +1891,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 Host.userMetrics.navigationSettingAtFirstTimelineLoad(1 /* Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE */);
             }
         }
+        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.full(parsedTrace));
     }
     #onAnnotationModifiedEvent(e) {
         const event = e;
@@ -1920,8 +1926,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const annotations = currentManager?.getAnnotations() ?? [];
         const annotationEntryToColorMap = this.buildColorsAnnotationsMap(annotations);
         this.#sideBar.setAnnotations(annotations, annotationEntryToColorMap);
-        this.saveButton.element
-            .updateContentVisibility(currentManager ? currentManager.getAnnotations()?.length > 0 : false);
+        this.saveButton.element.updateContentVisibility({
+            annotationsExist: currentManager ? currentManager.getAnnotations()?.length > 0 : false
+        });
     }
     /**
      * After the user imports / records a trace, we auto-show the sidebar.
@@ -2161,7 +2168,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 throw new Error(`Could not get trace data at index ${traceIndex}`);
             }
             if (recordingIsFresh) {
-                Utils.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
+                Tracing.FreshRecording.Tracker.instance().registerFreshRecording(parsedTrace);
             }
             // We store the index of the active trace so we can load it back easily
             // if the user goes to a different trace then comes back.
@@ -2335,6 +2342,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             metadata: metadata ?? undefined,
             isFreshRecording,
             resolveSourceMap: this.#createSourceMapResolver(isFreshRecording, metadata),
+            isCPUProfile: metadata?.dataOrigin === "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */,
         };
         if (window.location.href.includes('devtools/bundled') || window.location.search.includes('debugFrontend')) {
             // Someone is debugging DevTools, enable the logger to give timings
@@ -2645,7 +2653,7 @@ ${responseTextForPassedInsights}`;
     static async handleExternalAnalyzeRequest(prompt) {
         const data = TimelinePanel.instance().getOrCreateExternalAIConversationData();
         return await data.conversationHandler.handleExternalRequest({
-            conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */,
+            conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
             prompt,
             data,
         });
@@ -2701,7 +2709,7 @@ export class ActionDelegate {
                 panel.recordReload();
                 return true;
             case 'timeline.save-to-file':
-                void panel.saveToFile({ includeScriptContent: false, includeSourceMaps: false, addModifications: false });
+                void panel.handleSaveToFileAction();
                 return true;
             case 'timeline.load-from-file':
                 panel.selectFileToLoad();

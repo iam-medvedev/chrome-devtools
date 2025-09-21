@@ -267,8 +267,7 @@ export declare const enum LinkableNameProperties {
     ANIMATION_NAME = "animation-name",
     FONT_PALETTE = "font-palette",
     POSITION_TRY_FALLBACKS = "position-try-fallbacks",
-    POSITION_TRY = "position-try",
-    FUNCTION = "function"
+    POSITION_TRY = "position-try"
 }
 declare const enum AnimationLonghandPart {
     DIRECTION = "direction",
@@ -392,12 +391,14 @@ export declare const enum ArithmeticFunction {
     SIBLING_INDEX = "sibling-index"
 }
 type MathFunction = SelectFunction | ArithmeticFunction;
-export declare class MathFunctionMatch implements Match {
+export declare class BaseFunctionMatch<T extends string> implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
-    readonly func: MathFunction;
+    readonly func: T;
     readonly args: CodeMirror.SyntaxNode[][];
-    constructor(text: string, node: CodeMirror.SyntaxNode, func: MathFunction, args: CodeMirror.SyntaxNode[][]);
+    constructor(text: string, node: CodeMirror.SyntaxNode, func: T, args: CodeMirror.SyntaxNode[][]);
+}
+export declare class MathFunctionMatch extends BaseFunctionMatch<MathFunction> {
     isArithmeticFunctionCall(): boolean;
 }
 declare const MathFunctionMatcher_base: {
@@ -410,6 +411,18 @@ declare const MathFunctionMatcher_base: {
 export declare class MathFunctionMatcher extends MathFunctionMatcher_base {
     private static getFunctionType;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): MathFunctionMatch | null;
+}
+export declare class CustomFunctionMatch extends BaseFunctionMatch<string> {
+}
+declare const CustomFunctionMatcher_base: {
+    new (): {
+        matchType: Platform.Constructor.ConstructorOrAbstract<CustomFunctionMatch>;
+        accepts(_propertyName: string): boolean;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): CustomFunctionMatch | null;
+    };
+};
+export declare class CustomFunctionMatcher extends CustomFunctionMatcher_base {
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): CustomFunctionMatch | null;
 }
 export declare class FlexGridMatch implements Match {
     readonly text: string;

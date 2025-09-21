@@ -10,9 +10,10 @@ export interface BadgeNotificationProperties {
     message: HTMLElement | string;
     imageUri: string;
     actions: BadgeNotificationAction[];
+    isStarterBadge: boolean;
 }
 export interface ViewInput extends BadgeNotificationProperties {
-    onCloseClick: () => void;
+    onDismissClick: () => void;
 }
 declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLElement) => void;
 type View = typeof DEFAULT_VIEW;
@@ -21,8 +22,10 @@ export declare class BadgeNotification extends UI.Widget.Widget {
     message: HTMLElement | string;
     imageUri: string;
     actions: BadgeNotificationAction[];
+    isStarterBadge: boolean;
     constructor(element?: HTMLElement, view?: View);
     present(badge: Badges.Badge): Promise<void>;
+    onDetach(): void;
     wasShown(): void;
     performUpdate(): void;
 }

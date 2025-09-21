@@ -476,6 +476,9 @@ export class SourcesView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox)
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return true;
+    }
     supportsRegexSearch() {
         return true;
     }

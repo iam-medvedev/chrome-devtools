@@ -10,7 +10,7 @@ describeWithEnvironment('DOMSize', function () {
     expectConsoleLogs({
         error: ['Error: missing metric scores for specified navigation'],
     });
-    it('finds layout reflows and style recalcs affected by DOM size', async () => {
+    it('finds layout reflows and style recalcs affected by DOM size', async function () {
         const { data, insights } = await processTrace(this, 'dom-size.json.gz');
         // 1 large DOM update was triggered before the first navigation
         {
@@ -25,7 +25,7 @@ describeWithEnvironment('DOMSize', function () {
             assert.lengthOf(insight.largeStyleRecalcs, 1);
         }
     });
-    it('finds largest DOM stats event', async () => {
+    it('finds largest DOM stats event', async function () {
         const { data, insights } = await processTrace(this, 'multi-frame-dom-stats.json.gz');
         const insight = getInsightOrError('DOMSize', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         const domStats = insight.maxDOMStats.args.data;
@@ -35,7 +35,7 @@ describeWithEnvironment('DOMSize', function () {
         assert.strictEqual(domStats.maxChildren.numChildren, 4);
         assert.strictEqual(domStats.maxChildren.nodeName, 'BODY');
     });
-    it('separates dom stats in a cross-origin navigation', async () => {
+    it('separates dom stats in a cross-origin navigation', async function () {
         const { data, insights } = await processTrace(this, 'dom-size-overlap.json.gz');
         const navigations = [...data.Meta.navigationsByNavigationId.values()].filter(n => n.args.data?.isOutermostMainFrame);
         {

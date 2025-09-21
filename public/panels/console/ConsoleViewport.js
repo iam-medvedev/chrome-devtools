@@ -380,12 +380,12 @@ export class ConsoleViewport {
     }
     refresh() {
         this.observer.disconnect();
-        this.innerRefresh();
+        this.#refresh();
         if (this.#stickToBottom) {
             this.observer.observe(this.#contentElement, this.observerConfig);
         }
     }
-    innerRefresh() {
+    #refresh() {
         if (!this.visibleHeight()) {
             return;
         } // Do nothing for invisible controls.

@@ -51,6 +51,9 @@ export class ExtensionPanel extends UI.Panel.Panel {
     supportsCaseSensitiveSearch() {
         return false;
     }
+    supportsWholeWordSearch() {
+        return false;
+    }
     supportsRegexSearch() {
         return false;
     }

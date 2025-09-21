@@ -51,6 +51,9 @@
     "../../../../../../front_end/models/ai_assistance/data_formatters/UnitFormatters.ts",
     "../../../../../../front_end/models/ai_assistance/debug.ts",
     "../../../../../../front_end/models/ai_assistance/injected.ts",
+    "../../../../../../front_end/models/ai_assistance/performance/AICallTree.ts",
+    "../../../../../../front_end/models/ai_assistance/performance/AIContext.ts",
+    "../../../../../../front_end/models/ai_assistance/performance/AIQueries.ts",
     "../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../front_end/global_typings/global_defs.d.ts",
     "../../../../../../node_modules/@types/filesystem/index.d.ts"
@@ -75,10 +78,10 @@
       "path": "../../panels/elements/bundle-tsconfig.json"
     },
     {
-      "path": "../../panels/timeline/utils/bundle-tsconfig.json"
+      "path": "../../panels/utils/bundle-tsconfig.json"
     },
     {
-      "path": "../../panels/utils/bundle-tsconfig.json"
+      "path": "../../services/tracing/bundle-tsconfig.json"
     },
     {
       "path": "../../third_party/diff/bundle-tsconfig.json"
@@ -100,6 +103,9 @@
     },
     {
       "path": "../trace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../trace_source_maps_resolver/bundle-tsconfig.json"
     },
     {
       "path": "../workspace/bundle-tsconfig.json"

@@ -36,6 +36,7 @@ export declare class XMLView extends UI.Widget.Widget implements UI.SearchableVi
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
 export {};

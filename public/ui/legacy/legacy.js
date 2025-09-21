@@ -621,6 +621,7 @@ __export(UIUtils_exports, {
   DevToolsSmallBubble: () => DevToolsSmallBubble,
   ElementFocusRestorer: () => ElementFocusRestorer,
   HTMLElementWithLightDOMTemplate: () => HTMLElementWithLightDOMTemplate,
+  InterceptBindingDirective: () => InterceptBindingDirective,
   LongClickController: () => LongClickController,
   MaxLengthForDisplayedURLs: () => MaxLengthForDisplayedURLs,
   MessageDialog: () => MessageDialog,
@@ -635,6 +636,7 @@ __export(UIUtils_exports, {
   beautifyFunctionName: () => beautifyFunctionName,
   bindInput: () => bindInput,
   bindToAction: () => bindToAction,
+  cloneCustomElement: () => cloneCustomElement,
   copyFileNameLabel: () => copyFileNameLabel,
   copyLinkAddressLabel: () => copyLinkAddressLabel,
   createFileSelectorElement: () => createFileSelectorElement,
@@ -4891,7 +4893,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
     const focused = this.hasFocus();
     for (let i = 0; i < ids.length; ++i) {
-      this.innerCloseTab(ids[i], userGesture);
+      this.#closeTab(ids[i], userGesture);
     }
     this.requestUpdate();
     if (this.tabsHistory.length) {
@@ -4901,7 +4903,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
       this.focus();
     }
   }
-  innerCloseTab(id2, userGesture) {
+  #closeTab(id2, userGesture) {
     const tab = this.tabsById.get(id2);
     if (!tab) {
       return;
@@ -7258,17 +7260,16 @@ var InspectorView = class _InspectorView extends VBox {
     return this.drawerSplitWidget.isVertical();
   }
   keyDown(event) {
-    const keyboardEvent = event;
-    if (!KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) || keyboardEvent.altKey || keyboardEvent.shiftKey) {
+    if (!KeyboardShortcut.eventHasCtrlEquivalentKey(event) || event.altKey || event.shiftKey) {
       return;
     }
     const panelShortcutEnabled = Common10.Settings.moduleSetting("shortcut-panel-switch").get();
     if (panelShortcutEnabled) {
       let panelIndex = -1;
-      if (keyboardEvent.keyCode > 48 && keyboardEvent.keyCode < 58) {
-        panelIndex = keyboardEvent.keyCode - 49;
-      } else if (keyboardEvent.keyCode > 96 && keyboardEvent.keyCode < 106 && keyboardEvent.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-        panelIndex = keyboardEvent.keyCode - 97;
+      if (event.keyCode > 48 && event.keyCode < 58) {
+        panelIndex = event.keyCode - 49;
+      } else if (event.keyCode > 96 && event.keyCode < 106 && event.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+        panelIndex = event.keyCode - 97;
       }
       if (panelIndex !== -1) {
         const panelName = this.tabbedPane.tabIds()[panelIndex];
@@ -8763,7 +8764,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       }
     }
     this.pendingTargets = [];
-    this.innerShow();
+    this.#show();
   }
   /**
    * Discards (closes) the soft context menu if it's currently shown.
@@ -8789,7 +8790,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
       }
     }
   }
-  innerShow() {
+  #show() {
     if (!this.eventTarget) {
       return;
     }
@@ -9178,10 +9179,8 @@ var createSettingSelect = function(name, options, requiresReload, setting, subti
     }
   }
 };
-var bindToSetting = (setting, stringValidator) => {
-  if (typeof setting === "string") {
-    setting = Common11.Settings.Settings.instance().moduleSetting(setting);
-  }
+var bindToSetting = (settingOrName, stringValidator) => {
+  const setting = typeof settingOrName === "string" ? Common11.Settings.Settings.instance().moduleSetting(settingOrName) : settingOrName;
   let setValue;
   function settingChanged() {
     setValue(setting.get());
@@ -9304,7 +9303,8 @@ var createControlForSetting = function(setting, subtitle) {
 // gen/front_end/ui/legacy/TextPrompt.js
 var TextPrompt_exports = {};
 __export(TextPrompt_exports, {
-  TextPrompt: () => TextPrompt
+  TextPrompt: () => TextPrompt,
+  TextPromptElement: () => TextPromptElement
 });
 import * as Common13 from "./../../core/common/common.js";
 import * as Platform13 from "./../../core/platform/platform.js";
@@ -10371,6 +10371,137 @@ var textPrompt_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./textPrompt.css")} */`;
 
 // gen/front_end/ui/legacy/TextPrompt.js
+var TextPromptElement = class _TextPromptElement extends HTMLElement {
+  static observedAttributes = ["editing", "completions"];
+  #shadow = this.attachShadow({ mode: "open" });
+  #entrypoint = this.#shadow.createChild("span");
+  #slot = this.#entrypoint.createChild("slot");
+  #textPrompt = new TextPrompt();
+  #completionTimeout = null;
+  constructor() {
+    super();
+    this.#textPrompt.initialize(this.#willAutoComplete.bind(this));
+  }
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue || !this.isConnected) {
+      return;
+    }
+    switch (name) {
+      case "editing":
+        if (newValue !== null && newValue !== "false" && oldValue === null) {
+          this.#startEditing();
+        } else {
+          this.#stopEditing();
+        }
+        break;
+      case "completions":
+        if (this.#textPrompt.isSuggestBoxVisible()) {
+          void this.#textPrompt.complete(
+            /* force=*/
+            true
+          );
+        }
+        break;
+    }
+  }
+  async #willAutoComplete(expression, filter, force) {
+    if (!force) {
+      this.dispatchEvent(new _TextPromptElement.BeforeAutoCompleteEvent({ expression, filter }));
+    }
+    const listId = this.getAttribute("completions");
+    if (!listId) {
+      return [];
+    }
+    const datalist = this.getComponentRoot()?.querySelectorAll(`datalist#${listId} > option`);
+    if (!datalist?.length) {
+      return [];
+    }
+    filter = filter?.toLowerCase();
+    return datalist.values().filter((option) => option.textContent.startsWith(filter ?? "")).map((option) => ({ text: option.textContent })).toArray();
+  }
+  #startEditing() {
+    const placeholder = this.#entrypoint.createChild("span");
+    placeholder.textContent = this.#slot.deepInnerText();
+    this.#slot.remove();
+    const proxy = this.#textPrompt.attachAndStartEditing(placeholder, (e) => this.#done(
+      e,
+      /* commit=*/
+      true
+    ));
+    proxy.addEventListener("keydown", this.#editingValueKeyDown.bind(this));
+    placeholder.getComponentSelection()?.selectAllChildren(placeholder);
+  }
+  #stopEditing() {
+    this.#entrypoint.removeChildren();
+    this.#entrypoint.appendChild(this.#slot);
+    this.#textPrompt.detach();
+  }
+  connectedCallback() {
+    if (this.hasAttribute("editing")) {
+      this.attributeChangedCallback("editing", null, "");
+    }
+  }
+  #done(e, commit) {
+    const target = e.target;
+    const text = target.textContent || "";
+    if (commit) {
+      this.dispatchEvent(new _TextPromptElement.CommitEvent(text));
+    } else {
+      this.dispatchEvent(new _TextPromptElement.CancelEvent());
+    }
+    e.consume();
+  }
+  #editingValueKeyDown(event) {
+    if (event.handled || !(event instanceof KeyboardEvent)) {
+      return;
+    }
+    if (event.key === "Enter") {
+      this.#done(
+        event,
+        /* commit=*/
+        true
+      );
+    } else if (Platform13.KeyboardUtilities.isEscKey(event)) {
+      this.#done(
+        event,
+        /* commit=*/
+        false
+      );
+    }
+  }
+  set completionTimeout(timeout) {
+    this.#completionTimeout = timeout;
+    this.#textPrompt.setAutocompletionTimeout(timeout);
+  }
+  cloneNode() {
+    const clone = cloneCustomElement(this);
+    if (this.#completionTimeout !== null) {
+      clone.completionTimeout = this.#completionTimeout;
+    }
+    return clone;
+  }
+};
+(function(TextPromptElement2) {
+  class CommitEvent extends CustomEvent {
+    constructor(detail) {
+      super("commit", { detail });
+    }
+  }
+  TextPromptElement2.CommitEvent = CommitEvent;
+  class CancelEvent extends CustomEvent {
+    constructor() {
+      super("cancel");
+    }
+  }
+  TextPromptElement2.CancelEvent = CancelEvent;
+  class BeforeAutoCompleteEvent extends CustomEvent {
+    constructor(detail) {
+      super("beforeautocomplete", { detail });
+    }
+  }
+  TextPromptElement2.BeforeAutoCompleteEvent = BeforeAutoCompleteEvent;
+})(TextPromptElement || (TextPromptElement = {}));
+customElements.define("devtools-prompt", TextPromptElement);
 var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   proxyElement;
   proxyElementDisplay;
@@ -10789,6 +10920,9 @@ var TextPrompt = class extends Common13.ObjectWrapper.ObjectWrapper {
   }
   async complete(force) {
     this.clearAutocompleteTimeout();
+    if (!this.element().isConnected) {
+      return;
+    }
     const selection = this.element().getComponentSelection();
     if (!selection || selection.rangeCount === 0) {
       return;
@@ -15364,13 +15498,10 @@ function bindToAction(actionName) {
 }
 var InterceptBindingDirective = class _InterceptBindingDirective extends Lit2.Directive.Directive {
   static #interceptedBindings = /* @__PURE__ */ new WeakMap();
-  constructor(part) {
-    super(part);
-    if (part.type !== Lit2.Directive.PartType.EVENT) {
-      throw new Error("This directive is for event bindings only");
-    }
-  }
   update(part, [listener]) {
+    if (part.type !== Lit2.Directive.PartType.EVENT) {
+      return listener;
+    }
     let eventListeners = _InterceptBindingDirective.#interceptedBindings.get(part.element);
     if (!eventListeners) {
       eventListeners = /* @__PURE__ */ new Map();
@@ -15379,6 +15510,7 @@ var InterceptBindingDirective = class _InterceptBindingDirective extends Lit2.Di
     eventListeners.set(part.name, listener);
     return this.render(listener);
   }
+  /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
   render(_listener) {
     return void 0;
   }
@@ -15392,8 +15524,19 @@ var InterceptBindingDirective = class _InterceptBindingDirective extends Lit2.Di
     }
   }
 };
+var cloneCustomElement = (element, deep) => {
+  const clone = document.createElement(element.localName);
+  for (const attribute of element.attributes) {
+    clone.setAttribute(attribute.name, attribute.value);
+  }
+  if (deep) {
+    for (const child of element.childNodes) {
+      clone.appendChild(child.cloneNode(deep));
+    }
+  }
+  return clone;
+};
 var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate extends HTMLElement {
-  static on = Lit2.Directive.directive(InterceptBindingDirective);
   #mutationObserver = new MutationObserver(this.#onChange.bind(this));
   #contentTemplate = null;
   constructor() {
@@ -15410,6 +15553,33 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     }
     return clone;
   }
+  static patchLitTemplate(template) {
+    const wrapper = Lit2.Directive.directive(InterceptBindingDirective);
+    if (template === Lit2.nothing) {
+      return;
+    }
+    template.values = template.values.map(patchValue);
+    function isLitTemplate(value) {
+      return Boolean(typeof value === "object" && value && "_$litType$" in value && "strings" in value && "values" in value && value["_$litType$"] === 1);
+    }
+    function patchValue(value) {
+      if (typeof value === "function") {
+        try {
+          return wrapper(value);
+        } catch {
+          return value;
+        }
+      }
+      if (isLitTemplate(value)) {
+        _HTMLElementWithLightDOMTemplate.patchLitTemplate(value);
+        return value;
+      }
+      if (Array.isArray(value)) {
+        return value.map(patchValue);
+      }
+      return value;
+    }
+  }
   set template(template) {
     if (!this.#contentTemplate) {
       this.removeChildren();
@@ -15417,6 +15587,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       this.#mutationObserver.disconnect();
       this.#mutationObserver.observe(this.#contentTemplate.content, { childList: true, attributes: true, subtree: true, characterData: true });
     }
+    _HTMLElementWithLightDOMTemplate.patchLitTemplate(template);
     render2(template, this.#contentTemplate.content);
   }
   #onChange(mutationList) {
@@ -15456,6 +15627,7 @@ var GlassPane = class _GlassPane {
   constructor(jslog) {
     this.#widget = new Widget({ jslog, useShadowDom: true });
     this.#widget.markAsRoot();
+    this.#widget.onDetach = this.#onDetach.bind(this);
     this.element = this.#widget.element;
     this.contentElement = this.#widget.contentElement;
     this.registerRequiredCSS(glassPane_css_default);
@@ -15540,13 +15712,15 @@ var GlassPane = class _GlassPane {
     if (!this.isShowing()) {
       return;
     }
-    panes.delete(this);
-    this.element.ownerDocument.body.removeEventListener("mousedown", this.onMouseDownBound, true);
-    this.element.ownerDocument.body.removeEventListener("pointerdown", this.onMouseDownBound, true);
     this.#widget.detach();
     if (this.#onHideCallback) {
       this.#onHideCallback();
     }
+  }
+  #onDetach() {
+    panes.delete(this);
+    this.element.ownerDocument.body.removeEventListener("mousedown", this.onMouseDownBound, true);
+    this.element.ownerDocument.body.removeEventListener("pointerdown", this.onMouseDownBound, true);
   }
   onMouseDown(event) {
     if (!this.onClickOutsideCallback) {
@@ -15736,6 +15910,9 @@ var Dialog = class _Dialog extends Common15.ObjectWrapper.eventMixin(GlassPane) 
       /* PointerEventsBehavior.BLOCKED_BY_GLASS_PANE */
     );
     this.setOutsideClickCallback((event) => {
+      if (_Dialog.getInstance() !== this) {
+        return;
+      }
       this.hide();
       event.consume(true);
     });
@@ -15743,19 +15920,32 @@ var Dialog = class _Dialog extends Common15.ObjectWrapper.eventMixin(GlassPane) 
     this.targetDocumentKeyDownHandler = this.onKeyDown.bind(this);
   }
   static hasInstance() {
-    return Boolean(_Dialog.instance);
+    return _Dialog.dialogs.length > 0;
   }
+  /**
+   * If there is only one dialog, returns that.
+   * If there are stacked dialogs, returns the topmost one.
+   */
   static getInstance() {
-    return _Dialog.instance;
+    return _Dialog.dialogs[_Dialog.dialogs.length - 1] || null;
   }
-  show(where) {
+  /**
+   * `stack` parameter is needed for being able to open a dialog on top
+   * of an existing dialog. The main reason is, Settings Tab is
+   * implemented as a Dialog. So, if we want to open a dialog on the
+   * Settings Tab, we need to stack it on top of that dialog.
+   *
+   * @param where Container element of the dialog.
+   * @param stack Whether to open this dialog on top of an existing dialog.
+   */
+  show(where, stack) {
     const document2 = where instanceof Document ? where : (where || InspectorView.instance().element).ownerDocument;
     this.targetDocument = document2;
     this.targetDocument.addEventListener("keydown", this.targetDocumentKeyDownHandler, true);
-    if (_Dialog.instance) {
-      _Dialog.instance.hide();
+    if (!stack && _Dialog.dialogs.length) {
+      _Dialog.dialogs.forEach((dialog3) => dialog3.hide());
     }
-    _Dialog.instance = this;
+    _Dialog.dialogs.push(this);
     this.disableTabIndexOnElements(document2);
     super.show(document2);
     this.focusRestorer = new WidgetFocusRestorer(this.widget());
@@ -15773,7 +15963,10 @@ var Dialog = class _Dialog extends Common15.ObjectWrapper.eventMixin(GlassPane) 
       "hidden"
       /* Events.HIDDEN */
     );
-    _Dialog.instance = null;
+    const index = _Dialog.dialogs.indexOf(this);
+    if (index !== -1) {
+      _Dialog.dialogs.splice(index, 1);
+    }
   }
   setAriaLabel(label) {
     setLabel(this.contentElement, label);
@@ -15848,6 +16041,9 @@ var Dialog = class _Dialog extends Common15.ObjectWrapper.eventMixin(GlassPane) 
   }
   onKeyDown(event) {
     const keyboardEvent = event;
+    if (_Dialog.getInstance() !== this) {
+      return;
+    }
     if (keyboardEvent.keyCode === Keys.Esc.code && KeyboardShortcut.hasNoModifiers(event)) {
       if (this.escapeKeyCallback) {
         this.escapeKeyCallback(event);
@@ -15861,7 +16057,7 @@ var Dialog = class _Dialog extends Common15.ObjectWrapper.eventMixin(GlassPane) 
       }
     }
   }
-  static instance = null;
+  static dialogs = [];
 };
 
 // gen/front_end/ui/legacy/ARIAUtils.js
@@ -18564,42 +18760,52 @@ var ProgressIndicator = class extends HTMLElement {
     this.#labelElement = this.#contentElement.createChild("div", "title");
     this.#progressElement = this.#contentElement.createChild("progress");
     this.#progressElement.value = 0;
-    if (!this.hasAttribute("no-stop-button")) {
-      this.#stopButton = this.#contentElement.createChild("button", "progress-indicator-shadow-stop-button");
-      this.#stopButton.addEventListener("click", this.cancel.bind(this));
-    }
   }
   connectedCallback() {
     this.classList.add("progress-indicator");
+    if (!this.hasAttribute("no-stop-button")) {
+      this.#stopButton = this.#contentElement.createChild("button", "progress-indicator-shadow-stop-button");
+      this.#stopButton.addEventListener("click", () => {
+        this.canceled = true;
+      });
+    }
   }
-  done() {
-    if (this.#isDone) {
+  set done(done) {
+    if (this.#isDone === done) {
       return;
     }
-    this.#isDone = true;
-    this.remove();
-  }
-  cancel() {
-    this.#isCanceled = true;
-  }
-  isCanceled() {
-    return this.#isCanceled;
-  }
-  setTitle(title) {
-    this.#labelElement.textContent = title;
-  }
-  setTotalWork(totalWork) {
-    this.#progressElement.max = totalWork;
-  }
-  setWorked(worked, title) {
-    this.#worked = worked;
-    this.#progressElement.value = worked;
-    if (title) {
-      this.setTitle(title);
+    this.#isDone = done;
+    if (done) {
+      this.remove();
     }
   }
-  incrementWorked(worked) {
-    this.setWorked(this.#worked + (worked || 1));
+  get done() {
+    return this.#isDone;
+  }
+  set canceled(value) {
+    this.#isCanceled = value;
+  }
+  get canceled() {
+    return this.#isCanceled;
+  }
+  set title(title) {
+    this.#labelElement.textContent = title;
+  }
+  get title() {
+    return this.#labelElement.textContent ?? "";
+  }
+  set totalWork(totalWork) {
+    this.#progressElement.max = totalWork;
+  }
+  get totalWork() {
+    return this.#progressElement.max;
+  }
+  set worked(worked) {
+    this.#worked = worked;
+    this.#progressElement.value = worked;
+  }
+  get worked() {
+    return this.#worked;
   }
 };
 customElements.define("devtools-progress", ProgressIndicator);
@@ -19306,10 +19512,6 @@ var searchableView_css_default = `/*
   flex-basis: auto;
 }
 
-:host-context(#sources-panel-sources-view) .toolbar-search {
-  flex-wrap: wrap;
-}
-
 /*# sourceURL=${import.meta.resolve("./searchableView.css")} */`;
 
 // gen/front_end/ui/legacy/SearchableView.js
@@ -19339,21 +19541,17 @@ var UIStrings17 = {
    */
   searchNext: "Show next result",
   /**
-   * @description Tooltip text on a toggle to enable search by matching case of the input
+   * @description Tooltip text on a toggle to enable/disable search by matching the exact case.
    */
-  enableCaseSensitive: "Enable case sensitive search",
+  matchCase: "Match case",
   /**
-   * @description Tooltip text on a toggle to disable search by matching case of the input
+   * @description Tooltip text on a toggle to enable/disable search by matching the exact word.
    */
-  disableCaseSensitive: "Disable case sensitive search",
+  matchWholeWord: "Match whole word",
   /**
-   * @description Tooltip text on a toggle to enable searching with regular expression
+   * @description Tooltip text on a toggle to enable/disable searching with regular expression.
    */
-  enableRegularExpression: "Enable regular expressions",
-  /**
-   * @description Tooltip text on a toggle to disable searching with regular expression
-   */
-  disableRegularExpression: "Disable regular expressions",
+  useRegularExpression: "Use regular expression",
   /**
    * @description Tooltip text on a button to close the search bar
    */
@@ -19420,6 +19618,7 @@ var SearchableView = class extends VBox {
   searchNavigationNextElement;
   replaceInputElement;
   caseSensitiveButton;
+  wholeWordButton;
   regexButton;
   replaceButtonElement;
   replaceAllButtonElement;
@@ -19476,6 +19675,44 @@ var SearchableView = class extends VBox {
       this.searchInputElement.focus();
     });
     searchConfigButtons.appendChild(clearButton);
+    const saveSettingAndPerformSearch = () => {
+      this.saveSetting();
+      this.performSearch(false, true);
+    };
+    if (this.searchProvider.supportsCaseSensitiveSearch()) {
+      const iconName = "match-case";
+      this.caseSensitiveButton = new Buttons9.Button.Button();
+      this.caseSensitiveButton.data = {
+        variant: "icon_toggle",
+        size: "SMALL",
+        iconName,
+        toggledIconName: iconName,
+        toggled: false,
+        toggleType: "primary-toggle",
+        title: i18nString17(UIStrings17.matchCase),
+        jslogContext: iconName
+      };
+      setLabel(this.caseSensitiveButton, i18nString17(UIStrings17.matchCase));
+      this.caseSensitiveButton.addEventListener("click", saveSettingAndPerformSearch);
+      searchConfigButtons.appendChild(this.caseSensitiveButton);
+    }
+    if (this.searchProvider.supportsWholeWordSearch()) {
+      const iconName = "match-whole-word";
+      this.wholeWordButton = new Buttons9.Button.Button();
+      this.wholeWordButton.data = {
+        variant: "icon_toggle",
+        size: "SMALL",
+        iconName,
+        toggledIconName: iconName,
+        toggled: false,
+        toggleType: "primary-toggle",
+        title: i18nString17(UIStrings17.matchWholeWord),
+        jslogContext: iconName
+      };
+      setLabel(this.wholeWordButton, i18nString17(UIStrings17.matchWholeWord));
+      this.wholeWordButton.addEventListener("click", saveSettingAndPerformSearch);
+      searchConfigButtons.appendChild(this.wholeWordButton);
+    }
     if (this.searchProvider.supportsRegexSearch()) {
       const iconName = "regular-expression";
       this.regexButton = new Buttons9.Button.Button();
@@ -19487,26 +19724,11 @@ var SearchableView = class extends VBox {
         toggleType: "primary-toggle",
         toggled: false,
         jslogContext: iconName,
-        title: i18nString17(UIStrings17.enableCaseSensitive)
+        title: i18nString17(UIStrings17.useRegularExpression)
       };
-      this.regexButton.addEventListener("click", () => this.toggleRegexSearch());
+      setLabel(this.regexButton, i18nString17(UIStrings17.useRegularExpression));
+      this.regexButton.addEventListener("click", saveSettingAndPerformSearch);
       searchConfigButtons.appendChild(this.regexButton);
-    }
-    if (this.searchProvider.supportsCaseSensitiveSearch()) {
-      const iconName = "match-case";
-      this.caseSensitiveButton = new Buttons9.Button.Button();
-      this.caseSensitiveButton.data = {
-        variant: "icon_toggle",
-        size: "SMALL",
-        iconName,
-        toggledIconName: iconName,
-        toggled: false,
-        toggleType: "primary-toggle",
-        title: i18nString17(UIStrings17.enableCaseSensitive),
-        jslogContext: iconName
-      };
-      this.caseSensitiveButton.addEventListener("click", () => this.toggleCaseSensitiveSearch());
-      searchConfigButtons.appendChild(this.caseSensitiveButton);
     }
     searchInputElements.createChild("div", "input-line search-input-background");
     const buttonsContainer = this.footerElement.createChild("div", "toolbar-search-buttons");
@@ -19562,20 +19784,6 @@ var SearchableView = class extends VBox {
     }
     return view;
   }
-  toggleCaseSensitiveSearch() {
-    if (this.caseSensitiveButton) {
-      this.caseSensitiveButton.title = this.caseSensitiveButton.toggled ? i18nString17(UIStrings17.disableCaseSensitive) : i18nString17(UIStrings17.enableCaseSensitive);
-    }
-    this.saveSetting();
-    this.performSearch(false, true);
-  }
-  toggleRegexSearch() {
-    if (this.regexButton) {
-      this.regexButton.title = this.regexButton.toggled ? i18nString17(UIStrings17.disableRegularExpression) : i18nString17(UIStrings17.enableRegularExpression);
-    }
-    this.saveSetting();
-    this.performSearch(false, true);
-  }
   toggleReplace() {
     const replaceEnabled = this.replaceToggleButton.isToggled();
     const label = replaceEnabled ? i18nString17(UIStrings17.disableFindAndReplace) : i18nString17(UIStrings17.enableFindAndReplace);
@@ -19591,6 +19799,9 @@ var SearchableView = class extends VBox {
     if (this.caseSensitiveButton) {
       settingValue.caseSensitive = this.caseSensitiveButton.toggled;
     }
+    if (this.wholeWordButton) {
+      settingValue.wholeWord = this.wholeWordButton.toggled;
+    }
     if (this.regexButton) {
       settingValue.isRegex = this.regexButton.toggled;
     }
@@ -19598,17 +19809,14 @@ var SearchableView = class extends VBox {
   }
   loadSetting() {
     const settingValue = this.setting ? this.setting.get() || {} : {};
-    if (this.searchProvider.supportsCaseSensitiveSearch() && this.caseSensitiveButton) {
+    if (this.caseSensitiveButton) {
       this.caseSensitiveButton.toggled = Boolean(settingValue.caseSensitive);
-      const label = settingValue.caseSensitive ? i18nString17(UIStrings17.disableCaseSensitive) : i18nString17(UIStrings17.enableCaseSensitive);
-      this.caseSensitiveButton.title = label;
-      setLabel(this.caseSensitiveButton, label);
     }
-    if (this.searchProvider.supportsRegexSearch() && this.regexButton) {
+    if (this.wholeWordButton) {
+      this.wholeWordButton.toggled = Boolean(settingValue.wholeWord);
+    }
+    if (this.regexButton) {
       this.regexButton.toggled = Boolean(settingValue.isRegex);
-      const label = settingValue.regular ? i18nString17(UIStrings17.disableRegularExpression) : i18nString17(UIStrings17.enableRegularExpression);
-      this.regexButton.title = label;
-      setLabel(this.regexButton, label);
     }
   }
   setMinimalSearchQuerySize(minimalSearchQuerySize) {
@@ -19624,16 +19832,17 @@ var SearchableView = class extends VBox {
     this.replaceable = replaceable;
   }
   updateSearchMatchesCount(matches) {
-    const untypedSearchProvider = this.searchProvider;
-    if (untypedSearchProvider.currentSearchMatches === matches) {
+    if (this.searchProvider.currentSearchMatches === matches) {
       return;
     }
-    untypedSearchProvider.currentSearchMatches = matches;
-    this.updateSearchMatchesCountAndCurrentMatchIndex(untypedSearchProvider.currentQuery ? matches : 0, -1);
+    this.searchProvider.currentSearchMatches = matches;
+    this.updateSearchMatchesCountAndCurrentMatchIndex(this.searchProvider.currentQuery ? matches : 0, -1);
   }
   updateCurrentMatchIndex(currentMatchIndex) {
-    const untypedSearchProvider = this.searchProvider;
-    this.updateSearchMatchesCountAndCurrentMatchIndex(untypedSearchProvider.currentSearchMatches, currentMatchIndex);
+    if (!this.searchProvider.currentSearchMatches) {
+      return;
+    }
+    this.updateSearchMatchesCountAndCurrentMatchIndex(this.searchProvider.currentSearchMatches, currentMatchIndex);
   }
   closeSearch() {
     this.cancelSearch();
@@ -19775,10 +19984,9 @@ var SearchableView = class extends VBox {
     this.jumpToNextSearchResult(true);
   }
   clearSearch() {
-    const untypedSearchProvider = this.searchProvider;
-    delete this.currentQuery;
-    if (Boolean(untypedSearchProvider.currentQuery)) {
-      delete untypedSearchProvider.currentQuery;
+    this.currentQuery = void 0;
+    if (Boolean(this.searchProvider.currentQuery)) {
+      this.searchProvider.currentQuery = void 0;
       this.searchProvider.onSearchCanceled();
     }
     this.updateSearchMatchesCountAndCurrentMatchIndex(0, -1);
@@ -19797,8 +20005,9 @@ var SearchableView = class extends VBox {
   currentSearchConfig() {
     const query = this.searchInputElement.value;
     const caseSensitive = this.caseSensitiveButton ? this.caseSensitiveButton.toggled : false;
+    const wholeWord = this.wholeWordButton ? this.wholeWordButton.toggled : false;
     const isRegex = this.regexButton ? this.regexButton.toggled : false;
-    return new SearchConfig(query, caseSensitive, isRegex);
+    return new SearchConfig(query, caseSensitive, wholeWord, isRegex);
   }
   updateSecondRowVisibility() {
     const secondRowVisible = this.replaceToggleButton.isToggled();
@@ -19812,16 +20021,16 @@ var SearchableView = class extends VBox {
   }
   replace() {
     if (!this.replaceProvider) {
-      throw new Error("No 'replacable' provided to SearchableView!");
+      throw new Error("No 'replaceable' provided to SearchableView!");
     }
     const searchConfig = this.currentSearchConfig();
     this.replaceProvider.replaceSelectionWith(searchConfig, this.replaceInputElement.value);
-    delete this.currentQuery;
+    this.currentQuery = void 0;
     this.performSearch(true, true);
   }
   replaceAll() {
     if (!this.replaceProvider) {
-      throw new Error("No 'replacable' provided to SearchableView!");
+      throw new Error("No 'replaceable' provided to SearchableView!");
     }
     const searchConfig = this.currentSearchConfig();
     this.replaceProvider.replaceAllWith(searchConfig, this.replaceInputElement.value);
@@ -19831,9 +20040,7 @@ var SearchableView = class extends VBox {
       this.clearSearch();
       return;
     }
-    if (this.valueChangedTimeoutId) {
-      clearTimeout(this.valueChangedTimeoutId);
-    }
+    clearTimeout(this.valueChangedTimeoutId);
     const timeout = this.searchInputElement.value.length < 3 ? 200 : 0;
     this.valueChangedTimeoutId = window.setTimeout(this.onValueChanged.bind(this), timeout);
   }
@@ -19841,7 +20048,7 @@ var SearchableView = class extends VBox {
     if (!this.searchIsVisible) {
       return;
     }
-    delete this.valueChangedTimeoutId;
+    this.valueChangedTimeoutId = void 0;
     this.performSearch(false, true);
   }
 };
@@ -19849,10 +20056,12 @@ var searchableViewsByElement = /* @__PURE__ */ new WeakMap();
 var SearchConfig = class {
   query;
   caseSensitive;
+  wholeWord;
   isRegex;
-  constructor(query, caseSensitive, isRegex) {
+  constructor(query, caseSensitive, wholeWord, isRegex) {
     this.query = query;
     this.caseSensitive = caseSensitive;
+    this.wholeWord = wholeWord;
     this.isRegex = isRegex;
   }
   toSearchRegex(global) {
@@ -19873,6 +20082,16 @@ var SearchConfig = class {
     }
     if (!regex) {
       regex = Platform24.StringUtilities.createPlainTextSearchRegex(query, modifiers);
+    }
+    if (this.wholeWord) {
+      let { source } = regex;
+      if (!source.startsWith("^") && !source.startsWith("\\b")) {
+        source = "\\b" + source;
+      }
+      if (!source.endsWith("$") && !source.endsWith("\\b")) {
+        source = source + "\\b";
+      }
+      regex = new RegExp(source, regex.flags);
     }
     return {
       regex,

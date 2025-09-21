@@ -9,6 +9,7 @@ var Runtime_exports = {};
 __export(Runtime_exports, {
   Experiment: () => Experiment,
   ExperimentsSupport: () => ExperimentsSupport,
+  GdpProfilesEnterprisePolicyValue: () => GdpProfilesEnterprisePolicyValue,
   GenAiEnterprisePolicyValue: () => GenAiEnterprisePolicyValue,
   HostConfigFreestylerExecutionMode: () => HostConfigFreestylerExecutionMode,
   Runtime: () => Runtime,
@@ -260,6 +261,12 @@ var HostConfigFreestylerExecutionMode;
   HostConfigFreestylerExecutionMode2["SIDE_EFFECT_FREE_SCRIPTS_ONLY"] = "SIDE_EFFECT_FREE_SCRIPTS_ONLY";
   HostConfigFreestylerExecutionMode2["NO_SCRIPTS"] = "NO_SCRIPTS";
 })(HostConfigFreestylerExecutionMode || (HostConfigFreestylerExecutionMode = {}));
+var GdpProfilesEnterprisePolicyValue;
+(function(GdpProfilesEnterprisePolicyValue2) {
+  GdpProfilesEnterprisePolicyValue2[GdpProfilesEnterprisePolicyValue2["ENABLED"] = 0] = "ENABLED";
+  GdpProfilesEnterprisePolicyValue2[GdpProfilesEnterprisePolicyValue2["ENABLED_WITHOUT_BADGES"] = 1] = "ENABLED_WITHOUT_BADGES";
+  GdpProfilesEnterprisePolicyValue2[GdpProfilesEnterprisePolicyValue2["DISABLED"] = 2] = "DISABLED";
+})(GdpProfilesEnterprisePolicyValue || (GdpProfilesEnterprisePolicyValue = {}));
 var hostConfig = /* @__PURE__ */ Object.create(null);
 var conditions = {
   canDock: () => Boolean(Runtime.queryParam("can_dock"))

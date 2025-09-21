@@ -23,7 +23,7 @@ export declare class CountersGraph extends UI.Widget.VBox {
     setModel(parsedTrace: Trace.TraceModel.ParsedTrace | null, events: Trace.Types.Events.Event[] | null): void;
     private createCurrentValuesBar;
     private createCounter;
-    resizerElement(): Element | null;
+    resizerElement(): Element;
     private resize;
     performUpdate(): Promise<void> | void;
     draw(): void;

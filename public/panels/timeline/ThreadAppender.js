@@ -227,7 +227,11 @@ export class ThreadAppender {
      */
     #appendTrackHeaderAtLevel(currentLevel) {
         const trackIsCollapsible = this.#entries.length > 0;
-        const style = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+        const style = buildGroupStyle({
+            shareHeaderLine: false,
+            collapsible: trackIsCollapsible ? 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ :
+                1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */,
+        });
         if (this.#headerNestingLevel !== null) {
             style.nestingLevel = this.#headerNestingLevel;
         }
@@ -265,7 +269,11 @@ export class ThreadAppender {
         const currentTrackCount = this.#compatibilityBuilder.getCurrentTrackCountForThreadType(threadType);
         if (currentTrackCount === 0) {
             const trackIsCollapsible = this.#entries.length > 0;
-            const headerStyle = buildGroupStyle({ shareHeaderLine: false, collapsible: trackIsCollapsible });
+            const headerStyle = buildGroupStyle({
+                shareHeaderLine: false,
+                collapsible: trackIsCollapsible ? 0 /* PerfUI.FlameChart.GroupCollapsibleState.ALWAYS */ :
+                    1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */,
+            });
             // Don't set any jslogcontext (first argument) because this is a shared
             // header group. Each child will have its context set.
             const headerGroup = buildTrackHeader(null, trackStartLevel, this.trackName(), headerStyle, /* selectable= */ false, this.#expanded);
@@ -273,7 +281,7 @@ export class ThreadAppender {
         }
         // Nesting is set to 1 because the track is appended inside the
         // header for all raster threads.
-        const titleStyle = buildGroupStyle({ padding: 2, nestingLevel: 1, collapsible: false });
+        const titleStyle = buildGroupStyle({ padding: 2, nestingLevel: 1, collapsible: 1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */ });
         const rasterizerTitle = this.threadType === "RASTERIZER" /* Trace.Handlers.Threads.ThreadType.RASTERIZER */ ?
             i18nString(UIStrings.rasterizerThreadS, { PH1: currentTrackCount + 1 }) :
             i18nString(UIStrings.threadPoolThreadS, { PH1: currentTrackCount + 1 });

@@ -7,7 +7,7 @@ export declare class ProfileNode {
     total: number;
     id: number;
     parent: ProfileNode | null;
-    children: ProfileNode[];
+    children: this[];
     functionName: string;
     depth: number;
     deoptReason: string | null;

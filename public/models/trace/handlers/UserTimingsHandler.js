@@ -22,6 +22,9 @@ let syntheticEvents = [];
 let measureTraceByTraceId = new Map();
 let performanceMeasureEvents = [];
 let performanceMarkEvents = [];
+// This is the array we populate in the finalize() call to pair up all the
+// begin & end events we find.
+let pairedPerformanceMeasures = [];
 let consoleTimings = [];
 let timestampEvents = [];
 export function reset() {
@@ -30,6 +33,7 @@ export function reset() {
     performanceMarkEvents = [];
     consoleTimings = [];
     timestampEvents = [];
+    pairedPerformanceMeasures = [];
     measureTraceByTraceId = new Map();
 }
 const resourceTimingNames = [
@@ -171,15 +175,69 @@ export async function finalize() {
     syntheticEvents = Helpers.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
     syntheticEvents = syntheticEvents.sort((a, b) => userTimingComparator(a, b, [...syntheticEvents]));
     timestampEvents = timestampEvents.sort((a, b) => userTimingComparator(a, b, [...timestampEvents]));
+    pairedPerformanceMeasures = pairPerformanceMeasureEvents(performanceMeasureEvents);
+    pairedPerformanceMeasures =
+        pairedPerformanceMeasures.sort((a, b) => userTimingComparator(a, b, [...pairedPerformanceMeasures]));
 }
 export function data() {
     return {
-        performanceMeasures: syntheticEvents.filter(e => e.cat === 'blink.user_timing'),
+        performanceMeasures: pairedPerformanceMeasures,
         consoleTimings: syntheticEvents.filter(e => e.cat === 'blink.console'),
-        // TODO(crbug/41484172): UserTimingsHandler.test.ts fails if this is not copied.
-        performanceMarks: [...performanceMarkEvents],
-        timestampEvents: [...timestampEvents],
-        measureTraceByTraceId: new Map(measureTraceByTraceId),
+        performanceMarks: performanceMarkEvents,
+        timestampEvents,
+        measureTraceByTraceId,
     };
+}
+function pairPerformanceMeasureEvents(events) {
+    const pairs = [];
+    // To pair up the events, we walk through all begin & end events in ASC order
+    // and treat it like a stack. However we cannot have just one stack, because
+    // we need to pair events up not just by timing but also by their ID, as
+    // Perfetto may reuse IDs in non-overlapping events. So we maintain stacks
+    // of begin events, based on their IDs. We then look to find the last begin
+    // event with the right ID every time we find an end event.
+    const beginEventsById = new Map();
+    // First, before we start, we need to process events in timestamp order.
+    Helpers.Trace.sortTraceEventsInPlace(events);
+    for (const event of events) {
+        const id = Helpers.Trace.getSyntheticId(event);
+        if (!id) {
+            // Drop events without an ID, we cannot pair them.
+            continue;
+        }
+        if (Types.Events.isPerformanceMeasureBegin(event)) {
+            const byId = beginEventsById.get(id) ?? [];
+            byId.push(event);
+            beginEventsById.set(id, byId);
+        }
+        else {
+            // Find matching begin event.
+            const beginEventsWithMatchingId = beginEventsById.get(id) ?? [];
+            const beginEvent = beginEventsWithMatchingId.pop();
+            if (!beginEvent) {
+                // We should always find the begin event, but if we don't, just drop
+                // the end event.
+                continue;
+            }
+            const syntheticEvent = Helpers.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
+                rawSourceEvent: beginEvent,
+                cat: event.cat,
+                ph: event.ph,
+                pid: event.pid,
+                tid: event.tid,
+                id,
+                // Both events have the same name, so it doesn't matter which we pick to
+                // use as the description
+                name: beginEvent.name,
+                dur: Types.Timing.Micro(event.ts - beginEvent.ts),
+                ts: beginEvent.ts,
+                args: {
+                    data: { beginEvent, endEvent: event },
+                },
+            });
+            pairs.push(syntheticEvent);
+        }
+    }
+    return pairs;
 }
 //# sourceMappingURL=UserTimingsHandler.js.map

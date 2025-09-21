@@ -29,7 +29,7 @@ export class RehydratingConnection {
     sessions = new Map();
     #onConnectionLost;
     #rehydratingWindow;
-    #onReceiveHostWindowPayloadBound = this.#onReceiveHostWindowPayload.bind(this);
+    #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
     constructor(onConnectionLost) {
         // If we're invoking this class, we're in the rehydrating pop-up window. Rename window for clarity.
         this.#onConnectionLost = onConnectionLost;
@@ -48,12 +48,12 @@ export class RehydratingConnection {
      * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
      * the trace event and all necessary data to power a rehydrated session.
      */
-    #onReceiveHostWindowPayload(event) {
+    onReceiveHostWindowPayload(event) {
         if (event.data.type === 'REHYDRATING_TRACE_FILE') {
             const traceJson = event.data.traceJson;
             let trace;
             try {
-                trace = JSON.parse(traceJson);
+                trace = new TraceObject(JSON.parse(traceJson));
             }
             catch {
                 this.#onConnectionLost(i18nString(UIStrings.errorLoadingLog));
@@ -96,10 +96,10 @@ export class RehydratingConnection {
                     },
                 },
             });
-            // Create new session associated to the target created and send
-            // Target.attachedToTarget to frontend.
             sessionId += 1;
-            this.sessions.set(sessionId, new RehydratingSession(sessionId, target, executionContexts, scripts, this));
+            const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
+            this.sessions.set(sessionId, session);
+            session.declareSessionAttachedToTarget();
         }
         await this.#onRehydrated();
         return true;
@@ -110,8 +110,7 @@ export class RehydratingConnection {
         }
         this.rehydratingConnectionState = 3 /* RehydratingConnectionState.REHYDRATED */;
         // Use revealer to load trace into performance panel
-        const trace = new TraceObject(this.trace.traceEvents, this.trace.metadata);
-        await Common.Revealer.reveal(trace);
+        await Common.Revealer.reveal(this.trace);
     }
     setOnMessage(onMessage) {
         this.onMessage = onMessage;
@@ -165,11 +164,7 @@ class RehydratingSessionBase {
         this.connection = connection;
     }
     sendMessageToFrontend(payload) {
-        requestAnimationFrame(() => {
-            if (this.connection) {
-                this.connection.postToFrontend(payload);
-            }
-        });
+        this.connection?.postToFrontend(payload);
     }
     handleFrontendMessageAsFakeCDPAgent(data) {
         // Send default response in default session.
@@ -190,7 +185,6 @@ export class RehydratingSession extends RehydratingSessionBase {
         this.target = target;
         this.executionContexts = executionContexts;
         this.scripts = scripts;
-        this.sessionAttachToTarget();
     }
     sendMessageToFrontend(payload, attachSessionId = true) {
         // Attach the session's Id to the message.
@@ -221,7 +215,7 @@ export class RehydratingSession extends RehydratingSessionBase {
                 break;
         }
     }
-    sessionAttachToTarget() {
+    declareSessionAttachedToTarget() {
         this.sendMessageToFrontend({
             method: 'Target.attachedToTarget',
             params: {

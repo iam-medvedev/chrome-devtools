@@ -2,6 +2,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import type * as Trace from '../../models/trace/trace.js';
 export declare class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
+    #private;
     private tileById;
     private paintProfilerModel;
     constructor(target: SDK.Target.Target | null);
@@ -9,7 +10,6 @@ export declare class TracingLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
     setTiles(tiles: TracingLayerTile[]): void;
     pictureForRasterTile(tileId: string): Promise<SDK.PaintProfiler.SnapshotWithRect | null>;
     private setPaints;
-    private innerSetLayers;
     private extractNodeIdsToResolve;
 }
 export declare class TracingFrameLayerTree {

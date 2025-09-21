@@ -33,6 +33,7 @@ __export(Trace_exports, {
   frameIDForEvent: () => frameIDForEvent,
   getNavigationForTraceEvent: () => getNavigationForTraceEvent,
   getStackTraceTopCallFrameInEventPayload: () => getStackTraceTopCallFrameInEventPayload,
+  getSyntheticId: () => getSyntheticId,
   getZeroIndexedLineAndColumnForEvent: () => getZeroIndexedLineAndColumnForEvent,
   getZeroIndexedStackTraceInEventPayload: () => getZeroIndexedStackTraceInEventPayload,
   isExtensionUrl: () => isExtensionUrl,

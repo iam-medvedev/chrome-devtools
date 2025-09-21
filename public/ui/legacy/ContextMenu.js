@@ -630,7 +630,7 @@ export class ContextMenu extends SubMenu {
             }
         }
         this.pendingTargets = [];
-        this.innerShow();
+        this.#show();
     }
     /**
      * Discards (closes) the soft context menu if it's currently shown.
@@ -658,7 +658,7 @@ export class ContextMenu extends SubMenu {
             }
         }
     }
-    innerShow() {
+    #show() {
         if (!this.eventTarget) {
             return;
         }

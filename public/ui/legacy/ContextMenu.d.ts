@@ -272,6 +272,7 @@ export interface ContextMenuOptions {
  * integration with registered context menu providers.
  */
 export declare class ContextMenu extends SubMenu {
+    #private;
     protected contextMenu: this;
     private pendingTargets;
     private readonly event;
@@ -335,7 +336,6 @@ export declare class ContextMenu extends SubMenu {
      */
     discard(): void;
     private registerLoggablesWithin;
-    private innerShow;
     /**
      * Sets the x-coordinate for the menu's position.
      * @param x The new x-coordinate.

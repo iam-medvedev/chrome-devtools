@@ -111,6 +111,9 @@ export class TraceProcessor extends EventTarget {
         if (this.#status !== "IDLE" /* Status.IDLE */) {
             throw new Error(`Trace processor can't start parsing when not idle. Current state: ${this.#status}`);
         }
+        if (typeof options.isCPUProfile === 'undefined' && options.metadata) {
+            options.isCPUProfile = options.metadata.dataOrigin === "CPUProfile" /* Types.File.DataOrigin.CPU_PROFILE */;
+        }
         options.logger?.start('total');
         try {
             this.#status = "PARSING" /* Status.PARSING */;
@@ -345,7 +348,8 @@ export class TraceProcessor extends EventTarget {
         }
         insightSet.model = newModel;
     }
-    #computeInsightSet(data, context, options) {
+    #computeInsightSet(data, context) {
+        const logger = context.options.logger;
         let id, urlString, navigation;
         if (context.navigation) {
             id = context.navigationId;
@@ -360,7 +364,7 @@ export class TraceProcessor extends EventTarget {
         for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {
             let model;
             try {
-                options.logger?.start(`insights:${name}`);
+                logger?.start(`insights:${name}`);
                 model = insight.generateInsight(data, context);
                 model.frameId = context.frameId;
                 const navId = context.navigation?.args.data?.navigationId;
@@ -376,7 +380,7 @@ export class TraceProcessor extends EventTarget {
                 model = err;
             }
             finally {
-                options.logger?.end(`insights:${name}`);
+                logger?.end(`insights:${name}`);
             }
             Object.assign(insightSetModel, { [name]: model });
         }
@@ -420,7 +424,7 @@ export class TraceProcessor extends EventTarget {
             this.#insights = new Map();
         }
         this.#insights.set(insightSet.id, insightSet);
-        this.sortInsightSet(insightSet, options.metadata ?? null);
+        this.sortInsightSet(insightSet, context.options.metadata ?? null);
     }
     /**
      * Run all the insights and set the result to `#insights`.
@@ -449,11 +453,12 @@ export class TraceProcessor extends EventTarget {
             Helpers.Timing.traceWindowFromMicroSeconds(data.Meta.traceBounds.min, navigations[0].ts) :
             data.Meta.traceBounds;
         const context = {
+            options,
             bounds,
             frameId: data.Meta.mainFrameId,
             // No navigation or lantern context applies to this initial/no-navigation period.
         };
-        this.#computeInsightSet(data, context, options);
+        this.#computeInsightSet(data, context);
     }
     /**
      * Computes insights for a specific navigation event.
@@ -497,13 +502,14 @@ export class TraceProcessor extends EventTarget {
             options.logger?.end('insights:createLanternContext');
         }
         const context = {
+            options,
             bounds,
             frameId,
             navigation,
             navigationId,
             lantern,
         };
-        this.#computeInsightSet(data, context, options);
+        this.#computeInsightSet(data, context);
     }
 }
 /**

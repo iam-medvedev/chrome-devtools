@@ -563,7 +563,7 @@ async function finalize4() {
 }
 function data4() {
   return {
-    worklets: new Map(createdSyntheticEvents)
+    worklets: createdSyntheticEvents
   };
 }
 
@@ -590,11 +590,14 @@ var viewportRect = null;
 var devicePixelRatio = null;
 var processNames = /* @__PURE__ */ new Map();
 var topLevelRendererIds = /* @__PURE__ */ new Set();
-var traceBounds = {
-  min: Types6.Timing.Micro(Number.POSITIVE_INFINITY),
-  max: Types6.Timing.Micro(Number.NEGATIVE_INFINITY),
-  range: Types6.Timing.Micro(Number.POSITIVE_INFINITY)
-};
+function makeNewTraceBounds() {
+  return {
+    min: Types6.Timing.Micro(Number.POSITIVE_INFINITY),
+    max: Types6.Timing.Micro(Number.NEGATIVE_INFINITY),
+    range: Types6.Timing.Micro(Number.POSITIVE_INFINITY)
+  };
+}
+var traceBounds = makeNewTraceBounds();
 var navigationsByFrameId = /* @__PURE__ */ new Map();
 var navigationsByNavigationId = /* @__PURE__ */ new Map();
 var finalDisplayUrlByNavigationId = /* @__PURE__ */ new Map();
@@ -629,9 +632,7 @@ function reset5() {
   threadsInProcess = /* @__PURE__ */ new Map();
   rendererProcessesByFrameId = /* @__PURE__ */ new Map();
   framesByProcessId = /* @__PURE__ */ new Map();
-  traceBounds.min = Types6.Timing.Micro(Number.POSITIVE_INFINITY);
-  traceBounds.max = Types6.Timing.Micro(Number.NEGATIVE_INFINITY);
-  traceBounds.range = Types6.Timing.Micro(Number.POSITIVE_INFINITY);
+  traceBounds = makeNewTraceBounds();
   traceStartedTimeFromTracingStartedEvent = Types6.Timing.Micro(-1);
   traceIsGeneric = true;
 }
@@ -828,7 +829,7 @@ async function finalize5() {
 }
 function data5() {
   return {
-    traceBounds: { ...traceBounds },
+    traceBounds,
     browserProcessId,
     browserThreadId,
     processNames,
@@ -1811,6 +1812,7 @@ var syntheticEvents = [];
 var measureTraceByTraceId = /* @__PURE__ */ new Map();
 var performanceMeasureEvents = [];
 var performanceMarkEvents = [];
+var pairedPerformanceMeasures = [];
 var consoleTimings = [];
 var timestampEvents = [];
 function reset11() {
@@ -1819,6 +1821,7 @@ function reset11() {
   performanceMarkEvents = [];
   consoleTimings = [];
   timestampEvents = [];
+  pairedPerformanceMeasures = [];
   measureTraceByTraceId = /* @__PURE__ */ new Map();
 }
 var resourceTimingNames = [
@@ -1929,16 +1932,57 @@ async function finalize11() {
   syntheticEvents = Helpers8.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
   syntheticEvents = syntheticEvents.sort((a, b) => userTimingComparator(a, b, [...syntheticEvents]));
   timestampEvents = timestampEvents.sort((a, b) => userTimingComparator(a, b, [...timestampEvents]));
+  pairedPerformanceMeasures = pairPerformanceMeasureEvents(performanceMeasureEvents);
+  pairedPerformanceMeasures = pairedPerformanceMeasures.sort((a, b) => userTimingComparator(a, b, [...pairedPerformanceMeasures]));
 }
 function data11() {
   return {
-    performanceMeasures: syntheticEvents.filter((e) => e.cat === "blink.user_timing"),
+    performanceMeasures: pairedPerformanceMeasures,
     consoleTimings: syntheticEvents.filter((e) => e.cat === "blink.console"),
-    // TODO(crbug/41484172): UserTimingsHandler.test.ts fails if this is not copied.
-    performanceMarks: [...performanceMarkEvents],
-    timestampEvents: [...timestampEvents],
-    measureTraceByTraceId: new Map(measureTraceByTraceId)
+    performanceMarks: performanceMarkEvents,
+    timestampEvents,
+    measureTraceByTraceId
   };
+}
+function pairPerformanceMeasureEvents(events) {
+  const pairs = [];
+  const beginEventsById = /* @__PURE__ */ new Map();
+  Helpers8.Trace.sortTraceEventsInPlace(events);
+  for (const event of events) {
+    const id = Helpers8.Trace.getSyntheticId(event);
+    if (!id) {
+      continue;
+    }
+    if (Types12.Events.isPerformanceMeasureBegin(event)) {
+      const byId = beginEventsById.get(id) ?? [];
+      byId.push(event);
+      beginEventsById.set(id, byId);
+    } else {
+      const beginEventsWithMatchingId = beginEventsById.get(id) ?? [];
+      const beginEvent = beginEventsWithMatchingId.pop();
+      if (!beginEvent) {
+        continue;
+      }
+      const syntheticEvent = Helpers8.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
+        rawSourceEvent: beginEvent,
+        cat: event.cat,
+        ph: event.ph,
+        pid: event.pid,
+        tid: event.tid,
+        id,
+        // Both events have the same name, so it doesn't matter which we pick to
+        // use as the description
+        name: beginEvent.name,
+        dur: Types12.Timing.Micro(event.ts - beginEvent.ts),
+        ts: beginEvent.ts,
+        args: {
+          data: { beginEvent, endEvent: event }
+        }
+      });
+      pairs.push(syntheticEvent);
+    }
+  }
+  return pairs;
 }
 
 // gen/front_end/models/trace/handlers/ExtensionTraceDataHandler.js
@@ -2317,8 +2361,8 @@ async function finalize14() {
 }
 function data14() {
   return {
-    frames: model ? Array.from(model.frames()) : [],
-    framesById: model ? { ...model.framesById() } : {}
+    frames: model?.frames() ?? [],
+    framesById: model?.framesById() ?? {}
   };
 }
 function deps7() {
@@ -2341,7 +2385,7 @@ var TimelineFrameModel = class {
   #activeProcessId = null;
   #activeThreadId = null;
   #layerTreeData;
-  constructor(allEvents2, rendererData, auctionWorkletsData, metaData, layerTreeData) {
+  constructor(allEvents, rendererData, auctionWorkletsData, metaData, layerTreeData) {
     const mainThreads = threadsInRenderer(rendererData, auctionWorkletsData).filter((thread) => {
       return thread.type === "MAIN_THREAD" && thread.processIsOnMainFrame;
     });
@@ -2353,7 +2397,7 @@ var TimelineFrameModel = class {
       };
     });
     this.#layerTreeData = layerTreeData;
-    this.#addTraceEvents(allEvents2, threadData, metaData.mainFrameId);
+    this.#addTraceEvents(allEvents, threadData, metaData.mainFrameId);
   }
   framesById() {
     return this.#frameById;
@@ -3890,15 +3934,14 @@ function data23() {
     prePaintEvents,
     layoutInvalidationEvents,
     scheduleStyleInvalidationEvents,
-    styleRecalcInvalidationEvents: [],
+    styleRecalcInvalidationEvents,
     renderFrameImplCreateChildFrameEvents,
     domLoadingEvents,
     layoutImageUnsizedEvents,
     remoteFonts,
     scoreRecords,
-    // TODO(crbug/41484172): change the type so no need to clone
-    backendNodeIds: [...backendNodeIds],
-    clustersByNavigationId: new Map(clustersByNavigationId),
+    backendNodeIds,
+    clustersByNavigationId,
     paintImageEvents: paintImageEvents2
   };
 }
@@ -4013,14 +4056,14 @@ function handleEvent26(event) {
     const key = `${isolate}.${scriptId}`;
     return Platform14.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: "", ts: 0 }));
   };
-  if (Types27.Events.isTargetRundownEvent(event) && event.args.data) {
+  if (Types27.Events.isRundownScriptCompiled(event) && event.args.data) {
     const { isolate, scriptId, frame } = event.args.data;
     const script = getOrMakeScript(isolate, scriptId);
     script.frame = frame;
     script.ts = event.ts;
     return;
   }
-  if (Types27.Events.isV8SourceRundownEvent(event)) {
+  if (Types27.Events.isRundownScript(event)) {
     const { isolate, scriptId, url, sourceUrl, sourceMapUrl, sourceMapUrlElided } = event.args.data;
     const script = getOrMakeScript(isolate, scriptId);
     script.url = url;
@@ -4034,13 +4077,13 @@ function handleEvent26(event) {
     }
     return;
   }
-  if (Types27.Events.isV8SourceRundownSourcesScriptCatchupEvent(event)) {
+  if (Types27.Events.isRundownScriptSource(event)) {
     const { isolate, scriptId, sourceText } = event.args.data;
     const script = getOrMakeScript(isolate, scriptId);
     script.content = sourceText;
     return;
   }
-  if (Types27.Events.isV8SourceRundownSourcesLargeScriptCatchupEvent(event)) {
+  if (Types27.Events.isRundownScriptSourceLarge(event)) {
     const { isolate, scriptId, sourceText } = event.args.data;
     const script = getOrMakeScript(isolate, scriptId);
     script.content = (script.content ?? "") + sourceText;
@@ -4299,7 +4342,6 @@ __export(UserInteractionsHandler_exports, {
 });
 import * as Helpers17 from "./../helpers/helpers.js";
 import * as Types29 from "./../types/types.js";
-var allEvents = [];
 var beginCommitCompositorFrameEvents = [];
 var parseMetaViewportEvents = [];
 var LONG_INTERACTION_THRESHOLD = Helpers17.Timing.milliToMicro(Types29.Timing.Milli(200));
@@ -4311,7 +4353,6 @@ var interactionEventsWithNoNesting = [];
 var eventTimingEndEventsById = /* @__PURE__ */ new Map();
 var eventTimingStartEventsForInteractions = [];
 function reset28() {
-  allEvents = [];
   beginCommitCompositorFrameEvents = [];
   parseMetaViewportEvents = [];
   interactionEvents = [];
@@ -4335,7 +4376,6 @@ function handleEvent28(event) {
   if (Types29.Events.isEventTimingEnd(event)) {
     eventTimingEndEventsById.set(event.id, event);
   }
-  allEvents.push(event);
   if (!event.args.data || !Types29.Events.isEventTimingStart(event)) {
     return;
   }
@@ -4472,7 +4512,6 @@ async function finalize28() {
 }
 function data28() {
   return {
-    allEvents,
     beginCommitCompositorFrameEvents,
     parseMetaViewportEvents,
     interactionEvents,

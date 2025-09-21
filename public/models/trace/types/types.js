@@ -164,7 +164,7 @@ __export(TraceEvents_exports, {
   isAnimationFrameAsyncEnd: () => isAnimationFrameAsyncEnd,
   isAnimationFrameAsyncStart: () => isAnimationFrameAsyncStart,
   isAnimationFramePresentation: () => isAnimationFramePresentation,
-  isAnyScriptCatchupEvent: () => isAnyScriptCatchupEvent,
+  isAnyScriptSourceEvent: () => isAnyScriptSourceEvent,
   isAuctionWorkletDoneWithProcess: () => isAuctionWorkletDoneWithProcess,
   isAuctionWorkletRunningInProcess: () => isAuctionWorkletRunningInProcess,
   isBegin: () => isBegin,
@@ -262,6 +262,10 @@ __export(TraceEvents_exports, {
   isResourceWillSendRequest: () => isResourceWillSendRequest,
   isRunPostTaskCallback: () => isRunPostTaskCallback,
   isRunTask: () => isRunTask,
+  isRundownScript: () => isRundownScript,
+  isRundownScriptCompiled: () => isRundownScriptCompiled,
+  isRundownScriptSource: () => isRundownScriptSource,
+  isRundownScriptSourceLarge: () => isRundownScriptSourceLarge,
   isSchedulePostMessage: () => isSchedulePostMessage,
   isSchedulePostTaskCallback: () => isSchedulePostTaskCallback,
   isScheduleStyleInvalidationTracking: () => isScheduleStyleInvalidationTracking,
@@ -282,7 +286,6 @@ __export(TraceEvents_exports, {
   isSyntheticNetworkRequest: () => isSyntheticNetworkRequest,
   isSyntheticUserTiming: () => isSyntheticUserTiming,
   isSyntheticWebSocketConnection: () => isSyntheticWebSocketConnection,
-  isTargetRundownEvent: () => isTargetRundownEvent,
   isThreadName: () => isThreadName,
   isTimerFire: () => isTimerFire,
   isTimerInstall: () => isTimerInstall,
@@ -293,9 +296,6 @@ __export(TraceEvents_exports, {
   isUserTiming: () => isUserTiming,
   isUserTimingMeasure: () => isUserTimingMeasure,
   isV8Compile: () => isV8Compile,
-  isV8SourceRundownEvent: () => isV8SourceRundownEvent,
-  isV8SourceRundownSourcesLargeScriptCatchupEvent: () => isV8SourceRundownSourcesLargeScriptCatchupEvent,
-  isV8SourceRundownSourcesScriptCatchupEvent: () => isV8SourceRundownSourcesScriptCatchupEvent,
   isWebSocketCreate: () => isWebSocketCreate,
   isWebSocketDestroy: () => isWebSocketDestroy,
   isWebSocketEvent: () => isWebSocketEvent,
@@ -319,7 +319,7 @@ function objectIsCallFrame(object) {
   return "functionName" in object && typeof object.functionName === "string" && ("scriptId" in object && (typeof object.scriptId === "string" || typeof object.scriptId === "number")) && ("columnNumber" in object && typeof object.columnNumber === "number") && ("lineNumber" in object && typeof object.lineNumber === "number") && ("url" in object && typeof object.url === "string");
 }
 function isRunTask(event) {
-  return event.name === "RunTask";
+  return event.name === "RunTask" && event.ph === "X";
 }
 function isAuctionWorkletRunningInProcess(event) {
   return event.name === "AuctionWorkletRunningInProcess";
@@ -509,7 +509,7 @@ function isEnd(event) {
   return event.ph === "E";
 }
 function isDispatch(event) {
-  return event.name === "EventDispatch";
+  return event.name === "EventDispatch" && event.ph === "X";
 }
 function isInstant(event) {
   return event.ph === "I";
@@ -518,13 +518,13 @@ function isRendererEvent(event) {
   return isInstant(event) || isComplete(event);
 }
 function isFireIdleCallback(event) {
-  return event.name === "FireIdleCallback";
+  return event.name === "FireIdleCallback" && event.ph === "X";
 }
 function isSchedulePostMessage(event) {
   return event.name === "SchedulePostMessage";
 }
 function isHandlePostMessage(event) {
-  return event.name === "HandlePostMessage";
+  return event.name === "HandlePostMessage" && event.ph === "X";
 }
 function isUpdateCounters(event) {
   return event.name === "UpdateCounters";
@@ -606,7 +606,7 @@ function isProfile(event) {
   return event.name === "Profile";
 }
 function isSyntheticCpuProfile(event) {
-  return event.name === "CpuProfile";
+  return event.name === "CpuProfile" && event.ph === "X";
 }
 function isProfileChunk(event) {
   return event.name === "ProfileChunk";
@@ -651,7 +651,7 @@ function isNavigationStart(event) {
   return event.name === "navigationStart" && event.args?.data?.documentLoaderURL !== "";
 }
 function isDidCommitSameDocumentNavigation(event) {
-  return event.name === "RenderFrameHostImpl::DidCommitSameDocumentNavigation";
+  return event.name === "RenderFrameHostImpl::DidCommitSameDocumentNavigation" && event.ph === "X";
 }
 function isMainFrameViewport(event) {
   return event.name === "PaintTimingVisualizer::Viewport";
@@ -722,10 +722,10 @@ function isPaint(event) {
   return event.name === "Paint";
 }
 function isPaintImage(event) {
-  return event.name === "PaintImage";
+  return event.name === "PaintImage" && event.ph === "X";
 }
 function isScrollLayer(event) {
-  return event.name === "ScrollLayer";
+  return event.name === "ScrollLayer" && event.ph === "X";
 }
 function isSetLayerId(event) {
   return event.name === "SetLayerTreeId";
@@ -740,13 +740,13 @@ function isLayerTreeHostImplSnapshot(event) {
   return event.name === "cc::LayerTreeHostImpl";
 }
 function isFireAnimationFrame(event) {
-  return event.name === "FireAnimationFrame";
+  return event.name === "FireAnimationFrame" && event.ph === "X";
 }
 function isTimerInstall(event) {
   return event.name === "TimerInstall";
 }
 function isTimerFire(event) {
-  return event.name === "TimerFire";
+  return event.name === "TimerFire" && event.ph === "X";
 }
 function isRequestIdleCallback(event) {
   return event.name === "RequestIdleCallback";
@@ -776,19 +776,19 @@ function isWebSocketEvent(event) {
   return isWebSocketTraceEvent(event) || isSyntheticWebSocketConnection(event);
 }
 function isV8Compile(event) {
-  return event.name === "v8.compile";
+  return event.name === "v8.compile" && event.ph === "X";
 }
 function isFunctionCall(event) {
-  return event.name === "FunctionCall";
+  return event.name === "FunctionCall" && event.ph === "X";
 }
 function isSchedulePostTaskCallback(event) {
   return event.name === "SchedulePostTaskCallback";
 }
 function isRunPostTaskCallback(event) {
-  return event.name === "RunPostTaskCallback";
+  return event.name === "RunPostTaskCallback" && event.ph === "X";
 }
 function isAbortPostTaskCallback(event) {
-  return event.name === "AbortPostTaskCallback";
+  return event.name === "AbortPostTaskCallback" && event.ph === "X";
 }
 function isJSInvocationEvent(event) {
   switch (event.name) {
@@ -817,7 +817,7 @@ function isFlowPhaseEvent(event) {
   return event.ph === "s" || event.ph === "t" || event.ph === "f";
 }
 function isParseAuthorStyleSheetEvent(event) {
-  return event.name === "ParseAuthorStyleSheet";
+  return event.name === "ParseAuthorStyleSheet" && event.ph === "X";
 }
 var Categories = {
   Console: "blink.console",
@@ -827,19 +827,19 @@ var Categories = {
 function isLegacyTimelineFrame(data) {
   return "idle" in data && typeof data.idle === "boolean";
 }
-function isTargetRundownEvent(event) {
-  return event.cat === "disabled-by-default-devtools.target-rundown" && event.name === "ScriptCompiled";
+function isRundownScriptCompiled(event) {
+  return event.cat === "disabled-by-default-devtools.target-rundown";
 }
-function isV8SourceRundownEvent(event) {
+function isRundownScript(event) {
   return event.cat === "disabled-by-default-devtools.v8-source-rundown" && event.name === "ScriptCatchup";
 }
-function isV8SourceRundownSourcesScriptCatchupEvent(event) {
+function isRundownScriptSource(event) {
   return event.cat === "disabled-by-default-devtools.v8-source-rundown-sources" && event.name === "ScriptCatchup";
 }
-function isV8SourceRundownSourcesLargeScriptCatchupEvent(event) {
+function isRundownScriptSourceLarge(event) {
   return event.cat === "disabled-by-default-devtools.v8-source-rundown-sources" && event.name === "LargeScriptCatchup";
 }
-function isAnyScriptCatchupEvent(event) {
+function isAnyScriptSourceEvent(event) {
   return event.cat === "disabled-by-default-devtools.v8-source-rundown-sources";
 }
 export {

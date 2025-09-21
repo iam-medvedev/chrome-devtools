@@ -2,23 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../../ui/components/icon_button/icon_button.js';
+import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
-import * as TimelineUtils from '../../../panels/timeline/utils/utils.js';
+import * as Tracing from '../../../services/tracing/tracing.js';
 import * as Trace from '../../trace/trace.js';
 import { PerformanceInsightFormatter, TraceEventFormatter, } from '../data_formatters/PerformanceInsightFormatter.js';
 import { PerformanceTraceFormatter } from '../data_formatters/PerformanceTraceFormatter.js';
 import { debugLog } from '../debug.js';
+import { AICallTree } from '../performance/AICallTree.js';
+import { AgentFocus } from '../performance/AIContext.js';
 import { AiAgent, ConversationContext, } from './AiAgent.js';
 const UIStringsNotTranslated = {
     /**
      *@description Shown when the agent is investigating a trace
      */
     analyzingTrace: 'Analyzing trace',
-    analyzingCallTree: 'Analyzing call tree',
     /**
      * @description Shown when the agent is investigating network activity
      */
@@ -60,6 +62,7 @@ The 3 main performance metrics are:
 
 Trace events referenced in the information given to you will be marked with an \`eventKey\`. For example: \`LCP element: <img src="..."> (eventKey: r-123, ts: 123456)\`
 You can use this key with \`getEventByKey\` to get more information about that trace event. For example: \`getEventByKey('r-123')\`
+You can also use this key with \`selectEventByKey\` to show the user a specific event
 
 ## Step-by-step instructions for debugging performance issues
 
@@ -136,15 +139,16 @@ var ScorePriority;
 })(ScorePriority || (ScorePriority = {}));
 export class PerformanceTraceContext extends ConversationContext {
     static full(parsedTrace) {
-        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.full(parsedTrace));
+        return new PerformanceTraceContext(AgentFocus.full(parsedTrace));
     }
     static fromInsight(parsedTrace, insight) {
-        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromInsight(parsedTrace, insight));
+        return new PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight));
     }
     static fromCallTree(callTree) {
-        return new PerformanceTraceContext(TimelineUtils.AIContext.AgentFocus.fromCallTree(callTree));
+        return new PerformanceTraceContext(AgentFocus.fromCallTree(callTree));
     }
     #focus;
+    external = false;
     constructor(focus) {
         super();
         this.#focus = focus;
@@ -162,18 +166,50 @@ export class PerformanceTraceContext extends ConversationContext {
         if (!url) {
             url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
         }
-        return `Trace: ${url.hostname}`;
+        const parts = [`Trace: ${url.hostname}`];
+        if (focus.insight) {
+            parts.push(focus.insight.title);
+        }
+        if (focus.callTree) {
+            const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
+            parts.push(Trace.Name.forEntry(node.event));
+        }
+        return parts.join(' – ');
     }
     /**
      * Presents the default suggestions that are shown when the user first clicks
      * "Ask AI".
      */
     async getSuggestions() {
-        const focus = this.#focus.data;
-        if (focus.type !== 'insight') {
-            return;
+        const data = this.#focus.data;
+        if (data.callTree) {
+            return [
+                { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
+                { title: 'Where is time being spent?', jslogContext: 'performance-default' },
+                { title: 'How can I optimize this?', jslogContext: 'performance-default' },
+            ];
         }
-        return new PerformanceInsightFormatter(focus.parsedTrace, focus.insight).getSuggestions();
+        if (data.insight) {
+            return new PerformanceInsightFormatter(data.parsedTrace, data.insight).getSuggestions();
+        }
+        const suggestions = [{ title: 'What performance issues exist with my page?', jslogContext: 'performance-default' }];
+        if (data.insightSet) {
+            const lcp = data.insightSet ? Trace.Insights.Common.getLCP(data.insightSet) : null;
+            const cls = data.insightSet ? Trace.Insights.Common.getCLS(data.insightSet) : null;
+            const inp = data.insightSet ? Trace.Insights.Common.getINP(data.insightSet) : null;
+            const ModelHandlers = Trace.Handlers.ModelHandlers;
+            const GOOD = "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */;
+            if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
+                suggestions.push({ title: 'How can I improve LCP?', jslogContext: 'performance-default' });
+            }
+            if (inp && ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(inp.value) !== GOOD) {
+                suggestions.push({ title: 'How can I improve INP?', jslogContext: 'performance-default' });
+            }
+            if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
+                suggestions.push({ title: 'How can I improve CLS?', jslogContext: 'performance-default' });
+            }
+        }
+        return suggestions;
     }
 }
 // 16k Tokens * ~4 char per token.
@@ -183,16 +219,10 @@ const MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
  * instance for a new conversation.
  */
 export class PerformanceAgent extends AiAgent {
-    // TODO: would make more sense on AgentOptions
-    #conversationType;
     #formatter = null;
     #lastInsightForEnhancedQuery;
     #eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
-    #lastFocusHandledForContextDetails = null;
-    constructor(opts, conversationType) {
-        super(opts);
-        this.#conversationType = conversationType;
-    }
+    #hasShownAnalyzeTraceContext = false;
     /**
      * Cache of all function calls made by the agent. This allows us to include (as a
      * fact) every function call to conversation requests, allowing the AI to access
@@ -232,7 +262,7 @@ export class PerformanceAgent extends AiAgent {
         };
     }
     getConversationType() {
-        return this.#conversationType;
+        return "drjones-performance-full" /* ConversationType.PERFORMANCE */;
     }
     #lookupEvent(key) {
         const parsedTrace = this.context?.getItem().data.parsedTrace;
@@ -253,38 +283,20 @@ export class PerformanceAgent extends AiAgent {
         if (!context) {
             return;
         }
-        const focus = context.getItem();
-        if (this.#lastFocusHandledForContextDetails === focus) {
+        if (this.#hasShownAnalyzeTraceContext) {
             return;
         }
-        this.#lastFocusHandledForContextDetails = focus;
-        if (focus.data.type === 'full' || focus.data.type === 'insight') {
-            yield {
-                type: "context" /* ResponseType.CONTEXT */,
-                title: lockedString(UIStringsNotTranslated.analyzingTrace),
-                details: [
-                    {
-                        title: 'Trace',
-                        text: this.#formatter?.formatTraceSummary() ?? '',
-                    },
-                ],
-            };
-        }
-        else if (focus.data.type === 'call-tree') {
-            yield {
-                type: "context" /* ResponseType.CONTEXT */,
-                title: lockedString(UIStringsNotTranslated.analyzingCallTree),
-                details: [
-                    {
-                        title: 'Selected call tree',
-                        text: focus.data.callTree.serialize(),
-                    },
-                ],
-            };
-        }
-        else {
-            Platform.assertNever(focus.data, 'Unknown agent focus');
-        }
+        yield {
+            type: "context" /* ResponseType.CONTEXT */,
+            title: lockedString(UIStringsNotTranslated.analyzingTrace),
+            details: [
+                {
+                    title: 'Trace',
+                    text: this.#formatter?.formatTraceSummary() ?? '',
+                },
+            ],
+        };
+        this.#hasShownAnalyzeTraceContext = true;
     }
     #callTreeContextSet = new WeakSet();
     #isFunctionResponseTooLarge(response) {
@@ -314,10 +326,8 @@ export class PerformanceAgent extends AiAgent {
         this.clearDeclaredFunctions();
         this.#declareFunctions(context);
         const focus = context.getItem();
-        if (focus.data.type === 'full') {
-            return query;
-        }
-        if (focus.data.type === 'call-tree') {
+        const selected = [];
+        if (focus.data.callTree) {
             // If this is a followup chat about the same call tree, don't include the call tree serialization again.
             // We don't need to repeat it and we'd rather have more the context window space.
             let contextString = '';
@@ -325,15 +335,11 @@ export class PerformanceAgent extends AiAgent {
                 contextString = focus.data.callTree.serialize();
                 this.#callTreeContextSet.add(focus.data.callTree);
             }
-            if (!contextString) {
-                return query;
+            if (contextString) {
+                selected.push(`User selected the following call tree:\n\n${contextString}\n\n`);
             }
-            let enhancedQuery = '';
-            enhancedQuery += `User selected the following call tree:\n\n${contextString}\n\n`;
-            enhancedQuery += `# User query\n\n${query}`;
-            return enhancedQuery;
         }
-        if (focus.data.type === 'insight') {
+        if (focus.data.insight) {
             // We only need to add Insight info to a prompt when the context changes. For example:
             // User clicks Insight A. We need to send info on Insight A with the prompt.
             // User asks follow up question. We do not need to resend Insight A with the prompt.
@@ -341,15 +347,15 @@ export class PerformanceAgent extends AiAgent {
             // User clicks Insight A. We should resend the Insight info with the prompt.
             const includeInsightInfo = focus.data.insight !== this.#lastInsightForEnhancedQuery;
             this.#lastInsightForEnhancedQuery = focus.data.insight;
-            if (!includeInsightInfo) {
-                return query;
+            if (includeInsightInfo) {
+                selected.push(`User selected the ${focus.data.insight.insightKey} insight.\n\n`);
             }
-            let enhancedQuery = '';
-            enhancedQuery += `User selected the ${focus.data.insight.insightKey} insight.\n\n`;
-            enhancedQuery += `# User query\n\n${query}`;
-            return enhancedQuery;
         }
-        Platform.assertNever(focus.data, 'Unknown agent focus');
+        if (!selected.length) {
+            return query;
+        }
+        selected.push(`# User query\n\n${query}`);
+        return selected.join('');
     }
     async *run(initialQuery, options) {
         const focus = options.selected?.getItem();
@@ -648,14 +654,14 @@ export class PerformanceAgent extends AiAgent {
                 if (!event) {
                     return { error: 'Invalid eventKey' };
                 }
-                const tree = TimelineUtils.AICallTree.AICallTree.fromEvent(event, parsedTrace);
+                const tree = AICallTree.fromEvent(event, parsedTrace);
                 const callTree = tree ? this.#formatter.formatCallTree(tree) : 'No call tree found';
                 const key = `getDetailedCallTree(${args.eventKey})`;
                 this.#cacheFunctionResult(focus, key, callTree);
                 return { result: { callTree } };
             },
         });
-        const isFresh = TimelineUtils.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
+        const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace);
         const hasScriptContents = parsedTrace.metadata.enhancedTraceVersion && parsedTrace.data.Scripts.scripts.some(s => s.content);
         if (isFresh || hasScriptContents) {
             this.declareFunction('getResourceContent', {
@@ -691,6 +697,36 @@ export class PerformanceAgent extends AiAgent {
                     const key = `getResourceContent(${args.url})`;
                     this.#cacheFunctionResult(focus, key, content);
                     return { result: { content } };
+                },
+            });
+        }
+        if (!context.external) {
+            this.declareFunction('selectEventByKey', {
+                description: 'Selects the event in the flamechart for the user. If the user asks to show them something, it\'s likely a good idea to call this function.',
+                parameters: {
+                    type: 6 /* Host.AidaClient.ParametersTypes.OBJECT */,
+                    description: '',
+                    nullable: false,
+                    properties: {
+                        eventKey: {
+                            type: 1 /* Host.AidaClient.ParametersTypes.STRING */,
+                            description: 'The key for the event.',
+                            nullable: false,
+                        }
+                    },
+                },
+                displayInfoFromArgs: params => {
+                    return { title: lockedString('Selecting event…'), action: `selectEventByKey('${params.eventKey}')` };
+                },
+                handler: async (params) => {
+                    debugLog('Function call: selectEventByKey', params);
+                    const event = this.#lookupEvent(params.eventKey);
+                    if (!event) {
+                        return { error: 'Invalid eventKey' };
+                    }
+                    const revealable = new SDK.TraceObject.RevealableEvent(event);
+                    await Common.Revealer.reveal(revealable);
+                    return { result: { success: true } };
                 },
             });
         }

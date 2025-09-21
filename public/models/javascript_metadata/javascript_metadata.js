@@ -6092,7 +6092,7 @@ var NativeFunctions = [
   },
   {
     name: "addAnimation",
-    signatures: [["animation"]]
+    signatures: [["animation", "action", "behavior"]]
   },
   {
     name: "removeAnimation",
@@ -6767,6 +6767,10 @@ var NativeFunctions = [
   },
   {
     name: "DragEvent",
+    signatures: [["type", "?eventInitDict"]]
+  },
+  {
+    name: "EmailVerifiedEvent",
     signatures: [["type", "?eventInitDict"]]
   },
   {
@@ -7609,7 +7613,7 @@ var NativeFunctions = [
     signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
   },
   {
-    name: "drawHTML",
+    name: "drawElementImage",
     signatures: [["element", "x", "y", "?dwidth", "?dheight"]]
   },
   {
@@ -8425,10 +8429,6 @@ var NativeFunctions = [
     signatures: [["worker", "?options", "?transfer"]]
   },
   {
-    name: "sendRtp",
-    signatures: [["packet", "options"]]
-  },
-  {
     name: "setHeaderExtensionsToNegotiate",
     signatures: [["extensions"]]
   },
@@ -8474,7 +8474,7 @@ var NativeFunctions = [
   },
   {
     name: "submitPrintJob",
-    signatures: [["job_name", "document", "attributes"]]
+    signatures: [["job_name", "document_data", "attributes"]]
   },
   {
     name: "PushEvent",
@@ -8895,7 +8895,7 @@ var NativeFunctions = [
     signatures: [["provokeMode"]]
   },
   {
-    name: "texHTML2D",
+    name: "texElementImage2D",
     signatures: [["target", "level", "internalformat", "format", "type", "element"]]
   },
   {

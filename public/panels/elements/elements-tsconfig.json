@@ -153,6 +153,9 @@
       "path": "../../ui/components/highlighting/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/icon_button/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/components/text_editor/bundle-tsconfig.json"
     },
     {

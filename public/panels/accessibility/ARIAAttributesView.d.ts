@@ -1,36 +1,20 @@
 import * as SDK from '../../core/sdk/sdk.js';
-import * as UI from '../../ui/legacy/legacy.js';
 import { AccessibilitySubPane } from './AccessibilitySubPane.js';
+interface ViewInput {
+    propertyCompletions: Map<SDK.DOMModel.Attribute, string[]>;
+    onStartEditing: (attribute: SDK.DOMModel.Attribute) => void;
+    onCommitEditing: (attribute: SDK.DOMModel.Attribute, result: string) => void;
+    onCancelEditing: (attribute: SDK.DOMModel.Attribute) => void;
+    attributeBeingEdited: SDK.DOMModel.Attribute | null;
+    attributes: SDK.DOMModel.Attribute[];
+}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class ARIAAttributesPane extends AccessibilitySubPane {
-    private readonly noPropertiesInfo;
-    private readonly treeOutline;
-    constructor();
+    #private;
+    constructor(view?: View);
     setNode(node: SDK.DOMModel.DOMNode | null): void;
-    getTreeOutlineForTesting(): Readonly<UI.TreeOutline.TreeOutline> | undefined;
+    performUpdate(): void;
     private isARIAAttribute;
 }
-export declare class ARIAAttributesTreeElement extends UI.TreeOutline.TreeElement {
-    private readonly parentPane;
-    private readonly attribute;
-    private nameElement?;
-    private valueElement?;
-    private prompt?;
-    constructor(parentPane: ARIAAttributesPane, attribute: SDK.DOMModel.Attribute, _target: SDK.Target.Target);
-    static createARIAValueElement(value: string): Element;
-    onattach(): void;
-    getPromptForTesting(): Readonly<ARIAAttributePrompt> | undefined;
-    private populateListItem;
-    appendNameElement(name: string): void;
-    appendAttributeValueElement(value: string): void;
-    private mouseClick;
-    private startEditing;
-    private removePrompt;
-    private editingCommitted;
-    private editingCancelled;
-    private editingValueKeyDown;
-}
-export declare class ARIAAttributePrompt extends UI.TextPrompt.TextPrompt {
-    private readonly ariaCompletions;
-    constructor(ariaCompletions: string[]);
-    private buildPropertyCompletions;
-}
+export {};

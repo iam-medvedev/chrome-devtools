@@ -146,11 +146,11 @@ export class SourcesSearchScope {
         }
         const files = this.searchResultCandidates;
         if (!files.length) {
-            progress.done();
+            progress.done = true;
             callback();
             return;
         }
-        progress.setTotalWork(files.length);
+        progress.totalWork = files.length;
         let fileIndex = 0;
         const maxFileContentRequests = 20;
         let callbacksLeft = 0;
@@ -170,7 +170,7 @@ export class SourcesSearchScope {
         function scheduleSearchInNextFileOrFinish() {
             if (fileIndex >= files.length) {
                 if (!callbacksLeft) {
-                    progress.done();
+                    progress.done = true;
                     callback();
                     return;
                 }
@@ -181,7 +181,7 @@ export class SourcesSearchScope {
             window.setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
         }
         function contentLoaded(uiSourceCode, content) {
-            progress.incrementWorked(1);
+            ++progress.worked;
             let matches = [];
             const searchConfig = this.searchConfig;
             const queries = searchConfig.queries();

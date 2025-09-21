@@ -406,20 +406,18 @@ export class InspectorView extends VBox {
         return this.drawerSplitWidget.isVertical();
     }
     keyDown(event) {
-        const keyboardEvent = event;
-        if (!KeyboardShortcut.eventHasCtrlEquivalentKey(keyboardEvent) || keyboardEvent.altKey || keyboardEvent.shiftKey) {
+        if (!KeyboardShortcut.eventHasCtrlEquivalentKey(event) || event.altKey || event.shiftKey) {
             return;
         }
         // Ctrl/Cmd + 1-9 should show corresponding panel.
         const panelShortcutEnabled = Common.Settings.moduleSetting('shortcut-panel-switch').get();
         if (panelShortcutEnabled) {
             let panelIndex = -1;
-            if (keyboardEvent.keyCode > 0x30 && keyboardEvent.keyCode < 0x3A) {
-                panelIndex = keyboardEvent.keyCode - 0x31;
+            if (event.keyCode > 0x30 && event.keyCode < 0x3A) {
+                panelIndex = event.keyCode - 0x31;
             }
-            else if (keyboardEvent.keyCode > 0x60 && keyboardEvent.keyCode < 0x6A &&
-                keyboardEvent.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
-                panelIndex = keyboardEvent.keyCode - 0x61;
+            else if (event.keyCode > 0x60 && event.keyCode < 0x6A && event.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD) {
+                panelIndex = event.keyCode - 0x61;
             }
             if (panelIndex !== -1) {
                 const panelName = this.tabbedPane.tabIds()[panelIndex];
