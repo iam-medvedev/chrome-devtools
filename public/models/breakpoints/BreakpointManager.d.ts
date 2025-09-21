@@ -37,7 +37,6 @@ export declare class BreakpointManager extends Common.ObjectWrapper.ObjectWrappe
     private projectRemoved;
     private removeUISourceCode;
     setBreakpoint(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber: number | undefined, condition: UserCondition, enabled: boolean, isLogpoint: boolean, origin: BreakpointOrigin): Promise<Breakpoint | undefined>;
-    private innerSetBreakpoint;
     findBreakpoint(uiLocation: Workspace.UISourceCode.UILocation): BreakpointLocation | null;
     addHomeUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode, breakpoint: Breakpoint): void;
     removeHomeUISourceCode(uiSourceCode: Workspace.UISourceCode.UISourceCode, breakpoint: Breakpoint): void;

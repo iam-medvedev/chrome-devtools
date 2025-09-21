@@ -21,11 +21,14 @@ let viewportRect = null;
 let devicePixelRatio = null;
 let processNames = new Map();
 let topLevelRendererIds = new Set();
-const traceBounds = {
-    min: Types.Timing.Micro(Number.POSITIVE_INFINITY),
-    max: Types.Timing.Micro(Number.NEGATIVE_INFINITY),
-    range: Types.Timing.Micro(Number.POSITIVE_INFINITY),
-};
+function makeNewTraceBounds() {
+    return {
+        min: Types.Timing.Micro(Number.POSITIVE_INFINITY),
+        max: Types.Timing.Micro(Number.NEGATIVE_INFINITY),
+        range: Types.Timing.Micro(Number.POSITIVE_INFINITY),
+    };
+}
+let traceBounds = makeNewTraceBounds();
 /**
  * These represent the user navigating. Values such as First Contentful Paint,
  * etc, are relative to the navigation.
@@ -84,9 +87,7 @@ export function reset() {
     threadsInProcess = new Map();
     rendererProcessesByFrameId = new Map();
     framesByProcessId = new Map();
-    traceBounds.min = Types.Timing.Micro(Number.POSITIVE_INFINITY);
-    traceBounds.max = Types.Timing.Micro(Number.NEGATIVE_INFINITY);
-    traceBounds.range = Types.Timing.Micro(Number.POSITIVE_INFINITY);
+    traceBounds = makeNewTraceBounds();
     traceStartedTimeFromTracingStartedEvent = Types.Timing.Micro(-1);
     traceIsGeneric = true;
 }
@@ -377,7 +378,7 @@ export async function finalize() {
 }
 export function data() {
     return {
-        traceBounds: { ...traceBounds },
+        traceBounds,
         browserProcessId,
         browserThreadId,
         processNames,

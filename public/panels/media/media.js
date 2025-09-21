@@ -363,7 +363,7 @@ function getGroupDefaultTextColor() {
 var DefaultStyle = () => ({
   height: 20,
   padding: 2,
-  collapsible: false,
+  collapsible: 1,
   font: defaultFont,
   color: getGroupDefaultTextColor(),
   backgroundColor: "rgba(100 0 0 / 10%)",

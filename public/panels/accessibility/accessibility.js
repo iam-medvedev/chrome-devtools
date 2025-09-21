@@ -914,6 +914,7 @@ var accessibilityProperties_css_default = `/*
  * found in the LICENSE file.
  */
 
+@scope to (devtools-widget > *) {
 .ax-name {
   color: var(--sys-color-token-attribute);
   flex-shrink: 0;
@@ -948,6 +949,7 @@ span.ax-internal-role {
   overflow-x: hidden;
   white-space: normal;
 }
+}
 
 /*# sourceURL=${import.meta.resolve("./accessibilityProperties.css")} */`;
 
@@ -968,10 +970,12 @@ var AccessibilitySubPane = class extends UI.View.SimpleView {
   setNode(node) {
     this.nodeInternal = node;
   }
-  createInfo(textContent, className) {
-    const info = this.element.createChild("div", className || "gray-info-message");
-    info.classList.add("info-message-overflow");
-    info.textContent = textContent;
+  createInfo(textContent, ...classNames) {
+    const info = new UI.EmptyWidget.EmptyWidget(textContent);
+    if (classNames.length === 0) {
+      classNames.push("gray-info-message");
+    }
+    info.element.classList.add(...classNames, "info-message-overflow");
     return info;
   }
   createTreeOutline() {
@@ -1105,7 +1109,7 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     this.axNode = null;
     this.contentElement.classList.add("ax-subpane");
     this.noNodeInfo = this.createInfo(i18nString(UIStrings2.noAccessibilityNode));
-    this.ignoredInfo = this.createInfo(i18nString(UIStrings2.accessibilityNodeNotExposed), "ax-ignored-info hidden");
+    this.ignoredInfo = this.createInfo(i18nString(UIStrings2.accessibilityNodeNotExposed), "ax-ignored-info", "hidden");
     this.treeOutline = this.createTreeOutline();
     this.ignoredReasonsTree = this.createTreeOutline();
     this.element.classList.add("accessibility-computed");
@@ -1122,9 +1126,9 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
     ignoredReasons.removeChildren();
     if (!axNode) {
       treeOutline.element.classList.add("hidden");
-      this.ignoredInfo.classList.add("hidden");
+      this.ignoredInfo.element.classList.add("hidden");
       ignoredReasons.element.classList.add("hidden");
-      this.noNodeInfo.classList.remove("hidden");
+      this.noNodeInfo.element.classList.remove("hidden");
       this.element.classList.add("ax-ignored-node-pane");
       return;
     }
@@ -1132,10 +1136,10 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
       let addIgnoredReason = function(property) {
         ignoredReasons.appendChild(new AXNodeIgnoredReasonTreeElement(property, axNode));
       };
-      this.noNodeInfo.classList.add("hidden");
+      this.noNodeInfo.element.classList.add("hidden");
       treeOutline.element.classList.add("hidden");
       this.element.classList.add("ax-ignored-node-pane");
-      this.ignoredInfo.classList.remove("hidden");
+      this.ignoredInfo.element.classList.remove("hidden");
       ignoredReasons.element.classList.remove("hidden");
       const ignoredReasonsArray = axNode.ignoredReasons();
       for (const reason of ignoredReasonsArray) {
@@ -1147,9 +1151,9 @@ var AXNodeSubPane = class extends AccessibilitySubPane {
       return;
     }
     this.element.classList.remove("ax-ignored-node-pane");
-    this.ignoredInfo.classList.add("hidden");
+    this.ignoredInfo.element.classList.add("hidden");
     ignoredReasons.element.classList.add("hidden");
-    this.noNodeInfo.classList.add("hidden");
+    this.noNodeInfo.element.classList.add("hidden");
     treeOutline.element.classList.remove("hidden");
     function addProperty(property) {
       treeOutline.appendChild(new AXNodePropertyTreePropertyElement(property, axNode));
@@ -1585,14 +1589,14 @@ import * as UI5 from "./../../ui/legacy/legacy.js";
 // gen/front_end/panels/accessibility/ARIAAttributesView.js
 var ARIAAttributesView_exports = {};
 __export(ARIAAttributesView_exports, {
-  ARIAAttributePrompt: () => ARIAAttributePrompt,
   ARIAAttributesPane: () => ARIAAttributesPane,
-  ARIAAttributesTreeElement: () => ARIAAttributesTreeElement
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/accessibility/ARIAMetadata.js
@@ -3181,174 +3185,107 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/accessibility/ARIAAttributesView.ts", UIStrings3);
 var i18nString2 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var { render, html } = Lit;
+var DEFAULT_VIEW = (input, output, target) => {
+  const MAX_CONTENT_LENGTH = 1e4;
+  const onStartEditing = (attribute, e) => {
+    e.consume(true);
+    input.onStartEditing(attribute);
+  };
+  const propertyCompletions = (attribute) => {
+    const values = input.propertyCompletions.get(attribute);
+    if (!values?.length) {
+      return Lit.nothing;
+    }
+    return html`<datalist id=completions>
+      ${values.map((value) => html`<option>${value}</option>`)}
+    </datalist>`;
+  };
+  render(
+    // clang-format off
+    input.attributes.length === 0 ? html`
+          <style>${accessibilityProperties_css_default}</style>
+          <devtools-widget
+            .widgetConfig=${UI3.Widget.widgetConfig(UI3.EmptyWidget.EmptyWidget, { text: i18nString2(UIStrings3.noAriaAttributes) })}
+            class="gray-info-message info-message-overflow"></devtools-widget>` : html`<devtools-tree
+           hide-overflow
+           .template=${html`
+             <ul role="tree">
+              ${input.attributes?.map((attribute) => html`
+                <li role="treeitem">
+                  <style>${accessibilityProperties_css_default}</style>
+                  <span class="ax-name monospace" @mousedown=${onStartEditing.bind(null, attribute)}>
+                    ${attribute.name}
+                  </span>
+                  <span class="separator" @mousedown=${onStartEditing.bind(null, attribute)}>${":\xA0"}</span>
+                  <devtools-prompt
+                    completions=completions
+                    class="monospace"
+                    @mousedown=${onStartEditing.bind(null, attribute)}
+                    .completionTimeout=${0}
+                    ?editing=${input.attributeBeingEdited === attribute}
+                    @commit=${(e) => input.onCommitEditing(attribute, e.detail)}
+                    @cancel=${() => input.onCancelEditing(attribute)}>
+                      ${Platform.StringUtilities.trimMiddle(attribute.value, MAX_CONTENT_LENGTH)}
+                      ${propertyCompletions(attribute)}
+                  </devtools-prompt>
+                </li>`)}
+             </ul>
+           `}></devtools-tree>`,
+    // clang-format on
+    target
+  );
+};
 var ARIAAttributesPane = class extends AccessibilitySubPane {
-  noPropertiesInfo;
-  treeOutline;
-  constructor() {
+  #view;
+  #attributeBeingEdited = null;
+  constructor(view = DEFAULT_VIEW) {
     super({
       title: i18nString2(UIStrings3.ariaAttributes),
       viewId: "aria-attributes",
       jslog: `${VisualLogging2.section("aria-attributes")}`
     });
-    this.noPropertiesInfo = this.createInfo(i18nString2(UIStrings3.noAriaAttributes));
-    this.treeOutline = this.createTreeOutline();
+    this.#view = view;
   }
   setNode(node) {
     super.setNode(node);
-    this.treeOutline.removeChildren();
-    if (!node) {
-      return;
-    }
-    const target = node.domModel().target();
-    const attributes = node.attributes();
-    for (let i = 0; i < attributes.length; ++i) {
-      const attribute = attributes[i];
-      if (!this.isARIAAttribute(attribute)) {
-        continue;
-      }
-      this.treeOutline.appendChild(new ARIAAttributesTreeElement(this, attribute, target));
-    }
-    const foundAttributes = this.treeOutline.rootElement().childCount() !== 0;
-    this.noPropertiesInfo.classList.toggle("hidden", foundAttributes);
-    this.treeOutline.element.classList.toggle("hidden", !foundAttributes);
+    this.requestUpdate();
   }
-  getTreeOutlineForTesting() {
-    return this.treeOutline;
+  performUpdate() {
+    const onStartEditing = (attribute) => {
+      this.#attributeBeingEdited = attribute;
+      this.requestUpdate();
+    };
+    const onCancelEditing = (attribute) => {
+      if (attribute === this.#attributeBeingEdited) {
+        this.#attributeBeingEdited = null;
+      }
+      this.requestUpdate();
+    };
+    const onCommitEditing = (attribute, result) => {
+      const node = this.node();
+      if (node && attribute.value !== result) {
+        node.setAttributeValue(attribute.name, result);
+      }
+      if (attribute === this.#attributeBeingEdited) {
+        this.#attributeBeingEdited = null;
+      }
+      this.requestUpdate();
+    };
+    const attributes = this.node()?.attributes()?.filter((attribute) => this.isARIAAttribute(attribute)) ?? [];
+    const propertyCompletions = new Map(attributes.map((attribute) => [attribute, ariaMetadata().valuesForProperty(attribute.name)]));
+    const input = {
+      attributeBeingEdited: this.#attributeBeingEdited,
+      attributes,
+      onStartEditing,
+      onCommitEditing,
+      onCancelEditing,
+      propertyCompletions
+    };
+    this.#view(input, {}, this.contentElement);
   }
   isARIAAttribute(attribute) {
     return SDK2.DOMModel.ARIA_ATTRIBUTES.has(attribute.name);
-  }
-};
-var ARIAAttributesTreeElement = class _ARIAAttributesTreeElement extends UI3.TreeOutline.TreeElement {
-  parentPane;
-  attribute;
-  nameElement;
-  valueElement;
-  prompt;
-  constructor(parentPane, attribute, _target) {
-    super("");
-    this.parentPane = parentPane;
-    this.attribute = attribute;
-    this.selectable = false;
-  }
-  static createARIAValueElement(value) {
-    const valueElement = document.createElement("span");
-    valueElement.classList.add("monospace");
-    valueElement.setTextContentTruncatedIfNeeded(value || "");
-    return valueElement;
-  }
-  onattach() {
-    this.populateListItem();
-    this.listItemElement.addEventListener("click", this.mouseClick.bind(this));
-  }
-  getPromptForTesting() {
-    return this.prompt;
-  }
-  populateListItem() {
-    this.listItemElement.removeChildren();
-    this.appendNameElement(this.attribute.name);
-    this.listItemElement.createChild("span", "separator").textContent = ":\xA0";
-    this.appendAttributeValueElement(this.attribute.value);
-  }
-  appendNameElement(name) {
-    this.nameElement = document.createElement("span");
-    this.nameElement.textContent = name;
-    this.nameElement.classList.add("ax-name");
-    this.nameElement.classList.add("monospace");
-    this.listItemElement.appendChild(this.nameElement);
-  }
-  appendAttributeValueElement(value) {
-    this.valueElement = _ARIAAttributesTreeElement.createARIAValueElement(value);
-    this.listItemElement.appendChild(this.valueElement);
-  }
-  mouseClick(event) {
-    if (event.target === this.listItemElement) {
-      return;
-    }
-    event.consume(true);
-    this.startEditing();
-  }
-  startEditing() {
-    const valueElement = this.valueElement;
-    if (!valueElement || UI3.UIUtils.isBeingEdited(valueElement)) {
-      return;
-    }
-    const previousContent = valueElement.textContent || "";
-    function blurListener(previousContent2, event) {
-      const target = event.target;
-      const text = target.textContent || "";
-      this.editingCommitted(text, previousContent2);
-    }
-    const attributeName = this.nameElement.textContent || "";
-    this.prompt = new ARIAAttributePrompt(ariaMetadata().valuesForProperty(attributeName));
-    this.prompt.setAutocompletionTimeout(0);
-    const proxyElement = this.prompt.attachAndStartEditing(valueElement, blurListener.bind(this, previousContent));
-    proxyElement.addEventListener("keydown", (event) => this.editingValueKeyDown(previousContent, event), false);
-    const selection = valueElement.getComponentSelection();
-    if (selection) {
-      selection.selectAllChildren(valueElement);
-    }
-  }
-  removePrompt() {
-    if (!this.prompt) {
-      return;
-    }
-    this.prompt.detach();
-    delete this.prompt;
-  }
-  editingCommitted(userInput, previousContent) {
-    this.removePrompt();
-    if (userInput !== previousContent) {
-      const node = this.parentPane.node();
-      node.setAttributeValue(this.attribute.name, userInput);
-    }
-  }
-  editingCancelled() {
-    this.removePrompt();
-    this.populateListItem();
-  }
-  editingValueKeyDown(previousContent, event) {
-    if (event.handled) {
-      return;
-    }
-    if (event.key === "Enter") {
-      const target = event.target;
-      this.editingCommitted(target.textContent || "", previousContent);
-      event.consume();
-      return;
-    }
-    if (Platform.KeyboardUtilities.isEscKey(event)) {
-      this.editingCancelled();
-      event.consume();
-      return;
-    }
-  }
-};
-var ARIAAttributePrompt = class extends UI3.TextPrompt.TextPrompt {
-  ariaCompletions;
-  constructor(ariaCompletions) {
-    super();
-    this.initialize(this.buildPropertyCompletions.bind(this));
-    this.ariaCompletions = ariaCompletions;
-  }
-  async buildPropertyCompletions(expression, prefix, force) {
-    prefix = prefix.toLowerCase();
-    if (!prefix && !force && expression) {
-      return [];
-    }
-    return this.ariaCompletions.filter((value) => value.startsWith(prefix)).map((c) => {
-      return {
-        text: c,
-        title: void 0,
-        subtitle: void 0,
-        priority: void 0,
-        isSecondary: void 0,
-        subtitleRenderer: void 0,
-        selectionRange: void 0,
-        hideGhostText: void 0,
-        iconElement: void 0
-      };
-    });
   }
 };
 
@@ -4081,7 +4018,7 @@ var RoleStyles = {
 // gen/front_end/panels/accessibility/SourceOrderView.js
 import "./../../ui/legacy/legacy.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
-import { html, nothing, render } from "./../../ui/lit/lit.js";
+import { html as html2, nothing as nothing2, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 var UIStrings5 = {
   /**
@@ -4107,24 +4044,24 @@ var UIStrings5 = {
 var str_5 = i18n9.i18n.registerUIStrings("panels/accessibility/SourceOrderView.ts", UIStrings5);
 var i18nString4 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var MAX_CHILD_ELEMENTS_THRESHOLD = 300;
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   function onShowSourceOrderChanged(event) {
     const checkbox = event.currentTarget;
     input.onShowSourceOrderChanged(checkbox.checked);
     event.consume();
   }
-  render(html`
-    ${input.showSourceOrder === void 0 ? html`
+  render2(html2`
+    ${input.showSourceOrder === void 0 ? html2`
         <div class="gray-info-message info-message-overflow">
           ${i18nString4(UIStrings5.noSourceOrderInformation)}
         </div>
-      ` : html`
-      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html`
+      ` : html2`
+      ${input.childCount >= MAX_CHILD_ELEMENTS_THRESHOLD ? html2`
           <div class="gray-info-message info-message-overflow"
                 id="source-order-warning">
             ${i18nString4(UIStrings5.thereMayBeADelayInDisplaying)}
           </div>
-        ` : nothing}
+        ` : nothing2}
       <devtools-checkbox class="source-order-checkbox"
                           jslog=${VisualLogging4.toggle().track({ click: true })}
                           ?checked=${input.showSourceOrder}
@@ -4138,7 +4075,7 @@ var SourceOrderPane = class extends AccessibilitySubPane {
   #childCount = 0;
   #showSourceOrder = void 0;
   #view;
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super({
       title: i18nString4(UIStrings5.sourceOrderViewer),
       viewId: "source-order-viewer",

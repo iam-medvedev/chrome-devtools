@@ -55,6 +55,6 @@ export declare class CoverageView extends UI.Widget.VBox {
     willHide(): void;
 }
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
+    #private;
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
-    private innerHandleAction;
 }

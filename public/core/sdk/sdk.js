@@ -535,6 +535,7 @@ var generatedProperties = [
       "font-family",
       "font-feature-settings",
       "font-kerning",
+      "font-language-override",
       "font-optical-sizing",
       "font-palette",
       "font-size",
@@ -579,8 +580,8 @@ var generatedProperties = [
       "inset-block-start",
       "inset-inline-end",
       "inset-inline-start",
-      "interest-hide-delay",
-      "interest-show-delay",
+      "interest-delay-end",
+      "interest-delay-start",
       "interpolate-size",
       "isolation",
       "item-tolerance",
@@ -662,6 +663,7 @@ var generatedProperties = [
       "overscroll-behavior-inline",
       "overscroll-behavior-x",
       "overscroll-behavior-y",
+      "overscroll-position",
       "pad",
       "padding-block-end",
       "padding-block-start",
@@ -2325,7 +2327,8 @@ var generatedProperties = [
       "font-size-adjust",
       "font-kerning",
       "font-feature-settings",
-      "font-variation-settings"
+      "font-variation-settings",
+      "font-language-override"
     ],
     "name": "font"
   },
@@ -2351,6 +2354,13 @@ var generatedProperties = [
       "none"
     ],
     "name": "font-kerning"
+  },
+  {
+    "inherited": true,
+    "keywords": [
+      "normal"
+    ],
+    "name": "font-language-override"
   },
   {
     "inherited": true,
@@ -2813,16 +2823,16 @@ var generatedProperties = [
   },
   {
     "longhands": [
-      "interest-show-delay",
-      "interest-hide-delay"
+      "interest-delay-start",
+      "interest-delay-end"
     ],
     "name": "interest-delay"
   },
   {
-    "name": "interest-hide-delay"
+    "name": "interest-delay-end"
   },
   {
-    "name": "interest-show-delay"
+    "name": "interest-delay-start"
   },
   {
     "inherited": true,
@@ -3444,6 +3454,12 @@ var generatedProperties = [
       "none"
     ],
     "name": "overscroll-behavior-y"
+  },
+  {
+    "keywords": [
+      "none"
+    ],
+    "name": "overscroll-position"
   },
   {
     "name": "pad"
@@ -5715,6 +5731,11 @@ var generatedPropertyValues = {
       "none"
     ]
   },
+  "font-language-override": {
+    "values": [
+      "normal"
+    ]
+  },
   "font-optical-sizing": {
     "values": [
       "auto",
@@ -6341,6 +6362,11 @@ var generatedPropertyValues = {
     "values": [
       "auto",
       "contain",
+      "none"
+    ]
+  },
+  "overscroll-position": {
+    "values": [
       "none"
     ]
   },
@@ -9434,7 +9460,7 @@ var EnhancedTracesParser = class {
   }
   parseEnhancedTrace() {
     for (const event of this.#trace.traceEvents) {
-      if (this.isTracingStartInBrowserEvent(event)) {
+      if (this.isTracingStartedInBrowser(event)) {
         const data = event.args?.data;
         for (const frame of data.frames) {
           if (frame.url === "about:blank") {
@@ -9456,7 +9482,7 @@ var EnhancedTracesParser = class {
         if (data.isolate) {
           this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
         }
-      } else if (this.isTargetRundownEvent(event)) {
+      } else if (this.isRundownScriptCompiled(event)) {
         const data = event.args?.data;
         this.#scriptToV8Context.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.v8context);
         this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
@@ -9465,7 +9491,7 @@ var EnhancedTracesParser = class {
           this.#targets.push({
             targetId: frameId,
             type: data.frameType,
-            isolate: data.isolate,
+            isolate: String(data.isolate),
             pid: event.pid,
             url: data.url
           });
@@ -9480,31 +9506,34 @@ var EnhancedTracesParser = class {
               isDefault: data.isDefault,
               type: data.contextType
             },
-            isolate: data.isolate
+            isolate: String(data.isolate),
+            name: data.origin,
+            uniqueId: `${data.v8context}-${data.isolate}`
           });
         }
-      } else if (this.isScriptRundownEvent(event)) {
+      } else if (this.isRundownScript(event)) {
         this.#scriptRundownEvents.push(event);
         const data = event.args.data;
-        if (!this.#scripts.find((script) => script.scriptId === String(data.scriptId) && script.isolate === data.isolate)) {
+        if (!this.#scripts.find((script) => script.scriptId === String(data.scriptId) && script.isolate === String(data.isolate))) {
           this.#scripts.push({
             scriptId: String(data.scriptId),
-            isolate: data.isolate,
+            isolate: String(data.isolate),
+            buildId: "",
             executionContextId: data.executionContextId,
             startLine: data.startLine ?? 0,
             startColumn: data.startColumn ?? 0,
             endLine: data.endLine ?? 0,
             endColumn: data.endColumn ?? 0,
-            hash: data.hash,
+            hash: data.hash ?? "",
             isModule: data.isModule,
-            url: data.url,
+            url: data.url ?? "",
             hasSourceURL: data.hasSourceUrl,
-            sourceURL: data.sourceUrl,
+            sourceURL: data.sourceUrl ?? "",
             sourceMapURL: data.sourceMapUrl,
             pid: event.pid
           });
         }
-      } else if (this.isScriptRundownSourceEvent(event)) {
+      } else if (this.isRundownScriptSource(event)) {
         const data = event.args.data;
         const scriptIsolateId = this.getScriptIsolateId(data.isolate, data.scriptId);
         if ("splitIndex" in data && "splitCount" in data) {
@@ -9557,9 +9586,9 @@ var EnhancedTracesParser = class {
       }
       const linkedExecutionContext = this.#executionContexts.find((context) => context.id === script.executionContextId && context.isolate === script.isolate);
       if (linkedExecutionContext) {
-        script.auxData = linkedExecutionContext.auxData;
-        if (script.auxData?.frameId) {
-          this.#scriptToFrame.set(scriptIsolateId, script.auxData?.frameId);
+        script.executionContextAuxData = linkedExecutionContext.auxData;
+        if (script.executionContextAuxData?.frameId) {
+          this.#scriptToFrame.set(scriptIsolateId, script.executionContextAuxData?.frameId);
         }
       }
     });
@@ -9605,24 +9634,24 @@ var EnhancedTracesParser = class {
     return sourceMap;
   }
   getScriptIsolateId(isolate, scriptId) {
-    return scriptId + "@" + isolate;
+    return `${scriptId}@${isolate}`;
   }
   getExecutionContextIsolateId(isolate, executionContextId) {
-    return executionContextId + "@" + isolate;
+    return `${executionContextId}@${isolate}`;
   }
   isTraceEvent(event) {
     return "cat" in event && "pid" in event && "args" in event && "data" in event.args;
   }
-  isTargetRundownEvent(event) {
+  isRundownScriptCompiled(event) {
     return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.target-rundown";
   }
-  isScriptRundownEvent(event) {
+  isRundownScript(event) {
     return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown";
   }
-  isScriptRundownSourceEvent(event) {
+  isRundownScriptSource(event) {
     return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown-sources";
   }
-  isTracingStartInBrowserEvent(event) {
+  isTracingStartedInBrowser(event) {
     return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.timeline" && event.name === "TracingStartedInBrowser";
   }
   isFunctionCallEvent(event) {
@@ -9651,8 +9680,8 @@ var EnhancedTracesParser = class {
     }
     for (const script of scripts) {
       const scriptExecutionContextIsolateId = this.getExecutionContextIsolateId(script.isolate, script.executionContextId);
-      const scriptFrameId = script.auxData?.frameId;
-      if (script.auxData?.frameId && targetIds.has(scriptFrameId)) {
+      const scriptFrameId = script.executionContextAuxData?.frameId;
+      if (script.executionContextAuxData?.frameId && targetIds.has(scriptFrameId)) {
         targetToScripts.get(scriptFrameId)?.push(script);
         executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, scriptFrameId);
       } else if (this.#scriptToFrame.has(this.getScriptIsolateId(script.isolate, script.scriptId))) {
@@ -9691,12 +9720,14 @@ var EnhancedTracesParser = class {
             id: script.executionContextId,
             origin: "",
             v8Context: "",
+            name: "",
             auxData: {
               frameId: targetId,
               isDefault: false,
               type: "type"
             },
-            isolate: script.isolate
+            isolate: script.isolate,
+            uniqueId: `${targetId}-${script.isolate}`
           };
           executionContexts2.push(artificialContext);
         }
@@ -9847,6 +9878,7 @@ __export(CSSPropertyParserMatchers_exports, {
   AttributeMatcher: () => AttributeMatcher,
   AutoBaseMatch: () => AutoBaseMatch,
   AutoBaseMatcher: () => AutoBaseMatcher,
+  BaseFunctionMatch: () => BaseFunctionMatch,
   BaseVariableMatch: () => BaseVariableMatch,
   BaseVariableMatcher: () => BaseVariableMatcher,
   BezierMatch: () => BezierMatch,
@@ -9859,6 +9891,8 @@ __export(CSSPropertyParserMatchers_exports, {
   ColorMatcher: () => ColorMatcher,
   ColorMixMatch: () => ColorMixMatch,
   ColorMixMatcher: () => ColorMixMatcher,
+  CustomFunctionMatch: () => CustomFunctionMatch,
+  CustomFunctionMatcher: () => CustomFunctionMatcher,
   EnvFunctionMatch: () => EnvFunctionMatch,
   EnvFunctionMatcher: () => EnvFunctionMatcher,
   FlexGridMatch: () => FlexGridMatch,
@@ -10581,14 +10615,6 @@ var LinkableNameMatcher = class _LinkableNameMatcher extends matcherBase(Linkabl
     if (!parentNode) {
       return null;
     }
-    if (parentNode.name === "CallExpression" && node.name === "VariableName") {
-      return new LinkableNameMatch(
-        text,
-        node,
-        "function"
-        /* LinkableNameProperties.FUNCTION */
-      );
-    }
     if (!(propertyName && _LinkableNameMatcher.isLinkableNameProperty(propertyName))) {
       return null;
     }
@@ -10782,7 +10808,7 @@ var LengthMatcher = class _LengthMatcher extends matcherBase(LengthMatch) {
     return new LengthMatch(text, node, unit);
   }
 };
-var MathFunctionMatch = class {
+var BaseFunctionMatch = class {
   text;
   node;
   func;
@@ -10793,6 +10819,8 @@ var MathFunctionMatch = class {
     this.func = func;
     this.args = args;
   }
+};
+var MathFunctionMatch = class extends BaseFunctionMatch {
   isArithmeticFunctionCall() {
     const func = this.func;
     switch (func) {
@@ -10840,6 +10868,26 @@ var MathFunctionMatcher = class _MathFunctionMatcher extends matcherBase(MathFun
       return null;
     }
     return match;
+  }
+};
+var CustomFunctionMatch = class extends BaseFunctionMatch {
+};
+var CustomFunctionMatcher = class extends matcherBase(CustomFunctionMatch) {
+  // clang-format on
+  matches(node, matching) {
+    if (node.name !== "CallExpression") {
+      return null;
+    }
+    const callee = matching.ast.text(node.getChild("VariableName"));
+    if (!callee?.startsWith("--")) {
+      return null;
+    }
+    const args = ASTUtils.callArgs(node);
+    if (args.some((arg) => arg.length === 0 || matching.hasUnresolvedSubstitutionsRange(arg[0], arg[arg.length - 1]))) {
+      return null;
+    }
+    const text = matching.ast.text(node);
+    return new CustomFunctionMatch(text, node, callee, args);
   }
 };
 var FlexGridMatch = class {
@@ -13531,11 +13579,15 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     const domCascade = this.#styleToDOMCascade.get(style);
     return domCascade ? domCascade.computeAttribute(style, attributeName, type) : null;
   }
-  rawAttributeValueFromStyle(style, attributeName) {
+  originatingNodeForStyle(style) {
     let node = this.nodeForStyle(style) ?? this.node();
     while (node?.pseudoType()) {
       node = node.parentNode;
     }
+    return node;
+  }
+  rawAttributeValueFromStyle(style, attributeName) {
+    const node = this.originatingNodeForStyle(style);
     if (!node) {
       return null;
     }
@@ -13587,6 +13639,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       new PositionTryMatcher(),
       new LengthMatcher(),
       new MathFunctionMatcher(),
+      new CustomFunctionMatcher(),
       new AutoBaseMatcher(),
       new BinOpMatcher(),
       new RelativeColorChannelMatcher(),
@@ -13880,9 +13933,9 @@ var DOMInheritanceCascade = class {
     if (!nodeCascade) {
       return null;
     }
-    return this.innerComputeCSSVariable(nodeCascade, variableName);
+    return this.#computeCSSVariable(nodeCascade, variableName);
   }
-  innerComputeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
+  #computeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
     const availableCSSVariables = this.#availableCSSVariables.get(nodeCascade);
     const computedCSSVariables = this.#computedCSSVariables.get(nodeCascade);
     if (!computedCSSVariables || !availableCSSVariables?.has(variableName)) {
@@ -13911,7 +13964,7 @@ var DOMInheritanceCascade = class {
     if (!ast) {
       return null;
     }
-    return this.innerWalkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
+    return this.#walkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
   }
   computeAttribute(style, attributeName, type) {
     this.ensureInitialized();
@@ -13919,7 +13972,7 @@ var DOMInheritanceCascade = class {
     if (!nodeCascade) {
       return null;
     }
-    return this.innerComputeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
+    return this.#computeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
   }
   attributeValueAsType(style, attributeName, type) {
     const rawValue = this.#matchedStyles.rawAttributeValueFromStyle(style, attributeName);
@@ -13937,9 +13990,9 @@ var DOMInheritanceCascade = class {
     if (!ast) {
       return null;
     }
-    return this.innerWalkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
+    return this.#walkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
   }
-  innerComputeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
+  #computeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
     if (type.isCSSTokens) {
       const value = this.attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord);
       if (value !== null && localEvalCSS(value, type.type) !== null) {
@@ -13949,13 +14002,13 @@ var DOMInheritanceCascade = class {
     }
     return this.attributeValueAsType(style, attributeName, type.type);
   }
-  innerWalkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration2) {
+  #walkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration2) {
     const record = sccRecord.add(outerNodeCascade, substitutionName);
     const computedCSSVariablesMap = this.#computedCSSVariables;
     const innerNodeCascade = this.#styleToNodeCascade.get(parentStyle);
     const matching = BottomUpTreeMatching.walk(ast, [
       new BaseVariableMatcher((match) => {
-        const { value, mayFallback } = recurseWithCycleDetection(match.name, (nodeCascade) => this.innerComputeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
+        const { value, mayFallback } = recurseWithCycleDetection(match.name, (nodeCascade) => this.#computeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
         if (!mayFallback || value !== null) {
           return value;
         }
@@ -14145,7 +14198,7 @@ var DOMInheritanceCascade = class {
       for (const variableName of variableNames) {
         const prevValue = accumulatedCSSVariables.get(variableName);
         accumulatedCSSVariables.delete(variableName);
-        const computedValue = this.innerComputeCSSVariable(nodeCascade, variableName);
+        const computedValue = this.#computeCSSVariable(nodeCascade, variableName);
         if (prevValue && computedValue?.value === prevValue.value) {
           computedValue.declaration = prevValue.declaration;
         }
@@ -24442,8 +24495,10 @@ SDKModel.register(ResourceTreeModel, { capabilities: 2, autostart: true, early: 
 var TraceObject = class {
   traceEvents;
   metadata;
-  constructor(traceEvents, metadata = {}) {
-    this.traceEvents = traceEvents;
+  constructor(payload, meta = {}) {
+    const events = Array.isArray(payload) ? payload : payload.traceEvents;
+    const metadata = meta ?? (!Array.isArray(payload) && payload.metadata) ?? {};
+    this.traceEvents = events;
     this.metadata = metadata;
   }
 };
@@ -24496,7 +24551,7 @@ var RehydratingConnection = class {
   sessions = /* @__PURE__ */ new Map();
   #onConnectionLost;
   #rehydratingWindow;
-  #onReceiveHostWindowPayloadBound = this.#onReceiveHostWindowPayload.bind(this);
+  #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
   constructor(onConnectionLost) {
     this.#onConnectionLost = onConnectionLost;
     this.#rehydratingWindow = window;
@@ -24514,12 +24569,12 @@ var RehydratingConnection = class {
    * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
    * the trace event and all necessary data to power a rehydrated session.
    */
-  #onReceiveHostWindowPayload(event) {
+  onReceiveHostWindowPayload(event) {
     if (event.data.type === "REHYDRATING_TRACE_FILE") {
       const traceJson = event.data.traceJson;
       let trace;
       try {
-        trace = JSON.parse(traceJson);
+        trace = new TraceObject(JSON.parse(traceJson));
       } catch {
         this.#onConnectionLost(i18nString7(UIStrings7.errorLoadingLog));
         return;
@@ -24559,7 +24614,9 @@ var RehydratingConnection = class {
         }
       });
       sessionId += 1;
-      this.sessions.set(sessionId, new RehydratingSession(sessionId, target, executionContexts, scripts, this));
+      const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
+      this.sessions.set(sessionId, session);
+      session.declareSessionAttachedToTarget();
     }
     await this.#onRehydrated();
     return true;
@@ -24569,8 +24626,7 @@ var RehydratingConnection = class {
       return;
     }
     this.rehydratingConnectionState = 3;
-    const trace = new TraceObject(this.trace.traceEvents, this.trace.metadata);
-    await Common25.Revealer.reveal(trace);
+    await Common25.Revealer.reveal(this.trace);
   }
   setOnMessage(onMessage) {
     this.onMessage = onMessage;
@@ -24619,11 +24675,7 @@ var RehydratingSessionBase = class {
     this.connection = connection;
   }
   sendMessageToFrontend(payload) {
-    requestAnimationFrame(() => {
-      if (this.connection) {
-        this.connection.postToFrontend(payload);
-      }
-    });
+    this.connection?.postToFrontend(payload);
   }
   handleFrontendMessageAsFakeCDPAgent(data) {
     this.sendMessageToFrontend({
@@ -24643,7 +24695,6 @@ var RehydratingSession = class extends RehydratingSessionBase {
     this.target = target;
     this.executionContexts = executionContexts;
     this.scripts = scripts;
-    this.sessionAttachToTarget();
   }
   sendMessageToFrontend(payload, attachSessionId = true) {
     if (this.sessionId !== 0 && attachSessionId) {
@@ -24673,7 +24724,7 @@ var RehydratingSession = class extends RehydratingSessionBase {
         break;
     }
   }
-  sessionAttachToTarget() {
+  declareSessionAttachedToTarget() {
     this.sendMessageToFrontend(
       {
         method: "Target.attachedToTarget",

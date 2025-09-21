@@ -300,7 +300,7 @@ export class ConsoleView extends UI.Widget.VBox {
     buildHiddenCacheTimeout;
     searchShouldJumpBackwards;
     searchProgressIndicator;
-    innerSearchTimeoutId;
+    #searchTimeoutId;
     muteViewportUpdates;
     waitForScrollTimeout;
     issueCounter;
@@ -886,16 +886,12 @@ export class ConsoleView extends UI.Widget.VBox {
             this.tryToCollapseMessages(viewMessage, this.visibleViewMessages[this.visibleViewMessages.length - 1])) {
             return;
         }
-        // Track any adjacent messages.
-        const originatingMessage = viewMessage.consoleMessage().originatingMessage();
-        const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
-        viewMessage.setAdjacentUserCommandResult(adjacent);
-        // Ensure any parent groups for this message are shown.
         const currentGroup = viewMessage.consoleGroup();
-        showGroup(currentGroup, this.visibleViewMessages);
-        // Determine whether this message should actually be visible.
-        const shouldShowMessage = !currentGroup?.messagesHidden();
-        if (shouldShowMessage) {
+        if (!currentGroup?.messagesHidden()) {
+            const originatingMessage = viewMessage.consoleMessage().originatingMessage();
+            const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
+            viewMessage.setAdjacentUserCommandResult(adjacent);
+            showGroup(currentGroup, this.visibleViewMessages);
             this.visibleViewMessages.push(viewMessage);
             this.searchMessage(this.visibleViewMessages.length - 1);
         }
@@ -1013,15 +1009,15 @@ export class ConsoleView extends UI.Widget.VBox {
         const filename = Platform.StringUtilities.sprintf('%s-%d.log', parsedURL ? parsedURL.host : 'console', Date.now());
         const stream = new Bindings.FileUtils.FileOutputStream();
         const progressIndicator = document.createElement('devtools-progress');
-        progressIndicator.setTitle(i18nString(UIStrings.writingFile));
-        progressIndicator.setTotalWork(this.itemCount());
+        progressIndicator.title = i18nString(UIStrings.writingFile);
+        progressIndicator.totalWork = this.itemCount();
         const chunkSize = 350;
         if (!await stream.open(filename)) {
             return;
         }
         this.progressToolbarItem.element.appendChild(progressIndicator);
         let messageIndex = 0;
-        while (messageIndex < this.itemCount() && !progressIndicator.isCanceled()) {
+        while (messageIndex < this.itemCount() && !progressIndicator.canceled) {
             const messageContents = [];
             let i;
             for (i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
@@ -1030,10 +1026,10 @@ export class ConsoleView extends UI.Widget.VBox {
             }
             messageIndex += i;
             await stream.write(messageContents.join('\n') + '\n');
-            progressIndicator.setWorked(messageIndex);
+            progressIndicator.worked = messageIndex;
         }
         void stream.close();
-        progressIndicator.done();
+        progressIndicator.done = true;
     }
     async copyConsole() {
         const messageContents = [];
@@ -1266,28 +1262,28 @@ export class ConsoleView extends UI.Widget.VBox {
             this.searchShouldJumpBackwards = Boolean(jumpBackwards);
         }
         this.searchProgressIndicator = document.createElement('devtools-progress');
-        this.searchProgressIndicator.setTitle(i18nString(UIStrings.searching));
-        this.searchProgressIndicator.setTotalWork(this.visibleViewMessages.length);
+        this.searchProgressIndicator.title = i18nString(UIStrings.searching);
+        this.searchProgressIndicator.totalWork = this.visibleViewMessages.length;
         this.progressToolbarItem.element.appendChild(this.searchProgressIndicator);
-        this.innerSearch(0);
+        this.#search(0);
     }
     cleanupAfterSearch() {
         delete this.searchShouldJumpBackwards;
-        if (this.innerSearchTimeoutId) {
-            clearTimeout(this.innerSearchTimeoutId);
-            delete this.innerSearchTimeoutId;
+        if (this.#searchTimeoutId) {
+            clearTimeout(this.#searchTimeoutId);
+            this.#searchTimeoutId = undefined;
         }
         if (this.searchProgressIndicator) {
-            this.searchProgressIndicator.done();
+            this.searchProgressIndicator.done = true;
             delete this.searchProgressIndicator;
         }
     }
     searchFinishedForTests() {
         // This method is sniffed in tests.
     }
-    innerSearch(index) {
-        delete this.innerSearchTimeoutId;
-        if (this.searchProgressIndicator?.isCanceled()) {
+    #search(index) {
+        this.#searchTimeoutId = undefined;
+        if (this.searchProgressIndicator?.canceled) {
             this.cleanupAfterSearch();
             return;
         }
@@ -1305,9 +1301,9 @@ export class ConsoleView extends UI.Widget.VBox {
             window.setTimeout(this.searchFinishedForTests.bind(this), 0);
             return;
         }
-        this.innerSearchTimeoutId = window.setTimeout(this.innerSearch.bind(this, index), 100);
+        this.#searchTimeoutId = window.setTimeout(this.#search.bind(this, index), 100);
         if (this.searchProgressIndicator) {
-            this.searchProgressIndicator.setWorked(index);
+            this.searchProgressIndicator.worked = index;
         }
     }
     searchMessage(index) {
@@ -1324,6 +1320,9 @@ export class ConsoleView extends UI.Widget.VBox {
         this.jumpToMatch(this.currentMatchRangeIndex - 1);
     }
     supportsCaseSensitiveSearch() {
+        return true;
+    }
+    supportsWholeWordSearch() {
         return true;
     }
     supportsRegexSearch() {

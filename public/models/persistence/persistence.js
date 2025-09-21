@@ -144,7 +144,7 @@ var PlatformFileSystem = class extends Common.ObjectWrapper.ObjectWrapper {
   }
   indexContent(progress) {
     queueMicrotask(() => {
-      progress.done();
+      progress.done = true;
     });
   }
   mimeFromPath(_path) {
@@ -301,14 +301,14 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     let activePath = "";
     for (const path of paths) {
       activePath = activePath + "/" + path;
-      dirEntry = await this.innerCreateFolderIfNeeded(activePath);
+      dirEntry = await this.#createFolderIfNeeded(activePath);
       if (!dirEntry) {
         return null;
       }
     }
     return dirEntry;
   }
-  innerCreateFolderIfNeeded(path) {
+  #createFolderIfNeeded(path) {
     return new Promise((resolve) => {
       this.domFileSystem.root.getDirectory(path, { create: true }, (dirEntry) => resolve(dirEntry), (error) => {
         this.domFileSystem.root.getFile(path, void 0, () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailed, { PH1: path })));
@@ -562,12 +562,12 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this.#embedderPath, query);
       function innerCallback(files) {
         resolve(files.map((path) => Common2.ParsedURL.ParsedURL.rawPathToUrlString(path)));
-        progress.incrementWorked(1);
+        ++progress.worked;
       }
     });
   }
   indexContent(progress) {
-    progress.setTotalWork(1);
+    progress.totalWork = 1;
     const requestId = this.manager.registerProgress(progress);
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(requestId, this.#embedderPath, JSON.stringify(this.excludedEmbedderFolders));
   }
@@ -792,7 +792,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
       const fileSystems = event.data;
       const promises = [];
       for (let i = 0; i < fileSystems.length; ++i) {
-        promises.push(this.innerAddFileSystem(fileSystems[i], false));
+        promises.push(this.#addFileSystem(fileSystems[i], false));
       }
       void Promise.all(promises).then(onFileSystemsAdded);
     }
@@ -814,7 +814,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
   waitForFileSystems() {
     return this.fileSystemsLoadedPromise;
   }
-  innerAddFileSystem(fileSystem, dispatchEvent) {
+  #addFileSystem(fileSystem, dispatchEvent) {
     const embedderPath = fileSystem.fileSystemPath;
     const fileSystemURL = Common3.ParsedURL.ParsedURL.rawPathToUrlString(fileSystem.fileSystemPath);
     const promise = IsolatedFileSystem.create(this, fileSystemURL, embedderPath, hostFileSystemTypeToPlatformFileSystemType(fileSystem.type), fileSystem.fileSystemName, fileSystem.rootURL, fileSystem.type === "automatic");
@@ -848,7 +848,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
       this.fileSystemRequestResolve.call(null, null);
       this.fileSystemRequestResolve = null;
     } else if (fileSystem) {
-      void this.innerAddFileSystem(fileSystem, true).then((fileSystem2) => {
+      void this.#addFileSystem(fileSystem, true).then((fileSystem2) => {
         if (this.fileSystemRequestResolve) {
           this.fileSystemRequestResolve.call(null, fileSystem2);
           this.fileSystemRequestResolve = null;
@@ -922,7 +922,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     if (!progress) {
       return;
     }
-    progress.setTotalWork(totalWork);
+    progress.totalWork = totalWork;
   }
   onIndexingWorked(event) {
     const { requestId, worked } = event.data;
@@ -930,8 +930,8 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     if (!progress) {
       return;
     }
-    progress.incrementWorked(worked);
-    if (progress.isCanceled()) {
+    progress.worked += worked;
+    if (progress.canceled) {
       Host2.InspectorFrontendHost.InspectorFrontendHostInstance.stopIndexing(requestId);
       this.onIndexingDone(event);
     }
@@ -942,7 +942,7 @@ var IsolatedFileSystemManager = class _IsolatedFileSystemManager extends Common3
     if (!progress) {
       return;
     }
-    progress.done();
+    progress.done = true;
     this.progresses.delete(requestId);
   }
   onSearchCompleted(event) {
@@ -1183,12 +1183,12 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
     if (!queriesToRun.length) {
       queriesToRun.push("");
     }
-    progress.setTotalWork(queriesToRun.length);
+    progress.totalWork = queriesToRun.length;
     for (const query of queriesToRun) {
       const files = await this.#fileSystem.searchInPath(searchConfig.isRegex() ? "" : query, progress);
       files.sort(Platform5.StringUtilities.naturalOrderComparator);
       workingFileSet = Platform5.ArrayUtilities.intersectOrdered(workingFileSet, files, Platform5.StringUtilities.naturalOrderComparator);
-      progress.incrementWorked(1);
+      ++progress.worked;
     }
     const result = /* @__PURE__ */ new Map();
     for (const file of workingFileSet) {
@@ -1197,7 +1197,7 @@ var FileSystem = class extends Workspace.Workspace.ProjectStore {
         result.set(uiSourceCode, null);
       }
     }
-    progress.done();
+    progress.done = true;
     return result;
   }
   indexContent(progress) {
@@ -2263,16 +2263,16 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     this.#mapping.scheduleRemap();
   }
   async addBinding(binding) {
-    await this.innerAddBinding(binding);
+    await this.#addBinding(binding);
   }
   async addBindingForTest(binding) {
-    await this.innerAddBinding(binding);
+    await this.#addBinding(binding);
   }
   async removeBinding(binding) {
-    await this.innerRemoveBinding(binding);
+    await this.#removeBinding(binding);
   }
   async removeBindingForTest(binding) {
-    await this.innerRemoveBinding(binding);
+    await this.#removeBinding(binding);
   }
   #setupBindings(networkUISourceCode) {
     if (networkUISourceCode.project().type() !== Workspace7.Workspace.projectTypes.Network) {
@@ -2280,7 +2280,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     }
     return this.#mapping.computeNetworkStatus(networkUISourceCode);
   }
-  async innerAddBinding(binding) {
+  async #addBinding(binding) {
     bindings.set(binding.network, binding);
     bindings.set(binding.fileSystem, binding);
     binding.fileSystem.forceLoadOnCheckContent();
@@ -2303,7 +2303,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     this.notifyBindingEvent(binding.fileSystem);
     this.dispatchEventToListeners(Events2.BindingCreated, binding);
   }
-  async innerRemoveBinding(binding) {
+  async #removeBinding(binding) {
     if (bindings.get(binding.network) !== binding) {
       return;
     }
@@ -2323,11 +2323,11 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
   onStatusAdded(status) {
     const binding = new PersistenceBinding(status.network, status.fileSystem);
     statusBindings.set(status, binding);
-    return this.innerAddBinding(binding);
+    return this.#addBinding(binding);
   }
   async onStatusRemoved(status) {
     const binding = statusBindings.get(status);
-    await this.innerRemoveBinding(binding);
+    await this.#removeBinding(binding);
   }
   onWorkingCopyChanged(event) {
     const uiSourceCode = event.data;

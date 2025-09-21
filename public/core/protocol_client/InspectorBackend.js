@@ -81,10 +81,12 @@ export class InspectorBackend {
 }
 let connectionFactory;
 export class Connection {
+    // on message from browser
     setOnMessage(_onMessage) {
     }
     setOnDisconnect(_onDisconnect) {
     }
+    // send raw CDP message to browser
     sendRawMessage(_message) {
     }
     disconnect() {

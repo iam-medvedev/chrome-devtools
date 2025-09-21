@@ -15,10 +15,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import styles from './gdpSignUpDialog.css.js';
 const UIStrings = {
     /**
-     * @description Heading of the Google Developer Program sign up dialog.
-     */
-    gdpSignUp: 'Google Developer Program',
-    /**
      * @description Aria label for the Google Developer Program sign up dialog
      */
     gdpDialogAriaLabel: 'Google Developer Program sign up dialog',
@@ -38,7 +34,7 @@ const UIStrings = {
     /**
      * @description Body for the first section of the GDP sign up dialog.
      */
-    designedForSuccessBody: 'Grow your skills, build with AI, and receive badges you can showcase in your developer profile',
+    designedForSuccessBody: 'Grow your skills, build with AI, and earn badges you can showcase in your developer profile',
     /**
      * @description Title for the second section of the GDP sign up dialog.
      */
@@ -46,22 +42,30 @@ const UIStrings = {
     /**
      * @description Body for the second section of the GDP sign up dialog.
      */
-    keepUpdatedBody: 'The latest DevTools features, event invites, and tailored insights directly in your inbox',
+    keepUpdatedBody: 'The latest DevTools features, event invites, and tailored insights land directly in your inbox',
     /**
      * @description Title for the third section of the GDP sign up dialog.
      */
-    thingsToConsider: 'Things to consider',
+    tailorProfile: 'Tailor your profile',
+    /**
+     * @description Body for the third section of the GDP sign up dialog.
+     */
+    tailorProfileBody: 'The name on your Google Account and your interests will be used in your Google Developer Profile. Your name may appear where you contribute and can be changed at any time.',
     /**
      * @description Body for the third section of the GDP sign up dialog.
      * @example {Content Policy} PH1
      * @example {Terms of Service} PH2
      * @example {Privacy Policy} PH3
      */
-    thingsToConsiderBody: 'By creating a Developer Profile, you agree to the {PH1}. Google’s {PH2} and {PH3} apply to your use of this service. The name on your Google Account and your interests will be used in your Google Developer Profile. Your name may appear where you contribute and can be changed at any time.',
+    tailorProfileBodyDisclaimer: 'By creating a Developer Profile, you agree to the {PH1}. Google’s {PH2} and {PH3} apply to your use of this service.',
     /**
      * @description Button text for learning more about the Google Developer Program.
      */
     learnMore: 'Learn more',
+    /**
+     * @description Accessible text for learning more about the Google Developer Program.
+     */
+    learnMoreAccessibleText: 'Learn more about the Google Developer Program',
     /**
      * @description Link text for Content Policy.
      */
@@ -89,14 +93,14 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
       <style>${styles}</style>
-      <h2 class="gdp-sign-up-dialog-header">${i18nString(UIStrings.gdpSignUp)}</h2>
+      <div class="gdp-sign-up-dialog-header" role="img" tabindex="0" aria-label="Google Developer Program"></div>
       <div class="main-content">
         <div class="section">
           <div class="icon-container">
             <devtools-icon name="trophy"></devtools-icon>
           </div>
           <div class="text-container">
-            <h3 class="section-title">${i18nString(UIStrings.designedForSuccess)}</h3>
+            <h2 class="section-title">${i18nString(UIStrings.designedForSuccess)}</h2>
             <div class="section-text">${i18nString(UIStrings.designedForSuccessBody)}</div>
           </div>
         </div>
@@ -105,7 +109,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             <devtools-icon name="mark-email-unread"></devtools-icon>
           </div>
           <div class="text-container">
-            <h3 class="section-title">${i18nString(UIStrings.keepUpdated)}</h3>
+            <h2 class="section-title">${i18nString(UIStrings.keepUpdated)}</h2>
             <div class="section-text">${i18nString(UIStrings.keepUpdatedBody)}</div>
           </div>
           <div class="switch-container">
@@ -123,17 +127,22 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             <devtools-icon name="google"></devtools-icon>
           </div>
           <div class="text-container">
-            <h3 class="section-title">${i18nString(UIStrings.thingsToConsider)}</h3>
-            <div class="section-text">${i18n.i18n.getFormatLocalizedString(str_, UIStrings.thingsToConsiderBody, {
+            <h2 class="section-title">${i18nString(UIStrings.tailorProfile)}</h2>
+            <div class="section-text">
+              <div>${i18nString(UIStrings.tailorProfileBody)}</div><br/>
+              <div>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.tailorProfileBodyDisclaimer, {
         PH1: UI.XLink.XLink.create(CONTENT_POLICY_URL, i18nString(UIStrings.contentPolicy), 'link', undefined, 'gdp.content-policy'),
         PH2: UI.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString(UIStrings.termsOfService), 'link', undefined, 'gdp.terms-of-service'),
         PH3: UI.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString(UIStrings.privacyPolicy), 'link', undefined, 'gdp.privacy-policy'),
     })}</div>
+            </div>
           </div>
         </div>
       </div>
       <div class="buttons">
         <devtools-button
+          aria-label=${i18nString(UIStrings.learnMoreAccessibleText)}
+          .title=${i18nString(UIStrings.learnMoreAccessibleText)}
           .variant=${"outlined" /* Buttons.Button.Variant.OUTLINED */}
           .jslogContext=${'learn-more'}
           @click=${() => UI.UIUtils.openInNewTab(GDP_PROGRAM_URL)}>${i18nString(UIStrings.learnMore)}</devtools-button>
@@ -158,9 +167,11 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
     #dialog;
     #keepMeUpdated = false;
     #isSigningUp = false;
+    #onSuccess;
     constructor(options, view) {
         super();
         this.#dialog = options.dialog;
+        this.#onSuccess = options.onSuccess;
         this.#view = view ?? DEFAULT_VIEW;
         this.requestUpdate();
     }
@@ -175,6 +186,7 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
             Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges').set(true);
             await Badges.UserBadges.instance().initialize();
             Badges.UserBadges.instance().recordAction(Badges.BadgeAction.GDP_SIGN_UP_COMPLETE);
+            this.#onSuccess?.();
             this.#dialog.hide();
         }
         else {
@@ -198,14 +210,14 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
         };
         this.#view(viewInput, undefined, this.contentElement);
     }
-    static show() {
+    static show({ onSuccess } = {}) {
         const dialog = new UI.Dialog.Dialog();
         dialog.setAriaLabel(i18nString(UIStrings.gdpDialogAriaLabel));
         dialog.setMaxContentSize(new Geometry.Size(384, 500));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
-        new GdpSignUpDialog({ dialog }).show(dialog.contentElement);
-        dialog.show();
+        new GdpSignUpDialog({ dialog, onSuccess }).show(dialog.contentElement);
+        dialog.show(undefined, /* stack */ true);
     }
 }
 //# sourceMappingURL=GdpSignUpDialog.js.map

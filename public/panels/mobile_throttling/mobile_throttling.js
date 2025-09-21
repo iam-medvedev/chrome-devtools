@@ -1585,8 +1585,8 @@ var CPUThrottlingCard = class {
     }
   }
   async runCalibration() {
-    this.progress.setWorked(0);
-    this.progress.setTotalWork(1);
+    this.progress.worked = 0;
+    this.progress.totalWork = 1;
     this.controller = new CalibrationController();
     try {
       if (!await this.controller.start()) {
@@ -1594,7 +1594,7 @@ var CPUThrottlingCard = class {
         return;
       }
       for await (const result2 of this.controller.iterator()) {
-        this.progress.setWorked(result2.progress);
+        this.progress.worked = result2.progress;
       }
     } catch (e) {
       console.error(e);
@@ -1604,7 +1604,7 @@ var CPUThrottlingCard = class {
     const result = this.controller.result();
     if (result && (result.low || result.mid)) {
       this.setting.set(result);
-      this.progress.setWorked(1);
+      this.progress.worked = 1;
       await new Promise((resolve) => setTimeout(resolve, 200));
     }
     this.state = "cta";

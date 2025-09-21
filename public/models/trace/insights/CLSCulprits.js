@@ -325,7 +325,7 @@ function getUnsizedImageRootCauses(unsizedImageEvents, paintImageEvents, shiftsB
     });
     return rootCausesByShift;
 }
-export function isCLSCulprits(insight) {
+export function isCLSCulpritsInsight(insight) {
     return insight.insightKey === "CLSCulprits" /* InsightKeys.CLS_CULPRITS */;
 }
 /**

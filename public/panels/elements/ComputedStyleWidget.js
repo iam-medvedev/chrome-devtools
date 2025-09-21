@@ -177,13 +177,12 @@ class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatc
         swatch.renderColor(color);
         const valueElement = document.createElement('span');
         valueElement.textContent = match.text;
-        swatch.append(valueElement);
         swatch.addEventListener(InlineEditor.ColorSwatch.ColorChangedEvent.eventName, (event) => {
             const { data: { color } } = event;
             valueElement.textContent = color.getAuthoredText() ?? color.asString();
         });
         context.addControl('color', swatch);
-        return [swatch];
+        return [swatch, valueElement];
     }
     matcher() {
         return new SDK.CSSPropertyParserMatchers.ColorMatcher();

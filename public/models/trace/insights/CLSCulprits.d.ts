@@ -132,6 +132,6 @@ export interface LayoutShiftRootCausesData {
     unsizedImages: UnsizedImage[];
 }
 export declare function getNonCompositedFailure(animationEvent: Types.Events.SyntheticAnimationPair): NoncompositedAnimationFailure[];
-export declare function isCLSCulprits(insight: InsightModel): insight is CLSCulpritsInsightModel;
+export declare function isCLSCulpritsInsight(insight: InsightModel): insight is CLSCulpritsInsightModel;
 export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): CLSCulpritsInsightModel;
 export declare function createOverlays(model: CLSCulpritsInsightModel): Types.Overlays.Overlay[];

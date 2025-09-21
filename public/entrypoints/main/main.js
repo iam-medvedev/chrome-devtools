@@ -512,6 +512,7 @@ var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var loadedPanelCommonModule;
 var MainImpl = class _MainImpl {
   #readyForTestPromise = Promise.withResolvers();
+  #veStartPromise;
   constructor() {
     _MainImpl.instanceForTest = this;
     void this.#loaded();
@@ -560,9 +561,9 @@ var MainImpl = class _MainImpl {
           clickLogThrottler: new Common2.Throttler.Throttler(10),
           resizeLogThrottler: new Common2.Throttler.Throttler(10)
         };
-        void VisualLogging2.startLogging(options);
+        this.#veStartPromise = VisualLogging2.startLogging(options);
       } else {
-        void VisualLogging2.startLogging();
+        this.#veStartPromise = VisualLogging2.startLogging();
       }
     }
     void this.#createAppUI();
@@ -658,7 +659,6 @@ var MainImpl = class _MainImpl {
     Root2.Runtime.experiments.register("authored-deployed-grouping", "Group sources into authored and deployed trees", void 0, "https://goo.gle/authored-deployed", "https://goo.gle/authored-deployed-feedback");
     Root2.Runtime.experiments.register("just-my-code", "Hide ignore-listed code in Sources tree view");
     Root2.Runtime.experiments.register("timeline-show-postmessage-events", "Performance panel: show postMessage dispatch and handling flows");
-    Root2.Runtime.experiments.register("timeline-save-as-gz", "Performance panel: enable saving traces as .gz");
     Root2.Runtime.experiments.enableExperimentsByDefault([
       "full-accessibility-tree",
       ...Root2.Runtime.Runtime.queryParam("isChromeForTesting") ? ["protocol-monitor"] : []
@@ -779,7 +779,7 @@ var MainImpl = class _MainImpl {
     const actionRegistryInstance = UI2.ActionRegistry.ActionRegistry.instance({ forceNew: true });
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
-    if (Root2.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+    if (Host.GdpClient.isGdpProfilesAvailable()) {
       void Host.GdpClient.GdpClient.instance().initialize();
       void Badges.UserBadges.instance().initialize();
       Badges.UserBadges.instance().addEventListener("BadgeTriggered", async (ev) => {
@@ -825,6 +825,7 @@ var MainImpl = class _MainImpl {
     for (const runnableInstanceFunction of Common2.Runnable.earlyInitializationRunnables()) {
       await runnableInstanceFunction().run();
     }
+    await this.#veStartPromise;
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
     this.#readyForTestPromise.resolve();
     window.setTimeout(this.#lateInitialization.bind(this), 100);

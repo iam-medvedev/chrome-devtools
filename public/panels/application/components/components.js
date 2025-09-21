@@ -531,6 +531,7 @@ var NotRestoredReasonDescription = {
   JavaScriptExecution: { name: i18nLazyString(UIStrings.JavaScriptExecution) },
   RendererProcessKilled: { name: i18nLazyString(UIStrings.rendererProcessKilled) },
   RendererProcessCrashed: { name: i18nLazyString(UIStrings.rendererProcessCrashed) },
+  // @ts-expect-error kept for backwards compatibly
   GrantedMediaStreamAccess: { name: i18nLazyString(UIStrings.grantedMediaStreamAccess) },
   CacheFlushed: { name: i18nLazyString(UIStrings.cacheFlushed) },
   ServiceWorkerVersionActivation: { name: i18nLazyString(UIStrings.serviceWorkerVersionActivation) },

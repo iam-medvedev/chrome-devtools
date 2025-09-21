@@ -97,12 +97,9 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     private ensureContentLoaded;
     protected setContentDataOrError(contentDataPromise: Promise<TextUtils.ContentData.ContentDataOrError>): Promise<void>;
     revealPosition(position: RevealPosition, shouldHighlight?: boolean): void;
-    private innerRevealPositionIfNeeded;
     private clearPositionToReveal;
     scrollToLine(line: number): void;
-    private innerScrollToLineIfNeeded;
     setSelection(textRange: TextUtils.TextRange.TextRange): void;
-    private innerSetSelectionIfNeeded;
     private wasShownOrLoaded;
     onTextChanged(): void;
     isClean(): boolean;
@@ -121,6 +118,7 @@ export declare class SourceFrameImpl extends SourceFrameImpl_base implements UI.
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     jumpToSearchResult(index: number): void;
     replaceSelectionWith(_searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;

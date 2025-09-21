@@ -3,7 +3,7 @@ import * as Host from '../../core/host/host.js';
 import { Directives } from '../lit/lit.js';
 import { CheckboxLabel } from './UIUtils.js';
 export declare function createSettingCheckbox(name: Common.UIString.LocalizedString, setting: Common.Settings.Setting<boolean>, tooltip?: string): CheckboxLabel;
-export declare const bindToSetting: (setting: string | Common.Settings.Setting<boolean | string> | Common.Settings.RegExpSetting, stringValidator?: (newSettingValue: string) => boolean) => ReturnType<typeof Directives.ref>;
+export declare const bindToSetting: (settingOrName: string | Common.Settings.Setting<boolean | string> | Common.Settings.RegExpSetting, stringValidator?: (newSettingValue: string) => boolean) => ReturnType<typeof Directives.ref>;
 /**
  * @deprecated Prefer {@link bindToSetting} as this function leaks the checkbox via the setting listener.
  */

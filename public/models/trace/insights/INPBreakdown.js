@@ -41,7 +41,7 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/INPBreakdown.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function isINPBreakdown(insight) {
+export function isINPBreakdownInsight(insight) {
     return insight.insightKey === "INPBreakdown" /* InsightKeys.INP_BREAKDOWN */;
 }
 function finalize(partialModel) {

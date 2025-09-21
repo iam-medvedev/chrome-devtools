@@ -120,6 +120,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let loadedPanelCommonModule;
 export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
+    #veStartPromise;
     constructor() {
         MainImpl.instanceForTest = this;
         void this.#loaded();
@@ -168,10 +169,10 @@ export class MainImpl {
                     clickLogThrottler: new Common.Throttler.Throttler(10),
                     resizeLogThrottler: new Common.Throttler.Throttler(10),
                 };
-                void VisualLogging.startLogging(options);
+                this.#veStartPromise = VisualLogging.startLogging(options);
             }
             else {
-                void VisualLogging.startLogging();
+                this.#veStartPromise = VisualLogging.startLogging();
             }
         }
         void this.#createAppUI();
@@ -294,7 +295,6 @@ export class MainImpl {
         // Hide third party code (as determined by ignore lists or source maps)
         Root.Runtime.experiments.register("just-my-code" /* Root.Runtime.ExperimentName.JUST_MY_CODE */, 'Hide ignore-listed code in Sources tree view');
         Root.Runtime.experiments.register("timeline-show-postmessage-events" /* Root.Runtime.ExperimentName.TIMELINE_SHOW_POST_MESSAGE_EVENTS */, 'Performance panel: show postMessage dispatch and handling flows');
-        Root.Runtime.experiments.register("timeline-save-as-gz" /* Root.Runtime.ExperimentName.TIMELINE_SAVE_AS_GZ */, 'Performance panel: enable saving traces as .gz');
         Root.Runtime.experiments.enableExperimentsByDefault([
             "full-accessibility-tree" /* Root.Runtime.ExperimentName.FULL_ACCESSIBILITY_TREE */,
             ...(Root.Runtime.Runtime.queryParam('isChromeForTesting') ? ['protocol-monitor'] : []),
@@ -422,7 +422,7 @@ export class MainImpl {
         UI.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
         this.#registerMessageSinkListener();
         // Initialize `GDPClient` and `UserBadges` for Google Developer Program integration
-        if (Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+        if (Host.GdpClient.isGdpProfilesAvailable()) {
             void Host.GdpClient.GdpClient.instance().initialize();
             void Badges.UserBadges.instance().initialize();
             Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, async (ev) => {
@@ -477,6 +477,7 @@ export class MainImpl {
         for (const runnableInstanceFunction of Common.Runnable.earlyInitializationRunnables()) {
             await runnableInstanceFunction().run();
         }
+        await this.#veStartPromise;
         // Used for browser tests.
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.readyForTest();
         this.#readyForTestPromise.resolve();

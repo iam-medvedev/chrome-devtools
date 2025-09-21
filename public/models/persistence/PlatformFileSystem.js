@@ -110,7 +110,7 @@ export class PlatformFileSystem extends Common.ObjectWrapper.ObjectWrapper {
     }
     indexContent(progress) {
         queueMicrotask(() => {
-            progress.done();
+            progress.done = true;
         });
     }
     mimeFromPath(_path) {

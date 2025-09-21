@@ -166,8 +166,4 @@ export default `/*
   flex-basis: auto;
 }
 
-:host-context(#sources-panel-sources-view) .toolbar-search {
-  flex-wrap: wrap;
-}
-
 /*# sourceURL=${import.meta.resolve('./searchableView.css')} */`;

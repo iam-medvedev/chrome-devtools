@@ -54,7 +54,6 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     private buildHiddenCacheTimeout?;
     private searchShouldJumpBackwards?;
     private searchProgressIndicator?;
-    private innerSearchTimeoutId?;
     private muteViewportUpdates?;
     private waitForScrollTimeout?;
     private issueCounter;
@@ -136,11 +135,11 @@ export declare class ConsoleView extends UI.Widget.VBox implements UI.Searchable
     performSearch(searchConfig: UI.SearchableView.SearchConfig, shouldJump: boolean, jumpBackwards?: boolean): void;
     private cleanupAfterSearch;
     private searchFinishedForTests;
-    private innerSearch;
     private searchMessage;
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     private jumpToMatch;
     private updateStickToBottomOnPointerDown;

@@ -87,7 +87,7 @@ export type ImageDeliveryInsightModel = InsightModel<typeof UIStrings, {
     optimizableImages: OptimizableImage[];
     wastedBytes: number;
 }>;
-export declare function isImageDelivery(model: InsightModel): model is ImageDeliveryInsightModel;
+export declare function isImageDeliveryInsight(model: InsightModel): model is ImageDeliveryInsightModel;
 export declare function getOptimizationMessage(optimization: ImageOptimization): string;
 export declare function getOptimizationMessageWithBytes(optimization: ImageOptimization): string;
 export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): ImageDeliveryInsightModel;

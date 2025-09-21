@@ -482,7 +482,6 @@ function moveCompletionSelectionIfNotConservative(forward, by = "option") {
     if (CM3.completionStatus(view.state) !== "active") {
       return false;
     }
-    view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
     if (view.state.field(conservativeCompletion, false)) {
       view.dispatch({ effects: disableConservativeCompletion.of(null) });
       announceSelectedCompletionInfo(view);
@@ -498,7 +497,6 @@ function moveCompletionSelectionBackwardWrapper() {
     if (CM3.completionStatus(view.state) !== "active") {
       return false;
     }
-    view.dispatch({ effects: setAiAutoCompleteSuggestion.of(null) });
     CM3.moveCompletionSelection(false)(view);
     announceSelectedCompletionInfo(view);
     return true;
@@ -797,7 +795,7 @@ var aiAutoCompleteSuggestionState = CM3.StateField.define({
     }
     const from = tr.changes.mapPos(value.from);
     const { head } = tr.state.selection.main;
-    if (tr.changes.touchesRange(0, from - 1) || head < from) {
+    if (head < from) {
       return null;
     }
     const typedText = tr.state.doc.sliceString(from, head);
@@ -808,6 +806,10 @@ function hasActiveAiSuggestion(state) {
   return state.field(aiAutoCompleteSuggestionState) !== null;
 }
 function acceptAiAutoCompleteSuggestion(view) {
+  const selectedCompletion2 = CM3.selectedCompletion(view.state);
+  if (selectedCompletion2) {
+    return { accepted: false };
+  }
   const suggestion = view.state.field(aiAutoCompleteSuggestionState);
   if (!suggestion) {
     return { accepted: false };
@@ -831,22 +833,63 @@ var aiAutoCompleteSuggestion = [
   aiAutoCompleteSuggestionState,
   CM3.ViewPlugin.fromClass(class {
     decorations = CM3.Decoration.none;
+    #lastLoggedSuggestion = null;
     update(update) {
+      if (update.state.doc.length === 0) {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
       const activeSuggestion = update.state.field(aiAutoCompleteSuggestionState);
-      const { head, empty: empty2 } = update.state.selection.main;
-      let hint = "";
-      if (activeSuggestion && empty2 && head >= activeSuggestion.from) {
-        const { text, from } = activeSuggestion;
-        const typedText = update.state.doc.sliceString(from, head);
-        if (text.startsWith(typedText)) {
-          hint = text.slice(typedText.length);
+      if (!activeSuggestion) {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
+      if (CM3.completionStatus(update.view.state) === "pending") {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
+      const selectedCompletionIndex2 = CM3.selectedCompletionIndex(update.state);
+      if (selectedCompletionIndex2 && selectedCompletionIndex2 > 0) {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
+      const { head } = update.state.selection.main;
+      const selectedCompletion2 = CM3.selectedCompletion(update.state);
+      const additionallyTypedText = update.state.doc.sliceString(activeSuggestion.from, head);
+      if (!activeSuggestion.text.startsWith(additionallyTypedText)) {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
+      let ghostText = activeSuggestion.text.slice(additionallyTypedText.length);
+      if (selectedCompletion2) {
+        if (selectedCompletion2.type?.includes("keyword")) {
+          this.decorations = CM3.Decoration.none;
+          return;
+        }
+        const endsWithCompleteSelectedCompletion = update.state.doc.sliceString(head - selectedCompletion2.label.length, head) === selectedCompletion2.label;
+        if (!endsWithCompleteSelectedCompletion && !TextUtils.TextUtils.getOverlap(selectedCompletion2.label, ghostText)) {
+          this.decorations = CM3.Decoration.none;
+          return;
         }
       }
-      if (!hint) {
-        this.decorations = CM3.Decoration.none;
-      } else {
-        this.decorations = CM3.Decoration.set([CM3.Decoration.widget({ widget: new CompletionHint(hint), side: 1 }).range(head)]);
+      const currentMenuHint = update.view.plugin(showCompletionHint)?.currentHint;
+      const conservativeCompletionEnabled = update.state.field(conservativeCompletion, false);
+      if (!conservativeCompletionEnabled && currentMenuHint) {
+        ghostText = ghostText.slice(currentMenuHint.length);
       }
+      this.decorations = CM3.Decoration.set([CM3.Decoration.widget({ widget: new CompletionHint(ghostText), side: 1 }).range(head)]);
+      this.#registerImpressionIfNeeded(activeSuggestion);
+    }
+    #registerImpressionIfNeeded(activeSuggestion) {
+      if (!activeSuggestion.rpcGlobalId) {
+        return;
+      }
+      if (this.#lastLoggedSuggestion?.rpcGlobalId === activeSuggestion?.rpcGlobalId && this.#lastLoggedSuggestion?.sampleId === activeSuggestion?.sampleId) {
+        return;
+      }
+      const latency = performance.now() - activeSuggestion.startTime;
+      activeSuggestion.onImpression(activeSuggestion.rpcGlobalId, activeSuggestion.sampleId, latency);
+      this.#lastLoggedSuggestion = activeSuggestion;
     }
   }, { decorations: (p) => p.decorations })
 ];

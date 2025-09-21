@@ -350,9 +350,8 @@ export class HeaderSectionRow extends HTMLElement {
         this.dispatchEvent(new HeaderRemovedEvent(this.#header.name, this.#header.value || ''));
     }
     #onKeyDown(event) {
-        const keyboardEvent = event;
         const target = event.target;
-        if (keyboardEvent.key === 'Escape') {
+        if (event.key === 'Escape') {
             event.consume();
             if (target.matches('.header-name devtools-editable-span')) {
                 target.value = this.#header?.name || '';

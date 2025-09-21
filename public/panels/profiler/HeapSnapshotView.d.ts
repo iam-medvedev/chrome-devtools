@@ -50,7 +50,9 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     baseProfile: HeapProfileHeader | null;
     trackingOverviewGrid?: HeapTimelineOverview;
     currentSearchResultIndex: number;
-    currentQuery?: HeapSnapshotModel.HeapSnapshotModel.SearchConfig;
+    currentSearch?: HeapSnapshotModel.HeapSnapshotModel.SearchConfig;
+    get currentQuery(): string | undefined;
+    set currentQuery(value: string);
     constructor(dataDisplayDelegate: DataDisplayDelegate, profile: HeapProfileHeader);
     createOverview(): void;
     onStopTracking(): void;
@@ -65,6 +67,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
     toolbarItems(): Promise<UI.Toolbar.ToolbarItem[]>;
     willHide(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     onSearchCanceled(): void;
     selectRevealedNode(node: HeapSnapshotGridNode | null): void;
@@ -80,7 +83,7 @@ export declare class HeapSnapshotView extends UI.View.SimpleView implements Data
         filterName: string;
     }>;
     changeFilter(): void;
-    profiles(): ProfileHeader[];
+    profiles(): HeapProfileHeader[];
     selectionChanged(event: Common.EventTarget.EventTargetEvent<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>): void;
     onSelectAllocationNode(event: Common.EventTarget.EventTargetEvent<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>): void;
     inspectedObjectChanged(event: Common.EventTarget.EventTargetEvent<DataGrid.DataGrid.DataGridNode<HeapSnapshotGridNode>>): void;

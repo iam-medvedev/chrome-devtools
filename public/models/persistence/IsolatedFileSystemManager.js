@@ -96,7 +96,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
             const fileSystems = event.data;
             const promises = [];
             for (let i = 0; i < fileSystems.length; ++i) {
-                promises.push(this.innerAddFileSystem(fileSystems[i], false));
+                promises.push(this.#addFileSystem(fileSystems[i], false));
             }
             void Promise.all(promises).then(onFileSystemsAdded);
         }
@@ -120,7 +120,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
     waitForFileSystems() {
         return this.fileSystemsLoadedPromise;
     }
-    innerAddFileSystem(fileSystem, dispatchEvent) {
+    #addFileSystem(fileSystem, dispatchEvent) {
         const embedderPath = fileSystem.fileSystemPath;
         const fileSystemURL = Common.ParsedURL.ParsedURL.rawPathToUrlString(fileSystem.fileSystemPath);
         const promise = IsolatedFileSystem.create(this, fileSystemURL, embedderPath, hostFileSystemTypeToPlatformFileSystemType(fileSystem.type), fileSystem.fileSystemName, fileSystem.rootURL, fileSystem.type === 'automatic');
@@ -155,7 +155,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
             this.fileSystemRequestResolve = null;
         }
         else if (fileSystem) {
-            void this.innerAddFileSystem(fileSystem, true).then(fileSystem => {
+            void this.#addFileSystem(fileSystem, true).then(fileSystem => {
                 if (this.fileSystemRequestResolve) {
                     this.fileSystemRequestResolve.call(null, fileSystem);
                     this.fileSystemRequestResolve = null;
@@ -229,7 +229,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         if (!progress) {
             return;
         }
-        progress.setTotalWork(totalWork);
+        progress.totalWork = totalWork;
     }
     onIndexingWorked(event) {
         const { requestId, worked } = event.data;
@@ -237,8 +237,8 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         if (!progress) {
             return;
         }
-        progress.incrementWorked(worked);
-        if (progress.isCanceled()) {
+        progress.worked += worked;
+        if (progress.canceled) {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.stopIndexing(requestId);
             this.onIndexingDone(event);
         }
@@ -249,7 +249,7 @@ export class IsolatedFileSystemManager extends Common.ObjectWrapper.ObjectWrappe
         if (!progress) {
             return;
         }
-        progress.done();
+        progress.done = true;
         this.progresses.delete(requestId);
     }
     onSearchCompleted(event) {

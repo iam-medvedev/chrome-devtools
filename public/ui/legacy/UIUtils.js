@@ -1842,15 +1842,12 @@ export function bindToAction(actionName) {
         e.onclick = () => action.execute();
     });
 }
-class InterceptBindingDirective extends Lit.Directive.Directive {
+export class InterceptBindingDirective extends Lit.Directive.Directive {
     static #interceptedBindings = new WeakMap();
-    constructor(part) {
-        super(part);
-        if (part.type !== Lit.Directive.PartType.EVENT) {
-            throw new Error('This directive is for event bindings only');
-        }
-    }
     update(part, [listener]) {
+        if (part.type !== Lit.Directive.PartType.EVENT) {
+            return listener;
+        }
         let eventListeners = InterceptBindingDirective.#interceptedBindings.get(part.element);
         if (!eventListeners) {
             eventListeners = new Map();
@@ -1859,6 +1856,7 @@ class InterceptBindingDirective extends Lit.Directive.Directive {
         eventListeners.set(part.name, listener);
         return this.render(listener);
     }
+    /* eslint-disable-next-line @typescript-eslint/no-unsafe-function-type */
     render(_listener) {
         return undefined;
     }
@@ -1872,8 +1870,19 @@ class InterceptBindingDirective extends Lit.Directive.Directive {
         }
     }
 }
+export const cloneCustomElement = (element, deep) => {
+    const clone = document.createElement(element.localName);
+    for (const attribute of element.attributes) {
+        clone.setAttribute(attribute.name, attribute.value);
+    }
+    if (deep) {
+        for (const child of element.childNodes) {
+            clone.appendChild(child.cloneNode(deep));
+        }
+    }
+    return clone;
+};
 export class HTMLElementWithLightDOMTemplate extends HTMLElement {
-    static on = Lit.Directive.directive(InterceptBindingDirective);
     #mutationObserver = new MutationObserver(this.#onChange.bind(this));
     #contentTemplate = null;
     constructor() {
@@ -1890,6 +1899,35 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
         }
         return clone;
     }
+    static patchLitTemplate(template) {
+        const wrapper = Lit.Directive.directive(InterceptBindingDirective);
+        if (template === Lit.nothing) {
+            return;
+        }
+        template.values = template.values.map(patchValue);
+        function isLitTemplate(value) {
+            return Boolean(typeof value === 'object' && value && '_$litType$' in value && 'strings' in value && 'values' in value &&
+                value['_$litType$'] === 1);
+        }
+        function patchValue(value) {
+            if (typeof value === 'function') {
+                try {
+                    return wrapper(value);
+                }
+                catch {
+                    return value;
+                }
+            }
+            if (isLitTemplate(value)) {
+                HTMLElementWithLightDOMTemplate.patchLitTemplate(value);
+                return value;
+            }
+            if (Array.isArray(value)) {
+                return value.map(patchValue);
+            }
+            return value;
+        }
+    }
     set template(template) {
         if (!this.#contentTemplate) {
             this.removeChildren();
@@ -1897,6 +1935,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
             this.#mutationObserver.disconnect();
             this.#mutationObserver.observe(this.#contentTemplate.content, { childList: true, attributes: true, subtree: true, characterData: true });
         }
+        HTMLElementWithLightDOMTemplate.patchLitTemplate(template);
         // eslint-disable-next-line rulesdir/no-lit-render-outside-of-view
         render(template, this.#contentTemplate.content);
     }

@@ -19,44 +19,54 @@ export class ProgressIndicator extends HTMLElement {
         this.#labelElement = this.#contentElement.createChild('div', 'title');
         this.#progressElement = this.#contentElement.createChild('progress');
         this.#progressElement.value = 0;
+    }
+    connectedCallback() {
+        this.classList.add('progress-indicator');
         // By default we show the stop button, but this can be controlled by
         // using the 'no-stop-button' attribute on the element.
         if (!this.hasAttribute('no-stop-button')) {
             this.#stopButton = this.#contentElement.createChild('button', 'progress-indicator-shadow-stop-button');
-            this.#stopButton.addEventListener('click', this.cancel.bind(this));
+            this.#stopButton.addEventListener('click', () => {
+                this.canceled = true;
+            });
         }
     }
-    connectedCallback() {
-        this.classList.add('progress-indicator');
-    }
-    done() {
-        if (this.#isDone) {
+    set done(done) {
+        if (this.#isDone === done) {
             return;
         }
-        this.#isDone = true;
-        this.remove();
-    }
-    cancel() {
-        this.#isCanceled = true;
-    }
-    isCanceled() {
-        return this.#isCanceled;
-    }
-    setTitle(title) {
-        this.#labelElement.textContent = title;
-    }
-    setTotalWork(totalWork) {
-        this.#progressElement.max = totalWork;
-    }
-    setWorked(worked, title) {
-        this.#worked = worked;
-        this.#progressElement.value = worked;
-        if (title) {
-            this.setTitle(title);
+        this.#isDone = done;
+        if (done) {
+            this.remove();
         }
     }
-    incrementWorked(worked) {
-        this.setWorked(this.#worked + (worked || 1));
+    get done() {
+        return this.#isDone;
+    }
+    set canceled(value) {
+        this.#isCanceled = value;
+    }
+    get canceled() {
+        return this.#isCanceled;
+    }
+    set title(title) {
+        this.#labelElement.textContent = title;
+    }
+    get title() {
+        return this.#labelElement.textContent ?? '';
+    }
+    set totalWork(totalWork) {
+        this.#progressElement.max = totalWork;
+    }
+    get totalWork() {
+        return this.#progressElement.max;
+    }
+    set worked(worked) {
+        this.#worked = worked;
+        this.#progressElement.value = worked;
+    }
+    get worked() {
+        return this.#worked;
     }
 }
 customElements.define('devtools-progress', ProgressIndicator);

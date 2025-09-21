@@ -3,13 +3,16 @@ export declare class ProgressIndicator extends HTMLElement implements Common.Pro
     #private;
     constructor();
     connectedCallback(): void;
-    done(): void;
-    cancel(): void;
-    isCanceled(): boolean;
-    setTitle(title: string): void;
-    setTotalWork(totalWork: number): void;
-    setWorked(worked: number, title?: string): void;
-    incrementWorked(worked?: number): void;
+    set done(done: boolean);
+    get done(): boolean;
+    set canceled(value: boolean);
+    get canceled(): boolean;
+    set title(title: string);
+    get title(): string;
+    set totalWork(totalWork: number);
+    get totalWork(): number;
+    set worked(worked: number);
+    get worked(): number;
 }
 declare global {
     interface HTMLElementTagNameMap {

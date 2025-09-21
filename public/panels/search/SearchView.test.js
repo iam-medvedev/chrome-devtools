@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
-import { dispatchClickEvent, dispatchKeyDownEvent } from '../../testing/DOMHelpers.js';
+import { dispatchClickEvent, dispatchInputEvent, dispatchKeyDownEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Search from './search.js';
@@ -18,7 +18,9 @@ class FakeSearchScope {
         this.#resolvePerformSearchCalledPromise({ searchConfig, progress, searchResultCallback, searchFinishedCallback });
     }
     performIndexing(progress) {
-        setTimeout(() => progress.done(), 0); // Allow microtasks to run.
+        setTimeout(() => {
+            progress.done = true;
+        }, 0); // Allow microtasks to run.
     }
     stopSearch() {
     }
@@ -36,39 +38,47 @@ class TestSearchView extends Search.SearchView.SearchView {
      * that behaves normally with no override, but returns the mock if one is provided.
      */
     #searchResultsPane = null;
-    #overrideResultsPane;
     constructor(scopeCreator, searchResultsPane) {
         const throttler = new Common.Throttler.Throttler(/* timeoutMs */ 0);
         super('fake', throttler);
         this.throttler = throttler;
         this.#scopeCreator = scopeCreator;
         this.#searchResultsPane = searchResultsPane ?? null;
-        this.#overrideResultsPane = Boolean(searchResultsPane);
-        // Use 'Object.defineProperty' or TS won't be happy that we replace a prop with an accessor.
-        Object.defineProperty(this, 'searchResultsPane', {
-            get: () => this.#searchResultsPane,
-            set: (pane) => {
-                if (!this.#overrideResultsPane) {
-                    this.#searchResultsPane = pane;
-                }
-            },
-        });
+    }
+    createSearchResultsPane() {
+        return this.#searchResultsPane ?? super.createSearchResultsPane();
     }
     createScope() {
         return this.#scopeCreator();
     }
     /** Fills in the UI elements of the SearchView and hits 'Enter'. */
     triggerSearch(query, matchCase, isRegex) {
-        this.search.value = query;
-        this.matchCaseButton.toggled = matchCase;
-        this.regexButton.toggled = isRegex;
-        dispatchKeyDownEvent(this.search, { keyCode: UI.KeyboardShortcut.Keys.Enter.code });
+        const search = this.contentElement.querySelector('.search-toolbar-input');
+        search.value = query;
+        dispatchInputEvent(search);
+        if (matchCase) {
+            const matchCaseButton = this.contentElement.querySelector('.match-case-button');
+            matchCaseButton.click();
+        }
+        if (isRegex) {
+            const regexButton = this.contentElement.querySelector('.regex-button');
+            regexButton.click();
+        }
+        dispatchKeyDownEvent(search, { keyCode: UI.KeyboardShortcut.Keys.Enter.code });
     }
     get currentSearchResultMessage() {
         return this.contentElement.querySelector('.search-message:nth-child(3)').textContent ?? '';
     }
 }
 describeWithEnvironment('SearchView', () => {
+    it('has a standard placeholder when nothing has been searched yet', async () => {
+        const fakeScope = new FakeSearchScope();
+        const searchView = new TestSearchView(() => fakeScope);
+        renderElementIntoDOM(searchView);
+        await searchView.updateComplete;
+        assert.deepEqual(searchView.contentElement.querySelector('.empty-state-header')?.textContent, 'No search results');
+        assert.isTrue(searchView.contentElement.querySelector('.empty-state-description')?.textContent?.includes('Type and press '));
+    });
     it('calls the search scope with the search config provided by the user via the UI', async () => {
         const fakeScope = new FakeSearchScope();
         const searchView = new TestSearchView(() => fakeScope);
@@ -81,30 +91,29 @@ describeWithEnvironment('SearchView', () => {
     it('notifies the user when no search results were found', async () => {
         const fakeScope = new FakeSearchScope();
         const searchView = new TestSearchView(() => fakeScope);
+        renderElementIntoDOM(searchView);
         searchView.triggerSearch('a query', true, true);
         const { searchFinishedCallback } = await fakeScope.performSearchCalledPromise;
         searchFinishedCallback(/* finished */ true);
+        await searchView.updateComplete;
         assert.deepEqual(searchView.contentElement.querySelector('.empty-state-header')?.textContent, 'No matches found');
         assert.deepEqual(searchView.contentElement.querySelector('.empty-state-description')?.textContent, 'Nothing matched your search query');
-    });
-    it('has a standard placeholder when nothing has been searched yet', async () => {
-        const fakeScope = new FakeSearchScope();
-        const searchView = new TestSearchView(() => fakeScope);
-        assert.deepEqual(searchView.contentElement.querySelector('.empty-state-header')?.textContent, 'No search results');
-        assert.isTrue(searchView.contentElement.querySelector('.empty-state-description')?.textContent?.includes('Type and press '));
     });
     it('has a standard placeholder when search has been cleared', async () => {
         const fakeScope = new FakeSearchScope();
         const searchView = new TestSearchView(() => fakeScope);
+        renderElementIntoDOM(searchView);
         searchView.triggerSearch('a query', true, true);
         const { searchFinishedCallback } = await fakeScope.performSearchCalledPromise;
         searchFinishedCallback(/* finished */ true);
         // After search, shows that no matches were found.
+        await searchView.updateComplete;
         assert.deepEqual(searchView.contentElement.querySelector('.empty-state-header')?.textContent, 'No matches found');
         const clearButton = searchView.contentElement.querySelector('.clear-button');
         assert.exists(clearButton);
         dispatchClickEvent(clearButton);
         // After clearing, shows standard placeholder.
+        await searchView.updateComplete;
         assert.deepEqual(searchView.contentElement.querySelector('.empty-state-header')?.textContent, 'No search results');
         assert.isTrue(searchView.contentElement.querySelector('.empty-state-description')?.textContent?.includes('Type and press '));
     });

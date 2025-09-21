@@ -2207,10 +2207,10 @@ var ActionDelegate = class {
     ).then(() => {
       const view = UI2.ViewManager.ViewManager.instance().view(coverageViewId);
       return view?.widget();
-    }).then((widget) => this.innerHandleAction(widget, actionId));
+    }).then((widget) => this.#handleAction(widget, actionId));
     return true;
   }
-  innerHandleAction(coverageView, actionId) {
+  #handleAction(coverageView, actionId) {
     switch (actionId) {
       case "coverage.toggle-recording":
         coverageView.toggleRecording();

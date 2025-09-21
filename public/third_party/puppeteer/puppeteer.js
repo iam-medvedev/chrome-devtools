@@ -2550,7 +2550,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.20.0";
+var packageVersion = "24.22.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -5029,7 +5029,7 @@ var Page = (() => {
      *
      * @remarks
      * This method is a shortcut for calling two methods:
-     * {@link Page.setUserAgent} and {@link Page.setViewport}.
+     * {@link Page.(setUserAgent:2) } and {@link Page.setViewport}.
      *
      * This method will resize the page. A lot of websites don't expect phones to
      * change size, so you should emulate before navigating to the page.
@@ -5052,7 +5052,7 @@ var Page = (() => {
      */
     async emulate(device) {
       await Promise.all([
-        this.setUserAgent(device.userAgent),
+        this.setUserAgent({ userAgent: device.userAgent }),
         this.setViewport(device.viewport)
       ]);
     }
@@ -11776,7 +11776,6 @@ var AXNode = class _AXNode {
   #name;
   #role;
   #ignored;
-  #cachedHasFocusableChild;
   #realm;
   constructor(realm, payload) {
     this.payload = payload;
@@ -11810,18 +11809,6 @@ var AXNode = class _AXNode {
     const role = this.#role;
     return role === "LineBreak" || role === "text" || role === "InlineTextBox" || role === "StaticText";
   }
-  #hasFocusableChild() {
-    if (this.#cachedHasFocusableChild === void 0) {
-      this.#cachedHasFocusableChild = false;
-      for (const child of this.children) {
-        if (child.#focusable || child.#hasFocusableChild()) {
-          this.#cachedHasFocusableChild = true;
-          break;
-        }
-      }
-    }
-    return this.#cachedHasFocusableChild;
-  }
   find(predicate) {
     if (predicate(this)) {
       return this;
@@ -11854,12 +11841,6 @@ var AXNode = class _AXNode {
         return true;
       default:
         break;
-    }
-    if (this.#hasFocusableChild()) {
-      return false;
-    }
-    if (this.#focusable && this.#name && this.#name !== "Document") {
-      return true;
     }
     if (this.#role === "heading" && this.#name) {
       return true;
@@ -13850,11 +13831,12 @@ var NetworkManager = class extends EventEmitter {
   #credentials = null;
   #attemptedAuthentications = /* @__PURE__ */ new Set();
   #userRequestInterceptionEnabled = false;
-  #protocolRequestInterceptionEnabled = false;
+  #protocolRequestInterceptionEnabled;
   #userCacheDisabled;
   #emulatedNetworkConditions;
   #userAgent;
   #userAgentMetadata;
+  #platform;
   #handlers = [
     ["Fetch.requestPaused", this.#onRequestPaused],
     ["Fetch.authRequired", this.#onAuthRequired],
@@ -13997,9 +13979,10 @@ var NetworkManager = class extends EventEmitter {
       throw error;
     }
   }
-  async setUserAgent(userAgent, userAgentMetadata) {
+  async setUserAgent(userAgent, userAgentMetadata, platform) {
     this.#userAgent = userAgent;
     this.#userAgentMetadata = userAgentMetadata;
+    this.#platform = platform;
     await this.#applyToAllClients(this.#applyUserAgent.bind(this));
   }
   async #applyUserAgent(client) {
@@ -14009,7 +13992,8 @@ var NetworkManager = class extends EventEmitter {
     try {
       await client.send("Network.setUserAgentOverride", {
         userAgent: this.#userAgent,
-        userAgentMetadata: this.#userAgentMetadata
+        userAgentMetadata: this.#userAgentMetadata,
+        platform: this.#platform
       });
     } catch (error) {
       if (this.#canIgnoreError(error)) {
@@ -14032,6 +14016,9 @@ var NetworkManager = class extends EventEmitter {
     await this.#applyToAllClients(this.#applyProtocolRequestInterception.bind(this));
   }
   async #applyProtocolRequestInterception(client) {
+    if (this.#protocolRequestInterceptionEnabled === void 0) {
+      return;
+    }
     if (this.#userCacheDisabled === void 0) {
       this.#userCacheDisabled = false;
     }
@@ -16418,8 +16405,13 @@ var CdpPage = class _CdpPage extends Page {
   async setExtraHTTPHeaders(headers) {
     return await this.#frameManager.networkManager.setExtraHTTPHeaders(headers);
   }
-  async setUserAgent(userAgent, userAgentMetadata) {
-    return await this.#frameManager.networkManager.setUserAgent(userAgent, userAgentMetadata);
+  async setUserAgent(userAgentOrOptions, userAgentMetadata) {
+    if (typeof userAgentOrOptions === "string") {
+      return await this.#frameManager.networkManager.setUserAgent(userAgentOrOptions, userAgentMetadata);
+    } else {
+      const userAgent = userAgentOrOptions.userAgent ?? await this.browser().userAgent();
+      return await this.#frameManager.networkManager.setUserAgent(userAgent, userAgentOrOptions.userAgentMetadata, userAgentOrOptions.platform);
+    }
   }
   async metrics() {
     const response = await this.#primaryTargetClient.send("Performance.getMetrics");

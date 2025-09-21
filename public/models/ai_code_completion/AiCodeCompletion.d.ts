@@ -25,13 +25,13 @@ interface AgentOptions {
  */
 export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
-    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, panel: Panel, stopSequences?: string[]);
+    constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, panel: ContextFlavor, stopSequences?: string[]);
     registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number): void;
-    onTextChanged(prefix: string, suffix: string, cursor: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
+    onTextChanged(prefix: string, suffix: string, cursorPositionAtRequest: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
     remove(): void;
 }
-export declare const enum Panel {
-    CONSOLE = "console",
+export declare const enum ContextFlavor {
+    CONSOLE = "console",// generated code can contain console specific APIs like `$0`.
     SOURCES = "sources"
 }
 export declare const enum Events {

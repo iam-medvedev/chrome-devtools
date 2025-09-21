@@ -4,6 +4,28 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/services/tracing/FreshRecording.js
+var FreshRecording_exports = {};
+__export(FreshRecording_exports, {
+  Tracker: () => Tracker
+});
+var instance = null;
+var Tracker = class _Tracker {
+  #freshRecordings = /* @__PURE__ */ new WeakSet();
+  static instance(opts = { forceNew: false }) {
+    if (!instance || opts.forceNew) {
+      instance = new _Tracker();
+    }
+    return instance;
+  }
+  registerFreshRecording(data) {
+    this.#freshRecordings.add(data);
+  }
+  recordingIsFresh(data) {
+    return this.#freshRecordings.has(data);
+  }
+};
+
 // gen/front_end/services/tracing/PerformanceTracing.js
 var PerformanceTracing_exports = {};
 __export(PerformanceTracing_exports, {
@@ -173,6 +195,7 @@ var RawTraceEvents = class {
   }
 };
 export {
+  FreshRecording_exports as FreshRecording,
   PerformanceTracing_exports as PerformanceTracing,
   TracingManager_exports as TracingManager
 };

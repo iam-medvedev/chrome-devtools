@@ -49,7 +49,7 @@ fieldset {
   outline-offset: 2px;
 }
 
-img {
+.account-avatar {
   border: 0;
   border-radius: var(--sys-shape-corner-full);
   display: block;
@@ -101,9 +101,16 @@ img {
     font-size: var(--sys-typescale-body3-size);
     height: var(--sys-size-11);
 
-    .gdp-logo {
-      width: 34px;
-      height: fit-content;
+    & .gdp-logo {
+      background-image: var(--image-file-gdp-logo-light);
+      background-size: contain;
+      width: 203px;
+      height: 18px;
+      background-repeat: no-repeat;
+    }
+
+    :host-context(.theme-with-dark-background) & .gdp-logo {
+      background-image: var(--image-file-gdp-logo-dark);
     }
   }
 
@@ -131,6 +138,12 @@ img {
       display: flex;
       align-items: center;
       gap: var(--sys-size-2);
+    }
+
+    & .tooltip-content {
+      max-width: 278px;
+      padding: var(--sys-size-2) var(--sys-size-3);
+      font: var(--sys-typescale-body5-regular);
     }
   }
 }
@@ -194,18 +207,48 @@ var UIStrings = {
    */
   signUp: "Sign up",
   /**
-   * @description Text for the data notice right after the settings checkbox.
-   */
-  relevantDataDisclaimer: "(Relevant data is sent to Google)",
-  /**
    * @description Link text for opening the Google Developer Program profile page.
    */
-  viewProfile: "View profile"
+  viewProfile: "View profile",
+  /**
+   * @description Text for tooltip shown on hovering over "Relevant Data" in the disclaimer text for AI code completion.
+   */
+  tooltipDisclaimerText: "When you qualify for a badge, the badge\u2019s identifier and the type of activity you did to earn it are sent to Google",
+  /**
+   * @description Text for the data notice right after the settings checkbox.
+   */
+  relevantData: "Relevant data",
+  /**
+   * @description Text for the data notice right after the settings checkbox.
+   * @example {Relevant data} PH1
+   */
+  dataDisclaimer: "({PH1} is sent to Google)"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/settings/components/SyncSection.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var lockedString = i18n.i18n.lockedString;
 var { html, Directives: { ref, createRef } } = Lit;
+var cachedTooltipElement;
+function renderDataDisclaimer() {
+  if (cachedTooltipElement) {
+    return cachedTooltipElement;
+  }
+  const relevantDataTooltipTemplate = html`
+    <span
+      tabIndex="0"
+      class="link"
+      aria-details="gdp-profile-tooltip"
+      aria-describedby="gdp-profile-tooltip"
+      >${i18nString(UIStrings.relevantData)}</span>
+    <devtools-tooltip id="gdp-profile-tooltip" variant=${"rich"}>
+      <div class="tooltip-content" tabindex="0">${i18nString(UIStrings.tooltipDisclaimerText)}</div>
+    </devtools-tooltip>`;
+  const container = document.createElement("span");
+  Lit.render(relevantDataTooltipTemplate, container);
+  cachedTooltipElement = i18n.i18n.getFormatLocalizedString(str_, UIStrings.dataDisclaimer, {
+    PH1: container
+  });
+  return cachedTooltipElement;
+}
 function getGdpSubscriptionText(profile) {
   if (!profile.activeSubscription || profile.activeSubscription.subscriptionStatus !== Host.GdpClient.SubscriptionStatus.ENABLED) {
     return i18nString(UIStrings.gdpStandardPlan);
@@ -223,20 +266,22 @@ function getGdpSubscriptionText(profile) {
       return i18nString(UIStrings.gdpUnknownSubscription);
   }
 }
-var GDP_LOGO_IMAGE_URL = new URL("../../../Images/gdp-logo-standalone.svg", import.meta.url).toString();
 var SyncSection = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #syncInfo = { isSyncActive: false };
   #syncSetting;
   #receiveBadgesSetting;
   #receiveBadgesSettingContainerRef = createRef();
+  #isEligibleToCreateGdpProfile = false;
   #gdpProfile;
   set data(data) {
     this.#syncInfo = data.syncInfo;
     this.#syncSetting = data.syncSetting;
     this.#receiveBadgesSetting = data.receiveBadgesSetting;
-    void this.#updateGdpProfile();
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
+    if (data.syncInfo.accountEmail) {
+      void this.#fetchGdpDetails();
+    }
   }
   async highlightReceiveBadgesSetting() {
     await ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
@@ -259,13 +304,19 @@ var SyncSection = class extends HTMLElement {
         ${renderGdpSectionIfNeeded({
       receiveBadgesSetting: this.#receiveBadgesSetting,
       receiveBadgesSettingContainerRef: this.#receiveBadgesSettingContainerRef,
-      gdpProfile: this.#gdpProfile
+      gdpProfile: this.#gdpProfile,
+      isEligibleToCreateProfile: this.#isEligibleToCreateGdpProfile,
+      onSignUpSuccess: this.#fetchGdpDetails.bind(this)
     })}
       </fieldset>
     `, this.#shadow, { host: this });
   }
-  async #updateGdpProfile() {
+  async #fetchGdpDetails() {
+    if (!Host.GdpClient.isGdpProfilesAvailable()) {
+      return;
+    }
     this.#gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile() ?? void 0;
+    this.#isEligibleToCreateGdpProfile = await Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile();
     void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
   }
 };
@@ -312,22 +363,22 @@ function renderAccountInfo(syncInfo) {
   }
   return html`
     <div class="account-info">
-      <img src="data:image/png;base64, ${syncInfo.accountImage}" alt="Account avatar" />
+      <img class="account-avatar" src="data:image/png;base64, ${syncInfo.accountImage}" alt="Account avatar" />
       <div class="account-email">
         <span>${i18nString(UIStrings.signedIn)}</span>
         <span>${syncInfo.accountEmail}</span>
       </div>
     </div>`;
 }
-function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingContainerRef, gdpProfile }) {
-  if (!Root.Runtime.hostConfig.devToolsGdpProfiles?.enabled) {
+function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingContainerRef, gdpProfile, isEligibleToCreateProfile, onSignUpSuccess }) {
+  if (!Host.GdpClient.isGdpProfilesAvailable() || !gdpProfile && !isEligibleToCreateProfile) {
     return Lit.nothing;
   }
+  const hasReceiveBadgesCheckbox = receiveBadgesSetting && Host.GdpClient.getGdpProfilesEnterprisePolicy() === Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED;
   function renderBrand() {
     return html`
       <div class="gdp-profile-header">
-        <img src=${GDP_LOGO_IMAGE_URL} class="gdp-logo" alt="Google Developer Program">
-        ${lockedString("Google Developer Program")}
+        <div class="gdp-logo" role="img" tabindex="0" aria-label="Google Developer Program"></div>
       </div>
     `;
   }
@@ -343,7 +394,7 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
             <x-link class="link" href=${Host.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK}>
               ${i18nString(UIStrings.viewProfile)}
             </x-link></div>
-            ${receiveBadgesSetting ? html`
+            ${hasReceiveBadgesCheckbox ? html`
               <div class="setting-container"  ${ref(receiveBadgesSettingContainerRef)}>
                 <setting-checkbox class="setting-checkbox" .data=${{ setting: receiveBadgesSetting }} @change=${(e) => {
     const settingCheckbox = e.target;
@@ -354,14 +405,16 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
       Badges.UserBadges.instance().recordAction(Badges.BadgeAction.RECEIVE_BADGES_SETTING_ENABLED);
     });
   }}></setting-checkbox>
-                <span>${i18nString(UIStrings.relevantDataDisclaimer)}</span>
+                ${renderDataDisclaimer()}
               </div>` : Lit.nothing}
         </div>
       ` : html`
         <div class="gdp-profile-sign-up-content">
           ${renderBrand()}
           <devtools-button
-            @click=${() => PanelCommon.GdpSignUpDialog.show()}
+            @click=${() => PanelCommon.GdpSignUpDialog.show({
+    onSuccess: onSignUpSuccess
+  })}
             .jslogContext=${"gdp.sign-up-dialog-open"}
             .variant=${"outlined"}>
               ${i18nString(UIStrings.signUp)}

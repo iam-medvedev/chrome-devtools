@@ -85,9 +85,9 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
     }
     async findFilesMatchingSearchRequest(searchConfig, filesMatchingFileQuery, progress) {
         const result = new Map();
-        progress.setTotalWork(filesMatchingFileQuery.length);
+        progress.totalWork = filesMatchingFileQuery.length;
         await Promise.all(filesMatchingFileQuery.map(searchInContent.bind(this)));
-        progress.done();
+        progress.done = true;
         return result;
         async function searchInContent(uiSourceCode) {
             let allMatchesFound = true;
@@ -103,11 +103,13 @@ export class ContentProviderBasedProject extends Workspace.Workspace.ProjectStor
             if (allMatchesFound) {
                 result.set(uiSourceCode, matches);
             }
-            progress.incrementWorked(1);
+            ++progress.worked;
         }
     }
     indexContent(progress) {
-        queueMicrotask(progress.done.bind(progress));
+        queueMicrotask(() => {
+            progress.done = true;
+        });
     }
     addUISourceCodeWithProvider(uiSourceCode, contentProvider, metadata, mimeType) {
         this.#uiSourceCodeToData.set(uiSourceCode, { mimeType, metadata, contentProvider });

@@ -1602,6 +1602,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "font-family",
   "font-feature-settings",
   "font-kerning",
+  "font-language-override",
   "font-optical-sizing",
   "font-palette",
   "font-size",
@@ -1910,6 +1911,8 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "interactions",
   "interactivity",
   "interest-delay",
+  "interest-delay-end",
+  "interest-delay-start",
   "interest-groups",
   "interest-hide-delay",
   "interest-show-delay",
@@ -2743,6 +2746,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "overscroll-behavior-inline",
   "overscroll-behavior-x",
   "overscroll-behavior-y",
+  "overscroll-position",
   "p3",
   "pa",
   "packetLoss",
@@ -3549,6 +3553,9 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "start-time",
   "start-url",
   "start-view",
+  "starter-badge-dismissed",
+  "starter-badge-last-snoozed-timestamp",
+  "starter-badge-snooze-count",
   "static-global-setting",
   "static-synced-setting",
   "status",
@@ -3774,6 +3781,7 @@ var knownContextValues = /* @__PURE__ */ new Set([
   "timeline.export-trace-options",
   "timeline.export-trace-options.annotations-checkbox",
   "timeline.export-trace-options.script-content-checkbox",
+  "timeline.export-trace-options.should-compress-checkbox",
   "timeline.export-trace-options.source-maps-checkbox",
   "timeline.extension",
   "timeline.field-data.configure",
@@ -4921,15 +4929,29 @@ async function expectVeEvents(expectedEvents) {
     throw new Error("VE events expectation already set. Cannot set another one until the previous is resolved");
   }
   const { promise, resolve: success, reject: fail } = Promise.withResolvers();
-  pendingEventExpectation = { expectedEvents, success, fail, unmatchingEvents: [] };
+  pendingEventExpectation = { expectedEvents, success, fail, unmatchedEvents: [] };
   checkPendingEventExpectation();
   const timeout = setTimeout(() => {
     if (pendingEventExpectation?.missingEvents) {
-      pendingEventExpectation.fail(new Error("\nMissing VE Events:\n" + formatVeEvents(pendingEventExpectation.missingEvents) + "\nUnmatched VE Events:\n" + formatVeEvents(pendingEventExpectation.unmatchingEvents) + "\nAll events:\n" + JSON.stringify(veDebugEventsLog, null, 2)));
+      const allLogs = veDebugEventsLog.filter((ve) => {
+        if ("interaction" in ve) {
+          return ve.interaction !== "SettingAccess";
+        }
+        return true;
+      });
+      pendingEventExpectation.fail(new Error(`
+Missing VE Events:
+${formatVeEvents(pendingEventExpectation.missingEvents)}
+Unmatched VE Events:
+${formatVeEvents(pendingEventExpectation.unmatchedEvents)}
+All events:
+${JSON.stringify(allLogs, null, 2)}
+`));
     }
   }, EVENT_EXPECTATION_TIMEOUT);
   return await promise.finally(() => {
     clearTimeout(timeout);
+    pendingEventExpectation = null;
   });
 }
 var numMatchedEvents = 0;
@@ -4940,7 +4962,7 @@ function checkPendingEventExpectation() {
   const actualEvents = [...veDebugEventsLog];
   let partialMatch = false;
   const matchedImpressions = /* @__PURE__ */ new Set();
-  pendingEventExpectation.unmatchingEvents = [];
+  pendingEventExpectation.unmatchedEvents = [];
   for (let i = 0; i < pendingEventExpectation.expectedEvents.length; ++i) {
     const expectedEvent = pendingEventExpectation.expectedEvents[i];
     while (true) {
@@ -4955,9 +4977,9 @@ function checkPendingEventExpectation() {
       }
       if (!compareVeEvents(actualEvents[i], expectedEvent)) {
         if (partialMatch) {
-          const unmatching = { ...actualEvents[i] };
-          if ("impressions" in unmatching && "impressions" in expectedEvent) {
-            unmatching.impressions = unmatching.impressions.filter((impression) => {
+          const unmatched = { ...actualEvents[i] };
+          if ("impressions" in unmatched && "impressions" in expectedEvent) {
+            unmatched.impressions = unmatched.impressions.filter((impression) => {
               const matched = expectedEvent.impressions.includes(impression);
               if (matched) {
                 matchedImpressions.add(impression);
@@ -4965,7 +4987,7 @@ function checkPendingEventExpectation() {
               return !matched;
             });
           }
-          pendingEventExpectation.unmatchingEvents.push(unmatching);
+          pendingEventExpectation.unmatchedEvents.push(unmatched);
         }
         actualEvents.splice(i, 1);
       } else {
@@ -4976,7 +4998,6 @@ function checkPendingEventExpectation() {
   }
   numMatchedEvents = veDebugEventsLog.length - actualEvents.length + pendingEventExpectation.expectedEvents.length;
   pendingEventExpectation.success();
-  pendingEventExpectation = null;
 }
 function getUnmatchedVeEvents() {
   console.error(numMatchedEvents);

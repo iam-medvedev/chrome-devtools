@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable rulesdir/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
-import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import { html, render } from '../../ui/lit/lit.js';
 import searchResultsPaneStyles from './searchResultsPane.css.js';
 const UIStrings = {
     /**
@@ -31,17 +32,20 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class SearchResultsPane extends UI.Widget.VBox {
     searchConfig;
     searchResults;
-    treeElements;
+    treeElements = new Map();
+    initializedTreeElements = new WeakSet();
     treeOutline;
     matchesExpandedCount;
     constructor(searchConfig) {
         super({ useShadowDom: true });
         this.searchConfig = searchConfig;
         this.searchResults = [];
-        this.treeElements = [];
         this.treeOutline = new UI.TreeOutline.TreeOutlineInShadow();
         this.treeOutline.registerRequiredCSS(searchResultsPaneStyles);
         this.treeOutline.setHideOverflow(true);
+        this.treeOutline.addEventListener(UI.TreeOutline.Events.ElementExpanded, (event) => {
+            this.updateMatchesUI(event.data);
+        });
         this.contentElement.appendChild(this.treeOutline.element);
         this.matchesExpandedCount = 0;
     }
@@ -50,18 +54,21 @@ export class SearchResultsPane extends UI.Widget.VBox {
         this.addTreeElement(searchResult);
     }
     showAllMatches() {
-        this.treeElements.forEach(treeElement => {
+        for (const [treeElement, searchResult] of this.treeElements.entries()) {
             treeElement.expand();
-            treeElement.showAllMatches();
-        });
+            treeElement.removeChildren();
+            this.appendSearchMatches(treeElement, 0, searchResult.matchesCount());
+        }
     }
     collapseAllResults() {
-        this.treeElements.forEach(treeElement => {
+        for (const treeElement of this.treeElements.keys()) {
             treeElement.collapse();
-        });
+        }
     }
     addTreeElement(searchResult) {
-        const treeElement = new SearchResultsTreeElement(this.searchConfig, searchResult);
+        const treeElement = new UI.TreeOutline.TreeElement('', true);
+        treeElement.toggleOnClick = true;
+        this.treeElements.set(treeElement, searchResult);
         this.treeOutline.appendChild(treeElement);
         if (!this.treeOutline.selectedTreeElement) {
             treeElement.select(/* omitFocus */ true, /* selectedByUser */ true);
@@ -71,72 +78,41 @@ export class SearchResultsPane extends UI.Widget.VBox {
             treeElement.expand();
         }
         this.matchesExpandedCount += searchResult.matchesCount();
-        this.treeElements.push(treeElement);
+        treeElement.listItemElement.classList.add('search-result');
+        // clang-format off
+        render(html `
+      <span class="search-result-file-name">${searchResult.label()}
+        <span class="search-result-dash">${'\u2014'}</span>
+        <span class="search-result-qualifier">${searchResult.description()}</span>
+      </span>
+      <span class="search-result-matches-count"
+          aria-label=${i18nString(UIStrings.matchesCountS, { PH1: searchResult.matchesCount() })}>
+          ${searchResult.matchesCount()}
+      </span>`, treeElement.listItemElement);
+        // clang-format on
+        treeElement.tooltip = searchResult.description();
     }
-}
-export const matchesExpandedByDefault = 200;
-export const matchesShownAtOnce = 20;
-export class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
-    searchConfig;
-    searchResult;
-    initialized;
-    toggleOnClick;
-    constructor(searchConfig, searchResult) {
-        super('', true);
-        this.searchConfig = searchConfig;
-        this.searchResult = searchResult;
-        this.initialized = false;
-        this.toggleOnClick = true;
-    }
-    onexpand() {
-        if (this.initialized) {
+    updateMatchesUI(element) {
+        const searchResult = this.treeElements.get(element);
+        if (!searchResult || this.initializedTreeElements.has(element)) {
             return;
         }
-        this.updateMatchesUI();
-        this.initialized = true;
-    }
-    showAllMatches() {
-        this.removeChildren();
-        this.appendSearchMatches(0, this.searchResult.matchesCount());
-    }
-    updateMatchesUI() {
-        this.removeChildren();
-        const toIndex = Math.min(this.searchResult.matchesCount(), matchesShownAtOnce);
-        if (toIndex < this.searchResult.matchesCount()) {
-            this.appendSearchMatches(0, toIndex - 1);
-            this.appendShowMoreMatchesElement(toIndex - 1);
+        element.removeChildren();
+        const toIndex = Math.min(searchResult.matchesCount(), matchesShownAtOnce);
+        if (toIndex < searchResult.matchesCount()) {
+            this.appendSearchMatches(element, 0, toIndex - 1);
+            this.appendShowMoreMatchesElement(element, toIndex - 1);
         }
         else {
-            this.appendSearchMatches(0, toIndex);
+            this.appendSearchMatches(element, 0, toIndex);
         }
+        this.initializedTreeElements.add(element);
     }
-    onattach() {
-        this.updateSearchMatches();
-    }
-    updateSearchMatches() {
-        this.listItemElement.classList.add('search-result');
-        const fileNameSpan = span(this.searchResult.label(), 'search-result-file-name');
-        fileNameSpan.appendChild(span('\u2014', 'search-result-dash'));
-        fileNameSpan.appendChild(span(this.searchResult.description(), 'search-result-qualifier'));
-        this.tooltip = this.searchResult.description();
-        this.listItemElement.appendChild(fileNameSpan);
-        const matchesCountSpan = document.createElement('span');
-        matchesCountSpan.className = 'search-result-matches-count';
-        matchesCountSpan.textContent = `${this.searchResult.matchesCount()}`;
-        UI.ARIAUtils.setLabel(matchesCountSpan, i18nString(UIStrings.matchesCountS, { PH1: this.searchResult.matchesCount() }));
-        this.listItemElement.appendChild(matchesCountSpan);
-        if (this.expanded) {
-            this.updateMatchesUI();
+    appendSearchMatches(element, fromIndex, toIndex) {
+        const searchResult = this.treeElements.get(element);
+        if (!searchResult) {
+            return;
         }
-        function span(text, className) {
-            const span = document.createElement('span');
-            span.className = className;
-            span.textContent = text;
-            return span;
-        }
-    }
-    appendSearchMatches(fromIndex, toIndex) {
-        const searchResult = this.searchResult;
         const queries = this.searchConfig.queries();
         const regexes = [];
         for (let i = 0; i < queries.length; ++i) {
@@ -162,26 +138,27 @@ export class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
                 }
                 ({ lineSegment: lineContent, matchRanges } = lineSegmentForMultipleMatches(lineContent, matchRanges));
             }
-            const anchor = Components.Linkifier.Linkifier.linkifyRevealable(searchResult.matchRevealable(i), '', undefined, undefined, undefined, 'search-match');
-            anchor.classList.add('search-match-link');
-            anchor.tabIndex = 0;
-            const labelSpan = document.createElement('span');
-            labelSpan.classList.add('search-match-line-number');
             const resultLabel = searchResult.matchLabel(i);
-            labelSpan.textContent = resultLabel;
-            if (typeof resultLabel === 'number' && !isNaN(resultLabel)) {
-                UI.ARIAUtils.setLabel(labelSpan, i18nString(UIStrings.lineS, { PH1: resultLabel }));
-            }
-            else {
-                UI.ARIAUtils.setLabel(labelSpan, resultLabel);
-            }
-            anchor.appendChild(labelSpan);
-            const contentSpan = this.createContentSpan(lineContent, matchRanges);
-            anchor.appendChild(contentSpan);
             const searchMatchElement = new UI.TreeOutline.TreeElement();
-            this.appendChild(searchMatchElement);
+            element.appendChild(searchMatchElement);
+            // clang-format off
+            render(html `
+        <button class="devtools-link text-button link-style search-match-link"
+                jslog="Link; context: search-match; track: click" role="link" tabindex="0"
+                @click=${() => void Common.Revealer.reveal(searchResult.matchRevealable(i))}>
+          <span class="search-match-line-number"
+              aria-label=${typeof resultLabel === 'number' && !isNaN(resultLabel)
+                ? i18nString(UIStrings.lineS, { PH1: resultLabel }) : resultLabel}>
+            ${resultLabel}
+          </span>
+          <span class="search-match-content" aria-label="${lineContent} line">
+            ${lineContent}
+          </span>
+        </button>`, searchMatchElement.listItemElement);
+            // clang-format on
+            const contentSpan = searchMatchElement.listItemElement.querySelector('.search-match-content');
+            UI.UIUtils.highlightRangesWithStyleClass(contentSpan, matchRanges, 'highlighted-search-result');
             searchMatchElement.listItemElement.className = 'search-match';
-            searchMatchElement.listItemElement.appendChild(anchor);
             searchMatchElement.listItemElement.addEventListener('keydown', event => {
                 if (event.key === 'Enter') {
                     event.consume(true);
@@ -191,22 +168,18 @@ export class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
             searchMatchElement.tooltip = lineContent;
         }
     }
-    appendShowMoreMatchesElement(startMatchIndex) {
-        const matchesLeftCount = this.searchResult.matchesCount() - startMatchIndex;
+    appendShowMoreMatchesElement(element, startMatchIndex) {
+        const searchResult = this.treeElements.get(element);
+        if (!searchResult) {
+            return;
+        }
+        const matchesLeftCount = searchResult.matchesCount() - startMatchIndex;
         const showMoreMatchesText = i18nString(UIStrings.showDMore, { PH1: matchesLeftCount });
         const showMoreMatchesTreeElement = new UI.TreeOutline.TreeElement(showMoreMatchesText);
-        this.appendChild(showMoreMatchesTreeElement);
+        element.appendChild(showMoreMatchesTreeElement);
         showMoreMatchesTreeElement.listItemElement.classList.add('show-more-matches');
         showMoreMatchesTreeElement.onselect =
-            this.showMoreMatchesElementSelected.bind(this, showMoreMatchesTreeElement, startMatchIndex);
-    }
-    createContentSpan(lineContent, matchRanges) {
-        const contentSpan = document.createElement('span');
-        contentSpan.className = 'search-match-content';
-        contentSpan.textContent = lineContent;
-        UI.ARIAUtils.setLabel(contentSpan, `${lineContent} line`);
-        UI.UIUtils.highlightRangesWithStyleClass(contentSpan, matchRanges, 'highlighted-search-result');
-        return contentSpan;
+            this.showMoreMatchesElementSelected.bind(this, element, showMoreMatchesTreeElement, startMatchIndex);
     }
     regexMatchRanges(lineContent, regex) {
         regex.lastIndex = 0;
@@ -217,12 +190,18 @@ export class SearchResultsTreeElement extends UI.TreeOutline.TreeElement {
         }
         return matchRanges;
     }
-    showMoreMatchesElementSelected(showMoreMatchesTreeElement, startMatchIndex) {
-        this.removeChild(showMoreMatchesTreeElement);
-        this.appendSearchMatches(startMatchIndex, this.searchResult.matchesCount());
+    showMoreMatchesElementSelected(parentElement, showMoreMatchesTreeElement, startMatchIndex) {
+        const searchResult = this.treeElements.get(parentElement);
+        if (!searchResult) {
+            return false;
+        }
+        parentElement.removeChild(showMoreMatchesTreeElement);
+        this.appendSearchMatches(parentElement, startMatchIndex, searchResult.matchesCount());
         return false;
     }
 }
+export const matchesExpandedByDefault = 200;
+export const matchesShownAtOnce = 20;
 const DEFAULT_OPTS = {
     prefixLength: 25,
     maxLength: 1000,

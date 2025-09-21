@@ -61,6 +61,7 @@ export declare class SourcesView extends SourcesView_base implements TabbedEdito
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     replaceSelectionWith(searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;
     replaceAllWith(searchConfig: UI.SearchableView.SearchConfig, replacement: string): void;

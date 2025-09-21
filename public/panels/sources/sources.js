@@ -245,9 +245,6 @@ var AiCodeCompletionPlugin = class extends Plugin {
     return [
       CodeMirror.EditorView.updateListener.of((update) => this.#editorUpdate(update)),
       this.#teaserCompartment.of([]),
-      // conservativeCompletion is required so that the completion suggestions in the traditional
-      // autocomplete menu are only activated after the first keyDown/keyUp events.
-      TextEditor.Config.conservativeCompletion,
       TextEditor.Config.aiAutoCompleteSuggestion,
       CodeMirror.Prec.highest(CodeMirror.keymap.of(this.#editorKeymap()))
     ];
@@ -365,12 +362,8 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#teaser = void 0;
     }
     if (!this.#aiCodeCompletion) {
-      this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion(
-        { aidaClient: this.#aidaClient },
-        this.#editor,
-        "sources"
-        /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */
-      );
+      const contextFlavor = this.uiSourceCode.url().startsWith("snippet://") ? "console" : "sources";
+      this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, contextFlavor);
       this.#aiCodeCompletion.addEventListener("RequestTriggered", this.#onAiRequestTriggered, this);
       this.#aiCodeCompletion.addEventListener("ResponseReceived", this.#onAiResponseReceived, this);
     }
@@ -4578,11 +4571,11 @@ var SourcesSearchScope = class _SourcesSearchScope {
     }
     const files = this.searchResultCandidates;
     if (!files.length) {
-      progress.done();
+      progress.done = true;
       callback();
       return;
     }
-    progress.setTotalWork(files.length);
+    progress.totalWork = files.length;
     let fileIndex = 0;
     const maxFileContentRequests = 20;
     let callbacksLeft = 0;
@@ -4601,7 +4594,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
     function scheduleSearchInNextFileOrFinish() {
       if (fileIndex >= files.length) {
         if (!callbacksLeft) {
-          progress.done();
+          progress.done = true;
           callback();
           return;
         }
@@ -4612,7 +4605,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
       window.setTimeout(searchInNextFile.bind(this, uiSourceCode), 0);
     }
     function contentLoaded(uiSourceCode, content) {
-      progress.incrementWorked(1);
+      ++progress.worked;
       let matches = [];
       const searchConfig = this.searchConfig;
       const queries = searchConfig.queries();
@@ -7804,7 +7797,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     if (frame?.currentSourceFrame()?.contentSet && this.#currentFile === uiSourceCode && frame?.currentUISourceCode() === uiSourceCode) {
       Common12.EventTarget.fireEvent("source-file-loaded", uiSourceCode.displayName(true));
     } else {
-      this.innerShowFile(uiSourceCode, true);
+      this.#showFile(uiSourceCode, true);
     }
   }
   closeFile(uiSourceCode) {
@@ -7875,7 +7868,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       }
     }
   }
-  innerShowFile(uiSourceCode, userGesture) {
+  #showFile(uiSourceCode, userGesture) {
     if (this.reentrantShow) {
       return;
     }
@@ -7997,7 +7990,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       this.appendFileTab(uiSourceCode, false);
     }
     if (!index) {
-      this.innerShowFile(uiSourceCode, false);
+      this.#showFile(uiSourceCode, false);
       return;
     }
     if (!this.#currentFile) {
@@ -8006,7 +7999,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     const currentProjectIsSnippets = Snippets3.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.#currentFile);
     const addedProjectIsSnippets = Snippets3.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
     if (this.history.index(historyItemKey(this.#currentFile)) && currentProjectIsSnippets && !addedProjectIsSnippets) {
-      this.innerShowFile(uiSourceCode, false);
+      this.#showFile(uiSourceCode, false);
     }
   }
   removeUISourceCode(uiSourceCode) {
@@ -8121,7 +8114,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
     const { tabId: tabId2, isUserGesture } = event.data;
     const uiSourceCode = this.files.get(tabId2);
     if (uiSourceCode) {
-      this.innerShowFile(uiSourceCode, isUserGesture);
+      this.#showFile(uiSourceCode, isUserGesture);
     }
   }
   addUISourceCodeListeners(uiSourceCode) {
@@ -8794,6 +8787,9 @@ var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(U
     this.searchView.jumpToPreviousSearchResult();
   }
   supportsCaseSensitiveSearch() {
+    return true;
+  }
+  supportsWholeWordSearch() {
     return true;
   }
   supportsRegexSearch() {
@@ -13034,7 +13030,9 @@ function outline(state) {
   }
   function subtitleFromParamList() {
     while (cursor.name !== "ParamList") {
-      cursor.nextSibling();
+      if (!cursor.nextSibling()) {
+        break;
+      }
     }
     let parameters = "";
     if (cursor.name === "ParamList" && cursor.firstChild()) {

@@ -507,6 +507,9 @@ var ProfileDataGridTree = class {
   supportsCaseSensitiveSearch() {
     return true;
   }
+  supportsWholeWordSearch() {
+    return false;
+  }
   supportsRegexSearch() {
     return false;
   }
@@ -3312,6 +3315,9 @@ var ProfileFlameChart = class extends Common5.ObjectWrapper.eventMixin(UI7.Widge
   supportsCaseSensitiveSearch() {
     return true;
   }
+  supportsWholeWordSearch() {
+    return false;
+  }
   supportsRegexSearch() {
     return false;
   }
@@ -3849,6 +3855,9 @@ var ProfileView = class extends UI8.View.SimpleView {
   }
   supportsCaseSensitiveSearch() {
     return true;
+  }
+  supportsWholeWordSearch() {
+    return false;
   }
   supportsRegexSearch() {
     return false;
@@ -7870,7 +7879,15 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
   baseProfile;
   trackingOverviewGrid;
   currentSearchResultIndex = -1;
-  currentQuery;
+  currentSearch;
+  get currentQuery() {
+    return this.currentSearch?.query;
+  }
+  set currentQuery(value2) {
+    if (this.currentSearch) {
+      this.currentSearch.query = value2;
+    }
+  }
   constructor(dataDisplayDelegate, profile) {
     super({
       title: i18nString13(UIStrings14.heapSnapshot),
@@ -8126,6 +8143,9 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
   supportsCaseSensitiveSearch() {
     return true;
   }
+  supportsWholeWordSearch() {
+    return false;
+  }
   supportsRegexSearch() {
     return false;
   }
@@ -8139,7 +8159,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
     }
   }
   performSearch(searchConfig, shouldJump, jumpBackwards) {
-    const nextQuery = new HeapSnapshotModel5.HeapSnapshotModel.SearchConfig(searchConfig.query.trim(), searchConfig.caseSensitive, searchConfig.isRegex, shouldJump, jumpBackwards || false);
+    const nextQuery = new HeapSnapshotModel5.HeapSnapshotModel.SearchConfig(searchConfig.query.trim(), searchConfig.caseSensitive, searchConfig.wholeWord, searchConfig.isRegex, shouldJump, jumpBackwards || false);
     void this.searchThrottler.schedule(this.performSearchInternal.bind(this, nextQuery));
   }
   async performSearchInternal(nextQuery) {
@@ -8147,7 +8167,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
     if (!this.currentPerspective.supportsSearch()) {
       return;
     }
-    this.currentQuery = nextQuery;
+    this.currentSearch = nextQuery;
     const query = nextQuery.query.trim();
     if (!query) {
       return;
@@ -8168,7 +8188,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
       return;
     }
     const filter = this.dataGrid.nodeFilter();
-    this.searchResults = filter ? await this.profile.snapshotProxy.search(this.currentQuery, filter) : [];
+    this.searchResults = filter ? await this.profile.snapshotProxy.search(this.currentSearch, filter) : [];
     this.searchableViewInternal.updateSearchMatchesCount(this.searchResults.length);
     if (this.searchResults.length) {
       this.currentSearchResultIndex = nextQuery.jumpBackward ? this.searchResults.length - 1 : 0;
@@ -8219,10 +8239,10 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
     if (dataGrid.snapshot) {
       void this.baseProfile.loadPromise.then(dataGrid.setBaseDataSource.bind(dataGrid));
     }
-    if (!this.currentQuery || !this.searchResults) {
+    if (!this.currentSearch || !this.searchResults) {
       return;
     }
-    this.performSearch(this.currentQuery, false);
+    this.performSearch(this.currentSearch, false);
   }
   static ALWAYS_AVAILABLE_FILTERS = [
     { uiName: i18nString13(UIStrings14.duplicatedStrings), filterName: "duplicatedStrings" },
@@ -8242,10 +8262,10 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
       return;
     }
     this.dataGrid.filterSelectIndexChanged(this.profiles(), profileIndex, filterName);
-    if (!this.currentQuery || !this.searchResults) {
+    if (!this.currentSearch || !this.searchResults) {
       return;
     }
-    this.performSearch(this.currentQuery, false);
+    this.performSearch(this.currentSearch, false);
   }
   profiles() {
     return this.profile.profileType().getProfiles();
@@ -8337,10 +8357,10 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
       this.dataGrid.updateWidths();
     }
     void this.updateDataSourceAndView();
-    if (!this.currentQuery || !this.searchResults) {
+    if (!this.currentSearch || !this.searchResults) {
       return;
     }
-    this.performSearch(this.currentQuery, false);
+    this.performSearch(this.currentSearch, false);
   }
   async selectLiveObject(perspectiveName, snapshotObjectId) {
     await this.changePerspectiveAndWait(perspectiveName);

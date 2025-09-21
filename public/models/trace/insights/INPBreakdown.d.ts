@@ -41,7 +41,7 @@ export type INPBreakdownInsightModel = InsightModel<typeof UIStrings, {
     longestInteractionEvent?: SyntheticInteractionPair;
     highPercentileInteractionEvent?: SyntheticInteractionPair;
 }>;
-export declare function isINPBreakdown(insight: InsightModel): insight is INPBreakdownInsightModel;
+export declare function isINPBreakdownInsight(insight: InsightModel): insight is INPBreakdownInsightModel;
 export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): INPBreakdownInsightModel;
 /**
  * If `subpart` is -1, then all subparts are included. Otherwise it's just that index.

@@ -20,6 +20,8 @@ style.setProperty('--image-file-popoverArrows', 'url(\"' + new URL('./popoverArr
 style.setProperty('--image-file-toolbarResizerVertical', 'url(\"' + new URL('./toolbarResizerVertical.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touchCursor_2x', 'url(\"' + new URL('./touchCursor_2x.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-touchCursor', 'url(\"' + new URL('./touchCursor.png', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-gdp-logo-light', 'url(\"' + new URL('./gdp-logo-light.png', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-gdp-logo-dark', 'url(\"' + new URL('./gdp-logo-dark.png', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-3d-center', 'url(\"' + new URL(new URL('3d-center.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-3d-pan', 'url(\"' + new URL(new URL('3d-pan.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-3d-rotate', 'url(\"' + new URL(new URL('3d-rotate.svg', import.meta.url).href).toString() + '\")');
@@ -165,7 +167,6 @@ style.setProperty('--image-file-folder', 'url(\"' + new URL(new URL('folder.svg'
 style.setProperty('--image-file-frame-crossed', 'url(\"' + new URL(new URL('frame-crossed.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-frame-icon', 'url(\"' + new URL(new URL('frame-icon.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-frame', 'url(\"' + new URL(new URL('frame.svg', import.meta.url).href).toString() + '\")');
-style.setProperty('--image-file-gdp-logo-standalone', 'url(\"' + new URL(new URL('gdp-logo-standalone.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-gear-filled', 'url(\"' + new URL(new URL('gear-filled.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-gear', 'url(\"' + new URL(new URL('gear.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-gears', 'url(\"' + new URL(new URL('gears.svg', import.meta.url).href).toString() + '\")');

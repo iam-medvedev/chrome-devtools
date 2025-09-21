@@ -2,7 +2,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { ChangeManager } from '../ChangeManager.js';
-import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestion, type FunctionCallHandlerResult, MultimodalInputType, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestions, type FunctionCallHandlerResult, MultimodalInputType, type ParsedResponse, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect, contextNode }: {
     throwOnSideEffect: boolean;
     contextNode: SDK.DOMModel.DOMNode | null;
@@ -22,7 +22,7 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     getOrigin(): string;
     getItem(): SDK.DOMModel.DOMNode;
     getTitle(): string;
-    getSuggestions(): Promise<[ConversationSuggestion, ...ConversationSuggestion[]] | undefined>;
+    getSuggestions(): Promise<ConversationSuggestions | undefined>;
 }
 type Relation = 'currentElement' | 'parentElement';
 /**

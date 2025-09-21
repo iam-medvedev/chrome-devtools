@@ -12,6 +12,7 @@ declare const Layers3DView_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends keyof EventTypes>(eventType: Platform.TypeScriptUtilities.NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.VBox;
 export declare class Layers3DView extends Layers3DView_base implements LayerView {
+    #private;
     private failBanner;
     private readonly layerViewHost;
     private transformController;
@@ -76,7 +77,6 @@ export declare class Layers3DView extends Layers3DView_base implements LayerView
     private drawViewportAndChrome;
     private drawViewRect;
     update(): void;
-    private innerUpdate;
     private webglDisabledBanner;
     private selectionFromEventPoint;
     private createVisibilitySetting;

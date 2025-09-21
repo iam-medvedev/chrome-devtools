@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
-import * as Buttons from '../../ui/components/buttons/buttons.js';
+import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 let instance = null;
@@ -87,7 +87,9 @@ export class StyleEditorWidget extends UI.Widget.VBox {
         }
     }
     static createTriggerButton(pane, section, editorClass, buttonTitle, triggerKey) {
-        const triggerButton = createButton(buttonTitle);
+        const triggerButton = IconButton.Icon.create('flex-wrap', 'styles-pane-button');
+        triggerButton.title = buttonTitle;
+        triggerButton.role = 'button';
         triggerButton.onclick = async (event) => {
             event.stopPropagation();
             const popoverHelper = pane.swatchPopoverHelper();
@@ -112,24 +114,12 @@ export class StyleEditorWidget extends UI.Widget.VBox {
                 scrollerElement.addEventListener('scroll', onScroll);
             }
         };
+        triggerButton.onmouseup = event => {
+            // Stop propagation to prevent the property editor from being activated.
+            event.stopPropagation();
+        };
         return triggerButton;
     }
-}
-function createButton(buttonTitle) {
-    const button = new Buttons.Button.Button();
-    button.data = {
-        variant: "icon" /* Buttons.Button.Variant.ICON */,
-        size: "SMALL" /* Buttons.Button.Size.SMALL */,
-        iconName: 'flex-wrap',
-        title: buttonTitle,
-        jslogContext: 'flex-wrap',
-    };
-    button.classList.add('styles-pane-button');
-    button.onmouseup = event => {
-        // Stop propagation to prevent the property editor from being activated.
-        event.stopPropagation();
-    };
-    return button;
 }
 function ensureTreeElementForProperty(section, propertyName) {
     const target = section.propertiesTreeOutline.rootElement().children().find(child => child instanceof StylePropertyTreeElement && child.property.name === propertyName);

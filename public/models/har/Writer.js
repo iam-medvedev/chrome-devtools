@@ -51,15 +51,15 @@ export class Writer {
     static async write(stream, requests, options, progress) {
         const compositeProgress = new Common.Progress.CompositeProgress(progress);
         const content = await Writer.harStringForRequests(requests, options, compositeProgress);
-        if (progress.isCanceled()) {
+        if (progress.canceled) {
             return;
         }
         await Writer.writeToStream(stream, compositeProgress, content);
     }
     static async harStringForRequests(requests, options, compositeProgress) {
         const progress = compositeProgress.createSubProgress();
-        progress.setTitle(i18nString(UIStrings.collectingContent));
-        progress.setTotalWork(requests.length);
+        progress.title = i18nString(UIStrings.collectingContent);
+        progress.totalWork = requests.length;
         // Sort by issueTime because this is recorded as startedDateTime in HAR logs.
         requests.sort((reqA, reqB) => reqA.issueTime() - reqB.issueTime());
         const harLog = await Log.build(requests, options);
@@ -69,8 +69,8 @@ export class Writer {
             promises.push(promise.then(contentLoaded.bind(null, harLog.entries[i])));
         }
         await Promise.all(promises);
-        progress.done();
-        if (progress.isCanceled()) {
+        progress.done = true;
+        if (progress.canceled) {
             return '';
         }
         return JSON.stringify({ log: harLog }, null, jsonIndent);
@@ -89,7 +89,7 @@ export class Writer {
             return false;
         }
         function contentLoaded(entry, contentDataOrError) {
-            progress.incrementWorked();
+            ++progress.worked;
             const contentData = TextUtils.ContentData.ContentData.asDeferredContent(contentDataOrError);
             let encoded = contentData.isEncoded;
             if (contentData.content !== null) {
@@ -107,14 +107,14 @@ export class Writer {
     }
     static async writeToStream(stream, compositeProgress, fileContent) {
         const progress = compositeProgress.createSubProgress();
-        progress.setTitle(i18nString(UIStrings.writingFile));
-        progress.setTotalWork(fileContent.length);
-        for (let i = 0; i < fileContent.length && !progress.isCanceled(); i += chunkSize) {
+        progress.title = i18nString(UIStrings.writingFile);
+        progress.totalWork = fileContent.length;
+        for (let i = 0; i < fileContent.length && !progress.canceled; i += chunkSize) {
             const chunk = fileContent.substr(i, chunkSize);
             await stream.write(chunk);
-            progress.incrementWorked(chunk.length);
+            progress.worked += chunk.length;
         }
-        progress.done();
+        progress.done = true;
     }
 }
 export const jsonIndent = 2;

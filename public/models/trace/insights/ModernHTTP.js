@@ -30,7 +30,7 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/ModernHTTP.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function isModernHTTP(model) {
+export function isModernHTTPInsight(model) {
     return model.insightKey === "ModernHTTP" /* InsightKeys.MODERN_HTTP */;
 }
 /**

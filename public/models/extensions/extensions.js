@@ -1016,6 +1016,9 @@ var ExtensionPanel = class extends UI2.Panel.Panel {
   supportsCaseSensitiveSearch() {
     return false;
   }
+  supportsWholeWordSearch() {
+    return false;
+  }
   supportsRegexSearch() {
     return false;
   }

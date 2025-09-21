@@ -61,7 +61,6 @@ export declare class NetworkLogViewColumns {
     private saveColumnsSettings;
     private loadCustomColumnsAndSettings;
     private makeHeaderFragment;
-    private innerHeaderContextMenu;
     private manageRequestCustomHeaderDialog;
     private manageResponseCustomHeaderDialog;
     private removeCustomHeader;

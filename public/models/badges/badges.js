@@ -81,6 +81,7 @@ var StarterBadge = class extends Badge {
 // gen/front_end/models/badges/UserBadges.js
 import * as Common2 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
+import * as Root from "./../../core/root/root.js";
 
 // gen/front_end/models/badges/AiExplorerBadge.js
 var AI_EXPLORER_BADGE_URI = new URL("../../Images/ai-explorer-badge.svg", import.meta.url).toString();
@@ -125,11 +126,16 @@ var DOMDetectiveBadge = class extends Badge {
 };
 
 // gen/front_end/models/badges/UserBadges.js
+var SNOOZE_TIME_MS = 24 * 60 * 60 * 1e3;
+var MAX_SNOOZE_COUNT = 3;
 var userBadgesInstance = void 0;
 var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
   #badgeActionEventTarget = new Common2.ObjectWrapper.ObjectWrapper();
   #receiveBadgesSetting;
   #allBadges;
+  #starterBadgeSnoozeCount;
+  #starterBadgeLastSnoozedTimestamp;
+  #starterBadgeDismissed;
   static BADGE_REGISTRY = [
     StarterBadge,
     SpeedsterBadge,
@@ -140,7 +146,28 @@ var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     this.#receiveBadgesSetting = Common2.Settings.Settings.instance().moduleSetting("receive-gdp-badges");
+    if (Host.GdpClient.getGdpProfilesEnterprisePolicy() === Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED_WITHOUT_BADGES) {
+      this.#receiveBadgesSetting.set(false);
+    }
     this.#receiveBadgesSetting.addChangeListener(this.#reconcileBadges, this);
+    this.#starterBadgeSnoozeCount = Common2.Settings.Settings.instance().createSetting(
+      "starter-badge-snooze-count",
+      0,
+      "Synced"
+      /* Common.Settings.SettingStorageType.SYNCED */
+    );
+    this.#starterBadgeLastSnoozedTimestamp = Common2.Settings.Settings.instance().createSetting(
+      "starter-badge-last-snoozed-timestamp",
+      0,
+      "Synced"
+      /* Common.Settings.SettingStorageType.SYNCED */
+    );
+    this.#starterBadgeDismissed = Common2.Settings.Settings.instance().createSetting(
+      "starter-badge-dismissed",
+      false,
+      "Synced"
+      /* Common.Settings.SettingStorageType.SYNCED */
+    );
     this.#allBadges = _UserBadges.BADGE_REGISTRY.map((badgeCtor) => new badgeCtor({
       onTriggerBadge: this.#onTriggerBadge.bind(this),
       badgeActionEventTarget: this.#badgeActionEventTarget
@@ -155,6 +182,13 @@ var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
   async initialize() {
     return await this.#reconcileBadges();
   }
+  snoozeStarterBadge() {
+    this.#starterBadgeSnoozeCount.set(this.#starterBadgeSnoozeCount.get() + 1);
+    this.#starterBadgeLastSnoozedTimestamp.set(Date.now());
+  }
+  dismissStarterBadge() {
+    this.#starterBadgeDismissed.set(true);
+  }
   recordAction(action) {
     this.#badgeActionEventTarget.dispatchEventToListeners(action);
   }
@@ -165,7 +199,7 @@ var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
     } else {
       const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
       const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting.get());
-      if (gdpProfile && receiveBadgesSettingEnabled) {
+      if (gdpProfile && receiveBadgesSettingEnabled && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed()) {
         shouldAwardBadge = true;
       }
     }
@@ -182,10 +216,22 @@ var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
       badge.deactivate();
     });
   }
-  // TODO(ergunsh): Implement starter badge dismissal, snooze count & timestamp checks.
+  #isStarterBadgeDismissed() {
+    return this.#starterBadgeDismissed.get();
+  }
+  #isStarterBadgeSnoozed() {
+    const snoozeCount = this.#starterBadgeSnoozeCount.get();
+    const lastSnoozed = this.#starterBadgeLastSnoozedTimestamp.get();
+    const snoozedRecently = Date.now() - lastSnoozed < SNOOZE_TIME_MS;
+    return snoozeCount >= MAX_SNOOZE_COUNT || snoozedRecently;
+  }
   async #reconcileBadges() {
     const syncInfo = await new Promise((resolve) => Host.InspectorFrontendHost.InspectorFrontendHostInstance.getSyncInformation(resolve));
     if (!syncInfo.accountEmail) {
+      this.#deactivateAllBadges();
+      return;
+    }
+    if (!Host.GdpClient.isGdpProfilesAvailable() || Host.GdpClient.getGdpProfilesEnterprisePolicy() !== Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED) {
       this.#deactivateAllBadges();
       return;
     }
@@ -211,7 +257,7 @@ var UserBadges = class _UserBadges extends Common2.ObjectWrapper.ObjectWrapper {
         badge.deactivate();
         continue;
       }
-      const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile;
+      const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed();
       const shouldActivateActivityBasedBadge = !badge.isStarterBadge && Boolean(gdpProfile) && receiveBadgesSettingEnabled;
       if (shouldActivateStarterBadge || shouldActivateActivityBasedBadge) {
         badge.activate();

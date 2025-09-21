@@ -1040,6 +1040,9 @@
   "entrypoints/main/main-meta.ts | dontMatchChromeColorSchemeCommand": {
     "message": "Don't match Chrome color scheme"
   },
+  "entrypoints/main/main-meta.ts | earnBadges": {
+    "message": "Earn badges"
+  },
   "entrypoints/main/main-meta.ts | enableCtrlShortcutToSwitchPanels": {
     "message": "Enable Ctrl + 1-9 shortcut to switch panels"
   },
@@ -1090,9 +1093,6 @@
   },
   "entrypoints/main/main-meta.ts | previousPanel": {
     "message": "Previous panel"
-  },
-  "entrypoints/main/main-meta.ts | receiveBadges": {
-    "message": "Receive badges"
   },
   "entrypoints/main/main-meta.ts | reloadDevtools": {
     "message": "Reload DevTools"
@@ -5985,19 +5985,19 @@
     "message": "Copy file {PH1} to clipboard"
   },
   "panels/common/BadgeNotification.ts | activityBasedBadgeAwardMessage": {
-    "message": "You earned the {PH1} badge! It has been added to your Developer Profile."
+    "message": "You earned the {PH1} badge! It’s been added to your Developer Profile."
   },
-  "panels/common/BadgeNotification.ts | badgeSettings": {
-    "message": "Badge settings"
+  "panels/common/BadgeNotification.ts | close": {
+    "message": "Close"
   },
   "panels/common/BadgeNotification.ts | createProfile": {
     "message": "Create profile"
   },
-  "panels/common/BadgeNotification.ts | dismiss": {
-    "message": "Dismiss"
+  "panels/common/BadgeNotification.ts | manageSettings": {
+    "message": "Manage settings"
   },
   "panels/common/BadgeNotification.ts | receiveBadges": {
-    "message": "Receive badges"
+    "message": "Turn on badges"
   },
   "panels/common/BadgeNotification.ts | remindMeLater": {
     "message": "Remind me later"
@@ -6039,22 +6039,22 @@
     "message": "Designed for your success"
   },
   "panels/common/GdpSignUpDialog.ts | designedForSuccessBody": {
-    "message": "Grow your skills, build with AI, and receive badges you can showcase in your developer profile"
+    "message": "Grow your skills, build with AI, and earn badges you can showcase in your developer profile"
   },
   "panels/common/GdpSignUpDialog.ts | gdpDialogAriaLabel": {
     "message": "Google Developer Program sign up dialog"
-  },
-  "panels/common/GdpSignUpDialog.ts | gdpSignUp": {
-    "message": "Google Developer Program"
   },
   "panels/common/GdpSignUpDialog.ts | keepUpdated": {
     "message": "Keep me updated"
   },
   "panels/common/GdpSignUpDialog.ts | keepUpdatedBody": {
-    "message": "The latest DevTools features, event invites, and tailored insights directly in your inbox"
+    "message": "The latest DevTools features, event invites, and tailored insights land directly in your inbox"
   },
   "panels/common/GdpSignUpDialog.ts | learnMore": {
     "message": "Learn more"
+  },
+  "panels/common/GdpSignUpDialog.ts | learnMoreAccessibleText": {
+    "message": "Learn more about the Google Developer Program"
   },
   "panels/common/GdpSignUpDialog.ts | privacyPolicy": {
     "message": "Privacy Policy"
@@ -6065,14 +6065,17 @@
   "panels/common/GdpSignUpDialog.ts | signUpFailed": {
     "message": "Your Google Developer Program profile couldn’t be created. Please try again later."
   },
+  "panels/common/GdpSignUpDialog.ts | tailorProfile": {
+    "message": "Tailor your profile"
+  },
+  "panels/common/GdpSignUpDialog.ts | tailorProfileBody": {
+    "message": "The name on your Google Account and your interests will be used in your Google Developer Profile. Your name may appear where you contribute and can be changed at any time."
+  },
+  "panels/common/GdpSignUpDialog.ts | tailorProfileBodyDisclaimer": {
+    "message": "By creating a Developer Profile, you agree to the {PH1}. Google’s {PH2} and {PH3} apply to your use of this service."
+  },
   "panels/common/GdpSignUpDialog.ts | termsOfService": {
     "message": "Terms of Service"
-  },
-  "panels/common/GdpSignUpDialog.ts | thingsToConsider": {
-    "message": "Things to consider"
-  },
-  "panels/common/GdpSignUpDialog.ts | thingsToConsiderBody": {
-    "message": "By creating a Developer Profile, you agree to the {PH1}. Google’s {PH2} and {PH3} apply to your use of this service. The name on your Google Account and your interests will be used in your Google Developer Profile. Your name may appear where you contribute and can be changed at any time."
   },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Open Console to view {PH1}"
@@ -12992,6 +12995,9 @@
   "panels/settings/AISettingsTab.ts | whenOn": {
     "message": "When on"
   },
+  "panels/settings/components/SyncSection.ts | dataDisclaimer": {
+    "message": "({PH1} is sent to Google)"
+  },
   "panels/settings/components/SyncSection.ts | gdpPremiumAnnualSubscription": {
     "message": "Premium (Annual)"
   },
@@ -13016,8 +13022,8 @@
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
     "message": "To turn this setting on, you must first enable settings sync in Chrome."
   },
-  "panels/settings/components/SyncSection.ts | relevantDataDisclaimer": {
-    "message": "(Relevant data is sent to Google)"
+  "panels/settings/components/SyncSection.ts | relevantData": {
+    "message": "Relevant data"
   },
   "panels/settings/components/SyncSection.ts | signedIn": {
     "message": "Signed into Chrome as:"
@@ -13027,6 +13033,9 @@
   },
   "panels/settings/components/SyncSection.ts | syncDisabled": {
     "message": "To turn this setting on, you must enable Chrome sync."
+  },
+  "panels/settings/components/SyncSection.ts | tooltipDisclaimerText": {
+    "message": "When you qualify for a badge, the badge’s identifier and the type of activity you did to earn it are sent to Google"
   },
   "panels/settings/components/SyncSection.ts | viewProfile": {
     "message": "View profile"
@@ -14564,6 +14573,9 @@
   "panels/timeline/components/ExportTraceOptions.ts | saveButtonTitle": {
     "message": "Save"
   },
+  "panels/timeline/components/ExportTraceOptions.ts | shouldCompress": {
+    "message": "Compress with gzip"
+  },
   "panels/timeline/components/ExportTraceOptions.ts | showExportTraceOptionsDialogTitle": {
     "message": "Save trace…"
   },
@@ -16004,6 +16016,9 @@
   "panels/timeline/TimelineUIUtils.ts | function": {
     "message": "Function"
   },
+  "panels/timeline/TimelineUIUtils.ts | functionStack": {
+    "message": "Function stack"
+  },
   "panels/timeline/TimelineUIUtils.ts | idleCallbackRequested": {
     "message": "Idle callback requested"
   },
@@ -16141,9 +16156,6 @@
   },
   "panels/timeline/TimelineUIUtils.ts | sSelf": {
     "message": "{PH1} (self)"
-  },
-  "panels/timeline/TimelineUIUtils.ts | stackTrace": {
-    "message": "Stack trace"
   },
   "panels/timeline/TimelineUIUtils.ts | streamed": {
     "message": "Streamed"
@@ -17366,14 +17378,8 @@
   "ui/legacy/SearchableView.ts | closeSearchBar": {
     "message": "Close search bar"
   },
-  "ui/legacy/SearchableView.ts | disableCaseSensitive": {
-    "message": "Disable case sensitive search"
-  },
   "ui/legacy/SearchableView.ts | disableFindAndReplace": {
     "message": "Disable find and replace"
-  },
-  "ui/legacy/SearchableView.ts | disableRegularExpression": {
-    "message": "Disable regular expressions"
   },
   "ui/legacy/SearchableView.ts | dMatches": {
     "message": "{PH1} matches"
@@ -17381,20 +17387,20 @@
   "ui/legacy/SearchableView.ts | dOfD": {
     "message": "{PH1} of {PH2}"
   },
-  "ui/legacy/SearchableView.ts | enableCaseSensitive": {
-    "message": "Enable case sensitive search"
-  },
   "ui/legacy/SearchableView.ts | enableFindAndReplace": {
     "message": "Find and replace"
-  },
-  "ui/legacy/SearchableView.ts | enableRegularExpression": {
-    "message": "Enable regular expressions"
   },
   "ui/legacy/SearchableView.ts | findString": {
     "message": "Find"
   },
+  "ui/legacy/SearchableView.ts | matchCase": {
+    "message": "Match case"
+  },
   "ui/legacy/SearchableView.ts | matchString": {
     "message": "1 match"
+  },
+  "ui/legacy/SearchableView.ts | matchWholeWord": {
+    "message": "Match whole word"
   },
   "ui/legacy/SearchableView.ts | replace": {
     "message": "Replace"
@@ -17407,6 +17413,9 @@
   },
   "ui/legacy/SearchableView.ts | searchPrevious": {
     "message": "Show previous result"
+  },
+  "ui/legacy/SearchableView.ts | useRegularExpression": {
+    "message": "Use regular expression"
   },
   "ui/legacy/SettingsUI.ts | oneOrMoreSettingsHaveChanged": {
     "message": "One or more settings have changed which requires a reload to take effect"

@@ -73,10 +73,7 @@ export class AiCodeCompletionPlugin extends Plugin {
     editorExtension() {
         return [
             CodeMirror.EditorView.updateListener.of(update => this.#editorUpdate(update)), this.#teaserCompartment.of([]),
-            // conservativeCompletion is required so that the completion suggestions in the traditional
-            // autocomplete menu are only activated after the first keyDown/keyUp events.
-            TextEditor.Config.conservativeCompletion, TextEditor.Config.aiAutoCompleteSuggestion,
-            CodeMirror.Prec.highest(CodeMirror.keymap.of(this.#editorKeymap()))
+            TextEditor.Config.aiAutoCompleteSuggestion, CodeMirror.Prec.highest(CodeMirror.keymap.of(this.#editorKeymap()))
         ];
     }
     rightToolbarItems() {
@@ -195,7 +192,10 @@ export class AiCodeCompletionPlugin extends Plugin {
             this.#teaser = undefined;
         }
         if (!this.#aiCodeCompletion) {
-            this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, "sources" /* AiCodeCompletion.AiCodeCompletion.Panel.SOURCES */);
+            const contextFlavor = this.uiSourceCode.url().startsWith('snippet://') ?
+                "console" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.CONSOLE */ :
+                "sources" /* AiCodeCompletion.AiCodeCompletion.ContextFlavor.SOURCES */;
+            this.#aiCodeCompletion = new AiCodeCompletion.AiCodeCompletion.AiCodeCompletion({ aidaClient: this.#aidaClient }, this.#editor, contextFlavor);
             this.#aiCodeCompletion.addEventListener("RequestTriggered" /* AiCodeCompletion.AiCodeCompletion.Events.REQUEST_TRIGGERED */, this.#onAiRequestTriggered, this);
             this.#aiCodeCompletion.addEventListener("ResponseReceived" /* AiCodeCompletion.AiCodeCompletion.Events.RESPONSE_RECEIVED */, this.#onAiResponseReceived, this);
         }

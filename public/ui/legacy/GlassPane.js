@@ -19,6 +19,7 @@ export class GlassPane {
     constructor(jslog) {
         this.#widget = new Widget({ jslog, useShadowDom: true });
         this.#widget.markAsRoot();
+        this.#widget.onDetach = this.#onDetach.bind(this);
         this.element = this.#widget.element;
         this.contentElement = this.#widget.contentElement;
         this.registerRequiredCSS(glassPaneStyles);
@@ -94,13 +95,15 @@ export class GlassPane {
         if (!this.isShowing()) {
             return;
         }
-        panes.delete(this);
-        this.element.ownerDocument.body.removeEventListener('mousedown', this.onMouseDownBound, true);
-        this.element.ownerDocument.body.removeEventListener('pointerdown', this.onMouseDownBound, true);
         this.#widget.detach();
         if (this.#onHideCallback) {
             this.#onHideCallback();
         }
+    }
+    #onDetach() {
+        panes.delete(this);
+        this.element.ownerDocument.body.removeEventListener('mousedown', this.onMouseDownBound, true);
+        this.element.ownerDocument.body.removeEventListener('pointerdown', this.onMouseDownBound, true);
     }
     onMouseDown(event) {
         if (!this.onClickOutsideCallback) {

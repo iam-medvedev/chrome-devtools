@@ -19,14 +19,14 @@ export function handleEvent(event) {
         const key = `${isolate}.${scriptId}`;
         return Platform.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: '', ts: 0 }));
     };
-    if (Types.Events.isTargetRundownEvent(event) && event.args.data) {
+    if (Types.Events.isRundownScriptCompiled(event) && event.args.data) {
         const { isolate, scriptId, frame } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.frame = frame;
         script.ts = event.ts;
         return;
     }
-    if (Types.Events.isV8SourceRundownEvent(event)) {
+    if (Types.Events.isRundownScript(event)) {
         const { isolate, scriptId, url, sourceUrl, sourceMapUrl, sourceMapUrlElided } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.url = url;
@@ -46,13 +46,13 @@ export function handleEvent(event) {
         }
         return;
     }
-    if (Types.Events.isV8SourceRundownSourcesScriptCatchupEvent(event)) {
+    if (Types.Events.isRundownScriptSource(event)) {
         const { isolate, scriptId, sourceText } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.content = sourceText;
         return;
     }
-    if (Types.Events.isV8SourceRundownSourcesLargeScriptCatchupEvent(event)) {
+    if (Types.Events.isRundownScriptSourceLarge(event)) {
         const { isolate, scriptId, sourceText } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.content = (script.content ?? '') + sourceText;

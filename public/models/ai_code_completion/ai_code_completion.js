@@ -143,8 +143,8 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
     this.#panel = panel;
     this.#stopSequences = stopSequences ?? [];
   }
-  #debouncedRequestAidaSuggestion = Common.Debouncer.debounce((prefix, suffix, cursor, inferenceLanguage) => {
-    void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix, inferenceLanguage), cursor);
+  #debouncedRequestAidaSuggestion = Common.Debouncer.debounce((prefix, suffix, cursorPositionAtRequest, inferenceLanguage) => {
+    void this.#requestAidaSuggestion(this.#buildRequest(prefix, suffix, inferenceLanguage), cursorPositionAtRequest);
   }, AIDA_REQUEST_DEBOUNCE_TIMEOUT_MS);
   #buildRequest(prefix, suffix, inferenceLanguage = "JAVASCRIPT") {
     const userTier = Host.AidaClient.convertToUserTierEnum(this.#userTier);
@@ -176,61 +176,98 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       additional_files: additionalFiles
     };
   }
-  async #requestAidaSuggestion(request, cursor) {
+  async #completeCodeCached(request) {
+    const cachedResponse = this.#checkCachedRequestForResponse(request);
+    if (cachedResponse) {
+      return { response: cachedResponse, fromCache: true };
+    }
+    const response = await this.#aidaClient.completeCode(request);
+    if (!response) {
+      return {
+        response: null,
+        fromCache: false
+      };
+    }
+    this.#updateCachedRequest(request, response);
+    return {
+      response,
+      fromCache: false
+    };
+  }
+  #pickSampleFromResponse(response) {
+    if (!response.generatedSamples.length) {
+      return null;
+    }
+    const currentHintInMenu = this.#editor.editor.plugin(TextEditor.Config.showCompletionHint)?.currentHint;
+    if (!currentHintInMenu) {
+      return response.generatedSamples[0];
+    }
+    return response.generatedSamples.find((sample) => sample.generationString.startsWith(currentHintInMenu)) ?? response.generatedSamples[0];
+  }
+  async #generateSampleForRequest(request, cursor) {
+    const { response, fromCache } = await this.#completeCodeCached(request);
+    debugLog("At cursor position", cursor, { request, response, fromCache });
+    if (!response) {
+      return null;
+    }
+    const suggestionSample = this.#pickSampleFromResponse(response);
+    if (!suggestionSample) {
+      return null;
+    }
+    const shouldBlock = suggestionSample.attributionMetadata?.attributionAction === Host.AidaClient.RecitationAction.BLOCK;
+    if (shouldBlock) {
+      return null;
+    }
+    const suggestionText = this.#trimSuggestionOverlap(suggestionSample.generationString, request);
+    if (suggestionText.length === 0) {
+      return null;
+    }
+    return {
+      suggestionText,
+      sampleId: suggestionSample.sampleId,
+      fromCache,
+      citations: suggestionSample.attributionMetadata?.citations ?? [],
+      rpcGlobalId: response.metadata.rpcGlobalId
+    };
+  }
+  async #requestAidaSuggestion(request, cursorPositionAtRequest) {
     const startTime = performance.now();
-    let servedFromCache = false;
     this.dispatchEventToListeners("RequestTriggered", {});
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionRequestTriggered);
     try {
-      let response = this.#checkCachedRequestForResponse(request);
-      if (!response) {
-        response = await this.#aidaClient.completeCode(request);
-        if (response) {
-          this.#updateCachedRequest(request, response);
-        }
-      } else {
-        servedFromCache = true;
-      }
-      debugLog("At cursor position", cursor, { request, response });
-      if (response && response.generatedSamples.length > 0 && response.generatedSamples[0].generationString) {
-        if (response.generatedSamples[0].attributionMetadata?.attributionAction === Host.AidaClient.RecitationAction.BLOCK) {
-          this.dispatchEventToListeners("ResponseReceived", {});
-          return;
-        }
-        let suggestionText = response.generatedSamples[0].generationString;
-        if (request.suffix && request.suffix.length > 0) {
-          suggestionText = this.#trimSuggestionOverlap(response.generatedSamples[0].generationString, request.suffix);
-        }
-        if (suggestionText.length === 0) {
-          this.dispatchEventToListeners("ResponseReceived", {});
-          return;
-        }
-        const remainderDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
-        this.#renderingTimeout = window.setTimeout(() => {
-          this.#editor.dispatch({
-            effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({
-              text: suggestionText,
-              from: cursor,
-              rpcGlobalId: response.metadata.rpcGlobalId,
-              sampleId: response.generatedSamples[0].sampleId
-            })
-          });
-          if (servedFromCache) {
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionResponseServedFromCache);
-          }
-          debugLog("Suggestion dispatched to the editor", response.generatedSamples[0], "at cursor position", cursor);
-          if (response.metadata.rpcGlobalId) {
-            const latency = performance.now() - startTime;
-            this.#registerUserImpression(response.metadata.rpcGlobalId, response.generatedSamples[0].sampleId, latency);
-          }
-          const citations = response.generatedSamples[0].attributionMetadata?.citations;
-          this.dispatchEventToListeners("ResponseReceived", { citations });
-        }, remainderDelay);
-      } else {
+      const sampleResponse = await this.#generateSampleForRequest(request, cursorPositionAtRequest);
+      if (!sampleResponse) {
         this.dispatchEventToListeners("ResponseReceived", {});
+        return;
       }
+      const { suggestionText, sampleId, fromCache, citations, rpcGlobalId } = sampleResponse;
+      const remainingDelay = Math.max(DELAY_BEFORE_SHOWING_RESPONSE_MS - (performance.now() - startTime), 0);
+      this.#renderingTimeout = window.setTimeout(() => {
+        const currentCursorPosition = this.#editor.editor.state.selection.main.head;
+        if (currentCursorPosition !== cursorPositionAtRequest) {
+          this.dispatchEventToListeners("ResponseReceived", {});
+          return;
+        }
+        this.#editor.dispatch({
+          effects: TextEditor.Config.setAiAutoCompleteSuggestion.of({
+            text: suggestionText,
+            from: cursorPositionAtRequest,
+            rpcGlobalId,
+            sampleId,
+            startTime,
+            onImpression: this.#registerUserImpression.bind(this)
+          })
+        });
+        if (fromCache) {
+          Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionResponseServedFromCache);
+        }
+        debugLog("Suggestion dispatched to the editor", suggestionText, "at cursor position", cursorPositionAtRequest);
+        this.dispatchEventToListeners("ResponseReceived", { citations });
+      }, remainingDelay);
     } catch (e) {
       debugLog("Error while fetching code completion suggestions from AIDA", e);
       this.dispatchEventToListeners("ResponseReceived", {});
+      Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionError);
     }
   }
   get #userTier() {
@@ -247,7 +284,11 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
   /**
    * Removes the end of a suggestion if it overlaps with the start of the suffix.
    */
-  #trimSuggestionOverlap(generationString, suffix) {
+  #trimSuggestionOverlap(generationString, request) {
+    const suffix = request.suffix;
+    if (!suffix) {
+      return generationString;
+    }
     for (let i = Math.min(generationString.length, suffix.length); i > 0; i--) {
       const overlapCandidate = suffix.substring(0, i);
       if (generationString.endsWith(overlapCandidate)) {
@@ -302,6 +343,7 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       }
     });
     debugLog("Registered user impression with latency {seconds:", seconds, ", nanos:", nanos, "}");
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionSuggestionDisplayed);
   }
   registerUserAcceptance(rpcGlobalId, sampleId) {
     void this.#aidaClient.registerClientEvent({
@@ -316,9 +358,10 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       }
     });
     debugLog("Registered user acceptance");
+    Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionSuggestionAccepted);
   }
-  onTextChanged(prefix, suffix, cursor, inferenceLanguage) {
-    this.#debouncedRequestAidaSuggestion(prefix, suffix, cursor, inferenceLanguage);
+  onTextChanged(prefix, suffix, cursorPositionAtRequest, inferenceLanguage) {
+    this.#debouncedRequestAidaSuggestion(prefix, suffix, cursorPositionAtRequest, inferenceLanguage);
   }
   remove() {
     if (this.#renderingTimeout) {

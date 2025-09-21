@@ -45,16 +45,16 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.#mapping.scheduleRemap();
     }
     async addBinding(binding) {
-        await this.innerAddBinding(binding);
+        await this.#addBinding(binding);
     }
     async addBindingForTest(binding) {
-        await this.innerAddBinding(binding);
+        await this.#addBinding(binding);
     }
     async removeBinding(binding) {
-        await this.innerRemoveBinding(binding);
+        await this.#removeBinding(binding);
     }
     async removeBindingForTest(binding) {
-        await this.innerRemoveBinding(binding);
+        await this.#removeBinding(binding);
     }
     #setupBindings(networkUISourceCode) {
         if (networkUISourceCode.project().type() !== Workspace.Workspace.projectTypes.Network) {
@@ -62,7 +62,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         return this.#mapping.computeNetworkStatus(networkUISourceCode);
     }
-    async innerAddBinding(binding) {
+    async #addBinding(binding) {
         bindings.set(binding.network, binding);
         bindings.set(binding.fileSystem, binding);
         binding.fileSystem.forceLoadOnCheckContent();
@@ -87,7 +87,7 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.notifyBindingEvent(binding.fileSystem);
         this.dispatchEventToListeners(Events.BindingCreated, binding);
     }
-    async innerRemoveBinding(binding) {
+    async #removeBinding(binding) {
         if (bindings.get(binding.network) !== binding) {
             return;
         }
@@ -107,11 +107,11 @@ export class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper {
     onStatusAdded(status) {
         const binding = new PersistenceBinding(status.network, status.fileSystem);
         statusBindings.set(status, binding);
-        return this.innerAddBinding(binding);
+        return this.#addBinding(binding);
     }
     async onStatusRemoved(status) {
         const binding = statusBindings.get(status);
-        await this.innerRemoveBinding(binding);
+        await this.#removeBinding(binding);
     }
     onWorkingCopyChanged(event) {
         const uiSourceCode = event.data;

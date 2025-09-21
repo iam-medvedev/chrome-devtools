@@ -70,7 +70,7 @@ interface LCPSubparts {
      */
     renderDelay: Subpart;
 }
-export declare function isLCPBreakdown(model: InsightModel): model is LCPBreakdownInsightModel;
+export declare function isLCPBreakdownInsight(model: InsightModel): model is LCPBreakdownInsightModel;
 export type LCPBreakdownInsightModel = InsightModel<typeof UIStrings, {
     lcpMs?: Types.Timing.Milli;
     lcpTs?: Types.Timing.Milli;

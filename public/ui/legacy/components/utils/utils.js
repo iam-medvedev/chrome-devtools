@@ -1153,8 +1153,7 @@ function listenForNewComponentLinkifierEvents() {
   }
   listeningToNewEvents = true;
   window.addEventListener("linkifieractivated", function(event) {
-    const unknownEvent = event;
-    const eventWithData = unknownEvent;
+    const eventWithData = event;
     Linkifier.handleClickFromNewComponentLand(eventWithData.data);
   });
 }

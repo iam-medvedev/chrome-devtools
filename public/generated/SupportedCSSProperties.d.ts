@@ -395,6 +395,9 @@ export const generatedPropertyValues: {
     "font-kerning": {
         values: string[];
     };
+    "font-language-override": {
+        values: string[];
+    };
     "font-optical-sizing": {
         values: string[];
     };
@@ -666,6 +669,9 @@ export const generatedPropertyValues: {
         values: string[];
     };
     "overscroll-behavior-y": {
+        values: string[];
+    };
+    "overscroll-position": {
         values: string[];
     };
     page: {

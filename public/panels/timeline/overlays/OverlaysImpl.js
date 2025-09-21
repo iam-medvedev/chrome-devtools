@@ -5,9 +5,9 @@
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
+import * as AIAssistance from '../../../models/ai_assistance/ai_assistance.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import * as Utils from '../utils/utils.js';
 import * as Components from './components/components.js';
 const UIStrings = {
     /**
@@ -1207,7 +1207,7 @@ export class Overlays extends EventTarget {
                 const component = new Components.EntryLabelOverlay.EntryLabelOverlay(overlay.label, shouldDrawLabelBelowEntry);
                 // Generate the AI Call Tree for the AI Auto-Annotation feature.
                 const parsedTrace = this.#queries.parsedTrace();
-                const callTree = parsedTrace ? Utils.AICallTree.AICallTree.fromEvent(overlay.entry, parsedTrace) : null;
+                const callTree = parsedTrace ? AIAssistance.AICallTree.fromEvent(overlay.entry, parsedTrace) : null;
                 component.callTree = callTree;
                 component.addEventListener(Components.EntryLabelOverlay.LabelAnnotationsConsentDialogVisibilityChange.eventName, e => {
                     const event = e;

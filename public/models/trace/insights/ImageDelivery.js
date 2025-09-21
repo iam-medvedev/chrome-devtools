@@ -85,7 +85,7 @@ export var ImageOptimizationType;
     ImageOptimizationType["VIDEO_FORMAT"] = "VIDEO_FORMAT";
     ImageOptimizationType["RESPONSIVE_SIZE"] = "RESPONSIVE_SIZE";
 })(ImageOptimizationType || (ImageOptimizationType = {}));
-export function isImageDelivery(model) {
+export function isImageDeliveryInsight(model) {
     return model.insightKey === 'ImageDelivery';
 }
 export function getOptimizationMessage(optimization) {

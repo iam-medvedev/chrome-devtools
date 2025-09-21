@@ -166,7 +166,8 @@
       <include file="Images/frame-crossed.svg" name="IMAGES_FRAME_CROSSED_SVG" resource_path="Images/frame-crossed.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame-icon.svg" name="IMAGES_FRAME_ICON_SVG" resource_path="Images/frame-icon.svg" type="BINDATA" compress="false"/>
       <include file="Images/frame.svg" name="IMAGES_FRAME_SVG" resource_path="Images/frame.svg" type="BINDATA" compress="false"/>
-      <include file="Images/gdp-logo-standalone.svg" name="IMAGES_GDP_LOGO_STANDALONE_SVG" resource_path="Images/gdp-logo-standalone.svg" type="BINDATA" compress="false"/>
+      <include file="Images/gdp-logo-dark.png" name="IMAGES_GDP_LOGO_DARK_PNG" resource_path="Images/gdp-logo-dark.png" type="BINDATA" compress="false"/>
+      <include file="Images/gdp-logo-light.png" name="IMAGES_GDP_LOGO_LIGHT_PNG" resource_path="Images/gdp-logo-light.png" type="BINDATA" compress="false"/>
       <include file="Images/gear-filled.svg" name="IMAGES_GEAR_FILLED_SVG" resource_path="Images/gear-filled.svg" type="BINDATA" compress="false"/>
       <include file="Images/gear.svg" name="IMAGES_GEAR_SVG" resource_path="Images/gear.svg" type="BINDATA" compress="false"/>
       <include file="Images/gears.svg" name="IMAGES_GEARS_SVG" resource_path="Images/gears.svg" type="BINDATA" compress="false"/>

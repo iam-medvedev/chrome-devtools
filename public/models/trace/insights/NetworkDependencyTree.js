@@ -500,7 +500,7 @@ export function generatePreconnectCandidates(data, context, contextRequests) {
     preconnectCandidates = preconnectCandidates.sort((a, b) => b.wastedMs - a.wastedMs);
     return preconnectCandidates.slice(0, TOO_MANY_PRECONNECTS_THRESHOLD);
 }
-export function isNetworkDependencyTree(model) {
+export function isNetworkDependencyTreeInsight(model) {
     return model.insightKey === "NetworkDependencyTree" /* InsightKeys.NETWORK_DEPENDENCY_TREE */;
 }
 export function generateInsight(data, context) {

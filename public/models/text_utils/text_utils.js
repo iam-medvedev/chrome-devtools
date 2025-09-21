@@ -575,6 +575,7 @@ __export(TextUtils_exports, {
   FilterParser: () => FilterParser,
   Utils: () => Utils,
   detectIndentation: () => detectIndentation,
+  getOverlap: () => getOverlap,
   isMinified: () => isMinified,
   performSearchInContent: () => performSearchInContent,
   performSearchInContentData: () => performSearchInContentData,
@@ -850,6 +851,17 @@ var performSearchInSearchMatches = function(matches, query, caseSensitive, isReg
     }
   }
   return result;
+};
+var getOverlap = function(s1, s2) {
+  const minLen = Math.min(s1.length, s2.length);
+  for (let n = minLen; n > 0; n--) {
+    const suffix = s1.slice(-n);
+    const prefix = s2.substring(0, n);
+    if (suffix === prefix) {
+      return suffix;
+    }
+  }
+  return null;
 };
 
 // gen/front_end/models/text_utils/StaticContentProvider.js

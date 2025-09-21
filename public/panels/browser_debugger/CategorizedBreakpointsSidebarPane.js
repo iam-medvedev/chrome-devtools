@@ -146,7 +146,6 @@ export const DEFAULT_VIEW = (input, output, target) => {
             input.categories.get(target)?.forEach(breakpoint => input.onBreakpointChange(breakpoint, enabled));
         }
     };
-    const { on } = UI.UIUtils.HTMLElementWithLightDOMTemplate;
     const classes = (breakpoint) => Lit.Directives.classMap({
         small: true,
         'source-code': true,
@@ -206,7 +205,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                 ?indeterminate=${breakpoints.some(breakpoint => !breakpoint.enabled()) &&
         breakpoints.some(breakpoint => breakpoint.enabled())}
                 ?checked=${!breakpoints.some(breakpoint => !breakpoint.enabled())}
-                @change=${on((e) => onCheckboxClicked(e, category))}
+                @change=${(e) => onCheckboxClicked(e, category)}
               >${getLocalizedCategory(category)}</devtools-checkbox>
               <ul
                   role="group"
@@ -224,7 +223,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                     ?checked=${breakpoint.enabled()}
                     aria-description=${breakpoint === input.highlightedItem ? i18nString(UIStrings.breakpointHit)
         : Lit.nothing}
-                    @change=${on((e) => onCheckboxClicked(e, breakpoint))}
+                    @change=${(e) => onCheckboxClicked(e, breakpoint)}
                   >${Sources.CategorizedBreakpointL10n.getLocalizedBreakpointName(breakpoint.name)}</devtools-checkbox>
                 </li>`)}
               </ul>

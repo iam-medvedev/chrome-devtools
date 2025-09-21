@@ -20,7 +20,6 @@ export declare class IsolatedFileSystem extends PlatformFileSystem {
     embedderPath(): Platform.DevToolsPath.RawPathString;
     private initializeFilePaths;
     private createFoldersIfNotExist;
-    private innerCreateFolderIfNeeded;
     createFile(path: Platform.DevToolsPath.EncodedPathString, name: Platform.DevToolsPath.RawPathString | null): Promise<Platform.DevToolsPath.EncodedPathString | null>;
     deleteFile(path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;
     deleteDirectoryRecursively(path: Platform.DevToolsPath.EncodedPathString): Promise<boolean>;

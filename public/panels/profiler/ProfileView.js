@@ -314,6 +314,9 @@ export class ProfileView extends UI.View.SimpleView {
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return false;
+    }
     supportsRegexSearch() {
         return false;
     }

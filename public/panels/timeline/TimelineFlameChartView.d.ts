@@ -139,6 +139,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     private updateSearchResults;
     /**

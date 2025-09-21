@@ -52,7 +52,7 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/LCPBreakdown.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function isLCPBreakdown(model) {
+export function isLCPBreakdownInsight(model) {
     return model.insightKey === 'LCPBreakdown';
 }
 function anyValuesNaN(...values) {

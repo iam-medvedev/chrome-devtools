@@ -5,7 +5,7 @@ import * as Platform from '../platform/platform.js';
 import { CSSMetadata, cssMetadata } from './CSSMetadata.js';
 import { CSSProperty } from './CSSProperty.js';
 import * as PropertyParser from './CSSPropertyParser.js';
-import { AnchorFunctionMatcher, AngleMatcher, AttributeMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, defaultValueForCSSType, EnvFunctionMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, localEvalCSS, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
+import { AnchorFunctionMatcher, AngleMatcher, AttributeMatcher, AutoBaseMatcher, BaseVariableMatcher, BezierMatcher, BinOpMatcher, ColorMatcher, ColorMixMatcher, CustomFunctionMatcher, defaultValueForCSSType, EnvFunctionMatcher, FlexGridMatcher, GridTemplateMatcher, LengthMatcher, LightDarkColorMatcher, LinearGradientMatcher, LinkableNameMatcher, localEvalCSS, MathFunctionMatcher, PositionAnchorMatcher, PositionTryMatcher, RelativeColorChannelMatcher, ShadowMatcher, StringMatcher, URLMatcher, VariableMatcher } from './CSSPropertyParserMatchers.js';
 import { CSSFontPaletteValuesRule, CSSFunctionRule, CSSKeyframeRule, CSSKeyframesRule, CSSPositionTryRule, CSSPropertyRule, CSSStyleRule, } from './CSSRule.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 function containsStyle(styles, query) {
@@ -656,12 +656,16 @@ export class CSSMatchedStyles {
         const domCascade = this.#styleToDOMCascade.get(style);
         return domCascade ? domCascade.computeAttribute(style, attributeName, type) : null;
     }
-    rawAttributeValueFromStyle(style, attributeName) {
+    originatingNodeForStyle(style) {
         let node = this.nodeForStyle(style) ?? this.node();
         // If it's a pseudo-element, we need to find the originating element.
         while (node?.pseudoType()) {
             node = node.parentNode;
         }
+        return node;
+    }
+    rawAttributeValueFromStyle(style, attributeName) {
+        const node = this.originatingNodeForStyle(style);
         if (!node) {
             return null;
         }
@@ -713,6 +717,7 @@ export class CSSMatchedStyles {
             new PositionTryMatcher(),
             new LengthMatcher(),
             new MathFunctionMatcher(),
+            new CustomFunctionMatcher(),
             new AutoBaseMatcher(),
             new BinOpMatcher(),
             new RelativeColorChannelMatcher(),
@@ -997,9 +1002,9 @@ class DOMInheritanceCascade {
         if (!nodeCascade) {
             return null;
         }
-        return this.innerComputeCSSVariable(nodeCascade, variableName);
+        return this.#computeCSSVariable(nodeCascade, variableName);
     }
-    innerComputeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
+    #computeCSSVariable(nodeCascade, variableName, sccRecord = new SCCRecord()) {
         const availableCSSVariables = this.#availableCSSVariables.get(nodeCascade);
         const computedCSSVariables = this.#computedCSSVariables.get(nodeCascade);
         if (!computedCSSVariables || !availableCSSVariables?.has(variableName)) {
@@ -1029,7 +1034,7 @@ class DOMInheritanceCascade {
         if (!ast) {
             return null;
         }
-        return this.innerWalkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
+        return this.#walkTree(nodeCascade, ast, definedValue.declaration.style, variableName, sccRecord, definedValue.declaration);
     }
     computeAttribute(style, attributeName, type) {
         this.ensureInitialized();
@@ -1037,7 +1042,7 @@ class DOMInheritanceCascade {
         if (!nodeCascade) {
             return null;
         }
-        return this.innerComputeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
+        return this.#computeAttribute(nodeCascade, style, attributeName, type, new SCCRecord());
     }
     attributeValueAsType(style, attributeName, type) {
         const rawValue = this.#matchedStyles.rawAttributeValueFromStyle(style, attributeName);
@@ -1055,9 +1060,9 @@ class DOMInheritanceCascade {
         if (!ast) {
             return null;
         }
-        return this.innerWalkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
+        return this.#walkTree(nodeCascade, ast, style, `attr(${attributeName})`, sccRecord)?.value ?? null;
     }
-    innerComputeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
+    #computeAttribute(nodeCascade, style, attributeName, type, sccRecord = new SCCRecord()) {
         if (type.isCSSTokens) {
             const value = this.attributeValueWithSubstitutions(nodeCascade, style, attributeName, sccRecord);
             if (value !== null && localEvalCSS(value, type.type) !== null) {
@@ -1067,7 +1072,7 @@ class DOMInheritanceCascade {
         }
         return this.attributeValueAsType(style, attributeName, type.type);
     }
-    innerWalkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration) {
+    #walkTree(outerNodeCascade, ast, parentStyle, substitutionName, sccRecord, declaration) {
         const record = sccRecord.add(outerNodeCascade, substitutionName);
         const computedCSSVariablesMap = this.#computedCSSVariables;
         const innerNodeCascade = this.#styleToNodeCascade.get(parentStyle);
@@ -1081,7 +1086,7 @@ class DOMInheritanceCascade {
         // bubbling up the minimum discovery time whenever we close a cycle.
         const matching = PropertyParser.BottomUpTreeMatching.walk(ast, [
             new BaseVariableMatcher(match => {
-                const { value, mayFallback } = recurseWithCycleDetection(match.name, nodeCascade => this.innerComputeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
+                const { value, mayFallback } = recurseWithCycleDetection(match.name, nodeCascade => this.#computeCSSVariable(nodeCascade, match.name, sccRecord)?.value ?? null);
                 if (!mayFallback || value !== null) {
                     return value;
                 }
@@ -1268,7 +1273,7 @@ class DOMInheritanceCascade {
             for (const variableName of variableNames) {
                 const prevValue = accumulatedCSSVariables.get(variableName);
                 accumulatedCSSVariables.delete(variableName);
-                const computedValue = this.innerComputeCSSVariable(nodeCascade, variableName);
+                const computedValue = this.#computeCSSVariable(nodeCascade, variableName);
                 if (prevValue && computedValue?.value === prevValue.value) {
                     computedValue.declaration = prevValue.declaration;
                 }

@@ -5,12 +5,12 @@ import { describeWithEnvironment } from '../../../testing/EnvironmentHelpers.js'
 import { createContextForNavigation, getFirstOrError, getInsightOrError, processTrace, } from '../../../testing/InsightHelpers.js';
 import * as Trace from '../trace.js';
 describeWithEnvironment('Viewport', function () {
-    it('detects mobile optimized viewport', async () => {
+    it('detects mobile optimized viewport', async function () {
         const { data, insights } = await processTrace(this, 'lcp-images.json.gz');
         const insight = getInsightOrError('Viewport', insights, getFirstOrError(data.Meta.navigationsByNavigationId.values()));
         assert.isTrue(insight.mobileOptimized);
     });
-    it('detects mobile unoptimized viewport (w/ no pointer interactions)', async () => {
+    it('detects mobile unoptimized viewport (w/ no pointer interactions)', async function () {
         const { data } = await processTrace(this, 'lcp-images.json.gz');
         const navigation = getFirstOrError(data.Meta.navigationsByNavigationId.values());
         const context = createContextForNavigation(data, navigation, data.Meta.mainFrameId);
@@ -24,9 +24,10 @@ describeWithEnvironment('Viewport', function () {
         assert.strictEqual(insight.metricSavings?.INP, 0);
         assert.isEmpty(insight.longPointerInteractions);
     });
-    it('detects mobile unoptimized viewport (w/ pointer interactions)', async () => {
+    it('detects mobile unoptimized viewport (w/ pointer interactions)', async function () {
         const { data } = await processTrace(this, 'nytimes-bad-mobile-viewport.json.gz');
         const context = {
+            options: {},
             bounds: data.Meta.traceBounds,
             frameId: data.Meta.mainFrameId,
         };

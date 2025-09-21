@@ -4,13 +4,8 @@
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
 import { data as metaHandlerData } from './MetaHandler.js';
-// This handler serves two purposes. It generates a list of events that are
-// used to show user clicks in the timeline. It is also used to gather
-// EventTimings into Interactions, which we use to show interactions and
-// highlight long interactions to the user, along with INP.
-// We don't need to know which process / thread these events occurred in,
-// because they are effectively global, so we just track all that we find.
-let allEvents = [];
+// This handler gathers EventTimings into Interactions, which we use to show
+// interactions and highlight long interactions to the user, along with INP.
 let beginCommitCompositorFrameEvents = [];
 let parseMetaViewportEvents = [];
 export const LONG_INTERACTION_THRESHOLD = Helpers.Timing.milliToMicro(Types.Timing.Milli(200));
@@ -22,7 +17,6 @@ let interactionEventsWithNoNesting = [];
 let eventTimingEndEventsById = new Map();
 let eventTimingStartEventsForInteractions = [];
 export function reset() {
-    allEvents = [];
     beginCommitCompositorFrameEvents = [];
     parseMetaViewportEvents = [];
     interactionEvents = [];
@@ -47,7 +41,6 @@ export function handleEvent(event) {
         // Store the end event; for each start event that is an interaction, we need the matching end event to calculate the duration correctly.
         eventTimingEndEventsById.set(event.id, event);
     }
-    allEvents.push(event);
     // From this point on we want to find events that represent interactions.
     // These events are always start events - those are the ones that contain all
     // the metadata about the interaction.
@@ -268,7 +261,6 @@ export async function finalize() {
 }
 export function data() {
     return {
-        allEvents,
         beginCommitCompositorFrameEvents,
         parseMetaViewportEvents,
         interactionEvents,

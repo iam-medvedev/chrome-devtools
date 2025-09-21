@@ -190,7 +190,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         this.columnsArray = [];
         this.columns = {};
         this.visibleColumnsArray = columnsArray;
-        columnsArray.forEach(column => this.innerAddColumn(column));
+        columnsArray.forEach(column => this.#addColumn(column));
         this.cellClass = null;
         this.dataTableColumnGroup = this.dataTable.createChild('colgroup');
         this.#dataTableHead = this.dataTable.createChild('thead');
@@ -359,11 +359,11 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
         UI.ARIAUtils.LiveAnnouncer.alert(accessibleText);
     }
-    innerAddColumn(column, position) {
+    #addColumn(column, position) {
         column.defaultWeight = column.weight;
         const columnId = column.id;
         if (columnId in this.columns) {
-            this.innerRemoveColumn(columnId);
+            this.#removeColumn(columnId);
         }
         if (position === undefined) {
             position = this.columnsArray.length;
@@ -411,9 +411,9 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     addColumn(column, position) {
-        this.innerAddColumn(column, position);
+        this.#addColumn(column, position);
     }
-    innerRemoveColumn(columnId) {
+    #removeColumn(columnId) {
         const column = this.columns[columnId];
         if (!column) {
             return;
@@ -428,7 +428,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         delete this.dataTableHeaders[columnId];
     }
     removeColumn(columnId) {
-        this.innerRemoveColumn(columnId);
+        this.#removeColumn(columnId);
     }
     setCellClass(cellClass) {
         this.cellClass = cellClass;

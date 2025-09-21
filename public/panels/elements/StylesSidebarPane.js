@@ -507,9 +507,9 @@ export class StylesSidebarPane extends Common.ObjectWrapper.eventMixin(ElementsS
         return await node.domModel().cssModel().getComputedStyle(nodeId);
     }
     onResize() {
-        void this.resizeThrottler.schedule(this.innerResize.bind(this));
+        void this.resizeThrottler.schedule(this.#resize.bind(this));
     }
-    innerResize() {
+    #resize() {
         const width = this.contentElement.getBoundingClientRect().width + 'px';
         this.allSections().forEach(section => {
             section.propertiesTreeOutline.element.style.width = width;

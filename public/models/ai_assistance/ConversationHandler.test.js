@@ -287,7 +287,7 @@ describeWithMockConnection('ConversationHandler', () => {
             Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, isNode: false, traceModel });
             const generator = await conversationHandler.handleExternalRequest({
                 prompt: 'Please help me debug this problem',
-                conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */,
+                conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
                 data: Timeline.TimelinePanel.TimelinePanel.instance().getOrCreateExternalAIConversationData(),
             });
             let response = await generator.next();

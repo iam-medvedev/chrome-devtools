@@ -17,16 +17,16 @@ const UIStrings = {
     /**
      * @description Title for close button
      */
-    dismiss: 'Dismiss',
+    close: 'Close',
     /**
      * @description Activity based badge award notification text
      * @example {Badge Title} PH1
      */
-    activityBasedBadgeAwardMessage: 'You earned the {PH1} badge! It has been added to your Developer Profile.',
+    activityBasedBadgeAwardMessage: 'You earned the {PH1} badge! It’s been added to your Developer Profile.',
     /**
      * @description Action title for navigating to the badge settings in Google Developer Profile section
      */
-    badgeSettings: 'Badge settings',
+    manageSettings: 'Manage settings',
     /**
      * @description Action title for opening the Google Developer Program profile page of the user in a new tab
      */
@@ -50,7 +50,7 @@ const UIStrings = {
     /**
      * @description Action title for enabling the "Receive badges" setting
      */
-    receiveBadges: 'Receive badges',
+    receiveBadges: 'Turn on badges',
     /**
      * @description Action title for creating a Google Developer Program profle
      */
@@ -62,6 +62,7 @@ const i18nFormatString = i18n.i18n.getFormatLocalizedString.bind(undefined, str_
 const lockedString = i18n.i18n.lockedString;
 const LEFT_OFFSET = 5;
 const BOTTOM_OFFSET = 5;
+const AUTO_CLOSE_TIME_IN_MS = 30000;
 // clang-format off
 const DEFAULT_VIEW = (input, _output, target) => {
     const actionButtons = input.actions.map(property => {
@@ -76,19 +77,19 @@ const DEFAULT_VIEW = (input, _output, target) => {
     });
     const crossButton = html `<devtools-button
         class="dismiss notification-button"
-        @click=${input.onCloseClick}
+        @click=${input.onDismissClick}
         jslog=${VisualLogging.action('badge-notification.dismiss').track({ click: true })}
-        aria-label=${i18nString(UIStrings.dismiss)}
+        aria-label=${i18nString(UIStrings.close)}
         .iconName=${'cross'}
         .variant=${"icon" /* Buttons.Button.Variant.ICON */}
-        .title=${i18nString(UIStrings.dismiss)}
+        .title=${i18nString(UIStrings.close)}
         .inverseColorTheme=${true}
     ></devtools-button>`;
     render(html `
     <style>${badgeNotificationStyles}</style>
     <div class="container">
       <div class="badge-container">
-        <img class="badge-image" src=${input.imageUri}>
+        <img class="badge-image" role="presentation" src=${input.imageUri}>
       </div>
       <div class="action-and-text-container">
         <div class="label-container">
@@ -107,10 +108,14 @@ export class BadgeNotification extends UI.Widget.Widget {
     message = '';
     imageUri = '';
     actions = [];
+    isStarterBadge = false;
+    #autoCloseTimeout;
     #view;
     constructor(element, view = DEFAULT_VIEW) {
         super(element);
         this.#view = view;
+        // eslint-disable-next-line
+        this.contentElement.role = 'alert';
         this.markAsRoot();
     }
     async present(badge) {
@@ -130,11 +135,16 @@ export class BadgeNotification extends UI.Widget.Widget {
         this.message = properties.message;
         this.imageUri = properties.imageUri;
         this.actions = properties.actions;
+        this.isStarterBadge = properties.isStarterBadge;
         this.requestUpdate();
         this.show(document.body);
         void this.updateComplete.then(() => {
             this.#positionNotification();
         });
+        if (this.#autoCloseTimeout) {
+            window.clearTimeout(this.#autoCloseTimeout);
+        }
+        this.#autoCloseTimeout = window.setTimeout(this.#onAutoClose, AUTO_CLOSE_TIME_IN_MS);
     }
     async #presentStarterBadge(badge) {
         const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
@@ -154,17 +164,21 @@ export class BadgeNotification extends UI.Widget.Widget {
                 actions: [
                     {
                         label: i18nString(UIStrings.remindMeLater),
-                        onClick: () => { },
+                        onClick: () => {
+                            this.detach();
+                            Badges.UserBadges.instance().snoozeStarterBadge();
+                        },
                     },
                     {
                         label: i18nString(UIStrings.receiveBadges),
                         onClick: () => {
-                            this.#close();
+                            this.detach();
                             revealBadgeSettings();
                         }
                     }
                 ],
                 imageUri: badge.imageUri,
+                isStarterBadge: true,
             });
             return;
         }
@@ -174,17 +188,21 @@ export class BadgeNotification extends UI.Widget.Widget {
             actions: [
                 {
                     label: i18nString(UIStrings.remindMeLater),
-                    onClick: () => { },
+                    onClick: () => {
+                        this.detach();
+                        Badges.UserBadges.instance().snoozeStarterBadge();
+                    },
                 },
                 {
                     label: i18nString(UIStrings.createProfile),
                     onClick: () => {
-                        this.#close();
+                        this.detach();
                         GdpSignUpDialog.GdpSignUpDialog.show();
                     }
                 }
             ],
             imageUri: badge.imageUri,
+            isStarterBadge: true,
         });
     }
     #presentActivityBasedBadge(badge) {
@@ -192,9 +210,9 @@ export class BadgeNotification extends UI.Widget.Widget {
             message: i18nString(UIStrings.activityBasedBadgeAwardMessage, { PH1: badge.title }),
             actions: [
                 {
-                    label: i18nString(UIStrings.badgeSettings),
+                    label: i18nString(UIStrings.manageSettings),
                     onClick: () => {
-                        this.#close();
+                        this.detach();
                         revealBadgeSettings();
                     },
                 },
@@ -206,10 +224,23 @@ export class BadgeNotification extends UI.Widget.Widget {
                 }
             ],
             imageUri: badge.imageUri,
+            isStarterBadge: badge.isStarterBadge,
         });
     }
-    #close = () => {
+    onDetach() {
+        window.clearTimeout(this.#autoCloseTimeout);
+    }
+    #onDismissClick = () => {
         this.detach();
+        if (this.isStarterBadge) {
+            Badges.UserBadges.instance().dismissStarterBadge();
+        }
+    };
+    #onAutoClose = () => {
+        this.detach();
+        if (this.isStarterBadge) {
+            Badges.UserBadges.instance().snoozeStarterBadge();
+        }
     };
     wasShown() {
         super.wasShown();
@@ -220,7 +251,8 @@ export class BadgeNotification extends UI.Widget.Widget {
             message: this.message,
             imageUri: this.imageUri,
             actions: this.actions,
-            onCloseClick: this.#close,
+            isStarterBadge: this.isStarterBadge,
+            onDismissClick: this.#onDismissClick,
         };
         this.#view(viewInput, undefined, this.contentElement);
     }

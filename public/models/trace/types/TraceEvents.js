@@ -20,7 +20,7 @@ export function objectIsCallFrame(object) {
         ('url' in object && typeof object.url === 'string');
 }
 export function isRunTask(event) {
-    return event.name === "RunTask" /* Name.RUN_TASK */;
+    return event.name === "RunTask" /* Name.RUN_TASK */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isAuctionWorkletRunningInProcess(event) {
     return event.name === 'AuctionWorkletRunningInProcess';
@@ -216,7 +216,7 @@ export function isEnd(event) {
     return event.ph === "E" /* Phase.END */;
 }
 export function isDispatch(event) {
-    return event.name === 'EventDispatch';
+    return event.name === 'EventDispatch' && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isInstant(event) {
     return event.ph === "I" /* Phase.INSTANT */;
@@ -225,13 +225,13 @@ export function isRendererEvent(event) {
     return isInstant(event) || isComplete(event);
 }
 export function isFireIdleCallback(event) {
-    return event.name === 'FireIdleCallback';
+    return event.name === 'FireIdleCallback' && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isSchedulePostMessage(event) {
     return event.name === "SchedulePostMessage" /* Name.SCHEDULE_POST_MESSAGE */;
 }
 export function isHandlePostMessage(event) {
-    return event.name === "HandlePostMessage" /* Name.HANDLE_POST_MESSAGE */;
+    return event.name === "HandlePostMessage" /* Name.HANDLE_POST_MESSAGE */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isUpdateCounters(event) {
     return event.name === 'UpdateCounters';
@@ -314,7 +314,7 @@ export function isProfile(event) {
     return event.name === "Profile" /* Name.PROFILE */;
 }
 export function isSyntheticCpuProfile(event) {
-    return event.name === "CpuProfile" /* Name.CPU_PROFILE */;
+    return event.name === "CpuProfile" /* Name.CPU_PROFILE */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isProfileChunk(event) {
     return event.name === "ProfileChunk" /* Name.PROFILE_CHUNK */;
@@ -362,7 +362,7 @@ export function isNavigationStart(event) {
     return event.name === 'navigationStart' && event.args?.data?.documentLoaderURL !== '';
 }
 export function isDidCommitSameDocumentNavigation(event) {
-    return event.name === 'RenderFrameHostImpl::DidCommitSameDocumentNavigation';
+    return event.name === 'RenderFrameHostImpl::DidCommitSameDocumentNavigation' && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isMainFrameViewport(event) {
     return event.name === 'PaintTimingVisualizer::Viewport';
@@ -433,10 +433,10 @@ export function isPaint(event) {
     return event.name === "Paint" /* Name.PAINT */;
 }
 export function isPaintImage(event) {
-    return event.name === "PaintImage" /* Name.PAINT_IMAGE */;
+    return event.name === "PaintImage" /* Name.PAINT_IMAGE */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isScrollLayer(event) {
-    return event.name === "ScrollLayer" /* Name.SCROLL_LAYER */;
+    return event.name === "ScrollLayer" /* Name.SCROLL_LAYER */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isSetLayerId(event) {
     return event.name === "SetLayerTreeId" /* Name.SET_LAYER_TREE_ID */;
@@ -451,13 +451,13 @@ export function isLayerTreeHostImplSnapshot(event) {
     return event.name === "cc::LayerTreeHostImpl" /* Name.LAYER_TREE_HOST_IMPL_SNAPSHOT */;
 }
 export function isFireAnimationFrame(event) {
-    return event.name === "FireAnimationFrame" /* Name.FIRE_ANIMATION_FRAME */;
+    return event.name === "FireAnimationFrame" /* Name.FIRE_ANIMATION_FRAME */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isTimerInstall(event) {
     return event.name === "TimerInstall" /* Name.TIMER_INSTALL */;
 }
 export function isTimerFire(event) {
-    return event.name === "TimerFire" /* Name.TIMER_FIRE */;
+    return event.name === "TimerFire" /* Name.TIMER_FIRE */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isRequestIdleCallback(event) {
     return event.name === "RequestIdleCallback" /* Name.REQUEST_IDLE_CALLBACK */;
@@ -488,19 +488,19 @@ export function isWebSocketEvent(event) {
     return isWebSocketTraceEvent(event) || isSyntheticWebSocketConnection(event);
 }
 export function isV8Compile(event) {
-    return event.name === "v8.compile" /* Name.COMPILE */;
+    return event.name === "v8.compile" /* Name.COMPILE */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isFunctionCall(event) {
-    return event.name === "FunctionCall" /* Name.FUNCTION_CALL */;
+    return event.name === "FunctionCall" /* Name.FUNCTION_CALL */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isSchedulePostTaskCallback(event) {
     return event.name === "SchedulePostTaskCallback" /* Name.SCHEDULE_POST_TASK_CALLBACK */;
 }
 export function isRunPostTaskCallback(event) {
-    return event.name === "RunPostTaskCallback" /* Name.RUN_POST_TASK_CALLBACK */;
+    return event.name === "RunPostTaskCallback" /* Name.RUN_POST_TASK_CALLBACK */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 export function isAbortPostTaskCallback(event) {
-    return event.name === "AbortPostTaskCallback" /* Name.ABORT_POST_TASK_CALLBACK */;
+    return event.name === "AbortPostTaskCallback" /* Name.ABORT_POST_TASK_CALLBACK */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 /**
  * Generally, before JS is executed, a trace event is dispatched that
@@ -536,7 +536,7 @@ export function isFlowPhaseEvent(event) {
     return event.ph === "s" /* Phase.FLOW_START */ || event.ph === "t" /* Phase.FLOW_STEP */ || event.ph === "f" /* Phase.FLOW_END */;
 }
 export function isParseAuthorStyleSheetEvent(event) {
-    return event.name === "ParseAuthorStyleSheet" /* Name.PARSE_AUTHOR_STYLE_SHEET */;
+    return event.name === "ParseAuthorStyleSheet" /* Name.PARSE_AUTHOR_STYLE_SHEET */ && event.ph === "X" /* Phase.COMPLETE */;
 }
 // NOT AN EXHAUSTIVE LIST: just some categories we use and refer
 // to in multiple places.
@@ -548,19 +548,19 @@ export const Categories = {
 export function isLegacyTimelineFrame(data) {
     return 'idle' in data && typeof data.idle === 'boolean';
 }
-export function isTargetRundownEvent(event) {
-    return event.cat === 'disabled-by-default-devtools.target-rundown' && event.name === 'ScriptCompiled';
+export function isRundownScriptCompiled(event) {
+    return event.cat === 'disabled-by-default-devtools.target-rundown';
 }
-export function isV8SourceRundownEvent(event) {
+export function isRundownScript(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown' && event.name === 'ScriptCatchup';
 }
-export function isV8SourceRundownSourcesScriptCatchupEvent(event) {
+export function isRundownScriptSource(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'ScriptCatchup';
 }
-export function isV8SourceRundownSourcesLargeScriptCatchupEvent(event) {
+export function isRundownScriptSourceLarge(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources' && event.name === 'LargeScriptCatchup';
 }
-export function isAnyScriptCatchupEvent(event) {
+export function isAnyScriptSourceEvent(event) {
     return event.cat === 'disabled-by-default-devtools.v8-source-rundown-sources';
 }
 //# sourceMappingURL=TraceEvents.js.map

@@ -536,6 +536,9 @@ export class ProfileDataGridTree {
     supportsCaseSensitiveSearch() {
         return true;
     }
+    supportsWholeWordSearch() {
+        return false;
+    }
     supportsRegexSearch() {
         return false;
     }

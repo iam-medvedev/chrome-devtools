@@ -2,7 +2,6 @@ import '../../../../ui/components/icon_button/icon_button.js';
 import '../../../../ui/components/tooltips/tooltips.js';
 import '../../../../ui/components/spinners/spinners.js';
 import * as AiAssistanceModels from '../../../../models/ai_assistance/ai_assistance.js';
-import type * as Utils from '../../utils/utils.js';
 export declare class EntryLabelRemoveEvent extends Event {
     static readonly eventName = "entrylabelremoveevent";
     constructor();
@@ -49,7 +48,7 @@ export declare class EntryLabelOverlay extends HTMLElement {
     entryHighlightWrapper(): HTMLElement | null;
     set entryLabelVisibleHeight(entryLabelVisibleHeight: number);
     setLabelEditabilityAndRemoveEmptyLabel(editable: boolean): void;
-    set callTree(callTree: Utils.AICallTree.AICallTree | null);
+    set callTree(callTree: AiAssistanceModels.AICallTree | null);
 }
 declare global {
     interface HTMLElementTagNameMap {

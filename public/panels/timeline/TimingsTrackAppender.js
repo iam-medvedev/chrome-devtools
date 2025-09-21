@@ -1,5 +1,6 @@
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Trace from '../../models/trace/trace.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import { buildGroupStyle, buildTrackHeader, getDurationString } from './AppenderUtils.js';
 import * as Extensions from './extensions/extensions.js';
 import { TimelineFlameChartMarker } from './TimelineFlameChartView.js';
@@ -77,7 +78,11 @@ export class TimingsTrackAppender {
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
         const trackIsCollapsible = this.#parsedTrace.data.UserTimings.performanceMeasures.length > 0;
-        const style = buildGroupStyle({ useFirstLineForOverview: true, collapsible: trackIsCollapsible });
+        const style = buildGroupStyle({
+            useFirstLineForOverview: true,
+            collapsible: trackIsCollapsible ? 2 /* PerfUI.FlameChart.GroupCollapsibleState.IF_MULTI_ROW */ :
+                1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */,
+        });
         const group = buildTrackHeader("timings" /* VisualLoggingTrackName.TIMINGS */, currentLevel, i18nString(UIStrings.timings), style, /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);
     }

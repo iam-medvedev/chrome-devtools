@@ -1844,12 +1844,22 @@ var consoleView_css_default = `/*
 .console-view-object-properties-section {
   padding: 0;
   position: relative;
-  vertical-align: top;
   color: inherit;
   display: inline-block;
   overflow-wrap: break-word;
   max-width: 100%;
+  vertical-align: top;
   margin-top: -1.5px;
+}
+
+/* Console content is rendered in "Noto Sans Mono" on Linux, which has a
+ * different actual line-height than the fonts used on Windows or MacOS.
+ * "vertical-align: middle" breaks the layout when expanding an object such
+ * that it spans multiple lines. We therefore align to the top, and use a
+ * different "margin-top" on Linux to compensate for the line-height difference.
+ */
+.platform-linux .console-view-object-properties-section {
+  margin-top: 0;
 }
 
 .info-note {
@@ -4536,12 +4546,12 @@ var ConsoleViewport = class {
   }
   refresh() {
     this.observer.disconnect();
-    this.innerRefresh();
+    this.#refresh();
     if (this.#stickToBottom) {
       this.observer.observe(this.#contentElement, this.observerConfig);
     }
   }
-  innerRefresh() {
+  #refresh() {
     if (!this.visibleHeight()) {
       return;
     }
@@ -5076,7 +5086,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   buildHiddenCacheTimeout;
   searchShouldJumpBackwards;
   searchProgressIndicator;
-  innerSearchTimeoutId;
+  #searchTimeoutId;
   muteViewportUpdates;
   waitForScrollTimeout;
   issueCounter;
@@ -5632,13 +5642,12 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     if (!preventCollapse && this.tryToCollapseMessages(viewMessage, this.visibleViewMessages[this.visibleViewMessages.length - 1])) {
       return;
     }
-    const originatingMessage = viewMessage.consoleMessage().originatingMessage();
-    const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
-    viewMessage.setAdjacentUserCommandResult(adjacent);
     const currentGroup = viewMessage.consoleGroup();
-    showGroup(currentGroup, this.visibleViewMessages);
-    const shouldShowMessage = !currentGroup?.messagesHidden();
-    if (shouldShowMessage) {
+    if (!currentGroup?.messagesHidden()) {
+      const originatingMessage = viewMessage.consoleMessage().originatingMessage();
+      const adjacent = Boolean(originatingMessage && lastMessage?.consoleMessage() === originatingMessage);
+      viewMessage.setAdjacentUserCommandResult(adjacent);
+      showGroup(currentGroup, this.visibleViewMessages);
       this.visibleViewMessages.push(viewMessage);
       this.searchMessage(this.visibleViewMessages.length - 1);
     }
@@ -5755,15 +5764,15 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     const filename = Platform4.StringUtilities.sprintf("%s-%d.log", parsedURL ? parsedURL.host : "console", Date.now());
     const stream = new Bindings2.FileUtils.FileOutputStream();
     const progressIndicator = document.createElement("devtools-progress");
-    progressIndicator.setTitle(i18nString5(UIStrings5.writingFile));
-    progressIndicator.setTotalWork(this.itemCount());
+    progressIndicator.title = i18nString5(UIStrings5.writingFile);
+    progressIndicator.totalWork = this.itemCount();
     const chunkSize = 350;
     if (!await stream.open(filename)) {
       return;
     }
     this.progressToolbarItem.element.appendChild(progressIndicator);
     let messageIndex = 0;
-    while (messageIndex < this.itemCount() && !progressIndicator.isCanceled()) {
+    while (messageIndex < this.itemCount() && !progressIndicator.canceled) {
       const messageContents = [];
       let i;
       for (i = 0; i < chunkSize && i + messageIndex < this.itemCount(); ++i) {
@@ -5772,10 +5781,10 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       }
       messageIndex += i;
       await stream.write(messageContents.join("\n") + "\n");
-      progressIndicator.setWorked(messageIndex);
+      progressIndicator.worked = messageIndex;
     }
     void stream.close();
-    progressIndicator.done();
+    progressIndicator.done = true;
   }
   async copyConsole() {
     const messageContents = [];
@@ -6004,27 +6013,27 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       this.searchShouldJumpBackwards = Boolean(jumpBackwards);
     }
     this.searchProgressIndicator = document.createElement("devtools-progress");
-    this.searchProgressIndicator.setTitle(i18nString5(UIStrings5.searching));
-    this.searchProgressIndicator.setTotalWork(this.visibleViewMessages.length);
+    this.searchProgressIndicator.title = i18nString5(UIStrings5.searching);
+    this.searchProgressIndicator.totalWork = this.visibleViewMessages.length;
     this.progressToolbarItem.element.appendChild(this.searchProgressIndicator);
-    this.innerSearch(0);
+    this.#search(0);
   }
   cleanupAfterSearch() {
     delete this.searchShouldJumpBackwards;
-    if (this.innerSearchTimeoutId) {
-      clearTimeout(this.innerSearchTimeoutId);
-      delete this.innerSearchTimeoutId;
+    if (this.#searchTimeoutId) {
+      clearTimeout(this.#searchTimeoutId);
+      this.#searchTimeoutId = void 0;
     }
     if (this.searchProgressIndicator) {
-      this.searchProgressIndicator.done();
+      this.searchProgressIndicator.done = true;
       delete this.searchProgressIndicator;
     }
   }
   searchFinishedForTests() {
   }
-  innerSearch(index) {
-    delete this.innerSearchTimeoutId;
-    if (this.searchProgressIndicator?.isCanceled()) {
+  #search(index) {
+    this.#searchTimeoutId = void 0;
+    if (this.searchProgressIndicator?.canceled) {
       this.cleanupAfterSearch();
       return;
     }
@@ -6042,9 +6051,9 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
       window.setTimeout(this.searchFinishedForTests.bind(this), 0);
       return;
     }
-    this.innerSearchTimeoutId = window.setTimeout(this.innerSearch.bind(this, index), 100);
+    this.#searchTimeoutId = window.setTimeout(this.#search.bind(this, index), 100);
     if (this.searchProgressIndicator) {
-      this.searchProgressIndicator.setWorked(index);
+      this.searchProgressIndicator.worked = index;
     }
   }
   searchMessage(index) {
@@ -6061,6 +6070,9 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     this.jumpToMatch(this.currentMatchRangeIndex - 1);
   }
   supportsCaseSensitiveSearch() {
+    return true;
+  }
+  supportsWholeWordSearch() {
     return true;
   }
   supportsRegexSearch() {

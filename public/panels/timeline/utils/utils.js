@@ -4,379 +4,6 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
-// gen/front_end/panels/timeline/utils/AICallTree.js
-var AICallTree_exports = {};
-__export(AICallTree_exports, {
-  AICallTree: () => AICallTree,
-  ExcludeCompileCodeFilter: () => ExcludeCompileCodeFilter,
-  MinDurationFilter: () => MinDurationFilter,
-  SelectedEventDurationFilter: () => SelectedEventDurationFilter
-});
-import * as Root from "./../../../core/root/root.js";
-import * as Trace from "./../../../models/trace/trace.js";
-import * as SourceMapsResolver from "./../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
-function depthFirstWalk(nodes, callback) {
-  for (const node of nodes) {
-    if (callback?.(node)) {
-      break;
-    }
-    depthFirstWalk(node.children().values(), callback);
-  }
-}
-var AICallTree = class _AICallTree {
-  selectedNode;
-  rootNode;
-  parsedTrace;
-  constructor(selectedNode, rootNode, parsedTrace) {
-    this.selectedNode = selectedNode;
-    this.rootNode = rootNode;
-    this.parsedTrace = parsedTrace;
-  }
-  static findEventsForThread({ thread, parsedTrace, bounds }) {
-    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-    if (!threadEvents) {
-      return null;
-    }
-    return threadEvents.filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
-  }
-  static findMainThreadTasks({ thread, parsedTrace, bounds }) {
-    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-    if (!threadEvents) {
-      return null;
-    }
-    return threadEvents.filter(Trace.Types.Events.isRunTask).filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
-  }
-  /**
-   * Builds a call tree representing all calls within the given timeframe for
-   * the provided thread.
-   * Events that are less than 0.05% of the range duration are removed.
-   */
-  static fromTimeOnThread({ thread, parsedTrace, bounds }) {
-    const overlappingEvents = this.findEventsForThread({ thread, parsedTrace, bounds });
-    if (!overlappingEvents) {
-      return null;
-    }
-    const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes());
-    const minDuration = Trace.Types.Timing.Micro(bounds.range * 5e-3);
-    const minDurationFilter = new MinDurationFilter(minDuration);
-    const compileCodeFilter = new ExcludeCompileCodeFilter();
-    const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
-      filters: [minDurationFilter, compileCodeFilter, visibleEventsFilter],
-      startTime: Trace.Helpers.Timing.microToMilli(bounds.min),
-      endTime: Trace.Helpers.Timing.microToMilli(bounds.max),
-      doNotAggregate: true,
-      includeInstantEvents: true
-    });
-    const instance2 = new _AICallTree(null, rootNode, parsedTrace);
-    return instance2;
-  }
-  /**
-   * Attempts to build an AICallTree from a given selected event. It also
-   * validates that this event is one that we support being used with the AI
-   * Assistance panel, which [as of January 2025] means:
-   * 1. It is on the main thread.
-   * 2. It exists in either the Renderer or Sample handler's entryToNode map.
-   * This filters out other events we make such as SyntheticLayoutShifts which are not valid
-   * If the event is not valid, or there is an unexpected error building the tree, `null` is returned.
-   */
-  static fromEvent(selectedEvent, parsedTrace) {
-    if (Trace.Types.Events.isPerformanceMark(selectedEvent)) {
-      return null;
-    }
-    const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace.data);
-    const thread = threads.find((t) => t.pid === selectedEvent.pid && t.tid === selectedEvent.tid);
-    if (!thread) {
-      return null;
-    }
-    if (thread.type !== "MAIN_THREAD" && thread.type !== "CPU_PROFILE") {
-      return null;
-    }
-    const data = parsedTrace.data;
-    if (!data.Renderer.entryToNode.has(selectedEvent) && !data.Samples.entryToNode.has(selectedEvent)) {
-      return null;
-    }
-    const allEventsEnabled = Root.Runtime.experiments.isEnabled("timeline-show-all-events");
-    const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
-    let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
-    if (!threadEvents) {
-      threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
-    }
-    if (!threadEvents) {
-      console.warn(`AICallTree: could not find thread for selected entry: ${selectedEvent}`);
-      return null;
-    }
-    const overlappingEvents = threadEvents.filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, selectedEventBounds));
-    const filters = [new SelectedEventDurationFilter(selectedEvent), new ExcludeCompileCodeFilter(selectedEvent)];
-    if (!allEventsEnabled) {
-      filters.push(new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes()));
-    }
-    const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
-      filters,
-      startTime,
-      endTime,
-      includeInstantEvents: true
-    });
-    let selectedNode = null;
-    depthFirstWalk([rootNode].values(), (node) => {
-      if (node.event === selectedEvent) {
-        selectedNode = node;
-        return true;
-      }
-      return;
-    });
-    if (selectedNode === null) {
-      console.warn(`Selected event ${selectedEvent} not found within its own tree.`);
-      return null;
-    }
-    const instance2 = new _AICallTree(selectedNode, rootNode, parsedTrace);
-    return instance2;
-  }
-  /**
-   * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
-   * BFS is important here because the serialization process assumes that direct child nodes
-   * will have consecutive IDs (horizontally across each depth).
-   *
-   * Example tree with IDs:
-   *
-   *             1
-   *            / \
-   *           2   3
-   *        / / /   \
-   *      4  5 6     7
-   *
-   * Here, node with an ID 2 has consecutive children in the 4-6 range.
-   *
-   * To optimize for space, the provided `callback` function is called to serialize
-   * each node as it's visited during the BFS traversal.
-   *
-   * When serializing a node, the callback receives:
-   * 1. The current node being visited.
-   * 2. The ID assigned to this current node (a simple incrementing index based on visit order).
-   * 3. The predicted starting ID for the children of this current node.
-   *
-   * A serialized node needs to know the ID range of its children. However,
-   * child node IDs are only assigned when those children are themselves visited.
-   * To handle this, we predict the starting ID for a node's children. This prediction
-   * is based on a running count of all nodes that have ever been added to the BFS queue.
-   * Since IDs are assigned consecutively as nodes are processed from the queue, and a
-   * node's children are added to the end of the queue when the parent is visited,
-   * their eventual IDs will follow this running count.
-   */
-  breadthFirstWalk(nodes, serializeNodeCallback) {
-    const queue = Array.from(nodes);
-    let nodeIndex = 1;
-    let nodesAddedToQueueCount = queue.length;
-    let currentNode = queue.shift();
-    while (currentNode) {
-      if (currentNode.children().size > 0) {
-        serializeNodeCallback(currentNode, nodeIndex, nodesAddedToQueueCount + 1);
-      } else {
-        serializeNodeCallback(currentNode, nodeIndex);
-      }
-      queue.push(...Array.from(currentNode.children().values()));
-      nodesAddedToQueueCount += currentNode.children().size;
-      currentNode = queue.shift();
-      nodeIndex++;
-    }
-  }
-  serialize(headerLevel = 1) {
-    const header = "#".repeat(headerLevel);
-    const allUrls = [];
-    let nodesStr = "";
-    this.breadthFirstWalk(this.rootNode.children().values(), (node, nodeId, childStartingNode) => {
-      nodesStr += "\n" + this.stringifyNode(node, nodeId, this.parsedTrace, this.selectedNode, allUrls, childStartingNode);
-    });
-    let output = "";
-    if (allUrls.length) {
-      output += `
-${header} All URLs:
-
-` + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
-    }
-    output += `
-
-${header} Call tree:
-${nodesStr}`;
-    return output;
-  }
-  /*
-  * Each node is serialized into a single line to minimize token usage in the context window.
-  * The format is a semicolon-separated string with the following fields:
-  * Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
-  *
-  *   1. `id`: A unique numerical identifier for the node assigned by BFS.
-  *   2. `name`: The name of the event represented by the node.
-  *   3. `duration`: The total duration of the event in milliseconds, rounded to one decimal place.
-  *   4. `selfTime`: The self time of the event in milliseconds, rounded to one decimal place.
-  *   5. `urlIndex`: An index referencing a URL in the `allUrls` array. If no URL is present, this is an empty string.
-  *   6. `childRange`: A string indicating the range of IDs for the node's children. Children should always have consecutive IDs.
-  *                    If there is only one child, it's a single ID.
-  *   7. `[S]`: An optional marker indicating that this node is the selected node.
-  *
-  * Example:
-  *   `1;Parse HTML;2.5;0.3;0;2-5;S`
-  *   This represents:
-  *     - Node ID 1
-  *     - Name "Parse HTML"
-  *     - Total duration of 2.5ms
-  *     - Self time of 0.3ms
-  *     - URL index 0 (meaning the URL is the first one in the `allUrls` array)
-  *     - Child range of IDs 2 to 5
-  *     - This node is the selected node (S marker)
-  */
-  stringifyNode(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
-    const event = node.event;
-    if (!event) {
-      throw new Error("Event required");
-    }
-    const idStr = String(nodeId);
-    const name = Trace.Name.forEntry(event, parsedTrace);
-    const roundToTenths = (num) => {
-      if (!num) {
-        return "";
-      }
-      return String(Math.round(num * 10) / 10);
-    };
-    const durationStr = roundToTenths(node.totalTime);
-    const selfTimeStr = roundToTenths(node.selfTime);
-    const url = SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
-    let urlIndexStr = "";
-    if (url) {
-      const existingIndex = allUrls.indexOf(url);
-      if (existingIndex === -1) {
-        urlIndexStr = String(allUrls.push(url) - 1);
-      } else {
-        urlIndexStr = String(existingIndex);
-      }
-    }
-    const children = Array.from(node.children().values());
-    let childRangeStr = "";
-    if (childStartingNodeIndex) {
-      childRangeStr = children.length === 1 ? String(childStartingNodeIndex) : `${childStartingNodeIndex}-${childStartingNodeIndex + children.length}`;
-    }
-    const selectedMarker = selectedNode?.event === node.event ? "S" : "";
-    let line = idStr;
-    line += ";" + name;
-    line += ";" + durationStr;
-    line += ";" + selfTimeStr;
-    line += ";" + urlIndexStr;
-    line += ";" + childRangeStr;
-    if (selectedMarker) {
-      line += ";" + selectedMarker;
-    }
-    return line;
-  }
-  // Only used for debugging.
-  logDebug() {
-    const str = this.serialize();
-    console.log("\u{1F386}", str);
-    if (str.length > 45e3) {
-      console.warn("Output will likely not fit in the context window. Expect an AIDA error.");
-    }
-  }
-};
-var ExcludeCompileCodeFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
-  #selectedEvent = null;
-  constructor(selectedEvent) {
-    super();
-    this.#selectedEvent = selectedEvent ?? null;
-  }
-  accept(event) {
-    if (this.#selectedEvent && event === this.#selectedEvent) {
-      return true;
-    }
-    return event.name !== "V8.CompileCode";
-  }
-};
-var SelectedEventDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
-  #minDuration;
-  #selectedEvent;
-  constructor(selectedEvent) {
-    super();
-    this.#minDuration = Trace.Types.Timing.Micro((selectedEvent.dur ?? 1) * 5e-3);
-    this.#selectedEvent = selectedEvent;
-  }
-  accept(event) {
-    if (event === this.#selectedEvent) {
-      return true;
-    }
-    return event.dur ? event.dur >= this.#minDuration : false;
-  }
-};
-var MinDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
-  #minDuration;
-  constructor(minDuration) {
-    super();
-    this.#minDuration = minDuration;
-  }
-  accept(event) {
-    return event.dur ? event.dur >= this.#minDuration : false;
-  }
-};
-
-// gen/front_end/panels/timeline/utils/AIContext.js
-var AIContext_exports = {};
-__export(AIContext_exports, {
-  AgentFocus: () => AgentFocus,
-  getPerformanceAgentFocusFromModel: () => getPerformanceAgentFocusFromModel
-});
-import * as Trace2 from "./../../../models/trace/trace.js";
-function getFirstInsightSet(insights) {
-  return [...insights.values()].filter((insightSet) => insightSet.navigation).at(0) ?? null;
-}
-var AgentFocus = class _AgentFocus {
-  static full(parsedTrace) {
-    if (!parsedTrace.insights) {
-      throw new Error("missing insights");
-    }
-    const insightSet = getFirstInsightSet(parsedTrace.insights);
-    return new _AgentFocus({
-      type: "full",
-      parsedTrace,
-      insightSet
-    });
-  }
-  static fromInsight(parsedTrace, insight) {
-    if (!parsedTrace.insights) {
-      throw new Error("missing insights");
-    }
-    const insightSet = getFirstInsightSet(parsedTrace.insights);
-    return new _AgentFocus({
-      type: "insight",
-      parsedTrace,
-      insightSet,
-      insight
-    });
-  }
-  static fromCallTree(callTree) {
-    const insights = callTree.parsedTrace.insights;
-    let insightSet = null;
-    if (insights) {
-      const callTreeTimeRange = Trace2.Helpers.Timing.traceWindowFromEvent(callTree.rootNode.event);
-      insightSet = insights.values().find((set) => Trace2.Helpers.Timing.boundsIncludeTimeRange({
-        timeRange: callTreeTimeRange,
-        bounds: set.bounds
-      })) ?? getFirstInsightSet(insights);
-    }
-    return new _AgentFocus({ type: "call-tree", parsedTrace: callTree.parsedTrace, insightSet, callTree });
-  }
-  #data;
-  constructor(data) {
-    this.#data = data;
-  }
-  get data() {
-    return this.#data;
-  }
-};
-function getPerformanceAgentFocusFromModel(model) {
-  const parsedTrace = model.parsedTrace();
-  if (!parsedTrace) {
-    return null;
-  }
-  return AgentFocus.full(parsedTrace);
-}
-
 // gen/front_end/panels/timeline/utils/EntryNodes.js
 var EntryNodes_exports = {};
 __export(EntryNodes_exports, {
@@ -385,7 +12,7 @@ __export(EntryNodes_exports, {
   relatedDOMNodesForEvent: () => relatedDOMNodesForEvent
 });
 import * as SDK from "./../../../core/sdk/sdk.js";
-import * as Trace3 from "./../../../models/trace/trace.js";
+import * as Trace from "./../../../models/trace/trace.js";
 var nodeIdsForEventCache = /* @__PURE__ */ new WeakMap();
 var domNodesForEventCache = /* @__PURE__ */ new WeakMap();
 function nodeIdsForEvent(parsedTrace, event) {
@@ -394,31 +21,31 @@ function nodeIdsForEvent(parsedTrace, event) {
     return fromCache;
   }
   const foundIds = /* @__PURE__ */ new Set();
-  if (Trace3.Types.Events.isLayout(event)) {
+  if (Trace.Types.Events.isLayout(event)) {
     event.args.endData?.layoutRoots.forEach((root) => foundIds.add(root.nodeId));
-  } else if (Trace3.Types.Events.isSyntheticLayoutShift(event) && event.args.data?.impacted_nodes) {
+  } else if (Trace.Types.Events.isSyntheticLayoutShift(event) && event.args.data?.impacted_nodes) {
     event.args.data.impacted_nodes.forEach((node) => foundIds.add(node.node_id));
-  } else if (Trace3.Types.Events.isLargestContentfulPaintCandidate(event) && typeof event.args.data?.nodeId !== "undefined") {
+  } else if (Trace.Types.Events.isLargestContentfulPaintCandidate(event) && typeof event.args.data?.nodeId !== "undefined") {
     foundIds.add(event.args.data.nodeId);
-  } else if (Trace3.Types.Events.isPaint(event) && typeof event.args.data.nodeId !== "undefined") {
+  } else if (Trace.Types.Events.isPaint(event) && typeof event.args.data.nodeId !== "undefined") {
     foundIds.add(event.args.data.nodeId);
-  } else if (Trace3.Types.Events.isPaintImage(event) && typeof event.args.data.nodeId !== "undefined") {
+  } else if (Trace.Types.Events.isPaintImage(event) && typeof event.args.data.nodeId !== "undefined") {
     foundIds.add(event.args.data.nodeId);
-  } else if (Trace3.Types.Events.isScrollLayer(event) && typeof event.args.data.nodeId !== "undefined") {
+  } else if (Trace.Types.Events.isScrollLayer(event) && typeof event.args.data.nodeId !== "undefined") {
     foundIds.add(event.args.data.nodeId);
-  } else if (Trace3.Types.Events.isSyntheticAnimation(event) && typeof event.args.data.beginEvent.args.data.nodeId !== "undefined") {
+  } else if (Trace.Types.Events.isSyntheticAnimation(event) && typeof event.args.data.beginEvent.args.data.nodeId !== "undefined") {
     foundIds.add(event.args.data.beginEvent.args.data.nodeId);
-  } else if (Trace3.Types.Events.isDecodeImage(event)) {
+  } else if (Trace.Types.Events.isDecodeImage(event)) {
     const paintImageEvent = parsedTrace.data.ImagePainting.paintImageForEvent.get(event);
     if (typeof paintImageEvent?.args.data.nodeId !== "undefined") {
       foundIds.add(paintImageEvent.args.data.nodeId);
     }
-  } else if (Trace3.Types.Events.isDrawLazyPixelRef(event) && event.args?.LazyPixelRef) {
+  } else if (Trace.Types.Events.isDrawLazyPixelRef(event) && event.args?.LazyPixelRef) {
     const paintImageEvent = parsedTrace.data.ImagePainting.paintImageByDrawLazyPixelRef.get(event.args.LazyPixelRef);
     if (typeof paintImageEvent?.args.data.nodeId !== "undefined") {
       foundIds.add(paintImageEvent.args.data.nodeId);
     }
-  } else if (Trace3.Types.Events.isParseMetaViewport(event) && typeof event.args?.data.node_id !== "undefined") {
+  } else if (Trace.Types.Events.isParseMetaViewport(event) && typeof event.args?.data.node_id !== "undefined") {
     foundIds.add(event.args.data.node_id);
   }
   nodeIdsForEventCache.set(event, foundIds);
@@ -450,28 +77,6 @@ async function domNodesForBackendIds(frameId, nodeIds) {
   }
   return await domModel.pushNodesByBackendIdsToFrontend(nodeIds) || /* @__PURE__ */ new Map();
 }
-
-// gen/front_end/panels/timeline/utils/FreshRecording.js
-var FreshRecording_exports = {};
-__export(FreshRecording_exports, {
-  Tracker: () => Tracker
-});
-var instance = null;
-var Tracker = class _Tracker {
-  #freshRecordings = /* @__PURE__ */ new WeakSet();
-  static instance(opts = { forceNew: false }) {
-    if (!instance || opts.forceNew) {
-      instance = new _Tracker();
-    }
-    return instance;
-  }
-  registerFreshRecording(data) {
-    this.#freshRecordings.add(data);
-  }
-  recordingIsFresh(data) {
-    return this.#freshRecordings.has(data);
-  }
-};
 
 // gen/front_end/panels/timeline/utils/Helpers.js
 var Helpers_exports = {};
@@ -585,8 +190,8 @@ __export(IgnoreList_exports, {
   isIgnoreListedEntry: () => isIgnoreListedEntry
 });
 import * as i18n from "./../../../core/i18n/i18n.js";
-import * as Trace4 from "./../../../models/trace/trace.js";
-import * as SourceMapsResolver3 from "./../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
+import * as Trace2 from "./../../../models/trace/trace.js";
+import * as SourceMapsResolver from "./../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js";
 import * as Workspace from "./../../../models/workspace/workspace.js";
 var UIStrings = {
   /**
@@ -610,7 +215,7 @@ var str_ = i18n.i18n.registerUIStrings("panels/timeline/utils/IgnoreList.ts", UI
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 function getUrlAndIgnoreListOptions(entry) {
   const rawUrl = entry.callFrame.url;
-  const sourceMappedData = SourceMapsResolver3.SourceMapsResolver.resolvedCodeLocationForEntry(entry);
+  const sourceMappedData = SourceMapsResolver.SourceMapsResolver.resolvedCodeLocationForEntry(entry);
   const script = sourceMappedData?.script;
   const uiSourceCode = sourceMappedData?.devtoolsLocation?.uiSourceCode;
   const resolvedUrl = uiSourceCode?.url();
@@ -621,7 +226,7 @@ function getUrlAndIgnoreListOptions(entry) {
   return { url, ignoreListOptions };
 }
 function isIgnoreListedEntry(entry) {
-  if (!Trace4.Types.Events.isProfileCall(entry)) {
+  if (!Trace2.Types.Events.isProfileCall(entry)) {
     return false;
   }
   const { url, ignoreListOptions } = getUrlAndIgnoreListOptions(entry);
@@ -631,7 +236,7 @@ function isIgnoreListedURL(url, options) {
   return Workspace.IgnoreListManager.IgnoreListManager.instance().isUserIgnoreListedURL(url, options);
 }
 function getIgnoredReasonString(entry) {
-  if (!Trace4.Types.Events.isProfileCall(entry)) {
+  if (!Trace2.Types.Events.isProfileCall(entry)) {
     console.warn("Ignore list feature should only support ProfileCall.");
     return "";
   }
@@ -662,14 +267,14 @@ __export(ImageCache_exports, {
   loadImageForTesting: () => loadImageForTesting,
   preload: () => preload
 });
-import * as Trace5 from "./../../../models/trace/trace.js";
+import * as Trace3 from "./../../../models/trace/trace.js";
 var imageCache = /* @__PURE__ */ new WeakMap();
 var emitter = new EventTarget();
 function getOrQueue(screenshot) {
   if (imageCache.has(screenshot)) {
     return imageCache.get(screenshot) ?? null;
   }
-  const uri = Trace5.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+  const uri = Trace3.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
   loadImage(uri).then((imageOrNull) => {
     imageCache.set(screenshot, imageOrNull);
     emitter.dispatchEvent(new CustomEvent("screenshot-loaded", { detail: { screenshot, image: imageOrNull } }));
@@ -690,7 +295,7 @@ function preload(screenshots) {
     if (imageCache.has(screenshot)) {
       return;
     }
-    const uri = Trace5.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
+    const uri = Trace3.Handlers.ModelHandlers.Screenshots.screenshotImageDataUri(screenshot);
     return loadImage(uri).then((image) => {
       imageCache.set(screenshot, image);
       return;
@@ -701,99 +306,6 @@ function preload(screenshots) {
 var cacheForTesting = imageCache;
 var loadImageForTesting = loadImage;
 
-// gen/front_end/panels/timeline/utils/InsightAIContext.js
-var InsightAIContext_exports = {};
-__export(InsightAIContext_exports, {
-  AIQueries: () => AIQueries
-});
-import * as Trace6 from "./../../../models/trace/trace.js";
-var AIQueries = class {
-  static findMainThread(navigationId, parsedTrace) {
-    let mainThreadPID = null;
-    let mainThreadTID = null;
-    if (navigationId) {
-      const navigation = parsedTrace.data.Meta.navigationsByNavigationId.get(navigationId);
-      if (navigation?.args.data?.isOutermostMainFrame) {
-        mainThreadPID = navigation.pid;
-        mainThreadTID = navigation.tid;
-      }
-    }
-    const threads = Trace6.Handlers.Threads.threadsInTrace(parsedTrace.data);
-    const thread = threads.find((thread2) => {
-      if (mainThreadPID && mainThreadTID) {
-        return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
-      }
-      return thread2.type === "MAIN_THREAD";
-    });
-    return thread ?? null;
-  }
-  /**
-   * Returns bottom up activity for the given range.
-   */
-  static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
-    if (!events) {
-      return null;
-    }
-    const visibleEvents = Trace6.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
-    const filter = new Trace6.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
-      "SyntheticNetworkRequest"
-      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
-    ]));
-    const startTime = Trace6.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace6.Helpers.Timing.microToMilli(bounds.max);
-    return new Trace6.Extras.TraceTree.BottomUpRootNode(events, {
-      textFilter: new Trace6.Extras.TraceFilter.ExclusiveNameFilter([]),
-      filters: [filter],
-      startTime,
-      endTime
-    });
-  }
-  /**
-   * Returns an AI Call Tree representing the activity on the main thread for
-   * the relevant time range of the given insight.
-   */
-  static mainThreadActivityTopDown(navigationId, bounds, parsedTrace) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    return AICallTree.fromTimeOnThread({
-      thread: {
-        pid: thread.pid,
-        tid: thread.tid
-      },
-      parsedTrace,
-      bounds
-    });
-  }
-  /**
-   * Returns the top longest tasks as AI Call Trees.
-   */
-  static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    const tasks = AICallTree.findMainThreadTasks({ thread, parsedTrace, bounds });
-    if (!tasks) {
-      return null;
-    }
-    const topTasks = tasks.filter((e) => e.name === "RunTask").sort((a, b) => b.dur - a.dur).slice(0, limit);
-    return topTasks.map((task) => {
-      const tree = AICallTree.fromEvent(task, parsedTrace);
-      if (tree) {
-        tree.selectedNode = null;
-      }
-      return tree;
-    }).filter((tree) => !!tree);
-  }
-};
-
 // gen/front_end/panels/timeline/utils/Treemap.js
 var Treemap_exports = {};
 __export(Treemap_exports, {
@@ -803,7 +315,7 @@ __export(Treemap_exports, {
 });
 import * as Common from "./../../../core/common/common.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
-import * as Trace7 from "./../../../models/trace/trace.js";
+import * as Trace4 from "./../../../models/trace/trace.js";
 async function toCompressedBase64(string) {
   const compAb = await Common.Gzip.compress(string);
   const strb64 = await Common.Base64.encode(compAb);
@@ -913,7 +425,7 @@ function createTreemapData(scripts, duplication) {
       continue;
     }
     const name = script.url;
-    const sizes = Trace7.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
+    const sizes = Trace4.Handlers.ModelHandlers.Scripts.getScriptGeneratedSizes(script);
     let node;
     if (script.sourceMap && sizes && !("errorMessage" in sizes)) {
       const sourcesData = {};
@@ -922,7 +434,7 @@ function createTreemapData(scripts, duplication) {
           resourceBytes,
           encodedBytes: void 0
         };
-        const key = Trace7.Extras.ScriptDuplication.normalizeSource(source);
+        const key = Trace4.Extras.ScriptDuplication.normalizeSource(source);
         if (duplication.has(key)) {
           sourceData.duplicatedNormalizedModuleName = key;
         }
@@ -982,14 +494,10 @@ function createTreemapData(scripts, duplication) {
   return nodes;
 }
 export {
-  AICallTree_exports as AICallTree,
-  AIContext_exports as AIContext,
   EntryNodes_exports as EntryNodes,
-  FreshRecording_exports as FreshRecording,
   Helpers_exports as Helpers,
   IgnoreList_exports as IgnoreList,
   ImageCache_exports as ImageCache,
-  InsightAIContext_exports as InsightAIContext,
   Treemap_exports as Treemap
 };
 //# sourceMappingURL=utils.js.map

@@ -7,6 +7,13 @@ import * as Lit from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import tooltipStyles from './tooltip.css.js';
 const { html } = Lit;
+var PositionOption;
+(function (PositionOption) {
+    PositionOption["BOTTOM_SPAN_RIGHT"] = "bottom-span-right";
+    PositionOption["BOTTOM_SPAN_LEFT"] = "bottom-span-left";
+    PositionOption["TOP_SPAN_RIGHT"] = "top-span-right";
+    PositionOption["TOP_SPAN_LEFT"] = "top-span-left";
+})(PositionOption || (PositionOption = {}));
 const positioningUtils = {
     bottomSpanRight: ({ anchorRect }) => {
         return {
@@ -71,28 +78,41 @@ const positioningUtils = {
             rect1.height === rect2.height;
     }
 };
-const proposedRectForRichTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect }) => {
-    // Tries the default positioning of bottom right, bottom left, top right and top left.
-    // If they don't work out, we default back to showing in bottom right and adjust its insets so that the popover is inside the inspector view bounds.
-    let proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
-    if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-        return proposedRect;
-    }
-    proposedRect = positioningUtils.bottomSpanLeft({ anchorRect, currentPopoverRect });
-    if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-        return proposedRect;
-    }
-    proposedRect = positioningUtils.topSpanRight({ anchorRect, currentPopoverRect });
-    if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-        return proposedRect;
-    }
-    proposedRect = positioningUtils.topSpanLeft({ anchorRect, currentPopoverRect });
-    if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
-        return proposedRect;
+const proposedRectForRichTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) => {
+    // The default positioning order is `BOTTOM_SPAN_RIGHT`, `BOTTOM_SPAN_LEFT`, `TOP_SPAN_RIGHT`
+    // and `TOP_SPAN_LEFT`. If `preferredPositions` are given, those are tried first, before
+    // continuing with the remaining options in default order. Duplicate entries are removed.
+    const uniqueOrder = [
+        ...new Set([
+            ...preferredPositions,
+            ...Object.values(PositionOption),
+        ]),
+    ];
+    // Tries the positioning options in the order given by `uniqueOrder`.
+    // If none of them work out, we default to showing the tooltip in the bottom right and adjust
+    // its insets so that the tooltip is inside the inspector view bounds.
+    for (const positionOption of uniqueOrder) {
+        let proposedRect;
+        switch (positionOption) {
+            case PositionOption.BOTTOM_SPAN_RIGHT:
+                proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
+                break;
+            case PositionOption.BOTTOM_SPAN_LEFT:
+                proposedRect = positioningUtils.bottomSpanLeft({ anchorRect, currentPopoverRect });
+                break;
+            case PositionOption.TOP_SPAN_RIGHT:
+                proposedRect = positioningUtils.topSpanRight({ anchorRect, currentPopoverRect });
+                break;
+            case PositionOption.TOP_SPAN_LEFT:
+                proposedRect = positioningUtils.topSpanLeft({ anchorRect, currentPopoverRect });
+        }
+        if (positioningUtils.isInBounds({ inspectorViewRect, currentPopoverRect, proposedRect })) {
+            return proposedRect;
+        }
     }
     // If none of the options work above, we position to bottom right
     // and adjust the insets so that it does not go out of bounds.
-    proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
+    const proposedRect = positioningUtils.bottomSpanRight({ anchorRect, currentPopoverRect });
     return positioningUtils.insetAdjustedRect({ anchorRect, currentPopoverRect, inspectorViewRect, proposedRect });
 };
 const proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPopoverRect }) => {
@@ -117,12 +137,18 @@ const proposedRectForSimpleTooltip = ({ inspectorViewRect, anchorRect, currentPo
  * @property variant - reflects the `"variant"` attribute.
  * @property padding - reflects the `"padding"` attribute.
  * @property useClick - reflects the `"click"` attribute.
+ * @property verticalDistanceIncrease - reflects the `"vertical-distance-increase"` attribute.
+ * @property preferSpanLeft - reflects the `"prefer-span-left"` attribute.
  * @attribute id - Id of the tooltip. Used for searching an anchor element with aria-describedby.
  * @attribute hover-delay - Hover length in ms before the tooltip is shown and hidden.
  * @attribute variant - Variant of the tooltip, `"simple"` for strings only, inverted background,
  *                 `"rich"` for interactive content, background according to theme's surface.
  * @attribute padding - Which padding to use, defaults to `"small"`. Use `"large"` for richer content.
  * @attribute use-click - If present, the tooltip will be shown on click instead of on hover.
+ * @attribute vertical-distance-increase - The tooltip is moved vertically this many pixels further away from its anchor.
+ * @attribute prefer-span-left - If present, the tooltip's preferred position is `"span-left"` (The right
+ *                 side of the tooltip and its anchor are aligned. The tooltip expands to the left from
+ *                 there.). Applies to rich tooltips only.
  * @attribute use-hotkey - If present, the tooltip will be shown on hover but not when receiving focus.
  *                    Requires a hotkey to open when fosed (Alt-down). When `"use-click"` is present
  *                    as well, use-click takes precedence.
@@ -190,6 +216,24 @@ export class Tooltip extends HTMLElement {
     set jslogContext(jslogContext) {
         this.setAttribute('jslogcontext', jslogContext);
         this.#updateJslog();
+    }
+    get verticalDistanceIncrease() {
+        return this.hasAttribute('vertical-distance-increase') ? Number(this.getAttribute('vertical-distance-increase')) :
+            0;
+    }
+    set verticalDistanceIncrease(increase) {
+        this.setAttribute('vertical-distance-increase', increase.toString());
+    }
+    get preferSpanLeft() {
+        return this.hasAttribute('prefer-span-left');
+    }
+    set preferSpanLeft(value) {
+        if (value) {
+            this.setAttribute('prefer-span-left', '');
+        }
+        else {
+            this.removeAttribute('prefer-span-left');
+        }
     }
     get anchor() {
         return this.#anchor;
@@ -289,9 +333,7 @@ export class Tooltip extends HTMLElement {
         if (this.open && Tooltip.lastOpenedTooltipId === this.id) {
             Tooltip.lastOpenedTooltipId = null;
         }
-        this.#timeout = window.setTimeout(() => {
-            this.hidePopover();
-        }, this.hoverDelay);
+        this.hidePopover();
     };
     toggle = () => {
         // We need this check because clicking on the anchor while the tooltip is open will trigger both
@@ -318,11 +360,16 @@ export class Tooltip extends HTMLElement {
         this.#previousAnchorRect = anchorRect;
         this.#previousPopoverRect = currentPopoverRect;
         const inspectorViewRect = UI.InspectorView.InspectorView.instance().element.getBoundingClientRect();
+        const preferredPositions = this.preferSpanLeft ? [PositionOption.BOTTOM_SPAN_LEFT, PositionOption.TOP_SPAN_LEFT] : [];
         const proposedPopoverRect = this.variant === 'rich' ?
-            proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect }) :
+            proposedRectForRichTooltip({ inspectorViewRect, anchorRect, currentPopoverRect, preferredPositions }) :
             proposedRectForSimpleTooltip({ inspectorViewRect, anchorRect, currentPopoverRect });
         this.style.left = `${proposedPopoverRect.left}px`;
-        this.style.top = `${proposedPopoverRect.top}px`;
+        // If the tooltip is above its anchor, we need to decrease the tooltip's
+        // y-coordinate to increase the distance between tooltip and anchor.
+        // If the tooltip is below its anchor, we add to the tooltip's y-coord.
+        const actualVerticalOffset = anchorRect.top < proposedPopoverRect.top ? this.verticalDistanceIncrease : -this.verticalDistanceIncrease;
+        this.style.top = `${proposedPopoverRect.top + actualVerticalOffset}px`;
         this.style.visibility = 'visible';
         requestAnimationFrame(this.#positionPopover);
     };

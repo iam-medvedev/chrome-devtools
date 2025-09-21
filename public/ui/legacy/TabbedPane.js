@@ -211,7 +211,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
         const focused = this.hasFocus();
         for (let i = 0; i < ids.length; ++i) {
-            this.innerCloseTab(ids[i], userGesture);
+            this.#closeTab(ids[i], userGesture);
         }
         this.requestUpdate();
         if (this.tabsHistory.length) {
@@ -221,7 +221,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
             this.focus();
         }
     }
-    innerCloseTab(id, userGesture) {
+    #closeTab(id, userGesture) {
         const tab = this.tabsById.get(id);
         if (!tab) {
             return;

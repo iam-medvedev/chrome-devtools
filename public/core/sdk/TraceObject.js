@@ -7,8 +7,11 @@ import { ResourceTreeModel } from './ResourceTreeModel.js';
 export class TraceObject {
     traceEvents;
     metadata;
-    constructor(traceEvents, metadata = {}) {
-        this.traceEvents = traceEvents;
+    constructor(payload, meta = {}) {
+        // Handle the typical traceEvent array juggling here.
+        const events = Array.isArray(payload) ? payload : payload.traceEvents;
+        const metadata = meta ?? (!Array.isArray(payload) && payload.metadata) ?? {};
+        this.traceEvents = events;
         this.metadata = metadata;
     }
 }

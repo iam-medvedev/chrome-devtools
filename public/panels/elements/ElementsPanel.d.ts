@@ -86,11 +86,13 @@ export declare class ElementsPanel extends UI.Panel.Panel implements UI.Searchab
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
     private highlightCurrentSearchResult;
     private hideSearchHighlights;
     selectedDOMNode(): SDK.DOMModel.DOMNode | null;
     selectDOMNode(node: SDK.DOMModel.DOMNode, focus?: boolean): void;
+    highlightNodeAttribute(node: SDK.DOMModel.DOMNode, attribute: string): void;
     selectAndShowSidebarTab(tabId: SidebarPaneTabId): void;
     private updateBreadcrumbIfNeeded;
     private crumbNodeSelected;

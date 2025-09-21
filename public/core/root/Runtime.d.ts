@@ -80,8 +80,7 @@ export declare const enum ExperimentName {
     TIMELINE_SHOW_POST_MESSAGE_EVENTS = "timeline-show-postmessage-events",
     TIMELINE_DEBUG_MODE = "timeline-debug-mode",
     TIMELINE_ENHANCED_TRACES = "timeline-enhanced-traces",
-    TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources",
-    TIMELINE_SAVE_AS_GZ = "timeline-save-as-gz"
+    TIMELINE_COMPILED_SOURCES = "timeline-compiled-sources"
 }
 export declare enum GenAiEnterprisePolicyValue {
     ALLOW = 0,
@@ -204,6 +203,15 @@ interface GdpProfiles {
     enabled: boolean;
     starterBadgeEnabled: boolean;
 }
+export declare enum GdpProfilesEnterprisePolicyValue {
+    ENABLED = 0,
+    ENABLED_WITHOUT_BADGES = 1,
+    DISABLED = 2
+}
+interface GdpProfilesAvailability {
+    enabled: boolean;
+    enterprisePolicyValue: GdpProfilesEnterprisePolicyValue;
+}
 interface LiveEdit {
     enabled: boolean;
 }
@@ -252,6 +260,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsIpProtectionInDevTools: IpProtectionInDevTools;
     devToolsGlobalAiButton: GlobalAiButton;
     devToolsGdpProfiles: GdpProfiles;
+    devToolsGdpProfilesAvailability: GdpProfilesAvailability;
     devToolsLiveEdit: LiveEdit;
     devToolsFlexibleLayout: DevToolsFlexibleLayout;
 }>;

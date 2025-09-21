@@ -85,6 +85,7 @@ export declare class TimelineTreeView extends TimelineTreeView_base implements U
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
 export declare namespace TimelineTreeView {

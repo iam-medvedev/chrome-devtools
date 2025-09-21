@@ -1,9 +1,16 @@
 import type * as Protocol from '../../generated/protocol.js';
 import type { NetworkRequest } from './NetworkRequest.js';
+import type { SourceMapV3 } from './SourceMap.js';
 export declare class TraceObject {
     readonly traceEvents: Protocol.Tracing.DataCollectedEvent['value'];
-    readonly metadata: Object;
-    constructor(traceEvents: Protocol.Tracing.DataCollectedEvent['value'], metadata?: Object);
+    readonly metadata: {
+        sourceMaps?: Array<{
+            sourceMapUrl: string;
+            sourceMap: SourceMapV3;
+            url: string;
+        }>;
+    };
+    constructor(payload: Protocol.Tracing.DataCollectedEvent['value'] | TraceObject, meta?: Object);
 }
 export declare class RevealableEvent {
     event: any;

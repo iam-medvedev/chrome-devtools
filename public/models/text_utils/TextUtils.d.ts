@@ -79,6 +79,16 @@ export declare const performSearchInSearchMatches: (matches: Array<{
     lineNumber: number;
     lineContent: string;
 }>, query: string, caseSensitive: boolean, isRegex: boolean) => SearchMatch[];
+/**
+ * Finds the longest overlapping string segment between the end of the first
+ * string and the beginning of the second string.
+ *
+ * @param s1 The first string (whose suffix will be checked).
+ * @param s2 The second string (whose prefix will be checked).
+ * @returns The overlapping string segment, or an empty string ("")
+ * if no overlap is found.
+ */
+export declare const getOverlap: (s1: string, s2: string) => string | null;
 export interface ParsedFilter {
     key?: string;
     text?: string | null;

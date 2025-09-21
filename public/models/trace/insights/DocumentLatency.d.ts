@@ -52,7 +52,7 @@ export declare const UIStrings: {
     readonly uncompressedDownload: "Uncompressed download";
 };
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
-export declare function isDocumentLatency(x: InsightModel): x is DocumentLatencyInsightModel;
+export declare function isDocumentLatencyInsight(x: InsightModel): x is DocumentLatencyInsightModel;
 export type DocumentLatencyInsightModel = InsightModel<typeof UIStrings, {
     data?: {
         serverResponseTime: Types.Timing.Milli;

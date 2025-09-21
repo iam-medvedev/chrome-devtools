@@ -16,8 +16,6 @@ export declare class PersistenceImpl extends Common.ObjectWrapper.ObjectWrapper<
     addBindingForTest(binding: PersistenceBinding): Promise<void>;
     removeBinding(binding: PersistenceBinding): Promise<void>;
     removeBindingForTest(binding: PersistenceBinding): Promise<void>;
-    private innerAddBinding;
-    private innerRemoveBinding;
     private onStatusAdded;
     private onStatusRemoved;
     private onWorkingCopyChanged;

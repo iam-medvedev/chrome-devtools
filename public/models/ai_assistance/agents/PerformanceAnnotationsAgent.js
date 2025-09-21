@@ -102,7 +102,7 @@ export class PerformanceAnnotationsAgent extends AiAgent {
             return;
         }
         const focus = context.getItem();
-        if (focus.data.type !== 'call-tree') {
+        if (!focus.data.callTree) {
             throw new Error('unexpected context');
         }
         const callTree = focus.data.callTree;
@@ -122,7 +122,7 @@ export class PerformanceAnnotationsAgent extends AiAgent {
             return query;
         }
         const focus = context.getItem();
-        if (focus.data.type !== 'call-tree') {
+        if (!focus.data.callTree) {
             throw new Error('unexpected context');
         }
         const callTree = focus.data.callTree;

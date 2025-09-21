@@ -7,6 +7,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Geometry from '../../models/geometry/geometry.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as ComponentHelpers from '../../ui/components/helpers/helpers.js';
+import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as ThemeSupport from '../../ui/legacy/theme_support/theme_support.js';
 import { buildGroupStyle, buildTrackHeader } from './AppenderUtils.js';
 import * as Utils from './utils/utils.js';
@@ -67,7 +68,7 @@ export class LayoutShiftsTrackAppender {
      * appended.
      */
     #appendTrackHeaderAtLevel(currentLevel, expanded) {
-        const style = buildGroupStyle({ collapsible: false });
+        const style = buildGroupStyle({ collapsible: 1 /* PerfUI.FlameChart.GroupCollapsibleState.NEVER */ });
         const group = buildTrackHeader("layout-shifts" /* VisualLoggingTrackName.LAYOUT_SHIFTS */, currentLevel, i18nString(UIStrings.layoutShifts), style, 
         /* selectable= */ true, expanded);
         this.#compatibilityBuilder.registerTrackForGroup(group, this);

@@ -171,7 +171,7 @@ var AgentLayerTree = class extends SDK.LayerTreeBase.LayerTreeBase {
   }
   async setLayers(payload) {
     if (!payload) {
-      this.innerSetLayers(payload);
+      this.#setLayers(payload);
       return;
     }
     const idsToResolve = /* @__PURE__ */ new Set();
@@ -183,9 +183,9 @@ var AgentLayerTree = class extends SDK.LayerTreeBase.LayerTreeBase {
       idsToResolve.add(backendNodeId);
     }
     await this.resolveBackendNodeIds(idsToResolve);
-    this.innerSetLayers(payload);
+    this.#setLayers(payload);
   }
-  innerSetLayers(layers) {
+  #setLayers(layers) {
     this.setRoot(null);
     this.setContentRoot(null);
     if (!layers) {

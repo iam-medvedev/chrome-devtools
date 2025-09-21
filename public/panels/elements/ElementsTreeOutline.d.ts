@@ -57,6 +57,7 @@ export declare class DOMTreeWidget extends UI.Widget.Widget {
     get rootDOMNode(): SDK.DOMModel.DOMNode | null;
     constructor(element?: HTMLElement, view?: View);
     selectDOMNode(node: SDK.DOMModel.DOMNode | null, focus?: boolean): void;
+    highlightNodeAttribute(node: SDK.DOMModel.DOMNode, attribute: string): void;
     setWordWrap(wrap: boolean): void;
     selectedDOMNode(): SDK.DOMModel.DOMNode | null;
     /**
@@ -165,6 +166,7 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private lookUpTreeElement;
     createTreeElementFor(node: SDK.DOMModel.DOMNode): ElementsTreeElement | null;
     private revealAndSelectNode;
+    highlightNodeAttribute(node: SDK.DOMModel.DOMNode, attribute: string): void;
     treeElementFromEventInternal(event: MouseEvent): UI.TreeOutline.TreeElement | null;
     private onfocusout;
     private onmousedown;
@@ -227,7 +229,6 @@ export declare class ElementsTreeOutline extends ElementsTreeOutline_base {
     private updateChildren;
     insertChildElement(treeElement: ElementsTreeElement | TopLayerContainer, child: SDK.DOMModel.DOMNode, index: number, isClosingTag?: boolean): ElementsTreeElement;
     private moveChild;
-    private innerUpdateChildren;
     private markersChanged;
     private topLayerElementsChanged;
     private scrollableFlagUpdated;

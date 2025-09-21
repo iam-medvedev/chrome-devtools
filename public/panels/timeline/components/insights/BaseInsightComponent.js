@@ -5,12 +5,13 @@
 import '../../../../ui/components/markdown_view/markdown_view.js';
 import * as i18n from '../../../../core/i18n/i18n.js';
 import * as Root from '../../../../core/root/root.js';
+import * as AIAssistance from '../../../../models/ai_assistance/ai_assistance.js';
+import * as Badges from '../../../../models/badges/badges.js';
 import * as Buttons from '../../../../ui/components/buttons/buttons.js';
 import * as ComponentHelpers from '../../../../ui/components/helpers/helpers.js';
 import * as UI from '../../../../ui/legacy/legacy.js';
 import * as Lit from '../../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../../ui/visual_logging/visual_logging.js';
-import * as Utils from '../../utils/utils.js';
 import baseInsightComponentStyles from './baseInsightComponent.css.js';
 import { md } from './Helpers.js';
 import * as SidebarInsight from './SidebarInsight.js';
@@ -135,19 +136,23 @@ export class BaseInsightComponent extends HTMLElement {
         return { updateTraceWindow: true };
     }
     #dispatchInsightToggle() {
-        if (this.#selected) {
-            this.dispatchEvent(new SidebarInsight.InsightDeactivated());
-            // Clear agent (but only if currently focused on an insight).
-            const focus = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
-            if (focus && focus.data.type === 'insight') {
-                UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
-            }
-            return;
-        }
         if (!this.data.insightSetKey || !this.model) {
             // Shouldn't happen, but needed to satisfy TS.
             return;
         }
+        const focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+        if (this.#selected) {
+            this.dispatchEvent(new SidebarInsight.InsightDeactivated());
+            // Clear agent (but only if currently focused on an insight).
+            if (focus) {
+                UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(null));
+            }
+            return;
+        }
+        if (focus) {
+            UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(this.model));
+        }
+        Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
         this.sharedTableState.selectedRowEl?.classList.remove('selected');
         this.sharedTableState.selectedRowEl = null;
         this.sharedTableState.selectionIsSticky = false;
@@ -288,7 +293,14 @@ export class BaseInsightComponent extends HTMLElement {
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
-        UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, this.#agentFocus);
+        let focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+        if (focus) {
+            focus = focus.withInsight(this.model);
+        }
+        else {
+            focus = this.#agentFocus;
+        }
+        UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
         // Trigger the AI Assistance panel to open.
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
         void action.execute();

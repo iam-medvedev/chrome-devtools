@@ -35,6 +35,10 @@ const UIStrings = {
      */
     includeAnnotations: 'Include annotations',
     /**
+     * @description Text for the compression option.
+     */
+    shouldCompress: 'Compress with gzip',
+    /**
      * @description Text for the save trace button
      */
     saveButtonTitle: 'Save',
@@ -44,17 +48,20 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class ExportTraceOptions extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
-    #includeAnnotationsSettingString = 'export-performance-trace-include-annotations';
-    #includeScriptContentSettingString = 'export-performance-trace-include-scripts';
-    #includeSourceMapsSettingString = 'export-performance-trace-include-sourcemaps';
-    #includeAnnotationsSetting = Common.Settings.Settings.instance().createSetting(this.#includeAnnotationsSettingString, true, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-    #includeScriptContentSetting = Common.Settings.Settings.instance().createSetting(this.#includeScriptContentSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-    #includeSourceMapsSetting = Common.Settings.Settings.instance().createSetting(this.#includeSourceMapsSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    static #includeAnnotationsSettingString = 'export-performance-trace-include-annotations';
+    static #includeScriptContentSettingString = 'export-performance-trace-include-scripts';
+    static #includeSourceMapsSettingString = 'export-performance-trace-include-sourcemaps';
+    static #shouldCompressSettingString = 'export-performance-trace-should-compress';
+    #includeAnnotationsSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeAnnotationsSettingString, true, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #includeScriptContentSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeScriptContentSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #includeSourceMapsSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeSourceMapsSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #shouldCompressSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#shouldCompressSettingString, true, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
     #state = {
         dialogState: "collapsed" /* Dialogs.Dialog.DialogState.COLLAPSED */,
         includeAnnotations: this.#includeAnnotationsSetting.get(),
         includeScriptContent: this.#includeScriptContentSetting.get(),
         includeSourceMaps: this.#includeSourceMapsSetting.get(),
+        shouldCompress: this.#shouldCompressSetting.get(),
     };
     #includeAnnotationsCheckbox = UI.UIUtils.CheckboxLabel.create(
     /* title*/ i18nString(UIStrings.includeAnnotations), /* checked*/ this.#state.includeAnnotations, 
@@ -68,6 +75,10 @@ export class ExportTraceOptions extends HTMLElement {
     /* title*/ i18nString(UIStrings.includeSourcemap), /* checked*/ this.#state.includeSourceMaps, 
     /* subtitle*/ undefined, 
     /* jslogContext*/ 'timeline.export-trace-options.source-maps-checkbox');
+    #shouldCompressCheckbox = UI.UIUtils.CheckboxLabel.create(
+    /* title*/ i18nString(UIStrings.shouldCompress), /* checked*/ this.#state.shouldCompress, 
+    /* subtitle*/ undefined, 
+    /* jslogContext*/ 'timeline.export-trace-options.should-compress-checkbox');
     set data(data) {
         this.#data = data;
         this.#scheduleRender();
@@ -77,13 +88,17 @@ export class ExportTraceOptions extends HTMLElement {
         this.#includeAnnotationsSetting.set(state.includeAnnotations);
         this.#includeScriptContentSetting.set(state.includeScriptContent);
         this.#includeSourceMapsSetting.set(state.includeSourceMaps);
+        this.#shouldCompressSetting.set(state.shouldCompress);
         this.#scheduleRender();
     }
-    updateContentVisibility(annotationsExist) {
+    get state() {
+        return this.#state;
+    }
+    updateContentVisibility(options) {
         const showIncludeScriptContentCheckbox = Root.Runtime.experiments.isEnabled("timeline-enhanced-traces" /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */);
         const showIncludeSourceMapCheckbox = Root.Runtime.experiments.isEnabled("timeline-compiled-sources" /* Root.Runtime.ExperimentName.TIMELINE_COMPILED_SOURCES */);
         const newState = Object.assign({}, this.#state, {
-            displayAnnotationsCheckbox: annotationsExist,
+            displayAnnotationsCheckbox: options.annotationsExist,
             displayScriptContentCheckbox: showIncludeScriptContentCheckbox,
             displaySourceMapsCheckbox: showIncludeSourceMapCheckbox
         });
@@ -111,6 +126,10 @@ export class ExportTraceOptions extends HTMLElement {
                 newState.includeSourceMaps = checked;
                 break;
             }
+            case this.#shouldCompressCheckbox: {
+                newState.shouldCompress = checked;
+                break;
+            }
         }
         this.state = newState;
     }
@@ -133,8 +152,6 @@ export class ExportTraceOptions extends HTMLElement {
         if (!ComponentHelpers.ScheduledRender.isScheduledRender(this)) {
             throw new Error('Export trace options dialog render was not scheduled');
         }
-        const emptyDialog = !(this.#state.displayAnnotationsCheckbox || this.#state.displayScriptContentCheckbox ||
-            this.#state.displaySourceMapsCheckbox);
         // clang-format off
         const output = html `
       <style>${exportTraceOptionsStyles}</style>
@@ -150,12 +167,13 @@ export class ExportTraceOptions extends HTMLElement {
             horizontalAlignment: "auto" /* Dialogs.Dialog.DialogHorizontalAlignment.AUTO */,
             closeButton: false,
             dialogTitle: i18nString(UIStrings.exportTraceOptionsDialogTitle),
-            state: emptyDialog ? "disabled" /* Dialogs.Dialog.DialogState.DISABLED */ : this.#state.dialogState,
+            state: this.#state.dialogState,
         }}>
         <div class='export-trace-options-content'>
           ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox(this.#includeAnnotationsCheckbox, i18nString(UIStrings.includeAnnotations), this.#state.includeAnnotations) : ''}
           ${this.#state.displayScriptContentCheckbox ? this.#renderCheckbox(this.#includeScriptContentCheckbox, i18nString(UIStrings.includeScriptContent), this.#state.includeScriptContent) : ''}
           ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox(this.#includeSourceMapsCheckbox, i18nString(UIStrings.includeSourcemap), this.#state.includeSourceMaps) : ''}
+          ${this.#renderCheckbox(this.#shouldCompressCheckbox, i18nString(UIStrings.shouldCompress), this.#state.shouldCompress)}
           <div class='export-trace-options-row'><div class='export-trace-blank'></div><devtools-button
                   class="setup-button"
                   @click=${this.#onExportClick.bind(this)}
@@ -172,22 +190,16 @@ export class ExportTraceOptions extends HTMLElement {
         Lit.render(output, this.#shadow, { host: this });
     }
     async #onButtonDialogClick() {
-        // Handles button dialog click. Either expands dialog with options or
-        // directly exports if no options available.
-        if (!(this.#state.displayAnnotationsCheckbox || this.#state.displayScriptContentCheckbox ||
-            this.#state.displaySourceMapsCheckbox)) {
-            void this.#onExportCallback();
-        }
-        else {
-            this.state = Object.assign({}, this.#state, { dialogState: "expanded" /* Dialogs.Dialog.DialogState.EXPANDED */ });
-        }
+        this.state = Object.assign({}, this.#state, { dialogState: "expanded" /* Dialogs.Dialog.DialogState.EXPANDED */ });
     }
     async #onExportCallback() {
         // Calls passed onExport function with current settings.
         await this.#data?.onExport({
             includeScriptContent: this.#state.includeScriptContent,
             includeSourceMaps: this.#state.includeSourceMaps,
-            addModifications: this.#state.includeAnnotations
+            // Note: this also includes track configuration ...
+            addModifications: this.#state.includeAnnotations,
+            shouldCompress: this.#state.shouldCompress,
         });
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.PerfPanelTraceExported);
     }

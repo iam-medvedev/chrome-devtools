@@ -147,14 +147,14 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         let activePath = '';
         for (const path of paths) {
             activePath = activePath + '/' + path;
-            dirEntry = await this.innerCreateFolderIfNeeded(activePath);
+            dirEntry = await this.#createFolderIfNeeded(activePath);
             if (!dirEntry) {
                 return null;
             }
         }
         return dirEntry;
     }
-    innerCreateFolderIfNeeded(path) {
+    #createFolderIfNeeded(path) {
         return new Promise(resolve => {
             this.domFileSystem.root.getDirectory(path, { create: true }, dirEntry => resolve(dirEntry), error => {
                 this.domFileSystem.root.getFile(path, undefined, () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailed, { PH1: path })));
@@ -409,12 +409,12 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.searchInPath(requestId, this.#embedderPath, query);
             function innerCallback(files) {
                 resolve(files.map(path => Common.ParsedURL.ParsedURL.rawPathToUrlString(path)));
-                progress.incrementWorked(1);
+                ++progress.worked;
             }
         });
     }
     indexContent(progress) {
-        progress.setTotalWork(1);
+        progress.totalWork = 1;
         const requestId = this.manager.registerProgress(progress);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.indexPath(requestId, this.#embedderPath, JSON.stringify(this.excludedEmbedderFolders));
     }

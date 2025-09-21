@@ -4434,19 +4434,11 @@ __export(Progress_exports, {
   SubProgress: () => SubProgress
 });
 var Progress = class {
-  setTotalWork(_totalWork) {
-  }
-  setTitle(_title) {
-  }
-  setWorked(_worked, _title) {
-  }
-  incrementWorked(_worked) {
-  }
-  done() {
-  }
-  isCanceled() {
-    return false;
-  }
+  totalWork = 0;
+  worked = 0;
+  title = void 0;
+  canceled = false;
+  done = false;
 };
 var CompositeProgress = class {
   parent;
@@ -4456,14 +4448,14 @@ var CompositeProgress = class {
     this.parent = parent;
     this.#children = [];
     this.#childrenDone = 0;
-    this.parent.setTotalWork(1);
-    this.parent.setWorked(0);
+    this.parent.totalWork = 1;
+    this.parent.worked = 0;
   }
   childDone() {
     if (++this.#childrenDone !== this.#children.length) {
       return;
     }
-    this.parent.done();
+    this.parent.done = true;
   }
   createSubProgress(weight) {
     const child = new SubProgress(this, weight);
@@ -4475,12 +4467,12 @@ var CompositeProgress = class {
     let done = 0;
     for (let i = 0; i < this.#children.length; ++i) {
       const child = this.#children[i];
-      if (child.getTotalWork()) {
-        done += child.getWeight() * child.getWorked() / child.getTotalWork();
+      if (child.totalWork) {
+        done += child.weight * child.worked / child.totalWork;
       }
-      totalWeights += child.getWeight();
+      totalWeights += child.weight;
     }
-    this.parent.setWorked(done / totalWeights);
+    this.parent.worked = done / totalWeights;
   }
 };
 var SubProgress = class {
@@ -4494,77 +4486,92 @@ var SubProgress = class {
     this.#worked = 0;
     this.#totalWork = 0;
   }
-  isCanceled() {
-    return this.#composite.parent.isCanceled();
+  get canceled() {
+    return this.#composite.parent.canceled;
   }
-  setTitle(title) {
-    this.#composite.parent.setTitle(title);
+  set title(title) {
+    this.#composite.parent.title = title;
   }
-  done() {
-    this.setWorked(this.#totalWork);
+  set done(done) {
+    if (!done) {
+      return;
+    }
+    this.worked = this.#totalWork;
     this.#composite.childDone();
   }
-  setTotalWork(totalWork) {
+  set totalWork(totalWork) {
     this.#totalWork = totalWork;
     this.#composite.update();
   }
-  setWorked(worked, title) {
+  set worked(worked) {
     this.#worked = worked;
-    if (typeof title !== "undefined") {
-      this.setTitle(title);
-    }
     this.#composite.update();
   }
-  incrementWorked(worked) {
-    this.setWorked(this.#worked + (worked || 1));
-  }
-  getWeight() {
+  get weight() {
     return this.#weight;
   }
-  getWorked() {
+  get worked() {
     return this.#worked;
   }
-  getTotalWork() {
+  get totalWork() {
     return this.#totalWork;
   }
 };
 var ProgressProxy = class {
   #delegate;
   #doneCallback;
-  constructor(delegate, doneCallback) {
+  #updateCallback;
+  constructor(delegate, doneCallback, updateCallback) {
     this.#delegate = delegate;
     this.#doneCallback = doneCallback;
+    this.#updateCallback = updateCallback;
   }
-  isCanceled() {
-    return this.#delegate ? this.#delegate.isCanceled() : false;
+  get canceled() {
+    return this.#delegate ? this.#delegate.canceled : false;
   }
-  setTitle(title) {
+  set title(title) {
     if (this.#delegate) {
-      this.#delegate.setTitle(title);
+      this.#delegate.title = title;
+    }
+    if (this.#updateCallback) {
+      this.#updateCallback();
     }
   }
-  done() {
+  get title() {
+    return this.#delegate?.title ?? "";
+  }
+  set done(done) {
     if (this.#delegate) {
-      this.#delegate.done();
+      this.#delegate.done = done;
     }
-    if (this.#doneCallback) {
+    if (done && this.#doneCallback) {
       this.#doneCallback();
     }
   }
-  setTotalWork(totalWork) {
+  get done() {
+    return this.#delegate ? this.#delegate.done : false;
+  }
+  set totalWork(totalWork) {
     if (this.#delegate) {
-      this.#delegate.setTotalWork(totalWork);
+      this.#delegate.totalWork = totalWork;
+    }
+    if (this.#updateCallback) {
+      this.#updateCallback();
     }
   }
-  setWorked(worked, title) {
+  get totalWork() {
+    return this.#delegate ? this.#delegate.totalWork : 0;
+  }
+  set worked(worked) {
     if (this.#delegate) {
-      this.#delegate.setWorked(worked, title);
+      this.#delegate.worked = worked;
+    }
+    if (this.#updateCallback) {
+      this.#updateCallback?.();
     }
   }
-  incrementWorked(worked) {
-    if (this.#delegate) {
-      this.#delegate.incrementWorked(worked);
-    }
+  get worked() {
+    return this.#delegate ? this.#delegate.worked : 0;
   }
 };
 
@@ -5509,7 +5516,6 @@ var Settings = class _Settings {
    * If you are creating a setting that you expect the user to control, and
    * sync, prefer {@see createSetting}
    */
-  // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   moduleSetting(settingName) {
     const setting = this.moduleSettings.get(settingName);

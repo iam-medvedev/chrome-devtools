@@ -3858,10 +3858,20 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     }
     const groups = this.rawTimelineData.groups || [];
     const style = groups[index].style;
-    if (!style.shareHeaderLine || !style.collapsible) {
-      return Boolean(style.collapsible);
+    if (style.collapsible === 1) {
+      return false;
+    }
+    if (!style.shareHeaderLine) {
+      return style.collapsible === 0;
     }
     const isLastGroup = index + 1 >= groups.length;
+    if (style.collapsible === 2) {
+      const nextRowStartLevel = isLastGroup ? this.dataProvider.maxStackDepth() : groups[index + 1].startLevel;
+      const rowsInCurrentGroup = nextRowStartLevel - groups[index].startLevel;
+      if (rowsInCurrentGroup < 2) {
+        return false;
+      }
+    }
     if (!isLastGroup && groups[index + 1].style.nestingLevel > style.nestingLevel) {
       return true;
     }
@@ -4999,11 +5009,7 @@ var Performance = class _Performance {
     const nodesToGo = [profile.profileHead];
     const sampleDuration = (profile.profileEndTime - profile.profileStartTime) / profile.totalHitCount;
     while (nodesToGo.length) {
-      const nodes = (
-        // TODO(crbug.com/1172300) Ignored during the jsdoc to ts migration)
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        nodesToGo.pop().children
-      );
+      const nodes = nodesToGo.pop()?.children ?? [];
       for (let i = 0; i < nodes.length; ++i) {
         const node = nodes[i];
         nodesToGo.push(node);

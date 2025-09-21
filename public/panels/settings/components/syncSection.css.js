@@ -29,7 +29,7 @@ fieldset {
   outline-offset: 2px;
 }
 
-img {
+.account-avatar {
   border: 0;
   border-radius: var(--sys-shape-corner-full);
   display: block;
@@ -81,9 +81,16 @@ img {
     font-size: var(--sys-typescale-body3-size);
     height: var(--sys-size-11);
 
-    .gdp-logo {
-      width: 34px;
-      height: fit-content;
+    & .gdp-logo {
+      background-image: var(--image-file-gdp-logo-light);
+      background-size: contain;
+      width: 203px;
+      height: 18px;
+      background-repeat: no-repeat;
+    }
+
+    :host-context(.theme-with-dark-background) & .gdp-logo {
+      background-image: var(--image-file-gdp-logo-dark);
     }
   }
 
@@ -111,6 +118,12 @@ img {
       display: flex;
       align-items: center;
       gap: var(--sys-size-2);
+    }
+
+    & .tooltip-content {
+      max-width: 278px;
+      padding: var(--sys-size-2) var(--sys-size-3);
+      font: var(--sys-typescale-body5-regular);
     }
   }
 }

@@ -37,7 +37,7 @@ export declare class TimelineUIUtils {
         cacheRejected?: boolean;
         cacheKind?: string;
     }, contentHelper: TimelineDetailsContentHelper): void;
-    static maybeCreateLinkElement(url: string): HTMLElement | null;
+    static maybeCreateLinkElement(url: string): Element | null;
     /**
      * Takes an input string and parses it to look for links. It does this by
      * looking for URLs in the input string. The returned fragment will contain

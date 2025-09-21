@@ -48,7 +48,7 @@ export const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/trace/insights/LCPDiscovery.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-export function isLCPDiscovery(model) {
+export function isLCPDiscoveryInsight(model) {
     return model.insightKey === 'LCPDiscovery';
 }
 function finalize(partialModel) {

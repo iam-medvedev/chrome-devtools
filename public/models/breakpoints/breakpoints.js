@@ -234,7 +234,7 @@ var BreakpointManager = class _BreakpointManager extends Common.ObjectWrapper.Ob
       if (!_BreakpointManager.isValidPositionInScript(lineNumber, columnNumber, script)) {
         continue;
       }
-      this.innerSetBreakpoint(
+      this.#setBreakpoint(
         uiSourceCode,
         lineNumber,
         columnNumber,
@@ -272,7 +272,7 @@ var BreakpointManager = class _BreakpointManager extends Common.ObjectWrapper.Ob
       const uiLocation = new Workspace.UISourceCode.UILocation(compatibleUiSourceCode, lineNumber, columnNumber);
       const normalizedLocation = await this.debuggerWorkspaceBinding.normalizeUILocation(uiLocation);
       const breakpointLocation = _BreakpointManager.breakpointLocationFromUiLocation(normalizedLocation);
-      const breakpoint = this.innerSetBreakpoint(normalizedLocation.uiSourceCode, breakpointLocation.lineNumber, breakpointLocation.columnNumber, condition, enabled, isLogpoint, origin);
+      const breakpoint = this.#setBreakpoint(normalizedLocation.uiSourceCode, breakpointLocation.lineNumber, breakpointLocation.columnNumber, condition, enabled, isLogpoint, origin);
       if (uiSourceCode === compatibleUiSourceCode) {
         if (normalizedLocation.id() !== uiLocation.id()) {
           void Common.Revealer.reveal(normalizedLocation);
@@ -283,7 +283,7 @@ var BreakpointManager = class _BreakpointManager extends Common.ObjectWrapper.Ob
     console.assert(primaryBreakpoint !== void 0, "The passed uiSourceCode is expected to be a valid uiSourceCode");
     return primaryBreakpoint;
   }
-  innerSetBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, origin) {
+  #setBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, origin) {
     const url = _BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode)?.sourceURL ?? uiSourceCode.url();
     const resourceTypeName = uiSourceCode.contentType().name();
     const storageState = { url, resourceTypeName, lineNumber, columnNumber, condition, enabled, isLogpoint };

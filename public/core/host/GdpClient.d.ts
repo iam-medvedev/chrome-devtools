@@ -1,3 +1,4 @@
+import * as Root from '../root/root.js';
 export declare enum SubscriptionStatus {
     ENABLED = "SUBSCRIPTION_STATE_ENABLED",
     PENDING = "SUBSCRIPTION_STATE_PENDING",
@@ -69,4 +70,6 @@ export declare class GdpClient {
         name: string;
     }): Promise<Award | null>;
 }
+export declare function isGdpProfilesAvailable(): boolean;
+export declare function getGdpProfilesEnterprisePolicy(): Root.Runtime.GdpProfilesEnterprisePolicyValue;
 export {};

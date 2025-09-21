@@ -24,11 +24,12 @@ export declare class JSONView extends UI.Widget.VBox implements UI.SearchableVie
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
-export declare class ParsedJSON {
-    data: any;
+export declare class ParsedJSON<T extends unknown = unknown> {
+    data: T;
     prefix: string;
     suffix: string;
-    constructor(data: any, prefix: string, suffix: string);
+    constructor(data: T, prefix: string, suffix: string);
 }

@@ -20,7 +20,7 @@ export interface ExternalPerformanceAIConversationData {
     selected: PerformanceTraceContext;
 }
 export interface ExternalPerformanceRequestParameters {
-    conversationType: ConversationType.PERFORMANCE_FULL;
+    conversationType: ConversationType.PERFORMANCE;
     prompt: string;
     data: ExternalPerformanceAIConversationData;
 }

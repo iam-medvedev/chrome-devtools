@@ -28,7 +28,7 @@ import { BinOpRenderer, Renderer, rendererBase, RenderingContext, StringRenderer
 import { StyleEditorWidget } from './StyleEditorWidget.js';
 import { getCssDeclarationAsJavascriptProperty } from './StylePropertyUtils.js';
 import { CSSPropertyPrompt, REGISTERED_PROPERTY_SECTION_NAME, StylesSidebarPane, } from './StylesSidebarPane.js';
-const { html, nothing, render, Directives: { classMap, ifDefined } } = Lit;
+const { html, nothing, render, Directives: { classMap } } = Lit;
 const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
@@ -363,16 +363,22 @@ export class AttributeRenderer extends rendererBase(SDK.CSSPropertyParserMatcher
         const renderedFallback = match.fallback ? Renderer.render(match.fallback, context) : undefined;
         const attrCall = this.#treeElement?.getTracingTooltip('attr', match.node, this.#matchedStyles, this.#computedStyles, context);
         const tooltipId = attributeMissing ? undefined : this.#treeElement?.getTooltipId('custom-attribute');
+        const tooltip = tooltipId ? { tooltipId } : undefined;
         // clang-format off
         render(html `
         <span data-title=${computedValue || ''}
               jslog=${VisualLogging.link('css-variable').track({ click: true, hover: true })}
-        >${attrCall ?? 'attr'}(<span class=${attributeClass} aria-details=${ifDefined(tooltipId)}>${match.name}</span>${match.type ? html ` <span class=${typeClass}>${match.type}</span>` : nothing}${renderedFallback ? html `, <span class=${fallbackClass}>${renderedFallback.nodes}</span>` : nothing})</span>${tooltipId ? html `
+        >${attrCall ?? 'attr'}(<devtools-link-swatch class=${attributeClass} .data=${{
+            tooltip,
+            text: match.name,
+            isDefined: true,
+            onLinkActivate: () => this.#handleAttributeActivate(this.#matchedStyles.originatingNodeForStyle(match.style), match.name),
+        }}></devtools-link-swatch>${tooltipId ? html `
           <devtools-tooltip
             id=${tooltipId}
             variant=rich
             jslogContext=elements.css-var
-          >${JSON.stringify(rawValue)}</devtools-tooltip>` : ''}`, varSwatch);
+          >${JSON.stringify(rawValue)}</devtools-tooltip>` : nothing}${match.type ? html ` <span class=${typeClass}>${match.type}</span>` : nothing}${renderedFallback ? html `, <span class=${fallbackClass}>${renderedFallback.nodes}</span>` : nothing})</span>`, varSwatch);
         // clang-format on
         const color = computedValue && Common.Color.parse(computedValue);
         if (!color) {
@@ -386,6 +392,14 @@ export class AttributeRenderer extends rendererBase(SDK.CSSPropertyParserMatcher
             }));
         }
         return [colorSwatch, varSwatch];
+    }
+    #handleAttributeActivate(node, attribute) {
+        if (!node) {
+            return;
+        }
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.AttributeLinkClicked);
+        Host.userMetrics.swatchActivated(11 /* Host.UserMetrics.SwatchType.ATTR_LINK */);
+        ElementsPanel.instance().highlightNodeAttribute(node, attribute);
     }
 }
 // clang-format off
@@ -858,13 +872,6 @@ export class LinkableNameRenderer extends rendererBase(SDK.CSSPropertyParserMatc
                     ruleBlock: '@position-try',
                     isDefined: Boolean(this.#matchedStyles.positionTryRules().find(pt => pt.name().text === match.text)),
                 };
-            case "function" /* SDK.CSSPropertyParserMatchers.LinkableNameProperties.FUNCTION */:
-                return {
-                    jslogContext: 'css-function',
-                    metric: null,
-                    ruleBlock: '@function',
-                    isDefined: Boolean(this.#matchedStyles.getRegisteredFunction(match.text)),
-                };
         }
     }
     render(match) {
@@ -876,16 +883,7 @@ export class LinkableNameRenderer extends rendererBase(SDK.CSSPropertyParserMatc
             isDefined,
             onLinkActivate: () => {
                 metric && Host.userMetrics.swatchActivated(metric);
-                if (match.propertyName === "function" /* SDK.CSSPropertyParserMatchers.LinkableNameProperties.FUNCTION */) {
-                    const functionName = this.#matchedStyles.getRegisteredFunction(match.text);
-                    if (!functionName) {
-                        return;
-                    }
-                    this.#stylesPane.jumpToFunctionDefinition(functionName);
-                }
-                else {
-                    this.#stylesPane.jumpToSectionBlock(`${ruleBlock} ${match.text}`);
-                }
+                this.#stylesPane.jumpToSectionBlock(`${ruleBlock} ${match.text}`);
             },
             jslogContext,
         };
@@ -1330,7 +1328,7 @@ export class LengthRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.L
     }
 }
 // clang-format off
-export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.MathFunctionMatch) {
+export class BaseFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.BaseFunctionMatch) {
     // clang-format on
     #stylesPane;
     #matchedStyles;
@@ -1361,7 +1359,7 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
                 return evaluation;
             }
         }
-        else if (!match.isArithmeticFunctionCall()) {
+        else if (match instanceof SDK.CSSPropertyParserMatchers.MathFunctionMatch && !match.isArithmeticFunctionCall()) {
             void this.applyMathFunction(renderedArgs, match, context);
         }
         return [span];
@@ -1401,6 +1399,12 @@ export class MathFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatc
             }
         }
     }
+}
+export class MathFunctionRenderer extends BaseFunctionRenderer {
+    matchType = SDK.CSSPropertyParserMatchers.MathFunctionMatch;
+}
+export class CustomFunctionRenderer extends BaseFunctionRenderer {
+    matchType = SDK.CSSPropertyParserMatchers.CustomFunctionMatch;
 }
 // clang-format off
 export class AnchorFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.AnchorFunctionMatch) {
@@ -1553,6 +1557,7 @@ export function getPropertyRenderers(propertyName, style, stylesPane, matchedSty
         new PositionTryRenderer(matchedStyles),
         new LengthRenderer(stylesPane, propertyName, treeElement),
         new MathFunctionRenderer(stylesPane, matchedStyles, computedStyles, propertyName, treeElement),
+        new CustomFunctionRenderer(stylesPane, matchedStyles, computedStyles, propertyName, treeElement),
         new AutoBaseRenderer(computedStyles),
         new BinOpRenderer(),
         new RelativeColorChannelRenderer(treeElement),
@@ -1889,13 +1894,13 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             return;
         }
         this.lastComputedValue = computedValue;
-        this.innerUpdateTitle();
+        this.#updateTitle();
     }
     updateTitle() {
         this.lastComputedValue = this.#computeCSSExpression(this.property.ownerStyle, this.property.value);
-        this.innerUpdateTitle();
+        this.#updateTitle();
     }
-    innerUpdateTitle() {
+    #updateTitle() {
         this.#tooltipKeyCounts.clear();
         this.updateState();
         if (this.isExpandable()) {
@@ -2059,6 +2064,24 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         property.setDisplayedStringForInvalidProperty(invalidString);
         return container;
     }
+    #getLinkableFunction(functionName, matchedStyles) {
+        const swatch = new InlineEditor.LinkSwatch.LinkSwatch();
+        const registeredFunction = matchedStyles.getRegisteredFunction(functionName);
+        const isDefined = Boolean(registeredFunction);
+        swatch.data = {
+            jslogContext: 'css-function',
+            text: functionName,
+            tooltip: isDefined ? undefined : { title: i18nString(UIStrings.sIsNotDefined, { PH1: functionName }) },
+            isDefined,
+            onLinkActivate: () => {
+                if (!registeredFunction) {
+                    return;
+                }
+                this.#parentPane.jumpToFunctionDefinition(registeredFunction);
+            },
+        };
+        return swatch;
+    }
     getTracingTooltip(functionName, node, matchedStyles, computedStyles, context) {
         if (context.tracing || !context.property) {
             return html `${functionName}`;
@@ -2071,7 +2094,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const tooltipId = this.getTooltipId(`${functionName}-trace`);
         // clang-format off
         return html `
-        <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName}</span>
+        <span tabIndex=-1 class=tracing-anchor aria-details=${tooltipId}>${functionName.startsWith('--') ? this.#getLinkableFunction(functionName, matchedStyles) : functionName}</span>
         <devtools-tooltip
             id=${tooltipId}
             use-hotkey

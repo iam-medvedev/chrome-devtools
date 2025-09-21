@@ -253,6 +253,12 @@ export var HostConfigFreestylerExecutionMode;
     HostConfigFreestylerExecutionMode["SIDE_EFFECT_FREE_SCRIPTS_ONLY"] = "SIDE_EFFECT_FREE_SCRIPTS_ONLY";
     HostConfigFreestylerExecutionMode["NO_SCRIPTS"] = "NO_SCRIPTS";
 })(HostConfigFreestylerExecutionMode || (HostConfigFreestylerExecutionMode = {}));
+export var GdpProfilesEnterprisePolicyValue;
+(function (GdpProfilesEnterprisePolicyValue) {
+    GdpProfilesEnterprisePolicyValue[GdpProfilesEnterprisePolicyValue["ENABLED"] = 0] = "ENABLED";
+    GdpProfilesEnterprisePolicyValue[GdpProfilesEnterprisePolicyValue["ENABLED_WITHOUT_BADGES"] = 1] = "ENABLED_WITHOUT_BADGES";
+    GdpProfilesEnterprisePolicyValue[GdpProfilesEnterprisePolicyValue["DISABLED"] = 2] = "DISABLED";
+})(GdpProfilesEnterprisePolicyValue || (GdpProfilesEnterprisePolicyValue = {}));
 /**
  * The host configuration for this DevTools instance.
  *

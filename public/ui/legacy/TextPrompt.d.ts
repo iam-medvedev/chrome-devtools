@@ -1,5 +1,56 @@
 import * as Common from '../../core/common/common.js';
 import { SuggestBox, type SuggestBoxDelegate, type Suggestion } from './SuggestBox.js';
+/**
+ * A custom element wrapper around TextPrompt that allows text-editing contents in-place.
+ *
+ * ## Usage ##
+ *
+ * ```
+ * <devtools-prompt>
+ *  <b>Structured</b> content
+ * </devtools-prompt>
+ *
+ * ```
+ *
+ * @property completionTimeout Sets the delay for showing the autocomplete suggestion box.
+ * @event commit Editing is done and the result was accepted.
+ * @event expand Editing was canceled.
+ * @event beforeautocomplete This is sent before the autocomplete suggestion box is triggered and before the <datalist>
+ *                           is read.
+ * @attribute editing Setting/removing this attribute starts/stops editing.
+ * @attribute completions Sets the `id` of the <datalist> containing the autocomplete options.
+ */
+export declare class TextPromptElement extends HTMLElement {
+    #private;
+    static readonly observedAttributes: string[];
+    constructor();
+    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null): void;
+    connectedCallback(): void;
+    set completionTimeout(timeout: number);
+    cloneNode(): Node;
+}
+export declare namespace TextPromptElement {
+    class CommitEvent extends CustomEvent<string> {
+        constructor(detail: string);
+    }
+    class CancelEvent extends CustomEvent<string> {
+        constructor();
+    }
+    class BeforeAutoCompleteEvent extends CustomEvent<{
+        expression?: string;
+        filter?: string;
+    }> {
+        constructor(detail: {
+            expression?: string;
+            filter?: string;
+        });
+    }
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'devtools-prompt': TextPromptElement;
+    }
+}
 export declare class TextPrompt extends Common.ObjectWrapper.ObjectWrapper<EventTypes> implements SuggestBoxDelegate {
     #private;
     private proxyElement;

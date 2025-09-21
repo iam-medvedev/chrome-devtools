@@ -19,7 +19,6 @@ import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkForward from '../network/forward/forward.js';
 import * as NetworkPanel from '../network/network.js';
 import * as TimelinePanel from '../timeline/timeline.js';
-import * as TimelineUtils from '../timeline/utils/utils.js';
 import aiAssistancePanelStyles from './aiAssistancePanel.css.js';
 import { ChatView } from './components/ChatView.js';
 import { ExploreWidget } from './components/ExploreWidget.js';
@@ -119,10 +118,6 @@ const UIStringsNotTranslate = {
     /**
      * @description Placeholder text for the chat UI input.
      */
-    inputPlaceholderForPerformance: 'Ask a question about the selected item and its call tree',
-    /**
-     * @description Placeholder text for the chat UI input.
-     */
     inputPlaceholderForPerformanceWithNoRecording: 'Record a performance trace and select an item to ask a question',
     /**
      * @description Placeholder text for the chat UI input when there is no context selected.
@@ -137,25 +132,13 @@ const UIStringsNotTranslate = {
      */
     inputPlaceholderForFileNoContext: 'Select a file to ask a question',
     /**
-     * @description Placeholder text for the chat UI input when there is no context selected.
-     */
-    inputPlaceholderForPerformanceNoContext: 'Select an item to ask a question',
-    /**
-     * @description Placeholder text for the chat UI input.
-     */
-    inputPlaceholderForPerformanceInsights: 'Ask a question about the selected performance insight',
-    /**
-     * @description Placeholder text for the chat UI input.
-     */
-    inputPlaceholderForPerformanceInsightsNoContext: 'Select a performance insight to ask a question',
-    /**
      * @description Placeholder text for the chat UI input.
      */
     inputPlaceholderForPerformanceTrace: 'Ask a question about the selected performance trace',
     /**
      *@description Placeholder text for the chat UI input.
      */
-    inputPlaceholderForPerformanceTraceNoContext: 'Select a performance trace to ask a question',
+    inputPlaceholderForPerformanceTraceNoContext: 'Record or select a performance trace to ask a question',
     /**
      * @description Disclaimer text right after the chat input.
      */
@@ -206,17 +189,17 @@ function selectedElementFilter(maybeNode) {
     }
     return null;
 }
-async function getEmptyStateSuggestions(context, conversationType) {
+async function getEmptyStateSuggestions(context, conversation) {
     if (context) {
         const specialSuggestions = await context.getSuggestions();
         if (specialSuggestions) {
             return specialSuggestions;
         }
     }
-    if (!conversationType) {
+    if (!conversation?.type || conversation.isReadOnly) {
         return [];
     }
-    switch (conversationType) {
+    switch (conversation.type) {
         case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
             return [
                 { title: 'What can you help me with?', jslogContext: 'styling-default' },
@@ -235,26 +218,13 @@ async function getEmptyStateSuggestions(context, conversationType) {
                 { title: 'Are there any security headers present?', jslogContext: 'network-default' },
                 { title: 'Why is the request failing?', jslogContext: 'network-default' },
             ];
-        case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */:
+        case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
             return [
                 { title: 'What performance issues exist with my page?', jslogContext: 'performance-default' },
             ];
-        case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-        case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */: {
-            const focus = context?.getItem();
-            if (focus?.data.type === 'call-tree') {
-                return [
-                    { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
-                    { title: 'Where is time being spent?', jslogContext: 'performance-default' },
-                    { title: 'How can I optimize this?', jslogContext: 'performance-default' },
-                ];
-            }
-            return [
-                { title: 'Help me optimize my page load performance', jslogContext: 'performance-insights-default' },
-            ];
         }
         default:
-            Platform.assertNever(conversationType, 'Unknown conversation type');
+            Platform.assertNever(conversation.type, 'Unknown conversation type');
     }
 }
 function toolbarView(input) {
@@ -517,14 +487,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const isNetworkPanelVisible = viewManager.isViewVisible('network');
         const isSourcesPanelVisible = viewManager.isViewVisible('sources');
         const isPerformancePanelVisible = viewManager.isViewVisible('timeline');
-        // Check if the user has an insight expanded in the performance panel sidebar.
-        // If they have, we default to the Insights agent; otherwise we fallback to
-        // the regular Performance agent.
-        // Note that we do not listen to this flavor changing; this code is here to
-        // ensure that by default we do not pick the Insights agent if the user has
-        // just imported a trace and not done anything else. It doesn't make sense
-        // to select the Insights AI agent in that case.
-        const userHasExpandedPerfInsight = Boolean(UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.SelectedInsight));
         let targetConversationType = undefined;
         if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
             targetConversationType = "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
@@ -535,12 +497,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         else if (isSourcesPanelVisible && hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
             targetConversationType = "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
         }
-        else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled &&
-            hostConfig.devToolsAiAssistancePerformanceAgent?.insightsEnabled && userHasExpandedPerfInsight) {
-            targetConversationType = "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
-        }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-            targetConversationType = "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */;
+            targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
         }
         if (this.#conversation?.type === targetConversationType) {
             // The above if makes sure even if we have an active agent it's empty
@@ -593,7 +551,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedRequest =
             createRequestContext(UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
         this.#selectedPerformanceTrace =
-            createPerformanceTraceContext(UI.Context.Context.instance().flavor(TimelineUtils.AIContext.AgentFocus));
+            createPerformanceTraceContext(UI.Context.Context.instance().flavor(AiAssistanceModel.AgentFocus));
         this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode));
         this.#updateConversationState({ agent: this.#conversationAgent });
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
@@ -601,7 +559,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
         UI.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
@@ -621,7 +579,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(TimelineUtils.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
         UI.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
@@ -678,26 +636,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         this.#selectedPerformanceTrace =
             Boolean(ev.data) ? new AiAssistanceModel.PerformanceTraceContext(ev.data) : null;
-        let conversationType;
-        if (ev.data) {
-            if (ev.data.data.type === 'full') {
-                conversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */;
-            }
-            else if (ev.data.data.type === 'insight') {
-                conversationType = "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
-            }
-            else if (ev.data.data.type === 'call-tree') {
-                conversationType = "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */;
-            }
-            else {
-                Platform.assertNever(ev.data.data, 'Unknown agent focus');
-            }
-        }
-        let agent = this.#conversationAgent;
-        if (conversationType && agent instanceof AiAssistanceModel.PerformanceAgent &&
-            agent.getConversationType() !== conversationType) {
-            agent = this.#conversationHandler.createAgent(conversationType);
-        }
         this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handleUISourceCodeFlavorChange = (ev) => {
@@ -725,7 +663,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         return this.#changeManager.formatChangesForPatching(this.#conversationAgent.id, /* includeSourceLocation= */ true);
     }
     async performUpdate() {
-        const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation?.type);
+        const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation);
         this.view({
             state: this.#getChatUiState(),
             blockedByCrossOrigin: this.#blockedByCrossOrigin,
@@ -849,21 +787,15 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
                 return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkNoContext);
-            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */: {
+            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
                 const perfPanel = UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
                 if (perfPanel?.hasActiveTrace()) {
-                    return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForPerformance) :
-                        lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceNoContext);
+                    return this.#selectedContext ?
+                        lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTrace) :
+                        lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTraceNoContext);
                 }
                 return lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceWithNoRecording);
             }
-            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
-                return this.#selectedContext ?
-                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceInsights) :
-                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceInsightsNoContext);
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */:
-                return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTrace) :
-                    lockedString(UIStringsNotTranslate.inputPlaceholderForPerformanceTraceNoContext);
         }
     }
     #getDisclaimerText() {
@@ -891,9 +823,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 return lockedString(UIStringsNotTranslate.inputDisclaimerForNetwork);
             // It is deliberate that both Performance agents use the same disclaimer
             // text and this has been approved by Privacy.
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */:
-            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */:
-            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
+            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformanceEnterpriseNoLogging);
                 }
@@ -925,18 +855,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         if (context instanceof AiAssistanceModel.PerformanceTraceContext) {
             const focus = context.getItem().data;
-            if (focus.type === 'full') {
-                return;
-            }
-            if (focus.type === 'call-tree') {
+            if (focus.callTree) {
                 const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
                 const trace = new SDK.TraceObject.RevealableEvent(event);
                 return Common.Revealer.reveal(trace);
             }
-            if (focus.type === 'insight') {
+            if (focus.insight) {
                 return Common.Revealer.reveal(focus.insight);
             }
-            Platform.assertNever(focus, 'Unknown agent focus');
         }
         // Node picker is using linkifier.
     }
@@ -971,17 +897,17 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
             case 'drjones.performance-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformancePanelCallTree);
-                targetConversationType = "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.performance-insight-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
-                targetConversationType = "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.performance-panel-full-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceFullButton);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.sources-floating-button': {
@@ -1000,10 +926,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let agent = this.#conversationAgent;
         if (!this.#conversation || !this.#conversationAgent || this.#conversation.type !== targetConversationType ||
-            this.#conversation?.isEmpty ||
-            targetConversationType === "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */ ||
-            (agent instanceof AiAssistanceModel.PerformanceAgent &&
-                agent.getConversationType() !== targetConversationType)) {
+            this.#conversation?.isEmpty) {
             agent = this.#conversationHandler.createAgent(targetConversationType, this.#changeManager);
         }
         this.#updateConversationState({ agent });
@@ -1219,9 +1142,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
                 context = this.#selectedRequest;
                 break;
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE_FULL */:
-            case "drjones-performance" /* AiAssistanceModel.ConversationType.PERFORMANCE_CALL_TREE */:
-            case "performance-insight" /* AiAssistanceModel.ConversationType.PERFORMANCE_INSIGHT */:
+            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
                 context = this.#selectedPerformanceTrace;
                 break;
         }

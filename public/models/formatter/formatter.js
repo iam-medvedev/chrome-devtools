@@ -11,7 +11,6 @@ __export(FormatterWorkerPool_exports, {
   formatterWorkerPool: () => formatterWorkerPool
 });
 import * as Common from "./../../core/common/common.js";
-var MAX_WORKERS = Math.max(2, navigator.hardwareConcurrency - 1);
 var formatterWorkerPoolInstance;
 var FormatterWorkerPool = class _FormatterWorkerPool {
   taskQueue;
@@ -33,11 +32,12 @@ var FormatterWorkerPool = class _FormatterWorkerPool {
     return worker;
   }
   processNextTask() {
+    const maxWorkers = Math.max(2, navigator.hardwareConcurrency - 1);
     if (!this.taskQueue.length) {
       return;
     }
     let freeWorker = [...this.workerTasks.keys()].find((worker) => !this.workerTasks.get(worker));
-    if (!freeWorker && this.workerTasks.size < MAX_WORKERS) {
+    if (!freeWorker && this.workerTasks.size < maxWorkers) {
       freeWorker = this.createWorker();
     }
     if (!freeWorker) {

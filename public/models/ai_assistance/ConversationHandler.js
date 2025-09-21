@@ -134,7 +134,7 @@ export class ConversationHandler {
                 case "freestyler" /* ConversationType.STYLING */: {
                     return await this.#handleExternalStylingConversation(parameters.prompt, parameters.selector);
                 }
-                case "drjones-performance-full" /* ConversationType.PERFORMANCE_FULL */:
+                case "drjones-performance-full" /* ConversationType.PERFORMANCE */:
                     return await this.#handleExternalPerformanceConversation(parameters.prompt, parameters.data);
                 case "drjones-network-request" /* ConversationType.NETWORK */:
                     if (!parameters.requestUrl) {
@@ -253,10 +253,8 @@ export class ConversationHandler {
                 agent = new FileAgent(options);
                 break;
             }
-            case "drjones-performance-full" /* ConversationType.PERFORMANCE_FULL */:
-            case "performance-insight" /* ConversationType.PERFORMANCE_INSIGHT */:
-            case "drjones-performance" /* ConversationType.PERFORMANCE_CALL_TREE */: {
-                agent = new PerformanceAgent(options, conversationType);
+            case "drjones-performance-full" /* ConversationType.PERFORMANCE */: {
+                agent = new PerformanceAgent(options);
                 break;
             }
         }

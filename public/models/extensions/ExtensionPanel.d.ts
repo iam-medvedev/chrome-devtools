@@ -15,6 +15,7 @@ export declare class ExtensionPanel extends UI.Panel.Panel implements UI.Searcha
     jumpToNextSearchResult(): void;
     jumpToPreviousSearchResult(): void;
     supportsCaseSensitiveSearch(): boolean;
+    supportsWholeWordSearch(): boolean;
     supportsRegexSearch(): boolean;
 }
 export declare class ExtensionButton {

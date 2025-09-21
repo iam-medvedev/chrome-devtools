@@ -86,7 +86,6 @@ function getPresentationTimestamp(screenshotEvent) {
     // The last one is sometimes missing as because the trace terminates right before the associated PipelineReporter is emitted.
     return updatedTs ?? screenshotEvent.ts;
 }
-// TODO(crbug/41484172): should be readonly
 export function data() {
     return {
         legacySyntheticScreenshots: syntheticScreenshots.length ? syntheticScreenshots : null,

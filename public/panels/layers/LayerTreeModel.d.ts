@@ -27,10 +27,10 @@ export interface EventTypes {
     [Events.LayerPainted]: AgentLayer;
 }
 export declare class AgentLayerTree extends SDK.LayerTreeBase.LayerTreeBase {
+    #private;
     private layerTreeModel;
     constructor(layerTreeModel: LayerTreeModel);
     setLayers(payload: Protocol.LayerTree.Layer[] | null): Promise<void>;
-    private innerSetLayers;
 }
 export declare class AgentLayer implements SDK.LayerTreeBase.Layer {
     #private;

@@ -28,7 +28,7 @@ export declare const i18nString: (id: string, values?: import("../../../core/i18
 export type ModernHTTPInsightModel = InsightModel<typeof UIStrings, {
     http1Requests: Types.Events.SyntheticNetworkRequest[];
 }>;
-export declare function isModernHTTP(model: InsightModel): model is ModernHTTPInsightModel;
+export declare function isModernHTTPInsight(model: InsightModel): model is ModernHTTPInsightModel;
 /**
  * Determine the set of resources that aren't HTTP/2 but should be.
  * We're a little conservative about what we surface for a few reasons:

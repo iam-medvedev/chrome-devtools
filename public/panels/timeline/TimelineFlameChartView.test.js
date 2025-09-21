@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
+import * as AIAssistance from '../../models/ai_assistance/ai_assistance.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as TraceBounds from '../../services/trace_bounds/trace_bounds.js';
@@ -13,7 +14,6 @@ import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
-import * as Utils from './utils/utils.js';
 const { urlString } = Platform.DevToolsPath;
 class MockViewDelegate {
     selection = null;
@@ -319,7 +319,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         flameChartView.setSearchableView(searchableView);
         flameChartView.setModel(parsedTrace, new Map());
         const searchQuery = 'Paint';
-        const searchConfig = new UI.SearchableView.SearchConfig(/* query */ searchQuery, /* caseSensitive */ false, /* isRegex */ false);
+        const searchConfig = new UI.SearchableView.SearchConfig(/* query */ searchQuery, /* caseSensitive */ false, 
+        /* wholeWord */ false, /* isRegex */ false);
         flameChartView.performSearch(searchConfig, true);
         assert.strictEqual(flameChartView.getSearchResults()?.length, 14);
         assertSelectionName('PrePaint');
@@ -350,7 +351,8 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         flameChartView.setSearchableView(searchableView);
         flameChartView.setModel(parsedTrace, new Map());
         const searchQuery = 'app.js';
-        const searchConfig = new UI.SearchableView.SearchConfig(/* query */ searchQuery, /* caseSensitive */ false, /* isRegex */ false);
+        const searchConfig = new UI.SearchableView.SearchConfig(/* query */ searchQuery, /* caseSensitive */ false, 
+        /* wholeWord */ false, /* isRegex */ false);
         flameChartView.performSearch(searchConfig, true);
         const results = flameChartView.getSearchResults();
         assert.isOk(results);
@@ -504,7 +506,7 @@ describeWithEnvironment('TimelineFlameChartView', function () {
         let flameChartView;
         let parsedTrace;
         const flameChartContainer = document.createElement('div');
-        this.beforeEach(async () => {
+        this.beforeEach(async function () {
             parsedTrace = await TraceLoader.traceEngine(this, 'recursive-blocking-js.json.gz');
             const mockViewDelegate = new MockViewDelegate();
             flameChartView = new Timeline.TimelineFlameChartView.TimelineFlameChartView(mockViewDelegate);
@@ -929,16 +931,15 @@ describeWithEnvironment('TimelineFlameChartView', function () {
             // Find some task in the main thread that we can build an AI Call Tree from
             const task = allThreadEntriesInTrace(parsedTrace).find(event => {
                 return Trace.Types.Events.isRunTask(event) && event.dur > 5_000 &&
-                    Utils.AICallTree.AICallTree.fromEvent(event, parsedTrace) !== null;
+                    AIAssistance.AICallTree.fromEvent(event, parsedTrace) !== null;
             });
             assert.isOk(task);
-            UI.Context.Context.instance().setFlavor(Utils.AIContext.AgentFocus, null);
+            UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, null);
             const selection = Timeline.TimelineSelection.selectionFromEvent(task);
             flameChartView.setSelectionAndReveal(selection);
             await doubleRaf(); // the updating of the AI Call Tree is done in a rAF to not block.
-            const flavor = UI.Context.Context.instance().flavor(Utils.AIContext.AgentFocus);
-            assert.instanceOf(flavor, Utils.AIContext.AgentFocus);
-            assert.strictEqual(flavor.data.type, 'call-tree');
+            const flavor = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+            assert.instanceOf(flavor, AIAssistance.AgentFocus);
         });
     });
     describe('Link between entries annotation in progress', function () {

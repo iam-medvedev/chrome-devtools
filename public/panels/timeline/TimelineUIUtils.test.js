@@ -1385,16 +1385,16 @@ describeWithMockConnection('TimelineUIUtils', function () {
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, 'Check out: <button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">https://example.com</button>.');
+            assert.strictEqual(container.innerHTML, 'Check out: <button class="devtools-link text-button link-style" title="https://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>.');
         });
         it('should handle URLs anywhere within the string', () => {
             const rawString = 'http://example.com at the beginning. http://example.com in the middle or at the end: http://example.com';
             const fragment = Timeline.TimelineUIUtils.TimelineUIUtils.parseStringForLinks(rawString);
             const container = document.createElement('div');
             container.appendChild(fragment);
-            assert.strictEqual(container.innerHTML, `<button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">http://example.com</button>
-at the beginning. <button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">http://example.com</button>
-in the middle or at the end: <button class="devtools-link text-button link-style" jslog="Link; context: url; track: click" role="link" tabindex="-1">http://example.com</button>`
+            assert.strictEqual(container.innerHTML, `<button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>
+at the beginning. <button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>
+in the middle or at the end: <button class="devtools-link text-button link-style" title="http://example.com" jslog="Link; context: url; track: click" role="link" tabindex="-1"></button>`
                 .replace(/\n/g, ' '));
         });
         it('should parse a string with multiple links and create link elements for them', () => {
