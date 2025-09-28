@@ -2,7 +2,7 @@ import * as Host from '../../../core/host/host.js';
 import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import { ChangeManager } from '../ChangeManager.js';
-import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestions, type FunctionCallHandlerResult, MultimodalInputType, type ParsedResponse, type RequestOptions } from './AiAgent.js';
+import { type AgentOptions as BaseAgentOptions, AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestions, type FunctionCallHandlerResult, MultimodalInputType, type RequestOptions } from './AiAgent.js';
 declare function executeJsCode(functionDeclaration: string, { throwOnSideEffect, contextNode }: {
     throwOnSideEffect: boolean;
     contextNode: SDK.DOMModel.DOMNode | null;
@@ -38,7 +38,6 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
     get options(): RequestOptions;
     get multimodalInputEnabled(): boolean;
     preambleFeatures(): string[];
-    parseTextResponse(text: string): ParsedResponse;
     constructor(opts: AgentOptions);
     onPrimaryPageChanged(): void;
     generateObservation(action: string, { throwOnSideEffect, }: {

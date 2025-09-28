@@ -167,7 +167,7 @@ export class NetworkRequestDetails extends UI.Widget.Widget {
 }
 export const DEFAULT_VIEW = (input, _output, target) => {
     if (!input.request) {
-        render(html ``, target);
+        render(Lit.nothing, target);
         return;
     }
     const { request } = input;

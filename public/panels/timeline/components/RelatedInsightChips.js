@@ -55,7 +55,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const { activeEvent, eventToInsightsMap } = input;
     const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
     if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
-        render(html ``, target);
+        render(Lit.nothing, target);
         return;
     }
     // TODO: Render insight messages in a separate UX

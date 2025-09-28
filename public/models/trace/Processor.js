@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Handlers from './handlers/handlers.js';
 import * as Helpers from './helpers/helpers.js';
 import * as Insights from './insights/insights.js';
@@ -31,7 +32,7 @@ export class TraceProcessor extends EventTarget {
     #data = null;
     #insights = null;
     static createWithAllHandlers() {
-        return new TraceProcessor(Handlers.ModelHandlers, Types.Configuration.defaults());
+        return new _a(Handlers.ModelHandlers, Types.Configuration.defaults());
     }
     /**
      * This function is kept for testing with `stub`.
@@ -361,7 +362,7 @@ export class TraceProcessor extends EventTarget {
             urlString = data.Meta.finalDisplayUrlByNavigationId.get('') ?? data.Meta.mainFrameURL;
         }
         const insightSetModel = {};
-        for (const [name, insight] of Object.entries(TraceProcessor.getInsightRunners())) {
+        for (const [name, insight] of Object.entries(_a.getInsightRunners())) {
             let model;
             try {
                 logger?.start(`insights:${name}`);
@@ -512,6 +513,7 @@ export class TraceProcessor extends EventTarget {
         this.#computeInsightSet(data, context);
     }
 }
+_a = TraceProcessor;
 /**
  * Some Handlers need data provided by others. Dependencies of a handler handler are
  * declared in the `deps` field.

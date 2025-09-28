@@ -1512,6 +1512,7 @@ import * as VisualLogging8 from "./../visual_logging/visual_logging.js";
 var InspectorView_exports = {};
 __export(InspectorView_exports, {
   ActionDelegate: () => ActionDelegate,
+  DockMode: () => DockMode,
   DrawerOrientation: () => DrawerOrientation,
   InspectorView: () => InspectorView,
   InspectorViewTabDelegate: () => InspectorViewTabDelegate
@@ -2401,50 +2402,12 @@ var XBox = class extends XElement {
     super.attributeChangedCallback(attr, oldValue, newValue);
   }
 };
-var XVBox = class extends XBox {
-  constructor() {
-    super("column");
-  }
-};
 var XHBox = class extends XBox {
   constructor() {
     super("row");
   }
 };
-var XCBox = class extends XElement {
-  constructor() {
-    super();
-    this.style.setProperty("display", "flex");
-    this.style.setProperty("flex-direction", "column");
-    this.style.setProperty("justify-content", "center");
-    this.style.setProperty("align-items", "center");
-  }
-};
-var XDiv = class extends XElement {
-  constructor() {
-    super();
-    this.style.setProperty("display", "block");
-  }
-};
-var XSpan = class extends XElement {
-  constructor() {
-    super();
-    this.style.setProperty("display", "inline");
-  }
-};
-var XText = class extends XElement {
-  constructor() {
-    super();
-    this.style.setProperty("display", "inline");
-    this.style.setProperty("white-space", "pre");
-  }
-};
-customElements.define("x-vbox", XVBox);
 customElements.define("x-hbox", XHBox);
-customElements.define("x-cbox", XCBox);
-customElements.define("x-div", XDiv);
-customElements.define("x-span", XSpan);
-customElements.define("x-text", XText);
 
 // gen/front_end/ui/legacy/XWidget.js
 var observer = null;
@@ -4967,6 +4930,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     if (!tab) {
       return false;
     }
+    this.lastSelectedOverflowTab = tab;
     const eventData = {
       prevTabId: this.currentTab ? this.currentTab.id : void 0,
       tabId: id2,
@@ -5269,7 +5233,6 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     }
   }
   dropDownMenuItemSelected(tab) {
-    this.lastSelectedOverflowTab = tab;
     this.selectTab(tab.id, true, true);
   }
   totalWidth() {
@@ -6990,8 +6953,14 @@ var DrawerOrientation;
   DrawerOrientation2["HORIZONTAL"] = "horizontal";
   DrawerOrientation2["UNSET"] = "unset";
 })(DrawerOrientation || (DrawerOrientation = {}));
+var DockMode;
+(function(DockMode2) {
+  DockMode2["BOTTOM"] = "bottom";
+  DockMode2["SIDE"] = "side";
+  DockMode2["UNDOCKED"] = "undocked";
+})(DockMode || (DockMode = {}));
 var InspectorView = class _InspectorView extends VBox {
-  drawerOrientationSetting;
+  drawerOrientationByDockSetting;
   drawerSplitWidget;
   tabDelegate;
   drawerTabbedLocation;
@@ -7011,8 +6980,13 @@ var InspectorView = class _InspectorView extends VBox {
     super();
     GlassPane.setContainer(this.element);
     this.setMinimumSize(MIN_INSPECTOR_WIDTH_HORIZONTAL_DRAWER, MIN_INSPECTOR_HEIGHT);
-    this.drawerOrientationSetting = Common10.Settings.Settings.instance().createSetting("inspector.drawer-orientation", DrawerOrientation.UNSET);
-    const isVertical = this.drawerOrientationSetting.get() === DrawerOrientation.VERTICAL;
+    this.drawerOrientationByDockSetting = Common10.Settings.Settings.instance().createSetting("inspector.drawer-orientation-by-dock-mode", {
+      [DockMode.BOTTOM]: DrawerOrientation.UNSET,
+      [DockMode.SIDE]: DrawerOrientation.UNSET,
+      [DockMode.UNDOCKED]: DrawerOrientation.UNSET
+    });
+    const initialOrientation = this.#getOrientationForDockMode();
+    const isVertical = initialOrientation === DrawerOrientation.VERTICAL;
     this.drawerSplitWidget = new SplitWidget(isVertical, true, "inspector.drawer-split-view-state", 200, 200);
     this.drawerSplitWidget.hideSidebar();
     this.drawerSplitWidget.enableShowModeSaving();
@@ -7032,8 +7006,7 @@ var InspectorView = class _InspectorView extends VBox {
     closeDrawerButton.element.setAttribute("jslog", `${VisualLogging7.close().track({ click: true })}`);
     closeDrawerButton.addEventListener("Click", this.closeDrawer, this);
     this.#toggleOrientationButton = new ToolbarButton(i18nString7(UIStrings7.toggleDrawerOrientation), this.drawerSplitWidget.isVertical() ? "dock-bottom" : "dock-right");
-    this.#toggleOrientationButton.element.setAttribute("jslog", `${VisualLogging7.toggle().track({ click: true })}`);
-    this.#toggleOrientationButton.element.setAttribute("jslogcontext", "toggle-drawer-orientation");
+    this.#toggleOrientationButton.element.setAttribute("jslog", `${VisualLogging7.toggle("toggle-drawer-orientation").track({ click: true })}`);
     this.#toggleOrientationButton.addEventListener("Click", () => this.toggleDrawerOrientation(), this);
     this.drawerTabbedPane.addEventListener(Events.TabSelected, (event) => this.tabSelected(event.data.tabId), this);
     const selectedDrawerTab = this.drawerTabbedPane.selectedTabId;
@@ -7105,6 +7078,46 @@ var InspectorView = class _InspectorView extends VBox {
   static removeInstance() {
     inspectorViewInstance = null;
   }
+  applyDrawerOrientationForDockSideForTest() {
+  }
+  #applyDrawerOrientationForDockSide() {
+    if (!this.drawerVisible()) {
+      this.applyDrawerOrientationForDockSideForTest();
+      return;
+    }
+    const newOrientation = this.#getOrientationForDockMode();
+    this.#applyDrawerOrientation(newOrientation);
+    this.applyDrawerOrientationForDockSideForTest();
+  }
+  #getDockMode() {
+    const dockSide = DockController.instance().dockSide();
+    if (dockSide === "bottom") {
+      return DockMode.BOTTOM;
+    }
+    if (dockSide === "undocked") {
+      return DockMode.UNDOCKED;
+    }
+    return DockMode.SIDE;
+  }
+  #getOrientationForDockMode() {
+    const dockMode = this.#getDockMode();
+    const orientationSetting = this.drawerOrientationByDockSetting.get();
+    let orientation = orientationSetting[dockMode];
+    if (orientation === DrawerOrientation.UNSET) {
+      orientation = dockMode === DockMode.BOTTOM ? DrawerOrientation.VERTICAL : DrawerOrientation.HORIZONTAL;
+    }
+    return orientation;
+  }
+  #applyDrawerOrientation(orientation) {
+    const shouldBeVertical = orientation === DrawerOrientation.VERTICAL;
+    const isVertical = this.drawerSplitWidget.isVertical();
+    if (shouldBeVertical === isVertical) {
+      return;
+    }
+    this.#toggleOrientationButton.setGlyph(shouldBeVertical ? "dock-bottom" : "dock-right");
+    this.drawerSplitWidget.setVertical(shouldBeVertical);
+    this.setDrawerRelatedMinimumSizes();
+  }
   #observedResize() {
     const rect = this.element.getBoundingClientRect();
     this.element.style.setProperty("--devtools-window-left", `${rect.left}px`);
@@ -7118,10 +7131,13 @@ var InspectorView = class _InspectorView extends VBox {
     this.#resizeObserver.observe(this.element);
     this.#observedResize();
     this.element.ownerDocument.addEventListener("keydown", this.keyDownBound, false);
+    DockController.instance().addEventListener("DockSideChanged", this.#applyDrawerOrientationForDockSide, this);
+    this.#applyDrawerOrientationForDockSide();
   }
   willHide() {
     this.#resizeObserver.unobserve(this.element);
     this.element.ownerDocument.removeEventListener("keydown", this.keyDownBound, false);
+    DockController.instance().removeEventListener("DockSideChanged", this.#applyDrawerOrientationForDockSide, this);
   }
   resolveLocation(locationName) {
     if (locationName === "drawer-view") {
@@ -7197,6 +7213,7 @@ var InspectorView = class _InspectorView extends VBox {
     } else {
       this.focusRestorer = null;
     }
+    this.#applyDrawerOrientationForDockSide();
     LiveAnnouncer.alert(i18nString7(UIStrings7.drawerShown));
   }
   drawerVisible() {
@@ -7216,19 +7233,23 @@ var InspectorView = class _InspectorView extends VBox {
     if (!this.drawerTabbedPane.isShowing()) {
       return;
     }
-    let drawerWillBeVertical;
+    const dockMode = this.#getDockMode();
+    const currentSettings = this.drawerOrientationByDockSetting.get();
+    let newOrientation;
     if (force) {
-      drawerWillBeVertical = force === DrawerOrientation.VERTICAL;
+      newOrientation = force;
     } else {
-      drawerWillBeVertical = !this.drawerSplitWidget.isVertical();
+      const currentOrientation = this.#getOrientationForDockMode();
+      newOrientation = currentOrientation === DrawerOrientation.VERTICAL ? DrawerOrientation.HORIZONTAL : DrawerOrientation.VERTICAL;
     }
-    this.drawerOrientationSetting.set(drawerWillBeVertical ? DrawerOrientation.VERTICAL : DrawerOrientation.HORIZONTAL);
-    this.#toggleOrientationButton.setGlyph(drawerWillBeVertical ? "dock-bottom" : "dock-right");
-    this.drawerSplitWidget.setVertical(drawerWillBeVertical);
-    this.setDrawerRelatedMinimumSizes();
+    currentSettings[dockMode] = newOrientation;
+    this.drawerOrientationByDockSetting.set(currentSettings);
+    this.#applyDrawerOrientation(newOrientation);
   }
   isUserExplicitlyUpdatedDrawerOrientation() {
-    return this.drawerOrientationSetting.get() !== DrawerOrientation.UNSET;
+    const orientationSetting = this.drawerOrientationByDockSetting.get();
+    const dockMode = this.#getDockMode();
+    return orientationSetting[dockMode] !== DrawerOrientation.UNSET;
   }
   setDrawerRelatedMinimumSizes() {
     const drawerIsVertical = this.drawerSplitWidget.isVertical();
@@ -8179,6 +8200,7 @@ var SoftContextMenu = class _SoftContextMenu {
 };
 
 // gen/front_end/ui/legacy/ContextMenu.js
+var _a;
 var Item = class {
   typeInternal;
   label;
@@ -8644,7 +8666,7 @@ var SubMenu = class extends Item {
 };
 var MENU_ITEM_HEIGHT_FOR_LOGGING = 20;
 var MENU_ITEM_WIDTH_FOR_LOGGING = 200;
-var ContextMenu = class _ContextMenu extends SubMenu {
+var ContextMenu = class extends SubMenu {
   contextMenu;
   pendingTargets;
   event;
@@ -8699,7 +8721,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
   static initialize() {
     Host6.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host6.InspectorFrontendHostAPI.Events.SetUseSoftMenu, setUseSoftMenu);
     function setUseSoftMenu(event) {
-      _ContextMenu.useSoftMenu = event.data;
+      _a.useSoftMenu = event.data;
     }
   }
   /**
@@ -8710,7 +8732,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
   static installHandler(doc) {
     doc.body.addEventListener("contextmenu", handler, false);
     function handler(event) {
-      const contextMenu = new _ContextMenu(event);
+      const contextMenu = new _a(event);
       void contextMenu.show();
     }
   }
@@ -8748,16 +8770,16 @@ var ContextMenu = class _ContextMenu extends SubMenu {
    * and then displaying either a soft or native menu.
    */
   async show() {
-    _ContextMenu.pendingMenu = this;
+    _a.pendingMenu = this;
     this.event.consume(true);
     const loadedProviders = await Promise.all(this.pendingTargets.map(async (target) => {
       const providers = await loadApplicableRegisteredProviders(target);
       return { target, providers };
     }));
-    if (_ContextMenu.pendingMenu !== this) {
+    if (_a.pendingMenu !== this) {
       return;
     }
-    _ContextMenu.pendingMenu = null;
+    _a.pendingMenu = null;
     for (const { target, providers } of loadedProviders) {
       for (const provider of providers) {
         provider.appendApplicableItems(this.event, this, target);
@@ -8796,7 +8818,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
     }
     const menuObject = this.buildMenuDescriptors();
     const ownerDocument = this.eventTarget.ownerDocument;
-    if (this.useSoftMenu || _ContextMenu.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
+    if (this.useSoftMenu || _a.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
       this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, void 0, this.onSoftMenuClosed, this.loggableParent);
       const isMouseEvent = this.event.pointerType === "mouse" && this.event.button >= 0;
       this.softMenu.setFocusOnTheFirstItem(!isMouseEvent);
@@ -8936,6 +8958,7 @@ var ContextMenu = class _ContextMenu extends SubMenu {
     "footer"
   ];
 };
+_a = ContextMenu;
 var MenuButton = class extends HTMLElement {
   static observedAttributes = ["icon-name", "disabled"];
   #shadow = this.attachShadow({ mode: "open" });
@@ -10371,7 +10394,8 @@ var textPrompt_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./textPrompt.css")} */`;
 
 // gen/front_end/ui/legacy/TextPrompt.js
-var TextPromptElement = class _TextPromptElement extends HTMLElement {
+var _a2;
+var TextPromptElement = class extends HTMLElement {
   static observedAttributes = ["editing", "completions"];
   #shadow = this.attachShadow({ mode: "open" });
   #entrypoint = this.#shadow.createChild("span");
@@ -10406,7 +10430,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
   }
   async #willAutoComplete(expression, filter, force) {
     if (!force) {
-      this.dispatchEvent(new _TextPromptElement.BeforeAutoCompleteEvent({ expression, filter }));
+      this.dispatchEvent(new _a2.BeforeAutoCompleteEvent({ expression, filter }));
     }
     const listId = this.getAttribute("completions");
     if (!listId) {
@@ -10445,9 +10469,9 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     const target = e.target;
     const text = target.textContent || "";
     if (commit) {
-      this.dispatchEvent(new _TextPromptElement.CommitEvent(text));
+      this.dispatchEvent(new _a2.CommitEvent(text));
     } else {
-      this.dispatchEvent(new _TextPromptElement.CancelEvent());
+      this.dispatchEvent(new _a2.CancelEvent());
     }
     e.consume();
   }
@@ -10481,6 +10505,7 @@ var TextPromptElement = class _TextPromptElement extends HTMLElement {
     return clone;
   }
 };
+_a2 = TextPromptElement;
 (function(TextPromptElement2) {
   class CommitEvent extends CustomEvent {
     constructor(detail) {
@@ -15594,7 +15619,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     this.onChange(mutationList);
     for (const mutation of mutationList) {
       this.removeNodes(mutation.removedNodes);
-      this.addNodes(mutation.addedNodes);
+      this.addNodes(mutation.addedNodes, mutation.nextSibling);
       this.updateNode(mutation.target, mutation.attributeName);
     }
   }
@@ -15602,7 +15627,7 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   }
   updateNode(_node, _attributeName) {
   }
-  addNodes(_nodes) {
+  addNodes(_nodes, _nextSibling) {
   }
   removeNodes(_nodes) {
   }
@@ -22063,7 +22088,7 @@ var TreeSearch = class {
   getResults(node) {
     return this.#getNodeMatchMap().get(node) ?? [];
   }
-  highlight(ranges, selectedRange) {
+  static highlight(ranges, selectedRange) {
     return Lit3.Directives.ref((element) => {
       if (element instanceof HTMLLIElement) {
         TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
@@ -22153,6 +22178,7 @@ var ActiveHighlights = class {
 var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
   #activeHighlights = new ActiveHighlights();
   #clonedAttributes = /* @__PURE__ */ new Set();
+  #clonedClasses = /* @__PURE__ */ new Set();
   static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
   configElement;
   constructor(treeOutline, configElement) {
@@ -22167,7 +22193,9 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
   refresh() {
     this.titleElement.textContent = "";
     this.#clonedAttributes.forEach((attr) => this.listItemElement.attributes.removeNamedItem(attr));
+    this.#clonedClasses.forEach((className) => this.listItemElement.classList.remove(className));
     this.#clonedAttributes.clear();
+    this.#clonedClasses.clear();
     for (let i = 0; i < this.configElement.attributes.length; ++i) {
       const attribute = this.configElement.attributes.item(i);
       if (attribute && attribute.name !== "role" && SDK2.DOMModel.ARIA_ATTRIBUTES.has(attribute.name)) {
@@ -22175,6 +22203,11 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
         this.#clonedAttributes.add(attribute.name);
       }
     }
+    for (const className of this.configElement.classList) {
+      this.listItemElement.classList.add(className);
+      this.#clonedClasses.add(className);
+    }
+    InterceptBindingDirective.attachEventListeners(this.configElement, this.listItemElement);
     for (const child of this.configElement.childNodes) {
       if (child instanceof HTMLUListElement && child.role === "group") {
         continue;
@@ -22270,7 +22303,7 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       }
     }
   }
-  addNodes(nodes) {
+  addNodes(nodes, nextSibling) {
     for (const node of getTreeNodes(nodes)) {
       if (TreeViewTreeElement.get(node)) {
         continue;
@@ -22279,8 +22312,15 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
       if (!parent) {
         continue;
       }
+      while (nextSibling && nextSibling.nodeType !== Node.ELEMENT_NODE) {
+        nextSibling = nextSibling.nextSibling;
+      }
+      const nextElement = nextSibling ? TreeViewTreeElement.get(nextSibling) : null;
+      const index = nextElement ? parent.treeElement.indexOfChild(nextElement) : parent.treeElement.children().length;
       const treeElement = new TreeViewTreeElement(this.#treeOutline, node);
-      parent.treeElement.appendChild(treeElement);
+      const expandable = Boolean(node.querySelector('ul[role="group"]'));
+      treeElement.setExpandable(expandable);
+      parent.treeElement.insertChild(treeElement, index);
       if (hasBooleanAttribute(node, "selected")) {
         treeElement.revealAndSelect(true);
       }

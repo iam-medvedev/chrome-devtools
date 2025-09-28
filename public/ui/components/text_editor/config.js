@@ -422,6 +422,7 @@ export const aiAutoCompleteSuggestionState = CM.StateField.define({
                 if (effect.value) {
                     return effect.value;
                 }
+                value?.clearCachedRequest();
                 return null;
             }
         }
@@ -431,18 +432,21 @@ export const aiAutoCompleteSuggestionState = CM.StateField.define({
         // A suggestion from an effect can be stale if the document was changed
         // between when the request was sent and the response was received.
         // We check if the position is still valid before trying to map it.
-        if (value.from > tr.startState.doc.length) {
+        if (value.from > tr.state.doc.length) {
+            value.clearCachedRequest();
             return null;
         }
         // If deletion occurs, set to null. Otherwise, the mapping might fail if
         // the position is inside the deleted range.
         if (tr.docChanged && tr.state.doc.length < tr.startState.doc.length) {
+            value.clearCachedRequest();
             return null;
         }
         const from = tr.changes.mapPos(value.from);
         const { head } = tr.state.selection.main;
         // If a change happened before the position from which suggestion was generated, set to null.
-        if (head < from) {
+        if (tr.docChanged && head < from) {
+            value.clearCachedRequest();
             return null;
         }
         // Check if what's typed after the AI suggestion is a prefix of the AI suggestion.
@@ -475,6 +479,7 @@ export function acceptAiAutoCompleteSuggestion(view) {
         effects: setAiAutoCompleteSuggestion.of(null),
         userEvent: 'input.complete',
     });
+    suggestion.clearCachedRequest();
     return { accepted: true, suggestion };
 }
 export const aiAutoCompleteSuggestion = [
@@ -508,6 +513,12 @@ export const aiAutoCompleteSuggestion = [
                 return;
             }
             const { head } = update.state.selection.main;
+            // Hide AI suggestion if the user moves the cursor to a location
+            // before the position from which suggestion was generated.
+            if (head < activeSuggestion.from) {
+                this.decorations = CM.Decoration.none;
+                return;
+            }
             const selectedCompletion = CM.selectedCompletion(update.state);
             const additionallyTypedText = update.state.doc.sliceString(activeSuggestion.from, head);
             // The user might have typed text after the suggestion is triggered.
@@ -524,17 +535,15 @@ export const aiAutoCompleteSuggestion = [
                     this.decorations = CM.Decoration.none;
                     return;
                 }
-                // If the user typed the full selected completion, then we don't check for overlap.
-                // (e.g. the user wrote `flex`, traditional suggestion is `flex` and the AI autocompletion is
-                // `;\njustify-content: center`. Then, we want to show the AI completion)
-                const endsWithCompleteSelectedCompletion = update.state.doc.sliceString(head - selectedCompletion.label.length, head) === selectedCompletion.label;
                 // If a traditional autocomplete menu is shown, the AI suggestion is only
                 // shown if it builds upon the currently selected item. If there is no
                 // overlap, we hide the AI suggestion. For example, for the text `console`
                 // if the traditional autocomplete suggests `log` and the AI
                 // suggests `warn`, there is no overlap and the AI suggestion is hidden.
-                if (!endsWithCompleteSelectedCompletion &&
-                    !TextUtils.TextUtils.getOverlap(selectedCompletion.label, ghostText)) {
+                const overlappingText = TextUtils.TextUtils.getOverlap(selectedCompletion.label, ghostText) ?? '';
+                const lineAtAiSuggestion = update.state.doc.lineAt(activeSuggestion.from).text;
+                const overlapsWithSelectedCompletion = (lineAtAiSuggestion + overlappingText).endsWith(selectedCompletion.label);
+                if (!overlapsWithSelectedCompletion) {
                     this.decorations = CM.Decoration.none;
                     return;
                 }

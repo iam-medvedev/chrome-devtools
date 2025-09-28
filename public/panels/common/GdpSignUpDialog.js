@@ -11,7 +11,6 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, render } from '../../ui/lit/lit.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import styles from './gdpSignUpDialog.css.js';
 const UIStrings = {
     /**
@@ -93,7 +92,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     // clang-format off
     render(html `
       <style>${styles}</style>
-      <div class="gdp-sign-up-dialog-header" role="img" tabindex="0" aria-label="Google Developer Program"></div>
+      <div class="gdp-sign-up-dialog-header" role="img" aria-label="Google Developer Program"></div>
       <div class="main-content">
         <div class="section">
           <div class="icon-container">
@@ -115,9 +114,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           <div class="switch-container">
             <devtools-switch
             .checked=${input.keepMeUpdated}
+            .jslogContext=${'keep-me-updated'}
+            .label=${i18nString(UIStrings.keepUpdated)}
             @switchchange=${(e) => input.onKeepMeUpdatedChange(e.checked)}
-            jslog=${VisualLogging.toggle('gdp.signup.keep-me-updated').track({ click: true })}
-            aria-label=${i18nString(UIStrings.keepUpdated)}
           >
             </devtools-switch>
           </div>
@@ -131,9 +130,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             <div class="section-text">
               <div>${i18nString(UIStrings.tailorProfileBody)}</div><br/>
               <div>${i18n.i18n.getFormatLocalizedString(str_, UIStrings.tailorProfileBodyDisclaimer, {
-        PH1: UI.XLink.XLink.create(CONTENT_POLICY_URL, i18nString(UIStrings.contentPolicy), 'link', undefined, 'gdp.content-policy'),
-        PH2: UI.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString(UIStrings.termsOfService), 'link', undefined, 'gdp.terms-of-service'),
-        PH3: UI.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString(UIStrings.privacyPolicy), 'link', undefined, 'gdp.privacy-policy'),
+        PH1: UI.XLink.XLink.create(CONTENT_POLICY_URL, i18nString(UIStrings.contentPolicy), 'link', undefined, 'content-policy'),
+        PH2: UI.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString(UIStrings.termsOfService), 'link', undefined, 'terms-of-service'),
+        PH3: UI.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString(UIStrings.privacyPolicy), 'link', undefined, 'privacy-policy'),
     })}</div>
             </div>
           </div>
@@ -153,7 +152,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
             @click=${input.onCancelClick}>${i18nString(UIStrings.cancel)}</devtools-button>
           <devtools-button
             .variant=${"primary" /* Buttons.Button.Variant.PRIMARY */}
-            .jslogContext=${'gdp.sign-up'}
+            .jslogContext=${'sign-up'}
             .spinner=${input.isSigningUp}
             .disabled=${input.isSigningUp}
             @click=${input.onSignUpClick}>${i18nString(UIStrings.signUp)}</devtools-button>
@@ -168,10 +167,12 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
     #keepMeUpdated = false;
     #isSigningUp = false;
     #onSuccess;
+    #onCancel;
     constructor(options, view) {
         super();
         this.#dialog = options.dialog;
         this.#onSuccess = options.onSuccess;
+        this.#onCancel = options.onCancel;
         this.#view = view ?? DEFAULT_VIEW;
         this.requestUpdate();
     }
@@ -200,6 +201,7 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
             onSignUpClick: this.#onSignUpClick.bind(this),
             onCancelClick: () => {
                 this.#dialog.hide();
+                this.#onCancel?.();
             },
             keepMeUpdated: this.#keepMeUpdated,
             onKeepMeUpdatedChange: (value) => {
@@ -210,13 +212,13 @@ export class GdpSignUpDialog extends UI.Widget.VBox {
         };
         this.#view(viewInput, undefined, this.contentElement);
     }
-    static show({ onSuccess } = {}) {
-        const dialog = new UI.Dialog.Dialog();
+    static show({ onSuccess, onCancel } = {}) {
+        const dialog = new UI.Dialog.Dialog('gdp-sign-up-dialog');
         dialog.setAriaLabel(i18nString(UIStrings.gdpDialogAriaLabel));
         dialog.setMaxContentSize(new Geometry.Size(384, 500));
         dialog.setSizeBehavior("SetExactWidthMaxHeight" /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */);
         dialog.setDimmed(true);
-        new GdpSignUpDialog({ dialog, onSuccess }).show(dialog.contentElement);
+        new GdpSignUpDialog({ dialog, onSuccess, onCancel }).show(dialog.contentElement);
         dialog.show(undefined, /* stack */ true);
     }
 }

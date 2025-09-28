@@ -81,6 +81,7 @@ describeWithEnvironment('PreloadingGrid', () => {
                     ruleSets: [{
                             id: 'ruleSetId:0.1',
                             loaderId: 'loaderId:1',
+                            tag: 'tag1',
                             sourceText: `
 {
   "tag": "tag1",

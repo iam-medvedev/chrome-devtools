@@ -1,19 +1,32 @@
 import * as Trace from '../../../models/trace/trace.js';
-import type { AICallTree } from './AICallTree.js';
-export interface AgentFocusData {
+import { AICallTree } from './AICallTree.js';
+interface AgentFocusData {
     parsedTrace: Trace.TraceModel.ParsedTrace;
     insightSet: Trace.Insights.Types.InsightSet | null;
+    /** Note: at most one of event or callTree is non-null. */
+    event: Trace.Types.Events.Event | null;
+    /** Note: at most one of event or callTree is non-null. */
     callTree: AICallTree | null;
     insight: Trace.Insights.Types.InsightModel | null;
 }
 export declare class AgentFocus {
     #private;
-    static full(parsedTrace: Trace.TraceModel.ParsedTrace): AgentFocus;
+    static fromParsedTrace(parsedTrace: Trace.TraceModel.ParsedTrace): AgentFocus;
     static fromInsight(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel): AgentFocus;
+    static fromEvent(parsedTrace: Trace.TraceModel.ParsedTrace, event: Trace.Types.Events.Event): AgentFocus;
     static fromCallTree(callTree: AICallTree): AgentFocus;
+    readonly eventsSerializer: Trace.EventsSerializer.EventsSerializer;
     constructor(data: AgentFocusData);
-    get data(): AgentFocusData;
+    get parsedTrace(): Trace.TraceModel.ParsedTrace;
+    get insightSet(): Trace.Insights.Types.InsightSet | null;
+    /** Note: at most one of event or callTree is non-null. */
+    get event(): Trace.Types.Events.Event | null;
+    /** Note: at most one of event or callTree is non-null. */
+    get callTree(): AICallTree | null;
+    get insight(): Trace.Insights.Types.InsightModel | null;
     withInsight(insight: Trace.Insights.Types.InsightModel | null): AgentFocus;
-    withCallTree(callTree: AICallTree | null): AgentFocus;
+    withEvent(event: Trace.Types.Events.Event | null): AgentFocus;
+    lookupEvent(key: Trace.Types.File.SerializableKey): Trace.Types.Events.Event | null;
 }
 export declare function getPerformanceAgentFocusFromModel(model: Trace.TraceModel.Model): AgentFocus | null;
+export {};

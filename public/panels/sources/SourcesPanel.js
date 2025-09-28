@@ -34,6 +34,7 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Extensions from '../../models/extensions/extensions.js';
@@ -421,6 +422,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         else if (!this.#paused) {
             UI.Context.Context.instance().setFlavor(SDK.Target.Target, debuggerModel.target());
         }
+        Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DEBUGGER_PAUSED);
     }
     debugInfoAttached(event) {
         const { debuggerModel } = event.data;
@@ -1001,7 +1003,7 @@ export class SourcesPanel extends UI.Panel.Panel {
             vertically = true;
         }
         else {
-            vertically = UI.InspectorView.InspectorView.instance().element.offsetWidth < 680;
+            vertically = this.splitWidget.element.offsetWidth < 680;
         }
         if (this.sidebarPaneView && vertically === !this.splitWidget.isVertical()) {
             return;

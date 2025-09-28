@@ -1,4 +1,3 @@
-import '../../../ui/components/icon_button/icon_button.js';
 import * as Host from '../../../core/host/host.js';
 import * as Trace from '../../trace/trace.js';
 import { ConversationType } from '../AiHistoryStorage.js';
@@ -7,7 +6,7 @@ import { AgentFocus } from '../performance/AIContext.js';
 import { AiAgent, type ContextResponse, ConversationContext, type ConversationSuggestions, type ParsedResponse, type RequestOptions, type ResponseData } from './AiAgent.js';
 export declare class PerformanceTraceContext extends ConversationContext<AgentFocus> {
     #private;
-    static full(parsedTrace: Trace.TraceModel.ParsedTrace): PerformanceTraceContext;
+    static fromParsedTrace(parsedTrace: Trace.TraceModel.ParsedTrace): PerformanceTraceContext;
     static fromInsight(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel): PerformanceTraceContext;
     static fromCallTree(callTree: AICallTree): PerformanceTraceContext;
     external: boolean;
@@ -36,7 +35,7 @@ export declare class PerformanceAgent extends AiAgent<AgentFocus> {
     parseTextResponse(response: string): ParsedResponse;
     enhanceQuery(query: string, context: PerformanceTraceContext | null): Promise<string>;
     run(initialQuery: string, options: {
-        selected: ConversationContext<AgentFocus> | null;
+        selected: PerformanceTraceContext | null;
         signal?: AbortSignal;
     }): AsyncGenerator<ResponseData, void, void>;
 }

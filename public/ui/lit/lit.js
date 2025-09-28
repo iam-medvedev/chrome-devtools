@@ -1,5 +1,5 @@
 // gen/front_end/ui/lit/lit.prebundle.js
-import { Decorators, Directive, Directives, LitElement, noChange, nothing, render, StaticHtml as StaticHtml2, svg } from "./../../third_party/lit/lit.js";
+import { Decorators, Directive, Directives, LitElement, noChange, nothing as nothing2, render, StaticHtml as StaticHtml2, svg } from "./../../third_party/lit/lit.js";
 
 // gen/front_end/ui/lit/i18n-template.js
 import * as i18n from "./../../core/i18n/i18n.js";
@@ -7,7 +7,7 @@ import * as Lit from "./../../third_party/lit/lit.js";
 var { html } = Lit.StaticHtml;
 function i18nTemplate(registeredStrings, stringId, placeholders) {
   const formatter = registeredStrings.getLocalizedStringSetFor(i18n.DevToolsLocale.DevToolsLocale.instance().locale).getMessageFormatterFor(stringId);
-  let result = html``;
+  let result = Lit.nothing;
   for (const icuElement of formatter.getAst()) {
     if (icuElement.type === /* argumentElement */
     1) {
@@ -61,7 +61,7 @@ export {
   html3 as html,
   i18nTemplate,
   noChange,
-  nothing,
+  nothing2 as nothing,
   render,
   svg
 };

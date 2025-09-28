@@ -167,7 +167,7 @@ export function boundsIncludeTimeRange(data) {
 /** Checks to see if the event is within or overlaps the bounds */
 export function eventIsInBounds(event, bounds) {
     const startTime = event.ts;
-    return startTime <= bounds.max && bounds.min <= (startTime + (event.dur ?? 0));
+    return startTime <= bounds.max && bounds.min < (startTime + (event.dur ?? 0));
 }
 export function timestampIsInBounds(bounds, timestamp) {
     return timestamp >= bounds.min && timestamp <= bounds.max;

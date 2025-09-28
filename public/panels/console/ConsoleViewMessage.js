@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
+var _a;
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -1288,7 +1289,7 @@ export class ConsoleViewMessage {
         button.append(icon);
         button.onclick = (event) => {
             event.stopPropagation();
-            UI.Context.Context.instance().setFlavor(ConsoleViewMessage, this);
+            UI.Context.Context.instance().setFlavor(_a, this);
             const action = UI.ActionRegistry.ActionRegistry.instance().getAction(EXPLAIN_HOVER_ACTION_ID);
             void action.execute();
         };
@@ -1604,7 +1605,7 @@ export class ConsoleViewMessage {
             return fragment;
         }
         const container = document.createDocumentFragment();
-        const tokens = ConsoleViewMessage.tokenizeMessageText(string);
+        const tokens = _a.tokenizeMessageText(string);
         let isBlob = false;
         for (const token of tokens) {
             if (!token.text) {
@@ -1664,7 +1665,7 @@ export class ConsoleViewMessage {
         return this.groupKeyInternal;
     }
     groupTitle() {
-        const tokens = ConsoleViewMessage.tokenizeMessageText(this.message.messageText);
+        const tokens = _a.tokenizeMessageText(this.message.messageText);
         const result = tokens.reduce((acc, token) => {
             let text = token.text;
             if (token.type === 'url') {
@@ -1687,6 +1688,7 @@ export class ConsoleViewMessage {
         return result.replace(/[%]o/g, '');
     }
 }
+_a = ConsoleViewMessage;
 let tokenizerRegexes = null;
 let tokenizerTypes = null;
 function getOrCreateTokenizers() {

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
+var _a;
 /*
  * Copyright (C) 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2011 Google Inc.  All rights reserved.
@@ -92,7 +93,7 @@ export class TextPromptElement extends HTMLElement {
     }
     async #willAutoComplete(expression, filter, force) {
         if (!force) {
-            this.dispatchEvent(new TextPromptElement.BeforeAutoCompleteEvent({ expression, filter }));
+            this.dispatchEvent(new _a.BeforeAutoCompleteEvent({ expression, filter }));
         }
         const listId = this.getAttribute('completions');
         if (!listId) {
@@ -130,10 +131,10 @@ export class TextPromptElement extends HTMLElement {
         const target = e.target;
         const text = target.textContent || '';
         if (commit) {
-            this.dispatchEvent(new TextPromptElement.CommitEvent(text));
+            this.dispatchEvent(new _a.CommitEvent(text));
         }
         else {
-            this.dispatchEvent(new TextPromptElement.CancelEvent());
+            this.dispatchEvent(new _a.CancelEvent());
         }
         e.consume();
     }
@@ -160,6 +161,7 @@ export class TextPromptElement extends HTMLElement {
         return clone;
     }
 }
+_a = TextPromptElement;
 (function (TextPromptElement) {
     class CommitEvent extends CustomEvent {
         constructor(detail) {

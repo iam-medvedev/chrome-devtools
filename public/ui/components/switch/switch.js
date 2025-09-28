@@ -141,6 +141,7 @@ var Switch = class extends HTMLElement {
   #checked = false;
   #disabled = false;
   #jslogContext = "";
+  #label = "";
   connectedCallback() {
     this.#render();
   }
@@ -165,6 +166,13 @@ var Switch = class extends HTMLElement {
     this.#jslogContext = jslogContext;
     this.#render();
   }
+  get label() {
+    return this.#label;
+  }
+  set label(label) {
+    this.#label = label;
+    this.#render();
+  }
   #handleChange = (ev) => {
     this.#checked = ev.target.checked;
     this.dispatchEvent(new SwitchChangeEvent(this.#checked));
@@ -173,8 +181,9 @@ var Switch = class extends HTMLElement {
     const jslog = this.#jslogContext && VisualLogging.toggle(this.#jslogContext).track({ change: true });
     render(html`
     <style>${switch_css_default}</style>
-    <label role="button" jslog=${jslog || nothing}>
+    <label jslog=${jslog || nothing}>
       <input type="checkbox"
+        aria-label=${this.#label || nothing}
         @change=${this.#handleChange}
         ?disabled=${this.#disabled}
         .checked=${this.#checked}

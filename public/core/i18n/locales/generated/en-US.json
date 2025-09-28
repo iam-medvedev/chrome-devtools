@@ -1049,9 +1049,6 @@
   "entrypoints/main/main-meta.ts | enableShortcutToSwitchPanels": {
     "message": "Enable ⌘ + 1-9 shortcut to switch panels"
   },
-  "entrypoints/main/main-meta.ts | enableSync": {
-    "message": "Enable settings sync"
-  },
   "entrypoints/main/main-meta.ts | findNextResult": {
     "message": "Find next result"
   },
@@ -1105,6 +1102,9 @@
   },
   "entrypoints/main/main-meta.ts | right": {
     "message": "Right"
+  },
+  "entrypoints/main/main-meta.ts | saveSettings": {
+    "message": "Save DevTools settings to your Google account"
   },
   "entrypoints/main/main-meta.ts | searchAsYouTypeCommand": {
     "message": "Enable search as you type"
@@ -7259,6 +7259,9 @@
   "panels/elements/ElementsTreeElement.ts | disableScrollSnap": {
     "message": "Disable scroll-snap overlay"
   },
+  "panels/elements/ElementsTreeElement.ts | disableStartingStyle": {
+    "message": "Disable @starting-style mode"
+  },
   "panels/elements/ElementsTreeElement.ts | distributeItemsEvenly": {
     "message": "Distribute items evenly"
   },
@@ -7288,6 +7291,9 @@
   },
   "panels/elements/ElementsTreeElement.ts | enableScrollSnap": {
     "message": "Enable scroll-snap overlay"
+  },
+  "panels/elements/ElementsTreeElement.ts | enableStartingStyle": {
+    "message": "Enable @starting-style mode"
   },
   "panels/elements/ElementsTreeElement.ts | expandRecursively": {
     "message": "Expand recursively"
@@ -10256,6 +10262,9 @@
   "panels/network/NetworkLogViewColumns.ts | initiatorAddressSpace": {
     "message": "Initiator Address Space"
   },
+  "panels/network/NetworkLogViewColumns.ts | isAdRelated": {
+    "message": "Is Ad-Related"
+  },
   "panels/network/NetworkLogViewColumns.ts | latency": {
     "message": "Latency"
   },
@@ -12998,17 +13007,11 @@
   "panels/settings/components/SyncSection.ts | dataDisclaimer": {
     "message": "({PH1} is sent to Google)"
   },
-  "panels/settings/components/SyncSection.ts | gdpPremiumAnnualSubscription": {
-    "message": "Premium (Annual)"
+  "panels/settings/components/SyncSection.ts | gdpPremiumSubscription": {
+    "message": "Premium"
   },
-  "panels/settings/components/SyncSection.ts | gdpPremiumMonthlySubscription": {
-    "message": "Premium (Monthly)"
-  },
-  "panels/settings/components/SyncSection.ts | gdpProAnnualSubscription": {
-    "message": "Pro (Annual)"
-  },
-  "panels/settings/components/SyncSection.ts | gdpProMonthlySubscription": {
-    "message": "Pro (Monthly)"
+  "panels/settings/components/SyncSection.ts | gdpProSubscription": {
+    "message": "Pro"
   },
   "panels/settings/components/SyncSection.ts | gdpStandardPlan": {
     "message": "Standard plan"
@@ -13020,7 +13023,7 @@
     "message": "You're not signed into Chrome."
   },
   "panels/settings/components/SyncSection.ts | preferencesSyncDisabled": {
-    "message": "To turn this setting on, you must first enable settings sync in Chrome."
+    "message": "You need to first enable saving Chrome settings in your Google account."
   },
   "panels/settings/components/SyncSection.ts | relevantData": {
     "message": "Relevant data"
@@ -14570,14 +14573,23 @@
   "panels/timeline/components/ExportTraceOptions.ts | includeSourcemap": {
     "message": "Include script source maps"
   },
+  "panels/timeline/components/ExportTraceOptions.ts | moreInfoTitle": {
+    "message": "More information"
+  },
   "panels/timeline/components/ExportTraceOptions.ts | saveButtonTitle": {
     "message": "Save"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | scriptContentPrivacyInfo": {
+    "message": "Includes the full content of all loaded scripts (except extensions)."
   },
   "panels/timeline/components/ExportTraceOptions.ts | shouldCompress": {
     "message": "Compress with gzip"
   },
   "panels/timeline/components/ExportTraceOptions.ts | showExportTraceOptionsDialogTitle": {
     "message": "Save trace…"
+  },
+  "panels/timeline/components/ExportTraceOptions.ts | sourceMapsContentPrivacyInfo": {
+    "message": "Includes available source maps, which may expose authored code."
   },
   "panels/timeline/components/FieldSettingsDialog.ts | advanced": {
     "message": "Advanced"

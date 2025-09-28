@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 export class AutocompleteHistory {
     static #historySize = 300;
     #setting;
@@ -85,7 +86,8 @@ export class AutocompleteHistory {
         return this.#data[this.#data.length - this.#historyOffset];
     }
     #store() {
-        this.#setting.set(this.#data.slice(-AutocompleteHistory.#historySize));
+        this.#setting.set(this.#data.slice(-_a.#historySize));
     }
 }
+_a = AutocompleteHistory;
 //# sourceMappingURL=AutocompleteHistory.js.map

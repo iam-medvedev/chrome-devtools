@@ -17,7 +17,7 @@ export function handleEvent(event) {
     const getOrMakeScript = (isolate, scriptIdAsNumber) => {
         const scriptId = String(scriptIdAsNumber);
         const key = `${isolate}.${scriptId}`;
-        return Platform.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: '', ts: 0 }));
+        return Platform.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: '', ts: event.ts }));
     };
     if (Types.Events.isRundownScriptCompiled(event) && event.args.data) {
         const { isolate, scriptId, frame } = event.args.data;
@@ -30,6 +30,7 @@ export function handleEvent(event) {
         const { isolate, scriptId, url, sourceUrl, sourceMapUrl, sourceMapUrlElided } = event.args.data;
         const script = getOrMakeScript(isolate, scriptId);
         script.url = url;
+        script.ts = event.ts;
         if (sourceUrl) {
             script.sourceUrl = sourceUrl;
         }

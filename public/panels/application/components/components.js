@@ -1390,7 +1390,7 @@ var BounceTrackingMitigationsView = class extends LegacyWrapper3.LegacyWrapper.W
   }
   #renderDeletedSitesOrNoSitesMessage() {
     if (!this.#seenButtonClick) {
-      return html2``;
+      return Lit2.nothing;
     }
     if (this.#trackingSites.length === 0) {
       return html2`

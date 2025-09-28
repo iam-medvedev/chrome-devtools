@@ -221,9 +221,11 @@ describeWithEnvironment('RehydratingConnection emittance', () => {
         conn.onReceiveHostWindowPayload({
             data: { type: 'REHYDRATING_TRACE_FILE', traceJson: JSON.stringify(contents) },
         });
-        // Poll for REHYDRATED state
+        // Poll for rehydration complete
         const poll = async () => {
-            if (conn.rehydratingConnectionState === 3 /* SDK.RehydratingConnection.RehydratingConnectionState.REHYDRATED */) {
+            const isRehydrated = conn.rehydratingConnectionState === 3 /* SDK.RehydratingConnection.RehydratingConnectionState.REHYDRATED */;
+            const messageLogPopulated = messageLog.length > 100; // This trace ends up with 158.
+            if (isRehydrated && messageLogPopulated) {
                 return;
             }
             await new Promise(res => setTimeout(res, 100));

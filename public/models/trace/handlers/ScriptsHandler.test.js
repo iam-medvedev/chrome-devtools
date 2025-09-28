@@ -37,7 +37,7 @@ describe('ScriptsHandler', () => {
                 request: undefined,
                 scriptId: '3',
                 sourceMapUrl: 'http://localhost:8080/source.map.json',
-                ts: 0,
+                ts: 50442438976,
                 url: 'http://localhost:8080/index.html',
             },
             {
@@ -47,7 +47,7 @@ describe('ScriptsHandler', () => {
                 request: undefined,
                 scriptId: '4',
                 sourceMapUrl: 'http://localhost:8080/source.map.json',
-                ts: 0,
+                ts: 50442438976,
                 url: 'http://localhost:8080/index.html',
             },
             {
@@ -57,7 +57,7 @@ describe('ScriptsHandler', () => {
                 request: undefined,
                 scriptId: '1',
                 sourceMapUrl: 'http://localhost:8080/source.map.json',
-                ts: 0,
+                ts: 50442438976,
                 url: 'http://localhost:8080/index.html',
             },
             {

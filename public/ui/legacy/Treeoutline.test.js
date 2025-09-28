@@ -252,6 +252,73 @@ describe('TreeViewElement', () => {
             }
         ]);
     });
+    it('applies classes to tree elements', async () => {
+        const component = await makeTree(html `
+      <devtools-tree
+        .template=${html `
+          <ul role="tree">
+            <li role="treeitem" class="first">first node</li>
+            <li role="treeitem" class="second">second node</li>
+          </ul>
+        `}></devtools-tree>`);
+        assert.deepEqual(component.getInternalTreeOutlineForTest().rootElement().children().map(element => [...element.listItemElement.classList]), [
+            ['first'],
+            ['second'],
+        ]);
+    });
+    it('applies event listeners to tree elements', async () => {
+        const onClick = sinon.stub();
+        const component = await makeTree(html `
+      <devtools-tree
+        .template=${html `
+          <ul role="tree">
+            <li role="treeitem">
+              <button @click=${onClick}>click me</button>
+            </li>
+          </ul>
+        `}></devtools-tree>`);
+        component.getInternalTreeOutlineForTest()
+            .rootElement()
+            .children()[0]
+            .listItemElement.querySelector('button')
+            ?.click();
+        sinon.assert.calledOnce(onClick);
+    });
+    it('handles adding tree elements in the moddile', async () => {
+        const makeTemplate = (items) => {
+            return html `
+        <ul role="tree">
+          <li role="treeitem">node
+            <ul role="group">
+              ${items.map(item => html `<li role="treeitem">${item}</li>`)}
+              <li role="treeitem">extra node</li>
+            </ul>
+          </li>
+        </ul>
+      `;
+        };
+        const component = await makeTree(html `<devtools-tree .template=${makeTemplate(['second child'])}></devtools-tree>`);
+        component.template = makeTemplate(['first child', 'second child']);
+        await new Promise(resolve => setTimeout(resolve, 0));
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        const children = treeOutline.rootElement().childAt(0).children();
+        assert.lengthOf(children, 3);
+        assert.strictEqual(children[0].titleElement.textContent?.trim(), 'first child');
+        assert.strictEqual(children[1].titleElement.textContent?.trim(), 'second child');
+        assert.strictEqual(children[2].titleElement.textContent?.trim(), 'extra node');
+    });
+    it('marks a node as expandable even if it has empty subtree', async () => {
+        const component = await makeTree(html `<devtools-tree .template=${html `
+      <ul role="tree">
+        <li role="treeitem">node
+          <ul role="group">
+          </ul>
+        </li>
+      </ul>
+    `}></devtools-tree>`);
+        const treeOutline = component.getInternalTreeOutlineForTest();
+        assert.isTrue(treeOutline.rootElement().childAt(0).isExpandable());
+    });
 });
 class TestTreeNode {
     contents;

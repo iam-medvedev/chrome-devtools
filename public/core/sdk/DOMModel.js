@@ -88,6 +88,7 @@ export class DOMNode {
     #xmlVersion;
     #isSVGNode;
     #isScrollable;
+    #affectedByStartingStyles;
     #creationStackTrace = null;
     #pseudoElements = new Map();
     #distributedNodes = [];
@@ -148,6 +149,7 @@ export class DOMNode {
         this.#xmlVersion = payload.xmlVersion;
         this.#isSVGNode = Boolean(payload.isSVG);
         this.#isScrollable = Boolean(payload.isScrollable);
+        this.#affectedByStartingStyles = Boolean(payload.affectedByStartingStyles);
         this.#retainedNodes = retainedNodes;
         if (this.#retainedNodes?.has(this.backendNodeId())) {
             this.retained = true;
@@ -237,6 +239,9 @@ export class DOMNode {
     isScrollable() {
         return this.#isScrollable;
     }
+    affectedByStartingStyles() {
+        return this.#affectedByStartingStyles;
+    }
     isMediaNode() {
         return this.#nodeName === 'AUDIO' || this.#nodeName === 'VIDEO';
     }
@@ -278,6 +283,9 @@ export class DOMNode {
     }
     setIsScrollable(isScrollable) {
         this.#isScrollable = isScrollable;
+    }
+    setAffectedByStartingStyles(affectedByStartingStyles) {
+        this.#affectedByStartingStyles = affectedByStartingStyles;
     }
     hasAttributes() {
         return this.#attributes.size > 0;
@@ -1327,6 +1335,14 @@ export class DOMModel extends SDKModel {
         node.setIsScrollable(isScrollable);
         this.dispatchEventToListeners(Events.ScrollableFlagUpdated, { node });
     }
+    affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles) {
+        const node = this.nodeForId(nodeId);
+        if (!node || node.affectedByStartingStyles() === affectedByStartingStyles) {
+            return;
+        }
+        node.setAffectedByStartingStyles(affectedByStartingStyles);
+        this.dispatchEventToListeners(Events.AffectedByStartingStylesFlagUpdated, { node });
+    }
     topLayerElementsUpdated() {
         this.dispatchEventToListeners(Events.TopLayerElementsChanged);
     }
@@ -1478,6 +1494,7 @@ export var Events;
     Events["MarkersChanged"] = "MarkersChanged";
     Events["TopLayerElementsChanged"] = "TopLayerElementsChanged";
     Events["ScrollableFlagUpdated"] = "ScrollableFlagUpdated";
+    Events["AffectedByStartingStylesFlagUpdated"] = "AffectedByStartingStylesFlagUpdated";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Events || (Events = {}));
 class DOMDispatcher {
@@ -1533,7 +1550,8 @@ class DOMDispatcher {
     scrollableFlagUpdated({ nodeId, isScrollable }) {
         this.#domModel.scrollableFlagUpdated(nodeId, isScrollable);
     }
-    affectedByStartingStylesFlagUpdated(_) {
+    affectedByStartingStylesFlagUpdated({ nodeId, affectedByStartingStyles }) {
+        this.#domModel.affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles);
     }
 }
 let domModelUndoStackInstance = null;

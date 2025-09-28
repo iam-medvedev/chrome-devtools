@@ -46,6 +46,7 @@ export declare class DOMNode {
     isAdFrameNode(): boolean;
     isSVGNode(): boolean;
     isScrollable(): boolean;
+    affectedByStartingStyles(): boolean;
     isMediaNode(): boolean;
     isViewTransitionPseudoNode(): boolean;
     creationStackTrace(): Promise<Protocol.Runtime.StackTrace | null>;
@@ -55,6 +56,7 @@ export declare class DOMNode {
     children(): DOMNode[] | null;
     setChildren(children: DOMNode[]): void;
     setIsScrollable(isScrollable: boolean): void;
+    setAffectedByStartingStyles(affectedByStartingStyles: boolean): void;
     hasAttributes(): boolean;
     childNodeCount(): number;
     setChildNodeCount(childNodeCount: number): void;
@@ -209,6 +211,7 @@ export declare class DOMModel extends SDKModel<EventTypes> {
     shadowRootPopped(hostId: Protocol.DOM.NodeId, rootId: Protocol.DOM.NodeId): void;
     pseudoElementAdded(parentId: Protocol.DOM.NodeId, pseudoElement: Protocol.DOM.Node): void;
     scrollableFlagUpdated(nodeId: Protocol.DOM.NodeId, isScrollable: boolean): void;
+    affectedByStartingStylesFlagUpdated(nodeId: Protocol.DOM.NodeId, affectedByStartingStyles: boolean): void;
     topLayerElementsUpdated(): void;
     pseudoElementRemoved(parentId: Protocol.DOM.NodeId, pseudoElementId: Protocol.DOM.NodeId): void;
     distributedNodesUpdated(insertionPointId: Protocol.DOM.NodeId, distributedNodes: Protocol.DOM.BackendNode[]): void;
@@ -249,7 +252,8 @@ export declare enum Events {
     DistributedNodesChanged = "DistributedNodesChanged",
     MarkersChanged = "MarkersChanged",
     TopLayerElementsChanged = "TopLayerElementsChanged",
-    ScrollableFlagUpdated = "ScrollableFlagUpdated"
+    ScrollableFlagUpdated = "ScrollableFlagUpdated",
+    AffectedByStartingStylesFlagUpdated = "AffectedByStartingStylesFlagUpdated"
 }
 export interface EventTypes {
     [Events.AttrModified]: {
@@ -273,6 +277,9 @@ export interface EventTypes {
     [Events.MarkersChanged]: DOMNode;
     [Events.TopLayerElementsChanged]: void;
     [Events.ScrollableFlagUpdated]: {
+        node: DOMNode;
+    };
+    [Events.AffectedByStartingStylesFlagUpdated]: {
         node: DOMNode;
     };
 }

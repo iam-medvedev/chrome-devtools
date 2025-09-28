@@ -2,23 +2,31 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import type { SearchResult } from './SearchScope.js';
+interface SearchMatch {
+    lineContent: string;
+    matchRanges: TextUtils.TextRange.SourceRange[];
+    resultLabel: string | number;
+}
+interface ViewInput {
+    results: SearchResult[];
+    matches: WeakMap<SearchResult, SearchMatch[]>;
+    expandedResults: WeakSet<SearchResult>;
+    onSelectMatch: (searchResult: SearchResult, matchIndex: number) => void;
+    onExpandSearchResult: (searchResult: SearchResult) => void;
+    onShowMoreMatches: (searchResult: SearchResult) => void;
+}
+export type View = (input: ViewInput, output: unknown, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class SearchResultsPane extends UI.Widget.VBox {
-    private readonly searchConfig;
-    private readonly searchResults;
-    private readonly treeElements;
-    private readonly initializedTreeElements;
-    private treeOutline;
-    private matchesExpandedCount;
-    constructor(searchConfig: Workspace.SearchConfig.SearchConfig);
-    addSearchResult(searchResult: SearchResult): void;
+    #private;
+    constructor(element: HTMLElement | undefined, view?: View);
+    get searchResults(): SearchResult[];
+    set searchResults(searchResults: SearchResult[]);
+    get searchConfig(): Workspace.SearchConfig.SearchConfig | null;
+    set searchConfig(searchConfig: Workspace.SearchConfig.SearchConfig | null);
     showAllMatches(): void;
     collapseAllResults(): void;
-    private addTreeElement;
-    private updateMatchesUI;
-    private appendSearchMatches;
-    private appendShowMoreMatchesElement;
-    private regexMatchRanges;
-    private showMoreMatchesElementSelected;
+    performUpdate(): void;
 }
 export declare const matchesExpandedByDefault = 200;
 export declare const matchesShownAtOnce = 20;

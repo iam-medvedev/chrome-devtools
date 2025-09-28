@@ -252,6 +252,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let consoleViewInstance;
 const MIN_HISTORY_LENGTH_FOR_DISABLING_SELF_XSS_WARNING = 5;
 const DISCLAIMER_TOOLTIP_ID = 'console-ai-code-completion-disclaimer-tooltip';
+const SPINNER_TOOLTIP_ID = 'console-ai-code-completion-spinner-tooltip';
 const CITATIONS_TOOLTIP_ID = 'console-ai-code-completion-citations-tooltip';
 export class ConsoleView extends UI.Widget.VBox {
     #searchableView;
@@ -514,7 +515,11 @@ export class ConsoleView extends UI.Widget.VBox {
         return consoleViewInstance;
     }
     createAiCodeCompletionSummaryToolbar() {
-        this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
+        this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({
+            citationsTooltipId: CITATIONS_TOOLTIP_ID,
+            disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID,
+            spinnerTooltipId: SPINNER_TOOLTIP_ID
+        });
         this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild('div');
         this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, undefined, true);
     }
@@ -537,8 +542,9 @@ export class ConsoleView extends UI.Widget.VBox {
     #onAiCodeCompletionResponseReceived() {
         this.aiCodeCompletionSummaryToolbar?.setLoading(false);
     }
-    static clearConsole() {
+    clearConsole() {
         SDK.ConsoleModel.ConsoleModel.requestClearMessages();
+        this.prompt.clearAiCodeCompletionCache();
     }
     #onIssuesCountUpdate() {
         void this.issueToolbarThrottle.schedule(async () => this.updateIssuesToolbarItem());
@@ -576,6 +582,7 @@ export class ConsoleView extends UI.Widget.VBox {
     }
     clearHistory() {
         this.prompt.history().clear();
+        this.prompt.clearAiCodeCompletionCache();
     }
     consoleHistoryAutocompleteChanged() {
         this.prompt.setAddCompletionsFromHistory(this.consoleHistoryAutocompleteSetting.get());
@@ -1610,7 +1617,7 @@ export class ActionDelegate {
                 ConsoleView.instance().focusPrompt();
                 return true;
             case 'console.clear':
-                ConsoleView.clearConsole();
+                ConsoleView.instance().clearConsole();
                 return true;
             case 'console.clear.history':
                 ConsoleView.instance().clearHistory();

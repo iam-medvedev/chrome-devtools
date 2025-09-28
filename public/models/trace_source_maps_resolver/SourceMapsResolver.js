@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as SourceMapScopes from '../source_map_scopes/source_map_scopes.js';
@@ -65,10 +66,10 @@ export class SourceMapsResolver extends EventTarget {
             }
             callFrame = topCallFrame;
         }
-        return SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame);
+        return _a.resolvedCodeLocationForCallFrame(callFrame);
     }
     static resolvedURLForEntry(parsedTrace, entry) {
-        const resolvedCallFrameURL = SourceMapsResolver.resolvedCodeLocationForEntry(entry)?.devtoolsLocation?.uiSourceCode.url();
+        const resolvedCallFrameURL = _a.resolvedCodeLocationForEntry(entry)?.devtoolsLocation?.uiSourceCode.url();
         if (resolvedCallFrameURL) {
             return resolvedCallFrameURL;
         }
@@ -153,7 +154,7 @@ export class SourceMapsResolver extends EventTarget {
                         // Update mappings for the related events of the entity.
                         this.#entityMapper.updateSourceMapEntities(node.callFrame, uiLocation.uiSourceCode.url());
                     }
-                    SourceMapsResolver.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
+                    _a.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
                 }
             }
         }
@@ -197,4 +198,5 @@ export class SourceMapsResolver extends EventTarget {
         this.#entityMapper?.updateExtensionEntitiesWithName(this.executionContextNamesByOrigin);
     }
 }
+_a = SourceMapsResolver;
 //# sourceMappingURL=SourceMapsResolver.js.map

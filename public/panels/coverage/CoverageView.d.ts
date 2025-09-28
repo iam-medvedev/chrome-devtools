@@ -41,6 +41,7 @@ export declare class CoverageView extends UI.Widget.VBox {
     } | null): Promise<void>;
     private onCoverageDataReceived;
     private updateListView;
+    private toCoverageListItem;
     stopRecording(): Promise<void>;
     private onPrimaryPageChanged;
     private updateViews;

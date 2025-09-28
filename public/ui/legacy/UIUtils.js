@@ -1943,7 +1943,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
         this.onChange(mutationList);
         for (const mutation of mutationList) {
             this.removeNodes(mutation.removedNodes);
-            this.addNodes(mutation.addedNodes);
+            this.addNodes(mutation.addedNodes, mutation.nextSibling);
             this.updateNode(mutation.target, mutation.attributeName);
         }
     }
@@ -1951,7 +1951,7 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
     }
     updateNode(_node, _attributeName) {
     }
-    addNodes(_nodes) {
+    addNodes(_nodes, _nextSibling) {
     }
     removeNodes(_nodes) {
     }

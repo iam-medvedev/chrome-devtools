@@ -23,7 +23,7 @@ export default `/*
 
     .ai-code-completion-teaser {
         padding-left: var(--sys-size-3);
-        line-height: normal;
+        line-height: var(--sys-size-7);
         pointer-events: all;
         align-items: center;
         font-style: italic;
@@ -42,6 +42,11 @@ export default `/*
                 border-radius: var(--sys-shape-corner-extra-small);
                 padding: 0 var(--sys-size-3);
             }
+        }
+
+        .new-badge {
+            font-style: normal;
+            display: inline-block;
         }
     }
 }

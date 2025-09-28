@@ -2847,6 +2847,7 @@ function getCssDeclarationAsJavascriptProperty(declaration) {
 }
 
 // gen/front_end/panels/elements/StylePropertyTreeElement.js
+var _a;
 var { html: html5, nothing, render: render4, Directives: { classMap: classMap2 } } = Lit4;
 var ASTUtils = SDK6.CSSPropertyParser.ASTUtils;
 var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
@@ -4364,7 +4365,7 @@ function getPropertyRenderers(propertyName, style, stylesPane, matchedStyles, tr
     new AttributeRenderer(stylesPane, treeElement, matchedStyles, computedStyles)
   ];
 }
-var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeOutline.TreeElement {
+var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
   style;
   #matchedStyles;
   property;
@@ -4444,7 +4445,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return this.#matchedStyles;
   }
   getLonghand() {
-    return this.parent instanceof _StylePropertyTreeElement && this.parent.isShorthand ? this.parent : null;
+    return this.parent instanceof _a && this.parent.isShorthand ? this.parent : null;
   }
   editable() {
     const hasSourceData = Boolean(this.style.styleSheetId && this.style.range);
@@ -4609,7 +4610,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
       if (leadingProperty) {
         overloaded = true;
       }
-      const item2 = new _StylePropertyTreeElement({
+      const item2 = new _a({
         stylesPane: this.#parentPane,
         section: this.#parentSection,
         matchedStyles: this.#matchedStyles,
@@ -5099,7 +5100,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
   }
   #startEditing(context) {
     this.contextForTest = context;
-    if (this.parent instanceof _StylePropertyTreeElement && this.parent.isShorthand) {
+    if (this.parent instanceof _a && this.parent.isShorthand) {
       return;
     }
     const selectedElement = context.isEditingName ? this.nameElement : this.valueElement;
@@ -5248,7 +5249,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     const target = keyboardEvent.target;
     const keyChar = String.fromCharCode(keyboardEvent.charCode);
     const selectionLeftOffset = this.#selectionLeftOffset(target);
-    const isFieldInputTerminated = context.isEditingName ? keyChar === ":" : keyChar === ";" && selectionLeftOffset !== null && _StylePropertyTreeElement.shouldCommitValueSemicolon(target.textContent || "", selectionLeftOffset);
+    const isFieldInputTerminated = context.isEditingName ? keyChar === ":" : keyChar === ";" && selectionLeftOffset !== null && _a.shouldCommitValueSemicolon(target.textContent || "", selectionLeftOffset);
     if (isFieldInputTerminated) {
       event.consume(true);
       void this.editingCommitted(target.textContent || "", context, "forward");
@@ -5340,7 +5341,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     let target = this;
     do {
       const sibling = moveDirection === "forward" ? target.nextSibling : target.previousSibling;
-      target = sibling instanceof _StylePropertyTreeElement ? sibling : null;
+      target = sibling instanceof _a ? sibling : null;
     } while (target?.inherited());
     return target;
   }
@@ -5545,6 +5546,7 @@ var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeO
     return event.target === this.expandElement;
   }
 };
+_a = StylePropertyTreeElement;
 
 // gen/front_end/panels/elements/StyleEditorWidget.js
 var instance = null;
@@ -6595,6 +6597,11 @@ var StylePropertiesSection = class _StylePropertiesSection {
         case "StyleRule":
           ancestorRuleElement = this.createNestingElement(rule.nestingSelectors?.[nestingIndex++]);
           break;
+        case "StartingStyleRule":
+          if (Root2.Runtime.hostConfig.devToolsStartingStyleDebugging?.enabled) {
+            ancestorRuleElement = this.createStartingStyleElement();
+          }
+          break;
       }
       if (ancestorRuleElement) {
         this.#ancestorRuleListElement.prepend(ancestorRuleElement);
@@ -6698,6 +6705,15 @@ var StylePropertiesSection = class _StylePropertiesSection {
       jslogContext: "scope"
     };
     return scopeElement;
+  }
+  createStartingStyleElement() {
+    const startingStyleElement = new ElementsComponents2.CSSQuery.CSSQuery();
+    startingStyleElement.data = {
+      queryPrefix: "@starting-style",
+      queryText: "",
+      jslogContext: "starting-style"
+    };
+    return startingStyleElement;
   }
   createSupportsElement(supports) {
     if (!supports.text) {
@@ -10555,6 +10571,7 @@ var ComputedStyleModel = class extends Common9.ObjectWrapper.ObjectWrapper {
         cssModel.addEventListener(SDK12.CSSModel.Events.FontsUpdated, this.onCSSModelChanged, this),
         cssModel.addEventListener(SDK12.CSSModel.Events.MediaQueryResultChanged, this.onCSSModelChanged, this),
         cssModel.addEventListener(SDK12.CSSModel.Events.PseudoStateForced, this.onCSSModelChanged, this),
+        cssModel.addEventListener(SDK12.CSSModel.Events.StartingStylesStateForced, this.onCSSModelChanged, this),
         cssModel.addEventListener(SDK12.CSSModel.Events.ModelWasEnabled, this.onCSSModelChanged, this),
         cssModel.addEventListener(SDK12.CSSModel.Events.ComputedStyleUpdated, this.onComputedStyleChanged, this),
         domModel.addEventListener(SDK12.DOMModel.Events.DOMMutated, this.onDOMModelChanged, this),
@@ -11400,6 +11417,16 @@ var UIStrings13 = {
    * the overlay showing CSS scroll snapping for the current element.
    */
   disableScrollSnap: "Disable scroll-snap overlay",
+  /**
+   * @description Label of an adorner in the Elements panel. When clicked, it forces
+   * the element into applying its starting-style rules.
+   */
+  enableStartingStyle: "Enable @starting-style mode",
+  /**
+   * @description Label of an adorner in the Elements panel. When clicked, it no longer
+   * forces the element into applying its starting-style rules.
+   */
+  disableStartingStyle: "Disable @starting-style mode",
   /**
    * @description Label of an adorner in the Elements panel. When clicked, it redirects
    * to the Media Panel.
@@ -13287,6 +13314,12 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     if (node.isMediaNode()) {
       this.pushMediaAdorner(this.tagTypeContext);
     }
+    if (Root6.Runtime.hostConfig.devToolsStartingStyleDebugging?.enabled) {
+      const affectedByStartingStyles = node.affectedByStartingStyles();
+      if (affectedByStartingStyles) {
+        this.pushStartingStyleAdorner(this.tagTypeContext);
+      }
+    }
     if (node.attributes().find((attr) => attr.name === "popover")) {
       this.pushPopoverAdorner(this.tagTypeContext);
     }
@@ -13428,6 +13461,31 @@ var ElementsTreeElement = class _ElementsTreeElement extends UI16.TreeOutline.Tr
     if (node.domModel().overlayModel().isHighlightedScrollSnapInPersistentOverlay(nodeId)) {
       adorner.toggle(true);
     }
+  }
+  pushStartingStyleAdorner(context) {
+    const node = this.node();
+    const nodeId = node.id;
+    if (!nodeId) {
+      return;
+    }
+    const config = ElementsComponents5.AdornerManager.getRegisteredAdorner(ElementsComponents5.AdornerManager.RegisteredAdorners.STARTING_STYLE);
+    const adorner = this.adorn(config);
+    adorner.classList.add("starting-style");
+    const onClick = () => {
+      const model = node.domModel().cssModel();
+      if (adorner.isActive()) {
+        model.forceStartingStyle(node, true);
+      } else {
+        model.forceStartingStyle(node, false);
+      }
+    };
+    adorner.addInteraction(onClick, {
+      isToggle: true,
+      shouldPropagateOnKeydown: false,
+      ariaLabelDefault: i18nString12(UIStrings13.enableStartingStyle),
+      ariaLabelActive: i18nString12(UIStrings13.disableStartingStyle)
+    });
+    context.styleAdorners.add(adorner);
   }
   pushFlexAdorner(context) {
     const node = this.node();
@@ -15330,6 +15388,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     domModel.addEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
     domModel.addEventListener(SDK16.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
     domModel.addEventListener(SDK16.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+    domModel.addEventListener(SDK16.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
   }
   unwireFromDOMModel(domModel) {
     domModel.removeEventListener(SDK16.DOMModel.Events.MarkersChanged, this.markersChanged, this);
@@ -15343,6 +15402,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     domModel.removeEventListener(SDK16.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
     domModel.removeEventListener(SDK16.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+    domModel.removeEventListener(SDK16.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
     elementsTreeOutlineByDOMModel.delete(domModel);
   }
   addUpdateRecord(node) {
@@ -15728,6 +15788,13 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     const treeElement = this.treeElementByNode.get(node);
     if (treeElement && isOpeningTag(treeElement.tagTypeContext)) {
       void treeElement.tagTypeContext.adornersThrottler.schedule(async () => treeElement.updateScrollAdorner());
+    }
+  }
+  affectedByStartingStylesFlagUpdated(event) {
+    const { node } = event.data;
+    const treeElement = this.treeElementByNode.get(node);
+    if (treeElement && isOpeningTag(treeElement.tagTypeContext)) {
+      void treeElement.tagTypeContext.adornersThrottler.schedule(async () => await treeElement.updateStyleAdorners());
     }
   }
 };

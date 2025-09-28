@@ -40,6 +40,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
@@ -1626,6 +1627,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         else {
             await this.#startTraceRecording();
         }
+        Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_RECORDING_STARTED);
     }
     async stopRecording() {
         if (this.statusDialog) {
@@ -1891,7 +1893,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 Host.userMetrics.navigationSettingAtFirstTimelineLoad(1 /* Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE */);
             }
         }
-        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.full(parsedTrace));
+        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
     }
     #onAnnotationModifiedEvent(e) {
         const event = e;
@@ -2608,7 +2610,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             for (const modelName in insightsForNav.model) {
                 const model = modelName;
                 const insight = insightsForNav.model[model];
-                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
+                const focus = AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace);
+                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(focus, insight);
                 if (!formatter.insightIsSupported()) {
                     // Not all Insights are integrated with "Ask AI" yet, let's avoid
                     // filling up the response with those ones because there will be no

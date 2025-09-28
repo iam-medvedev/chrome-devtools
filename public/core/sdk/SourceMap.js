@@ -1,6 +1,7 @@
 // Copyright 2012 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Common from '../common/common.js';
@@ -273,7 +274,7 @@ export class SourceMap {
             this.mappings().sort(SourceMapEntry.compare);
             this.#computeReverseMappings(this.#mappings);
         }
-        if (!SourceMap.retainRawSourceMaps) {
+        if (!_a.retainRawSourceMaps) {
             this.#json = null;
         }
     }
@@ -585,6 +586,7 @@ export class SourceMap {
         return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
     }
 }
+_a = SourceMap;
 const VLQ_BASE_SHIFT = 5;
 const VLQ_BASE_MASK = (1 << 5) - 1;
 const VLQ_CONTINUATION_MASK = 1 << 5;

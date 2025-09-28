@@ -1,3 +1,5 @@
+import '../../../ui/components/tooltips/tooltips.js';
+import '../../../ui/components/buttons/buttons.js';
 import * as Dialogs from '../../../ui/components/dialogs/dialogs.js';
 export interface ExportTraceOptionsData {
     onExport: (config: {

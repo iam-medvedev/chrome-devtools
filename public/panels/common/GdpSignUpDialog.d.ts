@@ -14,10 +14,12 @@ export declare class GdpSignUpDialog extends UI.Widget.VBox {
     constructor(options: {
         dialog: UI.Dialog.Dialog;
         onSuccess?: () => void;
+        onCancel?: () => void;
     }, view?: View);
     performUpdate(): void;
-    static show({ onSuccess }?: {
+    static show({ onSuccess, onCancel }?: {
         onSuccess?: () => void;
+        onCancel?: () => void;
     }): void;
 }
 export {};

@@ -15,7 +15,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import { CoverageDecorationManager } from './CoverageDecorationManager.js';
 import { CoverageListView } from './CoverageListView.js';
-import { CoverageModel, Events } from './CoverageModel.js';
+import { CoverageModel, Events, SourceURLCoverageInfo, } from './CoverageModel.js';
 import coverageViewStyles from './coverageView.css.js';
 const UIStrings = {
     /**
@@ -227,7 +227,7 @@ export class CoverageView extends UI.Widget.VBox {
         this.bfcacheReloadPromptPage = this.buildReloadPromptPage(i18nString(UIStrings.bfcacheNoCapture), 'bfcache-page');
         this.activationReloadPromptPage =
             this.buildReloadPromptPage(i18nString(UIStrings.activationNoCapture), 'prerender-page');
-        this.listView = new CoverageListView(this.isVisible.bind(this, false));
+        this.listView = new CoverageListView();
         this.statusToolbarElement = this.contentElement.createChild('div', 'coverage-toolbar-summary');
         this.statusMessageElement = this.statusToolbarElement.createChild('div', 'coverage-message');
         this.landingPage.show(this.coverageResultsElement);
@@ -383,7 +383,25 @@ export class CoverageView extends UI.Widget.VBox {
         this.updateViews(data);
     }
     updateListView() {
-        this.listView.update(this.model?.entries() || []);
+        const entries = (this.model?.entries() || [])
+            .map(entry => this.toCoverageListItem(entry))
+            .filter(info => this.isVisible(info))
+            .map((entry) => ({ ...entry, sources: entry.sources.filter((entry) => this.isVisible(entry)) }));
+        this.listView.update(entries, this.textFilterRegExp);
+    }
+    toCoverageListItem(info) {
+        return {
+            url: info.url(),
+            type: info.type(),
+            size: info.size(),
+            usedSize: info.usedSize(),
+            unusedSize: info.unusedSize(),
+            usedPercentage: info.usedPercentage(),
+            unusedPercentage: info.unusedPercentage(),
+            sources: [...info.sourcesURLCoverageInfo.values()].map(this.toCoverageListItem, this),
+            isContentScript: info.isContentScript(),
+            generatedUrl: info instanceof SourceURLCoverageInfo ? info.generatedURLCoverageInfo.url() : undefined,
+        };
     }
     async stopRecording() {
         SDK.TargetManager.TargetManager.instance().removeModelListener(SDK.ResourceTreeModel.ResourceTreeModel, SDK.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
@@ -448,7 +466,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     updateViews(updatedEntries) {
         this.updateStats();
-        this.listView.update(this.model?.entries() || []);
+        this.updateListView();
         this.exportAction.setEnabled(this.model !== null && this.model.entries().length > 0);
         this.decorationManager?.update(updatedEntries);
     }
@@ -460,7 +478,8 @@ export class CoverageView extends UI.Widget.VBox {
             for (const info of this.model.entries()) {
                 all.total += info.size();
                 all.unused += info.unusedSize();
-                if (this.isVisible(false, info)) {
+                const listItem = this.toCoverageListItem(info);
+                if (this.isVisible(listItem)) {
                     if (this.textFilterRegExp?.test(info.url())) {
                         filtered.total += info.size();
                         filtered.unused += info.unusedSize();
@@ -468,7 +487,7 @@ export class CoverageView extends UI.Widget.VBox {
                     else {
                         // If it doesn't match the filter, calculate the stats from visible children if there are any
                         for (const childInfo of info.sourcesURLCoverageInfo.values()) {
-                            if (this.isVisible(false, childInfo)) {
+                            if (this.isVisible(this.toCoverageListItem(childInfo))) {
                                 filtered.total += childInfo.size();
                                 filtered.unused += childInfo.unusedSize();
                             }
@@ -497,7 +516,7 @@ export class CoverageView extends UI.Widget.VBox {
         }
         const text = this.filterInput.value();
         this.textFilterRegExp = text ? Platform.StringUtilities.createPlainTextSearchRegex(text, 'i') : null;
-        this.listView.updateFilterAndHighlight(this.textFilterRegExp);
+        this.updateListView();
         this.updateStats();
     }
     onFilterByTypeChanged() {
@@ -508,29 +527,29 @@ export class CoverageView extends UI.Widget.VBox {
         const option = this.filterByTypeComboBox.selectedOption();
         const type = option?.value;
         this.typeFilterValue = parseInt(type || '', 10) || null;
-        this.listView.updateFilterAndHighlight(this.textFilterRegExp);
+        this.updateListView();
         this.updateStats();
     }
-    isVisible(ignoreTextFilter, coverageInfo) {
-        const url = coverageInfo.url();
+    isVisible(coverageInfo) {
+        const url = coverageInfo.url;
         if (url.startsWith(CoverageView.EXTENSION_BINDINGS_URL_PREFIX)) {
             return false;
         }
-        if (coverageInfo.isContentScript() && !this.showContentScriptsSetting.get()) {
+        if (coverageInfo.isContentScript && !this.showContentScriptsSetting.get()) {
             return false;
         }
-        if (this.typeFilterValue && !(coverageInfo.type() & this.typeFilterValue)) {
+        if (this.typeFilterValue && !(coverageInfo.type & this.typeFilterValue)) {
             return false;
         }
         // If it's a parent, check if any children are visible
-        if (coverageInfo.sourcesURLCoverageInfo.size > 0) {
-            for (const sourceURLCoverageInfo of coverageInfo.sourcesURLCoverageInfo.values()) {
-                if (this.isVisible(ignoreTextFilter, sourceURLCoverageInfo)) {
+        if (coverageInfo.sources.length > 0) {
+            for (const sourceURLCoverageInfo of coverageInfo.sources) {
+                if (this.isVisible(sourceURLCoverageInfo)) {
                     return true;
                 }
             }
         }
-        return ignoreTextFilter || !this.textFilterRegExp || this.textFilterRegExp.test(url);
+        return !this.textFilterRegExp || this.textFilterRegExp.test(url);
     }
     async exportReport() {
         const fos = new Bindings.FileUtils.FileOutputStream();

@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Types from '../types/types.js';
 import { milliToMicro } from './Timing.js';
 import { extractSampleTraceId, makeProfileCall, mergeEventsInOrder, sortTraceEventsInPlace } from './Trace.js';
@@ -310,7 +311,7 @@ export class SamplesIntegrator {
         if (maybeCallForTraceId) {
             stackTrace = maybeCallForTraceId;
         }
-        SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
+        _a.filterStackFrames(stackTrace, this.#engineConfig);
         const endTime = event.ts + (event.dur || 0);
         const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
         let i;
@@ -332,7 +333,7 @@ export class SamplesIntegrator {
         for (i = this.#lockedJsStackDepth.at(-1) || 0; i < minFrames; ++i) {
             const newFrame = stackTrace[i].callFrame;
             const oldFrame = this.#currentJSStack[i].callFrame;
-            if (!SamplesIntegrator.framesAreEqual(newFrame, oldFrame)) {
+            if (!_a.framesAreEqual(newFrame, oldFrame)) {
                 break;
             }
             // Scoot the right edge of this callFrame to the right
@@ -418,7 +419,7 @@ export class SamplesIntegrator {
             frame1.lineNumber === frame2.lineNumber;
     }
     static showNativeName(name, runtimeCallStatsEnabled) {
-        return runtimeCallStatsEnabled && Boolean(SamplesIntegrator.nativeGroup(name));
+        return runtimeCallStatsEnabled && Boolean(_a.nativeGroup(name));
     }
     static nativeGroup(nativeName) {
         if (nativeName.startsWith('Parse')) {
@@ -441,12 +442,12 @@ export class SamplesIntegrator {
         let j = 0;
         for (let i = 0; i < stack.length; ++i) {
             const frame = stack[i].callFrame;
-            const nativeRuntimeFrame = SamplesIntegrator.isNativeRuntimeFrame(frame);
+            const nativeRuntimeFrame = _a.isNativeRuntimeFrame(frame);
             if (nativeRuntimeFrame &&
-                !SamplesIntegrator.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
+                !_a.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
                 continue;
             }
-            const nativeFrameName = nativeRuntimeFrame ? SamplesIntegrator.nativeGroup(frame.functionName) : null;
+            const nativeFrameName = nativeRuntimeFrame ? _a.nativeGroup(frame.functionName) : null;
             if (previousNativeFrameName && previousNativeFrameName === nativeFrameName) {
                 continue;
             }
@@ -491,4 +492,5 @@ export class SamplesIntegrator {
         return profile;
     }
 }
+_a = SamplesIntegrator;
 //# sourceMappingURL=SamplesIntegrator.js.map

@@ -15,7 +15,7 @@ var TraceLoader = class _TraceLoader {
    **/
   static setTestTimeout(context) {
     if (context.timeout() > 0) {
-      context.timeout(Math.max(context.timeout(), 3e4));
+      context.timeout(Math.max(context.timeout(), 45e3));
     }
   }
   /**
@@ -109,7 +109,7 @@ var TraceLoader = class _TraceLoader {
     }
     const fileContents = await wrapInTimeout(context, async () => {
       return await _TraceLoader.fixtureContents(context, name);
-    }, 15e3, `Loading fixtureContents for ${name}`);
+    }, 3e4, `Loading fixtureContents for ${name}`);
     const parsedTraceFileAndModel = await wrapInTimeout(context, async () => {
       return await _TraceLoader.executeTraceEngineOnFileContents(
         fileContents,

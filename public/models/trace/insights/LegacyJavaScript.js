@@ -48,7 +48,8 @@ export function generateInsight(data, context) {
         if (script.url?.startsWith('chrome-extension://')) {
             return false;
         }
-        return Helpers.Timing.timestampIsInBounds(context.bounds, script.ts);
+        return Helpers.Timing.timestampIsInBounds(context.bounds, script.ts) ||
+            (script.request && Helpers.Timing.eventIsInBounds(script.request, context.bounds));
     });
     const legacyJavaScriptResults = new Map();
     const wastedBytesByRequestId = new Map();

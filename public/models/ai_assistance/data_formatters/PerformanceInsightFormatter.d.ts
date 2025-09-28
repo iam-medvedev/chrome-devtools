@@ -1,8 +1,9 @@
 import * as Trace from '../../trace/trace.js';
 import type { ConversationSuggestions } from '../agents/AiAgent.js';
+import type { AgentFocus } from '../performance/AIContext.js';
 export declare class PerformanceInsightFormatter {
     #private;
-    constructor(parsedTrace: Trace.TraceModel.ParsedTrace, insight: Trace.Insights.Types.InsightModel);
+    constructor(focus: AgentFocus, insight: Trace.Insights.Types.InsightModel);
     insightIsSupported(): boolean;
     getSuggestions(): ConversationSuggestions;
     /**
@@ -146,17 +147,4 @@ export declare class PerformanceInsightFormatter {
         headingLevel: number;
     }): string;
     estimatedSavings(): string;
-}
-export interface NetworkRequestFormatOptions {
-    verbose?: boolean;
-    customTitle?: string;
-}
-export declare class TraceEventFormatter {
-    #private;
-    static layoutShift(shift: Trace.Types.Events.SyntheticLayoutShift, index: number, parsedTrace: Trace.TraceModel.ParsedTrace, rootCauses?: Trace.Insights.Models.CLSCulprits.LayoutShiftRootCausesData): string;
-    static networkRequests(requests: readonly Trace.Types.Events.SyntheticNetworkRequest[], parsedTrace: Trace.TraceModel.ParsedTrace, options?: NetworkRequestFormatOptions): string;
-    /**
-     * Network requests format description that is sent to the model as a fact.
-     */
-    static networkDataFormatDescription: string;
 }

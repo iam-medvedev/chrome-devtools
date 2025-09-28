@@ -4551,11 +4551,8 @@ function ruleSetLocationShort(ruleSet, pageURL2) {
   return Bindings2.ResourceUtils.displayNameForURL(url);
 }
 function ruleSetTagOrLocationShort(ruleSet, pageURL2) {
-  if (!ruleSet.errorMessage) {
-    const parsedRuleset = JSON.parse(ruleSet["sourceText"]);
-    if ("tag" in parsedRuleset) {
-      return '"' + parsedRuleset["tag"] + '"';
-    }
+  if (!ruleSet.errorMessage && ruleSet.tag) {
+    return '"' + ruleSet.tag + '"';
   }
   return ruleSetLocationShort(ruleSet, pageURL2);
 }

@@ -1,5 +1,4 @@
 import '../../../ui/components/icon_button/icon_button.js';
-import './CPUThrottlingSelector.js';
 import './FieldSettingsDialog.js';
 import './NetworkThrottlingSelector.js';
 import '../../../ui/components/menus/menus.js';

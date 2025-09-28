@@ -6,6 +6,7 @@ import * as Badges from './badges.js';
 class TestBadge extends Badges.Badge {
     name = 'badges/test-badge';
     title = 'test-badge-title';
+    jslogContext = 'test-badge-jslogcontext';
     imageUri = 'image-uri';
     interestedActions = [
         Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED,

@@ -215,6 +215,16 @@ const UIStrings = {
      */
     disableScrollSnap: 'Disable scroll-snap overlay',
     /**
+     * @description Label of an adorner in the Elements panel. When clicked, it forces
+     * the element into applying its starting-style rules.
+     */
+    enableStartingStyle: 'Enable @starting-style mode',
+    /**
+     * @description Label of an adorner in the Elements panel. When clicked, it no longer
+     * forces the element into applying its starting-style rules.
+     */
+    disableStartingStyle: 'Disable @starting-style mode',
+    /**
      * @description Label of an adorner in the Elements panel. When clicked, it redirects
      * to the Media Panel.
      */
@@ -2203,6 +2213,12 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (node.isMediaNode()) {
             this.pushMediaAdorner(this.tagTypeContext);
         }
+        if (Root.Runtime.hostConfig.devToolsStartingStyleDebugging?.enabled) {
+            const affectedByStartingStyles = node.affectedByStartingStyles();
+            if (affectedByStartingStyles) {
+                this.pushStartingStyleAdorner(this.tagTypeContext);
+            }
+        }
         if (node.attributes().find(attr => attr.name === 'popover')) {
             this.pushPopoverAdorner(this.tagTypeContext);
         }
@@ -2348,6 +2364,32 @@ export class ElementsTreeElement extends UI.TreeOutline.TreeElement {
         if (node.domModel().overlayModel().isHighlightedScrollSnapInPersistentOverlay(nodeId)) {
             adorner.toggle(true);
         }
+    }
+    pushStartingStyleAdorner(context) {
+        const node = this.node();
+        const nodeId = node.id;
+        if (!nodeId) {
+            return;
+        }
+        const config = ElementsComponents.AdornerManager.getRegisteredAdorner(ElementsComponents.AdornerManager.RegisteredAdorners.STARTING_STYLE);
+        const adorner = this.adorn(config);
+        adorner.classList.add('starting-style');
+        const onClick = (() => {
+            const model = node.domModel().cssModel();
+            if (adorner.isActive()) {
+                model.forceStartingStyle(node, true);
+            }
+            else {
+                model.forceStartingStyle(node, false);
+            }
+        });
+        adorner.addInteraction(onClick, {
+            isToggle: true,
+            shouldPropagateOnKeydown: false,
+            ariaLabelDefault: i18nString(UIStrings.enableStartingStyle),
+            ariaLabelActive: i18nString(UIStrings.disableStartingStyle),
+        });
+        context.styleAdorners.add(adorner);
     }
     pushFlexAdorner(context) {
         const node = this.node();

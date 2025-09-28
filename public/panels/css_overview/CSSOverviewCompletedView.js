@@ -1,6 +1,7 @@
 // Copyright 2019 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
@@ -421,7 +422,7 @@ function renderContrastIssue(key, issues) {
 function renderColor(section, color) {
     const borderColor = Common.Color.parse(color)?.asLegacyColor();
     if (!borderColor) {
-        return html ``;
+        return nothing;
     }
     // clang-format off
     return html `<li>
@@ -482,7 +483,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
     #reset() {
         this.#viewOutput.closeAllTabs();
         this.#viewMap = new Map();
-        CSSOverviewCompletedView.pushedNodes.clear();
+        _a.pushedNodes.clear();
         this.#selectedSection = 'summary';
         this.requestUpdate();
     }
@@ -701,6 +702,7 @@ export class CSSOverviewCompletedView extends UI.Widget.VBox {
     }
     static pushedNodes = new Set();
 }
+_a = CSSOverviewCompletedView;
 export const ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
     const { items, visibility } = input;
     // clang-format off
@@ -808,7 +810,7 @@ export class ElementDetailsView extends UI.Widget.Widget {
 }
 function renderNode(data, link, showNode) {
     if (!link) {
-        return html ``;
+        return nothing;
     }
     return html `
     <td>

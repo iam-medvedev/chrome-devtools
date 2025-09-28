@@ -640,6 +640,7 @@ export const generatedProperties = [
             "row-rule-style",
             "row-rule-width",
             "ruby-align",
+            "ruby-overhang",
             "ruby-position",
             "rx",
             "ry",
@@ -737,7 +738,7 @@ export const generatedProperties = [
             "timeline-trigger-name",
             "timeline-trigger-range-end",
             "timeline-trigger-range-start",
-            "timeline-trigger-timeline",
+            "timeline-trigger-source",
             "top",
             "touch-action",
             "transform",
@@ -3734,6 +3735,14 @@ export const generatedProperties = [
     {
         "inherited": true,
         "keywords": [
+            "auto",
+            "none"
+        ],
+        "name": "ruby-overhang"
+    },
+    {
+        "inherited": true,
+        "keywords": [
             "over",
             "under"
         ],
@@ -4421,7 +4430,7 @@ export const generatedProperties = [
     {
         "longhands": [
             "timeline-trigger-name",
-            "timeline-trigger-timeline",
+            "timeline-trigger-source",
             "timeline-trigger-behavior",
             "timeline-trigger-range-start",
             "timeline-trigger-range-end",
@@ -4459,7 +4468,7 @@ export const generatedProperties = [
             "none",
             "auto"
         ],
-        "name": "timeline-trigger-timeline"
+        "name": "timeline-trigger-source"
     },
     {
         "keywords": [
@@ -6481,6 +6490,12 @@ export const generatedPropertyValues = {
             "space-between"
         ]
     },
+    "ruby-overhang": {
+        "values": [
+            "auto",
+            "none"
+        ]
+    },
     "ruby-position": {
         "values": [
             "over",
@@ -6838,7 +6853,7 @@ export const generatedPropertyValues = {
             "state"
         ]
     },
-    "timeline-trigger-timeline": {
+    "timeline-trigger-source": {
         "values": [
             "none",
             "auto"

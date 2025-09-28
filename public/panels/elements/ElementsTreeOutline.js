@@ -1241,6 +1241,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         domModel.addEventListener(SDK.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
         domModel.addEventListener(SDK.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
         domModel.addEventListener(SDK.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+        domModel.addEventListener(SDK.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
     }
     unwireFromDOMModel(domModel) {
         domModel.removeEventListener(SDK.DOMModel.Events.MarkersChanged, this.markersChanged, this);
@@ -1254,6 +1255,7 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         domModel.removeEventListener(SDK.DOMModel.Events.DistributedNodesChanged, this.distributedNodesChanged, this);
         domModel.removeEventListener(SDK.DOMModel.Events.TopLayerElementsChanged, this.topLayerElementsChanged, this);
         domModel.removeEventListener(SDK.DOMModel.Events.ScrollableFlagUpdated, this.scrollableFlagUpdated, this);
+        domModel.removeEventListener(SDK.DOMModel.Events.AffectedByStartingStylesFlagUpdated, this.affectedByStartingStylesFlagUpdated, this);
         elementsTreeOutlineByDOMModel.delete(domModel);
     }
     addUpdateRecord(node) {
@@ -1658,6 +1660,13 @@ export class ElementsTreeOutline extends Common.ObjectWrapper.eventMixin(UI.Tree
         const treeElement = this.treeElementByNode.get(node);
         if (treeElement && isOpeningTag(treeElement.tagTypeContext)) {
             void treeElement.tagTypeContext.adornersThrottler.schedule(async () => treeElement.updateScrollAdorner());
+        }
+    }
+    affectedByStartingStylesFlagUpdated(event) {
+        const { node } = event.data;
+        const treeElement = this.treeElementByNode.get(node);
+        if (treeElement && isOpeningTag(treeElement.tagTypeContext)) {
+            void treeElement.tagTypeContext.adornersThrottler.schedule(async () => await treeElement.updateStyleAdorners());
         }
     }
 }

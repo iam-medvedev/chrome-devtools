@@ -1,6 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Common from '../../../core/common/common.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as SDK from '../../../core/sdk/sdk.js';
@@ -443,7 +444,7 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         const script = `
       ${injectedScript};DevToolsRecorder.startRecording({getAccessibleName, getAccessibleRole}, {
         debug: ${Util.isDebugBuild},
-        allowUntrustedEvents: ${RecordingSession.#allowUntrustedEvents},
+        allowUntrustedEvents: ${_a.#allowUntrustedEvents},
         selectorTypesToRecord: ${JSON.stringify(this.#selectorTypesToRecord)},
         selectorAttribute: ${this.#userFlow.selectorAttribute ? formatAsJSLiteral(this.#userFlow.selectorAttribute) : undefined},
         stopShortcuts: ${JSON.stringify(this.#getStopShortcuts())},
@@ -599,4 +600,5 @@ export class RecordingSession extends Common.ObjectWrapper.ObjectWrapper {
         ]);
     }
 }
+_a = RecordingSession;
 //# sourceMappingURL=RecordingSession.js.map

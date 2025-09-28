@@ -13,7 +13,7 @@ export declare enum SubscriptionTier {
     PRO_ANNUAL = "SUBSCRIPTION_TIER_PRO_ANNUAL",
     PRO_MONTHLY = "SUBSCRIPTION_TIER_PRO_MONTHLY"
 }
-declare enum EligibilityStatus {
+export declare enum EligibilityStatus {
     ELIGIBLE = "ELIGIBLE",
     NOT_ELIGIBLE = "NOT_ELIGIBLE"
 }
@@ -45,6 +45,10 @@ export interface Profile {
         subscriptionTier: SubscriptionTier | string;
     };
 }
+interface InitializeResult {
+    hasProfile: boolean;
+    isEligible: boolean;
+}
 export declare const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 export declare class GdpClient {
     #private;
@@ -52,7 +56,7 @@ export declare class GdpClient {
     static instance({ forceNew }?: {
         forceNew: boolean;
     }): GdpClient;
-    initialize(): Promise<void>;
+    initialize(): Promise<InitializeResult>;
     getProfile(): Promise<Profile | null>;
     checkEligibility(): Promise<CheckElibigilityResponse | null>;
     /**

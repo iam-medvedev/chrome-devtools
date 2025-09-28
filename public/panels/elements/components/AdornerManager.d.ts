@@ -20,6 +20,7 @@ export declare enum RegisteredAdorners {
     FLEX = "flex",
     AD = "ad",
     SCROLL_SNAP = "scroll-snap",
+    STARTING_STYLE = "starting-style",
     CONTAINER = "container",
     SLOT = "slot",
     TOP_LAYER = "top-layer",

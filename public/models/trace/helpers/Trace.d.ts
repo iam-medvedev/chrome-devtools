@@ -1,11 +1,6 @@
 import type * as Protocol from '../../../generated/protocol.js';
 import type * as CPUProfile from '../../cpu_profile/cpu_profile.js';
 import * as Types from '../types/types.js';
-interface MatchingPairableAsyncEvents {
-    begin: Types.Events.PairableAsyncBegin | null;
-    end: Types.Events.PairableAsyncEnd | null;
-    instant?: Types.Events.PairableAsyncInstant[];
-}
 /**
  * Extracts the raw stack trace in known trace events. Most likely than
  * not you want to use `getZeroIndexedStackTraceForEvent`, which returns
@@ -52,21 +47,13 @@ export declare function activeURLForFrameAtTime(frameId: string, time: Types.Tim
  * See `panels/timeline/docs/profile_calls.md` for more context on how these events are created.
  */
 export declare function makeProfileCall(node: CPUProfile.ProfileTreeModel.ProfileNode, profileId: Types.Events.ProfileID, sampleIndex: number, ts: Types.Timing.Micro, pid: Types.Events.ProcessID, tid: Types.Events.ThreadID): Types.Events.SyntheticProfileCall;
-/**
- * Matches beginning events with PairableAsyncEnd and PairableAsyncInstant (ASYNC_NESTABLE_INSTANT)
- * if provided, though currently only coming from Animations. Traces may contain multiple instant events so we need to
- * account for that.
- *
- * @returns Map of the animation's ID to it's matching events.
- */
-export declare function matchEvents(unpairedEvents: Types.Events.PairableAsync[]): Map<string, MatchingPairableAsyncEvents>;
 export declare function getSyntheticId(event: Types.Events.PairableAsync): string | undefined;
-export declare function createSortedSyntheticEvents<T extends Types.Events.PairableAsync>(matchedPairs: Map<string, {
-    begin: Types.Events.PairableAsyncBegin | null;
-    end: Types.Events.PairableAsyncEnd | null;
-    instant?: Types.Events.PairableAsyncInstant[];
-}>, syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Array<Types.Events.SyntheticEventPair<T>>;
-export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[], syntheticEventCallback?: (syntheticEvent: Types.Events.SyntheticEventPair<T>) => void): Array<Types.Events.SyntheticEventPair<T>>;
+/**
+ * Groups up sets of async events into synthetic events.
+ * @param unpairedAsyncEvents the raw array of begin, end and async instant
+ * events. These MUST be sorted in timestamp ASC order.
+ */
+export declare function createMatchedSortedSyntheticEvents<T extends Types.Events.PairableAsync>(unpairedAsyncEvents: T[]): Array<Types.Events.SyntheticEventPair<T>>;
 /**
  * Different trace events return line/column numbers that are 1 or 0 indexed.
  * This function knows which events return 1 indexed numbers and normalizes
@@ -150,4 +137,3 @@ export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, 
 export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.Micro): boolean;
 export declare function extractSampleTraceId(event: Types.Events.Event): number | null;
 export declare const VISIBLE_TRACE_EVENT_TYPES: Set<Types.Events.Name>;
-export {};

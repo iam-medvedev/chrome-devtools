@@ -50,7 +50,7 @@ export const logClick = (throttler) => (loggable, event, options) => {
     void throttler.schedule(async () => {
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.recordClick(clickEvent);
         processEventForDebugging('Click', loggingState, { mouseButton: clickEvent.mouseButton, doubleClick: clickEvent.doubleClick });
-    });
+    }, "Delayed" /* Common.Throttler.Scheduling.DELAYED */);
 };
 export const logHover = (throttler) => async (event) => {
     const loggingState = getLoggingState(event.currentTarget);

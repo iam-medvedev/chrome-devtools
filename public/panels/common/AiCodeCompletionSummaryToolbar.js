@@ -33,10 +33,11 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, _output, target) => {
         'has-top-border': input.hasTopBorder,
     });
     // clang-format off
-    const disclaimer = input.disclaimerTooltipId ?
+    const disclaimer = input.disclaimerTooltipId && input.spinnerTooltipId ?
         html `<devtools-widget
             .widgetConfig=${UI.Widget.widgetConfig(AiCodeCompletionDisclaimer, {
             disclaimerTooltipId: input.disclaimerTooltipId,
+            spinnerTooltipId: input.spinnerTooltipId,
             loading: input.loading,
         })} class="disclaimer-widget"></devtools-widget>` : nothing;
     const recitationNotice = input.citations && input.citations.size > 0 ?
@@ -73,6 +74,7 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, _output, target) => {
 export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     #view;
     #disclaimerTooltipId;
+    #spinnerTooltipId;
     #citationsTooltipId;
     #citations = new Set();
     #loading = false;
@@ -82,6 +84,7 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     constructor(props, view) {
         super();
         this.#disclaimerTooltipId = props.disclaimerTooltipId;
+        this.#spinnerTooltipId = props.spinnerTooltipId;
         this.#citationsTooltipId = props.citationsTooltipId;
         this.#hasTopBorder = props.hasTopBorder ?? false;
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
@@ -110,6 +113,7 @@ export class AiCodeCompletionSummaryToolbar extends UI.Widget.Widget {
     performUpdate() {
         this.#view({
             disclaimerTooltipId: this.#disclaimerTooltipId,
+            spinnerTooltipId: this.#spinnerTooltipId,
             citations: this.#citations,
             citationsTooltipId: this.#citationsTooltipId,
             loading: this.#loading,

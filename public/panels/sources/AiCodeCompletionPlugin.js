@@ -14,6 +14,7 @@ import * as PanelCommon from '../common/common.js';
 import { Plugin } from './Plugin.js';
 const AI_CODE_COMPLETION_CHARACTER_LIMIT = 20_000;
 const DISCLAIMER_TOOLTIP_ID = 'sources-ai-code-completion-disclaimer-tooltip';
+const SPINNER_TOOLTIP_ID = 'sources-ai-code-completion-spinner-tooltip';
 const CITATIONS_TOOLTIP_ID = 'sources-ai-code-completion-citations-tooltip';
 export class AiCodeCompletionPlugin extends Plugin {
     #aidaClient;
@@ -49,6 +50,8 @@ export class AiCodeCompletionPlugin extends Plugin {
         if (showTeaser) {
             this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
         }
+        this.#aiCodeCompletionDisclaimerContainer.classList.add('ai-code-completion-disclaimer-container');
+        this.#aiCodeCompletionDisclaimerContainer.style.paddingInline = 'var(--sys-size-3)';
     }
     static accepts(uiSourceCode) {
         return uiSourceCode.contentType().hasScripts() || uiSourceCode.contentType().hasStyleSheets();
@@ -83,6 +86,7 @@ export class AiCodeCompletionPlugin extends Plugin {
         if (this.#teaser) {
             if (update.docChanged) {
                 update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
+                window.clearTimeout(this.#teaserDisplayTimeout);
                 this.#addTeaserPluginToCompartment(update.view);
             }
             else if (update.selectionSet && update.state.doc.length > 0) {
@@ -166,10 +170,6 @@ export class AiCodeCompletionPlugin extends Plugin {
         }
     }
     #addTeaserPluginToCompartment = Common.Debouncer.debounce((view) => {
-        if (this.#teaserDisplayTimeout) {
-            window.clearTimeout(this.#teaserDisplayTimeout);
-            this.#teaserDisplayTimeout = undefined;
-        }
         this.#teaserDisplayTimeout = window.setTimeout(() => {
             this.#addTeaserPluginToCompartmentImmediate(view);
         }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
@@ -208,6 +208,7 @@ export class AiCodeCompletionPlugin extends Plugin {
         }
         this.#aiCodeCompletionDisclaimer = new PanelCommon.AiCodeCompletionDisclaimer();
         this.#aiCodeCompletionDisclaimer.disclaimerTooltipId = DISCLAIMER_TOOLTIP_ID;
+        this.#aiCodeCompletionDisclaimer.spinnerTooltipId = SPINNER_TOOLTIP_ID;
         this.#aiCodeCompletionDisclaimer.show(this.#aiCodeCompletionDisclaimerContainer, undefined, true);
     }
     #createAiCodeCompletionCitationsToolbar() {

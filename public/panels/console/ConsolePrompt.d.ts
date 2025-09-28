@@ -42,6 +42,7 @@ export declare class ConsolePrompt extends ConsolePrompt_base {
     willHide(): void;
     history(): TextEditor.AutocompleteHistory.AutocompleteHistory;
     clearAutocomplete(): void;
+    clearAiCodeCompletionCache(): void;
     moveCaretToEndOfPrompt(): void;
     clear(): void;
     text(): string;

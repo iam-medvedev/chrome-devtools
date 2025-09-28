@@ -87,7 +87,7 @@ var aiCodeCompletionTeaser_css_default = `/*
 
     .ai-code-completion-teaser {
         padding-left: var(--sys-size-3);
-        line-height: normal;
+        line-height: var(--sys-size-7);
         pointer-events: all;
         align-items: center;
         font-style: italic;
@@ -106,6 +106,11 @@ var aiCodeCompletionTeaser_css_default = `/*
                 border-radius: var(--sys-shape-corner-extra-small);
                 padding: 0 var(--sys-size-3);
             }
+        }
+
+        .new-badge {
+            font-style: normal;
+            display: inline-block;
         }
     }
 }
@@ -234,9 +239,9 @@ var str_ = i18n.i18n.registerUIStrings("panels/common/FreDialog.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var FreDialog = class {
   static show({ header, reminderItems, onLearnMoreClick, ariaLabel, learnMoreButtonText, learnMoreButtonAriaLabel }) {
-    const dialog = new UI.Dialog.Dialog();
+    const dialog2 = new UI.Dialog.Dialog();
     if (ariaLabel) {
-      dialog.setAriaLabel(ariaLabel);
+      dialog2.setAriaLabel(ariaLabel);
     }
     const result = Promise.withResolvers();
     Lit.render(html`
@@ -274,7 +279,7 @@ var FreDialog = class {
             <devtools-button
               @click=${() => {
       result.resolve(false);
-      dialog.hide();
+      dialog2.hide();
     }}
               .jslogContext=${"fre-disclaimer.cancel"}
               .variant=${"tonal"}>
@@ -283,7 +288,7 @@ var FreDialog = class {
             <devtools-button
               @click=${() => {
       result.resolve(true);
-      dialog.hide();
+      dialog2.hide();
     }}
               .jslogContext=${"fre-disclaimer.continue"}
               .variant=${"primary"}>
@@ -291,21 +296,21 @@ var FreDialog = class {
             </devtools-button>
           </div>
         </footer>
-      </div>`, dialog.contentElement);
-    dialog.setOutsideClickCallback((ev) => {
+      </div>`, dialog2.contentElement);
+    dialog2.setOutsideClickCallback((ev) => {
       ev.consume(true);
-      dialog.hide();
+      dialog2.hide();
       result.resolve(false);
     });
-    dialog.setOnHideCallback(() => {
+    dialog2.setOnHideCallback(() => {
       result.resolve(false);
     });
-    dialog.setSizeBehavior(
+    dialog2.setSizeBehavior(
       "MeasureContent"
       /* UI.GlassPane.SizeBehavior.MEASURE_CONTENT */
     );
-    dialog.setDimmed(true);
-    dialog.show();
+    dialog2.setDimmed(true);
+    dialog2.show();
     return result.promise;
   }
   constructor() {
@@ -382,6 +387,7 @@ var UIStringsNotTranslate = {
 };
 var lockedString = i18n3.i18n.lockedString;
 var CODE_SNIPPET_WARNING_URL = "https://support.google.com/legal/answer/13505487";
+var PROMOTION_ID = "ai-code-completion";
 var DEFAULT_VIEW = (input, _output, target) => {
   if (input.aidaAvailability !== "available") {
     render2(nothing, target);
@@ -389,8 +395,11 @@ var DEFAULT_VIEW = (input, _output, target) => {
   }
   const cmdOrCtrl = Host.Platform.isMac() ? lockedString(UIStringsNotTranslate.cmd) : lockedString(UIStringsNotTranslate.ctrl);
   const teaserAriaLabel = lockedString(UIStringsNotTranslate.press) + " " + cmdOrCtrl + " " + lockedString(UIStringsNotTranslate.i) + " " + lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions) + " " + lockedString(UIStringsNotTranslate.press) + " " + cmdOrCtrl + " " + lockedString(UIStringsNotTranslate.x) + " " + lockedString(UIStringsNotTranslate.toDisableCodeSuggestions);
+  const newBadge = UI2.UIUtils.maybeCreateNewBadge(PROMOTION_ID);
+  const newBadgeTemplate = newBadge ? html2`&nbsp;${newBadge}` : nothing;
   render2(html2`
           <style>${aiCodeCompletionTeaser_css_default}</style>
+          <style>@scope to (devtools-widget > *) { ${UI2.inspectorCommonStyles} }</style>
           <div class="ai-code-completion-teaser-screen-reader-only">${teaserAriaLabel}</div>
           <div class="ai-code-completion-teaser" aria-hidden="true">
             <span class="ai-code-completion-teaser-action">
@@ -402,6 +411,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
               jslog=${VisualLogging.action("ai-code-completion-teaser.dismiss").track({ click: true })}>
                 ${lockedString(UIStringsNotTranslate.dontShowAgain)}
             </span>
+            ${newBadgeTemplate}
           </div>
         `, target);
 };
@@ -533,7 +543,6 @@ import * as Buttons2 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars2 from "./../../ui/components/snackbars/snackbars.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
 import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
-import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/gdpSignUpDialog.css.js
 var gdpSignUpDialog_css_default = `/*
@@ -716,7 +725,7 @@ var GDP_PROGRAM_URL = "https://developers.google.com/program";
 var DEFAULT_VIEW2 = (input, _output, target) => {
   render3(html3`
       <style>${gdpSignUpDialog_css_default}</style>
-      <div class="gdp-sign-up-dialog-header" role="img" tabindex="0" aria-label="Google Developer Program"></div>
+      <div class="gdp-sign-up-dialog-header" role="img" aria-label="Google Developer Program"></div>
       <div class="main-content">
         <div class="section">
           <div class="icon-container">
@@ -738,9 +747,9 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
           <div class="switch-container">
             <devtools-switch
             .checked=${input.keepMeUpdated}
+            .jslogContext=${"keep-me-updated"}
+            .label=${i18nString2(UIStrings2.keepUpdated)}
             @switchchange=${(e) => input.onKeepMeUpdatedChange(e.checked)}
-            jslog=${VisualLogging2.toggle("gdp.signup.keep-me-updated").track({ click: true })}
-            aria-label=${i18nString2(UIStrings2.keepUpdated)}
           >
             </devtools-switch>
           </div>
@@ -754,9 +763,9 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             <div class="section-text">
               <div>${i18nString2(UIStrings2.tailorProfileBody)}</div><br/>
               <div>${i18n5.i18n.getFormatLocalizedString(str_2, UIStrings2.tailorProfileBodyDisclaimer, {
-    PH1: UI3.XLink.XLink.create(CONTENT_POLICY_URL, i18nString2(UIStrings2.contentPolicy), "link", void 0, "gdp.content-policy"),
-    PH2: UI3.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString2(UIStrings2.termsOfService), "link", void 0, "gdp.terms-of-service"),
-    PH3: UI3.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString2(UIStrings2.privacyPolicy), "link", void 0, "gdp.privacy-policy")
+    PH1: UI3.XLink.XLink.create(CONTENT_POLICY_URL, i18nString2(UIStrings2.contentPolicy), "link", void 0, "content-policy"),
+    PH2: UI3.XLink.XLink.create(TERMS_OF_SERVICE_URL, i18nString2(UIStrings2.termsOfService), "link", void 0, "terms-of-service"),
+    PH3: UI3.XLink.XLink.create(PRIVACY_POLICY_URL, i18nString2(UIStrings2.privacyPolicy), "link", void 0, "privacy-policy")
   })}</div>
             </div>
           </div>
@@ -776,7 +785,7 @@ var DEFAULT_VIEW2 = (input, _output, target) => {
             @click=${input.onCancelClick}>${i18nString2(UIStrings2.cancel)}</devtools-button>
           <devtools-button
             .variant=${"primary"}
-            .jslogContext=${"gdp.sign-up"}
+            .jslogContext=${"sign-up"}
             .spinner=${input.isSigningUp}
             .disabled=${input.isSigningUp}
             @click=${input.onSignUpClick}>${i18nString2(UIStrings2.signUp)}</devtools-button>
@@ -790,10 +799,12 @@ var GdpSignUpDialog = class _GdpSignUpDialog extends UI3.Widget.VBox {
   #keepMeUpdated = false;
   #isSigningUp = false;
   #onSuccess;
+  #onCancel;
   constructor(options, view) {
     super();
     this.#dialog = options.dialog;
     this.#onSuccess = options.onSuccess;
+    this.#onCancel = options.onCancel;
     this.#view = view ?? DEFAULT_VIEW2;
     this.requestUpdate();
   }
@@ -821,6 +832,7 @@ var GdpSignUpDialog = class _GdpSignUpDialog extends UI3.Widget.VBox {
       onSignUpClick: this.#onSignUpClick.bind(this),
       onCancelClick: () => {
         this.#dialog.hide();
+        this.#onCancel?.();
       },
       keepMeUpdated: this.#keepMeUpdated,
       onKeepMeUpdatedChange: (value) => {
@@ -831,17 +843,17 @@ var GdpSignUpDialog = class _GdpSignUpDialog extends UI3.Widget.VBox {
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
-  static show({ onSuccess } = {}) {
-    const dialog = new UI3.Dialog.Dialog();
-    dialog.setAriaLabel(i18nString2(UIStrings2.gdpDialogAriaLabel));
-    dialog.setMaxContentSize(new Geometry.Size(384, 500));
-    dialog.setSizeBehavior(
+  static show({ onSuccess, onCancel } = {}) {
+    const dialog2 = new UI3.Dialog.Dialog("gdp-sign-up-dialog");
+    dialog2.setAriaLabel(i18nString2(UIStrings2.gdpDialogAriaLabel));
+    dialog2.setMaxContentSize(new Geometry.Size(384, 500));
+    dialog2.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
-    dialog.setDimmed(true);
-    new _GdpSignUpDialog({ dialog, onSuccess }).show(dialog.contentElement);
-    dialog.show(
+    dialog2.setDimmed(true);
+    new _GdpSignUpDialog({ dialog: dialog2, onSuccess, onCancel }).show(dialog2.contentElement);
+    dialog2.show(
       void 0,
       /* stack */
       true
@@ -857,7 +869,7 @@ import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as UI4 from "./../../ui/legacy/legacy.js";
 import { Directives, html as html4, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
-import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/aiCodeCompletionDisclaimer.css.js
 var aiCodeCompletionDisclaimer_css_default = `/*
@@ -939,6 +951,10 @@ var UIStringsNotTranslate2 = {
    */
   tooltipDisclaimerTextForAiCodeCompletionNoLogging: "To generate code suggestions, your console input and the history of your current console session are shared with Google. This data will not be used to improve Google\u2019s AI models.",
   /**
+   * Text for tooltip shown on hovering over spinner.
+   */
+  tooltipTextForSpinner: "Shows when data is being sent to Google to generate code suggestions",
+  /**
    * @description Text for tooltip button which redirects to AI settings
    */
   manageInSettings: "Manage in settings",
@@ -949,7 +965,7 @@ var UIStringsNotTranslate2 = {
 };
 var lockedString2 = i18n7.i18n.lockedString;
 var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-  if (input.aidaAvailability !== "available" || !input.disclaimerTooltipId) {
+  if (input.aidaAvailability !== "available" || !input.disclaimerTooltipId || !input.spinnerTooltipId) {
     render4(nothing2, target);
     return;
   }
@@ -963,12 +979,21 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
         el.toggleAttribute("active", isLoading);
       };
     }
-  })}></devtools-spinner>
+  })}
+          aria-details=${input.spinnerTooltipId}
+          aria-describedby=${input.spinnerTooltipId}></devtools-spinner>
+          <devtools-tooltip
+              id=${input.spinnerTooltipId}
+              variant=${"rich"}
+              jslogContext=${"ai-code-completion-spinner-tooltip"}>
+          <div class="disclaimer-tooltip-container"><div class="tooltip-text">
+            ${lockedString2(UIStringsNotTranslate2.tooltipTextForSpinner)}
+          </div></div></devtools-tooltip>
           <span
               tabIndex="0"
               class="link"
               role="link"
-              jslog=${VisualLogging3.link("open-ai-settings").track({
+              jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
               aria-details=${input.disclaimerTooltipId}
@@ -995,7 +1020,7 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
                     tabIndex="0"
                     class="link"
                     role="link"
-                    jslog=${VisualLogging3.link("open-ai-settings").track({
+                    jslog=${VisualLogging2.link("open-ai-settings").track({
     click: true
   })}
                     @click=${input.onManageInSettingsTooltipClick}
@@ -1007,6 +1032,7 @@ var MINIMUM_LOADING_STATE_TIMEOUT = 1e3;
 var AiCodeCompletionDisclaimer = class extends UI4.Widget.Widget {
   #view;
   #viewOutput = {};
+  #spinnerTooltipId;
   #disclaimerTooltipId;
   #noLogging;
   // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
@@ -1024,6 +1050,10 @@ var AiCodeCompletionDisclaimer = class extends UI4.Widget.Widget {
   }
   set disclaimerTooltipId(disclaimerTooltipId) {
     this.#disclaimerTooltipId = disclaimerTooltipId;
+    this.requestUpdate();
+  }
+  set spinnerTooltipId(spinnerTooltipId) {
+    this.#spinnerTooltipId = spinnerTooltipId;
     this.requestUpdate();
   }
   set loading(loading) {
@@ -1065,6 +1095,7 @@ var AiCodeCompletionDisclaimer = class extends UI4.Widget.Widget {
   performUpdate() {
     this.#view({
       disclaimerTooltipId: this.#disclaimerTooltipId,
+      spinnerTooltipId: this.#spinnerTooltipId,
       noLogging: this.#noLogging,
       aidaAvailability: this.#aidaAvailability,
       onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this)
@@ -1088,7 +1119,7 @@ import * as Host4 from "./../../core/host/host.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
 import { Directives as Directives2, html as html5, nothing as nothing3, render as render5 } from "./../../ui/lit/lit.js";
-import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/aiCodeCompletionSummaryToolbar.css.js
 var aiCodeCompletionSummaryToolbar_css_default = `/*
@@ -1218,9 +1249,10 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW2 = (input, _output, target) => {
     "has-recitation-notice": Boolean(input.citations && input.citations.size > 0),
     "has-top-border": input.hasTopBorder
   });
-  const disclaimer = input.disclaimerTooltipId ? html5`<devtools-widget
+  const disclaimer = input.disclaimerTooltipId && input.spinnerTooltipId ? html5`<devtools-widget
             .widgetConfig=${UI5.Widget.widgetConfig(AiCodeCompletionDisclaimer, {
     disclaimerTooltipId: input.disclaimerTooltipId,
+    spinnerTooltipId: input.spinnerTooltipId,
     loading: input.loading
   })} class="disclaimer-widget"></devtools-widget>` : nothing3;
   const recitationNotice = input.citations && input.citations.size > 0 ? html5`<div class="ai-code-completion-recitation-notice">
@@ -1240,7 +1272,7 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW2 = (input, _output, target) => {
                     ${Directives2.repeat(input.citations, (citation) => html5`<x-link
                         tabIndex="0"
                         href=${citation}
-                        jslog=${VisualLogging4.link("ai-code-completion-citations.citation-link").track({
+                        jslog=${VisualLogging3.link("ai-code-completion-citations.citation-link").track({
     click: true
   })}>${citation}</x-link>`)}</div></devtools-tooltip>
             </div>` : nothing3;
@@ -1255,6 +1287,7 @@ var DEFAULT_SUMMARY_TOOLBAR_VIEW2 = (input, _output, target) => {
 var AiCodeCompletionSummaryToolbar = class extends UI5.Widget.Widget {
   #view;
   #disclaimerTooltipId;
+  #spinnerTooltipId;
   #citationsTooltipId;
   #citations = /* @__PURE__ */ new Set();
   #loading = false;
@@ -1264,6 +1297,7 @@ var AiCodeCompletionSummaryToolbar = class extends UI5.Widget.Widget {
   constructor(props, view) {
     super();
     this.#disclaimerTooltipId = props.disclaimerTooltipId;
+    this.#spinnerTooltipId = props.spinnerTooltipId;
     this.#citationsTooltipId = props.citationsTooltipId;
     this.#hasTopBorder = props.hasTopBorder ?? false;
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
@@ -1292,6 +1326,7 @@ var AiCodeCompletionSummaryToolbar = class extends UI5.Widget.Widget {
   performUpdate() {
     this.#view({
       disclaimerTooltipId: this.#disclaimerTooltipId,
+      spinnerTooltipId: this.#spinnerTooltipId,
       citations: this.#citations,
       citationsTooltipId: this.#citationsTooltipId,
       loading: this.#loading,
@@ -1319,7 +1354,7 @@ import * as WindowBoundsService from "./../../services/window_bounds/window_boun
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
-import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
+import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/common/badgeNotification.css.js
 var badgeNotification_css_default = `/*
@@ -1475,7 +1510,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     return html6`<devtools-button
         class="notification-button"
         @click=${() => property.onClick()}
-        jslog=${VisualLogging5.action(property.jslogContext).track({ click: true })}
+        jslog=${VisualLogging4.action(property.jslogContext).track({ click: true })}
         .variant=${"text"}
         .title=${property.title ?? ""}
         .inverseColorTheme=${true}
@@ -1484,7 +1519,7 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
   const crossButton = html6`<devtools-button
         class="dismiss notification-button"
         @click=${input.onDismissClick}
-        jslog=${VisualLogging5.action("badge-notification.dismiss").track({ click: true })}
+        jslog=${VisualLogging4.action("badge-notification.dismiss").track({ click: true })}
         aria-label=${i18nString3(UIStrings3.close)}
         .iconName=${"cross"}
         .variant=${"icon"}
@@ -1493,8 +1528,8 @@ var DEFAULT_VIEW3 = (input, _output, target) => {
     ></devtools-button>`;
   render6(html6`
     <style>${badgeNotification_css_default}</style>
-    <div class="container">
-      <div class="badge-container">
+    <div class="container" jslog=${VisualLogging4.dialog("badge-notification")}>
+      <div class="badge-container" jslog=${VisualLogging4.item(input.jslogContext)}>
         <img class="badge-image" role="presentation" src=${input.imageUri}>
       </div>
       <div class="action-and-text-container">
@@ -1511,6 +1546,7 @@ function revealBadgeSettings() {
   void Common3.Revealer.reveal(Common3.Settings.moduleSetting("receive-gdp-badges"));
 }
 var BadgeNotification = class extends UI6.Widget.Widget {
+  jslogContext = "";
   message = "";
   imageUri = "";
   actions = [];
@@ -1540,6 +1576,7 @@ var BadgeNotification = class extends UI6.Widget.Widget {
     this.imageUri = properties.imageUri;
     this.actions = properties.actions;
     this.isStarterBadge = properties.isStarterBadge;
+    this.jslogContext = properties.jslogContext;
     this.requestUpdate();
     this.show(document.body);
     void this.updateComplete.then(() => {
@@ -1553,7 +1590,7 @@ var BadgeNotification = class extends UI6.Widget.Widget {
   async #presentStarterBadge(badge) {
     const gdpProfile = await Host5.GdpClient.GdpClient.instance().getProfile();
     const receiveBadgesSettingEnabled = Badges2.UserBadges.instance().isReceiveBadgesSettingEnabled();
-    const googleDeveloperProgramLink = UI6.XLink.XLink.create("https://developers.google.com/program", lockedString4("Google Developer Program"), "badge-link", void 0, "gdp.program-link");
+    const googleDeveloperProgramLink = UI6.XLink.XLink.create("https://developers.google.com/program", lockedString4("Google Developer Program"), "badge-link", void 0, "program-link");
     if (gdpProfile && receiveBadgesSettingEnabled) {
       this.#presentActivityBasedBadge(badge);
       return;
@@ -1561,9 +1598,11 @@ var BadgeNotification = class extends UI6.Widget.Widget {
     if (gdpProfile && !receiveBadgesSettingEnabled) {
       this.#show({
         message: i18nFormatString(UIStrings3.starterBadgeAwardMessageSettingDisabled, { PH1: badge.title, PH2: googleDeveloperProgramLink }),
+        jslogContext: badge.jslogContext,
         actions: [
           {
             label: i18nString3(UIStrings3.remindMeLater),
+            jslogContext: "remind-me-later",
             onClick: () => {
               this.detach();
               Badges2.UserBadges.instance().snoozeStarterBadge();
@@ -1571,6 +1610,7 @@ var BadgeNotification = class extends UI6.Widget.Widget {
           },
           {
             label: i18nString3(UIStrings3.receiveBadges),
+            jslogContext: "receive-badges",
             onClick: () => {
               this.detach();
               revealBadgeSettings();
@@ -1584,9 +1624,11 @@ var BadgeNotification = class extends UI6.Widget.Widget {
     }
     this.#show({
       message: i18nFormatString(UIStrings3.starterBadgeAwardMessageNoGdpProfile, { PH1: badge.title, PH2: googleDeveloperProgramLink }),
+      jslogContext: badge.jslogContext,
       actions: [
         {
           label: i18nString3(UIStrings3.remindMeLater),
+          jslogContext: "remind-me-later",
           onClick: () => {
             this.detach();
             Badges2.UserBadges.instance().snoozeStarterBadge();
@@ -1594,9 +1636,13 @@ var BadgeNotification = class extends UI6.Widget.Widget {
         },
         {
           label: i18nString3(UIStrings3.createProfile),
+          jslogContext: "create-profile",
           onClick: () => {
             this.detach();
-            GdpSignUpDialog.show();
+            GdpSignUpDialog.show({
+              // We want to consider cancelling from the starter badge as a "snooze" for starter badge.
+              onCancel: () => Badges2.UserBadges.instance().snoozeStarterBadge()
+            });
           }
         }
       ],
@@ -1607,9 +1653,11 @@ var BadgeNotification = class extends UI6.Widget.Widget {
   #presentActivityBasedBadge(badge) {
     this.#show({
       message: i18nString3(UIStrings3.activityBasedBadgeAwardMessage, { PH1: badge.title }),
+      jslogContext: badge.jslogContext,
       actions: [
         {
           label: i18nString3(UIStrings3.manageSettings),
+          jslogContext: "manage-settings",
           onClick: () => {
             this.detach();
             revealBadgeSettings();
@@ -1617,6 +1665,7 @@ var BadgeNotification = class extends UI6.Widget.Widget {
         },
         {
           label: i18nString3(UIStrings3.viewProfile),
+          jslogContext: "view-profile",
           onClick: () => {
             UI6.UIUtils.openInNewTab(Host5.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK);
           }
@@ -1651,7 +1700,8 @@ var BadgeNotification = class extends UI6.Widget.Widget {
       imageUri: this.imageUri,
       actions: this.actions,
       isStarterBadge: this.isStarterBadge,
-      onDismissClick: this.#onDismissClick
+      onDismissClick: this.#onDismissClick,
+      jslogContext: this.jslogContext
     };
     this.#view(viewInput, void 0, this.contentElement);
   }
@@ -1672,14 +1722,14 @@ var str_4 = i18n13.i18n.registerUIStrings("panels/common/common.ts", UIStrings4)
 var i18nString4 = i18n13.i18n.getLocalizedString.bind(void 0, str_4);
 var TypeToAllowDialog = class {
   static async show(options) {
-    const dialog = new UI7.Dialog.Dialog(options.jslogContext.dialog);
-    dialog.setMaxContentSize(new Geometry2.Size(504, 340));
-    dialog.setSizeBehavior(
+    const dialog2 = new UI7.Dialog.Dialog(options.jslogContext.dialog);
+    dialog2.setMaxContentSize(new Geometry2.Size(504, 340));
+    dialog2.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
-    dialog.setDimmed(true);
-    const shadowRoot = UI7.UIUtils.createShadowRootWithCoreStyles(dialog.contentElement, { cssFile: common_css_default });
+    dialog2.setDimmed(true);
+    const shadowRoot = UI7.UIUtils.createShadowRootWithCoreStyles(dialog2.contentElement, { cssFile: common_css_default });
     const content = shadowRoot.createChild("div", "type-to-allow-dialog");
     const result = await new Promise((resolve) => {
       const header = content.createChild("div", "header");
@@ -1687,7 +1737,7 @@ var TypeToAllowDialog = class {
       const closeButton = header.createChild("dt-close-button", "dialog-close-button");
       closeButton.setTabbable(true);
       self.onInvokeElement(closeButton, (event) => {
-        dialog.hide();
+        dialog2.hide();
         event.consume(true);
         resolve(false);
       });
@@ -1716,14 +1766,14 @@ var TypeToAllowDialog = class {
       }, false);
       input.addEventListener("paste", (e) => e.preventDefault());
       input.addEventListener("drop", (e) => e.preventDefault());
-      dialog.setOutsideClickCallback((event) => {
+      dialog2.setOutsideClickCallback((event) => {
         event.consume();
         resolve(false);
       });
-      dialog.show();
+      dialog2.show();
       Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.SelfXssWarningDialogShown);
     });
-    dialog.hide();
+    dialog2.hide();
     return result;
   }
 };

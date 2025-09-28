@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import '../../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../../core/common/common.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
@@ -10,7 +9,7 @@ import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Tracing from '../../../services/tracing/tracing.js';
 import * as Trace from '../../trace/trace.js';
-import { PerformanceInsightFormatter, TraceEventFormatter, } from '../data_formatters/PerformanceInsightFormatter.js';
+import { PerformanceInsightFormatter, } from '../data_formatters/PerformanceInsightFormatter.js';
 import { PerformanceTraceFormatter } from '../data_formatters/PerformanceTraceFormatter.js';
 import { debugLog } from '../debug.js';
 import { AICallTree } from '../performance/AICallTree.js';
@@ -43,7 +42,7 @@ const lockedString = i18n.i18n.lockedString;
  *
  * Check token length in https://aistudio.google.com/
  */
-const fullTracePreamble = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
+const preamble = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
 
 Your primary goal is to provide actionable advice to web developers about their web page by using the Chrome Performance Panel and analyzing a trace. You may need to diagnose problems yourself, or you may be given direction for what to focus on by the user.
 
@@ -109,27 +108,22 @@ Adhere to the following critical requirements:
 - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
 - Do not provide answers on non-web-development topics, such as legal, financial, medical, or personal advice.
 `;
-const callFrameDataFormatDescription = `Each call frame is presented in the following format:
+const extraPreambleWhenNotExternal = `Additional notes:
 
-'id;name;duration;selfTime;urlIndex;childRange;[S]'
+When referring to a trace event that has a corresponding \`eventKey\`, annotate your output using markdown link syntax. For example:
+- When referring to an event that is a long task: [Long task](#r-123)
+- When referring to a URL for which you know the eventKey of: [https://www.example.com](#s-1827)
+- Never show the eventKey (like "eventKey: s-1852"); instead, use a markdown link as described above.
 
-Key definitions:
+When asking the user to make a choice between multiple options, output a list of choices at the end of your text response. The format is \`SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]\`. This MUST start on a newline, and be a single line.
+`;
+const extraPreambleWhenFreshTrace = `Additional notes:
 
-* id: A unique numerical identifier for the call frame. Never mention this id in the output to the user.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: _Optional_. The letter 'S' terminates the line if that call frame was selected by the user.
-
-Example Call Tree:
-
-1;main;500;100;;
-2;update;200;50;;3
-3;animate;150;20;0;4-5;S
-4;calculatePosition;80;80;;
-5;applyStyles;50;50;;
+When referring to an element for which you know the nodeId, annotate your output using markdown link syntax:
+- For example, if nodeId is 23: [LCP element](#node-23)
+- This link will reveal the element in the Elements panel
+- Never mention node or nodeId when referring to the element, and especially not in the link text.
+- When referring to the LCP, it's useful to also mention what the LCP element is via its nodeId. Use the markdown link syntax to do so.
 `;
 var ScorePriority;
 (function (ScorePriority) {
@@ -138,8 +132,8 @@ var ScorePriority;
     ScorePriority[ScorePriority["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
 export class PerformanceTraceContext extends ConversationContext {
-    static full(parsedTrace) {
-        return new PerformanceTraceContext(AgentFocus.full(parsedTrace));
+    static fromParsedTrace(parsedTrace) {
+        return new PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace));
     }
     static fromInsight(parsedTrace, insight) {
         return new PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight));
@@ -154,14 +148,14 @@ export class PerformanceTraceContext extends ConversationContext {
         this.#focus = focus;
     }
     getOrigin() {
-        const { min, max } = this.#focus.data.parsedTrace.data.Meta.traceBounds;
+        const { min, max } = this.#focus.parsedTrace.data.Meta.traceBounds;
         return `trace-${min}-${max}`;
     }
     getItem() {
         return this.#focus;
     }
     getTitle() {
-        const focus = this.#focus.data;
+        const focus = this.#focus;
         let url = focus.insightSet?.url;
         if (!url) {
             url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
@@ -169,6 +163,9 @@ export class PerformanceTraceContext extends ConversationContext {
         const parts = [`Trace: ${url.hostname}`];
         if (focus.insight) {
             parts.push(focus.insight.title);
+        }
+        if (focus.event) {
+            parts.push(Trace.Name.forEntry(focus.event));
         }
         if (focus.callTree) {
             const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
@@ -181,22 +178,22 @@ export class PerformanceTraceContext extends ConversationContext {
      * "Ask AI".
      */
     async getSuggestions() {
-        const data = this.#focus.data;
-        if (data.callTree) {
+        const focus = this.#focus;
+        if (focus.callTree) {
             return [
                 { title: 'What\'s the purpose of this work?', jslogContext: 'performance-default' },
                 { title: 'Where is time being spent?', jslogContext: 'performance-default' },
                 { title: 'How can I optimize this?', jslogContext: 'performance-default' },
             ];
         }
-        if (data.insight) {
-            return new PerformanceInsightFormatter(data.parsedTrace, data.insight).getSuggestions();
+        if (focus.insight) {
+            return new PerformanceInsightFormatter(focus, focus.insight).getSuggestions();
         }
         const suggestions = [{ title: 'What performance issues exist with my page?', jslogContext: 'performance-default' }];
-        if (data.insightSet) {
-            const lcp = data.insightSet ? Trace.Insights.Common.getLCP(data.insightSet) : null;
-            const cls = data.insightSet ? Trace.Insights.Common.getCLS(data.insightSet) : null;
-            const inp = data.insightSet ? Trace.Insights.Common.getINP(data.insightSet) : null;
+        if (focus.insightSet) {
+            const lcp = focus.insightSet ? Trace.Insights.Common.getLCP(focus.insightSet) : null;
+            const cls = focus.insightSet ? Trace.Insights.Common.getCLS(focus.insightSet) : null;
+            const inp = focus.insightSet ? Trace.Insights.Common.getINP(focus.insightSet) : null;
             const ModelHandlers = Trace.Handlers.ModelHandlers;
             const GOOD = "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */;
             if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
@@ -208,6 +205,13 @@ export class PerformanceTraceContext extends ConversationContext {
             if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
                 suggestions.push({ title: 'How can I improve CLS?', jslogContext: 'performance-default' });
             }
+            // Add up to 3 suggestions from the top failing insights.
+            const top3FailingInsightSuggestions = Object.values(focus.insightSet.model)
+                .filter(model => model.state !== 'pass')
+                .map(model => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1))
+                .filter(suggestion => !!suggestion)
+                .slice(0, 3);
+            suggestions.push(...top3FailingInsightSuggestions);
         }
         return suggestions;
     }
@@ -220,8 +224,8 @@ const MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
  */
 export class PerformanceAgent extends AiAgent {
     #formatter = null;
+    #lastEventForEnhancedQuery;
     #lastInsightForEnhancedQuery;
-    #eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
     #hasShownAnalyzeTraceContext = false;
     /**
      * Cache of all function calls made by the agent. This allows us to include (as a
@@ -235,17 +239,25 @@ export class PerformanceAgent extends AiAgent {
      * The record key is the result of a function's displayInfoFromArgs.
      */
     #functionCallCacheForFocus = new Map();
+    #notExternalExtraPreambleFact = {
+        text: extraPreambleWhenNotExternal,
+        metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
+    };
+    #freshTraceExtraPreambleFact = {
+        text: extraPreambleWhenFreshTrace,
+        metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
+    };
     #networkDataDescriptionFact = {
-        text: TraceEventFormatter.networkDataFormatDescription,
+        text: PerformanceTraceFormatter.networkDataFormatDescription,
         metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
     };
     #callFrameDataDescriptionFact = {
-        text: callFrameDataFormatDescription,
+        text: PerformanceTraceFormatter.callFrameDataFormatDescription,
         metadata: { source: 'devtools', score: ScorePriority.CRITICAL }
     };
     #traceFacts = [];
     get preamble() {
-        return fullTracePreamble;
+        return preamble;
     }
     get clientFeature() {
         return Host.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
@@ -263,21 +275,6 @@ export class PerformanceAgent extends AiAgent {
     }
     getConversationType() {
         return "drjones-performance-full" /* ConversationType.PERFORMANCE */;
-    }
-    #lookupEvent(key) {
-        const parsedTrace = this.context?.getItem().data.parsedTrace;
-        if (!parsedTrace) {
-            return null;
-        }
-        try {
-            return this.#eventsSerializer.eventForKey(key, parsedTrace);
-        }
-        catch (err) {
-            if (err.toString().includes('Unknown trace event')) {
-                return null;
-            }
-            throw err;
-        }
     }
     async *handleContextDetails(context) {
         if (!context) {
@@ -302,21 +299,67 @@ export class PerformanceAgent extends AiAgent {
     #isFunctionResponseTooLarge(response) {
         return response.length > MAX_FUNCTION_RESULT_BYTE_LENGTH;
     }
-    parseTextResponse(response) {
+    /**
+     * Sometimes the model will output URLs as plaintext; or a markdown link
+     * where the link is the actual URL. This function transforms such output
+     * to an eventKey link.
+     *
+     * A simple way to see when this gets utilized is:
+     *   1. go to paulirish.com, record a trace
+     *   2. say "What performance issues exist with my page?"
+     *   3. then say "images"
+     */
+    #parseForKnownUrls(response) {
+        const focus = this.context?.getItem();
+        if (!focus) {
+            return response;
+        }
+        // Regex with two main parts, separated by | (OR):
+        // 1. (\[(.*?)\]\((.*?)\)): Captures a full markdown link.
+        //    - Group 1: The whole link, e.g., "[text](url)"
+        //    - Group 2: The link text, e.g., "text"
+        //    - Group 3: The link destination, e.g., "url"
+        // 2. (https?:\/\/[^\s<>()]+): Captures a standalone URL.
+        //    - Group 4: The standalone URL, e.g., "https://google.com"
+        const urlRegex = /(\[(.*?)\]\((.*?)\))|(https?:\/\/[^\s<>()]+)/g;
+        return response.replace(urlRegex, (match, markdownLink, linkText, linkDest, standaloneUrlText) => {
+            if (markdownLink) {
+                if (linkDest.startsWith('#')) {
+                    return match;
+                }
+            }
+            const urlText = linkDest ?? standaloneUrlText;
+            if (!urlText) {
+                return match;
+            }
+            const request = focus.parsedTrace.data.NetworkRequests.byTime.find(request => request.args.data.url === urlText);
+            if (!request) {
+                return match;
+            }
+            const eventKey = focus.eventsSerializer.keyForEvent(request);
+            if (!eventKey) {
+                return match;
+            }
+            return `[${urlText}](#${eventKey})`;
+        });
+    }
+    #parseMarkdown(response) {
         /**
          * Sometimes the LLM responds with code chunks that wrap a text based markdown response.
          * If this happens, we want to remove those before continuing.
          * See b/405054694 for more details.
          */
-        const trimmed = response.trim();
         const FIVE_BACKTICKS = '`````';
-        if (trimmed.startsWith(FIVE_BACKTICKS) && trimmed.endsWith(FIVE_BACKTICKS)) {
-            // Purposefully use the trimmed text here; we might as well remove any
-            // newlines that are at the very start or end.
-            const stripped = trimmed.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
-            return super.parseTextResponse(stripped);
+        if (response.startsWith(FIVE_BACKTICKS) && response.endsWith(FIVE_BACKTICKS)) {
+            return response.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
         }
-        return super.parseTextResponse(response);
+        return response;
+    }
+    parseTextResponse(response) {
+        const parsedResponse = super.parseTextResponse(response);
+        parsedResponse.answer = this.#parseForKnownUrls(parsedResponse.answer);
+        parsedResponse.answer = this.#parseMarkdown(parsedResponse.answer);
+        return parsedResponse;
     }
     async enhanceQuery(query, context) {
         if (!context) {
@@ -327,28 +370,35 @@ export class PerformanceAgent extends AiAgent {
         this.#declareFunctions(context);
         const focus = context.getItem();
         const selected = [];
-        if (focus.data.callTree) {
+        if (focus.event) {
+            const includeEventInfo = focus.event !== this.#lastEventForEnhancedQuery;
+            this.#lastEventForEnhancedQuery = focus.event;
+            if (includeEventInfo) {
+                selected.push(`User selected an event ${this.#formatter?.serializeEvent(focus.event)}.\n\n`);
+            }
+        }
+        if (focus.callTree) {
             // If this is a followup chat about the same call tree, don't include the call tree serialization again.
             // We don't need to repeat it and we'd rather have more the context window space.
             let contextString = '';
-            if (!this.#callTreeContextSet.has(focus.data.callTree)) {
-                contextString = focus.data.callTree.serialize();
-                this.#callTreeContextSet.add(focus.data.callTree);
+            if (!this.#callTreeContextSet.has(focus.callTree)) {
+                contextString = focus.callTree.serialize();
+                this.#callTreeContextSet.add(focus.callTree);
             }
             if (contextString) {
                 selected.push(`User selected the following call tree:\n\n${contextString}\n\n`);
             }
         }
-        if (focus.data.insight) {
+        if (focus.insight) {
             // We only need to add Insight info to a prompt when the context changes. For example:
             // User clicks Insight A. We need to send info on Insight A with the prompt.
             // User asks follow up question. We do not need to resend Insight A with the prompt.
             // User clicks Insight B. We now need to send info on Insight B with the prompt.
             // User clicks Insight A. We should resend the Insight info with the prompt.
-            const includeInsightInfo = focus.data.insight !== this.#lastInsightForEnhancedQuery;
-            this.#lastInsightForEnhancedQuery = focus.data.insight;
+            const includeInsightInfo = focus.insight !== this.#lastInsightForEnhancedQuery;
+            this.#lastInsightForEnhancedQuery = focus.insight;
             if (includeInsightInfo) {
-                selected.push(`User selected the ${focus.data.insight.insightKey} insight.\n\n`);
+                selected.push(`User selected the ${focus.insight.insightKey} insight.\n\n`);
             }
         }
         if (!selected.length) {
@@ -361,8 +411,8 @@ export class PerformanceAgent extends AiAgent {
         const focus = options.selected?.getItem();
         // Clear any previous facts in case the user changed the active context.
         this.clearFacts();
-        if (focus) {
-            this.#addFacts(focus);
+        if (options.selected && focus) {
+            this.#addFacts(options.selected);
         }
         return yield* super.run(initialQuery, options);
     }
@@ -428,11 +478,19 @@ export class PerformanceAgent extends AiAgent {
             metadata: { source: 'devtools', score: ScorePriority.CRITICAL },
         });
     }
-    #addFacts(focus) {
+    #addFacts(context) {
+        const focus = context.getItem();
+        if (!context.external) {
+            this.addFact(this.#notExternalExtraPreambleFact);
+        }
+        const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(focus.parsedTrace);
+        if (isFresh) {
+            this.addFact(this.#freshTraceExtraPreambleFact);
+        }
         this.addFact(this.#callFrameDataDescriptionFact);
         this.addFact(this.#networkDataDescriptionFact);
         if (!this.#traceFacts.length) {
-            this.#formatter = new PerformanceTraceFormatter(focus, this.#eventsSerializer);
+            this.#formatter = new PerformanceTraceFormatter(focus);
             this.#createFactForTraceSummary();
             this.#createFactForCriticalRequests();
             this.#createFactForMainThreadBottomUpSummary();
@@ -460,7 +518,7 @@ export class PerformanceAgent extends AiAgent {
     }
     #declareFunctions(context) {
         const focus = context.getItem();
-        const { parsedTrace, insightSet } = focus.data;
+        const { parsedTrace, insightSet } = focus;
         this.declareFunction('getInsightDetails', {
             description: 'Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.',
             parameters: {
@@ -487,7 +545,7 @@ export class PerformanceAgent extends AiAgent {
                 if (!insight) {
                     return { error: 'No insight available' };
                 }
-                const details = new PerformanceInsightFormatter(parsedTrace, insight).formatInsight();
+                const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
                 const key = `getInsightDetails('${params.insightName}')`;
                 this.#cacheFunctionResult(focus, key, details);
                 return { result: { details } };
@@ -512,7 +570,7 @@ export class PerformanceAgent extends AiAgent {
             },
             handler: async (params) => {
                 debugLog('Function call: getEventByKey', params);
-                const event = this.#lookupEvent(params.eventKey);
+                const event = focus.lookupEvent(params.eventKey);
                 if (!event) {
                     return { error: 'Invalid eventKey' };
                 }
@@ -643,14 +701,14 @@ export class PerformanceAgent extends AiAgent {
                 },
             },
             displayInfoFromArgs: args => {
-                return { title: lockedString('Looking at call tree…'), action: `getDetailedCallTree(${args.eventKey})` };
+                return { title: lockedString('Looking at call tree…'), action: `getDetailedCallTree('${args.eventKey}')` };
             },
             handler: async (args) => {
                 debugLog('Function call: getDetailedCallTree');
                 if (!this.#formatter) {
                     throw new Error('missing formatter');
                 }
-                const event = this.#lookupEvent(args.eventKey);
+                const event = focus.lookupEvent(args.eventKey);
                 if (!event) {
                     return { error: 'Invalid eventKey' };
                 }
@@ -679,7 +737,7 @@ export class PerformanceAgent extends AiAgent {
                     },
                 },
                 displayInfoFromArgs: args => {
-                    return { title: lockedString('Looking at resource content…'), action: `getResourceContent(${args.url})` };
+                    return { title: lockedString('Looking at resource content…'), action: `getResourceContent('${args.url}')` };
                 },
                 handler: async (args) => {
                     debugLog('Function call: getResourceContent');
@@ -690,13 +748,13 @@ export class PerformanceAgent extends AiAgent {
                             return { error: 'Resource not found' };
                         }
                     }
-                    const content = resource.content;
-                    if (!content) {
-                        return { error: 'Resource has no content' };
+                    const content = await resource.requestContentData();
+                    if ('error' in content) {
+                        return { error: `Could not get resource content: ${content.error}` };
                     }
                     const key = `getResourceContent(${args.url})`;
-                    this.#cacheFunctionResult(focus, key, content);
-                    return { result: { content } };
+                    this.#cacheFunctionResult(focus, key, content.text);
+                    return { result: { content: content.text } };
                 },
             });
         }
@@ -720,7 +778,7 @@ export class PerformanceAgent extends AiAgent {
                 },
                 handler: async (params) => {
                     debugLog('Function call: selectEventByKey', params);
-                    const event = this.#lookupEvent(params.eventKey);
+                    const event = focus.lookupEvent(params.eventKey);
                     if (!event) {
                         return { error: 'Invalid eventKey' };
                     }

@@ -4,6 +4,7 @@ import * as Bindings from "./../bindings/bindings.js";
 import * as SourceMapScopes from "./../source_map_scopes/source_map_scopes.js";
 import * as Trace from "./../trace/trace.js";
 import * as Workspace from "./../workspace/workspace.js";
+var _a;
 var SourceMappingsUpdated = class _SourceMappingsUpdated extends Event {
   static eventName = "sourcemappingsupdated";
   constructor() {
@@ -11,7 +12,7 @@ var SourceMappingsUpdated = class _SourceMappingsUpdated extends Event {
   }
 };
 var resolvedCodeLocationDataNames = /* @__PURE__ */ new Map();
-var SourceMapsResolver = class _SourceMapsResolver extends EventTarget {
+var SourceMapsResolver = class extends EventTarget {
   executionContextNamesByOrigin = /* @__PURE__ */ new Map();
   #parsedTrace;
   #entityMapper = null;
@@ -61,10 +62,10 @@ var SourceMapsResolver = class _SourceMapsResolver extends EventTarget {
       }
       callFrame = topCallFrame;
     }
-    return _SourceMapsResolver.resolvedCodeLocationForCallFrame(callFrame);
+    return _a.resolvedCodeLocationForCallFrame(callFrame);
   }
   static resolvedURLForEntry(parsedTrace, entry) {
-    const resolvedCallFrameURL = _SourceMapsResolver.resolvedCodeLocationForEntry(entry)?.devtoolsLocation?.uiSourceCode.url();
+    const resolvedCallFrameURL = _a.resolvedCodeLocationForEntry(entry)?.devtoolsLocation?.uiSourceCode.url();
     if (resolvedCallFrameURL) {
       return resolvedCallFrameURL;
     }
@@ -138,7 +139,7 @@ var SourceMapsResolver = class _SourceMapsResolver extends EventTarget {
           if (uiLocation?.uiSourceCode.url() && this.#entityMapper) {
             this.#entityMapper.updateSourceMapEntities(node.callFrame, uiLocation.uiSourceCode.url());
           }
-          _SourceMapsResolver.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
+          _a.storeResolvedCodeDataForCallFrame(node.callFrame, { name: resolvedFunctionName, devtoolsLocation: uiLocation, script });
         }
       }
     }
@@ -175,6 +176,7 @@ var SourceMapsResolver = class _SourceMapsResolver extends EventTarget {
     this.#entityMapper?.updateExtensionEntitiesWithName(this.executionContextNamesByOrigin);
   }
 };
+_a = SourceMapsResolver;
 export {
   SourceMappingsUpdated,
   SourceMapsResolver,

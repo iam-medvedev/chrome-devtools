@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -149,7 +150,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     #validateFolder(rawInput) {
-        const path = EditFileSystemView.#normalizePrefix(rawInput.trim());
+        const path = _a.#normalizePrefix(rawInput.trim());
         if (!path) {
             return { path, status: 2 /* ExcludedFolderStatus.ERROR_NOT_A_PATH */ };
         }
@@ -165,4 +166,5 @@ export class EditFileSystemView extends UI.Widget.VBox {
         return prefix + (prefix[prefix.length - 1] === '/' ? '' : '/');
     }
 }
+_a = EditFileSystemView;
 //# sourceMappingURL=EditFileSystemView.js.map

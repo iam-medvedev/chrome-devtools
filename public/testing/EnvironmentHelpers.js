@@ -189,6 +189,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'monitoring-xhr-enabled', false),
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'custom-network-conditions', [], "array" /* Common.Settings.SettingType.ARRAY */),
         createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'calibrated-cpu-throttling', [], "boolean" /* Common.Settings.SettingType.BOOLEAN */),
+        createSettingValue("" /* Common.Settings.SettingCategory.NONE */, 'gdp.ai-conversation-count', 0),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'ui-theme', 'systemPreferred', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("APPEARANCE" /* Common.Settings.SettingCategory.APPEARANCE */, 'language', 'en-US', "enum" /* Common.Settings.SettingType.ENUM */),
         createSettingValue("PERSISTENCE" /* Common.Settings.SettingCategory.PERSISTENCE */, 'persistence-network-overrides-enabled', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
@@ -222,6 +223,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'show-event-listeners-for-ancestors', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'global-ai-button-click-count', 0),
         createSettingValue("ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */, 'receive-gdp-badges', false),
+        createSettingValue("GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */, 'currentDockState', 'right'),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.

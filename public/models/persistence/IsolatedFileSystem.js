@@ -1,6 +1,7 @@
 // Copyright 2013 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -66,7 +67,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         if (!domFileSystem) {
             return null;
         }
-        const fileSystem = new IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type, automatic);
+        const fileSystem = new _a(manager, path, embedderPath, domFileSystem, type, automatic);
         return await fileSystem.initializeFilePaths().then(() => fileSystem).catch(error => {
             console.error(error);
             return null;
@@ -88,7 +89,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             entry.getMetadata(resolve, errorHandler);
         }
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when getting file metadata \'' + path);
             resolve(null);
         }
@@ -158,7 +159,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return new Promise(resolve => {
             this.domFileSystem.root.getDirectory(path, { create: true }, dirEntry => resolve(dirEntry), error => {
                 this.domFileSystem.root.getFile(path, undefined, () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error" /* PlatformFileSystemEvents.FILE_SYSTEM_ERROR */, i18nString(UIStrings.createDirFailed, { PH1: path })));
-                const errorMessage = IsolatedFileSystem.errorMessage(error);
+                const errorMessage = _a.errorMessage(error);
                 console.error(errorMessage + ' trying to create directory \'' + path + '\'');
                 resolve(null);
             });
@@ -182,7 +183,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
                         resolve(createFileCandidate.call(this, name, (newFileIndex ? newFileIndex + 1 : 1)));
                         return;
                     }
-                    const errorMessage = IsolatedFileSystem.errorMessage(error);
+                    const errorMessage = _a.errorMessage(error);
                     console.error(errorMessage + ' when testing if file exists \'' + (this.path() + '/' + path + '/' + nameCandidate) +
                         '\'');
                     resolve(null);
@@ -204,7 +205,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
          * TODO(jsbell): Update externs replacing DOMError with DOMException. https://crbug.com/496901
          */
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when deleting file \'' + (this.path() + '/' + path) + '\'');
             resolve(false);
         }
@@ -223,7 +224,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
          * TODO(jsbell): Update externs replacing DOMError with DOMException. https://crbug.com/496901
          */
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when deleting directory \'' + (this.path() + '/' + path) + '\'');
             resolve(false);
         }
@@ -238,7 +239,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
                     resolve(null);
                     return;
                 }
-                const errorMessage = IsolatedFileSystem.errorMessage(error);
+                const errorMessage = _a.errorMessage(error);
                 console.error(errorMessage + ' when getting content for file \'' + (this.path() + '/' + path) + '\'');
                 resolve(null);
             }
@@ -295,7 +296,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         }
         function errorHandler(error) {
             // @ts-expect-error TODO(crbug.com/1172300) Properly type this after jsdoc to ts migration
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when setting content for file \'' + (this.path() + '/' + path) + '\'');
             resolve(undefined);
         }
@@ -335,7 +336,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             callback(true, entry.name);
         }
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when renaming file \'' + (this.path() + '/' + path) + '\' to \'' + newName + '\'');
             callback(false);
         }
@@ -357,7 +358,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         }
         dirReader.readEntries(innerCallback, errorHandler);
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when reading directory \'' + dirEntry.fullPath + '\'');
             callback([]);
         }
@@ -368,7 +369,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
             this.readDirectory(dirEntry, callback);
         }
         function errorHandler(error) {
-            const errorMessage = IsolatedFileSystem.errorMessage(error);
+            const errorMessage = _a.errorMessage(error);
             console.error(errorMessage + ' when requesting entry \'' + path + '\'');
             callback([]);
         }
@@ -450,6 +451,7 @@ export class IsolatedFileSystem extends PlatformFileSystem {
         return this.type() !== PlatformFileSystemType.OVERRIDES;
     }
 }
+_a = IsolatedFileSystem;
 /**
  * @returns Tries to determine the mime type for this Blob:
  *   1) If blob.type is non-empty, we return that.

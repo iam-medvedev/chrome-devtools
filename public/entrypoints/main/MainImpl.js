@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
+var _a;
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
  * Copyright (C) 2007 Matt Lilek (pewtermoose@gmail.com).
@@ -122,7 +123,7 @@ export class MainImpl {
     #readyForTestPromise = Promise.withResolvers();
     #veStartPromise;
     constructor() {
-        MainImpl.instanceForTest = this;
+        _a.instanceForTest = this;
         void this.#loaded();
     }
     static time(label) {
@@ -321,7 +322,7 @@ export class MainImpl {
         }
     }
     async #createAppUI() {
-        MainImpl.time('Main._createAppUI');
+        _a.time('Main._createAppUI');
         // Request filesystems early, we won't create connections until callback is fired. Things will happen in parallel.
         const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
         isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, event => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
@@ -423,7 +424,12 @@ export class MainImpl {
         this.#registerMessageSinkListener();
         // Initialize `GDPClient` and `UserBadges` for Google Developer Program integration
         if (Host.GdpClient.isGdpProfilesAvailable()) {
-            void Host.GdpClient.GdpClient.instance().initialize();
+            void Host.GdpClient.GdpClient.instance().initialize().then(({ hasProfile, isEligible }) => {
+                const contextString = hasProfile ? 'has-profile' :
+                    isEligible ? 'no-profile-and-eligible' :
+                        'no-profile-and-not-eligible';
+                void VisualLogging.logFunctionCall('gdp-client-initialize', contextString);
+            });
             void Badges.UserBadges.instance().initialize();
             Badges.UserBadges.instance().addEventListener("BadgeTriggered" /* Badges.Events.BADGE_TRIGGERED */, async (ev) => {
                 loadedPanelCommonModule ??= await import('../../panels/common/common.js');
@@ -431,7 +437,7 @@ export class MainImpl {
                 void badgeNotification.present(ev.data);
             });
         }
-        MainImpl.timeEnd('Main._createAppUI');
+        _a.timeEnd('Main._createAppUI');
         const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
         if (!appProvider) {
             throw new Error('Unable to boot DevTools, as the appprovider is missing');
@@ -439,7 +445,7 @@ export class MainImpl {
         await this.#showAppUI(await appProvider.loadAppProvider());
     }
     async #showAppUI(appProvider) {
-        MainImpl.time('Main._showAppUI');
+        _a.time('Main._showAppUI');
         const app = appProvider.createApp();
         // It is important to kick controller lifetime after apps are instantiated.
         UI.DockController.DockController.instance().initialize();
@@ -467,10 +473,10 @@ export class MainImpl {
         UI.DockController.DockController.instance().announceDockLocation();
         // Allow UI cycles to repaint prior to creating connection.
         window.setTimeout(this.#initializeTarget.bind(this), 0);
-        MainImpl.timeEnd('Main._showAppUI');
+        _a.timeEnd('Main._showAppUI');
     }
     async #initializeTarget() {
-        MainImpl.time('Main._initializeTarget');
+        _a.time('Main._initializeTarget');
         // We rely on having the early initialization runnables registered in Common when an app loads its
         // modules, so that we don't have to exhaustively check the app DevTools is running as to
         // start the applicable runnables.
@@ -484,7 +490,7 @@ export class MainImpl {
         // Asynchronously run the extensions.
         window.setTimeout(this.#lateInitialization.bind(this), 100);
         await this.#maybeInstallVeInspectionBinding();
-        MainImpl.timeEnd('Main._initializeTarget');
+        _a.timeEnd('Main._initializeTarget');
     }
     async #maybeInstallVeInspectionBinding() {
         const primaryPageTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -518,7 +524,7 @@ export class MainImpl {
         }
     }
     async #lateInitialization() {
-        MainImpl.time('Main._lateInitialization');
+        _a.time('Main._lateInitialization');
         Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
         const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
             const runnable = await lateInitializationLoader();
@@ -541,7 +547,7 @@ export class MainImpl {
                 Common.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
             }
         }
-        MainImpl.timeEnd('Main._lateInitialization');
+        _a.timeEnd('Main._lateInitialization');
     }
     readyForTest() {
         return this.#readyForTestPromise.promise;
@@ -607,6 +613,7 @@ export class MainImpl {
     }
     static instanceForTest = null;
 }
+_a = MainImpl;
 // @ts-expect-error Exported for Tests.js
 globalThis.Main = globalThis.Main || {};
 // @ts-expect-error Exported for Tests.js

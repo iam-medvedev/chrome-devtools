@@ -327,8 +327,10 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
                         text: noLogging ? i18nString(UIStrings.codeSuggestionsSendDataNoLogging) :
                             i18nString(UIStrings.codeSuggestionsSendData)
                     }],
-                // TODO: Add a relevant link
-                learnMoreLink: { url: '', linkJSLogContext: 'learn-more.code-completion' },
+                learnMoreLink: {
+                    url: ' https://developers.chrome.com/docs/devtools/ai-assistance/code-completion',
+                    linkJSLogContext: 'learn-more.code-completion'
+                },
                 settingExpandState: {
                     isSettingExpanded: false,
                     expandSettingJSLogContext: 'code-completion.accordion',
@@ -517,8 +519,9 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
           .checked=${Boolean(setting.get()) && !isDisabled}
           .jslogContext=${setting.name || ''}
           .disabled=${isDisabled}
+          .label=${disabledReasonsJoined || settingData.enableSettingText}
+          data-testid=${settingData.enableSettingText}
           @switchchange=${this.#toggleSetting.bind(this, setting)}
-          aria-label=${disabledReasonsJoined || settingData.enableSettingText}
         ></devtools-switch>
       </div>
       <div class=${classMap(detailsClasses)}>

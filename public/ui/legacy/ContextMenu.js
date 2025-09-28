@@ -1,6 +1,7 @@
 // Copyright 2009 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Host from '../../core/host/host.js';
 import * as Root from '../../core/root/root.js';
 import * as Buttons from '../components/buttons/buttons.js';
@@ -564,7 +565,7 @@ export class ContextMenu extends SubMenu {
          * @param event The event containing the new preference.
          */
         function setUseSoftMenu(event) {
-            ContextMenu.useSoftMenu = event.data;
+            _a.useSoftMenu = event.data;
         }
     }
     /**
@@ -575,7 +576,7 @@ export class ContextMenu extends SubMenu {
     static installHandler(doc) {
         doc.body.addEventListener('contextmenu', handler, false);
         function handler(event) {
-            const contextMenu = new ContextMenu(event);
+            const contextMenu = new _a(event);
             void contextMenu.show();
         }
     }
@@ -613,17 +614,17 @@ export class ContextMenu extends SubMenu {
      * and then displaying either a soft or native menu.
      */
     async show() {
-        ContextMenu.pendingMenu = this;
+        _a.pendingMenu = this;
         this.event.consume(true);
         const loadedProviders = await Promise.all(this.pendingTargets.map(async (target) => {
             const providers = await loadApplicableRegisteredProviders(target);
             return { target, providers };
         }));
         // After loading all providers, the contextmenu might be hidden again, so bail out.
-        if (ContextMenu.pendingMenu !== this) {
+        if (_a.pendingMenu !== this) {
             return;
         }
-        ContextMenu.pendingMenu = null;
+        _a.pendingMenu = null;
         for (const { target, providers } of loadedProviders) {
             for (const provider of providers) {
                 provider.appendApplicableItems(this.event, this, target);
@@ -664,7 +665,7 @@ export class ContextMenu extends SubMenu {
         }
         const menuObject = this.buildMenuDescriptors();
         const ownerDocument = this.eventTarget.ownerDocument;
-        if (this.useSoftMenu || ContextMenu.useSoftMenu ||
+        if (this.useSoftMenu || _a.useSoftMenu ||
             Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
             this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, undefined, this.onSoftMenuClosed, this.loggableParent);
             // let soft context menu focus on the first item when the event is triggered by a non-mouse event
@@ -803,6 +804,7 @@ export class ContextMenu extends SubMenu {
         'footer'
     ];
 }
+_a = ContextMenu;
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
 /**
  * @property jslogContext - Reflects the `"jslogContext"` attribute.

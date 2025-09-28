@@ -185,6 +185,7 @@ var Plugin = class {
 // gen/front_end/panels/sources/AiCodeCompletionPlugin.js
 var AI_CODE_COMPLETION_CHARACTER_LIMIT = 2e4;
 var DISCLAIMER_TOOLTIP_ID = "sources-ai-code-completion-disclaimer-tooltip";
+var SPINNER_TOOLTIP_ID = "sources-ai-code-completion-spinner-tooltip";
 var CITATIONS_TOOLTIP_ID = "sources-ai-code-completion-citations-tooltip";
 var AiCodeCompletionPlugin = class extends Plugin {
   #aidaClient;
@@ -220,6 +221,8 @@ var AiCodeCompletionPlugin = class extends Plugin {
     if (showTeaser) {
       this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
     }
+    this.#aiCodeCompletionDisclaimerContainer.classList.add("ai-code-completion-disclaimer-container");
+    this.#aiCodeCompletionDisclaimerContainer.style.paddingInline = "var(--sys-size-3)";
   }
   static accepts(uiSourceCode) {
     return uiSourceCode.contentType().hasScripts() || uiSourceCode.contentType().hasStyleSheets();
@@ -256,6 +259,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     if (this.#teaser) {
       if (update.docChanged) {
         update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
+        window.clearTimeout(this.#teaserDisplayTimeout);
         this.#addTeaserPluginToCompartment(update.view);
       } else if (update.selectionSet && update.state.doc.length > 0) {
         update.view.dispatch({ effects: this.#teaserCompartment.reconfigure([]) });
@@ -336,10 +340,6 @@ var AiCodeCompletionPlugin = class extends Plugin {
     }
   }
   #addTeaserPluginToCompartment = Common.Debouncer.debounce((view) => {
-    if (this.#teaserDisplayTimeout) {
-      window.clearTimeout(this.#teaserDisplayTimeout);
-      this.#teaserDisplayTimeout = void 0;
-    }
     this.#teaserDisplayTimeout = window.setTimeout(() => {
       this.#addTeaserPluginToCompartmentImmediate(view);
     }, AiCodeCompletion.AiCodeCompletion.DELAY_BEFORE_SHOWING_RESPONSE_MS);
@@ -376,6 +376,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     }
     this.#aiCodeCompletionDisclaimer = new PanelCommon.AiCodeCompletionDisclaimer();
     this.#aiCodeCompletionDisclaimer.disclaimerTooltipId = DISCLAIMER_TOOLTIP_ID;
+    this.#aiCodeCompletionDisclaimer.spinnerTooltipId = SPINNER_TOOLTIP_ID;
     this.#aiCodeCompletionDisclaimer.show(this.#aiCodeCompletionDisclaimerContainer, void 0, true);
   }
   #createAiCodeCompletionCitationsToolbar() {
@@ -4158,6 +4159,7 @@ import * as Host9 from "./../../core/host/host.js";
 import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform13 from "./../../core/platform/platform.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
+import * as Badges2 from "./../../models/badges/badges.js";
 import * as Bindings9 from "./../../models/bindings/bindings.js";
 import * as Breakpoints3 from "./../../models/breakpoints/breakpoints.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
@@ -4195,6 +4197,7 @@ import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings8 from "./../../models/bindings/bindings.js";
 import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
 import * as Extensions2 from "./../../models/extensions/extensions.js";
@@ -6643,11 +6646,16 @@ var sourcesView_css_default = `/*
 
 #sources-panel-sources-view .sources-toolbar {
   display: flex;
-  flex: 0 0 27px;
+  flex: 0 0 auto;
   background-color: var(--sys-color-cdt-base-container);
   border-top: 1px solid var(--sys-color-divider);
   overflow: hidden;
   z-index: 0;
+  align-items: flex-end;
+
+  devtools-toolbar:first-of-type {
+    flex-wrap: wrap;
+  }
 }
 
 .source-frame-debugger-script {
@@ -9479,6 +9487,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     } else if (!this.#paused) {
       UI18.Context.Context.instance().setFlavor(SDK11.Target.Target, debuggerModel.target());
     }
+    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.DEBUGGER_PAUSED);
   }
   debugInfoAttached(event) {
     const { debuggerModel } = event.data;
@@ -10011,7 +10020,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     } else if (position === "bottom") {
       vertically = true;
     } else {
-      vertically = UI18.InspectorView.InspectorView.instance().element.offsetWidth < 680;
+      vertically = this.splitWidget.element.offsetWidth < 680;
     }
     if (this.sidebarPaneView && vertically === !this.splitWidget.isVertical()) {
       return;
@@ -11629,6 +11638,9 @@ var DebuggerPlugin = class extends Plugin {
       /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */
     );
     this.breakpointWasSetForTest(lineNumber, columnNumber, condition, enabled);
+    if (bp) {
+      Badges2.UserBadges.instance().recordAction(Badges2.BadgeAction.BREAKPOINT_ADDED);
+    }
     return bp;
   }
   breakpointWasSetForTest(_lineNumber, _columnNumber, _condition, _enabled) {
@@ -14236,6 +14248,7 @@ li.watch-expression-editing::before {
 /*# sourceURL=${import.meta.resolve("./watchExpressionsSidebarPane.css")} */`;
 
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
+var _a;
 var UIStrings25 = {
   /**
    * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
@@ -14452,7 +14465,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     contextMenu.debugSection().appendAction("sources.add-to-watch");
   }
 };
-var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.ObjectWrapper {
+var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
   #treeElement;
   nameElement;
   valueElement;
@@ -14494,7 +14507,7 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
     return await executionContext.evaluate(
       {
         expression,
-        objectGroup: _WatchExpression.watchObjectGroupId,
+        objectGroup: _a.watchObjectGroupId,
         includeCommandLineAPI: false,
         silent: true,
         returnByValue: false,
@@ -14695,6 +14708,7 @@ var WatchExpression = class _WatchExpression extends Common19.ObjectWrapper.Obje
   }
   static watchObjectGroupId = "watch-group";
 };
+_a = WatchExpression;
 export {
   AddSourceMapURLDialog_exports as AddSourceMapURLDialog,
   AiCodeCompletionPlugin_exports as AiCodeCompletionPlugin,

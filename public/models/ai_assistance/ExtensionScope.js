@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
@@ -212,18 +213,18 @@ export class ExtensionScope {
             if (!matchedStyles) {
                 throw new Error('No matching styles');
             }
-            const styleRule = ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
+            const styleRule = _a.getStyleRuleFromMatchesStyles(matchedStyles);
             if (!styleRule) {
                 throw new Error('No style rule found');
             }
-            const selector = ExtensionScope.getSelectorsFromStyleRule(styleRule, matchedStyles);
+            const selector = _a.getSelectorsFromStyleRule(styleRule, matchedStyles);
             if (!selector) {
                 throw new Error('No selector found');
             }
             return {
                 selector,
-                simpleSelector: ExtensionScope.getSelectorForNode(node),
-                sourceLocation: ExtensionScope.getSourceLocation(styleRule),
+                simpleSelector: _a.getSelectorForNode(node),
+                sourceLocation: _a.getSourceLocation(styleRule),
             };
         }
         catch {
@@ -231,7 +232,7 @@ export class ExtensionScope {
         }
         // Fallback
         return {
-            selector: ExtensionScope.getSelectorForNode(node),
+            selector: _a.getSelectorForNode(node),
         };
     }
     async #bindingCalled(executionContext, event) {
@@ -320,4 +321,5 @@ export class ExtensionScope {
         return sanitizedStyles;
     }
 }
+_a = ExtensionScope;
 //# sourceMappingURL=ExtensionScope.js.map

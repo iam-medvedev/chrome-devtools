@@ -148,7 +148,7 @@ var EventsSerializer = class _EventsSerializer {
     if (_EventsSerializer.isLegacyTimelineFrameKey(eventValues)) {
       const event = parsedTrace.data.Frames.frames.at(eventValues.rawIndex);
       if (!event) {
-        throw new Error(`Could not find frame with index ${eventValues.rawIndex}`);
+        throw new Error(`Unknown trace event. Could not find frame with index ${eventValues.rawIndex}`);
       }
       return event;
     }
@@ -156,7 +156,7 @@ var EventsSerializer = class _EventsSerializer {
       const syntheticEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getSyntheticTraces();
       const syntheticEvent = syntheticEvents.at(eventValues.rawIndex);
       if (!syntheticEvent) {
-        throw new Error(`Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
+        throw new Error(`Unknown trace event. Attempted to get a synthetic event from an unknown raw event index: ${eventValues.rawIndex}`);
       }
       return syntheticEvent;
     }
@@ -164,7 +164,7 @@ var EventsSerializer = class _EventsSerializer {
       const rawEvents = Helpers3.SyntheticEvents.SyntheticEventsManager.getActiveManager().getRawTraceEvents();
       return rawEvents[eventValues.rawIndex];
     }
-    throw new Error(`Unknown trace event serializable key values: ${eventValues.join("-")}`);
+    throw new Error(`Unknown trace event. Serializable key values: ${eventValues.join("-")}`);
   }
   static isProfileCallKey(key) {
     return key.type === "p";
@@ -567,6 +567,7 @@ import * as Helpers4 from "./helpers/helpers.js";
 import * as Insights from "./insights/insights.js";
 import * as Lantern2 from "./lantern/lantern.js";
 import * as Types3 from "./types/types.js";
+var _a;
 var TraceParseProgressEvent = class _TraceParseProgressEvent extends Event {
   data;
   static eventName = "traceparseprogress";
@@ -581,7 +582,7 @@ function calculateProgress(value, phase) {
   }
   return value * phase;
 }
-var TraceProcessor = class _TraceProcessor extends EventTarget {
+var TraceProcessor = class extends EventTarget {
   // We force the Meta handler to be enabled, so the TraceHandlers type here is
   // the model handlers the user passes in and the Meta handler.
   #traceHandlers;
@@ -590,7 +591,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
   #data = null;
   #insights = null;
   static createWithAllHandlers() {
-    return new _TraceProcessor(Handlers3.ModelHandlers, Types3.Configuration.defaults());
+    return new _a(Handlers3.ModelHandlers, Types3.Configuration.defaults());
   }
   /**
    * This function is kept for testing with `stub`.
@@ -888,7 +889,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
       urlString = data.Meta.finalDisplayUrlByNavigationId.get("") ?? data.Meta.mainFrameURL;
     }
     const insightSetModel = {};
-    for (const [name, insight] of Object.entries(_TraceProcessor.getInsightRunners())) {
+    for (const [name, insight] of Object.entries(_a.getInsightRunners())) {
       let model;
       try {
         logger?.start(`insights:${name}`);
@@ -1003,6 +1004,7 @@ var TraceProcessor = class _TraceProcessor extends EventTarget {
     this.#computeInsightSet(data, context);
   }
 };
+_a = TraceProcessor;
 function sortHandlers(traceHandlers) {
   const sortedMap = /* @__PURE__ */ new Map();
   const visited = /* @__PURE__ */ new Set();

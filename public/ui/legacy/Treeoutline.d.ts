@@ -199,7 +199,7 @@ export declare class TreeSearch<NodeT extends TreeNode<NodeT>, SearchResultT ext
     reset(): void;
     currentMatch(): SearchResultT | undefined;
     getResults(node: NodeT): SearchResultT[];
-    highlight(ranges: TextUtils.TextRange.SourceRange[], selectedRange: TextUtils.TextRange.SourceRange | undefined): ReturnType<typeof Lit.Directives.ref>;
+    static highlight(ranges: TextUtils.TextRange.SourceRange[], selectedRange: TextUtils.TextRange.SourceRange | undefined): ReturnType<typeof Lit.Directives.ref>;
     updateSearchableView(view: SearchableView): void;
     next(): SearchResultT | undefined;
     prev(): SearchResultT | undefined;
@@ -277,7 +277,7 @@ export declare class TreeViewElement extends HTMLElementWithLightDOMTemplate {
     constructor();
     getInternalTreeOutlineForTest(): TreeOutlineInShadow;
     protected updateNode(node: Node, attributeName: string | null): void;
-    protected addNodes(nodes: NodeList | Node[]): void;
+    protected addNodes(nodes: NodeList | Node[], nextSibling?: Node | null): void;
     protected removeNodes(nodes: NodeList): void;
     set hideOverflow(hide: boolean);
     get hideOverflow(): boolean;

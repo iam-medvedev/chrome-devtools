@@ -285,6 +285,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         if (!tab) {
             return false;
         }
+        this.lastSelectedOverflowTab = tab;
         const eventData = {
             prevTabId: this.currentTab ? this.currentTab.id : undefined,
             tabId: id,
@@ -595,7 +596,6 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         }
     }
     dropDownMenuItemSelected(tab) {
-        this.lastSelectedOverflowTab = tab;
         this.selectTab(tab.id, true, true);
     }
     totalWidth() {

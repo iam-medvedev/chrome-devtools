@@ -307,6 +307,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     directSocketInfo;
     #directSocketChunks = [];
     #isIpProtectionUsed;
+    #isAdRelated;
     constructor(requestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         super();
         this.#requestId = requestId;
@@ -318,6 +319,7 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
         this.#initiator = initiator;
         this.#hasUserGesture = hasUserGesture;
         this.#isIpProtectionUsed = false;
+        this.#isAdRelated = false;
     }
     static create(backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture) {
         return new NetworkRequest(backendRequestId, backendRequestId, url, documentURL, frameId, loaderId, initiator, hasUserGesture);
@@ -1421,6 +1423,12 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     isIpProtectionUsed() {
         return this.#isIpProtectionUsed;
+    }
+    setIsAdRelated(isAdRelated) {
+        this.#isAdRelated = isAdRelated;
+    }
+    isAdRelated() {
+        return this.#isAdRelated;
     }
     getAssociatedData(key) {
         return this.#associatedData.get(key) || null;

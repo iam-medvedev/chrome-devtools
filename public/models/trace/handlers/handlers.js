@@ -1812,7 +1812,6 @@ var syntheticEvents = [];
 var measureTraceByTraceId = /* @__PURE__ */ new Map();
 var performanceMeasureEvents = [];
 var performanceMarkEvents = [];
-var pairedPerformanceMeasures = [];
 var consoleTimings = [];
 var timestampEvents = [];
 function reset11() {
@@ -1821,7 +1820,6 @@ function reset11() {
   performanceMarkEvents = [];
   consoleTimings = [];
   timestampEvents = [];
-  pairedPerformanceMeasures = [];
   measureTraceByTraceId = /* @__PURE__ */ new Map();
 }
 var resourceTimingNames = [
@@ -1932,57 +1930,15 @@ async function finalize11() {
   syntheticEvents = Helpers8.Trace.createMatchedSortedSyntheticEvents(asyncEvents);
   syntheticEvents = syntheticEvents.sort((a, b) => userTimingComparator(a, b, [...syntheticEvents]));
   timestampEvents = timestampEvents.sort((a, b) => userTimingComparator(a, b, [...timestampEvents]));
-  pairedPerformanceMeasures = pairPerformanceMeasureEvents(performanceMeasureEvents);
-  pairedPerformanceMeasures = pairedPerformanceMeasures.sort((a, b) => userTimingComparator(a, b, [...pairedPerformanceMeasures]));
 }
 function data11() {
   return {
-    performanceMeasures: pairedPerformanceMeasures,
     consoleTimings: syntheticEvents.filter((e) => e.cat === "blink.console"),
+    performanceMeasures: syntheticEvents.filter((e) => e.cat === "blink.user_timing"),
     performanceMarks: performanceMarkEvents,
     timestampEvents,
     measureTraceByTraceId
   };
-}
-function pairPerformanceMeasureEvents(events) {
-  const pairs = [];
-  const beginEventsById = /* @__PURE__ */ new Map();
-  Helpers8.Trace.sortTraceEventsInPlace(events);
-  for (const event of events) {
-    const id = Helpers8.Trace.getSyntheticId(event);
-    if (!id) {
-      continue;
-    }
-    if (Types12.Events.isPerformanceMeasureBegin(event)) {
-      const byId = beginEventsById.get(id) ?? [];
-      byId.push(event);
-      beginEventsById.set(id, byId);
-    } else {
-      const beginEventsWithMatchingId = beginEventsById.get(id) ?? [];
-      const beginEvent = beginEventsWithMatchingId.pop();
-      if (!beginEvent) {
-        continue;
-      }
-      const syntheticEvent = Helpers8.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
-        rawSourceEvent: beginEvent,
-        cat: event.cat,
-        ph: event.ph,
-        pid: event.pid,
-        tid: event.tid,
-        id,
-        // Both events have the same name, so it doesn't matter which we pick to
-        // use as the description
-        name: beginEvent.name,
-        dur: Types12.Timing.Micro(event.ts - beginEvent.ts),
-        ts: beginEvent.ts,
-        args: {
-          data: { beginEvent, endEvent: event }
-        }
-      });
-      pairs.push(syntheticEvent);
-    }
-  }
-  return pairs;
 }
 
 // gen/front_end/models/trace/handlers/ExtensionTraceDataHandler.js
@@ -4054,7 +4010,7 @@ function handleEvent26(event) {
   const getOrMakeScript = (isolate, scriptIdAsNumber) => {
     const scriptId = String(scriptIdAsNumber);
     const key = `${isolate}.${scriptId}`;
-    return Platform14.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: "", ts: 0 }));
+    return Platform14.MapUtilities.getWithDefault(scriptById, key, () => ({ isolate, scriptId, frame: "", ts: event.ts }));
   };
   if (Types27.Events.isRundownScriptCompiled(event) && event.args.data) {
     const { isolate, scriptId, frame } = event.args.data;
@@ -4067,6 +4023,7 @@ function handleEvent26(event) {
     const { isolate, scriptId, url, sourceUrl, sourceMapUrl, sourceMapUrlElided } = event.args.data;
     const script = getOrMakeScript(isolate, scriptId);
     script.url = url;
+    script.ts = event.ts;
     if (sourceUrl) {
       script.sourceUrl = sourceUrl;
     }
@@ -4336,10 +4293,11 @@ __export(UserInteractionsHandler_exports, {
   deps: () => deps15,
   finalize: () => finalize28,
   handleEvent: () => handleEvent28,
-  removeNestedInteractions: () => removeNestedInteractions,
+  removeNestedInteractionsAndSetProcessingTime: () => removeNestedInteractionsAndSetProcessingTime,
   reset: () => reset28,
   scoreClassificationForInteractionToNextPaint: () => scoreClassificationForInteractionToNextPaint
 });
+import * as Platform15 from "./../../../core/platform/platform.js";
 import * as Helpers17 from "./../helpers/helpers.js";
 import * as Types29 from "./../types/types.js";
 var beginCommitCompositorFrameEvents = [];
@@ -4350,14 +4308,14 @@ var INP_MEDIUM_TIMING = Helpers17.Timing.milliToMicro(Types29.Timing.Milli(500))
 var longestInteractionEvent = null;
 var interactionEvents = [];
 var interactionEventsWithNoNesting = [];
-var eventTimingEndEventsById = /* @__PURE__ */ new Map();
 var eventTimingStartEventsForInteractions = [];
+var eventTimingEndEventsForInteractions = [];
 function reset28() {
   beginCommitCompositorFrameEvents = [];
   parseMetaViewportEvents = [];
   interactionEvents = [];
   eventTimingStartEventsForInteractions = [];
-  eventTimingEndEventsById = /* @__PURE__ */ new Map();
+  eventTimingEndEventsForInteractions = [];
   interactionEventsWithNoNesting = [];
   longestInteractionEvent = null;
 }
@@ -4374,7 +4332,7 @@ function handleEvent28(event) {
     return;
   }
   if (Types29.Events.isEventTimingEnd(event)) {
-    eventTimingEndEventsById.set(event.id, event);
+    eventTimingEndEventsForInteractions.push(event);
   }
   if (!event.args.data || !Types29.Events.isEventTimingStart(event)) {
     return;
@@ -4408,7 +4366,7 @@ function categoryOfInteraction(interaction) {
   }
   return "OTHER";
 }
-function removeNestedInteractions(interactions) {
+function removeNestedInteractionsAndSetProcessingTime(interactions) {
   const earliestEventForEndTimePerCategory = {
     POINTER: /* @__PURE__ */ new Map(),
     KEYBOARD: /* @__PURE__ */ new Map(),
@@ -4459,51 +4417,61 @@ function writeSyntheticTimespans(event) {
 }
 async function finalize28() {
   const { navigationsByFrameId: navigationsByFrameId2 } = data5();
-  for (const interactionStartEvent of eventTimingStartEventsForInteractions) {
-    const endEvent = eventTimingEndEventsById.get(interactionStartEvent.id);
-    if (!endEvent) {
-      continue;
+  const beginAndEndEvents = Platform15.ArrayUtilities.mergeOrdered(eventTimingStartEventsForInteractions, eventTimingEndEventsForInteractions, Helpers17.Trace.eventTimeComparator);
+  const beginEventById = /* @__PURE__ */ new Map();
+  for (const event of beginAndEndEvents) {
+    if (Types29.Events.isEventTimingStart(event)) {
+      const forId = beginEventById.get(event.id) ?? [];
+      forId.push(event);
+      beginEventById.set(event.id, forId);
+    } else if (Types29.Events.isEventTimingEnd(event)) {
+      const beginEvents = beginEventById.get(event.id) ?? [];
+      const beginEvent = beginEvents.pop();
+      if (!beginEvent) {
+        continue;
+      }
+      const { type, interactionId, timeStamp, processingStart, processingEnd } = beginEvent.args.data;
+      if (!type || !interactionId || !timeStamp || !processingStart || !processingEnd) {
+        continue;
+      }
+      const processingStartRelativeToTraceTime = Types29.Timing.Micro(Helpers17.Timing.milliToMicro(processingStart) - Helpers17.Timing.milliToMicro(timeStamp) + beginEvent.ts);
+      const processingEndRelativeToTraceTime = Types29.Timing.Micro(Helpers17.Timing.milliToMicro(processingEnd) - Helpers17.Timing.milliToMicro(timeStamp) + beginEvent.ts);
+      const frameId = beginEvent.args.frame ?? beginEvent.args.data.frame ?? "";
+      const navigation = Helpers17.Trace.getNavigationForTraceEvent(beginEvent, frameId, navigationsByFrameId2);
+      const navigationId = navigation?.args.data?.navigationId;
+      const interactionEvent = Helpers17.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
+        // Use the start event to define the common fields.
+        rawSourceEvent: beginEvent,
+        cat: beginEvent.cat,
+        name: beginEvent.name,
+        pid: beginEvent.pid,
+        tid: beginEvent.tid,
+        ph: beginEvent.ph,
+        processingStart: processingStartRelativeToTraceTime,
+        processingEnd: processingEndRelativeToTraceTime,
+        // These will be set in writeSyntheticTimespans()
+        inputDelay: Types29.Timing.Micro(-1),
+        mainThreadHandling: Types29.Timing.Micro(-1),
+        presentationDelay: Types29.Timing.Micro(-1),
+        args: {
+          data: {
+            beginEvent,
+            endEvent: event,
+            frame: frameId,
+            navigationId
+          }
+        },
+        ts: beginEvent.ts,
+        dur: Types29.Timing.Micro(event.ts - beginEvent.ts),
+        type: beginEvent.args.data.type,
+        interactionId: beginEvent.args.data.interactionId
+      });
+      writeSyntheticTimespans(interactionEvent);
+      interactionEvents.push(interactionEvent);
     }
-    const { type, interactionId, timeStamp, processingStart, processingEnd } = interactionStartEvent.args.data;
-    if (!type || !interactionId || !timeStamp || !processingStart || !processingEnd) {
-      continue;
-    }
-    const processingStartRelativeToTraceTime = Types29.Timing.Micro(Helpers17.Timing.milliToMicro(processingStart) - Helpers17.Timing.milliToMicro(timeStamp) + interactionStartEvent.ts);
-    const processingEndRelativeToTraceTime = Types29.Timing.Micro(Helpers17.Timing.milliToMicro(processingEnd) - Helpers17.Timing.milliToMicro(timeStamp) + interactionStartEvent.ts);
-    const frameId = interactionStartEvent.args.frame ?? interactionStartEvent.args.data.frame ?? "";
-    const navigation = Helpers17.Trace.getNavigationForTraceEvent(interactionStartEvent, frameId, navigationsByFrameId2);
-    const navigationId = navigation?.args.data?.navigationId;
-    const interactionEvent = Helpers17.SyntheticEvents.SyntheticEventsManager.registerSyntheticEvent({
-      // Use the start event to define the common fields.
-      rawSourceEvent: interactionStartEvent,
-      cat: interactionStartEvent.cat,
-      name: interactionStartEvent.name,
-      pid: interactionStartEvent.pid,
-      tid: interactionStartEvent.tid,
-      ph: interactionStartEvent.ph,
-      processingStart: processingStartRelativeToTraceTime,
-      processingEnd: processingEndRelativeToTraceTime,
-      // These will be set in writeSyntheticTimespans()
-      inputDelay: Types29.Timing.Micro(-1),
-      mainThreadHandling: Types29.Timing.Micro(-1),
-      presentationDelay: Types29.Timing.Micro(-1),
-      args: {
-        data: {
-          beginEvent: interactionStartEvent,
-          endEvent,
-          frame: frameId,
-          navigationId
-        }
-      },
-      ts: interactionStartEvent.ts,
-      dur: Types29.Timing.Micro(endEvent.ts - interactionStartEvent.ts),
-      type: interactionStartEvent.args.data.type,
-      interactionId: interactionStartEvent.args.data.interactionId
-    });
-    writeSyntheticTimespans(interactionEvent);
-    interactionEvents.push(interactionEvent);
   }
-  interactionEventsWithNoNesting.push(...removeNestedInteractions(interactionEvents));
+  Helpers17.Trace.sortTraceEventsInPlace(interactionEvents);
+  interactionEventsWithNoNesting.push(...removeNestedInteractionsAndSetProcessingTime(interactionEvents));
   for (const interactionEvent of interactionEventsWithNoNesting) {
     if (!longestInteractionEvent || longestInteractionEvent.dur < interactionEvent.dur) {
       longestInteractionEvent = interactionEvent;
@@ -4546,7 +4514,7 @@ __export(WarningsHandler_exports, {
   handleEvent: () => handleEvent30,
   reset: () => reset30
 });
-import * as Platform15 from "./../../../core/platform/platform.js";
+import * as Platform16 from "./../../../core/platform/platform.js";
 import * as Helpers18 from "./../helpers/helpers.js";
 import * as Types31 from "./../types/types.js";
 
@@ -4607,10 +4575,10 @@ function reset30() {
   longTaskEvents = [];
 }
 function storeWarning(event, warning) {
-  const existingWarnings = Platform15.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);
+  const existingWarnings = Platform16.MapUtilities.getWithDefault(warningsPerEvent, event, () => []);
   existingWarnings.push(warning);
   warningsPerEvent.set(event, existingWarnings);
-  const existingEvents = Platform15.MapUtilities.getWithDefault(eventsPerWarning, warning, () => []);
+  const existingEvents = Platform16.MapUtilities.getWithDefault(eventsPerWarning, warning, () => []);
   existingEvents.push(event);
   eventsPerWarning.set(warning, existingEvents);
 }

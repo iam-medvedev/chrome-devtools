@@ -27,6 +27,7 @@ export declare class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper
     #private;
     constructor(opts: AgentOptions, editor: TextEditor.TextEditor.TextEditor, panel: ContextFlavor, stopSequences?: string[]);
     registerUserAcceptance(rpcGlobalId: Host.AidaClient.RpcGlobalId, sampleId: number): void;
+    clearCachedRequest(): void;
     onTextChanged(prefix: string, suffix: string, cursorPositionAtRequest: number, inferenceLanguage?: Host.AidaClient.AidaInferenceLanguage): void;
     remove(): void;
 }

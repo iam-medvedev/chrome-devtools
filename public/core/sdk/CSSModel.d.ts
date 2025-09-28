@@ -63,6 +63,7 @@ export declare class CSSModel extends SDKModel<EventTypes> {
     getPlatformFonts(nodeId: Protocol.DOM.NodeId): Promise<Protocol.CSS.PlatformFontUsage[] | null>;
     allStyleSheets(): CSSStyleSheetHeader[];
     getInlineStyles(nodeId: Protocol.DOM.NodeId): Promise<InlineStyleResult | null>;
+    forceStartingStyle(node: DOMNode, forced: boolean): boolean;
     forcePseudoState(node: DOMNode, pseudoClass: string, enable: boolean): boolean;
     pseudoState(node: DOMNode): string[] | null;
     setMediaText(styleSheetId: Protocol.CSS.StyleSheetId, range: TextUtils.TextRange.TextRange, newMediaText: string): Promise<boolean>;
@@ -110,6 +111,7 @@ export declare enum Events {
     ModelWasEnabled = "ModelWasEnabled",
     ModelDisposed = "ModelDisposed",
     PseudoStateForced = "PseudoStateForced",
+    StartingStylesStateForced = "StartingStylesStateForced",
     StyleSheetAdded = "StyleSheetAdded",
     StyleSheetChanged = "StyleSheetChanged",
     StyleSheetRemoved = "StyleSheetRemoved",
@@ -133,6 +135,7 @@ export interface EventTypes {
     [Events.ModelWasEnabled]: void;
     [Events.ModelDisposed]: CSSModel;
     [Events.PseudoStateForced]: PseudoStateForcedEvent;
+    [Events.StartingStylesStateForced]: DOMNode;
     [Events.StyleSheetAdded]: CSSStyleSheetHeader;
     [Events.StyleSheetChanged]: StyleSheetChangedEvent;
     [Events.StyleSheetRemoved]: CSSStyleSheetHeader;

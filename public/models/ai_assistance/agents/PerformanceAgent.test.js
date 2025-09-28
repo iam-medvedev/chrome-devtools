@@ -96,8 +96,7 @@ describeWithEnvironment('PerformanceAgent – call tree focus', () => {
             });
             const context = PerformanceTraceContext.fromCallTree(aiCallTree);
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
-            const expectedData = new PerformanceTraceFormatter(context.getItem(), new Trace.EventsSerializer.EventsSerializer())
-                .formatTraceSummary();
+            const expectedData = new PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
             assert.deepEqual(responses, [
                 {
                     type: "user-query" /* ResponseType.USER_QUERY */,
@@ -200,13 +199,16 @@ const FAKE_PARSED_TRACE = {
     insights: FAKE_INSIGHTS,
     metadata: FAKE_METADATA,
 };
-function createAgentForInsightConversation(opts = {}) {
-    return new PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() });
+function createAgentForConversation(opts = {}) {
+    const agent = new PerformanceAgent({ aidaClient: opts.aidaClient ?? mockAidaClient() });
+    const context = PerformanceTraceContext.fromParsedTrace(FAKE_PARSED_TRACE);
+    agent.run('', { selected: context });
+    return agent;
 }
 describeWithEnvironment('PerformanceAgent', () => {
     it('uses the min and max bounds of the trace as the origin', async function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
-        const context = PerformanceTraceContext.full(parsedTrace);
+        const context = PerformanceTraceContext.fromParsedTrace(parsedTrace);
         assert.strictEqual(context.getOrigin(), 'trace-658799706428-658804825864');
     });
     it('outputs the right title for the selected insight', async () => {
@@ -216,32 +218,32 @@ describeWithEnvironment('PerformanceAgent', () => {
     // See b/405054694 for context on why we do this.
     describe('parsing text responses', () => {
         it('strips out 5 backticks if the response has them', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse('`````hello world`````');
             assert.deepEqual(response, { answer: 'hello world' });
         });
         it('strips any newlines before the backticks', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse('\n\n`````hello world`````');
             assert.deepEqual(response, { answer: 'hello world' });
         });
         it('does not strip the backticks if the response does not fully start and end with them', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse('answer: `````hello world`````');
             assert.deepEqual(response, { answer: 'answer: `````hello world`````' });
         });
         it('does not strip the backticks in the middle of the response even if the response is also wrapped', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse('`````hello ````` world`````');
             assert.deepEqual(response, { answer: 'hello ````` world' });
         });
         it('does not strip out inline code backticks', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse('This is code `console.log("hello")`');
             assert.deepEqual(response, { answer: 'This is code `console.log("hello")`' });
         });
         it('does not strip out code block 3 backticks', async () => {
-            const agent = createAgentForInsightConversation();
+            const agent = createAgentForConversation();
             const response = agent.parseTextResponse(`\`\`\`
 code
 \`\`\``);
@@ -257,7 +259,7 @@ code
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-images.json.gz');
             assert.isOk(parsedTrace.insights);
             const context = PerformanceTraceContext.fromInsight(parsedTrace, FAKE_LCP_MODEL);
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([[{
                             explanation: 'This is the answer',
                             metadata: {
@@ -265,8 +267,7 @@ code
                             }
                         }]])
             });
-            const expectedDetailText = new PerformanceTraceFormatter(context.getItem(), new Trace.EventsSerializer.EventsSerializer())
-                .formatTraceSummary();
+            const expectedDetailText = new PerformanceTraceFormatter(context.getItem()).formatTraceSummary();
             const responses = await Array.fromAsync(agent.run('test', { selected: context }));
             assert.deepEqual(responses, [
                 {
@@ -297,7 +298,7 @@ code
     });
     describe('enhanceQuery', () => {
         it('adds the context to the query from the user', async () => {
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: {},
             });
             const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
@@ -306,7 +307,7 @@ code
             assert.strictEqual(finalQuery, expected);
         });
         it('does not add the context for follow-up queries with the same context', async () => {
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: {},
             });
             const context = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
@@ -316,7 +317,7 @@ code
             assert.strictEqual(finalQuery, expected);
         });
         it('does add context to queries if the insight context changes', async () => {
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: {},
             });
             const context1 = PerformanceTraceContext.fromInsight(FAKE_PARSED_TRACE, FAKE_LCP_MODEL);
@@ -337,7 +338,7 @@ code
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const bounds = parsedTrace.data.Meta.traceBounds;
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{
                             explanation: '',
@@ -360,7 +361,7 @@ code
                 const match = parsedTrace.data.NetworkRequests.byTime.find(r => r.args.data.url === url);
                 assert.isOk(match, `no request found for ${url}`);
             });
-            const formatter = new PerformanceTraceFormatter(context.getItem(), new Trace.EventsSerializer.EventsSerializer());
+            const formatter = new PerformanceTraceFormatter(context.getItem());
             const expectedRequestsOutput = formatter.formatNetworkTrackSummary(bounds);
             const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(expectedRequestsOutput);
             sinon.assert.calledWith(metricsSpy, expectedBytesSize);
@@ -383,7 +384,7 @@ code
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const bounds = parsedTrace.data.Meta.traceBounds;
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{
                             explanation: '',
@@ -399,7 +400,7 @@ code
             assert.strictEqual(titleResponse.title, 'Investigating main thread activity…');
             const action = responses.find(response => response.type === "action" /* ResponseType.ACTION */);
             assert.exists(action);
-            const formatter = new PerformanceTraceFormatter(context.getItem(), new Trace.EventsSerializer.EventsSerializer());
+            const formatter = new PerformanceTraceFormatter(context.getItem());
             const summary = formatter.formatMainThreadTrackSummary(bounds);
             assert.isOk(summary);
             const expectedBytesSize = Platform.StringUtilities.countWtf8Bytes(summary);
@@ -418,7 +419,7 @@ code
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
             const renderBlocking = getInsightOrError('RenderBlocking', parsedTrace.insights, firstNav);
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
                 ])
@@ -427,19 +428,19 @@ code
             const renderBlockingContext = PerformanceTraceContext.fromInsight(parsedTrace, renderBlocking);
             // Populate the function calls for the LCP Context
             await Array.fromAsync(agent.run('test 1 LCP', { selected: lcpContext }));
-            assert.strictEqual(agent.currentFacts().size, 6); // always adds 6 facts for high-level summary of trace.
+            assert.strictEqual(agent.currentFacts().size, 7); // always adds 7 facts for high-level summary of trace.
             await Array.fromAsync(agent.run('test 2 LCP', { selected: lcpContext }));
-            assert.strictEqual(agent.currentFacts().size, 7); // added the function call as a fact.
+            assert.strictEqual(agent.currentFacts().size, 8); // added the function call as a fact.
             // Now change the context and send a request.
             await Array.fromAsync(agent.run('test 1 RenderBlocking', { selected: renderBlockingContext }));
-            assert.strictEqual(agent.currentFacts().size, 6); // back to 6.
+            assert.strictEqual(agent.currentFacts().size, 7); // back to 7.
         });
         it('will cache function calls as facts', async function () {
             const parsedTrace = await TraceLoader.traceEngine(this, 'lcp-discovery-delay.json.gz');
             assert.isOk(parsedTrace.insights);
             const [firstNav] = parsedTrace.data.Meta.mainFrameNavigations;
             const lcpBreakdown = getInsightOrError('LCPBreakdown', parsedTrace.insights, firstNav);
-            const agent = createAgentForInsightConversation({
+            const agent = createAgentForConversation({
                 aidaClient: mockAidaClient([
                     [{ explanation: '', functionCalls: [{ name: 'getMainThreadTrackSummary', args: {} }] }],
                     [{ explanation: '', functionCalls: [{ name: 'getNetworkTrackSummary', args: {} }] }], [{ explanation: 'done' }]
@@ -448,11 +449,11 @@ code
             const context = PerformanceTraceContext.fromInsight(parsedTrace, lcpBreakdown);
             await Array.fromAsync(agent.run('test 1', { selected: context }));
             await Array.fromAsync(agent.run('test 2', { selected: context }));
-            // First 6 are the always included high-level facts. The rests are from the function calls.
+            // First 7 are the always included high-level facts. The rests are from the function calls.
             assert.deepEqual(Array.from(agent.currentFacts(), fact => {
                 return fact.metadata.source;
             }), [
-                'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools',
+                'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools', 'devtools',
                 'getMainThreadTrackSummary({min: 197695826524, max: 197698633660})',
                 'getNetworkTrackSummary({min: 197695826524, max: 197698633660})'
             ]);

@@ -484,6 +484,7 @@ export class NetworkDispatcher {
         networkRequest.mixedContentType = request.mixedContentType || "none" /* Protocol.Security.MixedContentType.None */;
         networkRequest.setReferrerPolicy(request.referrerPolicy);
         networkRequest.setIsSameSite(request.isSameSite || false);
+        networkRequest.setIsAdRelated(request.isAdRelated || false);
     }
     updateNetworkRequestWithResponse(networkRequest, response) {
         if (response.url && networkRequest.url() !== response.url) {

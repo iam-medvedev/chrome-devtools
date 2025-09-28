@@ -7,6 +7,7 @@ import { CSSContainerQuery } from './CSSContainerQuery.js';
 import { CSSLayer } from './CSSLayer.js';
 import { CSSMedia } from './CSSMedia.js';
 import { CSSScope } from './CSSScope.js';
+import { CSSStartingStyle } from './CSSStartingStyle.js';
 import { CSSStyleDeclaration, Type } from './CSSStyleDeclaration.js';
 import { CSSSupports } from './CSSSupports.js';
 function styleSheetHeaderForRule(cssModel, { styleSheetId }) {
@@ -83,6 +84,7 @@ export class CSSStyleRule extends CSSRule {
     scopes;
     layers;
     ruleTypes;
+    startingStyles;
     wasUsed;
     constructor(cssModel, payload, wasUsed) {
         super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
@@ -95,6 +97,8 @@ export class CSSStyleRule extends CSSRule {
         this.scopes = payload.scopes ? CSSScope.parseScopesPayload(cssModel, payload.scopes) : [];
         this.supports = payload.supports ? CSSSupports.parseSupportsPayload(cssModel, payload.supports) : [];
         this.layers = payload.layers ? CSSLayer.parseLayerPayload(cssModel, payload.layers) : [];
+        this.startingStyles =
+            payload.startingStyles ? CSSStartingStyle.parseStartingStylePayload(cssModel, payload.startingStyles) : [];
         this.ruleTypes = payload.ruleTypes || [];
         this.wasUsed = wasUsed || false;
     }

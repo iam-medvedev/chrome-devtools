@@ -57,8 +57,17 @@ export declare function categoryOfInteraction(interaction: Types.Events.Syntheti
  *   =======B=[keyup]=====
  *    ====C=[pointerdown]=
  *         =D=[pointerup]=
+ *
+ * Additionally, this method will also maximise the processing duration of the
+ * events that we keep as non-nested. We want to make sure we give an accurate
+ * representation of main thread activity, so if we keep an event + hide its
+ * nested children, we set the top level event's processing start &
+ * processing end to be the earliest processing start & the latest processing
+ * end of its children. This ensures we report a more accurate main thread
+ * activity time which is important as we want developers to focus on fixing
+ * this.
  **/
-export declare function removeNestedInteractions(interactions: readonly Types.Events.SyntheticInteractionPair[]): readonly Types.Events.SyntheticInteractionPair[];
+export declare function removeNestedInteractionsAndSetProcessingTime(interactions: readonly Types.Events.SyntheticInteractionPair[]): readonly Types.Events.SyntheticInteractionPair[];
 export declare function finalize(): Promise<void>;
 export declare function data(): UserInteractionsData;
 export declare function deps(): HandlerName[];

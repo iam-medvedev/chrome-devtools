@@ -164,7 +164,11 @@ class RehydratingSessionBase {
         this.connection = connection;
     }
     sendMessageToFrontend(payload) {
-        this.connection?.postToFrontend(payload);
+        // The frontend doesn't expect CDP responses within the same synchronous event loop, so it breaks unexpectedly.
+        //  Any async boundary will do, so we use setTimeout.
+        setTimeout(() => {
+            this.connection?.postToFrontend(payload);
+        });
     }
     handleFrontendMessageAsFakeCDPAgent(data) {
         // Send default response in default session.

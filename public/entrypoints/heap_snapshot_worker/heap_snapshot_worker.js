@@ -302,6 +302,7 @@ __export(HeapSnapshot_exports, {
 import * as i18n from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as HeapSnapshotModel3 from "./../../models/heap_snapshot_model/heap_snapshot_model.js";
+var _a;
 var HeapSnapshotEdge = class _HeapSnapshotEdge {
   snapshot;
   edges;
@@ -3037,7 +3038,7 @@ async function createJSHeapSnapshotForTesting(profile) {
   await result.initialize(channel.port1);
   return result;
 }
-var JSHeapSnapshotNode = class _JSHeapSnapshotNode extends HeapSnapshotNode {
+var JSHeapSnapshotNode = class extends HeapSnapshotNode {
   canBeQueried() {
     const snapshot = this.snapshot;
     const flags = snapshot.flagsOfNode(this);
@@ -3122,7 +3123,7 @@ var JSHeapSnapshotNode = class _JSHeapSnapshotNode extends HeapSnapshotNode {
         }
         continue;
       }
-      const formatted = _JSHeapSnapshotNode.formatPropertyName(edge.name());
+      const formatted = _a.formatPropertyName(edge.name());
       if (categoryNameStart.length > 1 && categoryNameStart.length + categoryNameEnd.length + formatted.length > 100) {
         break;
       }
@@ -3191,6 +3192,7 @@ var JSHeapSnapshotNode = class _JSHeapSnapshotNode extends HeapSnapshotNode {
     return result;
   }
 };
+_a = JSHeapSnapshotNode;
 var JSHeapSnapshotEdge = class _JSHeapSnapshotEdge extends HeapSnapshotEdge {
   clone() {
     const snapshot = this.snapshot;

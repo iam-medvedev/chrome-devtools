@@ -737,6 +737,9 @@ export const generatedPropertyValues: {
     "ruby-align": {
         values: string[];
     };
+    "ruby-overhang": {
+        values: string[];
+    };
     "ruby-position": {
         values: string[];
     };
@@ -896,7 +899,7 @@ export const generatedPropertyValues: {
     "timeline-trigger-behavior": {
         values: string[];
     };
-    "timeline-trigger-timeline": {
+    "timeline-trigger-source": {
         values: string[];
     };
     top: {

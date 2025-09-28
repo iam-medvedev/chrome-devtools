@@ -28,6 +28,10 @@ const UIStringsNotTranslate = {
      */
     tooltipDisclaimerTextForAiCodeCompletionNoLogging: 'To generate code suggestions, your console input and the history of your current console session are shared with Google. This data will not be used to improve Google’s AI models.',
     /**
+     * Text for tooltip shown on hovering over spinner.
+     */
+    tooltipTextForSpinner: 'Shows when data is being sent to Google to generate code suggestions',
+    /**
      * @description Text for tooltip button which redirects to AI settings
      */
     manageInSettings: 'Manage in settings',
@@ -38,7 +42,8 @@ const UIStringsNotTranslate = {
 };
 const lockedString = i18n.i18n.lockedString;
 export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
-    if (input.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ || !input.disclaimerTooltipId) {
+    if (input.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ || !input.disclaimerTooltipId ||
+        !input.spinnerTooltipId) {
         render(nothing, target);
         return;
     }
@@ -53,7 +58,16 @@ export const DEFAULT_SUMMARY_TOOLBAR_VIEW = (input, output, target) => {
                 el.toggleAttribute('active', isLoading);
             };
         }
-    })}></devtools-spinner>
+    })}
+          aria-details=${input.spinnerTooltipId}
+          aria-describedby=${input.spinnerTooltipId}></devtools-spinner>
+          <devtools-tooltip
+              id=${input.spinnerTooltipId}
+              variant=${'rich'}
+              jslogContext=${'ai-code-completion-spinner-tooltip'}>
+          <div class="disclaimer-tooltip-container"><div class="tooltip-text">
+            ${lockedString(UIStringsNotTranslate.tooltipTextForSpinner)}
+          </div></div></devtools-tooltip>
           <span
               tabIndex="0"
               class="link"
@@ -98,6 +112,7 @@ const MINIMUM_LOADING_STATE_TIMEOUT = 1000;
 export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     #view;
     #viewOutput = {};
+    #spinnerTooltipId;
     #disclaimerTooltipId;
     #noLogging; // Whether the enterprise setting is `ALLOW_WITHOUT_LOGGING` or not.
     #loading = false;
@@ -115,6 +130,10 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     }
     set disclaimerTooltipId(disclaimerTooltipId) {
         this.#disclaimerTooltipId = disclaimerTooltipId;
+        this.requestUpdate();
+    }
+    set spinnerTooltipId(spinnerTooltipId) {
+        this.#spinnerTooltipId = spinnerTooltipId;
         this.requestUpdate();
     }
     set loading(loading) {
@@ -157,6 +176,7 @@ export class AiCodeCompletionDisclaimer extends UI.Widget.Widget {
     performUpdate() {
         this.#view({
             disclaimerTooltipId: this.#disclaimerTooltipId,
+            spinnerTooltipId: this.#spinnerTooltipId,
             noLogging: this.#noLogging,
             aidaAvailability: this.#aidaAvailability,
             onManageInSettingsTooltipClick: this.#onManageInSettingsTooltipClick.bind(this),

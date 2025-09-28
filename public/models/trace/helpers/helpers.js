@@ -19,7 +19,6 @@ __export(Trace_exports, {
   addEventToProcessThread: () => addEventToProcessThread,
   compareBeginAndEnd: () => compareBeginAndEnd,
   createMatchedSortedSyntheticEvents: () => createMatchedSortedSyntheticEvents,
-  createSortedSyntheticEvents: () => createSortedSyntheticEvents,
   eventContainsTimestamp: () => eventContainsTimestamp,
   eventHasCategory: () => eventHasCategory,
   eventTimeComparator: () => eventTimeComparator,
@@ -41,7 +40,6 @@ __export(Trace_exports, {
   isTopLevelEvent: () => isTopLevelEvent,
   makeProfileCall: () => makeProfileCall,
   makeZeroBasedCallFrame: () => makeZeroBasedCallFrame,
-  matchEvents: () => matchEvents,
   mergeEventsInOrder: () => mergeEventsInOrder,
   parseDevtoolsDetails: () => parseDevtoolsDetails,
   sortTraceEventsInPlace: () => sortTraceEventsInPlace,
@@ -293,7 +291,7 @@ function boundsIncludeTimeRange(data) {
 }
 function eventIsInBounds(event, bounds) {
   const startTime = event.ts;
-  return startTime <= bounds.max && bounds.min <= startTime + (event.dur ?? 0);
+  return startTime <= bounds.max && bounds.min < startTime + (event.dur ?? 0);
 }
 function timestampIsInBounds(bounds, timestamp) {
   return timestamp >= bounds.min && timestamp <= bounds.max;
@@ -489,43 +487,80 @@ function makeProfileCall(node, profileId, sampleIndex, ts, pid, tid) {
   };
 }
 function matchEvents(unpairedEvents) {
-  const matchedPairs = /* @__PURE__ */ new Map();
+  sortTraceEventsInPlace(unpairedEvents);
+  const matches = [];
+  const beginEventsById = /* @__PURE__ */ new Map();
+  const instantEventsById = /* @__PURE__ */ new Map();
   for (const event of unpairedEvents) {
-    const syntheticId = getSyntheticId(event);
-    if (syntheticId === void 0) {
+    const id = getSyntheticId(event);
+    if (id === void 0) {
       continue;
     }
-    const otherEventsWithID = Platform2.MapUtilities.getWithDefault(matchedPairs, syntheticId, () => {
-      return { begin: null, end: null, instant: [] };
-    });
-    const isStartEvent = event.ph === "b";
-    const isEndEvent = event.ph === "e";
-    const isInstantEvent = event.ph === "n";
-    if (isStartEvent) {
-      otherEventsWithID.begin = event;
-    } else if (isEndEvent) {
-      otherEventsWithID.end = event;
-    } else if (isInstantEvent) {
-      if (!otherEventsWithID.instant) {
-        otherEventsWithID.instant = [];
+    if (Types2.Events.isPairableAsyncBegin(event)) {
+      const existingEvents = beginEventsById.get(id) ?? [];
+      existingEvents.push(event);
+      beginEventsById.set(id, existingEvents);
+    } else if (Types2.Events.isPairableAsyncInstant(event)) {
+      const existingEvents = instantEventsById.get(id) ?? [];
+      existingEvents.push(event);
+      instantEventsById.set(id, existingEvents);
+    } else if (Types2.Events.isPairableAsyncEnd(event)) {
+      const beginEventsWithMatchingId = beginEventsById.get(id) ?? [];
+      const beginEvent = beginEventsWithMatchingId.pop();
+      if (!beginEvent) {
+        continue;
       }
-      otherEventsWithID.instant.push(event);
+      const instantEventsWithMatchingId = instantEventsById.get(id) ?? [];
+      const instantEventsForThisGroup = [];
+      while (instantEventsWithMatchingId.length > 0) {
+        if (instantEventsWithMatchingId[0].ts >= beginEvent.ts) {
+          const event2 = instantEventsWithMatchingId.pop();
+          if (event2) {
+            instantEventsForThisGroup.push(event2);
+          }
+        } else {
+          break;
+        }
+      }
+      const matchingGroup = {
+        begin: beginEvent,
+        end: event,
+        instant: instantEventsForThisGroup,
+        syntheticId: id
+      };
+      matches.push(matchingGroup);
     }
   }
-  return matchedPairs;
+  for (const [id, beginEvents] of beginEventsById) {
+    const beginEvent = beginEvents.pop();
+    if (!beginEvent) {
+      continue;
+    }
+    const matchingInstantEvents = instantEventsById.get(id);
+    if (matchingInstantEvents?.length) {
+      matches.push({
+        syntheticId: id,
+        begin: beginEvent,
+        end: null,
+        instant: matchingInstantEvents
+      });
+    }
+  }
+  return matches;
 }
 function getSyntheticId(event) {
   const id = extractId(event);
   return id && `${event.cat}:${id}:${event.name}`;
 }
-function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback) {
+function createSortedSyntheticEvents(matchedPairs) {
   const syntheticEvents = [];
-  for (const [id, eventsTriplet] of matchedPairs.entries()) {
+  for (const eventsTriplet of matchedPairs) {
     let eventsArePairable = function(data) {
       const instantEventsMatch = data.instantEvents ? data.instantEvents.some((e) => id === getSyntheticId(e)) : false;
       const endEventMatch = data.endEvent ? id === getSyntheticId(data.endEvent) : false;
       return Boolean(id) && (instantEventsMatch || endEventMatch);
     };
+    const id = eventsTriplet.syntheticId;
     const beginEvent = eventsTriplet.begin;
     const endEvent = eventsTriplet.end;
     const instantEvents = eventsTriplet.instant;
@@ -556,14 +591,14 @@ function createSortedSyntheticEvents(matchedPairs, syntheticEventCallback) {
     if (event.dur < 0) {
       continue;
     }
-    syntheticEventCallback?.(event);
     syntheticEvents.push(event);
   }
-  return syntheticEvents.sort((a, b) => a.ts - b.ts);
+  sortTraceEventsInPlace(syntheticEvents);
+  return syntheticEvents;
 }
-function createMatchedSortedSyntheticEvents(unpairedAsyncEvents, syntheticEventCallback) {
+function createMatchedSortedSyntheticEvents(unpairedAsyncEvents) {
   const matchedPairs = matchEvents(unpairedAsyncEvents);
-  const syntheticEvents = createSortedSyntheticEvents(matchedPairs, syntheticEventCallback);
+  const syntheticEvents = createSortedSyntheticEvents(matchedPairs);
   return syntheticEvents;
 }
 function getZeroIndexedLineAndColumnForEvent(event) {
@@ -1141,7 +1176,8 @@ __export(SamplesIntegrator_exports, {
   SamplesIntegrator: () => SamplesIntegrator
 });
 import * as Types4 from "./../types/types.js";
-var SamplesIntegrator = class _SamplesIntegrator {
+var _a;
+var SamplesIntegrator = class {
   /**
    * The result of running the samples integrator. Holds the JS calls
    * with their approximated duration after integrating samples into the
@@ -1377,14 +1413,14 @@ var SamplesIntegrator = class _SamplesIntegrator {
     if (maybeCallForTraceId) {
       stackTrace = maybeCallForTraceId;
     }
-    _SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
+    _a.filterStackFrames(stackTrace, this.#engineConfig);
     const endTime = event.ts + (event.dur || 0);
     const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
     let i;
     for (i = this.#lockedJsStackDepth.at(-1) || 0; i < minFrames; ++i) {
       const newFrame = stackTrace[i].callFrame;
       const oldFrame = this.#currentJSStack[i].callFrame;
-      if (!_SamplesIntegrator.framesAreEqual(newFrame, oldFrame)) {
+      if (!_a.framesAreEqual(newFrame, oldFrame)) {
         break;
       }
       this.#currentJSStack[i].dur = Types4.Timing.Micro(Math.max(this.#currentJSStack[i].dur || 0, endTime - this.#currentJSStack[i].ts));
@@ -1446,7 +1482,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
     return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName && frame1.lineNumber === frame2.lineNumber;
   }
   static showNativeName(name, runtimeCallStatsEnabled) {
-    return runtimeCallStatsEnabled && Boolean(_SamplesIntegrator.nativeGroup(name));
+    return runtimeCallStatsEnabled && Boolean(_a.nativeGroup(name));
   }
   static nativeGroup(nativeName) {
     if (nativeName.startsWith("Parse")) {
@@ -1469,11 +1505,11 @@ var SamplesIntegrator = class _SamplesIntegrator {
     let j = 0;
     for (let i = 0; i < stack.length; ++i) {
       const frame = stack[i].callFrame;
-      const nativeRuntimeFrame = _SamplesIntegrator.isNativeRuntimeFrame(frame);
-      if (nativeRuntimeFrame && !_SamplesIntegrator.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
+      const nativeRuntimeFrame = _a.isNativeRuntimeFrame(frame);
+      if (nativeRuntimeFrame && !_a.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
         continue;
       }
-      const nativeFrameName = nativeRuntimeFrame ? _SamplesIntegrator.nativeGroup(frame.functionName) : null;
+      const nativeFrameName = nativeRuntimeFrame ? _a.nativeGroup(frame.functionName) : null;
       if (previousNativeFrameName && previousNativeFrameName === nativeFrameName) {
         continue;
       }
@@ -1514,6 +1550,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
     return profile;
   }
 };
+_a = SamplesIntegrator;
 export {
   Extensions_exports as Extensions,
   Network_exports as Network,

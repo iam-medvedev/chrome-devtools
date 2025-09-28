@@ -2511,7 +2511,7 @@ function generateInsight12(data, context) {
     if (script.url?.startsWith("chrome-extension://")) {
       return false;
     }
-    return Helpers13.Timing.timestampIsInBounds(context.bounds, script.ts);
+    return Helpers13.Timing.timestampIsInBounds(context.bounds, script.ts) || script.request && Helpers13.Timing.eventIsInBounds(script.request, context.bounds);
   });
   const legacyJavaScriptResults = /* @__PURE__ */ new Map();
   const wastedBytesByRequestId = /* @__PURE__ */ new Map();
