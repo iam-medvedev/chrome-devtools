@@ -679,6 +679,7 @@ import * as Common3 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
 var { render, html, Directives } = Lit;
@@ -827,6 +828,7 @@ var NetworkThrottlingSelect = class _NetworkThrottlingSelect extends Common3.Obj
     };
     const onSelect = (conditions) => {
       this.dispatchEventToListeners("conditionsChanged", conditions);
+      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.NETWORK_SPEED_THROTTLED);
     };
     const throttlingGroups = [
       { title: i18nString5(UIStrings5.disabled), items: [SDK5.NetworkManager.NoThrottlingConditions] },

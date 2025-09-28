@@ -1,6 +1,7 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Common from '../../core/common/common.js';
 import { assertNotNullOrUndefined } from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
@@ -58,7 +59,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
                 throw new Error(`Unable to create settings: targetManager, workspace, and debuggerWorkspaceBinding must be provided: ${new Error().stack}`);
             }
             breakpointManagerInstance =
-                new BreakpointManager(targetManager, workspace, debuggerWorkspaceBinding, restoreInitialBreakpointCount);
+                new _a(targetManager, workspace, debuggerWorkspaceBinding, restoreInitialBreakpointCount);
         }
         return breakpointManagerInstance;
     }
@@ -170,7 +171,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
     // of the embedding document. For other scripts, it just returns unchanged line-column.
     static breakpointLocationFromUiLocation(uiLocation) {
         const uiSourceCode = uiLocation.uiSourceCode;
-        const script = BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode);
+        const script = _a.getScriptForInlineUiSourceCode(uiSourceCode);
         const { lineNumber, columnNumber } = script ? script.relativeLocationToRawLocation(uiLocation) : uiLocation;
         return { lineNumber, columnNumber };
     }
@@ -178,7 +179,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
     // document into the coordinates of the script. Other UI source code coordinated are not
     // affected.
     static uiLocationFromBreakpointLocation(uiSourceCode, lineNumber, columnNumber) {
-        const script = BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode);
+        const script = _a.getScriptForInlineUiSourceCode(uiSourceCode);
         if (script) {
             ({ lineNumber, columnNumber } = script.rawLocationToRelativeLocation({ lineNumber, columnNumber }));
         }
@@ -202,7 +203,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         return true;
     }
     restoreBreakpoints(uiSourceCode) {
-        const script = BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode);
+        const script = _a.getScriptForInlineUiSourceCode(uiSourceCode);
         const url = script?.sourceURL ?? uiSourceCode.url();
         if (!url) {
             return;
@@ -212,7 +213,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         const breakpoints = this.storage.breakpointItems(url, contentType.name());
         for (const breakpoint of breakpoints) {
             const { lineNumber, columnNumber } = breakpoint;
-            if (!BreakpointManager.isValidPositionInScript(lineNumber, columnNumber, script)) {
+            if (!_a.isValidPositionInScript(lineNumber, columnNumber, script)) {
                 continue;
             }
             this.#setBreakpoint(uiSourceCode, lineNumber, columnNumber, breakpoint.condition, breakpoint.enabled, breakpoint.isLogpoint, "RESTORED" /* BreakpointOrigin.OTHER */);
@@ -246,7 +247,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         for (const compatibleUiSourceCode of compatibleUiSourceCodes) {
             const uiLocation = new Workspace.UISourceCode.UILocation(compatibleUiSourceCode, lineNumber, columnNumber);
             const normalizedLocation = await this.debuggerWorkspaceBinding.normalizeUILocation(uiLocation);
-            const breakpointLocation = BreakpointManager.breakpointLocationFromUiLocation(normalizedLocation);
+            const breakpointLocation = _a.breakpointLocationFromUiLocation(normalizedLocation);
             const breakpoint = this.#setBreakpoint(normalizedLocation.uiSourceCode, breakpointLocation.lineNumber, breakpointLocation.columnNumber, condition, enabled, isLogpoint, origin);
             if (uiSourceCode === compatibleUiSourceCode) {
                 if (normalizedLocation.id() !== uiLocation.id()) {
@@ -260,7 +261,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         return primaryBreakpoint;
     }
     #setBreakpoint(uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, origin) {
-        const url = BreakpointManager.getScriptForInlineUiSourceCode(uiSourceCode)?.sourceURL ?? uiSourceCode.url();
+        const url = _a.getScriptForInlineUiSourceCode(uiSourceCode)?.sourceURL ?? uiSourceCode.url();
         const resourceTypeName = uiSourceCode.contentType().name();
         const storageState = { url, resourceTypeName, lineNumber, columnNumber, condition, enabled, isLogpoint };
         const storageId = Storage.computeId(storageState);
@@ -371,6 +372,7 @@ export class BreakpointManager extends Common.ObjectWrapper.ObjectWrapper {
         return this.debuggerWorkspaceBinding.supportsConditionalBreakpoints(uiSourceCode);
     }
 }
+_a = BreakpointManager;
 export var Events;
 (function (Events) {
     /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */

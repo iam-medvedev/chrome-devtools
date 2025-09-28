@@ -94,6 +94,18 @@ export default `/*
   color: var(--sys-color-on-surface-subtle);
 }
 
+.info-tooltip-container {
+  max-width: var(--sys-size-28);
+  padding: var(--sys-size-4) var(--sys-size-5);
+}
+
+.tooltip-link {
+  display: block;
+  margin-top: var(--sys-size-4);
+  color: var(--sys-color-primary);
+  padding-left: 0;
+}
+
 .chat-input-container {
   width: 100%;
   display: flex;
@@ -667,7 +679,7 @@ main {
   justify-content: center;
   font: var(--sys-typescale-headline4);
   gap: var(--sys-size-8);
-  padding: var(--sys-size-3);
+  padding: var(--sys-size-4);
   max-width: var(--sys-size-33);
 
   /* Prevents the container from jumping when the scrollbar is shown */

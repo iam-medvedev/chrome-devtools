@@ -404,7 +404,7 @@ var MarkdownImage = class extends HTMLElement {
   }
   #getIconComponent() {
     if (!this.#imageData) {
-      return html3``;
+      return Lit2.nothing;
     }
     const { src, color, width = "100%", height = "100%" } = this.#imageData;
     return html3`
@@ -413,7 +413,7 @@ var MarkdownImage = class extends HTMLElement {
   }
   #getImageComponent() {
     if (!this.#imageData) {
-      return html3``;
+      return Lit2.nothing;
     }
     const { src, width = "100%", height = "100%" } = this.#imageData;
     return html3`

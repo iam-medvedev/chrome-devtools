@@ -2,12 +2,13 @@ import * as Badges from '../../models/badges/badges.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface BadgeNotificationAction {
     label: string;
-    jslogContext?: string;
+    jslogContext: string;
     title?: string;
     onClick: () => void;
 }
 export interface BadgeNotificationProperties {
     message: HTMLElement | string;
+    jslogContext: string;
     imageUri: string;
     actions: BadgeNotificationAction[];
     isStarterBadge: boolean;
@@ -19,6 +20,7 @@ declare const DEFAULT_VIEW: (input: ViewInput, _output: undefined, target: HTMLE
 type View = typeof DEFAULT_VIEW;
 export declare class BadgeNotification extends UI.Widget.Widget {
     #private;
+    jslogContext: string;
     message: HTMLElement | string;
     imageUri: string;
     actions: BadgeNotificationAction[];

@@ -165,6 +165,7 @@ var PlatformFileSystem = class extends Common.ObjectWrapper.ObjectWrapper {
 };
 
 // gen/front_end/models/persistence/IsolatedFileSystem.js
+var _a;
 var UIStrings2 = {
   /**
    * @description Text in Isolated File System of the Workspace settings in Settings
@@ -199,7 +200,7 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("models/persistence/IsolatedFileSystem.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
+var IsolatedFileSystem = class extends PlatformFileSystem {
   manager;
   #embedderPath;
   domFileSystem;
@@ -222,7 +223,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     if (!domFileSystem) {
       return null;
     }
-    const fileSystem = new _IsolatedFileSystem(manager, path, embedderPath, domFileSystem, type, automatic);
+    const fileSystem = new _a(manager, path, embedderPath, domFileSystem, type, automatic);
     return await fileSystem.initializeFilePaths().then(() => fileSystem).catch((error) => {
       console.error(error);
       return null;
@@ -244,7 +245,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       entry.getMetadata(resolve, errorHandler);
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when getting file metadata '" + path);
       resolve(null);
     }
@@ -312,7 +313,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     return new Promise((resolve) => {
       this.domFileSystem.root.getDirectory(path, { create: true }, (dirEntry) => resolve(dirEntry), (error) => {
         this.domFileSystem.root.getFile(path, void 0, () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailedBecausePathIsFile, { PH1: path })), () => this.dispatchEventToListeners("file-system-error", i18nString2(UIStrings2.createDirFailed, { PH1: path })));
-        const errorMessage = _IsolatedFileSystem.errorMessage(error);
+        const errorMessage = _a.errorMessage(error);
         console.error(errorMessage + " trying to create directory '" + path + "'");
         resolve(null);
       });
@@ -336,7 +337,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
             resolve(createFileCandidate.call(this, name2, newFileIndex ? newFileIndex + 1 : 1));
             return;
           }
-          const errorMessage = _IsolatedFileSystem.errorMessage(error);
+          const errorMessage = _a.errorMessage(error);
           console.error(errorMessage + " when testing if file exists '" + (this.path() + "/" + path + "/" + nameCandidate) + "'");
           resolve(null);
         });
@@ -354,7 +355,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       resolve(true);
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when deleting file '" + (this.path() + "/" + path) + "'");
       resolve(false);
     }
@@ -370,7 +371,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       resolve(true);
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when deleting directory '" + (this.path() + "/" + path) + "'");
       resolve(false);
     }
@@ -385,7 +386,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
           resolve(null);
           return;
         }
-        const errorMessage = _IsolatedFileSystem.errorMessage(error);
+        const errorMessage = _a.errorMessage(error);
         console.error(errorMessage + " when getting content for file '" + (this.path() + "/" + path) + "'");
         resolve(null);
       }
@@ -449,7 +450,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       }
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when setting content for file '" + (this.path() + "/" + path) + "'");
       resolve(void 0);
     }
@@ -489,7 +490,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       callback(true, entry.name);
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when renaming file '" + (this.path() + "/" + path) + "' to '" + newName + "'");
       callback(false);
     }
@@ -510,7 +511,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     }
     dirReader.readEntries(innerCallback, errorHandler);
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when reading directory '" + dirEntry.fullPath + "'");
       callback([]);
     }
@@ -521,7 +522,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
       this.readDirectory(dirEntry, callback);
     }
     function errorHandler(error) {
-      const errorMessage = _IsolatedFileSystem.errorMessage(error);
+      const errorMessage = _a.errorMessage(error);
       console.error(errorMessage + " when requesting entry '" + path + "'");
       callback([]);
     }
@@ -602,6 +603,7 @@ var IsolatedFileSystem = class _IsolatedFileSystem extends PlatformFileSystem {
     return this.type() !== PlatformFileSystemType.OVERRIDES;
   }
 };
+_a = IsolatedFileSystem;
 function mimeTypeForBlob(path, blob) {
   if (blob.type) {
     return blob.type;
@@ -3286,6 +3288,7 @@ var editFileSystemView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./editFileSystemView.css")} */`;
 
 // gen/front_end/models/persistence/EditFileSystemView.js
+var _a2;
 var { styleMap } = Directives;
 var UIStrings5 = {
   /**
@@ -3352,7 +3355,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
   ).map(({ status }) => html`<span class="excluded-folder-error">${statusString(status)}</span>`)}
     </div>`, target);
 };
-var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
+var EditFileSystemView = class extends UI3.Widget.VBox {
   #fileSystem;
   #excludedFolderPaths = [];
   #view;
@@ -3423,7 +3426,7 @@ var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
     this.requestUpdate();
   }
   #validateFolder(rawInput) {
-    const path = _EditFileSystemView.#normalizePrefix(rawInput.trim());
+    const path = _a2.#normalizePrefix(rawInput.trim());
     if (!path) {
       return {
         path,
@@ -3451,6 +3454,7 @@ var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
     return prefix + (prefix[prefix.length - 1] === "/" ? "" : "/");
   }
 };
+_a2 = EditFileSystemView;
 
 // gen/front_end/models/persistence/PersistenceActions.js
 var PersistenceActions_exports = {};

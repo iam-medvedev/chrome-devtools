@@ -6,6 +6,7 @@ const SPEEDSTER_BADGE_URI = new URL('../../Images/speedster-badge.svg', import.m
 export class SpeedsterBadge extends Badge {
     name = 'profiles/me/awards/developers.google.com%2Fprofile%2Fbadges%2Factivity%2Fchrome-devtools%2Fspeedster';
     title = 'Speedster';
+    jslogContext = 'speedster';
     interestedActions = [
         BadgeAction.PERFORMANCE_INSIGHT_CLICKED,
     ];

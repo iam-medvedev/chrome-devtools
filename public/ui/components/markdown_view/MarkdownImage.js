@@ -25,7 +25,7 @@ export class MarkdownImage extends HTMLElement {
     }
     #getIconComponent() {
         if (!this.#imageData) {
-            return html ``;
+            return Lit.nothing;
         }
         const { src, color, width = '100%', height = '100%' } = this.#imageData;
         return html `
@@ -34,7 +34,7 @@ export class MarkdownImage extends HTMLElement {
     }
     #getImageComponent() {
         if (!this.#imageData) {
-            return html ``;
+            return Lit.nothing;
         }
         const { src, width = '100%', height = '100%' } = this.#imageData;
         return html `

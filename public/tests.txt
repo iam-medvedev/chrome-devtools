@@ -135,6 +135,7 @@ models/ai_assistance/performance/AICallTree.test.js
 models/ai_assistance/performance/AIQueries.test.js
 models/ai_code_completion/AiCodeCompletion.test.js
 models/autofill_manager/AutofillManager.test.js
+models/badges/AiExplorerBadge.test.js
 models/badges/Badge.test.js
 models/badges/UserBadges.test.js
 models/bindings/CompilerScriptMapping.test.js
@@ -351,6 +352,7 @@ panels/autofill/AutofillView.test.js
 panels/browser_debugger/CategorizedBreakpointsSidebarPane.test.js
 panels/browser_debugger/DOMBreakpointsSidebarPane.test.js
 panels/browser_debugger/browser_debugger.test.js
+panels/changes/ChangesSidebar.test.js
 panels/changes/CombinedDiffView.test.js
 panels/changes/changes.test.js
 panels/common/AiCodeCompletionDisclaimer.test.js
@@ -368,6 +370,7 @@ panels/console/ConsoleViewport.test.js
 panels/console/ErrorStackParser.test.js
 panels/console_counters/console_counters.test.js
 panels/coverage/CoverageDecorationManager.test.js
+panels/coverage/CoverageListView.test.js
 panels/coverage/CoverageModel.test.js
 panels/coverage/CoverageView.test.js
 panels/css_overview/CSSOverviewPanel.test.js

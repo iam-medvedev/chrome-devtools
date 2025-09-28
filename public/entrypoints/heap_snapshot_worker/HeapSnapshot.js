@@ -1,6 +1,7 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 /* eslint-disable rulesdir/prefer-private-class-members */
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -3086,7 +3087,7 @@ export class JSHeapSnapshotNode extends HeapSnapshotNode {
                 }
                 continue;
             }
-            const formatted = JSHeapSnapshotNode.formatPropertyName(edge.name());
+            const formatted = _a.formatPropertyName(edge.name());
             // Always include at least one property, regardless of its length. Beyond that point,
             // only include more properties if the name isn't too long.
             if (categoryNameStart.length > 1 && categoryNameStart.length + categoryNameEnd.length + formatted.length > 100) {
@@ -3161,6 +3162,7 @@ export class JSHeapSnapshotNode extends HeapSnapshotNode {
         return result;
     }
 }
+_a = JSHeapSnapshotNode;
 export class JSHeapSnapshotEdge extends HeapSnapshotEdge {
     clone() {
         const snapshot = this.snapshot;

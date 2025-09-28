@@ -15,10 +15,12 @@ import "./../../../ui/components/tooltips/tooltips.js";
 import * as Host from "./../../../core/host/host.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
+import * as SDK from "./../../../core/sdk/sdk.js";
 import * as Badges from "./../../../models/badges/badges.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as ComponentHelpers from "./../../../ui/components/helpers/helpers.js";
 import * as Lit from "./../../../ui/lit/lit.js";
+import * as VisualLogging from "./../../../ui/visual_logging/visual_logging.js";
 import * as PanelCommon from "./../../common/common.js";
 import * as PanelUtils from "./../../utils/utils.js";
 
@@ -158,10 +160,10 @@ var UIStrings = {
    */
   syncDisabled: "To turn this setting on, you must enable Chrome sync.",
   /**
-   * @description Text shown to the user in the Settings UI. 'This setting' refers
-   * to a checkbox that is disabled.
+   * @description Text shown to the user in the Settings UI. Explains why the checkbox
+   * for saving DevTools settings to the user's Google account is inactive.
    */
-  preferencesSyncDisabled: "To turn this setting on, you must first enable settings sync in Chrome.",
+  preferencesSyncDisabled: "You need to first enable saving `Chrome` settings in your `Google` account.",
   /**
    * @description Label for the account email address. Shown in the DevTools Settings UI in
    * front of the email address currently used for Chrome Sync.
@@ -181,22 +183,12 @@ var UIStrings = {
    * @description Label for the Google Developer Program subscription status that corresponds to
    * `PREMIUM_ANNUAL` plan.
    */
-  gdpPremiumAnnualSubscription: "Premium (Annual)",
-  /**
-   * @description Label for the Google Developer Program subscription status that corresponds to
-   * `PREMIUM_MONTHLY` plan.
-   */
-  gdpPremiumMonthlySubscription: "Premium (Monthly)",
+  gdpPremiumSubscription: "Premium",
   /**
    * @description Label for the Google Developer Program subscription status that corresponds to
    * `PRO_ANNUAL` plan.
    */
-  gdpProAnnualSubscription: "Pro (Annual)",
-  /**
-   * @description Label for the Google Developer Program subscription status that corresponds to
-   * `PRO_MONTHLY` plan.
-   */
-  gdpProMonthlySubscription: "Pro (Monthly)",
+  gdpProSubscription: "Pro",
   /**
    * @description Label for the Google Developer Program subscription status that corresponds
    * to a plan not known by the client.
@@ -255,13 +247,11 @@ function getGdpSubscriptionText(profile) {
   }
   switch (profile.activeSubscription.subscriptionTier) {
     case Host.GdpClient.SubscriptionTier.PREMIUM_ANNUAL:
-      return i18nString(UIStrings.gdpPremiumAnnualSubscription);
     case Host.GdpClient.SubscriptionTier.PREMIUM_MONTHLY:
-      return i18nString(UIStrings.gdpPremiumMonthlySubscription);
+      return i18nString(UIStrings.gdpPremiumSubscription);
     case Host.GdpClient.SubscriptionTier.PRO_ANNUAL:
-      return i18nString(UIStrings.gdpProAnnualSubscription);
     case Host.GdpClient.SubscriptionTier.PRO_MONTHLY:
-      return i18nString(UIStrings.gdpProMonthlySubscription);
+      return i18nString(UIStrings.gdpProSubscription);
     default:
       return i18nString(UIStrings.gdpUnknownSubscription);
   }
@@ -339,15 +329,27 @@ function renderWarningIfNeeded(syncInfo) {
   }
   const warningLink = !syncInfo.isSyncActive ? "chrome://settings/syncSetup" : "chrome://settings/syncSetup/advanced";
   const warningText = !syncInfo.isSyncActive ? i18nString(UIStrings.syncDisabled) : i18nString(UIStrings.preferencesSyncDisabled);
+  const handleClick = (event) => {
+    const rootTarget = SDK.TargetManager.TargetManager.instance().rootTarget();
+    if (rootTarget === null) {
+      return;
+    }
+    void rootTarget.targetAgent().invoke_createTarget({ url: warningLink }).then((result) => {
+      if (result.getError()) {
+        Host.InspectorFrontendHost.InspectorFrontendHostInstance.openInNewTab(warningLink);
+      }
+    });
+    event.consume();
+  };
   return html`
-    <devtools-chrome-link .href=${warningLink}>
-      <devtools-button
-        aria-describedby=settings-sync-info
-        .iconName=${"info"}
-        .variant=${"icon"}
-        .size=${"SMALL"}>
-      </devtools-button>
-    </devtools-chrome-link>
+    <devtools-button
+      aria-describedby=settings-sync-info
+      .title=${warningText}
+      .iconName=${"info"}
+      .variant=${"icon"}
+      .size=${"SMALL"}
+      @click=${handleClick}>
+    </devtools-button>
     <devtools-tooltip
         id=settings-sync-info
         variant=simple>
@@ -378,12 +380,12 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
   function renderBrand() {
     return html`
       <div class="gdp-profile-header">
-        <div class="gdp-logo" role="img" tabindex="0" aria-label="Google Developer Program"></div>
+        <div class="gdp-logo" role="img" aria-label="Google Developer Program"></div>
       </div>
     `;
   }
   return html`
-    <div class="gdp-profile-container">
+    <div class="gdp-profile-container" jslog=${VisualLogging.section().context("gdp-profile")}>
       <div class="divider"></div>
       ${gdpProfile ? html`
         <div class="gdp-profile-details-content">
@@ -391,7 +393,10 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
           <div class="plan-details">
             ${getGdpSubscriptionText(gdpProfile)}
             &nbsp;·&nbsp;
-            <x-link class="link" href=${Host.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK}>
+            <x-link
+              jslog=${VisualLogging.link().track({ click: true, keydown: "Enter|Space" }).context("view-profile")}
+              class="link"
+              href=${Host.GdpClient.GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK}>
               ${i18nString(UIStrings.viewProfile)}
             </x-link></div>
             ${hasReceiveBadgesCheckbox ? html`
@@ -415,7 +420,7 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
             @click=${() => PanelCommon.GdpSignUpDialog.show({
     onSuccess: onSignUpSuccess
   })}
-            .jslogContext=${"gdp.sign-up-dialog-open"}
+            .jslogContext=${"open-sign-up-dialog"}
             .variant=${"outlined"}>
               ${i18nString(UIStrings.signUp)}
           </devtools-button>

@@ -76,7 +76,8 @@ var AutocompleteHistory_exports = {};
 __export(AutocompleteHistory_exports, {
   AutocompleteHistory: () => AutocompleteHistory
 });
-var AutocompleteHistory = class _AutocompleteHistory {
+var _a;
+var AutocompleteHistory = class {
   static #historySize = 300;
   #setting;
   /**
@@ -160,9 +161,10 @@ var AutocompleteHistory = class _AutocompleteHistory {
     return this.#data[this.#data.length - this.#historyOffset];
   }
   #store() {
-    this.#setting.set(this.#data.slice(-_AutocompleteHistory.#historySize));
+    this.#setting.set(this.#data.slice(-_a.#historySize));
   }
 };
+_a = AutocompleteHistory;
 
 // gen/front_end/ui/components/text_editor/config.js
 var config_exports = {};
@@ -781,21 +783,25 @@ var aiAutoCompleteSuggestionState = CM3.StateField.define({
         if (effect.value) {
           return effect.value;
         }
+        value?.clearCachedRequest();
         return null;
       }
     }
     if (!value) {
       return value;
     }
-    if (value.from > tr.startState.doc.length) {
+    if (value.from > tr.state.doc.length) {
+      value.clearCachedRequest();
       return null;
     }
     if (tr.docChanged && tr.state.doc.length < tr.startState.doc.length) {
+      value.clearCachedRequest();
       return null;
     }
     const from = tr.changes.mapPos(value.from);
     const { head } = tr.state.selection.main;
-    if (head < from) {
+    if (tr.docChanged && head < from) {
+      value.clearCachedRequest();
       return null;
     }
     const typedText = tr.state.doc.sliceString(from, head);
@@ -827,6 +833,7 @@ function acceptAiAutoCompleteSuggestion(view) {
     effects: setAiAutoCompleteSuggestion.of(null),
     userEvent: "input.complete"
   });
+  suggestion.clearCachedRequest();
   return { accepted: true, suggestion };
 }
 var aiAutoCompleteSuggestion = [
@@ -854,6 +861,10 @@ var aiAutoCompleteSuggestion = [
         return;
       }
       const { head } = update.state.selection.main;
+      if (head < activeSuggestion.from) {
+        this.decorations = CM3.Decoration.none;
+        return;
+      }
       const selectedCompletion2 = CM3.selectedCompletion(update.state);
       const additionallyTypedText = update.state.doc.sliceString(activeSuggestion.from, head);
       if (!activeSuggestion.text.startsWith(additionallyTypedText)) {
@@ -866,8 +877,10 @@ var aiAutoCompleteSuggestion = [
           this.decorations = CM3.Decoration.none;
           return;
         }
-        const endsWithCompleteSelectedCompletion = update.state.doc.sliceString(head - selectedCompletion2.label.length, head) === selectedCompletion2.label;
-        if (!endsWithCompleteSelectedCompletion && !TextUtils.TextUtils.getOverlap(selectedCompletion2.label, ghostText)) {
+        const overlappingText = TextUtils.TextUtils.getOverlap(selectedCompletion2.label, ghostText) ?? "";
+        const lineAtAiSuggestion = update.state.doc.lineAt(activeSuggestion.from).text;
+        const overlapsWithSelectedCompletion = (lineAtAiSuggestion + overlappingText).endsWith(selectedCompletion2.label);
+        if (!overlapsWithSelectedCompletion) {
           this.decorations = CM3.Decoration.none;
           return;
         }

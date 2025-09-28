@@ -14319,9 +14319,6 @@ export declare namespace Page {
     interface SetPrerenderingAllowedRequest {
         isAllowed: boolean;
     }
-    interface SetPrewarmingAllowedRequest {
-        isAllowed: boolean;
-    }
     interface DomContentEventFiredEvent {
         timestamp: Network.MonotonicTime;
     }

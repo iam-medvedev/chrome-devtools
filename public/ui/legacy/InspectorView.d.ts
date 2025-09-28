@@ -11,9 +11,19 @@ export declare enum DrawerOrientation {
     HORIZONTAL = "horizontal",
     UNSET = "unset"
 }
+export declare enum DockMode {
+    BOTTOM = "bottom",
+    SIDE = "side",// For LEFT and RIGHT
+    UNDOCKED = "undocked"
+}
+export interface DrawerOrientationByDockMode {
+    [DockMode.BOTTOM]: DrawerOrientation;
+    [DockMode.SIDE]: DrawerOrientation;
+    [DockMode.UNDOCKED]: DrawerOrientation;
+}
 export declare class InspectorView extends VBox implements ViewLocationResolver {
     #private;
-    private readonly drawerOrientationSetting;
+    private readonly drawerOrientationByDockSetting;
     private readonly drawerSplitWidget;
     private readonly tabDelegate;
     private readonly drawerTabbedLocation;
@@ -32,6 +42,7 @@ export declare class InspectorView extends VBox implements ViewLocationResolver 
     } | undefined): InspectorView;
     static maybeGetInspectorViewInstance(): InspectorView | null;
     static removeInstance(): void;
+    applyDrawerOrientationForDockSideForTest(): void;
     wasShown(): void;
     willHide(): void;
     resolveLocation(locationName: string): ViewLocation | null;

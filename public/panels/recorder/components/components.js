@@ -155,6 +155,7 @@ __export(CreateRecordingView_exports, {
 import "./../../../ui/legacy/legacy.js";
 import "./../../../ui/components/icon_button/icon_button.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
+import * as Badges from "./../../../models/badges/badges.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Input from "./../../../ui/components/input/input.js";
 import * as Lit2 from "./../../../ui/lit/lit.js";
@@ -421,6 +422,7 @@ var CreateRecordingView = class extends HTMLElement {
     const selectorAttribute = selectorAttributeEl.value.trim();
     this.#recorderSettings.selectorAttribute = selectorAttribute;
     this.dispatchEvent(new RecordingStartedEvent(nameInput.value.trim(), selectorTypesToRecord, selectorAttribute));
+    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.RECORDER_RECORDING_STARTED);
   }
   #dispatchRecordingCancelled() {
     this.dispatchEvent(new RecordingCancelledEvent());
@@ -1718,7 +1720,7 @@ function converterIdToStepMetric(converterId) {
 }
 function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
   if (!settings) {
-    return html6``;
+    return Lit6.nothing;
   }
   const environmentFragments = [];
   if (settings.viewportSettings) {

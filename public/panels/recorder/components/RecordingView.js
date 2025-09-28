@@ -160,7 +160,7 @@ function converterIdToStepMetric(converterId) {
 }
 function renderSettings({ settings, replaySettingsExpanded, onSelectMenuLabelClick, onNetworkConditionsChange, onTimeoutInput, isRecording, replayState, onReplaySettingsKeydown, onToggleReplaySettings }) {
     if (!settings) {
-        return html ``;
+        return Lit.nothing;
     }
     const environmentFragments = [];
     if (settings.viewportSettings) {

@@ -61,7 +61,6 @@ export interface ViewInput {
     onChangeWorkspaceClick?: () => void;
 }
 export interface ViewOutput {
-    tooltipRef?: Directives.Ref<HTMLElement>;
     changeRef?: Directives.Ref<HTMLElement>;
     summaryRef?: Directives.Ref<HTMLElement>;
 }

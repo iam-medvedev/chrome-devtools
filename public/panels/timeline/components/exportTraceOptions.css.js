@@ -30,4 +30,9 @@ export default `/*
   }
 }
 
+.info-tooltip-container {
+  max-width: var(--sys-size-28);
+  white-space: normal;
+}
+
 /*# sourceURL=${import.meta.resolve('./exportTraceOptions.css')} */`;

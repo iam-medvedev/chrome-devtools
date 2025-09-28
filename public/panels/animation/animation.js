@@ -61,6 +61,10 @@ var animationTimeline_css_default = `/*
   --timeline-controls-width: 150px;
 }
 
+.toolbar-view-container {
+  min-height: fit-content;
+}
+
 .animation-node-row {
   width: 100%;
   display: flex;
@@ -833,7 +837,7 @@ var AnimationTimeline = class _AnimationTimeline extends UI.Widget.VBox {
     this.#playbackRate = 1;
     this.#allPaused = false;
     this.#animationGroupPausedBeforeScrub = false;
-    this.#toolbarViewContainer = this.contentElement.createChild("div");
+    this.#toolbarViewContainer = this.contentElement.createChild("div", "toolbar-view-container");
     this.createHeader();
     this.#animationsContainer = this.contentElement.createChild("div", "animation-timeline-rows");
     this.#animationsContainer.setAttribute("jslog", `${VisualLogging.section("animations")}`);

@@ -1160,6 +1160,7 @@ var CSSOverviewSidebarPanel = class extends UI2.Widget.VBox {
 };
 
 // gen/front_end/panels/css_overview/CSSOverviewCompletedView.js
+var _a;
 var { styleMap, ref } = Directives2;
 var { widgetConfig } = UI3.Widget;
 var UIStrings4 = {
@@ -1576,7 +1577,7 @@ function renderContrastIssue(key, issues) {
 function renderColor(section, color) {
   const borderColor = Common2.Color.parse(color)?.asLegacyColor();
   if (!borderColor) {
-    return html3``;
+    return nothing;
   }
   return html3`<li>
     <button title=${color} data-type="color" data-color=${color}
@@ -1587,7 +1588,7 @@ function renderColor(section, color) {
     <div class="block-title color-text">${color}</div>
   </li>`;
 }
-var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widget.VBox {
+var CSSOverviewCompletedView = class extends UI3.Widget.VBox {
   onReset = () => {
   };
   #selectedSection = "summary";
@@ -1643,7 +1644,7 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
   #reset() {
     this.#viewOutput.closeAllTabs();
     this.#viewMap = /* @__PURE__ */ new Map();
-    _CSSOverviewCompletedView.pushedNodes.clear();
+    _a.pushedNodes.clear();
     this.#selectedSection = "summary";
     this.requestUpdate();
   }
@@ -1857,6 +1858,7 @@ var CSSOverviewCompletedView = class _CSSOverviewCompletedView extends UI3.Widge
   }
   static pushedNodes = /* @__PURE__ */ new Set();
 };
+_a = CSSOverviewCompletedView;
 var ELEMENT_DETAILS_DEFAULT_VIEW = (input, _output, target) => {
   const { items, visibility } = input;
   render3(html3`
@@ -1960,7 +1962,7 @@ var ElementDetailsView = class extends UI3.Widget.Widget {
 };
 function renderNode(data, link, showNode) {
   if (!link) {
-    return html3``;
+    return nothing;
   }
   return html3`
     <td>

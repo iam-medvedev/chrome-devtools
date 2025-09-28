@@ -126,7 +126,7 @@ export class LayoutShiftDetails extends UI.Widget.Widget {
 }
 export const DEFAULT_VIEW = (input, _output, target) => {
     if (!input.event || !input.parsedTrace) {
-        render(html ``, target);
+        render(Lit.nothing, target);
         return;
     }
     const title = Trace.Name.forEntry(input.event);

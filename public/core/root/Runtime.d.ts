@@ -218,6 +218,9 @@ interface LiveEdit {
 interface DevToolsFlexibleLayout {
     verticalDrawerEnabled: boolean;
 }
+interface DevToolsStartingStyleDebugging {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -263,6 +266,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsGdpProfilesAvailability: GdpProfilesAvailability;
     devToolsLiveEdit: LiveEdit;
     devToolsFlexibleLayout: DevToolsFlexibleLayout;
+    devToolsStartingStyleDebugging: DevToolsStartingStyleDebugging;
 }>;
 /**
  * The host configuration for this DevTools instance.

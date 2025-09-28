@@ -2266,6 +2266,22 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     bScore = bScore || 0;
     return aScore - bScore || aRequest.identityCompare(bRequest);
   }
+  static IsAdRelatedComparator(a, b) {
+    const aRequest = a.requestOrFirstKnownChildRequest();
+    const bRequest = b.requestOrFirstKnownChildRequest();
+    if (!aRequest || !bRequest) {
+      return !aRequest ? -1 : 1;
+    }
+    const aIsAdRelated = aRequest.isAdRelated();
+    const bIsAdRelated = bRequest.isAdRelated();
+    if (aIsAdRelated > bIsAdRelated) {
+      return 1;
+    }
+    if (bIsAdRelated > aIsAdRelated) {
+      return -1;
+    }
+    return aRequest.identityCompare(bRequest);
+  }
   static RequestPropertyComparator(propertyName, a, b) {
     const aRequest = a.requestOrFirstKnownChildRequest();
     const bRequest = b.requestOrFirstKnownChildRequest();
@@ -2482,6 +2498,10 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       }
       case "remote-address-space": {
         this.renderAddressSpaceCell(cell, this.requestInternal.remoteAddressSpace());
+        break;
+      }
+      case "is-ad-related": {
+        this.setTextAndTitle(cell, this.requestInternal.isAdRelated().toLocaleString());
         break;
       }
       case "cookies": {
@@ -8488,7 +8508,11 @@ var UIStrings18 = {
   /**
    * @description Text in Network Log View Columns of the Network panel
    */
-  remoteAddressSpace: "Remote Address Space"
+  remoteAddressSpace: "Remote Address Space",
+  /**
+   * @description Text to show whether a request is ad-related
+   */
+  isAdRelated: "Is Ad-Related"
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/network/NetworkLogViewColumns.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
@@ -9351,6 +9375,11 @@ var DEFAULT_COLUMNS = [
     isRequestHeader: true,
     title: i18n35.i18n.lockedLazyString("User-Agent"),
     sortingFunction: NetworkRequestNode.RequestHeaderStringComparator.bind(null, "user-agent")
+  },
+  {
+    id: "is-ad-related",
+    title: i18nLazyString3(UIStrings18.isAdRelated),
+    sortingFunction: NetworkRequestNode.IsAdRelatedComparator
   },
   // This header is a placeholder to let datagrid know that it can be sorted by this column, but never shown.
   {

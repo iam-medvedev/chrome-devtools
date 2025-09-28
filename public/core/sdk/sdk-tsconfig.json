@@ -8,7 +8,11 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
-      "esnext",
+      "ES2023",
+      "ES2024.Promise",
+      "ESNext.Iterator",
+      "ESNext.Collection",
+      "ESNext.Array",
       "dom",
       "dom.iterable"
     ],
@@ -24,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "esnext",
+    "target": "ES2023",
     "tsBuildInfoFile": "sdk-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
     "useUnknownInCatchVariables": false
@@ -48,6 +52,7 @@
     "../../../../../../front_end/core/sdk/CSSQuery.ts",
     "../../../../../../front_end/core/sdk/CSSRule.ts",
     "../../../../../../front_end/core/sdk/CSSScope.ts",
+    "../../../../../../front_end/core/sdk/CSSStartingStyle.ts",
     "../../../../../../front_end/core/sdk/CSSStyleDeclaration.ts",
     "../../../../../../front_end/core/sdk/CSSStyleSheetHeader.ts",
     "../../../../../../front_end/core/sdk/CSSSupports.ts",

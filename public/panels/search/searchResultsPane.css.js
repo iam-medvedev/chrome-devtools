@@ -36,6 +36,11 @@ li.search-result {
   white-space: pre;
 }
 
+li.search-result .tree-element-title {
+  display: flex;
+  width: 100%;
+}
+
 li.search-result:hover {
   background-color: var(--sys-color-state-hover-on-subtle);
 }
@@ -71,6 +76,10 @@ li.search-match {
   margin: 2px 0;
   overflow-wrap: normal;
   white-space: pre;
+}
+
+li.search-match .tree-element-title {
+  display: flex;
 }
 
 li.search-match.selected:focus-visible {

@@ -2306,6 +2306,7 @@ function framesMatch(parsedFrame, protocolFrame) {
 }
 
 // gen/front_end/panels/console/ConsoleViewMessage.js
+var _a;
 var UIStrings4 = {
   /**
    * @description Message element text content in Console View Message of the Console panel. Shown
@@ -2499,7 +2500,7 @@ var hoverButtonObserver = new IntersectionObserver((results) => {
     }
   }
 });
-var ConsoleViewMessage = class _ConsoleViewMessage {
+var ConsoleViewMessage = class {
   message;
   linkifier;
   repeatCountInternal;
@@ -3529,7 +3530,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     button.append(icon);
     button.onclick = (event) => {
       event.stopPropagation();
-      UI4.Context.Context.instance().setFlavor(_ConsoleViewMessage, this);
+      UI4.Context.Context.instance().setFlavor(_a, this);
       const action2 = UI4.ActionRegistry.ActionRegistry.instance().getAction(EXPLAIN_HOVER_ACTION_ID);
       void action2.execute();
     };
@@ -3823,7 +3824,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
       return fragment;
     }
     const container = document.createDocumentFragment();
-    const tokens = _ConsoleViewMessage.tokenizeMessageText(string);
+    const tokens = _a.tokenizeMessageText(string);
     let isBlob = false;
     for (const token of tokens) {
       if (!token.text) {
@@ -3882,7 +3883,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     return this.groupKeyInternal;
   }
   groupTitle() {
-    const tokens = _ConsoleViewMessage.tokenizeMessageText(this.message.messageText);
+    const tokens = _a.tokenizeMessageText(this.message.messageText);
     const result = tokens.reduce((acc, token) => {
       let text = token.text;
       if (token.type === "url") {
@@ -3901,6 +3902,7 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     return result.replace(/[%]o/g, "");
   }
 };
+_a = ConsoleViewMessage;
 var tokenizerRegexes = null;
 var tokenizerTypes = null;
 function getOrCreateTokenizers() {
@@ -4799,6 +4801,7 @@ import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -5038,6 +5041,7 @@ var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var consoleViewInstance;
 var MIN_HISTORY_LENGTH_FOR_DISABLING_SELF_XSS_WARNING = 5;
 var DISCLAIMER_TOOLTIP_ID = "console-ai-code-completion-disclaimer-tooltip";
+var SPINNER_TOOLTIP_ID = "console-ai-code-completion-spinner-tooltip";
 var CITATIONS_TOOLTIP_ID = "console-ai-code-completion-citations-tooltip";
 var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   #searchableView;
@@ -5295,7 +5299,11 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     return consoleViewInstance;
   }
   createAiCodeCompletionSummaryToolbar() {
-    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({ citationsTooltipId: CITATIONS_TOOLTIP_ID, disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID });
+    this.aiCodeCompletionSummaryToolbar = new AiCodeCompletionSummaryToolbar({
+      citationsTooltipId: CITATIONS_TOOLTIP_ID,
+      disclaimerTooltipId: DISCLAIMER_TOOLTIP_ID,
+      spinnerTooltipId: SPINNER_TOOLTIP_ID
+    });
     this.aiCodeCompletionSummaryToolbarContainer = this.element.createChild("div");
     this.aiCodeCompletionSummaryToolbar.show(this.aiCodeCompletionSummaryToolbarContainer, void 0, true);
   }
@@ -5318,8 +5326,9 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   #onAiCodeCompletionResponseReceived() {
     this.aiCodeCompletionSummaryToolbar?.setLoading(false);
   }
-  static clearConsole() {
+  clearConsole() {
     SDK6.ConsoleModel.ConsoleModel.requestClearMessages();
+    this.prompt.clearAiCodeCompletionCache();
   }
   #onIssuesCountUpdate() {
     void this.issueToolbarThrottle.schedule(async () => this.updateIssuesToolbarItem());
@@ -5355,6 +5364,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
   }
   clearHistory() {
     this.prompt.history().clear();
+    this.prompt.clearAiCodeCompletionCache();
   }
   consoleHistoryAutocompleteChanged() {
     this.prompt.setAddCompletionsFromHistory(this.consoleHistoryAutocompleteSetting.get());
@@ -6341,7 +6351,7 @@ var ActionDelegate = class {
         ConsoleView.instance().focusPrompt();
         return true;
       case "console.clear":
-        ConsoleView.clearConsole();
+        ConsoleView.instance().clearConsole();
         return true;
       case "console.clear.history":
         ConsoleView.instance().clearHistory();
@@ -6755,6 +6765,9 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   clearAutocomplete() {
     CodeMirror2.closeCompletion(this.editor.editor);
   }
+  clearAiCodeCompletionCache() {
+    this.aiCodeCompletion?.clearCachedRequest();
+  }
   moveCaretToEndOfPrompt() {
     this.editor.dispatch({
       selection: CodeMirror2.EditorSelection.cursor(this.editor.state.doc.length)
@@ -6907,6 +6920,7 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
         void this.evaluateCommandInConsole(executionContext, message, expression, useCommandLineAPI);
         if (ConsolePanel.instance().isShowing()) {
           Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.CommandEvaluatedInConsolePanel);
+          Badges.UserBadges.instance().recordAction(Badges.BadgeAction.CONSOLE_PROMPT_EXECUTED);
         }
       }
     }

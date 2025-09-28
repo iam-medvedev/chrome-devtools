@@ -5,10 +5,12 @@ import * as UI from '../../ui/legacy/legacy.js';
 export interface AiCodeCompletionSummaryToolbarProps {
     citationsTooltipId: string;
     disclaimerTooltipId?: string;
+    spinnerTooltipId?: string;
     hasTopBorder?: boolean;
 }
 export interface ViewInput {
     disclaimerTooltipId?: string;
+    spinnerTooltipId?: string;
     citations?: Set<string>;
     citationsTooltipId: string;
     loading: boolean;

@@ -102,10 +102,10 @@ export class PerformanceAnnotationsAgent extends AiAgent {
             return;
         }
         const focus = context.getItem();
-        if (!focus.data.callTree) {
+        if (!focus.callTree) {
             throw new Error('unexpected context');
         }
-        const callTree = focus.data.callTree;
+        const callTree = focus.callTree;
         yield {
             type: "context" /* ResponseType.CONTEXT */,
             title: lockedString(UIStringsNotTranslated.analyzingCallTree),
@@ -122,10 +122,10 @@ export class PerformanceAnnotationsAgent extends AiAgent {
             return query;
         }
         const focus = context.getItem();
-        if (!focus.data.callTree) {
+        if (!focus.callTree) {
             throw new Error('unexpected context');
         }
-        const callTree = focus.data.callTree;
+        const callTree = focus.callTree;
         const contextString = callTree.serialize();
         return `${contextString}\n\n# User request\n\n${query}`;
     }

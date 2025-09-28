@@ -102,9 +102,9 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/search/SearchView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { ref, live } = Directives;
-const { widgetConfig } = UI.Widget;
+const { widgetConfig, widgetRef } = UI.Widget;
 export const DEFAULT_VIEW = (input, output, target) => {
-    const { query, matchCase, isRegex, searchMessage, searchResultsPane, searchResultsMessage, progress, onQueryChange, onQueryKeyDown, onPanelKeyDown, onClearSearchInput, onToggleRegex, onToggleMatchCase, onRefresh, onClearSearch, } = input;
+    const { query, matchCase, isRegex, searchConfig, searchMessage, searchResults, searchResultsMessage, progress, onQueryChange, onQueryKeyDown, onPanelKeyDown, onClearSearchInput, onToggleRegex, onToggleMatchCase, onRefresh, onClearSearch, } = input;
     let header = '', text = '';
     if (!query) {
         header = i18nString(UIStrings.noSearchResult);
@@ -113,12 +113,13 @@ export const DEFAULT_VIEW = (input, output, target) => {
     else if (progress) {
         header = i18nString(UIStrings.searching);
     }
-    else if (!searchResultsPane) {
+    else if (!searchResults.length) {
         header = i18nString(UIStrings.noMatchesFound);
         text = i18nString(UIStrings.nothingMatchedTheQuery);
     }
     // clang-format off
     render(html `
+      <style>${UI.inspectorCommonStyles}</style>
       <style>${searchViewStyles}</style>
       <div class="search-drawer-header" @keydown=${onPanelKeyDown}>
         <div class="search-container">
@@ -195,9 +196,12 @@ export const DEFAULT_VIEW = (input, output, target) => {
         </devtools-toolbar>
       </div>
       <div class="search-results" @keydown=${onPanelKeyDown}>
-        ${searchResultsPane
-        ? html `<devtools-widget .widgetConfig=${widgetConfig(UI.Widget.VBox)}>
-              ${searchResultsPane.element}
+        ${searchResults.length
+        ? html `<devtools-widget .widgetConfig=${widgetConfig(SearchResultsPane, { searchResults, searchConfig })}
+            ${widgetRef(SearchResultsPane, w => {
+            output.showAllMatches = () => void w.showAllMatches();
+            output.collapseAllResults = () => void w.collapseAllResults();
+        })}>
             </devtools-widget>`
         : html `<devtools-widget .widgetConfig=${widgetConfig(UI.EmptyWidget.EmptyWidget, { header, text })}>
                   </devtools-widget>`}
@@ -217,6 +221,8 @@ export const DEFAULT_VIEW = (input, output, target) => {
 export class SearchView extends UI.Widget.VBox {
     #view;
     #focusSearchInput = () => { };
+    #showAllMatches = () => { };
+    #collapseAllResults = () => { };
     #isIndexing;
     #searchId;
     #searchMatchesCount;
@@ -225,7 +231,6 @@ export class SearchView extends UI.Widget.VBox {
     #searchingView;
     #searchConfig;
     #pendingSearchConfig;
-    #searchResultsPane;
     #progress;
     #query;
     #matchCase = false;
@@ -237,7 +242,7 @@ export class SearchView extends UI.Widget.VBox {
     // We throttle adding search results, otherwise we trigger DOM layout for each
     // result added.
     #throttler;
-    #pendingSearchResults = [];
+    #searchResults = [];
     constructor(settingKey, throttler, view = DEFAULT_VIEW) {
         super({
             jslog: `${VisualLogging.panel('search').track({ resize: true })}`,
@@ -254,7 +259,6 @@ export class SearchView extends UI.Widget.VBox {
         this.#searchingView = null;
         this.#searchConfig = null;
         this.#pendingSearchConfig = null;
-        this.#searchResultsPane = null;
         this.#progress = null;
         this.#throttler = throttler;
         this.#advancedSearchConfig = Common.Settings.Settings.instance().createLocalSetting(settingKey + '-search-config', new Workspace.SearchConfig.SearchConfig('', true, false).toPlainObject());
@@ -268,8 +272,9 @@ export class SearchView extends UI.Widget.VBox {
             query: this.#query,
             matchCase: this.#matchCase,
             isRegex: this.#isRegex,
+            searchConfig: this.#searchConfig,
             searchMessage: this.#searchMessage,
-            searchResultsPane: this.#searchResultsPane,
+            searchResults: this.#searchResults.filter(searchResult => searchResult.matchesCount()),
             searchResultsMessage: this.#searchResultsMessage,
             progress: this.#progress,
             onQueryChange: (query) => {
@@ -287,6 +292,12 @@ export class SearchView extends UI.Widget.VBox {
         const output = {
             set focusSearchInput(value) {
                 that.#focusSearchInput = value;
+            },
+            set showAllMatches(value) {
+                that.#showAllMatches = value;
+            },
+            set collapseAllResults(value) {
+                that.#collapseAllResults = value;
             }
         };
         this.#view(input, output, this.contentElement);
@@ -367,23 +378,17 @@ export class SearchView extends UI.Widget.VBox {
             this.#onIndexingFinished();
             return;
         }
-        if (!this.#searchResultsPane) {
-            this.#searchResultsPane = this.createSearchResultsPane();
-        }
-        this.#pendingSearchResults.push(searchResult);
-        void this.#throttler.schedule(async () => this.#addPendingSearchResults());
+        this.#searchResults.push(searchResult);
+        void this.#throttler.schedule(async () => this.#setSearchResults());
     }
-    createSearchResultsPane() {
-        return new SearchResultsPane(this.#searchConfig);
-    }
-    #addPendingSearchResults() {
-        for (const searchResult of this.#pendingSearchResults) {
+    #setSearchResults() {
+        this.#searchMatchesCount = 0;
+        this.#searchResultsCount = 0;
+        this.#nonEmptySearchResultsCount = 0;
+        for (const searchResult of this.#searchResults) {
             this.#addSearchResult(searchResult);
-            if (searchResult.matchesCount()) {
-                this.#searchResultsPane?.addSearchResult(searchResult);
-            }
         }
-        this.#pendingSearchResults = [];
+        this.performUpdate();
     }
     #onSearchFinished(searchId, finished) {
         if (searchId !== this.#searchId || !this.#progress) {
@@ -391,7 +396,6 @@ export class SearchView extends UI.Widget.VBox {
         }
         this.#progress = null;
         this.#searchFinished(finished);
-        this.#searchConfig = null;
         UI.ARIAUtils.LiveAnnouncer.alert(this.#searchMessage + ' ' + this.#searchResultsMessage);
     }
     #startSearch(searchConfig) {
@@ -408,7 +412,7 @@ export class SearchView extends UI.Widget.VBox {
     }
     #resetSearch() {
         this.#stopSearch();
-        this.#searchResultsPane = null;
+        this.#searchResults = [];
         this.#searchMessage = '';
         this.#searchResultsMessage = '';
         this.performUpdate();
@@ -420,11 +424,11 @@ export class SearchView extends UI.Widget.VBox {
         if (this.#searchScope) {
             this.#searchScope.stopSearch();
         }
-        this.#searchConfig = null;
     }
     #searchStarted() {
         this.#searchMatchesCount = 0;
         this.#searchResultsCount = 0;
+        this.#searchResults = [];
         this.#nonEmptySearchResultsCount = 0;
         if (!this.#searchingView) {
             this.#searchingView = new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.searching), '');
@@ -461,7 +465,7 @@ export class SearchView extends UI.Widget.VBox {
     }
     #searchFinished(finished) {
         this.#searchMessage = finished ? i18nString(UIStrings.searchFinished) : i18nString(UIStrings.searchInterrupted);
-        this.performUpdate();
+        this.requestUpdate();
     }
     focus() {
         this.#focusSearchInput();
@@ -503,14 +507,14 @@ export class SearchView extends UI.Widget.VBox {
         const shouldShowAllForOtherPlatforms = !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.code === 'BracketRight';
         // "Command + Alt + [" for Mac
         const shouldCollapseAllForMac = isMac && event.metaKey && !event.ctrlKey && event.altKey && event.code === 'BracketLeft';
-        // "Command + Alt + {" for other platforms
+        // "Ctrl + Alt + {" for other platforms
         const shouldCollapseAllForOtherPlatforms = !isMac && event.ctrlKey && !event.metaKey && event.shiftKey && event.code === 'BracketLeft';
         if (shouldShowAllForMac || shouldShowAllForOtherPlatforms) {
-            this.#searchResultsPane?.showAllMatches();
+            this.#showAllMatches();
             void VisualLogging.logKeyDown(event.currentTarget, event, 'show-all-matches');
         }
         else if (shouldCollapseAllForMac || shouldCollapseAllForOtherPlatforms) {
-            this.#searchResultsPane?.collapseAllResults();
+            this.#collapseAllResults();
             void VisualLogging.logKeyDown(event.currentTarget, event, 'collapse-all-results');
         }
     }

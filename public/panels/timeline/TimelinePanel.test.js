@@ -9,6 +9,7 @@ import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { dispatchClickEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions, } from '../../testing/EnvironmentHelpers.js';
+import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Timeline from './timeline.js';
@@ -138,7 +139,7 @@ describeWithEnvironment('TimelinePanel', function () {
     it('clears out AI related contexts when the user presses "Clear"', async () => {
         const context = UI.Context.Context.instance();
         const mockParsedTrace = { insights: new Map() };
-        context.setFlavor(AIAssistance.AgentFocus, AIAssistance.AgentFocus.full(mockParsedTrace));
+        context.setFlavor(AIAssistance.AgentFocus, AIAssistance.AgentFocus.fromParsedTrace(mockParsedTrace));
         const clearButton = timeline.element.querySelector('[aria-label="Clear"]');
         assert.isOk(clearButton);
         dispatchClickEvent(clearButton);
@@ -147,20 +148,16 @@ describeWithEnvironment('TimelinePanel', function () {
     it('includes the trace metadata when saving to a file', async function () {
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
         const metadata = await TraceLoader.metadata(this, 'web-dev-with-commit.json.gz');
+        const fileManager = stubFileManager();
         await timeline.loadingComplete(events, null, metadata);
-        const fileManager = Workspace.FileManager.FileManager.instance();
-        const saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
-            return Promise.resolve({});
-        });
-        sinon.stub(fileManager, 'close');
         await timeline.saveToFile({
             includeScriptContent: false,
             includeSourceMaps: false,
             addModifications: false,
             shouldCompress: false,
         });
-        sinon.assert.calledOnce(saveSpy);
-        const [, contentData] = saveSpy.getCall(0).args;
+        sinon.assert.calledOnce(fileManager.save);
+        const [, contentData] = fileManager.save.getCall(0).args;
         // Assert that each value in the metadata of the JSON matches the metadata in memory.
         // We can't do a simple deepEqual() on the two objects as the in-memory
         // contains values that are `undefined` which do not exist in the JSON
@@ -231,11 +228,9 @@ describeWithEnvironment('TimelinePanel', function () {
         let saveSpy;
         let closeSpy;
         beforeEach(() => {
-            fileManager = Workspace.FileManager.FileManager.instance();
-            saveSpy = sinon.stub(fileManager, 'save').callsFake(() => {
-                return Promise.resolve({});
-            });
-            closeSpy = sinon.stub(fileManager, 'close');
+            fileManager = stubFileManager();
+            saveSpy = fileManager.save;
+            closeSpy = fileManager.close;
         });
         describe('with gz', function () {
             it('saves a regular trace file', async function () {

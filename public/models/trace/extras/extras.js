@@ -566,7 +566,8 @@ function extractSampleTraceId(event) {
 var milliToMicro = (value) => Types5.Timing.Micro(value * 1e3);
 
 // gen/front_end/models/trace/helpers/SamplesIntegrator.js
-var SamplesIntegrator = class _SamplesIntegrator {
+var _a;
+var SamplesIntegrator = class {
   /**
    * The result of running the samples integrator. Holds the JS calls
    * with their approximated duration after integrating samples into the
@@ -802,14 +803,14 @@ var SamplesIntegrator = class _SamplesIntegrator {
     if (maybeCallForTraceId) {
       stackTrace = maybeCallForTraceId;
     }
-    _SamplesIntegrator.filterStackFrames(stackTrace, this.#engineConfig);
+    _a.filterStackFrames(stackTrace, this.#engineConfig);
     const endTime = event.ts + (event.dur || 0);
     const minFrames = Math.min(stackTrace.length, this.#currentJSStack.length);
     let i;
     for (i = this.#lockedJsStackDepth.at(-1) || 0; i < minFrames; ++i) {
       const newFrame = stackTrace[i].callFrame;
       const oldFrame = this.#currentJSStack[i].callFrame;
-      if (!_SamplesIntegrator.framesAreEqual(newFrame, oldFrame)) {
+      if (!_a.framesAreEqual(newFrame, oldFrame)) {
         break;
       }
       this.#currentJSStack[i].dur = Types6.Timing.Micro(Math.max(this.#currentJSStack[i].dur || 0, endTime - this.#currentJSStack[i].ts));
@@ -871,7 +872,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
     return frame1.scriptId === frame2.scriptId && frame1.functionName === frame2.functionName && frame1.lineNumber === frame2.lineNumber;
   }
   static showNativeName(name, runtimeCallStatsEnabled) {
-    return runtimeCallStatsEnabled && Boolean(_SamplesIntegrator.nativeGroup(name));
+    return runtimeCallStatsEnabled && Boolean(_a.nativeGroup(name));
   }
   static nativeGroup(nativeName) {
     if (nativeName.startsWith("Parse")) {
@@ -894,11 +895,11 @@ var SamplesIntegrator = class _SamplesIntegrator {
     let j = 0;
     for (let i = 0; i < stack.length; ++i) {
       const frame = stack[i].callFrame;
-      const nativeRuntimeFrame = _SamplesIntegrator.isNativeRuntimeFrame(frame);
-      if (nativeRuntimeFrame && !_SamplesIntegrator.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
+      const nativeRuntimeFrame = _a.isNativeRuntimeFrame(frame);
+      if (nativeRuntimeFrame && !_a.showNativeName(frame.functionName, engineConfig.includeRuntimeCallStats)) {
         continue;
       }
-      const nativeFrameName = nativeRuntimeFrame ? _SamplesIntegrator.nativeGroup(frame.functionName) : null;
+      const nativeFrameName = nativeRuntimeFrame ? _a.nativeGroup(frame.functionName) : null;
       if (previousNativeFrameName && previousNativeFrameName === nativeFrameName) {
         continue;
       }
@@ -939,6 +940,7 @@ var SamplesIntegrator = class _SamplesIntegrator {
     return profile;
   }
 };
+_a = SamplesIntegrator;
 
 // gen/front_end/models/trace/extras/TraceTree.js
 import * as Types7 from "./../types/types.js";

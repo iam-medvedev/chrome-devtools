@@ -11,6 +11,7 @@ import { SpeedsterBadge } from './SpeedsterBadge.js';
 import { StarterBadge } from './StarterBadge.js';
 const SNOOZE_TIME_MS = 24 * 60 * 60 * 1000; // 24 hours
 const MAX_SNOOZE_COUNT = 3;
+const DELAY_BEFORE_TRIGGER = 1500;
 let userBadgesInstance = undefined;
 export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
     #badgeActionEventTarget = new Common.ObjectWrapper.ObjectWrapper();
@@ -67,7 +68,8 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
         // @ts-expect-error
         this.#badgeActionEventTarget.dispatchEventToListeners(action);
     }
-    async #onTriggerBadge(badge) {
+    async #onTriggerBadge(badge, opts) {
+        const triggerTime = Date.now();
         let shouldAwardBadge = false;
         // By default, we award non-starter badges directly when they are triggered.
         if (!badge.isStarterBadge) {
@@ -89,7 +91,12 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
                 return;
             }
         }
-        this.dispatchEventToListeners("BadgeTriggered" /* Events.BADGE_TRIGGERED */, badge);
+        const timeElapsedAfterTriggerCall = Date.now() - triggerTime;
+        // We want to add exactly 1.5 second delay between the trigger action & the notification.
+        const delay = opts?.immediate ? 0 : Math.max(DELAY_BEFORE_TRIGGER - timeElapsedAfterTriggerCall, 0);
+        setTimeout(() => {
+            this.dispatchEventToListeners("BadgeTriggered" /* Events.BADGE_TRIGGERED */, badge);
+        }, delay);
     }
     #deactivateAllBadges() {
         this.#allBadges.forEach(badge => {
@@ -117,10 +124,11 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
             this.#deactivateAllBadges();
             return;
         }
-        const [gdpProfile, isEligibleToCreateProfile] = await Promise.all([
-            Host.GdpClient.GdpClient.instance().getProfile(),
-            Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile(),
-        ]);
+        const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
+        let isEligibleToCreateProfile = Boolean(gdpProfile);
+        if (!gdpProfile) {
+            isEligibleToCreateProfile = await Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile();
+        }
         // User does not have a GDP profile & not eligible to create one.
         // So, we don't activate any badges for them.
         if (!gdpProfile && !isEligibleToCreateProfile) {

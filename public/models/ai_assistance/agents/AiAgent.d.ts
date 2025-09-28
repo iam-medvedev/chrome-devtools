@@ -102,12 +102,7 @@ export interface ParsedAnswer {
     answer: string;
     suggestions?: [string, ...string[]];
 }
-export interface ParsedStep {
-    thought?: string;
-    title?: string;
-    action?: string;
-}
-export type ParsedResponse = ParsedAnswer | ParsedStep;
+export type ParsedResponse = ParsedAnswer;
 export declare const MAX_STEPS = 10;
 export interface ConversationSuggestion {
     title: string;
@@ -232,9 +227,16 @@ export declare abstract class AiAgent<T> {
     get id(): string;
     get origin(): string | undefined;
     /**
+     * The AI has instructions to emit structured suggestions in their response. This
+     * function parses for that.
+     *
+     * Note: currently only StylingAgent and PerformanceAgent utilize this, but
+     * eventually all agents should support this.
+     */
+    parseTextResponseForSuggestions(text: string): ParsedResponse;
+    /**
      * Parses a streaming text response into a
-     * though/action/title/answer/suggestions component. This is only used
-     * by StylingAgent.
+     * though/action/title/answer/suggestions component.
      */
     parseTextResponse(response: string): ParsedResponse;
     /**

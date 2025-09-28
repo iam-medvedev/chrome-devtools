@@ -7,6 +7,7 @@ import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as Formatter from '../../models/formatter/formatter.js';
@@ -1412,6 +1413,9 @@ export class DebuggerPlugin extends Plugin {
         Common.Settings.Settings.instance().moduleSetting('breakpoints-active').set(true);
         const bp = await this.breakpointManager.setBreakpoint(this.uiSourceCode, lineNumber, columnNumber, condition, enabled, isLogpoint, "USER_ACTION" /* Breakpoints.BreakpointManager.BreakpointOrigin.USER_ACTION */);
         this.breakpointWasSetForTest(lineNumber, columnNumber, condition, enabled);
+        if (bp) {
+            Badges.UserBadges.instance().recordAction(Badges.BadgeAction.BREAKPOINT_ADDED);
+        }
         return bp;
     }
     breakpointWasSetForTest(_lineNumber, _columnNumber, _condition, _enabled) {

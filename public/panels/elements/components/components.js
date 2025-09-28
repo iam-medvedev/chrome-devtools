@@ -123,6 +123,7 @@ var RegisteredAdorners;
   RegisteredAdorners2["FLEX"] = "flex";
   RegisteredAdorners2["AD"] = "ad";
   RegisteredAdorners2["SCROLL_SNAP"] = "scroll-snap";
+  RegisteredAdorners2["STARTING_STYLE"] = "starting-style";
   RegisteredAdorners2["CONTAINER"] = "container";
   RegisteredAdorners2["SLOT"] = "slot";
   RegisteredAdorners2["TOP_LAYER"] = "top-layer";
@@ -166,6 +167,12 @@ function getRegisteredAdorner(which) {
     case RegisteredAdorners.SCROLL_SNAP:
       return {
         name: "scroll-snap",
+        category: "Layout",
+        enabledByDefault: true
+      };
+    case RegisteredAdorners.STARTING_STYLE:
+      return {
+        name: "starting-style",
         category: "Layout",
         enabledByDefault: true
       };

@@ -2142,29 +2142,31 @@ var DEFAULT_VIEW = (input, output, target) => {
         }
       }
     }
-    return input.search.highlight(highlights, selected);
+    return UI7.TreeOutline.TreeSearch.highlight(highlights, selected);
   }
   function layOutNode(node, populateSubtrees = false) {
     const onExpand = (event) => input.onExpand(node, event.detail.expanded);
     return html`
-    <li
-      ${highlight(
+      <li ${highlight(
       node,
       /* closeTag=*/
       false
-    )}
-      role="treeitem"
-      ?selected=${input.jumpToNextSearchResult?.node === node}
-      @expand=${onExpand}>
-        ${htmlView(node)}${populateSubtrees || input.search ? subtree(node) : Lit.nothing}
-    </li>`;
+    )} role="treeitem"
+          ?selected=${input.jumpToNextSearchResult?.node === node}
+          @expand=${onExpand}>
+        ${htmlView(node)}
+        ${node.children().length ? html`
+          <ul role="group" ?hidden=${!node.expanded}>
+            ${populateSubtrees || input.search ? subtree(node) : Lit.nothing}
+          </ul>` : Lit.nothing}
+      </li>`;
   }
   function subtree(treeNode) {
     const children2 = treeNode.children();
     if (children2.length === 0) {
       return Lit.nothing;
     }
-    return html`<ul role="group" ?hidden=${!treeNode.expanded}>
+    return html`
       ${children2.map((child) => layOutNode(child, treeNode.expanded))}
       ${treeNode.node instanceof Element ? html`<li
                   ${highlight(
@@ -2173,8 +2175,7 @@ var DEFAULT_VIEW = (input, output, target) => {
       true
     )}
                   role="treeitem"><span part='shadow-xml-view-close-tag'>${"</" + treeNode.node.tagName + ">"}</span
-                 ></li>` : Lit.nothing}
-        </ul>`;
+                 ></li>` : Lit.nothing}`;
   }
   render(
     html`

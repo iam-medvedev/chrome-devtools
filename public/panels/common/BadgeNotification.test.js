@@ -11,6 +11,7 @@ import * as PanelCommon from './common.js';
 class TestBadge extends Badges.Badge {
     name = 'testBadge';
     title = 'title';
+    jslogContext = 'test-badge-jslogcontext';
     imageUri = 'image-uri';
     interestedActions = [];
     handleAction() {
@@ -20,6 +21,7 @@ class TestBadge extends Badges.Badge {
 class TestStarterBadge extends Badges.Badge {
     name = 'testStarterBadge';
     title = 'starterBadgeTitle';
+    jslogContext = 'starter-badge-jslogcontext';
     imageUri = 'starter-badge-image-uri';
     isStarterBadge = true;
     interestedActions = [];
@@ -57,7 +59,7 @@ describeWithEnvironment('BadgeNotification', () => {
     }
     it('invokes action callback on click', async () => {
         const action1Spy = sinon.spy();
-        const { view, widget } = await createWidget({ actions: [{ label: 'Action 1', onClick: action1Spy }] });
+        const { view, widget } = await createWidget({ actions: [{ jslogContext: '', label: 'Action 1', onClick: action1Spy }] });
         view.input.actions[0].onClick();
         sinon.assert.calledOnce(action1Spy);
         widget.detach();
@@ -121,6 +123,22 @@ describeWithEnvironment('BadgeNotification', () => {
         assert.strictEqual(input.actions[0].label, 'Remind me later');
         assert.strictEqual(input.actions[1].label, 'Create profile');
         assertMessageIncludes(input.message, 'Create a profile to claim your badge.');
+        widget.detach();
+    });
+    it('Calls snoozeStarterBadge when the GDP sign up dialog is opened from starter badge and is canceled', async () => {
+        sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves(null);
+        const snoozeStarterBadgeStub = sinon.stub(Badges.UserBadges.instance(), 'snoozeStarterBadge');
+        const gdpSignUpDialogShowStub = sinon.stub(PanelCommon.GdpSignUpDialog, 'show');
+        const { view, widget } = await createWidget();
+        const badge = createMockBadge(TestStarterBadge);
+        await widget.present(badge);
+        const input = await view.nextInput;
+        assert.strictEqual(input.actions[1].label, 'Create profile');
+        input.actions[1].onClick();
+        sinon.assert.calledOnce(gdpSignUpDialogShowStub);
+        const showArgs = gdpSignUpDialogShowStub.lastCall.args[0];
+        showArgs.onCancel();
+        sinon.assert.calledOnce(snoozeStarterBadgeStub);
         widget.detach();
     });
     describe('dismissing', () => {

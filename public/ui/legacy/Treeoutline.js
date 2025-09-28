@@ -42,7 +42,7 @@ import { InplaceEditor } from './InplaceEditor.js';
 import { Keys } from './KeyboardShortcut.js';
 import { Tooltip } from './Tooltip.js';
 import treeoutlineStyles from './treeoutline.css.js';
-import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, HTMLElementWithLightDOMTemplate, isEditing, } from './UIUtils.js';
+import { createShadowRootWithCoreStyles, deepElementFromPoint, enclosingNodeOrSelfWithNodeNameInArray, HTMLElementWithLightDOMTemplate, InterceptBindingDirective, isEditing, } from './UIUtils.js';
 const nodeToParentTreeElementMap = new WeakMap();
 const { render } = Lit;
 export var Events;
@@ -1233,7 +1233,7 @@ export class TreeSearch {
     getResults(node) {
         return this.#getNodeMatchMap().get(node) ?? [];
     }
-    highlight(ranges, selectedRange) {
+    static highlight(ranges, selectedRange) {
         return Lit.Directives.ref(element => {
             if (element instanceof HTMLLIElement) {
                 TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
@@ -1313,6 +1313,7 @@ class ActiveHighlights {
 class TreeViewTreeElement extends TreeElement {
     #activeHighlights = new ActiveHighlights();
     #clonedAttributes = new Set();
+    #clonedClasses = new Set();
     static #elementToTreeElement = new WeakMap();
     configElement;
     constructor(treeOutline, configElement) {
@@ -1327,7 +1328,9 @@ class TreeViewTreeElement extends TreeElement {
     refresh() {
         this.titleElement.textContent = '';
         this.#clonedAttributes.forEach(attr => this.listItemElement.attributes.removeNamedItem(attr));
+        this.#clonedClasses.forEach(className => this.listItemElement.classList.remove(className));
         this.#clonedAttributes.clear();
+        this.#clonedClasses.clear();
         for (let i = 0; i < this.configElement.attributes.length; ++i) {
             const attribute = this.configElement.attributes.item(i);
             if (attribute && attribute.name !== 'role' && SDK.DOMModel.ARIA_ATTRIBUTES.has(attribute.name)) {
@@ -1335,6 +1338,11 @@ class TreeViewTreeElement extends TreeElement {
                 this.#clonedAttributes.add(attribute.name);
             }
         }
+        for (const className of this.configElement.classList) {
+            this.listItemElement.classList.add(className);
+            this.#clonedClasses.add(className);
+        }
+        InterceptBindingDirective.attachEventListeners(this.configElement, this.listItemElement);
         for (const child of this.configElement.childNodes) {
             if (child instanceof HTMLUListElement && child.role === 'group') {
                 continue;
@@ -1499,7 +1507,7 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
             }
         }
     }
-    addNodes(nodes) {
+    addNodes(nodes, nextSibling) {
         for (const node of getTreeNodes(nodes)) {
             if (TreeViewTreeElement.get(node)) {
                 continue; // Not sure this can happen
@@ -1508,8 +1516,15 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
             if (!parent) {
                 continue;
             }
+            while (nextSibling && nextSibling.nodeType !== Node.ELEMENT_NODE) {
+                nextSibling = nextSibling.nextSibling;
+            }
+            const nextElement = nextSibling ? TreeViewTreeElement.get(nextSibling) : null;
+            const index = nextElement ? parent.treeElement.indexOfChild(nextElement) : parent.treeElement.children().length;
             const treeElement = new TreeViewTreeElement(this.#treeOutline, node);
-            parent.treeElement.appendChild(treeElement);
+            const expandable = Boolean(node.querySelector('ul[role="group"]'));
+            treeElement.setExpandable(expandable);
+            parent.treeElement.insertChild(treeElement, index);
             if (hasBooleanAttribute(node, 'selected')) {
                 treeElement.revealAndSelect(true);
             }

@@ -80,6 +80,7 @@ const UIStringsNotTranslate = {
 };
 const lockedString = i18n.i18n.lockedString;
 const CODE_SNIPPET_WARNING_URL = 'https://support.google.com/legal/answer/13505487';
+const PROMOTION_ID = 'ai-code-completion';
 export const DEFAULT_VIEW = (input, _output, target) => {
     if (input.aidaAvailability !== "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
         render(nothing, target);
@@ -90,9 +91,12 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         lockedString(UIStringsNotTranslate.i) + ' ' + lockedString(UIStringsNotTranslate.toTurnOnCodeSuggestions) + ' ' +
         lockedString(UIStringsNotTranslate.press) + ' ' + cmdOrCtrl + ' ' + lockedString(UIStringsNotTranslate.x) + ' ' +
         lockedString(UIStringsNotTranslate.toDisableCodeSuggestions);
+    const newBadge = UI.UIUtils.maybeCreateNewBadge(PROMOTION_ID);
+    const newBadgeTemplate = newBadge ? html `&nbsp;${newBadge}` : nothing;
     // clang-format off
     render(html `
           <style>${styles}</style>
+          <style>@scope to (devtools-widget > *) { ${UI.inspectorCommonStyles} }</style>
           <div class="ai-code-completion-teaser-screen-reader-only">${teaserAriaLabel}</div>
           <div class="ai-code-completion-teaser" aria-hidden="true">
             <span class="ai-code-completion-teaser-action">
@@ -104,6 +108,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
               jslog=${VisualLogging.action('ai-code-completion-teaser.dismiss').track({ click: true })}>
                 ${lockedString(UIStringsNotTranslate.dontShowAgain)}
             </span>
+            ${newBadgeTemplate}
           </div>
         `, target);
     // clang-format on

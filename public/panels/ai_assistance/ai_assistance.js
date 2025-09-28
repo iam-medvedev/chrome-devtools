@@ -6,19 +6,20 @@ var __export = (target, all) => {
 
 // gen/front_end/panels/ai_assistance/AiAssistancePanel.js
 import "./../../ui/legacy/legacy.js";
-import * as Common4 from "./../../core/common/common.js";
+import * as Common5 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Platform4 from "./../../core/platform/platform.js";
 import * as Root5 from "./../../core/root/root.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel3 from "./../../models/ai_assistance/ai_assistance.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
 import * as Workspace6 from "./../../models/workspace/workspace.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
 import * as Snackbars from "./../../ui/components/snackbars/snackbars.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
-import * as Lit3 from "./../../ui/lit/lit.js";
+import * as Lit4 from "./../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkForward from "./../network/forward/forward.js";
 import * as NetworkPanel from "./../network/network.js";
@@ -609,7 +610,6 @@ var PatchWidget = class extends UI2.Widget.Widget {
   #workspace = Workspace3.Workspace.WorkspaceImpl.instance();
   #automaticFileSystem = Persistence2.AutomaticFileSystemManager.AutomaticFileSystemManager.instance().automaticFileSystem;
   #applyToDisconnectedAutomaticWorkspace = false;
-  #popoverHelper = null;
   // `rpcId` from the `applyPatch` request
   #rpcId = null;
   constructor(element, view, opts) {
@@ -620,7 +620,6 @@ var PatchWidget = class extends UI2.Widget.Widget {
       if (!input.changeSummary && input.patchSuggestionState === PatchSuggestionState.INITIAL) {
         return;
       }
-      output.tooltipRef = output.tooltipRef ?? Directives.createRef();
       output.changeRef = output.changeRef ?? Directives.createRef();
       output.summaryRef = output.summaryRef ?? Directives.createRef();
       function renderSourcesLink() {
@@ -765,8 +764,23 @@ var PatchWidget = class extends UI2.Widget.Widget {
               .jslogContext=${"patch-widget.info-tooltip-trigger"}
               .iconName=${"info"}
               .variant=${"icon"}
-              .title=${input.applyToWorkspaceTooltipText}
             ></devtools-button>
+            <devtools-tooltip
+                id="info-tooltip"
+                variant=${"rich"}
+              >
+             <div class="info-tooltip-container">
+               ${input.applyToWorkspaceTooltipText}
+               <button
+                 class="link tooltip-link"
+                 role="link"
+                 jslog=${VisualLogging2.link("open-ai-settings").track({
+          click: true
+        })}
+                 @click=${input.onLearnMoreTooltipClick}
+               >${lockedString2(UIStringsNotTranslate2.learnMore)}</button>
+             </div>
+            </devtools-tooltip>
           </div>
         </div>`;
       }
@@ -786,50 +800,9 @@ var PatchWidget = class extends UI2.Widget.Widget {
         `;
       render2(template, target, { host: target });
     });
-    this.#popoverHelper = new UI2.PopoverHelper.PopoverHelper(this.contentElement, (event) => {
-      const hoveredNode = event.composedPath()[0];
-      const maybeDevToolsButton = event.composedPath()[2];
-      const popoverShownNode = hoveredNode instanceof HTMLElement && hoveredNode.getAttribute("aria-details") === "info-tooltip" ? hoveredNode : maybeDevToolsButton instanceof HTMLElement && maybeDevToolsButton.getAttribute("aria-details") === "info-tooltip" ? maybeDevToolsButton : null;
-      if (!popoverShownNode) {
-        return null;
-      }
-      return {
-        box: popoverShownNode.boxInWindow(),
-        show: async (popover) => {
-          render2(html2`
-            <style>
-              .info-tooltip-container {
-                max-width: var(--sys-size-28);
-                padding: var(--sys-size-4) var(--sys-size-5);
-
-                .tooltip-link {
-                  display: block;
-                  margin-top: var(--sys-size-4);
-                  color: var(--sys-color-primary);
-                  padding-left: 0;
-                }
-              }
-            </style>
-            <div class="info-tooltip-container">
-              ${UIStringsNotTranslate2.applyToWorkspaceTooltip}
-              <button
-                class="link tooltip-link"
-                role="link"
-                jslog=${VisualLogging2.link("open-ai-settings").track({
-            click: true
-          })}
-                @click=${this.#onLearnMoreTooltipClick}
-              >${lockedString2(UIStringsNotTranslate2.learnMore)}</button>
-            </div>`, popover.contentElement, { host: this });
-          return true;
-        }
-      };
-    }, "patch-widget.info-tooltip");
-    this.#popoverHelper.setTimeout(0);
     this.requestUpdate();
   }
   #onLearnMoreTooltipClick() {
-    this.#viewOutput.tooltipRef?.value?.hidePopover();
     void UI2.ViewManager.ViewManager.instance().showView("chrome-ai");
   }
   #getDisplayedProject() {
@@ -1264,6 +1237,18 @@ var chatView_css_default = `/*
   border-radius: var(--sys-shape-corner-medium-small);
   margin-bottom: var(--sys-size-5);
   color: var(--sys-color-on-surface-subtle);
+}
+
+.info-tooltip-container {
+  max-width: var(--sys-size-28);
+  padding: var(--sys-size-4) var(--sys-size-5);
+}
+
+.tooltip-link {
+  display: block;
+  margin-top: var(--sys-size-4);
+  color: var(--sys-color-primary);
+  padding-left: 0;
 }
 
 .chat-input-container {
@@ -1839,7 +1824,7 @@ main {
   justify-content: center;
   font: var(--sys-typescale-headline4);
   gap: var(--sys-size-8);
-  padding: var(--sys-size-3);
+  padding: var(--sys-size-4);
   max-width: var(--sys-size-33);
 
   /* Prevents the container from jumping when the scrollbar is shown */
@@ -2112,21 +2097,6 @@ main {
 }
 
 /*# sourceURL=${import.meta.resolve("././components/chatView.css")} */`;
-
-// gen/front_end/panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js
-import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
-var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
-  templateForToken(token) {
-    if (token.type === "code") {
-      const lines = token.text.split("\n");
-      if (lines[0]?.trim() === "css") {
-        token.lang = "css";
-        token.text = lines.slice(1).join("\n");
-      }
-    }
-    return super.templateForToken(token);
-  }
-};
 
 // gen/front_end/panels/ai_assistance/components/UserActionRow.js
 var UserActionRow_exports = {};
@@ -2775,17 +2745,15 @@ var str_ = i18n7.i18n.registerUIStrings("panels/ai_assistance/components/ChatVie
 var i18nString = i18n7.i18n.getLocalizedString.bind(void 0, str_);
 var lockedString4 = i18n7.i18n.lockedString;
 var SCROLL_ROUNDING_OFFSET2 = 1;
-var TOOLTIP_POPOVER_OFFSET = 4;
-var RELEVANT_DATA_LINK_ID = "relevant-data-link";
+var RELEVANT_DATA_LINK_FOOTER_ID = "relevant-data-link-footer";
+var RELEVANT_DATA_LINK_CHAT_ID = "relevant-data-link-chat";
 var ChatView = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
-  #markdownRenderer = new MarkdownRendererWithCodeBlock();
   #scrollTop;
   #props;
   #messagesContainerElement;
   #mainElementRef = Lit2.Directives.createRef();
   #messagesContainerResizeObserver = new ResizeObserver(() => this.#handleMessagesContainerResize());
-  #popoverHelper = null;
   /**
    * Indicates whether the chat scroll position should be pinned to the bottom.
    *
@@ -2808,7 +2776,6 @@ var ChatView = class extends HTMLElement {
     this.#props = props;
   }
   set props(props) {
-    this.#markdownRenderer = new MarkdownRendererWithCodeBlock();
     this.#props = props;
     this.#render();
   }
@@ -2849,53 +2816,6 @@ var ChatView = class extends HTMLElement {
       return;
     }
     this.#setMainElementScrollTop(this.#mainElementRef.value.scrollHeight);
-  }
-  #handleChatUiRef(el) {
-    if (!el || this.#popoverHelper) {
-      return;
-    }
-    this.#popoverHelper = new UI4.PopoverHelper.PopoverHelper(el, (event) => {
-      const popoverShownNode = event.target instanceof HTMLElement && event.target.id === RELEVANT_DATA_LINK_ID ? event.target : null;
-      if (!popoverShownNode) {
-        return null;
-      }
-      const nodeBox = popoverShownNode.boxInWindow();
-      nodeBox.y = nodeBox.y + TOOLTIP_POPOVER_OFFSET;
-      return {
-        box: nodeBox,
-        show: async (popover) => {
-          Lit2.render(html4`
-            <style>
-              .info-tooltip-container {
-                max-width: var(--sys-size-28);
-                padding: var(--sys-size-4) var(--sys-size-5);
-
-                .tooltip-link {
-                  display: block;
-                  margin-top: var(--sys-size-4);
-                  color: var(--sys-color-primary);
-                  padding-left: 0;
-                }
-              }
-            </style>
-            <div class="info-tooltip-container">
-              ${this.#props.disclaimerText}
-              <button
-                class="link tooltip-link"
-                role="link"
-                jslog=${VisualLogging4.link("open-ai-settings").track({
-            click: true
-          })}
-                @click=${() => {
-            void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
-          }}
-              >${i18nString(UIStrings.learnAbout)}</button>
-            </div>`, popover.contentElement, { host: this });
-          return true;
-        }
-      };
-    });
-    this.#popoverHelper.setTimeout(0);
   }
   #handleMessagesContainerResize() {
     if (!this.#pinScrollToBottom) {
@@ -2999,7 +2919,9 @@ var ChatView = class extends HTMLElement {
       });
       const footerContents = this.#props.conversationType ? renderRelevantDataDisclaimer({
         isLoading: this.#props.isLoading,
-        blockedByCrossOrigin: this.#props.blockedByCrossOrigin
+        blockedByCrossOrigin: this.#props.blockedByCrossOrigin,
+        tooltipId: RELEVANT_DATA_LINK_FOOTER_ID,
+        disclaimerText: this.#props.disclaimerText
       }) : html4`<p>
             ${lockedString4(UIStringsNotTranslate4.inputDisclaimerForEmptyState)}
             <button
@@ -3021,7 +2943,7 @@ var ChatView = class extends HTMLElement {
     };
     Lit2.render(html4`
       <style>${chatView_css_default}</style>
-      <div class="chat-ui" ${Lit2.Directives.ref(this.#handleChatUiRef)}>
+      <div class="chat-ui">
         <main @scroll=${this.#handleScroll} ${ref2(this.#mainElementRef)}>
           ${renderMainContents({
       state: this.#props.state,
@@ -3033,7 +2955,7 @@ var ChatView = class extends HTMLElement {
       isTextInputDisabled: this.#props.isTextInputDisabled,
       suggestions: this.#props.emptyStateSuggestions,
       userInfo: this.#props.userInfo,
-      markdownRenderer: this.#markdownRenderer,
+      markdownRenderer: this.#props.markdownRenderer,
       conversationType: this.#props.conversationType,
       changeSummary: this.#props.changeSummary,
       changeManager: this.#props.changeManager,
@@ -3051,6 +2973,7 @@ var ChatView = class extends HTMLElement {
       isTextInputDisabled: this.#props.isTextInputDisabled,
       inputPlaceholder: this.#props.inputPlaceholder,
       state: this.#props.state,
+      disclaimerText: this.#props.disclaimerText,
       selectedContext: this.#props.selectedContext,
       inspectElementToggled: this.#props.inspectElementToggled,
       multimodalInputEnabled: this.#props.multimodalInputEnabled,
@@ -3566,14 +3489,14 @@ function renderImageInput({ multimodalInputEnabled, imageInput, isTextInputDisab
       <img src="data:${imageInput.mimeType};base64, ${imageInput.data}" alt="Image input" />
     </div>`;
 }
-function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin }) {
+function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltipId, disclaimerText }) {
   const classes = Lit2.Directives.classMap({ "chat-input-disclaimer": true, "hide-divider": !isLoading && blockedByCrossOrigin });
   return html4`
     <p class=${classes}>
       <button
         class="link"
         role="link"
-        id=${RELEVANT_DATA_LINK_ID}
+        aria-details=${tooltipId}
         jslog=${VisualLogging4.link("open-ai-settings").track({
     click: true
   })}
@@ -3581,10 +3504,11 @@ function renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin }) {
     void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
   }}
       >${lockedString4("Relevant data")}</button>&nbsp;${lockedString4("is sent to Google")}
+      ${renderDisclamerTooltip(tooltipId, disclaimerText)}
     </p>
   `;
 }
-function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, state, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
+function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled, inputPlaceholder, state, selectedContext, inspectElementToggled, multimodalInputEnabled, conversationType, imageInput, isTextInputEmpty, uploadImageInputEnabled, aidaAvailability, disclaimerText, onContextClick, onInspectElementClick, onSubmit, onTextAreaKeyDown, onCancel, onNewConversation, onTakeScreenshot, onRemoveImageInput, onTextInputChange, onImageUpload }) {
   if (!conversationType) {
     return Lit2.nothing;
   }
@@ -3621,7 +3545,7 @@ function renderChatInput({ isLoading, blockedByCrossOrigin, isTextInputDisabled,
         </div>
         <div class="chat-input-actions-right">
           <div class="chat-input-disclaimer-container">
-            ${renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin })}
+            ${renderRelevantDataDisclaimer({ isLoading, blockedByCrossOrigin, tooltipId: RELEVANT_DATA_LINK_CHAT_ID, disclaimerText })}
           </div>
           ${renderMultimodalInputButtons({
     multimodalInputEnabled,
@@ -3658,7 +3582,7 @@ function renderAidaUnavailableContents(aidaAvailability) {
   }
 }
 function renderConsentViewContents() {
-  const settingsLink = document.createElement("button");
+  const settingsLink = document.createElement("span");
   settingsLink.textContent = i18nString(UIStrings.settingsLink);
   settingsLink.classList.add("link");
   UI4.ARIAUtils.markAsLink(settingsLink);
@@ -3725,6 +3649,27 @@ function renderMainContents({ state, aidaAvailability, messages, isLoading, isRe
     });
   }
   return renderEmptyState({ isTextInputDisabled, suggestions, onSuggestionClick });
+}
+function renderDisclamerTooltip(id, disclaimerText) {
+  return html4`
+    <devtools-tooltip
+      id=${id}
+      variant=${"rich"}
+    >
+      <div class="info-tooltip-container">
+        ${disclaimerText}
+        <button
+          class="link tooltip-link"
+          role="link"
+          jslog=${VisualLogging4.link("open-ai-settings").track({
+    click: true
+  })}
+          @click=${() => {
+    void UI4.ViewManager.ViewManager.instance().showView("chrome-ai");
+  }}>${i18nString(UIStrings.learnAbout)}
+        </button>
+      </div>
+    </devtools-tooltip>`;
 }
 customElements.define("devtools-ai-chat-view", ChatView);
 
@@ -4011,8 +3956,95 @@ var ExploreWidget = class extends UI5.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/ai_assistance/AiAssistancePanel.js
+// gen/front_end/panels/ai_assistance/components/MarkdownRendererWithCodeBlock.js
+import * as MarkdownView from "./../../ui/components/markdown_view/markdown_view.js";
+var MarkdownRendererWithCodeBlock = class extends MarkdownView.MarkdownView.MarkdownInsightRenderer {
+  templateForToken(token) {
+    if (token.type === "code") {
+      const lines = token.text.split("\n");
+      if (lines[0]?.trim() === "css") {
+        token.lang = "css";
+        token.text = lines.slice(1).join("\n");
+      }
+    }
+    return super.templateForToken(token);
+  }
+};
+
+// gen/front_end/panels/ai_assistance/components/PerformanceAgentMarkdownRenderer.js
+import * as Common4 from "./../../core/common/common.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Trace from "./../../models/trace/trace.js";
+import * as Lit3 from "./../../ui/lit/lit.js";
 var { html: html6 } = Lit3;
+var { ref: ref3, createRef } = Lit3.Directives;
+var PerformanceAgentMarkdownRenderer = class extends MarkdownRendererWithCodeBlock {
+  mainFrameId;
+  lookupEvent;
+  constructor(mainFrameId = "", lookupEvent = () => null) {
+    super();
+    this.mainFrameId = mainFrameId;
+    this.lookupEvent = lookupEvent;
+  }
+  templateForToken(token) {
+    if (token.type === "link" && token.href.startsWith("#")) {
+      if (token.href.startsWith("#node-")) {
+        const nodeId = Number(token.href.replace("#node-", ""));
+        const templateRef = createRef();
+        void this.#linkifyNode(nodeId, token.text).then((node) => {
+          if (!templateRef.value || !node) {
+            return;
+          }
+          templateRef.value.textContent = "";
+          templateRef.value.append(node);
+        });
+        return html6`<span ${ref3(templateRef)}>${token.text}</span>`;
+      }
+      const event = this.lookupEvent(token.href.slice(1));
+      if (!event) {
+        return html6`${token.text}`;
+      }
+      let label = token.text;
+      let title = "";
+      if (Trace.Types.Events.isSyntheticNetworkRequest(event)) {
+        title = event.args.data.url;
+      } else {
+        label += ` (${event.name})`;
+      }
+      return html6`<a href="#" draggable=false .title=${title} @click=${(e) => {
+        e.stopPropagation();
+        void Common4.Revealer.reveal(new SDK2.TraceObject.RevealableEvent(event));
+      }}>${label}</a>`;
+    }
+    return super.templateForToken(token);
+  }
+  // Taken from front_end/panels/timeline/components/insights/NodeLink.ts
+  // Would be nice to move the above component to somewhere that allows the AI
+  // Assistance panel to also use it.
+  async #linkifyNode(backendNodeId, label) {
+    if (backendNodeId === void 0) {
+      return;
+    }
+    const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const domModel = target?.model(SDK2.DOMModel.DOMModel);
+    if (!domModel) {
+      return void 0;
+    }
+    const domNodesMap = await domModel.pushNodesByBackendIdsToFrontend(/* @__PURE__ */ new Set([backendNodeId]));
+    const node = domNodesMap?.get(backendNodeId);
+    if (!node) {
+      return;
+    }
+    if (node.frameId() !== this.mainFrameId) {
+      return;
+    }
+    const linkedNode = await Common4.Linkifier.Linkifier.linkify(node, { textContent: label });
+    return linkedNode;
+  }
+};
+
+// gen/front_end/panels/ai_assistance/AiAssistancePanel.js
+var { html: html7 } = Lit4;
 var AI_ASSISTANCE_SEND_FEEDBACK = "https://crbug.com/364805393";
 var AI_ASSISTANCE_HELP = "https://developer.chrome.com/docs/devtools/ai-assistance";
 var SCREENSHOT_QUALITY = 100;
@@ -4213,11 +4245,22 @@ async function getEmptyStateSuggestions(context, conversation) {
       Platform4.assertNever(conversation.type, "Unknown conversation type");
   }
 }
+function getMarkdownRenderer(context, conversation) {
+  if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
+    if (!context.external) {
+      const focus = context.getItem();
+      return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
+    }
+  } else if (conversation?.type === "drjones-performance-full") {
+    return new PerformanceAgentMarkdownRenderer();
+  }
+  return new MarkdownRendererWithCodeBlock();
+}
 function toolbarView(input) {
-  return html6`
+  return html7`
     <div class="toolbar-container" role="toolbar" jslog=${VisualLogging6.toolbar()}>
       <devtools-toolbar class="freestyler-left-toolbar" role="presentation">
-      ${input.showChatActions ? html6`<devtools-button
+      ${input.showChatActions ? html7`<devtools-button
           title=${i18nString2(UIStrings2.newChat)}
           aria-label=${i18nString2(UIStrings2.newChat)}
           .iconName=${"plus"}
@@ -4231,8 +4274,8 @@ function toolbarView(input) {
           .iconName=${"history"}
           .jslogContext=${"freestyler.history"}
           .populateMenuCall=${input.populateHistoryMenu}
-        ></devtools-menu-button>` : Lit3.nothing}
-        ${input.showActiveConversationActions ? html6`
+        ></devtools-menu-button>` : Lit4.nothing}
+        ${input.showActiveConversationActions ? html7`
           <devtools-button
               title=${i18nString2(UIStrings2.deleteChat)}
               aria-label=${i18nString2(UIStrings2.deleteChat)}
@@ -4249,7 +4292,7 @@ function toolbarView(input) {
             .jslogContext=${"export-ai-conversation"}
             .variant=${"toolbar"}
             @click=${input.onExportConversationClick}>
-          </devtools-button>` : Lit3.nothing}
+          </devtools-button>` : Lit4.nothing}
       </devtools-toolbar>
       <devtools-toolbar class="freestyler-right-toolbar" role="presentation">
         <x-link
@@ -4278,18 +4321,18 @@ function toolbarView(input) {
   `;
 }
 function defaultView(input, output, target) {
-  Lit3.render(html6`
+  Lit4.render(html7`
       ${toolbarView(input)}
       <div class="ai-assistance-view-container">
-        ${input.state !== "explore-view" ? html6` <devtools-ai-chat-view
+        ${input.state !== "explore-view" ? html7` <devtools-ai-chat-view
               .props=${input}
-              ${Lit3.Directives.ref((el) => {
+              ${Lit4.Directives.ref((el) => {
     if (!el || !(el instanceof ChatView)) {
       return;
     }
     output.chatView = el;
   })}
-            ></devtools-ai-chat-view>` : html6`<devtools-widget
+            ></devtools-ai-chat-view>` : html7`<devtools-widget
               class="explore"
               .widgetConfig=${UI6.Widget.widgetConfig(ExploreWidget)}
             ></devtools-widget>`}
@@ -4347,7 +4390,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
   #aiAssistanceEnabledSetting;
   #changeManager = new AiAssistanceModel3.ChangeManager();
-  #mutex = new Common4.Mutex.Mutex();
+  #mutex = new Common5.Mutex.Mutex();
   #conversationAgent;
   #conversation;
   #selectedFile = null;
@@ -4410,7 +4453,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #getAiAssistanceEnabledSetting() {
     try {
-      return Common4.Settings.moduleSetting("ai-assistance-enabled");
+      return Common5.Settings.moduleSetting("ai-assistance-enabled");
     } catch {
       return;
     }
@@ -4500,22 +4543,22 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#viewOutput.chatView?.restoreScrollPosition();
     this.#viewOutput.chatView?.focusTextInput();
     void this.#handleAidaAvailabilityChange();
-    this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK2.DOMModel.DOMNode)));
-    this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK2.NetworkRequest.NetworkRequest));
+    this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
+    this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
     this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(AiAssistanceModel3.AgentFocus));
     this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
     this.#updateConversationState({ agent: this.#conversationAgent });
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(SDK2.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel3.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
-    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     UI6.Context.Context.instance().addFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
     this.#bindTimelineTraceListener();
     this.#selectDefaultAgentIfNeeded();
@@ -4525,15 +4568,15 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
-    UI6.Context.Context.instance().removeFlavorChangeListener(SDK2.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(SDK2.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel3.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
-    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
-    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.DOMModel.DOMModel, SDK2.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
-    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrRemoved, this.#handleDOMNodeAttrChange, this);
+    SDK3.TargetManager.TargetManager.instance().removeModelListener(SDK3.ResourceTreeModel.ResourceTreeModel, SDK3.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
     if (this.#timelinePanelInstance) {
       this.#timelinePanelInstance.removeEventListener("IsViewingTrace", this.requestUpdate, this);
       this.#timelinePanelInstance = null;
@@ -4614,6 +4657,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   async performUpdate() {
     const emptyStateSuggestions = await getEmptyStateSuggestions(this.#selectedContext, this.#conversation);
+    const markdownRenderer = getMarkdownRenderer(this.#selectedContext, this.#conversation);
     this.view({
       state: this.#getChatUiState(),
       blockedByCrossOrigin: this.#blockedByCrossOrigin,
@@ -4638,6 +4682,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       isTextInputEmpty: this.#isTextInputEmpty,
       changeManager: this.#changeManager,
       uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() && this.#conversation?.type === "freestyler",
+      markdownRenderer,
       onNewChatClick: this.#handleNewChatRequest.bind(this),
       populateHistoryMenu: this.#populateHistoryMenu.bind(this),
       onDeleteClick: this.#onDeleteClicked.bind(this),
@@ -4676,7 +4721,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
   }
   #handleSelectElementClick() {
-    UI6.Context.Context.instance().setFlavor(Common4.ReturnToPanel.ReturnToPanelFlavor, new Common4.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
+    UI6.Context.Context.instance().setFlavor(Common5.ReturnToPanel.ReturnToPanelFlavor, new Common5.ReturnToPanel.ReturnToPanelFlavor(this.panelName));
     void this.#toggleSearchElementAction?.execute();
   }
   #isTextInputDisabled() {
@@ -4785,20 +4830,20 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         "headers-component"
         /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */
       );
-      return Common4.Revealer.reveal(requestLocation);
+      return Common5.Revealer.reveal(requestLocation);
     }
     if (context instanceof AiAssistanceModel3.FileContext) {
-      return Common4.Revealer.reveal(context.getItem().uiLocation(0, 0));
+      return Common5.Revealer.reveal(context.getItem().uiLocation(0, 0));
     }
     if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
-      const focus = context.getItem().data;
+      const focus = context.getItem();
       if (focus.callTree) {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
-        const trace = new SDK2.TraceObject.RevealableEvent(event);
-        return Common4.Revealer.reveal(trace);
+        const revealable = new SDK3.TraceObject.RevealableEvent(event);
+        return Common5.Revealer.reveal(revealable);
       }
       if (focus.insight) {
-        return Common4.Revealer.reveal(focus.insight);
+        return Common5.Revealer.reveal(focus.insight);
       }
     }
   }
@@ -4944,11 +4989,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.newChatCreated));
   }
   async #handleTakeScreenshot() {
-    const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    const mainTarget = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       throw new Error("Could not find main target");
     }
-    const model = mainTarget.model(SDK2.ScreenCaptureModel.ScreenCaptureModel);
+    const model = mainTarget.model(SDK3.ScreenCaptureModel.ScreenCaptureModel);
     if (!model) {
       throw new Error("Could not find model");
     }
@@ -5092,6 +5137,9 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     const context = this.#getConversationContext(this.#conversation);
     if (context && !context.isOriginAllowed(this.#conversationAgent.origin)) {
       throw new Error("cross-origin context data should not be included");
+    }
+    if (this.#conversation?.isEmpty) {
+      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.STARTED_AI_CONVERSATION);
     }
     const image = isAiAssistanceMultimodalInputEnabled() ? imageInput : void 0;
     const imageId = image ? crypto.randomUUID() : void 0;

@@ -452,6 +452,7 @@ import * as UI2 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
 import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
+var _a;
 var UIStrings2 = {
   /**
    * @description Title of item in main
@@ -510,11 +511,11 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var loadedPanelCommonModule;
-var MainImpl = class _MainImpl {
+var MainImpl = class {
   #readyForTestPromise = Promise.withResolvers();
   #veStartPromise;
   constructor() {
-    _MainImpl.instanceForTest = this;
+    _a.instanceForTest = this;
     void this.#loaded();
   }
   static time(label) {
@@ -684,7 +685,7 @@ var MainImpl = class _MainImpl {
     }
   }
   async #createAppUI() {
-    _MainImpl.time("Main._createAppUI");
+    _a.time("Main._createAppUI");
     const isolatedFileSystemManager = Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance();
     isolatedFileSystemManager.addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemError, (event) => Snackbar.Snackbar.Snackbar.show({ message: event.data }));
     const defaultThemeSetting = "systemPreferred";
@@ -780,7 +781,10 @@ var MainImpl = class _MainImpl {
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
     if (Host.GdpClient.isGdpProfilesAvailable()) {
-      void Host.GdpClient.GdpClient.instance().initialize();
+      void Host.GdpClient.GdpClient.instance().initialize().then(({ hasProfile, isEligible }) => {
+        const contextString = hasProfile ? "has-profile" : isEligible ? "no-profile-and-eligible" : "no-profile-and-not-eligible";
+        void VisualLogging2.logFunctionCall("gdp-client-initialize", contextString);
+      });
       void Badges.UserBadges.instance().initialize();
       Badges.UserBadges.instance().addEventListener("BadgeTriggered", async (ev) => {
         loadedPanelCommonModule ??= await import("./../../panels/common/common.js");
@@ -788,7 +792,7 @@ var MainImpl = class _MainImpl {
         void badgeNotification.present(ev.data);
       });
     }
-    _MainImpl.timeEnd("Main._createAppUI");
+    _a.timeEnd("Main._createAppUI");
     const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
       throw new Error("Unable to boot DevTools, as the appprovider is missing");
@@ -796,7 +800,7 @@ var MainImpl = class _MainImpl {
     await this.#showAppUI(await appProvider.loadAppProvider());
   }
   async #showAppUI(appProvider) {
-    _MainImpl.time("Main._showAppUI");
+    _a.time("Main._showAppUI");
     const app = appProvider.createApp();
     UI2.DockController.DockController.instance().initialize();
     ThemeSupport.ThemeSupport.instance().fetchColorsAndApplyHostTheme();
@@ -818,10 +822,10 @@ var MainImpl = class _MainImpl {
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
     window.setTimeout(this.#initializeTarget.bind(this), 0);
-    _MainImpl.timeEnd("Main._showAppUI");
+    _a.timeEnd("Main._showAppUI");
   }
   async #initializeTarget() {
-    _MainImpl.time("Main._initializeTarget");
+    _a.time("Main._initializeTarget");
     for (const runnableInstanceFunction of Common2.Runnable.earlyInitializationRunnables()) {
       await runnableInstanceFunction().run();
     }
@@ -830,7 +834,7 @@ var MainImpl = class _MainImpl {
     this.#readyForTestPromise.resolve();
     window.setTimeout(this.#lateInitialization.bind(this), 100);
     await this.#maybeInstallVeInspectionBinding();
-    _MainImpl.timeEnd("Main._initializeTarget");
+    _a.timeEnd("Main._initializeTarget");
   }
   async #maybeInstallVeInspectionBinding() {
     const primaryPageTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -867,7 +871,7 @@ var MainImpl = class _MainImpl {
     }
   }
   async #lateInitialization() {
-    _MainImpl.time("Main._lateInitialization");
+    _a.time("Main._lateInitialization");
     Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
     const promises = Common2.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
       const runnable = await lateInitializationLoader();
@@ -889,7 +893,7 @@ var MainImpl = class _MainImpl {
         Common2.Settings.Settings.instance().moduleSetting(setting).addChangeListener(changeListener);
       }
     }
-    _MainImpl.timeEnd("Main._lateInitialization");
+    _a.timeEnd("Main._lateInitialization");
   }
   readyForTest() {
     return this.#readyForTestPromise.promise;
@@ -954,6 +958,7 @@ var MainImpl = class _MainImpl {
   }
   static instanceForTest = null;
 };
+_a = MainImpl;
 globalThis.Main = globalThis.Main || {};
 globalThis.Main.Main = MainImpl;
 var ZoomActionDelegate = class {

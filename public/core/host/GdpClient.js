@@ -19,7 +19,7 @@ export var SubscriptionTier;
     SubscriptionTier["PRO_ANNUAL"] = "SUBSCRIPTION_TIER_PRO_ANNUAL";
     SubscriptionTier["PRO_MONTHLY"] = "SUBSCRIPTION_TIER_PRO_MONTHLY";
 })(SubscriptionTier || (SubscriptionTier = {}));
-var EligibilityStatus;
+export var EligibilityStatus;
 (function (EligibilityStatus) {
     EligibilityStatus["ELIGIBLE"] = "ELIGIBLE";
     EligibilityStatus["NOT_ELIGIBLE"] = "NOT_ELIGIBLE";
@@ -65,8 +65,18 @@ export class GdpClient {
         return gdpClientInstance;
     }
     async initialize() {
-        void this.getProfile();
-        void this.checkEligibility();
+        const profile = await this.getProfile();
+        if (profile) {
+            return {
+                hasProfile: true,
+                isEligible: true,
+            };
+        }
+        const isEligible = await this.isEligibleToCreateProfile();
+        return {
+            hasProfile: false,
+            isEligible,
+        };
     }
     async getProfile() {
         if (this.#cachedProfilePromise) {
@@ -77,7 +87,11 @@ export class GdpClient {
             path: '/v1beta1/profile:get',
             method: 'GET',
         });
-        return await this.#cachedProfilePromise;
+        const profile = await this.#cachedProfilePromise;
+        if (profile) {
+            this.#cachedEligibilityPromise = Promise.resolve({ createProfile: EligibilityStatus.ELIGIBLE });
+        }
+        return profile;
     }
     async checkEligibility() {
         if (this.#cachedEligibilityPromise) {

@@ -122,7 +122,7 @@ export class BounceTrackingMitigationsView extends LegacyWrapper.LegacyWrapper.W
     }
     #renderDeletedSitesOrNoSitesMessage() {
         if (!this.#seenButtonClick) {
-            return html ``;
+            return Lit.nothing;
         }
         if (this.#trackingSites.length === 0) {
             // clang-format off

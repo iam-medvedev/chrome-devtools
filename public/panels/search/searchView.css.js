@@ -10,7 +10,6 @@ export default `/*
  */
 
 .search-drawer-header {
-  align-items: center;
   flex-shrink: 0;
   overflow: hidden;
   display: inline-flex;
@@ -19,7 +18,6 @@ export default `/*
   .search-container {
     border-bottom: 1px solid var(--sys-color-divider);
     display: flex;
-    height: 100%;
     align-items: center;
     flex-grow: 1;
   }

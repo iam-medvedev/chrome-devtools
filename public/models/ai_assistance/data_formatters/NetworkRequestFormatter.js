@@ -1,6 +1,7 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import { seconds } from './UnitFormatters.js';
@@ -40,10 +41,10 @@ export class NetworkRequestFormatter {
         this.#calculator = calculator;
     }
     formatRequestHeaders() {
-        return NetworkRequestFormatter.formatHeaders('Request headers:', this.#request.requestHeaders());
+        return _a.formatHeaders('Request headers:', this.#request.requestHeaders());
     }
     formatResponseHeaders() {
-        return NetworkRequestFormatter.formatHeaders('Response headers:', this.#request.responseHeaders);
+        return _a.formatHeaders('Response headers:', this.#request.responseHeaders);
     }
     /**
      * Note: nothing here should include information from origins other than
@@ -73,7 +74,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         const graph = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this.#request);
         for (const initiator of Array.from(graph.initiators).reverse()) {
             initiatorChain = initiatorChain + lineStart +
-                NetworkRequestFormatter.formatInitiatorUrl(initiator.url(), allowedOrigin) + '\n';
+                _a.formatInitiatorUrl(initiator.url(), allowedOrigin) + '\n';
             lineStart = '\t' + lineStart;
             if (initiator === this.#request) {
                 initiatorChain =
@@ -136,7 +137,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
                 if (!visited.has(keyRequest)) {
                     visited.add(keyRequest);
                     initiatorChain = initiatorChain + lineStart +
-                        NetworkRequestFormatter.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + '\n';
+                        _a.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + '\n';
                     initiatorChain =
                         this.#formatRequestInitiated(initiated, keyRequest, initiatorChain, '\t' + lineStart, allowedOrigin);
                 }
@@ -145,6 +146,7 @@ Request initiator chain:\n${this.formatRequestInitiatorChain()}`;
         return initiatorChain;
     }
 }
+_a = NetworkRequestFormatter;
 // Header names that could be included in the prompt, lowercase.
 const allowedHeaders = new Set([
     ':authority',

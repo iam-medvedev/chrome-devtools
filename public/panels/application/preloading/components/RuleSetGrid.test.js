@@ -49,6 +49,7 @@ describeWithEnvironment('RuleSetGrid', () => {
                     ruleSet: {
                         id: 'ruleSetId:0.1',
                         loaderId: 'loaderId:1',
+                        tag: 'tag1',
                         sourceText: `
 {
   "tag": "tag1",
@@ -131,6 +132,7 @@ describeWithEnvironment('RuleSetGrid', () => {
                     ruleSet: {
                         id: 'ruleSetId:0.2',
                         loaderId: 'loaderId:1',
+                        tag: 'マイルール',
                         sourceText: `
 {
   "prefetch": [

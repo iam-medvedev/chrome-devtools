@@ -705,6 +705,7 @@ var objectValue_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./objectValue.css")} */`;
 
 // gen/front_end/ui/legacy/components/object_ui/ObjectPropertiesSection.js
+var _a;
 var UIStrings2 = {
   /**
    * @description Text in Object Properties Section
@@ -1950,7 +1951,7 @@ var ObjectPropertyPrompt = class extends UI3.TextPrompt.TextPrompt {
     this.initialize(TextEditor.JavaScript.completeInContext);
   }
 };
-var ObjectPropertiesSectionsTreeExpandController = class _ObjectPropertiesSectionsTreeExpandController {
+var ObjectPropertiesSectionsTreeExpandController = class {
   static #propertyPathCache = /* @__PURE__ */ new WeakMap();
   static #sectionMap = /* @__PURE__ */ new WeakMap();
   #expandedProperties = /* @__PURE__ */ new Set();
@@ -1960,7 +1961,7 @@ var ObjectPropertiesSectionsTreeExpandController = class _ObjectPropertiesSectio
     treeOutline.addEventListener(UI3.TreeOutline.Events.ElementCollapsed, this.#elementCollapsed, this);
   }
   watchSection(id, section) {
-    _ObjectPropertiesSectionsTreeExpandController.#sectionMap.set(section, id);
+    _a.#sectionMap.set(section, id);
     if (this.#expandedProperties.has(id)) {
       section.expand();
     }
@@ -1987,7 +1988,7 @@ var ObjectPropertiesSectionsTreeExpandController = class _ObjectPropertiesSectio
     this.#expandedProperties.delete(this.#propertyPath(element));
   }
   #propertyPath(treeElement) {
-    const cachedPropertyPath = _ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.get(treeElement);
+    const cachedPropertyPath = _a.#propertyPathCache.get(treeElement);
     if (cachedPropertyPath) {
       return cachedPropertyPath;
     }
@@ -2011,12 +2012,13 @@ var ObjectPropertiesSectionsTreeExpandController = class _ObjectPropertiesSectio
         current = current.parent;
       }
     }
-    const treeOutlineId = _ObjectPropertiesSectionsTreeExpandController.#sectionMap.get(sectionRoot);
+    const treeOutlineId = _a.#sectionMap.get(sectionRoot);
     result = treeOutlineId + (result ? ":" + result : "");
-    _ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.set(treeElement, result);
+    _a.#propertyPathCache.set(treeElement, result);
     return result;
   }
 };
+_a = ObjectPropertiesSectionsTreeExpandController;
 var rendererInstance;
 var Renderer = class _Renderer {
   static instance(opts = { forceNew: false }) {

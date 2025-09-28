@@ -8,6 +8,7 @@ export interface FromTimeOnThreadOptions {
     bounds: Trace.Types.Timing.TraceWindowMicro;
 }
 export declare class AICallTree {
+    #private;
     selectedNode: Trace.Extras.TraceTree.Node | null;
     rootNode: Trace.Extras.TraceTree.TopDownRootNode;
     parsedTrace: Trace.TraceModel.ParsedTrace;

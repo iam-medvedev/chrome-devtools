@@ -703,7 +703,7 @@ var Dialog = class extends HTMLElement {
       );
       return;
     }
-    let dialogContent = html2``;
+    let dialogContent = Lit.nothing;
     if (this.#props.state === "expanded") {
       dialogContent = html2`
     <div id="content">

@@ -218,6 +218,10 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
     if (shouldBlock) {
       return null;
     }
+    const isRepetitive = this.#checkIfSuggestionRepeatsExistingText(suggestionSample.generationString, request);
+    if (isRepetitive) {
+      return null;
+    }
     const suggestionText = this.#trimSuggestionOverlap(suggestionSample.generationString, request);
     if (suggestionText.length === 0) {
       return null;
@@ -255,7 +259,8 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
             rpcGlobalId,
             sampleId,
             startTime,
-            onImpression: this.#registerUserImpression.bind(this)
+            onImpression: this.#registerUserImpression.bind(this),
+            clearCachedRequest: this.clearCachedRequest.bind(this)
           })
         });
         if (fromCache) {
@@ -296,6 +301,10 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
       }
     }
     return generationString;
+  }
+  #checkIfSuggestionRepeatsExistingText(generationString, request) {
+    const { prefix, suffix } = request;
+    return Boolean(prefix.includes(generationString.trim()) || suffix?.includes(generationString.trim()));
   }
   #checkCachedRequestForResponse(request) {
     if (!this.#aidaRequestCache || this.#aidaRequestCache.request.suffix !== request.suffix || JSON.stringify(this.#aidaRequestCache.request.options) !== JSON.stringify(request.options)) {
@@ -359,6 +368,9 @@ var AiCodeCompletion = class extends Common.ObjectWrapper.ObjectWrapper {
     });
     debugLog("Registered user acceptance");
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiCodeCompletionSuggestionAccepted);
+  }
+  clearCachedRequest() {
+    this.#aidaRequestCache = void 0;
   }
   onTextChanged(prefix, suffix, cursorPositionAtRequest, inferenceLanguage) {
     this.#debouncedRequestAidaSuggestion(prefix, suffix, cursorPositionAtRequest, inferenceLanguage);

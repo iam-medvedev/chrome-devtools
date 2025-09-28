@@ -8,7 +8,11 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
-      "esnext",
+      "ES2023",
+      "ES2024.Promise",
+      "ESNext.Iterator",
+      "ESNext.Collection",
+      "ESNext.Array",
       "dom",
       "dom.iterable"
     ],
@@ -24,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "esnext",
+    "target": "ES2023",
     "tsBuildInfoFile": "switch_impl-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
     "useUnknownInCatchVariables": false

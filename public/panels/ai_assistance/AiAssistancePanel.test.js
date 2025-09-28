@@ -6,12 +6,14 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as Badges from '../../models/badges/badges.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
 import { findMenuItemWithLabel } from '../../testing/ContextMenuHelpers.js';
 import { createTarget, describeWithEnvironment, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
+import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockStore } from '../../testing/MockSettingStorage.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
@@ -222,8 +224,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
             {
                 flavor: AiAssistanceModel.AgentFocus,
                 createContext: () => {
-                    const parsedTrace = { insights: new Map() };
-                    return AiAssistanceModel.PerformanceTraceContext.full(parsedTrace);
+                    const parsedTrace = { insights: new Map(), data: { Meta: { mainFrameId: '' } } };
+                    return AiAssistanceModel.PerformanceTraceContext.fromParsedTrace(parsedTrace);
                 },
                 action: 'drjones.performance-panel-context'
             },
@@ -288,8 +290,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const chatView = sinon.createStubInstance(AiAssistancePanel.ChatView);
             const { panel, view } = await createAiAssistancePanel({ chatView });
             // Firstly, start a conversation and set a context
-            const fakeParsedTrace = { insights: new Map() };
-            const context = AiAssistanceModel.PerformanceTraceContext.full(fakeParsedTrace);
+            const fakeParsedTrace = { insights: new Map(), data: { Meta: { mainFrameId: '' } } };
+            const context = AiAssistanceModel.PerformanceTraceContext.fromParsedTrace(fakeParsedTrace);
             UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, context.getItem());
             panel.handleAction('drjones.performance-panel-context');
             await view.nextInput;
@@ -325,6 +327,18 @@ describeWithMockConnection('AI Assistance Panel', () => {
             const uiSourceCode = sinon.createStubInstance(Workspace.UISourceCode.UISourceCode);
             UI.Context.Context.instance().setFlavor(Workspace.UISourceCode.UISourceCode, uiSourceCode);
             sinon.assert.callCount(view, callCount);
+        });
+    });
+    describe('AI explorer badge', () => {
+        it('should trigger started-ai-conversation action', async () => {
+            const recordActionSpy = sinon.spy(Badges.UserBadges.instance(), 'recordAction');
+            const { panel, view } = await createAiAssistancePanel({ aidaClient: mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test' }]]) });
+            panel.handleAction('freestyler.elements-floating-button');
+            (await view.nextInput).onTextSubmit('test');
+            sinon.assert.calledOnceWithExactly(recordActionSpy, Badges.BadgeAction.STARTED_AI_CONVERSATION);
+            (await view.nextInput).onTextSubmit('test 2');
+            await view.nextInput;
+            sinon.assert.calledOnce(recordActionSpy);
         });
     });
     describe('toolbar actions', () => {
@@ -1215,8 +1229,8 @@ describeWithMockConnection('AI Assistance Panel', () => {
                 timelinePanel.hasActiveTrace.callsFake(() => true);
                 viewManagerIsViewVisibleStub.callsFake(viewName => viewName === 'timeline');
                 UI.Context.Context.instance().setFlavor(Timeline.TimelinePanel.TimelinePanel, timelinePanel);
-                const fakeParsedTrace = { insights: new Map() };
-                const focus = AiAssistanceModel.AgentFocus.full(fakeParsedTrace);
+                const fakeParsedTrace = { insights: new Map(), data: { Meta: { mainFrameId: '' } } };
+                const focus = AiAssistanceModel.AgentFocus.fromParsedTrace(fakeParsedTrace);
                 UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, focus);
                 Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
                 const { panel, view } = await createAiAssistancePanel({ aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */ });
@@ -1523,9 +1537,7 @@ describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
             assert.isTrue(view.input.showActiveConversationActions, 'should show active conversation actions after loading');
         });
         it('should call the save function when export conversation button is clicked', async () => {
-            const fileManager = Workspace.FileManager.FileManager.instance();
-            const saveSpy = sinon.stub(fileManager, 'save');
-            const closeSpy = sinon.stub(fileManager, 'close');
+            const fileManager = stubFileManager();
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
             });
@@ -1533,14 +1545,13 @@ describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
             (await view.nextInput).onTextSubmit('test question');
             await view.nextInput;
             await view.input.onExportConversationClick();
-            sinon.assert.calledOnce(saveSpy);
-            sinon.assert.calledOnce(closeSpy);
-            const [fileName] = saveSpy.getCall(0).args;
+            sinon.assert.calledOnce(fileManager.save);
+            sinon.assert.calledOnce(fileManager.close);
+            const [fileName] = fileManager.save.getCall(0).args;
             assert.strictEqual(fileName, 'devtools_test_question.md');
         });
         it('should truncate a long file name when exporting', async () => {
-            const fileManager = Workspace.FileManager.FileManager.instance();
-            const saveSpy = sinon.stub(fileManager, 'save');
+            const fileManager = stubFileManager();
             const { panel, view } = await createAiAssistancePanel({
                 aidaClient: mockAidaClient([[{ explanation: 'test' }]]),
             });
@@ -1549,8 +1560,9 @@ describeWithEnvironment('AiAssistancePanel.ActionDelegate', () => {
             (await view.nextInput).onTextSubmit(longTitle);
             await view.nextInput;
             await view.input.onExportConversationClick();
-            sinon.assert.calledOnce(saveSpy);
-            const [fileName] = saveSpy.getCall(0).args;
+            sinon.assert.calledOnce(fileManager.save);
+            sinon.assert.calledOnce(fileManager.close);
+            const [fileName] = fileManager.save.getCall(0).args;
             const expectedSnakeCase = 'this_is_a_very_long_title_that_should_be_truncated_when_exporting_the_conversation_to_a_file';
             const prefix = 'devtools_';
             const suffix = '.md';

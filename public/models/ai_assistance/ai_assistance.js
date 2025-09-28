@@ -327,12 +327,12 @@ var AiAgent = class {
     }
     const enableAidaFunctionCalling = declarations.length;
     const userTier = Host.AidaClient.convertToUserTierEnum(this.userTier);
-    const preamble5 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
+    const preamble6 = userTier === Host.AidaClient.UserTier.TESTERS ? this.preamble : void 0;
     const facts = Array.from(this.#facts);
     const request = {
       client: Host.AidaClient.CLIENT_NAME,
       current_message: currentMessage,
-      preamble: preamble5,
+      preamble: preamble6,
       historical_contexts: history.length ? history : void 0,
       facts: facts.length ? facts : void 0,
       ...enableAidaFunctionCalling ? { function_declarations: declarations } : {},
@@ -358,12 +358,54 @@ var AiAgent = class {
     return this.#origin;
   }
   /**
+   * The AI has instructions to emit structured suggestions in their response. This
+   * function parses for that.
+   *
+   * Note: currently only StylingAgent and PerformanceAgent utilize this, but
+   * eventually all agents should support this.
+   */
+  parseTextResponseForSuggestions(text) {
+    if (!text) {
+      return { answer: "" };
+    }
+    const lines = text.split("\n");
+    const answerLines = [];
+    let suggestions;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (trimmed.startsWith("SUGGESTIONS:")) {
+        try {
+          suggestions = JSON.parse(trimmed.substring("SUGGESTIONS:".length).trim());
+        } catch {
+        }
+      } else {
+        answerLines.push(line);
+      }
+    }
+    if (!suggestions && answerLines.at(-1)?.includes("SUGGESTIONS:")) {
+      const [answer, suggestionsText] = answerLines[answerLines.length - 1].split("SUGGESTIONS:", 2);
+      try {
+        suggestions = JSON.parse(suggestionsText.trim().substring("SUGGESTIONS:".length).trim());
+      } catch {
+      }
+      answerLines[answerLines.length - 1] = answer;
+    }
+    const response = {
+      // If we could not parse the parts, consider the response to be an
+      // answer.
+      answer: answerLines.join("\n")
+    };
+    if (suggestions) {
+      response.suggestions = suggestions;
+    }
+    return response;
+  }
+  /**
    * Parses a streaming text response into a
-   * though/action/title/answer/suggestions component. This is only used
-   * by StylingAgent.
+   * though/action/title/answer/suggestions component.
    */
   parseTextResponse(response) {
-    return { answer: response };
+    return this.parseTextResponseForSuggestions(response.trim());
   }
   /**
    * Declare a function that the AI model can call.
@@ -780,6 +822,7 @@ function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
 }
 
 // gen/front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.js
+var _a;
 var MAX_HEADERS_SIZE = 1e3;
 function sanitizeHeaders(headers) {
   return headers.map((header) => {
@@ -789,7 +832,7 @@ function sanitizeHeaders(headers) {
     return { name: header.name, value: "<redacted>" };
   });
 }
-var NetworkRequestFormatter = class _NetworkRequestFormatter {
+var NetworkRequestFormatter = class {
   #calculator;
   static allowHeader(headerName) {
     return allowedHeaders.has(headerName.toLowerCase().trim());
@@ -813,10 +856,10 @@ var NetworkRequestFormatter = class _NetworkRequestFormatter {
     this.#calculator = calculator;
   }
   formatRequestHeaders() {
-    return _NetworkRequestFormatter.formatHeaders("Request headers:", this.#request.requestHeaders());
+    return _a.formatHeaders("Request headers:", this.#request.requestHeaders());
   }
   formatResponseHeaders() {
-    return _NetworkRequestFormatter.formatHeaders("Response headers:", this.#request.responseHeaders);
+    return _a.formatHeaders("Response headers:", this.#request.responseHeaders);
   }
   /**
    * Note: nothing here should include information from origins other than
@@ -847,7 +890,7 @@ ${this.formatRequestInitiatorChain()}`;
     let lineStart = "- URL: ";
     const graph = Logs.NetworkLog.NetworkLog.instance().initiatorGraphForRequest(this.#request);
     for (const initiator of Array.from(graph.initiators).reverse()) {
-      initiatorChain = initiatorChain + lineStart + _NetworkRequestFormatter.formatInitiatorUrl(initiator.url(), allowedOrigin) + "\n";
+      initiatorChain = initiatorChain + lineStart + _a.formatInitiatorUrl(initiator.url(), allowedOrigin) + "\n";
       lineStart = "	" + lineStart;
       if (initiator === this.#request) {
         initiatorChain = this.#formatRequestInitiated(graph.initiated, this.#request, initiatorChain, lineStart, allowedOrigin);
@@ -907,7 +950,7 @@ ${this.formatRequestInitiatorChain()}`;
       if (initiatedRequest === parentRequest) {
         if (!visited.has(keyRequest)) {
           visited.add(keyRequest);
-          initiatorChain = initiatorChain + lineStart + _NetworkRequestFormatter.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + "\n";
+          initiatorChain = initiatorChain + lineStart + _a.formatInitiatorUrl(keyRequest.url(), allowedOrigin) + "\n";
           initiatorChain = this.#formatRequestInitiated(initiated, keyRequest, initiatorChain, "	" + lineStart, allowedOrigin);
         }
       }
@@ -915,6 +958,7 @@ ${this.formatRequestInitiatorChain()}`;
     return initiatorChain;
   }
 };
+_a = NetworkRequestFormatter;
 var allowedHeaders = /* @__PURE__ */ new Set([
   ":authority",
   ":method",
@@ -1352,7 +1396,6 @@ function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
 }
 
 // gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
-import "./../../ui/components/icon_button/icon_button.js";
 import * as Common2 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
@@ -1364,7 +1407,989 @@ import * as Trace6 from "./../trace/trace.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
 import * as Common from "./../../core/common/common.js";
+import * as Trace4 from "./../trace/trace.js";
+
+// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
+import * as CrUXManager from "./../crux-manager/crux-manager.js";
+import * as Trace3 from "./../trace/trace.js";
+
+// gen/front_end/models/ai_assistance/performance/AIQueries.js
+import * as Trace2 from "./../trace/trace.js";
+
+// gen/front_end/models/ai_assistance/performance/AICallTree.js
+import * as Root4 from "./../../core/root/root.js";
 import * as Trace from "./../trace/trace.js";
+import * as SourceMapsResolver from "./../trace_source_maps_resolver/trace_source_maps_resolver.js";
+function depthFirstWalk(nodes, callback) {
+  for (const node of nodes) {
+    if (callback?.(node)) {
+      break;
+    }
+    depthFirstWalk(node.children().values(), callback);
+  }
+}
+var AICallTree = class _AICallTree {
+  selectedNode;
+  rootNode;
+  parsedTrace;
+  // Note: ideally this is passed in (or lived on ParsedTrace), but this class is
+  // stateless (mostly, there's a cache for some stuff) so it doesn't match much.
+  #eventsSerializer = new Trace.EventsSerializer.EventsSerializer();
+  constructor(selectedNode, rootNode, parsedTrace) {
+    this.selectedNode = selectedNode;
+    this.rootNode = rootNode;
+    this.parsedTrace = parsedTrace;
+  }
+  static findEventsForThread({ thread, parsedTrace, bounds }) {
+    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+    if (!threadEvents) {
+      return null;
+    }
+    return threadEvents.filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
+  }
+  static findMainThreadTasks({ thread, parsedTrace, bounds }) {
+    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
+    if (!threadEvents) {
+      return null;
+    }
+    return threadEvents.filter(Trace.Types.Events.isRunTask).filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, bounds));
+  }
+  /**
+   * Builds a call tree representing all calls within the given timeframe for
+   * the provided thread.
+   * Events that are less than 0.05% of the range duration are removed.
+   */
+  static fromTimeOnThread({ thread, parsedTrace, bounds }) {
+    const overlappingEvents = this.findEventsForThread({ thread, parsedTrace, bounds });
+    if (!overlappingEvents) {
+      return null;
+    }
+    const visibleEventsFilter = new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes());
+    const minDuration = Trace.Types.Timing.Micro(bounds.range * 5e-3);
+    const minDurationFilter = new MinDurationFilter(minDuration);
+    const compileCodeFilter = new ExcludeCompileCodeFilter();
+    const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
+      filters: [minDurationFilter, compileCodeFilter, visibleEventsFilter],
+      startTime: Trace.Helpers.Timing.microToMilli(bounds.min),
+      endTime: Trace.Helpers.Timing.microToMilli(bounds.max),
+      doNotAggregate: true,
+      includeInstantEvents: true
+    });
+    const instance2 = new _AICallTree(null, rootNode, parsedTrace);
+    return instance2;
+  }
+  /**
+   * Attempts to build an AICallTree from a given selected event. It also
+   * validates that this event is one that we support being used with the AI
+   * Assistance panel, which [as of January 2025] means:
+   * 1. It is on the main thread.
+   * 2. It exists in either the Renderer or Sample handler's entryToNode map.
+   * This filters out other events we make such as SyntheticLayoutShifts which are not valid
+   * If the event is not valid, or there is an unexpected error building the tree, `null` is returned.
+   */
+  static fromEvent(selectedEvent, parsedTrace) {
+    if (Trace.Types.Events.isPerformanceMark(selectedEvent)) {
+      return null;
+    }
+    const threads = Trace.Handlers.Threads.threadsInTrace(parsedTrace.data);
+    const thread = threads.find((t) => t.pid === selectedEvent.pid && t.tid === selectedEvent.tid);
+    if (!thread) {
+      return null;
+    }
+    if (thread.type !== "MAIN_THREAD" && thread.type !== "CPU_PROFILE") {
+      return null;
+    }
+    const data = parsedTrace.data;
+    if (!data.Renderer.entryToNode.has(selectedEvent) && !data.Samples.entryToNode.has(selectedEvent)) {
+      return null;
+    }
+    const allEventsEnabled = Root4.Runtime.experiments.isEnabled("timeline-show-all-events");
+    const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
+    const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
+    let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
+    if (!threadEvents) {
+      threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
+    }
+    if (!threadEvents) {
+      console.warn(`AICallTree: could not find thread for selected entry: ${selectedEvent}`);
+      return null;
+    }
+    const overlappingEvents = threadEvents.filter((e) => Trace.Helpers.Timing.eventIsInBounds(e, selectedEventBounds));
+    const filters = [new SelectedEventDurationFilter(selectedEvent), new ExcludeCompileCodeFilter(selectedEvent)];
+    if (!allEventsEnabled) {
+      filters.push(new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes()));
+    }
+    const rootNode = new Trace.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
+      filters,
+      startTime,
+      endTime,
+      includeInstantEvents: true
+    });
+    let selectedNode = null;
+    depthFirstWalk([rootNode].values(), (node) => {
+      if (node.event === selectedEvent) {
+        selectedNode = node;
+        return true;
+      }
+      return;
+    });
+    if (selectedNode === null) {
+      console.warn(`Selected event ${selectedEvent} not found within its own tree.`);
+      return null;
+    }
+    const instance2 = new _AICallTree(selectedNode, rootNode, parsedTrace);
+    return instance2;
+  }
+  /**
+   * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
+   * BFS is important here because the serialization process assumes that direct child nodes
+   * will have consecutive IDs (horizontally across each depth).
+   *
+   * Example tree with IDs:
+   *
+   *             1
+   *            / \
+   *           2   3
+   *        / / /   \
+   *      4  5 6     7
+   *
+   * Here, node with an ID 2 has consecutive children in the 4-6 range.
+   *
+   * To optimize for space, the provided `callback` function is called to serialize
+   * each node as it's visited during the BFS traversal.
+   *
+   * When serializing a node, the callback receives:
+   * 1. The current node being visited.
+   * 2. The ID assigned to this current node (a simple incrementing index based on visit order).
+   * 3. The predicted starting ID for the children of this current node.
+   *
+   * A serialized node needs to know the ID range of its children. However,
+   * child node IDs are only assigned when those children are themselves visited.
+   * To handle this, we predict the starting ID for a node's children. This prediction
+   * is based on a running count of all nodes that have ever been added to the BFS queue.
+   * Since IDs are assigned consecutively as nodes are processed from the queue, and a
+   * node's children are added to the end of the queue when the parent is visited,
+   * their eventual IDs will follow this running count.
+   */
+  breadthFirstWalk(nodes, serializeNodeCallback) {
+    const queue = Array.from(nodes);
+    let nodeIndex = 1;
+    let nodesAddedToQueueCount = queue.length;
+    let currentNode = queue.shift();
+    while (currentNode) {
+      if (currentNode.children().size > 0) {
+        serializeNodeCallback(currentNode, nodeIndex, nodesAddedToQueueCount + 1);
+      } else {
+        serializeNodeCallback(currentNode, nodeIndex);
+      }
+      queue.push(...Array.from(currentNode.children().values()));
+      nodesAddedToQueueCount += currentNode.children().size;
+      currentNode = queue.shift();
+      nodeIndex++;
+    }
+  }
+  serialize(headerLevel = 1) {
+    const header = "#".repeat(headerLevel);
+    const allUrls = [];
+    let nodesStr = "";
+    this.breadthFirstWalk(this.rootNode.children().values(), (node, nodeId, childStartingNode) => {
+      nodesStr += "\n" + this.stringifyNode(node, nodeId, this.parsedTrace, this.selectedNode, allUrls, childStartingNode);
+    });
+    let output = "";
+    if (allUrls.length) {
+      output += `
+${header} All URLs:
+
+` + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
+    }
+    output += `
+
+${header} Call tree:
+${nodesStr}`;
+    return output;
+  }
+  /*
+  * Each node is serialized into a single line to minimize token usage in the context window.
+  * The format is a semicolon-separated string with the following fields:
+  * Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
+  *
+  *   1. `id`: A unique numerical identifier for the node assigned by BFS.
+  *   2. `name`: The name of the event represented by the node.
+  *   3. `duration`: The total duration of the event in milliseconds, rounded to one decimal place.
+  *   4. `selfTime`: The self time of the event in milliseconds, rounded to one decimal place.
+  *   5. `urlIndex`: An index referencing a URL in the `allUrls` array. If no URL is present, this is an empty string.
+  *   6. `childRange`: A string indicating the range of IDs for the node's children. Children should always have consecutive IDs.
+  *                    If there is only one child, it's a single ID.
+  *   7. `[S]`: An optional marker indicating that this node is the selected node.
+  *
+  * Example:
+  *   `1;Parse HTML;2.5;0.3;0;2-5;S`
+  *   This represents:
+  *     - Node ID 1
+  *     - Name "Parse HTML"
+  *     - Total duration of 2.5ms
+  *     - Self time of 0.3ms
+  *     - URL index 0 (meaning the URL is the first one in the `allUrls` array)
+  *     - Child range of IDs 2 to 5
+  *     - This node is the selected node (S marker)
+  */
+  stringifyNode(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
+    const event = node.event;
+    if (!event) {
+      throw new Error("Event required");
+    }
+    const idStr = String(nodeId);
+    const eventKey = this.#eventsSerializer.keyForEvent(node.event);
+    const name = Trace.Name.forEntry(event, parsedTrace);
+    const roundToTenths = (num) => {
+      if (!num) {
+        return "";
+      }
+      return String(Math.round(num * 10) / 10);
+    };
+    const durationStr = roundToTenths(node.totalTime);
+    const selfTimeStr = roundToTenths(node.selfTime);
+    const url = SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
+    let urlIndexStr = "";
+    if (url) {
+      const existingIndex = allUrls.indexOf(url);
+      if (existingIndex === -1) {
+        urlIndexStr = String(allUrls.push(url) - 1);
+      } else {
+        urlIndexStr = String(existingIndex);
+      }
+    }
+    const children = Array.from(node.children().values());
+    let childRangeStr = "";
+    if (childStartingNodeIndex) {
+      childRangeStr = children.length === 1 ? String(childStartingNodeIndex) : `${childStartingNodeIndex}-${childStartingNodeIndex + children.length}`;
+    }
+    const selectedMarker = selectedNode?.event === node.event ? "S" : "";
+    let line = idStr;
+    line += ";" + eventKey;
+    line += ";" + name;
+    line += ";" + durationStr;
+    line += ";" + selfTimeStr;
+    line += ";" + urlIndexStr;
+    line += ";" + childRangeStr;
+    if (selectedMarker) {
+      line += ";" + selectedMarker;
+    }
+    return line;
+  }
+  // Only used for debugging.
+  logDebug() {
+    const str = this.serialize();
+    console.log("\u{1F386}", str);
+    if (str.length > 45e3) {
+      console.warn("Output will likely not fit in the context window. Expect an AIDA error.");
+    }
+  }
+};
+var ExcludeCompileCodeFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
+  #selectedEvent = null;
+  constructor(selectedEvent) {
+    super();
+    this.#selectedEvent = selectedEvent ?? null;
+  }
+  accept(event) {
+    if (this.#selectedEvent && event === this.#selectedEvent) {
+      return true;
+    }
+    return event.name !== "V8.CompileCode";
+  }
+};
+var SelectedEventDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
+  #minDuration;
+  #selectedEvent;
+  constructor(selectedEvent) {
+    super();
+    this.#minDuration = Trace.Types.Timing.Micro((selectedEvent.dur ?? 1) * 5e-3);
+    this.#selectedEvent = selectedEvent;
+  }
+  accept(event) {
+    if (event === this.#selectedEvent) {
+      return true;
+    }
+    return event.dur ? event.dur >= this.#minDuration : false;
+  }
+};
+var MinDurationFilter = class extends Trace.Extras.TraceFilter.TraceFilter {
+  #minDuration;
+  constructor(minDuration) {
+    super();
+    this.#minDuration = minDuration;
+  }
+  accept(event) {
+    return event.dur ? event.dur >= this.#minDuration : false;
+  }
+};
+
+// gen/front_end/models/ai_assistance/performance/AIQueries.js
+var AIQueries = class {
+  static findMainThread(navigationId, parsedTrace) {
+    let mainThreadPID = null;
+    let mainThreadTID = null;
+    if (navigationId) {
+      const navigation = parsedTrace.data.Meta.navigationsByNavigationId.get(navigationId);
+      if (navigation?.args.data?.isOutermostMainFrame) {
+        mainThreadPID = navigation.pid;
+        mainThreadTID = navigation.tid;
+      }
+    }
+    const threads = Trace2.Handlers.Threads.threadsInTrace(parsedTrace.data);
+    const thread = threads.find((thread2) => {
+      if (mainThreadPID && mainThreadTID) {
+        return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
+      }
+      return thread2.type === "MAIN_THREAD";
+    });
+    return thread ?? null;
+  }
+  /**
+   * Returns bottom up activity for the given range.
+   */
+  static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
+    if (!thread) {
+      return null;
+    }
+    const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
+    if (!events) {
+      return null;
+    }
+    const visibleEvents = Trace2.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
+    const filter = new Trace2.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
+      "SyntheticNetworkRequest"
+      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
+    ]));
+    const startTime = Trace2.Helpers.Timing.microToMilli(bounds.min);
+    const endTime = Trace2.Helpers.Timing.microToMilli(bounds.max);
+    return new Trace2.Extras.TraceTree.BottomUpRootNode(events, {
+      textFilter: new Trace2.Extras.TraceFilter.ExclusiveNameFilter([]),
+      filters: [filter],
+      startTime,
+      endTime
+    });
+  }
+  /**
+   * Returns an AI Call Tree representing the activity on the main thread for
+   * the relevant time range of the given insight.
+   */
+  static mainThreadActivityTopDown(navigationId, bounds, parsedTrace) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
+    if (!thread) {
+      return null;
+    }
+    return AICallTree.fromTimeOnThread({
+      thread: {
+        pid: thread.pid,
+        tid: thread.tid
+      },
+      parsedTrace,
+      bounds
+    });
+  }
+  /**
+   * Returns the top longest tasks as AI Call Trees.
+   */
+  static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
+    const thread = this.findMainThread(navigationId, parsedTrace);
+    if (!thread) {
+      return null;
+    }
+    const tasks = AICallTree.findMainThreadTasks({ thread, parsedTrace, bounds });
+    if (!tasks) {
+      return null;
+    }
+    const topTasks = tasks.filter((e) => e.name === "RunTask").sort((a, b) => b.dur - a.dur).slice(0, limit);
+    return topTasks.map((task) => {
+      const tree = AICallTree.fromEvent(task, parsedTrace);
+      if (tree) {
+        tree.selectedNode = null;
+      }
+      return tree;
+    }).filter((tree) => !!tree);
+  }
+};
+
+// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
+var PerformanceTraceFormatter = class {
+  #focus;
+  #parsedTrace;
+  #insightSet;
+  #eventsSerializer;
+  constructor(focus) {
+    this.#focus = focus;
+    this.#parsedTrace = focus.parsedTrace;
+    this.#insightSet = focus.insightSet;
+    this.#eventsSerializer = focus.eventsSerializer;
+  }
+  serializeEvent(event) {
+    const key = this.#eventsSerializer.keyForEvent(event);
+    return `(eventKey: ${key}, ts: ${event.ts})`;
+  }
+  serializeBounds(bounds) {
+    return `{min: ${bounds.min}, max: ${bounds.max}}`;
+  }
+  /**
+   * Fetching the Crux summary can error outside of DevTools, hence the
+   * try-catch around it here.
+   */
+  #getCruxTraceSummary(insightSet) {
+    if (insightSet === null) {
+      return [];
+    }
+    try {
+      const cruxScope = CrUXManager.CrUXManager.instance().getSelectedScope();
+      const parts = [];
+      const fieldMetrics = Trace3.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
+      const fieldLcp = fieldMetrics?.lcp;
+      const fieldInp = fieldMetrics?.inp;
+      const fieldCls = fieldMetrics?.cls;
+      if (fieldLcp || fieldInp || fieldCls) {
+        parts.push("Metrics (field / real users):");
+        const serializeFieldMetricTimingResult = (fieldMetric) => {
+          return `${Math.round(fieldMetric.value / 1e3)} ms (scope: ${fieldMetric.pageScope})`;
+        };
+        const serializeFieldMetricNumberResult = (fieldMetric) => {
+          return `${fieldMetric.value.toFixed(2)} (scope: ${fieldMetric.pageScope})`;
+        };
+        if (fieldLcp) {
+          parts.push(`  - LCP: ${serializeFieldMetricTimingResult(fieldLcp)}`);
+          const fieldLcpBreakdown = fieldMetrics?.lcpBreakdown;
+          if (fieldLcpBreakdown && (fieldLcpBreakdown.ttfb || fieldLcpBreakdown.loadDelay || fieldLcpBreakdown.loadDuration || fieldLcpBreakdown.renderDelay)) {
+            parts.push("  - LCP breakdown:");
+            if (fieldLcpBreakdown.ttfb) {
+              parts.push(`    - TTFB: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.ttfb)}`);
+            }
+            if (fieldLcpBreakdown.loadDelay) {
+              parts.push(`    - Load delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDelay)}`);
+            }
+            if (fieldLcpBreakdown.loadDuration) {
+              parts.push(`    - Load duration: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDuration)}`);
+            }
+            if (fieldLcpBreakdown.renderDelay) {
+              parts.push(`    - Render delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.renderDelay)}`);
+            }
+          }
+        }
+        if (fieldInp) {
+          parts.push(`  - INP: ${serializeFieldMetricTimingResult(fieldInp)}`);
+        }
+        if (fieldCls) {
+          parts.push(`  - CLS: ${serializeFieldMetricNumberResult(fieldCls)}`);
+        }
+        parts.push("  - The above data is from CrUX\u2013Chrome User Experience Report. It's how the page performs for real users.");
+        parts.push("  - The values shown above are the p75 measure of all real Chrome users");
+        parts.push("  - The scope indicates if the data came from the entire origin, or a specific url");
+        parts.push("  - Lab metrics describe how this specific page load performed, while field metrics are an aggregation of results from real-world users. Best practice is to prioritize metrics that are bad in field data. Lab metrics may be better or worse than fields metrics depending on the developer's machine, network, or the actions performed while tracing.");
+      }
+      return parts;
+    } catch {
+      return [];
+    }
+  }
+  formatTraceSummary() {
+    const parsedTrace = this.#parsedTrace;
+    const insightSet = this.#insightSet;
+    const traceMetadata = this.#parsedTrace.metadata;
+    const data = parsedTrace.data;
+    const parts = [];
+    const lcp = insightSet ? Trace3.Insights.Common.getLCP(insightSet) : null;
+    const cls = insightSet ? Trace3.Insights.Common.getCLS(insightSet) : null;
+    const inp = insightSet ? Trace3.Insights.Common.getINP(insightSet) : null;
+    parts.push(`URL: ${data.Meta.mainFrameURL}`);
+    parts.push(`Bounds: ${this.serializeBounds(data.Meta.traceBounds)}`);
+    parts.push("CPU throttling: " + (traceMetadata.cpuThrottling ? `${traceMetadata.cpuThrottling}x` : "none"));
+    parts.push(`Network throttling: ${traceMetadata.networkThrottling ?? "none"}`);
+    if (lcp || cls || inp) {
+      parts.push("Metrics (lab / observed):");
+      if (lcp) {
+        const nodeId = insightSet?.model.LCPBreakdown.lcpEvent?.args.data?.nodeId;
+        const nodeIdText = nodeId !== void 0 ? `, nodeId: ${nodeId}` : "";
+        parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}${nodeIdText}`);
+        const subparts = insightSet?.model.LCPBreakdown.subparts;
+        if (subparts) {
+          const serializeSubpart = (subpart) => {
+            return `${micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
+          };
+          parts.push("  - LCP breakdown:");
+          parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
+          if (subparts.loadDelay !== void 0) {
+            parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
+          }
+          if (subparts.loadDuration !== void 0) {
+            parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
+          }
+          parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
+        }
+      }
+      if (inp) {
+        parts.push(`  - INP: ${Math.round(inp.value / 1e3)} ms, event: ${this.serializeEvent(inp.event)}`);
+      }
+      if (cls) {
+        const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : "";
+        parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
+      }
+    } else {
+      parts.push("Metrics (lab / observed): n/a");
+    }
+    const cruxParts = insightSet && this.#getCruxTraceSummary(insightSet);
+    if (cruxParts?.length) {
+      parts.push(...cruxParts);
+    } else {
+      parts.push("Metrics (field / real users): n/a \u2013 no data for this page in CrUX");
+    }
+    if (insightSet) {
+      parts.push("Available insights:");
+      for (const [insightName, model] of Object.entries(insightSet.model)) {
+        if (model.state === "pass") {
+          continue;
+        }
+        const formatter = new PerformanceInsightFormatter(this.#focus, model);
+        if (!formatter.insightIsSupported()) {
+          continue;
+        }
+        const insightBounds = Trace3.Insights.Common.insightBounds(model, insightSet.bounds);
+        const insightParts = [
+          `insight name: ${insightName}`,
+          `description: ${model.description}`,
+          `relevant trace bounds: ${this.serializeBounds(insightBounds)}`
+        ];
+        const metricSavingsText = formatter.estimatedSavings();
+        if (metricSavingsText) {
+          insightParts.push(`estimated metric savings: ${metricSavingsText}`);
+        }
+        if (model.wastedBytes) {
+          insightParts.push(`estimated wasted bytes: ${bytes(model.wastedBytes)}`);
+        }
+        for (const suggestion of formatter.getSuggestions()) {
+          insightParts.push(`example question: ${suggestion.title}`);
+        }
+        const insightPartsText = insightParts.join("\n    ");
+        parts.push(`  - ${insightPartsText}`);
+      }
+    } else {
+      parts.push("Available insights: none");
+    }
+    return parts.join("\n");
+  }
+  formatCriticalRequests() {
+    const insightSet = this.#insightSet;
+    const criticalRequests = [];
+    const walkRequest = (node) => {
+      criticalRequests.push(node.request);
+      node.children.forEach(walkRequest);
+    };
+    insightSet?.model.NetworkDependencyTree.rootNodes.forEach(walkRequest);
+    if (!criticalRequests.length) {
+      return "";
+    }
+    return "Critical network requests:\n" + this.formatNetworkRequests(criticalRequests, { verbose: false });
+  }
+  #serializeBottomUpRootNode(rootNode, limit) {
+    const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= 1).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
+    function nodeToText(node) {
+      const event = node.event;
+      let frame;
+      if (Trace3.Types.Events.isProfileCall(event)) {
+        frame = event.callFrame;
+      } else {
+        frame = Trace3.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(event);
+      }
+      let source = Trace3.Name.forEntry(event);
+      if (frame?.url) {
+        source += ` (url: ${frame.url}`;
+        if (frame.lineNumber !== -1) {
+          source += `, line: ${frame.lineNumber}`;
+        }
+        if (frame.columnNumber !== -1) {
+          source += `, column: ${frame.columnNumber}`;
+        }
+        source += ")";
+      }
+      return `- self: ${millis(node.selfTime)}, total: ${millis(node.totalTime)}, source: ${source}`;
+    }
+    const listText = topNodes.map((node) => nodeToText.call(this, node)).join("\n");
+    const format = `This is the bottom-up summary for the entire trace. Only the top ${limit} activities (sorted by self time) are shown. An activity is all the aggregated time spent on the same type of work. For example, it can be all the time spent in a specific JavaScript function, or all the time spent in a specific browser rendering stage (like layout, v8 compile, parsing html). "Self time" represents the aggregated time spent directly in an activity, across all occurrences. "Total time" represents the aggregated time spent in an activity or any of its children.`;
+    return `${format}
+
+${listText}`;
+  }
+  formatMainThreadBottomUpSummary() {
+    const parsedTrace = this.#parsedTrace;
+    const insightSet = this.#insightSet;
+    const bounds = parsedTrace.data.Meta.traceBounds;
+    const rootNode = AIQueries.mainThreadActivityBottomUp(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace);
+    if (!rootNode) {
+      return "";
+    }
+    return this.#serializeBottomUpRootNode(rootNode, 10);
+  }
+  #formatThirdPartyEntitySummaries(summaries) {
+    const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
+    if (!topMainThreadTimeEntries.length) {
+      return "";
+    }
+    const listText = topMainThreadTimeEntries.map((s) => {
+      const transferSize = `${bytes(s.transferSize)}`;
+      return `- name: ${s.entity.name}, main thread time: ${millis(s.mainThreadTime)}, network transfer size: ${transferSize}`;
+    }).join("\n");
+    return listText;
+  }
+  formatThirdPartySummary() {
+    const insightSet = this.#insightSet;
+    if (!insightSet) {
+      return "";
+    }
+    const thirdParties = insightSet.model.ThirdParties;
+    let summaries = thirdParties.entitySummaries ?? [];
+    if (thirdParties.firstPartyEntity) {
+      summaries = summaries.filter((s) => s.entity !== thirdParties?.firstPartyEntity || null);
+    }
+    const listText = this.#formatThirdPartyEntitySummaries(summaries);
+    if (!listText) {
+      return "";
+    }
+    return `Third party summary:
+${listText}`;
+  }
+  formatLongestTasks() {
+    const parsedTrace = this.#parsedTrace;
+    const insightSet = this.#insightSet;
+    const bounds = parsedTrace.data.Meta.traceBounds;
+    const longestTaskTrees = AIQueries.longestTasks(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace, 3);
+    if (!longestTaskTrees || longestTaskTrees.length === 0) {
+      return "Longest tasks: none";
+    }
+    const listText = longestTaskTrees.map((tree) => {
+      const time = millis(tree.rootNode.totalTime);
+      return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
+    }).join("\n");
+    return `Longest ${longestTaskTrees.length} tasks:
+${listText}`;
+  }
+  #serializeRelatedInsightsForEvents(events) {
+    if (!events.length) {
+      return "";
+    }
+    const insightNameToRelatedEvents = /* @__PURE__ */ new Map();
+    if (this.#insightSet) {
+      for (const model of Object.values(this.#insightSet.model)) {
+        if (!model.relatedEvents) {
+          continue;
+        }
+        const modeRelatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
+        if (!modeRelatedEvents.length) {
+          continue;
+        }
+        const relatedEvents = modeRelatedEvents.filter((e) => events.includes(e));
+        if (relatedEvents.length) {
+          insightNameToRelatedEvents.set(model.insightKey, relatedEvents);
+        }
+      }
+    }
+    if (!insightNameToRelatedEvents.size) {
+      return "";
+    }
+    const results = [];
+    for (const [insightKey, events2] of insightNameToRelatedEvents) {
+      const eventsString = events2.slice(0, 5).map((e) => Trace3.Name.forEntry(e) + " " + this.serializeEvent(e)).join(", ");
+      results.push(`- ${insightKey}: ${eventsString}`);
+    }
+    return results.join("\n");
+  }
+  formatMainThreadTrackSummary(bounds) {
+    const results = [];
+    const topDownTree = AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    if (topDownTree) {
+      results.push("# Top-down main thread summary");
+      results.push(this.formatCallTree(
+        topDownTree,
+        2
+        /* headerLevel */
+      ));
+    }
+    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
+    if (bottomUpRootNode) {
+      results.push("# Bottom-up main thread summary");
+      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
+    }
+    const thirdPartySummaries = Trace3.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace.data, bounds);
+    if (thirdPartySummaries.length) {
+      results.push("# Third parties");
+      results.push(this.#formatThirdPartyEntitySummaries(thirdPartySummaries));
+    }
+    const relatedInsightsText = this.#serializeRelatedInsightsForEvents([...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]);
+    if (relatedInsightsText) {
+      results.push("# Related insights");
+      results.push("Here are all the insights that contain some related event from the main thread in the given range.");
+      results.push(relatedInsightsText);
+    }
+    if (!results.length) {
+      return "No main thread activity found";
+    }
+    return results.join("\n\n");
+  }
+  formatNetworkTrackSummary(bounds) {
+    const results = [];
+    const requests = this.#parsedTrace.data.NetworkRequests.byTime.filter((request) => Trace3.Helpers.Timing.eventIsInBounds(request, bounds));
+    const requestsText = this.formatNetworkRequests(requests, { verbose: false });
+    results.push("# Network requests summary");
+    results.push(requestsText || "No requests in the given bounds");
+    const relatedInsightsText = this.#serializeRelatedInsightsForEvents(requests);
+    if (relatedInsightsText) {
+      results.push("# Related insights");
+      results.push("Here are all the insights that contain some related request from the given range.");
+      results.push(relatedInsightsText);
+    }
+    return results.join("\n\n");
+  }
+  formatCallTree(tree, headerLevel = 1) {
+    return `${tree.serialize(headerLevel)}
+
+IMPORTANT: Never show eventKey to the user.`;
+  }
+  formatNetworkRequests(requests, options) {
+    if (requests.length === 0) {
+      return "";
+    }
+    let verbose;
+    if (options?.verbose !== void 0) {
+      verbose = options.verbose;
+    } else {
+      verbose = requests.length === 1;
+    }
+    if (verbose) {
+      return requests.map((request) => this.#networkRequestVerbosely(request, options)).join("\n");
+    }
+    return this.#networkRequestsArrayCompressed(requests);
+  }
+  #getOrAssignUrlIndex(urlIdToIndex, url) {
+    let index = urlIdToIndex.get(url);
+    if (index !== void 0) {
+      return index;
+    }
+    index = urlIdToIndex.size;
+    urlIdToIndex.set(url, index);
+    return index;
+  }
+  #getInitiatorChain(parsedTrace, request) {
+    const initiators = [];
+    let cur = request;
+    while (cur) {
+      const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(cur);
+      if (initiator) {
+        if (initiators.includes(initiator)) {
+          return [];
+        }
+        initiators.unshift(initiator);
+      }
+      cur = initiator;
+    }
+    return initiators;
+  }
+  /**
+   * This is the data passed to a network request when the Performance Insights
+   * agent is asking for information. It is a slimmed down version of the
+   * request's data to avoid using up too much of the context window.
+   * IMPORTANT: these set of fields have been reviewed by Chrome Privacy &
+   * Security; be careful about adding new data here. If you are in doubt please
+   * talk to jacktfranklin@.
+   */
+  #networkRequestVerbosely(request, options) {
+    const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
+    const parsedTrace = this.#parsedTrace;
+    const titlePrefix = `## ${options?.customTitle ?? "Network request"}`;
+    const navigationForEvent = Trace3.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+    const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
+    const startTimesForLifecycle = {
+      queuedAt: request.ts - baseTime,
+      requestSentAt: syntheticData.sendStartTime - baseTime,
+      downloadCompletedAt: syntheticData.finishTime - baseTime,
+      processingCompletedAt: request.ts + request.dur - baseTime
+    };
+    const mainThreadProcessingDuration = startTimesForLifecycle.processingCompletedAt - startTimesForLifecycle.downloadCompletedAt;
+    const downloadTime = syntheticData.finishTime - syntheticData.downloadStart;
+    const renderBlocking = Trace3.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
+    const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(request);
+    const priorityLines = [];
+    if (initialPriority === priority) {
+      priorityLines.push(`Priority: ${priority}`);
+    } else {
+      priorityLines.push(`Initial priority: ${initialPriority}`);
+      priorityLines.push(`Final priority: ${priority}`);
+    }
+    const redirects = request.args.data.redirects.map((redirect, index) => {
+      const startTime = redirect.ts - baseTime;
+      return `#### Redirect ${index + 1}: ${redirect.url}
+- Start time: ${micros(startTime)}
+- Duration: ${micros(redirect.dur)}`;
+    });
+    const initiators = this.#getInitiatorChain(parsedTrace, request);
+    const initiatorUrls = initiators.map((initiator2) => initiator2.args.data.url);
+    const eventKey = this.#eventsSerializer.keyForEvent(request);
+    const eventKeyLine = eventKey ? `eventKey: ${eventKey}
+` : "";
+    return `${titlePrefix}: ${url}
+${eventKeyLine}Timings:
+- Queued at: ${micros(startTimesForLifecycle.queuedAt)}
+- Request sent at: ${micros(startTimesForLifecycle.requestSentAt)}
+- Download complete at: ${micros(startTimesForLifecycle.downloadCompletedAt)}
+- Main thread processing completed at: ${micros(startTimesForLifecycle.processingCompletedAt)}
+Durations:
+- Download time: ${micros(downloadTime)}
+- Main thread processing time: ${micros(mainThreadProcessingDuration)}
+- Total duration: ${micros(request.dur)}${initiator ? `
+Initiator: ${initiator.args.data.url}` : ""}
+Redirects:${redirects.length ? "\n" + redirects.join("\n") : " no redirects"}
+Status code: ${statusCode}
+MIME Type: ${mimeType}
+Protocol: ${protocol}
+${priorityLines.join("\n")}
+Render blocking: ${renderBlocking ? "Yes" : "No"}
+From a service worker: ${fromServiceWorker ? "Yes" : "No"}
+Initiators (root request to the request that directly loaded this one): ${initiatorUrls.join(", ") || "none"}
+${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [], true)}`;
+  }
+  // A compact network requests format designed to save tokens when sending multiple network requests to the model.
+  // It creates a map that maps request URLs to IDs and references the IDs in the compressed format.
+  //
+  // Important: Do not use this method for stringifying a single network request. With this format, a format description
+  // needs to be provided, which is not worth sending if only one network request is being stringified.
+  // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
+  // format description.
+  #networkRequestsArrayCompressed(requests) {
+    const networkDataString = `
+Network requests data:
+
+`;
+    const urlIdToIndex = /* @__PURE__ */ new Map();
+    const allRequestsText = requests.map((request) => {
+      const urlIndex = this.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
+      return this.#networkRequestCompressedFormat(urlIndex, request, urlIdToIndex);
+    }).join("\n");
+    const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
+      return `${index}: ${url}`;
+    }).join(", ")}]`;
+    return networkDataString + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
+  }
+  static callFrameDataFormatDescription = `Each call frame is presented in the following format:
+
+'id;eventKey;name;duration;selfTime;urlIndex;childRange;[S]'
+
+Key definitions:
+
+* id: A unique numerical identifier for the call frame. Never mention this id in the output to the user.
+* eventKey: String that uniquely identifies this event in the flame chart.
+* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
+* duration: The total execution time of the call frame, including its children.
+* selfTime: The time spent directly within the call frame, excluding its children's execution.
+* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
+* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
+* S: _Optional_. The letter 'S' terminates the line if that call frame was selected by the user.
+
+Example Call Tree:
+
+1;r-123;main;500;100;;
+2;r-124;update;200;50;;3
+3;p-49575-15428179-2834-374;animate;150;20;0;4-5;S
+4;p-49575-15428179-3505-1162;calculatePosition;80;80;;
+5;p-49575-15428179-5391-2767;applyStyles;50;50;;
+`;
+  /**
+   * Network requests format description that is sent to the model as a fact.
+   */
+  static networkDataFormatDescription = `Network requests are formatted like this:
+\`urlIndex;eventKey;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiators;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
+
+- \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
+- \`eventKey\`: String that uniquely identifies this request's trace event.
+Timings (all in milliseconds, relative to navigation start):
+- \`queuedTime\`: When the request was queued.
+- \`requestSentTime\`: When the request was sent.
+- \`downloadCompleteTime\`: When the download completed.
+- \`processingCompleteTime\`: When main thread processing finished.
+Durations (all in milliseconds):
+- \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
+- \`downloadDuration\`: Time spent actively downloading the resource.
+- \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
+- \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
+- \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
+- \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
+- \`initialPriority\`: The initial network request priority.
+- \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
+- \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
+- \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
+- \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
+- \`initiators\`: A list (separated by ,) of URL indices for the initiator chain of this request. Listed in order starting from the root request to the request that directly loaded this one. This represents the network dependencies necessary to load this request. If there is no initiator, this is empty.
+- \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
+\`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
+- \`responseHeaders\`: A list (separated by '|') of values for specific, pre-defined response headers, enclosed in square brackets.
+The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
+`;
+  /**
+   * This is the network request data passed to the Performance agent.
+   *
+   * The `urlIdToIndex` Map is used to map URLs to numerical indices in order to not need to pass whole url every time it's mentioned.
+   * The map content is passed in the response together will all the requests data.
+   *
+   * See `networkDataFormatDescription` above for specifics.
+   */
+  #networkRequestCompressedFormat(urlIndex, request, urlIdToIndex) {
+    const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
+    const parsedTrace = this.#parsedTrace;
+    const navigationForEvent = Trace3.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
+    const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
+    const queuedTime = micros(request.ts - baseTime);
+    const requestSentTime = micros(syntheticData.sendStartTime - baseTime);
+    const downloadCompleteTime = micros(syntheticData.finishTime - baseTime);
+    const processingCompleteTime = micros(request.ts + request.dur - baseTime);
+    const totalDuration = micros(request.dur);
+    const downloadDuration = micros(syntheticData.finishTime - syntheticData.downloadStart);
+    const mainThreadProcessingDuration = micros(request.ts + request.dur - syntheticData.finishTime);
+    const renderBlocking = Trace3.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
+    const finalPriority = priority;
+    const headerValues = responseHeaders?.map((header) => {
+      const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : "<redacted>";
+      return `${header.name}: ${value}`;
+    }).join("|");
+    const redirects = request.args.data.redirects.map((redirect) => {
+      const urlIndex2 = this.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
+      const redirectStartTime = micros(redirect.ts - baseTime);
+      const redirectDuration = micros(redirect.dur);
+      return `[${urlIndex2}|${redirectStartTime}|${redirectDuration}]`;
+    }).join(",");
+    const initiators = this.#getInitiatorChain(parsedTrace, request);
+    const initiatorUrlIndices = initiators.map((initiator) => this.#getOrAssignUrlIndex(urlIdToIndex, initiator.args.data.url));
+    const parts = [
+      urlIndex,
+      this.#eventsSerializer.keyForEvent(request) ?? "",
+      queuedTime,
+      requestSentTime,
+      downloadCompleteTime,
+      processingCompleteTime,
+      totalDuration,
+      downloadDuration,
+      mainThreadProcessingDuration,
+      statusCode,
+      mimeType,
+      priority,
+      initialPriority,
+      finalPriority,
+      renderBlocking,
+      protocol,
+      fromServiceWorker ? "t" : "f",
+      initiatorUrlIndices.join(","),
+      `[${redirects}]`,
+      `[${headerValues ?? ""}]`
+    ];
+    return parts.join(";");
+  }
+};
+
+// gen/front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.js
 function getLCPData(parsedTrace, frameId, navigationId) {
   const navMetrics = parsedTrace.data.PageLoadMetrics.metricScoresByFrameId.get(frameId)?.get(navigationId);
   if (!navMetrics) {
@@ -1374,11 +2399,11 @@ function getLCPData(parsedTrace, frameId, navigationId) {
     "LCP"
     /* Trace.Handlers.ModelHandlers.PageLoadMetrics.MetricName.LCP */
   );
-  if (!metric || !Trace.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
+  if (!metric || !Trace4.Handlers.ModelHandlers.PageLoadMetrics.metricIsLCP(metric)) {
     return null;
   }
   const lcpEvent = metric?.event;
-  if (!lcpEvent || !Trace.Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
+  if (!lcpEvent || !Trace4.Types.Events.isLargestContentfulPaintCandidate(lcpEvent)) {
     return null;
   }
   return {
@@ -1388,11 +2413,13 @@ function getLCPData(parsedTrace, frameId, navigationId) {
   };
 }
 var PerformanceInsightFormatter = class {
+  #traceFormatter;
   #insight;
   #parsedTrace;
-  constructor(parsedTrace, insight) {
+  constructor(focus, insight) {
+    this.#traceFormatter = new PerformanceTraceFormatter(focus);
     this.#insight = insight;
-    this.#parsedTrace = parsedTrace;
+    this.#parsedTrace = focus.parsedTrace;
   }
   #formatMilli(x) {
     if (x === void 0) {
@@ -1404,7 +2431,23 @@ var PerformanceInsightFormatter = class {
     if (x === void 0) {
       return "";
     }
-    return this.#formatMilli(Trace.Helpers.Timing.microToMilli(x));
+    return this.#formatMilli(Trace4.Helpers.Timing.microToMilli(x));
+  }
+  #formatRequestUrl(request) {
+    return `${request.args.data.url} ${this.#traceFormatter.serializeEvent(request)}`;
+  }
+  #formatScriptUrl(script) {
+    if (script.request) {
+      return this.#formatRequestUrl(script.request);
+    }
+    return script.url ?? script.sourceUrl ?? script.scriptId;
+  }
+  #formatUrl(url) {
+    const request = this.#parsedTrace.data.NetworkRequests.byTime.find((request2) => request2.args.data.url === url);
+    if (request) {
+      return this.#formatRequestUrl(request);
+    }
+    return url;
   }
   /**
    * Information about LCP which we pass to the LLM for all insights that relate to LCP.
@@ -1421,13 +2464,13 @@ var PerformanceInsightFormatter = class {
       return "";
     }
     const { metricScore, lcpRequest, lcpEvent } = data;
-    const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName})` : "The LCP element";
+    const theLcpElement = lcpEvent.args.data?.nodeName ? `The LCP element (${lcpEvent.args.data.nodeName}, nodeId: ${lcpEvent.args.data.nodeId})` : "The LCP element";
     const parts = [
       `The Largest Contentful Paint (LCP) time for this navigation was ${this.#formatMicro(metricScore.timing)}.`
     ];
     if (lcpRequest) {
-      parts.push(`${theLcpElement} is an image fetched from \`${lcpRequest.args.data.url}\`.`);
-      const request = TraceEventFormatter.networkRequests([lcpRequest], this.#parsedTrace, { verbose: true, customTitle: "LCP resource network request" });
+      parts.push(`${theLcpElement} is an image fetched from ${this.#formatRequestUrl(lcpRequest)}.`);
+      const request = this.#traceFormatter.formatNetworkRequests([lcpRequest], { verbose: true, customTitle: "LCP resource network request" });
       parts.push(request);
     } else {
       parts.push(`${theLcpElement} is text and was not fetched from the network.`);
@@ -1435,6 +2478,9 @@ var PerformanceInsightFormatter = class {
     return parts.join("\n");
   }
   insightIsSupported() {
+    if (this.#insight instanceof Error) {
+      return false;
+    }
     return this.#description().length > 0;
   }
   getSuggestions() {
@@ -1527,19 +2573,57 @@ var PerformanceInsightFormatter = class {
    */
   formatCacheInsight(insight) {
     if (insight.requests.length === 0) {
-      return Trace.Insights.Models.Cache.UIStrings.noRequestsToCache + ".";
+      return Trace4.Insights.Models.Cache.UIStrings.noRequestsToCache + ".";
     }
     let output = "The following resources were associated with ineffficient cache policies:\n";
     for (const entry of insight.requests) {
       output += `
-- ${entry.request.args.data.url}`;
+- ${this.#formatRequestUrl(entry.request)}`;
       output += `
   - Cache Time to Live (TTL): ${entry.ttl} seconds`;
       output += `
   - Wasted bytes: ${bytes(entry.wastedBytes)}`;
     }
-    output += "\n\n" + Trace.Insights.Models.Cache.UIStrings.description;
+    output += "\n\n" + Trace4.Insights.Models.Cache.UIStrings.description;
     return output;
+  }
+  #formatLayoutShift(shift, index, rootCauses) {
+    const baseTime = this.#parsedTrace.data.Meta.traceBounds.min;
+    const potentialRootCauses = [];
+    if (rootCauses) {
+      rootCauses.iframes.forEach((iframe) => potentialRootCauses.push(`- An iframe (id: ${iframe.frame}, url: ${iframe.url ?? "unknown"} was injected into the page)`));
+      rootCauses.webFonts.forEach((req) => {
+        potentialRootCauses.push(`- A font that was loaded over the network: ${this.#formatRequestUrl(req)}.`);
+      });
+      rootCauses.nonCompositedAnimations.forEach((nonCompositedFailure) => {
+        potentialRootCauses.push("- A non-composited animation:");
+        const animationInfoOutput = [];
+        potentialRootCauses.push(`- non-composited animation: \`${nonCompositedFailure.name || "(unnamed)"}\``);
+        if (nonCompositedFailure.name) {
+          animationInfoOutput.push(`Animation name: ${nonCompositedFailure.name}`);
+        }
+        if (nonCompositedFailure.unsupportedProperties) {
+          animationInfoOutput.push("Unsupported CSS properties:");
+          animationInfoOutput.push("- " + nonCompositedFailure.unsupportedProperties.join(", "));
+        }
+        animationInfoOutput.push("Failure reasons:");
+        animationInfoOutput.push("  - " + nonCompositedFailure.failureReasons.join(", "));
+        potentialRootCauses.push(animationInfoOutput.map((l) => " ".repeat(4) + l).join("\n"));
+      });
+      rootCauses.unsizedImages.forEach((img) => {
+        const url = img.paintImageEvent.args.data.url;
+        const nodeName = img.paintImageEvent.args.data.nodeName;
+        const extraText = url ? `url: ${this.#formatUrl(url)}` : `id: ${img.backendNodeId}`;
+        potentialRootCauses.push(`- An unsized image (${nodeName}) (${extraText}).`);
+      });
+    }
+    const rootCauseText = potentialRootCauses.length ? `- Potential root causes:
+  ${potentialRootCauses.join("\n")}` : "- No potential root causes identified";
+    const startTime = Trace4.Helpers.Timing.microToMilli(Trace4.Types.Timing.Micro(shift.ts - baseTime));
+    return `### Layout shift ${index + 1}:
+- Start time: ${millis(startTime)}
+- Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
+${rootCauseText}`;
   }
   /**
    * Create an AI prompt string out of the CLS Culprits Insight model to use with Ask AI.
@@ -1549,7 +2633,7 @@ var PerformanceInsightFormatter = class {
   formatClsCulpritsInsight(insight) {
     const { worstCluster, shifts } = insight;
     if (!worstCluster) {
-      return "";
+      return "No layout shifts were found.";
     }
     const baseTime = this.#parsedTrace.data.Meta.traceBounds.min;
     const clusterTimes = {
@@ -1557,7 +2641,7 @@ var PerformanceInsightFormatter = class {
       end: worstCluster.ts + worstCluster.dur - baseTime
     };
     const shiftsFormatted = worstCluster.events.map((layoutShift, index) => {
-      return TraceEventFormatter.layoutShift(layoutShift, index, this.#parsedTrace, shifts.get(layoutShift));
+      return this.#formatLayoutShift(layoutShift, index, shifts.get(layoutShift));
     });
     return `The worst layout shift cluster was the cluster that started at ${this.#formatMicro(clusterTimes.start)} and ended at ${this.#formatMicro(clusterTimes.end)}, with a duration of ${this.#formatMicro(worstCluster.dur)}.
 The score for this cluster is ${worstCluster.clusterCumulativeScore.toFixed(4)}.
@@ -1593,7 +2677,7 @@ ${shiftsFormatted.join("\n")}`;
     });
     return `${this.#lcpMetricSharedContext()}
 
-${TraceEventFormatter.networkRequests([documentRequest], this.#parsedTrace, {
+${this.#traceFormatter.formatNetworkRequests([documentRequest], {
       verbose: true,
       customTitle: "Document network request"
     })}
@@ -1613,17 +2697,17 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
     if (insight.state === "pass") {
       return "No DOM size issues were detected.";
     }
-    let output = Trace.Insights.Models.DOMSize.UIStrings.description + "\n";
+    let output = Trace4.Insights.Models.DOMSize.UIStrings.description + "\n";
     if (insight.maxDOMStats) {
-      output += "\n" + Trace.Insights.Models.DOMSize.UIStrings.statistic + ":\n\n";
+      output += "\n" + Trace4.Insights.Models.DOMSize.UIStrings.statistic + ":\n\n";
       const maxDepthStats = insight.maxDOMStats.args.data.maxDepth;
       const maxChildrenStats = insight.maxDOMStats.args.data.maxChildren;
-      output += Trace.Insights.Models.DOMSize.UIStrings.totalElements + ": " + insight.maxDOMStats.args.data.totalElements + ".\n";
+      output += Trace4.Insights.Models.DOMSize.UIStrings.totalElements + ": " + insight.maxDOMStats.args.data.totalElements + ".\n";
       if (maxDepthStats) {
-        output += Trace.Insights.Models.DOMSize.UIStrings.maxDOMDepth + ": " + maxDepthStats.depth + ` nodes, starting with element '${maxDepthStats.nodeName}' (node id: ` + maxDepthStats.nodeId + ").\n";
+        output += Trace4.Insights.Models.DOMSize.UIStrings.maxDOMDepth + ": " + maxDepthStats.depth + ` nodes, starting with element '${maxDepthStats.nodeName}' (node id: ` + maxDepthStats.nodeId + ").\n";
       }
       if (maxChildrenStats) {
-        output += Trace.Insights.Models.DOMSize.UIStrings.maxChildren + ": " + maxChildrenStats.numChildren + `, for parent '${maxChildrenStats.nodeName}' (node id: ` + maxChildrenStats.nodeId + ").\n";
+        output += Trace4.Insights.Models.DOMSize.UIStrings.maxChildren + ": " + maxChildrenStats.numChildren + `, for parent '${maxChildrenStats.nodeName}' (node id: ` + maxChildrenStats.nodeId + ").\n";
       }
     }
     if (insight.largeLayoutUpdates.length > 0 || insight.largeStyleRecalcs.length > 0) {
@@ -1683,9 +2767,9 @@ Duplication grouped by Node modules: ${filesFormatted}`;
         fontName = url.isValid ? url.lastPathComponent : "(not available)";
       }
       output += `
- - Font name: ${fontName}, URL: ${font.request.args.data.url}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;
+ - Font name: ${fontName}, URL: ${this.#formatRequestUrl(font.request)}, Property 'font-display' set to: '${font.display}', Wasted time: ${this.#formatMilli(font.wastedTime)}.`;
     }
-    output += "\n\n" + Trace.Insights.Models.FontDisplay.UIStrings.description;
+    output += "\n\n" + Trace4.Insights.Models.FontDisplay.UIStrings.description;
     return output;
   }
   /**
@@ -1697,7 +2781,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
    * @returns a string formatted for sending to Ask AI.
    */
   formatForcedReflowInsight(insight) {
-    let output = Trace.Insights.Models.ForcedReflow.UIStrings.description + "\n\n";
+    let output = Trace4.Insights.Models.ForcedReflow.UIStrings.description + "\n\n";
     if (insight.topLevelFunctionCallData || insight.aggregatedBottomUpData.length > 0) {
       output += "The forced reflow checks revealed one or more problems.\n\n";
     } else {
@@ -1706,9 +2790,9 @@ Duplication grouped by Node modules: ${filesFormatted}`;
     }
     function callFrameToString(frame) {
       if (frame === null) {
-        return Trace.Insights.Models.ForcedReflow.UIStrings.unattributed;
+        return Trace4.Insights.Models.ForcedReflow.UIStrings.unattributed;
       }
-      let result = `${frame.functionName || Trace.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
+      let result = `${frame.functionName || Trace4.Insights.Models.ForcedReflow.UIStrings.anonymous}`;
       if (frame.url) {
         result += ` @ ${frame.url}:${frame.lineNumber}:${frame.columnNumber}`;
       } else {
@@ -1721,13 +2805,13 @@ Duplication grouped by Node modules: ${filesFormatted}`;
       output += " - " + callFrameToString(insight.topLevelFunctionCallData.topLevelFunctionCall);
       output += `
 
-${Trace.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}
+${Trace4.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatMicro(insight.topLevelFunctionCallData.totalReflowTime)}
 `;
     } else {
       output += "No top-level functions causing forced reflows were identified.\n";
     }
     if (insight.aggregatedBottomUpData.length > 0) {
-      output += "\n" + Trace.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + " (including total time):\n";
+      output += "\n" + Trace4.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + " (including total time):\n";
       for (const data of insight.aggregatedBottomUpData) {
         output += `
  - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
@@ -1749,11 +2833,11 @@ ${Trace.Insights.Models.ForcedReflow.UIStrings.totalReflowTime}: ${this.#formatM
     }
     const imageDetails = optimizableImages.map((image) => {
       const optimizations = image.optimizations.map((optimization) => {
-        const message = Trace.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
+        const message = Trace4.Insights.Models.ImageDelivery.getOptimizationMessage(optimization);
         const byteSavings = bytes(optimization.byteSavings);
         return `${message} (Est ${byteSavings})`;
       }).join("\n");
-      return `### ${image.request.args.data.url}
+      return `### ${this.#formatRequestUrl(image.request)}
 - Potential savings: ${bytes(image.byteSavings)}
 - Optimizations:
 ${optimizations}`;
@@ -1793,7 +2877,7 @@ ${imageDetails}`;
     }
     const phaseBulletPoints = [];
     Object.values(subparts).forEach((subpart) => {
-      const phaseMilli = Trace.Helpers.Timing.microToMilli(subpart.range);
+      const phaseMilli = Trace4.Helpers.Timing.microToMilli(subpart.range);
       const percentage = (phaseMilli / lcpMs * 100).toFixed(1);
       phaseBulletPoints.push({ name: subpart.label, value: this.#formatMilli(phaseMilli), percentage });
     });
@@ -1842,7 +2926,7 @@ ${checklistBulletPoints.map((point) => `- ${point.name}: ${point.passed ? "PASSE
       return "There is no significant amount of legacy JavaScript on the page.";
     }
     const filesFormatted = Array.from(legacyJavaScriptResults).map(([script, result]) => `
-- Script: ${script.url} - Wasted bytes: ${result.estimatedByteSavings} bytes
+- Script: ${this.#formatScriptUrl(script)} - Wasted bytes: ${result.estimatedByteSavings} bytes
 Matches:
 ${result.matches.map((match) => `Line: ${match.line}, Column: ${match.column}, Name: ${match.name}`).join("\n")}`).join("\n");
     return `Total legacy JavaScript: ${legacyJavaScriptResults.size} files.
@@ -1856,7 +2940,7 @@ ${filesFormatted}`;
    * @returns a string formatted for sending to Ask AI.
    */
   formatModernHttpInsight(insight) {
-    const requestSummary = insight.http1Requests.length === 1 ? TraceEventFormatter.networkRequests(insight.http1Requests, this.#parsedTrace, { verbose: true }) : TraceEventFormatter.networkRequests(insight.http1Requests, this.#parsedTrace);
+    const requestSummary = insight.http1Requests.length === 1 ? this.#traceFormatter.formatNetworkRequests(insight.http1Requests, { verbose: true }) : this.#traceFormatter.formatNetworkRequests(insight.http1Requests);
     if (requestSummary.length === 0) {
       return "There are no requests that were served over a legacy HTTP protocol.";
     }
@@ -1876,7 +2960,7 @@ ${requestSummary}`;
     const rootNodes = insight.rootNodes;
     if (rootNodes.length > 0) {
       let formatNode = function(node, indent) {
-        const url = node.request.args.data.url;
+        const url = this.#formatRequestUrl(node.request);
         const time = this.#formatMicro(node.timeFromInitialRequest);
         const isLongest = node.isLongest ? " (longest chain)" : "";
         let nodeString = `${indent}- ${url} (${time})${isLongest}
@@ -1895,46 +2979,46 @@ ${requestSummary}`;
       }
       output += "\n";
     } else {
-      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.noNetworkDependencyTree}.
+      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.noNetworkDependencyTree}.
 
 `;
     }
     if (insight.preconnectedOrigins?.length > 0) {
-      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableTitle}:
+      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableTitle}:
 `;
-      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableDescription}
+      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.preconnectOriginsTableDescription}
 `;
       for (const origin of insight.preconnectedOrigins) {
         const headerText = "headerText" in origin ? `'${origin.headerText}'` : ``;
         output += `
   - ${origin.url}
-    - ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.columnSource}: '${origin.source}'`;
+    - ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.columnSource}: '${origin.source}'`;
         if (headerText) {
           output += `
    - Header: ${headerText}`;
         }
         if (origin.unused) {
           output += `
-   - Warning: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.unusedWarning}`;
+   - Warning: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.unusedWarning}`;
         }
         if (origin.crossorigin) {
           output += `
-   - Warning: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.crossoriginWarning}`;
+   - Warning: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.crossoriginWarning}`;
         }
       }
-      if (insight.preconnectedOrigins.length > Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+      if (insight.preconnectedOrigins.length > Trace4.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
         output += `
 
-**Warning**: ${Trace.Insights.Models.NetworkDependencyTree.UIStrings.tooManyPreconnectLinksWarning}`;
+**Warning**: ${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.tooManyPreconnectLinksWarning}`;
       }
     } else {
-      output += `${Trace.Insights.Models.NetworkDependencyTree.UIStrings.noPreconnectOrigins}.`;
+      output += `${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.noPreconnectOrigins}.`;
     }
-    if (insight.preconnectCandidates.length > 0 && insight.preconnectedOrigins.length < Trace.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
+    if (insight.preconnectCandidates.length > 0 && insight.preconnectedOrigins.length < Trace4.Insights.Models.NetworkDependencyTree.TOO_MANY_PRECONNECTS_THRESHOLD) {
       output += `
 
-${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:
-${Trace.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}
+${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableTitle}:
+${Trace4.Insights.Models.NetworkDependencyTree.UIStrings.estSavingTableDescription}
 `;
       for (const candidate of insight.preconnectCandidates) {
         output += `
@@ -1949,7 +3033,7 @@ Adding [preconnect] to origin '${candidate.origin}' would save ${this.#formatMil
    * @returns a string formatted for sending to Ask AI.
    */
   formatRenderBlockingInsight(insight) {
-    const requestSummary = TraceEventFormatter.networkRequests(insight.renderBlockingRequests, this.#parsedTrace);
+    const requestSummary = this.#traceFormatter.formatNetworkRequests(insight.renderBlockingRequests);
     if (requestSummary.length === 0) {
       return "There are no network requests that are render blocking.";
     }
@@ -1968,32 +3052,32 @@ ${requestSummary}`;
   formatSlowCssSelectorsInsight(insight) {
     let output = "";
     if (!insight.topSelectorElapsedMs && !insight.topSelectorMatchAttempts) {
-      return Trace.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
+      return Trace4.Insights.Models.SlowCSSSelector.UIStrings.enableSelectorData;
     }
     output += "One or more slow CSS selectors were identified as negatively affecting page performance:\n\n";
     if (insight.topSelectorElapsedMs) {
-      output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):
+      output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.topSelectorElapsedTime} (as ranked by elapsed time in ms):
 `;
       output += `${this.#formatMicro(insight.topSelectorElapsedMs["elapsed (us)"])}: ${insight.topSelectorElapsedMs.selector}
 
 `;
     }
     if (insight.topSelectorMatchAttempts) {
-      output += Trace.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ":\n";
+      output += Trace4.Insights.Models.SlowCSSSelector.UIStrings.topSelectorMatchAttempt + ":\n";
       output += `${insight.topSelectorMatchAttempts.match_attempts} attempts for selector: '${insight.topSelectorMatchAttempts.selector}'
 
 `;
     }
-    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.total}:
+    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.total}:
 `;
-    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}
+    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.elapsed}: ${this.#formatMicro(insight.totalElapsedMs)}
 `;
-    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}
+    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.matchAttempts}: ${insight.totalMatchAttempts}
 `;
-    output += `${Trace.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}
+    output += `${Trace4.Insights.Models.SlowCSSSelector.UIStrings.matchCount}: ${insight.totalMatchCount}
 
 `;
-    output += Trace.Insights.Models.SlowCSSSelector.UIStrings.description;
+    output += Trace4.Insights.Models.SlowCSSSelector.UIStrings.description;
     return output;
   }
   /**
@@ -2037,7 +3121,7 @@ ${requestSummary}`;
       }
       output += "\n";
     }
-    output += Trace.Insights.Models.ThirdParties.UIStrings.description;
+    output += Trace4.Insights.Models.ThirdParties.UIStrings.description;
     return output;
   }
   /**
@@ -2060,7 +3144,7 @@ The viewport meta tag was found: \`${insight.viewportEvent?.args?.data.content}\
 The viewport meta tag is missing.`;
     }
     if (!hasMetaTag) {
-      output += "\n\n" + Trace.Insights.Models.Viewport.UIStrings.description;
+      output += "\n\n" + Trace4.Insights.Models.Viewport.UIStrings.description;
     }
     return output;
   }
@@ -2086,58 +3170,58 @@ ${header} External resources:
 ${this.#links()}`;
   }
   #details() {
-    if (Trace.Insights.Models.Cache.isCacheInsight(this.#insight)) {
+    if (Trace4.Insights.Models.Cache.isCacheInsight(this.#insight)) {
       return this.formatCacheInsight(this.#insight);
     }
-    if (Trace.Insights.Models.CLSCulprits.isCLSCulpritsInsight(this.#insight)) {
+    if (Trace4.Insights.Models.CLSCulprits.isCLSCulpritsInsight(this.#insight)) {
       return this.formatClsCulpritsInsight(this.#insight);
     }
-    if (Trace.Insights.Models.DocumentLatency.isDocumentLatencyInsight(this.#insight)) {
+    if (Trace4.Insights.Models.DocumentLatency.isDocumentLatencyInsight(this.#insight)) {
       return this.formatDocumentLatencyInsight(this.#insight);
     }
-    if (Trace.Insights.Models.DOMSize.isDomSizeInsight(this.#insight)) {
+    if (Trace4.Insights.Models.DOMSize.isDomSizeInsight(this.#insight)) {
       return this.formatDomSizeInsight(this.#insight);
     }
-    if (Trace.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScriptInsight(this.#insight)) {
+    if (Trace4.Insights.Models.DuplicatedJavaScript.isDuplicatedJavaScriptInsight(this.#insight)) {
       return this.formatDuplicatedJavaScriptInsight(this.#insight);
     }
-    if (Trace.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
+    if (Trace4.Insights.Models.FontDisplay.isFontDisplayInsight(this.#insight)) {
       return this.formatFontDisplayInsight(this.#insight);
     }
-    if (Trace.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
+    if (Trace4.Insights.Models.ForcedReflow.isForcedReflowInsight(this.#insight)) {
       return this.formatForcedReflowInsight(this.#insight);
     }
-    if (Trace.Insights.Models.ImageDelivery.isImageDeliveryInsight(this.#insight)) {
+    if (Trace4.Insights.Models.ImageDelivery.isImageDeliveryInsight(this.#insight)) {
       return this.formatImageDeliveryInsight(this.#insight);
     }
-    if (Trace.Insights.Models.INPBreakdown.isINPBreakdownInsight(this.#insight)) {
+    if (Trace4.Insights.Models.INPBreakdown.isINPBreakdownInsight(this.#insight)) {
       return this.formatInpBreakdownInsight(this.#insight);
     }
-    if (Trace.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(this.#insight)) {
+    if (Trace4.Insights.Models.LCPBreakdown.isLCPBreakdownInsight(this.#insight)) {
       return this.formatLcpBreakdownInsight(this.#insight);
     }
-    if (Trace.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(this.#insight)) {
+    if (Trace4.Insights.Models.LCPDiscovery.isLCPDiscoveryInsight(this.#insight)) {
       return this.formatLcpDiscoveryInsight(this.#insight);
     }
-    if (Trace.Insights.Models.LegacyJavaScript.isLegacyJavaScript(this.#insight)) {
+    if (Trace4.Insights.Models.LegacyJavaScript.isLegacyJavaScript(this.#insight)) {
       return this.formatLegacyJavaScriptInsight(this.#insight);
     }
-    if (Trace.Insights.Models.ModernHTTP.isModernHTTPInsight(this.#insight)) {
+    if (Trace4.Insights.Models.ModernHTTP.isModernHTTPInsight(this.#insight)) {
       return this.formatModernHttpInsight(this.#insight);
     }
-    if (Trace.Insights.Models.NetworkDependencyTree.isNetworkDependencyTreeInsight(this.#insight)) {
+    if (Trace4.Insights.Models.NetworkDependencyTree.isNetworkDependencyTreeInsight(this.#insight)) {
       return this.formatNetworkDependencyTreeInsight(this.#insight);
     }
-    if (Trace.Insights.Models.RenderBlocking.isRenderBlockingInsight(this.#insight)) {
+    if (Trace4.Insights.Models.RenderBlocking.isRenderBlockingInsight(this.#insight)) {
       return this.formatRenderBlockingInsight(this.#insight);
     }
-    if (Trace.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
+    if (Trace4.Insights.Models.SlowCSSSelector.isSlowCSSSelectorInsight(this.#insight)) {
       return this.formatSlowCssSelectorsInsight(this.#insight);
     }
-    if (Trace.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
+    if (Trace4.Insights.Models.ThirdParties.isThirdPartyInsight(this.#insight)) {
       return this.formatThirdPartiesInsight(this.#insight);
     }
-    if (Trace.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
+    if (Trace4.Insights.Models.Viewport.isViewportInsight(this.#insight)) {
       return this.formatViewportInsight(this.#insight);
     }
     return "";
@@ -2153,7 +3237,7 @@ ${this.#links()}`;
   #links() {
     switch (this.#insight.insightKey) {
       case "CLSCulprits":
-        return `- https://wdeb.dev/articles/cls
+        return `- https://web.dev/articles/cls
 - https://web.dev/articles/optimize-cls`;
       case "DocumentLatency":
         return "- https://web.dev/articles/optimize-ttfb";
@@ -2283,983 +3367,6 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
     }
   }
 };
-var TraceEventFormatter = class _TraceEventFormatter {
-  static layoutShift(shift, index, parsedTrace, rootCauses) {
-    const baseTime = parsedTrace.data.Meta.traceBounds.min;
-    const potentialRootCauses = [];
-    if (rootCauses) {
-      rootCauses.iframes.forEach((iframe) => potentialRootCauses.push(`An iframe (id: ${iframe.frame}, url: ${iframe.url ?? "unknown"} was injected into the page)`));
-      rootCauses.webFonts.forEach((req) => {
-        potentialRootCauses.push(`A font that was loaded over the network (${req.args.data.url}).`);
-      });
-      rootCauses.nonCompositedAnimations.forEach((_) => {
-        potentialRootCauses.push("A non composited animation.");
-      });
-      rootCauses.unsizedImages.forEach((img) => {
-        const url = img.paintImageEvent.args.data.url;
-        const nodeName = img.paintImageEvent.args.data.nodeName;
-        const extraText = url ? `url: ${url}` : `id: ${img.backendNodeId}`;
-        potentialRootCauses.push(`An unsized image (${nodeName}) (${extraText}).`);
-      });
-    }
-    const rootCauseText = potentialRootCauses.length ? `- Potential root causes:
-  - ${potentialRootCauses.join("\n  - ")}` : "- No potential root causes identified";
-    const startTime = Trace.Helpers.Timing.microToMilli(Trace.Types.Timing.Micro(shift.ts - baseTime));
-    return `### Layout shift ${index + 1}:
-- Start time: ${millis(startTime)}
-- Score: ${shift.args.data?.weighted_score_delta.toFixed(4)}
-${rootCauseText}`;
-  }
-  // Stringify network requests for the LLM model.
-  static networkRequests(requests, parsedTrace, options) {
-    if (requests.length === 0) {
-      return "";
-    }
-    let verbose;
-    if (options?.verbose !== void 0) {
-      verbose = options.verbose;
-    } else {
-      verbose = requests.length === 1;
-    }
-    if (verbose) {
-      return requests.map((request) => this.#networkRequestVerbosely(request, parsedTrace, options?.customTitle)).join("\n");
-    }
-    return this.#networkRequestsArrayCompressed(requests, parsedTrace);
-  }
-  /**
-   * This is the data passed to a network request when the Performance Insights
-   * agent is asking for information. It is a slimmed down version of the
-   * request's data to avoid using up too much of the context window.
-   * IMPORTANT: these set of fields have been reviewed by Chrome Privacy &
-   * Security; be careful about adding new data here. If you are in doubt please
-   * talk to jacktfranklin@.
-   */
-  static #networkRequestVerbosely(request, parsedTrace, customTitle) {
-    const { url, statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
-    const titlePrefix = `## ${customTitle ?? "Network request"}`;
-    const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
-    const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
-    const startTimesForLifecycle = {
-      queuedAt: request.ts - baseTime,
-      requestSentAt: syntheticData.sendStartTime - baseTime,
-      downloadCompletedAt: syntheticData.finishTime - baseTime,
-      processingCompletedAt: request.ts + request.dur - baseTime
-    };
-    const mainThreadProcessingDuration = startTimesForLifecycle.processingCompletedAt - startTimesForLifecycle.downloadCompletedAt;
-    const downloadTime = syntheticData.finishTime - syntheticData.downloadStart;
-    const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request);
-    const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(request);
-    const priorityLines = [];
-    if (initialPriority === priority) {
-      priorityLines.push(`Priority: ${priority}`);
-    } else {
-      priorityLines.push(`Initial priority: ${initialPriority}`);
-      priorityLines.push(`Final priority: ${priority}`);
-    }
-    const redirects = request.args.data.redirects.map((redirect, index) => {
-      const startTime = redirect.ts - baseTime;
-      return `#### Redirect ${index + 1}: ${redirect.url}
-- Start time: ${micros(startTime)}
-- Duration: ${micros(redirect.dur)}`;
-    });
-    const initiators = this.#getInitiatorChain(parsedTrace, request);
-    const initiatorUrls = initiators.map((initiator2) => initiator2.args.data.url);
-    return `${titlePrefix}: ${url}
-Timings:
-- Queued at: ${micros(startTimesForLifecycle.queuedAt)}
-- Request sent at: ${micros(startTimesForLifecycle.requestSentAt)}
-- Download complete at: ${micros(startTimesForLifecycle.downloadCompletedAt)}
-- Main thread processing completed at: ${micros(startTimesForLifecycle.processingCompletedAt)}
-Durations:
-- Download time: ${micros(downloadTime)}
-- Main thread processing time: ${micros(mainThreadProcessingDuration)}
-- Total duration: ${micros(request.dur)}${initiator ? `
-Initiator: ${initiator.args.data.url}` : ""}
-Redirects:${redirects.length ? "\n" + redirects.join("\n") : " no redirects"}
-Status code: ${statusCode}
-MIME Type: ${mimeType}
-Protocol: ${protocol}
-${priorityLines.join("\n")}
-Render blocking: ${renderBlocking ? "Yes" : "No"}
-From a service worker: ${fromServiceWorker ? "Yes" : "No"}
-Initiators (root request to the request that directly loaded this one): ${initiatorUrls.join(", ") || "none"}
-${NetworkRequestFormatter.formatHeaders("Response headers", responseHeaders ?? [], true)}`;
-  }
-  static #getOrAssignUrlIndex(urlIdToIndex, url) {
-    let index = urlIdToIndex.get(url);
-    if (index !== void 0) {
-      return index;
-    }
-    index = urlIdToIndex.size;
-    urlIdToIndex.set(url, index);
-    return index;
-  }
-  // A compact network requests format designed to save tokens when sending multiple network requests to the model.
-  // It creates a map that maps request URLs to IDs and references the IDs in the compressed format.
-  //
-  // Important: Do not use this method for stringifying a single network request. With this format, a format description
-  // needs to be provided, which is not worth sending if only one network request is being stringified.
-  // For a single request, use `formatRequestVerbosely`, which formats with all fields specified and does not require a
-  // format description.
-  static #networkRequestsArrayCompressed(requests, parsedTrace) {
-    const networkDataString = `
-Network requests data:
-
-`;
-    const urlIdToIndex = /* @__PURE__ */ new Map();
-    const allRequestsText = requests.map((request) => {
-      const urlIndex = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, request.args.data.url);
-      return this.#networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex);
-    }).join("\n");
-    const urlsMapString = `allUrls = [${Array.from(urlIdToIndex.entries()).map(([url, index]) => {
-      return `${index}: ${url}`;
-    }).join(", ")}]`;
-    return networkDataString + "\n\n" + urlsMapString + "\n\n" + allRequestsText;
-  }
-  /**
-   * Network requests format description that is sent to the model as a fact.
-   */
-  static networkDataFormatDescription = `Network requests are formatted like this:
-\`urlIndex;queuedTime;requestSentTime;downloadCompleteTime;processingCompleteTime;totalDuration;downloadDuration;mainThreadProcessingDuration;statusCode;mimeType;priority;initialPriority;finalPriority;renderBlocking;protocol;fromServiceWorker;initiators;redirects:[[redirectUrlIndex|startTime|duration]];responseHeaders:[header1Value|header2Value|...]\`
-
-- \`urlIndex\`: Numerical index for the request's URL, referencing the "All URLs" list.
-Timings (all in milliseconds, relative to navigation start):
-- \`queuedTime\`: When the request was queued.
-- \`requestSentTime\`: When the request was sent.
-- \`downloadCompleteTime\`: When the download completed.
-- \`processingCompleteTime\`: When main thread processing finished.
-Durations (all in milliseconds):
-- \`totalDuration\`: Total time from the request being queued until its main thread processing completed.
-- \`downloadDuration\`: Time spent actively downloading the resource.
-- \`mainThreadProcessingDuration\`: Time spent on the main thread after the download completed.
-- \`statusCode\`: The HTTP status code of the response (e.g., 200, 404).
-- \`mimeType\`: The MIME type of the resource (e.g., "text/html", "application/javascript").
-- \`priority\`: The final network request priority (e.g., "VeryHigh", "Low").
-- \`initialPriority\`: The initial network request priority.
-- \`finalPriority\`: The final network request priority (redundant if \`priority\` is always final, but kept for clarity if \`initialPriority\` and \`priority\` differ).
-- \`renderBlocking\`: 't' if the request was render-blocking, 'f' otherwise.
-- \`protocol\`: The network protocol used (e.g., "h2", "http/1.1").
-- \`fromServiceWorker\`: 't' if the request was served from a service worker, 'f' otherwise.
-- \`initiators\`: A list (separated by ,) of URL indices for the initiator chain of this request. Listed in order starting from the root request to the request that directly loaded this one. This represents the network dependencies necessary to load this request. If there is no initiator, this is empty.
-- \`redirects\`: A comma-separated list of redirects, enclosed in square brackets. Each redirect is formatted as
-\`[redirectUrlIndex|startTime|duration]\`, where: \`redirectUrlIndex\`: Numerical index for the redirect's URL. \`startTime\`: The start time of the redirect in milliseconds, relative to navigation start. \`duration\`: The duration of the redirect in milliseconds.
-- \`responseHeaders\`: A list (separated by '|') of values for specific, pre-defined response headers, enclosed in square brackets.
-The order of headers corresponds to an internal fixed list. If a header is not present, its value will be empty.
-`;
-  /**
-   *
-   * This is the network request data passed to the Performance agent.
-   *
-   * The `urlIdToIndex` Map is used to map URLs to numerical indices in order to not need to pass whole url every time it's mentioned.
-   * The map content is passed in the response together will all the requests data.
-   *
-   * See `networkDataFormatDescription` above for specifics.
-   */
-  static #networkRequestCompressedFormat(urlIndex, request, parsedTrace, urlIdToIndex) {
-    const { statusCode, initialPriority, priority, fromServiceWorker, mimeType, responseHeaders, syntheticData, protocol } = request.args.data;
-    const navigationForEvent = Trace.Helpers.Trace.getNavigationForTraceEvent(request, request.args.data.frame, parsedTrace.data.Meta.navigationsByFrameId);
-    const baseTime = navigationForEvent?.ts ?? parsedTrace.data.Meta.traceBounds.min;
-    const queuedTime = micros(request.ts - baseTime);
-    const requestSentTime = micros(syntheticData.sendStartTime - baseTime);
-    const downloadCompleteTime = micros(syntheticData.finishTime - baseTime);
-    const processingCompleteTime = micros(request.ts + request.dur - baseTime);
-    const totalDuration = micros(request.dur);
-    const downloadDuration = micros(syntheticData.finishTime - syntheticData.downloadStart);
-    const mainThreadProcessingDuration = micros(request.ts + request.dur - syntheticData.finishTime);
-    const renderBlocking = Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(request) ? "t" : "f";
-    const finalPriority = priority;
-    const headerValues = responseHeaders?.map((header) => {
-      const value = NetworkRequestFormatter.allowHeader(header.name) ? header.value : "<redacted>";
-      return `${header.name}: ${value}`;
-    }).join("|");
-    const redirects = request.args.data.redirects.map((redirect) => {
-      const urlIndex2 = _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, redirect.url);
-      const redirectStartTime = micros(redirect.ts - baseTime);
-      const redirectDuration = micros(redirect.dur);
-      return `[${urlIndex2}|${redirectStartTime}|${redirectDuration}]`;
-    }).join(",");
-    const initiators = this.#getInitiatorChain(parsedTrace, request);
-    const initiatorUrlIndices = initiators.map((initiator) => _TraceEventFormatter.#getOrAssignUrlIndex(urlIdToIndex, initiator.args.data.url));
-    const parts = [
-      urlIndex,
-      queuedTime,
-      requestSentTime,
-      downloadCompleteTime,
-      processingCompleteTime,
-      totalDuration,
-      downloadDuration,
-      mainThreadProcessingDuration,
-      statusCode,
-      mimeType,
-      priority,
-      initialPriority,
-      finalPriority,
-      renderBlocking,
-      protocol,
-      fromServiceWorker ? "t" : "f",
-      initiatorUrlIndices.join(","),
-      `[${redirects}]`,
-      `[${headerValues ?? ""}]`
-    ];
-    return parts.join(";");
-  }
-  static #getInitiatorChain(parsedTrace, request) {
-    const initiators = [];
-    let cur = request;
-    while (cur) {
-      const initiator = parsedTrace.data.NetworkRequests.eventToInitiator.get(cur);
-      if (initiator) {
-        if (initiators.includes(initiator)) {
-          return [];
-        }
-        initiators.unshift(initiator);
-      }
-      cur = initiator;
-    }
-    return initiators;
-  }
-};
-
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
-import * as CrUXManager from "./../crux-manager/crux-manager.js";
-import * as Trace4 from "./../trace/trace.js";
-
-// gen/front_end/models/ai_assistance/performance/AIQueries.js
-import * as Trace3 from "./../trace/trace.js";
-
-// gen/front_end/models/ai_assistance/performance/AICallTree.js
-import * as Root4 from "./../../core/root/root.js";
-import * as Trace2 from "./../trace/trace.js";
-import * as SourceMapsResolver from "./../trace_source_maps_resolver/trace_source_maps_resolver.js";
-function depthFirstWalk(nodes, callback) {
-  for (const node of nodes) {
-    if (callback?.(node)) {
-      break;
-    }
-    depthFirstWalk(node.children().values(), callback);
-  }
-}
-var AICallTree = class _AICallTree {
-  selectedNode;
-  rootNode;
-  parsedTrace;
-  constructor(selectedNode, rootNode, parsedTrace) {
-    this.selectedNode = selectedNode;
-    this.rootNode = rootNode;
-    this.parsedTrace = parsedTrace;
-  }
-  static findEventsForThread({ thread, parsedTrace, bounds }) {
-    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-    if (!threadEvents) {
-      return null;
-    }
-    return threadEvents.filter((e) => Trace2.Helpers.Timing.eventIsInBounds(e, bounds));
-  }
-  static findMainThreadTasks({ thread, parsedTrace, bounds }) {
-    const threadEvents = parsedTrace.data.Renderer.processes.get(thread.pid)?.threads.get(thread.tid)?.entries;
-    if (!threadEvents) {
-      return null;
-    }
-    return threadEvents.filter(Trace2.Types.Events.isRunTask).filter((e) => Trace2.Helpers.Timing.eventIsInBounds(e, bounds));
-  }
-  /**
-   * Builds a call tree representing all calls within the given timeframe for
-   * the provided thread.
-   * Events that are less than 0.05% of the range duration are removed.
-   */
-  static fromTimeOnThread({ thread, parsedTrace, bounds }) {
-    const overlappingEvents = this.findEventsForThread({ thread, parsedTrace, bounds });
-    if (!overlappingEvents) {
-      return null;
-    }
-    const visibleEventsFilter = new Trace2.Extras.TraceFilter.VisibleEventsFilter(Trace2.Styles.visibleTypes());
-    const minDuration = Trace2.Types.Timing.Micro(bounds.range * 5e-3);
-    const minDurationFilter = new MinDurationFilter(minDuration);
-    const compileCodeFilter = new ExcludeCompileCodeFilter();
-    const rootNode = new Trace2.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
-      filters: [minDurationFilter, compileCodeFilter, visibleEventsFilter],
-      startTime: Trace2.Helpers.Timing.microToMilli(bounds.min),
-      endTime: Trace2.Helpers.Timing.microToMilli(bounds.max),
-      doNotAggregate: true,
-      includeInstantEvents: true
-    });
-    const instance2 = new _AICallTree(null, rootNode, parsedTrace);
-    return instance2;
-  }
-  /**
-   * Attempts to build an AICallTree from a given selected event. It also
-   * validates that this event is one that we support being used with the AI
-   * Assistance panel, which [as of January 2025] means:
-   * 1. It is on the main thread.
-   * 2. It exists in either the Renderer or Sample handler's entryToNode map.
-   * This filters out other events we make such as SyntheticLayoutShifts which are not valid
-   * If the event is not valid, or there is an unexpected error building the tree, `null` is returned.
-   */
-  static fromEvent(selectedEvent, parsedTrace) {
-    if (Trace2.Types.Events.isPerformanceMark(selectedEvent)) {
-      return null;
-    }
-    const threads = Trace2.Handlers.Threads.threadsInTrace(parsedTrace.data);
-    const thread = threads.find((t) => t.pid === selectedEvent.pid && t.tid === selectedEvent.tid);
-    if (!thread) {
-      return null;
-    }
-    if (thread.type !== "MAIN_THREAD" && thread.type !== "CPU_PROFILE") {
-      return null;
-    }
-    const data = parsedTrace.data;
-    if (!data.Renderer.entryToNode.has(selectedEvent) && !data.Samples.entryToNode.has(selectedEvent)) {
-      return null;
-    }
-    const allEventsEnabled = Root4.Runtime.experiments.isEnabled("timeline-show-all-events");
-    const { startTime, endTime } = Trace2.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
-    const selectedEventBounds = Trace2.Helpers.Timing.traceWindowFromMicroSeconds(Trace2.Helpers.Timing.milliToMicro(startTime), Trace2.Helpers.Timing.milliToMicro(endTime));
-    let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
-    if (!threadEvents) {
-      threadEvents = data.Samples.profilesInProcess.get(selectedEvent.pid)?.get(selectedEvent.tid)?.profileCalls;
-    }
-    if (!threadEvents) {
-      console.warn(`AICallTree: could not find thread for selected entry: ${selectedEvent}`);
-      return null;
-    }
-    const overlappingEvents = threadEvents.filter((e) => Trace2.Helpers.Timing.eventIsInBounds(e, selectedEventBounds));
-    const filters = [new SelectedEventDurationFilter(selectedEvent), new ExcludeCompileCodeFilter(selectedEvent)];
-    if (!allEventsEnabled) {
-      filters.push(new Trace2.Extras.TraceFilter.VisibleEventsFilter(Trace2.Styles.visibleTypes()));
-    }
-    const rootNode = new Trace2.Extras.TraceTree.TopDownRootNode(overlappingEvents, {
-      filters,
-      startTime,
-      endTime,
-      includeInstantEvents: true
-    });
-    let selectedNode = null;
-    depthFirstWalk([rootNode].values(), (node) => {
-      if (node.event === selectedEvent) {
-        selectedNode = node;
-        return true;
-      }
-      return;
-    });
-    if (selectedNode === null) {
-      console.warn(`Selected event ${selectedEvent} not found within its own tree.`);
-      return null;
-    }
-    const instance2 = new _AICallTree(selectedNode, rootNode, parsedTrace);
-    return instance2;
-  }
-  /**
-   * Iterates through nodes level by level using a Breadth-First Search (BFS) algorithm.
-   * BFS is important here because the serialization process assumes that direct child nodes
-   * will have consecutive IDs (horizontally across each depth).
-   *
-   * Example tree with IDs:
-   *
-   *             1
-   *            / \
-   *           2   3
-   *        / / /   \
-   *      4  5 6     7
-   *
-   * Here, node with an ID 2 has consecutive children in the 4-6 range.
-   *
-   * To optimize for space, the provided `callback` function is called to serialize
-   * each node as it's visited during the BFS traversal.
-   *
-   * When serializing a node, the callback receives:
-   * 1. The current node being visited.
-   * 2. The ID assigned to this current node (a simple incrementing index based on visit order).
-   * 3. The predicted starting ID for the children of this current node.
-   *
-   * A serialized node needs to know the ID range of its children. However,
-   * child node IDs are only assigned when those children are themselves visited.
-   * To handle this, we predict the starting ID for a node's children. This prediction
-   * is based on a running count of all nodes that have ever been added to the BFS queue.
-   * Since IDs are assigned consecutively as nodes are processed from the queue, and a
-   * node's children are added to the end of the queue when the parent is visited,
-   * their eventual IDs will follow this running count.
-   */
-  breadthFirstWalk(nodes, serializeNodeCallback) {
-    const queue = Array.from(nodes);
-    let nodeIndex = 1;
-    let nodesAddedToQueueCount = queue.length;
-    let currentNode = queue.shift();
-    while (currentNode) {
-      if (currentNode.children().size > 0) {
-        serializeNodeCallback(currentNode, nodeIndex, nodesAddedToQueueCount + 1);
-      } else {
-        serializeNodeCallback(currentNode, nodeIndex);
-      }
-      queue.push(...Array.from(currentNode.children().values()));
-      nodesAddedToQueueCount += currentNode.children().size;
-      currentNode = queue.shift();
-      nodeIndex++;
-    }
-  }
-  serialize(headerLevel = 1) {
-    const header = "#".repeat(headerLevel);
-    const allUrls = [];
-    let nodesStr = "";
-    this.breadthFirstWalk(this.rootNode.children().values(), (node, nodeId, childStartingNode) => {
-      nodesStr += "\n" + this.stringifyNode(node, nodeId, this.parsedTrace, this.selectedNode, allUrls, childStartingNode);
-    });
-    let output = "";
-    if (allUrls.length) {
-      output += `
-${header} All URLs:
-
-` + allUrls.map((url, index) => `  * ${index}: ${url}`).join("\n");
-    }
-    output += `
-
-${header} Call tree:
-${nodesStr}`;
-    return output;
-  }
-  /*
-  * Each node is serialized into a single line to minimize token usage in the context window.
-  * The format is a semicolon-separated string with the following fields:
-  * Format: `id;name;duration;selfTime;urlIndex;childRange;[S]
-  *
-  *   1. `id`: A unique numerical identifier for the node assigned by BFS.
-  *   2. `name`: The name of the event represented by the node.
-  *   3. `duration`: The total duration of the event in milliseconds, rounded to one decimal place.
-  *   4. `selfTime`: The self time of the event in milliseconds, rounded to one decimal place.
-  *   5. `urlIndex`: An index referencing a URL in the `allUrls` array. If no URL is present, this is an empty string.
-  *   6. `childRange`: A string indicating the range of IDs for the node's children. Children should always have consecutive IDs.
-  *                    If there is only one child, it's a single ID.
-  *   7. `[S]`: An optional marker indicating that this node is the selected node.
-  *
-  * Example:
-  *   `1;Parse HTML;2.5;0.3;0;2-5;S`
-  *   This represents:
-  *     - Node ID 1
-  *     - Name "Parse HTML"
-  *     - Total duration of 2.5ms
-  *     - Self time of 0.3ms
-  *     - URL index 0 (meaning the URL is the first one in the `allUrls` array)
-  *     - Child range of IDs 2 to 5
-  *     - This node is the selected node (S marker)
-  */
-  stringifyNode(node, nodeId, parsedTrace, selectedNode, allUrls, childStartingNodeIndex) {
-    const event = node.event;
-    if (!event) {
-      throw new Error("Event required");
-    }
-    const idStr = String(nodeId);
-    const name = Trace2.Name.forEntry(event, parsedTrace);
-    const roundToTenths = (num) => {
-      if (!num) {
-        return "";
-      }
-      return String(Math.round(num * 10) / 10);
-    };
-    const durationStr = roundToTenths(node.totalTime);
-    const selfTimeStr = roundToTenths(node.selfTime);
-    const url = SourceMapsResolver.SourceMapsResolver.resolvedURLForEntry(parsedTrace, event);
-    let urlIndexStr = "";
-    if (url) {
-      const existingIndex = allUrls.indexOf(url);
-      if (existingIndex === -1) {
-        urlIndexStr = String(allUrls.push(url) - 1);
-      } else {
-        urlIndexStr = String(existingIndex);
-      }
-    }
-    const children = Array.from(node.children().values());
-    let childRangeStr = "";
-    if (childStartingNodeIndex) {
-      childRangeStr = children.length === 1 ? String(childStartingNodeIndex) : `${childStartingNodeIndex}-${childStartingNodeIndex + children.length}`;
-    }
-    const selectedMarker = selectedNode?.event === node.event ? "S" : "";
-    let line = idStr;
-    line += ";" + name;
-    line += ";" + durationStr;
-    line += ";" + selfTimeStr;
-    line += ";" + urlIndexStr;
-    line += ";" + childRangeStr;
-    if (selectedMarker) {
-      line += ";" + selectedMarker;
-    }
-    return line;
-  }
-  // Only used for debugging.
-  logDebug() {
-    const str = this.serialize();
-    console.log("\u{1F386}", str);
-    if (str.length > 45e3) {
-      console.warn("Output will likely not fit in the context window. Expect an AIDA error.");
-    }
-  }
-};
-var ExcludeCompileCodeFilter = class extends Trace2.Extras.TraceFilter.TraceFilter {
-  #selectedEvent = null;
-  constructor(selectedEvent) {
-    super();
-    this.#selectedEvent = selectedEvent ?? null;
-  }
-  accept(event) {
-    if (this.#selectedEvent && event === this.#selectedEvent) {
-      return true;
-    }
-    return event.name !== "V8.CompileCode";
-  }
-};
-var SelectedEventDurationFilter = class extends Trace2.Extras.TraceFilter.TraceFilter {
-  #minDuration;
-  #selectedEvent;
-  constructor(selectedEvent) {
-    super();
-    this.#minDuration = Trace2.Types.Timing.Micro((selectedEvent.dur ?? 1) * 5e-3);
-    this.#selectedEvent = selectedEvent;
-  }
-  accept(event) {
-    if (event === this.#selectedEvent) {
-      return true;
-    }
-    return event.dur ? event.dur >= this.#minDuration : false;
-  }
-};
-var MinDurationFilter = class extends Trace2.Extras.TraceFilter.TraceFilter {
-  #minDuration;
-  constructor(minDuration) {
-    super();
-    this.#minDuration = minDuration;
-  }
-  accept(event) {
-    return event.dur ? event.dur >= this.#minDuration : false;
-  }
-};
-
-// gen/front_end/models/ai_assistance/performance/AIQueries.js
-var AIQueries = class {
-  static findMainThread(navigationId, parsedTrace) {
-    let mainThreadPID = null;
-    let mainThreadTID = null;
-    if (navigationId) {
-      const navigation = parsedTrace.data.Meta.navigationsByNavigationId.get(navigationId);
-      if (navigation?.args.data?.isOutermostMainFrame) {
-        mainThreadPID = navigation.pid;
-        mainThreadTID = navigation.tid;
-      }
-    }
-    const threads = Trace3.Handlers.Threads.threadsInTrace(parsedTrace.data);
-    const thread = threads.find((thread2) => {
-      if (mainThreadPID && mainThreadTID) {
-        return thread2.pid === mainThreadPID && thread2.tid === mainThreadTID;
-      }
-      return thread2.type === "MAIN_THREAD";
-    });
-    return thread ?? null;
-  }
-  /**
-   * Returns bottom up activity for the given range.
-   */
-  static mainThreadActivityBottomUp(navigationId, bounds, parsedTrace) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    const events = AICallTree.findEventsForThread({ thread, parsedTrace, bounds });
-    if (!events) {
-      return null;
-    }
-    const visibleEvents = Trace3.Helpers.Trace.VISIBLE_TRACE_EVENT_TYPES.values().toArray();
-    const filter = new Trace3.Extras.TraceFilter.VisibleEventsFilter(visibleEvents.concat([
-      "SyntheticNetworkRequest"
-      /* Trace.Types.Events.Name.SYNTHETIC_NETWORK_REQUEST */
-    ]));
-    const startTime = Trace3.Helpers.Timing.microToMilli(bounds.min);
-    const endTime = Trace3.Helpers.Timing.microToMilli(bounds.max);
-    return new Trace3.Extras.TraceTree.BottomUpRootNode(events, {
-      textFilter: new Trace3.Extras.TraceFilter.ExclusiveNameFilter([]),
-      filters: [filter],
-      startTime,
-      endTime
-    });
-  }
-  /**
-   * Returns an AI Call Tree representing the activity on the main thread for
-   * the relevant time range of the given insight.
-   */
-  static mainThreadActivityTopDown(navigationId, bounds, parsedTrace) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    return AICallTree.fromTimeOnThread({
-      thread: {
-        pid: thread.pid,
-        tid: thread.tid
-      },
-      parsedTrace,
-      bounds
-    });
-  }
-  /**
-   * Returns the top longest tasks as AI Call Trees.
-   */
-  static longestTasks(navigationId, bounds, parsedTrace, limit = 3) {
-    const thread = this.findMainThread(navigationId, parsedTrace);
-    if (!thread) {
-      return null;
-    }
-    const tasks = AICallTree.findMainThreadTasks({ thread, parsedTrace, bounds });
-    if (!tasks) {
-      return null;
-    }
-    const topTasks = tasks.filter((e) => e.name === "RunTask").sort((a, b) => b.dur - a.dur).slice(0, limit);
-    return topTasks.map((task) => {
-      const tree = AICallTree.fromEvent(task, parsedTrace);
-      if (tree) {
-        tree.selectedNode = null;
-      }
-      return tree;
-    }).filter((tree) => !!tree);
-  }
-};
-
-// gen/front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.js
-var PerformanceTraceFormatter = class {
-  #parsedTrace;
-  #insightSet;
-  #eventsSerializer;
-  constructor(focus, eventsSerializer) {
-    this.#parsedTrace = focus.data.parsedTrace;
-    this.#insightSet = focus.data.insightSet;
-    this.#eventsSerializer = eventsSerializer;
-  }
-  serializeEvent(event) {
-    const key = this.#eventsSerializer.keyForEvent(event);
-    return `(eventKey: ${key}, ts: ${event.ts})`;
-  }
-  serializeBounds(bounds) {
-    return `{min: ${bounds.min}, max: ${bounds.max}}`;
-  }
-  /**
-   * Fetching the Crux summary can error outside of DevTools, hence the
-   * try-catch around it here.
-   */
-  #getCruxTraceSummary(insightSet) {
-    if (insightSet === null) {
-      return [];
-    }
-    try {
-      const cruxScope = CrUXManager.CrUXManager.instance().getSelectedScope();
-      const parts = [];
-      const fieldMetrics = Trace4.Insights.Common.getFieldMetricsForInsightSet(insightSet, this.#parsedTrace.metadata, cruxScope);
-      const fieldLcp = fieldMetrics?.lcp;
-      const fieldInp = fieldMetrics?.inp;
-      const fieldCls = fieldMetrics?.cls;
-      if (fieldLcp || fieldInp || fieldCls) {
-        parts.push("Metrics (field / real users):");
-        const serializeFieldMetricTimingResult = (fieldMetric) => {
-          return `${Math.round(fieldMetric.value / 1e3)} ms (scope: ${fieldMetric.pageScope})`;
-        };
-        const serializeFieldMetricNumberResult = (fieldMetric) => {
-          return `${fieldMetric.value.toFixed(2)} (scope: ${fieldMetric.pageScope})`;
-        };
-        if (fieldLcp) {
-          parts.push(`  - LCP: ${serializeFieldMetricTimingResult(fieldLcp)}`);
-          const fieldLcpBreakdown = fieldMetrics?.lcpBreakdown;
-          if (fieldLcpBreakdown && (fieldLcpBreakdown.ttfb || fieldLcpBreakdown.loadDelay || fieldLcpBreakdown.loadDuration || fieldLcpBreakdown.renderDelay)) {
-            parts.push("  - LCP breakdown:");
-            if (fieldLcpBreakdown.ttfb) {
-              parts.push(`    - TTFB: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.ttfb)}`);
-            }
-            if (fieldLcpBreakdown.loadDelay) {
-              parts.push(`    - Load delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDelay)}`);
-            }
-            if (fieldLcpBreakdown.loadDuration) {
-              parts.push(`    - Load duration: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.loadDuration)}`);
-            }
-            if (fieldLcpBreakdown.renderDelay) {
-              parts.push(`    - Render delay: ${serializeFieldMetricTimingResult(fieldLcpBreakdown.renderDelay)}`);
-            }
-          }
-        }
-        if (fieldInp) {
-          parts.push(`  - INP: ${serializeFieldMetricTimingResult(fieldInp)}`);
-        }
-        if (fieldCls) {
-          parts.push(`  - CLS: ${serializeFieldMetricNumberResult(fieldCls)}`);
-        }
-        parts.push("  - The above data is from CrUX\u2013Chrome User Experience Report. It's how the page performs for real users.");
-        parts.push("  - The values shown above are the p75 measure of all real Chrome users");
-        parts.push("  - The scope indicates if the data came from the entire origin, or a specific url");
-        parts.push("  - Lab metrics describe how this specific page load performed, while field metrics are an aggregation of results from real-world users. Best practice is to prioritize metrics that are bad in field data. Lab metrics may be better or worse than fields metrics depending on the developer's machine, network, or the actions performed while tracing.");
-      }
-      return parts;
-    } catch {
-      return [];
-    }
-  }
-  formatTraceSummary() {
-    const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const traceMetadata = this.#parsedTrace.metadata;
-    const data = parsedTrace.data;
-    const parts = [];
-    const lcp = insightSet ? Trace4.Insights.Common.getLCP(insightSet) : null;
-    const cls = insightSet ? Trace4.Insights.Common.getCLS(insightSet) : null;
-    const inp = insightSet ? Trace4.Insights.Common.getINP(insightSet) : null;
-    parts.push(`URL: ${data.Meta.mainFrameURL}`);
-    parts.push(`Bounds: ${this.serializeBounds(data.Meta.traceBounds)}`);
-    parts.push("CPU throttling: " + (traceMetadata.cpuThrottling ? `${traceMetadata.cpuThrottling}x` : "none"));
-    parts.push(`Network throttling: ${traceMetadata.networkThrottling ?? "none"}`);
-    if (lcp || cls || inp) {
-      parts.push("Metrics (lab / observed):");
-      if (lcp) {
-        parts.push(`  - LCP: ${Math.round(lcp.value / 1e3)} ms, event: ${this.serializeEvent(lcp.event)}`);
-        const subparts = insightSet?.model.LCPBreakdown.subparts;
-        if (subparts) {
-          const serializeSubpart = (subpart) => {
-            return `${micros(subpart.range)}, bounds: ${this.serializeBounds(subpart)}`;
-          };
-          parts.push("  - LCP breakdown:");
-          parts.push(`    - TTFB: ${serializeSubpart(subparts.ttfb)}`);
-          if (subparts.loadDelay !== void 0) {
-            parts.push(`    - Load delay: ${serializeSubpart(subparts.loadDelay)}`);
-          }
-          if (subparts.loadDuration !== void 0) {
-            parts.push(`    - Load duration: ${serializeSubpart(subparts.loadDuration)}`);
-          }
-          parts.push(`    - Render delay: ${serializeSubpart(subparts.renderDelay)}`);
-        }
-      }
-      if (inp) {
-        parts.push(`  - INP: ${Math.round(inp.value / 1e3)} ms, event: ${this.serializeEvent(inp.event)}`);
-      }
-      if (cls) {
-        const eventText = cls.worstClusterEvent ? `, event: ${this.serializeEvent(cls.worstClusterEvent)}` : "";
-        parts.push(`  - CLS: ${cls.value.toFixed(2)}${eventText}`);
-      }
-    } else {
-      parts.push("Metrics (lab / observed): n/a");
-    }
-    const cruxParts = insightSet && this.#getCruxTraceSummary(insightSet);
-    if (cruxParts?.length) {
-      parts.push(...cruxParts);
-    } else {
-      parts.push("Metrics (field / real users): n/a \u2013 no data for this page in CrUX");
-    }
-    if (insightSet) {
-      parts.push("Available insights:");
-      for (const [insightName, model] of Object.entries(insightSet.model)) {
-        if (model.state === "pass") {
-          continue;
-        }
-        const formatter = new PerformanceInsightFormatter(parsedTrace, model);
-        if (!formatter.insightIsSupported()) {
-          continue;
-        }
-        const insightBounds = Trace4.Insights.Common.insightBounds(model, insightSet.bounds);
-        const insightParts = [
-          `insight name: ${insightName}`,
-          `description: ${model.description}`,
-          `relevant trace bounds: ${this.serializeBounds(insightBounds)}`
-        ];
-        const metricSavingsText = formatter.estimatedSavings();
-        if (metricSavingsText) {
-          insightParts.push(`estimated metric savings: ${metricSavingsText}`);
-        }
-        if (model.wastedBytes) {
-          insightParts.push(`estimated wasted bytes: ${bytes(model.wastedBytes)}`);
-        }
-        for (const suggestion of formatter.getSuggestions()) {
-          insightParts.push(`example question: ${suggestion.title}`);
-        }
-        const insightPartsText = insightParts.join("\n    ");
-        parts.push(`  - ${insightPartsText}`);
-      }
-    } else {
-      parts.push("Available insights: none");
-    }
-    return parts.join("\n");
-  }
-  formatCriticalRequests() {
-    const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const criticalRequests = [];
-    const walkRequest = (node) => {
-      criticalRequests.push(node.request);
-      node.children.forEach(walkRequest);
-    };
-    insightSet?.model.NetworkDependencyTree.rootNodes.forEach(walkRequest);
-    if (!criticalRequests.length) {
-      return "";
-    }
-    return "Critical network requests:\n" + TraceEventFormatter.networkRequests(criticalRequests, parsedTrace, { verbose: false });
-  }
-  #serializeBottomUpRootNode(rootNode, limit) {
-    const topNodes = [...rootNode.children().values()].filter((n) => n.totalTime >= 1).sort((a, b) => b.selfTime - a.selfTime).slice(0, limit);
-    function nodeToText(node) {
-      const event = node.event;
-      let frame;
-      if (Trace4.Types.Events.isProfileCall(event)) {
-        frame = event.callFrame;
-      } else {
-        frame = Trace4.Helpers.Trace.getStackTraceTopCallFrameInEventPayload(event);
-      }
-      let source = Trace4.Name.forEntry(event);
-      if (frame?.url) {
-        source += ` (url: ${frame.url}`;
-        if (frame.lineNumber !== -1) {
-          source += `, line: ${frame.lineNumber}`;
-        }
-        if (frame.columnNumber !== -1) {
-          source += `, column: ${frame.columnNumber}`;
-        }
-        source += ")";
-      }
-      return `- self: ${millis(node.selfTime)}, total: ${millis(node.totalTime)}, source: ${source}`;
-    }
-    const listText = topNodes.map((node) => nodeToText.call(this, node)).join("\n");
-    const format = `This is the bottom-up summary for the entire trace. Only the top ${limit} activities (sorted by self time) are shown. An activity is all the aggregated time spent on the same type of work. For example, it can be all the time spent in a specific JavaScript function, or all the time spent in a specific browser rendering stage (like layout, v8 compile, parsing html). "Self time" represents the aggregated time spent directly in an activity, across all occurrences. "Total time" represents the aggregated time spent in an activity or any of its children.`;
-    return `${format}
-
-${listText}`;
-  }
-  formatMainThreadBottomUpSummary() {
-    const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const bounds = parsedTrace.data.Meta.traceBounds;
-    const rootNode = AIQueries.mainThreadActivityBottomUp(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace);
-    if (!rootNode) {
-      return "";
-    }
-    return this.#serializeBottomUpRootNode(rootNode, 10);
-  }
-  #formatThirdPartyEntitySummaries(summaries) {
-    const topMainThreadTimeEntries = summaries.toSorted((a, b) => b.mainThreadTime - a.mainThreadTime).slice(0, 5);
-    if (!topMainThreadTimeEntries.length) {
-      return "";
-    }
-    const listText = topMainThreadTimeEntries.map((s) => {
-      const transferSize = `${bytes(s.transferSize)}`;
-      return `- name: ${s.entity.name}, main thread time: ${millis(s.mainThreadTime)}, network transfer size: ${transferSize}`;
-    }).join("\n");
-    return listText;
-  }
-  formatThirdPartySummary() {
-    const insightSet = this.#insightSet;
-    if (!insightSet) {
-      return "";
-    }
-    const thirdParties = insightSet.model.ThirdParties;
-    let summaries = thirdParties.entitySummaries ?? [];
-    if (thirdParties.firstPartyEntity) {
-      summaries = summaries.filter((s) => s.entity !== thirdParties?.firstPartyEntity || null);
-    }
-    const listText = this.#formatThirdPartyEntitySummaries(summaries);
-    if (!listText) {
-      return "";
-    }
-    return `Third party summary:
-${listText}`;
-  }
-  formatLongestTasks() {
-    const parsedTrace = this.#parsedTrace;
-    const insightSet = this.#insightSet;
-    const bounds = parsedTrace.data.Meta.traceBounds;
-    const longestTaskTrees = AIQueries.longestTasks(insightSet?.navigation?.args.data?.navigationId, bounds, parsedTrace, 3);
-    if (!longestTaskTrees || longestTaskTrees.length === 0) {
-      return "Longest tasks: none";
-    }
-    const listText = longestTaskTrees.map((tree) => {
-      const time = millis(tree.rootNode.totalTime);
-      return `- total time: ${time}, event: ${this.serializeEvent(tree.rootNode.event)}`;
-    }).join("\n");
-    return `Longest ${longestTaskTrees.length} tasks:
-${listText}`;
-  }
-  #serializeRelatedInsightsForEvents(events) {
-    if (!events.length) {
-      return "";
-    }
-    const insightNameToRelatedEvents = /* @__PURE__ */ new Map();
-    if (this.#insightSet) {
-      for (const model of Object.values(this.#insightSet.model)) {
-        if (!model.relatedEvents) {
-          continue;
-        }
-        const modeRelatedEvents = Array.isArray(model.relatedEvents) ? model.relatedEvents : [...model.relatedEvents.keys()];
-        if (!modeRelatedEvents.length) {
-          continue;
-        }
-        const relatedEvents = modeRelatedEvents.filter((e) => events.includes(e));
-        if (relatedEvents.length) {
-          insightNameToRelatedEvents.set(model.insightKey, relatedEvents);
-        }
-      }
-    }
-    if (!insightNameToRelatedEvents.size) {
-      return "";
-    }
-    const results = [];
-    for (const [insightKey, events2] of insightNameToRelatedEvents) {
-      const eventsString = events2.slice(0, 5).map((e) => Trace4.Name.forEntry(e) + " " + this.serializeEvent(e)).join(", ");
-      results.push(`- ${insightKey}: ${eventsString}`);
-    }
-    return results.join("\n");
-  }
-  formatMainThreadTrackSummary(bounds) {
-    const results = [];
-    const topDownTree = AIQueries.mainThreadActivityTopDown(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
-    if (topDownTree) {
-      results.push("# Top-down main thread summary");
-      results.push(this.formatCallTree(
-        topDownTree,
-        2
-        /* headerLevel */
-      ));
-    }
-    const bottomUpRootNode = AIQueries.mainThreadActivityBottomUp(this.#insightSet?.navigation?.args.data?.navigationId, bounds, this.#parsedTrace);
-    if (bottomUpRootNode) {
-      results.push("# Bottom-up main thread summary");
-      results.push(this.#serializeBottomUpRootNode(bottomUpRootNode, 20));
-    }
-    const thirdPartySummaries = Trace4.Extras.ThirdParties.summarizeByThirdParty(this.#parsedTrace.data, bounds);
-    if (thirdPartySummaries.length) {
-      results.push("# Third parties");
-      results.push(this.#formatThirdPartyEntitySummaries(thirdPartySummaries));
-    }
-    const relatedInsightsText = this.#serializeRelatedInsightsForEvents([...topDownTree?.rootNode.events ?? [], ...bottomUpRootNode?.events ?? []]);
-    if (relatedInsightsText) {
-      results.push("# Related insights");
-      results.push("Here are all the insights that contain some related event from the main thread in the given range.");
-      results.push(relatedInsightsText);
-    }
-    if (!results.length) {
-      return "No main thread activity found";
-    }
-    return results.join("\n\n");
-  }
-  formatNetworkTrackSummary(bounds) {
-    const results = [];
-    const requests = this.#parsedTrace.data.NetworkRequests.byTime.filter((request) => Trace4.Helpers.Timing.eventIsInBounds(request, bounds));
-    const requestsText = TraceEventFormatter.networkRequests(requests, this.#parsedTrace, { verbose: false });
-    results.push("# Network requests summary");
-    results.push(requestsText || "No requests in the given bounds");
-    const relatedInsightsText = this.#serializeRelatedInsightsForEvents(requests);
-    if (relatedInsightsText) {
-      results.push("# Related insights");
-      results.push("Here are all the insights that contain some related request from the given range.");
-      results.push(relatedInsightsText);
-    }
-    return results.join("\n\n");
-  }
-  formatCallTree(tree, headerLevel = 1) {
-    const results = [tree.serialize(headerLevel), ""];
-    results.push("#".repeat(headerLevel) + " Node id to eventKey\n");
-    results.push("These node ids correspond to the call tree nodes listed in the above section.\n");
-    tree.breadthFirstWalk(tree.rootNode.children().values(), (node, nodeId) => {
-      results.push(`${nodeId}: ${this.#eventsSerializer.keyForEvent(node.event)}`);
-    });
-    results.push("\nIMPORTANT: Never show eventKey to the user.");
-    return results.join("\n");
-  }
-};
 
 // gen/front_end/models/ai_assistance/performance/AIContext.js
 import * as Trace5 from "./../trace/trace.js";
@@ -3267,7 +3374,7 @@ function getFirstInsightSet(insights) {
   return [...insights.values()].filter((insightSet) => insightSet.navigation).at(0) ?? null;
 }
 var AgentFocus = class _AgentFocus {
-  static full(parsedTrace) {
+  static fromParsedTrace(parsedTrace) {
     if (!parsedTrace.insights) {
       throw new Error("missing insights");
     }
@@ -3275,6 +3382,7 @@ var AgentFocus = class _AgentFocus {
     return new _AgentFocus({
       parsedTrace,
       insightSet,
+      event: null,
       callTree: null,
       insight: null
     });
@@ -3287,9 +3395,18 @@ var AgentFocus = class _AgentFocus {
     return new _AgentFocus({
       parsedTrace,
       insightSet,
+      event: null,
       callTree: null,
       insight
     });
+  }
+  static fromEvent(parsedTrace, event) {
+    if (!parsedTrace.insights) {
+      throw new Error("missing insights");
+    }
+    const insightSet = getFirstInsightSet(parsedTrace.insights);
+    const result = _AgentFocus.#getCallTreeOrEvent(parsedTrace, event);
+    return new _AgentFocus({ parsedTrace, insightSet, event: result.event, callTree: result.callTree, insight: null });
   }
   static fromCallTree(callTree) {
     const insights = callTree.parsedTrace.insights;
@@ -3301,24 +3418,69 @@ var AgentFocus = class _AgentFocus {
         bounds: set.bounds
       })) ?? getFirstInsightSet(insights);
     }
-    return new _AgentFocus({ parsedTrace: callTree.parsedTrace, insightSet, callTree, insight: null });
+    return new _AgentFocus({ parsedTrace: callTree.parsedTrace, insightSet, event: null, callTree, insight: null });
   }
   #data;
+  eventsSerializer = new Trace5.EventsSerializer.EventsSerializer();
   constructor(data) {
     this.#data = data;
   }
-  get data() {
-    return this.#data;
+  get parsedTrace() {
+    return this.#data.parsedTrace;
+  }
+  get insightSet() {
+    return this.#data.insightSet;
+  }
+  /** Note: at most one of event or callTree is non-null. */
+  get event() {
+    return this.#data.event;
+  }
+  /** Note: at most one of event or callTree is non-null. */
+  get callTree() {
+    return this.#data.callTree;
+  }
+  get insight() {
+    return this.#data.insight;
   }
   withInsight(insight) {
     const focus = new _AgentFocus(this.#data);
     focus.#data.insight = insight;
     return focus;
   }
-  withCallTree(callTree) {
+  withEvent(event) {
     const focus = new _AgentFocus(this.#data);
-    focus.#data.callTree = callTree;
+    const result = _AgentFocus.#getCallTreeOrEvent(this.#data.parsedTrace, event);
+    focus.#data.callTree = result.callTree;
+    focus.#data.event = result.event;
     return focus;
+  }
+  lookupEvent(key) {
+    try {
+      return this.eventsSerializer.eventForKey(key, this.#data.parsedTrace);
+    } catch (err) {
+      if (err.toString().includes("Unknown trace event") || err.toString().includes("Unknown profile call")) {
+        return null;
+      }
+      throw err;
+    }
+  }
+  /**
+   * If an event is a call tree, this returns that call tree and a null event.
+   * If not a call tree, this only returns a non-null event if the event is a network
+   * request.
+   * This is an arbitrary limitation – it should be removed, but first we need to
+   * improve the agent's knowledge of events that are not main-thread or network
+   * events.
+   */
+  static #getCallTreeOrEvent(parsedTrace, event) {
+    const callTree = event && AICallTree.fromEvent(event, parsedTrace);
+    if (callTree) {
+      return { callTree, event: null };
+    }
+    if (event && Trace5.Types.Events.isSyntheticNetworkRequest(event)) {
+      return { callTree: null, event };
+    }
+    return { callTree: null, event: null };
   }
 };
 function getPerformanceAgentFocusFromModel(model) {
@@ -3326,7 +3488,7 @@ function getPerformanceAgentFocusFromModel(model) {
   if (!parsedTrace) {
     return null;
   }
-  return AgentFocus.full(parsedTrace);
+  return AgentFocus.fromParsedTrace(parsedTrace);
 }
 
 // gen/front_end/models/ai_assistance/agents/PerformanceAgent.js
@@ -3345,7 +3507,7 @@ var UIStringsNotTranslated = {
   mainThreadActivity: "Investigating main thread activity\u2026"
 };
 var lockedString3 = i18n5.i18n.lockedString;
-var fullTracePreamble = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
+var preamble3 = `You are an assistant, expert in web performance and highly skilled with Chrome DevTools.
 
 Your primary goal is to provide actionable advice to web developers about their web page by using the Chrome Performance Panel and analyzing a trace. You may need to diagnose problems yourself, or you may be given direction for what to focus on by the user.
 
@@ -3411,27 +3573,22 @@ Adhere to the following critical requirements:
 - If asked about sensitive topics (religion, race, politics, sexuality, gender, etc.), respond with: "My expertise is limited to website performance analysis. I cannot provide information on that topic.".
 - Do not provide answers on non-web-development topics, such as legal, financial, medical, or personal advice.
 `;
-var callFrameDataFormatDescription = `Each call frame is presented in the following format:
+var extraPreambleWhenNotExternal = `Additional notes:
 
-'id;name;duration;selfTime;urlIndex;childRange;[S]'
+When referring to a trace event that has a corresponding \`eventKey\`, annotate your output using markdown link syntax. For example:
+- When referring to an event that is a long task: [Long task](#r-123)
+- When referring to a URL for which you know the eventKey of: [https://www.example.com](#s-1827)
+- Never show the eventKey (like "eventKey: s-1852"); instead, use a markdown link as described above.
 
-Key definitions:
+When asking the user to make a choice between multiple options, output a list of choices at the end of your text response. The format is \`SUGGESTIONS: ["suggestion1", "suggestion2", "suggestion3"]\`. This MUST start on a newline, and be a single line.
+`;
+var extraPreambleWhenFreshTrace = `Additional notes:
 
-* id: A unique numerical identifier for the call frame. Never mention this id in the output to the user.
-* name: A concise string describing the call frame (e.g., 'Evaluate Script', 'render', 'fetchData').
-* duration: The total execution time of the call frame, including its children.
-* selfTime: The time spent directly within the call frame, excluding its children's execution.
-* urlIndex: Index referencing the "All URLs" list. Empty if no specific script URL is associated.
-* childRange: Specifies the direct children of this node using their IDs. If empty ('' or 'S' at the end), the node has no children. If a single number (e.g., '4'), the node has one child with that ID. If in the format 'firstId-lastId' (e.g., '4-5'), it indicates a consecutive range of child IDs from 'firstId' to 'lastId', inclusive.
-* S: _Optional_. The letter 'S' terminates the line if that call frame was selected by the user.
-
-Example Call Tree:
-
-1;main;500;100;;
-2;update;200;50;;3
-3;animate;150;20;0;4-5;S
-4;calculatePosition;80;80;;
-5;applyStyles;50;50;;
+When referring to an element for which you know the nodeId, annotate your output using markdown link syntax:
+- For example, if nodeId is 23: [LCP element](#node-23)
+- This link will reveal the element in the Elements panel
+- Never mention node or nodeId when referring to the element, and especially not in the link text.
+- When referring to the LCP, it's useful to also mention what the LCP element is via its nodeId. Use the markdown link syntax to do so.
 `;
 var ScorePriority;
 (function(ScorePriority2) {
@@ -3440,8 +3597,8 @@ var ScorePriority;
   ScorePriority2[ScorePriority2["DEFAULT"] = 1] = "DEFAULT";
 })(ScorePriority || (ScorePriority = {}));
 var PerformanceTraceContext = class _PerformanceTraceContext extends ConversationContext {
-  static full(parsedTrace) {
-    return new _PerformanceTraceContext(AgentFocus.full(parsedTrace));
+  static fromParsedTrace(parsedTrace) {
+    return new _PerformanceTraceContext(AgentFocus.fromParsedTrace(parsedTrace));
   }
   static fromInsight(parsedTrace, insight) {
     return new _PerformanceTraceContext(AgentFocus.fromInsight(parsedTrace, insight));
@@ -3456,14 +3613,14 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     this.#focus = focus;
   }
   getOrigin() {
-    const { min, max } = this.#focus.data.parsedTrace.data.Meta.traceBounds;
+    const { min, max } = this.#focus.parsedTrace.data.Meta.traceBounds;
     return `trace-${min}-${max}`;
   }
   getItem() {
     return this.#focus;
   }
   getTitle() {
-    const focus = this.#focus.data;
+    const focus = this.#focus;
     let url = focus.insightSet?.url;
     if (!url) {
       url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
@@ -3471,6 +3628,9 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
     const parts = [`Trace: ${url.hostname}`];
     if (focus.insight) {
       parts.push(focus.insight.title);
+    }
+    if (focus.event) {
+      parts.push(Trace6.Name.forEntry(focus.event));
     }
     if (focus.callTree) {
       const node = focus.callTree.selectedNode ?? focus.callTree.rootNode;
@@ -3483,22 +3643,22 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
    * "Ask AI".
    */
   async getSuggestions() {
-    const data = this.#focus.data;
-    if (data.callTree) {
+    const focus = this.#focus;
+    if (focus.callTree) {
       return [
         { title: "What's the purpose of this work?", jslogContext: "performance-default" },
         { title: "Where is time being spent?", jslogContext: "performance-default" },
         { title: "How can I optimize this?", jslogContext: "performance-default" }
       ];
     }
-    if (data.insight) {
-      return new PerformanceInsightFormatter(data.parsedTrace, data.insight).getSuggestions();
+    if (focus.insight) {
+      return new PerformanceInsightFormatter(focus, focus.insight).getSuggestions();
     }
     const suggestions = [{ title: "What performance issues exist with my page?", jslogContext: "performance-default" }];
-    if (data.insightSet) {
-      const lcp = data.insightSet ? Trace6.Insights.Common.getLCP(data.insightSet) : null;
-      const cls = data.insightSet ? Trace6.Insights.Common.getCLS(data.insightSet) : null;
-      const inp = data.insightSet ? Trace6.Insights.Common.getINP(data.insightSet) : null;
+    if (focus.insightSet) {
+      const lcp = focus.insightSet ? Trace6.Insights.Common.getLCP(focus.insightSet) : null;
+      const cls = focus.insightSet ? Trace6.Insights.Common.getCLS(focus.insightSet) : null;
+      const inp = focus.insightSet ? Trace6.Insights.Common.getINP(focus.insightSet) : null;
       const ModelHandlers = Trace6.Handlers.ModelHandlers;
       const GOOD = "good";
       if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
@@ -3510,6 +3670,8 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
       if (cls && ModelHandlers.LayoutShifts.scoreClassificationForLayoutShift(cls.value) !== GOOD) {
         suggestions.push({ title: "How can I improve CLS?", jslogContext: "performance-default" });
       }
+      const top3FailingInsightSuggestions = Object.values(focus.insightSet.model).filter((model) => model.state !== "pass").map((model) => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1)).filter((suggestion) => !!suggestion).slice(0, 3);
+      suggestions.push(...top3FailingInsightSuggestions);
     }
     return suggestions;
   }
@@ -3517,8 +3679,8 @@ var PerformanceTraceContext = class _PerformanceTraceContext extends Conversatio
 var MAX_FUNCTION_RESULT_BYTE_LENGTH = 16384 * 4;
 var PerformanceAgent = class extends AiAgent {
   #formatter = null;
+  #lastEventForEnhancedQuery;
   #lastInsightForEnhancedQuery;
-  #eventsSerializer = new Trace6.EventsSerializer.EventsSerializer();
   #hasShownAnalyzeTraceContext = false;
   /**
    * Cache of all function calls made by the agent. This allows us to include (as a
@@ -3532,17 +3694,25 @@ var PerformanceAgent = class extends AiAgent {
    * The record key is the result of a function's displayInfoFromArgs.
    */
   #functionCallCacheForFocus = /* @__PURE__ */ new Map();
+  #notExternalExtraPreambleFact = {
+    text: extraPreambleWhenNotExternal,
+    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+  };
+  #freshTraceExtraPreambleFact = {
+    text: extraPreambleWhenFreshTrace,
+    metadata: { source: "devtools", score: ScorePriority.CRITICAL }
+  };
   #networkDataDescriptionFact = {
-    text: TraceEventFormatter.networkDataFormatDescription,
+    text: PerformanceTraceFormatter.networkDataFormatDescription,
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
   };
   #callFrameDataDescriptionFact = {
-    text: callFrameDataFormatDescription,
+    text: PerformanceTraceFormatter.callFrameDataFormatDescription,
     metadata: { source: "devtools", score: ScorePriority.CRITICAL }
   };
   #traceFacts = [];
   get preamble() {
-    return fullTracePreamble;
+    return preamble3;
   }
   get clientFeature() {
     return Host4.AidaClient.ClientFeature.CHROME_PERFORMANCE_FULL_AGENT;
@@ -3560,20 +3730,6 @@ var PerformanceAgent = class extends AiAgent {
   }
   getConversationType() {
     return "drjones-performance-full";
-  }
-  #lookupEvent(key) {
-    const parsedTrace = this.context?.getItem().data.parsedTrace;
-    if (!parsedTrace) {
-      return null;
-    }
-    try {
-      return this.#eventsSerializer.eventForKey(key, parsedTrace);
-    } catch (err) {
-      if (err.toString().includes("Unknown trace event")) {
-        return null;
-      }
-      throw err;
-    }
   }
   async *handleContextDetails(context) {
     if (!context) {
@@ -3598,14 +3754,55 @@ var PerformanceAgent = class extends AiAgent {
   #isFunctionResponseTooLarge(response) {
     return response.length > MAX_FUNCTION_RESULT_BYTE_LENGTH;
   }
-  parseTextResponse(response) {
-    const trimmed = response.trim();
-    const FIVE_BACKTICKS = "`````";
-    if (trimmed.startsWith(FIVE_BACKTICKS) && trimmed.endsWith(FIVE_BACKTICKS)) {
-      const stripped = trimmed.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
-      return super.parseTextResponse(stripped);
+  /**
+   * Sometimes the model will output URLs as plaintext; or a markdown link
+   * where the link is the actual URL. This function transforms such output
+   * to an eventKey link.
+   *
+   * A simple way to see when this gets utilized is:
+   *   1. go to paulirish.com, record a trace
+   *   2. say "What performance issues exist with my page?"
+   *   3. then say "images"
+   */
+  #parseForKnownUrls(response) {
+    const focus = this.context?.getItem();
+    if (!focus) {
+      return response;
     }
-    return super.parseTextResponse(response);
+    const urlRegex = /(\[(.*?)\]\((.*?)\))|(https?:\/\/[^\s<>()]+)/g;
+    return response.replace(urlRegex, (match, markdownLink, linkText, linkDest, standaloneUrlText) => {
+      if (markdownLink) {
+        if (linkDest.startsWith("#")) {
+          return match;
+        }
+      }
+      const urlText = linkDest ?? standaloneUrlText;
+      if (!urlText) {
+        return match;
+      }
+      const request = focus.parsedTrace.data.NetworkRequests.byTime.find((request2) => request2.args.data.url === urlText);
+      if (!request) {
+        return match;
+      }
+      const eventKey = focus.eventsSerializer.keyForEvent(request);
+      if (!eventKey) {
+        return match;
+      }
+      return `[${urlText}](#${eventKey})`;
+    });
+  }
+  #parseMarkdown(response) {
+    const FIVE_BACKTICKS = "`````";
+    if (response.startsWith(FIVE_BACKTICKS) && response.endsWith(FIVE_BACKTICKS)) {
+      return response.slice(FIVE_BACKTICKS.length, -FIVE_BACKTICKS.length);
+    }
+    return response;
+  }
+  parseTextResponse(response) {
+    const parsedResponse = super.parseTextResponse(response);
+    parsedResponse.answer = this.#parseForKnownUrls(parsedResponse.answer);
+    parsedResponse.answer = this.#parseMarkdown(parsedResponse.answer);
+    return parsedResponse;
   }
   async enhanceQuery(query, context) {
     if (!context) {
@@ -3616,11 +3813,20 @@ var PerformanceAgent = class extends AiAgent {
     this.#declareFunctions(context);
     const focus = context.getItem();
     const selected = [];
-    if (focus.data.callTree) {
+    if (focus.event) {
+      const includeEventInfo = focus.event !== this.#lastEventForEnhancedQuery;
+      this.#lastEventForEnhancedQuery = focus.event;
+      if (includeEventInfo) {
+        selected.push(`User selected an event ${this.#formatter?.serializeEvent(focus.event)}.
+
+`);
+      }
+    }
+    if (focus.callTree) {
       let contextString = "";
-      if (!this.#callTreeContextSet.has(focus.data.callTree)) {
-        contextString = focus.data.callTree.serialize();
-        this.#callTreeContextSet.add(focus.data.callTree);
+      if (!this.#callTreeContextSet.has(focus.callTree)) {
+        contextString = focus.callTree.serialize();
+        this.#callTreeContextSet.add(focus.callTree);
       }
       if (contextString) {
         selected.push(`User selected the following call tree:
@@ -3630,11 +3836,11 @@ ${contextString}
 `);
       }
     }
-    if (focus.data.insight) {
-      const includeInsightInfo = focus.data.insight !== this.#lastInsightForEnhancedQuery;
-      this.#lastInsightForEnhancedQuery = focus.data.insight;
+    if (focus.insight) {
+      const includeInsightInfo = focus.insight !== this.#lastInsightForEnhancedQuery;
+      this.#lastInsightForEnhancedQuery = focus.insight;
       if (includeInsightInfo) {
-        selected.push(`User selected the ${focus.data.insight.insightKey} insight.
+        selected.push(`User selected the ${focus.insight.insightKey} insight.
 
 `);
       }
@@ -3650,8 +3856,8 @@ ${query}`);
   async *run(initialQuery, options) {
     const focus = options.selected?.getItem();
     this.clearFacts();
-    if (focus) {
-      this.#addFacts(focus);
+    if (options.selected && focus) {
+      this.#addFacts(options.selected);
     }
     return yield* super.run(initialQuery, options);
   }
@@ -3718,11 +3924,19 @@ ${text}`, metadata: { source: "devtools", score: ScorePriority.REQUIRED } });
       metadata: { source: "devtools", score: ScorePriority.CRITICAL }
     });
   }
-  #addFacts(focus) {
+  #addFacts(context) {
+    const focus = context.getItem();
+    if (!context.external) {
+      this.addFact(this.#notExternalExtraPreambleFact);
+    }
+    const isFresh = Tracing.FreshRecording.Tracker.instance().recordingIsFresh(focus.parsedTrace);
+    if (isFresh) {
+      this.addFact(this.#freshTraceExtraPreambleFact);
+    }
     this.addFact(this.#callFrameDataDescriptionFact);
     this.addFact(this.#networkDataDescriptionFact);
     if (!this.#traceFacts.length) {
-      this.#formatter = new PerformanceTraceFormatter(focus, this.#eventsSerializer);
+      this.#formatter = new PerformanceTraceFormatter(focus);
       this.#createFactForTraceSummary();
       this.#createFactForCriticalRequests();
       this.#createFactForMainThreadBottomUpSummary();
@@ -3751,7 +3965,7 @@ ${result}`,
   }
   #declareFunctions(context) {
     const focus = context.getItem();
-    const { parsedTrace, insightSet } = focus.data;
+    const { parsedTrace, insightSet } = focus;
     this.declareFunction("getInsightDetails", {
       description: "Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.",
       parameters: {
@@ -3778,7 +3992,7 @@ ${result}`,
         if (!insight) {
           return { error: "No insight available" };
         }
-        const details = new PerformanceInsightFormatter(parsedTrace, insight).formatInsight();
+        const details = new PerformanceInsightFormatter(focus, insight).formatInsight();
         const key = `getInsightDetails('${params.insightName}')`;
         this.#cacheFunctionResult(focus, key, details);
         return { result: { details } };
@@ -3803,7 +4017,7 @@ ${result}`,
       },
       handler: async (params) => {
         debugLog("Function call: getEventByKey", params);
-        const event = this.#lookupEvent(params.eventKey);
+        const event = focus.lookupEvent(params.eventKey);
         if (!event) {
           return { error: "Invalid eventKey" };
         }
@@ -3933,14 +4147,14 @@ ${result}`,
         }
       },
       displayInfoFromArgs: (args) => {
-        return { title: lockedString3("Looking at call tree\u2026"), action: `getDetailedCallTree(${args.eventKey})` };
+        return { title: lockedString3("Looking at call tree\u2026"), action: `getDetailedCallTree('${args.eventKey}')` };
       },
       handler: async (args) => {
         debugLog("Function call: getDetailedCallTree");
         if (!this.#formatter) {
           throw new Error("missing formatter");
         }
-        const event = this.#lookupEvent(args.eventKey);
+        const event = focus.lookupEvent(args.eventKey);
         if (!event) {
           return { error: "Invalid eventKey" };
         }
@@ -3969,7 +4183,7 @@ ${result}`,
           }
         },
         displayInfoFromArgs: (args) => {
-          return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent(${args.url})` };
+          return { title: lockedString3("Looking at resource content\u2026"), action: `getResourceContent('${args.url}')` };
         },
         handler: async (args) => {
           debugLog("Function call: getResourceContent");
@@ -3980,13 +4194,13 @@ ${result}`,
               return { error: "Resource not found" };
             }
           }
-          const content = resource.content;
-          if (!content) {
-            return { error: "Resource has no content" };
+          const content = await resource.requestContentData();
+          if ("error" in content) {
+            return { error: `Could not get resource content: ${content.error}` };
           }
           const key = `getResourceContent(${args.url})`;
-          this.#cacheFunctionResult(focus, key, content);
-          return { result: { content } };
+          this.#cacheFunctionResult(focus, key, content.text);
+          return { result: { content: content.text } };
         }
       });
     }
@@ -4010,7 +4224,7 @@ ${result}`,
         },
         handler: async (params) => {
           debugLog("Function call: selectEventByKey", params);
-          const event = this.#lookupEvent(params.eventKey);
+          const event = focus.lookupEvent(params.eventKey);
           if (!event) {
             return { error: "Invalid eventKey" };
           }
@@ -4116,10 +4330,10 @@ var PerformanceAnnotationsAgent = class extends AiAgent {
       return;
     }
     const focus = context.getItem();
-    if (!focus.data.callTree) {
+    if (!focus.callTree) {
       throw new Error("unexpected context");
     }
-    const callTree = focus.data.callTree;
+    const callTree = focus.callTree;
     yield {
       type: "context",
       title: lockedString4(UIStringsNotTranslated2.analyzingCallTree),
@@ -4136,10 +4350,10 @@ var PerformanceAnnotationsAgent = class extends AiAgent {
       return query;
     }
     const focus = context.getItem();
-    if (!focus.data.callTree) {
+    if (!focus.callTree) {
       throw new Error("unexpected context");
     }
-    const callTree = focus.data.callTree;
+    const callTree = focus.callTree;
     const contextString = callTree.serialize();
     return `${contextString}
 
@@ -4517,7 +4731,8 @@ function setupSetElementStyles(prefix) {
 var injectedFunctions = `(${String(setupSetElementStyles)})('${AI_ASSISTANCE_CSS_CLASS_NAME}')`;
 
 // gen/front_end/models/ai_assistance/ExtensionScope.js
-var ExtensionScope = class _ExtensionScope {
+var _a2;
+var ExtensionScope = class {
   #listeners = [];
   #changeManager;
   #agentId;
@@ -4706,23 +4921,23 @@ var ExtensionScope = class _ExtensionScope {
       if (!matchedStyles) {
         throw new Error("No matching styles");
       }
-      const styleRule = _ExtensionScope.getStyleRuleFromMatchesStyles(matchedStyles);
+      const styleRule = _a2.getStyleRuleFromMatchesStyles(matchedStyles);
       if (!styleRule) {
         throw new Error("No style rule found");
       }
-      const selector = _ExtensionScope.getSelectorsFromStyleRule(styleRule, matchedStyles);
+      const selector = _a2.getSelectorsFromStyleRule(styleRule, matchedStyles);
       if (!selector) {
         throw new Error("No selector found");
       }
       return {
         selector,
-        simpleSelector: _ExtensionScope.getSelectorForNode(node),
-        sourceLocation: _ExtensionScope.getSourceLocation(styleRule)
+        simpleSelector: _a2.getSelectorForNode(node),
+        sourceLocation: _a2.getSourceLocation(styleRule)
       };
     } catch {
     }
     return {
-      selector: _ExtensionScope.getSelectorForNode(node)
+      selector: _a2.getSelectorForNode(node)
     };
   }
   async #bindingCalled(executionContext, event) {
@@ -4799,6 +5014,7 @@ var ExtensionScope = class _ExtensionScope {
     return sanitizedStyles;
   }
 };
+_a2 = ExtensionScope;
 
 // gen/front_end/models/ai_assistance/agents/StylingAgent.js
 var UIStringsNotTranslate3 = {
@@ -4812,7 +5028,7 @@ var UIStringsNotTranslate3 = {
   dataUsed: "Data used"
 };
 var lockedString5 = i18n9.i18n.lockedString;
-var preamble3 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
+var preamble4 = `You are the most advanced CSS/DOM/HTML debugging assistant integrated into Chrome DevTools.
 You always suggest considering the best web development practices and the newest platform features such as view transitions.
 The user selected a DOM element in the browser's DevTools and sends a query about the page or the selected DOM element.
 First, examine the provided context, then use the functions to gather additional context and resolve the user request.
@@ -4957,7 +5173,7 @@ var NodeContext = class extends ConversationContext {
 };
 var enableDedicatedStyleFunctions = false;
 var StylingAgent = class _StylingAgent extends AiAgent {
-  preamble = preamble3;
+  preamble = preamble4;
   clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
   get userTier() {
     return Root7.Runtime.hostConfig.devToolsFreestyler?.userTier;
@@ -4978,31 +5194,6 @@ var StylingAgent = class _StylingAgent extends AiAgent {
   }
   preambleFeatures() {
     return ["function_calling"];
-  }
-  parseTextResponse(text) {
-    if (!text.trim()) {
-      return { answer: "" };
-    }
-    const lines = text.split("\n");
-    const answerLines = [];
-    let suggestions;
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (trimmed.startsWith("SUGGESTIONS:")) {
-        try {
-          suggestions = JSON.parse(trimmed.substring("SUGGESTIONS:".length).trim());
-        } catch {
-        }
-      } else {
-        answerLines.push(line);
-      }
-    }
-    return {
-      // If we could not parse the parts, consider the response to be an
-      // answer.
-      answer: answerLines.join("\n"),
-      suggestions
-    };
   }
   #execJs;
   #changes;
@@ -5529,7 +5720,7 @@ ${await _StylingAgent.describeElement(selectedElement.getItem())}
 // gen/front_end/models/ai_assistance/agents/PatchAgent.js
 import * as Host7 from "./../../core/host/host.js";
 import * as Root8 from "./../../core/root/root.js";
-var preamble4 = `You are a highly skilled software engineer with expertise in web development.
+var preamble5 = `You are a highly skilled software engineer with expertise in web development.
 The user asks you to apply changes to a source code folder.
 
 # Considerations
@@ -5565,7 +5756,7 @@ var PatchAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble4;
+  preamble = preamble5;
   clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
     return Root8.Runtime.hostConfig.devToolsFreestyler?.userTier;
@@ -5742,7 +5933,7 @@ var FileUpdateAgent = class extends AiAgent {
   async *handleContextDetails(_select) {
     return;
   }
-  preamble = preamble4;
+  preamble = preamble5;
   clientFeature = Host7.AidaClient.ClientFeature.CHROME_PATCH_AGENT;
   get userTier() {
     return Root8.Runtime.hostConfig.devToolsFreestyler?.userTier;
@@ -6366,7 +6557,6 @@ export {
   SelectedEventDurationFilter,
   SideEffectError,
   StylingAgent,
-  TraceEventFormatter,
   bytes,
   debugLog,
   formatError,

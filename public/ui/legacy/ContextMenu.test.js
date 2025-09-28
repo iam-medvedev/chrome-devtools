@@ -5,6 +5,7 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { dispatchMouseUpEvent, renderElementIntoDOM } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment, registerNoopActions } from '../../testing/EnvironmentHelpers.js';
+import { expectCall } from '../../testing/ExpectStubCall.js';
 import * as Lit from '../lit/lit.js';
 import * as VisualLogging from '../visual_logging/visual_logging.js';
 import * as UI from './legacy.js';
@@ -118,8 +119,7 @@ describeWithEnvironment('ContextMenu', () => {
             { id: 0, type: 29, parent: menuId, context: 44, height: 20, width: 200 },
         ]);
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.dispatchEventToListeners(Host.InspectorFrontendHostAPI.Events.ContextMenuItemSelected, 1);
-        await new Promise(resolve => setTimeout(resolve, 0));
-        sinon.assert.calledOnce(recordClick);
+        await expectCall(recordClick);
         await VisualLogging.stopLogging();
     });
     it('can register an action menu item with a new badge', async () => {

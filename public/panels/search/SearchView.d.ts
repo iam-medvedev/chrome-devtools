@@ -1,16 +1,17 @@
 import '../../ui/legacy/legacy.js';
 import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
+import * as Workspace from '../../models/workspace/workspace.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { SearchResultsPane } from './SearchResultsPane.js';
-import type { SearchScope } from './SearchScope.js';
-interface SearchViewInput {
+import type { SearchResult, SearchScope } from './SearchScope.js';
+export interface SearchViewInput {
     query: string;
     matchCase: boolean;
     isRegex: boolean;
+    searchConfig: Workspace.SearchConfig.SearchConfig | null;
     searchMessage: string;
     searchResultsMessage: string;
-    searchResultsPane: SearchResultsPane | null;
+    searchResults: SearchResult[];
     progress: Common.Progress.Progress | null;
     onQueryChange: (query: string) => void;
     onQueryKeyDown: (evt: KeyboardEvent) => void;
@@ -21,10 +22,12 @@ interface SearchViewInput {
     onRefresh: () => void;
     onClearSearch: () => void;
 }
-interface SearchViewOutput {
+export interface SearchViewOutput {
     focusSearchInput: () => void;
+    showAllMatches: () => void;
+    collapseAllResults: () => void;
 }
-type View = (input: SearchViewInput, output: SearchViewOutput, target: HTMLElement) => void;
+export type View = (input: SearchViewInput, output: SearchViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
 export declare class SearchView extends UI.Widget.VBox {
     #private;
@@ -32,9 +35,7 @@ export declare class SearchView extends UI.Widget.VBox {
     performUpdate(): void;
     toggle(queryCandidate: string, searchImmediately?: boolean): void;
     createScope(): SearchScope;
-    protected createSearchResultsPane(): SearchResultsPane;
     focus(): void;
     willHide(): void;
     get throttlerForTest(): Common.Throttler.Throttler;
 }
-export {};

@@ -93,6 +93,15 @@ export function isRenderFrameImplCreateChildFrame(event) {
 export function isLayoutImageUnsized(event) {
     return event.name === "LayoutImageUnsized" /* Name.LAYOUT_IMAGE_UNSIZED */;
 }
+export function isPairableAsyncBegin(e) {
+    return e.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
+}
+export function isPairableAsyncEnd(e) {
+    return e.ph === "e" /* Phase.ASYNC_NESTABLE_END */;
+}
+export function isPairableAsyncInstant(e) {
+    return e.ph === "n" /* Phase.ASYNC_NESTABLE_INSTANT */;
+}
 export function isAnimationFrameAsyncStart(data) {
     return data.name === "AnimationFrame" /* Name.ANIMATION_FRAME */ && data.ph === "b" /* Phase.ASYNC_NESTABLE_START */;
 }

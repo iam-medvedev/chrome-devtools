@@ -6,6 +6,7 @@ import { CSSLayer } from './CSSLayer.js';
 import { CSSMedia } from './CSSMedia.js';
 import type { CSSModel, Edit } from './CSSModel.js';
 import { CSSScope } from './CSSScope.js';
+import { CSSStartingStyle } from './CSSStartingStyle.js';
 import { CSSStyleDeclaration } from './CSSStyleDeclaration.js';
 import type { CSSStyleSheetHeader } from './CSSStyleSheetHeader.js';
 import { CSSSupports } from './CSSSupports.js';
@@ -45,6 +46,7 @@ export declare class CSSStyleRule extends CSSRule {
     scopes: CSSScope[];
     layers: CSSLayer[];
     ruleTypes: Protocol.CSS.CSSRuleType[];
+    startingStyles: CSSStartingStyle[];
     wasUsed: boolean;
     constructor(cssModel: CSSModel, payload: Protocol.CSS.CSSRule, wasUsed?: boolean);
     static createDummyRule(cssModel: CSSModel, selectorText: string): CSSStyleRule;

@@ -232,6 +232,9 @@ __export(TraceEvents_exports, {
   isNetworkTrackEntry: () => isNetworkTrackEntry,
   isPaint: () => isPaint,
   isPaintImage: () => isPaintImage,
+  isPairableAsyncBegin: () => isPairableAsyncBegin,
+  isPairableAsyncEnd: () => isPairableAsyncEnd,
+  isPairableAsyncInstant: () => isPairableAsyncInstant,
   isParseAuthorStyleSheetEvent: () => isParseAuthorStyleSheetEvent,
   isParseHTML: () => isParseHTML,
   isParseMetaViewport: () => isParseMetaViewport,
@@ -391,6 +394,15 @@ function isRenderFrameImplCreateChildFrame(event) {
 }
 function isLayoutImageUnsized(event) {
   return event.name === "LayoutImageUnsized";
+}
+function isPairableAsyncBegin(e) {
+  return e.ph === "b";
+}
+function isPairableAsyncEnd(e) {
+  return e.ph === "e";
+}
+function isPairableAsyncInstant(e) {
+  return e.ph === "n";
 }
 function isAnimationFrameAsyncStart(data) {
   return data.name === "AnimationFrame" && data.ph === "b";

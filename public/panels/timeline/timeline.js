@@ -4773,6 +4773,7 @@ import * as Platform11 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
 import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
+import * as Badges from "./../../models/badges/badges.js";
 import * as CrUXManager3 from "./../../models/crux-manager/crux-manager.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Trace23 from "./../../models/trace/trace.js";
@@ -6165,6 +6166,7 @@ var timelineHistoryManager_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineHistoryManager.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineHistoryManager.js
+var _a;
 var LANDING_PAGE_INDEX_DROPDOWN_CHOICE = Infinity;
 var UIStrings16 = {
   /**
@@ -6215,7 +6217,7 @@ var listFormatter = /* @__PURE__ */ function defineFormatter() {
     }
   };
 }();
-var TimelineHistoryManager = class _TimelineHistoryManager {
+var TimelineHistoryManager = class {
   recordings;
   action;
   nextNumberByDomain;
@@ -6280,7 +6282,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     const modelUsedMoreTimeAgo = this.recordings.reduce((a, b) => lastUsedTime(a.parsedTraceIndex) < lastUsedTime(b.parsedTraceIndex) ? a : b);
     this.recordings.splice(this.recordings.indexOf(modelUsedMoreTimeAgo), 1);
     function lastUsedTime(index) {
-      const data = _TimelineHistoryManager.dataForTraceIndex(index);
+      const data = _a.dataForTraceIndex(index);
       if (!data) {
         throw new Error("Unable to find data for model");
       }
@@ -6360,7 +6362,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
   }
   #setActiveTrace(item) {
     if (item.type === "TRACE_INDEX") {
-      const data = _TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
+      const data = _a.dataForTraceIndex(item.parsedTraceIndex);
       if (!data) {
         throw new Error("Unable to find data for model");
       }
@@ -6376,7 +6378,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     this.action.setEnabled(this.recordings.length >= 1 && this.enabled);
   }
   static previewElement(parsedTraceIndex) {
-    const data = _TimelineHistoryManager.dataForTraceIndex(parsedTraceIndex);
+    const data = _a.dataForTraceIndex(parsedTraceIndex);
     if (!data) {
       throw new Error("Unable to find data for model");
     }
@@ -6386,7 +6388,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     if (item.type === "LANDING_PAGE") {
       return this.#landingPageTitle;
     }
-    const data = _TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
+    const data = _a.dataForTraceIndex(item.parsedTraceIndex);
     if (!data) {
       throw new Error("Unable to find data for model");
     }
@@ -6477,6 +6479,7 @@ var TimelineHistoryManager = class _TimelineHistoryManager {
     return parsedTraceIndexToPerformancePreviewData.get(index) || null;
   }
 };
+_a = TimelineHistoryManager;
 var maxRecordings = 5;
 var previewWidth = 500;
 var parsedTraceIndexToPerformancePreviewData = /* @__PURE__ */ new Map();
@@ -9411,6 +9414,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     } else {
       await this.#startTraceRecording();
     }
+    Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_RECORDING_STARTED);
   }
   async stopRecording() {
     if (this.statusDialog) {
@@ -9697,7 +9701,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         );
       }
     }
-    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.full(parsedTrace));
+    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
   }
   #onAnnotationModifiedEvent(e) {
     const event = e;
@@ -10336,7 +10340,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       for (const modelName in insightsForNav.model) {
         const model = modelName;
         const insight = insightsForNav.model[model];
-        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(parsedTrace, insight);
+        const focus = AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace);
+        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(focus, insight);
         if (!formatter.insightIsSupported()) {
           continue;
         }
@@ -16426,12 +16431,12 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
       if (!this.#parsedTrace) {
         return;
       }
-      const callTree = selectionIsEvent(selection) ? AIAssistance.AICallTree.fromEvent(selection.event, this.#parsedTrace) : null;
+      const event = selectionIsEvent(selection) ? selection.event : null;
       let focus = UI18.Context.Context.instance().flavor(AIAssistance.AgentFocus);
       if (focus) {
-        focus = focus.withCallTree(callTree);
-      } else if (callTree) {
-        focus = AIAssistance.AgentFocus.fromCallTree(callTree);
+        focus = focus.withEvent(event);
+      } else if (event) {
+        focus = AIAssistance.AgentFocus.fromEvent(this.#parsedTrace, event);
       } else {
         focus = null;
       }
@@ -16958,13 +16963,6 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     if (perfAIEntryPointEnabled && this.parsedTrace) {
       const callTree = AIAssistance2.AICallTree.fromEvent(entry, this.parsedTrace);
       if (callTree) {
-        let focus = UI19.Context.Context.instance().flavor(AIAssistance2.AgentFocus);
-        if (focus) {
-          focus = focus.withCallTree(callTree);
-        } else {
-          focus = AIAssistance2.AgentFocus.fromCallTree(callTree);
-        }
-        UI19.Context.Context.instance().setFlavor(AIAssistance2.AgentFocus, focus);
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
         if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {
           let appendSubmenuPromptAction = function(submenu2, action3, label, prompt, jslogContext) {

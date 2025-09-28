@@ -6,6 +6,7 @@ const DOM_DETECTIVE_BADGE_IMAGE_URI = new URL('../../Images/dom-detective-badge.
 export class DOMDetectiveBadge extends Badge {
     name = 'profiles/me/awards/developers.google.com%2Fprofile%2Fbadges%2Factivity%2Fchrome-devtools%2Fdom-detective';
     title = 'DOM Detective';
+    jslogContext = 'dom-detective';
     imageUri = DOM_DETECTIVE_BADGE_IMAGE_URI;
     interestedActions = [
         BadgeAction.MODERN_DOM_BADGE_CLICKED,

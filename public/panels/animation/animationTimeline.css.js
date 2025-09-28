@@ -15,6 +15,10 @@ export default `/*
   --timeline-controls-width: 150px;
 }
 
+.toolbar-view-container {
+  min-height: fit-content;
+}
+
 .animation-node-row {
   width: 100%;
   display: flex;

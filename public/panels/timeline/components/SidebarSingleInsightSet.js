@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
+var _a;
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
 import * as AIAssistance from '../../../models/ai_assistance/ai_assistance.js';
@@ -347,7 +348,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
             return Lit.nothing;
         }
         const fieldMetrics = this.#getFieldMetrics(insightSetKey);
-        const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = SidebarSingleInsightSet.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
+        const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _a.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
         const renderInsightComponent = (insightData) => {
             const { componentClass, model } = insightData;
             if (!this.#data.parsedTrace?.insights) {
@@ -391,7 +392,7 @@ export class SidebarSingleInsightSet extends HTMLElement {
     #render() {
         const { parsedTrace, insightSetKey, } = this.#data;
         if (!parsedTrace?.insights || !insightSetKey) {
-            Lit.render(html ``, this.#shadow, { host: this });
+            Lit.render(Lit.nothing, this.#shadow, { host: this });
             return;
         }
         // clang-format off
@@ -405,5 +406,6 @@ export class SidebarSingleInsightSet extends HTMLElement {
         // clang-format on
     }
 }
+_a = SidebarSingleInsightSet;
 customElements.define('devtools-performance-sidebar-single-navigation', SidebarSingleInsightSet);
 //# sourceMappingURL=SidebarSingleInsightSet.js.map

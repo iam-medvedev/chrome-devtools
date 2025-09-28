@@ -7,6 +7,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { describeWithLocale } from '../../testing/EnvironmentHelpers.js';
 import { expectCall } from '../../testing/ExpectStubCall.js';
+import { stubFileManager } from '../../testing/FileManagerHelpers.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as TextUtils from '../text_utils/text_utils.js';
@@ -23,6 +24,7 @@ describeWithLocale('ContextMenuProvider', () => {
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'close');
     });
     it('passes along the "isEncoded" flag to the FileManager for "Save as"', async () => {
+        const fileManager = stubFileManager();
         const event = new Event('contextmenu');
         sinon.stub(event, 'target').value(document);
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
@@ -39,15 +41,15 @@ describeWithLocale('ContextMenuProvider', () => {
         await contextMenu.show();
         const saveItem = contextMenu.saveSection().items[0];
         assert.exists(saveItem);
-        const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
         contextMenu.invokeHandler(saveItem.id());
-        assert.deepEqual(await expectCall(saveStub), [
+        assert.deepEqual(await expectCall(fileManager.save), [
             urlString `https://example.com/sample.webp`,
             contentData,
             /* forceSaveAs=*/ true,
         ]);
     });
     it('can "Save as" WASM modules', async () => {
+        const fileManager = stubFileManager();
         const event = new Event('contextmenu');
         sinon.stub(event, 'target').value(document);
         const contextMenu = new UI.ContextMenu.ContextMenu(event);
@@ -68,13 +70,12 @@ describeWithLocale('ContextMenuProvider', () => {
         menuProvider.appendApplicableItems(event, contextMenu, uiSourceCode);
         await contextMenu.show();
         const saveItem = contextMenu.saveSection().items[0];
-        const saveStub = sinon.stub(Workspace.FileManager.FileManager.instance(), 'save');
         contextMenu.invokeHandler(saveItem.id());
-        const args = await expectCall(saveStub);
-        assert.lengthOf(args, 3);
-        assert.strictEqual(args[0], urlString `https://example.com/sample.wasm`);
-        assert.strictEqual(args[1].base64, 'AQIDBA==');
-        assert.isTrue(args[2]);
+        assert.deepEqual(await expectCall(fileManager.save), [
+            urlString `https://example.com/sample.wasm`,
+            new TextUtils.ContentData.ContentData('AQIDBA==', true, 'application/wasm'),
+            /* forceSaveAs=*/ true,
+        ]);
     });
 });
 //# sourceMappingURL=PersistenceAction.test.js.map

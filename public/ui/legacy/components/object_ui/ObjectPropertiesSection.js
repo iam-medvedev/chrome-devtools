@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
+var _a;
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
  * Copyright (C) 2009 Joseph Pecoraro
@@ -1341,7 +1342,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
         treeOutline.addEventListener(UI.TreeOutline.Events.ElementCollapsed, this.#elementCollapsed, this);
     }
     watchSection(id, section) {
-        ObjectPropertiesSectionsTreeExpandController.#sectionMap.set(section, id);
+        _a.#sectionMap.set(section, id);
         if (this.#expandedProperties.has(id)) {
             section.expand();
         }
@@ -1368,7 +1369,7 @@ export class ObjectPropertiesSectionsTreeExpandController {
         this.#expandedProperties.delete(this.#propertyPath(element));
     }
     #propertyPath(treeElement) {
-        const cachedPropertyPath = ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.get(treeElement);
+        const cachedPropertyPath = _a.#propertyPathCache.get(treeElement);
         if (cachedPropertyPath) {
             return cachedPropertyPath;
         }
@@ -1397,12 +1398,13 @@ export class ObjectPropertiesSectionsTreeExpandController {
                 current = current.parent;
             }
         }
-        const treeOutlineId = ObjectPropertiesSectionsTreeExpandController.#sectionMap.get(sectionRoot);
+        const treeOutlineId = _a.#sectionMap.get(sectionRoot);
         result = treeOutlineId + (result ? ':' + result : '');
-        ObjectPropertiesSectionsTreeExpandController.#propertyPathCache.set(treeElement, result);
+        _a.#propertyPathCache.set(treeElement, result);
         return result;
     }
 }
+_a = ObjectPropertiesSectionsTreeExpandController;
 let rendererInstance;
 export class Renderer {
     static instance(opts = { forceNew: false }) {

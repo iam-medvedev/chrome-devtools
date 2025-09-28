@@ -546,7 +546,7 @@ export class Dialog extends HTMLElement {
             // clang-format on
             return;
         }
-        let dialogContent = html ``;
+        let dialogContent = Lit.nothing;
         // If state is expanded content should be shown, do not render it otherwise.
         if (this.#props.state === "expanded" /* DialogState.EXPANDED */) {
             dialogContent = html `

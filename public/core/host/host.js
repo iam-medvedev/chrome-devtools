@@ -613,6 +613,9 @@ var InspectorFrontendHostStub = class {
       },
       devToolsFlexibleLayout: {
         verticalDrawerEnabled: true
+      },
+      devToolsStartingStyleDebugging: {
+        enabled: false
       }
     };
     if ("hostConfigForTesting" in globalThis) {
@@ -1154,6 +1157,7 @@ var HostConfigTracker = class _HostConfigTracker extends Common3.ObjectWrapper.O
 // gen/front_end/core/host/GdpClient.js
 var GdpClient_exports = {};
 __export(GdpClient_exports, {
+  EligibilityStatus: () => EligibilityStatus,
   EmailPreference: () => EmailPreference,
   GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK: () => GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK,
   GdpClient: () => GdpClient,
@@ -1220,8 +1224,18 @@ var GdpClient = class _GdpClient {
     return gdpClientInstance;
   }
   async initialize() {
-    void this.getProfile();
-    void this.checkEligibility();
+    const profile = await this.getProfile();
+    if (profile) {
+      return {
+        hasProfile: true,
+        isEligible: true
+      };
+    }
+    const isEligible = await this.isEligibleToCreateProfile();
+    return {
+      hasProfile: false,
+      isEligible
+    };
   }
   async getProfile() {
     if (this.#cachedProfilePromise) {
@@ -1232,7 +1246,11 @@ var GdpClient = class _GdpClient {
       path: "/v1beta1/profile:get",
       method: "GET"
     });
-    return await this.#cachedProfilePromise;
+    const profile = await this.#cachedProfilePromise;
+    if (profile) {
+      this.#cachedEligibilityPromise = Promise.resolve({ createProfile: EligibilityStatus.ELIGIBLE });
+    }
+    return profile;
   }
   async checkEligibility() {
     if (this.#cachedEligibilityPromise) {

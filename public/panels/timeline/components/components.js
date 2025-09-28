@@ -232,14 +232,15 @@ customElements.define("devtools-breadcrumbs-ui", BreadcrumbsUI);
 // gen/front_end/panels/timeline/components/CPUThrottlingSelector.js
 var CPUThrottlingSelector_exports = {};
 __export(CPUThrottlingSelector_exports, {
-  CPUThrottlingSelector: () => CPUThrottlingSelector
+  CPUThrottlingSelector: () => CPUThrottlingSelector,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
 import "./../../../ui/components/icon_button/icon_button.js";
 import "./../../../ui/components/menus/menus.js";
 import * as Common from "./../../../core/common/common.js";
 import * as i18n3 from "./../../../core/i18n/i18n.js";
 import * as SDK from "./../../../core/sdk/sdk.js";
-import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
+import * as UI2 from "./../../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../../mobile_throttling/mobile_throttling.js";
@@ -251,29 +252,31 @@ var cpuThrottlingSelector_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
-  display: flex;
-  align-items: center;
-  max-width: 100%;
-  height: 20px;
-}
+ @scope to (devtools-widget > *) {
+  :scope {
+    display: flex;
+    align-items: center;
+    max-width: 100%;
+    height: 20px;
+  }
 
-devtools-icon[name="info"] {
-  margin-left: var(--sys-size-3);
-  width: var(--sys-size-8);
-  height: var(--sys-size-8);
-}
+  devtools-icon[name="info"] {
+    margin-left: var(--sys-size-3);
+    width: var(--sys-size-8);
+    height: var(--sys-size-8);
+  }
 
-devtools-select-menu {
-  min-width: 160px;
-  max-width: 100%;
-  height: 20px;
+  devtools-select-menu {
+    min-width: 160px;
+    max-width: 100%;
+    height: 20px;
+  }
 }
 
 /*# sourceURL=${import.meta.resolve("./cpuThrottlingSelector.css")} */`;
 
 // gen/front_end/panels/timeline/components/CPUThrottlingSelector.js
-var { html: html2 } = Lit2;
+var { render: render2, html: html2 } = Lit2;
 var UIStrings2 = {
   /**
    * @description Text label for a selection box showing which CPU throttling option is applied.
@@ -309,14 +312,69 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/timeline/components/CPUThrottlingSelector.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
-var CPUThrottlingSelector = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
+var DEFAULT_VIEW = (input, _output, target) => {
+  let recommendedInfoEl;
+  if (input.recommendedOption && input.currentOption === SDK.CPUThrottlingManager.NoThrottlingOption) {
+    recommendedInfoEl = html2`<devtools-icon
+        title=${i18nString2(UIStrings2.recommendedThrottlingReason)}
+        name=info></devtools-icon>`;
+  }
+  const selectionTitle = input.currentOption.title();
+  const hasCalibratedOnce = input.throttling.low || input.throttling.mid;
+  const calibrationLabel = hasCalibratedOnce ? i18nString2(UIStrings2.recalibrate) : i18nString2(UIStrings2.calibrate);
+  const template = html2`
+    <style>${cpuThrottlingSelector_css_default}</style>
+    <devtools-select-menu
+          @selectmenuselected=${input.onMenuItemSelected}
+          .showDivider=${true}
+          .showArrow=${true}
+          .sideButton=${false}
+          .showSelectedItem=${true}
+          .jslogContext=${"cpu-throttling"}
+          .buttonTitle=${i18nString2(UIStrings2.cpu, { PH1: selectionTitle })}
+          .title=${i18nString2(UIStrings2.cpuThrottling, { PH1: selectionTitle })}
+        >
+        ${input.groups.map((group) => {
+    return html2`
+            <devtools-menu-group .name=${group.name} .title=${group.name}>
+              ${group.items.map((option) => {
+      const title = option === input.recommendedOption ? i18nString2(UIStrings2.recommendedThrottling, { PH1: option.title() }) : option.title();
+      const rate = option.rate();
+      return html2`
+                  <devtools-menu-item
+                    .value=${option.calibratedDeviceType ?? rate}
+                    .selected=${input.currentOption === option}
+                    .disabled=${rate === 0}
+                    .title=${title}
+                    jslog=${VisualLogging2.item(option.jslogContext).track({ click: true })}
+                  >
+                    ${title}
+                  </devtools-menu-item>
+                `;
+    })}
+              ${group.name === "Calibrated presets" ? html2`<devtools-menu-item
+                .value=${-1}
+                .title=${calibrationLabel}
+                jslog=${VisualLogging2.action("cpu-throttling-selector-calibrate").track({ click: true })}
+                @click=${input.onCalibrateClick}
+              >
+                ${calibrationLabel}
+              </devtools-menu-item>` : Lit2.nothing}
+            </devtools-menu-group>`;
+  })}
+    </devtools-select-menu>
+    ${recommendedInfoEl}
+  `;
+  render2(template, target);
+};
+var CPUThrottlingSelector = class extends UI2.Widget.Widget {
   #currentOption;
   #recommendedOption = null;
   #groups = [];
   #calibratedThrottlingSetting;
-  constructor() {
-    super();
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
     this.#currentOption = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingOption();
     this.#calibratedThrottlingSetting = Common.Settings.Settings.instance().createSetting(
       "calibrated-cpu-throttling",
@@ -325,28 +383,30 @@ var CPUThrottlingSelector = class extends HTMLElement {
       /* Common.Settings.SettingStorageType.GLOBAL */
     );
     this.#resetGroups();
-    this.#render();
+    this.#view = view;
   }
   set recommendedOption(recommendedOption) {
     this.#recommendedOption = recommendedOption;
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    this.requestUpdate();
   }
-  connectedCallback() {
+  wasShown() {
+    super.wasShown();
     SDK.CPUThrottlingManager.CPUThrottlingManager.instance().addEventListener("RateChanged", this.#onOptionChange, this);
     this.#calibratedThrottlingSetting.addChangeListener(this.#onCalibratedSettingChanged, this);
     this.#onOptionChange();
   }
-  disconnectedCallback() {
+  willHide() {
+    super.willHide();
     this.#calibratedThrottlingSetting.removeChangeListener(this.#onCalibratedSettingChanged, this);
     SDK.CPUThrottlingManager.CPUThrottlingManager.instance().removeEventListener("RateChanged", this.#onOptionChange, this);
   }
   #onOptionChange() {
     this.#currentOption = SDK.CPUThrottlingManager.CPUThrottlingManager.instance().cpuThrottlingOption();
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    this.requestUpdate();
   }
   #onCalibratedSettingChanged() {
     this.#resetGroups();
-    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
+    this.requestUpdate();
   }
   #onMenuItemSelected(event) {
     let option;
@@ -379,64 +439,18 @@ var CPUThrottlingSelector = class extends HTMLElement {
       }
     ];
   }
-  #render = () => {
-    let recommendedInfoEl;
-    if (this.#recommendedOption && this.#currentOption === SDK.CPUThrottlingManager.NoThrottlingOption) {
-      recommendedInfoEl = html2`<devtools-icon
-        title=${i18nString2(UIStrings2.recommendedThrottlingReason)}
-        name=info></devtools-icon>`;
-    }
-    const selectionTitle = this.#currentOption.title();
-    const setting = this.#calibratedThrottlingSetting.get();
-    const hasCalibratedOnce = setting.low || setting.mid;
-    const calibrationLabel = hasCalibratedOnce ? i18nString2(UIStrings2.recalibrate) : i18nString2(UIStrings2.calibrate);
-    const output = html2`
-      <style>${cpuThrottlingSelector_css_default}</style>
-      <devtools-select-menu
-            @selectmenuselected=${this.#onMenuItemSelected}
-            .showDivider=${true}
-            .showArrow=${true}
-            .sideButton=${false}
-            .showSelectedItem=${true}
-            .jslogContext=${"cpu-throttling"}
-            .buttonTitle=${i18nString2(UIStrings2.cpu, { PH1: selectionTitle })}
-            .title=${i18nString2(UIStrings2.cpuThrottling, { PH1: selectionTitle })}
-          >
-          ${this.#groups.map((group) => {
-      return html2`
-              <devtools-menu-group .name=${group.name} .title=${group.name}>
-                ${group.items.map((option) => {
-        const title = option === this.#recommendedOption ? i18nString2(UIStrings2.recommendedThrottling, { PH1: option.title() }) : option.title();
-        const rate = option.rate();
-        return html2`
-                    <devtools-menu-item
-                      .value=${option.calibratedDeviceType ?? rate}
-                      .selected=${this.#currentOption === option}
-                      .disabled=${rate === 0}
-                      .title=${title}
-                      jslog=${VisualLogging2.item(option.jslogContext).track({ click: true })}
-                    >
-                      ${title}
-                    </devtools-menu-item>
-                  `;
-      })}
-                ${group.name === "Calibrated presets" ? html2`<devtools-menu-item
-                  .value=${-1}
-                  .title=${calibrationLabel}
-                  jslog=${VisualLogging2.action("cpu-throttling-selector-calibrate").track({ click: true })}
-                  @click=${this.#onCalibrateClick}
-                >
-                  ${calibrationLabel}
-                </devtools-menu-item>` : Lit2.nothing}
-              </devtools-menu-group>`;
-    })}
-      </devtools-select-menu>
-      ${recommendedInfoEl}
-    `;
-    Lit2.render(output, this.#shadow, { host: this });
-  };
+  async performUpdate() {
+    const input = {
+      recommendedOption: this.#recommendedOption,
+      currentOption: this.#currentOption,
+      groups: this.#groups,
+      throttling: this.#calibratedThrottlingSetting.get(),
+      onMenuItemSelected: this.#onMenuItemSelected.bind(this),
+      onCalibrateClick: this.#onCalibrateClick.bind(this)
+    };
+    this.#view(input, void 0, this.contentElement);
+  }
 };
-customElements.define("devtools-cpu-throttling-selector", CPUThrottlingSelector);
 
 // gen/front_end/panels/timeline/components/DetailsView.js
 var DetailsView_exports = {};
@@ -448,7 +462,7 @@ __export(DetailsView_exports, {
 import * as i18n5 from "./../../../core/i18n/i18n.js";
 import * as Platform from "./../../../core/platform/platform.js";
 import * as Trace2 from "./../../../models/trace/trace.js";
-import * as UI2 from "./../../../ui/legacy/legacy.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
 var UIStrings3 = {
   /**
    * @description Text in the Performance panel for a forced style and layout calculation of elements
@@ -514,7 +528,7 @@ function buildWarningElementsForEvent(event, parsedTrace) {
     const span = document.createElement("span");
     switch (warning) {
       case "FORCED_REFLOW": {
-        const forcedReflowLink = UI2.XLink.XLink.create("https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts", i18nString3(UIStrings3.forcedReflow), void 0, void 0, "forced-reflow");
+        const forcedReflowLink = UI3.XLink.XLink.create("https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts", i18nString3(UIStrings3.forcedReflow), void 0, void 0, "forced-reflow");
         span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sIsALikelyPerformanceBottleneck, { PH1: forcedReflowLink }));
         break;
       }
@@ -527,12 +541,12 @@ function buildWarningElementsForEvent(event, parsedTrace) {
         break;
       }
       case "LONG_TASK": {
-        const longTaskLink = UI2.XLink.XLink.create("https://web.dev/optimize-long-tasks/", i18nString3(UIStrings3.longTask), void 0, void 0, "long-tasks");
+        const longTaskLink = UI3.XLink.XLink.create("https://web.dev/optimize-long-tasks/", i18nString3(UIStrings3.longTask), void 0, void 0, "long-tasks");
         span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sTookS, { PH1: longTaskLink, PH2: i18n5.TimeUtilities.millisToString(duration || 0, true) }));
         break;
       }
       case "LONG_INTERACTION": {
-        const longInteractionINPLink = UI2.XLink.XLink.create("https://web.dev/inp", i18nString3(UIStrings3.longInteractionINP), void 0, void 0, "long-interaction");
+        const longInteractionINPLink = UI3.XLink.XLink.create("https://web.dev/inp", i18nString3(UIStrings3.longInteractionINP), void 0, void 0, "long-interaction");
         span.appendChild(i18n5.i18n.getFormatLocalizedString(str_3, UIStrings3.sIsLikelyPoorPageResponsiveness, { PH1: longInteractionINPLink }));
         break;
       }
@@ -617,14 +631,16 @@ var ExportTraceOptions_exports = {};
 __export(ExportTraceOptions_exports, {
   ExportTraceOptions: () => ExportTraceOptions
 });
+import "./../../../ui/components/tooltips/tooltips.js";
+import "./../../../ui/components/buttons/buttons.js";
 import * as Common2 from "./../../../core/common/common.js";
 import * as Host from "./../../../core/host/host.js";
 import * as i18n7 from "./../../../core/i18n/i18n.js";
 import * as Root from "./../../../core/root/root.js";
 import * as Buttons from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs from "./../../../ui/components/dialogs/dialogs.js";
-import * as ComponentHelpers3 from "./../../../ui/components/helpers/helpers.js";
-import * as UI3 from "./../../../ui/legacy/legacy.js";
+import * as ComponentHelpers2 from "./../../../ui/components/helpers/helpers.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/exportTraceOptions.css.js
@@ -655,9 +671,15 @@ var exportTraceOptions_css_default = `/*
   }
 }
 
+.info-tooltip-container {
+  max-width: var(--sys-size-28);
+  white-space: normal;
+}
+
 /*# sourceURL=${import.meta.resolve("./exportTraceOptions.css")} */`;
 
 // gen/front_end/panels/timeline/components/ExportTraceOptions.js
+var _a;
 var { html: html3 } = Lit3;
 var UIStrings4 = {
   /**
@@ -687,11 +709,24 @@ var UIStrings4 = {
   /**
    * @description Text for the save trace button
    */
-  saveButtonTitle: "Save"
+  saveButtonTitle: "Save",
+  /**
+   * @description Title for the information icon showing more information about an option
+   */
+  moreInfoTitle: "More information",
+  /**
+   * @description Text shown in the information pop-up next to the "Include script content" option.
+   */
+  scriptContentPrivacyInfo: "Includes the full content of all loaded scripts (except extensions).",
+  /**
+   * @description Text shown in the information pop-up next to the "Include script sourcemaps" option.
+   */
+  sourceMapsContentPrivacyInfo: "Includes available source maps, which may expose authored code."
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/timeline/components/ExportTraceOptions.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
+var checkboxesWithInfoDialog = /* @__PURE__ */ new Set(["script-content", "script-source-maps"]);
+var ExportTraceOptions = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #data = null;
   static #includeAnnotationsSettingString = "export-performance-trace-include-annotations";
@@ -699,25 +734,25 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   static #includeSourceMapsSettingString = "export-performance-trace-include-sourcemaps";
   static #shouldCompressSettingString = "export-performance-trace-should-compress";
   #includeAnnotationsSetting = Common2.Settings.Settings.instance().createSetting(
-    _ExportTraceOptions.#includeAnnotationsSettingString,
+    _a.#includeAnnotationsSettingString,
     true,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #includeScriptContentSetting = Common2.Settings.Settings.instance().createSetting(
-    _ExportTraceOptions.#includeScriptContentSettingString,
+    _a.#includeScriptContentSettingString,
     false,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #includeSourceMapsSetting = Common2.Settings.Settings.instance().createSetting(
-    _ExportTraceOptions.#includeSourceMapsSettingString,
+    _a.#includeSourceMapsSettingString,
     false,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #shouldCompressSetting = Common2.Settings.Settings.instance().createSetting(
-    _ExportTraceOptions.#shouldCompressSettingString,
+    _a.#shouldCompressSettingString,
     true,
     "Synced"
     /* Common.Settings.SettingStorageType.SYNCED */
@@ -729,7 +764,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     includeSourceMaps: this.#includeSourceMapsSetting.get(),
     shouldCompress: this.#shouldCompressSetting.get()
   };
-  #includeAnnotationsCheckbox = UI3.UIUtils.CheckboxLabel.create(
+  #includeAnnotationsCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
     i18nString4(UIStrings4.includeAnnotations),
     /* checked*/
@@ -739,7 +774,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     /* jslogContext*/
     "timeline.export-trace-options.annotations-checkbox"
   );
-  #includeScriptContentCheckbox = UI3.UIUtils.CheckboxLabel.create(
+  #includeScriptContentCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
     i18nString4(UIStrings4.includeScriptContent),
     /* checked*/
@@ -749,7 +784,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     /* jslogContext*/
     "timeline.export-trace-options.script-content-checkbox"
   );
-  #includeSourceMapsCheckbox = UI3.UIUtils.CheckboxLabel.create(
+  #includeSourceMapsCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
     i18nString4(UIStrings4.includeSourcemap),
     /* checked*/
@@ -759,7 +794,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     /* jslogContext*/
     "timeline.export-trace-options.source-maps-checkbox"
   );
-  #shouldCompressCheckbox = UI3.UIUtils.CheckboxLabel.create(
+  #shouldCompressCheckbox = UI4.UIUtils.CheckboxLabel.create(
     /* title*/
     i18nString4(UIStrings4.shouldCompress),
     /* checked*/
@@ -801,7 +836,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     this.state = newState;
   }
   #scheduleRender() {
-    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers2.ScheduledRender.scheduleRender(this, this.#render);
   }
   #checkboxOptionChanged(checkboxWithLabel, checked) {
     const newState = Object.assign({}, this.#state, {
@@ -831,8 +866,8 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     }
     this.state = newState;
   }
-  #renderCheckbox(checkboxWithLabel, title, checked) {
-    UI3.Tooltip.Tooltip.install(checkboxWithLabel, title);
+  #renderCheckbox(checkboxId, checkboxWithLabel, title, checked) {
+    UI4.Tooltip.Tooltip.install(checkboxWithLabel, title);
     checkboxWithLabel.ariaLabel = title;
     checkboxWithLabel.checked = checked;
     checkboxWithLabel.addEventListener("change", this.#checkboxOptionChanged.bind(this, checkboxWithLabel, !checked), false);
@@ -840,11 +875,38 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     return html3`
         <div class='export-trace-options-row'>
           ${checkboxWithLabel}
+
+          ${checkboxesWithInfoDialog.has(checkboxId) ? html3`
+            <devtools-button
+              aria-details=${`export-trace-tooltip-${checkboxId}`}
+              class="pen-icon"
+              .title=${UIStrings4.moreInfoTitle}
+              .iconName=${"info"}
+              .variant=${"icon"}
+              ></devtools-button>
+            ` : Lit3.nothing}
         </div>
       `;
   }
+  #renderInfoTooltip(checkboxId) {
+    if (!checkboxesWithInfoDialog.has(checkboxId)) {
+      return Lit3.nothing;
+    }
+    return html3`
+    <devtools-tooltip
+      variant="rich"
+      id=${`export-trace-tooltip-${checkboxId}`}
+    >
+      <div class="info-tooltip-container">
+      <p>
+        ${checkboxId === "script-content" ? i18nString4(UIStrings4.scriptContentPrivacyInfo) : Lit3.nothing}
+        ${checkboxId === "script-source-maps" ? i18nString4(UIStrings4.sourceMapsContentPrivacyInfo) : Lit3.nothing}
+      </p>
+      </div>
+    </devtools-tooltip>`;
+  }
   #render() {
-    if (!ComponentHelpers3.ScheduledRender.isScheduledRender(this)) {
+    if (!ComponentHelpers2.ScheduledRender.isScheduledRender(this)) {
       throw new Error("Export trace options dialog render was not scheduled");
     }
     const output = html3`
@@ -864,12 +926,13 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
       state: this.#state.dialogState
     }}>
         <div class='export-trace-options-content'>
-          ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox(this.#includeAnnotationsCheckbox, i18nString4(UIStrings4.includeAnnotations), this.#state.includeAnnotations) : ""}
-          ${this.#state.displayScriptContentCheckbox ? this.#renderCheckbox(this.#includeScriptContentCheckbox, i18nString4(UIStrings4.includeScriptContent), this.#state.includeScriptContent) : ""}
-          ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox(this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
-          ${this.#renderCheckbox(this.#shouldCompressCheckbox, i18nString4(UIStrings4.shouldCompress), this.#state.shouldCompress)}
+          ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox("annotations", this.#includeAnnotationsCheckbox, i18nString4(UIStrings4.includeAnnotations), this.#state.includeAnnotations) : ""}
+          ${this.#state.displayScriptContentCheckbox ? this.#renderCheckbox("script-content", this.#includeScriptContentCheckbox, i18nString4(UIStrings4.includeScriptContent), this.#state.includeScriptContent) : ""}
+          ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox("script-source-maps", this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
+          ${this.#renderCheckbox("compress-with-gzip", this.#shouldCompressCheckbox, i18nString4(UIStrings4.shouldCompress), this.#state.shouldCompress)}
           <div class='export-trace-options-row'><div class='export-trace-blank'></div><devtools-button
                   class="setup-button"
+                  data-export-button
                   @click=${this.#onExportClick.bind(this)}
                   .data=${{
       variant: "primary",
@@ -879,6 +942,9 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
                 </div>
         </div>
       </devtools-button-dialog>
+
+      ${this.#state.displayScriptContentCheckbox ? this.#renderInfoTooltip("script-content") : Lit3.nothing}
+      ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderInfoTooltip("script-source-maps") : Lit3.nothing}
     `;
     Lit3.render(output, this.#shadow, { host: this });
   }
@@ -906,6 +972,7 @@ var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
     });
   }
 };
+_a = ExportTraceOptions;
 customElements.define("devtools-perf-export-trace-options", ExportTraceOptions);
 
 // gen/front_end/panels/timeline/components/FieldSettingsDialog.js
@@ -925,7 +992,7 @@ import * as i18n9 from "./../../../core/i18n/i18n.js";
 import * as SDK2 from "./../../../core/sdk/sdk.js";
 import * as CrUXManager from "./../../../models/crux-manager/crux-manager.js";
 import * as RenderCoordinator from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI4 from "./../../../ui/legacy/legacy.js";
+import * as UI5 from "./../../../ui/legacy/legacy.js";
 import * as Lit4 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/originMap.css.js
@@ -1033,12 +1100,12 @@ var str_5 = i18n9.i18n.registerUIStrings("panels/timeline/components/OriginMap.t
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var DEV_ORIGIN_CONTROL = "developmentOrigin";
 var PROD_ORIGIN_CONTROL = "productionOrigin";
-var OriginMap = class extends UI4.Widget.WidgetElement {
+var OriginMap = class extends UI5.Widget.WidgetElement {
   #list;
   #editor;
   constructor() {
     super();
-    this.#list = new UI4.ListWidget.ListWidget(
+    this.#list = new UI5.ListWidget.ListWidget(
       this,
       false,
       true
@@ -1048,7 +1115,7 @@ var OriginMap = class extends UI4.Widget.WidgetElement {
     this.#updateListFromSetting();
   }
   createWidget() {
-    const containerWidget = new UI4.Widget.Widget(this);
+    const containerWidget = new UI5.Widget.Widget(this);
     this.#list.registerRequiredCSS(originMap_css_default);
     this.#list.show(containerWidget.contentElement);
     return containerWidget;
@@ -1188,7 +1255,7 @@ var OriginMap = class extends UI4.Widget.WidgetElement {
     if (this.#editor) {
       return this.#editor;
     }
-    const editor = new UI4.ListWidget.Editor();
+    const editor = new UI5.ListWidget.Editor();
     this.#editor = editor;
     const content = editor.contentElement().createChild("div", "origin-mapping-editor");
     const devInput = editor.createInput(DEV_ORIGIN_CONTROL, "text", i18nString5(UIStrings5.developmentOrigin), this.#developmentValidator.bind(this));
@@ -1213,9 +1280,9 @@ import * as i18n11 from "./../../../core/i18n/i18n.js";
 import * as CrUXManager3 from "./../../../models/crux-manager/crux-manager.js";
 import * as Buttons2 from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs2 from "./../../../ui/components/dialogs/dialogs.js";
-import * as ComponentHelpers4 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers3 from "./../../../ui/components/helpers/helpers.js";
 import * as Input from "./../../../ui/components/input/input.js";
-import * as UI5 from "./../../../ui/legacy/legacy.js";
+import * as UI6 from "./../../../ui/legacy/legacy.js";
 import * as Lit5 from "./../../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -1410,7 +1477,7 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/timeline/components/FieldSettingsDialog.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var { html: html5, nothing: nothing4, Directives: { ifDefined } } = Lit5;
+var { html: html5, nothing: nothing5, Directives: { ifDefined } } = Lit5;
 var ShowDialog = class _ShowDialog extends Event {
   static eventName = "showdialog";
   constructor() {
@@ -1448,7 +1515,7 @@ var FieldSettingsDialog = class extends HTMLElement {
     });
   }
   #onSettingsChanged() {
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
   }
   async #urlHasFieldData(url) {
     const cruxManager = CrUXManager3.CrUXManager.instance();
@@ -1465,13 +1532,13 @@ var FieldSettingsDialog = class extends HTMLElement {
       const origin = this.#getOrigin(this.#urlOverride);
       if (!origin) {
         this.#urlOverrideWarning = i18nString6(UIStrings6.invalidOrigin, { PH1: this.#urlOverride });
-        void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+        void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
         return;
       }
       const hasFieldData = await this.#urlHasFieldData(this.#urlOverride);
       if (!hasFieldData) {
         this.#urlOverrideWarning = i18nString6(UIStrings6.doesNotHaveSufficientData);
-        void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+        void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
         return;
       }
     }
@@ -1484,7 +1551,7 @@ var FieldSettingsDialog = class extends HTMLElement {
     }
     this.#resetToSettingState();
     void this.#dialog.setDialogVisible(true);
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
     this.dispatchEvent(new ShowDialog());
   }
   #closeDialog(evt) {
@@ -1495,11 +1562,11 @@ var FieldSettingsDialog = class extends HTMLElement {
     if (evt) {
       evt.stopImmediatePropagation();
     }
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     this.#configSetting.addChangeListener(this.#onSettingsChanged, this);
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
   }
   disconnectedCallback() {
     this.#configSetting.removeChangeListener(this.#onSettingsChanged, this);
@@ -1568,14 +1635,14 @@ var FieldSettingsDialog = class extends HTMLElement {
     const input = event.target;
     this.#urlOverride = input.value;
     this.#urlOverrideWarning = "";
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
   }
   #onUrlOverrideEnabledChange(event) {
     event.stopPropagation();
     const input = event.target;
     this.#urlOverrideEnabled = input.checked;
     this.#urlOverrideWarning = "";
-    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers3.ScheduledRender.scheduleRender(this, this.#render);
   }
   #getOrigin(url) {
     try {
@@ -1588,7 +1655,7 @@ var FieldSettingsDialog = class extends HTMLElement {
     return html5`
       <div class="origin-mapping-description">${i18nString6(UIStrings6.mapDevelopmentOrigins)}</div>
       <devtools-origin-map
-        on-render=${ComponentHelpers4.Directives.nodeRenderedCallback((node) => {
+        on-render=${ComponentHelpers3.Directives.nodeRenderedCallback((node) => {
       this.#originMap = node;
     })}
       ></devtools-origin-map>
@@ -1606,7 +1673,7 @@ var FieldSettingsDialog = class extends HTMLElement {
     `;
   }
   #render = () => {
-    const linkEl = UI5.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n11.i18n.lockedString("Chrome UX Report"));
+    const linkEl = UI6.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n11.i18n.lockedString("Chrome UX Report"));
     const descriptionEl = i18n11.i18n.getFormatLocalizedString(str_6, UIStrings6.fetchAggregated, { PH1: linkEl });
     const output = html5`
       <style>${fieldSettingsDialog_css_default}</style>
@@ -1620,7 +1687,7 @@ var FieldSettingsDialog = class extends HTMLElement {
         .jslogContext=${"timeline.field-data.settings"}
         .expectedMutationsSelector=${".timeline-settings-pane option"}
         .dialogTitle=${i18nString6(UIStrings6.configureFieldData)}
-        on-render=${ComponentHelpers4.Directives.nodeRenderedCallback((node) => {
+        on-render=${ComponentHelpers3.Directives.nodeRenderedCallback((node) => {
       this.#dialog = node;
     })}
       >
@@ -1654,7 +1721,7 @@ var FieldSettingsDialog = class extends HTMLElement {
                 .value=${this.#urlOverride}
                 placeholder=${ifDefined(this.#urlOverrideEnabled ? i18nString6(UIStrings6.url) : void 0)}
               />
-              ${this.#urlOverrideWarning ? html5`<div class="warning" role="alert" aria-label=${this.#urlOverrideWarning}>${this.#urlOverrideWarning}</div>` : nothing4}
+              ${this.#urlOverrideWarning ? html5`<div class="warning" role="alert" aria-label=${this.#urlOverrideWarning}>${this.#urlOverrideWarning}</div>` : nothing5}
             </div>
           </details>
           <div class="buttons-section">
@@ -1682,8 +1749,8 @@ import * as Platform2 from "./../../../core/platform/platform.js";
 import * as Workspace from "./../../../models/workspace/workspace.js";
 import * as Buttons3 from "./../../../ui/components/buttons/buttons.js";
 import * as Dialogs3 from "./../../../ui/components/dialogs/dialogs.js";
-import * as ComponentHelpers5 from "./../../../ui/components/helpers/helpers.js";
-import * as UI6 from "./../../../ui/legacy/legacy.js";
+import * as ComponentHelpers4 from "./../../../ui/components/helpers/helpers.js";
+import * as UI7 from "./../../../ui/legacy/legacy.js";
 import * as Lit6 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/ignoreListSetting.css.js
@@ -1790,7 +1857,7 @@ var IgnoreListSetting = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #ignoreListEnabled = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
   #regexPatterns = this.#getSkipStackFramesPatternSetting().getAsArray();
-  #newRegexCheckbox = UI6.UIUtils.CheckboxLabel.create(
+  #newRegexCheckbox = UI7.UIUtils.CheckboxLabel.create(
     /* title*/
     void 0,
     /* checked*/
@@ -1800,7 +1867,7 @@ var IgnoreListSetting = class extends HTMLElement {
     /* jslogContext*/
     "timeline.ignore-list-new-regex.checkbox"
   );
-  #newRegexInput = UI6.UIUtils.createInput(
+  #newRegexInput = UI7.UIUtils.createInput(
     /* className*/
     "new-regex-text-input",
     /* type*/
@@ -1822,7 +1889,7 @@ var IgnoreListSetting = class extends HTMLElement {
     });
   }
   #scheduleRender() {
-    void ComponentHelpers5.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers4.ScheduledRender.scheduleRender(this, this.#render);
   }
   #getSkipStackFramesPatternSetting() {
     return Common3.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
@@ -1894,8 +1961,8 @@ var IgnoreListSetting = class extends HTMLElement {
     this.#newRegexInput.placeholder = "/framework\\.js$";
     const checkboxHelpText = i18nString7(UIStrings7.ignoreScriptsWhoseNamesMatchNewRegex);
     const inputHelpText = i18nString7(UIStrings7.addNewRegex);
-    UI6.Tooltip.Tooltip.install(this.#newRegexCheckbox, checkboxHelpText);
-    UI6.Tooltip.Tooltip.install(this.#newRegexInput, inputHelpText);
+    UI7.Tooltip.Tooltip.install(this.#newRegexCheckbox, checkboxHelpText);
+    UI7.Tooltip.Tooltip.install(this.#newRegexInput, inputHelpText);
     this.#newRegexInput.addEventListener("blur", this.#addNewRegexToIgnoreList.bind(this), false);
     this.#newRegexInput.addEventListener("keydown", this.#handleKeyDown.bind(this), false);
     this.#newRegexInput.addEventListener("input", this.#handleInputChange.bind(this), false);
@@ -1920,14 +1987,14 @@ var IgnoreListSetting = class extends HTMLElement {
     this.#getSkipStackFramesPatternSetting().setAsArray(this.#regexPatterns);
   }
   #renderItem(regex, index) {
-    const checkboxWithLabel = UI6.UIUtils.CheckboxLabel.createWithStringLiteral(
+    const checkboxWithLabel = UI7.UIUtils.CheckboxLabel.createWithStringLiteral(
       regex.pattern,
       !regex.disabled,
       /* jslogContext*/
       "timeline.ignore-list-pattern"
     );
     const helpText = i18nString7(UIStrings7.ignoreScriptsWhoseNamesMatchS, { regex: regex.pattern });
-    UI6.Tooltip.Tooltip.install(checkboxWithLabel, helpText);
+    UI7.Tooltip.Tooltip.install(checkboxWithLabel, helpText);
     checkboxWithLabel.ariaLabel = helpText;
     checkboxWithLabel.addEventListener("change", this.#onExistingRegexEnableToggle.bind(this, regex, checkboxWithLabel), false);
     return html6`
@@ -1945,7 +2012,7 @@ var IgnoreListSetting = class extends HTMLElement {
     `;
   }
   #render() {
-    if (!ComponentHelpers5.ScheduledRender.isScheduledRender(this)) {
+    if (!ComponentHelpers4.ScheduledRender.isScheduledRender(this)) {
       throw new Error("Ignore List setting dialog render was not scheduled");
     }
     const output = html6`
@@ -1991,7 +2058,7 @@ __export(InteractionBreakdown_exports, {
   InteractionBreakdown: () => InteractionBreakdown
 });
 import * as i18n15 from "./../../../core/i18n/i18n.js";
-import * as ComponentHelpers6 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers5 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit7 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/interactionBreakdown.css.js
@@ -2046,7 +2113,7 @@ var InteractionBreakdown = class extends HTMLElement {
       return;
     }
     this.#entry = entry;
-    void ComponentHelpers6.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers5.ScheduledRender.scheduleRender(this, this.#render);
   }
   #render() {
     if (!this.#entry) {
@@ -2069,7 +2136,7 @@ customElements.define("devtools-interaction-breakdown", InteractionBreakdown);
 // gen/front_end/panels/timeline/components/LayoutShiftDetails.js
 var LayoutShiftDetails_exports = {};
 __export(LayoutShiftDetails_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   LayoutShiftDetails: () => LayoutShiftDetails
 });
 import * as i18n17 from "./../../../core/i18n/i18n.js";
@@ -2078,7 +2145,7 @@ import * as Helpers3 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace3 from "./../../../models/trace/trace.js";
 import * as Buttons4 from "./../../../ui/components/buttons/buttons.js";
 import * as LegacyComponents from "./../../../ui/legacy/components/utils/utils.js";
-import * as UI7 from "./../../../ui/legacy/legacy.js";
+import * as UI8 from "./../../../ui/legacy/legacy.js";
 import * as Lit8 from "./../../../ui/lit/lit.js";
 import * as Insights from "./insights/insights.js";
 
@@ -2269,12 +2336,12 @@ var UIStrings9 = {
 };
 var str_9 = i18n17.i18n.registerUIStrings("panels/timeline/components/LayoutShiftDetails.ts", UIStrings9);
 var i18nString9 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-var LayoutShiftDetails = class extends UI7.Widget.Widget {
+var LayoutShiftDetails = class extends UI8.Widget.Widget {
   #view;
   #event = null;
   #parsedTrace = null;
   #isFreshRecording = false;
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW2) {
     super(element);
     this.#view = view;
   }
@@ -2319,9 +2386,9 @@ var LayoutShiftDetails = class extends UI7.Widget.Widget {
     }, {}, this.contentElement);
   }
 };
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW2 = (input, _output, target) => {
   if (!input.event || !input.parsedTrace) {
-    render8(html8``, target);
+    render8(Lit8.nothing, target);
     return;
   }
   const title = Trace3.Name.forEntry(input.event);
@@ -2555,7 +2622,7 @@ import * as Common4 from "./../../../core/common/common.js";
 import * as i18n19 from "./../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../core/platform/platform.js";
 import * as SDK4 from "./../../../core/sdk/sdk.js";
-import * as ComponentHelpers7 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers6 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit9 from "./../../../ui/lit/lit.js";
 import * as VisualLogging4 from "./../../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling2 from "./../../mobile_throttling/mobile_throttling.js";
@@ -2589,7 +2656,7 @@ devtools-select-menu {
 /*# sourceURL=${import.meta.resolve("./networkThrottlingSelector.css")} */`;
 
 // gen/front_end/panels/timeline/components/NetworkThrottlingSelector.js
-var { html: html9, nothing: nothing6 } = Lit9;
+var { html: html9, nothing: nothing7 } = Lit9;
 var UIStrings10 = {
   /**
    * @description Text label for a selection box showing which network throttling option is applied.
@@ -2644,7 +2711,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
   }
   set recommendedConditions(recommendedConditions) {
     this.#recommendedConditions = recommendedConditions;
-    void ComponentHelpers7.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers6.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     SDK4.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged", this.#onConditionsChanged, this);
@@ -2677,7 +2744,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
   }
   #onConditionsChanged() {
     this.#currentConditions = SDK4.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
-    void ComponentHelpers7.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers6.ScheduledRender.scheduleRender(this, this.#render);
   }
   #onMenuItemSelected(event) {
     const newConditions = this.#groups.flatMap((g) => g.items).find((item5) => {
@@ -2690,7 +2757,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
   }
   #onSettingChanged() {
     this.#resetPresets();
-    void ComponentHelpers7.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers6.ScheduledRender.scheduleRender(this, this.#render);
   }
   #getConditionsTitle(conditions) {
     return conditions.title instanceof Function ? conditions.title() : conditions.title;
@@ -2758,7 +2825,7 @@ var NetworkThrottlingSelector = class extends HTMLElement {
                 >
                   ${i18nString10(UIStrings10.add)}
                 </devtools-menu-item>
-              ` : nothing6}
+              ` : nothing7}
             </devtools-menu-group>
           `;
     })}
@@ -2782,8 +2849,8 @@ import * as i18n25 from "./../../../core/i18n/i18n.js";
 import * as Platform5 from "./../../../core/platform/platform.js";
 import * as CrUXManager5 from "./../../../models/crux-manager/crux-manager.js";
 import * as Buttons5 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers8 from "./../../../ui/components/helpers/helpers.js";
-import * as UI8 from "./../../../ui/legacy/legacy.js";
+import * as ComponentHelpers7 from "./../../../ui/components/helpers/helpers.js";
+import * as UI9 from "./../../../ui/legacy/legacy.js";
 import * as Lit10 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/metricCard.css.js
@@ -3523,7 +3590,7 @@ function determineCompareRating(metric, localValue, fieldValue) {
 }
 
 // gen/front_end/panels/timeline/components/MetricCard.js
-var { html: html10, nothing: nothing8 } = Lit10;
+var { html: html10, nothing: nothing9 } = Lit10;
 var UIStrings13 = {
   /**
    * @description Label for a metric value that was measured in the local environment.
@@ -3645,10 +3712,10 @@ var MetricCard = class extends HTMLElement {
   };
   set data(data) {
     this.#data = data;
-    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers7.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
-    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers7.ScheduledRender.scheduleRender(this, this.#render);
   }
   #hideTooltipOnEsc = (event) => {
     if (Platform5.KeyboardUtilities.isEscKey(event)) {
@@ -3971,7 +4038,7 @@ var MetricCard = class extends HTMLElement {
               class="phase-table-value"
               style="grid-column: 3"
               title=${i18nString12(UIStrings13.field75thPercentile)}>${i18nString12(UIStrings13.fieldP75)}</div>
-          ` : nothing8}
+          ` : nothing9}
         </div>
         ${phases.map((phase) => html10`
           <div class="phase-table-row" role="row">
@@ -3979,7 +4046,7 @@ var MetricCard = class extends HTMLElement {
             <div role="cell" class="phase-table-value">${i18n25.TimeUtilities.preciseMillisToString(phase[1])}</div>
             ${phase[2] !== void 0 ? html10`
               <div role="cell" class="phase-table-value">${i18n25.TimeUtilities.preciseMillisToString(phase[2])}</div>
-            ` : nothing8}
+            ` : nothing9}
           </div>
         `)}
       </div>
@@ -4005,7 +4072,7 @@ var MetricCard = class extends HTMLElement {
             title=${this.#getHelpTooltip()}
             .iconName=${"help"}
             .variant=${"icon"}
-            @click=${() => UI8.UIUtils.openInNewTab(helpLink)}
+            @click=${() => UI9.UIUtils.openInNewTab(helpLink)}
           ></devtools-button>
         </h3>
         <div tabindex="0" class="metric-values-section"
@@ -4017,20 +4084,20 @@ var MetricCard = class extends HTMLElement {
         >
           <div class="metric-source-block">
             <div class="metric-source-value" id="local-value">${localValueEl}</div>
-            ${fieldEnabled ? html10`<div class="metric-source-label">${i18nString12(UIStrings13.localValue)}</div>` : nothing8}
+            ${fieldEnabled ? html10`<div class="metric-source-label">${i18nString12(UIStrings13.localValue)}</div>` : nothing9}
           </div>
           ${fieldEnabled ? html10`
             <div class="metric-source-block">
               <div class="metric-source-value" id="field-value">${fieldValueEl}</div>
               <div class="metric-source-label">${i18nString12(UIStrings13.field75thPercentile)}</div>
             </div>
-          ` : nothing8}
+          ` : nothing9}
           <div
             id="tooltip"
             class="tooltip"
             role="tooltip"
             aria-label=${i18nString12(UIStrings13.viewCardDetails)}
-            on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
+            on-render=${ComponentHelpers7.Directives.nodeRenderedCallback((node) => {
       this.#tooltipEl = node;
     })}
           >
@@ -4040,13 +4107,13 @@ var MetricCard = class extends HTMLElement {
                   ${this.#renderDetailedCompareString()}
                   <hr class="divider">
                   ${this.#renderFieldHistogram()}
-                  ${localValue && this.#data.phases ? this.#renderPhaseTable(this.#data.phases) : nothing8}
+                  ${localValue && this.#data.phases ? this.#renderPhaseTable(this.#data.phases) : nothing9}
                 </div>
               </div>
             </div>
           </div>
         </div>
-        ${fieldEnabled ? html10`<hr class="divider">` : nothing8}
+        ${fieldEnabled ? html10`<hr class="divider">` : nothing9}
         ${this.#renderCompareString()}
         ${this.#data.warnings?.map((warning) => html10`
           <div class="warning">${warning}</div>
@@ -4069,10 +4136,10 @@ import * as EmulationModel from "./../../../models/emulation/emulation.js";
 import * as LiveMetrics from "./../../../models/live-metrics/live-metrics.js";
 import * as Trace5 from "./../../../models/trace/trace.js";
 import * as Buttons6 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers8 from "./../../../ui/components/helpers/helpers.js";
 import * as LegacyWrapper from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as RenderCoordinator2 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI9 from "./../../../ui/legacy/legacy.js";
+import * as UI10 from "./../../../ui/legacy/legacy.js";
 import * as Lit12 from "./../../../ui/lit/lit.js";
 import * as VisualLogging6 from "./../../../ui/visual_logging/visual_logging.js";
 
@@ -4509,7 +4576,7 @@ x-link {
 /*# sourceURL=${import.meta.resolve("./liveMetricsView.css")} */`;
 
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
-var { html: html12, nothing: nothing10 } = Lit12;
+var { html: html12, nothing: nothing11 } = Lit12;
 var DEVICE_OPTION_LIST = ["AUTO", ...CrUXManager9.DEVICE_SCOPE_LIST];
 var RTT_MINIMUM = 60;
 var UIStrings14 = {
@@ -4775,12 +4842,12 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
   #deviceModeModel = EmulationModel.DeviceModeModel.DeviceModeModel.tryInstance();
   constructor() {
     super();
-    this.#toggleRecordAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
-    this.#recordReloadAction = UI9.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
+    this.#toggleRecordAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
+    this.#recordReloadAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
   }
   set isNode(isNode) {
     this.#isNode = isNode;
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   #onMetricStatus(event) {
     this.#lcpValue = event.data.lcp;
@@ -4790,7 +4857,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     this.#layoutShifts = [...event.data.layoutShifts];
     const hasNewInteraction = this.#interactions.size < event.data.interactions.size;
     this.#interactions = new Map(event.data.interactions);
-    const renderPromise = ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    const renderPromise = ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
     if (hasNewInteraction && this.#interactionsListEl) {
       this.#keepScrolledToBottom(renderPromise, this.#interactionsListEl);
     }
@@ -4817,16 +4884,16 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     });
   }
   #onFieldDataChanged() {
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   #onEmulationChanged() {
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   async #refreshFieldDataForCurrentPage() {
     if (!this.#isNode) {
       await this.#cruxManager.refresh();
     }
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     const liveMetrics = LiveMetrics.LiveMetrics.instance();
@@ -4842,7 +4909,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     this.#inpValue = liveMetrics.inpValue;
     this.#interactions = liveMetrics.interactions;
     this.#layoutShifts = liveMetrics.layoutShifts;
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   disconnectedCallback() {
     LiveMetrics.LiveMetrics.instance().removeEventListener("status", this.#onMetricStatus, this);
@@ -4890,7 +4957,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               <span class="related-info-label">${i18nString13(UIStrings14.lcpElement)}</span>
               <span class="related-info-link">${nodeLink}</span>
             </div>
-          ` : nothing10}
+          ` : nothing11}
       </devtools-metric-card>
     `;
   }
@@ -4917,7 +4984,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               jslog=${VisualLogging6.action("timeline.landing.show-cls-cluster").track({ click: true })}
             >${i18nString13(UIStrings14.numShifts, { shiftCount: clusterIds.size })}</button>
           </div>
-        ` : nothing10}
+        ` : nothing11}
       </devtools-metric-card>
     `;
   }
@@ -4949,7 +5016,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               jslog=${VisualLogging6.action("timeline.landing.show-inp-interaction").track({ click: true })}
             >${interaction.interactionType}</button>
           </div>
-        ` : nothing10}
+        ` : nothing11}
       </devtools-metric-card>
     `;
   }
@@ -4968,7 +5035,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     }}>
           ${action6.title()}
         </devtools-button>
-        <span class="shortcut-label">${UI9.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
+        <span class="shortcut-label">${UI10.ShortcutRegistry.ShortcutRegistry.instance().shortcutTitleForAction(action6.id())}</span>
       </div>
     `;
   }
@@ -5018,9 +5085,9 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
           <li>${i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.device, { PH1: deviceRecEl })}</li>
           <li>${i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.network, { PH1: networkRecEl })}</li>
         </ul>
-      ` : nothing10}
+      ` : nothing11}
       <div class="environment-option">
-        <devtools-cpu-throttling-selector .recommendedOption=${recs.cpuOption}></devtools-cpu-throttling-selector>
+        <devtools-widget .widgetConfig=${UI10.Widget.widgetConfig(CPUThrottlingSelector, { recommendedOption: recs.cpuOption })}></devtools-widget>
       </div>
       <div class="environment-option">
         <devtools-network-throttling-selector .recommendedConditions=${recs.networkConditions}></devtools-network-throttling-selector>
@@ -5050,7 +5117,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     } else {
       this.#cruxManager.fieldPageScope = "origin";
     }
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   #renderPageScopeSetting() {
     if (!this.#cruxManager.getConfigSetting().get().enabled) {
@@ -5121,7 +5188,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
   }
   #onDeviceOptionMenuItemSelected(event) {
     this.#cruxManager.fieldDeviceOption = event.itemValue;
-    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   #renderDeviceScopeSetting() {
     if (!this.#cruxManager.getConfigSetting().get().enabled) {
@@ -5205,7 +5272,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     if (this.#cruxManager.getConfigSetting().get().enabled) {
       return this.#renderCollectionPeriod();
     }
-    const linkEl = UI9.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n27.i18n.lockedString("Chrome UX Report"));
+    const linkEl = UI10.XLink.XLink.create("https://developer.chrome.com/docs/crux", i18n27.i18n.lockedString("Chrome UX Report"));
     const messageEl = i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.seeHowYourLocalMetricsCompare, { PH1: linkEl });
     return html12`
       <div class="field-data-message">${messageEl}</div>
@@ -5215,7 +5282,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     return html12`
       <section class="logs-section" aria-label=${i18nString13(UIStrings14.eventLogs)}>
         <devtools-live-metrics-logs
-          on-render=${ComponentHelpers9.Directives.nodeRenderedCallback((node) => {
+          on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
       this.#logsEl = node;
     })}
         >
@@ -5239,7 +5306,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
         block: "center"
       });
       interactionEl.focus();
-      UI9.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
+      UI10.UIUtils.runCSSAnimationOnce(interactionEl, "highlight");
     });
   }
   async #logExtraInteractionDetails(interaction) {
@@ -5255,7 +5322,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     return html12`
       <ol class="log"
         slot="interactions-log-content"
-        on-render=${ComponentHelpers9.Directives.nodeRenderedCallback((node) => {
+        on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
       this.#interactionsListEl = node;
     })}
       >
@@ -5268,14 +5335,14 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
               <details>
                 <summary>
                   <span class="interaction-type">
-                    ${interaction.interactionType} ${isInp ? html12`<span class="interaction-inp-chip" title=${i18nString13(UIStrings14.inpInteraction)}>INP</span>` : nothing10}
+                    ${interaction.interactionType} ${isInp ? html12`<span class="interaction-inp-chip" title=${i18nString13(UIStrings14.inpInteraction)}>INP</span>` : nothing11}
                   </span>
                   <span class="interaction-node">${interaction.nodeRef?.link}</span>
                   ${isP98Excluded ? html12`<devtools-icon
                     class="interaction-info"
                     name="info"
                     title=${i18nString13(UIStrings14.interactionExcluded)}
-                  ></devtools-icon>` : nothing10}
+                  ></devtools-icon>` : nothing11}
                   <span class="interaction-duration">${metricValue}</span>
                 </summary>
                 <div class="phase-table" role="table">
@@ -5335,7 +5402,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
       });
       layoutShiftEls[0].focus();
       for (const layoutShiftEl of layoutShiftEls) {
-        UI9.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
+        UI10.UIUtils.runCSSAnimationOnce(layoutShiftEl, "highlight");
       }
     });
   }
@@ -5346,7 +5413,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     return html12`
       <ol class="log"
         slot="layout-shifts-log-content"
-        on-render=${ComponentHelpers9.Directives.nodeRenderedCallback((node) => {
+        on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
       this.#layoutShiftsListEl = node;
     })}
       >
@@ -5403,7 +5470,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
           <main class="live-metrics">
             <h2 class="section-title">${liveMetricsTitle}</h2>
             <div class="metric-cards"
-              on-render=${ComponentHelpers9.Directives.nodeRenderedCallback((node) => {
+              on-render=${ComponentHelpers8.Directives.nodeRenderedCallback((node) => {
       this.#tooltipContainerEl = node;
     })}
             >
@@ -5451,7 +5518,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     Lit12.render(output, this.#shadow, { host: this });
   };
 };
-var LiveMetricsLogs = class extends UI9.Widget.WidgetElement {
+var LiveMetricsLogs = class extends UI10.Widget.WidgetElement {
   #tabbedPane;
   constructor() {
     super();
@@ -5478,18 +5545,18 @@ var LiveMetricsLogs = class extends UI9.Widget.WidgetElement {
     }
   }
   createWidget() {
-    const containerWidget = new UI9.Widget.Widget(this, { useShadowDom: true });
+    const containerWidget = new UI10.Widget.Widget(this, { useShadowDom: true });
     containerWidget.contentElement.style.display = "contents";
-    this.#tabbedPane = new UI9.TabbedPane.TabbedPane();
+    this.#tabbedPane = new UI10.TabbedPane.TabbedPane();
     const interactionsSlot = document.createElement("slot");
     interactionsSlot.name = "interactions-log-content";
-    const interactionsTab = UI9.Widget.Widget.getOrCreateWidget(interactionsSlot);
+    const interactionsTab = UI10.Widget.Widget.getOrCreateWidget(interactionsSlot);
     this.#tabbedPane.appendTab("interactions", i18nString13(UIStrings14.interactions), interactionsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.interactions-log");
     const layoutShiftsSlot = document.createElement("slot");
     layoutShiftsSlot.name = "layout-shifts-log-content";
-    const layoutShiftsTab = UI9.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
+    const layoutShiftsTab = UI10.Widget.Widget.getOrCreateWidget(layoutShiftsSlot);
     this.#tabbedPane.appendTab("layout-shifts", i18nString13(UIStrings14.layoutShifts), layoutShiftsTab, void 0, void 0, void 0, void 0, void 0, "timeline.landing.layout-shifts-log");
-    const clearButton = new UI9.Toolbar.ToolbarButton(i18nString13(UIStrings14.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
+    const clearButton = new UI10.Toolbar.ToolbarButton(i18nString13(UIStrings14.clearCurrentLog), "clear", void 0, "timeline.landing.clear-log");
     clearButton.addEventListener("Click", this.#clearCurrentLog, this);
     this.#tabbedPane.rightToolbar().appendToolbarItem(clearButton);
     this.#tabbedPane.show(containerWidget.contentElement);
@@ -5502,7 +5569,7 @@ customElements.define("devtools-live-metrics-logs", LiveMetricsLogs);
 // gen/front_end/panels/timeline/components/NetworkRequestDetails.js
 var NetworkRequestDetails_exports = {};
 __export(NetworkRequestDetails_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   NetworkRequestDetails: () => NetworkRequestDetails
 });
 import "./../../../ui/components/request_link_icon/request_link_icon.js";
@@ -5511,7 +5578,7 @@ import * as SDK7 from "./../../../core/sdk/sdk.js";
 import * as Helpers6 from "./../../../models/trace/helpers/helpers.js";
 import * as Trace7 from "./../../../models/trace/trace.js";
 import * as LegacyComponents2 from "./../../../ui/legacy/components/utils/utils.js";
-import * as UI10 from "./../../../ui/legacy/legacy.js";
+import * as UI11 from "./../../../ui/legacy/legacy.js";
 import * as Lit14 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/networkRequestDetails.css.js
@@ -5791,6 +5858,7 @@ import * as Trace6 from "./../../../models/trace/trace.js";
 import * as PerfUI from "./../../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
 import * as TimelineUtils from "./../utils/utils.js";
+var _a2;
 var { html: html13 } = Lit13;
 var MAX_URL_LENGTH2 = 60;
 var UIStrings15 = {
@@ -5829,7 +5897,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/components/NetworkRequestTooltip.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
+var NetworkRequestTooltip = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #data = { networkRequest: null, entityMapper: null };
   connectedCallback() {
@@ -5921,7 +5989,7 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
     const url = new URL(this.#data.networkRequest.args.data.url);
     const entity = this.#data.entityMapper ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
     const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
-    const redirectsHtml = _NetworkRequestTooltip.renderRedirects(this.#data.networkRequest);
+    const redirectsHtml = _a2.renderRedirects(this.#data.networkRequest);
     const output = html13`
       <style>${networkRequestTooltip_css_default}</style>
       <div class="performance-card">
@@ -5933,11 +6001,11 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
           <span class="network-category-chip" style=${Lit13.Directives.styleMap(chipStyle)}>
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
-        <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
+        <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_a2.renderPriorityValue(this.#data.networkRequest)}</div>
         ${Trace6.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ? html13`<div class="render-blocking"> ${i18nString14(UIStrings15.renderBlocking)} </div>` : Lit13.nothing}
         <div class="divider"></div>
 
-        ${_NetworkRequestTooltip.renderTimings(this.#data.networkRequest)}
+        ${_a2.renderTimings(this.#data.networkRequest)}
 
         ${redirectsHtml ? html13`
           <div class="divider"></div>
@@ -5948,6 +6016,7 @@ var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
     Lit13.render(output, this.#shadow, { host: this });
   }
 };
+_a2 = NetworkRequestTooltip;
 customElements.define("devtools-performance-network-request-tooltip", NetworkRequestTooltip);
 
 // gen/front_end/panels/timeline/components/NetworkRequestDetails.js
@@ -6045,7 +6114,7 @@ var UIStrings16 = {
 };
 var str_16 = i18n31.i18n.registerUIStrings("panels/timeline/components/NetworkRequestDetails.ts", UIStrings16);
 var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
-var NetworkRequestDetails = class extends UI10.Widget.Widget {
+var NetworkRequestDetails = class extends UI11.Widget.Widget {
   #view;
   #request = null;
   #requestPreviewElements = /* @__PURE__ */ new WeakMap();
@@ -6054,7 +6123,7 @@ var NetworkRequestDetails = class extends UI10.Widget.Widget {
   #linkifier = null;
   #serverTimings = null;
   #parsedTrace = null;
-  constructor(element, view = DEFAULT_VIEW2) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element);
     this.#view = view;
     this.requestUpdate();
@@ -6099,9 +6168,9 @@ var NetworkRequestDetails = class extends UI10.Widget.Widget {
     }, {}, this.contentElement);
   }
 };
-var DEFAULT_VIEW2 = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   if (!input.request) {
-    render13(html14``, target);
+    render13(Lit14.nothing, target);
     return;
   }
   const { request } = input;
@@ -6168,7 +6237,7 @@ function renderURL(request) {
   const networkRequest = SDK7.TraceObject.RevealableNetworkRequest.create(request);
   if (networkRequest) {
     linkifiedURL.addEventListener("contextmenu", (event) => {
-      const contextMenu = new UI10.ContextMenu.ContextMenu(event);
+      const contextMenu = new UI11.ContextMenu.ContextMenu(event);
       contextMenu.appendApplicableItems(networkRequest);
       void contextMenu.show();
     });
@@ -6326,11 +6395,11 @@ function renderInitiatedBy(request, parsedTrace, target, linkifier) {
 // gen/front_end/panels/timeline/components/RelatedInsightChips.js
 var RelatedInsightChips_exports = {};
 __export(RelatedInsightChips_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW3,
+  DEFAULT_VIEW: () => DEFAULT_VIEW4,
   RelatedInsightChips: () => RelatedInsightChips
 });
 import * as i18n33 from "./../../../core/i18n/i18n.js";
-import * as UI11 from "./../../../ui/legacy/legacy.js";
+import * as UI12 from "./../../../ui/legacy/legacy.js";
 import * as Lit15 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/relatedInsightChips.css.js
@@ -6430,11 +6499,11 @@ var UIStrings17 = {
 };
 var str_17 = i18n33.i18n.registerUIStrings("panels/timeline/components/RelatedInsightChips.ts", UIStrings17);
 var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
-var RelatedInsightChips = class extends UI11.Widget.Widget {
+var RelatedInsightChips = class extends UI12.Widget.Widget {
   #view;
   #activeEvent = null;
   #eventToInsightsMap = /* @__PURE__ */ new Map();
-  constructor(element, view = DEFAULT_VIEW3) {
+  constructor(element, view = DEFAULT_VIEW4) {
     super(element);
     this.#view = view;
   }
@@ -6460,11 +6529,11 @@ var RelatedInsightChips = class extends UI11.Widget.Widget {
     this.#view(input, {}, this.contentElement);
   }
 };
-var DEFAULT_VIEW3 = (input, _output, target) => {
+var DEFAULT_VIEW4 = (input, _output, target) => {
   const { activeEvent, eventToInsightsMap } = input;
   const relatedInsights = activeEvent ? eventToInsightsMap.get(activeEvent) ?? [] : [];
   if (!activeEvent || eventToInsightsMap.size === 0 || relatedInsights.length === 0) {
-    render14(html15``, target);
+    render14(Lit15.nothing, target);
     return;
   }
   const insightMessages = relatedInsights.flatMap((insight) => {
@@ -6512,7 +6581,7 @@ __export(Sidebar_exports, {
   SidebarWidget: () => SidebarWidget
 });
 import * as RenderCoordinator3 from "./../../../ui/components/render_coordinator/render_coordinator.js";
-import * as UI13 from "./../../../ui/legacy/legacy.js";
+import * as UI14 from "./../../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/timeline/components/insights/SidebarInsight.js
 var InsightActivated = class _InsightActivated extends Event {
@@ -6535,7 +6604,7 @@ var InsightDeactivated = class _InsightDeactivated extends Event {
 // gen/front_end/panels/timeline/components/SidebarAnnotationsTab.js
 var SidebarAnnotationsTab_exports = {};
 __export(SidebarAnnotationsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW4,
+  DEFAULT_VIEW: () => DEFAULT_VIEW5,
   SidebarAnnotationsTab: () => SidebarAnnotationsTab
 });
 import * as Common6 from "./../../../core/common/common.js";
@@ -6543,7 +6612,7 @@ import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform8 from "./../../../core/platform/platform.js";
 import * as Trace8 from "./../../../models/trace/trace.js";
 import * as TraceBounds3 from "./../../../services/trace_bounds/trace_bounds.js";
-import * as UI12 from "./../../../ui/legacy/legacy.js";
+import * as UI13 from "./../../../ui/legacy/legacy.js";
 import * as ThemeSupport3 from "./../../../ui/legacy/theme_support/theme_support.js";
 import * as Lit16 from "./../../../ui/lit/lit.js";
 import * as VisualLogging7 from "./../../../ui/visual_logging/visual_logging.js";
@@ -6728,14 +6797,14 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/timeline/components/SidebarAnnotationsTab.ts", UIStrings18);
 var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var SidebarAnnotationsTab = class extends UI12.Widget.Widget {
+var SidebarAnnotationsTab = class extends UI13.Widget.Widget {
   #annotations = [];
   // A map with annotated entries and the colours that are used to display them in the FlameChart.
   // We need this map to display the entries in the sidebar with the same colours.
   #annotationEntryToColorMap = /* @__PURE__ */ new Map();
   #annotationsHiddenSetting;
   #view;
-  constructor(view = DEFAULT_VIEW4) {
+  constructor(view = DEFAULT_VIEW5) {
     super();
     this.#view = view;
     this.#annotationsHiddenSetting = Common6.Settings.Settings.instance().moduleSetting("annotations-hidden");
@@ -6960,7 +7029,7 @@ function renderTutorial() {
       </div>
     </div>`;
 }
-var DEFAULT_VIEW4 = (input, _output, target) => {
+var DEFAULT_VIEW5 = (input, _output, target) => {
   render15(html16`
       <style>${sidebarAnnotationsTab_css_default}</style>
       <span class="annotations">
@@ -7015,7 +7084,7 @@ import * as AIAssistance from "./../../../models/ai_assistance/ai_assistance.js"
 import * as CrUXManager11 from "./../../../models/crux-manager/crux-manager.js";
 import * as Trace9 from "./../../../models/trace/trace.js";
 import * as Buttons7 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers9 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit17 from "./../../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 import * as Insights4 from "./insights/insights.js";
@@ -7145,6 +7214,7 @@ var sidebarSingleInsightSet_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./sidebarSingleInsightSet.css")} */`;
 
 // gen/front_end/panels/timeline/components/SidebarSingleInsightSet.js
+var _a3;
 var { html: html17 } = Lit17.StaticHtml;
 var UIStrings19 = {
   /**
@@ -7213,7 +7283,7 @@ var INSIGHT_NAME_TO_COMPONENT = {
   ThirdParties: Insights4.ThirdParties.ThirdParties,
   Viewport: Insights4.Viewport.Viewport
 };
-var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement {
+var SidebarSingleInsightSet = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #activeInsightElement = null;
   #data = {
@@ -7226,7 +7296,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   #activeHighlightTimeout = -1;
   set data(data) {
     this.#data = data;
-    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers9.ScheduledRender.scheduleRender(this, this.#render);
   }
   connectedCallback() {
     this.#render();
@@ -7450,7 +7520,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
       return Lit17.nothing;
     }
     const fieldMetrics = this.#getFieldMetrics(insightSetKey);
-    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _SidebarSingleInsightSet.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
+    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _a3.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
     const renderInsightComponent = (insightData) => {
       const { componentClass, model } = insightData;
       if (!this.#data.parsedTrace?.insights) {
@@ -7490,7 +7560,7 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
   #render() {
     const { parsedTrace, insightSetKey } = this.#data;
     if (!parsedTrace?.insights || !insightSetKey) {
-      Lit17.render(html17``, this.#shadow, { host: this });
+      Lit17.render(Lit17.nothing, this.#shadow, { host: this });
       return;
     }
     Lit17.render(html17`
@@ -7502,12 +7572,13 @@ var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement
       `, this.#shadow, { host: this });
   }
 };
+_a3 = SidebarSingleInsightSet;
 customElements.define("devtools-performance-sidebar-single-navigation", SidebarSingleInsightSet);
 
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js
 import * as Trace10 from "./../../../models/trace/trace.js";
 import * as Buttons8 from "./../../../ui/components/buttons/buttons.js";
-import * as ComponentHelpers11 from "./../../../ui/components/helpers/helpers.js";
+import * as ComponentHelpers10 from "./../../../ui/components/helpers/helpers.js";
 import * as Lit18 from "./../../../ui/lit/lit.js";
 import * as Utils from "./../utils/utils.js";
 import * as Insights6 from "./insights/insights.js";
@@ -7611,7 +7682,7 @@ var SidebarInsightsTab = class extends HTMLElement {
     if (this.#parsedTrace?.insights) {
       this.#selectedInsightSetKey = [...this.#parsedTrace.insights.keys()].at(0) ?? null;
     }
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   get activeInsight() {
     return this.#activeInsight;
@@ -7624,14 +7695,14 @@ var SidebarInsightsTab = class extends HTMLElement {
     if (this.#activeInsight) {
       this.#selectedInsightSetKey = this.#activeInsight.insightSetKey;
     }
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetToggled(id) {
     this.#selectedInsightSetKey = this.#selectedInsightSetKey === id ? null : id;
     if (this.#selectedInsightSetKey !== this.#activeInsight?.insightSetKey) {
       this.dispatchEvent(new Insights6.SidebarInsight.InsightDeactivated());
     }
-    void ComponentHelpers11.ScheduledRender.scheduleRender(this, this.#render);
+    void ComponentHelpers10.ScheduledRender.scheduleRender(this, this.#render);
   }
   #insightSetHovered(id) {
     const data = this.#parsedTrace?.insights?.get(id);
@@ -7774,8 +7845,8 @@ var AnnotationHoverOut = class _AnnotationHoverOut extends Event {
 var DEFAULT_SIDEBAR_TAB = "insights";
 var DEFAULT_SIDEBAR_WIDTH_PX = 240;
 var MIN_SIDEBAR_WIDTH_PX = 170;
-var SidebarWidget = class extends UI13.Widget.VBox {
-  #tabbedPane = new UI13.TabbedPane.TabbedPane();
+var SidebarWidget = class extends UI14.Widget.VBox {
+  #tabbedPane = new UI14.TabbedPane.TabbedPane();
   #insightsView = new InsightsView();
   #annotationsView = new AnnotationsView();
   /**
@@ -7841,7 +7912,7 @@ var SidebarWidget = class extends UI13.Widget.VBox {
     }
   }
 };
-var InsightsView = class extends UI13.Widget.VBox {
+var InsightsView = class extends UI14.Widget.VBox {
   #component = new SidebarInsightsTab();
   constructor() {
     super();
@@ -7863,7 +7934,7 @@ var InsightsView = class extends UI13.Widget.VBox {
     }
   }
 };
-var AnnotationsView = class extends UI13.Widget.VBox {
+var AnnotationsView = class extends UI14.Widget.VBox {
   #component = new SidebarAnnotationsTab();
   constructor() {
     super();
@@ -7890,7 +7961,7 @@ __export(TimelineSummary_exports, {
   CategorySummary: () => CategorySummary
 });
 import * as i18n39 from "./../../../core/i18n/i18n.js";
-import * as UI14 from "./../../../ui/legacy/legacy.js";
+import * as UI15 from "./../../../ui/legacy/legacy.js";
 import * as Lit19 from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/timeline/components/timelineSummary.css.js
@@ -7985,7 +8056,7 @@ var UIStrings20 = {
 var str_20 = i18n39.i18n.registerUIStrings("panels/timeline/components/TimelineSummary.ts", UIStrings20);
 var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
 var CategorySummary = class extends HTMLElement {
-  #shadow = UI14.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
+  #shadow = UI15.UIUtils.createShadowRootWithCoreStyles(this, { cssFile: timelineSummary_css_default, delegatesFocus: void 0 });
   #rangeStart = 0;
   #rangeEnd = 0;
   #total = 0;

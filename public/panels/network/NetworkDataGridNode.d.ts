@@ -107,6 +107,7 @@ export declare class NetworkRequestNode extends NetworkNode {
     static RequestCookiesCountComparator(a: NetworkNode, b: NetworkNode): number;
     static ResponseCookiesCountComparator(a: NetworkNode, b: NetworkNode): number;
     static PriorityComparator(a: NetworkNode, b: NetworkNode): number;
+    static IsAdRelatedComparator(a: NetworkNode, b: NetworkNode): number;
     static RequestPropertyComparator(propertyName: string, a: NetworkNode, b: NetworkNode): number;
     static RequestURLComparator(a: NetworkNode, b: NetworkNode): number;
     static HeaderStringComparator(getHeaderValue: (request: SDK.NetworkRequest.NetworkRequest, propertyName: string) => string | undefined, propertyName: string, a: NetworkNode, b: NetworkNode): number;
