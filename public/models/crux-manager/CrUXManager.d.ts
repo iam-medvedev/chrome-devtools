@@ -69,6 +69,7 @@ export interface ConfigSetting {
     overrideEnabled?: boolean;
     originMappings?: OriginMapping[];
 }
+/** TODO: Potentially support `TABLET`. Tablet field data will always be `null` until then. **/
 export declare const DEVICE_SCOPE_LIST: DeviceScope[];
 export declare class CrUXManager extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;

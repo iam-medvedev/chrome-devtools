@@ -4,6 +4,10 @@ declare global {
         'devtools-chrome-link': ChromeLink;
     }
 }
+/**
+ * Use this component to render links to 'chrome://...'-URLs
+ * (for which regular <x-link>s do not work).
+ **/
 export declare class ChromeLink extends HTMLElement {
     #private;
     connectedCallback(): void;

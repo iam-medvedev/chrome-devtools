@@ -57,6 +57,7 @@ let highlightManagerInstance;
 export class HighlightManager {
     #highlights = new Highlight();
     #currentHighlights = new Highlight();
+    #stateByNode = new WeakMap();
     constructor() {
         CSS.highlights.set(HIGHLIGHT_REGISTRY, this.#highlights);
         CSS.highlights.set(CURRENT_HIGHLIGHT_REGISTRY, this.#currentHighlights);
@@ -98,6 +99,32 @@ export class HighlightManager {
             this.addHighlights(ranges);
         }
         return ranges;
+    }
+    #getOrCreateState(node) {
+        let state = this.#stateByNode.get(node);
+        if (!state) {
+            state = {
+                activeRanges: [],
+                ranges: [],
+                currentRange: undefined,
+            };
+            this.#stateByNode.set(node, state);
+        }
+        return state;
+    }
+    apply(node) {
+        const state = this.#getOrCreateState(node);
+        this.removeHighlights(state.activeRanges);
+        state.activeRanges = this.highlightOrderedTextRanges(node, state.ranges);
+        if (state.currentRange) {
+            state.activeRanges.push(...this.highlightOrderedTextRanges(node, [state.currentRange], /* isCurrent=*/ true));
+        }
+    }
+    set(element, ranges, currentRange) {
+        const state = this.#getOrCreateState(element);
+        state.ranges = ranges;
+        state.currentRange = currentRange;
+        this.apply(element);
     }
 }
 //# sourceMappingURL=HighlightManager.js.map

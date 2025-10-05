@@ -9,20 +9,12 @@ interface ViewInput {
     renderInline?: boolean;
     portBindingEnabled?: boolean;
     schemeBindingEnabled?: boolean;
-    onEdit: (event: CustomEvent<{
-        node: HTMLElement;
-        columnId: string;
-        valueBeforeEditing: string;
-        newText: string;
-    }>) => void;
-    onCreate: (event: CustomEvent<CookieData>) => void;
+    onEdit: (data: CookieData, columnId: string, valueBeforeEditing: string, newText: string) => void;
+    onCreate: (data: CookieData) => void;
     onRefresh: () => void;
-    onDelete: (event: CustomEvent<HTMLElement>) => void;
-    onContextMenu: (event: CustomEvent<{
-        menu: UI.ContextMenu.ContextMenu;
-        element: HTMLElement;
-    }>) => void;
-    onSelect: (event: CustomEvent<HTMLElement | null>) => void;
+    onDelete: (data: CookieData) => void;
+    onContextMenu: (data: CookieData, menu: UI.ContextMenu.ContextMenu) => void;
+    onSelect: (key: string | undefined) => void;
 }
 type ViewFunction = (input: ViewInput, output: object, target: HTMLElement) => void;
 type AttributeWithIcon = SDK.Cookie.Attribute.NAME | SDK.Cookie.Attribute.VALUE | SDK.Cookie.Attribute.DOMAIN | SDK.Cookie.Attribute.PATH | SDK.Cookie.Attribute.SECURE | SDK.Cookie.Attribute.SAME_SITE;

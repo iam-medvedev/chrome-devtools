@@ -131,12 +131,9 @@ var CookiesTable = class extends UI.Widget.VBox {
                id="cookies-table"
                striped
                ?inline=${input.renderInline}
-               @edit=${input.onEdit}
                @create=${input.onCreate}
                @refresh=${input.onRefresh}
-               @delete=${input.onDelete}
-               @contextmenu=${input.onContextMenu}
-               @select=${input.onSelect}
+               @deselect=${() => input.onSelect(void 0)}
           >
             <table>
                <tr>
@@ -185,11 +182,15 @@ var CookiesTable = class extends UI.Widget.VBox {
                    SourcePort
                 </th>` : ""}
               </tr>
-              ${repeat(this.data, (cookie) => cookie.key, (cookie) => html`<tr data-key=${ifDefined(cookie.key)}
-                    ?selected=${cookie.key === input.selectedKey}
+              ${repeat(this.data, (cookie) => cookie.key, (cookie) => html`
+                <tr ?selected=${cookie.key === input.selectedKey}
                     ?inactive=${cookie.inactive}
                     ?dirty=${cookie.dirty}
-                    ?highlighted=${cookie.flagged}>
+                    ?highlighted=${cookie.flagged}
+                    @edit=${(e) => input.onEdit(cookie, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
+                    @delete=${() => input.onDelete(cookie)}
+                    @contextmenu=${(e) => input.onContextMenu(cookie, e.detail)}
+                    @select=${() => input.onSelect(cookie.key)}>
                   <td>${cookie.icons?.name}${cookie.name}</td>
                   <td>${cookie.value}</td>
                   <td>${cookie.icons?.domain}${cookie.domain}</td>
@@ -261,30 +262,29 @@ var CookiesTable = class extends UI.Widget.VBox {
       renderInline: this.renderInline,
       schemeBindingEnabled: this.schemeBindingEnabled,
       portBindingEnabled: this.portBindingEnabled,
-      onEdit: (event) => this.onUpdateCookie(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText),
-      onCreate: (event) => this.onCreateCookie(event.detail),
-      onRefresh: () => this.refresh(),
-      onDelete: (event) => this.onDeleteCookie(event.detail),
-      onSelect: (event) => this.onSelect(event.detail),
-      onContextMenu: (event) => this.populateContextMenu(event.detail.menu, event.detail.element)
+      onEdit: this.onUpdateCookie.bind(this),
+      onCreate: this.onCreateCookie.bind(this),
+      onRefresh: this.refresh.bind(this),
+      onDelete: this.onDeleteCookie.bind(this),
+      onSelect: this.onSelect.bind(this),
+      onContextMenu: this.populateContextMenu.bind(this)
     };
     const output = {};
     this.view(input, output, this.element);
   }
-  onSelect(node) {
-    this.selectedKey = node?.dataset?.key;
+  onSelect(key) {
+    this.selectedKey = key;
     this.selectedCallback?.();
   }
-  onDeleteCookie(node) {
-    const cookie = this.cookies.find((cookie2) => cookie2.key() === node.dataset.key);
+  onDeleteCookie(data) {
+    const cookie = this.cookies.find((cookie2) => cookie2.key() === data.key);
     if (cookie && this.deleteCallback) {
       this.deleteCallback(cookie, () => this.refresh());
     }
   }
-  onUpdateCookie(editingNode, columnIdentifier, _oldText, newText) {
-    const oldCookie = this.cookies.find((cookie) => cookie.key() === editingNode.dataset.key);
-    const oldData = this.data.find((data) => data.key === editingNode.dataset.key);
-    if (!oldData || !oldCookie) {
+  onUpdateCookie(oldData, columnIdentifier, _oldText, newText) {
+    const oldCookie = this.cookies.find((cookie) => cookie.key() === oldData.key);
+    if (!oldCookie) {
       return;
     }
     const newCookieData = { ...oldData, [columnIdentifier]: newText };
@@ -549,8 +549,8 @@ var CookiesTable = class extends UI.Widget.VBox {
       this.refreshCallback();
     }
   }
-  populateContextMenu(contextMenu, gridNode) {
-    const maybeCookie = this.cookies.find((cookie2) => cookie2.key() === gridNode.dataset.key);
+  populateContextMenu(data, contextMenu) {
+    const maybeCookie = this.cookies.find((cookie2) => cookie2.key() === data.key);
     if (!maybeCookie) {
       return;
     }

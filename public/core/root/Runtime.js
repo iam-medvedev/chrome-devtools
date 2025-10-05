@@ -239,7 +239,7 @@ export class Experiment {
         this.#experiments.setEnabled(this.name, enabled);
     }
 }
-// This must be constructed after the query parameters have been parsed.
+/** This must be constructed after the query parameters have been parsed. **/
 export const experiments = new ExperimentsSupport();
 export var GenAiEnterprisePolicyValue;
 (function (GenAiEnterprisePolicyValue) {

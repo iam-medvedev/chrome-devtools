@@ -7,9 +7,11 @@
  * @example markdown
  * Find more information about web development at [Learn more](exampleLink)
  */
-// This is only exported for tests, and it should not be
-// imported in any component, instead add link in map and
-// use getMarkdownLink to get the appropriate link.
+/**
+ * This is only exported for tests, and it should not be
+ * imported in any component, instead add link in map and
+ * use getMarkdownLink to get the appropriate link.
+ **/
 export const markdownLinks = new Map([
     ['issuesContrastWCAG21AA', 'https://www.w3.org/TR/WCAG21/#contrast-minimum'],
     ['issuesContrastWCAG21AAA', 'https://www.w3.org/TR/WCAG21/#contrast-enhanced'],

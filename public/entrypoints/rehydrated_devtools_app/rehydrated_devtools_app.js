@@ -1143,7 +1143,7 @@ Common2.Settings.registerSettingExtension({
 UI2.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule2();
-    return InspectorMain.InspectorMain.NodeIndicator.instance();
+    return InspectorMain.InspectorMain.NodeIndicatorProvider.instance();
   },
   order: 2,
   location: "main-toolbar-left"

@@ -37,6 +37,7 @@ export declare class PauseListener {
     #private;
     constructor();
 }
+/** Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the **/
 export declare function sendOverProtocol(method: ProtocolClient.InspectorBackend.QualifiedName, params: Object | null): Promise<unknown[] | null>;
 export declare class ReloadActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(_context: UI.Context.Context, actionId: string): boolean;
@@ -61,6 +62,11 @@ type ExternalRequestInput = {
         prompt: string;
     };
 };
+/**
+ * For backwards-compatibility we iterate over the generator and drop the
+ * intermediate results. The final response is transformed to its legacy type.
+ * Instead of sending responses of type error, errors are throws.
+ **/
 export declare function handleExternalRequest(input: ExternalRequestInput): Promise<{
     response: string;
     devToolsLogs: object[];

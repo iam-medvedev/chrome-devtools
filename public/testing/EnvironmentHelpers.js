@@ -372,7 +372,7 @@ export function setupActionRegistry() {
         }
     });
 }
-// This needs to be invoked within a describe block, rather than within an it() block.
+/** This needs to be invoked within a describe block, rather than within an it() block. **/
 export function expectConsoleLogs(expectedLogs) {
     const { error, warn, log } = console;
     before(() => {

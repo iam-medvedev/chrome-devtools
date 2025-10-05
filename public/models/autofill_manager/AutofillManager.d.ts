@@ -10,6 +10,10 @@ export declare class AutofillManager extends Common.ObjectWrapper.ObjectWrapper<
     highlightFilledField(filledField: Protocol.Autofill.FilledField): void;
     clearHighlightedFilledFields(): void;
 }
+/**
+ * A Match describes how the value of a filled field corresponds to a substring
+ * of address from startIndex to endIndex.
+ **/
 export interface Match {
     startIndex: number;
     endIndex: number;

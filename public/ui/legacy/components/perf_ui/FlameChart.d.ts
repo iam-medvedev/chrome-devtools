@@ -5,7 +5,9 @@ import * as Trace from '../../../../models/trace/trace.js';
 import * as UI from '../../legacy.js';
 import { type ChartViewportDelegate } from './ChartViewport.js';
 export declare const ARROW_SIDE = 8;
+/** The width of each of the edit mode icons. **/
 export declare const EDIT_ICON_WIDTH = 16;
+/** export for test. **/
 export declare const enum HoverType {
     TRACK_CONFIG_UP_BUTTON = "TRACK_CONFIG_UP_BUTTON",
     TRACK_CONFIG_DOWN_BUTTON = "TRACK_CONFIG_DOWN_BUTTON",
@@ -69,6 +71,7 @@ export interface UserFilterAction {
     type: FilterAction;
     entry: Trace.Types.Events.Event;
 }
+/** Object used to indicate to the Context Menu if an action is possible on the selected entry. **/
 export interface PossibleFilterActions {
     [FilterAction.MERGE_FUNCTION]: boolean;
     [FilterAction.COLLAPSE_FUNCTION]: boolean;

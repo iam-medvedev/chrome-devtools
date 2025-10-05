@@ -781,7 +781,12 @@ var MainImpl = class {
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
     this.#registerMessageSinkListener();
     if (Host.GdpClient.isGdpProfilesAvailable()) {
-      void Host.GdpClient.GdpClient.instance().initialize().then(({ hasProfile, isEligible }) => {
+      void Host.GdpClient.GdpClient.instance().getProfile().then((getProfileResponse) => {
+        if (!getProfileResponse) {
+          return;
+        }
+        const { profile, isEligible } = getProfileResponse;
+        const hasProfile = Boolean(profile);
         const contextString = hasProfile ? "has-profile" : isEligible ? "no-profile-and-eligible" : "no-profile-and-not-eligible";
         void VisualLogging2.logFunctionCall("gdp-client-initialize", contextString);
       });

@@ -56,6 +56,7 @@ export declare function highlightSearchResult(element: Element, offset: number, 
 export declare function highlightSearchResults(element: Element, resultRanges: TextUtils.TextRange.SourceRange[], changes?: HighlightChange[]): Element[];
 export declare function runCSSAnimationOnce(element: Element, className: string): void;
 export declare function highlightRangesWithStyleClass(element: Element, resultRanges: TextUtils.TextRange.SourceRange[], styleClass: string, changes?: HighlightChange[]): Element[];
+/** Used in chromium/src/third_party/blink/web_tests/http/tests/devtools/components/utilities-highlight-results.js **/
 export declare function applyDomChanges(domChanges: HighlightChange[]): void;
 export declare function revertDomChanges(domChanges: HighlightChange[]): void;
 export declare function measurePreferredSize(element: Element, containerElement?: Element | null): Geometry.Size;
@@ -329,10 +330,12 @@ export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
     constructor();
     static cloneNode(node: Node): Node;
     private static patchLitTemplate;
+    get templateRoot(): DocumentFragment | HTMLElement;
     set template(template: Lit.LitTemplate);
     protected onChange(_mutationList: MutationRecord[]): void;
     protected updateNode(_node: Node, _attributeName: string | null): void;
     protected addNodes(_nodes: NodeList | Node[], _nextSibling?: Node | null): void;
     protected removeNodes(_nodes: NodeList): void;
+    static findCorrespondingElement(sourceElement: HTMLElement, sourceRootElement: HTMLElement, targetRootElement: Element): Element | null;
 }
 export {};

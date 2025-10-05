@@ -142,7 +142,7 @@ export function addEventToEntityMapping(event, entityMappings) {
     }
     entityMappings.entityByEvent.set(event, entity);
 }
-// A slight upgrade of addEventToEntityMapping to handle the sub-events of a network request.
+/** A slight upgrade of addEventToEntityMapping to handle the sub-events of a network request. **/
 export function addNetworkRequestToEntityMapping(networkRequest, entityMappings, requestTraceEvents) {
     const entity = getEntityForEvent(networkRequest, entityMappings);
     if (!entity) {

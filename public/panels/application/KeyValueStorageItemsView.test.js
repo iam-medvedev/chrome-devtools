@@ -50,22 +50,19 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
     afterEach(() => {
         keyValueStorageItemsView.detach();
     });
-    function createSelectEvent(key, value) {
-        return new CustomEvent('select', { detail: { dataset: { key, value } } });
-    }
     it('updates preview when key selected', async () => {
         const { key, value } = MOCK_ITEMS[0];
         const createPreviewPromise = expectCreatePreviewCalled(key, value);
         // Select the first item by key.
-        viewFunction.input.onSelect(createSelectEvent(key, value));
+        viewFunction.input.onSelect({ key, value });
         // Check createPreview function was called.
         await createPreviewPromise;
         assert.include(viewFunction.input.preview.element.innerText, `${key}:${value}`);
     });
     it('shows empty preview when no row is selected', async () => {
-        viewFunction.input.onSelect(createSelectEvent(MOCK_ITEMS[0].key));
+        viewFunction.input.onSelect(MOCK_ITEMS[0]);
         await raf();
-        viewFunction.input.onSelect(new CustomEvent('select', { detail: null }));
+        viewFunction.input.onSelect(null);
         // Check preview was updated.
         assert.include(viewFunction.input.preview.element.innerText, 'No value selectedSelect a value to preview');
     });
@@ -73,7 +70,7 @@ describeWithEnvironment('KeyValueStorageItemsView', () => {
         const { key, value } = MOCK_ITEMS[0];
         let createPreviewPromise = expectCreatePreviewCalled(key, value);
         // Select the first item.
-        viewFunction.input.onSelect(createSelectEvent(key, value));
+        viewFunction.input.onSelect({ key, value });
         // Check createPreview function was called.
         await createPreviewPromise;
         // Update the item data (in reality, this would happen since a user edit

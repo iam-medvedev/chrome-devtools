@@ -27,7 +27,6 @@ export declare class ResourceType {
     isFont(): boolean;
     isImage(): boolean;
     isFromSourceMap(): boolean;
-    isWebbundle(): boolean;
     toString(): string;
     canonicalMimeType(): string;
 }
@@ -80,7 +79,6 @@ export declare const resourceTypes: {
     readonly Preflight: ResourceType;
     readonly SourceMapScript: ResourceType;
     readonly SourceMapStyleSheet: ResourceType;
-    readonly WebBundle: ResourceType;
     readonly FedCM: ResourceType;
 };
 export declare const resourceTypeByExtension: Map<string, ResourceType>;

@@ -1081,16 +1081,16 @@ var IGNORE_THRESHOLD_IN_BYTES = 1400;
 function isDocumentLatencyInsight(x) {
   return x.insightKey === "DocumentLatency";
 }
-function getServerResponseTime(request, context) {
-  const lanternRequest = context.navigation && context.lantern?.requests.find((r) => r.rawRequest === request);
-  if (lanternRequest?.serverResponseTime !== void 0) {
-    return lanternRequest.serverResponseTime;
+function getServerResponseTime(request) {
+  const isLightrider = globalThis.isLightrider;
+  if (isLightrider) {
+    return request.args.data.lrServerResponseTime ?? null;
   }
   const timing = request.args.data.timing;
   if (!timing) {
     return null;
   }
-  const ms = Helpers4.Timing.microToMilli(request.args.data.syntheticData.waiting);
+  const ms = Helpers4.Timing.microToMilli(request.args.data.syntheticData.serverResponseTime);
   return Math.round(ms);
 }
 function getCompressionSavings(request) {
@@ -1160,7 +1160,7 @@ function generateInsight3(data, context) {
   if (!documentRequest) {
     return finalize3({ warnings: [InsightWarning.NO_DOCUMENT_REQUEST] });
   }
-  const serverResponseTime = getServerResponseTime(documentRequest, context);
+  const serverResponseTime = getServerResponseTime(documentRequest);
   if (serverResponseTime === null) {
     throw new Error("missing document request timing");
   }
@@ -2006,6 +2006,7 @@ __export(INPBreakdown_exports, {
   isINPBreakdownInsight: () => isINPBreakdownInsight
 });
 import * as i18n17 from "./../../../core/i18n/i18n.js";
+import * as Handlers3 from "./../handlers/handlers.js";
 import * as Helpers10 from "./../helpers/helpers.js";
 var UIStrings9 = {
   /**
@@ -2048,13 +2049,22 @@ function isINPBreakdownInsight(insight) {
   return insight.insightKey === "INPBreakdown";
 }
 function finalize9(partialModel) {
+  let state = "pass";
+  if (partialModel.longestInteractionEvent) {
+    const classification = Handlers3.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(partialModel.longestInteractionEvent.dur);
+    if (classification === "good") {
+      state = "informative";
+    } else {
+      state = "fail";
+    }
+  }
   return {
     insightKey: "INPBreakdown",
     strings: UIStrings9,
     title: i18nString9(UIStrings9.title),
     description: i18nString9(UIStrings9.description),
     category: InsightCategory.INP,
-    state: partialModel.longestInteractionEvent ? "informative" : "pass",
+    state,
     ...partialModel
   };
 }
@@ -2121,7 +2131,7 @@ __export(LCPBreakdown_exports, {
   isLCPBreakdownInsight: () => isLCPBreakdownInsight
 });
 import * as i18n19 from "./../../../core/i18n/i18n.js";
-import * as Handlers3 from "./../handlers/handlers.js";
+import * as Handlers4 from "./../handlers/handlers.js";
 import * as Helpers11 from "./../helpers/helpers.js";
 import * as Types7 from "./../types/types.js";
 var UIStrings10 = {
@@ -2216,13 +2226,22 @@ function finalize10(partialModel) {
   if (partialModel.lcpRequest) {
     relatedEvents.push(partialModel.lcpRequest);
   }
+  let state = "pass";
+  if (partialModel.lcpMs !== void 0) {
+    const classification = Handlers4.ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(Helpers11.Timing.milliToMicro(partialModel.lcpMs));
+    if (classification === "good") {
+      state = "informative";
+    } else {
+      state = "fail";
+    }
+  }
   return {
     insightKey: "LCPBreakdown",
     strings: UIStrings10,
     title: i18nString10(UIStrings10.title),
     description: i18nString10(UIStrings10.description),
     category: InsightCategory.LCP,
-    state: partialModel.lcpEvent || partialModel.lcpRequest ? "informative" : "pass",
+    state,
     ...partialModel,
     relatedEvents
   };
@@ -2290,7 +2309,7 @@ __export(LCPDiscovery_exports, {
   isLCPDiscoveryInsight: () => isLCPDiscoveryInsight
 });
 import * as i18n21 from "./../../../core/i18n/i18n.js";
-import * as Handlers4 from "./../handlers/handlers.js";
+import * as Handlers5 from "./../handlers/handlers.js";
 import * as Helpers12 from "./../helpers/helpers.js";
 import * as Types8 from "./../types/types.js";
 var UIStrings11 = {
@@ -2562,7 +2581,7 @@ __export(ModernHTTP_exports, {
 });
 import * as i18n25 from "./../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../core/platform/platform.js";
-import * as Handlers5 from "./../handlers/handlers.js";
+import * as Handlers6 from "./../handlers/handlers.js";
 import * as Helpers15 from "./../helpers/helpers.js";
 var UIStrings13 = {
   /**
@@ -2700,7 +2719,7 @@ function generateInsight13(data, context) {
   const contextRequests = data.NetworkRequests.byTime.filter(isWithinContext);
   const entityMappings = data.NetworkRequests.entityMappings;
   const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
-  const firstPartyEntity = Handlers5.Helpers.getEntityForUrl(firstPartyUrl, entityMappings);
+  const firstPartyEntity = Handlers6.Helpers.getEntityForUrl(firstPartyUrl, entityMappings);
   const http1Requests = determineHttp1Requests(contextRequests, entityMappings, firstPartyEntity ?? null);
   return finalize13({
     http1Requests,
@@ -3222,7 +3241,7 @@ __export(RenderBlocking_exports, {
   isRenderBlockingInsight: () => isRenderBlockingInsight
 });
 import * as i18n29 from "./../../../core/i18n/i18n.js";
-import * as Handlers6 from "./../handlers/handlers.js";
+import * as Handlers7 from "./../handlers/handlers.js";
 import * as Helpers17 from "./../helpers/helpers.js";
 var UIStrings15 = {
   /**
@@ -3584,7 +3603,7 @@ __export(ThirdParties_exports, {
 import * as i18n33 from "./../../../core/i18n/i18n.js";
 import * as ThirdPartyWeb from "./../../../third_party/third-party-web/third-party-web.js";
 import * as Extras3 from "./../extras/extras.js";
-import * as Handlers7 from "./../handlers/handlers.js";
+import * as Handlers8 from "./../handlers/handlers.js";
 var UIStrings17 = {
   /** Title of an insight that provides details about the code on a web page that the user doesn't control (referred to as "third-party code"). */
   title: "3rd parties",
@@ -3632,7 +3651,7 @@ function isThirdPartyInsight(model) {
 function generateInsight17(data, context) {
   const entitySummaries = Extras3.ThirdParties.summarizeByThirdParty(data, context.bounds);
   const firstPartyUrl = context.navigation?.args.data?.documentLoaderURL ?? data.Meta.mainFrameURL;
-  const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || Handlers7.Helpers.makeUpEntity(data.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
+  const firstPartyEntity = ThirdPartyWeb.ThirdPartyWeb.getEntity(firstPartyUrl) || Handlers8.Helpers.makeUpEntity(data.Renderer.entityMappings.createdEntityCache, firstPartyUrl);
   return finalize17({
     relatedEvents: getRelatedEvents(entitySummaries, firstPartyEntity),
     firstPartyEntity,
@@ -3678,7 +3697,7 @@ __export(Viewport_exports, {
 });
 import * as i18n35 from "./../../../core/i18n/i18n.js";
 import * as Platform6 from "./../../../core/platform/platform.js";
-import * as Handlers8 from "./../handlers/handlers.js";
+import * as Handlers9 from "./../handlers/handlers.js";
 import * as Helpers20 from "./../helpers/helpers.js";
 import * as Types11 from "./../types/types.js";
 var UIStrings18 = {
@@ -3733,7 +3752,7 @@ function generateInsight18(data, context) {
   }
   for (const event of compositorEvents) {
     if (!event.args.is_mobile_optimized) {
-      const longPointerInteractions = [...data.UserInteractions.interactionsOverThreshold.values()].filter((interaction) => Handlers8.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === "POINTER" && interaction.inputDelay >= 5e4);
+      const longPointerInteractions = [...data.UserInteractions.interactionsOverThreshold.values()].filter((interaction) => Handlers9.ModelHandlers.UserInteractions.categoryOfInteraction(interaction) === "POINTER" && interaction.inputDelay >= 5e4);
       const inputDelay = Math.max(0, ...longPointerInteractions.map((interaction) => interaction.inputDelay)) / 1e3;
       const inpMetricSavings = Platform6.NumberUtilities.clamp(inputDelay, 0, 300);
       return finalize18({

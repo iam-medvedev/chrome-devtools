@@ -7,6 +7,8 @@ import * as Host from '../host/host.js';
 import { ParallelConnection } from './Connections.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
+import { SecurityOriginManager } from './SecurityOriginManager.js';
+import { StorageKeyManager } from './StorageKeyManager.js';
 import { Type } from './Target.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
@@ -185,6 +187,34 @@ export class ChildTargetManager extends SDKModel {
         // to resume even if there is another session waiting for the debugger.
         if (waitingForDebugger) {
             void target.runtimeAgent().invoke_runIfWaitingForDebugger();
+        }
+        // For top-level workers (those not attached to a frame), we need to
+        // initialize their storage context manually. The `Capability.STORAGE` is
+        // only granted in `Target.ts` to workers that are not parented by a frame,
+        // which makes this check safe. Frame-associated workers have their storage
+        // managed by ResourceTreeModel.
+        if (type !== Type.FRAME && target.hasAllCapabilities(8192 /* Capability.STORAGE */)) {
+            await this.initializeStorage(target);
+        }
+    }
+    async initializeStorage(target) {
+        const storageAgent = target.storageAgent();
+        const response = await storageAgent.invoke_getStorageKey({});
+        const storageKey = response.storageKey;
+        if (response.getError() || !storageKey) {
+            console.error(`Failed to get storage key for target ${target.id()}: ${response.getError()}`);
+            return;
+        }
+        const storageKeyManager = target.model(StorageKeyManager);
+        if (storageKeyManager) {
+            storageKeyManager.setMainStorageKey(storageKey);
+            storageKeyManager.updateStorageKeys(new Set([storageKey]));
+        }
+        const securityOriginManager = target.model(SecurityOriginManager);
+        if (securityOriginManager) {
+            const origin = new URL(storageKey).origin;
+            securityOriginManager.setMainSecurityOrigin(origin, '');
+            securityOriginManager.updateSecurityOrigins(new Set([origin]));
         }
     }
     detachedFromTarget({ sessionId }) {

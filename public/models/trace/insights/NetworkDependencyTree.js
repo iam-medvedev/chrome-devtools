@@ -337,7 +337,7 @@ export function handleLinkResponseHeader(linkHeaderValue) {
     }
     return preconnectedOrigins;
 }
-// Export the function for test purpose.
+/** Export the function for test purpose. **/
 export function generatePreconnectedOrigins(data, context, contextRequests, preconnectCandidates) {
     const preconnectedOrigins = [];
     for (const event of data.NetworkRequests.linkPreconnectEvents) {
@@ -436,7 +436,7 @@ function candidateRequestsByOrigin(data, mainResource, contextRequests, lcpGraph
     });
     return origins;
 }
-// Export the function for test purpose.
+/** Export the function for test purpose. **/
 export function generatePreconnectCandidates(data, context, contextRequests) {
     if (!context.lantern) {
         return [];

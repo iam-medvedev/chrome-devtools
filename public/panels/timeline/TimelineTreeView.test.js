@@ -9,6 +9,8 @@ import { TraceLoader } from '../../testing/TraceLoader.js';
 import * as RenderCoordinator from '../../ui/components/render_coordinator/render_coordinator.js';
 import * as Timeline from './timeline.js';
 class MockViewDelegate {
+    zoomEvent(_event) {
+    }
     select(_selection) {
     }
     set3PCheckboxDisabled(_disabled) {

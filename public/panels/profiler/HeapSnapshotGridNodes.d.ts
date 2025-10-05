@@ -156,6 +156,7 @@ export declare class HeapSnapshotInstanceNode extends HeapSnapshotGenericObjectN
     comparator(): HeapSnapshotModel.HeapSnapshotModel.ComparatorConfig;
 }
 export declare class HeapSnapshotConstructorNode extends HeapSnapshotGridNode {
+    #private;
     readonly nameInternal: string;
     readonly nodeFilter: HeapSnapshotModel.HeapSnapshotModel.NodeFilter;
     readonly distance: number;

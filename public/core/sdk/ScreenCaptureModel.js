@@ -3,24 +3,26 @@
 // found in the LICENSE file.
 import { OverlayModel } from './OverlayModel.js';
 import { SDKModel } from './SDKModel.js';
-// Manages concurrent screencast requests by queuing and prioritizing.
-//
-// When startScreencast is invoked:
-//   - If a screencast is currently active, the existing screencast's parameters and callbacks are
-//     saved in the #screencastOperations array.
-//   - The active screencast is then stopped.
-//   - A new screencast is initiated using the parameters and callbacks from the current startScreencast call.
-//
-// When stopScreencast is invoked:
-//   - The currently active screencast is stopped.
-//   - The #screencastOperations is checked for interrupted screencast operations.
-//   - If any operations are found, the latest one is started
-//     using its saved parameters and callbacks.
-//
-// This ensures that:
-//   - Only one screencast is active at a time.
-//   - Interrupted screencasts are resumed after the current screencast is stopped.
-// This ensures animation previews, which use screencasting, don't disrupt ongoing remote debugging sessions. Without this mechanism, stopping a preview screencast would terminate the debugging screencast, freezing the ScreencastView.
+/**
+ * Manages concurrent screencast requests by queuing and prioritizing.
+ *
+ * When startScreencast is invoked:
+ * - If a screencast is currently active, the existing screencast's parameters and callbacks are
+ * saved in the #screencastOperations array.
+ * - The active screencast is then stopped.
+ * - A new screencast is initiated using the parameters and callbacks from the current startScreencast call.
+ *
+ * When stopScreencast is invoked:
+ * - The currently active screencast is stopped.
+ * - The #screencastOperations is checked for interrupted screencast operations.
+ * - If any operations are found, the latest one is started
+ * using its saved parameters and callbacks.
+ *
+ * This ensures that:
+ * - Only one screencast is active at a time.
+ * - Interrupted screencasts are resumed after the current screencast is stopped.
+ * This ensures animation previews, which use screencasting, don't disrupt ongoing remote debugging sessions. Without this mechanism, stopping a preview screencast would terminate the debugging screencast, freezing the ScreencastView.
+ **/
 export class ScreenCaptureModel extends SDKModel {
     #agent;
     #nextScreencastOperationId = 1;

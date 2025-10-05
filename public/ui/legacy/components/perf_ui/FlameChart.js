@@ -92,7 +92,7 @@ const EXPANSION_ARROW_INDENT = HEADER_LEFT_PADDING + ARROW_SIDE / 2;
 const HEADER_LABEL_X_PADDING = 3;
 const HEADER_LABEL_Y_PADDING = 2;
 const PADDING_BETWEEN_TITLE_AND_SUBTITLE = 6;
-// The width of each of the edit mode icons.
+/** The width of each of the edit mode icons. **/
 export const EDIT_ICON_WIDTH = 16;
 // This gap might seem quite small - but the icons themselves have some
 // whitespace either side, so we don't need a huge gap.

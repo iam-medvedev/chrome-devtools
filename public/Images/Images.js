@@ -76,7 +76,6 @@ style.setProperty('--image-file-brush-filled', 'url(\"' + new URL(new URL('brush
 style.setProperty('--image-file-brush', 'url(\"' + new URL(new URL('brush.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-bucket', 'url(\"' + new URL(new URL('bucket.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-bug', 'url(\"' + new URL(new URL('bug.svg', import.meta.url).href).toString() + '\")');
-style.setProperty('--image-file-bundle', 'url(\"' + new URL(new URL('bundle.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-button-magic', 'url(\"' + new URL(new URL('button-magic.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-calendar-today', 'url(\"' + new URL(new URL('calendar-today.svg', import.meta.url).href).toString() + '\")');
 style.setProperty('--image-file-center-focus-weak', 'url(\"' + new URL(new URL('center-focus-weak.svg', import.meta.url).href).toString() + '\")');

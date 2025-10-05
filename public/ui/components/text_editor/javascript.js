@@ -230,8 +230,10 @@ const primitivePrototypes = new Map([
 ]);
 const maxCacheAge = 30_000;
 let cacheInstance = null;
-// Store recent collections of property completions. The empty string
-// is used to store the set of global bindings.
+/**
+ * Store recent collections of property completions. The empty string
+ * is used to store the set of global bindings.
+ **/
 class PropertyCache {
     #cache = new Map();
     constructor() {
@@ -623,8 +625,10 @@ async function prototypesFromObject(object) {
         return result;
     }, []) ?? [];
 }
-// Given a function object that is probably a bound function, try to
-// retrieve the argument list from its target function.
+/**
+ * Given a function object that is probably a bound function, try to
+ * retrieve the argument list from its target function.
+ **/
 async function getArgumentsForBoundFunction(object) {
     const { internalProperties } = await object.getOwnProperties(false);
     if (!internalProperties) {

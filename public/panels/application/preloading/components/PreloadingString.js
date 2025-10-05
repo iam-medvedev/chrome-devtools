@@ -377,7 +377,7 @@ export const PrefetchReasonDescription = {
     PrefetchNotEligibleRedirectToServiceWorker: { name: () => i18n.i18n.lockedString('Unknown') },
     PrefetchEvictedAfterBrowsingDataRemoved: { name: i18nLazyString(UIStrings.PrefetchEvictedAfterBrowsingDataRemoved) },
 };
-// Decoding PrefetchFinalStatus prefetchAttempt to failure description.
+/** Decoding PrefetchFinalStatus prefetchAttempt to failure description. **/
 export function prefetchFailureReason({ prefetchStatus }) {
     // If you face an error on rolling CDP changes, see
     // https://docs.google.com/document/d/1PnrfowsZMt62PX1EvvTp2Nqs3ji1zrklrAEe1JYbkTk
@@ -464,7 +464,7 @@ export function prefetchFailureReason({ prefetchStatus }) {
             return i18n.i18n.lockedString(`Unknown failure reason: ${prefetchStatus}`);
     }
 }
-// Detailed failure reason for PrerenderFinalStatus.
+/** Detailed failure reason for PrerenderFinalStatus. **/
 export function prerenderFailureReason(attempt) {
     // If you face an error on rolling CDP changes, see
     // https://docs.google.com/document/d/1PnrfowsZMt62PX1EvvTp2Nqs3ji1zrklrAEe1JYbkTk

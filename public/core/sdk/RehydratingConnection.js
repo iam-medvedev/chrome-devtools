@@ -157,7 +157,7 @@ export class RehydratingConnection {
         return Promise.reject();
     }
 }
-// Default rehydrating session with default responses.
+/** Default rehydrating session with default responses. **/
 class RehydratingSessionBase {
     connection = null;
     constructor(connection) {

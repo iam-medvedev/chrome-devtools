@@ -10,8 +10,10 @@ import { html, render } from '../../lit/lit.js';
 import * as VisualLogging from '../../visual_logging/visual_logging.js';
 import * as ComponentHelpers from '../helpers/helpers.js';
 import chromeLinkStyles from './chromeLink.css.js';
-// Use this component to render links to 'chrome://...'-URLs
-// (for which regular <x-link>s do not work).
+/**
+ * Use this component to render links to 'chrome://...'-URLs
+ * (for which regular <x-link>s do not work).
+ **/
 export class ChromeLink extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #href = '';

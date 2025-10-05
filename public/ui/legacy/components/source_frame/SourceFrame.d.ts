@@ -151,6 +151,7 @@ export declare const enum DecoratorType {
     MEMORY = "memory",
     COVERAGE = "coverage"
 }
+/** Effect to add lines (by position) to the set of non-breakable lines. **/
 export declare const addNonBreakableLines: CodeMirror.StateEffectType<readonly number[]>;
 export declare function isBreakableLine(state: CodeMirror.EditorState, line: CodeMirror.Line): boolean;
 /**
@@ -172,10 +173,12 @@ export type RevealPosition = number | {
         columnNumber: number;
     };
 };
+/** This is usually an Infobar but is also used for AiCodeCompletionSummaryToolbar **/
 export interface SourceFrameInfobar {
     element: HTMLElement;
     order?: number;
 }
+/** Infobar panel state, used to show additional panels below the editor. **/
 export declare const addSourceFrameInfobar: CodeMirror.StateEffectType<SourceFrameInfobar>;
 export declare const removeSourceFrameInfobar: CodeMirror.StateEffectType<SourceFrameInfobar>;
 export {};

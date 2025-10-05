@@ -14,6 +14,7 @@ export interface RuleSetGridRow {
     ruleSet: Protocol.Preload.RuleSet;
     preloadsStatusSummary: string;
 }
+/** Grid component to show SpeculationRules rule sets. **/
 export declare class RuleSetGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
     connectedCallback(): void;

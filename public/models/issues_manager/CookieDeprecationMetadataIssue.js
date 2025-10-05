@@ -11,7 +11,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('models/issues_manager/CookieDeprecationMetadataIssue.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(b/305738703): Move this issue into a warning on CookieIssue.
+/** TODO(b/305738703): Move this issue into a warning on CookieIssue. **/
 export class CookieDeprecationMetadataIssue extends Issue {
     #issueDetails;
     constructor(issueDetails, issuesModel) {

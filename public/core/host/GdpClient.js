@@ -29,27 +29,49 @@ export var EmailPreference;
     EmailPreference["ENABLED"] = "ENABLED";
     EmailPreference["DISABLED"] = "DISABLED";
 })(EmailPreference || (EmailPreference = {}));
-// The `batchGet` awards endpoint returns badge names with an
-// obfuscated user ID (e.g., `profiles/12345/awards/badge-name`).
-// This function normalizes them to use `me` instead of the ID
-// (e.g., `profiles/me/awards/badge-path`) to match the format
-// used for client-side requests.
+export var GdpErrorType;
+(function (GdpErrorType) {
+    GdpErrorType["HTTP_RESPONSE_UNAVAILABLE"] = "HTTP_RESPONSE_UNAVAILABLE";
+    GdpErrorType["NOT_FOUND"] = "NOT_FOUND";
+})(GdpErrorType || (GdpErrorType = {}));
+class GdpError extends Error {
+    type;
+    constructor(type, options) {
+        super(undefined, options);
+        this.type = type;
+    }
+}
+/**
+ * The `batchGet` awards endpoint returns badge names with an
+ * obfuscated user ID (e.g., `profiles/12345/awards/badge-name`).
+ * This function normalizes them to use `me` instead of the ID
+ * (e.g., `profiles/me/awards/badge-path`) to match the format
+ * used for client-side requests.
+ **/
 function normalizeBadgeName(name) {
     return name.replace(/profiles\/[^/]+\/awards\//, 'profiles/me/awards/');
 }
 export const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = 'https://developers.google.com/profile/u/me';
 async function makeHttpRequest(request) {
     if (!isGdpProfilesAvailable()) {
-        return null;
+        throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE);
     }
     const response = await new Promise(resolve => {
         InspectorFrontendHostInstance.dispatchHttpRequest(request, resolve);
     });
     debugLog({ request, response });
-    if ('response' in response && response.statusCode === 200) {
-        return JSON.parse(response.response);
+    if (response.statusCode === 404) {
+        throw new GdpError(GdpErrorType.NOT_FOUND);
     }
-    return null;
+    if ('response' in response && response.statusCode === 200) {
+        try {
+            return JSON.parse(response.response);
+        }
+        catch (err) {
+            throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE, { cause: err });
+        }
+    }
+    throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE);
 }
 const SERVICE_NAME = 'gdpService';
 let gdpClientInstance = null;
@@ -64,21 +86,41 @@ export class GdpClient {
         }
         return gdpClientInstance;
     }
-    async initialize() {
-        const profile = await this.getProfile();
-        if (profile) {
+    /**
+     * Fetches the user's GDP profile and eligibility status.
+     *
+     * It first attempts to fetch the profile. If the profile is not found
+     * (a `NOT_FOUND` error), this is handled gracefully by treating the profile
+     * as `null` and then proceeding to check for eligibility.
+     *
+     * @returns A promise that resolves with an object containing the `profile`
+     * and `isEligible` status, or `null` if an unexpected error occurs.
+     */
+    async getProfile() {
+        try {
+            const profile = await this.#getProfile();
             return {
-                hasProfile: true,
+                profile,
                 isEligible: true,
             };
         }
-        const isEligible = await this.isEligibleToCreateProfile();
-        return {
-            hasProfile: false,
-            isEligible,
-        };
+        catch (err) {
+            if (err instanceof GdpError && err.type === GdpErrorType.HTTP_RESPONSE_UNAVAILABLE) {
+                return null;
+            }
+        }
+        try {
+            const checkEligibilityResponse = await this.#checkEligibility();
+            return {
+                profile: null,
+                isEligible: checkEligibilityResponse.createProfile === EligibilityStatus.ELIGIBLE,
+            };
+        }
+        catch {
+            return null;
+        }
     }
-    async getProfile() {
+    async #getProfile() {
         if (this.#cachedProfilePromise) {
             return await this.#cachedProfilePromise;
         }
@@ -86,14 +128,13 @@ export class GdpClient {
             service: SERVICE_NAME,
             path: '/v1beta1/profile:get',
             method: 'GET',
-        });
-        const profile = await this.#cachedProfilePromise;
-        if (profile) {
+        }).then(profile => {
             this.#cachedEligibilityPromise = Promise.resolve({ createProfile: EligibilityStatus.ELIGIBLE });
-        }
-        return profile;
+            return profile;
+        });
+        return await this.#cachedProfilePromise;
     }
-    async checkEligibility() {
+    async #checkEligibility() {
         if (this.#cachedEligibilityPromise) {
             return await this.#cachedEligibilityPromise;
         }
@@ -105,52 +146,60 @@ export class GdpClient {
      * @returns null if the request fails, the awarded badge names otherwise.
      */
     async getAwardedBadgeNames({ names }) {
-        const result = await makeHttpRequest({
-            service: SERVICE_NAME,
-            path: '/v1beta1/profiles/me/awards:batchGet',
-            method: 'GET',
-            queryParams: {
-                allowMissing: 'true',
-                names,
-            }
-        });
-        if (!result) {
+        try {
+            const response = await makeHttpRequest({
+                service: SERVICE_NAME,
+                path: '/v1beta1/profiles/me/awards:batchGet',
+                method: 'GET',
+                queryParams: {
+                    allowMissing: 'true',
+                    names,
+                }
+            });
+            return new Set(response.awards?.map(award => normalizeBadgeName(award.name)) ?? []);
+        }
+        catch {
             return null;
         }
-        return new Set(result.awards?.map(award => normalizeBadgeName(award.name)) ?? []);
-    }
-    async isEligibleToCreateProfile() {
-        return (await this.checkEligibility())?.createProfile === EligibilityStatus.ELIGIBLE;
     }
     async createProfile({ user, emailPreference }) {
-        const result = await makeHttpRequest({
-            service: SERVICE_NAME,
-            path: '/v1beta1/profiles',
-            method: 'POST',
-            body: JSON.stringify({
-                user,
-                newsletter_email: emailPreference,
-            }),
-        });
-        if (result) {
+        try {
+            const response = await makeHttpRequest({
+                service: SERVICE_NAME,
+                path: '/v1beta1/profiles',
+                method: 'POST',
+                body: JSON.stringify({
+                    user,
+                    newsletter_email: emailPreference,
+                }),
+            });
             this.#clearCache();
+            return response;
         }
-        return result;
+        catch {
+            return null;
+        }
     }
     #clearCache() {
         this.#cachedProfilePromise = undefined;
         this.#cachedEligibilityPromise = undefined;
     }
-    createAward({ name }) {
-        return makeHttpRequest({
-            service: SERVICE_NAME,
-            path: '/v1beta1/profiles/me/awards',
-            method: 'POST',
-            body: JSON.stringify({
-                awardingUri: 'devtools://devtools',
-                name,
-            })
-        });
+    async createAward({ name }) {
+        try {
+            const response = await makeHttpRequest({
+                service: SERVICE_NAME,
+                path: '/v1beta1/profiles/me/awards',
+                method: 'POST',
+                body: JSON.stringify({
+                    awardingUri: 'devtools://devtools',
+                    name,
+                })
+            });
+            return response;
+        }
+        catch {
+            return null;
+        }
     }
 }
 function isDebugMode() {
@@ -181,6 +230,14 @@ export function isGdpProfilesAvailable() {
 export function getGdpProfilesEnterprisePolicy() {
     return (Root.Runtime.hostConfig.devToolsGdpProfilesAvailability?.enterprisePolicyValue ??
         Root.Runtime.GdpProfilesEnterprisePolicyValue.DISABLED);
+}
+export function isBadgesEnabled() {
+    const isBadgesEnabledByEnterprisePolicy = getGdpProfilesEnterprisePolicy() === Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED;
+    const isBadgesEnabledByFeatureFlag = Boolean(Root.Runtime.hostConfig.devToolsGdpProfiles?.badgesEnabled);
+    return isBadgesEnabledByEnterprisePolicy && isBadgesEnabledByFeatureFlag;
+}
+export function isStarterBadgeEnabled() {
+    return Boolean(Root.Runtime.hostConfig.devToolsGdpProfiles?.starterBadgeEnabled);
 }
 // @ts-expect-error
 globalThis.setDebugGdpIntegrationEnabled = setDebugGdpIntegrationEnabled;

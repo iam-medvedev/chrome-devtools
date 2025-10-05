@@ -14,10 +14,12 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/legacy/components/perf_ui/PieChart.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// If the slices are not available when constructing the pie chart, set .data
-// immediately, with total=0 and slices=[], so that the chart is rendered with
-// the correct initial size. This avoids a layout shift when the slices are
-// later populated.
+/**
+ * If the slices are not available when constructing the pie chart, set .data
+ * immediately, with total=0 and slices=[], so that the chart is rendered with
+ * the correct initial size. This avoids a layout shift when the slices are
+ * later populated.
+ **/
 export class PieChart extends HTMLElement {
     shadow = this.attachShadow({ mode: 'open' });
     chartName = '';

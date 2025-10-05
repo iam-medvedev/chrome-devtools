@@ -23,7 +23,7 @@ export declare const replaceControlCharacters: (inputString: string) => string;
 export declare const countWtf8Bytes: (inputString: string) => number;
 export declare const stripLineBreaks: (inputStr: string) => string;
 /**
- * Tests if the `inputStr` is following the extended Kebab Case naming convetion,
+ * Tests if the `inputStr` is following the extended Kebab Case naming convention,
  * where words are separated with either a dash (`-`) or a dot (`.`), and all
  * characters must be lower-case alphanumeric.
  *
@@ -66,6 +66,7 @@ export declare function toKebabCaseKeys<T>(settingValue: Record<string, T>): Rec
  * @returns The snake_case version of the input string.
  */
 export declare function toSnakeCase(text: string): string;
+/** Replaces the last occurrence of parameter `search` with parameter `replacement` in `input` **/
 export declare const replaceLast: (input: string, search: string, replacement: string) => string;
 export declare const stringifyWithPrecision: (s: number, precision?: number) => string;
 /**

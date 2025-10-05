@@ -251,7 +251,7 @@ export class TimelineFlameChartNetworkDataProvider {
         context.fillStyle = ThemeSupport.ThemeSupport.instance().getComputedValue('--sys-color-cdt-base-container');
         context.fillRect(barX, barY - 0.5, sendStart - barX, barHeight);
         context.fillRect(finish, barY - 0.5, barX + barWidth - finish, barHeight);
-        // Draws left and right whiskers
+        /** Draws left and right whiskers **/
         function drawTick(begin, end, y) {
             const /** @constant */ tickHeightPx = 6;
             context.moveTo(begin, y - tickHeightPx / 2);

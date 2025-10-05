@@ -2000,7 +2000,7 @@ var BounceTrackingMitigationsTreeElement = class extends ApplicationPanelTreeEle
 };
 
 // gen/front_end/panels/application/ApplicationPanelSidebar.js
-import * as ApplicationComponents15 from "./components/components.js";
+import * as ApplicationComponents14 from "./components/components.js";
 
 // gen/front_end/panels/application/DOMStorageModel.js
 var DOMStorageModel_exports = {};
@@ -3075,6 +3075,7 @@ var IDBDatabaseView = class extends ApplicationComponents4.StorageMetadataView.S
   constructor(model, database) {
     super();
     this.model = model;
+    this.setShowOnlyBucket(false);
     if (database) {
       this.update(database);
     }
@@ -5292,7 +5293,6 @@ var PreloadingAttemptTreeElement = class extends PreloadingTreeElementBase {
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n25 from "./../../core/i18n/i18n.js";
 import * as IconButton7 from "./../../ui/components/icon_button/icon_button.js";
-import * as ApplicationComponents7 from "./components/components.js";
 
 // gen/front_end/panels/application/ReportingApiView.js
 var ReportingApiView_exports = {};
@@ -5345,7 +5345,10 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${input.hasReports ? html3`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
-              ${input.reportsGrid}
+              <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents6.ReportsGrid.ReportsGrid, {
+      reports: input.reports,
+      onReportSelected: input.onReportSelected
+    })}></devtools-widget>
             </div>
             <div slot="sidebar" class="vbox" jslog=${VisualLogging6.pane("preview").track({ resize: true })}>
               ${input.focusedReport ? html3`
@@ -5360,11 +5363,16 @@ var DEFAULT_VIEW = (input, _output, target) => {
           </devtools-split-view>
         ` : html3`
           <div slot="main">
-            ${input.reportsGrid}
+            <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents6.ReportsGrid.ReportsGrid, {
+      reports: input.reports,
+      onReportSelected: input.onReportSelected
+    })}></devtools-widget>
           </div>
         `}
         <div slot="sidebar">
-          ${input.endpointsGrid}
+          <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents6.EndpointsGrid.EndpointsGrid, {
+      endpoints: input.endpoints
+    })}></devtools-widget>
         </div>
       </devtools-split-view>
     `, target);
@@ -5379,19 +5387,15 @@ var DEFAULT_VIEW = (input, _output, target) => {
   }
 };
 var ReportingApiView = class extends UI10.Widget.VBox {
-  #endpointsGrid;
   #endpoints;
   #view;
   #networkManager;
-  #reportsGrid = new ApplicationComponents6.ReportsGrid.ReportsGrid();
   #reports = [];
   #focusedReport;
-  constructor(endpointsGrid, view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW) {
     super();
     this.#view = view;
-    this.#endpointsGrid = endpointsGrid;
     this.#endpoints = /* @__PURE__ */ new Map();
-    this.#reportsGrid.addEventListener("select", this.#onFocus.bind(this));
     SDK13.TargetManager.TargetManager.instance().observeModels(SDK13.NetworkManager.NetworkManager, this);
     this.requestUpdate();
   }
@@ -5419,31 +5423,28 @@ var ReportingApiView = class extends UI10.Widget.VBox {
     const viewInput = {
       hasReports: this.#reports.length > 0,
       hasEndpoints: this.#endpoints.size > 0,
-      endpointsGrid: this.#endpointsGrid,
-      reportsGrid: this.#reportsGrid,
-      focusedReport: this.#focusedReport
+      endpoints: this.#endpoints,
+      reports: this.#reports,
+      focusedReport: this.#focusedReport,
+      onReportSelected: this.#onReportSelected.bind(this)
     };
     this.#view(viewInput, {}, this.element);
   }
   #onEndpointsChangedForOrigin({ data }) {
     this.#endpoints.set(data.origin, data.endpoints);
-    this.#endpointsGrid.data = { endpoints: this.#endpoints };
     this.requestUpdate();
   }
   #onReportAdded({ data: report }) {
     this.#reports.push(report);
-    this.#reportsGrid.data = { reports: this.#reports };
     this.requestUpdate();
   }
   #onReportUpdated({ data: report }) {
     const index = this.#reports.findIndex((oldReport) => oldReport.id === report.id);
     this.#reports[index] = report;
-    this.#reportsGrid.data = { reports: this.#reports };
     this.requestUpdate();
   }
-  async #onFocus(event) {
-    const selectEvent = event;
-    const report = this.#reports.find((report2) => report2.id === selectEvent.detail);
+  #onReportSelected(id) {
+    const report = this.#reports.find((report2) => report2.id === id);
     if (report) {
       this.#focusedReport = report;
       this.requestUpdate();
@@ -5473,7 +5474,7 @@ var ReportingApiTreeElement = class extends ApplicationPanelTreeElement {
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = new ReportingApiView(new ApplicationComponents7.EndpointsGrid.EndpointsGrid());
+      this.view = new ReportingApiView();
     }
     this.showView(this.view);
     Host5.userMetrics.panelShown("reporting-api");
@@ -5569,7 +5570,7 @@ import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 import * as NetworkComponents from "./../network/components/components.js";
 import * as Network from "./../network/network.js";
-import * as ApplicationComponents8 from "./components/components.js";
+import * as ApplicationComponents7 from "./components/components.js";
 
 // gen/front_end/panels/application/serviceWorkerCacheViews.css.js
 var serviceWorkerCacheViews_css_default = `/*
@@ -5718,7 +5719,7 @@ var ServiceWorkerCacheView = class extends UI11.View.SimpleView {
   returnCount;
   summaryBarElement;
   loadingPromise;
-  metadataView = new ApplicationComponents8.StorageMetadataView.StorageMetadataView();
+  metadataView = new ApplicationComponents7.StorageMetadataView.StorageMetadataView();
   constructor(model, cache) {
     super({
       title: i18nString14(UIStrings14.cache),
@@ -5742,6 +5743,7 @@ var ServiceWorkerCacheView = class extends UI11.View.SimpleView {
     this.preview = null;
     this.cache = cache;
     const bucketInfo = this.model.target().model(SDK14.StorageBucketsModel.StorageBucketsModel)?.getBucketByName(cache.storageBucket.storageKey, cache.storageBucket.name);
+    this.metadataView.setShowOnlyBucket(false);
     if (bucketInfo) {
       this.metadataView.setStorageBucket(bucketInfo);
     } else if (cache.storageKey) {
@@ -6311,7 +6313,7 @@ import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
-import * as ApplicationComponents9 from "./components/components.js";
+import * as ApplicationComponents8 from "./components/components.js";
 
 // gen/front_end/panels/application/serviceWorkersView.css.js
 var serviceWorkersView_css_default = `/*
@@ -7309,7 +7311,7 @@ var Section = class {
     this.syncTagNameSetting = Common9.Settings.Settings.instance().createLocalSetting("sync-tag-name", "test-tag-from-devtools");
     this.periodicSyncTagNameSetting = Common9.Settings.Settings.instance().createLocalSetting("periodic-sync-tag-name", "test-tag-from-devtools");
     this.updateCycleView = new ServiceWorkerUpdateCycleView(registration);
-    this.routerView = new ApplicationComponents9.ServiceWorkerRouterView.ServiceWorkerRouterView();
+    this.routerView = new ApplicationComponents8.ServiceWorkerRouterView.ServiceWorkerRouterView();
     this.networkRequests = new Buttons5.Button.Button();
     this.networkRequests.data = {
       variant: "text",
@@ -7601,7 +7603,7 @@ import * as SDK18 from "./../../core/sdk/sdk.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging10 from "./../../ui/visual_logging/visual_logging.js";
-import * as ApplicationComponents10 from "./components/components.js";
+import * as ApplicationComponents9 from "./components/components.js";
 
 // gen/front_end/panels/application/sharedStorageEventsView.css.js
 var sharedStorageEventsView_css_default = `/*
@@ -7638,7 +7640,7 @@ function eventEquals2(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
 var SharedStorageEventsView = class extends UI15.SplitWidget.SplitWidget {
-  #sharedStorageEventGrid = new ApplicationComponents10.SharedStorageAccessGrid.SharedStorageAccessGrid();
+  #sharedStorageEventGrid = new ApplicationComponents9.SharedStorageAccessGrid.SharedStorageAccessGrid();
   #events = [];
   #noDisplayView;
   #defaultId = "";
@@ -7948,7 +7950,7 @@ import * as Common13 from "./../../core/common/common.js";
 import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as SourceFrame4 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
-import * as ApplicationComponents13 from "./components/components.js";
+import * as ApplicationComponents12 from "./components/components.js";
 
 // gen/front_end/panels/application/KeyValueStorageItemsView.js
 var KeyValueStorageItemsView_exports = {};
@@ -7960,7 +7962,7 @@ import * as Geometry from "./../../models/geometry/geometry.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import { Directives as LitDirectives, html as html5, nothing as nothing2, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
-import * as ApplicationComponents12 from "./components/components.js";
+import * as ApplicationComponents11 from "./components/components.js";
 
 // gen/front_end/panels/application/StorageItemsToolbar.js
 var StorageItemsToolbar_exports = {};
@@ -7976,7 +7978,7 @@ import * as Buttons6 from "./../../ui/components/buttons/buttons.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
-import * as ApplicationComponents11 from "./components/components.js";
+import * as ApplicationComponents10 from "./components/components.js";
 var UIStrings20 = {
   /**
    * @description Text to refresh the page
@@ -8060,7 +8062,7 @@ var StorageItemsToolbar = class extends Common12.ObjectWrapper.eventMixin(UI16.W
   }
   get metadataView() {
     if (!this.#metadataView) {
-      this.#metadataView = new ApplicationComponents11.StorageMetadataView.StorageMetadataView();
+      this.#metadataView = new ApplicationComponents10.StorageMetadataView.StorageMetadataView();
     }
     return this.#metadataView;
   }
@@ -8174,7 +8176,7 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
   #toolbar;
   metadataView;
   constructor(title, id, editable, view, metadataView) {
-    metadataView ??= new ApplicationComponents12.StorageMetadataView.StorageMetadataView();
+    metadataView ??= new ApplicationComponents11.StorageMetadataView.StorageMetadataView();
     if (!view) {
       view = (input, output, target) => {
         render4(
@@ -8194,12 +8196,10 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
                   .name=${`${id}-datagrid-with-preview`}
                   striped
                   style="flex: auto"
-                  @select=${input.onSelect}
-                  @sort=${input.onSort}
+                  @sort=${(e) => input.onSort(e.detail.ascending)}
                   @refresh=${input.onReferesh}
-                  @create=${input.onCreate}
-                  @edit=${input.onEdit}
-                  @delete=${input.onDelete}
+                  @create=${(e) => input.onCreate(e.detail.key, e.detail.value)}
+                  @deselect=${() => input.onSelect(null)}
                 >
                   <table>
                     <tr>
@@ -8212,6 +8212,9 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
                     </tr>
                     ${repeat(input.items, (item) => item.key, (item) => html5`
                       <tr data-key=${item.key} data-value=${item.value}
+                          @select=${() => input.onSelect(item)}
+                          @edit=${(e) => input.onEdit(item.key, item.value, e.detail.columnId, e.detail.valueBeforeEditing, e.detail.newText)}
+                          @delete=${() => input.onDelete(item.key)}
                           selected=${input.selectedKey === item.key || nothing2}>
                         <td>${item.key}</td>
                         <td>${item.value.substr(0, MAX_VALUE_LENGTH)}</td>
@@ -8262,25 +8265,25 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
       selectedKey: this.#selectedKey,
       editable: this.#editable,
       preview: this.#preview,
-      onSelect: (event) => {
-        this.#toolbar?.setCanDeleteSelected(Boolean(event.detail));
-        if (!event.detail) {
+      onSelect: (item) => {
+        this.#toolbar?.setCanDeleteSelected(Boolean(item));
+        if (!item) {
           void this.#previewEntry(null);
         } else {
-          void this.#previewEntry({ key: event.detail.dataset.key || "", value: event.detail.dataset.value || "" });
+          void this.#previewEntry(item);
         }
       },
-      onSort: (event) => {
-        this.#isSortOrderAscending = event.detail.ascending;
+      onSort: (ascending) => {
+        this.#isSortOrderAscending = ascending;
       },
-      onCreate: (event) => {
-        this.#createCallback(event.detail.key, event.detail.value || "");
+      onCreate: (key, value) => {
+        this.#createCallback(key, value);
       },
-      onEdit: (event) => {
-        this.#editingCallback(event.detail.node, event.detail.columnId, event.detail.valueBeforeEditing, event.detail.newText);
+      onEdit: (key, value, columnId, valueBeforeEditing, newText) => {
+        this.#editingCallback(key, value, columnId, valueBeforeEditing, newText);
       },
-      onDelete: (event) => {
-        this.#deleteCallback(event.detail.dataset.key || "");
+      onDelete: (key) => {
+        this.#deleteCallback(key);
       },
       onReferesh: () => {
         this.refreshItems();
@@ -8361,7 +8364,7 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
   isEditAllowed(_columnIdentifier, _oldText, _newText) {
     return true;
   }
-  #editingCallback(editingNode, columnIdentifier, oldText, newText) {
+  #editingCallback(key, value, columnIdentifier, oldText, newText) {
     if (!this.isEditAllowed(columnIdentifier, oldText, newText)) {
       return;
     }
@@ -8369,13 +8372,12 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
       if (typeof oldText === "string") {
         this.removeItem(oldText);
       }
-      this.setItem(newText, editingNode.dataset.value || "");
-      this.#removeDupes(newText, editingNode.dataset.value || "");
-      editingNode.dataset.key = newText;
-      void this.#previewEntry({ key: newText, value: editingNode.dataset.value || "" });
+      this.setItem(newText, value);
+      this.#removeDupes(newText, value);
+      void this.#previewEntry({ key: newText, value });
     } else {
-      this.setItem(editingNode.dataset.key || "", newText);
-      void this.#previewEntry({ key: editingNode.dataset.key || "", value: newText });
+      this.setItem(key, newText);
+      void this.#previewEntry({ key, value: newText });
     }
   }
   #removeDupes(key, value) {
@@ -8465,7 +8467,7 @@ var SharedStorageItemsView = class _SharedStorageItemsView extends KeyValueStora
       /* editable=*/
       true,
       view,
-      new ApplicationComponents13.SharedStorageMetadataView.SharedStorageMetadataView(sharedStorage, sharedStorage.securityOrigin)
+      new ApplicationComponents12.SharedStorageMetadataView.SharedStorageMetadataView(sharedStorage, sharedStorage.securityOrigin)
     );
     this.#sharedStorage = sharedStorage;
     this.performUpdate();
@@ -9391,7 +9393,7 @@ import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as IconButton12 from "./../../ui/components/icon_button/icon_button.js";
 import * as LegacyWrapper9 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
-import * as ApplicationComponents14 from "./components/components.js";
+import * as ApplicationComponents13 from "./components/components.js";
 var UIStrings25 = {
   /**
    * @description Hover text for an info icon in the Private State Token panel.
@@ -9414,7 +9416,7 @@ var TrustTokensTreeElement = class extends ApplicationPanelTreeElement {
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper9.LegacyWrapper.legacyWrapper(UI21.Widget.Widget, new ApplicationComponents14.TrustTokensView.TrustTokensView(), "trust-tokens");
+      this.view = LegacyWrapper9.LegacyWrapper.legacyWrapper(UI21.Widget.Widget, new ApplicationComponents13.TrustTokensView.TrustTokensView(), "trust-tokens");
     }
     this.showView(this.view);
     Host8.userMetrics.panelShown("trust-tokens");
@@ -11134,7 +11136,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
     this.treeElementForResource.clear();
     this.treeElementForWorker.clear();
     if (this.selected) {
-      this.view = LegacyWrapper11.LegacyWrapper.legacyWrapper(UI22.Widget.Widget, new ApplicationComponents15.FrameDetailsView.FrameDetailsReportView(this.frame));
+      this.view = LegacyWrapper11.LegacyWrapper.legacyWrapper(UI22.Widget.Widget, new ApplicationComponents14.FrameDetailsView.FrameDetailsReportView(this.frame));
       this.showView(this.view);
     } else {
       this.view = null;
@@ -11161,7 +11163,7 @@ var FrameTreeElement = class _FrameTreeElement extends ApplicationPanelTreeEleme
   onselect(selectedByUser) {
     super.onselect(selectedByUser);
     if (!this.view) {
-      this.view = LegacyWrapper11.LegacyWrapper.legacyWrapper(UI22.Widget.Widget, new ApplicationComponents15.FrameDetailsView.FrameDetailsReportView(this.frame));
+      this.view = LegacyWrapper11.LegacyWrapper.legacyWrapper(UI22.Widget.Widget, new ApplicationComponents14.FrameDetailsView.FrameDetailsReportView(this.frame));
     }
     Host9.userMetrics.panelShown("frame-details");
     this.showView(this.view);

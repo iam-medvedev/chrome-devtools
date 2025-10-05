@@ -57,12 +57,15 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
                     2048 /* Capability.INSPECTOR */ | 131072 /* Capability.IO */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
                 if (parentTarget?.type() !== Type.FRAME) {
-                    this.#capabilitiesMask |= 1 /* Capability.BROWSER */;
+                    this.#capabilitiesMask |= 1 /* Capability.BROWSER */ | 8192 /* Capability.STORAGE */;
                 }
                 break;
             case Type.SHARED_WORKER:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
                     131072 /* Capability.IO */ | 262144 /* Capability.MEDIA */ | 2048 /* Capability.INSPECTOR */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
+                if (parentTarget?.type() !== Type.FRAME) {
+                    this.#capabilitiesMask |= 8192 /* Capability.STORAGE */;
+                }
                 break;
             case Type.SHARED_STORAGE_WORKLET:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 2048 /* Capability.INSPECTOR */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
@@ -70,6 +73,9 @@ export class Target extends ProtocolClient.InspectorBackend.TargetBase {
             case Type.Worker:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 16 /* Capability.NETWORK */ | 32 /* Capability.TARGET */ |
                     131072 /* Capability.IO */ | 262144 /* Capability.MEDIA */ | 256 /* Capability.EMULATION */ | 524288 /* Capability.EVENT_BREAKPOINTS */;
+                if (parentTarget?.type() !== Type.FRAME) {
+                    this.#capabilitiesMask |= 8192 /* Capability.STORAGE */;
+                }
                 break;
             case Type.WORKLET:
                 this.#capabilitiesMask = 4 /* Capability.JS */ | 8 /* Capability.LOG */ | 524288 /* Capability.EVENT_BREAKPOINTS */ | 16 /* Capability.NETWORK */;

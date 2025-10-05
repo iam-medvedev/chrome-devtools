@@ -11436,8 +11436,8 @@ var ComputedTextChunk = class {
     }
     return this.#cachedComputedText;
   }
-  // If the match is top-level, i.e. is an outermost subexpression in the property value, count the number of outermost
-  // subexpressions after applying any potential substitutions.
+  // If the match is top-level, i.e. is an outermost sub-expression in the property value, count the number of outermost
+  // sub-expressions after applying any potential substitutions.
   get topLevelValueCount() {
     if (this.match.node.parent?.name !== "Declaration") {
       return 0;
@@ -17102,17 +17102,23 @@ var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
       case Type2.ServiceWorker:
         this.#capabilitiesMask = 4 | 8 | 16 | 32 | 2048 | 131072 | 524288;
         if (parentTarget?.type() !== Type2.FRAME) {
-          this.#capabilitiesMask |= 1;
+          this.#capabilitiesMask |= 1 | 8192;
         }
         break;
       case Type2.SHARED_WORKER:
         this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 2048 | 524288;
+        if (parentTarget?.type() !== Type2.FRAME) {
+          this.#capabilitiesMask |= 8192;
+        }
         break;
       case Type2.SHARED_STORAGE_WORKLET:
         this.#capabilitiesMask = 4 | 8 | 2048 | 524288;
         break;
       case Type2.Worker:
         this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 256 | 524288;
+        if (parentTarget?.type() !== Type2.FRAME) {
+          this.#capabilitiesMask |= 8192;
+        }
         break;
       case Type2.WORKLET:
         this.#capabilitiesMask = 4 | 8 | 524288 | 16;
@@ -26637,37 +26643,13 @@ var NetworkDispatcher = class {
     }
     request.setTrustTokenOperationDoneEvent(event);
   }
-  subresourceWebBundleMetadataReceived({ requestId, urls }) {
-    const extraInfoBuilder = this.getExtraInfoBuilder(requestId);
-    extraInfoBuilder.setWebBundleInfo({ resourceUrls: urls });
-    const finalRequest = extraInfoBuilder.finalRequest();
-    if (finalRequest) {
-      this.updateNetworkRequest(finalRequest);
-    }
+  subresourceWebBundleMetadataReceived() {
   }
-  subresourceWebBundleMetadataError({ requestId, errorMessage }) {
-    const extraInfoBuilder = this.getExtraInfoBuilder(requestId);
-    extraInfoBuilder.setWebBundleInfo({ errorMessage });
-    const finalRequest = extraInfoBuilder.finalRequest();
-    if (finalRequest) {
-      this.updateNetworkRequest(finalRequest);
-    }
+  subresourceWebBundleMetadataError() {
   }
-  subresourceWebBundleInnerResponseParsed({ innerRequestId, bundleRequestId }) {
-    const extraInfoBuilder = this.getExtraInfoBuilder(innerRequestId);
-    extraInfoBuilder.setWebBundleInnerRequestInfo({ bundleRequestId });
-    const finalRequest = extraInfoBuilder.finalRequest();
-    if (finalRequest) {
-      this.updateNetworkRequest(finalRequest);
-    }
+  subresourceWebBundleInnerResponseParsed() {
   }
-  subresourceWebBundleInnerResponseError({ innerRequestId, errorMessage }) {
-    const extraInfoBuilder = this.getExtraInfoBuilder(innerRequestId);
-    extraInfoBuilder.setWebBundleInnerRequestInfo({ errorMessage });
-    const finalRequest = extraInfoBuilder.finalRequest();
-    if (finalRequest) {
-      this.updateNetworkRequest(finalRequest);
-    }
+  subresourceWebBundleInnerResponseError() {
   }
   reportingApiReportAdded(data) {
     this.#manager.dispatchEventToListeners(Events8.ReportingApiReportAdded, data.report);
@@ -27142,8 +27124,6 @@ var ExtraInfoBuilder = class {
   #responseExtraInfos = [];
   #responseEarlyHintsHeaders = [];
   #finished = false;
-  #webBundleInfo = null;
-  #webBundleInnerRequestInfo = null;
   addRequest(req) {
     this.#requests.push(req);
     this.sync(this.#requests.length - 1);
@@ -27167,14 +27147,6 @@ var ExtraInfoBuilder = class {
   }
   setEarlyHintsHeaders(earlyHintsHeaders) {
     this.#responseEarlyHintsHeaders = earlyHintsHeaders;
-    this.updateFinalRequest();
-  }
-  setWebBundleInfo(info) {
-    this.#webBundleInfo = info;
-    this.updateFinalRequest();
-  }
-  setWebBundleInnerRequestInfo(info) {
-    this.#webBundleInnerRequestInfo = info;
     this.updateFinalRequest();
   }
   finished() {
@@ -27222,8 +27194,6 @@ var ExtraInfoBuilder = class {
       return;
     }
     const finalRequest = this.finalRequest();
-    finalRequest?.setWebBundleInfo(this.#webBundleInfo);
-    finalRequest?.setWebBundleInnerRequestInfo(this.#webBundleInnerRequestInfo);
     finalRequest?.setEarlyHintsHeaders(this.#responseEarlyHintsHeaders);
   }
 };
@@ -28253,8 +28223,6 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   #initialPriority = null;
   #currentPriority = null;
   #signedExchangeInfo = null;
-  #webBundleInfo = null;
-  #webBundleInnerRequestInfo = null;
   #resourceType = Common31.ResourceType.resourceTypes.Other;
   #contentData = null;
   #streamingContentData = null;
@@ -29163,18 +29131,6 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   signedExchangeInfo() {
     return this.#signedExchangeInfo;
-  }
-  setWebBundleInfo(info) {
-    this.#webBundleInfo = info;
-  }
-  webBundleInfo() {
-    return this.#webBundleInfo;
-  }
-  setWebBundleInnerRequestInfo(info) {
-    this.#webBundleInnerRequestInfo = info;
-  }
-  webBundleInnerRequestInfo() {
-    return this.#webBundleInnerRequestInfo;
   }
   async populateImageSource(image) {
     const contentData = await this.requestContentData();
@@ -31085,6 +31041,32 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
     }
     if (waitingForDebugger) {
       void target.runtimeAgent().invoke_runIfWaitingForDebugger();
+    }
+    if (type !== Type2.FRAME && target.hasAllCapabilities(
+      8192
+      /* Capability.STORAGE */
+    )) {
+      await this.initializeStorage(target);
+    }
+  }
+  async initializeStorage(target) {
+    const storageAgent = target.storageAgent();
+    const response = await storageAgent.invoke_getStorageKey({});
+    const storageKey = response.storageKey;
+    if (response.getError() || !storageKey) {
+      console.error(`Failed to get storage key for target ${target.id()}: ${response.getError()}`);
+      return;
+    }
+    const storageKeyManager = target.model(StorageKeyManager);
+    if (storageKeyManager) {
+      storageKeyManager.setMainStorageKey(storageKey);
+      storageKeyManager.updateStorageKeys(/* @__PURE__ */ new Set([storageKey]));
+    }
+    const securityOriginManager = target.model(SecurityOriginManager);
+    if (securityOriginManager) {
+      const origin = new URL(storageKey).origin;
+      securityOriginManager.setMainSecurityOrigin(origin, "");
+      securityOriginManager.updateSecurityOrigins(/* @__PURE__ */ new Set([origin]));
     }
   }
   detachedFromTarget({ sessionId }) {

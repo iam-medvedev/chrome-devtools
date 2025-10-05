@@ -15176,8 +15176,6 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     }
   }
   contextMenuEventFired(event) {
-    event.stopPropagation();
-    event.preventDefault();
     const treeElement = this.treeElementFromEventInternal(event);
     if (treeElement instanceof ElementsTreeElement) {
       void this.showContextMenu(treeElement, event);
@@ -15187,13 +15185,15 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     if (UI19.UIUtils.isEditing()) {
       return;
     }
-    const contextMenu = new UI19.ContextMenu.ContextMenu(event);
-    const isPseudoElement = Boolean(treeElement.node().pseudoType());
-    const isTag = treeElement.node().nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
     const node = event.target;
     if (!node) {
       return;
     }
+    event.stopPropagation();
+    event.preventDefault();
+    const contextMenu = new UI19.ContextMenu.ContextMenu(event);
+    const isPseudoElement = Boolean(treeElement.node().pseudoType());
+    const isTag = treeElement.node().nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
     let textNode = node.enclosingNodeOrSelfWithClass("webkit-html-text-node");
     if (textNode?.classList.contains("bogus")) {
       textNode = null;
@@ -19171,6 +19171,7 @@ var SpecificPseudoStates;
   SpecificPseudoStates2["PLACEHOLDER_SHOWN"] = "placeholder-shown";
   SpecificPseudoStates2["AUTOFILL"] = "autofill";
   SpecificPseudoStates2["OPEN"] = "open";
+  SpecificPseudoStates2["TARGET_CURRENT"] = "target-current";
 })(SpecificPseudoStates || (SpecificPseudoStates = {}));
 var DEFAULT_VIEW9 = (input, _output, target) => {
   const createElementStateCheckbox = (state) => {
@@ -19254,6 +19255,7 @@ var ElementStatePaneWidget = class extends UI28.Widget.Widget {
     this.#states.set(SpecificPseudoStates.PLACEHOLDER_SHOWN, { state: SpecificPseudoStates.PLACEHOLDER_SHOWN, type: "specific" });
     this.#states.set(SpecificPseudoStates.AUTOFILL, { state: SpecificPseudoStates.AUTOFILL, type: "specific" });
     this.#states.set(SpecificPseudoStates.OPEN, { state: SpecificPseudoStates.OPEN, type: "specific" });
+    this.#states.set(SpecificPseudoStates.TARGET_CURRENT, { state: SpecificPseudoStates.TARGET_CURRENT, type: "specific" });
     setDualStateCheckboxes(SpecificPseudoStates.VALID, SpecificPseudoStates.INVALID);
     setDualStateCheckboxes(SpecificPseudoStates.USER_VALID, SpecificPseudoStates.USER_INVALID);
     setDualStateCheckboxes(SpecificPseudoStates.READ_ONLY, SpecificPseudoStates.READ_WRITE);
@@ -19335,6 +19337,9 @@ var ElementStatePaneWidget = class extends UI28.Widget.Widget {
     };
     const isElementOfTypes = (node2, types) => {
       return types.includes(node2.nodeName()?.toLowerCase());
+    };
+    const isAnchorElementWithHref = (node2) => {
+      return isElementOfTypes(node2, ["a"]) && node2.getAttribute("href") !== void 0;
     };
     const isInputWithTypeRadioOrCheckbox = (node2) => {
       return isElementOfTypes(node2, ["input"]) && (node2.getAttribute("type") === "checkbox" || node2.getAttribute("type") === "radio");
@@ -19434,6 +19439,11 @@ var ElementStatePaneWidget = class extends UI28.Widget.Widget {
       hideSpecificCheckbox(SpecificPseudoStates.OPEN, false);
     } else {
       hideSpecificCheckbox(SpecificPseudoStates.OPEN, true);
+    }
+    if (isAnchorElementWithHref(node) || node.pseudoType() === "scroll-marker") {
+      hideSpecificCheckbox(SpecificPseudoStates.TARGET_CURRENT, false);
+    } else {
+      hideSpecificCheckbox(SpecificPseudoStates.TARGET_CURRENT, true);
     }
   }
 };

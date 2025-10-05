@@ -583,10 +583,12 @@ export function processStartLoggingForDebugging() {
         maybeLogDebugEvent({ event: 'SessionStart' });
     }
 }
-// Compares the 'actual' log entry against the 'expected'.
-// For impressions events to match, all expected impressions need to be present
-// in the actual event. Unexpected impressions in the actual event are ignored.
-// Interaction events need to match exactly.
+/**
+ * Compares the 'actual' log entry against the 'expected'.
+ * For impressions events to match, all expected impressions need to be present
+ * in the actual event. Unexpected impressions in the actual event are ignored.
+ * Interaction events need to match exactly.
+ **/
 function compareVeEvents(actual, expected) {
     if ('interaction' in expected && 'interaction' in actual) {
         const actualString = formatInteraction(actual);
@@ -637,8 +639,10 @@ function formatVeEvents(events) {
     })
         .join('\n');
 }
-// Verifies that VE events contains all the expected events in given order.
-// Unexpected VE events are ignored.
+/**
+ * Verifies that VE events contains all the expected events in given order.
+ * Unexpected VE events are ignored.
+ **/
 export async function expectVeEvents(expectedEvents) {
     if (pendingEventExpectation) {
         throw new Error('VE events expectation already set. Cannot set another one until the previous is resolved');

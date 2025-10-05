@@ -60,6 +60,7 @@ export declare class Experiment {
     isEnabled(): boolean;
     setEnabled(enabled: boolean): void;
 }
+/** This must be constructed after the query parameters have been parsed. **/
 export declare const experiments: ExperimentsSupport;
 /**
  * @deprecated Experiments should not be used anymore, instead use base::Feature.
@@ -201,6 +202,7 @@ interface GlobalAiButton {
 }
 interface GdpProfiles {
     enabled: boolean;
+    badgesEnabled: boolean;
     starterBadgeEnabled: boolean;
 }
 export declare enum GdpProfilesEnterprisePolicyValue {

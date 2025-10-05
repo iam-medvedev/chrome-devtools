@@ -1923,10 +1923,6 @@ var UIStrings5 = {
    */
   fromSignedexchange: "(from signed-exchange)",
   /**
-   * @description Text in Request Headers View of the Network panel
-   */
-  fromWebBundle: "(from Web Bundle)",
-  /**
    * @description Section header for a list of the main aspects of a http request
    */
   general: "General",
@@ -2245,8 +2241,6 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
       comment = i18nString5(UIStrings5.fromServiceWorker);
     } else if (this.#request.redirectSourceSignedExchangeInfoHasNoErrors()) {
       comment = i18nString5(UIStrings5.fromSignedexchange);
-    } else if (this.#request.webBundleInnerRequestInfo()) {
-      comment = i18nString5(UIStrings5.fromWebBundle);
     } else if (this.#request.fromPrefetchCache()) {
       comment = i18nString5(UIStrings5.fromPrefetchCache);
     } else if (this.#request.cached()) {
@@ -2654,116 +2648,6 @@ function renderRowWithCodeValue(key, value2) {
   `;
 }
 customElements.define("devtools-trust-token-report", RequestTrustTokensView);
-
-// gen/front_end/panels/network/components/WebBundleInfoView.js
-var WebBundleInfoView_exports = {};
-__export(WebBundleInfoView_exports, {
-  WebBundleInfoView: () => WebBundleInfoView
-});
-import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import "./../../../ui/components/icon_button/icon_button.js";
-import * as Common4 from "./../../../core/common/common.js";
-import * as i18n13 from "./../../../core/i18n/i18n.js";
-import { PanelUtils } from "./../../utils/utils.js";
-import * as LegacyWrapper5 from "./../../../ui/components/legacy_wrapper/legacy_wrapper.js";
-import { html as html8, render as render8 } from "./../../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
-
-// gen/front_end/panels/network/components/WebBundleInfoView.css.js
-var WebBundleInfoView_css_default = `/*
- * Copyright 2021 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-:host {
-  --icon-padding: 4px;
-
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-}
-
-.header {
-  display: flex;
-  font-weight: bold;
-  padding: calc(2 * var(--icon-padding)) var(--icon-padding);
-  line-height: 20px;
-}
-
-.icon {
-  margin: 0 var(--icon-padding);
-}
-
-devtools-data-grid {
-  height: 100%;
-}
-
-/*# sourceURL=${import.meta.resolve("./WebBundleInfoView.css")} */`;
-
-// gen/front_end/panels/network/components/WebBundleInfoView.js
-var { mimeFromURL, fromMimeTypeOverride, fromMimeType } = Common4.ResourceType.ResourceType;
-var { iconDataForResourceType } = PanelUtils;
-var UIStrings7 = {
-  /**
-   * @description Header for the column that contains URL of the resource in a web bundle.
-   */
-  bundledResource: "Bundled resource"
-};
-var str_7 = i18n13.i18n.registerUIStrings("panels/network/components/WebBundleInfoView.ts", UIStrings7);
-var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
-var WebBundleInfoView = class extends LegacyWrapper5.LegacyWrapper.WrappableComponent {
-  #shadow = this.attachShadow({ mode: "open" });
-  #webBundleInfo;
-  #webBundleName;
-  constructor(request) {
-    super();
-    const webBundleInfo = request.webBundleInfo();
-    if (!webBundleInfo) {
-      throw new Error("Trying to render a Web Bundle info without providing data");
-    }
-    this.#webBundleInfo = webBundleInfo;
-    this.#webBundleName = request.parsedURL.lastPathComponent;
-    this.setAttribute("jslog", `${VisualLogging8.pane("webbundle").track({ resize: true })}`);
-  }
-  async render() {
-    render8(html8`
-      <style>${WebBundleInfoView_css_default}</style>
-      <div class="header">
-        <devtools-icon name="bundle" class="icon extra-large">
-        </devtools-icon>
-        <span>${this.#webBundleName}</span>
-        <x-link href="https://web.dev/web-bundles/#explaining-web-bundles"
-          jslog=${VisualLogging8.link("webbundle-explainer").track({
-      click: true
-    })}>
-          <devtools-icon name="help" class="icon medium">
-          </devtools-icon>
-        </x-link>
-      </div>
-      <devtools-data-grid striped>
-        <table>
-          <tr>
-            <th id="url">${i18nString7(UIStrings7.bundledResource)}</th>
-          </tr>
-          ${this.#webBundleInfo.resourceUrls?.map((url) => {
-      const mimeType = mimeFromURL(url) || null;
-      const resourceType = fromMimeTypeOverride(mimeType) || fromMimeType(mimeType);
-      const iconData = iconDataForResourceType(resourceType);
-      return html8`<tr>
-              <td>
-                <div style="display: flex;">
-                  <devtools-icon class="icon extra-large" .data=${iconData} as IconData}>
-                  </devtools-icon>
-                  <span>${url}</span>
-                </div>
-              </td>
-            </tr>`;
-    })}
-        </table>
-      </devtools-data-grid>`, this.#shadow, { host: this });
-  }
-};
-customElements.define("devtools-web-bundle-info", WebBundleInfoView);
 export {
   DirectSocketConnectionView_exports as DirectSocketConnectionView,
   EditableSpan_exports as EditableSpan,
@@ -2771,7 +2655,6 @@ export {
   RequestHeaderSection_exports as RequestHeaderSection,
   RequestHeadersView_exports as RequestHeadersView,
   RequestTrustTokensView_exports as RequestTrustTokensView,
-  ResponseHeaderSection_exports as ResponseHeaderSection,
-  WebBundleInfoView_exports as WebBundleInfoView
+  ResponseHeaderSection_exports as ResponseHeaderSection
 };
 //# sourceMappingURL=components.js.map

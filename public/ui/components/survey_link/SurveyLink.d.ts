@@ -9,6 +9,10 @@ export interface SurveyLinkData {
     canShowSurvey: (trigger: string, callback: CanShowSurveyCallback) => void;
     showSurvey: (trigger: string, callback: ShowSurveyCallback) => void;
 }
+/**
+ * A link to a survey. The link is rendered asynchronously because we need to first check if
+ * canShowSurvey succeeds.
+ **/
 export declare class SurveyLink extends HTMLElement {
     #private;
     set data(data: SurveyLinkData);

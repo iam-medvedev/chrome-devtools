@@ -1318,7 +1318,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                              direction="column"
                              sidebar-initial-size="400"
                              sidebar-visibility=${input.sidebarVisible ? "visible" : "hidden"}
-                             @change=${input.onSplitChange}>
+                             @change=${(e) => input.onSplitChange(e.detail === "OnlyMain")}>
           <div slot="main" class="vbox protocol-monitor-main">
             <devtools-toolbar class="protocol-monitor-toolbar"
                                jslog=${VisualLogging2.toolbar("top")}>
@@ -1329,22 +1329,23 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                                 .variant=${"icon_toggle"}
                                 .toggleType=${"red-toggle"}
                                 .toggled=${true}
-                                @click=${input.onRecord}></devtools-button>
+                                @click=${(e) => input.onRecord(e.target.toggled)}>
+               </devtools-button>
               <devtools-button title=${i18nString2(UIStrings2.clearAll)}
                                .iconName=${"clear"}
                                .variant=${"toolbar"}
                                .jslogContext=${"protocol-monitor.clear-all"}
-                               @click=${input.onClear}></devtools-button>
+                               @click=${() => input.onClear()}></devtools-button>
               <devtools-button title=${i18nString2(UIStrings2.save)}
                                .iconName=${"download"}
                                .variant=${"toolbar"}
                                .jslogContext=${"protocol-monitor.save"}
-                               @click=${input.onSave}></devtools-button>
+                               @click=${() => input.onSave()}></devtools-button>
               <devtools-toolbar-input type="filter"
                                       list="filter-suggestions"
                                       style="flex-grow: 1"
                                       value=${input.filter}
-                                      @change=${input.onFilterChanged}>
+                                      @change=${(e) => input.onFilterChanged(e.detail)}>
                 <datalist id="filter-suggestions">
                   ${input.filterKeys.map((key) => html2`
                         <option value=${key + ":"}></option>
@@ -1357,8 +1358,6 @@ var DEFAULT_VIEW2 = (input, output, target) => {
               <devtools-data-grid
                   striped
                   slot="main"
-                  @select=${input.onSelect}
-                  @contextmenu=${input.onContextMenu}
                   .filters=${input.parseFilter(input.filter)}>
                 <table>
                     <tr>
@@ -1387,8 +1386,9 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                         ${i18nString2(UIStrings2.session)}
                       </th>
                     </tr>
-                    ${input.messages.map((message, index) => html2`
-                      <tr data-index=${index}
+                    ${input.messages.map((message) => html2`
+                      <tr @select=${() => input.onSelect(message)}
+                          @contextmenu=${(e) => input.onContextMenu(message, e.detail)}
                           style="--override-data-grid-row-background-color: var(--sys-color-surface3)">
                         ${"id" in message ? html2`
                           <td title="sent">
@@ -1427,7 +1427,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                                .iconName=${input.sidebarVisible ? "left-panel-close" : "left-panel-open"}
                                .variant=${"toolbar"}
                                .jslogContext=${"protocol-monitor.toggle-command-editor"}
-                               @click=${input.onToggleSidebar}></devtools-button>
+                               @click=${() => input.onToggleSidebar()}></devtools-button>
               </devtools-button>
               <devtools-toolbar-input id="command-input"
                                       style=${styleMap({
@@ -1438,8 +1438,8 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                                       list="command-input-suggestions"
                                       placeholder=${i18nString2(UIStrings2.sendRawCDPCommand)}
                                       title=${i18nString2(UIStrings2.sendRawCDPCommandExplanation)}
-                                      @change=${input.onCommandChange}
-                                      @submit=${input.onCommandSubmitted}>
+                                      @change=${(e) => input.onCommandChange(e.detail)}
+                                      @submit=${(e) => input.onCommandSubmitted(e.detail)}>
                 <datalist id="command-input-suggestions">
                   ${input.commandSuggestions.map((c) => html2`<option value=${c}></option>`)}
                 </datalist>
@@ -1448,7 +1448,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                       title=${i18nString2(UIStrings2.selectTarget)}
                       style=${styleMap({ display: input.sidebarVisible ? "none" : "flex" })}
                       jslog=${VisualLogging2.dropDown("target-selector").track({ change: true })}
-                      @change=${input.onTargetChange}>
+                      @change=${(e) => input.onTargetChange(e.target.value)}>
                 ${input.targets.map((target2) => html2`
                   <option jslog=${VisualLogging2.item("target").track({ click: true })}
                           value=${target2.id()} ?selected=${target2.id() === input.selectedTargetId}>
@@ -1517,8 +1517,8 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       filterKeys: this.#filterKeys,
       filter: this.#filter,
       parseFilter: this.filterParser.parse.bind(this.filterParser),
-      onSplitChange: (e) => {
-        if (e.detail === "OnlyMain") {
+      onSplitChange: (onlyMain) => {
+        if (onlyMain) {
           this.#populateToolbarInput();
           this.#sidebarVisible = false;
         } else {
@@ -1528,8 +1528,8 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
         }
         this.requestUpdate();
       },
-      onRecord: (e) => {
-        this.setRecording(e.target.toggled);
+      onRecord: (recording) => {
+        this.setRecording(recording);
       },
       onClear: () => {
         this.#messages = [];
@@ -1539,35 +1539,27 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       onSave: () => {
         void this.saveAsFile();
       },
-      onSelect: (e) => {
-        const index = parseInt(e.detail?.dataset?.index ?? "", 10);
-        this.#selectedMessage = !isNaN(index) ? this.#messages[index] : void 0;
+      onSelect: (message) => {
+        this.#selectedMessage = message;
         this.requestUpdate();
       },
-      onContextMenu: (e) => {
-        const message = this.#messages[parseInt(e.detail?.element?.dataset?.index || "", 10)];
-        if (message) {
-          this.#populateContextMenu(e.detail.menu, message);
-        }
+      onContextMenu: this.#populateContextMenu.bind(this),
+      onCommandChange: (command) => {
+        this.#command = command;
       },
-      onCommandChange: (e) => {
-        this.#command = e.detail;
-      },
-      onCommandSubmitted: (e) => {
-        this.#commandAutocompleteSuggestionProvider.addEntry(e.detail);
-        const { command, parameters } = parseCommandInput(e.detail);
+      onCommandSubmitted: (input) => {
+        this.#commandAutocompleteSuggestionProvider.addEntry(input);
+        const { command, parameters } = parseCommandInput(input);
         this.onCommandSend(command, parameters, this.#selectedTargetId);
       },
-      onFilterChanged: (e) => {
-        this.#filter = e.detail;
+      onFilterChanged: (filter) => {
+        this.#filter = filter;
         this.requestUpdate();
       },
-      onTargetChange: (e) => {
-        if (e.target instanceof HTMLSelectElement) {
-          this.#selectedTargetId = e.target.value;
-        }
+      onTargetChange: (targetId) => {
+        this.#selectedTargetId = targetId;
       },
-      onToggleSidebar: (_e) => {
+      onToggleSidebar: () => {
         this.#sidebarVisible = !this.#sidebarVisible;
         this.requestUpdate();
       },
@@ -1582,7 +1574,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     };
     this.#view(viewInput, viewOutput, this.contentElement);
   }
-  #populateContextMenu(menu, message) {
+  #populateContextMenu(message, menu) {
     menu.editSection().appendItem(i18nString2(UIStrings2.editAndResend), () => {
       if (!this.#selectedMessage) {
         return;

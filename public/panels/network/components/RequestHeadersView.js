@@ -50,10 +50,6 @@ const UIStrings = {
      */
     fromSignedexchange: '(from signed-exchange)',
     /**
-     * @description Text in Request Headers View of the Network panel
-     */
-    fromWebBundle: '(from Web Bundle)',
-    /**
      * @description Section header for a list of the main aspects of a http request
      */
     general: 'General',
@@ -403,9 +399,6 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         }
         else if (this.#request.redirectSourceSignedExchangeInfoHasNoErrors()) {
             comment = i18nString(UIStrings.fromSignedexchange);
-        }
-        else if (this.#request.webBundleInnerRequestInfo()) {
-            comment = i18nString(UIStrings.fromWebBundle);
         }
         else if (this.#request.fromPrefetchCache()) {
             comment = i18nString(UIStrings.fromPrefetchCache);

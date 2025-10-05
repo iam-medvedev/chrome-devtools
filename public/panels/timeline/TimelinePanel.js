@@ -556,6 +556,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             },
         });
     }
+    zoomEvent(event) {
+        this.flameChart.zoomEvent(event);
+    }
     /**
      * Activates an insight and ensures the sidebar is open too.
      * Pass `highlightInsight: true` to flash the insight with the background highlight colour.
@@ -1514,11 +1517,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 reject('Could not load resourceModel');
                 return;
             }
-            // To clear out the page and any state from prior test runs, we
-            // navigate to about:blank before initiating the trace recording.
-            // Once we have navigated to about:blank, we start recording and
-            // then navigate to the original page URL, to ensure we profile the
-            // page load.
+            /**
+             * To clear out the page and any state from prior test runs, we
+             * navigate to about:blank before initiating the trace recording.
+             * Once we have navigated to about:blank, we start recording and
+             * then navigate to the original page URL, to ensure we profile the
+             * page load.
+             **/
             function waitForAboutBlank(event) {
                 if (event.data.url === 'about:blank') {
                     resolve();
@@ -1709,12 +1714,12 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.toggleRecordAction.setToggled(this.state === "Recording" /* State.RECORDING */);
         this.toggleRecordAction.setEnabled(this.state === "Recording" /* State.RECORDING */ || this.state === "Idle" /* State.IDLE */);
         this.askAiButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
+        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
+        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
         if (!this.canRecord()) {
             return;
         }
         this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.IDLE */);
-        this.panelToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
-        this.panelRightToolbar.setEnabled(this.state !== "Loading" /* State.LOADING */);
         this.homeButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
     }
     async toggleRecording() {
@@ -2662,7 +2667,7 @@ ${responseTextForPassedInsights}`;
         });
     }
 }
-// Define row and header height, should be in sync with styles for timeline graphs.
+/** Define row and header height, should be in sync with styles for timeline graphs. **/
 export const rowHeight = 18;
 export const headerHeight = 20;
 export let loadTimelineHandlerInstance;

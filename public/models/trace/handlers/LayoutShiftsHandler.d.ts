@@ -25,8 +25,20 @@ interface RemoteFont {
     name?: string;
     beginRemoteFontLoadEvent: Types.Events.BeginRemoteFontLoad;
 }
+/**
+ * This represents the maximum #time we will allow a cluster to go before we
+ * reset it.
+ **/
 export declare const MAX_CLUSTER_DURATION: Types.Timing.Micro;
+/**
+ * This represents the maximum #time we will allow between layout shift events
+ * before considering it to be the start of a new cluster.
+ **/
 export declare const MAX_SHIFT_TIME_DELTA: Types.Timing.Micro;
+/**
+ * Represents a point in time in which a  LS score change
+ * was recorded.
+ **/
 interface ScoreRecord {
     ts: number;
     score: number;
@@ -37,6 +49,7 @@ export declare function finalize(): Promise<void>;
 export declare function data(): LayoutShiftsData;
 export declare function deps(): HandlerName[];
 export declare function scoreClassificationForLayoutShift(score: number): ScoreClassification;
+/** Based on https://web.dev/cls/ **/
 export declare const enum LayoutShiftsThreshold {
     GOOD = 0,
     NEEDS_IMPROVEMENT = 0.1,

@@ -25,6 +25,7 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     addEventListener<K extends keyof HTMLElementEventMap>(type: K, listener: (this: HTMLElement, ev: HTMLElementEventMap[K]) => void, options?: boolean | AddEventListenerOptions | undefined): void;
     addEventListener(type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions | undefined): void;
     #private: any;
+    get templateRoot(): DocumentFragment | HTMLElement;
     set template(template: import("../ui/lit/lit.js").LitTemplate);
     accessKey: string;
     readonly accessKeyLabel: string;

@@ -23,8 +23,10 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('ui/components/survey_link/SurveyLink.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// A link to a survey. The link is rendered aysnchronously because we need to first check if
-// canShowSurvey succeeds.
+/**
+ * A link to a survey. The link is rendered asynchronously because we need to first check if
+ * canShowSurvey succeeds.
+ **/
 export class SurveyLink extends HTMLElement {
     #shadow = this.attachShadow({ mode: 'open' });
     #trigger = '';

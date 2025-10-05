@@ -111,8 +111,10 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/components/UsedPreloadingView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-// TODO(kenoss): Rename this class and file once https://crrev.com/c/4933567 landed.
-// This also shows summary of speculations initiated by this page.
+/**
+ * TODO(kenoss): Rename this class and file once https://crrev.com/c/4933567 landed.
+ * This also shows summary of speculations initiated by this page.
+ **/
 export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = {

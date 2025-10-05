@@ -182,7 +182,7 @@ const resolveScope = async (script, scopeChain) => {
                         return;
                     }
                 }
-                // If there is no entry with the name field, try to infer the name from the source positions.
+                /** If there is no entry with the name field, try to infer the name from the source positions. **/
                 async function resolvePosition() {
                     if (!sourceMap) {
                         return;
@@ -556,10 +556,12 @@ export class RemoteObject extends SDK.RemoteObject.RemoteObject {
         return this.object.isNode();
     }
 }
-// Resolve the frame's function name using the name associated with the opening
-// paren that starts the scope. If there is no name associated with the scope
-// start or if the function scope does not start with a left paren (e.g., arrow
-// function with one parameter), the resolution returns null.
+/**
+ * Resolve the frame's function name using the name associated with the opening
+ * paren that starts the scope. If there is no name associated with the scope
+ * start or if the function scope does not start with a left paren (e.g., arrow
+ * function with one parameter), the resolution returns null.
+ **/
 async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
     // To reduce the overhead of resolving function names,
     // we check for source maps first and immediately leave

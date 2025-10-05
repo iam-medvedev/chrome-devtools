@@ -711,17 +711,17 @@ var UIStrings4 = {
    */
   saveButtonTitle: "Save",
   /**
-   * @description Title for the information icon showing more information about an option
-   */
-  moreInfoTitle: "More information",
-  /**
    * @description Text shown in the information pop-up next to the "Include script content" option.
    */
   scriptContentPrivacyInfo: "Includes the full content of all loaded scripts (except extensions).",
   /**
    * @description Text shown in the information pop-up next to the "Include script sourcemaps" option.
    */
-  sourceMapsContentPrivacyInfo: "Includes available source maps, which may expose authored code."
+  sourceMapsContentPrivacyInfo: "Includes available source maps, which may expose authored code.",
+  /**
+   * @description Text used as the start of the accessible label for the information button which shows additional context when the user focuses / hovers.
+   */
+  moreInfoLabel: "Additional information:"
 };
 var str_4 = i18n7.i18n.registerUIStrings("panels/timeline/components/ExportTraceOptions.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
@@ -866,6 +866,15 @@ var ExportTraceOptions = class extends HTMLElement {
     }
     this.state = newState;
   }
+  #accessibleLabelForInfoCheckbox(checkboxId) {
+    if (checkboxId === "script-source-maps") {
+      return i18nString4(UIStrings4.moreInfoLabel) + " " + i18nString4(UIStrings4.sourceMapsContentPrivacyInfo);
+    }
+    if (checkboxId === "script-content") {
+      return i18nString4(UIStrings4.moreInfoLabel) + " " + i18nString4(UIStrings4.scriptContentPrivacyInfo);
+    }
+    return "";
+  }
   #renderCheckbox(checkboxId, checkboxWithLabel, title, checked) {
     UI4.Tooltip.Tooltip.install(checkboxWithLabel, title);
     checkboxWithLabel.ariaLabel = title;
@@ -879,8 +888,8 @@ var ExportTraceOptions = class extends HTMLElement {
           ${checkboxesWithInfoDialog.has(checkboxId) ? html3`
             <devtools-button
               aria-details=${`export-trace-tooltip-${checkboxId}`}
+              aria-label=${this.#accessibleLabelForInfoCheckbox(checkboxId)}
               class="pen-icon"
-              .title=${UIStrings4.moreInfoTitle}
               .iconName=${"info"}
               .variant=${"icon"}
               ></devtools-button>
@@ -923,9 +932,11 @@ var ExportTraceOptions = class extends HTMLElement {
       horizontalAlignment: "auto",
       closeButton: false,
       dialogTitle: i18nString4(UIStrings4.exportTraceOptionsDialogTitle),
-      state: this.#state.dialogState
+      state: this.#state.dialogState,
+      closeOnESC: true
     }}>
         <div class='export-trace-options-content'>
+
           ${this.#state.displayAnnotationsCheckbox ? this.#renderCheckbox("annotations", this.#includeAnnotationsCheckbox, i18nString4(UIStrings4.includeAnnotations), this.#state.includeAnnotations) : ""}
           ${this.#state.displayScriptContentCheckbox ? this.#renderCheckbox("script-content", this.#includeScriptContentCheckbox, i18nString4(UIStrings4.includeScriptContent), this.#state.includeScriptContent) : ""}
           ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderCheckbox("script-source-maps", this.#includeSourceMapsCheckbox, i18nString4(UIStrings4.includeSourcemap), this.#state.includeSourceMaps) : ""}
@@ -940,11 +951,10 @@ var ExportTraceOptions = class extends HTMLElement {
     }}
                 >${i18nString4(UIStrings4.saveButtonTitle)}</devtools-button>
                 </div>
+          ${this.#state.displayScriptContentCheckbox ? this.#renderInfoTooltip("script-content") : Lit3.nothing}
+          ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderInfoTooltip("script-source-maps") : Lit3.nothing}
         </div>
       </devtools-button-dialog>
-
-      ${this.#state.displayScriptContentCheckbox ? this.#renderInfoTooltip("script-content") : Lit3.nothing}
-      ${this.#state.displayScriptContentCheckbox && this.#state.displaySourceMapsCheckbox ? this.#renderInfoTooltip("script-source-maps") : Lit3.nothing}
     `;
     Lit3.render(output, this.#shadow, { host: this });
   }

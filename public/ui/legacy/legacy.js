@@ -2313,211 +2313,6 @@ import "./../../core/dom_extension/dom_extension.js";
 import * as Platform5 from "./../../core/platform/platform.js";
 import * as Geometry from "./../../models/geometry/geometry.js";
 import * as Lit from "./../lit/lit.js";
-
-// gen/front_end/ui/legacy/XWidget.js
-var XWidget_exports = {};
-__export(XWidget_exports, {
-  XWidget: () => XWidget
-});
-
-// gen/front_end/ui/legacy/XElement.js
-var XElement_exports = {};
-__export(XElement_exports, {
-  XElement: () => XElement
-});
-var XElement = class extends HTMLElement {
-  static get observedAttributes() {
-    return [
-      "flex",
-      "padding",
-      "padding-top",
-      "padding-bottom",
-      "padding-left",
-      "padding-right",
-      "margin",
-      "margin-top",
-      "margin-bottom",
-      "margin-left",
-      "margin-right",
-      "overflow",
-      "overflow-x",
-      "overflow-y",
-      "font-size",
-      "color",
-      "background",
-      "background-color",
-      "border",
-      "border-top",
-      "border-bottom",
-      "border-left",
-      "border-right",
-      "max-width",
-      "max-height"
-    ];
-  }
-  attributeChangedCallback(attr, _oldValue, newValue) {
-    if (attr === "flex") {
-      if (newValue === null) {
-        this.style.removeProperty("flex");
-      } else if (newValue === "initial" || newValue === "auto" || newValue === "none" || newValue.indexOf(" ") !== -1) {
-        this.style.setProperty("flex", newValue);
-      } else {
-        this.style.setProperty("flex", "0 0 " + newValue);
-      }
-      return;
-    }
-    if (newValue === null) {
-      this.style.removeProperty(attr);
-      if (attr.startsWith("padding-") || attr.startsWith("margin-") || attr.startsWith("border-") || attr.startsWith("background-") || attr.startsWith("overflow-")) {
-        const shorthand = attr.substring(0, attr.indexOf("-"));
-        const shorthandValue = this.getAttribute(shorthand);
-        if (shorthandValue !== null) {
-          this.style.setProperty(shorthand, shorthandValue);
-        }
-      }
-    } else {
-      this.style.setProperty(attr, newValue);
-    }
-  }
-};
-var XBox = class extends XElement {
-  constructor(direction) {
-    super();
-    this.style.setProperty("display", "flex");
-    this.style.setProperty("flex-direction", direction);
-    this.style.setProperty("justify-content", "flex-start");
-  }
-  static get observedAttributes() {
-    return super.observedAttributes.concat(["x-start", "x-center", "x-stretch", "x-baseline", "justify-content"]);
-  }
-  attributeChangedCallback(attr, oldValue, newValue) {
-    if (attr === "x-start" || attr === "x-center" || attr === "x-stretch" || attr === "x-baseline") {
-      if (newValue === null) {
-        this.style.removeProperty("align-items");
-      } else {
-        this.style.setProperty("align-items", attr === "x-start" ? "flex-start" : attr.substr(2));
-      }
-      return;
-    }
-    super.attributeChangedCallback(attr, oldValue, newValue);
-  }
-};
-var XHBox = class extends XBox {
-  constructor() {
-    super("row");
-  }
-};
-customElements.define("x-hbox", XHBox);
-
-// gen/front_end/ui/legacy/XWidget.js
-var observer = null;
-var storedScrollPositions = /* @__PURE__ */ new WeakMap();
-var XWidget = class _XWidget extends XElement {
-  visible;
-  defaultFocusedElement;
-  elementsToRestoreScrollPositionsFor;
-  onShownCallback;
-  onHiddenCallback;
-  onResizedCallback;
-  constructor() {
-    super();
-    this.style.setProperty("display", "flex");
-    this.style.setProperty("flex-direction", "column");
-    this.style.setProperty("align-items", "stretch");
-    this.style.setProperty("justify-content", "flex-start");
-    this.style.setProperty("contain", "layout style");
-    this.visible = false;
-    this.defaultFocusedElement = null;
-    this.elementsToRestoreScrollPositionsFor = [];
-    if (!observer) {
-      observer = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          const widget = entry.target;
-          if (widget.visible && widget.onResizedCallback) {
-            widget.onResizedCallback.call(null);
-          }
-        }
-      });
-    }
-    observer.observe(this);
-    this.setElementsToRestoreScrollPositionsFor([this]);
-  }
-  isShowing() {
-    return this.visible;
-  }
-  setElementsToRestoreScrollPositionsFor(elements) {
-    for (const element of this.elementsToRestoreScrollPositionsFor) {
-      element.removeEventListener("scroll", _XWidget.storeScrollPosition, { capture: false });
-    }
-    this.elementsToRestoreScrollPositionsFor = elements;
-    for (const element of this.elementsToRestoreScrollPositionsFor) {
-      element.addEventListener("scroll", _XWidget.storeScrollPosition, { passive: true, capture: false });
-    }
-  }
-  restoreScrollPositions() {
-    for (const element of this.elementsToRestoreScrollPositionsFor) {
-      const storedPositions = storedScrollPositions.get(element);
-      if (storedPositions) {
-        element.scrollTop = storedPositions.scrollTop;
-        element.scrollLeft = storedPositions.scrollLeft;
-      }
-    }
-  }
-  static storeScrollPosition(event) {
-    const element = event.currentTarget;
-    storedScrollPositions.set(element, { scrollLeft: element.scrollLeft, scrollTop: element.scrollTop });
-  }
-  setDefaultFocusedElement(element) {
-    if (element && !this.isSelfOrAncestor(element)) {
-      throw new Error("Default focus must be descendant");
-    }
-    this.defaultFocusedElement = element;
-  }
-  focus() {
-    if (!this.visible) {
-      return;
-    }
-    let element;
-    if (this.defaultFocusedElement && this.isSelfOrAncestor(this.defaultFocusedElement)) {
-      element = this.defaultFocusedElement;
-    } else if (this.tabIndex !== -1) {
-      element = this;
-    } else {
-      let child = this.traverseNextNode(this);
-      while (child) {
-        if (child instanceof _XWidget && child.visible) {
-          element = child;
-          break;
-        }
-        child = child.traverseNextNode(this);
-      }
-    }
-    if (!element || element.hasFocus()) {
-      return;
-    }
-    if (element === this) {
-      HTMLElement.prototype.focus.call(this);
-    } else {
-      element.focus();
-    }
-  }
-  connectedCallback() {
-    this.visible = true;
-    this.restoreScrollPositions();
-    if (this.onShownCallback) {
-      this.onShownCallback.call(null);
-    }
-  }
-  disconnectedCallback() {
-    this.visible = false;
-    if (this.onHiddenCallback) {
-      this.onHiddenCallback.call(null);
-    }
-  }
-};
-customElements.define("x-widget", XWidget);
-
-// gen/front_end/ui/legacy/Widget.js
 var originalAppendChild = Element.prototype.appendChild;
 var originalInsertBefore = Element.prototype.insertBefore;
 var originalRemoveChild = Element.prototype.removeChild;
@@ -2996,13 +2791,13 @@ var Widget = class _Widget {
   storeScrollPositions() {
     const elements = this.elementsToRestoreScrollPositionsFor();
     for (const container of elements) {
-      storedScrollPositions2.set(container, { scrollLeft: container.scrollLeft, scrollTop: container.scrollTop });
+      storedScrollPositions.set(container, { scrollLeft: container.scrollLeft, scrollTop: container.scrollTop });
     }
   }
   restoreScrollPositions() {
     const elements = this.elementsToRestoreScrollPositionsFor();
     for (const container of elements) {
-      const storedPositions = storedScrollPositions2.get(container);
+      const storedPositions = storedScrollPositions.get(container);
       if (storedPositions) {
         container.scrollLeft = storedPositions.scrollLeft;
         container.scrollTop = storedPositions.scrollTop;
@@ -3073,10 +2868,6 @@ var Widget = class _Widget {
       }
       let child = this.contentElement.traverseNextNode(this.contentElement);
       while (child) {
-        if (child instanceof XWidget) {
-          child.focus();
-          return;
-        }
         child = child.traverseNextNode(this.contentElement);
       }
     }
@@ -3210,7 +3001,7 @@ var Widget = class _Widget {
     return this.#updateComplete;
   }
 };
-var storedScrollPositions2 = /* @__PURE__ */ new WeakMap();
+var storedScrollPositions = /* @__PURE__ */ new WeakMap();
 var VBox = class extends Widget {
   constructor() {
     super(...arguments);
@@ -7786,15 +7577,15 @@ var SoftContextMenu = class _SoftContextMenu {
       const devToolsElem = InspectorView.maybeGetInspectorViewInstance()?.element;
       if (devToolsElem) {
         let firedOnce = false;
-        const observer2 = new ResizeObserver(() => {
+        const observer = new ResizeObserver(() => {
           if (firedOnce) {
-            observer2.disconnect();
+            observer.disconnect();
             this.discard();
             return;
           }
           firedOnce = true;
         });
-        observer2.observe(devToolsElem);
+        observer.observe(devToolsElem);
       }
       if (this.contextMenuElement.children && this.focusOnTheFirstItem) {
         const focusElement = this.contextMenuElement.children[0];
@@ -9312,11 +9103,7 @@ var createControlForSetting = function(setting, subtitle) {
       return component;
     }
     case "enum":
-      if (Array.isArray(setting.options())) {
-        return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
-      }
-      console.error("Enum setting defined without options");
-      return null;
+      return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
     default:
       console.error("Invalid setting type: " + setting.type());
       return null;
@@ -15341,26 +15128,11 @@ function updateWidgetfocusWidgetForNode(node) {
     widget = parentWidget;
   }
 }
-function updateXWidgetfocusWidgetForNode(node) {
-  node = node?.parentNodeOrShadowHost() ?? null;
-  const XWidgetConstructor = customElements.get("x-widget");
-  let widget = null;
-  while (node) {
-    if (XWidgetConstructor && node instanceof XWidgetConstructor) {
-      if (widget) {
-        node.defaultFocusedElement = widget;
-      }
-      widget = node;
-    }
-    node = node.parentNodeOrShadowHost();
-  }
-}
 function focusChanged(event) {
   const target = event.target;
   const document2 = target ? target.ownerDocument : null;
   const element = document2 ? Platform16.DOMUtilities.deepActiveElement(document2) : null;
   updateWidgetfocusWidgetForNode(element);
-  updateXWidgetfocusWidgetForNode(element);
 }
 function createShadowRootWithCoreStyles(element, options = {
   delegatesFocus: void 0,
@@ -15605,6 +15377,9 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
       return value;
     }
   }
+  get templateRoot() {
+    return this.#contentTemplate?.content ?? this;
+  }
   set template(template) {
     if (!this.#contentTemplate) {
       this.removeChildren();
@@ -15630,6 +15405,22 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
   addNodes(_nodes, _nextSibling) {
   }
   removeNodes(_nodes) {
+  }
+  static findCorrespondingElement(sourceElement, sourceRootElement, targetRootElement) {
+    let currentElement = sourceElement;
+    const childIndexesOnPathToRoot = [];
+    while (currentElement?.parentElement && currentElement !== sourceRootElement) {
+      childIndexesOnPathToRoot.push([...currentElement.parentElement.children].indexOf(currentElement));
+      currentElement = currentElement.parentElement;
+    }
+    if (!currentElement) {
+      return null;
+    }
+    let targetElement = targetRootElement;
+    for (const index of childIndexesOnPathToRoot.reverse()) {
+      targetElement = targetElement.children[index];
+    }
+    return targetElement;
   }
 };
 
@@ -16774,6 +16565,67 @@ var generateClassName = (index) => "template-class-" + index;
 var templateCache = /* @__PURE__ */ new Map();
 var html2 = (strings, ...vararg) => {
   return Fragment.cached(strings, ...vararg).element();
+};
+
+// gen/front_end/ui/legacy/XElement.js
+var XElement_exports = {};
+__export(XElement_exports, {
+  XElement: () => XElement
+});
+var XElement = class extends HTMLElement {
+  static get observedAttributes() {
+    return [
+      "flex",
+      "padding",
+      "padding-top",
+      "padding-bottom",
+      "padding-left",
+      "padding-right",
+      "margin",
+      "margin-top",
+      "margin-bottom",
+      "margin-left",
+      "margin-right",
+      "overflow",
+      "overflow-x",
+      "overflow-y",
+      "font-size",
+      "color",
+      "background",
+      "background-color",
+      "border",
+      "border-top",
+      "border-bottom",
+      "border-left",
+      "border-right",
+      "max-width",
+      "max-height"
+    ];
+  }
+  attributeChangedCallback(attr, _oldValue, newValue) {
+    if (attr === "flex") {
+      if (newValue === null) {
+        this.style.removeProperty("flex");
+      } else if (newValue === "initial" || newValue === "auto" || newValue === "none" || newValue.indexOf(" ") !== -1) {
+        this.style.setProperty("flex", newValue);
+      } else {
+        this.style.setProperty("flex", "0 0 " + newValue);
+      }
+      return;
+    }
+    if (newValue === null) {
+      this.style.removeProperty(attr);
+      if (attr.startsWith("padding-") || attr.startsWith("margin-") || attr.startsWith("border-") || attr.startsWith("background-") || attr.startsWith("overflow-")) {
+        const shorthand = attr.substring(0, attr.indexOf("-"));
+        const shorthandValue = this.getAttribute(shorthand);
+        if (shorthandValue !== null) {
+          this.style.setProperty(shorthand, shorthandValue);
+        }
+      }
+    } else {
+      this.style.setProperty(attr, newValue);
+    }
+  }
 };
 
 // gen/front_end/ui/legacy/XLink.js
@@ -22090,8 +21942,16 @@ var TreeSearch = class {
   }
   static highlight(ranges, selectedRange) {
     return Lit3.Directives.ref((element) => {
-      if (element instanceof HTMLLIElement) {
-        TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
+      if (!(element instanceof HTMLElement)) {
+        return;
+      }
+      const configListItem = element.closest('li[role="treeitem"]');
+      const titleElement = configListItem ? TreeViewTreeElement.get(configListItem)?.titleElement : void 0;
+      if (configListItem && titleElement) {
+        const targetElement = HTMLElementWithLightDOMTemplate.findCorrespondingElement(element, configListItem, titleElement);
+        if (targetElement) {
+          Highlighting.HighlightManager.HighlightManager.instance().set(targetElement, ranges, selectedRange);
+        }
       }
     });
   }
@@ -22153,30 +22013,7 @@ var TreeSearch = class {
     return this.#matches.length;
   }
 };
-var ActiveHighlights = class {
-  #activeRanges = [];
-  #highlights = [];
-  #selectedSearchResult = void 0;
-  apply(node) {
-    Highlighting.HighlightManager.HighlightManager.instance().removeHighlights(this.#activeRanges);
-    this.#activeRanges = Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, this.#highlights);
-    if (this.#selectedSearchResult) {
-      this.#activeRanges.push(...Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(
-        node,
-        [this.#selectedSearchResult],
-        /* isSelected=*/
-        true
-      ));
-    }
-  }
-  set(element, highlights, selectedSearchResult) {
-    this.#highlights = highlights;
-    this.#selectedSearchResult = selectedSearchResult;
-    this.apply(element);
-  }
-};
 var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
-  #activeHighlights = new ActiveHighlights();
   #clonedAttributes = /* @__PURE__ */ new Set();
   #clonedClasses = /* @__PURE__ */ new Set();
   static #elementToTreeElement = /* @__PURE__ */ new WeakMap();
@@ -22186,9 +22023,6 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
     this.configElement = configElement;
     _TreeViewTreeElement.#elementToTreeElement.set(configElement, this);
     this.refresh();
-  }
-  highlight(highlights, selectedSearchResult) {
-    this.#activeHighlights.set(this.titleElement, highlights, selectedSearchResult);
   }
   refresh() {
     this.titleElement.textContent = "";
@@ -22214,7 +22048,7 @@ var TreeViewTreeElement = class _TreeViewTreeElement extends TreeElement {
       }
       this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
     }
-    this.#activeHighlights.apply(this.titleElement);
+    Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
   }
   static get(configElement) {
     return configElement && _TreeViewTreeElement.#elementToTreeElement.get(configElement);
@@ -22251,12 +22085,12 @@ var TreeViewElement = class _TreeViewElement extends HTMLElementWithLightDOMTemp
     });
     this.#treeOutline.addEventListener(Events2.ElementExpanded, (event) => {
       if (event.data instanceof TreeViewTreeElement) {
-        this.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
+        event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: true }));
       }
     });
     this.#treeOutline.addEventListener(Events2.ElementCollapsed, (event) => {
       if (event.data instanceof TreeViewTreeElement) {
-        this.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
+        event.data.listItemElement.dispatchEvent(new _TreeViewElement.ExpandEvent({ expanded: false }));
       }
     });
     this.addNodes(getTreeNodes([this]));
@@ -22487,7 +22321,6 @@ export {
   Widget_exports as Widget,
   XElement_exports as XElement,
   XLink_exports as XLink,
-  XWidget_exports as XWidget,
   ZoomManager_exports as ZoomManager,
   inspectorCommon_css_default as inspectorCommonStyles
 };

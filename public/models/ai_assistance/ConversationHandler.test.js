@@ -6,6 +6,7 @@ import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
+import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Timeline from '../../panels/timeline/timeline.js';
 import { createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
@@ -170,7 +171,7 @@ describeWithMockConnection('ConversationHandler', () => {
                             title: 'Request',
                         },
                         {
-                            text: 'Response Status: 200 \n\nResponse headers:\ncontent-type: bar2\nx-forwarded-for: bar3',
+                            text: 'Response Status: 200 \n\nResponse headers:\ncontent-type: bar2\nx-forwarded-for: bar3\n\nResponse body:\n<empty response>',
                             title: 'Response',
                         },
                         {
@@ -196,6 +197,8 @@ describeWithMockConnection('ConversationHandler', () => {
             const networkRequest = createNetworkRequest({
                 url: urlString `https://a.test`,
             });
+            sinon.stub(networkRequest, 'requestContentData')
+                .resolves(new TextUtils.ContentData.ContentData('', false, 'text/plain'));
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const aidaClient = mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }], [{ explanation: 'test3' }]]);
@@ -260,6 +263,8 @@ describeWithMockConnection('ConversationHandler', () => {
             });
             const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
             const request = createNetworkRequest();
+            sinon.stub(request, 'requestContentData')
+                .resolves(new TextUtils.ContentData.ContentData('', false, 'text/plain'));
             const networkManager = sinon.createStubInstance(SDK.NetworkManager.NetworkManager, {
                 requestForURL: request,
             });

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import './data_grid.js';
-import { renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
+import { raf, renderElementIntoDOM } from '../../../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../../../testing/EnvironmentHelpers.js';
 import * as RenderCoordinator from '../../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Lit from '../../../../ui/lit/lit.js';
@@ -46,7 +46,7 @@ describeWithEnvironment('DataGrid', () => {
         return container.querySelector('devtools-data-grid');
     }
     async function renderDataGridContent(template) {
-        return await renderDataGrid(html `<devtools-data-grid striped name="Display Name">${template}</devtools-data-grid>`);
+        return await renderDataGrid(html `<devtools-data-grid striped name="Display Name" .template=${template}></devtools-data-grid>`);
     }
     async function renderDataGridWithData(columns, rows) {
         return await renderDataGridContent(html `<table>${columns}${rows}</table>`);
@@ -186,13 +186,13 @@ describeWithEnvironment('DataGrid', () => {
     it('supports editable columns', async () => {
         const editCallback = sinon.stub();
         const element = await renderDataGrid(html `
-        <devtools-data-grid striped name=${'Display Name'} @edit=${editCallback}>
+        <devtools-data-grid striped name=${'Display Name'}>
           <table>
             <tr>
               <th id="column-1" editable>Column 1</th>
               <th id="column-2">Column 2</th>
             </tr>
-            <tr>
+            <tr @edit=${editCallback}>
               <td>Value 1</td>
               <td>Value 2</td>
             </tr>
@@ -203,8 +203,8 @@ describeWithEnvironment('DataGrid', () => {
         getFocusedElement().textContent = 'New Value';
         sendKeydown(element, 'Enter');
         sinon.assert.calledOnce(editCallback);
-        assert.isTrue(editCallback.firstCall.args[0].detail.node.textContent.includes('Value 1'));
-        assert.isTrue(editCallback.firstCall.args[0].detail.node.textContent.includes('Value 2'));
+        assert.isTrue(editCallback.firstCall.args[0].target.textContent.includes('Value 1'));
+        assert.isTrue(editCallback.firstCall.args[0].target.textContent.includes('Value 2'));
         assert.strictEqual(editCallback.firstCall.args[0].detail.columnId, 'column-1');
         assert.strictEqual(editCallback.firstCall.args[0].detail.valueBeforeEditing, 'Value 1');
         assert.strictEqual(editCallback.firstCall.args[0].detail.newText, 'New Value');
@@ -214,18 +214,17 @@ describeWithEnvironment('DataGrid', () => {
         const editCallback = sinon.stub();
         const element = await renderDataGrid(html `
         <devtools-data-grid striped name=${'Display Name'}
-                            @create=${createCallback}
-                            @edit=${editCallback}>
+                            @create=${createCallback}>
           <table>
             <tr>
               <th id="column-1" editable>Column 1</th>
               <th id="column-2" editable>Column 2</th>
             </tr>
-            <tr>
+            <tr @edit=${editCallback}>
               <td>Value 1</td>
               <td>Value 2</td>
             </tr>
-            <tr placeholder>
+            <tr placeholder @edit=${editCallback}>
             </tr>
           </table>
         </devtools-data-grid>`);
@@ -241,6 +240,40 @@ describeWithEnvironment('DataGrid', () => {
         sinon.assert.notCalled(editCallback);
         sinon.assert.calledOnce(createCallback);
         assert.deepEqual(createCallback.firstCall.args[0].detail, { 'column-1': 'New Value 1', 'column-2': 'New Value 2' });
+    });
+    it('can display nested nodes', async () => {
+        const element = await renderDataGrid(html `
+        <devtools-data-grid striped name=${'Display Name'}>
+          <table>
+            <tr>
+              <th id="column-1">Column 1</th>
+              <th id="column-2">Column 2</th>
+            </tr>
+            <tr>
+              <td>Parent Value 1</td>
+              <td>Parent Value 2</td>
+              <td>
+                <table>
+                  <tr>
+                    <td>Child Value 1</td>
+                    <td>Child Value 2</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </devtools-data-grid>`);
+        // Navigate to parent row.
+        sendKeydown(element, 'ArrowDown');
+        // It should identify it as a parent and collapsed.
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row collapsed level 1, Column 1: Parent Value 1, Column 2: Parent Value 2');
+        // Expand parent row.
+        sendKeydown(element, 'ArrowRight');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row expanded level 1, Column 1: Parent Value 1, Column 2: Parent Value 2');
+        await raf();
+        // Navigate to child row.
+        sendKeydown(element, 'ArrowDown');
+        assert.strictEqual(getAlertAnnouncement(element), 'Display Name Row  level 2, Column 1: Child Value 1, Column 2: Child Value 2');
     });
 });
 //# sourceMappingURL=DataGridElement.test.js.map

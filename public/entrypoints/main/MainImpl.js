@@ -424,7 +424,12 @@ export class MainImpl {
         this.#registerMessageSinkListener();
         // Initialize `GDPClient` and `UserBadges` for Google Developer Program integration
         if (Host.GdpClient.isGdpProfilesAvailable()) {
-            void Host.GdpClient.GdpClient.instance().initialize().then(({ hasProfile, isEligible }) => {
+            void Host.GdpClient.GdpClient.instance().getProfile().then(getProfileResponse => {
+                if (!getProfileResponse) {
+                    return;
+                }
+                const { profile, isEligible } = getProfileResponse;
+                const hasProfile = Boolean(profile);
                 const contextString = hasProfile ? 'has-profile' :
                     isEligible ? 'no-profile-and-eligible' :
                         'no-profile-and-not-eligible';
@@ -846,7 +851,7 @@ export class PauseListener {
         void Common.Revealer.reveal(debuggerPausedDetails);
     }
 }
-// Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the
+/** Unused but mentioned at https://chromedevtools.github.io/devtools-protocol/#:~:text=use%20Main.MainImpl.-,sendOverProtocol,-()%20in%20the **/
 export function sendOverProtocol(method, params) {
     return new Promise((resolve, reject) => {
         const sendRawMessage = ProtocolClient.InspectorBackend.test.sendRawMessage;
@@ -871,9 +876,11 @@ export class ReloadActionDelegate {
         return false;
     }
 }
-// For backwards-compatibility we iterate over the generator and drop the
-// intermediate results. The final response is transformed to its legacy type.
-// Instead of sending responses of type error, errors are throws.
+/**
+ * For backwards-compatibility we iterate over the generator and drop the
+ * intermediate results. The final response is transformed to its legacy type.
+ * Instead of sending responses of type error, errors are throws.
+ **/
 export async function handleExternalRequest(input) {
     const generator = await handleExternalRequestGenerator(input);
     let result;

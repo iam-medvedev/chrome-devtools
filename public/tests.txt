@@ -614,6 +614,7 @@ ui/components/dialogs/ShortcutDialog.test.js
 ui/components/diff_view/DiffView.test.js
 ui/components/expandable_list/ExpandableList.test.js
 ui/components/helpers/helpers.test.js
+ui/components/highlighting/HighlightElement.test.js
 ui/components/highlighting/HighlightManager.test.js
 ui/components/icon_button/FileSourceIcon.test.js
 ui/components/icon_button/Icon.test.js

@@ -193,7 +193,7 @@ export function nearestIndexFromBeginning(arr, predicate) {
 export function nearestIndexFromEnd(arr, predicate) {
     return nearestIndex(arr, predicate, "END" /* NearestSearchStart.END */);
 }
-// Type guard for ensuring that `arr` does not contain null or undefined
+/** Type guard for ensuring that `arr` does not contain null or undefined **/
 export function arrayDoesNotContainNullOrUndefined(arr) {
     return !arr.includes(null) && !arr.includes(undefined);
 }

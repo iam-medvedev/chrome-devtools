@@ -1970,9 +1970,11 @@ __export(XMLView_exports, {
   XMLTreeViewNode: () => XMLTreeViewNode,
   XMLView: () => XMLView
 });
+import "./../../../components/highlighting/highlighting.js";
 import * as i18n11 from "./../../../../core/i18n/i18n.js";
 import * as TextUtils8 from "./../../../../models/text_utils/text_utils.js";
 import * as Lit from "./../../../lit/lit.js";
+import * as VisualLogging5 from "./../../../visual_logging/visual_logging.js";
 import * as UI7 from "./../../legacy.js";
 
 // gen/front_end/ui/legacy/components/source_frame/xmlTree.css.js
@@ -2041,12 +2043,10 @@ var xmlView_css_default = `/*
  * found in the LICENSE file.
  */
 
-@scope to (devtools-widget > *) {
 .shadow-xml-view {
   user-select: text;
   overflow: auto;
   padding: 0;
-}
 }
 
 /*# sourceURL=${import.meta.resolve("./xmlView.css")} */`;
@@ -2070,7 +2070,7 @@ function* attributes(element) {
   }
 }
 function hasNonTextChildren(node) {
-  return node.childNodes.length !== node.childTextNodes.length;
+  return Boolean(node.childNodes.values().find((node2) => node2.nodeType !== Node.TEXT_NODE));
 }
 function textView(treeNode, closeTag) {
   const { node } = treeNode;
@@ -2126,37 +2126,40 @@ function htmlView(treeNode) {
 }
 var DEFAULT_VIEW = (input, output, target) => {
   function highlight(node, closeTag) {
+    let highlights = "";
+    let selected = "";
     if (!input.search) {
-      return Lit.nothing;
+      return { highlights, selected };
     }
     const entries = input.search.getResults(node);
-    const highlights = [];
-    let selected = void 0;
     for (const entry of entries ?? []) {
       if (entry.isPostOrderMatch === closeTag) {
         const range = new TextUtils8.TextRange.SourceRange(entry.match.index, entry.match[0].length);
         if (entry === input.jumpToNextSearchResult) {
-          selected = range;
+          selected = `${range.offset},${range.length}`;
         } else {
-          highlights.push(range);
+          highlights += `${range.offset},${range.length} `;
         }
       }
     }
-    return UI7.TreeOutline.TreeSearch.highlight(highlights, selected);
+    return { highlights, selected };
   }
   function layOutNode(node, populateSubtrees = false) {
     const onExpand = (event) => input.onExpand(node, event.detail.expanded);
-    return html`
-      <li ${highlight(
+    const { highlights, selected } = highlight(
       node,
       /* closeTag=*/
       false
-    )} role="treeitem"
+    );
+    return html`
+      <li role="treeitem"
           ?selected=${input.jumpToNextSearchResult?.node === node}
           @expand=${onExpand}>
-        ${htmlView(node)}
+        <devtools-highlight ranges=${highlights} current-range=${selected}>
+          ${htmlView(node)}
+        </devtools-highlight>
         ${node.children().length ? html`
-          <ul role="group" ?hidden=${!node.expanded}>
+          <ul role="group" ?hidden=${!node.expanded && input.jumpToNextSearchResult?.node !== node}>
             ${populateSubtrees || input.search ? subtree(node) : Lit.nothing}
           </ul>` : Lit.nothing}
       </li>`;
@@ -2166,16 +2169,19 @@ var DEFAULT_VIEW = (input, output, target) => {
     if (children2.length === 0) {
       return Lit.nothing;
     }
-    return html`
-      ${children2.map((child) => layOutNode(child, treeNode.expanded))}
-      ${treeNode.node instanceof Element ? html`<li
-                  ${highlight(
+    const { highlights, selected } = highlight(
       treeNode,
       /* closeTag=*/
       true
-    )}
-                  role="treeitem"><span part='shadow-xml-view-close-tag'>${"</" + treeNode.node.tagName + ">"}</span
-                 ></li>` : Lit.nothing}`;
+    );
+    return html`
+      ${children2.map((child) => layOutNode(child, treeNode.expanded))}
+      ${treeNode.node instanceof Element ? html`
+        <li role="treeitem">
+          <devtools-highlight ranges=${highlights} current-range=${selected}>
+            <span part='shadow-xml-view-close-tag'>${"</" + treeNode.node.tagName + ">"}</span>
+          </devtools-highlight>
+        </li>` : Lit.nothing}`;
   }
   render(
     html`
@@ -2247,7 +2253,7 @@ var XMLView = class _XMLView extends UI7.Widget.Widget {
   #view;
   #nextJump;
   constructor(target, view = DEFAULT_VIEW) {
-    super(target, { jslog: "xml-view", classes: ["shadow-xml-view", "source-code"] });
+    super(target, { jslog: `${VisualLogging5.pane("xml-view")}`, classes: ["shadow-xml-view", "source-code"] });
     this.#view = view;
   }
   set parsedXML(parsedXML) {

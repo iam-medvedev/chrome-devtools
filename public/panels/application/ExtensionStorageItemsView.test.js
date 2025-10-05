@@ -92,14 +92,7 @@ describeWithMockConnection('ExtensionStorageItemsView', function () {
         ];
         for (const { input, parsedValue } of expectedResults) {
             const key = Object.keys(EXAMPLE_DATA)[0];
-            viewFunction.input.onEdit(new CustomEvent('edit', {
-                detail: {
-                    node: { dataset: { key } },
-                    columnId: 'value',
-                    valueBeforeEditing: EXAMPLE_DATA[key],
-                    newText: input
-                }
-            }));
+            viewFunction.input.onEdit(key, 'oldValue', 'value', EXAMPLE_DATA[key], input);
             await itemsListener.waitForItemsEdited();
             setStorageItems.calledOnceWithExactly({ id: TEST_EXTENSION_ID, storageArea: "local" /* Protocol.Extensions.StorageArea.Local */, values: { [key]: parsedValue } });
             setStorageItems.reset();

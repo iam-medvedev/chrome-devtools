@@ -27,6 +27,7 @@ export interface PageResource {
     size: number | null;
     duration: number | null;
 }
+/** Used for revealing a resource. **/
 export declare class ResourceKey {
     readonly key: string;
     constructor(key: string);

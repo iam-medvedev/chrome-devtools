@@ -1,7 +1,20 @@
 import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
+/**
+ * Height in pixels of the dialog's connector. The connector is represented as
+ * as a diamond and the height corresponds to half the height of the diamond.
+ * (the visible height is only half of the diamond).
+ **/
 export declare const CONNECTOR_HEIGHT = 10;
 export declare const DIALOG_SIDE_PADDING = 5;
 export declare const DIALOG_VERTICAL_PADDING = 3;
+/**
+ * If the content of the dialog cannot be completely shown because otherwise
+ * the dialog would overflow the window, the dialog's max width and height are
+ * set such that the dialog remains inside the visible bounds. In this cases
+ * some extra, determined by this constant, is added so that the dialog's borders
+ * remain clearly visible. This constant accounts for the padding of the dialog's
+ * content (20 px) and a 5px gap left on each extreme of the dialog from the viewport.
+ **/
 export declare const DIALOG_PADDING_FROM_WINDOW: number;
 type DialogAnchor = HTMLElement | DOMRect | DOMPoint;
 export declare const MODAL = "MODAL";

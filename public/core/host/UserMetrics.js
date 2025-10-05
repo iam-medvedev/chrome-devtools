@@ -231,9 +231,11 @@ export class UserMetrics {
  * 1. Delete the line with the unneeded value
  * 2. Do not update any 'MAX_VALUE' or any other value.
  */
-// Codes below are used to collect UMA histograms in the Chromium port.
-// Do not change the values below, additional actions are needed on the Chromium side
-// in order to add more codes.
+/**
+ * Codes below are used to collect UMA histograms in the Chromium port.
+ * Do not change the values below, additional actions are needed on the Chromium side
+ * in order to add more codes.
+ **/
 export var Action;
 (function (Action) {
     /* eslint-disable @typescript-eslint/naming-convention */
@@ -706,7 +708,7 @@ export var DevtoolsExperiments;
     // Increment this when new experiments are added.
     DevtoolsExperiments[DevtoolsExperiments["MAX_VALUE"] = 110] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));
-// Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added.
+/** Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added. **/
 export var IssueExpanded;
 (function (IssueExpanded) {
     /* eslint-disable @typescript-eslint/naming-convention */

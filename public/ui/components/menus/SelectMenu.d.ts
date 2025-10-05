@@ -125,5 +125,11 @@ export declare class SelectMenuButtonTriggerEvent extends Event {
     static readonly eventName = "selectmenubuttontrigger";
     constructor();
 }
+/**
+ * Exported artifacts used in this component and that belong to the Menu are
+ * renamed to only make reference to the SelectMenu. This way, the Menu API
+ * doesn't have to be used in SelectMenu usages and the SelectMenu implementation
+ * can remain transparent to its users.
+ **/
 export type SelectMenuItemValue = MenuItemValue;
 export { MenuGroup as SelectMenuGroup };

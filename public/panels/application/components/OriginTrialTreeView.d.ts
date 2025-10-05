@@ -11,6 +11,13 @@ export declare class Badge extends HTMLElement {
     set data(data: BadgeData);
 }
 type TreeNode<DataType> = TreeOutline.TreeOutlineUtils.TreeNode<DataType>;
+/**
+ * The Origin Trial Tree has 4 levels of content:
+ * - Origin Trial (has multiple Origin Trial tokens)
+ * - Origin Trial Token (has only 1 raw token text)
+ * - Fields in Origin Trial Token
+ * - Raw Origin Trial Token text (folded because the content is long)
+ **/
 export type OriginTrialTreeNodeData = Protocol.Page.OriginTrial | Protocol.Page.OriginTrialTokenWithStatus | string;
 export interface OriginTrialTokenRowsData {
     node: TreeNode<OriginTrialTreeNodeData>;

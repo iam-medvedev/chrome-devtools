@@ -16,29 +16,33 @@ export function getReleaseNote() {
     return releaseNote;
 }
 let releaseNote = {
-    version: 82,
-    header: 'What\'s new in DevTools 141',
+    version: 83,
+    header: 'What\'s new in DevTools 142',
     markdownLinks: [
         {
-            key: 'ai-insight',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-141/#ai-insight',
+            key: 'perf-ai-agent',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-142/#perf-ai-agent',
         },
         {
-            key: 'ai-chat-export',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-141/#ai-chat-export',
+            key: 'ai-code-completion',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-142/#ai-code-completion',
         },
         {
-            key: 'ipp',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-141/#ipp',
+            key: 'gdp',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-142/#gdp',
+        },
+        {
+            key: 'ai-main-button',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-142/#ai-main-button',
         },
     ],
     videoLinks: [
         {
-            description: 'See past highlights from Chrome 140',
-            link: 'https://developer.chrome.com/blog/new-in-devtools-140',
+            description: 'See past highlights from Chrome 141',
+            link: 'https://developer.chrome.com/blog/new-in-devtools-141',
             type: "WhatsNew" /* VideoType.WHATS_NEW */,
         },
     ],
-    link: 'https://developer.chrome.com/blog/new-in-devtools-141/',
+    link: 'https://developer.chrome.com/blog/new-in-devtools-142/',
 };
 //# sourceMappingURL=ReleaseNoteText.js.map

@@ -70,8 +70,10 @@ export function extractOriginFromTrace(firstNavigationURL) {
     }
     return null;
 }
-// Each thread contains events. Events indicate the thread and process IDs, which are
-// used to store the event in the correct process thread entry below.
+/**
+ * Each thread contains events. Events indicate the thread and process IDs, which are
+ * used to store the event in the correct process thread entry below.
+ **/
 export function addEventToProcessThread(event, eventsInProcessThread) {
     const { tid, pid } = event;
     let eventsInThread = eventsInProcessThread.get(pid);
@@ -704,8 +706,10 @@ export function extractSampleTraceId(event) {
     }
     return event.args?.sampleTraceId ?? event.args?.data?.sampleTraceId ?? null;
 }
-// This exactly matches Trace.Styles.visibleTypes. See the runtime verification in maybeInitStylesMap.
-// TODO(crbug.com/410884528)
+/**
+ * This exactly matches Trace.Styles.visibleTypes. See the runtime verification in maybeInitStylesMap.
+ * TODO(crbug.com/410884528)
+ **/
 export const VISIBLE_TRACE_EVENT_TYPES = new Set([
     "AbortPostTaskCallback" /* Types.Events.Name.ABORT_POST_TASK_CALLBACK */,
     "Animation" /* Types.Events.Name.ANIMATION */,

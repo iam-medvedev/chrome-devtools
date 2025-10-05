@@ -5,6 +5,10 @@ export declare const secondsToMicro: (value: Types.Timing.Seconds) => Types.Timi
 export declare const microToMilli: (value: Types.Timing.Micro) => Types.Timing.Milli;
 export declare const microToSeconds: (value: Types.Timing.Micro) => Types.Timing.Seconds;
 export declare function timeStampForEventAdjustedByClosestNavigation(event: Types.Events.Event, traceBounds: Types.Timing.TraceWindowMicro, navigationsByNavigationId: Map<string, Types.Events.NavigationStart>, navigationsByFrameId: Map<string, Types.Events.NavigationStart[]>): Types.Timing.Micro;
+/**
+ * Expands the trace window by a provided percentage or, if it the expanded window is smaller than 1 millisecond, expands it to 1 millisecond.
+ * If the expanded window is outside of the max trace window, cut the overflowing bound to the max trace window bound.
+ **/
 export declare function expandWindowByPercentOrToOneMillisecond(annotationWindow: Types.Timing.TraceWindowMicro, maxTraceWindow: Types.Timing.TraceWindowMicro, percentage: number): Types.Timing.TraceWindowMicro;
 export interface EventTimingsData<ValueType extends Types.Timing.Micro | Types.Timing.Milli | Types.Timing.Seconds> {
     startTime: ValueType;

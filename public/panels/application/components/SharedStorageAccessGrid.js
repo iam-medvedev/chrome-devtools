@@ -89,7 +89,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           <devtools-icon class="info-icon medium" name="info"
                           title=${i18nString(UIStrings.allSharedStorageEvents)}>
           </devtools-icon>
-          <devtools-data-grid striped inline @select=${input.onSelect}>
+          <devtools-data-grid striped inline>
             <table>
               <thead>
                 <tr>
@@ -114,8 +114,8 @@ export const DEFAULT_VIEW = (input, _output, target) => {
                 </tr>
               </thead>
               <tbody>
-                ${input.events.map((event, index) => html `
-                  <tr data-index=${index}>
+                ${input.events.map(event => html `
+                  <tr @select=${() => input.onSelect(event)}>
                     <td data-value=${event.accessTime}>
                       ${new Date(1e3 * event.accessTime).toLocaleString()}
                     </td>
@@ -155,15 +155,8 @@ export class SharedStorageAccessGrid extends UI.Widget.Widget {
     performUpdate() {
         this.#view({
             events: this.#events,
-            onSelect: this.#onSelectEvent.bind(this),
+            onSelect: this.#onSelect.bind(this),
         }, {}, this.contentElement);
-    }
-    #onSelectEvent(event) {
-        const index = parseInt(event.detail?.dataset.index || '', 10);
-        const datastore = isNaN(index) ? undefined : this.#events[index];
-        if (datastore) {
-            this.#onSelect(datastore);
-        }
     }
 }
 //# sourceMappingURL=SharedStorageAccessGrid.js.map

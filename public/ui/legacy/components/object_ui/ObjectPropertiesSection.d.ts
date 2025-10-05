@@ -53,6 +53,10 @@ export declare class RootElement extends UI.TreeOutline.TreeElement {
     private onContextMenu;
     onpopulate(): Promise<void>;
 }
+/**
+ * Number of initially visible children in an ObjectPropertyTreeElement.
+ * Remaining children are shown as soon as requested via a show more properties button.
+ **/
 export declare const InitialVisibleChildrenLimit = 200;
 export declare class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     property: SDK.RemoteObject.RemoteObjectProperty;

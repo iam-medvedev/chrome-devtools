@@ -6,6 +6,7 @@ import type * as Platform from '../../core/platform/platform.js';
 import * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export declare const i18nString: (id: string, values?: import("../../core/i18n/i18nTypes.js").Values | undefined) => Platform.UIString.LocalizedString;
+/** A simplified representation of a network request for mock data. **/
 interface MockNetworkRequest {
     requestId: string;
     url: string;

@@ -279,6 +279,6 @@ export class GlassPane {
 }
 const containers = new Map();
 const panes = new Set();
-// Exported for layout tests.
+/** Exported for layout tests. **/
 export const GlassPanePanes = panes;
 //# sourceMappingURL=GlassPane.js.map

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Handlers from '../handlers/handlers.js';
 import * as Helpers from '../helpers/helpers.js';
 import { InsightCategory, } from './types.js';
 export const UIStrings = {
@@ -45,13 +46,23 @@ export function isINPBreakdownInsight(insight) {
     return insight.insightKey === "INPBreakdown" /* InsightKeys.INP_BREAKDOWN */;
 }
 function finalize(partialModel) {
+    let state = 'pass';
+    if (partialModel.longestInteractionEvent) {
+        const classification = Handlers.ModelHandlers.UserInteractions.scoreClassificationForInteractionToNextPaint(partialModel.longestInteractionEvent.dur);
+        if (classification === "good" /* Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */) {
+            state = 'informative';
+        }
+        else {
+            state = 'fail';
+        }
+    }
     return {
         insightKey: "INPBreakdown" /* InsightKeys.INP_BREAKDOWN */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.INP,
-        state: partialModel.longestInteractionEvent ? 'informative' : 'pass',
+        state,
         ...partialModel,
     };
 }

@@ -44,20 +44,17 @@ export interface ViewInput {
     filterKeys: string[];
     filter: string;
     parseFilter: (filter: string) => TextUtils.TextUtils.ParsedFilter[];
-    onRecord: (e: Event) => void;
+    onRecord: (record: boolean) => void;
     onClear: () => void;
     onSave: () => void;
-    onSplitChange: (e: CustomEvent<string>) => void;
-    onSelect: (e: CustomEvent<HTMLElement | null>) => void;
-    onContextMenu: (e: CustomEvent<{
-        menu: UI.ContextMenu.ContextMenu;
-        element: HTMLElement;
-    }>) => void;
-    onFilterChanged: (e: CustomEvent<string>) => void;
-    onCommandChange: (e: CustomEvent<string>) => void;
-    onCommandSubmitted: (e: CustomEvent<string>) => void;
-    onTargetChange: (e: Event) => void;
-    onToggleSidebar: (e: Event) => void;
+    onSplitChange: (onlyMain: boolean) => void;
+    onSelect: (e: Message | undefined) => void;
+    onContextMenu: (message: Message, menu: UI.ContextMenu.ContextMenu) => void;
+    onFilterChanged: (filter: string) => void;
+    onCommandChange: (command: string) => void;
+    onCommandSubmitted: (input: string) => void;
+    onTargetChange: (targetId: string) => void;
+    onToggleSidebar: () => void;
     targets: SDK.Target.Target[];
     selectedTargetId: string;
 }

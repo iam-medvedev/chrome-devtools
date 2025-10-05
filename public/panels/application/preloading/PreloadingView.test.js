@@ -14,7 +14,7 @@ const zip2 = (xs, ys) => {
     assert.strictEqual(xs.length, ys.length);
     return Array.from(xs.map((_, i) => [xs[i], ys[i]]));
 };
-// Holds targets and ids, and emits events.
+/** Holds targets and ids, and emits events. **/
 class NavigationEmulator {
     seq = 0;
     tabTarget;

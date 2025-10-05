@@ -32,11 +32,13 @@
 import * as Platform from '../platform/platform.js';
 import { ColorConverter } from './ColorConverter.js';
 import { blendColors, contrastRatioAPCA, desiredLuminanceAPCA, luminance, luminanceAPCA, rgbToHsl, rgbToHwb, } from './ColorUtils.js';
-// <hue> is defined as a <number> or <angle>
-// and we hold this in degrees. However, after
-// the conversions, these degrees can result in
-// negative values. That's why we normalize the hue to be
-// between [0 - 360].
+/**
+ * <hue> is defined as a <number> or <angle>
+ * and we hold this in degrees. However, after
+ * the conversions, these degrees can result in
+ * negative values. That's why we normalize the hue to be
+ * between [0 - 360].
+ **/
 function normalizeHue(hue) {
     // Even though it is highly unlikely, hue can be
     // very negative like -400. The initial modulo
@@ -44,9 +46,11 @@ function normalizeHue(hue) {
     // negative, it is between [-360, 0].
     return ((hue % 360) + 360) % 360;
 }
-// Parses angle in the form of
-// `<angle>deg`, `<angle>turn`, `<angle>grad and `<angle>rad`
-// and returns the canonicalized `degree`.
+/**
+ * Parses angle in the form of
+ * `<angle>deg`, `<angle>turn`, `<angle>grad and `<angle>rad`
+ * and returns the canonicalized `degree`.
+ **/
 function parseAngle(angleText) {
     const angle = angleText.replace(/(deg|g?rad|turn)$/, '');
     // @ts-expect-error: isNaN can accept strings
@@ -69,7 +73,7 @@ function parseAngle(angleText) {
     // 1deg === 1deg ^_^
     return number;
 }
-// Returns the `Format` equivalent from the format text
+/** Returns the `Format` equivalent from the format text **/
 export function getFormat(formatText) {
     switch (formatText) {
         case "hex" /* Format.HEX */:

@@ -20,4 +20,6 @@ export declare class HighlightManager {
     addHighlight(range: Range): void;
     removeHighlight(range: Range): void;
     highlightOrderedTextRanges(root: Node, sourceRanges: TextUtils.TextRange.SourceRange[], isCurrent?: boolean): Range[];
+    apply(node: Node): void;
+    set(element: Node, ranges: TextUtils.TextRange.SourceRange[], currentRange: TextUtils.TextRange.SourceRange | undefined): void;
 }

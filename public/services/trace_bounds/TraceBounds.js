@@ -15,8 +15,10 @@ export class StateChangedEvent extends Event {
         this.options = options;
     }
 }
-// Exposed as a shortcut to BoundsManager.instance().addEventListener, which
-// also takes care of type-casting the event to StateChangedEvent.
+/**
+ * Exposed as a shortcut to BoundsManager.instance().addEventListener, which
+ * also takes care of type-casting the event to StateChangedEvent.
+ **/
 export function onChange(cb) {
     BoundsManager.instance().addEventListener(StateChangedEvent.eventName, 
     // Cast the callback as TS doesn't know that these events will emit

@@ -1,7 +1,6 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Common from '../../core/common/common.js';
 import { assertScreenshot, renderElementIntoDOM, } from '../../testing/DOMHelpers.js';
 import { describeWithEnvironment } from '../../testing/EnvironmentHelpers.js';
 import { createViewFunctionStub } from '../../testing/ViewFunctionHelpers.js';
@@ -27,11 +26,6 @@ class FakeSearchScope {
     }
 }
 class TestSearchView extends Search.SearchView.SearchView {
-    /**
-     * The throttler with which the base 'SearchView' throttles UI updates.
-     * Exposed here so tests can wait for the updates to finish.
-     */
-    throttler;
     #scopeCreator;
     /**
      * `SearchView` resets and lazily re-creates the search results pane for each search.
@@ -41,9 +35,7 @@ class TestSearchView extends Search.SearchView.SearchView {
     view;
     constructor(scopeCreator) {
         const view = createViewFunctionStub(Search.SearchView.SearchView);
-        const throttler = new Common.Throttler.Throttler(/* timeoutMs */ 0);
-        super('fake', throttler, view);
-        this.throttler = throttler;
+        super('fake', view);
         this.view = view;
         this.#scopeCreator = scopeCreator;
     }

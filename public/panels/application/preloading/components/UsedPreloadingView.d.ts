@@ -19,6 +19,10 @@ export declare const enum UsedKind {
     PRERENDER_FAILED = "PrerenderFailed",
     NO_PRELOADS = "NoPreloads"
 }
+/**
+ * TODO(kenoss): Rename this class and file once https://crrev.com/c/4933567 landed.
+ * This also shows summary of speculations initiated by this page.
+ **/
 export declare class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
     set data(data: UsedPreloadingViewData);

@@ -942,7 +942,7 @@ export class TimelineFlameChartDataProvider extends Common.ObjectWrapper.ObjectW
         }
         context.fillRect(barX, barY - 0.5, desiredBoxStartX - barX, barHeight);
         context.fillRect(desiredBoxEndX, barY - 0.5, entireBarEndXPixel - desiredBoxEndX, barHeight);
-        // Draws left and right whiskers
+        /** Draws left and right whiskers **/
         function drawTick(begin, end, y) {
             const tickHeightPx = 6;
             context.moveTo(begin, y - tickHeightPx / 2);

@@ -2,6 +2,7 @@ import type * as Platform from '../../../core/platform/platform.js';
 import type * as SDK from '../../../core/sdk/sdk.js';
 import type * as Protocol from '../../../generated/protocol.js';
 import type { Micro, Milli, Seconds, TraceWindowMicro } from './Timing.js';
+/** Trace Events. **/
 export declare const enum Phase {
     BEGIN = "B",
     END = "E",
@@ -203,6 +204,10 @@ export interface End extends Event {
  * the RendererHandler.
  */
 export type SyntheticComplete = Complete;
+/**
+ * TODO(paulirish): Migrate to the new (Sept 2024) EventTiming trace events.
+ * See https://source.chromium.org/chromium/chromium/src/+/main:third_party/blink/renderer/core/timing/window_performance.cc;l=900-901;drc=b503c262e425eae59ced4a80d59d176ed07152c7
+ **/
 export type EventTimingBeginOrEnd = EventTimingBegin | EventTimingEnd;
 export interface EventTimingBegin extends Event {
     ph: Phase.ASYNC_NESTABLE_START;
@@ -248,6 +253,11 @@ export interface SyntheticNetworkRedirect {
     ts: Micro;
     dur: Micro;
 }
+/**
+ * ProcessedArgsData is used to store the processed data of a network
+ * request. Which is used to distinguish from the date we extract from the
+ * trace event directly.
+ **/
 interface SyntheticArgsData {
     dnsLookup: Micro;
     download: Micro;
@@ -268,8 +278,10 @@ interface SyntheticArgsData {
     ssl: Micro;
     stalled: Micro;
     totalTime: Micro;
-    /** Server response time (receiveHeadersEnd - sendEnd) */
+    /** receiveHeadersEnd - sendEnd */
     waiting: Micro;
+    /** receiveHeadersStart - sendEnd */
+    serverResponseTime: Micro;
 }
 export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.COMPLETE> {
     rawSourceEvent: ResourceSendRequest;
@@ -323,6 +335,8 @@ export interface SyntheticNetworkRequest extends Complete, SyntheticBased<Phase.
             initiator?: Initiator;
             requestMethod?: string;
             timing?: ResourceReceiveResponseTimingData;
+            /** Server response time according to Lightrider. */
+            lrServerResponseTime?: Milli;
         };
     };
     cat: 'loading';
@@ -763,7 +777,7 @@ export interface SyntheticLayoutShift extends Omit<LayoutShift, 'name'>, Synthet
 }
 export declare const NO_NAVIGATION = "NO_NAVIGATION";
 /**
- * This maybe be a navigation id string from Chromium, or `NO_NAVIGATION`, which represents the
+ * This maybe be a navigation id string from Chrome, or `NO_NAVIGATION`, which represents the
  * portion of the trace for which we don't have any navigation event for (as it happeneded prior
  * to the trace start).
  */
@@ -1297,6 +1311,10 @@ declare const enum FrameType {
     FORKED = "FORKED",
     BACKFILL = "BACKFILL"
 }
+/**
+ * TODO(crbug.com/409484302): Remove once Chrome migrates from
+ * ChromeTrackEvent.chrome_frame_reporter to ChromeTrackEvent.frame_reporter.
+ **/
 export interface OldChromeFrameReporterArgs {
     chrome_frame_reporter: ChromeFrameReporter;
 }
@@ -1311,12 +1329,26 @@ export interface PipelineReporter extends Event {
     args: Args & (OldChromeFrameReporterArgs | NewChromeFrameReporterArgs);
 }
 export declare function isPipelineReporter(event: Event): event is PipelineReporter;
+/**
+ * A type used for synthetic events created based on a raw trace event.
+ * A branded type is used to ensure not all events can be typed as
+ * SyntheticBased and prevent places different to the
+ * SyntheticEventsManager from creating synthetic events. This is
+ * because synthetic events need to be registered in order to resolve
+ * serialized event keys into event objects, so we ensure events are
+ * registered at the time they are created by the SyntheticEventsManager.
+ **/
 export interface SyntheticBased<Ph extends Phase = Phase, T extends Event = Event> extends Event {
     ph: Ph;
     rawSourceEvent: T;
     _tag: 'SyntheticEntryTag';
 }
 export declare function isSyntheticBased(event: Event): event is SyntheticBased;
+/**
+ * Nestable async events with a duration are made up of two distinct
+ * events: the begin, and the end. We need both of them to be able to
+ * display the right information, so we create these synthetic events.
+ **/
 export interface SyntheticEventPair<T extends PairableAsync = PairableAsync> extends SyntheticBased<Phase, T> {
     rawSourceEvent: T;
     name: T['name'];
@@ -1457,6 +1489,7 @@ export interface RasterTask extends Complete {
     };
 }
 export declare function isRasterTask(event: Event): event is RasterTask;
+/** CompositeLayers has been replaced by "Commit", but we support both to not break old traces being imported. **/
 export interface CompositeLayers extends Instant {
     name: Name.COMPOSITE_LAYERS;
     args: Args & {
@@ -1637,6 +1670,7 @@ export declare function isResourceMarkAsCached(event: Event): event is ResourceM
 export declare function isResourceFinish(event: Event): event is ResourceFinish;
 export declare function isResourceWillSendRequest(event: Event): event is ResourceWillSendRequest;
 export declare function isResourceReceivedData(event: Event): event is ResourceReceivedData;
+/** Any event where we receive data (and get an encodedDataLength) **/
 export declare function isReceivedDataEvent(event: Event): event is ResourceReceivedData | ResourceFinish | ResourceReceiveResponse;
 export declare function isSyntheticNetworkRequest(event: Event): event is SyntheticNetworkRequest;
 export declare function isSyntheticWebSocketConnection(event: Event): event is SyntheticWebSocketConnection;
@@ -2230,6 +2264,10 @@ export declare const enum Name {
     USER_TIMING_MEASURE = "UserTiming::Measure",
     LINK_PRECONNECT = "LinkPreconnect"
 }
+/**
+ * NOT AN EXHAUSTIVE LIST: just some categories we use and refer
+ * to in multiple places.
+ **/
 export declare const Categories: {
     readonly Console: "blink.console";
     readonly UserTiming: "blink.user_timing";

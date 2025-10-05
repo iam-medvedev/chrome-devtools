@@ -544,7 +544,7 @@ export class SourcesPanel extends UI.Panel.Panel {
         }
     }
     addExperimentMenuItem(menuSection, experiment, menuItem) {
-        // menu handler
+        /** menu handler **/
         function toggleExperiment() {
             const checked = Root.Runtime.experiments.isEnabled(experiment);
             Root.Runtime.experiments.setEnabled(experiment, !checked);

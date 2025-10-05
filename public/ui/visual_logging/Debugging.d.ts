@@ -34,5 +34,9 @@ export declare const enum DebugLoggingFormat {
 }
 export declare function setVeDebugLoggingEnabled(enabled: boolean, format?: DebugLoggingFormat): void;
 export declare function processStartLoggingForDebugging(): void;
+/**
+ * Verifies that VE events contains all the expected events in given order.
+ * Unexpected VE events are ignored.
+ **/
 export declare function expectVeEvents(expectedEvents: TestLogEntry[]): Promise<void>;
 export {};

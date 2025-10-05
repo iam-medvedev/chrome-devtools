@@ -225,8 +225,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     #initialPriority = null;
     #currentPriority = null;
     #signedExchangeInfo = null;
-    #webBundleInfo = null;
-    #webBundleInnerRequestInfo = null;
     #resourceType = Common.ResourceType.resourceTypes.Other;
     #contentData = null;
     #streamingContentData = null;
@@ -1167,18 +1165,6 @@ export class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper {
     }
     signedExchangeInfo() {
         return this.#signedExchangeInfo;
-    }
-    setWebBundleInfo(info) {
-        this.#webBundleInfo = info;
-    }
-    webBundleInfo() {
-        return this.#webBundleInfo;
-    }
-    setWebBundleInnerRequestInfo(info) {
-        this.#webBundleInnerRequestInfo = info;
-    }
-    webBundleInnerRequestInfo() {
-        return this.#webBundleInnerRequestInfo;
     }
     async populateImageSource(image) {
         const contentData = await this.requestContentData();

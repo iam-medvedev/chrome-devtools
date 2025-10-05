@@ -13,7 +13,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         'enabled', 'disabled', 'valid', 'invalid', 'user-valid',
         'user-invalid', 'required', 'optional', 'read-only', 'read-write',
         'in-range', 'out-of-range', 'visited', 'link', 'checked',
-        'indeterminate', 'placeholder-shown', 'autofill', 'open',
+        'indeterminate', 'placeholder-shown', 'autofill', 'open', 'target-current',
     ];
     beforeEach(() => {
         stubNoopSettings();
@@ -30,6 +30,9 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         sinon.stub(node, 'callFunction').resolves({ value: formAssociated });
         if (attribute) {
             sinon.stub(node, 'getAttribute').withArgs(attribute[0]).returns(attribute[1]);
+        }
+        if (nodeName.startsWith('::')) {
+            sinon.stub(node, 'pseudoType').returns(nodeName.slice(2));
         }
         UI.Context.Context.instance().setFlavor(SDK.DOMModel.DOMNode, node);
         await view.updateComplete;
@@ -177,7 +180,7 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         await assertExpectedPseudoClasses('progress', ['read-write', 'indeterminate']);
     });
     it('Shows the specific pseudo-classes for a and area with href', async () => {
-        await assertExpectedPseudoClasses('a', ['visited', 'link', 'read-write'], false, ['href', 'www.google.com']);
+        await assertExpectedPseudoClasses('a', ['visited', 'link', 'read-write', 'target-current'], false, ['href', 'www.google.com']);
         await assertExpectedPseudoClasses('area', ['visited', 'link', 'read-write'], false, ['href', 'www.google.com']);
     });
     it('Shows the specific pseudo-classes for a and area without href', async () => {
@@ -222,6 +225,9 @@ describeWithMockConnection('ElementStatePaneWidget', () => {
         await assertExpectedPseudoClasses('label', ['read-write']);
         await assertExpectedPseudoClasses('legend', ['read-write']);
         await assertExpectedPseudoClasses('meter', ['read-write']);
+    });
+    it('Shows the specific pseudo-classes for ::scroll-marker', async () => {
+        await assertExpectedPseudoClasses('::scroll-marker', ['read-write', 'target-current']);
     });
 });
 //# sourceMappingURL=ElementStatePaneWidget.test.js.map

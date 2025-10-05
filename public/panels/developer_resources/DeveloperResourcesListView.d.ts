@@ -1,12 +1,12 @@
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import '../../ui/components/highlighting/highlighting.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import type * as Protocol from '../../generated/protocol.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
+import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 export interface ViewInput {
     items: SDK.PageResourceLoader.PageResource[];
     selectedItem: SDK.PageResourceLoader.PageResource | null;
-    highlight: (element: Element | undefined, textContent: string | undefined, columnId: string) => void;
     filters: TextUtils.TextUtils.ParsedFilter[];
     onContextMenu: (e: CustomEvent<{
         menu: UI.ContextMenu.ContextMenu;

@@ -62,6 +62,9 @@
       "path": "../../../core/i18n/bundle-tsconfig.json"
     },
     {
+      "path": "../../../core/root/bundle-tsconfig.json"
+    },
+    {
       "path": "../../../testing/testing-tsconfig.json"
     },
     {

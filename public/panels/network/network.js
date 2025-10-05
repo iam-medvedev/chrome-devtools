@@ -1843,11 +1843,6 @@ var UIStrings5 = {
    */
   servedFromSignedHttpExchange: "Served from Signed HTTP Exchange, resource size: {PH1}",
   /**
-   * @description Cell title in Network Data Grid Node of the Network panel. Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
-   * @example {4 B} PH1
-   */
-  servedFromWebBundle: "Served from Web Bundle, resource size: {PH1}",
-  /**
    * @description Text of a DOM element in Network Data Grid Node of the Network panel
    */
   prefetchCache: "(prefetch cache)",
@@ -1886,19 +1881,6 @@ var UIStrings5 = {
    * @description Text describing the depth of a top level node in the network datagrid
    */
   level: "level 1",
-  /**
-   * @description Text in Network Data Grid Node of the Network panel
-   */
-  webBundleError: "Web Bundle error",
-  /**
-   * @description Alternative text for the web bundle inner request icon in Network Data Grid Node of the Network panel
-   * Indicates that the response came from preloaded web bundle. See https://web.dev/web-bundles/
-   */
-  webBundleInnerRequest: "Served from Web Bundle",
-  /**
-   * @description Text in Network Data Grid Node of the Network panel
-   */
-  webBundle: "(Web Bundle)",
   /**
    * @description Tooltip text for subtitles of Time cells in Network request rows. Latency is the time difference
    * between the time a response to a network request is received and the time the request is started.
@@ -2624,18 +2606,6 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       }
     }
     if (columnId === "name") {
-      const webBundleInnerRequestInfo = this.requestInternal.webBundleInnerRequestInfo();
-      if (webBundleInnerRequestInfo) {
-        const secondIconElement = IconButton.Icon.create("bundle", "icon");
-        secondIconElement.style.color = "var(--icon-info)";
-        secondIconElement.title = i18nString5(UIStrings5.webBundleInnerRequest);
-        const networkManager2 = SDK4.NetworkManager.NetworkManager.forRequest(this.requestInternal);
-        if (webBundleInnerRequestInfo.bundleRequestId && networkManager2) {
-          cell.appendChild(Components.Linkifier.Linkifier.linkifyRevealable(new NetworkForward.NetworkRequestId.NetworkRequestId(webBundleInnerRequestInfo.bundleRequestId, networkManager2), secondIconElement, void 0, void 0, void 0, "webbundle-request"));
-        } else {
-          cell.appendChild(secondIconElement);
-        }
-      }
       const name = Platform3.StringUtilities.trimMiddle(this.requestInternal.name(), 100);
       const networkManager = SDK4.NetworkManager.NetworkManager.forRequest(this.requestInternal);
       UI5.UIUtils.createTextChild(cell, networkManager ? networkManager.target().decorateLabel(name) : name);
@@ -2650,10 +2620,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
   renderStatusCell(cell) {
     cell.classList.toggle("network-dim-cell", !this.isFailed() && (this.requestInternal.cached() || !this.requestInternal.statusCode));
     const corsErrorStatus = this.requestInternal.corsErrorStatus();
-    const webBundleErrorMessage = this.requestInternal.webBundleInfo()?.errorMessage || this.requestInternal.webBundleInnerRequestInfo()?.errorMessage;
-    if (webBundleErrorMessage) {
-      this.setTextAndTitle(cell, i18nString5(UIStrings5.webBundleError), webBundleErrorMessage);
-    } else if (this.requestInternal.failed && !this.requestInternal.canceled && !this.requestInternal.wasBlocked() && !corsErrorStatus) {
+    if (this.requestInternal.failed && !this.requestInternal.canceled && !this.requestInternal.wasBlocked() && !corsErrorStatus) {
       const failText = i18nString5(UIStrings5.failed);
       if (this.requestInternal.localizedFailDescription) {
         UI5.UIUtils.createTextChild(cell, failText);
@@ -2899,10 +2866,6 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
       UI5.UIUtils.createTextChild(cell, i18n9.i18n.lockedString("(signed-exchange)"));
       UI5.Tooltip.Tooltip.install(cell, i18nString5(UIStrings5.servedFromSignedHttpExchange, { PH1: resourceSize }));
       cell.classList.add("network-dim-cell");
-    } else if (this.requestInternal.webBundleInnerRequestInfo()) {
-      UI5.UIUtils.createTextChild(cell, i18nString5(UIStrings5.webBundle));
-      UI5.Tooltip.Tooltip.install(cell, i18nString5(UIStrings5.servedFromWebBundle, { PH1: resourceSize }));
-      cell.classList.add("network-dim-cell");
     } else if (this.requestInternal.fromPrefetchCache()) {
       UI5.UIUtils.createTextChild(cell, i18nString5(UIStrings5.prefetchCache));
       UI5.Tooltip.Tooltip.install(cell, i18nString5(UIStrings5.servedFromPrefetchCacheResource, { PH1: resourceSize }));
@@ -2999,10 +2962,10 @@ import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as NetworkForward2 from "./forward/forward.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
-import * as LegacyWrapper3 from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
+import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging11 from "./../../ui/visual_logging/visual_logging.js";
-import * as NetworkComponents2 from "./components/components.js";
+import * as NetworkComponents from "./components/components.js";
 
 // gen/front_end/panels/network/RequestCookiesView.js
 var RequestCookiesView_exports = {};
@@ -4301,11 +4264,9 @@ __export(RequestPreviewView_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as i18n19 from "./../../core/i18n/i18n.js";
 import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as LegacyWrapper from "./../../ui/components/legacy_wrapper/legacy_wrapper.js";
 import * as SourceFrame2 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
-import * as NetworkComponents from "./components/components.js";
 
 // gen/front_end/panels/network/RequestHTMLView.js
 var RequestHTMLView_exports = {};
@@ -4813,9 +4774,6 @@ var RequestPreviewView = class extends UI11.Widget.VBox {
   async createPreview() {
     if (this.request.signedExchangeInfo()) {
       return new SignedExchangeInfoView(this.request);
-    }
-    if (this.request.webBundleInfo()) {
-      return LegacyWrapper.LegacyWrapper.legacyWrapper(UI11.Widget.VBox, new NetworkComponents.WebBundleInfoView.WebBundleInfoView(this.request));
     }
     const htmlErrorPreview = await this.htmlPreview();
     if (htmlErrorPreview) {
@@ -6537,11 +6495,11 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     })}`);
     if (request.resourceType() === Common12.ResourceType.resourceTypes.DirectSocket) {
       this.#firstTab = "direct-socket-connection";
-      this.appendTab("direct-socket-connection", i18nString16(UIStrings16.connectionInfo), new NetworkComponents2.DirectSocketConnectionView.DirectSocketConnectionView(request), i18nString16(UIStrings16.headers));
+      this.appendTab("direct-socket-connection", i18nString16(UIStrings16.connectionInfo), new NetworkComponents.DirectSocketConnectionView.DirectSocketConnectionView(request), i18nString16(UIStrings16.headers));
     } else {
       this.#firstTab = "headers-component";
-      this.#headersViewComponent = new NetworkComponents2.RequestHeadersView.RequestHeadersView(request);
-      this.appendTab("headers-component", i18nString16(UIStrings16.headers), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, this.#headersViewComponent), i18nString16(UIStrings16.headers));
+      this.#headersViewComponent = new NetworkComponents.RequestHeadersView.RequestHeadersView(request);
+      this.appendTab("headers-component", i18nString16(UIStrings16.headers), LegacyWrapper.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, this.#headersViewComponent), i18nString16(UIStrings16.headers));
     }
     this.#resourceViewTabSetting = Common12.Settings.Settings.instance().createSetting("resource-view-tab", this.#firstTab);
     if (this.#request.hasOverriddenHeaders()) {
@@ -6587,7 +6545,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     this.appendTab("initiator", i18nString16(UIStrings16.initiator), new RequestInitiatorView(request), i18nString16(UIStrings16.requestInitiatorCallStack));
     this.appendTab("timing", i18nString16(UIStrings16.timing), new RequestTimingView(request, calculator), i18nString16(UIStrings16.requestAndResponseTimeline));
     if (request.trustTokenParams()) {
-      this.appendTab("trust-tokens", i18nString16(UIStrings16.trustTokens), LegacyWrapper3.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, new NetworkComponents2.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString16(UIStrings16.trustTokenOperationDetails));
+      this.appendTab("trust-tokens", i18nString16(UIStrings16.trustTokens), LegacyWrapper.LegacyWrapper.legacyWrapper(UI17.Widget.VBox, new NetworkComponents.RequestTrustTokensView.RequestTrustTokensView(request)), i18nString16(UIStrings16.trustTokenOperationDetails));
     }
     this.#initialTab = initialTab || this.#resourceViewTabSetting.get();
     this.setAutoSelectFirstItemOnShow(false);
@@ -6652,7 +6610,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
   }
   maybeShowErrorIconInTrustTokenTabHeader() {
     const trustTokenResult = this.#request.trustTokenOperationDoneEvent();
-    if (trustTokenResult && !NetworkComponents2.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
+    if (trustTokenResult && !NetworkComponents.RequestTrustTokensView.statusConsideredSuccess(trustTokenResult.status)) {
       const icon = new IconButton4.Icon.Icon();
       icon.name = "cross-circle-filled";
       icon.classList.add("small");
@@ -12760,10 +12718,7 @@ var RequestLocationRevealer = class {
 var searchNetworkViewInstance;
 var SearchNetworkView = class _SearchNetworkView extends Search.SearchView.SearchView {
   constructor() {
-    super("network", new Common17.Throttler.Throttler(
-      /* timeoutMs */
-      200
-    ));
+    super("network");
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;

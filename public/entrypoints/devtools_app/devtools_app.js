@@ -2411,7 +2411,7 @@ Common8.Settings.registerSettingExtension({
 UI12.Toolbar.registerToolbarItem({
   async loadItem() {
     const InspectorMain = await loadInspectorMainModule();
-    return InspectorMain.InspectorMain.NodeIndicator.instance();
+    return InspectorMain.InspectorMain.NodeIndicatorProvider.instance();
   },
   order: 2,
   location: "main-toolbar-left"

@@ -695,6 +695,7 @@ import * as NetworkTimeCalculator2 from "./../network_time_calculator/network_ti
 // gen/front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.js
 import * as Logs from "./../logs/logs.js";
 import * as NetworkTimeCalculator from "./../network_time_calculator/network_time_calculator.js";
+import * as TextUtils3 from "./../text_utils/text_utils.js";
 
 // gen/front_end/models/ai_assistance/data_formatters/UnitFormatters.js
 var defaultTimeFormatterOptions = {
@@ -824,6 +825,7 @@ function formatAndEnsureSpace(formatter, value, separator = "\xA0") {
 // gen/front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.js
 var _a;
 var MAX_HEADERS_SIZE = 1e3;
+var MAX_BODY_SIZE = 1e4;
 function sanitizeHeaders(headers) {
   return headers.map((header) => {
     if (NetworkRequestFormatter.allowHeader(header.name)) {
@@ -834,6 +836,7 @@ function sanitizeHeaders(headers) {
 }
 var NetworkRequestFormatter = class {
   #calculator;
+  #request;
   static allowHeader(headerName) {
     return allowedHeaders.has(headerName.toLowerCase().trim());
   }
@@ -843,6 +846,27 @@ var NetworkRequestFormatter = class {
       return prefix + header.name + ": " + header.value + "\n";
     }), MAX_HEADERS_SIZE);
   }
+  static async formatBody(title, request, maxBodySize) {
+    const data = await request.requestContentData();
+    if (TextUtils3.ContentData.ContentData.isError(data)) {
+      return "";
+    }
+    if (data.isEmpty) {
+      return `${title}
+<empty response>`;
+    }
+    if (data.isTextContent) {
+      const dataAsText = data.text;
+      if (dataAsText.length > maxBodySize) {
+        return `${title}
+${dataAsText.substring(0, maxBodySize) + "... <truncated>"}`;
+      }
+      return `${title}
+${dataAsText}`;
+    }
+    return `${title}
+<binary data>`;
+  }
   static formatInitiatorUrl(initiatorUrl, allowedOrigin) {
     const initiatorOrigin = new URL(initiatorUrl).origin;
     if (initiatorOrigin === allowedOrigin) {
@@ -850,7 +874,6 @@ var NetworkRequestFormatter = class {
     }
     return "<redacted cross-origin initiator URL>";
   }
-  #request;
   constructor(request, calculator) {
     this.#request = request;
     this.#calculator = calculator;
@@ -861,16 +884,25 @@ var NetworkRequestFormatter = class {
   formatResponseHeaders() {
     return _a.formatHeaders("Response headers:", this.#request.responseHeaders);
   }
+  async formatResponseBody() {
+    return await _a.formatBody("Response body:", this.#request, MAX_BODY_SIZE);
+  }
   /**
    * Note: nothing here should include information from origins other than
    * the request's origin.
    */
-  formatNetworkRequest() {
+  async formatNetworkRequest() {
+    let responseBody = await this.formatResponseBody();
+    if (responseBody) {
+      responseBody = `
+
+${responseBody}`;
+    }
     return `Request: ${this.#request.url()}
 
 ${this.formatRequestHeaders()}
 
-${this.formatResponseHeaders()}
+${this.formatResponseHeaders()}${responseBody}
 
 Response status: ${this.#request.statusCode} ${this.#request.statusText}
 
@@ -1355,12 +1387,12 @@ var NetworkAgent = class extends AiAgent {
     yield {
       type: "context",
       title: lockedString2(UIStringsNotTranslate2.analyzingNetworkData),
-      details: createContextDetailsForNetworkAgent(selectedNetworkRequest)
+      details: await createContextDetailsForNetworkAgent(selectedNetworkRequest)
     };
   }
   async enhanceQuery(query, selectedNetworkRequest) {
     const networkEnchantmentQuery = selectedNetworkRequest ? `# Selected network request 
-${new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator).formatNetworkRequest()}
+${await new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator).formatNetworkRequest()}
 
 # User request
 
@@ -1368,16 +1400,22 @@ ${new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkR
     return `${networkEnchantmentQuery}${query}`;
   }
 };
-function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
+async function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
   const request = selectedNetworkRequest.getItem();
   const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
   const requestContextDetail = {
     title: lockedString2(UIStringsNotTranslate2.request),
     text: lockedString2(UIStringsNotTranslate2.requestUrl) + ": " + request.url() + "\n\n" + formatter.formatRequestHeaders()
   };
+  const responseBody = await formatter.formatResponseBody();
+  const responseBodyString = responseBody ? `
+
+${responseBody}` : "";
   const responseContextDetail = {
     title: lockedString2(UIStringsNotTranslate2.response),
-    text: lockedString2(UIStringsNotTranslate2.responseStatus) + ": " + request.statusCode + " " + request.statusText + "\n\n" + formatter.formatResponseHeaders()
+    text: lockedString2(UIStringsNotTranslate2.responseStatus) + ": " + request.statusCode + " " + request.statusText + `
+
+${formatter.formatResponseHeaders()}` + responseBodyString
   };
   const timingContextDetail = {
     title: lockedString2(UIStringsNotTranslate2.timing),
@@ -3371,7 +3409,14 @@ Polyfills and transforms enable older browsers to use new JavaScript features. H
 // gen/front_end/models/ai_assistance/performance/AIContext.js
 import * as Trace5 from "./../trace/trace.js";
 function getFirstInsightSet(insights) {
-  return [...insights.values()].filter((insightSet) => insightSet.navigation).at(0) ?? null;
+  const insightSets = Array.from(insights.values());
+  if (insightSets.length === 0) {
+    return null;
+  }
+  if (insightSets.length === 1) {
+    return insightSets[0];
+  }
+  return insightSets.filter((set) => set.navigation).at(0) ?? insightSets.at(0) ?? null;
 }
 var AgentFocus = class _AgentFocus {
   static fromParsedTrace(parsedTrace) {
@@ -5171,7 +5216,6 @@ var NodeContext = class extends ConversationContext {
     return;
   }
 };
-var enableDedicatedStyleFunctions = false;
 var StylingAgent = class _StylingAgent extends AiAgent {
   preamble = preamble4;
   clientFeature = Host6.AidaClient.ClientFeature.CHROME_STYLING_AGENT;
@@ -5210,90 +5254,49 @@ var StylingAgent = class _StylingAgent extends AiAgent {
       return new ExtensionScope(changes, this.id, this.context?.getItem() ?? null);
     });
     SDK5.TargetManager.TargetManager.instance().addModelListener(SDK5.ResourceTreeModel.ResourceTreeModel, SDK5.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-    if (enableDedicatedStyleFunctions) {
-      this.declareFunction("getComputedStyles", {
-        description: "Call this function to get the computed styles for the current or the parent element. Use executeJavaScript for more complex queries.",
-        parameters: {
-          type: 6,
-          description: "",
-          nullable: false,
-          properties: {
-            thought: {
+    this.declareFunction("getStyles", {
+      description: `Get computed and source styles for one or multiple elements on the inspected page for multiple elements at once by uid.
+
+**CRITICAL** Use selectors to refer to elements in the text output. Do not use uids.
+**CRITICAL** Always provide the explanation argument to explain what and why you query.`,
+      parameters: {
+        type: 6,
+        description: "",
+        nullable: false,
+        properties: {
+          explanation: {
+            type: 1,
+            description: "Explain why you want to get styles",
+            nullable: false
+          },
+          elements: {
+            type: 5,
+            description: "A list of element uids to get data for",
+            items: { type: 1, description: `An element uid.` },
+            nullable: false
+          },
+          styleProperties: {
+            type: 5,
+            description: "One or more CSS style property names to fetch.",
+            nullable: false,
+            items: {
               type: 1,
-              description: "Explain why you want to get computed styles"
-            },
-            relations: {
-              type: 5,
-              description: "A list of relations describing which elements to query.",
-              items: {
-                type: 1,
-                description: "Which element to query. Either 'currentElement' or 'parentElement'"
-              }
-            },
-            properties: {
-              type: 5,
-              description: "One or more style property names to fetch",
-              nullable: false,
-              items: {
-                type: 1,
-                description: "A computed style property name to retrieve. For example, 'background-color'."
-              }
+              description: "A CSS style property name to retrieve. For example, 'background-color'."
             }
           }
-        },
-        displayInfoFromArgs: (params) => {
-          return {
-            title: "Reading computed styles",
-            thought: params.thought,
-            action: `getComputedStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`
-          };
-        },
-        handler: async (params, options) => {
-          return await this.getComputedStyles(params.relations, params.properties, options);
         }
-      });
-      this.declareFunction("getAuthoredStyles", {
-        description: "Call this function to get the styles as specified by the page author.",
-        parameters: {
-          type: 6,
-          description: "",
-          nullable: false,
-          properties: {
-            thought: {
-              type: 1,
-              description: "Explain why you want to get computed styles"
-            },
-            relations: {
-              type: 5,
-              description: "A list of relations describing which elements to query. Possible values: 'currentElement', 'parentElement'",
-              items: {
-                type: 1,
-                description: "Which element to query. Either 'currentElement' or 'parentElement'"
-              }
-            },
-            properties: {
-              type: 5,
-              description: "One or more style property names to fetch",
-              nullable: false,
-              items: {
-                type: 1,
-                description: "A computed style property name to retrieve. For example, 'background-color'."
-              }
-            }
-          }
-        },
-        displayInfoFromArgs: (params) => {
-          return {
-            title: "Reading authored styles",
-            thought: params.thought,
-            action: `getAuthoredStyles(${JSON.stringify(params.relations)}, ${JSON.stringify(params.properties)})`
-          };
-        },
-        handler: async (params, options) => {
-          return await this.getAuthoredStyles(params.relations, params.properties, options);
-        }
-      });
-    }
+      },
+      displayInfoFromArgs: (params) => {
+        return {
+          title: "Reading computed and source styles",
+          thought: params.explanation,
+          action: `getStyles(${JSON.stringify(params.elements)}, ${JSON.stringify(params.styleProperties)})`
+        };
+      },
+      handler: async (params, options) => {
+        return await this.getStyles(params.elements, params.styleProperties, options);
+      }
+    });
     this.declareFunction("executeJavaScript", {
       description: `This function allows you to run JavaScript code on the inspected page to access the element styles and page content.
 Call this function to gather additional information or modify the page state. Call this function enough times to investigate the user request.`,
@@ -5310,27 +5313,9 @@ Call this function to gather additional information or modify the page state. Ca
 
 * To return data, define a top-level \`data\` variable and populate it with data you want to get. Only JSON-serializable objects can be assigned to \`data\`.
 * If you modify styles on an element, ALWAYS call the pre-defined global \`async setElementStyles(el: Element, styles: object)\` function. This function is an internal mechanism for you and should never be presented as a command/advice to the user.
-* Use \`window.getComputedStyle\` to gather **computed** styles and make sure that you take the distinction between authored styles and computed styles into account.
 * **CRITICAL** Only get styles that might be relevant to the user request.
-* **CRITICAL** Call \`window.getComputedStyle\` only once per element and store results into a local variable. Never try to return all the styles of the element in \`data\`.
 * **CRITICAL** Never assume a selector for the elements unless you verified your knowledge.
 * **CRITICAL** Consider that \`data\` variable from the previous function calls are not available in a new function call.
-
-For example, the code to return basic styles:
-
-\`\`\`
-const styles = window.getComputedStyle($0);
-const data = {
-    display: styles['display'],
-    visibility: styles['visibility'],
-    position: styles['position'],
-    left: styles['right'],
-    top: styles['top'],
-    width: styles['width'],
-    height: styles['height'],
-    zIndex: styles['z-index']
-};
-\`\`\`
 
 For example, the code to change element styles:
 
@@ -5340,59 +5325,10 @@ await setElementStyles($0, {
 });
 \`\`\`
 
-For example, the code to get current and parent styles at once:
+For example, the code to get overlapping elements:
 
 \`\`\`
-const styles = window.getComputedStyle($0);
-const parentStyles = window.getComputedStyle($0.parentElement);
 const data = {
-    currentElementStyles: {
-      display: styles['display'],
-      visibility: styles['visibility'],
-      position: styles['position'],
-      left: styles['right'],
-      top: styles['top'],
-      width: styles['width'],
-      height: styles['height'],
-      zIndex: styles['z-index'],
-    },
-    parentElementStyles: {
-      display: parentStyles['display'],
-      visibility: parentStyles['visibility'],
-      position: parentStyles['position'],
-      left: parentStyles['right'],
-      top: parentStyles['top'],
-      width: parentStyles['width'],
-      height: parentStyles['height'],
-      zIndex: parentStyles['z-index'],
-    },
-};
-\`\`\`
-
-For example, the code to get check siblings and overlapping elements:
-
-\`\`\`
-const computedStyles = window.getComputedStyle($0);
-const parentComputedStyles = window.getComputedStyle($0.parentElement);
-const data = {
-  numberOfChildren: $0.children.length,
-  numberOfSiblings: $0.parentElement.children.length,
-  hasPreviousSibling: !!$0.previousElementSibling,
-  hasNextSibling: !!$0.nextElementSibling,
-  elementStyles: {
-    display: computedStyles['display'],
-    visibility: computedStyles['visibility'],
-    position: computedStyles['position'],
-    clipPath: computedStyles['clip-path'],
-    zIndex: computedStyles['z-index']
-  },
-  parentStyles: {
-    display: parentComputedStyles['display'],
-    visibility: parentComputedStyles['visibility'],
-    position: parentComputedStyles['position'],
-    clipPath: parentComputedStyles['clip-path'],
-    zIndex: parentComputedStyles['z-index']
-  },
   overlappingElements: Array.from(document.querySelectorAll('*'))
     .filter(el => {
       const rect = el.getBoundingClientRect();
@@ -5486,7 +5422,8 @@ const data = {
     }
   }
   static async describeElement(element) {
-    let output = `* Its selector is \`${element.simpleSelector()}\``;
+    let output = `* Element's uid is ${element.backendNodeId()}.
+* Its selector is \`${element.simpleSelector()}\``;
     const childNodes = await element.getChildNodesPromise();
     if (childNodes) {
       const textChildNodes = childNodes.filter((childNode) => childNode.nodeType() === Node.TEXT_NODE);
@@ -5501,7 +5438,7 @@ const data = {
           break;
         default:
           output += `
-* It has ${elementChildNodes.length} child element nodes: ${elementChildNodes.map((node) => `\`${node.simpleSelector()}\``).join(", ")}`;
+* It has ${elementChildNodes.length} child element nodes: ${elementChildNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
       }
       switch (textChildNodes.length) {
         case 0:
@@ -5516,12 +5453,12 @@ const data = {
       }
     }
     if (element.nextSibling) {
-      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === Node.ELEMENT_NODE ? "an element" : "a non element";
+      const elementOrNodeElementNodeText = element.nextSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.nextSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a next sibling and it is ${elementOrNodeElementNodeText} node`;
     }
     if (element.previousSibling) {
-      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === Node.ELEMENT_NODE ? "an element" : "a non element";
+      const elementOrNodeElementNodeText = element.previousSibling.nodeType() === Node.ELEMENT_NODE ? `an element (uid=${element.previousSibling.backendNodeId()})` : "a non element";
       output += `
 * It has a previous sibling and it is ${elementOrNodeElementNodeText} node`;
     }
@@ -5532,7 +5469,7 @@ const data = {
     if (parentNode) {
       const parentChildrenNodes = await parentNode.getChildNodesPromise();
       output += `
-* Its parent's selector is \`${parentNode.simpleSelector()}\``;
+* Its parent's selector is \`${parentNode.simpleSelector()}\` (uid=${parentNode.backendNodeId()})`;
       const elementOrNodeElementNodeText = parentNode.nodeType() === Node.ELEMENT_NODE ? "an element" : "a non element";
       output += `
 * Its parent is ${elementOrNodeElementNodeText} node`;
@@ -5549,7 +5486,7 @@ const data = {
             break;
           default:
             output += `
-* Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\``).join(", ")}`;
+* Its parent has ${childElementNodes.length} child element nodes: ${childElementNodes.map((node) => `\`${node.simpleSelector()}\` (uid=${node.backendNodeId()})`).join(", ")}`;
             break;
         }
         const siblingTextNodes = parentChildrenNodes.filter((siblingNode) => siblingNode.nodeType() === Node.TEXT_NODE);
@@ -5571,51 +5508,30 @@ const data = {
   #getSelectedNode() {
     return this.context?.getItem() ?? null;
   }
-  async getComputedStyles(relations, properties, _options) {
+  async getStyles(elements, properties, _options) {
     const result = {};
-    for (const relation of relations) {
-      result[relation] = {};
-      debugLog(`Action to execute: ${relation}`);
-      let selectedNode = this.#getSelectedNode();
+    for (const uid of elements) {
+      result[uid] = { computed: {}, authored: {} };
+      debugLog(`Action to execute: uid=${uid}`);
+      const selectedNode = this.#getSelectedNode();
       if (!selectedNode) {
         return { error: "Error: Could not find the currently selected element." };
       }
-      if (relation === "parentElement") {
-        selectedNode = selectedNode.parentNode;
+      const node = new SDK5.DOMModel.DeferredDOMNode(selectedNode.domModel().target(), Number(uid));
+      const resolved = await node.resolvePromise();
+      if (!resolved) {
+        return { error: "Error: Could not find the element with uid=" + uid };
       }
-      if (!selectedNode) {
-        return { error: "Error: Could not find the parent element." };
-      }
-      const styles = await selectedNode.domModel().cssModel().getComputedStyle(selectedNode.id);
+      const styles = await resolved.domModel().cssModel().getComputedStyle(resolved.id);
       if (!styles) {
         return { error: "Error: Could not get computed styles." };
       }
-      for (const prop of properties) {
-        result[relation][prop] = styles.get(prop);
-      }
-    }
-    return {
-      result: JSON.stringify(result, null, 2)
-    };
-  }
-  async getAuthoredStyles(relations, properties, _options) {
-    const result = {};
-    for (const relation of relations) {
-      result[relation] = {};
-      debugLog(`Action to execute: ${relation}`);
-      let selectedNode = this.#getSelectedNode();
-      if (!selectedNode) {
-        return { error: "Error: Could not find the currently selected element." };
-      }
-      if (relation === "parentElement") {
-        selectedNode = selectedNode.parentNode;
-      }
-      if (!selectedNode) {
-        return { error: "Error: Could not find the parent element." };
-      }
-      const matchedStyles = await selectedNode.domModel().cssModel().getMatchedStyles(selectedNode.id);
+      const matchedStyles = await resolved.domModel().cssModel().getMatchedStyles(resolved.id);
       if (!matchedStyles) {
-        return { error: "Error: Could not get computed styles." };
+        return { error: "Error: Could not get authored styles." };
+      }
+      for (const prop of properties) {
+        result[uid].computed[prop] = styles.get(prop);
       }
       for (const style of matchedStyles.nodeStyles()) {
         for (const property of style.allProperties()) {
@@ -5624,7 +5540,7 @@ const data = {
           }
           const state = matchedStyles.propertyState(property);
           if (state === "Active") {
-            result[relation][property.name] = property.value;
+            result[uid].authored[property.name] = property.value;
           }
         }
       }

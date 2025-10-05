@@ -36,10 +36,14 @@ function getIssueCode(details) {
             return "SharedDictionaryIssue::WriteErrorInvalidMatchField" /* IssueCode.WRITE_ERROR_INVALID_MATCH_FIELD */;
         case "WriteErrorInvalidStructuredHeader" /* Protocol.Audits.SharedDictionaryError.WriteErrorInvalidStructuredHeader */:
             return "SharedDictionaryIssue::WriteErrorInvalidStructuredHeader" /* IssueCode.WRITE_ERROR_INVALID_STRUCTURED_HEADER */;
+        case "WriteErrorInvalidTTLField" /* Protocol.Audits.SharedDictionaryError.WriteErrorInvalidTTLField */:
+            return "SharedDictionaryIssue::WriteErrorInvalidTTLField" /* IssueCode.WRITE_ERROR_INVALID_TTL_FIELD */;
         case "WriteErrorNavigationRequest" /* Protocol.Audits.SharedDictionaryError.WriteErrorNavigationRequest */:
             return "SharedDictionaryIssue::WriteErrorNavigationRequest" /* IssueCode.WRITE_ERROR_NAVIGATION_REQUEST */;
         case "WriteErrorNoMatchField" /* Protocol.Audits.SharedDictionaryError.WriteErrorNoMatchField */:
             return "SharedDictionaryIssue::WriteErrorNoMatchField" /* IssueCode.WRITE_ERROR_NO_MATCH_FIELD */;
+        case "WriteErrorNonIntegerTTLField" /* Protocol.Audits.SharedDictionaryError.WriteErrorNonIntegerTTLField */:
+            return "SharedDictionaryIssue::WriteErrorNonIntegerTTLField" /* IssueCode.WRITE_ERROR_NON_INTEGER_TTL_FIELD */;
         case "WriteErrorNonListMatchDestField" /* Protocol.Audits.SharedDictionaryError.WriteErrorNonListMatchDestField */:
             return "SharedDictionaryIssue::WriteErrorNonListMatchDestField" /* IssueCode.WRITE_ERROR_NON_LIST_MATCH_DEST_FIELD */;
         case "WriteErrorNonSecureContext" /* Protocol.Audits.SharedDictionaryError.WriteErrorNonSecureContext */:
@@ -193,6 +197,13 @@ const issueDescriptions = new Map([
         },
     ],
     [
+        "WriteErrorInvalidTTLField" /* Protocol.Audits.SharedDictionaryError.WriteErrorInvalidTTLField */,
+        {
+            file: 'sharedDictionaryWriteErrorInvalidTTLField.md',
+            links: specLinks,
+        },
+    ],
+    [
         "WriteErrorNavigationRequest" /* Protocol.Audits.SharedDictionaryError.WriteErrorNavigationRequest */,
         {
             file: 'sharedDictionaryWriteErrorNavigationRequest.md',
@@ -203,6 +214,13 @@ const issueDescriptions = new Map([
         "WriteErrorNoMatchField" /* Protocol.Audits.SharedDictionaryError.WriteErrorNoMatchField */,
         {
             file: 'sharedDictionaryWriteErrorNoMatchField.md',
+            links: specLinks,
+        },
+    ],
+    [
+        "WriteErrorNonIntegerTTLField" /* Protocol.Audits.SharedDictionaryError.WriteErrorNonIntegerTTLField */,
+        {
+            file: 'sharedDictionaryWriteErrorNonIntegerTTLField.md',
             links: specLinks,
         },
     ],

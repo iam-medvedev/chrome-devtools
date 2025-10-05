@@ -5,7 +5,9 @@ import * as Protocol from '../../../../generated/protocol.js';
 export declare const PrefetchReasonDescription: Record<string, {
     name: () => Platform.UIString.LocalizedString;
 }>;
+/** Decoding PrefetchFinalStatus prefetchAttempt to failure description. **/
 export declare function prefetchFailureReason({ prefetchStatus }: SDK.PreloadingModel.PrefetchAttempt): string | null;
+/** Detailed failure reason for PrerenderFinalStatus. **/
 export declare function prerenderFailureReason(attempt: SDK.PreloadingModel.PrerenderAttempt): string | null;
 export declare function ruleSetLocationShort(ruleSet: Protocol.Preload.RuleSet, pageURL: Platform.DevToolsPath.UrlString): string;
 export declare function ruleSetTagOrLocationShort(ruleSet: Protocol.Preload.RuleSet, pageURL: Platform.DevToolsPath.UrlString): string;

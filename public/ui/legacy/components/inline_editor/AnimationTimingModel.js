@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 import * as Geometry from '../../../../models/geometry/geometry.js';
 import { CSSLinearEasingModel } from './CSSLinearEasingModel.js';
-// Provides a unified interface for both linear easing and cubic bezier
-// models and handles the parsing for animation-timing texts.
+/**
+ * Provides a unified interface for both linear easing and cubic bezier
+ * models and handles the parsing for animation-timing texts.
+ **/
 export class AnimationTimingModel {
     static parse(text) {
         // Try to parse as a CSSLinearEasingModel first.

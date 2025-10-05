@@ -5,6 +5,13 @@ export interface WithId<I, V> {
     id: I;
     value: V;
 }
+/**
+ * Holds preloading related information.
+ *
+ * - SpeculationRule rule sets
+ * - Preloading attempts
+ * - Relationship between rule sets and preloading attempts
+ **/
 export declare class PreloadingModel extends SDKModel<EventTypes> {
     private agent;
     private loaderIds;
@@ -40,6 +47,21 @@ export interface EventTypes {
     [Events.MODEL_UPDATED]: void;
     [Events.WARNINGS_UPDATED]: Protocol.Preload.PreloadEnabledStateUpdatedEvent;
 }
+/**
+ * Protocol.Preload.PreloadingStatus|'NotTriggered'
+ *
+ * A renderer sends SpeculationCandidate to the browser process and the
+ * browser process checks eligibilities, and starts PreloadingAttempt.
+ *
+ * In the frontend, "NotTriggered" is used to denote that a
+ * PreloadingAttempt is waiting for at trigger event (eg:
+ * mousedown/mouseover). All PreloadingAttempts will start off as
+ * "NotTriggered", but "eager" preloading attempts (attempts not
+ * actually waiting for any trigger) will be processed by the browser
+ * immediately, and will not stay in this state for long.
+ *
+ * TODO(https://crbug.com/1384419): Add NotEligible.
+ **/
 export declare const enum PreloadingStatus {
     NOT_TRIGGERED = "NotTriggered",
     PENDING = "Pending",

@@ -2404,8 +2404,10 @@ var CountersGraph = class extends UI.Widget.VBox {
   #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
   #noEventsFoundMessage = document.createElement("div");
   #showNoEventsMessage = false;
+  #defaultNumberFormatter;
   constructor(delegate) {
     super();
+    this.#defaultNumberFormatter = new Intl.NumberFormat(i18n17.DevToolsLocale.DevToolsLocale.instance().locale);
     this.element.id = "memory-graphs-container";
     this.delegate = delegate;
     this.calculator = new Calculator();
@@ -2488,6 +2490,7 @@ var CountersGraph = class extends UI.Widget.VBox {
       }
     }
     this.#showNoEventsMessage = counterEventsFound === 0;
+    this.requestUpdate();
   }
   createCurrentValuesBar() {
     this.currentValuesBar = this.graphsContainer.element.createChild("div");
@@ -2496,7 +2499,7 @@ var CountersGraph = class extends UI.Widget.VBox {
   createCounter(uiName, settingsKey, color, formatter) {
     const counter = new Counter();
     this.counters.push(counter);
-    this.counterUI.push(new CounterUI(this, uiName, settingsKey, color, counter, formatter));
+    this.counterUI.push(new CounterUI(this, uiName, settingsKey, color, counter, formatter ?? this.#defaultNumberFormatter.format));
     return counter;
   }
   resizerElement() {
@@ -2670,7 +2673,7 @@ var CounterUI = class {
   constructor(countersPane, title, settingsKey, graphColor, counter, formatter) {
     this.countersPane = countersPane;
     this.counter = counter;
-    this.formatter = formatter || Platform5.NumberUtilities.withThousandsSeparator;
+    this.formatter = formatter;
     this.setting = Common4.Settings.Settings.instance().createSetting("timeline-counters-graph-" + settingsKey, true);
     this.setting.setTitle(title);
     this.filter = new UI.Toolbar.ToolbarSettingCheckbox(this.setting, title);
@@ -2734,7 +2737,7 @@ var CounterUI = class {
       return;
     }
     const index = this.recordIndexAt(x);
-    const value = Platform5.NumberUtilities.withThousandsSeparator(this.counter.values[index]);
+    const value = this.formatter(this.counter.values[index]);
     this.value.textContent = `${this.counterName}: ${value}`;
     const y = this.graphYValues[index] / window.devicePixelRatio;
     this.marker.style.left = x + "px";
@@ -8407,6 +8410,9 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       }
     });
   }
+  zoomEvent(event) {
+    this.flameChart.zoomEvent(event);
+  }
   /**
    * Activates an insight and ensures the sidebar is open too.
    * Pass `highlightInsight: true` to flash the insight with the background highlight colour.
@@ -9528,13 +9534,6 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       /* State.IDLE */
     );
     this.askAiButton?.setEnabled(this.state === "Idle" && this.#hasActiveTrace());
-    if (!this.canRecord()) {
-      return;
-    }
-    this.recordReloadAction.setEnabled(
-      isNode ? false : this.state === "Idle"
-      /* State.IDLE */
-    );
     this.panelToolbar.setEnabled(
       this.state !== "Loading"
       /* State.LOADING */
@@ -9542,6 +9541,13 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.panelRightToolbar.setEnabled(
       this.state !== "Loading"
       /* State.LOADING */
+    );
+    if (!this.canRecord()) {
+      return;
+    }
+    this.recordReloadAction.setEnabled(
+      isNode ? false : this.state === "Idle"
+      /* State.IDLE */
     );
     this.homeButton?.setEnabled(this.state === "Idle" && this.#hasActiveTrace());
   }
@@ -11259,7 +11265,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     const defaultColorForEvent = this.eventColor(event);
     const isMarker = parsedTrace && isMarkerEvent(parsedTrace, event);
     const color = isMarker ? _TimelineUIUtils.markerStyleForEvent(event).color : defaultColorForEvent;
-    contentHelper.addSection(_TimelineUIUtils.eventTitle(event), color);
+    contentHelper.addSection(_TimelineUIUtils.eventTitle(event), color, event);
     const unsafeEventArgs = event.args;
     const unsafeEventData = event.args?.data;
     const initiator = parsedTrace.data.Initiators.eventToInitiator.get(event) ?? null;
@@ -12346,7 +12352,7 @@ var TimelineDetailsContentHelper = class {
     this.tableElement = this.element.createChild("div", "vbox timeline-details-chip-body");
     this.fragment.appendChild(this.element);
   }
-  addSection(title, swatchColor) {
+  addSection(title, swatchColor, event) {
     if (!this.tableElement.hasChildNodes()) {
       this.element.removeChildren();
     } else {
@@ -12359,7 +12365,14 @@ var TimelineDetailsContentHelper = class {
       if (swatchColor) {
         titleElement.createChild("div").style.backgroundColor = swatchColor;
       }
-      UI11.UIUtils.createTextChild(titleElement, title);
+      const textChild = titleElement.createChild("span");
+      textChild.textContent = title;
+      if (event) {
+        textChild.classList.add("timeline-details-chip-title-reveal-entry");
+        textChild.addEventListener("click", function() {
+          TimelinePanel.instance().zoomEvent(event);
+        });
+      }
     }
     this.tableElement = this.element.createChild("div", "vbox timeline-details-chip-body");
     this.fragment.appendChild(this.element);
@@ -12707,6 +12720,11 @@ var timelineDetailsView_css_default = `/*
     padding: 8px;
     display: flex;
     align-items: center;
+  }
+
+  .timeline-details-chip-title-reveal-entry:hover {
+    background: var(--sys-color-state-hover-on-subtle);
+    cursor: pointer;
   }
 
   .timeline-details-view-block:first-child > .timeline-details-chip-title {
@@ -16376,6 +16394,17 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
     } else {
       this.chartSplitWidget.hideSidebar();
     }
+  }
+  zoomEvent(event) {
+    const traceBounds = TraceBounds15.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
+    if (!traceBounds) {
+      return;
+    }
+    this.#expandEntryTrack(event);
+    this.revealEventVertically(event);
+    const entryWindow = Trace32.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, Trace32.Types.Timing.Micro(event.ts + (event.dur ?? 0)));
+    const expandedBounds = Trace32.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(entryWindow, traceBounds, 100);
+    TraceBounds15.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
   }
   revealEvent(event) {
     const mainIndex = this.mainDataProvider.indexForEvent(event);

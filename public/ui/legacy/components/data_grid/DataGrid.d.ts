@@ -135,6 +135,7 @@ export declare class DataGridImpl<T> extends Common.ObjectWrapper.ObjectWrapper<
     headerHeight(): number;
     revealNode(element: HTMLElement): void;
 }
+/** Keep in sync with .data-grid col.corner style rule. **/
 export declare const CornerWidth = 14;
 export declare const enum Events {
     SELECTED_NODE = "SelectedNode",

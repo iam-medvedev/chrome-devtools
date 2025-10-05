@@ -1476,7 +1476,7 @@ export class DataGridImpl extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
 }
-// Keep in sync with .data-grid col.corner style rule.
+/** Keep in sync with .data-grid col.corner style rule. **/
 export const CornerWidth = 14;
 export var Order;
 (function (Order) {

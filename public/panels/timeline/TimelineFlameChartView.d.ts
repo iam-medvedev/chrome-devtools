@@ -109,6 +109,7 @@ export declare class TimelineFlameChartView extends TimelineFlameChartView_base 
     willHide(): void;
     wasShown(): void;
     updateCountersGraphToggle(showMemoryGraph: boolean): void;
+    zoomEvent(event: Trace.Types.Events.Event): void;
     revealEvent(event: Trace.Types.Events.Event): void;
     revealEventVertically(event: Trace.Types.Events.Event): void;
     setSelectionAndReveal(selection: TimelineSelection | null): void;

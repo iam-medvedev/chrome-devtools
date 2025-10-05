@@ -145,7 +145,12 @@ export declare class ElementsTreeElement extends UI.TreeOutline.TreeElement {
     pushScrollAdorner(): void;
 }
 export declare const InitialChildrenLimit = 500;
+/**
+ * A union of HTML4 and HTML5-Draft elements that explicitly
+ * or implicitly (for HTML5) forbid the closing tag.
+ **/
 export declare const ForbiddenClosingTagElements: Set<string>;
+/** These tags we do not allow editing their tag name. **/
 export declare const EditTagBlocklist: Set<string>;
 export declare function adornerComparator(adornerA: Adorners.Adorner.Adorner, adornerB: Adorners.Adorner.Adorner): number;
 export declare function convertUnicodeCharsToHTMLEntities(text: string): {

@@ -31,11 +31,10 @@ export type View = (input: SearchViewInput, output: SearchViewOutput, target: HT
 export declare const DEFAULT_VIEW: View;
 export declare class SearchView extends UI.Widget.VBox {
     #private;
-    constructor(settingKey: string, throttler: Common.Throttler.Throttler, view?: View);
+    constructor(settingKey: string, view?: View);
     performUpdate(): void;
     toggle(queryCandidate: string, searchImmediately?: boolean): void;
     createScope(): SearchScope;
     focus(): void;
     willHide(): void;
-    get throttlerForTest(): Common.Throttler.Throttler;
 }

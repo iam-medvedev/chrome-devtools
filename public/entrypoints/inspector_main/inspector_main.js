@@ -277,9 +277,11 @@ var ReloadActionDelegate = class {
 var InspectorMain_exports = {};
 __export(InspectorMain_exports, {
   BackendSettingsSync: () => BackendSettingsSync,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   FocusDebuggeeActionDelegate: () => FocusDebuggeeActionDelegate,
   InspectorMainImpl: () => InspectorMainImpl,
   NodeIndicator: () => NodeIndicator,
+  NodeIndicatorProvider: () => NodeIndicatorProvider,
   ReloadActionDelegate: () => ReloadActionDelegate2,
   SourcesPanelIndicator: () => SourcesPanelIndicator
 });
@@ -292,6 +294,7 @@ import * as MobileThrottling from "./../../panels/mobile_throttling/mobile_throt
 import * as Security from "./../../panels/security/security.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 
 // gen/front_end/entrypoints/inspector_main/nodeIcon.css.js
 var nodeIcon_css_default = `/*
@@ -323,6 +326,7 @@ var nodeIcon_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./nodeIcon.css")} */`;
 
 // gen/front_end/entrypoints/inspector_main/InspectorMain.js
+var { html } = Lit;
 var UIStrings2 = {
   /**
    * @description Text that refers to the main target. The main target is the primary webpage that
@@ -455,40 +459,66 @@ var FocusDebuggeeActionDelegate = class {
     return true;
   }
 };
-var nodeIndicatorInstance;
-var NodeIndicator = class _NodeIndicator {
-  #element;
-  #button;
-  constructor() {
-    const element = document.createElement("div");
-    const shadowRoot = UI2.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: nodeIcon_css_default });
-    this.#element = shadowRoot.createChild("div", "node-icon");
-    element.addEventListener("click", () => Host2.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
-    this.#button = new UI2.Toolbar.ToolbarItem(element);
-    this.#button.setTitle(i18nString2(UIStrings2.openDedicatedTools));
-    SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", (event) => this.#update(event.data));
-    this.#button.setVisible(false);
-    this.#update([]);
+var isNodeProcessRunning = (targetInfos) => {
+  return Boolean(targetInfos.find((target) => target.type === "node" && !target.attached));
+};
+var DEFAULT_VIEW = (input, output, target) => {
+  const { nodeProcessRunning } = input;
+  Lit.render(html`
+    <style>${nodeIcon_css_default}</style>
+    <div
+        class="node-icon ${!nodeProcessRunning ? "inactive" : ""}"
+        title=${i18nString2(UIStrings2.openDedicatedTools)}
+        @click=${() => Host2.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend()}>
+    </div>
+    `, target);
+};
+var NodeIndicator = class extends UI2.Widget.Widget {
+  #view;
+  #targetInfos = [];
+  #wasShown = false;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#view = view;
+    SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", (event) => {
+      this.#targetInfos = event.data;
+      this.requestUpdate();
+    });
   }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!nodeIndicatorInstance || forceNew) {
-      nodeIndicatorInstance = new _NodeIndicator();
-    }
-    return nodeIndicatorInstance;
-  }
-  #update(targetInfos) {
+  performUpdate() {
     if (Host2.InspectorFrontendHost.isUnderTest()) {
       return;
     }
-    const hasNode = Boolean(targetInfos.find((target) => target.type === "node" && !target.attached));
-    this.#element.classList.toggle("inactive", !hasNode);
-    if (hasNode) {
-      this.#button.setVisible(true);
+    const nodeProcessRunning = isNodeProcessRunning(this.#targetInfos);
+    if (!this.#wasShown && !nodeProcessRunning) {
+      return;
     }
+    this.#wasShown = true;
+    const input = {
+      nodeProcessRunning
+    };
+    this.#view(input, {}, this.contentElement);
+  }
+};
+var nodeIndicatorProviderInstance;
+var NodeIndicatorProvider = class _NodeIndicatorProvider {
+  #toolbarItem;
+  #widgetElement;
+  constructor() {
+    this.#widgetElement = document.createElement("devtools-widget");
+    this.#widgetElement.widgetConfig = UI2.Widget.widgetConfig(NodeIndicator);
+    this.#toolbarItem = new UI2.Toolbar.ToolbarItem(this.#widgetElement);
+    this.#toolbarItem.setVisible(false);
   }
   item() {
-    return this.#button;
+    return this.#toolbarItem;
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!nodeIndicatorProviderInstance || forceNew) {
+      nodeIndicatorProviderInstance = new _NodeIndicatorProvider();
+    }
+    return nodeIndicatorProviderInstance;
   }
 };
 var SourcesPanelIndicator = class {
@@ -659,7 +689,8 @@ var OutermostTargetSelector = class _OutermostTargetSelector {
     }
     this.listItems.insertWithComparator(target, this.#targetComparator());
     this.#toolbarItem.setVisible(this.listItems.length > 1);
-    if (target === UI3.Context.Context.instance().flavor(SDK2.Target.Target)) {
+    const primaryTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (target === primaryTarget || target === UI3.Context.Context.instance().flavor(SDK2.Target.Target)) {
       this.#dropDown.selectItem(target);
     }
   }

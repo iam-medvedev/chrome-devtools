@@ -963,7 +963,7 @@ var escapeForRegExp = (str) => {
 };
 var naturalOrderComparator = (a, b) => {
   const chunk = /^\d+|^\D+/;
-  let chunka, chunkb, anum, bnum;
+  let chunkA, chunkB, numA, numB;
   while (true) {
     if (a) {
       if (!b) {
@@ -975,32 +975,32 @@ var naturalOrderComparator = (a, b) => {
       }
       return 0;
     }
-    chunka = a.match(chunk)[0];
-    chunkb = b.match(chunk)[0];
-    anum = !Number.isNaN(Number(chunka));
-    bnum = !Number.isNaN(Number(chunkb));
-    if (anum && !bnum) {
+    chunkA = a.match(chunk)[0];
+    chunkB = b.match(chunk)[0];
+    numA = !Number.isNaN(Number(chunkA));
+    numB = !Number.isNaN(Number(chunkB));
+    if (numA && !numB) {
       return -1;
     }
-    if (bnum && !anum) {
+    if (numB && !numA) {
       return 1;
     }
-    if (anum && bnum) {
-      const diff = Number(chunka) - Number(chunkb);
+    if (numA && numB) {
+      const diff = Number(chunkA) - Number(chunkB);
       if (diff) {
         return diff;
       }
-      if (chunka.length !== chunkb.length) {
-        if (!Number(chunka) && !Number(chunkb)) {
-          return chunka.length - chunkb.length;
+      if (chunkA.length !== chunkB.length) {
+        if (!Number(chunkA) && !Number(chunkB)) {
+          return chunkA.length - chunkB.length;
         }
-        return chunkb.length - chunka.length;
+        return chunkB.length - chunkA.length;
       }
-    } else if (chunka !== chunkb) {
-      return chunka < chunkb ? -1 : 1;
+    } else if (chunkA !== chunkB) {
+      return chunkA < chunkB ? -1 : 1;
     }
-    a = a.substring(chunka.length);
-    b = b.substring(chunkb.length);
+    a = a.substring(chunkA.length);
+    b = b.substring(chunkB.length);
   }
 };
 var base64ToSize = function(content) {

@@ -116,6 +116,49 @@ describeWithLocale.skip('[crbug.com/1473557]: IDBDatabaseView', () => {
             '0',
         ]);
     });
+    it('renders only minimal fields for a default bucket', async function () {
+        if (this.timeout() > 0) {
+            this.timeout(10000);
+        }
+        const defaultBucketDatabaseId = new Application.IndexedDBModel.DatabaseId({ storageKey: 'https://example.com/^112345^267890' }, '');
+        const defaultBucketDatabase = new Application.IndexedDBModel.Database(defaultBucketDatabaseId, 1);
+        const defaultBucketModel = {
+            target: () => ({
+                model: () => ({
+                    getBucketByName: () => ({
+                        bucket: { storageKey: 'https://example.com/^112345^267890', name: '' }, // Default bucket
+                        quota: 1024,
+                        expiration: 42,
+                        durability: 'strict',
+                    }),
+                }),
+            }),
+        };
+        const defaultBucketComponent = new Application.IndexedDBViews.IDBDatabaseView(defaultBucketModel, defaultBucketDatabase);
+        renderElementIntoDOM(defaultBucketComponent);
+        assert.isNotNull(defaultBucketComponent.shadowRoot);
+        await RenderCoordinator.done();
+        const defaultReport = getElementWithinComponent(defaultBucketComponent, 'devtools-report', ReportView.ReportView.Report);
+        assert.isNotNull(defaultReport.shadowRoot);
+        const defaultKeys = getCleanTextContentFromElements(defaultBucketComponent.shadowRoot, 'devtools-report-key');
+        assert.deepEqual(defaultKeys, [
+            'Origin',
+            'Is third-party',
+            'Is opaque',
+            'Bucket name',
+            'Version',
+            'Object stores',
+        ]);
+        const defaultValues = getCleanTextContentFromElements(defaultBucketComponent.shadowRoot, 'devtools-report-value');
+        assert.deepEqual(defaultValues, [
+            'https://example.com',
+            'Yes, because the storage key is opaque',
+            'Yes',
+            'default',
+            '1',
+            '0',
+        ]);
+    });
     it('renders buttons', async function () {
         if (this.timeout() > 0) {
             this.timeout(10000);

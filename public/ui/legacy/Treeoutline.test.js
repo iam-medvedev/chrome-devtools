@@ -176,36 +176,30 @@ describe('TreeViewElement', () => {
         assert.strictEqual(onSelect.args[0][0].detail, secondConfigElement);
     });
     it('sends an `expand` event when a node is expanded or collapsed', async () => {
-        const onExpand = sinon.stub();
-        let firstConfigElement, secondConfigElement;
+        const onExpand1 = sinon.stub();
+        const onExpand2 = sinon.stub();
         const component = await makeTree(html `
      <devtools-tree
-       @expand=${onExpand}
        .template=${html `
          <ul role="tree">
-           <li  ${Lit.Directives.ref(e => {
-            firstConfigElement = e;
-        })} role="treeitem">first subtree
+           <li @expand=${onExpand1} role="treeitem">first subtree
              <ul role="group" hidden>
                <li role="treeitem">in first subtree</li>
              </ul>
            </li>
-           <li  ${Lit.Directives.ref(e => {
-            secondConfigElement = e;
-        })} role="treeitem">second subtree
+           <li @expand=${onExpand2} role="treeitem">second subtree
              <ul role="group" hidden>
                <li role="treeitem">in second subtree</li>
              </ul>
            </li>
          </ul>`}></devtools-tree>`);
-        assert.exists(firstConfigElement);
-        assert.exists(secondConfigElement);
         component.getInternalTreeOutlineForTest().rootElement().lastChild()?.expand();
-        sinon.assert.calledOnce(onExpand);
-        assert.deepEqual(onExpand.args[0][0].detail, { expanded: true, target: secondConfigElement });
+        sinon.assert.calledOnce(onExpand2);
+        assert.deepEqual(onExpand2.args[0][0].detail, { expanded: true });
         component.getInternalTreeOutlineForTest().rootElement().lastChild()?.collapse();
-        sinon.assert.calledTwice(onExpand);
-        assert.deepEqual(onExpand.args[1][0].detail, { expanded: false, target: secondConfigElement });
+        sinon.assert.calledTwice(onExpand2);
+        assert.deepEqual(onExpand2.args[1][0].detail, { expanded: false });
+        sinon.assert.notCalled(onExpand1);
     });
     it('applies jslog contexts to tree elements', async () => {
         const component = await makeTree(html `

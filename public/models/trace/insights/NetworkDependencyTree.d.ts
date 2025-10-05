@@ -127,7 +127,9 @@ export declare function handleLinkResponseHeader(linkHeaderValue: string): Array
     url: string;
     headerText: string;
 }>;
+/** Export the function for test purpose. **/
 export declare function generatePreconnectedOrigins(data: Handlers.Types.HandlerData, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[], preconnectCandidates: PreconnectCandidate[]): PreconnectedOrigin[];
+/** Export the function for test purpose. **/
 export declare function generatePreconnectCandidates(data: Handlers.Types.HandlerData, context: InsightSetContextWithNavigation, contextRequests: Types.Events.SyntheticNetworkRequest[]): PreconnectCandidate[];
 export declare function isNetworkDependencyTreeInsight(model: InsightModel): model is NetworkDependencyTreeInsightModel;
 export declare function generateInsight(data: Handlers.Types.HandlerData, context: InsightSetContext): NetworkDependencyTreeInsightModel;

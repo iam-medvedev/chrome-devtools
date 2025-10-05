@@ -30,13 +30,9 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, [
-            'Origin',
-        ]);
+        assert.deepEqual(keys, []);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
-        assert.deepEqual(values, [
-            'https://example.com',
-        ]);
+        assert.deepEqual(values, []);
     });
     it('renders with an top-level site', async () => {
         const component = await makeView('https://example.com/^0https://test.example');
@@ -45,7 +41,7 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, ['Origin', 'Top-level site', 'Is third-party']);
+        assert.deepEqual(keys, ['Frame origin', 'Top-level site', 'Is third-party']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
         assert.deepEqual(values, ['https://example.com', 'https://test.example', 'Yes, because the origin is outside of the top-level site']);
     });
@@ -56,10 +52,9 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, ['Origin', 'Top-level site', 'Is third-party', 'Is opaque']);
+        assert.deepEqual(keys, ['Top-level site', 'Is third-party', 'Is opaque']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
         assert.deepEqual(values, [
-            'https://example.com',
             '(opaque)',
             'Yes, because the top-level site is opaque',
             'Yes, because the top-level site is opaque',
@@ -72,9 +67,9 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, ['Origin', 'Is third-party', 'Is opaque']);
+        assert.deepEqual(keys, ['Is third-party', 'Is opaque']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
-        assert.deepEqual(values, ['https://example.com', 'Yes, because the storage key is opaque', 'Yes']);
+        assert.deepEqual(values, ['Yes, because the storage key is opaque', 'Yes']);
     });
     it('renders with a cross-site ancestor chain', async () => {
         const component = await makeView('https://example.com/^31');
@@ -83,9 +78,9 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, ['Origin', 'Is third-party']);
+        assert.deepEqual(keys, ['Is third-party']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
-        assert.deepEqual(values, ['https://example.com', 'Yes, because the ancestry chain contains a third-party origin']);
+        assert.deepEqual(values, ['Yes, because the ancestry chain contains a third-party origin']);
     });
     it('renders with a bucket', async () => {
         const component = await makeView({
@@ -101,10 +96,9 @@ describeWithLocale('SharedStorageMetadataView', () => {
         assert.strictEqual(textContent, 'https://example.com');
         assert.isNotNull(component.shadowRoot);
         const keys = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-key');
-        assert.deepEqual(keys, ['Origin', 'Is third-party', 'Bucket name', 'Is persistent', 'Durability', 'Quota', 'Expiration']);
+        assert.deepEqual(keys, ['Is third-party', 'Bucket name', 'Is persistent', 'Durability', 'Quota', 'Expiration']);
         const values = getCleanTextContentFromElements(component.shadowRoot, 'devtools-report-value');
         assert.deepEqual(values, [
-            'https://example.com',
             'Yes, because the ancestry chain contains a third-party origin',
             'My Bucket',
             'Yes',

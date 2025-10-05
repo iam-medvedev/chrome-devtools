@@ -12,7 +12,7 @@ import { ResourceTreeModel } from './ResourceTreeModel.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
-// Keep this list in sync with https://w3c.github.io/aria/#state_prop_def
+/** Keep this list in sync with https://w3c.github.io/aria/#state_prop_def **/
 export const ARIA_ATTRIBUTES = new Set([
     'role',
     'aria-activedescendant',

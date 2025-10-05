@@ -5,5 +5,4 @@ import * as RequestHeaderSection from './RequestHeaderSection.js';
 import * as RequestHeadersView from './RequestHeadersView.js';
 import * as RequestTrustTokensView from './RequestTrustTokensView.js';
 import * as ResponseHeaderSection from './ResponseHeaderSection.js';
-import * as WebBundleInfoView from './WebBundleInfoView.js';
-export { DirectSocketConnectionView, EditableSpan, HeaderSectionRow, RequestHeaderSection, RequestHeadersView, RequestTrustTokensView, ResponseHeaderSection, WebBundleInfoView, };
+export { DirectSocketConnectionView, EditableSpan, HeaderSectionRow, RequestHeaderSection, RequestHeadersView, RequestTrustTokensView, ResponseHeaderSection, };

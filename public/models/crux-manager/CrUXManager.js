@@ -19,7 +19,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const CRUX_API_KEY = 'AIzaSyCCSOx25vrb5z0tbedCB3_JRzzbVW6Uwgw';
 const DEFAULT_ENDPOINT = `https://chromeuxreport.googleapis.com/v1/records:queryRecord?key=${CRUX_API_KEY}`;
 let cruxManagerInstance;
-// TODO: Potentially support `TABLET`. Tablet field data will always be `null` until then.
+/** TODO: Potentially support `TABLET`. Tablet field data will always be `null` until then. **/
 export const DEVICE_SCOPE_LIST = ['ALL', 'DESKTOP', 'PHONE'];
 const pageScopeList = ['origin', 'url'];
 const metrics = [

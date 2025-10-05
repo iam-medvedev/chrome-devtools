@@ -1524,8 +1524,10 @@ export class BreakpointLocationRevealer {
         }
     }
 }
-// Enumerate non-breakable lines (lines without a known corresponding
-// position in the UISource).
+/**
+ * Enumerate non-breakable lines (lines without a known corresponding
+ * position in the UISource).
+ **/
 async function computeNonBreakableLines(state, transformer, sourceCode) {
     const debuggerWorkspaceBinding = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
     const mappedLines = await debuggerWorkspaceBinding.getMappedLines(sourceCode);
@@ -1761,8 +1763,10 @@ export function getVariableNamesByLine(editorState, fromPos, toPos, currentPos) 
     fromPos = Math.min(fromLine.to, fromPos);
     toPos = editorState.doc.lineAt(toPos).from;
     const tree = CodeMirror.syntaxTree(editorState);
-    // Sibling scope is a scope that does not contain the current position.
-    // We will exclude variables that are defined (and used in those scopes (since we are currently outside of their lifetime).
+    /**
+     * Sibling scope is a scope that does not contain the current position.
+     * We will exclude variables that are defined (and used in those scopes (since we are currently outside of their lifetime).
+     **/
     function isSiblingScopeNode(node) {
         return isScopeNode(node.name) && (node.to < currentPos || currentPos < node.from);
     }

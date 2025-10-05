@@ -8,7 +8,7 @@ import * as i18n from '../i18n/i18n.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
 import { Cookie } from './Cookie.js';
-import { DirectSocketChunkType, DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest } from './NetworkRequest.js';
+import { DirectSocketChunkType, DirectSocketStatus, DirectSocketType, Events as NetworkRequestEvents, NetworkRequest, } from './NetworkRequest.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
 const UIStrings = {
@@ -1228,37 +1228,17 @@ export class NetworkDispatcher {
         }
         request.setTrustTokenOperationDoneEvent(event);
     }
-    subresourceWebBundleMetadataReceived({ requestId, urls }) {
-        const extraInfoBuilder = this.getExtraInfoBuilder(requestId);
-        extraInfoBuilder.setWebBundleInfo({ resourceUrls: urls });
-        const finalRequest = extraInfoBuilder.finalRequest();
-        if (finalRequest) {
-            this.updateNetworkRequest(finalRequest);
-        }
+    subresourceWebBundleMetadataReceived() {
+        // TODO: remove implementation after deleting this methods from definition in Network.pdl
     }
-    subresourceWebBundleMetadataError({ requestId, errorMessage }) {
-        const extraInfoBuilder = this.getExtraInfoBuilder(requestId);
-        extraInfoBuilder.setWebBundleInfo({ errorMessage });
-        const finalRequest = extraInfoBuilder.finalRequest();
-        if (finalRequest) {
-            this.updateNetworkRequest(finalRequest);
-        }
+    subresourceWebBundleMetadataError() {
+        // TODO: remove implementation after deleting this methods from definition in Network.pdl
     }
-    subresourceWebBundleInnerResponseParsed({ innerRequestId, bundleRequestId }) {
-        const extraInfoBuilder = this.getExtraInfoBuilder(innerRequestId);
-        extraInfoBuilder.setWebBundleInnerRequestInfo({ bundleRequestId });
-        const finalRequest = extraInfoBuilder.finalRequest();
-        if (finalRequest) {
-            this.updateNetworkRequest(finalRequest);
-        }
+    subresourceWebBundleInnerResponseParsed() {
+        // TODO: remove implementation after deleting this methods from definition in Network.pdl
     }
-    subresourceWebBundleInnerResponseError({ innerRequestId, errorMessage }) {
-        const extraInfoBuilder = this.getExtraInfoBuilder(innerRequestId);
-        extraInfoBuilder.setWebBundleInnerRequestInfo({ errorMessage });
-        const finalRequest = extraInfoBuilder.finalRequest();
-        if (finalRequest) {
-            this.updateNetworkRequest(finalRequest);
-        }
+    subresourceWebBundleInnerResponseError() {
+        // TODO: remove implementation after deleting this methods from definition in Network.pdl
     }
     reportingApiReportAdded(data) {
         this.#manager.dispatchEventToListeners(Events.ReportingApiReportAdded, data.report);
@@ -1747,8 +1727,6 @@ class ExtraInfoBuilder {
     #responseExtraInfos = [];
     #responseEarlyHintsHeaders = [];
     #finished = false;
-    #webBundleInfo = null;
-    #webBundleInnerRequestInfo = null;
     addRequest(req) {
         this.#requests.push(req);
         this.sync(this.#requests.length - 1);
@@ -1777,14 +1755,6 @@ class ExtraInfoBuilder {
     }
     setEarlyHintsHeaders(earlyHintsHeaders) {
         this.#responseEarlyHintsHeaders = earlyHintsHeaders;
-        this.updateFinalRequest();
-    }
-    setWebBundleInfo(info) {
-        this.#webBundleInfo = info;
-        this.updateFinalRequest();
-    }
-    setWebBundleInnerRequestInfo(info) {
-        this.#webBundleInnerRequestInfo = info;
         this.updateFinalRequest();
     }
     finished() {
@@ -1839,8 +1809,6 @@ class ExtraInfoBuilder {
             return;
         }
         const finalRequest = this.finalRequest();
-        finalRequest?.setWebBundleInfo(this.#webBundleInfo);
-        finalRequest?.setWebBundleInnerRequestInfo(this.#webBundleInnerRequestInfo);
         finalRequest?.setEarlyHintsHeaders(this.#responseEarlyHintsHeaders);
     }
 }

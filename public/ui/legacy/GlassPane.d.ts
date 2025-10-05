@@ -60,4 +60,5 @@ export declare const enum MarginBehavior {
     DEFAULT_MARGIN = "DefaultMargin",
     NO_MARGIN = "NoMargin"
 }
+/** Exported for layout tests. **/
 export declare const GlassPanePanes: Set<GlassPane>;

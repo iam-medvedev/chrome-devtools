@@ -10,6 +10,7 @@ import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
+import * as TextUtils from '../../text_utils/text_utils.js';
 import { NetworkAgent, RequestContext, } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkAgent', () => {
@@ -41,6 +42,7 @@ describeWithMockConnection('NetworkAgent', () => {
         });
     });
     describe('run', () => {
+        const exampleResponse = JSON.stringify({ request: 'body' });
         let selectedNetworkRequest;
         let calculator;
         const timingInfo = {
@@ -67,6 +69,9 @@ describeWithMockConnection('NetworkAgent', () => {
             selectedNetworkRequest.responseHeaders =
                 [{ name: 'content-type', value: 'bar2' }, { name: 'x-forwarded-for', value: 'bar3' }];
             selectedNetworkRequest.timing = timingInfo;
+            selectedNetworkRequest.requestContentData = () => {
+                return Promise.resolve(new TextUtils.ContentData.ContentData(exampleResponse, false, 'application/json', 'utf-8'));
+            };
             const initiatorNetworkRequest = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.initiator.com`, urlString ``, null, null, null);
             const initiatedNetworkRequest1 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/1`, urlString ``, null, null, null);
             const initiatedNetworkRequest2 = SDK.NetworkRequest.NetworkRequest.create('requestId', urlString `https://www.example.com/2`, urlString ``, null, null, null);
@@ -124,7 +129,7 @@ describeWithMockConnection('NetworkAgent', () => {
                         },
                         {
                             title: 'Response',
-                            text: 'Response Status: 200 \n\nResponse headers:\ncontent-type: bar2\nx-forwarded-for: bar3',
+                            text: `Response Status: 200 \n\nResponse headers:\ncontent-type: bar2\nx-forwarded-for: bar3\n\nResponse body:\n${exampleResponse}`
                         },
                         {
                             title: 'Timing',
@@ -150,7 +155,8 @@ describeWithMockConnection('NetworkAgent', () => {
                     rpcId: 123,
                 },
             ]);
-            assert.deepEqual(agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts, [
+            const historicalCtx = agent.buildRequest({ text: '' }, Host.AidaClient.Role.USER).historical_contexts;
+            assert.deepEqual(historicalCtx, [
                 {
                     role: 1,
                     parts: [{
@@ -162,6 +168,9 @@ content-type: bar1
 Response headers:
 content-type: bar2
 x-forwarded-for: bar3
+
+Response body:
+${exampleResponse}
 
 Response status: 200 \n
 Request timing:

@@ -349,7 +349,7 @@ export function isResourceWillSendRequest(event) {
 export function isResourceReceivedData(event) {
     return event.name === 'ResourceReceivedData';
 }
-// Any event where we receive data (and get an encodedDataLength)
+/** Any event where we receive data (and get an encodedDataLength) **/
 export function isReceivedDataEvent(event) {
     return event.name === 'ResourceReceivedData' || event.name === 'ResourceFinish' ||
         event.name === 'ResourceReceiveResponse';
@@ -547,8 +547,10 @@ export function isFlowPhaseEvent(event) {
 export function isParseAuthorStyleSheetEvent(event) {
     return event.name === "ParseAuthorStyleSheet" /* Name.PARSE_AUTHOR_STYLE_SHEET */ && event.ph === "X" /* Phase.COMPLETE */;
 }
-// NOT AN EXHAUSTIVE LIST: just some categories we use and refer
-// to in multiple places.
+/**
+ * NOT AN EXHAUSTIVE LIST: just some categories we use and refer
+ * to in multiple places.
+ **/
 export const Categories = {
     Console: 'blink.console',
     UserTiming: 'blink.user_timing',

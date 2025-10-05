@@ -104,7 +104,7 @@ export function colorForNetworkRequest(request) {
     const category = networkResourceCategory(request);
     return colorForNetworkCategory(category);
 }
-// TODO: Consolidate our metric rating logic with the trace engine.
+/** TODO: Consolidate our metric rating logic with the trace engine. **/
 export const LCP_THRESHOLDS = [2500, 4000];
 export const CLS_THRESHOLDS = [0.1, 0.25];
 export const INP_THRESHOLDS = [200, 500];

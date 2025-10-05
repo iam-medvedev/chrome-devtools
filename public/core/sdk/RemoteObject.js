@@ -1,7 +1,7 @@
 // Copyright 2009 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// This cannot be an interface due to "instanceof RemoteObject" checks in the code.
+/** This cannot be an interface due to "instanceof RemoteObject" checks in the code. **/
 export class RemoteObject {
     static fromLocalObject(value) {
         return new LocalJSONObject(value);

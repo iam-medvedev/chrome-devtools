@@ -7,6 +7,7 @@ import { RemoteObject } from './RemoteObject.js';
 import { RuntimeModel } from './RuntimeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { type Target } from './Target.js';
+/** Keep this list in sync with https://w3c.github.io/aria/#state_prop_def **/
 export declare const ARIA_ATTRIBUTES: Set<string>;
 export declare class DOMNode {
     #private;

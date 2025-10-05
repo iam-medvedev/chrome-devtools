@@ -137,6 +137,12 @@ export interface LinkifyOptions {
      */
     revealBreakpoint?: boolean;
 }
+/**
+ * The filter function for the openResourceHandlers. Returns true if the `url`
+ * should be considered for a particular handler. `specificSchemeHandlers`
+ * is the set of all schemes handled by all registered DevTools extensions
+ * (that specify a particular scheme).
+ **/
 export type LinkHandlerPredicate = (url: Platform.DevToolsPath.UrlString, specificSchemeHandlers: Set<string>) => boolean;
 export type LinkHandler = (arg0: TextUtils.ContentProvider.ContentProvider | Platform.DevToolsPath.UrlString, lineNumber: number, columnNumber?: number) => void;
 export interface LinkHandlerRegistration {

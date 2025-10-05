@@ -239,11 +239,8 @@ export class SearchView extends UI.Widget.VBox {
     #searchResultsMessage = '';
     #advancedSearchConfig;
     #searchScope;
-    // We throttle adding search results, otherwise we trigger DOM layout for each
-    // result added.
-    #throttler;
     #searchResults = [];
-    constructor(settingKey, throttler, view = DEFAULT_VIEW) {
+    constructor(settingKey, view = DEFAULT_VIEW) {
         super({
             jslog: `${VisualLogging.panel('search').track({ resize: true })}`,
             useShadowDom: true,
@@ -260,7 +257,6 @@ export class SearchView extends UI.Widget.VBox {
         this.#searchConfig = null;
         this.#pendingSearchConfig = null;
         this.#progress = null;
-        this.#throttler = throttler;
         this.#advancedSearchConfig = Common.Settings.Settings.instance().createLocalSetting(settingKey + '-search-config', new Workspace.SearchConfig.SearchConfig('', true, false).toPlainObject());
         this.performUpdate();
         this.#load();
@@ -379,16 +375,8 @@ export class SearchView extends UI.Widget.VBox {
             return;
         }
         this.#searchResults.push(searchResult);
-        void this.#throttler.schedule(async () => this.#setSearchResults());
-    }
-    #setSearchResults() {
-        this.#searchMatchesCount = 0;
-        this.#searchResultsCount = 0;
-        this.#nonEmptySearchResultsCount = 0;
-        for (const searchResult of this.#searchResults) {
-            this.#addSearchResult(searchResult);
-        }
-        this.performUpdate();
+        this.#addSearchResult(searchResult);
+        this.requestUpdate();
     }
     #onSearchFinished(searchId, finished) {
         if (searchId !== this.#searchId || !this.#progress) {
@@ -544,9 +532,6 @@ export class SearchView extends UI.Widget.VBox {
     #onClearSearch() {
         this.#resetSearch();
         this.#onClearSearchInput();
-    }
-    get throttlerForTest() {
-        return this.#throttler;
     }
 }
 //# sourceMappingURL=SearchView.js.map

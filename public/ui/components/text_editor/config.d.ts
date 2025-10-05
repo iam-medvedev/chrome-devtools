@@ -13,6 +13,11 @@ export declare class DynamicSetting<T> {
     static none: ReadonlyArray<DynamicSetting<unknown>>;
 }
 export declare const tabMovesFocus: DynamicSetting<boolean>;
+/**
+ * When enabled, this suppresses the behavior of showCompletionHint
+ * and accepting of completions with Enter until the user selects a
+ * completion beyond the initially selected one. Used in the console.
+ **/
 export declare const conservativeCompletion: CM.StateField<boolean>;
 export declare const autocompletion: DynamicSetting<boolean>;
 export declare const bracketMatching: DynamicSetting<boolean>;

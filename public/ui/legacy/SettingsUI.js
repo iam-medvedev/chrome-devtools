@@ -194,11 +194,7 @@ export const createControlForSetting = function (setting, subtitle) {
             return component;
         }
         case "enum" /* Common.Settings.SettingType.ENUM */:
-            if (Array.isArray(setting.options())) {
-                return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
-            }
-            console.error('Enum setting defined without options');
-            return null;
+            return createSettingSelect(uiTitle, setting.options(), setting.reloadRequired(), setting, subtitle);
         default:
             console.error('Invalid setting type: ' + setting.type());
             return null;

@@ -174,6 +174,7 @@ export type LiveObjects = Record<number, {
     size: number;
     ids: number[];
 }>;
+/** The first batch of data sent from the primary worker to the secondary. **/
 interface SecondaryInitArgumentsStep1 {
     edgeToNodeOrdinals: Uint32Array;
     firstEdgeIndexes: Uint32Array;
@@ -181,10 +182,12 @@ interface SecondaryInitArgumentsStep1 {
     edgeFieldsCount: number;
     nodeFieldCount: number;
 }
+/** The second batch of data sent from the primary worker to the secondary. **/
 interface SecondaryInitArgumentsStep2 {
     rootNodeOrdinal: number;
     essentialEdgesBuffer: ArrayBuffer;
 }
+/** The third batch of data sent from the primary worker to the secondary. **/
 interface SecondaryInitArgumentsStep3 {
     nodeSelfSizes: Uint32Array;
 }
@@ -209,6 +212,10 @@ interface DominatedNodes {
     firstDominatedNodeIndex: Uint32Array;
     dominatedNodes: Uint32Array;
 }
+/**
+ * Initialization work is split into two threads. This class is the entry point
+ * for work done by the second thread.
+ **/
 export declare class SecondaryInitManager {
     argsStep1: Promise<SecondaryInitArgumentsStep1>;
     argsStep2: Promise<SecondaryInitArgumentsStep2>;
@@ -450,6 +457,7 @@ export declare class JSHeapSnapshot extends HeapSnapshot {
     private calculateArraySize;
     getStatistics(): HeapSnapshotModel.HeapSnapshotModel.Statistics;
 }
+/** Creates and initializes a JSHeapSnapshot using only one thread. **/
 export declare function createJSHeapSnapshotForTesting(profile: Profile): Promise<JSHeapSnapshot>;
 export declare class JSHeapSnapshotNode extends HeapSnapshotNode {
     #private;

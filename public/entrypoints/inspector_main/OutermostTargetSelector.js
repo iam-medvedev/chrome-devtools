@@ -66,7 +66,8 @@ export class OutermostTargetSelector {
         }
         this.listItems.insertWithComparator(target, this.#targetComparator());
         this.#toolbarItem.setVisible(this.listItems.length > 1);
-        if (target === UI.Context.Context.instance().flavor(SDK.Target.Target)) {
+        const primaryTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (target === primaryTarget || target === UI.Context.Context.instance().flavor(SDK.Target.Target)) {
             this.#dropDown.selectItem(target);
         }
     }

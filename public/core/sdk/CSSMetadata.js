@@ -279,8 +279,10 @@ export const CubicBezierKeywordValues = new Map([
     ['ease-in-out', 'cubic-bezier(0.42, 0, 0.58, 1)'],
     ['ease-out', 'cubic-bezier(0, 0, 0.58, 1)'],
 ]);
-// Spec: https://drafts.csswg.org/css-cascade/#defaulting-keywords
-// https://drafts.csswg.org/css-cascade-5/#revert-layer
+/**
+ * Spec: https://drafts.csswg.org/css-cascade/#defaulting-keywords
+ * https://drafts.csswg.org/css-cascade-5/#revert-layer
+ **/
 export const CSSWideKeywords = [
     "inherit" /* CSSWideKeyword.INHERIT */,
     "initial" /* CSSWideKeyword.INITIAL */,

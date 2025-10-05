@@ -29,9 +29,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/search/SearchResultsPane.ts', U
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export const DEFAULT_VIEW = (input, _output, target) => {
     const { results, matches, expandedResults, onSelectMatch, onExpandSearchResult, onShowMoreMatches } = input;
-    const onExpand = ({ detail: { expanded, target } }) => {
-        const searchResultIndex = Number(target.dataset.searchResultIndex);
-        const searchResult = results[searchResultIndex];
+    const onExpand = (searchResult, { detail: { expanded } }) => {
         if (expanded) {
             expandedResults.add(searchResult);
             onExpandSearchResult(searchResult);
@@ -42,10 +40,12 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     };
     // clang-format off
     render(html `
-    <devtools-tree hide-overflow @expand=${onExpand} .template=${html `
+    <devtools-tree hide-overflow .template=${html `
       <ul role="tree">
-        ${results.map((searchResult, i) => html `
-          <li role="treeitem" data-search-result-index=${i} class="search-result">
+        ${results.map(searchResult => html `
+          <li @expand=${(e) => onExpand(searchResult, e)}
+              role="treeitem"
+              class="search-result">
             <style>${searchResultsPaneStyles}</style>
             ${renderSearchResult(searchResult)}
             <ul role="group" ?hidden=${!expandedResults.has(searchResult)}>
@@ -76,7 +76,6 @@ const renderSearchMatches = (searchResult, matches, onSelectMatch, onShowMoreMat
     return html `
       ${visibleMatches.map(({ lineContent, matchRanges, resultLabel }, i) => html `
         <li role="treeitem" class="search-match" @click=${() => onSelectMatch(searchResult, i)}
-          ${UI.TreeOutline.TreeSearch.highlight(matchRanges.map(range => ({ offset: range.offset + `${resultLabel}`.length, length: range.length })), undefined)}
           @keydown=${(event) => {
         if (event.key === 'Enter') {
             onSelectMatch(searchResult, i);
@@ -91,7 +90,8 @@ const renderSearchMatches = (searchResult, matches, onSelectMatch, onShowMoreMat
         ? i18nString(UIStrings.lineS, { PH1: resultLabel }) : resultLabel}>
               ${resultLabel}
             </span>
-            <span class="search-match-content" aria-label="${lineContent} line">
+            <span class="search-match-content" aria-label="${lineContent} line"
+                  ${UI.TreeOutline.TreeSearch.highlight(matchRanges, undefined)}>
               ${lineContent}
             </span>
           </button>
