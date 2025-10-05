@@ -77,7 +77,7 @@ class PreloadingUIUtils {
         }
     }
 }
-// Grid component to show prerendering attempts.
+/** Grid component to show prerendering attempts. **/
 export class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;

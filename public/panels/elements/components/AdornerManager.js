@@ -18,8 +18,10 @@ export var RegisteredAdorners;
     RegisteredAdorners["SCROLL"] = "scroll";
     RegisteredAdorners["POPOVER"] = "popover";
 })(RegisteredAdorners || (RegisteredAdorners = {}));
-// This enum-like const object serves as the authoritative registry for all the
-// adorners available.
+/**
+ * This enum-like const object serves as the authoritative registry for all the
+ * adorners available.
+ **/
 export function getRegisteredAdorner(which) {
     switch (which) {
         case RegisteredAdorners.GRID:
@@ -174,7 +176,7 @@ const OrderedAdornerCategories = [
     "Layout" /* AdornerCategories.LAYOUT */,
     "Default" /* AdornerCategories.DEFAULT */,
 ];
-// Use idx + 1 for the order to avoid JavaScript's 0 == false issue
+/** Use idx + 1 for the order to avoid JavaScript's 0 == false issue **/
 export const AdornerCategoryOrder = new Map(OrderedAdornerCategories.map((category, idx) => [category, idx + 1]));
 export function compareAdornerNamesByCategory(nameA, nameB) {
     const orderA = AdornerCategoryOrder.get(getCategoryFromAdornerName(nameA)) || Number.POSITIVE_INFINITY;

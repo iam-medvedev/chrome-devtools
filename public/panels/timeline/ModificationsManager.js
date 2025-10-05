@@ -9,9 +9,11 @@ import * as AnnotationHelpers from './AnnotationHelpers.js';
 import { EntriesFilter } from './EntriesFilter.js';
 const modificationsManagerByTraceIndex = [];
 let activeManager;
-// Event dispatched after an annotation was added, removed or updated.
-// The event argument is the Overlay that needs to be created,removed
-// or updated by `Overlays.ts` and the action that needs to be applied to it.
+/**
+ * Event dispatched after an annotation was added, removed or updated.
+ * The event argument is the Overlay that needs to be created,removed
+ * or updated by `Overlays.ts` and the action that needs to be applied to it.
+ **/
 export class AnnotationModifiedEvent extends Event {
     overlay;
     action;

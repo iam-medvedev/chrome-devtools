@@ -732,7 +732,7 @@ export function highlightRangesWithStyleClass(element, resultRanges, styleClass,
     }
     return highlightNodes;
 }
-// Used in chromium/src/third_party/blink/web_tests/http/tests/devtools/components/utilities-highlight-results.js
+/** Used in chromium/src/third_party/blink/web_tests/http/tests/devtools/components/utilities-highlight-results.js **/
 export function applyDomChanges(domChanges) {
     for (let i = 0, size = domChanges.length; i < size; ++i) {
         const entry = domChanges[i];
@@ -1629,26 +1629,11 @@ function updateWidgetfocusWidgetForNode(node) {
         widget = parentWidget;
     }
 }
-function updateXWidgetfocusWidgetForNode(node) {
-    node = node?.parentNodeOrShadowHost() ?? null;
-    const XWidgetConstructor = customElements.get('x-widget');
-    let widget = null;
-    while (node) {
-        if (XWidgetConstructor && node instanceof XWidgetConstructor) {
-            if (widget) {
-                node.defaultFocusedElement = widget;
-            }
-            widget = node;
-        }
-        node = node.parentNodeOrShadowHost();
-    }
-}
 function focusChanged(event) {
     const target = event.target;
     const document = target ? target.ownerDocument : null;
     const element = document ? Platform.DOMUtilities.deepActiveElement(document) : null;
     updateWidgetfocusWidgetForNode(element);
-    updateXWidgetfocusWidgetForNode(element);
 }
 /**
  * Creates a new shadow DOM tree with the core styles and an optional list of
@@ -1928,6 +1913,9 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
             return value;
         }
     }
+    get templateRoot() {
+        return this.#contentTemplate?.content ?? this;
+    }
     set template(template) {
         if (!this.#contentTemplate) {
             this.removeChildren();
@@ -1954,6 +1942,22 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
     addNodes(_nodes, _nextSibling) {
     }
     removeNodes(_nodes) {
+    }
+    static findCorrespondingElement(sourceElement, sourceRootElement, targetRootElement) {
+        let currentElement = sourceElement;
+        const childIndexesOnPathToRoot = [];
+        while (currentElement?.parentElement && currentElement !== sourceRootElement) {
+            childIndexesOnPathToRoot.push([...currentElement.parentElement.children].indexOf(currentElement));
+            currentElement = currentElement.parentElement;
+        }
+        if (!currentElement) {
+            return null;
+        }
+        let targetElement = targetRootElement;
+        for (const index of childIndexesOnPathToRoot.reverse()) {
+            targetElement = targetElement.children[index];
+        }
+        return targetElement;
     }
 }
 //# sourceMappingURL=UIUtils.js.map

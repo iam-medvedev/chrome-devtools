@@ -6,9 +6,11 @@ import * as Workspace from '../models/workspace/workspace.js';
 import { dispatchEvent, } from './MockConnection.js';
 import { createResource, getMainFrame } from './ResourceTreeHelpers.js';
 import { createFileSystemUISourceCode } from './UISourceCodeHelpers.js';
-// This helper sets up a file system and a file system uiSourceCode that can be used for
-// Persistence testing. As soon as a script is added that has the given `networkScriptUrl` and the `content`,
-// PersistenceImpl will try to bind the network uiSourceCode with this file system uiSourceCode.
+/**
+ * This helper sets up a file system and a file system uiSourceCode that can be used for
+ * Persistence testing. As soon as a script is added that has the given `networkScriptUrl` and the `content`,
+ * PersistenceImpl will try to bind the network uiSourceCode with this file system uiSourceCode.
+ **/
 export function createFileSystemFileForPersistenceTests(fileSystemScript, networkScriptUrl, content, target) {
     // First, set up a network resource that is described by the networkScriptUrl. This resource
     // file is required for a binding to be created.

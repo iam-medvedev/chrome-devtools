@@ -622,7 +622,7 @@ export class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainmentDataG
         this.updateResetButtonVisibility();
     }
 }
-// TODO(crbug.com/1228674): Remove this enum, it is only used in web tests.
+/** TODO(crbug.com/1228674): Remove this enum, it is only used in web tests. **/
 export var HeapSnapshotRetainmentDataGridEvents;
 (function (HeapSnapshotRetainmentDataGridEvents) {
     /* eslint-disable @typescript-eslint/naming-convention -- Used by web_tests. */

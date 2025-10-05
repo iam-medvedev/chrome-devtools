@@ -232,7 +232,7 @@ describeWithEnvironment('RehydratingConnection emittance', () => {
             void poll();
         };
         await poll();
-        // Elide any script sources in front_end/core/sdk/RehydratingConnection.snapshot.txt
+        /** Elide any script sources in front_end/core/sdk/RehydratingConnection.snapshot.txt **/
         function sanitizeLog(m) {
             if (typeof m === 'object' && m.params?.sourceText) {
                 m.params.sourceText = m.params.sourceText.slice(0, 20) + '…';

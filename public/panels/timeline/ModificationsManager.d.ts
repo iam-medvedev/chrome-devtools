@@ -2,6 +2,11 @@ import * as Trace from '../../models/trace/trace.js';
 import * as TimelineComponents from '../../panels/timeline/components/components.js';
 import { EntriesFilter } from './EntriesFilter.js';
 export type UpdateAction = 'Remove' | 'Add' | 'UpdateLabel' | 'UpdateTimeRange' | 'UpdateLinkToEntry' | 'EnterLabelEditState' | 'LabelBringForward';
+/**
+ * Event dispatched after an annotation was added, removed or updated.
+ * The event argument is the Overlay that needs to be created,removed
+ * or updated by `Overlays.ts` and the action that needs to be applied to it.
+ **/
 export declare class AnnotationModifiedEvent extends Event {
     overlay: Trace.Types.Overlays.Overlay;
     action: UpdateAction;

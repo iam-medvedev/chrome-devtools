@@ -68,6 +68,7 @@ export declare class PendingFrame {
     triggerTime: number;
     constructor(triggerTime: number);
 }
+/** The parameters of an impl-side BeginFrame. **/
 declare class BeginFrameInfo {
     seqId: number;
     startTime: Types.Timing.Micro;
@@ -75,6 +76,12 @@ declare class BeginFrameInfo {
     isPartial: boolean;
     constructor(seqId: number, startTime: Types.Timing.Micro, isDropped: boolean, isPartial: boolean);
 }
+/**
+ * A queue of BeginFrames pending visualization.
+ * BeginFrames are added into this queue as they occur; later when their
+ * corresponding DrawFrames occur (or lack thereof), the BeginFrames are removed
+ * from the queue and their timestamps are used for visualization.
+ **/
 export declare class TimelineFrameBeginFrameQueue {
     private queueFrames;
     private mapFrames;

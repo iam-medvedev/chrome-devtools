@@ -217,7 +217,7 @@ export declare class TreeSearch<NodeT extends TreeNode<NodeT>, SearchResultT ext
  * <devtools-tree
  *   .template=${html`
  *     <ul role="tree">
- *        <li role="treeitem">
+ *        <li role="treeitem" @expand=${onExpand}>
  *          Tree Node Text
  *          <ul role="group">
  *            Node with subtree
@@ -239,7 +239,7 @@ export declare class TreeSearch<NodeT extends TreeNode<NodeT>, SearchResultT ext
  * tree node). If a tree node contains a <ul role="group">, that defines a subtree under that tree node. The `hidden`
  * attribute on the <ul> defines whether that subtree should render as collapsed. Note that node expanding/collapsing do
  * not reflect this state back to the attribute on the config element, those state changes are rather sent out as
- * `expand` events.
+ * `expand` events on the config element.
  *
  * Under the hood this uses TreeOutline.
  *
@@ -267,7 +267,6 @@ export declare class TreeSearch<NodeT extends TreeNode<NodeT>, SearchResultT ext
  *
  * @property template Define the tree contents
  * @event selected A node was selected
- * @event expand A subtree was expanded or collapsed
  * @attribute navigation-variant Turn this tree into the navigation variant
  * @attribute hide-overflow
  */
@@ -291,11 +290,9 @@ export declare namespace TreeViewElement {
     }
     class ExpandEvent extends CustomEvent<{
         expanded: boolean;
-        target: HTMLLIElement;
     }> {
         constructor(detail: {
             expanded: boolean;
-            target: HTMLLIElement;
         });
     }
 }

@@ -158,10 +158,10 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     directUDPSocketChunkSent(event: Protocol.Network.DirectUDPSocketChunkSentEvent): void;
     directUDPSocketChunkReceived(event: Protocol.Network.DirectUDPSocketChunkReceivedEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
-    subresourceWebBundleMetadataReceived({ requestId, urls }: Protocol.Network.SubresourceWebBundleMetadataReceivedEvent): void;
-    subresourceWebBundleMetadataError({ requestId, errorMessage }: Protocol.Network.SubresourceWebBundleMetadataErrorEvent): void;
-    subresourceWebBundleInnerResponseParsed({ innerRequestId, bundleRequestId }: Protocol.Network.SubresourceWebBundleInnerResponseParsedEvent): void;
-    subresourceWebBundleInnerResponseError({ innerRequestId, errorMessage }: Protocol.Network.SubresourceWebBundleInnerResponseErrorEvent): void;
+    subresourceWebBundleMetadataReceived(): void;
+    subresourceWebBundleMetadataError(): void;
+    subresourceWebBundleInnerResponseParsed(): void;
+    subresourceWebBundleInnerResponseError(): void;
     reportingApiReportAdded(data: Protocol.Network.ReportingApiReportAddedEvent): void;
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
     reportingApiEndpointsChangedForOrigin(data: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;

@@ -123,18 +123,18 @@ export class NetworkAgent extends AiAgent {
         yield {
             type: "context" /* ResponseType.CONTEXT */,
             title: lockedString(UIStringsNotTranslate.analyzingNetworkData),
-            details: createContextDetailsForNetworkAgent(selectedNetworkRequest),
+            details: await createContextDetailsForNetworkAgent(selectedNetworkRequest),
         };
     }
     async enhanceQuery(query, selectedNetworkRequest) {
         const networkEnchantmentQuery = selectedNetworkRequest ?
-            `# Selected network request \n${new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator)
-                .formatNetworkRequest()}\n\n# User request\n\n` :
+            `# Selected network request \n${await (new NetworkRequestFormatter(selectedNetworkRequest.getItem(), selectedNetworkRequest.calculator)
+                .formatNetworkRequest())}\n\n# User request\n\n` :
             '';
         return `${networkEnchantmentQuery}${query}`;
     }
 }
-function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
+async function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
     const request = selectedNetworkRequest.getItem();
     const formatter = new NetworkRequestFormatter(request, selectedNetworkRequest.calculator);
     const requestContextDetail = {
@@ -142,10 +142,12 @@ function createContextDetailsForNetworkAgent(selectedNetworkRequest) {
         text: lockedString(UIStringsNotTranslate.requestUrl) + ': ' + request.url() + '\n\n' +
             formatter.formatRequestHeaders(),
     };
+    const responseBody = await formatter.formatResponseBody();
+    const responseBodyString = responseBody ? `\n\n${responseBody}` : '';
     const responseContextDetail = {
         title: lockedString(UIStringsNotTranslate.response),
         text: lockedString(UIStringsNotTranslate.responseStatus) + ': ' + request.statusCode + ' ' + request.statusText +
-            '\n\n' + formatter.formatResponseHeaders(),
+            `\n\n${formatter.formatResponseHeaders()}` + responseBodyString,
     };
     const timingContextDetail = {
         title: lockedString(UIStringsNotTranslate.timing),

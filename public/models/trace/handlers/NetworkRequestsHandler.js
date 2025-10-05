@@ -221,6 +221,7 @@ export async function finalize() {
          *
          * See `_updateTimingsForLightrider` in Lighthouse for more detail.
          */
+        let lrServerResponseTime;
         if (isLightrider && request.receiveResponse?.args.data.headers) {
             timing = {
                 requestTime: Helpers.Timing.microToSeconds(request.sendRequests.at(0)?.ts ?? 0),
@@ -253,6 +254,13 @@ export async function finalize() {
                 timing.sslStart = TCPMs / 2;
                 timing.connectEnd = TCPMs;
                 timing.sslEnd = TCPMs;
+            }
+            // Lightrider does not have any equivalent for `sendEnd` timing values. The
+            // closest we can get to the server response time is from a header that
+            // Lightrider sets.
+            const ResponseMsHeader = request.receiveResponse.args.data.headers.find(h => h.name === 'X-ResponseMs');
+            if (ResponseMsHeader) {
+                lrServerResponseTime = Math.max(0, parseInt(ResponseMsHeader.value, 10));
             }
         }
         // TODO: consider allowing chrome / about.
@@ -346,6 +354,13 @@ export async function finalize() {
         const waiting = timing ?
             Types.Timing.Micro((timing.receiveHeadersEnd - timing.sendEnd) * MILLISECONDS_TO_MICROSECONDS) :
             Types.Timing.Micro(0);
+        // Server Response Time
+        // =======================
+        // Time from when the send finished going to when the first byte of headers were received.
+        const serverResponseTime = timing ?
+            Types.Timing.Micro(((timing.receiveHeadersStart ?? timing.receiveHeadersEnd) - timing.sendEnd) *
+                MILLISECONDS_TO_MICROSECONDS) :
+            Types.Timing.Micro(0);
         // Download
         // =======================
         // Time from receipt of headers to the finish time.
@@ -404,6 +419,7 @@ export async function finalize() {
                         stalled,
                         totalTime,
                         waiting,
+                        serverResponseTime,
                     },
                     // All fields below are from TraceEventsForNetworkRequest.
                     decodedBodyLength,
@@ -428,6 +444,7 @@ export async function finalize() {
                     initiator: finalSendRequest.args.data.initiator,
                     stackTrace: finalSendRequest.args.data.stackTrace,
                     timing,
+                    lrServerResponseTime,
                     url,
                     failed: request.resourceFinish?.args.data.didFail ?? false,
                     finished: Boolean(request.resourceFinish),

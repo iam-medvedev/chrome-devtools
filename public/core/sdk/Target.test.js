@@ -7,10 +7,12 @@ import * as Platform from '../platform/platform.js';
 import * as SDK from './sdk.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('Target', () => {
+    let browserTarget;
     let tabTarget;
     let mainFrameTargetUnderTab;
     let subframeTarget;
     beforeEach(() => {
+        browserTarget = createTarget({ type: SDK.Target.Type.BROWSER });
         tabTarget = createTarget({ type: SDK.Target.Type.TAB });
         mainFrameTargetUnderTab = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: tabTarget });
         subframeTarget = createTarget({ type: SDK.Target.Type.FRAME, parentTarget: mainFrameTargetUnderTab });
@@ -21,6 +23,23 @@ describeWithMockConnection('Target', () => {
         assert.isTrue(mainFrameTargetUnderTab.hasAllCapabilities(32 /* SDK.Target.Capability.TARGET */ | 2 /* SDK.Target.Capability.DOM */ | 4096 /* SDK.Target.Capability.DEVICE_EMULATION */));
         assert.isTrue(subframeTarget.hasAllCapabilities(32 /* SDK.Target.Capability.TARGET */ | 2 /* SDK.Target.Capability.DOM */));
         assert.isFalse(subframeTarget.hasAllCapabilities(4096 /* SDK.Target.Capability.DEVICE_EMULATION */));
+    });
+    it('should grant STORAGE capability to top-level workers', () => {
+        const serviceWorker = createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: browserTarget });
+        const sharedWorker = createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: browserTarget });
+        const dedicatedWorker = createTarget({ type: SDK.Target.Type.Worker, parentTarget: browserTarget });
+        assert.isTrue(serviceWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level service worker');
+        assert.isTrue(sharedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level shared worker');
+        assert.isTrue(dedicatedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'top-level dedicated worker');
+    });
+    it('should NOT grant STORAGE capability to frame-attached workers', () => {
+        const frameTarget = mainFrameTargetUnderTab;
+        const serviceWorker = createTarget({ type: SDK.Target.Type.ServiceWorker, parentTarget: frameTarget });
+        const sharedWorker = createTarget({ type: SDK.Target.Type.SHARED_WORKER, parentTarget: frameTarget });
+        const dedicatedWorker = createTarget({ type: SDK.Target.Type.Worker, parentTarget: frameTarget });
+        assert.isFalse(serviceWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached service worker');
+        assert.isFalse(sharedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached shared worker');
+        assert.isFalse(dedicatedWorker.hasAllCapabilities(8192 /* SDK.Target.Capability.STORAGE */), 'frame-attached dedicated worker');
     });
     it('notifies about inspected URL change', () => {
         const inspectedURLChanged = sinon.spy(SDK.TargetManager.TargetManager.instance(), 'onInspectedURLChange');

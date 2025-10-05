@@ -210,15 +210,17 @@ function findDifferentiatingPath(url, allUrls, startIndex) {
     }
     return differentiatingPath;
 }
-// This function tries to find a subpath (if available) that we can use to differentiate
-// urls that have the same file name.
-// It does so by 1. removing common suffixes, 2. taking segments of the path (from right to left) until the path is
-// unique.
-//
-// Example:
-//
-//     Paths:  'http://www.google.com/src/a/index.js', 'http://www.google.com/src2/a/index.js'
-//     Output: 'src/…/', 'src2/…/'
+/**
+ * This function tries to find a subpath (if available) that we can use to differentiate
+ * urls that have the same file name.
+ * It does so by 1. removing common suffixes, 2. taking segments of the path (from right to left) until the path is
+ * unique.
+ *
+ * Example:
+ *
+ * Paths:  'http://www.google.com/src/a/index.js', 'http://www.google.com/src2/a/index.js'
+ * Output: 'src/…/', 'src2/…/'
+ **/
 function populateDifferentiatingPathMap(urls, urlToDifferentiator) {
     const splitReversedUrls = urls.map(url => {
         // Get the folder path components without the first '/'.

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import { ResourceTreeModel } from './ResourceTreeModel.js';
-// A thin wrapper class, mostly to enable instanceof-based revealing of traces to open in Timeline.
+/** A thin wrapper class, mostly to enable instanceof-based revealing of traces to open in Timeline. **/
 export class TraceObject {
     traceEvents;
     metadata;
@@ -15,7 +15,7 @@ export class TraceObject {
         this.metadata = metadata;
     }
 }
-// Another thin wrapper class to enable revealing individual trace events (aka entries) in Timeline panel.
+/** Another thin wrapper class to enable revealing individual trace events (aka entries) in Timeline panel. **/
 export class RevealableEvent {
     event;
     // Only Trace.Types.Events.Event are passed in, but we can't depend on that type from SDK

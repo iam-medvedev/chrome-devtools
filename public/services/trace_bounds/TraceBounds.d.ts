@@ -10,6 +10,10 @@ export declare class StateChangedEvent extends Event {
         shouldAnimate?: boolean;
     });
 }
+/**
+ * Exposed as a shortcut to BoundsManager.instance().addEventListener, which
+ * also takes care of type-casting the event to StateChangedEvent.
+ **/
 export declare function onChange(cb: (event: StateChangedEvent) => void): void;
 export declare function removeListener(cb: (event: StateChangedEvent) => void): void;
 export interface State {

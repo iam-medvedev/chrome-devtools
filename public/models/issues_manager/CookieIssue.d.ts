@@ -3,11 +3,13 @@ import * as SDK from '../../core/sdk/sdk.js';
 import * as Protocol from '../../generated/protocol.js';
 import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
+/** The enum string values need to match the IssueExpanded enum values in UserMetrics.ts. **/
 export declare const enum CookieIssueSubCategory {
     GENERIC_COOKIE = "GenericCookie",
     SAME_SITE_COOKIE = "SameSiteCookie",
     THIRD_PARTY_PHASEOUT_COOKIE = "ThirdPartyPhaseoutCookie"
 }
+/** Enum to show cookie status from the security panel's third-party cookie report tool **/
 export declare const enum CookieStatus {
     BLOCKED = 0,
     ALLOWED = 1,

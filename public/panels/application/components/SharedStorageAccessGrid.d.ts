@@ -4,7 +4,7 @@ import * as UI from '../../../ui/legacy/legacy.js';
 export declare const i18nString: (id: string, values?: import("../../../core/i18n/i18nTypes.js").Values | undefined) => import("../../../core/platform/UIString.js").LocalizedString;
 export interface ViewInput {
     events: Protocol.Storage.SharedStorageAccessedEvent[];
-    onSelect: (event: CustomEvent<HTMLElement>) => void;
+    onSelect: (event: Protocol.Storage.SharedStorageAccessedEvent) => void;
 }
 export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;

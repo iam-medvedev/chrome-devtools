@@ -351,6 +351,11 @@ export default `/*
     color: ButtonText;
   }
 
+  .data-grid tbody tr.revealed:not(.data-grid-filler-row, .selected):hover,
+  .data-grid:focus-within tbody tr.revealed.selected {
+    background-color: Highlight;
+  }
+
   .data-grid th.sortable:hover *,
   .data-grid tr.parent.selected td.disclosure::before,
   .data-grid:focus tr.parent.selected td.disclosure::before,

@@ -151,14 +151,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         'source-code': true,
         'breakpoint-hit': input.highlightedItem === breakpoint,
     });
-    const categoryConfigElements = new WeakMap();
-    const trackCategoryConfigElement = (category) => ref((e) => {
-        if (e instanceof HTMLLIElement) {
-            categoryConfigElements.set(e, category);
-        }
-    });
-    const onExpand = ({ detail: { expanded, target } }) => {
-        const category = categoryConfigElements.get(target);
+    const onExpand = (category, { detail: { expanded } }) => {
         const breakpoints = category && input.categories.get(category);
         if (!breakpoints) {
             return;
@@ -186,17 +179,15 @@ export const DEFAULT_VIEW = (input, output, target) => {
     </devtools-toolbar>
     <devtools-tree
       ${ref(e => { output.defaultFocus = e; })}
-      @expand=${onExpand}
       .template=${html `
         <ul role="tree">
           ${filteredCategories.map(([category, breakpoints]) => html `
-            <li
+            <li @expand=${(e) => onExpand(category, e)}
                 role="treeitem"
                 jslog-context=${category}
                 aria-checked=${breakpoints.some(breakpoint => breakpoint.enabled())
         ? breakpoints.some(breakpoint => !breakpoint.enabled()) ? 'mixed' : true
-        : false}
-                ${trackCategoryConfigElement(category)}>
+        : false}>
               <style>${categorizedBreakpointsSidebarPaneStyles}</style>
               <devtools-checkbox
                 class="small"

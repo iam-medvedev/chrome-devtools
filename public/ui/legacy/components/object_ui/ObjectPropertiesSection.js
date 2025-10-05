@@ -592,8 +592,10 @@ export class RootElement extends UI.TreeOutline.TreeElement {
         return await ObjectPropertyTreeElement.populate(this, this.object, skipProto, false, this.linkifier, this.emptyPlaceholder, this.propertiesMode, this.extraProperties, this.targetObject);
     }
 }
-// Number of initially visible children in an ObjectPropertyTreeElement.
-// Remaining children are shown as soon as requested via a show more properties button.
+/**
+ * Number of initially visible children in an ObjectPropertyTreeElement.
+ * Remaining children are shown as soon as requested via a show more properties button.
+ **/
 export const InitialVisibleChildrenLimit = 200;
 export class ObjectPropertyTreeElement extends UI.TreeOutline.TreeElement {
     property;

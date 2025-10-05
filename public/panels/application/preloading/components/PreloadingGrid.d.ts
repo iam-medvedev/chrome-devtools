@@ -16,6 +16,7 @@ export interface PreloadingGridRow {
     pipeline: SDK.PreloadingModel.PreloadPipeline;
     ruleSets: Protocol.Preload.RuleSet[];
 }
+/** Grid component to show prerendering attempts. **/
 export declare class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
     connectedCallback(): void;

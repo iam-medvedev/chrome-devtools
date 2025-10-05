@@ -84,7 +84,7 @@ export function substitutePlaceholders(markdown, substitutions) {
     }
     return result;
 }
-// Ensure that all provided placeholders match the naming pattern.
+/** Ensure that all provided placeholders match the naming pattern. **/
 function validatePlaceholders(placeholders) {
     const invalidPlaceholders = [...placeholders].filter(placeholder => !validPlaceholderNamePattern.test(placeholder));
     if (invalidPlaceholders.length > 0) {

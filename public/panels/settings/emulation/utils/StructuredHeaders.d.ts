@@ -41,31 +41,47 @@ export interface Boolean {
     kind: ResultKind.BOOLEAN;
     value: boolean;
 }
+/**
+ * bare-item = sf-integer / sf-decimal / sf-string / sf-token
+ * / sf-binary / sf-boolean
+ **/
 export type BareItem = Integer | Decimal | String | Token | Binary | Boolean;
 export interface ParamName {
     kind: ResultKind.PARAM_NAME;
     value: string;
 }
+/**
+ * parameter     = param-name [ "=" param-value ]
+ * param-value   = bare-item
+ **/
 export interface Parameter {
     kind: ResultKind.PARAMETER;
     name: ParamName;
     value: BareItem;
 }
+/** parameters  = *( ";" *SP parameter ) **/
 export interface Parameters {
     kind: ResultKind.PARAMETERS;
     items: Parameter[];
 }
+/** sf-item   = bare-item parameters **/
 export interface Item {
     kind: ResultKind.ITEM;
     value: BareItem;
     parameters: Parameters;
 }
+/**
+ * inner-list    = "(" *SP [ sf-item *( 1*SP sf-item ) *SP ] ")"
+ * parameters
+ **/
 export interface InnerList {
     kind: ResultKind.INNER_LIST;
     items: Item[];
     parameters: Parameters;
 }
+/** list-member = sf-item / inner-list **/
 export type ListMember = Item | InnerList;
+/** sf-list = list-member *( OWS "," OWS list-member ) **/
 export interface List {
     kind: ResultKind.LIST;
     items: ListMember[];
@@ -76,5 +92,7 @@ export interface SerializationResult {
 }
 export declare function parseItem(input: string): Item | Error;
 export declare function parseList(input: string): List | Error;
+/** 4.1.3.  Serializing an Item **/
 export declare function serializeItem(input: Item): SerializationResult | Error;
+/** 4.1.1.  Serializing a List **/
 export declare function serializeList(input: List): SerializationResult | Error;

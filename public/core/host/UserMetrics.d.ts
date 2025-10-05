@@ -56,6 +56,11 @@ export declare class UserMetrics {
  * 1. Delete the line with the unneeded value
  * 2. Do not update any 'MAX_VALUE' or any other value.
  */
+/**
+ * Codes below are used to collect UMA histograms in the Chromium port.
+ * Do not change the values below, additional actions are needed on the Chromium side
+ * in order to add more codes.
+ **/
 export declare enum Action {
     WindowDocked = 1,
     WindowUndocked = 2,
@@ -518,6 +523,7 @@ export declare enum DevtoolsExperiments {
     'timeline-debug-mode' = 93,
     MAX_VALUE = 110
 }
+/** Update DevToolsIssuesPanelIssueExpanded from tools/metrics/histograms/enums.xml if new enum is added. **/
 export declare enum IssueExpanded {
     CrossOriginEmbedderPolicy = 0,
     MixedContent = 1,

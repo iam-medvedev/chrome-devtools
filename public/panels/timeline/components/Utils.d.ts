@@ -16,6 +16,7 @@ export declare function colorForNetworkCategory(category: NetworkCategory): stri
 export declare function colorForNetworkRequest(request: Trace.Types.Events.SyntheticNetworkRequest): string;
 export type MetricRating = 'good' | 'needs-improvement' | 'poor';
 export type MetricThresholds = [number, number];
+/** TODO: Consolidate our metric rating logic with the trace engine. **/
 export declare const LCP_THRESHOLDS: MetricThresholds;
 export declare const CLS_THRESHOLDS: MetricThresholds;
 export declare const INP_THRESHOLDS: MetricThresholds;

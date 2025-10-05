@@ -1,3 +1,4 @@
+import '../../../components/highlighting/highlighting.js';
 import * as UI from '../../legacy.js';
 interface ViewInput {
     onExpand(node: XMLTreeViewNode, expanded: boolean): void;

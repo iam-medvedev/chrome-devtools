@@ -536,7 +536,7 @@ describe('closing the dialog with click', () => {
     });
 });
 describeWithLocale('visual appearance', () => {
-    // FIXME: clean up and modularize these test helpers.
+    /** FIXME: clean up and modularize these test helpers. **/
     async function renderDialogs() {
         const verticalPositions = ["top" /* Dialogs.Dialog.DialogVerticalPosition.TOP */, "bottom" /* Dialogs.Dialog.DialogVerticalPosition.BOTTOM */];
         const horizontalAlignments = [

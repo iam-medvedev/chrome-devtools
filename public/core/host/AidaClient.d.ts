@@ -72,6 +72,7 @@ export interface FunctionDeclaration<T extends string | number | symbol = string
     description: string;
     parameters: FunctionObjectParam<T>;
 }
+/** Raw media bytes. **/
 export interface MediaBlob {
     mimeType: string;
     data: string;
@@ -82,6 +83,7 @@ export declare enum FunctionalityType {
     EXPLAIN_ERROR = 2,
     AGENTIC_CHAT = 5
 }
+/** See: cs/aida.proto (google3). **/
 export declare enum ClientFeature {
     CLIENT_FEATURE_UNSPECIFIED = 0,
     CHROME_CONSOLE_INSIGHTS = 1,
@@ -98,6 +100,7 @@ export declare enum UserTier {
     BETA = 2,
     PUBLIC = 3
 }
+/** Googlers: see the Aida `retrieval` proto; this type is based on that. **/
 export interface RequestFactMetadata {
     /**
      * A description of where the fact comes from.

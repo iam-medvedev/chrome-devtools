@@ -1,4 +1,10 @@
 import * as Trace from '../../../models/trace/trace.js';
+/**
+ * `initialBreadcrumb` is the first breadcrumb in the breadcrumbs linked list. Since
+ * breadcrumbs are a linked list, the first breadcrumb is enough to be able to iterate through all of them.
+ *
+ * `activeBreadcrumb` is the currently active breadcrumb that the timeline is limited to.
+ **/
 export interface BreadcrumbsUIData {
     initialBreadcrumb: Trace.Types.File.Breadcrumb;
     activeBreadcrumb: Trace.Types.File.Breadcrumb;

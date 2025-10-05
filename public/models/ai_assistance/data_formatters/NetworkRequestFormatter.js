@@ -4,8 +4,10 @@
 var _a;
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
+import * as TextUtils from '../../text_utils/text_utils.js';
 import { seconds } from './UnitFormatters.js';
 const MAX_HEADERS_SIZE = 1000;
+const MAX_BODY_SIZE = 10000;
 /**
  * Sanitizes the set of headers, removing values that are not on the allow-list and replacing them with '<redacted>'.
  */
@@ -19,6 +21,7 @@ function sanitizeHeaders(headers) {
 }
 export class NetworkRequestFormatter {
     #calculator;
+    #request;
     static allowHeader(headerName) {
         return allowedHeaders.has(headerName.toLowerCase().trim());
     }
@@ -28,6 +31,23 @@ export class NetworkRequestFormatter {
             return prefix + header.name + ': ' + header.value + '\n';
         }), MAX_HEADERS_SIZE);
     }
+    static async formatBody(title, request, maxBodySize) {
+        const data = await request.requestContentData();
+        if (TextUtils.ContentData.ContentData.isError(data)) {
+            return '';
+        }
+        if (data.isEmpty) {
+            return `${title}\n<empty response>`;
+        }
+        if (data.isTextContent) {
+            const dataAsText = data.text;
+            if (dataAsText.length > maxBodySize) {
+                return `${title}\n${dataAsText.substring(0, maxBodySize) + '... <truncated>'}`;
+            }
+            return `${title}\n${dataAsText}`;
+        }
+        return `${title}\n<binary data>`;
+    }
     static formatInitiatorUrl(initiatorUrl, allowedOrigin) {
         const initiatorOrigin = new URL(initiatorUrl).origin;
         if (initiatorOrigin === allowedOrigin) {
@@ -35,7 +55,6 @@ export class NetworkRequestFormatter {
         }
         return '<redacted cross-origin initiator URL>';
     }
-    #request;
     constructor(request, calculator) {
         this.#request = request;
         this.#calculator = calculator;
@@ -46,16 +65,24 @@ export class NetworkRequestFormatter {
     formatResponseHeaders() {
         return _a.formatHeaders('Response headers:', this.#request.responseHeaders);
     }
+    async formatResponseBody() {
+        return await _a.formatBody('Response body:', this.#request, MAX_BODY_SIZE);
+    }
     /**
      * Note: nothing here should include information from origins other than
      * the request's origin.
      */
-    formatNetworkRequest() {
+    async formatNetworkRequest() {
+        let responseBody = await this.formatResponseBody();
+        if (responseBody) {
+            // if we have a response then we add 2 new line to follow same structure of the context
+            responseBody = `\n\n${responseBody}`;
+        }
         return `Request: ${this.#request.url()}
 
 ${this.formatRequestHeaders()}
 
-${this.formatResponseHeaders()}
+${this.formatResponseHeaders()}${responseBody}
 
 Response status: ${this.#request.statusCode} ${this.#request.statusText}
 

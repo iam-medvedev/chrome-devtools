@@ -13,7 +13,9 @@ import { ElementsSidebarPane } from './ElementsSidebarPane.js';
 import { StylePropertiesSection } from './StylePropertiesSection.js';
 import type { StylePropertyTreeElement } from './StylePropertyTreeElement.js';
 import { WebCustomData } from './WebCustomData.js';
+/** Title of the registered properties section **/
 export declare const REGISTERED_PROPERTY_SECTION_NAME = "@property";
+/** Title of the function section **/
 export declare const FUNCTION_SECTION_NAME = "@function";
 declare const StylesSidebarPane_base: (new (...args: any[]) => {
     addEventListener<T extends keyof EventTypes>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;

@@ -1,7 +1,6 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -11,7 +10,9 @@ import * as MobileThrottling from '../../panels/mobile_throttling/mobile_throttl
 import * as Security from '../../panels/security/security.js';
 import * as Components from '../../ui/legacy/components/utils/utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import nodeIconStyles from './nodeIcon.css.js';
+const { html } = Lit;
 const UIStrings = {
     /**
      * @description Text that refers to the main target. The main target is the primary webpage that
@@ -155,42 +156,73 @@ export class FocusDebuggeeActionDelegate {
         return true;
     }
 }
-let nodeIndicatorInstance;
-export class NodeIndicator {
-    #element;
-    #button;
-    constructor() {
-        const element = document.createElement('div');
-        const shadowRoot = UI.UIUtils.createShadowRootWithCoreStyles(element, { cssFile: nodeIconStyles });
-        this.#element = shadowRoot.createChild('div', 'node-icon');
-        element.addEventListener('click', () => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend(), false);
-        this.#button = new UI.Toolbar.ToolbarItem(element);
-        this.#button.setTitle(i18nString(UIStrings.openDedicatedTools));
-        SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, event => this.#update(event.data));
-        this.#button.setVisible(false);
-        this.#update([]);
+const isNodeProcessRunning = (targetInfos) => {
+    return Boolean(targetInfos.find(target => target.type === 'node' && !target.attached));
+};
+export const DEFAULT_VIEW = (input, output, target) => {
+    const { nodeProcessRunning, } = input;
+    // clang-format off
+    Lit.render(html `
+    <style>${nodeIconStyles}</style>
+    <div
+        class="node-icon ${!nodeProcessRunning ? 'inactive' : ''}"
+        title=${i18nString(UIStrings.openDedicatedTools)}
+        @click=${() => Host.InspectorFrontendHost.InspectorFrontendHostInstance.openNodeFrontend()}>
+    </div>
+    `, target);
+    // clang-format on
+};
+export class NodeIndicator extends UI.Widget.Widget {
+    #view;
+    #targetInfos = [];
+    #wasShown = false;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, { useShadowDom: true });
+        this.#view = view;
+        SDK.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged" /* SDK.TargetManager.Events.AVAILABLE_TARGETS_CHANGED */, event => {
+            this.#targetInfos = event.data;
+            this.requestUpdate();
+        });
     }
-    static instance(opts = { forceNew: null }) {
-        const { forceNew } = opts;
-        if (!nodeIndicatorInstance || forceNew) {
-            nodeIndicatorInstance = new NodeIndicator();
-        }
-        return nodeIndicatorInstance;
-    }
-    #update(targetInfos) {
+    performUpdate() {
         // Disable when we are testing, as debugging e2e
         // attaches a debug process and this changes some view sizes
         if (Host.InspectorFrontendHost.isUnderTest()) {
             return;
         }
-        const hasNode = Boolean(targetInfos.find(target => target.type === 'node' && !target.attached));
-        this.#element.classList.toggle('inactive', !hasNode);
-        if (hasNode) {
-            this.#button.setVisible(true);
+        const nodeProcessRunning = isNodeProcessRunning(this.#targetInfos);
+        if (!this.#wasShown && !nodeProcessRunning) {
+            // This widget is designed to be hidden until the first debuggable Node process is detected. Therefore
+            // we don't construct the view if there's no data. After we've shown it once, it remains on-sreen and
+            // indicates via its disabled state whether Node debugging is available.
+            return;
         }
+        this.#wasShown = true;
+        const input = {
+            nodeProcessRunning,
+        };
+        this.#view(input, {}, this.contentElement);
+    }
+}
+let nodeIndicatorProviderInstance;
+export class NodeIndicatorProvider {
+    #toolbarItem;
+    #widgetElement;
+    constructor() {
+        this.#widgetElement = document.createElement('devtools-widget');
+        this.#widgetElement.widgetConfig = UI.Widget.widgetConfig(NodeIndicator);
+        this.#toolbarItem = new UI.Toolbar.ToolbarItem(this.#widgetElement);
+        this.#toolbarItem.setVisible(false);
     }
     item() {
-        return this.#button;
+        return this.#toolbarItem;
+    }
+    static instance(opts = { forceNew: null }) {
+        const { forceNew } = opts;
+        if (!nodeIndicatorProviderInstance || forceNew) {
+            nodeIndicatorProviderInstance = new NodeIndicatorProvider();
+        }
+        return nodeIndicatorProviderInstance;
     }
 }
 export class SourcesPanelIndicator {

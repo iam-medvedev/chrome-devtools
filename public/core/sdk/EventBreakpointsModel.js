@@ -11,8 +11,10 @@ export class EventBreakpointsModel extends SDKModel {
         this.agent = target.eventBreakpointsAgent();
     }
 }
-// This implementation (as opposed to similar class in DOMDebuggerModel) is for
-// instrumentation breakpoints in targets that run JS but do not have a DOM.
+/**
+ * This implementation (as opposed to similar class in DOMDebuggerModel) is for
+ * instrumentation breakpoints in targets that run JS but do not have a DOM.
+ **/
 class EventListenerBreakpoint extends CategorizedBreakpoint {
     setEnabled(enabled) {
         if (this.enabled() === enabled) {

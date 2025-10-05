@@ -1453,6 +1453,7 @@ customElements.define("devtools-bounce-tracking-mitigations-view", BounceTrackin
 // gen/front_end/panels/application/components/EndpointsGrid.js
 var EndpointsGrid_exports = {};
 __export(EndpointsGrid_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   EndpointsGrid: () => EndpointsGrid,
   i18nString: () => i18nString3
 });
@@ -1462,40 +1463,39 @@ import * as UI from "./../../../ui/legacy/legacy.js";
 import * as Lit3 from "./../../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/panels/application/components/reportingApiGrid.css.js
-var reportingApiGrid_css_default = `/*
- * Copyright 2021 The Chromium Authors
+// gen/front_end/panels/application/components/endpointsGrid.css.js
+var endpointsGrid_css_default = `/*
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-:host {
-  overflow: auto;
-  height: 100%;
+@scope to (devtools-widget > *) {
+  :scope {
+    overflow: auto;
+    height: 100%;
+  }
+
+  .endpoints-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .endpoints-header {
+    font-size: 15px;
+    background-color: var(--sys-color-surface2);
+    padding: 1px 4px;
+    flex-shrink: 0;
+  }
+
+  devtools-data-grid {
+    flex: auto;
+  }
 }
 
-.reporting-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.reporting-header {
-  font-size: 15px;
-  background-color: var(--sys-color-surface2);
-  padding: 1px 4px;
-  flex-shrink: 0;
-}
-
-devtools-data-grid {
-  flex: auto;
-}
-
-.inline-icon {
-  vertical-align: text-bottom;
-}
-
-/*# sourceURL=${import.meta.resolve("./reportingApiGrid.css")} */`;
+/*# sourceURL=${import.meta.resolve("./endpointsGrid.css")} */`;
 
 // gen/front_end/panels/application/components/EndpointsGrid.js
 var UIStrings4 = {
@@ -1513,51 +1513,50 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/application/components/EndpointsGrid.ts", UIStrings4);
 var i18nString3 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var { render: render3, html: html3 } = Lit3;
-var EndpointsGrid = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #endpoints = /* @__PURE__ */ new Map();
-  connectedCallback() {
-    this.#render();
+var DEFAULT_VIEW = (input, output, target) => {
+  render3(html3`
+    <style>${endpointsGrid_css_default}</style>
+    <style>${UI.inspectorCommonStyles}</style>
+    <div class="endpoints-container" jslog=${VisualLogging3.section("endpoints")}>
+      <div class="endpoints-header">${i18n7.i18n.lockedString("Endpoints")}</div>
+      ${input.endpoints.size > 0 ? html3`
+        <devtools-data-grid striped>
+         <table>
+          <tr>
+            <th id="origin" weight="30">${i18n7.i18n.lockedString("Origin")}</th>
+            <th id="name" weight="20">${i18n7.i18n.lockedString("Name")}</th>
+            <th id="url" weight="30">${i18n7.i18n.lockedString("URL")}</th>
+          </tr>
+          ${Array.from(input.endpoints).map(([origin, endpointArray]) => endpointArray.map((endpoint) => html3`<tr>
+                <td>${origin}</td>
+                <td>${endpoint.groupName}</td>
+                <td>${endpoint.url}</td>
+              </tr>`)).flat()}
+          </table>
+        </devtools-data-grid>
+      ` : html3`
+        <div class="empty-state">
+          <span class="empty-state-header">${i18nString3(UIStrings4.noEndpointsToDisplay)}</span>
+          <span class="empty-state-description">${i18nString3(UIStrings4.endpointsDescription)}</span>
+        </div>
+      `}
+    </div>
+  `, target);
+};
+var EndpointsGrid = class extends UI.Widget.Widget {
+  endpoints = /* @__PURE__ */ new Map();
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+    this.requestUpdate();
   }
-  set data(data) {
-    this.#endpoints = data.endpoints;
-    this.#render();
-  }
-  get data() {
-    return { endpoints: this.#endpoints };
-  }
-  #render() {
-    render3(html3`
-      <style>${reportingApiGrid_css_default}</style>
-      <style>${UI.inspectorCommonStyles}</style>
-      <div class="reporting-container" jslog=${VisualLogging3.section("endpoints")}>
-        <div class="reporting-header">${i18n7.i18n.lockedString("Endpoints")}</div>
-        ${this.#endpoints.size > 0 ? html3`
-          <devtools-data-grid striped>
-           <table>
-            <tr>
-              <th id="origin" weight="30">${i18n7.i18n.lockedString("Origin")}</th>
-              <th id="name" weight="20">${i18n7.i18n.lockedString("Name")}</th>
-              <th id="url" weight="30">${i18n7.i18n.lockedString("URL")}</th>
-            </tr>
-            ${Array.from(this.#endpoints).map(([origin, endpointArray]) => endpointArray.map((endpoint) => html3`<tr>
-                  <td>${origin}</td>
-                  <td>${endpoint.groupName}</td>
-                  <td>${endpoint.url}</td>
-                </tr>`)).flat()}
-            </table>
-          </devtools-data-grid>
-        ` : html3`
-          <div class="empty-state">
-            <span class="empty-state-header">${i18nString3(UIStrings4.noEndpointsToDisplay)}</span>
-            <span class="empty-state-description">${i18nString3(UIStrings4.endpointsDescription)}</span>
-          </div>
-        `}
-      </div>
-    `, this.#shadow, { host: this });
+  performUpdate() {
+    this.#view({
+      endpoints: this.endpoints
+    }, void 0, this.contentElement);
   }
 };
-customElements.define("devtools-resources-endpoints-grid", EndpointsGrid);
 
 // gen/front_end/panels/application/components/FrameDetailsView.js
 var FrameDetailsView_exports = {};
@@ -2426,6 +2425,7 @@ function renderIconLink(iconName, title, clickHandler, jsLogContext) {
   <devtools-button
     .iconName=${iconName}
     title=${title}
+    aria-label=${title}
     .variant=${"icon"}
     .size=${"SMALL"}
     @click=${clickHandler}
@@ -3454,7 +3454,7 @@ var InterestGroupAccessGrid = class extends HTMLElement {
   }
   #renderGrid() {
     return html8`
-      <devtools-data-grid @select=${this.#onSelect} striped inline>
+      <devtools-data-grid striped inline>
         <table>
           <tr>
             <th id="event-time" sortable weight="10">${i18nString8(UIStrings9.eventTime)}</td>
@@ -3462,8 +3462,8 @@ var InterestGroupAccessGrid = class extends HTMLElement {
             <th id="event-group-owner" sortable weight="10">${i18nString8(UIStrings9.groupOwner)}</td>
             <th id="event-group-name" sortable weight="10">${i18nString8(UIStrings9.groupName)}</td>
           </tr>
-          ${this.#datastores.map((event, index) => html8`
-          <tr data-index=${index}>
+          ${this.#datastores.map((event) => html8`
+          <tr @select=${() => this.dispatchEvent(new CustomEvent("select", { detail: event }))}>
             <td>${new Date(1e3 * event.accessTime).toLocaleString()}</td>
             <td>${event.type}</td>
             <td>${event.ownerOrigin}</td>
@@ -3471,13 +3471,7 @@ var InterestGroupAccessGrid = class extends HTMLElement {
           </tr>
         `)}
         </table>
-      </devtools-data-grid>
-    `;
-  }
-  #onSelect(event) {
-    if (event.detail) {
-      this.dispatchEvent(new CustomEvent("select", { detail: this.#datastores[Number(event.detail.dataset.index)] }));
-    }
+      </devtools-data-grid>`;
   }
 };
 customElements.define("devtools-interest-group-access-grid", InterestGroupAccessGrid);
@@ -3688,1325 +3682,56 @@ customElements.define("devtools-protocol-handlers-view", ProtocolHandlersView);
 // gen/front_end/panels/application/components/ReportsGrid.js
 var ReportsGrid_exports = {};
 __export(ReportsGrid_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   ReportsGrid: () => ReportsGrid,
-  ReportsGridStatusHeader: () => ReportsGridStatusHeader,
   i18nString: () => i18nString10
 });
 import "./../../../ui/legacy/components/data_grid/data_grid.js";
-import "./../../../ui/components/icon_button/icon_button.js";
-import "./../../../ui/legacy/legacy.js";
 import * as i18n21 from "./../../../core/i18n/i18n.js";
 import * as Root2 from "./../../../core/root/root.js";
+import * as UI4 from "./../../../ui/legacy/legacy.js";
+import * as Lit10 from "./../../../ui/lit/lit.js";
+import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 
-// gen/front_end/ui/legacy/inspectorCommon.css.js
-var inspectorCommon_css_default = `/*
- * Copyright 2015 The Chromium Authors
+// gen/front_end/panels/application/components/reportsGrid.css.js
+var reportsGrid_css_default = `/*
+ * Copyright 2025 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
  */
 
-* {
-  box-sizing: border-box;
-  /* This is required for correct sizing of flex items because we rely
-     * on an old version of the flexbox spec. */
-
-  min-width: 0;
-  min-height: 0;
-}
-
-:root {
-  height: 100%;
-  overflow: hidden;
-  interpolate-size: allow-keywords;
-}
-
-body {
-  height: 100%;
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  margin: 0;
-  cursor: default;
-  font-family: var(--default-font-family);
-  font-size: 12px;
-  tab-size: 4;
-  user-select: none;
-  color: var(--sys-color-on-surface);
-  background: var(--sys-color-cdt-base-container);
-}
-
-:focus {
-  outline-width: 0;
-}
-
-/* Prevent UA stylesheet from overriding font-family for HTML elements. */
-code, kbd, samp, pre {
-  font-family: var(--monospace-font-family);
-}
-
-.monospace {
-  font-family: var(--monospace-font-family);
-  font-size: var(
-    --monospace-font-size
-  ) !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.source-code {
-  font-family: var(--source-code-font-family);
-  font-size: var(
-    --source-code-font-size
-  ) !important; /* stylelint-disable-line declaration-no-important */
-
-  white-space: pre-wrap;
-
-  &:not(input)::selection {
-    color: var(--sys-color-on-surface);
+@scope to (devtools-widget > *) {
+  :scope {
+    overflow: auto;
+    height: 100%;
   }
-}
 
-.source-code.breakpoint {
-  white-space: nowrap;
-}
-
-.source-code .devtools-link.text-button {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-img {
-  -webkit-user-drag: none;
-}
-
-iframe,
-a img {
-  border: none;
-}
-
-.fill {
-  position: absolute;
-  inset: 0;
-}
-
-iframe.fill {
-  width: 100%;
-  height: 100%;
-}
-
-.widget {
-  position: relative;
-  flex: auto;
-  contain: style;
-}
-
-.hbox {
-  display: flex;
-  flex-direction: row !important; /* stylelint-disable-line declaration-no-important */
-  position: relative;
-}
-
-.vbox {
-  display: flex;
-  flex-direction: column !important; /* stylelint-disable-line declaration-no-important */
-  position: relative;
-}
-
-.view-container > devtools-toolbar {
-  border-bottom: 1px solid var(--sys-color-divider);
-}
-
-.flex-auto {
-  flex: auto;
-}
-
-.flex-none {
-  flex: none;
-}
-
-.flex-centered {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.overflow-auto {
-  overflow: auto;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-iframe.widget {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  inset: 0;
-}
-
-.hidden {
-  display: none !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.highlighted-search-result,::highlight(highlighted-search-result) {
-  border-radius: 1px;
-  background-color: var(--sys-color-yellow-container);
-  outline: 1px solid var(--sys-color-yellow-container);
-}
-
-.link {
-  cursor: pointer;
-  text-decoration: underline;
-  color: var(--text-link);
-  outline-offset: 2px;
-}
-
-button,
-input,
-select {
-  /* Form elements do not automatically inherit font style from ancestors. */
-  font-family: inherit;
-  font-size: inherit;
-}
-
-select option,
-select optgroup,
-input {
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-input {
-  color: inherit;
-
-  &[type='checkbox'] {
-    position: relative;
-    outline: none;
+  .reporting-container {
+    height: 100%;
     display: flex;
-    align-items: center;
-    justify-content: center;
-
-    &:hover::after,
-    &:active::before {
-      content: '';
-      height: 24px;
-      width: 24px;
-      border-radius: var(--sys-shape-corner-full);
-      position: absolute;
-    }
-
-    &:not(.-theme-preserve) {
-      accent-color: var(--sys-color-primary-bright);
-      color: var(--sys-color-on-primary);
-    }
-
-    &:not(:disabled):hover::after {
-      background-color: var(--sys-color-state-hover-on-subtle);
-    }
-
-    &:not(:disabled):active::before {
-      background-color: var(--sys-color-state-ripple-neutral-on-subtle);
-    }
-
-    &:not(:disabled):focus-visible::before {
-      content: '';
-      height: 15px;
-      width: 15px;
-      border-radius: 5px;
-      position: absolute;
-      border: 2px solid var(--sys-color-state-focus-ring);
-    }
-
-    &.small:hover::after,
-    &.small:active::before {
-      height: 12px;
-      width: 12px;
-      border-radius: 2px;
-    }
-  }
-}
-
-input::placeholder {
-  --override-input-placeholder-color: rgb(0 0 0 / 54%);
-
-  color: var(--override-input-placeholder-color);
-}
-
-.theme-with-dark-background input::placeholder,
-:host-context(.theme-with-dark-background) input::placeholder {
-  --override-input-placeholder-color: rgb(230 230 230 / 54%);
-}
-
-.harmony-input:not([type]),
-.harmony-input[type='number'],
-.harmony-input[type='text'] {
-  padding: 3px 6px;
-  height: 24px;
-  border: 1px solid var(--sys-color-neutral-outline);
-  border-radius: 4px;
-
-  &.error-input,
-  &:invalid {
-    border-color: var(--sys-color-error);
+    flex-direction: column;
+    width: 100%;
   }
 
-  &:not(.error-input, :invalid):focus {
-    border-color: var(--sys-color-state-focus-ring);
+  .reporting-header {
+    font-size: 15px;
+    background-color: var(--sys-color-surface2);
+    padding: 1px 4px;
+    flex-shrink: 0;
   }
 
-  &:not(.error-input, :invalid):hover:not(:focus) {
-    background: var(--sys-color-state-hover-on-subtle);
-  }
-}
-
-/* Radio inputs */
-input[type='radio'] {
-  height: 17px;
-  width: 17px;
-  min-width: 17px;
-  border-radius: 8px;
-  vertical-align: sub;
-  margin: 0 5px 5px 0;
-  accent-color: var(--sys-color-primary-bright);
-  color: var(--sys-color-on-primary);
-
-  &:focus-visible {
-    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-  }
-}
-
-@media (forced-colors: active) {
-  input[type='radio'] {
-    --gradient-start: ButtonFace;
-    --gradient-end: ButtonFace;
-
-    &:checked {
-      --gradient-start: Highlight;
-      --gradient-end: Highlight;
-    }
-  }
-}
-
-/* Range inputs */
-input[type='range'] {
-  appearance: none;
-  margin: 0;
-  padding: 0;
-  height: 10px;
-  width: 88px;
-  outline: none;
-  background: none;
-}
-
-input[type='range']::-webkit-slider-thumb,
-.-theme-preserve {
-  appearance: none;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  width: 12px;
-  height: 12px;
-  margin-top: -5px;
-  border-radius: 50%;
-  background-color: var(--sys-color-primary);
-}
-
-input[type='range']::-webkit-slider-runnable-track {
-  appearance: none;
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--sys-color-surface-variant);
-}
-
-input[type='range']:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 2px var(--sys-color-inverse-primary);
-}
-
-input[type='range']:disabled::-webkit-slider-thumb {
-  background-color: var(--sys-color-state-disabled);
-}
-
-@media (forced-colors: active) {
-  input[type='range'] {
-    forced-color-adjust: none;
-  }
-}
-
-.highlighted-search-result.current-search-result,::highlight(current-search-result) {
-  /* Note: this value is used in light & dark mode */
-  --override-current-search-result-background-color: rgb(255 127 0 / 80%);
-
-  outline: 1px solid var(--sys-color-yellow-container);
-  border-radius: 1px;
-  padding: 1px;
-  margin: -1px;
-  background-color: var(--override-current-search-result-background-color);
-}
-
-.dimmed {
-  opacity: 60%;
-}
-
-.editing {
-  box-shadow: var(--drop-shadow);
-  background-color: var(--sys-color-cdt-base-container);
-  text-overflow: clip !important; /* stylelint-disable-line declaration-no-important */
-  padding-left: 2px;
-  margin-left: -2px;
-  padding-right: 2px;
-  margin-right: -2px;
-  margin-bottom: -1px;
-  padding-bottom: 1px;
-  opacity: 100% !important; /* stylelint-disable-line declaration-no-important */
-}
-
-.editing,
-.editing * {
-  color: var(
-    --sys-color-on-surface
-  ) !important; /* stylelint-disable-line declaration-no-important */
-
-  text-decoration: none !important; /* stylelint-disable-line declaration-no-important */
-}
-
-/* Combo boxes */
-
-select {
-  appearance: none;
-  user-select: none;
-  height: var(--sys-size-11);
-  border: var(--sys-size-1) solid var(--sys-color-neutral-outline);
-  border-radius: var(--sys-shape-corner-extra-small);
-  color: var(--sys-color-on-surface);
-  font: inherit;
-  margin: 0;
-  outline: none;
-  padding: 0 var(--sys-size-9) 0 var(--sys-size-5);
-  background-image: var(--combobox-dropdown-arrow);
-  background-color: transparent;
-  background-position: right center;
-  background-repeat: no-repeat;
-
-  &:disabled {
-    opacity: 100%;
-    border-color: transparent;
-    color: var(--sys-color-state-disabled);
-    background-color: var(--sys-color-state-disabled-container);
-    pointer-events: none;
-  }
-
-  &:enabled {
-    &:hover {
-      background-color: var(--sys-color-state-hover-on-subtle);
-    }
-
-    &:active {
-      background-color: var(--sys-color-state-ripple-neutral-on-subtle);
-    }
-
-    &:hover:active {
-      background: var(--combobox-dropdown-arrow),
-        linear-gradient(
-          var(--sys-color-state-hover-on-subtle),
-          var(--sys-color-state-hover-on-subtle)
-        ),
-        linear-gradient(
-          var(--sys-color-state-ripple-neutral-on-subtle),
-          var(--sys-color-state-ripple-neutral-on-subtle)
-        );
-      background-position: right center;
-      background-repeat: no-repeat;
-    }
-
-    &:focus {
-      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-      outline-offset: -1px;
-    }
-  }
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: light) {
-  :root,
-  .theme-with-dark-background,
-  :host-context(.theme-with-dark-background) {
-    --combobox-dropdown-arrow: var(--image-file-arrow-drop-down-light);
-  }
-}
-
-@media (forced-colors: active) and (prefers-color-scheme: dark) {
-  :root,
-  .theme-with-dark-background,
-  :host-context(.theme-with-dark-background) {
-    --combobox-dropdown-arrow: var(--image-file-arrow-drop-down-dark);
-  }
-}
-
-.chrome-select-label {
-  margin: 0 var(--sys-size-10);
-  flex: none;
-
-  p p {
-    margin-top: 0;
-    color: var(--sys-color-token-subtle);
-  }
-
-  .reload-warning {
-    margin-left: var(--sys-size-5);
-  }
-}
-
-/* This class is used outside of the settings screen in the "Renderer" and
-   "Sensors" panel. As such we need to override their style globally */
-.settings-select {
-  margin: 0;
-}
-
-select optgroup,
-select option {
-  background-color: var(--sys-color-cdt-base-container);
-  color: var(--sys-color-on-surface);
-}
-
-.gray-info-message {
-  text-align: center;
-  font-style: italic;
-  padding: 6px;
-  color: var(--sys-color-token-subtle);
-  white-space: nowrap;
-}
-
-/* General empty state styles */
-.empty-state {
-  margin: var(--sys-size-5);
-  display: flex;
-  flex-grow: 1;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  min-height: fit-content;
-  min-width: fit-content;
-
-  > * {
-    max-width: var(--sys-size-29);
-  }
-
-  .empty-state-header {
-    font: var(--sys-typescale-headline5);
-    margin-bottom: var(--sys-size-3);
-  }
-
-  .empty-state-description {
-    font: var(--sys-typescale-body4-regular);
-    color: var(--sys-color-on-surface-subtle);
-
-    > x-link {
-      white-space: nowrap;
-      margin-left: var(--sys-size-3);
-    }
-  }
-
-  > devtools-button {
-    margin-top: var(--sys-size-7);
-  }
-}
-
-dt-icon-label {
-  flex: none;
-}
-
-.dot::before {
-  content: var(--image-file-empty);
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  outline: 1px solid var(--icon-gap-default);
-  left: 9px;
-  position: absolute;
-  top: 9px;
-  z-index: 1;
-}
-
-.green::before {
-  background-color: var(--sys-color-green-bright);
-}
-
-.purple::before {
-  background-color: var(--sys-color-purple-bright);
-}
-
-.new-badge {
-  width: fit-content;
-  height: var(--sys-size-8);
-  line-height: var(--sys-size-8);
-  border-radius: var(--sys-shape-corner-extra-small);
-  padding: 0 var(--sys-size-3);
-  background-color: var(--sys-color-tonal-container);
-  color: var(--sys-color-on-tonal-container);
-  font-weight: var(--ref-typeface-weight-bold);
-  font-size: 9px;
-  text-align: center;
-}
-
-:host-context(.platform-mac) .new-badge {
-  background-color: var(--sys-color-primary);
-  color: var(--sys-color-on-primary);
-}
-
-.expandable-inline-button {
-  background-color: var(--sys-color-cdt-base-container);
-  color: var(--sys-color-on-surface);
-  cursor: pointer;
-  border-radius: 3px;
-}
-
-.undisplayable-text,
-.expandable-inline-button {
-  border: none;
-  padding: 1px 3px;
-  margin: 0 2px;
-  font-size: 11px;
-  font-family: sans-serif;
-  white-space: nowrap;
-  display: inline-block;
-}
-
-.undisplayable-text::after,
-.expandable-inline-button::after {
-  content: attr(data-text);
-}
-
-.undisplayable-text {
-  color: var(--sys-color-state-disabled);
-  font-style: italic;
-}
-
-.expandable-inline-button:hover,
-.expandable-inline-button:focus-visible {
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-.expandable-inline-button:focus-visible {
-  background-color: var(--sys-color-state-focus-highlight);
-}
-
-::selection {
-  background-color: var(--sys-color-state-text-highlight);
-  color: var(--sys-color-state-on-text-highlight);
-}
-
-button.link {
-  border: none;
-  background: none;
-  padding: 3px;
-}
-
-button.link:focus-visible {
-  outline: 2px solid var(--sys-color-state-focus-ring);
-  outline-offset: 2px;
-  border-radius: var(--sys-shape-corner-full);
-}
-
-.data-grid-data-grid-node button.link:focus-visible {
-  border-radius: var(--sys-shape-corner-extra-small);
-  padding: 0;
-  margin-top: 3px;
-}
-
-@media (forced-colors: active) {
-  .dimmed,
-  select:disabled {
-    opacity: 100%;
-  }
-
-  .harmony-input:not([type]),
-  .harmony-input[type='number'],
-  .harmony-input[type='text'] {
-    border: 1px solid ButtonText;
-  }
-
-  .harmony-input:not([type]):focus,
-  .harmony-input[type='number']:focus,
-  .harmony-input[type='text']:focus {
-    border: 1px solid Highlight;
-  }
-}
-/* search input with customized styling */
-input.custom-search-input::-webkit-search-cancel-button {
-  appearance: none;
-  width: 16px;
-  height: 15px;
-  margin-right: 0;
-  opacity: 70%;
-  mask-image: var(--image-file-cross-circle-filled);
-  mask-position: center;
-  mask-repeat: no-repeat;
-  mask-size: 99%;
-  background-color: var(--icon-default);
-}
-
-input.custom-search-input::-webkit-search-cancel-button:hover {
-  opacity: 99%;
-}
-/* loading spinner */
-.spinner::before {
-  display: block;
-  width: var(--dimension, 24px);
-  height: var(--dimension, 24px);
-  border: var(--override-spinner-size, 3px) solid
-    var(--override-spinner-color, var(--sys-color-token-subtle));
-  border-radius: 12px;
-  clip-path: rect(0, var(--clip-size, 15px), var(--clip-size, 15px), 0);
-  content: '';
-  position: absolute;
-  animation: spinner-animation 1s linear infinite;
-  box-sizing: border-box;
-}
-
-@keyframes spinner-animation {
-  from {
-    transform: rotate(0);
-  }
-
-  to {
-    transform: rotate(360deg);
-  }
-}
-/** Adorner */
-.adorner-container {
-  display: inline-flex;
-  vertical-align: middle;
-}
-
-.adorner-container.hidden {
-  display: none;
-}
-
-.adorner-container devtools-adorner {
-  margin-left: 3px;
-}
-
-:host-context(.theme-with-dark-background) devtools-adorner {
-  --override-adorner-border-color: var(--sys-color-tonal-outline);
-  --override-adorner-active-background-color: var(
-    --sys-color-state-riple-neutral-on-subtle
-  );
-}
-
-/* General panel styles */
-.panel {
-  display: flex;
-  overflow: hidden;
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-.panel-sidebar {
-  overflow-x: hidden;
-  background-color: var(--sys-color-cdt-base-container);
-}
-
-iframe.extension {
-  flex: auto;
-  width: 100%;
-  height: 100%;
-}
-
-iframe.panel.extension {
-  display: block;
-  height: 100%;
-}
-
-@media (forced-colors: active) {
-  :root {
-    --legacy-accent-color: Highlight;
-    --legacy-focus-ring-inactive-shadow-color: ButtonText;
-  }
-}
-
-/* Toolbar styles */
-devtools-toolbar {
-  & > * {
-    position: relative;
-    display: flex;
-    background-color: transparent;
-    flex: none;
-    align-items: center;
-    justify-content: center;
-    height: var(--toolbar-height);
-    border: none;
-    white-space: pre;
-    overflow: hidden;
-    max-width: 100%;
-    color: var(--icon-default);
-
-    /* Some toolbars have a different cursor on hover (for example, resizeable
-     * ones which can be clicked + dragged to move). But we want to make sure
-     * by default each toolbar item shows the default cursor, because you
-     * cannot click + drag on the item to resize the toolbar container, you
-     * have to click + drag only on empty space. See crbug.com/371838044 for
-     * an example. */
-    cursor: default;
-
-    & .devtools-link {
-      color: var(--icon-default);
-    }
-  }
-
-  .status-buttons {
-    padding: 0 var(--sys-size-2);
-    gap: var(--sys-size-2);
-  }
-
-  & > :not(select) {
-    padding: 0;
-  }
-
-  & > devtools-issue-counter {
-    margin-top: -4px;
-    padding: 0 1px;
-  }
-
-  devtools-adorner.fix-perf-icon {
-    --override-adorner-text-color: transparent;
-    --override-adorner-border-color: transparent;
-    --override-adorner-background-color: transparent;
-  }
-
-  devtools-issue-counter.main-toolbar {
-    margin-left: 1px;
-    margin-right: 1px;
-  }
-
-  .toolbar-dropdown-arrow {
-    pointer-events: none;
-    flex: none;
-    top: var(--sys-size-1);
-  }
-
-  .toolbar-button.dark-text .toolbar-dropdown-arrow {
-    color: var(--sys-color-on-surface);
-  }
-
-  /* Toolbar item */
-
-  .toolbar-button {
-    white-space: nowrap;
-    overflow: hidden;
-    min-width: 28px;
-    background: transparent;
-    border-radius: 0;
-
-    &[aria-haspopup='true'][aria-expanded='true'] {
-      pointer-events: none;
-    }
-  }
-
-  .toolbar-item-search {
-    min-width: 5.2em;
-    max-width: 300px;
-    flex: 1 1 auto;
-    justify-content: start;
-    overflow: revert;
-  }
-
-  .toolbar-text {
-    margin: 0 5px;
-    flex: none;
-    color: var(--ui-text);
-  }
-
-  .toolbar-text:empty {
-    margin: 0;
-  }
-
-  .toolbar-has-dropdown {
-    justify-content: space-between;
-    height: var(--sys-size-9);
-    padding: 0 var(--sys-size-2) 0 var(--sys-size-4);
-    margin: 0 var(--sys-size-2);
-    gap: var(--sys-size-2);
-    border-radius: var(--sys-shape-corner-extra-small);
-
-    &:hover::after,
-    &:active::before {
-      content: '';
-      height: 100%;
-      width: 100%;
-      border-radius: inherit;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-
-    &:hover::after {
-      background-color: var(--sys-color-state-hover-on-subtle);
-    }
-
-    &:active::before {
-      background-color: var(--sys-color-state-ripple-neutral-on-subtle);
-    }
-
-    &:focus-visible {
-      outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-    }
-
-    &[disabled] {
-      pointer-events: none;
-      background-color: var(--sys-color-state-disabled-container);
-      color: var(--sys-color-state-disabled);
-    }
-  }
-
-  .toolbar-has-dropdown-shrinkable {
-    flex-shrink: 1;
-  }
-
-  .toolbar-has-dropdown .toolbar-text {
-    margin: 0;
-    text-overflow: ellipsis;
-    flex: auto;
-    overflow: hidden;
-    text-align: right;
-  }
-
-  .toolbar-button:not(.toolbar-has-dropdown):focus-visible::before {
-    position: absolute;
-    inset: 2px;
-    background-color: var(--sys-color-state-focus-highlight);
-    border-radius: 2px;
-    content: '';
-    /* This ::before rule serves as a background for an element.
-    Setting z-index to make sure it's always below the content. */
-    z-index: -1;
-  }
-
-  .toolbar-glyph {
-    flex: none;
-  }
-  /* Button */
-
-  .toolbar-button:disabled {
-    opacity: 50%;
-  }
-
-  .toolbar-button.copied-to-clipboard::after {
-    content: attr(data-content);
-    position: fixed;
-    margin-top: calc(2 * var(--toolbar-height));
-    padding: 3px 5px;
-    color: var(--sys-color-token-subtle);
-    background: var(--sys-color-cdt-base-container);
-    animation: 2s fade-out;
-    font-weight: normal;
-    border: 1px solid var(--sys-color-divider);
-    border-radius: 3px;
-  }
-
-  .toolbar-button.toolbar-state-on .toolbar-glyph {
-    color: var(--icon-toggled);
-  }
-
-  .toolbar-state-on.toolbar-toggle-with-dot .toolbar-text::after {
-    content: '';
-    position: absolute;
-    bottom: 2px;
-    background-color: var(--sys-color-primary-bright);
-    width: 4.5px;
-    height: 4.5px;
-    border: 2px solid
-      var(--override-toolbar-background-color, --sys-color-cdt-base-container);
-    border-radius: 50%;
-    right: 0;
-  }
-
-  .toolbar-button.toolbar-state-on.toolbar-toggle-with-red-color .toolbar-glyph,
-  .toolbar-button.toolbar-state-off.toolbar-default-with-red-color
-    .toolbar-glyph {
-    color: var(
-      --icon-error
-    ) !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .toolbar-button:not(
-      .toolbar-has-glyph,
-      .toolbar-has-dropdown,
-      .largeicon-menu,
-      .toolbar-button-secondary
-    ) {
-    font-weight: bold;
-  }
-
-  .toolbar-button.dark-text .toolbar-text {
-    color: var(
-      --sys-color-on-surface
-    ) !important; /* stylelint-disable-line declaration-no-important */
-  }
-
-  .toolbar-button.toolbar-state-on .toolbar-text {
-    color: var(--sys-color-primary);
-  }
-
-  .toolbar-button.toolbar-state-on:enabled:active .toolbar-text {
-    color: var(--sys-color-primary-bright);
-  }
-
-  .toolbar-button:enabled:hover:not(:active) .toolbar-glyph {
-    color: var(--sys-color-on-surface);
-  }
-
-  .toolbar-button:enabled:hover:not(:active) .toolbar-text {
-    color: var(--sys-color-on-surface);
-  }
-
-  .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-glyph {
-    color: var(--sys-color-primary);
-  }
-
-  .toolbar-button.toolbar-state-on:enabled:hover:not(:active) .toolbar-text {
-    color: var(--sys-color-primary);
-  }
-
-  /* Checkbox */
-
-  & > devtools-checkbox {
-    padding: 0 5px 0 0;
-    white-space: unset;
-  }
-
-  /* Select */
-
-  & > select {
-    height: var(--sys-size-9);
-    min-width: var(--sys-size-14);
-  }
-
-  /* Input */
-
-  .toolbar-input {
-    box-shadow: inset 0 0 0 2px transparent;
-    box-sizing: border-box;
-    width: 120px;
-    height: var(--sys-size-9);
-    padding: 0 var(--sys-size-2) 0 var(--sys-size-5);
-    margin: 1px 3px;
-    border-radius: 100px;
-    min-width: 35px;
-    position: relative;
-
-    &.focused {
-      box-shadow: inset 0 0 0 2px var(--sys-color-state-focus-ring);
-    }
-
-    &:not(:has(devtools-button:hover), .disabled):hover {
-      background-color: var(--sys-color-state-hover-on-subtle);
-    }
-
-    &::before {
-      content: '';
-      box-sizing: inherit;
-      height: 100%;
-      width: 100%;
-      position: absolute;
-      left: 0;
-      background: var(--sys-color-cdt-base);
-      z-index: -1;
-    }
-
-    & > devtools-icon {
-      color: var(--sys-color-on-surface-subtle);
-      width: var(--sys-size-8);
-      height: var(--sys-size-8);
-      margin-right: var(--sys-size-3);
-    }
-
-    &.disabled > devtools-icon {
-      color: var(--sys-color-state-disabled);
-    }
-  }
-
-  .toolbar-filter .toolbar-input-clear-button {
-    margin-right: var(--sys-size-4);
-  }
-
-  .toolbar-input-empty .toolbar-input-clear-button {
-    display: none;
-  }
-
-  .toolbar-prompt-proxy {
-    flex: 1;
-  }
-
-  .toolbar-input-prompt {
-    flex: 1;
-    overflow: hidden;
-    white-space: nowrap;
-    cursor: text;
-    color: var(--sys-color-on-surface);
-  }
-  /* Separator */
-
-  .toolbar-divider {
-    background-color: var(--sys-color-divider);
-    width: 1px;
-    margin: 5px 4px;
-    height: 16px;
-  }
-
-  .toolbar-spacer {
+  devtools-data-grid {
     flex: auto;
   }
 
-  .toolbar-button.emulate-active {
-    background-color: var(--sys-color-surface-variant);
-  }
-
-  &:not([floating]) > :last-child:not(:first-child, select) {
-    flex-shrink: 1;
-    justify-content: left;
-  }
-
-  &:not([floating]) > .toolbar-button:last-child:not(:first-child, select) {
-    justify-content: left;
-    margin-right: 2px;
-  }
-
-  & > .highlight::before {
-    content: '';
-    position: absolute;
-    inset: 2px;
-    border-radius: 2px;
-    background: var(--sys-color-neutral-container);
-    z-index: -1;
-  }
-
-  & > .highlight:focus-visible {
-    background: var(--sys-color-tonal-container);
-
-    & > .title {
-      color: var(--sys-color-on-tonal-container);
-    }
-  }
-
-  devtools-icon.leading-issue-icon {
-    margin: 0 7px;
-  }
-
-  @media (forced-colors: active) {
-    .toolbar-button:disabled {
-      opacity: 100%;
-      color: Graytext;
-    }
-
-    devtools-toolbar > *,
-    .toolbar-text {
-      color: ButtonText;
-    }
-
-    .toolbar-button:disabled .toolbar-text {
-      color: Graytext;
-    }
-
-    devtools-toolbar > select:disabled {
-      opacity: 100%;
-      color: Graytext;
-    }
-
-    .toolbar-button.toolbar-state-on .toolbar-glyph {
-      forced-color-adjust: none;
-      color: Highlight;
-    }
-
-    .toolbar-button.toolbar-state-on .toolbar-text {
-      forced-color-adjust: none;
-      color: Highlight;
-    }
-
-    .toolbar-button:enabled:hover:not(:active) .toolbar-text,
-    .toolbar-button:enabled:focus:not(:active) .toolbar-text {
-      color: HighlightText;
-    }
-
-    .toolbar-button:disabled devtools-icon {
-      color: GrayText;
-    }
-
-    .toolbar-button:disabled .toolbar-glyph {
-      color: GrayText;
-    }
-
-    .toolbar-button:enabled.hover:not(:active) .toolbar-glyph {
-      forced-color-adjust: none;
-      color: Highlight;
-    }
-
-    .toolbar-button:enabled:hover .toolbar-glyph,
-    .toolbar-button:enabled:focus .toolbar-glyph,
-    .toolbar-button:enabled:hover:not(:active) .toolbar-glyph,
-    .toolbar-button:enabled:hover devtools-icon,
-    .toolbar-button:enabled:focus devtools-icon {
-      color: HighlightText;
-    }
-
-    .toolbar-input {
-      forced-color-adjust: none;
-      background: canvas;
-      box-shadow: var(--legacy-focus-ring-inactive-shadow);
-    }
-
-    .toolbar-input.focused,
-    .toolbar-input:not(.toolbar-input-empty) {
-      forced-color-adjust: none;
-      background: canvas;
-      box-shadow: var(--legacy-focus-ring-active-shadow);
-    }
-
-    .toolbar-input:hover {
-      box-shadow: var(--legacy-focus-ring-active-shadow);
-    }
-
-    devtools-toolbar .devtools-link {
-      color: linktext;
-    }
-
-    .toolbar-has-dropdown {
-      forced-color-adjust: none;
-      background: ButtonFace;
-      color: ButtonText;
-    }
+  .inline-icon {
+    vertical-align: text-bottom;
   }
 }
 
-@keyframes fade-out {
-  from {
-    opacity: 100%;
-  }
-
-  to {
-    opacity: 0%;
-  }
-}
-
-/* Syntax highlighting */
-.webkit-css-property {
-  /* See: crbug.com/1152736 for color variable migration. */
-  /* stylelint-disable-next-line plugin/use_theme_colors */
-  color: var(
-    --webkit-css-property-color,
-    var(--sys-color-token-property-special)
-  );
-}
-
-.webkit-html-comment {
-  color: var(--sys-color-token-comment);
-  word-break: break-all;
-}
-
-.webkit-html-tag {
-  color: var(--sys-color-token-tag);
-}
-
-.webkit-html-tag-name,
-.webkit-html-close-tag-name {
-  /* Keep this in sync with view-source.css (.webkit-html-tag) */
-  color: var(--sys-color-token-tag);
-}
-
-.webkit-html-pseudo-element {
-  /* This one is non-standard. */
-  color: var(--sys-color-token-pseudo-element);
-}
-
-.webkit-html-js-node,
-.webkit-html-css-node {
-  color: var(--text-primary);
-  white-space: pre-wrap;
-}
-
-.webkit-html-text-node {
-  color: var(--text-primary);
-  unicode-bidi: -webkit-isolate;
-}
-
-.webkit-html-entity-value {
-  /* This one is non-standard. */
-  /* See: crbug.com/1152736 for color variable migration. */
-  /* stylelint-disable-next-line plugin/use_theme_colors */
-  background-color: rgb(0 0 0 / 15%);
-  unicode-bidi: -webkit-isolate;
-}
-
-.webkit-html-doctype {
-  /* Keep this in sync with view-source.css (.webkit-html-doctype) */
-  color: var(--text-secondary);
-  /* See: crbug.com/1152736 for color variable migration. */
-}
-
-.webkit-html-attribute-name {
-  /* Keep this in sync with view-source.css (.webkit-html-attribute-name) */
-  color: var(--sys-color-token-attribute);
-  unicode-bidi: -webkit-isolate;
-}
-
-.webkit-html-attribute-value {
-  /* Keep this in sync with view-source.css (.webkit-html-attribute-value) */
-  color: var(--sys-color-token-attribute-value);
-  unicode-bidi: -webkit-isolate;
-  word-break: break-all;
-}
-
-.devtools-link {
-  color: var(--text-link);
-  text-decoration: underline;
-  outline-offset: 2px;
-
-  .elements-disclosure & {
-    color: var(--text-link);
-  }
-
-  devtools-icon {
-    vertical-align: baseline;
-    color: var(--sys-color-primary);
-  }
-
-  :focus .selected & devtools-icon {
-    color: var(--sys-color-tonal-container);
-  }
-
-  &:focus-visible {
-    outline: var(--sys-size-2) solid var(--sys-color-state-focus-ring);
-    outline-offset: 0;
-    border-radius: var(--sys-shape-corner-extra-small);
-  }
-
-  &.invalid-link {
-    color: var(--text-disabled);
-    text-decoration: none;
-  }
-
-  &:not(.devtools-link-prevent-click, .invalid-link) {
-    cursor: pointer;
-  }
-
-  @media (forced-colors: active) {
-    &:not(.devtools-link-prevent-click) {
-      forced-color-adjust: none;
-      color: linktext;
-    }
-
-    &:focus-visible {
-      background: Highlight;
-      color: HighlightText;
-    }
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./inspectorCommon.css")} */`;
+/*# sourceURL=${import.meta.resolve("./reportsGrid.css")} */`;
 
 // gen/front_end/panels/application/components/ReportsGrid.js
-import * as UI4 from "./../../../ui/legacy/legacy.js";
-import * as Lit10 from "./../../../ui/lit/lit.js";
-import * as VisualLogging8 from "./../../../ui/visual_logging/visual_logging.js";
 var UIStrings11 = {
   /**
    * @description Placeholder text when there are no Reporting API reports.
@@ -5042,92 +3767,80 @@ var str_11 = i18n21.i18n.registerUIStrings("panels/application/components/Report
 var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var { render: render10, html: html10 } = Lit10;
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
-var ReportsGridStatusHeader = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  connectedCallback() {
-    this.#render();
-  }
-  #render() {
-    render10(html10`
-      <style>${reportingApiGrid_css_default}</style>
-      <span class="status-header">${i18nString10(UIStrings11.status)}</span>
-      <x-link href="https://web.dev/reporting-api/#report-status"
-      jslog=${VisualLogging8.link("report-status").track({ click: true })}>
-        <devtools-icon class="inline-icon medium" name="help" style="color: var(--icon-link);"></devtools-icon>
-      </x-link>
-    `, this.#shadow, { host: this });
-  }
-};
-var ReportsGrid = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
-  #reports = [];
-  #protocolMonitorExperimentEnabled = false;
-  connectedCallback() {
-    this.#protocolMonitorExperimentEnabled = Root2.Runtime.experiments.isEnabled("protocol-monitor");
-    this.#render();
-  }
-  set data(data) {
-    this.#reports = data.reports;
-    this.#render();
-  }
-  get data() {
-    return { reports: this.#reports };
-  }
-  #render() {
-    render10(html10`
-      <style>${reportingApiGrid_css_default}</style>
-      <style>${inspectorCommon_css_default}</style>
-      <div class="reporting-container" jslog=${VisualLogging8.section("reports")}>
-        <div class="reporting-header">${i18n21.i18n.lockedString("Reports")}</div>
-        ${this.#reports.length > 0 ? html10`
-          <devtools-data-grid striped @select=${this.#onSelect}>
-            <table>
-              <tr>
-                ${this.#protocolMonitorExperimentEnabled ? html10`
-                  <th id="id" weight="30">${i18n21.i18n.lockedString("ID")}</th>
-                ` : ""}
-                <th id="url" weight="30">${i18n21.i18n.lockedString("URL")}</th>
-                <th id="type" weight="20">${i18n21.i18n.lockedString("Type")}</th>
-                <th id="status" weight="20">
-                    <devtools-resources-reports-grid-status-header></devtools-resources-reports-grid-status-header>
-                </th>
-                <th id="destination" weight="20">${i18nString10(UIStrings11.destination)}</th>
-                <th id="timestamp" weight="20">${i18nString10(UIStrings11.generatedAt)}</th>
-                <th id="body" weight="20">${i18n21.i18n.lockedString("Body")}</th>
+var DEFAULT_VIEW2 = (input, output, target) => {
+  render10(html10`
+    <style>${reportsGrid_css_default}</style>
+    <style>${UI4.inspectorCommonStyles}</style>
+    <div class="reporting-container" jslog=${VisualLogging8.section("reports")}>
+      <div class="reporting-header">${i18n21.i18n.lockedString("Reports")}</div>
+      ${input.reports.length > 0 ? html10`
+        <devtools-data-grid striped>
+          <table>
+            <tr>
+              ${input.protocolMonitorExperimentEnabled ? html10`
+                <th id="id" weight="30">${i18n21.i18n.lockedString("ID")}</th>
+              ` : ""}
+              <th id="url" weight="30">${i18n21.i18n.lockedString("URL")}</th>
+              <th id="type" weight="20">${i18n21.i18n.lockedString("Type")}</th>
+              <th id="status" weight="20">
+                <style>${reportsGrid_css_default}</style>
+                <span class="status-header">${i18nString10(UIStrings11.status)}</span>
+                <x-link href="https://web.dev/reporting-api/#report-status"
+                jslog=${VisualLogging8.link("report-status").track({ click: true })}>
+                  <devtools-icon class="inline-icon medium" name="help" style="color: var(--icon-link);"
+                  ></devtools-icon>
+                </x-link>
+              </th>
+              <th id="destination" weight="20">${i18nString10(UIStrings11.destination)}</th>
+              <th id="timestamp" weight="20">${i18nString10(UIStrings11.generatedAt)}</th>
+              <th id="body" weight="20">${i18n21.i18n.lockedString("Body")}</th>
+            </tr>
+            ${input.reports.map((report) => html10`
+              <tr @select=${() => input.onSelect(report.id)}>
+                ${input.protocolMonitorExperimentEnabled ? html10`<td>${report.id}</td>` : ""}
+                <td>${report.initiatorUrl}</td>
+                <td>${report.type}</td>
+                <td>${report.status}</td>
+                <td>${report.destination}</td>
+                <td>${new Date(report.timestamp * 1e3).toLocaleString()}</td>
+                <td>${JSON.stringify(report.body)}</td>
               </tr>
-              ${this.#reports.map((report) => html10`
-                <tr data-id=${report.id}>
-                  ${this.#protocolMonitorExperimentEnabled ? html10`<td>${report.id}</td>` : ""}
-                  <td>${report.initiatorUrl}</td>
-                  <td>${report.type}</td>
-                  <td>${report.status}</td>
-                  <td>${report.destination}</td>
-                  <td>${new Date(report.timestamp * 1e3).toLocaleString()}</td>
-                  <td>${JSON.stringify(report.body)}</td>
-                </tr>
-              `)}
-            </table>
-          </devtools-data-grid>
-        ` : html10`
-          <div class="empty-state">
-            <span class="empty-state-header">${i18nString10(UIStrings11.noReportsToDisplay)}</span>
-            <div class="empty-state-description">
-              <span>${i18nString10(UIStrings11.reportingApiDescription)}</span>
-              ${UI4.XLink.XLink.create(REPORTING_API_EXPLANATION_URL, i18nString10(UIStrings11.learnMore), void 0, void 0, "learn-more")}
-            </div>
+            `)}
+          </table>
+        </devtools-data-grid>
+      ` : html10`
+        <div class="empty-state">
+          <span class="empty-state-header">${i18nString10(UIStrings11.noReportsToDisplay)}</span>
+          <div class="empty-state-description">
+            <span>${i18nString10(UIStrings11.reportingApiDescription)}</span>
+            ${UI4.XLink.XLink.create(REPORTING_API_EXPLANATION_URL, i18nString10(UIStrings11.learnMore), void 0, void 0, "learn-more")}
           </div>
-        `}
-      </div>
-    `, this.#shadow, { host: this });
+        </div>
+      `}
+    </div>
+  `, target);
+};
+var ReportsGrid = class extends UI4.Widget.Widget {
+  reports = [];
+  #protocolMonitorExperimentEnabled = false;
+  #view;
+  onReportSelected = () => {
+  };
+  constructor(element, view = DEFAULT_VIEW2) {
+    super(element);
+    this.#view = view;
+    this.#protocolMonitorExperimentEnabled = Root2.Runtime.experiments.isEnabled("protocol-monitor");
+    this.requestUpdate();
   }
-  #onSelect(e) {
-    if (e.detail) {
-      this.dispatchEvent(new CustomEvent("select", { detail: e.detail.dataset.id }));
-    }
+  performUpdate() {
+    const viewInput = {
+      reports: this.reports,
+      protocolMonitorExperimentEnabled: this.#protocolMonitorExperimentEnabled,
+      onSelect: this.onReportSelected
+    };
+    this.#view(viewInput, void 0, this.contentElement);
   }
 };
-customElements.define("devtools-resources-reports-grid-status-header", ReportsGridStatusHeader);
-customElements.define("devtools-resources-reports-grid", ReportsGrid);
 
 // gen/front_end/panels/application/components/ServiceWorkerRouterView.js
 var ServiceWorkerRouterView_exports = {};
@@ -5238,7 +3951,7 @@ customElements.define("devtools-service-worker-router-view", ServiceWorkerRouter
 // gen/front_end/panels/application/components/SharedStorageAccessGrid.js
 var SharedStorageAccessGrid_exports = {};
 __export(SharedStorageAccessGrid_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   SharedStorageAccessGrid: () => SharedStorageAccessGrid,
   i18nString: () => i18nString11
 });
@@ -5345,7 +4058,7 @@ var UIStrings12 = {
 };
 var str_12 = i18n23.i18n.registerUIStrings("panels/application/components/SharedStorageAccessGrid.ts", UIStrings12);
 var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW3 = (input, _output, target) => {
   render12(html12`
     <style>${sharedStorageAccessGrid_css_default}</style>
     ${input.events.length === 0 ? html12`
@@ -5361,7 +4074,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
           <devtools-icon class="info-icon medium" name="info"
                           title=${i18nString11(UIStrings12.allSharedStorageEvents)}>
           </devtools-icon>
-          <devtools-data-grid striped inline @select=${input.onSelect}>
+          <devtools-data-grid striped inline>
             <table>
               <thead>
                 <tr>
@@ -5386,8 +4099,8 @@ var DEFAULT_VIEW = (input, _output, target) => {
                 </tr>
               </thead>
               <tbody>
-                ${input.events.map((event, index) => html12`
-                  <tr data-index=${index}>
+                ${input.events.map((event) => html12`
+                  <tr @select=${() => input.onSelect(event)}>
                     <td data-value=${event.accessTime}>
                       ${new Date(1e3 * event.accessTime).toLocaleString()}
                     </td>
@@ -5408,7 +4121,7 @@ var SharedStorageAccessGrid = class extends UI5.Widget.Widget {
   #events = [];
   #onSelect = () => {
   };
-  constructor(element, view = DEFAULT_VIEW) {
+  constructor(element, view = DEFAULT_VIEW3) {
     super(element, { useShadowDom: true });
     this.#view = view;
     this.performUpdate();
@@ -5427,15 +4140,8 @@ var SharedStorageAccessGrid = class extends UI5.Widget.Widget {
   performUpdate() {
     this.#view({
       events: this.#events,
-      onSelect: this.#onSelectEvent.bind(this)
+      onSelect: this.#onSelect.bind(this)
     }, {}, this.contentElement);
-  }
-  #onSelectEvent(event) {
-    const index = parseInt(event.detail?.dataset.index || "", 10);
-    const datastore = isNaN(index) ? void 0 : this.#events[index];
-    if (datastore) {
-      this.#onSelect(datastore);
-    }
   }
 };
 
@@ -5495,13 +4201,28 @@ import * as LegacyWrapper9 from "./../../../ui/components/legacy_wrapper/legacy_
 import * as RenderCoordinator4 from "./../../../ui/components/render_coordinator/render_coordinator.js";
 import * as UI6 from "./../../../ui/legacy/legacy.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
+
+// gen/front_end/panels/application/components/storageMetadataView.css.js
+var storageMetadataView_css_default = `/*
+ * Copyright 2025 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+.default-bucket {
+  font-style: italic;
+}
+
+/*# sourceURL=${import.meta.resolve("./storageMetadataView.css")} */`;
+
+// gen/front_end/panels/application/components/StorageMetadataView.js
 var { html: html13 } = Lit13;
 var UIStrings13 = {
   /**
    * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
    *(for a lot of languages this does not need to be translated, please translate only where necessary)
    */
-  origin: "Origin",
+  origin: "Frame origin",
   /**
    * @description Site (https://web.dev/same-site-same-origin/#site) for the URL the user sees in the omnibox.
    */
@@ -5596,6 +4317,7 @@ var StorageMetadataView = class extends LegacyWrapper9.LegacyWrapper.WrappableCo
   #storageBucketsModel;
   #storageKey = null;
   #storageBucket = null;
+  #showOnlyBucket = true;
   setStorageKey(storageKey) {
     this.#storageKey = SDK5.StorageKeyManager.parseStorageKey(storageKey);
     void this.render();
@@ -5603,6 +4325,9 @@ var StorageMetadataView = class extends LegacyWrapper9.LegacyWrapper.WrappableCo
   setStorageBucket(storageBucket) {
     this.#storageBucket = storageBucket;
     this.setStorageKey(storageBucket.bucket.storageKey);
+  }
+  setShowOnlyBucket(show) {
+    this.#showOnlyBucket = show;
   }
   enableStorageBucketControls(model) {
     this.#storageBucketsModel = model;
@@ -5613,6 +4338,9 @@ var StorageMetadataView = class extends LegacyWrapper9.LegacyWrapper.WrappableCo
   render() {
     return RenderCoordinator4.write("StorageMetadataView render", async () => {
       Lit13.render(html13`
+        <style>
+          ${storageMetadataView_css_default}
+        </style>
         <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString12(UIStrings13.loading) }}>
           ${await this.renderReportContent()}
         </devtools-report>`, this.#shadow, { host: this });
@@ -5654,9 +4382,10 @@ var StorageMetadataView = class extends LegacyWrapper9.LegacyWrapper.WrappableCo
       /* SDK.StorageKeyManager.StorageKeyComponent.TOP_LEVEL_SITE */
     );
     const thirdPartyReason = ancestorChainHasCrossSite ? i18nString12(UIStrings13.yesBecauseAncestorChainHasCrossSite) : hasNonce ? i18nString12(UIStrings13.yesBecauseKeyIsOpaque) : topLevelSiteIsOpaque ? i18nString12(UIStrings13.yesBecauseTopLevelIsOpaque) : topLevelSite && origin !== topLevelSite ? i18nString12(UIStrings13.yesBecauseOriginNotInTopLevelSite) : null;
+    const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
     return html13`
-        ${this.key(i18nString12(UIStrings13.origin))}
-        ${this.value(html13`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}
+        ${isIframeOrEmbedded ? html13`${this.key(i18nString12(UIStrings13.origin))}
+            ${this.value(html13`<div class="text-ellipsis" title=${origin}>${origin}</div>`)}` : Lit13.nothing}
         ${topLevelSite || topLevelSiteIsOpaque ? this.key(i18nString12(UIStrings13.topLevelSite)) : Lit13.nothing}
         ${topLevelSite ? this.value(topLevelSite) : Lit13.nothing}
         ${topLevelSiteIsOpaque ? this.value(i18nString12(UIStrings13.opaque)) : Lit13.nothing}
@@ -5672,9 +4401,20 @@ var StorageMetadataView = class extends LegacyWrapper9.LegacyWrapper.WrappableCo
       throw new Error("Should not call #renderStorageBucketInfo if #bucket is null.");
     }
     const { bucket: { name }, persistent, durability, quota } = this.#storageBucket;
+    const isDefault = !name;
+    if (!this.#showOnlyBucket) {
+      if (isDefault) {
+        return html13`
+          ${this.key(i18nString12(UIStrings13.bucketName))}
+          ${this.value(html13`<span class="default-bucket">default</span>`)}`;
+      }
+      return html13`
+        ${this.key(i18nString12(UIStrings13.bucketName))}
+        ${this.value(name)}`;
+    }
     return html13`
       ${this.key(i18nString12(UIStrings13.bucketName))}
-      ${this.value(name || "default")}
+      ${this.value(name || html13`<span class="default-bucket">default</span>`)}
       ${this.key(i18nString12(UIStrings13.persistent))}
       ${this.value(persistent ? i18nString12(UIStrings13.yes) : i18nString12(UIStrings13.no))}
       ${this.key(i18nString12(UIStrings13.durability))}

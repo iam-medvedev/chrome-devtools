@@ -46,7 +46,9 @@ export const DEFAULT_VIEW = (input, _output, target) => {
         ${input.hasReports ? html `
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
             <div slot="main">
-              ${input.reportsGrid}
+              <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.ReportsGrid.ReportsGrid, {
+            reports: input.reports, onReportSelected: input.onReportSelected,
+        })}></devtools-widget>
             </div>
             <div slot="sidebar" class="vbox" jslog=${VisualLogging.pane('preview').track({ resize: true })}>
               ${input.focusedReport ? html `
@@ -61,11 +63,15 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           </devtools-split-view>
         ` : html `
           <div slot="main">
-            ${input.reportsGrid}
+            <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.ReportsGrid.ReportsGrid, {
+            reports: input.reports, onReportSelected: input.onReportSelected,
+        })}></devtools-widget>
           </div>
         `}
         <div slot="sidebar">
-          ${input.endpointsGrid}
+          <devtools-widget .widgetConfig=${widgetConfig(ApplicationComponents.EndpointsGrid.EndpointsGrid, {
+            endpoints: input.endpoints,
+        })}></devtools-widget>
         </div>
       </devtools-split-view>
     `, target);
@@ -84,19 +90,15 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     }
 };
 export class ReportingApiView extends UI.Widget.VBox {
-    #endpointsGrid;
     #endpoints;
     #view;
     #networkManager;
-    #reportsGrid = new ApplicationComponents.ReportsGrid.ReportsGrid();
     #reports = [];
     #focusedReport;
-    constructor(endpointsGrid, view = DEFAULT_VIEW) {
+    constructor(view = DEFAULT_VIEW) {
         super();
         this.#view = view;
-        this.#endpointsGrid = endpointsGrid;
         this.#endpoints = new Map();
-        this.#reportsGrid.addEventListener('select', this.#onFocus.bind(this));
         SDK.TargetManager.TargetManager.instance().observeModels(SDK.NetworkManager.NetworkManager, this);
         this.requestUpdate();
     }
@@ -124,31 +126,28 @@ export class ReportingApiView extends UI.Widget.VBox {
         const viewInput = {
             hasReports: this.#reports.length > 0,
             hasEndpoints: this.#endpoints.size > 0,
-            endpointsGrid: this.#endpointsGrid,
-            reportsGrid: this.#reportsGrid,
+            endpoints: this.#endpoints,
+            reports: this.#reports,
             focusedReport: this.#focusedReport,
+            onReportSelected: this.#onReportSelected.bind(this),
         };
         this.#view(viewInput, {}, this.element);
     }
     #onEndpointsChangedForOrigin({ data }) {
         this.#endpoints.set(data.origin, data.endpoints);
-        this.#endpointsGrid.data = { endpoints: this.#endpoints };
         this.requestUpdate();
     }
     #onReportAdded({ data: report }) {
         this.#reports.push(report);
-        this.#reportsGrid.data = { reports: this.#reports };
         this.requestUpdate();
     }
     #onReportUpdated({ data: report }) {
         const index = this.#reports.findIndex(oldReport => oldReport.id === report.id);
         this.#reports[index] = report;
-        this.#reportsGrid.data = { reports: this.#reports };
         this.requestUpdate();
     }
-    async #onFocus(event) {
-        const selectEvent = event;
-        const report = this.#reports.find(report => report.id === selectEvent.detail);
+    #onReportSelected(id) {
+        const report = this.#reports.find(report => report.id === id);
         if (report) {
             this.#focusedReport = report;
             this.requestUpdate();

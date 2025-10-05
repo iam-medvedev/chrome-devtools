@@ -96,11 +96,18 @@ export type Annotation = EntryLabelAnnotation | TimeRangeAnnotation | EntriesLin
 export declare function isTimeRangeAnnotation(annotation: Annotation): annotation is TimeRangeAnnotation;
 export declare function isEntryLabelAnnotation(annotation: Annotation): annotation is EntryLabelAnnotation;
 export declare function isEntriesLinkAnnotation(annotation: Annotation): annotation is EntriesLinkAnnotation;
+/**
+ * Serializable keys are created for trace events to be able to save
+ * references to timeline events in a trace file. These keys enable
+ * user modifications that can be saved. See go/cpq:event-data-json for
+ * more details on the key format.
+ **/
 export type RawEventKey = `${EventKeyType.RAW_EVENT}-${number}`;
 export type SyntheticEventKey = `${EventKeyType.SYNTHETIC_EVENT}-${number}`;
 export type ProfileCallKey = `${EventKeyType.PROFILE_CALL}-${ProcessID}-${ThreadID}-${SampleIndex}-${Protocol.integer}`;
 export type LegacyTimelineFrameKey = `${EventKeyType.LEGACY_TIMELINE_FRAME}-${number}`;
 export type SerializableKey = RawEventKey | ProfileCallKey | SyntheticEventKey | LegacyTimelineFrameKey;
+/** Serializable keys values objects contain data that maps the keys to original Trace Events **/
 export interface RawEventKeyValues {
     type: EventKeyType.RAW_EVENT;
     rawIndex: number;
@@ -129,6 +136,11 @@ export interface Modifications {
     initialBreadcrumb: Breadcrumb;
     annotations: SerializedAnnotations;
 }
+/**
+ * IMPORTANT: this is the same as PerfUI.FlameChart.PersistedGroupConfig
+ * However, the PerfUI code should not depend on the model/trace, and similarly
+ * this model cannot depend on that code, so we duplicate it.
+ **/
 export interface TrackVisualConfig {
     hidden: boolean;
     expanded: boolean;

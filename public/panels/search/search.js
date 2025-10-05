@@ -171,9 +171,7 @@ var str_ = i18n.i18n.registerUIStrings("panels/search/SearchResultsPane.ts", UIS
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var DEFAULT_VIEW = (input, _output, target) => {
   const { results, matches, expandedResults, onSelectMatch, onExpandSearchResult, onShowMoreMatches } = input;
-  const onExpand = ({ detail: { expanded, target: target2 } }) => {
-    const searchResultIndex = Number(target2.dataset.searchResultIndex);
-    const searchResult = results[searchResultIndex];
+  const onExpand = (searchResult, { detail: { expanded } }) => {
     if (expanded) {
       expandedResults.add(searchResult);
       onExpandSearchResult(searchResult);
@@ -182,10 +180,12 @@ var DEFAULT_VIEW = (input, _output, target) => {
     }
   };
   render(html`
-    <devtools-tree hide-overflow @expand=${onExpand} .template=${html`
+    <devtools-tree hide-overflow .template=${html`
       <ul role="tree">
-        ${results.map((searchResult, i) => html`
-          <li role="treeitem" data-search-result-index=${i} class="search-result">
+        ${results.map((searchResult) => html`
+          <li @expand=${(e) => onExpand(searchResult, e)}
+              role="treeitem"
+              class="search-result">
             <style>${searchResultsPane_css_default}</style>
             ${renderSearchResult(searchResult)}
             <ul role="group" ?hidden=${!expandedResults.has(searchResult)}>
@@ -212,7 +212,6 @@ var renderSearchMatches = (searchResult, matches, onSelectMatch, onShowMoreMatch
   return html`
       ${visibleMatches.map(({ lineContent, matchRanges, resultLabel }, i) => html`
         <li role="treeitem" class="search-match" @click=${() => onSelectMatch(searchResult, i)}
-          ${UI.TreeOutline.TreeSearch.highlight(matchRanges.map((range) => ({ offset: range.offset + `${resultLabel}`.length, length: range.length })), void 0)}
           @keydown=${(event) => {
     if (event.key === "Enter") {
       onSelectMatch(searchResult, i);
@@ -226,7 +225,8 @@ var renderSearchMatches = (searchResult, matches, onSelectMatch, onShowMoreMatch
                 aria-label=${typeof resultLabel === "number" && !isNaN(resultLabel) ? i18nString(UIStrings.lineS, { PH1: resultLabel }) : resultLabel}>
               ${resultLabel}
             </span>
-            <span class="search-match-content" aria-label="${lineContent} line">
+            <span class="search-match-content" aria-label="${lineContent} line"
+                  ${UI.TreeOutline.TreeSearch.highlight(matchRanges, void 0)}>
               ${lineContent}
             </span>
           </button>
@@ -771,11 +771,8 @@ var SearchView = class extends UI2.Widget.VBox {
   #searchResultsMessage = "";
   #advancedSearchConfig;
   #searchScope;
-  // We throttle adding search results, otherwise we trigger DOM layout for each
-  // result added.
-  #throttler;
   #searchResults = [];
-  constructor(settingKey, throttler, view = DEFAULT_VIEW2) {
+  constructor(settingKey, view = DEFAULT_VIEW2) {
     super({
       jslog: `${VisualLogging.panel("search").track({ resize: true })}`,
       useShadowDom: true
@@ -792,7 +789,6 @@ var SearchView = class extends UI2.Widget.VBox {
     this.#searchConfig = null;
     this.#pendingSearchConfig = null;
     this.#progress = null;
-    this.#throttler = throttler;
     this.#advancedSearchConfig = Common2.Settings.Settings.instance().createLocalSetting(settingKey + "-search-config", new Workspace.SearchConfig.SearchConfig("", true, false).toPlainObject());
     this.performUpdate();
     this.#load();
@@ -910,16 +906,8 @@ var SearchView = class extends UI2.Widget.VBox {
       return;
     }
     this.#searchResults.push(searchResult);
-    void this.#throttler.schedule(async () => this.#setSearchResults());
-  }
-  #setSearchResults() {
-    this.#searchMatchesCount = 0;
-    this.#searchResultsCount = 0;
-    this.#nonEmptySearchResultsCount = 0;
-    for (const searchResult of this.#searchResults) {
-      this.#addSearchResult(searchResult);
-    }
-    this.performUpdate();
+    this.#addSearchResult(searchResult);
+    this.requestUpdate();
   }
   #onSearchFinished(searchId, finished) {
     if (searchId !== this.#searchId || !this.#progress) {
@@ -1066,9 +1054,6 @@ var SearchView = class extends UI2.Widget.VBox {
   #onClearSearch() {
     this.#resetSearch();
     this.#onClearSearchInput();
-  }
-  get throttlerForTest() {
-    return this.#throttler;
   }
 };
 export {

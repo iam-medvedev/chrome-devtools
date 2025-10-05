@@ -27,8 +27,10 @@ export function encodeVlq(n) {
 export function encodeVlqList(list) {
     return list.map(encodeVlq).join('');
 }
-// Encode array mappings of the form "compiledLine:compiledColumn => srcFile:srcLine:srcColumn@name"
-// as a source map.
+/**
+ * Encode array mappings of the form "compiledLine:compiledColumn => srcFile:srcLine:srcColumn@name"
+ * as a source map.
+ **/
 export function encodeSourceMap(textMap, sourceRoot) {
     let mappings = '';
     const sources = [];

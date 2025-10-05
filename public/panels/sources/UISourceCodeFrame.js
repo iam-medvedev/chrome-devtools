@@ -560,7 +560,7 @@ class RowMessages {
 }
 const setRowMessages = CodeMirror.StateEffect.define();
 const underlineMark = CodeMirror.Decoration.mark({ class: 'cm-waveUnderline' });
-// The widget shown at the end of a message annotation.
+/** The widget shown at the end of a message annotation. **/
 class MessageWidget extends CodeMirror.WidgetType {
     messages;
     constructor(messages) {

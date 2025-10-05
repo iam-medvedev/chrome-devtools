@@ -57,6 +57,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private selection;
     private traceLoadStart;
     constructor(traceModel?: Trace.TraceModel.Model);
+    zoomEvent(event: Trace.Types.Events.Event): void;
     /**
      * This disables the 3P checkbox in the toolbar.
      * If the checkbox was checked, we flip it to indeterminiate to communicate it doesn't currently apply.
@@ -213,10 +214,12 @@ export declare const enum State {
     LOADING = "Loading",
     RECORDING_FAILED = "RecordingFailed"
 }
+/** Define row and header height, should be in sync with styles for timeline graphs. **/
 export declare const rowHeight = 18;
 export declare const headerHeight = 20;
 export interface TimelineModeViewDelegate {
     select(selection: TimelineSelection | null): void;
+    zoomEvent(event: Trace.Types.Events.Event): void;
     element: Element;
     set3PCheckboxDisabled(disabled: boolean): void;
     selectEntryAtTime(events: Trace.Types.Events.Event[] | null, time: number): void;

@@ -1588,14 +1588,18 @@ var BadgeNotification = class extends UI6.Widget.Widget {
     this.#autoCloseTimeout = window.setTimeout(this.#onAutoClose, AUTO_CLOSE_TIME_IN_MS);
   }
   async #presentStarterBadge(badge) {
-    const gdpProfile = await Host5.GdpClient.GdpClient.instance().getProfile();
+    const getProfileResponse = await Host5.GdpClient.GdpClient.instance().getProfile();
+    if (!getProfileResponse) {
+      return;
+    }
+    const hasGdpProfile = Boolean(getProfileResponse.profile);
     const receiveBadgesSettingEnabled = Badges2.UserBadges.instance().isReceiveBadgesSettingEnabled();
     const googleDeveloperProgramLink = UI6.XLink.XLink.create("https://developers.google.com/program", lockedString4("Google Developer Program"), "badge-link", void 0, "program-link");
-    if (gdpProfile && receiveBadgesSettingEnabled) {
+    if (hasGdpProfile && receiveBadgesSettingEnabled) {
       this.#presentActivityBasedBadge(badge);
       return;
     }
-    if (gdpProfile && !receiveBadgesSettingEnabled) {
+    if (hasGdpProfile && !receiveBadgesSettingEnabled) {
       this.#show({
         message: i18nFormatString(UIStrings3.starterBadgeAwardMessageSettingDisabled, { PH1: badge.title, PH2: googleDeveloperProgramLink }),
         jslogContext: badge.jslogContext,

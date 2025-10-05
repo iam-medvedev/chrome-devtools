@@ -43,7 +43,7 @@ export async function compress(str) {
     const buffer = await gzipCodec(encoded, new CompressionStream('gzip'));
     return buffer;
 }
-// Private coder/decoder
+/** Private coder/decoder **/
 function gzipCodec(buffer, codecStream) {
     const { readable, writable } = new TransformStream();
     const codecReadable = readable.pipeThrough(codecStream);

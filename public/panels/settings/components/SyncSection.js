@@ -7,7 +7,6 @@ import '../../../ui/components/settings/settings.js';
 import '../../../ui/components/tooltips/tooltips.js';
 import * as Host from '../../../core/host/host.js';
 import * as i18n from '../../../core/i18n/i18n.js';
-import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as Badges from '../../../models/badges/badges.js';
 import * as Buttons from '../../../ui/components/buttons/buttons.js';
@@ -176,8 +175,12 @@ export class SyncSection extends HTMLElement {
         if (!Host.GdpClient.isGdpProfilesAvailable()) {
             return;
         }
-        this.#gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile() ?? undefined;
-        this.#isEligibleToCreateGdpProfile = await Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile();
+        const getProfileResponse = await Host.GdpClient.GdpClient.instance().getProfile();
+        if (!getProfileResponse) {
+            return;
+        }
+        this.#gdpProfile = getProfileResponse.profile ?? undefined;
+        this.#isEligibleToCreateGdpProfile = getProfileResponse.isEligible;
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
 }
@@ -257,8 +260,7 @@ function renderGdpSectionIfNeeded({ receiveBadgesSetting, receiveBadgesSettingCo
     if (!Host.GdpClient.isGdpProfilesAvailable() || (!gdpProfile && !isEligibleToCreateProfile)) {
         return Lit.nothing;
     }
-    const hasReceiveBadgesCheckbox = receiveBadgesSetting &&
-        Host.GdpClient.getGdpProfilesEnterprisePolicy() === Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED;
+    const hasReceiveBadgesCheckbox = Host.GdpClient.isBadgesEnabled() && receiveBadgesSetting;
     function renderBrand() {
         // clang-format off
         return html `

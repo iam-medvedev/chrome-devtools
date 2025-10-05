@@ -201,6 +201,12 @@ describeWithMockConnection('AI Assistance Panel', () => {
         });
     });
     describe('contexts', () => {
+        beforeEach(async () => {
+            await createNetworkPanelForMockConnection();
+        });
+        afterEach(async () => {
+            Network.NetworkPanel.NetworkPanel.instance().detach();
+        });
         const tests = [
             {
                 flavor: SDK.DOMModel.DOMNode,

@@ -2,6 +2,13 @@ import * as Common from '../../core/common/common.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    selectedSourceCode: Workspace.UISourceCode.UISourceCode | null;
+    onSelect: (uiSourceCode: Workspace.UISourceCode.UISourceCode | null) => void;
+    sourceCodes: Set<Workspace.UISourceCode.UISourceCode>;
+}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 declare const ChangesSidebar_base: (new (...args: any[]) => {
     addEventListener<T extends Events.SELECTED_UI_SOURCE_CODE_CHANGED>(eventType: T, listener: (arg0: Common.EventTarget.EventTargetEvent<EventTypes[T], any>) => void, thisObject?: Object): Common.EventTarget.EventDescriptor<EventTypes, T>;
     once<T extends Events.SELECTED_UI_SOURCE_CODE_CHANGED>(eventType: T): Promise<EventTypes[T]>;
@@ -10,27 +17,16 @@ declare const ChangesSidebar_base: (new (...args: any[]) => {
     dispatchEventToListeners<T extends Events.SELECTED_UI_SOURCE_CODE_CHANGED>(eventType: import("../../core/platform/TypescriptUtilities.js").NoUnion<T>, ...eventData: Common.EventTarget.EventPayloadToRestParameters<EventTypes, T>): void;
 }) & typeof UI.Widget.Widget;
 export declare class ChangesSidebar extends ChangesSidebar_base {
-    private treeoutline;
-    private readonly treeElements;
-    private readonly workspaceDiff;
-    constructor(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
+    #private;
+    constructor(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl, target?: HTMLElement, view?: View);
     selectedUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
-    private selectionChanged;
+    performUpdate(): void;
     private uiSourceCodeModifiedStatusChanged;
-    private removeUISourceCode;
-    private addUISourceCode;
 }
 export declare const enum Events {
     SELECTED_UI_SOURCE_CODE_CHANGED = "SelectedUISourceCodeChanged"
 }
 export interface EventTypes {
     [Events.SELECTED_UI_SOURCE_CODE_CHANGED]: void;
-}
-export declare class UISourceCodeTreeElement extends UI.TreeOutline.TreeElement {
-    uiSourceCode: Workspace.UISourceCode.UISourceCode;
-    private readonly eventListeners;
-    constructor(uiSourceCode: Workspace.UISourceCode.UISourceCode);
-    private updateTitle;
-    dispose(): void;
 }
 export {};

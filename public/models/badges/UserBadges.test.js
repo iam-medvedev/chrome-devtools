@@ -45,11 +45,8 @@ function stubGdpClientCreateAward(name) {
     return sinon.stub(Host.GdpClient.GdpClient.instance(), 'createAward')
         .resolves(name ? { name } : null);
 }
-function mockGdpClientGetProfile(profile) {
-    sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves(profile);
-}
-function mockIsEligibleToCreateProfile(eligible) {
-    sinon.stub(Host.GdpClient.GdpClient.instance(), 'isEligibleToCreateProfile').resolves(eligible);
+function mockGdpClientGetProfile(response) {
+    sinon.stub(Host.GdpClient.GdpClient.instance(), 'getProfile').resolves(response);
 }
 function mockGetAwardedBadgeNames(names) {
     sinon.stub(Host.GdpClient.GdpClient.instance(), 'getAwardedBadgeNames').resolves(names ? new Set(names) : null);
@@ -72,8 +69,10 @@ function setUpEnvironmentForActivatedBadges() {
     setStarterBadgeDismissed(false);
     setReceiveBadgesSetting(true);
     mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
-    mockGdpClientGetProfile({ name: 'names/profile-id' });
-    mockIsEligibleToCreateProfile(true);
+    mockGdpClientGetProfile({
+        profile: { name: 'names/profile-id' },
+        isEligible: true,
+    });
     mockGetAwardedBadgeNames([]);
 }
 async function assertActiveBadges({ clock, shouldStarterBadgeBeActive, shouldActivityBadgeBeActive, }) {
@@ -107,6 +106,8 @@ describeWithEnvironment('UserBadges', () => {
         updateHostConfig({
             devToolsGdpProfiles: {
                 enabled: true,
+                starterBadgeEnabled: true,
+                badgesEnabled: true,
             },
             devToolsGdpProfilesAvailability: {
                 enabled: true,
@@ -179,8 +180,10 @@ describeWithEnvironment('UserBadges', () => {
             it('should not award a starter badge if the user does not have a GDP profile but trigger the badge', async () => {
                 setReceiveBadgesSetting(true);
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile(null);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 const createAwardStub = stubGdpClientCreateAward(null);
                 const badgeTriggeredSpy = sinon.spy();
                 await Badges.UserBadges.instance().initialize();
@@ -193,8 +196,10 @@ describeWithEnvironment('UserBadges', () => {
             it('should not award a starter badge if the "receive badges" setting is disabled but trigger the badge', async () => {
                 setReceiveBadgesSetting(false);
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
-                mockGdpClientGetProfile({ name: 'names/profile-id' });
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetAwardedBadgeNames([]);
                 const createAwardStub = stubGdpClientCreateAward(null);
                 const badgeTriggeredSpy = sinon.spy();
@@ -230,8 +235,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should not activate any badges if the user is signed in but is neither eligible to create a GDP profile nor has an existing one', async () => {
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
-                mockIsEligibleToCreateProfile(false);
-                mockGdpClientGetProfile(null);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: false,
+                });
                 await Badges.UserBadges.instance().initialize();
                 await assertActiveBadges({
                     clock,
@@ -241,8 +248,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should deactivate all badges if the awarded badges check fails', async () => {
                 setReceiveBadgesSetting(true);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames(null);
                 await Badges.UserBadges.instance().initialize();
@@ -254,8 +263,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should not activate any badges on non-branded builds', async () => {
                 setReceiveBadgesSetting(true);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 updateHostConfig({
@@ -271,10 +282,34 @@ describeWithEnvironment('UserBadges', () => {
                     shouldStarterBadgeBeActive: false,
                 });
             });
+            it('should not activate any badges if the badges kill-switch is on', async () => {
+                setReceiveBadgesSetting(true);
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
+                mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
+                mockGetAwardedBadgeNames([]);
+                updateHostConfig({
+                    devToolsGdpProfiles: {
+                        enabled: true,
+                        starterBadgeEnabled: true,
+                        badgesEnabled: false,
+                    },
+                });
+                await Badges.UserBadges.instance().initialize();
+                await assertActiveBadges({
+                    clock,
+                    shouldActivityBadgeBeActive: false,
+                    shouldStarterBadgeBeActive: false,
+                });
+            });
             it('should not activate any badges if not allowed by enterprise policy', async () => {
                 setReceiveBadgesSetting(true);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 updateHostConfig({
@@ -290,11 +325,25 @@ describeWithEnvironment('UserBadges', () => {
                     shouldStarterBadgeBeActive: false,
                 });
             });
+            it('should not activate any badges if `GetProfile` call returns null', async () => {
+                setReceiveBadgesSetting(true);
+                mockGdpClientGetProfile(null);
+                mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
+                mockGetAwardedBadgeNames([]);
+                await Badges.UserBadges.instance().initialize();
+                await assertActiveBadges({
+                    clock,
+                    shouldActivityBadgeBeActive: false,
+                    shouldStarterBadgeBeActive: false,
+                });
+            });
         });
         describe('only starter badge', () => {
             it('should activate only the starter badge if the user does not have a GDP profile and is eligible for one', async () => {
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -305,8 +354,10 @@ describeWithEnvironment('UserBadges', () => {
                 });
             });
             it('should activate only the starter badge if the user does not have a GDP profile and is eligible for one, even if awarded badges check fails', async () => {
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames(null);
                 await Badges.UserBadges.instance().initialize();
@@ -318,8 +369,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should activate only the starter badge if the user has a GDP profile and the receive badges setting is off', async () => {
                 setReceiveBadgesSetting(false);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -330,8 +383,10 @@ describeWithEnvironment('UserBadges', () => {
                 });
             });
             it('should not activate the starter badge if it was awarded before', async () => {
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames(['badges/starter-test-badge']);
                 await Badges.UserBadges.instance().initialize();
@@ -341,12 +396,36 @@ describeWithEnvironment('UserBadges', () => {
                     shouldStarterBadgeBeActive: false,
                 });
             });
+            it('should not activate the starter badge if the starter badge kill-switch is on', async () => {
+                setReceiveBadgesSetting(true);
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
+                mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
+                mockGetAwardedBadgeNames([]);
+                updateHostConfig({
+                    devToolsGdpProfiles: {
+                        enabled: true,
+                        badgesEnabled: true,
+                        starterBadgeEnabled: false,
+                    },
+                });
+                await Badges.UserBadges.instance().initialize();
+                await assertActiveBadges({
+                    clock,
+                    shouldActivityBadgeBeActive: true,
+                    shouldStarterBadgeBeActive: false,
+                });
+            });
         });
         describe('all badges', () => {
             it('should activate starter and activity badges if the user has a GDP profile AND the receive badges setting is on AND they are not awarded before', async () => {
                 setReceiveBadgesSetting(true);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -358,8 +437,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should not activate the activity badge if it was awarded before', async () => {
                 setReceiveBadgesSetting(true);
-                mockIsEligibleToCreateProfile(true);
-                mockGdpClientGetProfile({ name: 'profiles/test' });
+                mockGdpClientGetProfile({
+                    profile: { name: 'names/profile-id' },
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames(['badges/test-badge']);
                 await Badges.UserBadges.instance().initialize();
@@ -369,20 +450,13 @@ describeWithEnvironment('UserBadges', () => {
                     shouldStarterBadgeBeActive: true,
                 });
             });
-            it('should not check for eligibility if the user has a GDP profile', async () => {
-                setReceiveBadgesSetting(true);
-                const isEligibleToCreateProfileStub = sinon.stub(Host.GdpClient.GdpClient.instance(), 'isEligibleToCreateProfile');
-                mockGdpClientGetProfile({ name: 'profiles/test' });
-                mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
-                mockGetAwardedBadgeNames([]);
-                await Badges.UserBadges.instance().initialize();
-                sinon.assert.notCalled(isEligibleToCreateProfileStub);
-            });
         });
         it('should deactivate activity based badges when receive badges setting turns to false', async () => {
             setReceiveBadgesSetting(true);
-            mockIsEligibleToCreateProfile(true);
-            mockGdpClientGetProfile({ name: 'profiles/test' });
+            mockGdpClientGetProfile({
+                profile: { name: 'names/profile-id' },
+                isEligible: true,
+            });
             mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
             mockGetAwardedBadgeNames([]);
             await Badges.UserBadges.instance().initialize();
@@ -423,8 +497,10 @@ describeWithEnvironment('UserBadges', () => {
         describe('reconcileBadges', () => {
             it('should not activate the starter badge if it has been dismissed', async () => {
                 setStarterBadgeDismissed(true);
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -436,8 +512,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should not activate the starter badge if it was snoozed recently', async () => {
                 setStarterBadgeLastSnoozedTimestamp(NOW - 500);
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -449,8 +527,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should not activate the starter badge if the max snooze count has been reached', async () => {
                 setStarterBadgeSnoozeCount(3);
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();
@@ -462,8 +542,10 @@ describeWithEnvironment('UserBadges', () => {
             });
             it('should activate the starter badge if the snooze period has passed', async () => {
                 setStarterBadgeLastSnoozedTimestamp(NOW - TWO_DAYS);
-                mockGdpClientGetProfile(null);
-                mockIsEligibleToCreateProfile(true);
+                mockGdpClientGetProfile({
+                    profile: null,
+                    isEligible: true,
+                });
                 mockGetSyncInformation({ accountEmail: 'test@test.com', isSyncActive: false });
                 mockGetAwardedBadgeNames([]);
                 await Badges.UserBadges.instance().initialize();

@@ -4,6 +4,7 @@ import type * as SDK from '../../core/sdk/sdk.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
 import type * as Diff from '../../third_party/diff/diff.js';
 import { type TemplateResult } from '../../ui/lit/lit.js';
+/** These utilities are packaged in a class to allow unittests to stub or spy the implementation. **/
 export declare class PanelUtils {
     static isFailedNetworkRequest(request: SDK.NetworkRequest.NetworkRequest | null): boolean;
     static getIconForNetworkRequest(request: SDK.NetworkRequest.NetworkRequest): TemplateResult;

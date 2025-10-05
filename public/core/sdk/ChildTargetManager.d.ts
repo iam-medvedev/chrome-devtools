@@ -22,6 +22,7 @@ export declare class ChildTargetManager extends SDKModel<EventTypes> implements 
     getParentTargetId(): Promise<Protocol.Target.TargetID>;
     getTargetInfo(): Promise<Protocol.Target.TargetInfo>;
     attachedToTarget({ sessionId, targetInfo, waitingForDebugger }: Protocol.Target.AttachedToTargetEvent): Promise<void>;
+    private initializeStorage;
     detachedFromTarget({ sessionId }: Protocol.Target.DetachedFromTargetEvent): void;
     receivedMessageFromTarget({}: Protocol.Target.ReceivedMessageFromTargetEvent): void;
     createParallelConnection(onMessage: (arg0: Object | string) => void): Promise<{

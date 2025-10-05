@@ -39,6 +39,7 @@ export declare class CSSMetadata {
     isHighlightPseudoType(pseudoType: Protocol.DOM.PseudoType): boolean;
 }
 export declare const CubicBezierKeywordValues: Map<string, string>;
+/** CSS-wide keywords. **/
 export declare const enum CSSWideKeyword {
     INHERIT = "inherit",
     INITIAL = "initial",
@@ -46,7 +47,12 @@ export declare const enum CSSWideKeyword {
     REVERT_LAYER = "revert-layer",
     UNSET = "unset"
 }
+/**
+ * Spec: https://drafts.csswg.org/css-cascade/#defaulting-keywords
+ * https://drafts.csswg.org/css-cascade-5/#revert-layer
+ **/
 export declare const CSSWideKeywords: CSSWideKeyword[];
+/** https://www.w3.org/TR/css-anchor-position-1/#typedef-try-size **/
 export declare const enum PositionTryOrderKeyword {
     NORMAL = "normal",
     MOST_HEIGHT = "most-height",

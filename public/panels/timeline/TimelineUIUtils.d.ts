@@ -4,6 +4,7 @@ import type * as Protocol from '../../generated/protocol.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as LegacyComponents from '../../ui/legacy/components/utils/utils.js';
 import * as ThirdPartyTreeView from './ThirdPartyTreeView.js';
+/** Look for scheme:// plus text and exclude any punctuation at the end. **/
 export declare const URL_REGEX: RegExp;
 interface LinkifyLocationOptions {
     scriptId: Protocol.Runtime.ScriptId | null;
@@ -87,7 +88,7 @@ export declare class TimelineDetailsContentHelper {
     element: HTMLDivElement;
     private tableElement;
     constructor(target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier | null);
-    addSection(title: string, swatchColor?: string): void;
+    addSection(title: string, swatchColor?: string, event?: Trace.Types.Events.Event): void;
     linkifier(): LegacyComponents.Linkifier.Linkifier | null;
     appendTextRow(title: string, value: string | number | boolean): void;
     appendElementRow(title: string, content: string | Node, isWarning?: boolean, isStacked?: boolean): void;

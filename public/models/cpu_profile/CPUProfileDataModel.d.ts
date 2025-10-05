@@ -74,6 +74,7 @@ export declare class CPUProfileDataModel extends ProfileTreeModel {
     nodeById(nodeId: number): ProfileNode | null;
     nodes(): ProfileNode[] | null;
 }
+/** Format used by profiles coming from traces. **/
 export type ExtendedProfileNode = Protocol.Profiler.ProfileNode & {
     parent?: number;
 };

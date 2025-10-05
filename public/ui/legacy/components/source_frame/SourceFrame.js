@@ -970,7 +970,7 @@ const searchHighlighter = CodeMirror.ViewPlugin.fromClass(class {
 const nonBreakableLineMark = new (class extends CodeMirror.GutterMarker {
     elementClass = 'cm-nonBreakableLine';
 })();
-// Effect to add lines (by position) to the set of non-breakable lines.
+/** Effect to add lines (by position) to the set of non-breakable lines. **/
 export const addNonBreakableLines = CodeMirror.StateEffect.define();
 const nonBreakableLines = CodeMirror.StateField.define({
     create() {
@@ -1030,7 +1030,7 @@ const sourceFrameTheme = CodeMirror.EditorView.theme({
         color: 'var(--sys-color-primary)',
     },
 });
-// Infobar panel state, used to show additional panels below the editor.
+/** Infobar panel state, used to show additional panels below the editor. **/
 export const addSourceFrameInfobar = CodeMirror.StateEffect.define();
 export const removeSourceFrameInfobar = CodeMirror.StateEffect.define();
 const sourceFrameInfobarState = CodeMirror.StateField.define({

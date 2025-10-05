@@ -120,5 +120,6 @@ export declare class BottomUpNode extends Node {
     searchTree(matchFunction: (arg0: Types.Events.Event) => boolean, results?: Node[]): Node[];
 }
 export declare function eventStackFrame(event: Types.Events.Event): Protocol.Runtime.CallFrame | null;
+/** TODO(paulirish): rename to generateNodeId **/
 export declare function generateEventID(event: Types.Events.Event): string;
 export type ChildrenCache = Map<string | symbol, Node>;

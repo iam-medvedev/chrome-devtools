@@ -24,9 +24,11 @@ export function isWin() {
     }
     return _isWin;
 }
-// In Chrome Layout tests the imported 'Platform' object is not writable/
-// configurable, which prevents us from monkey-patching 'Platform''s methods.
-// We circumvent this by adding 'setPlatformForTests'.
+/**
+ * In Chrome Layout tests the imported 'Platform' object is not writable/
+ * configurable, which prevents us from monkey-patching 'Platform''s methods.
+ * We circumvent this by adding 'setPlatformForTests'.
+ **/
 export function setPlatformForTests(platform) {
     _platform = platform;
     _isMac = undefined;

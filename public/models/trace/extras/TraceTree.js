@@ -573,7 +573,7 @@ export function eventStackFrame(event) {
     }
     return { ...topFrame, scriptId: String(topFrame.scriptId) };
 }
-// TODO(paulirish): rename to generateNodeId
+/** TODO(paulirish): rename to generateNodeId **/
 export function generateEventID(event) {
     if (Types.Events.isProfileCall(event)) {
         const name = SamplesIntegrator.isNativeRuntimeFrame(event.callFrame) ?

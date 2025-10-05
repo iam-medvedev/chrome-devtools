@@ -15,6 +15,7 @@ interface Delegate {
     eventsRetrievalProgress(progress: number): void;
     tracingComplete(events: Object[]): void;
 }
+/** Used by an implementation of Common.Revealer to transfer data from the recorder to the performance panel. **/
 export declare class RawTraceEvents {
     private events;
     constructor(events: Object[]);

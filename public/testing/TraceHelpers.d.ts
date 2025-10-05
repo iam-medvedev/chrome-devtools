@@ -3,6 +3,11 @@ import * as Workspace from '../models/workspace/workspace.js';
 import * as Timeline from '../panels/timeline/timeline.js';
 import * as PerfUI from '../ui/legacy/components/perf_ui/perf_ui.js';
 import * as UI from '../ui/legacy/legacy.js';
+/**
+ * This mock class is used for instancing a flame chart in the helpers.
+ * Its implementation is empty because the methods aren't used by the
+ * helpers, only the mere definition.
+ **/
 export declare class MockFlameChartDelegate implements PerfUI.FlameChart.FlameChartDelegate {
     windowChanged(_startTime: number, _endTime: number, _animate: boolean): void;
     updateRangeSelection(_startTime: number, _endTime: number): void;
@@ -68,6 +73,10 @@ export declare function getNetworkFlameChart(traceFileName: string, expanded: bo
     flameChart: PerfUI.FlameChart.FlameChart;
     dataProvider: Timeline.TimelineFlameChartNetworkDataProvider.TimelineFlameChartNetworkDataProvider;
 }>;
+/**
+ * We create here a cross-test base trace event. It is assumed that each
+ * test will import this default event and copy-override properties at will.
+ **/
 export declare const defaultTraceEvent: Trace.Types.Events.Event;
 /**
  * Gets the tree in a thread.

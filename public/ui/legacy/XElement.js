@@ -40,33 +40,4 @@ export class XElement extends HTMLElement {
         }
     }
 }
-class XBox extends XElement {
-    constructor(direction) {
-        super();
-        this.style.setProperty('display', 'flex');
-        this.style.setProperty('flex-direction', direction);
-        this.style.setProperty('justify-content', 'flex-start');
-    }
-    static get observedAttributes() {
-        return super.observedAttributes.concat(['x-start', 'x-center', 'x-stretch', 'x-baseline', 'justify-content']);
-    }
-    attributeChangedCallback(attr, oldValue, newValue) {
-        if (attr === 'x-start' || attr === 'x-center' || attr === 'x-stretch' || attr === 'x-baseline') {
-            if (newValue === null) {
-                this.style.removeProperty('align-items');
-            }
-            else {
-                this.style.setProperty('align-items', attr === 'x-start' ? 'flex-start' : attr.substr(2));
-            }
-            return;
-        }
-        super.attributeChangedCallback(attr, oldValue, newValue);
-    }
-}
-class XHBox extends XBox {
-    constructor() {
-        super('row');
-    }
-}
-customElements.define('x-hbox', XHBox);
 //# sourceMappingURL=XElement.js.map

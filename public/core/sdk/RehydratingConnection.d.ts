@@ -30,6 +30,7 @@ export declare class RehydratingConnection implements ProtocolClient.InspectorBa
     postToFrontend(arg: ServerMessage): void;
     disconnect(): Promise<void>;
 }
+/** Default rehydrating session with default responses. **/
 declare class RehydratingSessionBase {
     connection: RehydratingConnectionInterface | null;
     constructor(connection: RehydratingConnectionInterface);

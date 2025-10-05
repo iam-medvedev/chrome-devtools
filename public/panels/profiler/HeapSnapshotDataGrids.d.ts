@@ -108,6 +108,7 @@ export declare class HeapSnapshotRetainmentDataGrid extends HeapSnapshotContainm
     setDataSource(snapshot: HeapSnapshotProxy, nodeIndex: number, nodeId?: number): Promise<void>;
     dataSourceChanged(): Promise<void>;
 }
+/** TODO(crbug.com/1228674): Remove this enum, it is only used in web tests. **/
 export declare enum HeapSnapshotRetainmentDataGridEvents {
     ExpandRetainersComplete = "ExpandRetainersComplete"
 }

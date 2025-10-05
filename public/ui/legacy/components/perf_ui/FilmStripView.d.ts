@@ -34,7 +34,6 @@ export interface EventTypes {
 }
 export declare class Dialog {
     #private;
-    private fragment;
     private readonly widget;
     private index;
     private dialog;

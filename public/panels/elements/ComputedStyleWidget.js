@@ -164,7 +164,7 @@ const createTraceElement = (node, property, isPropertyOverloaded, matchedStyles,
     };
     return trace;
 };
-// clang-format off
+/** clang-format off **/
 class ColorRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.ColorMatch) {
     // clang-format on
     render(match, context) {

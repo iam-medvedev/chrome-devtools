@@ -39,6 +39,10 @@ export declare class EventBreakpointsModel extends SDKModel<void> {
     readonly agent: ProtocolProxyApi.EventBreakpointsApi;
     constructor(target: Target);
 }
+/**
+ * This implementation (as opposed to similar class in DOMDebuggerModel) is for
+ * instrumentation breakpoints in targets that run JS but do not have a DOM.
+ **/
 declare class EventListenerBreakpoint extends CategorizedBreakpoint {
     setEnabled(enabled: boolean): void;
     updateOnModel(model: EventBreakpointsModel): void;

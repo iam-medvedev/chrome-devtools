@@ -235,7 +235,6 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.isNotNull(metadataView.shadowRoot);
         const keys = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
-            'Origin',
             'Creation Time',
             'Number of Entries',
             'Number of Bytes Used',
@@ -243,7 +242,6 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         ]);
         const values = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-value');
         assert.deepEqual(values, [
-            TEST_ORIGIN,
             (new Date(100 * 1e3)).toLocaleString(),
             '3',
             '30',
@@ -266,7 +264,6 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         assert.isNotNull(metadataView.shadowRoot);
         const keys = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-key');
         assert.deepEqual(keys, [
-            'Origin',
             'Creation Time',
             'Number of Entries',
             'Number of Bytes Used',
@@ -274,7 +271,6 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         ]);
         const values = getCleanTextContentFromElements(metadataView.shadowRoot, 'devtools-report-value');
         assert.deepEqual(values, [
-            TEST_ORIGIN,
             'Not yet created',
             '0',
             '0',
@@ -298,9 +294,6 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         const { viewFunction } = await createView();
         assert.instanceOf(viewFunction.input.preview, UI.EmptyWidget.EmptyWidget);
     });
-    function createMockElement(key, value) {
-        return { dataset: { key, value } };
-    }
     it('updates sidebarWidget upon receiving SelectedNode Event', async () => {
         assert.exists(sharedStorageModel);
         sinon.stub(sharedStorageModel.storageAgent, 'invoke_getSharedStorageMetadata')
@@ -317,7 +310,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         });
         const { viewFunction } = await createView();
         // Select the second row.
-        viewFunction.input.onSelect(new CustomEvent('select', { detail: createMockElement('key2', 'b') }));
+        viewFunction.input.onSelect({ key: 'key2', value: 'b' });
         await raf();
         assert.instanceOf(viewFunction.input.preview, UI.SearchableView.SearchableView);
     });
@@ -500,7 +493,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
         // Select the second row.
-        viewFunction.input.onSelect(new CustomEvent('select', { detail: createMockElement('key2', 'b') }));
+        viewFunction.input.onSelect({ key: 'key2', value: 'b' });
         // Clicking "Delete Selected" will cause `deleteEntry()`, `getMetadata()`, and `getEntries()` to be called.
         const deletedPromise = itemsListener.waitForItemsDeletedTotal(1);
         toolbar.dispatchEventToListeners("DeleteSelected" /* Resources.StorageItemsToolbar.StorageItemsToolbar.Events.DELETE_SELECTED */);
@@ -551,14 +544,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
-        viewFunction.input.onEdit(new CustomEvent('edit', {
-            detail: {
-                node: createMockElement('key2', 'b'),
-                columnId: 'key',
-                valueBeforeEditing: 'key2',
-                newText: 'key0',
-            },
-        }));
+        viewFunction.input.onEdit('key2', 'b', 'key', 'key2', 'key0');
         //  Editing a key will cause `deleteEntry()`, `setEntry()`, `getMetadata()`, and `getEntries()` to be called.
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
@@ -607,14 +593,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
-        viewFunction.input.onEdit(new CustomEvent('edit', {
-            detail: {
-                node: createMockElement('key2', 'b'),
-                columnId: 'key',
-                valueBeforeEditing: 'key2',
-                newText: 'key1',
-            },
-        }));
+        viewFunction.input.onEdit('key2', 'b', 'key', 'key2', 'key1');
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.calledOnceWithExactly(deleteEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2' });
         sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key1', value: 'b', ignoreIfPresent: false });
@@ -660,14 +639,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
-        viewFunction.input.onEdit(new CustomEvent('edit', {
-            detail: {
-                node: createMockElement('key2', 'b'),
-                columnId: 'value',
-                valueBeforeEditing: 'b',
-                newText: 'd',
-            },
-        }));
+        viewFunction.input.onEdit('key2', 'b', 'value', 'b', 'd');
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.notCalled(deleteEntrySpy);
         sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key2', value: 'd', ignoreIfPresent: false });
@@ -713,12 +685,7 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
-        viewFunction.input.onCreate(new CustomEvent('edit', {
-            detail: {
-                key: 'key4',
-                value: 'e',
-            },
-        }));
+        viewFunction.input.onCreate('key4', 'e');
         await itemsListener.waitForItemsEditedTotal(1);
         sinon.assert.notCalled(deleteEntrySpy);
         sinon.assert.calledOnceWithExactly(setEntrySpy, { ownerOrigin: TEST_ORIGIN, key: 'key4', value: 'e', ignoreIfPresent: false });
@@ -750,15 +717,8 @@ describeWithMockConnection('SharedStorageItemsView', function () {
         sinon.assert.calledOnceWithExactly(getMetadataSpy, { ownerOrigin: TEST_ORIGIN });
         sinon.assert.calledOnceWithExactly(getEntriesSpy, { ownerOrigin: TEST_ORIGIN });
         assert.deepEqual(viewFunction.input.items, ENTRIES);
-        viewFunction.input.onSelect(new CustomEvent('select', { detail: createMockElement('key2', 'b') }));
-        viewFunction.input.onEdit(new CustomEvent('edit', {
-            detail: {
-                node: createMockElement('key2', 'b'),
-                columnId: 'key',
-                valueBeforeEditing: 'key2',
-                newText: '',
-            },
-        }));
+        viewFunction.input.onSelect({ key: 'key2', value: 'b' });
+        viewFunction.input.onEdit('key2', 'b', 'key', 'key2', '');
         await itemsListener.waitForItemsRefreshed();
         sinon.assert.notCalled(deleteEntrySpy);
         sinon.assert.notCalled(setEntrySpy);

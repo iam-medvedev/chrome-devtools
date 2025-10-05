@@ -425,7 +425,7 @@ describeWithEnvironment('Trace helpers', function () {
         });
         describe('dealing with duplicate IDs and overlapping events', () => {
             const { createMatchedSortedSyntheticEvents } = Trace.Helpers.Trace;
-            // Helper functions for creating async begin/instant/end events.
+            /** Helper functions for creating async begin/instant/end events. **/
             function makeBeginEvent(id, tsMicro) {
                 return {
                     name: `fake-event:${id}`,

@@ -16,6 +16,10 @@ import * as Types from '../types/types.js';
 export declare function stackTraceInEvent(event: Types.Events.Event): Types.Events.CallFrame[] | null;
 export declare function extractOriginFromTrace(firstNavigationURL: string): string | null;
 export type EventsInThread<T extends Types.Events.Event> = Map<Types.Events.ThreadID, T[]>;
+/**
+ * Each thread contains events. Events indicate the thread and process IDs, which are
+ * used to store the event in the correct process thread entry below.
+ **/
 export declare function addEventToProcessThread<T extends Types.Events.Event>(event: T, eventsInProcessThread: Map<Types.Events.ProcessID, EventsInThread<T>>): void;
 export declare function compareBeginAndEnd(aBeginTime: number, bBeginTime: number, aEndTime: number, bEndTime: number): -1 | 0 | 1;
 export declare function eventTimeComparator(a: Types.Events.Event, b: Types.Events.Event): -1 | 0 | 1;
@@ -136,4 +140,8 @@ export declare function eventHasCategory(event: Types.Events.Event, category: st
 export declare function isMatchingCallFrame(eventFrame: Types.Events.CallFrame, nodeFrame: Protocol.Runtime.CallFrame): boolean;
 export declare function eventContainsTimestamp(event: Types.Events.Event, ts: Types.Timing.Micro): boolean;
 export declare function extractSampleTraceId(event: Types.Events.Event): number | null;
+/**
+ * This exactly matches Trace.Styles.visibleTypes. See the runtime verification in maybeInitStylesMap.
+ * TODO(crbug.com/410884528)
+ **/
 export declare const VISIBLE_TRACE_EVENT_TYPES: Set<Types.Events.Name>;

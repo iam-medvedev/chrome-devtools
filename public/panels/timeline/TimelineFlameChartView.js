@@ -1173,6 +1173,17 @@ export class TimelineFlameChartView extends Common.ObjectWrapper.eventMixin(UI.W
             this.chartSplitWidget.hideSidebar();
         }
     }
+    zoomEvent(event) {
+        const traceBounds = TraceBounds.TraceBounds.BoundsManager.instance().state()?.micro.entireTraceBounds;
+        if (!traceBounds) {
+            return;
+        }
+        this.#expandEntryTrack(event);
+        this.revealEventVertically(event);
+        const entryWindow = Trace.Helpers.Timing.traceWindowFromMicroSeconds(event.ts, Trace.Types.Timing.Micro(event.ts + (event.dur ?? 0)));
+        const expandedBounds = Trace.Helpers.Timing.expandWindowByPercentOrToOneMillisecond(entryWindow, traceBounds, 100);
+        TraceBounds.TraceBounds.BoundsManager.instance().setTimelineVisibleWindow(expandedBounds, { ignoreMiniMapBounds: true, shouldAnimate: true });
+    }
     revealEvent(event) {
         const mainIndex = this.mainDataProvider.indexForEvent(event);
         const networkIndex = this.networkDataProvider.indexForEvent(event);

@@ -970,10 +970,12 @@ export class AutoBaseRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
         return [content];
     }
 }
-// The shadow model is an abstraction over the various shadow properties on the one hand and the order they were defined
-// in on the other, so that modifications through the shadow editor can retain the property order in the authored text.
-// The model also looks through var()s by keeping a mapping between individual properties and any var()s they are coming
-// from, replacing the var() functions as needed with concrete values when edited.
+/**
+ * The shadow model is an abstraction over the various shadow properties on the one hand and the order they were defined
+ * in on the other, so that modifications through the shadow editor can retain the property order in the authored text.
+ * The model also looks through var()s by keeping a mapping between individual properties and any var()s they are coming
+ * from, replacing the var() functions as needed with concrete values when edited.
+ **/
 export class ShadowModel {
     #properties;
     #shadowType;

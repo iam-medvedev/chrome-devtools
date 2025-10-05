@@ -24,7 +24,7 @@ export var FunctionalityType;
     FunctionalityType[FunctionalityType["EXPLAIN_ERROR"] = 2] = "EXPLAIN_ERROR";
     FunctionalityType[FunctionalityType["AGENTIC_CHAT"] = 5] = "AGENTIC_CHAT";
 })(FunctionalityType || (FunctionalityType = {}));
-// See: cs/aida.proto (google3).
+/** See: cs/aida.proto (google3). **/
 export var ClientFeature;
 (function (ClientFeature) {
     // Unspecified client feature.

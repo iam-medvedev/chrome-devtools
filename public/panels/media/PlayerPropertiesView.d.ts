@@ -2,6 +2,7 @@ import * as Platform from '../../core/platform/platform.js';
 import type * as Protocol from '../../generated/protocol.js';
 import * as UI from '../../ui/legacy/legacy.js';
 type TabData = Record<string, string | object>;
+/** Keep this enum in sync with panels/media/base/media_log_properties.h **/
 export declare const enum PlayerPropertyKeys {
     RESOLUTION = "kResolution",
     TOTAL_BYTES = "kTotalBytes",

@@ -1,4 +1,4 @@
-import type * as Handlers from '../handlers/handlers.js';
+import * as Handlers from '../handlers/handlers.js';
 import type { SyntheticInteractionPair } from '../types/TraceEvents.js';
 import type * as Types from '../types/types.js';
 import { type InsightModel, type InsightSetContext } from './types.js';

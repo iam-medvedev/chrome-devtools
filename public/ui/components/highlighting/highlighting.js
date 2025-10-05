@@ -4,6 +4,9 @@ var __export = (target, all) => {
     __defProp(target, name, { get: all[name], enumerable: true });
 };
 
+// gen/front_end/ui/components/highlighting/HighlightElement.js
+import * as TextUtils from "./../../../models/text_utils/text_utils.js";
+
 // gen/front_end/ui/components/highlighting/HighlightManager.js
 var HighlightManager_exports = {};
 __export(HighlightManager_exports, {
@@ -64,6 +67,7 @@ var highlightManagerInstance;
 var HighlightManager = class _HighlightManager {
   #highlights = new Highlight();
   #currentHighlights = new Highlight();
+  #stateByNode = /* @__PURE__ */ new WeakMap();
   constructor() {
     CSS.highlights.set(HIGHLIGHT_REGISTRY, this.#highlights);
     CSS.highlights.set(CURRENT_HIGHLIGHT_REGISTRY, this.#currentHighlights);
@@ -104,7 +108,97 @@ var HighlightManager = class _HighlightManager {
     }
     return ranges;
   }
+  #getOrCreateState(node) {
+    let state = this.#stateByNode.get(node);
+    if (!state) {
+      state = {
+        activeRanges: [],
+        ranges: [],
+        currentRange: void 0
+      };
+      this.#stateByNode.set(node, state);
+    }
+    return state;
+  }
+  apply(node) {
+    const state = this.#getOrCreateState(node);
+    this.removeHighlights(state.activeRanges);
+    state.activeRanges = this.highlightOrderedTextRanges(node, state.ranges);
+    if (state.currentRange) {
+      state.activeRanges.push(...this.highlightOrderedTextRanges(
+        node,
+        [state.currentRange],
+        /* isCurrent=*/
+        true
+      ));
+    }
+  }
+  set(element, ranges, currentRange) {
+    const state = this.#getOrCreateState(element);
+    state.ranges = ranges;
+    state.currentRange = currentRange;
+    this.apply(element);
+  }
 };
+
+// gen/front_end/ui/components/highlighting/HighlightElement.js
+var HighlightElement = class extends HTMLElement {
+  static observedAttributes = ["ranges", "current-range"];
+  #ranges = [];
+  #currentRange;
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (oldValue === newValue) {
+      return;
+    }
+    switch (name) {
+      case "ranges":
+        this.#ranges = parseRanges(newValue);
+        break;
+      case "current-range":
+        this.#currentRange = parseRanges(newValue)[0];
+        break;
+    }
+    HighlightManager.instance().set(this, this.#ranges, this.#currentRange);
+  }
+};
+function parseRanges(value) {
+  if (!value) {
+    return [];
+  }
+  const ranges = value.split(" ").filter((rangeString) => {
+    const parts = rangeString.split(",");
+    if (parts.length !== 2) {
+      return false;
+    }
+    const num1 = Number(parts[0]);
+    const num2 = Number(parts[1]);
+    return !isNaN(num1) && !isNaN(num2);
+  }).map((rangeString) => {
+    const parts = rangeString.split(",").map((part) => Number(part));
+    return new TextUtils.TextRange.SourceRange(parts[0], parts[1]);
+  });
+  return sortAndMergeRanges(ranges);
+}
+function sortAndMergeRanges(ranges) {
+  ranges.sort((a, b) => a.offset - b.offset);
+  if (ranges.length === 0) {
+    return [];
+  }
+  const merged = [ranges[0]];
+  for (let i = 1; i < ranges.length; i++) {
+    const last = merged[merged.length - 1];
+    const current = ranges[i];
+    if (current.offset <= last.offset + last.length) {
+      const newEnd = Math.max(last.offset + last.length, current.offset + current.length);
+      const newLength = newEnd - last.offset;
+      merged[merged.length - 1] = new TextUtils.TextRange.SourceRange(last.offset, newLength);
+    } else {
+      merged.push(current);
+    }
+  }
+  return merged;
+}
+customElements.define("devtools-highlight", HighlightElement);
 export {
   HighlightManager_exports as HighlightManager
 };

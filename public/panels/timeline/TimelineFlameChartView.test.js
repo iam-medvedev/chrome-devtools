@@ -24,6 +24,8 @@ class MockViewDelegate {
     }
     selectEntryAtTime(_events, _time) {
     }
+    zoomEvent(_event) {
+    }
     highlightEvent(_event) {
     }
     element = document.createElement('div');

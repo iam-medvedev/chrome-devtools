@@ -128,7 +128,6 @@ var StarterBadge = class extends Badge {
 // gen/front_end/models/badges/UserBadges.js
 import * as Common3 from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
-import * as Root from "./../../core/root/root.js";
 
 // gen/front_end/models/badges/CodeWhispererBadge.js
 var CODE_WHISPERER_BADGE_IMAGE_URI = new URL("../../Images/code-whisperer-badge.svg", import.meta.url).toString();
@@ -180,7 +179,7 @@ var UserBadges = class _UserBadges extends Common3.ObjectWrapper.ObjectWrapper {
   constructor() {
     super();
     this.#receiveBadgesSetting = Common3.Settings.Settings.instance().moduleSetting("receive-gdp-badges");
-    if (Host.GdpClient.getGdpProfilesEnterprisePolicy() === Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED_WITHOUT_BADGES) {
+    if (!Host.GdpClient.isBadgesEnabled()) {
       this.#receiveBadgesSetting.set(false);
     }
     this.#receiveBadgesSetting.addChangeListener(this.#reconcileBadges, this);
@@ -232,9 +231,9 @@ var UserBadges = class _UserBadges extends Common3.ObjectWrapper.ObjectWrapper {
     if (!badge.isStarterBadge) {
       shouldAwardBadge = true;
     } else {
-      const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
+      const getProfileResponse = await Host.GdpClient.GdpClient.instance().getProfile();
       const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting.get());
-      if (gdpProfile && receiveBadgesSettingEnabled && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed()) {
+      if (getProfileResponse?.profile && receiveBadgesSettingEnabled && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed()) {
         shouldAwardBadge = true;
       }
     }
@@ -270,21 +269,23 @@ var UserBadges = class _UserBadges extends Common3.ObjectWrapper.ObjectWrapper {
       this.#deactivateAllBadges();
       return;
     }
-    if (!Host.GdpClient.isGdpProfilesAvailable() || Host.GdpClient.getGdpProfilesEnterprisePolicy() !== Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED) {
+    if (!Host.GdpClient.isGdpProfilesAvailable() || !Host.GdpClient.isBadgesEnabled()) {
       this.#deactivateAllBadges();
       return;
     }
-    const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
-    let isEligibleToCreateProfile = Boolean(gdpProfile);
-    if (!gdpProfile) {
-      isEligibleToCreateProfile = await Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile();
+    const getProfileResponse = await Host.GdpClient.GdpClient.instance().getProfile();
+    if (!getProfileResponse) {
+      this.#deactivateAllBadges();
+      return;
     }
-    if (!gdpProfile && !isEligibleToCreateProfile) {
+    const hasGdpProfile = Boolean(getProfileResponse.profile);
+    const isEligibleToCreateProfile = getProfileResponse.isEligible;
+    if (!hasGdpProfile && !isEligibleToCreateProfile) {
       this.#deactivateAllBadges();
       return;
     }
     let awardedBadgeNames = null;
-    if (gdpProfile) {
+    if (hasGdpProfile) {
       awardedBadgeNames = await Host.GdpClient.GdpClient.instance().getAwardedBadgeNames({ names: this.#allBadges.map((badge) => badge.name) });
       if (!awardedBadgeNames) {
         this.#deactivateAllBadges();
@@ -297,8 +298,8 @@ var UserBadges = class _UserBadges extends Common3.ObjectWrapper.ObjectWrapper {
         badge.deactivate();
         continue;
       }
-      const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed();
-      const shouldActivateActivityBasedBadge = !badge.isStarterBadge && Boolean(gdpProfile) && receiveBadgesSettingEnabled;
+      const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile && Host.GdpClient.isStarterBadgeEnabled() && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed();
+      const shouldActivateActivityBasedBadge = !badge.isStarterBadge && hasGdpProfile && receiveBadgesSettingEnabled;
       if (shouldActivateStarterBadge || shouldActivateActivityBasedBadge) {
         badge.activate();
       } else {

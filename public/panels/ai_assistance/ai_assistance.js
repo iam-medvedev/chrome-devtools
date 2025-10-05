@@ -2442,7 +2442,7 @@ var DEFAULT_VIEW = (input, output, target) => {
       </div>
     </form>
     ` : Lit.nothing}
-  `, target, { host: target });
+  `, target);
 };
 var UserActionRow = class extends UI3.Widget.Widget {
   showRateButtons = false;

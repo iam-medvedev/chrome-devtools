@@ -1161,10 +1161,13 @@ __export(GdpClient_exports, {
   EmailPreference: () => EmailPreference,
   GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK: () => GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK,
   GdpClient: () => GdpClient,
+  GdpErrorType: () => GdpErrorType,
   SubscriptionStatus: () => SubscriptionStatus,
   SubscriptionTier: () => SubscriptionTier,
   getGdpProfilesEnterprisePolicy: () => getGdpProfilesEnterprisePolicy,
-  isGdpProfilesAvailable: () => isGdpProfilesAvailable
+  isBadgesEnabled: () => isBadgesEnabled,
+  isGdpProfilesAvailable: () => isGdpProfilesAvailable,
+  isStarterBadgeEnabled: () => isStarterBadgeEnabled
 });
 import * as Root3 from "./../root/root.js";
 var SubscriptionStatus;
@@ -1193,22 +1196,41 @@ var EmailPreference;
   EmailPreference2["ENABLED"] = "ENABLED";
   EmailPreference2["DISABLED"] = "DISABLED";
 })(EmailPreference || (EmailPreference = {}));
+var GdpErrorType;
+(function(GdpErrorType2) {
+  GdpErrorType2["HTTP_RESPONSE_UNAVAILABLE"] = "HTTP_RESPONSE_UNAVAILABLE";
+  GdpErrorType2["NOT_FOUND"] = "NOT_FOUND";
+})(GdpErrorType || (GdpErrorType = {}));
+var GdpError = class extends Error {
+  type;
+  constructor(type, options) {
+    super(void 0, options);
+    this.type = type;
+  }
+};
 function normalizeBadgeName(name) {
   return name.replace(/profiles\/[^/]+\/awards\//, "profiles/me/awards/");
 }
 var GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 async function makeHttpRequest(request) {
   if (!isGdpProfilesAvailable()) {
-    return null;
+    throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE);
   }
   const response = await new Promise((resolve) => {
     InspectorFrontendHostInstance.dispatchHttpRequest(request, resolve);
   });
   debugLog({ request, response });
-  if ("response" in response && response.statusCode === 200) {
-    return JSON.parse(response.response);
+  if (response.statusCode === 404) {
+    throw new GdpError(GdpErrorType.NOT_FOUND);
   }
-  return null;
+  if ("response" in response && response.statusCode === 200) {
+    try {
+      return JSON.parse(response.response);
+    } catch (err) {
+      throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE, { cause: err });
+    }
+  }
+  throw new GdpError(GdpErrorType.HTTP_RESPONSE_UNAVAILABLE);
 }
 var SERVICE_NAME = "gdpService";
 var gdpClientInstance = null;
@@ -1223,21 +1245,39 @@ var GdpClient = class _GdpClient {
     }
     return gdpClientInstance;
   }
-  async initialize() {
-    const profile = await this.getProfile();
-    if (profile) {
+  /**
+   * Fetches the user's GDP profile and eligibility status.
+   *
+   * It first attempts to fetch the profile. If the profile is not found
+   * (a `NOT_FOUND` error), this is handled gracefully by treating the profile
+   * as `null` and then proceeding to check for eligibility.
+   *
+   * @returns A promise that resolves with an object containing the `profile`
+   * and `isEligible` status, or `null` if an unexpected error occurs.
+   */
+  async getProfile() {
+    try {
+      const profile = await this.#getProfile();
       return {
-        hasProfile: true,
+        profile,
         isEligible: true
       };
+    } catch (err) {
+      if (err instanceof GdpError && err.type === GdpErrorType.HTTP_RESPONSE_UNAVAILABLE) {
+        return null;
+      }
     }
-    const isEligible = await this.isEligibleToCreateProfile();
-    return {
-      hasProfile: false,
-      isEligible
-    };
+    try {
+      const checkEligibilityResponse = await this.#checkEligibility();
+      return {
+        profile: null,
+        isEligible: checkEligibilityResponse.createProfile === EligibilityStatus.ELIGIBLE
+      };
+    } catch {
+      return null;
+    }
   }
-  async getProfile() {
+  async #getProfile() {
     if (this.#cachedProfilePromise) {
       return await this.#cachedProfilePromise;
     }
@@ -1245,14 +1285,13 @@ var GdpClient = class _GdpClient {
       service: SERVICE_NAME,
       path: "/v1beta1/profile:get",
       method: "GET"
-    });
-    const profile = await this.#cachedProfilePromise;
-    if (profile) {
+    }).then((profile) => {
       this.#cachedEligibilityPromise = Promise.resolve({ createProfile: EligibilityStatus.ELIGIBLE });
-    }
-    return profile;
+      return profile;
+    });
+    return await this.#cachedProfilePromise;
   }
-  async checkEligibility() {
+  async #checkEligibility() {
     if (this.#cachedEligibilityPromise) {
       return await this.#cachedEligibilityPromise;
     }
@@ -1263,52 +1302,57 @@ var GdpClient = class _GdpClient {
    * @returns null if the request fails, the awarded badge names otherwise.
    */
   async getAwardedBadgeNames({ names }) {
-    const result = await makeHttpRequest({
-      service: SERVICE_NAME,
-      path: "/v1beta1/profiles/me/awards:batchGet",
-      method: "GET",
-      queryParams: {
-        allowMissing: "true",
-        names
-      }
-    });
-    if (!result) {
+    try {
+      const response = await makeHttpRequest({
+        service: SERVICE_NAME,
+        path: "/v1beta1/profiles/me/awards:batchGet",
+        method: "GET",
+        queryParams: {
+          allowMissing: "true",
+          names
+        }
+      });
+      return new Set(response.awards?.map((award) => normalizeBadgeName(award.name)) ?? []);
+    } catch {
       return null;
     }
-    return new Set(result.awards?.map((award) => normalizeBadgeName(award.name)) ?? []);
-  }
-  async isEligibleToCreateProfile() {
-    return (await this.checkEligibility())?.createProfile === EligibilityStatus.ELIGIBLE;
   }
   async createProfile({ user, emailPreference }) {
-    const result = await makeHttpRequest({
-      service: SERVICE_NAME,
-      path: "/v1beta1/profiles",
-      method: "POST",
-      body: JSON.stringify({
-        user,
-        newsletter_email: emailPreference
-      })
-    });
-    if (result) {
+    try {
+      const response = await makeHttpRequest({
+        service: SERVICE_NAME,
+        path: "/v1beta1/profiles",
+        method: "POST",
+        body: JSON.stringify({
+          user,
+          newsletter_email: emailPreference
+        })
+      });
       this.#clearCache();
+      return response;
+    } catch {
+      return null;
     }
-    return result;
   }
   #clearCache() {
     this.#cachedProfilePromise = void 0;
     this.#cachedEligibilityPromise = void 0;
   }
-  createAward({ name }) {
-    return makeHttpRequest({
-      service: SERVICE_NAME,
-      path: "/v1beta1/profiles/me/awards",
-      method: "POST",
-      body: JSON.stringify({
-        awardingUri: "devtools://devtools",
-        name
-      })
-    });
+  async createAward({ name }) {
+    try {
+      const response = await makeHttpRequest({
+        service: SERVICE_NAME,
+        path: "/v1beta1/profiles/me/awards",
+        method: "POST",
+        body: JSON.stringify({
+          awardingUri: "devtools://devtools",
+          name
+        })
+      });
+      return response;
+    } catch {
+      return null;
+    }
   }
 };
 function isDebugMode() {
@@ -1336,6 +1380,14 @@ function isGdpProfilesAvailable() {
 }
 function getGdpProfilesEnterprisePolicy() {
   return Root3.Runtime.hostConfig.devToolsGdpProfilesAvailability?.enterprisePolicyValue ?? Root3.Runtime.GdpProfilesEnterprisePolicyValue.DISABLED;
+}
+function isBadgesEnabled() {
+  const isBadgesEnabledByEnterprisePolicy = getGdpProfilesEnterprisePolicy() === Root3.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED;
+  const isBadgesEnabledByFeatureFlag = Boolean(Root3.Runtime.hostConfig.devToolsGdpProfiles?.badgesEnabled);
+  return isBadgesEnabledByEnterprisePolicy && isBadgesEnabledByFeatureFlag;
+}
+function isStarterBadgeEnabled() {
+  return Boolean(Root3.Runtime.hostConfig.devToolsGdpProfiles?.starterBadgeEnabled);
 }
 globalThis.setDebugGdpIntegrationEnabled = setDebugGdpIntegrationEnabled;
 

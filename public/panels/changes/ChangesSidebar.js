@@ -1,13 +1,12 @@
 // Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Workspace from '../../models/workspace/workspace.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
-import * as IconButton from '../../ui/components/icon_button/icon_button.js';
 import * as UI from '../../ui/legacy/legacy.js';
+import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Snippets from '../snippets/snippets.js';
 import changesSidebarStyles from './changesSidebar.css.js';
@@ -20,102 +19,104 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/changes/ChangesSidebar.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
+const { render, html, Directives: { ref } } = Lit;
+export const DEFAULT_VIEW = (input, output, target) => {
+    const tooltip = (uiSourceCode) => uiSourceCode.contentType().isFromSourceMap() ?
+        i18nString(UIStrings.sFromSourceMap, { PH1: uiSourceCode.displayName() }) :
+        uiSourceCode.url();
+    const icon = (uiSourceCode) => Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode) ? 'snippet' : 'document';
+    const configElements = new WeakMap();
+    const onSelect = (e) => input.onSelect(configElements.get(e.detail) ?? null);
+    render(
+    // clang-format off
+    html `<devtools-tree
+             @selected=${onSelect}
+             navigation-variant
+             hide-overflow .template=${html `
+               <ul role="tree">
+                 ${input.sourceCodes.values().map(uiSourceCode => html `
+                   <li
+                     role="treeitem"
+                     ${ref(e => e instanceof HTMLLIElement && configElements.set(e, uiSourceCode))}
+                     ?selected=${uiSourceCode === input.selectedSourceCode}>
+                       <style>${changesSidebarStyles}</style>
+                       <div class=${'navigator-' + uiSourceCode.contentType().name() + '-tree-item'}>
+                         <devtools-icon name=${icon(uiSourceCode)}></devtools-icon>
+                         <span title=${tooltip(uiSourceCode)}>
+                           <span ?hidden=${!uiSourceCode.isDirty()}>*</span>
+                           ${uiSourceCode.displayName()}
+                         </span>
+                       </div>
+                   </li>`)}
+               </ul>`}></devtools-tree>`, 
+    // clang-format on
+    target);
+};
 export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
-    treeoutline;
-    treeElements;
-    workspaceDiff;
-    constructor(workspaceDiff) {
+    #workspaceDiff;
+    #view;
+    #sourceCodes = new Set();
+    #selectedUISourceCode = null;
+    constructor(workspaceDiff, target, view = DEFAULT_VIEW) {
         super({ jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}` });
-        this.treeoutline = new UI.TreeOutline.TreeOutlineInShadow("NavigationTree" /* UI.TreeOutline.TreeVariant.NAVIGATION_TREE */);
-        this.treeoutline.registerRequiredCSS(changesSidebarStyles);
-        this.treeoutline.setFocusable(false);
-        this.treeoutline.setHideOverflow(true);
-        this.treeoutline.addEventListener(UI.TreeOutline.Events.ElementSelected, this.selectionChanged, this);
-        UI.ARIAUtils.markAsTablist(this.treeoutline.contentElement);
-        this.element.appendChild(this.treeoutline.element);
-        this.treeElements = new Map();
-        this.workspaceDiff = workspaceDiff;
-        this.workspaceDiff.modifiedUISourceCodes().forEach(this.addUISourceCode.bind(this));
-        this.workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
+        this.#view = view;
+        this.#workspaceDiff = workspaceDiff;
+        this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
+        this.#workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
+        this.requestUpdate();
     }
     selectedUISourceCode() {
-        // @ts-expect-error uiSourceCode seems to be dynamically attached.
-        return this.treeoutline.selectedTreeElement ? this.treeoutline.selectedTreeElement.uiSourceCode : null;
+        return this.#selectedUISourceCode;
     }
-    selectionChanged() {
+    performUpdate() {
+        const input = {
+            onSelect: uiSourceCode => this.#selectionChanged(uiSourceCode),
+            sourceCodes: this.#sourceCodes,
+            selectedSourceCode: this.#selectedUISourceCode
+        };
+        this.#view(input, {}, this.contentElement);
+    }
+    #selectionChanged(selectedUISourceCode) {
+        this.#selectedUISourceCode = selectedUISourceCode;
         this.dispatchEventToListeners("SelectedUISourceCodeChanged" /* Events.SELECTED_UI_SOURCE_CODE_CHANGED */);
+        this.requestUpdate();
     }
-    uiSourceCodeModifiedStatusChanged(event) {
-        if (event.data.isModified) {
-            this.addUISourceCode(event.data.uiSourceCode);
+    #addUISourceCode(uiSourceCode) {
+        this.#sourceCodes.add(uiSourceCode);
+        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.requestUpdate, this);
+        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.requestUpdate, this);
+        uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.requestUpdate, this);
+        this.requestUpdate();
+    }
+    #removeUISourceCode(uiSourceCode) {
+        uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.TitleChanged, this.requestUpdate, this);
+        uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.requestUpdate, this);
+        uiSourceCode.removeEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.requestUpdate, this);
+        if (uiSourceCode === this.#selectedUISourceCode) {
+            let newSelection;
+            for (const sourceCode of this.#sourceCodes.values()) {
+                if (sourceCode === uiSourceCode) {
+                    break;
+                }
+                newSelection = sourceCode;
+            }
+            this.#sourceCodes.delete(uiSourceCode);
+            this.#selectionChanged(newSelection ?? this.#sourceCodes.values().next().value ?? null);
         }
         else {
-            this.removeUISourceCode(event.data.uiSourceCode);
+            this.#sourceCodes.delete(uiSourceCode);
         }
+        this.requestUpdate();
     }
-    removeUISourceCode(uiSourceCode) {
-        const treeElement = this.treeElements.get(uiSourceCode);
-        this.treeElements.delete(uiSourceCode);
-        if (this.treeoutline.selectedTreeElement === treeElement) {
-            const nextElementToSelect = treeElement.previousSibling || treeElement.nextSibling;
-            if (nextElementToSelect) {
-                nextElementToSelect.select(true);
-            }
-            else {
-                treeElement.deselect();
-                this.selectionChanged();
-            }
+    uiSourceCodeModifiedStatusChanged(event) {
+        const { isModified, uiSourceCode } = event.data;
+        if (isModified) {
+            this.#addUISourceCode(uiSourceCode);
         }
-        if (treeElement) {
-            this.treeoutline.removeChild(treeElement);
-            treeElement.dispose();
+        else {
+            this.#removeUISourceCode(uiSourceCode);
         }
-        if (this.treeoutline.rootElement().childCount() === 0) {
-            this.treeoutline.setFocusable(false);
-        }
-    }
-    addUISourceCode(uiSourceCode) {
-        const treeElement = new UISourceCodeTreeElement(uiSourceCode);
-        this.treeElements.set(uiSourceCode, treeElement);
-        this.treeoutline.setFocusable(true);
-        this.treeoutline.appendChild(treeElement);
-    }
-}
-export class UISourceCodeTreeElement extends UI.TreeOutline.TreeElement {
-    uiSourceCode;
-    eventListeners;
-    constructor(uiSourceCode) {
-        super();
-        this.uiSourceCode = uiSourceCode;
-        this.listItemElement.classList.add('navigator-' + uiSourceCode.contentType().name() + '-tree-item');
-        UI.ARIAUtils.markAsTab(this.listItemElement);
-        let iconName = 'document';
-        if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(this.uiSourceCode)) {
-            iconName = 'snippet';
-        }
-        const defaultIcon = IconButton.Icon.create(iconName);
-        this.setLeadingIcons([defaultIcon]);
-        this.eventListeners = [
-            uiSourceCode.addEventListener(Workspace.UISourceCode.Events.TitleChanged, this.updateTitle, this),
-            uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyChanged, this.updateTitle, this),
-            uiSourceCode.addEventListener(Workspace.UISourceCode.Events.WorkingCopyCommitted, this.updateTitle, this),
-        ];
-        this.updateTitle();
-    }
-    updateTitle() {
-        let titleText = this.uiSourceCode.displayName();
-        if (this.uiSourceCode.isDirty()) {
-            titleText = '*' + titleText;
-        }
-        this.title = titleText;
-        let tooltip = this.uiSourceCode.url();
-        if (this.uiSourceCode.contentType().isFromSourceMap()) {
-            tooltip = i18nString(UIStrings.sFromSourceMap, { PH1: this.uiSourceCode.displayName() });
-        }
-        this.tooltip = tooltip;
-    }
-    dispose() {
-        Common.EventTarget.removeEventListeners(this.eventListeners);
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=ChangesSidebar.js.map

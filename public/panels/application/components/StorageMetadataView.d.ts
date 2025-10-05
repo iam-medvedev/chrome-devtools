@@ -7,6 +7,7 @@ export declare class StorageMetadataView extends LegacyWrapper.LegacyWrapper.Wra
     #private;
     setStorageKey(storageKey: string): void;
     setStorageBucket(storageBucket: Protocol.Storage.StorageBucketInfo): void;
+    setShowOnlyBucket(show: boolean): void;
     enableStorageBucketControls(model: SDK.StorageBucketsModel.StorageBucketsModel): void;
     render(): Promise<void>;
     getTitle(): string | undefined;

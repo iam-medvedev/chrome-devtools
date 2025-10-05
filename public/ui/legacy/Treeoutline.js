@@ -1235,8 +1235,16 @@ export class TreeSearch {
     }
     static highlight(ranges, selectedRange) {
         return Lit.Directives.ref(element => {
-            if (element instanceof HTMLLIElement) {
-                TreeViewTreeElement.get(element)?.highlight(ranges, selectedRange);
+            if (!(element instanceof HTMLElement)) {
+                return;
+            }
+            const configListItem = element.closest('li[role="treeitem"]');
+            const titleElement = configListItem ? TreeViewTreeElement.get(configListItem)?.titleElement : undefined;
+            if (configListItem && titleElement) {
+                const targetElement = HTMLElementWithLightDOMTemplate.findCorrespondingElement(element, configListItem, titleElement);
+                if (targetElement) {
+                    Highlighting.HighlightManager.HighlightManager.instance().set(targetElement, ranges, selectedRange);
+                }
             }
         });
     }
@@ -1292,26 +1300,7 @@ export class TreeSearch {
         return this.#matches.length;
     }
 }
-class ActiveHighlights {
-    #activeRanges = [];
-    #highlights = [];
-    #selectedSearchResult = undefined;
-    apply(node) {
-        Highlighting.HighlightManager.HighlightManager.instance().removeHighlights(this.#activeRanges);
-        this.#activeRanges =
-            Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, this.#highlights);
-        if (this.#selectedSearchResult) {
-            this.#activeRanges.push(...Highlighting.HighlightManager.HighlightManager.instance().highlightOrderedTextRanges(node, [this.#selectedSearchResult], /* isSelected=*/ true));
-        }
-    }
-    set(element, highlights, selectedSearchResult) {
-        this.#highlights = highlights;
-        this.#selectedSearchResult = selectedSearchResult;
-        this.apply(element);
-    }
-}
 class TreeViewTreeElement extends TreeElement {
-    #activeHighlights = new ActiveHighlights();
     #clonedAttributes = new Set();
     #clonedClasses = new Set();
     static #elementToTreeElement = new WeakMap();
@@ -1321,9 +1310,6 @@ class TreeViewTreeElement extends TreeElement {
         this.configElement = configElement;
         TreeViewTreeElement.#elementToTreeElement.set(configElement, this);
         this.refresh();
-    }
-    highlight(highlights, selectedSearchResult) {
-        this.#activeHighlights.set(this.titleElement, highlights, selectedSearchResult);
     }
     refresh() {
         this.titleElement.textContent = '';
@@ -1349,7 +1335,7 @@ class TreeViewTreeElement extends TreeElement {
             }
             this.titleElement.appendChild(HTMLElementWithLightDOMTemplate.cloneNode(child));
         }
-        this.#activeHighlights.apply(this.titleElement);
+        Highlighting.HighlightManager.HighlightManager.instance().apply(this.titleElement);
     }
     static get(configElement) {
         return configElement && TreeViewTreeElement.#elementToTreeElement.get(configElement);
@@ -1388,7 +1374,7 @@ function getTreeNodes(nodeList) {
  * <devtools-tree
  *   .template=${html`
  *     <ul role="tree">
- *        <li role="treeitem">
+ *        <li role="treeitem" @expand=${onExpand}>
  *          Tree Node Text
  *          <ul role="group">
  *            Node with subtree
@@ -1410,7 +1396,7 @@ function getTreeNodes(nodeList) {
  * tree node). If a tree node contains a <ul role="group">, that defines a subtree under that tree node. The `hidden`
  * attribute on the <ul> defines whether that subtree should render as collapsed. Note that node expanding/collapsing do
  * not reflect this state back to the attribute on the config element, those state changes are rather sent out as
- * `expand` events.
+ * `expand` events on the config element.
  *
  * Under the hood this uses TreeOutline.
  *
@@ -1438,7 +1424,6 @@ function getTreeNodes(nodeList) {
  *
  * @property template Define the tree contents
  * @event selected A node was selected
- * @event expand A subtree was expanded or collapsed
  * @attribute navigation-variant Turn this tree into the navigation variant
  * @attribute hide-overflow
  */
@@ -1454,12 +1439,12 @@ export class TreeViewElement extends HTMLElementWithLightDOMTemplate {
         });
         this.#treeOutline.addEventListener(Events.ElementExpanded, event => {
             if (event.data instanceof TreeViewTreeElement) {
-                this.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: true, target: event.data.configElement }));
+                event.data.listItemElement.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: true }));
             }
         });
         this.#treeOutline.addEventListener(Events.ElementCollapsed, event => {
             if (event.data instanceof TreeViewTreeElement) {
-                this.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: false, target: event.data.configElement }));
+                event.data.listItemElement.dispatchEvent(new TreeViewElement.ExpandEvent({ expanded: false }));
             }
         });
         this.addNodes(getTreeNodes([this]));

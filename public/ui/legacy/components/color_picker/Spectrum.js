@@ -151,15 +151,17 @@ function convertColorFormat(colorFormat) {
     }
     return colorFormat;
 }
-// HSV by itself, without a color space, doesn't map to a color and
-// it is usually interpreted as an sRGB color. However, it can also
-// represent colors in other color spaces since `HSV` -> `RGB` mapping
-// is not color space dependent. For example, color(display-p3 1 1 1) and rgb(1 1 1)
-// map to the same HSV values. The tricky thing is, `hsl()` syntax is interpreted
-// as it is in sRGB in CSS. So, when you convert those two colors and use as `hsl()`, it will
-// show an sRGB color. Though, if there was a function `color-hsl(<color-space> h s l)`
-// it was going to show the color in the color-space represented with `hsl`.
-// This function, gets the HSV values by interpreting them in the given gamut.
+/**
+ * HSV by itself, without a color space, doesn't map to a color and
+ * it is usually interpreted as an sRGB color. However, it can also
+ * represent colors in other color spaces since `HSV` -> `RGB` mapping
+ * is not color space dependent. For example, color(display-p3 1 1 1) and rgb(1 1 1)
+ * map to the same HSV values. The tricky thing is, `hsl()` syntax is interpreted
+ * as it is in sRGB in CSS. So, when you convert those two colors and use as `hsl()`, it will
+ * show an sRGB color. Though, if there was a function `color-hsl(<color-space> h s l)`
+ * it was going to show the color in the color-space represented with `hsl`.
+ * This function, gets the HSV values by interpreting them in the given gamut.
+ **/
 function getHsvFromColor(gamut, color) {
     switch (gamut) {
         case "display-p3" /* SpectrumGamut.DISPLAY_P3 */: {
@@ -174,7 +176,7 @@ function getHsvFromColor(gamut, color) {
         }
     }
 }
-// Interprets the given `hsva` values in the given gamut and returns the concrete `Color` object.
+/** Interprets the given `hsva` values in the given gamut and returns the concrete `Color` object. **/
 function getColorFromHsva(gamut, hsva) {
     const color = Common.Color.Legacy.fromHSVA(hsva);
     switch (gamut) {

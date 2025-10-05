@@ -10,23 +10,15 @@ export interface ViewInput {
     selectedKey: string | null;
     editable: boolean;
     preview: Widget;
-    onSelect: (event: CustomEvent<HTMLElement | null>) => void;
-    onSort: (event: CustomEvent<{
-        columnId: string;
-        ascending: boolean;
-    }>) => void;
-    onCreate: (event: CustomEvent<{
+    onSelect: (item: {
         key: string;
         value: string;
-    }>) => void;
+    } | null) => void;
+    onSort: (ascending: boolean) => void;
+    onCreate: (key: string, value: string) => void;
     onReferesh: () => void;
-    onEdit: (event: CustomEvent<{
-        node: HTMLElement;
-        columnId: string;
-        valueBeforeEditing: string;
-        newText: string;
-    }>) => void;
-    onDelete: (event: CustomEvent<HTMLElement>) => void;
+    onEdit: (key: string, value: string, columnId: string, valueBeforeEditing: string, newText: string) => void;
+    onDelete: (key: string) => void;
 }
 interface ViewOutput {
     toolbar: StorageItemsToolbar;

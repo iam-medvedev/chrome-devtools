@@ -43,6 +43,7 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
+    "../../../../../../../front_end/ui/components/highlighting/HighlightElement.test.ts",
     "../../../../../../../front_end/ui/components/highlighting/HighlightManager.test.ts",
     "../../../../../../../front_end/legacy/legacy-defs.d.ts",
     "../../../../../../../front_end/global_typings/global_defs.d.ts",
@@ -51,6 +52,9 @@
   "references": [
     {
       "path": "./bundle-tsconfig.json"
+    },
+    {
+      "path": "../../../testing/testing-tsconfig.json"
     }
   ]
 }

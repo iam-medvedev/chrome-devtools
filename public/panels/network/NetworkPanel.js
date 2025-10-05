@@ -860,7 +860,7 @@ export class RequestLocationRevealer {
 let searchNetworkViewInstance;
 export class SearchNetworkView extends Search.SearchView.SearchView {
     constructor() {
-        super('network', new Common.Throttler.Throttler(/* timeoutMs */ 200));
+        super('network');
     }
     static instance(opts = { forceNew: null }) {
         const { forceNew } = opts;

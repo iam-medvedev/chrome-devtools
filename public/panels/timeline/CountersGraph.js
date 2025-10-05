@@ -63,8 +63,10 @@ export class CountersGraph extends UI.Widget.VBox {
     #onTraceBoundsChangeBound = this.#onTraceBoundsChange.bind(this);
     #noEventsFoundMessage = document.createElement('div');
     #showNoEventsMessage = false;
+    #defaultNumberFormatter;
     constructor(delegate) {
         super();
+        this.#defaultNumberFormatter = new Intl.NumberFormat(i18n.DevToolsLocale.DevToolsLocale.instance().locale);
         this.element.id = 'memory-graphs-container';
         this.delegate = delegate;
         this.calculator = new Calculator();
@@ -149,6 +151,7 @@ export class CountersGraph extends UI.Widget.VBox {
             }
         }
         this.#showNoEventsMessage = counterEventsFound === 0;
+        this.requestUpdate();
     }
     createCurrentValuesBar() {
         this.currentValuesBar = this.graphsContainer.element.createChild('div');
@@ -157,7 +160,7 @@ export class CountersGraph extends UI.Widget.VBox {
     createCounter(uiName, settingsKey, color, formatter) {
         const counter = new Counter();
         this.counters.push(counter);
-        this.counterUI.push(new CounterUI(this, uiName, settingsKey, color, counter, formatter));
+        this.counterUI.push(new CounterUI(this, uiName, settingsKey, color, counter, formatter ?? this.#defaultNumberFormatter.format));
         return counter;
     }
     resizerElement() {
@@ -335,7 +338,7 @@ export class CounterUI {
     constructor(countersPane, title, settingsKey, graphColor, counter, formatter) {
         this.countersPane = countersPane;
         this.counter = counter;
-        this.formatter = formatter || Platform.NumberUtilities.withThousandsSeparator;
+        this.formatter = formatter;
         this.setting = Common.Settings.Settings.instance().createSetting('timeline-counters-graph-' + settingsKey, true);
         this.setting.setTitle(title);
         this.filter = new UI.Toolbar.ToolbarSettingCheckbox(this.setting, title);
@@ -394,7 +397,7 @@ export class CounterUI {
             return;
         }
         const index = this.recordIndexAt(x);
-        const value = Platform.NumberUtilities.withThousandsSeparator(this.counter.values[index]);
+        const value = this.formatter(this.counter.values[index]);
         this.value.textContent = `${this.counterName}: ${value}`;
         const y = this.graphYValues[index] / window.devicePixelRatio;
         this.marker.style.left = x + 'px';

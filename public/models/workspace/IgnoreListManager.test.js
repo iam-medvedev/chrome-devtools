@@ -153,7 +153,7 @@ describeWithMockConnection('IgnoreListManager', () => {
         nodeModulesUiSourceCode = notNull(workspace.uiSourceCodeForURL(sourceMapNodeModulesUrl));
         anonymousScriptUiSourceCode = notNull(debuggerWorkspaceBinding.uiSourceCodeForScript(scripts[3]));
     });
-    // Wrapper around getIgnoreListURLContextMenuItems to make its result more convenient for testing
+    /** Wrapper around getIgnoreListURLContextMenuItems to make its result more convenient for testing **/
     function getContextMenu(uiSourceCode) {
         const items = [];
         const callbacks = new Map();
@@ -163,7 +163,7 @@ describeWithMockConnection('IgnoreListManager', () => {
         }
         return { items, callbacks };
     }
-    // Wrapper around getIgnoreListFolderContextMenuItems to make its result more convenient for testing
+    /** Wrapper around getIgnoreListFolderContextMenuItems to make its result more convenient for testing **/
     function getFolderContextMenu(url) {
         const items = [];
         const callbacks = new Map();

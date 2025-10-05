@@ -12,6 +12,7 @@ export declare class SourceMappingsUpdated extends Event {
     static readonly eventName = "sourcemappingsupdated";
     constructor();
 }
+/** The code location key is created as a concatenation of its fields. **/
 export declare const resolvedCodeLocationDataNames: Map<string, ResolvedCodeLocationData | null>;
 export declare class SourceMapsResolver extends EventTarget {
     #private;

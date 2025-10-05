@@ -124,13 +124,23 @@ function finalize(partialModel) {
     if (partialModel.lcpRequest) {
         relatedEvents.push(partialModel.lcpRequest);
     }
+    let state = 'pass';
+    if (partialModel.lcpMs !== undefined) {
+        const classification = Handlers.ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(Helpers.Timing.milliToMicro(partialModel.lcpMs));
+        if (classification === "good" /* Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */) {
+            state = 'informative';
+        }
+        else {
+            state = 'fail';
+        }
+    }
     return {
         insightKey: "LCPBreakdown" /* InsightKeys.LCP_BREAKDOWN */,
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
         category: InsightCategory.LCP,
-        state: partialModel.lcpEvent || partialModel.lcpRequest ? 'informative' : 'pass',
+        state,
         ...partialModel,
         relatedEvents,
     };

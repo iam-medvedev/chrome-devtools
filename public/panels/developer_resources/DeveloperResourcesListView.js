@@ -2,15 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import '../../ui/legacy/components/data_grid/data_grid.js';
+import '../../ui/components/highlighting/highlighting.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
-import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
+import { html, nothing, render } from '../../ui/lit/lit.js';
 import developerResourcesListViewStyles from './developerResourcesListView.css.js';
-const { ref } = Directives;
 const UIStrings = {
     /**
      * @description Text for the status of something
@@ -78,6 +77,20 @@ const str_ = i18n.i18n.registerUIStrings('panels/developer_resources/DeveloperRe
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { withThousandsSeparator } = Platform.NumberUtilities;
 const DEFAULT_VIEW = (input, _output, target) => {
+    function highlightRange(textContent, columnId) {
+        if (!textContent) {
+            return '';
+        }
+        const filter = input.filters.find(filter => filter.key?.split(',')?.includes(columnId));
+        if (!filter?.regex) {
+            return '';
+        }
+        const matches = filter.regex.exec(textContent ?? '');
+        if (!matches?.length) {
+            return '';
+        }
+        return `${matches.index},${matches[0].length}`;
+    }
     // clang-format off
     render(html `
       <style>${developerResourcesListViewStyles}</style>
@@ -115,11 +128,11 @@ const DEFAULT_VIEW = (input, _output, target) => {
             item.success === false ? i18nString(UIStrings.failure) :
                 i18nString(UIStrings.pending)}</td>
               <td title=${item.url} aria-label=${item.url}>
-                <div aria-hidden="true" part="url-outer"
-                     ${ref(e => input.highlight(e, item.url, 'url'))}>
+                <devtools-highlight aria-hidden="true" part="url-outer"
+                                    ranges=${highlightRange(item.url, 'url')}>
                   <div part="url-prefix">${splitURL ? splitURL[1] : item.url}</div>
                   <div part="url-suffix">${splitURL ? splitURL[2] : ''}</div>
-                </div>
+                </devtools-highlight>
               </td>
               <td title=${item.initiator.initiatorUrl || ''}
                   aria-label=${item.initiator.initiatorUrl || ''}
@@ -132,9 +145,9 @@ const DEFAULT_VIEW = (input, _output, target) => {
                   data-value=${item.duration ?? nothing}>${item.duration !== null ? html `<span>${i18n.TimeUtilities.millisToString(item.duration)}</span>` : ''}</td>
               <td class="error-message">
                 ${item.errorMessage ? html `
-                <span ${ref(e => input.highlight(e, item.errorMessage, 'error-message'))}>
+                <devtools-highlight ranges=${highlightRange(item.errorMessage, 'error-message')}>
                   ${item.errorMessage}
-                </span>` : nothing}
+                </devtools-highlight>` : nothing}
               </td>
             </tr>`;
     })}
@@ -201,7 +214,6 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
             items: this.#items,
             selectedItem: this.#selectedItem,
             filters: this.#filters,
-            highlight: this.#highlight.bind(this),
             onContextMenu: (e) => {
                 if (e.detail?.element) {
                     this.#populateContextMenu(e.detail.menu, e.detail.element);
@@ -223,28 +235,6 @@ export class DeveloperResourcesListView extends UI.Widget.VBox {
         };
         const output = {};
         this.#view(input, output, this.contentElement);
-    }
-    #highlight(element, textContent, columnId) {
-        if (!element || !textContent) {
-            return;
-        }
-        const highlightContainers = new Set([...element.querySelectorAll('.filter-highlight')].map(e => e.parentElement));
-        for (const container of highlightContainers) {
-            container.textContent = container.textContent;
-        }
-        const filter = this.#filters.find(filter => filter.key?.split(',')?.includes(columnId));
-        if (!filter?.regex) {
-            return;
-        }
-        const matches = filter.regex.exec(element.textContent ?? '');
-        if (!matches?.length) {
-            return;
-        }
-        const range = new TextUtils.TextRange.SourceRange(matches.index, matches[0].length);
-        UI.UIUtils.highlightRangesWithStyleClass(element, [range], 'filter-highlight');
-        for (const el of element.querySelectorAll('.filter-highlight')) {
-            el.setAttribute('part', 'filter-highlight');
-        }
     }
 }
 //# sourceMappingURL=DeveloperResourcesListView.js.map

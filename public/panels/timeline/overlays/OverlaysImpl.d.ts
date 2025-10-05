@@ -65,6 +65,11 @@ export interface OverlayEntryQueries {
     isEntryCollapsedByUser: (entry: Trace.Types.Events.Event) => boolean;
     firstVisibleParentForEntry: (entry: Trace.Types.Events.Event) => Trace.Types.Events.Event | null;
 }
+/**
+ * An event dispatched when one of the Annotation Overlays (overlay created by the user,
+ * ex. Trace.Types.Overlays.EntryLabel) is removed or updated. When one of the Annotation Overlays is removed or updated,
+ * ModificationsManager listens to this event and updates the current annotations.
+ **/
 export type UpdateAction = 'Remove' | 'Update';
 export declare class AnnotationOverlayActionEvent extends Event {
     overlay: Trace.Types.Overlays.Overlay;

@@ -519,8 +519,10 @@ function formatProblemReport(snapshot, report) {
 function reportProblemToPrimaryWorker(problemReport, port) {
     port.postMessage({ problemReport });
 }
-// Initialization work is split into two threads. This class is the entry point
-// for work done by the second thread.
+/**
+ * Initialization work is split into two threads. This class is the entry point
+ * for work done by the second thread.
+ **/
 export class SecondaryInitManager {
     argsStep1;
     argsStep2;
@@ -2991,7 +2993,7 @@ export class JSHeapSnapshot extends HeapSnapshot {
         return this.#statistics;
     }
 }
-// Creates and initializes a JSHeapSnapshot using only one thread.
+/** Creates and initializes a JSHeapSnapshot using only one thread. **/
 export async function createJSHeapSnapshotForTesting(profile) {
     const result = new JSHeapSnapshot(profile, new HeapSnapshotProgress());
     const channel = new MessageChannel();

@@ -206,10 +206,6 @@ export declare class NetworkRequest extends Common.ObjectWrapper.ObjectWrapper<E
     priority(): Protocol.Network.ResourcePriority | null;
     setSignedExchangeInfo(info: Protocol.Network.SignedExchangeInfo): void;
     signedExchangeInfo(): Protocol.Network.SignedExchangeInfo | null;
-    setWebBundleInfo(info: WebBundleInfo | null): void;
-    webBundleInfo(): WebBundleInfo | null;
-    setWebBundleInnerRequestInfo(info: WebBundleInnerRequestInfo | null): void;
-    webBundleInnerRequestInfo(): WebBundleInnerRequestInfo | null;
     populateImageSource(image: HTMLImageElement): Promise<void>;
     initiator(): Protocol.Network.Initiator | null;
     hasUserGesture(): boolean | null;
@@ -368,14 +364,6 @@ export interface ExtraResponseInfo {
 }
 export interface EarlyHintsInfo {
     responseHeaders: NameValue[];
-}
-export interface WebBundleInfo {
-    resourceUrls?: Platform.DevToolsPath.UrlString[];
-    errorMessage?: string;
-}
-export interface WebBundleInnerRequestInfo {
-    bundleRequestId?: string;
-    errorMessage?: string;
 }
 export type OverrideType = 'content' | 'headers';
 export declare enum DirectSocketType {

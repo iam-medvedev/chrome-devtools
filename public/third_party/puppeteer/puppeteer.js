@@ -2550,7 +2550,7 @@ var environment = {
 };
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.22.3";
+var packageVersion = "24.23.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
@@ -5040,14 +5040,12 @@ var Page = (() => {
      * import {KnownDevices} from 'puppeteer';
      * const iPhone = KnownDevices['iPhone 15 Pro'];
      *
-     * (async () => {
-     *   const browser = await puppeteer.launch();
-     *   const page = await browser.newPage();
-     *   await page.emulate(iPhone);
-     *   await page.goto('https://www.google.com');
-     *   // other actions...
-     *   await browser.close();
-     * })();
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * await page.emulate(iPhone);
+     * await page.goto('https://www.google.com');
+     * // other actions...
+     * await browser.close();
      * ```
      */
     async emulate(device) {
@@ -5588,22 +5586,21 @@ var Page = (() => {
      *
      * ```ts
      * import puppeteer from 'puppeteer';
-     * (async () => {
-     *   const browser = await puppeteer.launch();
-     *   const page = await browser.newPage();
-     *   let currentURL;
-     *   page
-     *     .waitForSelector('img')
-     *     .then(() => console.log('First URL with image: ' + currentURL));
-     *   for (currentURL of [
-     *     'https://example.com',
-     *     'https://google.com',
-     *     'https://bbc.com',
-     *   ]) {
-     *     await page.goto(currentURL);
-     *   }
-     *   await browser.close();
-     * })();
+     *
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * let currentURL;
+     * page
+     *   .waitForSelector('img')
+     *   .then(() => console.log('First URL with image: ' + currentURL));
+     * for (currentURL of [
+     *   'https://example.com',
+     *   'https://google.com',
+     *   'https://bbc.com',
+     * ]) {
+     *   await page.goto(currentURL);
+     * }
+     * await browser.close();
      * ```
      *
      * @param selector -
@@ -5653,14 +5650,13 @@ var Page = (() => {
      *
      * ```ts
      * import puppeteer from 'puppeteer';
-     * (async () => {
-     *   const browser = await puppeteer.launch();
-     *   const page = await browser.newPage();
-     *   const watchDog = page.waitForFunction('window.innerWidth < 100');
-     *   await page.setViewport({width: 50, height: 50});
-     *   await watchDog;
-     *   await browser.close();
-     * })();
+     *
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * const watchDog = page.waitForFunction('window.innerWidth < 100');
+     * await page.setViewport({width: 50, height: 50});
+     * await watchDog;
+     * await browser.close();
      * ```
      *
      * @example
@@ -8837,24 +8833,22 @@ var Frame = (() => {
      * ```ts
      * import puppeteer from 'puppeteer';
      *
-     * (async () => {
-     *   const browser = await puppeteer.launch();
-     *   const page = await browser.newPage();
-     *   let currentURL;
-     *   page
-     *     .mainFrame()
-     *     .waitForSelector('img')
-     *     .then(() => console.log('First URL with image: ' + currentURL));
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * let currentURL;
+     * page
+     *   .mainFrame()
+     *   .waitForSelector('img')
+     *   .then(() => console.log('First URL with image: ' + currentURL));
      *
-     *   for (currentURL of [
-     *     'https://example.com',
-     *     'https://google.com',
-     *     'https://bbc.com',
-     *   ]) {
-     *     await page.goto(currentURL);
-     *   }
-     *   await browser.close();
-     * })();
+     * for (currentURL of [
+     *   'https://example.com',
+     *   'https://google.com',
+     *   'https://bbc.com',
+     * ]) {
+     *   await page.goto(currentURL);
+     * }
+     * await browser.close();
      * ```
      *
      * @param selector - The selector to query and wait for.
@@ -8876,14 +8870,14 @@ var Frame = (() => {
      * ```ts
      * import puppeteer from 'puppeteer';
      *
-     * (async () => {
-     * .  const browser = await puppeteer.launch();
-     * .  const page = await browser.newPage();
-     * .  const watchDog = page.mainFrame().waitForFunction('window.innerWidth < 100');
-     * .  page.setViewport({width: 50, height: 50});
-     * .  await watchDog;
-     * .  await browser.close();
-     * })();
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * const watchDog = page
+     *   .mainFrame()
+     *   .waitForFunction('window.innerWidth < 100');
+     * page.setViewport({width: 50, height: 50});
+     * await watchDog;
+     * await browser.close();
      * ```
      *
      * To pass arguments from Node.js to the predicate of `page.waitForFunction` function:
@@ -9899,9 +9893,10 @@ var ElementHandle = (() => {
      *
      * ```ts
      * const feedHandle = await page.$('.feed');
-     * expect(
-     *   await feedHandle.$$eval('.tweet', nodes => nodes.map(n => n.innerText)),
-     * ).toEqual(['Hello!', 'Hi!']);
+     *
+     * const listOfTweets = await feedHandle.$$eval('.tweet', nodes =>
+     *   nodes.map(n => n.innerText),
+     * );
      * ```
      *
      * @param selector -
@@ -9959,24 +9954,22 @@ var ElementHandle = (() => {
      * ```ts
      * import puppeteer from 'puppeteer';
      *
-     * (async () => {
-     *   const browser = await puppeteer.launch();
-     *   const page = await browser.newPage();
-     *   let currentURL;
-     *   page
-     *     .mainFrame()
-     *     .waitForSelector('img')
-     *     .then(() => console.log('First URL with image: ' + currentURL));
+     * const browser = await puppeteer.launch();
+     * const page = await browser.newPage();
+     * let currentURL;
+     * page
+     *   .mainFrame()
+     *   .waitForSelector('img')
+     *   .then(() => console.log('First URL with image: ' + currentURL));
      *
-     *   for (currentURL of [
-     *     'https://example.com',
-     *     'https://google.com',
-     *     'https://bbc.com',
-     *   ]) {
-     *     await page.goto(currentURL);
-     *   }
-     *   await browser.close();
-     * })();
+     * for (currentURL of [
+     *   'https://example.com',
+     *   'https://google.com',
+     *   'https://bbc.com',
+     * ]) {
+     *   await page.goto(currentURL);
+     * }
+     * await browser.close();
      * ```
      *
      * @param selector - The selector to query and wait for.
@@ -12961,7 +12954,6 @@ var HTTPRequest = class {
    * `respond()` aren't called).
    */
   continueRequestOverrides() {
-    assert(this.interception.enabled, "Request Interception is not enabled!");
     return this.interception.requestOverrides;
   }
   /**
@@ -12969,14 +12961,12 @@ var HTTPRequest = class {
    * interception is allowed to respond (ie, `abort()` is not called).
    */
   responseForRequest() {
-    assert(this.interception.enabled, "Request Interception is not enabled!");
     return this.interception.response;
   }
   /**
    * The most recent reason for aborting the request
    */
   abortErrorReason() {
-    assert(this.interception.enabled, "Request Interception is not enabled!");
     return this.interception.abortReason;
   }
   /**
@@ -13037,8 +13027,12 @@ var HTTPRequest = class {
         return await this._continue(this.interception.requestOverrides);
     }
   }
-  #canBeIntercepted() {
-    return !this.url().startsWith("data:") && !this._fromMemoryCache;
+  /**
+   * @internal
+   */
+  verifyInterception() {
+    assert(this.interception.enabled, "Request Interception is not enabled!");
+    assert(!this.interception.handled, "Request is already handled!");
   }
   /**
    * Continues request with optional request overrides.
@@ -13069,11 +13063,10 @@ var HTTPRequest = class {
    * Exception is immediately thrown if the request interception is not enabled.
    */
   async continue(overrides = {}, priority) {
-    if (!this.#canBeIntercepted()) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
-    assert(this.interception.enabled, "Request Interception is not enabled!");
-    assert(!this.interception.handled, "Request is already handled!");
     if (priority === void 0) {
       return await this._continue(overrides);
     }
@@ -13126,11 +13119,10 @@ var HTTPRequest = class {
    * Exception is immediately thrown if the request interception is not enabled.
    */
   async respond(response, priority) {
-    if (!this.#canBeIntercepted()) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
-    assert(this.interception.enabled, "Request Interception is not enabled!");
-    assert(!this.interception.handled, "Request is already handled!");
     if (priority === void 0) {
       return await this._respond(response);
     }
@@ -13164,13 +13156,12 @@ var HTTPRequest = class {
    * throw an exception immediately.
    */
   async abort(errorCode = "failed", priority) {
-    if (!this.#canBeIntercepted()) {
+    this.verifyInterception();
+    if (!this.canBeIntercepted()) {
       return;
     }
     const errorReason = errorReasons[errorCode];
     assert(errorReason, "Unknown error code: " + errorCode);
-    assert(this.interception.enabled, "Request Interception is not enabled!");
-    assert(!this.interception.handled, "Request is already handled!");
     if (priority === void 0) {
       return await this._abort(errorReason);
     }
@@ -13394,6 +13385,9 @@ var CdpHTTPRequest = class extends HTTPRequest {
     return {
       errorText: this._failureText
     };
+  }
+  canBeIntercepted() {
+    return !this.url().startsWith("data:") && !this._fromMemoryCache;
   }
   /**
    * @internal

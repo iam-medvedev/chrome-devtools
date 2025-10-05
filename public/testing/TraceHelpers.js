@@ -12,9 +12,11 @@ import * as UI from '../ui/legacy/legacy.js';
 import { raf, renderElementIntoDOM } from './DOMHelpers.js';
 import { initializeGlobalVars } from './EnvironmentHelpers.js';
 import { TraceLoader } from './TraceLoader.js';
-// This mock class is used for instancing a flame chart in the helpers.
-// Its implementation is empty because the methods aren't used by the
-// helpers, only the mere definition.
+/**
+ * This mock class is used for instancing a flame chart in the helpers.
+ * Its implementation is empty because the methods aren't used by the
+ * helpers, only the mere definition.
+ **/
 export class MockFlameChartDelegate {
     windowChanged(_startTime, _endTime, _animate) {
     }
@@ -113,8 +115,10 @@ export async function getNetworkFlameChart(traceFileName, expanded) {
     flameChart.update();
     return { flameChart, dataProvider };
 }
-// We create here a cross-test base trace event. It is assumed that each
-// test will import this default event and copy-override properties at will.
+/**
+ * We create here a cross-test base trace event. It is assumed that each
+ * test will import this default event and copy-override properties at will.
+ **/
 export const defaultTraceEvent = {
     name: 'process_name',
     tid: Trace.Types.Events.ThreadID(0),

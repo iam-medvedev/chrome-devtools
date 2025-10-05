@@ -17,4 +17,5 @@ export declare function getEntityForUrl(url: string, entityMappings: EntityMappi
 export declare function getNonResolvedURL(entry: Types.Events.Event, handlerData?: HandlerData): Platform.DevToolsPath.UrlString | null;
 export declare function makeUpEntity(entityCache: Map<string, Entity>, url: string): Entity | undefined;
 export declare function addEventToEntityMapping(event: Types.Events.Event, entityMappings: EntityMappings): void;
+/** A slight upgrade of addEventToEntityMapping to handle the sub-events of a network request. **/
 export declare function addNetworkRequestToEntityMapping(networkRequest: Types.Events.SyntheticNetworkRequest, entityMappings: EntityMappings, requestTraceEvents: TraceEventsForNetworkRequest): void;

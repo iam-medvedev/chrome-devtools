@@ -1017,6 +1017,7 @@ async function finalize6() {
     const isDiskCached = !!request.receiveResponse && request.receiveResponse.args.data.fromCache && !request.receiveResponse.args.data.fromServiceWorker && !isPushedResource;
     const isMemoryCached = request.resourceMarkAsCached !== void 0;
     let timing = isMemoryCached ? void 0 : request.receiveResponse?.args.data.timing;
+    let lrServerResponseTime;
     if (isLightrider && request.receiveResponse?.args.data.headers) {
       timing = {
         requestTime: Helpers5.Timing.microToSeconds(request.sendRequests.at(0)?.ts ?? 0),
@@ -1048,6 +1049,10 @@ async function finalize6() {
         timing.sslStart = TCPMs / 2;
         timing.connectEnd = TCPMs;
         timing.sslEnd = TCPMs;
+      }
+      const ResponseMsHeader = request.receiveResponse.args.data.headers.find((h) => h.name === "X-ResponseMs");
+      if (ResponseMsHeader) {
+        lrServerResponseTime = Math.max(0, parseInt(ResponseMsHeader.value, 10));
       }
     }
     const allowedProtocols = [
@@ -1082,6 +1087,7 @@ async function finalize6() {
     ])) : request.receiveResponse ? Types7.Timing.Micro(request.receiveResponse.ts - startTime) : Types7.Timing.Micro(0);
     const sendStartTime = timing ? Types7.Timing.Micro(timing.requestTime * SECONDS_TO_MICROSECONDS + timing.sendStart * MILLISECONDS_TO_MICROSECONDS) : startTime;
     const waiting = timing ? Types7.Timing.Micro((timing.receiveHeadersEnd - timing.sendEnd) * MILLISECONDS_TO_MICROSECONDS) : Types7.Timing.Micro(0);
+    const serverResponseTime = timing ? Types7.Timing.Micro(((timing.receiveHeadersStart ?? timing.receiveHeadersEnd) - timing.sendEnd) * MILLISECONDS_TO_MICROSECONDS) : Types7.Timing.Micro(0);
     const downloadStart = timing ? Types7.Timing.Micro(timing.requestTime * SECONDS_TO_MICROSECONDS + timing.receiveHeadersEnd * MILLISECONDS_TO_MICROSECONDS) : startTime;
     const download = timing ? Types7.Timing.Micro((finishTime || downloadStart) - downloadStart) : request.receiveResponse ? Types7.Timing.Micro(endTime - request.receiveResponse.ts) : Types7.Timing.Micro(0);
     const totalTime = Types7.Timing.Micro(networkDuration + processingDuration);
@@ -1120,7 +1126,8 @@ async function finalize6() {
             ssl,
             stalled,
             totalTime,
-            waiting
+            waiting,
+            serverResponseTime
           },
           // All fields below are from TraceEventsForNetworkRequest.
           decodedBodyLength,
@@ -1145,6 +1152,7 @@ async function finalize6() {
           initiator: finalSendRequest.args.data.initiator,
           stackTrace: finalSendRequest.args.data.stackTrace,
           timing,
+          lrServerResponseTime,
           url,
           failed: request.resourceFinish?.args.data.didFail ?? false,
           finished: Boolean(request.resourceFinish),

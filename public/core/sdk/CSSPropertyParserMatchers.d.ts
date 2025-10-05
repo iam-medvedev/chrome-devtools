@@ -61,7 +61,21 @@ export declare class AttributeMatch extends BaseVariableMatch {
     cssType(): string;
     resolveAttributeValue(): string | null;
 }
+/**
+ * These functions use an element in the frontend to evaluate CSS. The advantage
+ * of this is that it is synchronous and doesn't require a CDP method. The
+ * disadvantage is it lacks context that would allow substitutions such as
+ * `var()` and `calc()` to be resolved correctly, and if the user is doing
+ * remote debugging there is a possibility that the CSS behavior is different
+ * between the two browser versions. We use it for type checking after
+ * substitutions (but not for actual evaluation) and for applying units.
+ **/
 export declare function localEvalCSS(value: string, type: string): string | null;
+/**
+ * It is important to establish whether a type is valid, because if it is not,
+ * the current behavior of blink is to ignore the fallback and parse as a
+ * raw string, returning '' if the attribute is not set.
+ **/
 export declare function isValidCSSType(type: string): boolean;
 export declare function defaultValueForCSSType(type: string | null): string | null;
 export declare const RAW_STRING_TYPE = "raw-string";
@@ -477,6 +491,7 @@ export declare class AnchorFunctionMatcher extends AnchorFunctionMatcher_base {
     anchorFunction(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): string | null;
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): AnchorFunctionMatch | null;
 }
+/** For linking `position-anchor: --anchor-name`. **/
 export declare class PositionAnchorMatch implements Match {
     readonly text: string;
     readonly matching: BottomUpTreeMatching;

@@ -6,11 +6,13 @@ import { assertNotNullOrUndefined } from '../platform/platform.js';
 import { Events as ResourceTreeModelEvents, ResourceTreeModel, } from './ResourceTreeModel.js';
 import { SDKModel } from './SDKModel.js';
 import { TargetManager } from './TargetManager.js';
-// Holds preloading related information.
-//
-// - SpeculationRule rule sets
-// - Preloading attempts
-// - Relationship between rule sets and preloading attempts
+/**
+ * Holds preloading related information.
+ *
+ * - SpeculationRule rule sets
+ * - Preloading attempts
+ * - Relationship between rule sets and preloading attempts
+ **/
 export class PreloadingModel extends SDKModel {
     agent;
     loaderIds = [];

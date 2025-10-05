@@ -29,6 +29,10 @@ export declare enum RegisteredAdorners {
     SCROLL = "scroll",
     POPOVER = "popover"
 }
+/**
+ * This enum-like const object serves as the authoritative registry for all the
+ * adorners available.
+ **/
 export declare function getRegisteredAdorner(which: RegisteredAdorners): RegisteredAdorner;
 export declare const DefaultAdornerSettings: AdornerSetting[];
 interface SettingStore<Setting> {
@@ -42,6 +46,7 @@ export declare class AdornerManager {
     getSettings(): Readonly<AdornerSettingsMap>;
     isAdornerEnabled(adornerText: string): boolean;
 }
+/** Use idx + 1 for the order to avoid JavaScript's 0 == false issue **/
 export declare const AdornerCategoryOrder: Map<AdornerCategories, number>;
 export declare function compareAdornerNamesByCategory(nameA: string, nameB: string): number;
 export {};

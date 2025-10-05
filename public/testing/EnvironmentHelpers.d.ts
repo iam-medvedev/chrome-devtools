@@ -39,6 +39,7 @@ export declare namespace describeWithLocale {
 export declare function createFakeSetting<T>(name: string, defaultValue: T): Common.Settings.Setting<T>;
 export declare function createFakeRegExpSetting(name: string, defaultValue: string): Common.Settings.RegExpSetting;
 export declare function setupActionRegistry(): void;
+/** This needs to be invoked within a describe block, rather than within an it() block. **/
 export declare function expectConsoleLogs(expectedLogs: {
     warn?: string[];
     log?: string[];

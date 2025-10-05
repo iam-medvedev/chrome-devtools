@@ -10,13 +10,14 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
+import storageMetadataViewStyle from './storageMetadataView.css.js';
 const { html } = Lit;
 const UIStrings = {
     /**
      * @description The origin of a URL (https://web.dev/same-site-same-origin/#origin).
      *(for a lot of languages this does not need to be translated, please translate only where necessary)
      */
-    origin: 'Origin',
+    origin: 'Frame origin',
     /**
      * @description Site (https://web.dev/same-site-same-origin/#site) for the URL the user sees in the omnibox.
      */
@@ -111,6 +112,7 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
     #storageBucketsModel;
     #storageKey = null;
     #storageBucket = null;
+    #showOnlyBucket = true;
     setStorageKey(storageKey) {
         this.#storageKey = SDK.StorageKeyManager.parseStorageKey(storageKey);
         void this.render();
@@ -118,6 +120,9 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
     setStorageBucket(storageBucket) {
         this.#storageBucket = storageBucket;
         this.setStorageKey(storageBucket.bucket.storageKey);
+    }
+    setShowOnlyBucket(show) {
+        this.#showOnlyBucket = show;
     }
     enableStorageBucketControls(model) {
         this.#storageBucketsModel = model;
@@ -130,6 +135,9 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
             // Disabled until https://crbug.com/1079231 is fixed.
             // clang-format off
             Lit.render(html `
+        <style>
+          ${storageMetadataViewStyle}
+        </style>
         <devtools-report .data=${{ reportTitle: this.getTitle() ?? i18nString(UIStrings.loading) }}>
           ${await this.renderReportContent()}
         </devtools-report>`, this.#shadow, { host: this });
@@ -164,11 +172,14 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
                 topLevelSiteIsOpaque ? i18nString(UIStrings.yesBecauseTopLevelIsOpaque) :
                     (topLevelSite && origin !== topLevelSite) ? i18nString(UIStrings.yesBecauseOriginNotInTopLevelSite) :
                         null;
+        const isIframeOrEmbedded = topLevelSite && origin !== topLevelSite;
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         return html `
-        ${this.key(i18nString(UIStrings.origin))}
-        ${this.value(html `<div class="text-ellipsis" title=${origin}>${origin}</div>`)}
+        ${(isIframeOrEmbedded) ?
+            html `${this.key(i18nString(UIStrings.origin))}
+            ${this.value(html `<div class="text-ellipsis" title=${origin}>${origin}</div>`)}`
+            : Lit.nothing}
         ${(topLevelSite || topLevelSiteIsOpaque) ? this.key(i18nString(UIStrings.topLevelSite)) : Lit.nothing}
         ${topLevelSite ? this.value(topLevelSite) : Lit.nothing}
         ${topLevelSiteIsOpaque ? this.value(i18nString(UIStrings.opaque)) : Lit.nothing}
@@ -187,10 +198,21 @@ export class StorageMetadataView extends LegacyWrapper.LegacyWrapper.WrappableCo
             throw new Error('Should not call #renderStorageBucketInfo if #bucket is null.');
         }
         const { bucket: { name }, persistent, durability, quota } = this.#storageBucket;
+        const isDefault = !name;
+        if (!this.#showOnlyBucket) {
+            if (isDefault) {
+                return html `
+          ${this.key(i18nString(UIStrings.bucketName))}
+          ${this.value(html `<span class="default-bucket">default</span>`)}`;
+            }
+            return html `
+        ${this.key(i18nString(UIStrings.bucketName))}
+        ${this.value(name)}`;
+        }
         // clang-format off
         return html `
       ${this.key(i18nString(UIStrings.bucketName))}
-      ${this.value(name || 'default')}
+      ${this.value(name || html `<span class="default-bucket">default</span>`)}
       ${this.key(i18nString(UIStrings.persistent))}
       ${this.value(persistent ? i18nString(UIStrings.yes) : i18nString(UIStrings.no))}
       ${this.key(i18nString(UIStrings.durability))}

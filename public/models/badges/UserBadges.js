@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
-import * as Root from '../../core/root/root.js';
 import { AiExplorerBadge } from './AiExplorerBadge.js';
 import { CodeWhispererBadge } from './CodeWhispererBadge.js';
 import { DOMDetectiveBadge } from './DOMDetectiveBadge.js';
@@ -30,8 +29,7 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
     constructor() {
         super();
         this.#receiveBadgesSetting = Common.Settings.Settings.instance().moduleSetting('receive-gdp-badges');
-        if (Host.GdpClient.getGdpProfilesEnterprisePolicy() ===
-            Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED_WITHOUT_BADGES) {
+        if (!Host.GdpClient.isBadgesEnabled()) {
             this.#receiveBadgesSetting.set(false);
         }
         this.#receiveBadgesSetting.addChangeListener(this.#reconcileBadges, this);
@@ -76,10 +74,10 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
             shouldAwardBadge = true;
         }
         else {
-            const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
+            const getProfileResponse = await Host.GdpClient.GdpClient.instance().getProfile();
             const receiveBadgesSettingEnabled = Boolean(this.#receiveBadgesSetting.get());
             // If there is a GDP profile and the user has enabled receiving badges, we award the starter badge as well.
-            if (gdpProfile && receiveBadgesSettingEnabled && !this.#isStarterBadgeDismissed() &&
+            if (getProfileResponse?.profile && receiveBadgesSettingEnabled && !this.#isStarterBadgeDismissed() &&
                 !this.#isStarterBadgeSnoozed()) {
                 shouldAwardBadge = true;
             }
@@ -119,24 +117,25 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
             this.#deactivateAllBadges();
             return;
         }
-        if (!Host.GdpClient.isGdpProfilesAvailable() ||
-            Host.GdpClient.getGdpProfilesEnterprisePolicy() !== Root.Runtime.GdpProfilesEnterprisePolicyValue.ENABLED) {
+        if (!Host.GdpClient.isGdpProfilesAvailable() || !Host.GdpClient.isBadgesEnabled()) {
             this.#deactivateAllBadges();
             return;
         }
-        const gdpProfile = await Host.GdpClient.GdpClient.instance().getProfile();
-        let isEligibleToCreateProfile = Boolean(gdpProfile);
-        if (!gdpProfile) {
-            isEligibleToCreateProfile = await Host.GdpClient.GdpClient.instance().isEligibleToCreateProfile();
+        const getProfileResponse = await Host.GdpClient.GdpClient.instance().getProfile();
+        if (!getProfileResponse) {
+            this.#deactivateAllBadges();
+            return;
         }
+        const hasGdpProfile = Boolean(getProfileResponse.profile);
+        const isEligibleToCreateProfile = getProfileResponse.isEligible;
         // User does not have a GDP profile & not eligible to create one.
         // So, we don't activate any badges for them.
-        if (!gdpProfile && !isEligibleToCreateProfile) {
+        if (!hasGdpProfile && !isEligibleToCreateProfile) {
             this.#deactivateAllBadges();
             return;
         }
         let awardedBadgeNames = null;
-        if (gdpProfile) {
+        if (hasGdpProfile) {
             awardedBadgeNames = await Host.GdpClient.GdpClient.instance().getAwardedBadgeNames({ names: this.#allBadges.map(badge => badge.name) });
             // This is a conservative approach. We bail out if `awardedBadgeNames` is null
             // when there is a profile to prevent a negative user experience.
@@ -158,8 +157,8 @@ export class UserBadges extends Common.ObjectWrapper.ObjectWrapper {
                 continue;
             }
             const shouldActivateStarterBadge = badge.isStarterBadge && isEligibleToCreateProfile &&
-                !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed();
-            const shouldActivateActivityBasedBadge = !badge.isStarterBadge && Boolean(gdpProfile) && receiveBadgesSettingEnabled;
+                Host.GdpClient.isStarterBadgeEnabled() && !this.#isStarterBadgeDismissed() && !this.#isStarterBadgeSnoozed();
+            const shouldActivateActivityBasedBadge = !badge.isStarterBadge && hasGdpProfile && receiveBadgesSettingEnabled;
             if (shouldActivateStarterBadge || shouldActivateActivityBasedBadge) {
                 badge.activate();
             }

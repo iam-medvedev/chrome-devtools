@@ -21,9 +21,6 @@ export declare enum EmailPreference {
     ENABLED = "ENABLED",
     DISABLED = "DISABLED"
 }
-interface CheckElibigilityResponse {
-    createProfile: EligibilityStatus;
-}
 export interface Award {
     name: string;
     badge: {
@@ -45,9 +42,13 @@ export interface Profile {
         subscriptionTier: SubscriptionTier | string;
     };
 }
-interface InitializeResult {
-    hasProfile: boolean;
+export interface GetProfileResponse {
+    profile: Profile | null;
     isEligible: boolean;
+}
+export declare enum GdpErrorType {
+    HTTP_RESPONSE_UNAVAILABLE = "HTTP_RESPONSE_UNAVAILABLE",
+    NOT_FOUND = "NOT_FOUND"
 }
 export declare const GOOGLE_DEVELOPER_PROGRAM_PROFILE_LINK = "https://developers.google.com/profile/u/me";
 export declare class GdpClient {
@@ -56,16 +57,23 @@ export declare class GdpClient {
     static instance({ forceNew }?: {
         forceNew: boolean;
     }): GdpClient;
-    initialize(): Promise<InitializeResult>;
-    getProfile(): Promise<Profile | null>;
-    checkEligibility(): Promise<CheckElibigilityResponse | null>;
+    /**
+     * Fetches the user's GDP profile and eligibility status.
+     *
+     * It first attempts to fetch the profile. If the profile is not found
+     * (a `NOT_FOUND` error), this is handled gracefully by treating the profile
+     * as `null` and then proceeding to check for eligibility.
+     *
+     * @returns A promise that resolves with an object containing the `profile`
+     * and `isEligible` status, or `null` if an unexpected error occurs.
+     */
+    getProfile(): Promise<GetProfileResponse | null>;
     /**
      * @returns null if the request fails, the awarded badge names otherwise.
      */
     getAwardedBadgeNames({ names }: {
         names: string[];
     }): Promise<Set<string> | null>;
-    isEligibleToCreateProfile(): Promise<boolean>;
     createProfile({ user, emailPreference }: {
         user: string;
         emailPreference: EmailPreference;
@@ -76,4 +84,5 @@ export declare class GdpClient {
 }
 export declare function isGdpProfilesAvailable(): boolean;
 export declare function getGdpProfilesEnterprisePolicy(): Root.Runtime.GdpProfilesEnterprisePolicyValue;
-export {};
+export declare function isBadgesEnabled(): boolean;
+export declare function isStarterBadgeEnabled(): boolean;

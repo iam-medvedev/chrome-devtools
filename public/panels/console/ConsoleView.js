@@ -820,7 +820,7 @@ export class ConsoleView extends UI.Widget.VBox {
         }
         this.scheduleViewportRefresh();
         this.consoleMessageAddedForTest(viewMessage);
-        // Figure out whether the message should belong into this group or the parent group based on group end timestamp.
+        /** Figure out whether the message should belong into this group or the parent group based on group end timestamp. **/
         function addToGroup(viewMessage, currentGroup) {
             const currentEnd = currentGroup.groupEnd();
             if (currentEnd !== null) {
@@ -903,7 +903,7 @@ export class ConsoleView extends UI.Widget.VBox {
             this.searchMessage(this.visibleViewMessages.length - 1);
         }
         this.messageAppendedForTests();
-        // Show the group the message belongs to, and also show parent groups.
+        /** Show the group the message belongs to, and also show parent groups. **/
         function showGroup(currentGroup, visibleViewMessages) {
             if (currentGroup === null) {
                 return;

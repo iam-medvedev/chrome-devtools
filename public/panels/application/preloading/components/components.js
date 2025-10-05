@@ -1549,7 +1549,7 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
     render4(html4`
       <style>${preloadingGrid_css_default}</style>
       <div class="preloading-container">
-        <devtools-data-grid striped @select=${this.#onPreloadingGridCellFocused}>
+        <devtools-data-grid striped>
           <table>
             <tr>
               <th id="url" weight="40" sortable>${i18n9.i18n.lockedString("URL")}</th>
@@ -1563,7 +1563,7 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
       const prerenderStatus = row.pipeline.getPrerender()?.status;
       const hasWarning = prerenderStatus === "Failure" && (prefetchStatus === "Ready" || prefetchStatus === "Success");
       const hasError = row.pipeline.getOriginallyTriggered().status === "Failure";
-      return html4`<tr data-id=${row.id}>
+      return html4`<tr @select=${() => this.dispatchEvent(new CustomEvent("select", { detail: row.id }))}>
                 <td title=${attempt.key.url}>${this.#urlShort(row, securityOrigin)}</td>
                 <td>${capitalizedAction(attempt.action)}</td>
                 <td>${row.ruleSets.length === 0 ? "" : ruleSetTagOrLocationShort(row.ruleSets[0], pageURL)}</td>
@@ -1586,9 +1586,6 @@ var PreloadingGrid = class extends LegacyWrapper7.LegacyWrapper.WrappableCompone
         </devtools-data-grid>
       </div>
     `, this.#shadow, { host: this });
-  }
-  #onPreloadingGridCellFocused(event) {
-    this.dispatchEvent(new CustomEvent("select", { detail: event.detail.dataset.id }));
   }
   // Shorten URL if a preloading attempt is same-origin.
   #urlShort(row, securityOrigin) {
@@ -1945,7 +1942,7 @@ var RuleSetGrid = class extends LegacyWrapper13.LegacyWrapper.WrappableComponent
     Lit7.render(html7`
         <style>${ruleSetGrid_css_default}</style>
         <div class="ruleset-container" jslog=${VisualLogging3.pane("preloading-rules")}>
-          <devtools-data-grid striped @select=${this.#onRowSelected}>
+          <devtools-data-grid striped>
             <table>
               <tr>
                 <th id="rule-set" weight="20" sortable>
@@ -1960,7 +1957,7 @@ var RuleSetGrid = class extends LegacyWrapper13.LegacyWrapper.WrappableComponent
       const revealInElements = ruleSet.backendNodeId !== void 0;
       const revealInNetwork = ruleSet.url !== void 0 && ruleSet.requestId;
       return html7`
-                  <tr data-id=${ruleSet.id}>
+                  <tr @select=${() => this.dispatchEvent(new CustomEvent("select", { detail: ruleSet.id }))}>
                     <td>
                       ${revealInElements || revealInNetwork ? html7`
                         <button class="link" role="link"
@@ -2014,12 +2011,6 @@ var RuleSetGrid = class extends LegacyWrapper13.LegacyWrapper.WrappableComponent
           </devtools-data-grid>
         </div>
       `, this.#shadow, { host: this });
-  }
-  #onRowSelected(event) {
-    const ruleSetId = event.detail.dataset.id;
-    if (ruleSetId !== void 0) {
-      this.dispatchEvent(new CustomEvent("select", { detail: ruleSetId }));
-    }
   }
 };
 customElements.define("devtools-resources-ruleset-grid", RuleSetGrid);

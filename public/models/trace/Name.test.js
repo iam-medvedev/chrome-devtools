@@ -119,7 +119,7 @@ describeWithEnvironment('Name', () => {
             assert.strictEqual(name, 'performConcurrentWorkOnRoot');
             profileNode.setFunctionName(originalProfileNodeName);
         });
-        // Finds a particular event from the react-hello-world trace which is used for our test example.
+        /** Finds a particular event from the react-hello-world trace which is used for our test example. **/
         function getProfileEventAndNodeForReactTrace(parsedTrace) {
             const mainThread = getMainThread(parsedTrace.data.Renderer);
             let foundNode = null;

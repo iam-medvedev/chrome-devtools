@@ -59,7 +59,7 @@ export class PerformanceTracing {
         this.#delegate.tracingComplete(this.#traceEvents);
     }
 }
-// Used by an implementation of Common.Revealer to transfer data from the recorder to the performance panel.
+/** Used by an implementation of Common.Revealer to transfer data from the recorder to the performance panel. **/
 export class RawTraceEvents {
     events;
     constructor(events) {

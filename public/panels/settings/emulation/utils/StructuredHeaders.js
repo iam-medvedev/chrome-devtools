@@ -31,9 +31,11 @@ const CHAR_TILDE = '~'.charCodeAt(0);
 // ASCII printable range.
 const CHAR_MIN_ASCII_PRINTABLE = 0x20;
 const CHAR_MAX_ASCII_PRINTABLE = 0x7e;
-// Note: structured headers operates over ASCII, not unicode, so these are
-// all indeed supposed to return false on things outside 32-127 range regardless
-// of them being other kinds of digits or letters.
+/**
+ * Note: structured headers operates over ASCII, not unicode, so these are
+ * all indeed supposed to return false on things outside 32-127 range regardless
+ * of them being other kinds of digits or letters.
+ **/
 function isDigit(charCode) {
     // DIGIT = %x30-39 ; 0-9 (from RFC 5234)
     if (charCode === undefined) {
@@ -129,7 +131,7 @@ class Input {
 function makeError() {
     return { kind: 0 /* ResultKind.ERROR */ };
 }
-// 4.2.1. Parsing a list
+/** 4.2.1. Parsing a list **/
 function parseListInternal(input) {
     const result = { kind: 11 /* ResultKind.LIST */, items: [] };
     while (!input.atEnd()) {
@@ -154,14 +156,14 @@ function parseListInternal(input) {
     }
     return result; // this case corresponds to an empty list.
 }
-// 4.2.1.1.  Parsing an Item or Inner List
+/** 4.2.1.1.  Parsing an Item or Inner List **/
 function parseItemOrInnerList(input) {
     if (input.peek() === '(') {
         return parseInnerList(input);
     }
     return parseItemInternal(input);
 }
-// 4.2.1.2.  Parsing an Inner List
+/** 4.2.1.2.  Parsing an Inner List **/
 function parseInnerList(input) {
     if (input.peek() !== '(') {
         return makeError();
@@ -194,7 +196,7 @@ function parseInnerList(input) {
     // Didn't see ), so error.
     return makeError();
 }
-// 4.2.3.  Parsing an Item
+/** 4.2.3.  Parsing an Item **/
 function parseItemInternal(input) {
     const bareItem = parseBareItem(input);
     if (bareItem.kind === 0 /* ResultKind.ERROR */) {
@@ -206,7 +208,7 @@ function parseItemInternal(input) {
     }
     return { kind: 4 /* ResultKind.ITEM */, value: bareItem, parameters: params };
 }
-// 4.2.3.1.  Parsing a Bare Item
+/** 4.2.3.1.  Parsing a Bare Item **/
 function parseBareItem(input) {
     const upcoming = input.peekCharCode();
     if (upcoming === CHAR_MINUS || isDigit(upcoming)) {
@@ -226,7 +228,7 @@ function parseBareItem(input) {
     }
     return makeError();
 }
-// 4.2.3.2.  Parsing Parameters
+/** 4.2.3.2.  Parsing Parameters **/
 function parseParameters(input) {
     // The main noteworthy thing here is handling of duplicates and ordering:
     //
@@ -265,7 +267,7 @@ function parseParameters(input) {
     }
     return { kind: 3 /* ResultKind.PARAMETERS */, items: [...items.values()] };
 }
-// 4.2.3.3.  Parsing a Key
+/** 4.2.3.3.  Parsing a Key **/
 function parseKey(input) {
     let outputString = '';
     const first = input.peekCharCode();
@@ -283,7 +285,7 @@ function parseKey(input) {
     }
     return { kind: 1 /* ResultKind.PARAM_NAME */, value: outputString };
 }
-// 4.2.4.  Parsing an Integer or Decimal
+/** 4.2.4.  Parsing an Integer or Decimal **/
 function parseIntegerOrDecimal(input) {
     let resultKind = 5 /* ResultKind.INTEGER */;
     let sign = 1;
@@ -333,7 +335,7 @@ function parseIntegerOrDecimal(input) {
     }
     return { kind: 6 /* ResultKind.DECIMAL */, value: sign * Number.parseFloat(inputNumber) };
 }
-// 4.2.5.  Parsing a String
+/** 4.2.5.  Parsing a String **/
 function parseString(input) {
     let outputString = '';
     if (input.peek() !== '"') {
@@ -371,7 +373,7 @@ function parseString(input) {
     // No closing quote.
     return makeError();
 }
-// 4.2.6.  Parsing a Token
+/** 4.2.6.  Parsing a Token **/
 function parseToken(input) {
     const first = input.peekCharCode();
     if (first !== CHAR_STAR && !isAlpha(first)) {
@@ -388,7 +390,7 @@ function parseToken(input) {
     }
     return { kind: 8 /* ResultKind.TOKEN */, value: outputString };
 }
-// 4.2.7.  Parsing a Byte Sequence
+/** 4.2.7.  Parsing a Byte Sequence **/
 function parseByteSequence(input) {
     let outputString = '';
     if (input.peek() !== ':') {
@@ -415,7 +417,7 @@ function parseByteSequence(input) {
     // No closing :
     return makeError();
 }
-// 4.2.8.  Parsing a Boolean
+/** 4.2.8.  Parsing a Boolean **/
 function parseBoolean(input) {
     if (input.peek() !== '?') {
         return makeError();
@@ -443,7 +445,7 @@ export function parseList(input) {
     // No need to look for trailing stuff here since parseListInternal does it already.
     return parseListInternal(new Input(input));
 }
-// 4.1.3.  Serializing an Item
+/** 4.1.3.  Serializing an Item **/
 export function serializeItem(input) {
     const bareItemVal = serializeBareItem(input.value);
     if (bareItemVal.kind === 0 /* ResultKind.ERROR */) {
@@ -455,7 +457,7 @@ export function serializeItem(input) {
     }
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: bareItemVal.value + paramVal.value };
 }
-// 4.1.1.  Serializing a List
+/** 4.1.1.  Serializing a List **/
 export function serializeList(input) {
     const outputPieces = [];
     for (let i = 0; i < input.items.length; ++i) {
@@ -478,7 +480,7 @@ export function serializeList(input) {
     const output = outputPieces.join(', ');
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: output };
 }
-// 4.1.1.1.  Serializing an Inner List
+/** 4.1.1.1.  Serializing an Inner List **/
 function serializeInnerList(input) {
     const outputPieces = [];
     for (let i = 0; i < input.items.length; ++i) {
@@ -496,7 +498,7 @@ function serializeInnerList(input) {
     output += paramResult.value;
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: output };
 }
-// 4.1.1.2.  Serializing Parameters
+/** 4.1.1.2.  Serializing Parameters **/
 function serializeParameters(input) {
     let output = '';
     for (const item of input.items) {
@@ -518,7 +520,7 @@ function serializeParameters(input) {
     }
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: output };
 }
-// 4.1.1.3.  Serializing a Key
+/** 4.1.1.3.  Serializing a Key **/
 function serializeKey(input) {
     if (input.value.length === 0) {
         return makeError();
@@ -536,7 +538,7 @@ function serializeKey(input) {
     }
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: input.value };
 }
-// 4.1.3.1.  Serializing a Bare Item
+/** 4.1.3.1.  Serializing a Bare Item **/
 function serializeBareItem(input) {
     if (input.kind === 5 /* ResultKind.INTEGER */) {
         return serializeInteger(input);
@@ -558,18 +560,18 @@ function serializeBareItem(input) {
     }
     return makeError();
 }
-// 4.1.4.  Serializing an Integer
+/** 4.1.4.  Serializing an Integer **/
 function serializeInteger(input) {
     if (input.value < -999999999999999 || input.value > 999999999999999 || !Number.isInteger(input.value)) {
         return makeError();
     }
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: input.value.toString(10) };
 }
-// 4.1.5.  Serializing a Decimal
+/** 4.1.5.  Serializing a Decimal **/
 function serializeDecimal(_input) {
     throw new Error('Unimplemented');
 }
-// 4.1.6.  Serializing a String
+/** 4.1.6.  Serializing a String **/
 function serializeString(input) {
     // Only printable ASCII strings are supported by the spec.
     for (let i = 0; i < input.value.length; ++i) {
@@ -589,7 +591,7 @@ function serializeString(input) {
     output += '"';
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: output };
 }
-// 4.1.7.  Serializing a Token
+/** 4.1.7.  Serializing a Token **/
 function serializeToken(input) {
     if (input.value.length === 0) {
         return makeError();
@@ -606,11 +608,11 @@ function serializeToken(input) {
     }
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: input.value };
 }
-// 4.1.8.  Serializing a Byte Sequence
+/** 4.1.8.  Serializing a Byte Sequence **/
 function serializeByteSequence(_input) {
     throw new Error('Unimplemented');
 }
-// 4.1.9.  Serializing a Boolean
+/** 4.1.9.  Serializing a Boolean **/
 function serializeBoolean(input) {
     return { kind: 13 /* ResultKind.SERIALIZATION_RESULT */, value: input.value ? '?1' : '?0' };
 }

@@ -372,6 +372,11 @@ var dataGrid_css_default = `/*
     color: ButtonText;
   }
 
+  .data-grid tbody tr.revealed:not(.data-grid-filler-row, .selected):hover,
+  .data-grid:focus-within tbody tr.revealed.selected {
+    background-color: Highlight;
+  }
+
   .data-grid th.sortable:hover *,
   .data-grid tr.parent.selected td.disclosure::before,
   .data-grid:focus tr.parent.selected td.disclosure::before,
@@ -3164,13 +3169,13 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     this.#dataGrid.element.style.flex = "auto";
     this.#shadowRoot = UI3.UIUtils.createShadowRootWithCoreStyles(this, { delegatesFocus: true, cssFile: dataGrid_css_default });
     this.#shadowRoot.appendChild(this.#dataGrid.element);
-    this.#dataGrid.addEventListener("SelectedNode", (e) => this.dispatchEvent(new CustomEvent("select", { detail: e.data.configElement })));
-    this.#dataGrid.addEventListener("DeselectedNode", () => this.dispatchEvent(new CustomEvent("select", { detail: null })));
+    this.#dataGrid.addEventListener("SelectedNode", (e) => e.data.configElement.dispatchEvent(new CustomEvent("select")));
+    this.#dataGrid.addEventListener("DeselectedNode", () => this.dispatchEvent(new CustomEvent("deselect")));
     this.#dataGrid.addEventListener("SortingChanged", () => this.dispatchEvent(new CustomEvent("sort", {
       detail: { columnId: this.#dataGrid.sortColumnId(), ascending: this.#dataGrid.isSortOrderAscending() }
     })));
     this.#dataGrid.setRowContextMenuCallback((menu, node) => {
-      this.dispatchEvent(new CustomEvent("contextmenu", { detail: { menu, element: node.configElement } }));
+      node.configElement.dispatchEvent(new CustomEvent("contextmenu", { detail: menu }));
     });
     this.#dataGrid.setHeaderContextMenuCallback((menu) => {
       for (const column of this.#columns) {
@@ -3188,7 +3193,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     });
     this.#resizeObserver.observe(this);
     this.#updateColumns();
-    this.addNodes(this.querySelectorAll("tr"));
+    this.addNodes(this.templateRoot.querySelectorAll("tr"));
   }
   attributeChangedCallback(name, oldValue, newValue) {
     if (oldValue === newValue) {
@@ -3238,7 +3243,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
     this.#hideableColumns.clear();
     this.#columns = [];
     let hasEditableColumn = false;
-    for (const column of this.querySelectorAll("th[id]") || []) {
+    for (const column of this.templateRoot.querySelectorAll("th[id]") || []) {
       const id = column.id;
       let title = column.textContent?.trim() || "";
       const titleDOMFragment = column.firstElementChild ? document.createDocumentFragment() : void 0;
@@ -3306,7 +3311,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
   #getDataRows(nodes) {
     return [...nodes].flatMap((node) => {
       if (node instanceof HTMLTableRowElement) {
-        return [node];
+        return [node, ...node.querySelectorAll("table tr")];
       }
       if (node instanceof HTMLElement) {
         return [...node.querySelectorAll("tr")];
@@ -3325,10 +3330,15 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
   }
   addNodes(nodes) {
     for (const element of this.#getDataRows(nodes)) {
-      const parentNode = this.#dataGrid.rootNode();
+      const parentRow = element.parentElement?.closest("td")?.closest("tr");
+      const parentDataGridNode = parentRow ? DataGridElementNode.get(parentRow) : void 0;
+      const parentNode = parentDataGridNode || this.#dataGrid.rootNode();
       const nextNode = this.#findNextExistingNode(element);
       const index = nextNode ? parentNode.children.indexOf(nextNode) : parentNode.children.length;
       const node = new DataGridElementNode(element, this);
+      if ((parentRow || node.hasChildren()) && !this.#dataGrid.disclosureColumnId) {
+        this.#dataGrid.disclosureColumnId = this.#columns[0].id;
+      }
       parentNode.insertChild(node, index);
       if (hasBooleanAttribute(element, "selected")) {
         node.select();
@@ -3382,7 +3392,7 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       this.#usedCreationNode = null;
       this.#dataGrid.creationNode = void 0;
     }
-    const placeholder = this.querySelector("tr[placeholder]");
+    const placeholder = this.templateRoot.querySelector("tr[placeholder]");
     if (!placeholder) {
       this.#dataGrid.creationNode?.remove();
       this.#dataGrid.creationNode = void 0;
@@ -3413,10 +3423,10 @@ var DataGridElement = class extends UI3.UIUtils.HTMLElementWithLightDOMTemplate 
       }
       return;
     }
-    this.dispatchEvent(new CustomEvent("edit", { detail: { node: node.configElement, columnId, valueBeforeEditing, newText } }));
+    node.configElement.dispatchEvent(new CustomEvent("edit", { detail: { columnId, valueBeforeEditing, newText } }));
   }
   #deleteCallback(node) {
-    this.dispatchEvent(new CustomEvent("delete", { detail: node.configElement }));
+    node.configElement.dispatchEvent(new CustomEvent("delete"));
   }
   addEventListener(...args) {
     super.addEventListener(...args);
@@ -3448,9 +3458,12 @@ var DataGridElementNode = class _DataGridElementNode extends SortableDataGridNod
     return this.#configElement;
   }
   #updateData() {
-    const cells = this.#configElement.querySelectorAll("td");
-    for (let i = 0; i < cells.length; ++i) {
+    const cells = [...this.#configElement.children].filter((c) => c.tagName === "TD");
+    for (let i = 0; i < this.#dataGridElement.columns.length; ++i) {
       const cell = cells[i];
+      if (!cell) {
+        continue;
+      }
       const column = this.#dataGridElement.columns[i];
       if (column.dataType === "Boolean") {
         this.data[column.id] = hasBooleanAttribute(cell, "data-value") || cell.textContent === "true";
@@ -3490,18 +3503,9 @@ var DataGridElementNode = class _DataGridElementNode extends SortableDataGridNod
     }
   }
   #onRowMouseEvent(event) {
-    let currentElement = event.target;
-    const childIndexesOnPathToRoot = [];
-    while (currentElement?.parentElement && currentElement !== event.currentTarget) {
-      childIndexesOnPathToRoot.push([...currentElement.parentElement.children].indexOf(currentElement));
-      currentElement = currentElement.parentElement;
-    }
-    if (!currentElement) {
+    const targetInConfigRow = UI3.UIUtils.HTMLElementWithLightDOMTemplate.findCorrespondingElement(event.target, event.currentTarget, this.#configElement);
+    if (!targetInConfigRow) {
       throw new Error("Cell click event target not found in the data grid");
-    }
-    let targetInConfigRow = this.#configElement;
-    for (const index of childIndexesOnPathToRoot.reverse()) {
-      targetInConfigRow = targetInConfigRow.children[index];
     }
     if (targetInConfigRow instanceof HTMLElement) {
       targetInConfigRow?.dispatchEvent(new MouseEvent(event.type, { bubbles: true, composed: true }));
@@ -3530,7 +3534,8 @@ var DataGridElementNode = class _DataGridElementNode extends SortableDataGridNod
     if (this.isCreationNode) {
       return cell;
     }
-    const configCell = this.#configElement.querySelectorAll("td")[index];
+    const configCells = [...this.#configElement.children].filter((c) => c.tagName === "TD");
+    const configCell = configCells[index];
     if (!configCell) {
       throw new Error(`Column ${columnId} not found in the data grid`);
     }

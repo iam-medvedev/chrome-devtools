@@ -21,21 +21,25 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('ui/components/dialogs/Dialog.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const IS_DIALOG_SUPPORTED = 'HTMLDialogElement' in globalThis;
-// Height in pixels of the dialog's connector. The connector is represented as
-// as a diamond and the height corresponds to half the height of the diamond.
-// (the visible height is only half of the diamond).
+/**
+ * Height in pixels of the dialog's connector. The connector is represented as
+ * as a diamond and the height corresponds to half the height of the diamond.
+ * (the visible height is only half of the diamond).
+ **/
 export const CONNECTOR_HEIGHT = 10;
 const CONNECTOR_WIDTH = 2 * CONNECTOR_HEIGHT;
 // The offset used by the dialog's animation as it slides in when opened.
 const DIALOG_ANIMATION_OFFSET = 20;
 export const DIALOG_SIDE_PADDING = 5;
 export const DIALOG_VERTICAL_PADDING = 3;
-// If the content of the dialog cannot be completely shown because otherwise
-// the dialog would overflow the window, the dialog's max width and height are
-// set such that the dialog remains inside the visible bounds. In this cases
-// some extra, determined by this constant, is added so that the dialog's borders
-// remain clearly visible. This constant accounts for the padding of the dialog's
-// content (20 px) and a 5px gap left on each extreme of the dialog from the viewport.
+/**
+ * If the content of the dialog cannot be completely shown because otherwise
+ * the dialog would overflow the window, the dialog's max width and height are
+ * set such that the dialog remains inside the visible bounds. In this cases
+ * some extra, determined by this constant, is added so that the dialog's borders
+ * remain clearly visible. This constant accounts for the padding of the dialog's
+ * content (20 px) and a 5px gap left on each extreme of the dialog from the viewport.
+ **/
 export const DIALOG_PADDING_FROM_WINDOW = 3 * CONNECTOR_HEIGHT;
 export const MODAL = 'MODAL';
 export class Dialog extends HTMLElement {

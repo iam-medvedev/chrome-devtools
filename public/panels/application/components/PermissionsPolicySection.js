@@ -64,6 +64,7 @@ export function renderIconLink(iconName, title, clickHandler, jsLogContext) {
   <devtools-button
     .iconName=${iconName}
     title=${title}
+    aria-label=${title}
     .variant=${"icon" /* Buttons.Button.Variant.ICON */}
     .size=${"SMALL" /* Buttons.Button.Size.SMALL */}
     @click=${clickHandler}

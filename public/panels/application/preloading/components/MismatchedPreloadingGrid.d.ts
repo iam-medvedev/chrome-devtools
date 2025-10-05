@@ -14,6 +14,7 @@ export interface MismatchedPreloadingGridData {
     pageURL: Platform.DevToolsPath.UrlString;
     rows: MismatchedPreloadingGridRow[];
 }
+/** Grid component to show prerendering attempts. **/
 export declare class MismatchedPreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
     connectedCallback(): void;

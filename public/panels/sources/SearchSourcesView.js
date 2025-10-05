@@ -13,7 +13,7 @@ export class SearchSources {
 }
 export class SearchSourcesView extends Search.SearchView.SearchView {
     constructor() {
-        super('sources', new Common.Throttler.Throttler(/* timeoutMs */ 200));
+        super('sources');
     }
     createScope() {
         return new SourcesSearchScope();

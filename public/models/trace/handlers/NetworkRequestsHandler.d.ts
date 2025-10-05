@@ -1,6 +1,16 @@
 import * as Types from '../types/types.js';
 import * as HandlerHelpers from './helpers.js';
 import type { HandlerName } from './types.js';
+/**
+ * Network requests from traces are actually formed of 5 trace records.
+ * This handler tracks all trace records based on the request ID, and
+ * then creates a new synthetic trace event for those network requests.
+ *
+ * This interface, then, defines the shape of the object we intend to
+ * keep for each request in the trace. In the finalize we will convert
+ * these 5 types of trace records to a synthetic complete event that
+ * represents a composite of these trace records.
+ **/
 export interface TraceEventsForNetworkRequest {
     changePriority?: Types.Events.ResourceChangePriority;
     willSendRequests?: Types.Events.ResourceWillSendRequest[];

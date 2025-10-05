@@ -2632,6 +2632,10 @@ export declare namespace CSS {
          */
         style: CSSStyle;
         /**
+         * The BackendNodeId of the DOM node that constitutes the origin tree scope of this rule.
+         */
+        originTreeScopeNodeId?: DOM.BackendNodeId;
+        /**
          * Media list array (for rules involving media queries). The array enumerates media queries
          * starting with the innermost one, going outwards.
          */
@@ -10741,9 +10745,15 @@ export declare namespace Network {
     }
     interface SetBlockedURLsRequest {
         /**
-         * URL patterns to block. Wildcards ('*') are allowed.
+         * URL patterns to block. Patterns use the URLPattern constructor string syntax
+         * (https://urlpattern.spec.whatwg.org/). Example: `*://*:*\/*.css`.
          */
-        urls: string[];
+        urlPatterns?: string[];
+        /**
+         * URL patterns to block. Wildcards ('*') are allowed.
+         * @deprecated
+         */
+        urls?: string[];
     }
     interface SetBypassServiceWorkerRequest {
         /**
@@ -16127,6 +16137,12 @@ export declare namespace Storage {
         frameId: Page.FrameId;
     }
     interface GetStorageKeyForFrameResponse extends ProtocolResponseWithError {
+        storageKey: SerializedStorageKey;
+    }
+    interface GetStorageKeyRequest {
+        frameId?: Page.FrameId;
+    }
+    interface GetStorageKeyResponse extends ProtocolResponseWithError {
         storageKey: SerializedStorageKey;
     }
     interface ClearDataForOriginRequest {

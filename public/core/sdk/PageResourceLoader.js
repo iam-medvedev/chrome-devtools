@@ -20,7 +20,7 @@ const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 function isExtensionInitiator(initiator) {
     return 'extensionId' in initiator;
 }
-// Used for revealing a resource.
+/** Used for revealing a resource. **/
 export class ResourceKey {
     key;
     constructor(key) {

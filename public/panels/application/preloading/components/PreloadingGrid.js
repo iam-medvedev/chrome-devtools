@@ -33,7 +33,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/application/preloading/components/PreloadingGrid.ts', UIStrings);
 export const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const { render, html, Directives: { styleMap } } = Lit;
-// Grid component to show prerendering attempts.
+/** Grid component to show prerendering attempts. **/
 export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
     #data = null;
@@ -55,7 +55,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
         render(html `
       <style>${preloadingGridStyles}</style>
       <div class="preloading-container">
-        <devtools-data-grid striped @select=${this.#onPreloadingGridCellFocused}>
+        <devtools-data-grid striped>
           <table>
             <tr>
               <th id="url" weight="40" sortable>${i18n.i18n.lockedString('URL')}</th>
@@ -70,7 +70,7 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
             const hasWarning = (prerenderStatus === "Failure" /* PreloadingStatus.FAILURE */ &&
                 (prefetchStatus === "Ready" /* PreloadingStatus.READY */ || prefetchStatus === "Success" /* PreloadingStatus.SUCCESS */));
             const hasError = row.pipeline.getOriginallyTriggered().status === "Failure" /* PreloadingStatus.FAILURE */;
-            return html `<tr data-id=${row.id}>
+            return html `<tr @select=${() => this.dispatchEvent(new CustomEvent('select', { detail: row.id }))}>
                 <td title=${attempt.key.url}>${this.#urlShort(row, securityOrigin)}</td>
                 <td>${capitalizedAction(attempt.action)}</td>
                 <td>${row.ruleSets.length === 0 ? '' : ruleSetTagOrLocationShort(row.ruleSets[0], pageURL)}</td>
@@ -96,9 +96,6 @@ export class PreloadingGrid extends LegacyWrapper.LegacyWrapper.WrappableCompone
       </div>
     `, this.#shadow, { host: this });
         // clang-format on
-    }
-    #onPreloadingGridCellFocused(event) {
-        this.dispatchEvent(new CustomEvent('select', { detail: event.detail.dataset.id }));
     }
     // Shorten URL if a preloading attempt is same-origin.
     #urlShort(row, securityOrigin) {

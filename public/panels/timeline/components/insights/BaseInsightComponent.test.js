@@ -115,7 +115,8 @@ describeWithEnvironment('BaseInsightComponent', () => {
         });
     });
     describe('estimated savings output', () => {
-        let testComponentIndex = 0; // used for defining the custom element and making it unique
+        // used for defining the custom element and making it unique
+        let testComponentIndex = 0;
         function makeTestComponent(opts) {
             class TestInsight extends BaseInsightComponent {
                 internalName = 'test-insight';

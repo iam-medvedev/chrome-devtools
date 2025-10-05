@@ -52,6 +52,11 @@ export default `/*
     align-items: center;
   }
 
+  .timeline-details-chip-title-reveal-entry:hover {
+    background: var(--sys-color-state-hover-on-subtle);
+    cursor: pointer;
+  }
+
   .timeline-details-view-block:first-child > .timeline-details-chip-title {
     font-size: 13px;
   }

@@ -4677,10 +4677,7 @@ var SearchSources = class {
 };
 var SearchSourcesView = class extends Search.SearchView.SearchView {
   constructor() {
-    super("sources", new Common9.Throttler.Throttler(
-      /* timeoutMs */
-      200
-    ));
+    super("sources");
   }
   createScope() {
     return new SourcesSearchScope();

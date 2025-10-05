@@ -15,5 +15,6 @@ export interface TraceWindow<TimeFormat extends Micro | Milli> {
     max: TimeFormat;
     range: TimeFormat;
 }
+/** See front_end/models/trace/helpers/Timing.ts for helpful utility functions like traceWindowFromMicroSeconds **/
 export type TraceWindowMicro = TraceWindow<Micro>;
 export type TraceWindowMilli = TraceWindow<Milli>;

@@ -6030,6 +6030,7 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   shallowSize;
   retainedSize;
   classKey;
+  #numberFormatter = new Intl.NumberFormat(i18n21.DevToolsLocale.DevToolsLocale.instance().locale);
   constructor(dataGrid, classKey, aggregate, nodeFilter) {
     super(dataGrid, aggregate.count > 0);
     this.nameInternal = aggregate.name;
@@ -6044,7 +6045,7 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
     const shallowSizePercent = this.shallowSize / snapshot.totalSize * 100;
     this.data = {
       object: this.nameInternal,
-      count: Platform8.NumberUtilities.withThousandsSeparator(this.count),
+      count: this.#numberFormatter.format(this.count),
       distance: this.toUIDistance(this.distance),
       shallowSize: i18n21.ByteUtilities.formatBytesToKb(this.shallowSize),
       retainedSize: i18n21.ByteUtilities.formatBytesToKb(this.retainedSize),
@@ -6076,7 +6077,7 @@ var HeapSnapshotConstructorNode = class extends HeapSnapshotGridNode {
   createCell(columnId) {
     const cell = columnId === "object" ? super.createCell(columnId) : this.createValueCell(columnId);
     if (columnId === "object" && this.count > 1) {
-      cell.appendChild(UI12.Fragment.html`<span class="objects-count">×${this.count}</span>`);
+      cell.appendChild(UI12.Fragment.html`<span class="objects-count">×${this.data.count}</span>`);
     }
     return cell;
   }

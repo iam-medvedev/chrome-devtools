@@ -24,7 +24,6 @@ export declare class NodeContext extends ConversationContext<SDK.DOMModel.DOMNod
     getTitle(): string;
     getSuggestions(): Promise<ConversationSuggestions | undefined>;
 }
-type Relation = 'currentElement' | 'parentElement';
 /**
  * One agent instance handles one conversation. Create a new agent
  * instance for a new conversation.
@@ -48,11 +47,7 @@ export declare class StylingAgent extends AiAgent<SDK.DOMModel.DOMNode> {
         canceled: boolean;
     }>;
     static describeElement(element: SDK.DOMModel.DOMNode): Promise<string>;
-    getComputedStyles(relations: Relation[], properties: string[], _options?: {
-        signal?: AbortSignal;
-        approved?: boolean;
-    }): Promise<FunctionCallHandlerResult<unknown>>;
-    getAuthoredStyles(relations: Relation[], properties: string[], _options?: {
+    getStyles(elements: string[], properties: string[], _options?: {
         signal?: AbortSignal;
         approved?: boolean;
     }): Promise<FunctionCallHandlerResult<unknown>>;

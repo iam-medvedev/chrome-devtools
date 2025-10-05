@@ -40,7 +40,7 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/utils/utils.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 
-// These utilities are packaged in a class to allow unittests to stub or spy the implementation.
+/** These utilities are packaged in a class to allow unittests to stub or spy the implementation. **/
 export class PanelUtils {
   static isFailedNetworkRequest(request: SDK.NetworkRequest.NetworkRequest|null): boolean {
     if (!request) {
@@ -54,9 +54,6 @@ export class PanelUtils {
     }
     const signedExchangeInfo = request.signedExchangeInfo();
     if (signedExchangeInfo !== null && Boolean(signedExchangeInfo.errors)) {
-      return true;
-    }
-    if (request.webBundleInfo()?.errorMessage || request.webBundleInnerRequestInfo()?.errorMessage) {
       return true;
     }
     if (request.corsErrorStatus()) {
@@ -185,9 +182,6 @@ export class PanelUtils {
     }
     if (resourceType.name() === Common.ResourceType.resourceTypes.Media.name()) {
       return {iconName: 'file-media'};
-    }
-    if (resourceType.isWebbundle()) {
-      return {iconName: 'bundle'};
     }
 
     if (resourceType.name() === Common.ResourceType.resourceTypes.Fetch.name() ||

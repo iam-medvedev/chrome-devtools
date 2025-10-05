@@ -7090,6 +7090,10 @@ var NativeFunctions = [
     signatures: [["message"]]
   },
   {
+    name: "IntersectionObserver",
+    signatures: [["callback", "?options"]]
+  },
+  {
     name: "layoutNextFragment",
     signatures: [["?options"]]
   },
@@ -7986,7 +7990,7 @@ var NativeFunctions = [
   },
   {
     name: "constant",
-    signatures: [["tensor"], ["desc", "buffer"]]
+    signatures: [["tensor"], ["desc", "buffer"], ["type", "value"]]
   },
   {
     name: "argMin",
@@ -8833,6 +8837,10 @@ var NativeFunctions = [
   {
     name: "VideoEncoder",
     signatures: [["init"]]
+  },
+  {
+    name: "VideoFrame",
+    signatures: [["source", "?init"], ["data", "init"]]
   },
   {
     name: "clipControlEXT",
