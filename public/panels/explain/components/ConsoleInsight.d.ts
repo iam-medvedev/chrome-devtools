@@ -1,11 +1,11 @@
 import '../../../ui/components/spinners/spinners.js';
 import * as Host from '../../../core/host/host.js';
-import { type PromptBuilder, type Source } from '../PromptBuilder.js';
+import * as Console from '../../console/console.js';
 export declare class CloseEvent extends Event {
     static readonly eventName = "close";
     constructor();
 }
-type PublicPromptBuilder = Pick<PromptBuilder, 'buildPrompt' | 'getSearchQuery'>;
+type PublicPromptBuilder = Pick<Console.PromptBuilder.PromptBuilder, 'buildPrompt' | 'getSearchQuery'>;
 type PublicAidaClient = Pick<Host.AidaClient.AidaClient, 'doConversation' | 'registerClientEvent'>;
 export declare class ConsoleInsight extends HTMLElement {
     #private;
@@ -17,7 +17,7 @@ export declare class ConsoleInsight extends HTMLElement {
 }
 declare class ConsoleInsightSourcesList extends HTMLElement {
     #private;
-    set sources(values: Source[]);
+    set sources(values: Console.PromptBuilder.Source[]);
     set isPageReloadRecommended(isPageReloadRecommended: boolean);
 }
 declare global {

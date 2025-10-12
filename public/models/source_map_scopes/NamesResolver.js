@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Common from '../../core/common/common.js';
+import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as Bindings from '../bindings/bindings.js';
 import * as Formatter from '../formatter/formatter.js';
 import * as TextUtils from '../text_utils/text_utils.js';
-import { scopeTreeForScript } from './ScopeTreeCache.js';
 const scopeToCachedIdentifiersMap = new WeakMap();
 const cachedMapByCallFrame = new WeakMap();
 export async function getTextFor(contentProvider) {
@@ -31,15 +31,7 @@ const computeScopeTree = async function (script) {
     if (!script.sourceMapURL) {
         return null;
     }
-    const text = await getTextFor(script);
-    if (!text) {
-        return null;
-    }
-    const scopeTree = await scopeTreeForScript(script);
-    if (!scopeTree) {
-        return null;
-    }
-    return { scopeTree, text };
+    return await SDK.ScopeTreeCache.scopeTreeForScript(script);
 };
 /**
  * @returns the scope chain from outer-most to inner-most scope where the inner-most
@@ -309,7 +301,9 @@ export const resolveScopeChain = async function (callFrame) {
     if (scopeChain) {
         return scopeChain;
     }
-    scopeChain = callFrame.script.sourceMap()?.resolveScopeChain(callFrame);
+    scopeChain = Root.Runtime.experiments.isEnabled("use-source-map-scopes" /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */) ?
+        callFrame.script.sourceMap()?.resolveScopeChain(callFrame) :
+        null;
     if (scopeChain) {
         return scopeChain;
     }

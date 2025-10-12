@@ -403,8 +403,16 @@ var Tooltip = class _Tooltip extends HTMLElement {
       this.#openedViaHotkey = false;
     }
   };
+  #globalKeyDown = (event) => {
+    if (!this.open || event.key !== "Escape") {
+      return;
+    }
+    this.#openedViaHotkey = false;
+    this.toggle();
+    event.consume(true);
+  };
   #keyDown = (event) => {
-    const shouldToggleVisibility = event.key === "Escape" && this.open || this.useHotkey && event.altKey && event.key === "ArrowDown";
+    const shouldToggleVisibility = this.useHotkey && event.altKey && event.key === "ArrowDown";
     if (shouldToggleVisibility) {
       this.#openedViaHotkey = !this.open;
       this.toggle();
@@ -412,6 +420,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     }
   };
   #registerEventListeners() {
+    document.body.addEventListener("keydown", this.#globalKeyDown);
     if (this.#anchor) {
       this.#anchor.addEventListener("keydown", this.#keyDown);
       if (this.useClick) {
@@ -437,6 +446,7 @@ var Tooltip = class _Tooltip extends HTMLElement {
     if (this.#timeout) {
       window.clearTimeout(this.#timeout);
     }
+    document.body?.removeEventListener("keydown", this.#globalKeyDown);
     if (this.#anchor) {
       this.#anchor.removeEventListener("click", this.toggle);
       this.#anchor.removeEventListener("mouseenter", this.showTooltip);

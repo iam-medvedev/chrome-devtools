@@ -36,7 +36,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                     .widgetConfig=${widgetConfig(element => new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.failedToLoadResponseData), input.contentData.error, element))}></devtools-widget>`;
         // clang-format on
     }
-    else if (input.request.statusCode === 204) {
+    else if (input.request.statusCode === 204 || input.request.failed) {
         // clang-format off
         widget = html `<devtools-widget
                      .widgetConfig=${widgetConfig(element => new UI.EmptyWidget.EmptyWidget(i18nString(UIStrings.noPreview), i18nString(UIStrings.thisRequestHasNoResponseData), element))}></devtools-widget>`;
@@ -67,6 +67,7 @@ export class RequestResponseView extends UI.Widget.VBox {
         this.#view = view;
     }
     wasShown() {
+        super.wasShown();
         this.requestUpdate();
     }
     async performUpdate() {

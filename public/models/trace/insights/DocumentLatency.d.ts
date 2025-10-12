@@ -9,7 +9,7 @@ export declare const UIStrings: {
     /**
      * @description Description of an insight that provides a breakdown for how long it took to download the main document.
      */
-    readonly description: "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.";
+    readonly description: "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.";
     /**
      * @description Text to tell the user that the document request does not have redirects.
      */

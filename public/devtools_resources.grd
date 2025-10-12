@@ -388,8 +388,8 @@
       <include file="entrypoints/main/main.js" name="ENTRYPOINTS_MAIN_MAIN_JS" resource_path="entrypoints/main/main.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/ndb_app/ndb_app.js" name="ENTRYPOINTS_NDB_APP_NDB_APP_JS" resource_path="entrypoints/ndb_app/ndb_app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/node_app/node_app.js" name="ENTRYPOINTS_NODE_APP_NODE_APP_JS" resource_path="entrypoints/node_app/node_app.js" type="BINDATA" compress="false"/>
-      <include file="entrypoints/rehydrated_devtools_app/rehydrated_devtools_app.js" name="ENTRYPOINTS_REHYDRATED_DEVTOOLS_APP_REHYDRATED_DEVTOOLS_APP_JS" resource_path="entrypoints/rehydrated_devtools_app/rehydrated_devtools_app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/shell/shell.js" name="ENTRYPOINTS_SHELL_SHELL_JS" resource_path="entrypoints/shell/shell.js" type="BINDATA" compress="false"/>
+      <include file="entrypoints/trace_app/trace_app.js" name="ENTRYPOINTS_TRACE_APP_TRACE_APP_JS" resource_path="entrypoints/trace_app/trace_app.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js" name="ENTRYPOINTS_WASMPARSER_WORKER_WASMPARSER_WORKER_ENTRYPOINT_JS" resource_path="entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/wasmparser_worker/wasmparser_worker.js" name="ENTRYPOINTS_WASMPARSER_WORKER_WASMPARSER_WORKER_JS" resource_path="entrypoints/wasmparser_worker/wasmparser_worker.js" type="BINDATA" compress="false"/>
       <include file="entrypoints/worker_app/worker_app.js" name="ENTRYPOINTS_WORKER_APP_WORKER_APP_JS" resource_path="entrypoints/worker_app/worker_app.js" type="BINDATA" compress="false"/>
@@ -737,7 +737,6 @@
       <include file="panels/whats_new/resources/WNDT.md" name="PANELS_WHATS_NEW_RESOURCES_WNDT_MD" resource_path="panels/whats_new/resources/WNDT.md" type="BINDATA" compress="false"/>
       <include file="panels/whats_new/whats_new-meta.js" name="PANELS_WHATS_NEW_WHATS_NEW_META_JS" resource_path="panels/whats_new/whats_new-meta.js" type="BINDATA" compress="false"/>
       <include file="panels/whats_new/whats_new.js" name="PANELS_WHATS_NEW_WHATS_NEW_JS" resource_path="panels/whats_new/whats_new.js" type="BINDATA" compress="false"/>
-      <include file="rehydrated_devtools_app.html" name="REHYDRATED_DEVTOOLS_APP_HTML" resource_path="rehydrated_devtools_app.html" type="BINDATA" compress="false"/>
       <include file="services/puppeteer/puppeteer.js" name="SERVICES_PUPPETEER_PUPPETEER_JS" resource_path="services/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/trace_bounds.js" name="SERVICES_TRACE_BOUNDS_TRACE_BOUNDS_JS" resource_path="services/trace_bounds/trace_bounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/tracing.js" name="SERVICES_TRACING_TRACING_JS" resource_path="services/tracing/tracing.js" type="BINDATA" compress="false"/>
@@ -775,6 +774,7 @@
       <include file="third_party/third-party-web/third-party-web.js" name="THIRD_PARTY_THIRD_PARTY_WEB_THIRD_PARTY_WEB_JS" resource_path="third_party/third-party-web/third-party-web.js" type="BINDATA" compress="false"/>
       <include file="third_party/wasmparser/wasmparser.js" name="THIRD_PARTY_WASMPARSER_WASMPARSER_JS" resource_path="third_party/wasmparser/wasmparser.js" type="BINDATA" compress="false"/>
       <include file="third_party/web-vitals/web-vitals.js" name="THIRD_PARTY_WEB_VITALS_WEB_VITALS_JS" resource_path="third_party/web-vitals/web-vitals.js" type="BINDATA" compress="false"/>
+      <include file="trace_app.html" name="TRACE_APP_HTML" resource_path="trace_app.html" type="BINDATA" compress="false"/>
       <include file="ui/components/adorners/adorners.js" name="UI_COMPONENTS_ADORNERS_ADORNERS_JS" resource_path="ui/components/adorners/adorners.js" type="BINDATA" compress="false"/>
       <include file="ui/components/buttons/buttons.js" name="UI_COMPONENTS_BUTTONS_BUTTONS_JS" resource_path="ui/components/buttons/buttons.js" type="BINDATA" compress="false"/>
       <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>

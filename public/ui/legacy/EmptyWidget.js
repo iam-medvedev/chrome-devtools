@@ -29,6 +29,7 @@ const DEFAULT_VIEW = (input, output, target) => {
         <span>${input.text}</span>
         ${input.link ? XLink.create(input.link, i18nString(UIStrings.learnMore), undefined, undefined, 'learn-more') : ''}
       </div>
+      ${input.extraElements}
     </div>`, target);
     // clang-format on
 };
@@ -37,6 +38,8 @@ export class EmptyWidget extends VBox {
     #text;
     #link;
     #view;
+    #firstUpdate = true;
+    #extraElements = [];
     constructor(headerOrElement, text = '', element, view = DEFAULT_VIEW) {
         const header = typeof headerOrElement === 'string' ? headerOrElement : '';
         if (!element && headerOrElement instanceof HTMLElement) {
@@ -62,8 +65,12 @@ export class EmptyWidget extends VBox {
         this.performUpdate();
     }
     performUpdate() {
+        if (this.#firstUpdate) {
+            this.#extraElements = [...this.element.children];
+            this.#firstUpdate = false;
+        }
         const output = { contentElement: undefined };
-        this.#view({ header: this.#header, text: this.#text, link: this.#link }, output, this.element);
+        this.#view({ header: this.#header, text: this.#text, link: this.#link, extraElements: this.#extraElements }, output, this.element);
         if (output.contentElement) {
             this.contentElement = output.contentElement;
         }

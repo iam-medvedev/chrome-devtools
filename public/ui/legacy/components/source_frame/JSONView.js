@@ -60,6 +60,9 @@ export class JSONView extends UI.Widget.VBox {
         jsonView.element.tabIndex = 0;
         return searchableView;
     }
+    setSearchableView(searchableView) {
+        this.searchableView = searchableView;
+    }
     static parseJSON(text) {
         let returnObj = null;
         if (text) {
@@ -111,6 +114,7 @@ export class JSONView extends UI.Widget.VBox {
         return { start, end, length };
     }
     wasShown() {
+        super.wasShown();
         this.initialize();
     }
     initialize() {
@@ -241,6 +245,26 @@ export class ParsedJSON {
         this.data = data;
         this.prefix = prefix;
         this.suffix = suffix;
+    }
+}
+export class SearchableJsonView extends UI.SearchableView.SearchableView {
+    #jsonView;
+    constructor(element) {
+        const jsonView = new JSONView(new ParsedJSON('', '', ''));
+        super(jsonView, null, undefined, element);
+        this.#jsonView = jsonView;
+        this.setPlaceholder(i18nString(UIStrings.find));
+        jsonView.setSearchableView(this);
+        jsonView.show(this.element);
+        jsonView.element.tabIndex = 0;
+    }
+    set jsonObject(obj) {
+        const jsonView = new JSONView(new ParsedJSON(obj, '', ''));
+        this.#jsonView.detach();
+        this.#jsonView = jsonView;
+        this.searchProvider = jsonView;
+        jsonView.show(this.element);
+        this.requestUpdate();
     }
 }
 //# sourceMappingURL=JSONView.js.map

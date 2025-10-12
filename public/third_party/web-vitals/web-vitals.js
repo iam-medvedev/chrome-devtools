@@ -16,73 +16,6 @@ var onBFCacheRestore = (cb) => {
   }, true);
 };
 
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/generateUniqueID.js
-var generateUniqueID = () => {
-  return `v4-${Date.now()}-${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/getNavigationEntry.js
-var getNavigationEntry = () => {
-  const navigationEntry = self.performance && performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
-  if (navigationEntry && navigationEntry.responseStart > 0 && navigationEntry.responseStart < performance.now()) {
-    return navigationEntry;
-  }
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/getActivationStart.js
-var getActivationStart = () => {
-  const navEntry = getNavigationEntry();
-  return navEntry && navEntry.activationStart || 0;
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/initMetric.js
-var initMetric = (name, value) => {
-  const navEntry = getNavigationEntry();
-  let navigationType = "navigate";
-  if (getBFCacheRestoreTime() >= 0) {
-    navigationType = "back-forward-cache";
-  } else if (navEntry) {
-    if (document.prerendering || getActivationStart() > 0) {
-      navigationType = "prerender";
-    } else if (document.wasDiscarded) {
-      navigationType = "restore";
-    } else if (navEntry.type) {
-      navigationType = navEntry.type.replace(/_/g, "-");
-    }
-  }
-  const entries = [];
-  return {
-    name,
-    value: typeof value === "undefined" ? -1 : value,
-    rating: "good",
-    // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
-    delta: 0,
-    entries,
-    id: generateUniqueID(),
-    navigationType
-  };
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/observe.js
-var observe = (type, callback, opts) => {
-  try {
-    if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-      const po2 = new PerformanceObserver((list) => {
-        Promise.resolve().then(() => {
-          callback(list.getEntries());
-        });
-      });
-      po2.observe(Object.assign({
-        type,
-        buffered: true
-      }, opts || {}));
-      return po2;
-    }
-  } catch (e) {
-  }
-  return;
-};
-
 // gen/front_end/third_party/web-vitals/package/dist/modules/lib/bindReporter.js
 var getRating = (value, thresholds) => {
   if (value > thresholds[1]) {
@@ -99,7 +32,7 @@ var bindReporter = (callback, metric, thresholds, reportAllChanges) => {
   return (forceReport) => {
     if (metric.value >= 0) {
       if (forceReport || reportAllChanges) {
-        delta = metric.value - (prevValue || 0);
+        delta = metric.value - (prevValue ?? 0);
         if (delta || prevValue === void 0) {
           prevValue = metric.value;
           metric.delta = delta;
@@ -116,13 +49,98 @@ var doubleRAF = (cb) => {
   requestAnimationFrame(() => requestAnimationFrame(() => cb()));
 };
 
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/onHidden.js
-var onHidden = (cb) => {
-  document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "hidden") {
-      cb();
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/generateUniqueID.js
+var generateUniqueID = () => {
+  return `v5-${Date.now()}-${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
+};
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/getNavigationEntry.js
+var getNavigationEntry = () => {
+  const navigationEntry = performance.getEntriesByType("navigation")[0];
+  if (navigationEntry && navigationEntry.responseStart > 0 && navigationEntry.responseStart < performance.now()) {
+    return navigationEntry;
+  }
+};
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/getActivationStart.js
+var getActivationStart = () => {
+  const navEntry = getNavigationEntry();
+  return navEntry?.activationStart ?? 0;
+};
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/initMetric.js
+var initMetric = (name, value = -1) => {
+  const navEntry = getNavigationEntry();
+  let navigationType = "navigate";
+  if (getBFCacheRestoreTime() >= 0) {
+    navigationType = "back-forward-cache";
+  } else if (navEntry) {
+    if (document.prerendering || getActivationStart() > 0) {
+      navigationType = "prerender";
+    } else if (document.wasDiscarded) {
+      navigationType = "restore";
+    } else if (navEntry.type) {
+      navigationType = navEntry.type.replace(/_/g, "-");
     }
-  });
+  }
+  const entries = [];
+  return {
+    name,
+    value,
+    rating: "good",
+    // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
+    delta: 0,
+    entries,
+    id: generateUniqueID(),
+    navigationType
+  };
+};
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/initUnique.js
+var instanceMap = /* @__PURE__ */ new WeakMap();
+function initUnique(identityObj, ClassObj) {
+  if (!instanceMap.get(identityObj)) {
+    instanceMap.set(identityObj, new ClassObj());
+  }
+  return instanceMap.get(identityObj);
+}
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/LayoutShiftManager.js
+var LayoutShiftManager = class {
+  _onAfterProcessingUnexpectedShift;
+  _sessionValue = 0;
+  _sessionEntries = [];
+  _processEntry(entry) {
+    if (entry.hadRecentInput)
+      return;
+    const firstSessionEntry = this._sessionEntries[0];
+    const lastSessionEntry = this._sessionEntries.at(-1);
+    if (this._sessionValue && firstSessionEntry && lastSessionEntry && entry.startTime - lastSessionEntry.startTime < 1e3 && entry.startTime - firstSessionEntry.startTime < 5e3) {
+      this._sessionValue += entry.value;
+      this._sessionEntries.push(entry);
+    } else {
+      this._sessionValue = entry.value;
+      this._sessionEntries = [entry];
+    }
+    this._onAfterProcessingUnexpectedShift?.(entry);
+  }
+};
+
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/observe.js
+var observe = (type, callback, opts = {}) => {
+  try {
+    if (PerformanceObserver.supportedEntryTypes.includes(type)) {
+      const po2 = new PerformanceObserver((list) => {
+        Promise.resolve().then(() => {
+          callback(list.getEntries());
+        });
+      });
+      po2.observe({ type, buffered: true, ...opts });
+      return po2;
+    }
+  } catch {
+  }
+  return;
 };
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/lib/runOnce.js
@@ -138,37 +156,42 @@ var runOnce = (cb) => {
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/lib/getVisibilityWatcher.js
 var firstHiddenTime = -1;
+var onHiddenFunctions = /* @__PURE__ */ new Set();
 var initHiddenTime = () => {
   return document.visibilityState === "hidden" && !document.prerendering ? 0 : Infinity;
 };
 var onVisibilityUpdate = (event) => {
-  if (document.visibilityState === "hidden" && firstHiddenTime > -1) {
-    firstHiddenTime = event.type === "visibilitychange" ? event.timeStamp : 0;
-    removeChangeListeners();
+  if (document.visibilityState === "hidden") {
+    if (event.type === "visibilitychange") {
+      for (const onHiddenFunction of onHiddenFunctions) {
+        onHiddenFunction();
+      }
+    }
+    if (!isFinite(firstHiddenTime)) {
+      firstHiddenTime = event.type === "visibilitychange" ? event.timeStamp : 0;
+      removeEventListener("prerenderingchange", onVisibilityUpdate, true);
+    }
   }
-};
-var addChangeListeners = () => {
-  addEventListener("visibilitychange", onVisibilityUpdate, true);
-  addEventListener("prerenderingchange", onVisibilityUpdate, true);
-};
-var removeChangeListeners = () => {
-  removeEventListener("visibilitychange", onVisibilityUpdate, true);
-  removeEventListener("prerenderingchange", onVisibilityUpdate, true);
 };
 var getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
-    firstHiddenTime = initHiddenTime();
-    addChangeListeners();
+    const activationStart = getActivationStart();
+    const firstVisibilityStateHiddenTime = !document.prerendering ? globalThis.performance.getEntriesByType("visibility-state").filter((e) => e.name === "hidden" && e.startTime > activationStart)[0]?.startTime : void 0;
+    firstHiddenTime = firstVisibilityStateHiddenTime ?? initHiddenTime();
+    addEventListener("visibilitychange", onVisibilityUpdate, true);
+    addEventListener("prerenderingchange", onVisibilityUpdate, true);
     onBFCacheRestore(() => {
       setTimeout(() => {
         firstHiddenTime = initHiddenTime();
-        addChangeListeners();
-      }, 0);
+      });
     });
   }
   return {
     get firstHiddenTime() {
       return firstHiddenTime;
+    },
+    onHidden(cb) {
+      onHiddenFunctions.add(cb);
     }
   };
 };
@@ -184,14 +207,13 @@ var whenActivated = (callback) => {
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/onFCP.js
 var FCPThresholds = [1800, 3e3];
-var onFCP = (onReport, opts) => {
-  opts = opts || {};
+var onFCP = (onReport, opts = {}) => {
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric("FCP");
     let report;
     const handleEntries = (entries) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         if (entry.name === "first-contentful-paint") {
           po2.disconnect();
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
@@ -200,7 +222,7 @@ var onFCP = (onReport, opts) => {
             report(true);
           }
         }
-      });
+      }
     };
     const po2 = observe("paint", handleEntries);
     if (po2) {
@@ -219,47 +241,36 @@ var onFCP = (onReport, opts) => {
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/onCLS.js
 var CLSThresholds = [0.1, 0.25];
-var onCLS = (onReport, opts) => {
-  opts = opts || {};
+var onCLS = (onReport, opts = {}) => {
+  const visibilityWatcher = getVisibilityWatcher();
   onFCP(runOnce(() => {
     let metric = initMetric("CLS", 0);
     let report;
-    let sessionValue = 0;
-    let sessionEntries = [];
+    const layoutShiftManager = initUnique(opts, LayoutShiftManager);
     const handleEntries = (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.hadRecentInput) {
-          const firstSessionEntry = sessionEntries[0];
-          const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
-          if (sessionValue && entry.startTime - lastSessionEntry.startTime < 1e3 && entry.startTime - firstSessionEntry.startTime < 5e3) {
-            sessionValue += entry.value;
-            sessionEntries.push(entry);
-          } else {
-            sessionValue = entry.value;
-            sessionEntries = [entry];
-          }
-        }
-      });
-      if (sessionValue > metric.value) {
-        metric.value = sessionValue;
-        metric.entries = sessionEntries;
+      for (const entry of entries) {
+        layoutShiftManager._processEntry(entry);
+      }
+      if (layoutShiftManager._sessionValue > metric.value) {
+        metric.value = layoutShiftManager._sessionValue;
+        metric.entries = layoutShiftManager._sessionEntries;
         report();
       }
     };
     const po2 = observe("layout-shift", handleEntries);
     if (po2) {
       report = bindReporter(onReport, metric, CLSThresholds, opts.reportAllChanges);
-      onHidden(() => {
+      visibilityWatcher.onHidden(() => {
         handleEntries(po2.takeRecords());
         report(true);
       });
       onBFCacheRestore(() => {
-        sessionValue = 0;
+        layoutShiftManager._sessionValue = 0;
         metric = initMetric("CLS", 0);
         report = bindReporter(onReport, metric, CLSThresholds, opts.reportAllChanges);
         doubleRAF(() => report());
       });
-      setTimeout(report, 0);
+      setTimeout(report);
     }
   }));
 };
@@ -269,17 +280,17 @@ var interactionCountEstimate = 0;
 var minKnownInteractionId = Infinity;
 var maxKnownInteractionId = 0;
 var updateEstimate = (entries) => {
-  entries.forEach((e) => {
-    if (e.interactionId) {
-      minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
-      maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);
+  for (const entry of entries) {
+    if (entry.interactionId) {
+      minKnownInteractionId = Math.min(minKnownInteractionId, entry.interactionId);
+      maxKnownInteractionId = Math.max(maxKnownInteractionId, entry.interactionId);
       interactionCountEstimate = maxKnownInteractionId ? (maxKnownInteractionId - minKnownInteractionId) / 7 + 1 : 0;
     }
-  });
+  }
 };
 var po;
 var getInteractionCount = () => {
-  return po ? interactionCountEstimate : performance.interactionCount || 0;
+  return po ? interactionCountEstimate : performance.interactionCount ?? 0;
 };
 var initInteractionCountPolyfill = () => {
   if ("interactionCount" in performance || po)
@@ -291,86 +302,117 @@ var initInteractionCountPolyfill = () => {
   });
 };
 
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/interactions.js
-var longestInteractionList = [];
-var longestInteractionMap = /* @__PURE__ */ new Map();
-var DEFAULT_DURATION_THRESHOLD = 40;
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/InteractionManager.js
+var MAX_INTERACTIONS_TO_CONSIDER = 10;
 var prevInteractionCount = 0;
 var getInteractionCountForNavigation = () => {
   return getInteractionCount() - prevInteractionCount;
 };
-var resetInteractions = () => {
-  prevInteractionCount = getInteractionCount();
-  longestInteractionList.length = 0;
-  longestInteractionMap.clear();
-};
-var estimateP98LongestInteraction = () => {
-  const candidateInteractionIndex = Math.min(longestInteractionList.length - 1, Math.floor(getInteractionCountForNavigation() / 50));
-  return longestInteractionList[candidateInteractionIndex];
-};
-var MAX_INTERACTIONS_TO_CONSIDER = 10;
-var entryPreProcessingCallbacks = [];
-var processInteractionEntry = (entry) => {
-  entryPreProcessingCallbacks.forEach((cb) => cb(entry));
-  if (!(entry.interactionId || entry.entryType === "first-input"))
-    return;
-  const minLongestInteraction = longestInteractionList[longestInteractionList.length - 1];
-  const existingInteraction = longestInteractionMap.get(entry.interactionId);
-  if (existingInteraction || longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER || entry.duration > minLongestInteraction.latency) {
-    if (existingInteraction) {
-      if (entry.duration > existingInteraction.latency) {
-        existingInteraction.entries = [entry];
-        existingInteraction.latency = entry.duration;
-      } else if (entry.duration === existingInteraction.latency && entry.startTime === existingInteraction.entries[0].startTime) {
-        existingInteraction.entries.push(entry);
+var InteractionManager = class {
+  /**
+   * A list of longest interactions on the page (by latency) sorted so the
+   * longest one is first. The list is at most MAX_INTERACTIONS_TO_CONSIDER
+   * long.
+   */
+  _longestInteractionList = [];
+  /**
+   * A mapping of longest interactions by their interaction ID.
+   * This is used for faster lookup.
+   */
+  _longestInteractionMap = /* @__PURE__ */ new Map();
+  _onBeforeProcessingEntry;
+  _onAfterProcessingINPCandidate;
+  _resetInteractions() {
+    prevInteractionCount = getInteractionCount();
+    this._longestInteractionList.length = 0;
+    this._longestInteractionMap.clear();
+  }
+  /**
+   * Returns the estimated p98 longest interaction based on the stored
+   * interaction candidates and the interaction count for the current page.
+   */
+  _estimateP98LongestInteraction() {
+    const candidateInteractionIndex = Math.min(this._longestInteractionList.length - 1, Math.floor(getInteractionCountForNavigation() / 50));
+    return this._longestInteractionList[candidateInteractionIndex];
+  }
+  /**
+   * Takes a performance entry and adds it to the list of worst interactions
+   * if its duration is long enough to make it among the worst. If the
+   * entry is part of an existing interaction, it is merged and the latency
+   * and entries list is updated as needed.
+   */
+  _processEntry(entry) {
+    this._onBeforeProcessingEntry?.(entry);
+    if (!(entry.interactionId || entry.entryType === "first-input"))
+      return;
+    const minLongestInteraction = this._longestInteractionList.at(-1);
+    let interaction = this._longestInteractionMap.get(entry.interactionId);
+    if (interaction || this._longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER || // If the above conditions are false, `minLongestInteraction` will be set.
+    entry.duration > minLongestInteraction._latency) {
+      if (interaction) {
+        if (entry.duration > interaction._latency) {
+          interaction.entries = [entry];
+          interaction._latency = entry.duration;
+        } else if (entry.duration === interaction._latency && entry.startTime === interaction.entries[0].startTime) {
+          interaction.entries.push(entry);
+        }
+      } else {
+        interaction = {
+          id: entry.interactionId,
+          entries: [entry],
+          _latency: entry.duration
+        };
+        this._longestInteractionMap.set(interaction.id, interaction);
+        this._longestInteractionList.push(interaction);
       }
-    } else {
-      const interaction = {
-        id: entry.interactionId,
-        latency: entry.duration,
-        entries: [entry]
-      };
-      longestInteractionMap.set(interaction.id, interaction);
-      longestInteractionList.push(interaction);
-    }
-    longestInteractionList.sort((a, b) => b.latency - a.latency);
-    if (longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
-      longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => longestInteractionMap.delete(i.id));
+      this._longestInteractionList.sort((a, b) => b._latency - a._latency);
+      if (this._longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
+        const removedInteractions = this._longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER);
+        for (const interaction2 of removedInteractions) {
+          this._longestInteractionMap.delete(interaction2.id);
+        }
+      }
+      this._onAfterProcessingINPCandidate?.(interaction);
     }
   }
 };
 
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/whenIdle.js
-var whenIdle = (cb) => {
-  const rIC = self.requestIdleCallback || self.setTimeout;
-  let handle = -1;
-  cb = runOnce(cb);
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/whenIdleOrHidden.js
+var whenIdleOrHidden = (cb) => {
+  const rIC = globalThis.requestIdleCallback || setTimeout;
   if (document.visibilityState === "hidden") {
     cb();
   } else {
-    handle = rIC(cb);
-    onHidden(cb);
+    cb = runOnce(cb);
+    addEventListener("visibilitychange", cb, { once: true, capture: true });
+    rIC(() => {
+      cb();
+      removeEventListener("visibilitychange", cb, { capture: true });
+    });
   }
-  return handle;
 };
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/onINP.js
 var INPThresholds = [200, 500];
-var onINP = (onReport, opts) => {
-  if (!("PerformanceEventTiming" in self && "interactionId" in PerformanceEventTiming.prototype)) {
+var DEFAULT_DURATION_THRESHOLD = 40;
+var onINP = (onReport, opts = {}) => {
+  if (!(globalThis.PerformanceEventTiming && "interactionId" in PerformanceEventTiming.prototype)) {
     return;
   }
-  opts = opts || {};
+  const visibilityWatcher = getVisibilityWatcher();
   whenActivated(() => {
     initInteractionCountPolyfill();
     let metric = initMetric("INP");
     let report;
+    const interactionManager = initUnique(opts, InteractionManager);
     const handleEntries = (entries) => {
-      whenIdle(() => {
-        entries.forEach(processInteractionEntry);
-        const inp = estimateP98LongestInteraction();
-        if (inp && inp.latency !== metric.value) {
-          metric.value = inp.latency;
+      whenIdleOrHidden(() => {
+        for (const entry of entries) {
+          interactionManager._processEntry(entry);
+        }
+        const inp = interactionManager._estimateP98LongestInteraction();
+        if (inp && inp._latency !== metric.value) {
+          metric.value = inp._latency;
           metric.entries = inp.entries;
           report();
         }
@@ -388,12 +430,12 @@ var onINP = (onReport, opts) => {
     report = bindReporter(onReport, metric, INPThresholds, opts.reportAllChanges);
     if (po2) {
       po2.observe({ type: "first-input", buffered: true });
-      onHidden(() => {
+      visibilityWatcher.onHidden(() => {
         handleEntries(po2.takeRecords());
         report(true);
       });
       onBFCacheRestore(() => {
-        resetInteractions();
+        interactionManager._resetInteractions();
         metric = initMetric("INP");
         report = bindReporter(onReport, metric, INPThresholds, opts.reportAllChanges);
       });
@@ -401,51 +443,61 @@ var onINP = (onReport, opts) => {
   });
 };
 
+// gen/front_end/third_party/web-vitals/package/dist/modules/lib/LCPEntryManager.js
+var LCPEntryManager = class {
+  _onBeforeProcessingEntry;
+  _processEntry(entry) {
+    this._onBeforeProcessingEntry?.(entry);
+  }
+};
+
 // gen/front_end/third_party/web-vitals/package/dist/modules/onLCP.js
 var LCPThresholds = [2500, 4e3];
-var reportedMetricIDs = {};
-var onLCP = (onReport, opts) => {
-  opts = opts || {};
+var onLCP = (onReport, opts = {}) => {
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric("LCP");
     let report;
+    const lcpEntryManager = initUnique(opts, LCPEntryManager);
     const handleEntries = (entries) => {
       if (!opts.reportAllChanges) {
         entries = entries.slice(-1);
       }
-      entries.forEach((entry) => {
+      for (const entry of entries) {
+        lcpEntryManager._processEntry(entry);
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           metric.value = Math.max(entry.startTime - getActivationStart(), 0);
           metric.entries = [entry];
           report();
         }
-      });
+      }
     };
     const po2 = observe("largest-contentful-paint", handleEntries);
     if (po2) {
       report = bindReporter(onReport, metric, LCPThresholds, opts.reportAllChanges);
       const stopListening = runOnce(() => {
-        if (!reportedMetricIDs[metric.id]) {
-          handleEntries(po2.takeRecords());
-          po2.disconnect();
-          reportedMetricIDs[metric.id] = true;
-          report(true);
-        }
+        handleEntries(po2.takeRecords());
+        po2.disconnect();
+        report(true);
       });
-      ["keydown", "click"].forEach((type) => {
-        addEventListener(type, () => whenIdle(stopListening), {
-          once: true,
+      const stopListeningWrapper = (event) => {
+        if (event.isTrusted) {
+          whenIdleOrHidden(stopListening);
+          removeEventListener(event.type, stopListeningWrapper, {
+            capture: true
+          });
+        }
+      };
+      for (const type of ["keydown", "click", "visibilitychange"]) {
+        addEventListener(type, stopListeningWrapper, {
           capture: true
         });
-      });
-      onHidden(stopListening);
+      }
       onBFCacheRestore((event) => {
         metric = initMetric("LCP");
         report = bindReporter(onReport, metric, LCPThresholds, opts.reportAllChanges);
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;
-          reportedMetricIDs[metric.id] = true;
           report(true);
         });
       });
@@ -461,11 +513,10 @@ var whenReady = (callback) => {
   } else if (document.readyState !== "complete") {
     addEventListener("load", () => whenReady(callback), true);
   } else {
-    setTimeout(callback, 0);
+    setTimeout(callback);
   }
 };
-var onTTFB = (onReport, opts) => {
-  opts = opts || {};
+var onTTFB = (onReport, opts = {}) => {
   let metric = initMetric("TTFB");
   let report = bindReporter(onReport, metric, TTFBThresholds, opts.reportAllChanges);
   whenReady(() => {
@@ -483,128 +534,16 @@ var onTTFB = (onReport, opts) => {
   });
 };
 
-// gen/front_end/third_party/web-vitals/package/dist/modules/lib/polyfills/firstInputPolyfill.js
-var firstInputEvent;
-var firstInputDelay;
-var firstInputTimeStamp;
-var callbacks;
-var listenerOpts = { passive: true, capture: true };
-var startTimeStamp = /* @__PURE__ */ new Date();
-var firstInputPolyfill = (onFirstInput) => {
-  callbacks.push(onFirstInput);
-  reportFirstInputDelayIfRecordedAndValid();
-};
-var resetFirstInputPolyfill = () => {
-  callbacks = [];
-  firstInputDelay = -1;
-  firstInputEvent = null;
-  eachEventType(addEventListener);
-};
-var recordFirstInputDelay = (delay, event) => {
-  if (!firstInputEvent) {
-    firstInputEvent = event;
-    firstInputDelay = delay;
-    firstInputTimeStamp = /* @__PURE__ */ new Date();
-    eachEventType(removeEventListener);
-    reportFirstInputDelayIfRecordedAndValid();
-  }
-};
-var reportFirstInputDelayIfRecordedAndValid = () => {
-  if (firstInputDelay >= 0 && // @ts-ignore (subtracting two dates always returns a number)
-  firstInputDelay < firstInputTimeStamp - startTimeStamp) {
-    const entry = {
-      entryType: "first-input",
-      name: firstInputEvent.type,
-      target: firstInputEvent.target,
-      cancelable: firstInputEvent.cancelable,
-      startTime: firstInputEvent.timeStamp,
-      processingStart: firstInputEvent.timeStamp + firstInputDelay
-    };
-    callbacks.forEach(function(callback) {
-      callback(entry);
-    });
-    callbacks = [];
-  }
-};
-var onPointerDown = (delay, event) => {
-  const onPointerUp = () => {
-    recordFirstInputDelay(delay, event);
-    removePointerEventListeners();
-  };
-  const onPointerCancel = () => {
-    removePointerEventListeners();
-  };
-  const removePointerEventListeners = () => {
-    removeEventListener("pointerup", onPointerUp, listenerOpts);
-    removeEventListener("pointercancel", onPointerCancel, listenerOpts);
-  };
-  addEventListener("pointerup", onPointerUp, listenerOpts);
-  addEventListener("pointercancel", onPointerCancel, listenerOpts);
-};
-var onInput = (event) => {
-  if (event.cancelable) {
-    const isEpochTime = event.timeStamp > 1e12;
-    const now = isEpochTime ? /* @__PURE__ */ new Date() : performance.now();
-    const delay = now - event.timeStamp;
-    if (event.type == "pointerdown") {
-      onPointerDown(delay, event);
-    } else {
-      recordFirstInputDelay(delay, event);
-    }
-  }
-};
-var eachEventType = (callback) => {
-  const eventTypes = ["mousedown", "keydown", "touchstart", "pointerdown"];
-  eventTypes.forEach((type) => callback(type, onInput, listenerOpts));
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/onFID.js
-var FIDThresholds = [100, 300];
-var onFID = (onReport, opts) => {
-  opts = opts || {};
-  whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
-    let metric = initMetric("FID");
-    let report;
-    const handleEntry = (entry) => {
-      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-        metric.value = entry.processingStart - entry.startTime;
-        metric.entries.push(entry);
-        report(true);
-      }
-    };
-    const handleEntries = (entries) => {
-      entries.forEach(handleEntry);
-    };
-    const po2 = observe("first-input", handleEntries);
-    report = bindReporter(onReport, metric, FIDThresholds, opts.reportAllChanges);
-    if (po2) {
-      onHidden(runOnce(() => {
-        handleEntries(po2.takeRecords());
-        po2.disconnect();
-      }));
-      onBFCacheRestore(() => {
-        metric = initMetric("FID");
-        report = bindReporter(onReport, metric, FIDThresholds, opts.reportAllChanges);
-        resetFirstInputPolyfill();
-        firstInputPolyfill(handleEntry);
-      });
-    }
-  });
-};
-
 // gen/front_end/third_party/web-vitals/package/dist/modules/attribution/index.js
 var attribution_exports = {};
 __export(attribution_exports, {
   CLSThresholds: () => CLSThresholds,
   FCPThresholds: () => FCPThresholds,
-  FIDThresholds: () => FIDThresholds,
   INPThresholds: () => INPThresholds,
   LCPThresholds: () => LCPThresholds,
   TTFBThresholds: () => TTFBThresholds,
   onCLS: () => onCLS2,
   onFCP: () => onFCP2,
-  onFID: () => onFID2,
   onINP: () => onINP2,
   onLCP: () => onLCP2,
   onTTFB: () => onTTFB2
@@ -634,53 +573,69 @@ var getName = (node) => {
   const name = node.nodeName;
   return node.nodeType === 1 ? name.toLowerCase() : name.toUpperCase().replace(/^#/, "");
 };
-var getSelector = (node, maxLen) => {
+var MAX_LEN = 100;
+var getSelector = (node) => {
   let sel = "";
   try {
-    while (node && node.nodeType !== 9) {
+    while (node?.nodeType !== 9) {
       const el = node;
-      const part = el.id ? "#" + el.id : getName(el) + (el.classList && el.classList.value && el.classList.value.trim() && el.classList.value.trim().length ? "." + el.classList.value.trim().replace(/\s+/g, ".") : "");
-      if (sel.length + part.length > (maxLen || 100) - 1)
+      const part = el.id ? "#" + el.id : [getName(el), ...Array.from(el.classList).sort()].join(".");
+      if (sel.length + part.length > MAX_LEN - 1) {
         return sel || part;
+      }
       sel = sel ? part + ">" + sel : part;
-      if (el.id)
+      if (el.id) {
         break;
+      }
       node = el.parentNode;
     }
-  } catch (err) {
+  } catch {
   }
   return sel;
 };
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/attribution/onCLS.js
 var getLargestLayoutShiftEntry = (entries) => {
-  return entries.reduce((a, b) => a && a.value > b.value ? a : b);
+  return entries.reduce((a, b) => a.value > b.value ? a : b);
 };
 var getLargestLayoutShiftSource = (sources) => {
-  return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
+  return sources.find((s) => s.node?.nodeType === 1) || sources[0];
 };
-var attributeCLS = (metric) => {
-  let attribution = {};
-  if (metric.entries.length) {
-    const largestEntry = getLargestLayoutShiftEntry(metric.entries);
-    if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
-      const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
-      if (largestSource) {
-        attribution = {
-          largestShiftTarget: getSelector(largestSource.node),
-          largestShiftTime: largestEntry.startTime,
-          largestShiftValue: largestEntry.value,
-          largestShiftSource: largestSource,
-          largestShiftEntry: largestEntry,
-          loadState: getLoadState(largestEntry.startTime)
-        };
+var onCLS2 = (onReport, opts = {}) => {
+  opts = Object.assign({}, opts);
+  const layoutShiftManager = initUnique(opts, LayoutShiftManager);
+  const layoutShiftTargetMap = /* @__PURE__ */ new WeakMap();
+  layoutShiftManager._onAfterProcessingUnexpectedShift = (entry) => {
+    if (entry?.sources?.length) {
+      const largestSource = getLargestLayoutShiftSource(entry.sources);
+      const node = largestSource?.node;
+      if (node) {
+        const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
+        layoutShiftTargetMap.set(largestSource, customTarget);
       }
     }
-  }
-  const metricWithAttribution = Object.assign(metric, { attribution });
-  return metricWithAttribution;
-};
-var onCLS2 = (onReport, opts) => {
+  };
+  const attributeCLS = (metric) => {
+    let attribution = {};
+    if (metric.entries.length) {
+      const largestEntry = getLargestLayoutShiftEntry(metric.entries);
+      if (largestEntry?.sources?.length) {
+        const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
+        if (largestSource) {
+          attribution = {
+            largestShiftTarget: layoutShiftTargetMap.get(largestSource),
+            largestShiftTime: largestEntry.startTime,
+            largestShiftValue: largestEntry.value,
+            largestShiftSource: largestSource,
+            largestShiftEntry: largestEntry,
+            loadState: getLoadState(largestEntry.startTime)
+          };
+        }
+      }
+    }
+    const metricWithAttribution = Object.assign(metric, { attribution });
+    return metricWithAttribution;
+  };
   onCLS((metric) => {
     const metricWithAttribution = attributeCLS(metric);
     onReport(metricWithAttribution);
@@ -696,7 +651,7 @@ var attributeFCP = (metric) => {
   };
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
-    const fcpEntry = metric.entries[metric.entries.length - 1];
+    const fcpEntry = metric.entries.at(-1);
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
       const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
@@ -712,7 +667,7 @@ var attributeFCP = (metric) => {
   const metricWithAttribution = Object.assign(metric, { attribution });
   return metricWithAttribution;
 };
-var onFCP2 = (onReport, opts) => {
+var onFCP2 = (onReport, opts = {}) => {
   onFCP((metric) => {
     const metricWithAttribution = attributeFCP(metric);
     onReport(metricWithAttribution);
@@ -721,135 +676,211 @@ var onFCP2 = (onReport, opts) => {
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/attribution/onINP.js
 var MAX_PREVIOUS_FRAMES = 50;
-var loafObserver;
-var pendingLoAFs = [];
-var pendingEntriesGroups = [];
-var latestProcessingEnd = 0;
-var entryToEntriesGroupMap = /* @__PURE__ */ new WeakMap();
-var interactionTargetMap = /* @__PURE__ */ new Map();
-var idleHandle = -1;
-var handleLoAFEntries = (entries) => {
-  pendingLoAFs = pendingLoAFs.concat(entries);
-  queueCleanup();
-};
-var saveInteractionTarget = (entry) => {
-};
-var groupEntriesByRenderTime = (entry) => {
-  const renderTime = entry.startTime + entry.duration;
-  let group;
-  latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
-  for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
-    const potentialGroup = pendingEntriesGroups[i];
-    if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
-      group = potentialGroup;
-      group.startTime = Math.min(entry.startTime, group.startTime);
-      group.processingStart = Math.min(entry.processingStart, group.processingStart);
-      group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
-      group.entries.push(entry);
-      break;
-    }
-  }
-  if (!group) {
-    group = {
-      startTime: entry.startTime,
-      processingStart: entry.processingStart,
-      processingEnd: entry.processingEnd,
-      renderTime,
-      entries: [entry]
-    };
-    pendingEntriesGroups.push(group);
-  }
-  if (entry.interactionId || entry.entryType === "first-input") {
-    entryToEntriesGroupMap.set(entry, group);
-  }
-  queueCleanup();
-};
-var queueCleanup = () => {
-  if (idleHandle < 0) {
-    idleHandle = whenIdle(cleanupEntries);
-  }
-};
-var cleanupEntries = () => {
-  if (interactionTargetMap.size > 10) {
-    interactionTargetMap.forEach((_, key) => {
-      if (!longestInteractionMap.has(key)) {
-        interactionTargetMap.delete(key);
-      }
-    });
-  }
-  const longestInteractionGroups = longestInteractionList.map((i) => {
-    return entryToEntriesGroupMap.get(i.entries[0]);
-  });
-  const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
-  pendingEntriesGroups = pendingEntriesGroups.filter((group, index) => {
-    if (index >= minIndex)
-      return true;
-    return longestInteractionGroups.includes(group);
-  });
-  const loafsToKeep = /* @__PURE__ */ new Set();
-  for (let i = 0; i < pendingEntriesGroups.length; i++) {
-    const group = pendingEntriesGroups[i];
-    getIntersectingLoAFs(group.startTime, group.processingEnd).forEach((loaf) => {
-      loafsToKeep.add(loaf);
-    });
-  }
-  const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
-  pendingLoAFs = pendingLoAFs.filter((loaf, index) => {
-    if (loaf.startTime > latestProcessingEnd && index > prevFrameIndexCutoff) {
-      return true;
-    }
-    return loafsToKeep.has(loaf);
-  });
-  idleHandle = -1;
-};
-entryPreProcessingCallbacks.push(saveInteractionTarget, groupEntriesByRenderTime);
-var getIntersectingLoAFs = (start, end) => {
-  const intersectingLoAFs = [];
-  for (let i = 0, loaf; loaf = pendingLoAFs[i]; i++) {
-    if (loaf.startTime + loaf.duration < start)
-      continue;
-    if (loaf.startTime > end)
-      break;
-    intersectingLoAFs.push(loaf);
-  }
-  return intersectingLoAFs;
-};
-var attributeINP = (metric) => {
-  const firstEntry = metric.entries[0];
-  const group = entryToEntriesGroupMap.get(firstEntry);
-  const processingStart = firstEntry.processingStart;
-  const processingEnd = group.processingEnd;
-  const processedEventEntries = group.entries.sort((a, b) => {
-    return a.processingStart - b.processingStart;
-  });
-  const longAnimationFrameEntries = getIntersectingLoAFs(firstEntry.startTime, processingEnd);
-  const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
-  const interactionTargetElement = firstEntryWithTarget && firstEntryWithTarget.target || interactionTargetMap.get(firstEntry.interactionId);
-  const nextPaintTimeCandidates = [
-    firstEntry.startTime + firstEntry.duration,
-    processingEnd
-  ].concat(longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration));
-  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
-  const attribution = {
-    interactionTarget: getSelector(interactionTargetElement),
-    interactionTargetElement,
-    interactionType: firstEntry.name.startsWith("key") ? "keyboard" : "pointer",
-    interactionTime: firstEntry.startTime,
-    nextPaintTime,
-    processedEventEntries,
-    longAnimationFrameEntries,
-    inputDelay: processingStart - firstEntry.startTime,
-    processingDuration: processingEnd - processingStart,
-    presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
-    loadState: getLoadState(firstEntry.startTime)
+var onINP2 = (onReport, opts = {}) => {
+  opts = Object.assign({}, opts);
+  const interactionManager = initUnique(opts, InteractionManager);
+  let pendingLoAFs = [];
+  let pendingEntriesGroups = [];
+  let latestProcessingEnd = 0;
+  const entryToEntriesGroupMap = /* @__PURE__ */ new WeakMap();
+  const interactionTargetMap = /* @__PURE__ */ new WeakMap();
+  let cleanupPending = false;
+  const handleLoAFEntries = (entries) => {
+    pendingLoAFs = pendingLoAFs.concat(entries);
+    queueCleanup();
   };
-  const metricWithAttribution = Object.assign(metric, { attribution });
-  return metricWithAttribution;
-};
-var onINP2 = (onReport, opts) => {
-  if (!loafObserver) {
-    loafObserver = observe("long-animation-frame", handleLoAFEntries);
+  const saveInteractionTarget = (interaction) => {
+    if (!interactionTargetMap.get(interaction)) {
+      const node = interaction.entries[0].target;
+      if (node) {
+        const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
+        interactionTargetMap.set(interaction, customTarget);
+      }
+    }
+  };
+  const groupEntriesByRenderTime = (entry) => {
+    const renderTime = entry.startTime + entry.duration;
+    let group;
+    latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
+    for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
+      const potentialGroup = pendingEntriesGroups[i];
+      if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
+        group = potentialGroup;
+        group.startTime = Math.min(entry.startTime, group.startTime);
+        group.processingStart = Math.min(entry.processingStart, group.processingStart);
+        group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
+        group.entries.push(entry);
+        break;
+      }
+    }
+    if (!group) {
+      group = {
+        startTime: entry.startTime,
+        processingStart: entry.processingStart,
+        processingEnd: entry.processingEnd,
+        renderTime,
+        entries: [entry]
+      };
+      pendingEntriesGroups.push(group);
+    }
+    if (entry.interactionId || entry.entryType === "first-input") {
+      entryToEntriesGroupMap.set(entry, group);
+    }
+    queueCleanup();
+  };
+  const queueCleanup = () => {
+    if (!cleanupPending) {
+      whenIdleOrHidden(cleanupEntries);
+      cleanupPending = true;
+    }
+  };
+  const cleanupEntries = () => {
+    const longestInteractionGroups = interactionManager._longestInteractionList.map((i) => {
+      return entryToEntriesGroupMap.get(i.entries[0]);
+    });
+    const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
+    pendingEntriesGroups = pendingEntriesGroups.filter((group, index) => {
+      if (index >= minIndex)
+        return true;
+      return longestInteractionGroups.includes(group);
+    });
+    const loafsToKeep = /* @__PURE__ */ new Set();
+    for (const group of pendingEntriesGroups) {
+      const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
+      for (const loaf of loafs) {
+        loafsToKeep.add(loaf);
+      }
+    }
+    const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
+    pendingLoAFs = pendingLoAFs.filter((loaf, index) => {
+      if (loaf.startTime > latestProcessingEnd && index > prevFrameIndexCutoff) {
+        return true;
+      }
+      return loafsToKeep.has(loaf);
+    });
+    cleanupPending = false;
+  };
+  async function handleOnEachInteractionCallback(entry) {
+    if (!opts.onEachInteraction) {
+      return;
+    }
+    void await Promise.resolve();
+    if (!entry.interactionId) {
+      return;
+    }
+    const interaction = attributeINP({
+      entries: [entry],
+      // The only value we really need for `attributeINP` is `entries`
+      // Everything else is included to fill out the type.
+      name: "INP",
+      rating: "good",
+      value: entry.duration,
+      delta: entry.duration,
+      navigationType: "navigate",
+      id: "N/A"
+    });
+    opts.onEachInteraction(interaction);
   }
+  interactionManager._onBeforeProcessingEntry = (entry) => {
+    void handleOnEachInteractionCallback(entry);
+    groupEntriesByRenderTime(entry);
+  };
+  interactionManager._onAfterProcessingINPCandidate = saveInteractionTarget;
+  const getIntersectingLoAFs = (start, end) => {
+    const intersectingLoAFs = [];
+    for (const loaf of pendingLoAFs) {
+      if (loaf.startTime + loaf.duration < start)
+        continue;
+      if (loaf.startTime > end)
+        break;
+      intersectingLoAFs.push(loaf);
+    }
+    return intersectingLoAFs;
+  };
+  const attributeLoAFDetails = (attribution) => {
+    if (!attribution.longAnimationFrameEntries?.length) {
+      return;
+    }
+    const interactionTime = attribution.interactionTime;
+    const inputDelay = attribution.inputDelay;
+    const processingDuration = attribution.processingDuration;
+    let totalScriptDuration = 0;
+    let totalStyleAndLayoutDuration = 0;
+    let totalPaintDuration = 0;
+    let longestScriptDuration = 0;
+    let longestScriptEntry;
+    let longestScriptSubpart;
+    for (const loafEntry of attribution.longAnimationFrameEntries) {
+      totalStyleAndLayoutDuration = totalStyleAndLayoutDuration + loafEntry.startTime + loafEntry.duration - loafEntry.styleAndLayoutStart;
+      for (const script of loafEntry.scripts) {
+        const scriptEndTime = script.startTime + script.duration;
+        if (scriptEndTime < interactionTime) {
+          continue;
+        }
+        const intersectingScriptDuration = scriptEndTime - Math.max(interactionTime, script.startTime);
+        const intersectingForceStyleAndLayoutDuration = script.duration ? intersectingScriptDuration / script.duration * script.forcedStyleAndLayoutDuration : 0;
+        totalScriptDuration += intersectingScriptDuration - intersectingForceStyleAndLayoutDuration;
+        totalStyleAndLayoutDuration += intersectingForceStyleAndLayoutDuration;
+        if (intersectingScriptDuration > longestScriptDuration) {
+          longestScriptSubpart = script.startTime < interactionTime + inputDelay ? "input-delay" : script.startTime >= interactionTime + inputDelay + processingDuration ? "presentation-delay" : "processing-duration";
+          longestScriptEntry = script;
+          longestScriptDuration = intersectingScriptDuration;
+        }
+      }
+    }
+    const lastLoAF = attribution.longAnimationFrameEntries.at(-1);
+    const lastLoAFEndTime = lastLoAF ? lastLoAF.startTime + lastLoAF.duration : 0;
+    if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
+      totalPaintDuration = attribution.nextPaintTime - lastLoAFEndTime;
+    }
+    if (longestScriptEntry && longestScriptSubpart) {
+      attribution.longestScript = {
+        entry: longestScriptEntry,
+        subpart: longestScriptSubpart,
+        intersectingDuration: longestScriptDuration
+      };
+    }
+    attribution.totalScriptDuration = totalScriptDuration;
+    attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
+    attribution.totalPaintDuration = totalPaintDuration;
+    attribution.totalUnattributedDuration = attribution.nextPaintTime - interactionTime - totalScriptDuration - totalStyleAndLayoutDuration - totalPaintDuration;
+  };
+  const attributeINP = (metric) => {
+    const firstEntry = metric.entries[0];
+    const group = entryToEntriesGroupMap.get(firstEntry);
+    const processingStart = firstEntry.processingStart;
+    const nextPaintTime = Math.max(firstEntry.startTime + firstEntry.duration, processingStart);
+    const processingEnd = Math.min(group.processingEnd, nextPaintTime);
+    const processedEventEntries = group.entries.sort((a, b) => {
+      return a.processingStart - b.processingStart;
+    });
+    const longAnimationFrameEntries = getIntersectingLoAFs(firstEntry.startTime, processingEnd);
+    const interaction = interactionManager._longestInteractionMap.get(firstEntry.interactionId);
+    const attribution = {
+      // TS flags the next line because `interactionTargetMap.get()` might
+      // return `undefined`, but we ignore this assuming the user knows what
+      // they are doing.
+      interactionTarget: interactionTargetMap.get(interaction),
+      interactionType: firstEntry.name.startsWith("key") ? "keyboard" : "pointer",
+      interactionTime: firstEntry.startTime,
+      nextPaintTime,
+      processedEventEntries,
+      longAnimationFrameEntries,
+      inputDelay: processingStart - firstEntry.startTime,
+      processingDuration: processingEnd - processingStart,
+      presentationDelay: nextPaintTime - processingEnd,
+      loadState: getLoadState(firstEntry.startTime),
+      longestScript: void 0,
+      totalScriptDuration: void 0,
+      totalStyleAndLayoutDuration: void 0,
+      totalPaintDuration: void 0,
+      totalUnattributedDuration: void 0
+    };
+    attributeLoAFDetails(attribution);
+    const metricWithAttribution = Object.assign(metric, { attribution });
+    return metricWithAttribution;
+  };
+  observe("long-animation-frame", handleLoAFEntries);
   onINP((metric) => {
     const metricWithAttribution = attributeINP(metric);
     onReport(metricWithAttribution);
@@ -857,48 +888,61 @@ var onINP2 = (onReport, opts) => {
 };
 
 // gen/front_end/third_party/web-vitals/package/dist/modules/attribution/onLCP.js
-var attributeLCP = (metric) => {
-  let attribution = {
-    timeToFirstByte: 0,
-    resourceLoadDelay: 0,
-    resourceLoadDuration: 0,
-    elementRenderDelay: metric.value
+var onLCP2 = (onReport, opts = {}) => {
+  opts = Object.assign({}, opts);
+  const lcpEntryManager = initUnique(opts, LCPEntryManager);
+  const lcpTargetMap = /* @__PURE__ */ new WeakMap();
+  lcpEntryManager._onBeforeProcessingEntry = (entry) => {
+    const node = entry.element;
+    if (node) {
+      const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
+      lcpTargetMap.set(entry, customTarget);
+    }
   };
-  if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
-    if (navigationEntry) {
-      const activationStart = navigationEntry.activationStart || 0;
-      const lcpEntry = metric.entries[metric.entries.length - 1];
-      const lcpResourceEntry = lcpEntry.url && performance.getEntriesByType("resource").filter((e) => e.name === lcpEntry.url)[0];
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
-      const lcpRequestStart = Math.max(
-        ttfb,
-        // Prefer `requestStart` (if TOA is set), otherwise use `startTime`.
-        lcpResourceEntry ? (lcpResourceEntry.requestStart || lcpResourceEntry.startTime) - activationStart : 0
-      );
-      const lcpResponseEnd = Math.max(lcpRequestStart, lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0);
-      const lcpRenderTime = Math.max(lcpResponseEnd, lcpEntry.startTime - activationStart);
-      attribution = {
-        element: getSelector(lcpEntry.element),
-        timeToFirstByte: ttfb,
-        resourceLoadDelay: lcpRequestStart - ttfb,
-        resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
-        elementRenderDelay: lcpRenderTime - lcpResponseEnd,
-        navigationEntry,
-        lcpEntry
-      };
-      if (lcpEntry.url) {
-        attribution.url = lcpEntry.url;
-      }
-      if (lcpResourceEntry) {
-        attribution.lcpResourceEntry = lcpResourceEntry;
+  const attributeLCP = (metric) => {
+    let attribution = {
+      timeToFirstByte: 0,
+      resourceLoadDelay: 0,
+      resourceLoadDuration: 0,
+      elementRenderDelay: metric.value
+    };
+    if (metric.entries.length) {
+      const navigationEntry = getNavigationEntry();
+      if (navigationEntry) {
+        const activationStart = navigationEntry.activationStart || 0;
+        const lcpEntry = metric.entries.at(-1);
+        const lcpResourceEntry = lcpEntry.url && performance.getEntriesByType("resource").filter((e) => e.name === lcpEntry.url)[0];
+        const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+        const lcpRequestStart = Math.max(
+          ttfb,
+          // Prefer `requestStart` (if TOA is set), otherwise use `startTime`.
+          lcpResourceEntry ? (lcpResourceEntry.requestStart || lcpResourceEntry.startTime) - activationStart : 0
+        );
+        const lcpResponseEnd = Math.min(
+          // Cap at LCP time (videos continue downloading after LCP for example)
+          metric.value,
+          Math.max(lcpRequestStart, lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0)
+        );
+        attribution = {
+          target: lcpTargetMap.get(lcpEntry),
+          timeToFirstByte: ttfb,
+          resourceLoadDelay: lcpRequestStart - ttfb,
+          resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
+          elementRenderDelay: metric.value - lcpResponseEnd,
+          navigationEntry,
+          lcpEntry
+        };
+        if (lcpEntry.url) {
+          attribution.url = lcpEntry.url;
+        }
+        if (lcpResourceEntry) {
+          attribution.lcpResourceEntry = lcpResourceEntry;
+        }
       }
     }
-  }
-  const metricWithAttribution = Object.assign(metric, { attribution });
-  return metricWithAttribution;
-};
-var onLCP2 = (onReport, opts) => {
+    const metricWithAttribution = Object.assign(metric, { attribution });
+    return metricWithAttribution;
+  };
   onLCP((metric) => {
     const metricWithAttribution = attributeLCP(metric);
     onReport(metricWithAttribution);
@@ -939,29 +983,9 @@ var attributeTTFB = (metric) => {
   const metricWithAttribution = Object.assign(metric, { attribution });
   return metricWithAttribution;
 };
-var onTTFB2 = (onReport, opts) => {
+var onTTFB2 = (onReport, opts = {}) => {
   onTTFB((metric) => {
     const metricWithAttribution = attributeTTFB(metric);
-    onReport(metricWithAttribution);
-  }, opts);
-};
-
-// gen/front_end/third_party/web-vitals/package/dist/modules/attribution/onFID.js
-var attributeFID = (metric) => {
-  const fidEntry = metric.entries[0];
-  const attribution = {
-    eventTarget: getSelector(fidEntry.target),
-    eventType: fidEntry.name,
-    eventTime: fidEntry.startTime,
-    eventEntry: fidEntry,
-    loadState: getLoadState(fidEntry.startTime)
-  };
-  const metricWithAttribution = Object.assign(metric, { attribution });
-  return metricWithAttribution;
-};
-var onFID2 = (onReport, opts) => {
-  onFID((metric) => {
-    const metricWithAttribution = attributeFID(metric);
     onReport(metricWithAttribution);
   }, opts);
 };
@@ -969,16 +993,12 @@ export {
   attribution_exports as Attribution,
   CLSThresholds,
   FCPThresholds,
-  FIDThresholds,
   INPThresholds,
   LCPThresholds,
   TTFBThresholds,
-  attributeINP,
-  entryPreProcessingCallbacks,
   onBFCacheRestore,
   onCLS,
   onFCP,
-  onFID,
   onINP,
   onLCP,
   onTTFB

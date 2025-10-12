@@ -60,6 +60,9 @@ export function hasLocaleDataForTest(locale) {
 export function resetLocaleDataForTest() {
     i18nInstance.resetLocaleDataForTest();
 }
+export function registerLocaleDataForTest(locale, messages) {
+    i18nInstance.registerLocaleData(locale, messages);
+}
 /**
  * Returns an anonymous function that wraps a call to retrieve a localized string.
  * This is introduced so that localized strings can be declared in environments where

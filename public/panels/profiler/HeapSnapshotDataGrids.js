@@ -183,6 +183,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper
         }
     }
     wasShown() {
+        super.wasShown();
         if (this.nameFilter) {
             this.nameFilter.addEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onNameFilterChanged, this);
             this.updateVisibleNodes(true);
@@ -197,6 +198,7 @@ export class HeapSnapshotSortableDataGrid extends Common.ObjectWrapper
         this.dispatchEventToListeners(HeapSnapshotSortableDataGridEvents.ContentShown, this);
     }
     willHide() {
+        super.willHide();
         if (this.nameFilter) {
             this.nameFilter.removeEventListener("TextChanged" /* UI.Toolbar.ToolbarInput.Event.TEXT_CHANGED */, this.onNameFilterChanged, this);
         }

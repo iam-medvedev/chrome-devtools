@@ -439,6 +439,7 @@ var FilteredListWidget = class extends Common.ObjectWrapper.eventMixin(UI.Widget
     this.attachProvider();
   }
   willHide() {
+    super.willHide();
     if (this.provider) {
       this.provider.detach();
     }

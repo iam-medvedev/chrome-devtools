@@ -147,6 +147,7 @@ export class KeyValueStorageItemsView extends UI.Widget.VBox {
         this.showPreview(null, null);
     }
     wasShown() {
+        super.wasShown();
         this.refreshItems();
     }
     performUpdate() {

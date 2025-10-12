@@ -2539,8 +2539,12 @@ var Trie_exports = {};
 __export2(Trie_exports, {
   FrameNode: () => FrameNode,
   Trie: () => Trie,
-  compareRawFrames: () => compareRawFrames
+  compareRawFrames: () => compareRawFrames,
+  isBuiltinFrame: () => isBuiltinFrame
 });
+function isBuiltinFrame(rawFrame) {
+  return rawFrame.lineNumber === -1 && rawFrame.columnNumber === -1 && !Boolean(rawFrame.scriptId) && !Boolean(rawFrame.url);
+}
 var FrameNode = class {
   parent;
   children = [];

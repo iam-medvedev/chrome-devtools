@@ -1571,10 +1571,12 @@ var RecorderPanel = class _RecorderPanel extends UI2.Panel.Panel {
     return recorderPanelInstance;
   }
   wasShown() {
+    super.wasShown();
     UI2.Context.Context.instance().setFlavor(_RecorderPanel, this);
     this.#controller.focus();
   }
   willHide() {
+    super.willHide();
     UI2.Context.Context.instance().setFlavor(_RecorderPanel, null);
   }
   handleActions(actionId) {

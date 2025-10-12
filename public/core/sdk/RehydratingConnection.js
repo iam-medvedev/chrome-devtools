@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 import * as Common from '../common/common.js';
 import * as i18n from '../i18n/i18n.js';
+import * as Root from '../root/root.js';
 import * as EnhancedTraces from './EnhancedTracesParser.js';
 import { TraceObject } from './TraceObject.js';
 const UIStrings = {
@@ -28,13 +29,33 @@ export class RehydratingConnection {
     trace = null;
     sessions = new Map();
     #onConnectionLost;
-    #rehydratingWindow;
+    #rehydratingWindow = window;
     #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
     constructor(onConnectionLost) {
-        // If we're invoking this class, we're in the rehydrating pop-up window. Rename window for clarity.
         this.#onConnectionLost = onConnectionLost;
-        this.#rehydratingWindow = window;
-        this.#setupMessagePassing();
+        if (!this.#maybeHandleLoadingFromUrl()) {
+            this.#setupMessagePassing();
+        }
+    }
+    /** Returns true if found a trace URL. */
+    #maybeHandleLoadingFromUrl() {
+        let traceUrl = Root.Runtime.Runtime.queryParam('traceURL');
+        if (!traceUrl) {
+            // For compatibility, handle the older loadTimelineFromURL.
+            const timelineUrl = Root.Runtime.Runtime.queryParam('loadTimelineFromURL');
+            if (timelineUrl) {
+                // It was double-URI encoded for some reason.
+                traceUrl = decodeURIComponent(timelineUrl);
+            }
+        }
+        if (traceUrl) {
+            void fetch(traceUrl).then(r => r.arrayBuffer()).then(b => Common.Gzip.arrayBufferToString(b)).then(traceJson => {
+                const trace = new TraceObject(JSON.parse(traceJson));
+                void this.startHydration(trace);
+            });
+            return true;
+        }
+        return false;
     }
     #setupMessagePassing() {
         this.#rehydratingWindow.addEventListener('message', this.#onReceiveHostWindowPayloadBound);

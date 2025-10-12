@@ -47,6 +47,9 @@ export class Button extends HTMLElement {
         if ('size' in data && data.size) {
             this.#props.size = data.size;
         }
+        if (data.accessibleLabel) {
+            this.#props.accessibleLabel = data.accessibleLabel;
+        }
         this.#props.active = Boolean(data.active);
         this.#props.spinner = Boolean('spinner' in data ? data.spinner : false);
         this.#props.type = 'button';
@@ -81,6 +84,10 @@ export class Button extends HTMLElement {
     }
     set size(size) {
         this.#props.size = size;
+        this.#render();
+    }
+    set accessibleLabel(label) {
+        this.#props.accessibleLabel = label;
         this.#render();
     }
     set reducedFocusRing(reducedFocusRing) {
@@ -228,9 +235,10 @@ export class Button extends HTMLElement {
         Lit.render(html `
         <style>${buttonStyles}</style>
         <button title=${ifDefined(this.#props.title)}
-                .disabled=${this.#props.disabled}
+                ?disabled=${this.#props.disabled}
                 class=${classMap(classes)}
                 aria-pressed=${ifDefined(this.#props.toggled)}
+                aria-label=${ifDefined(this.#props.accessibleLabel)}
                 jslog=${ifDefined(jslog)}>
           ${hasIcon ? html `
             <devtools-icon name=${ifDefined(this.#props.toggled ? this.#props.toggledIconName : this.#props.iconName)}>

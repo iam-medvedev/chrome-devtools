@@ -15,9 +15,11 @@ export declare class CSSRule {
     readonly origin: Protocol.CSS.StyleSheetOrigin;
     readonly style: CSSStyleDeclaration;
     readonly header: CSSStyleSheetHeader | null;
+    readonly treeScope: Protocol.DOM.BackendNodeId | undefined;
     constructor(cssModel: CSSModel, payload: {
         style: Protocol.CSS.CSSStyle;
         origin: Protocol.CSS.StyleSheetOrigin;
+        originTreeScopeNodeId: Protocol.DOM.BackendNodeId | undefined;
         header: CSSStyleSheetHeader | null;
     });
     get sourceURL(): string | undefined;

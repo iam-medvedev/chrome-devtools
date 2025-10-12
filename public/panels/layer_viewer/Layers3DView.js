@@ -155,9 +155,11 @@ export class Layers3DView extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.update();
     }
     willHide() {
+        super.willHide();
         this.textureManager.suspend();
     }
     wasShown() {
+        super.wasShown();
         this.textureManager.resume();
         if (!this.needsUpdate) {
             return;

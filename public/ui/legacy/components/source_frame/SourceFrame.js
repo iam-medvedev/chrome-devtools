@@ -397,6 +397,7 @@ export class SourceFrameImpl extends Common.ObjectWrapper.eventMixin(UI.View.Sim
         return this.loadError;
     }
     wasShown() {
+        super.wasShown();
         void this.ensureContentLoaded();
         this.wasShownOrLoaded();
     }

@@ -7,8 +7,8 @@ import * as LegacyWrapper from '../../../ui/components/legacy_wrapper/legacy_wra
 import * as UI from '../../../ui/legacy/legacy.js';
 export declare class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #private;
+    isNode: boolean;
     constructor();
-    set isNode(isNode: boolean);
     connectedCallback(): void;
     disconnectedCallback(): void;
 }

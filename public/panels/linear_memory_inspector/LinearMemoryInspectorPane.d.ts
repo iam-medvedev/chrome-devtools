@@ -30,6 +30,7 @@ export declare class LinearMemoryInspectorView extends UI.Widget.VBox {
     #private;
     firstTimeOpen: boolean;
     constructor(memoryWrapper: LazyUint8Array, address: number | undefined, tabId: string, hideValueInspector?: boolean);
+    render(): void;
     wasShown(): void;
     saveSettings(settings: LinearMemoryInspectorComponents.LinearMemoryInspector.Settings): void;
     updateAddress(address: number): void;

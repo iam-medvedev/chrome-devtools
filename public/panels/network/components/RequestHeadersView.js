@@ -115,6 +115,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         this.setAttribute('jslog', `${VisualLogging.pane('headers').track({ resize: true })}`);
     }
     wasShown() {
+        super.wasShown();
         this.#request.addEventListener(SDK.NetworkRequest.Events.REMOTE_ADDRESS_CHANGED, this.#refreshHeadersView, this);
         this.#request.addEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.#refreshHeadersView, this);
         this.#request.addEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.#refreshHeadersView, this);
@@ -123,6 +124,7 @@ export class RequestHeadersView extends LegacyWrapper.LegacyWrapper.WrappableCom
         this.#refreshHeadersView();
     }
     willHide() {
+        super.willHide();
         this.#request.removeEventListener(SDK.NetworkRequest.Events.REMOTE_ADDRESS_CHANGED, this.#refreshHeadersView, this);
         this.#request.removeEventListener(SDK.NetworkRequest.Events.FINISHED_LOADING, this.#refreshHeadersView, this);
         this.#request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.#refreshHeadersView, this);

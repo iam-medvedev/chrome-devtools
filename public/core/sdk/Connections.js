@@ -224,7 +224,7 @@ export async function initMainConnection(createRootTarget, onConnectionLost) {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
 }
 function createMainConnection(onConnectionLost) {
-    if (Root.Runtime.getPathName().includes('rehydrated_devtools_app')) {
+    if (Root.Runtime.Runtime.isTraceApp()) {
         return new RehydratingConnection(onConnectionLost);
     }
     const wsParam = Root.Runtime.Runtime.queryParam('ws');

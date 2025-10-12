@@ -223,7 +223,8 @@ var BinaryViewObject = class {
 var BlockedURLsPane_exports = {};
 __export(BlockedURLsPane_exports, {
   ActionDelegate: () => ActionDelegate,
-  BlockedURLsPane: () => BlockedURLsPane
+  BlockedURLsPane: () => BlockedURLsPane,
+  DEFAULT_VIEW: () => DEFAULT_VIEW
 });
 import "./../../ui/legacy/legacy.js";
 import * as i18n3 from "./../../core/i18n/i18n.js";
@@ -232,6 +233,7 @@ import * as SDK from "./../../core/sdk/sdk.js";
 import * as Logs from "./../../models/logs/logs.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { Directives, html, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/network/blockedURLsPane.css.js
@@ -315,6 +317,7 @@ var blockedURLsPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./blockedURLsPane.css")} */`;
 
 // gen/front_end/panels/network/BlockedURLsPane.js
+var { ref } = Directives;
 var UIStrings2 = {
   /**
    * @description Text to enable blocking of network requests
@@ -366,54 +369,83 @@ var UIStrings2 = {
 var str_2 = i18n3.i18n.registerUIStrings("panels/network/BlockedURLsPane.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var NETWORK_REQUEST_BLOCKING_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/network-request-blocking";
+var { bindToAction } = UI2.UIUtils;
+var DEFAULT_VIEW = (input, output, target) => {
+  render(
+    // clang-format off
+    html`
+    <style>${blockedURLsPane_css_default}</style>
+    <devtools-toolbar jslog=${VisualLogging.toolbar()}>
+      <devtools-checkbox
+        ?checked=${input.enabled}
+        @click=${input.toggleEnabled}
+        .jslogContext=${"network.enable-request-blocking"}>
+        ${i18nString2(UIStrings2.enableNetworkRequestBlocking)}
+      </devtools-checkbox>
+      <div class="toolbar-divider"></div>
+      <devtools-button ${bindToAction("network.add-network-request-blocking-pattern")}></devtools-button>
+      <devtools-button ${bindToAction("network.remove-all-network-request-blocking-patterns")}></devtools-button>
+    </devtools-toolbar>
+    <div class=empty-state ${ref((e) => input.list.setEmptyPlaceholder(e ?? null))}>
+      <span class=empty-state-header>${i18nString2(UIStrings2.noNetworkRequestsBlocked)}</span>
+      <div class=empty-state-description>
+        <span>${i18nString2(UIStrings2.addPatternToBlock, { PH1: i18nString2(UIStrings2.addPattern) })}</span>
+        <x-link
+          href=${NETWORK_REQUEST_BLOCKING_EXPLANATION_URL}
+          tabindex=0
+          class=devtools-link
+          jslog=${VisualLogging.link().track({ click: true, keydown: "Enter|Space" }).context("learn-more")}>
+            ${i18nString2(UIStrings2.learnMore)}
+        </x-link>
+      </div>
+      <devtools-button
+        @click=${input.addPattern}
+        class=add-button
+        .jslogContext=${"network.add-network-request-blocking-pattern"}
+        aria-label=${i18nString2(UIStrings2.addNetworkRequestBlockingPattern)}
+        .variant=${"tonal"}>
+          ${i18nString2(UIStrings2.addPattern)}
+      </devtools-button>
+    </div>
+    <devtools-widget .widgetConfig=${UI2.Widget.widgetConfig(UI2.Widget.VBox)}>${input.list.element}</devtools-widget>
+    `,
+    // clang-format on
+    target
+  );
+};
 var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
   manager;
-  toolbar;
-  enabledCheckbox;
   list;
   editor;
   blockedCountForUrl;
-  constructor() {
-    super({
+  #view;
+  constructor(target, view = DEFAULT_VIEW) {
+    super(target, {
       jslog: `${VisualLogging.panel("network.blocked-urls").track({ resize: true })}`,
       useShadowDom: true
     });
-    this.registerRequiredCSS(blockedURLsPane_css_default);
+    this.#view = view;
     this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
     this.manager.addEventListener("BlockedPatternsChanged", this.update, this);
-    this.toolbar = this.contentElement.createChild("devtools-toolbar");
-    this.enabledCheckbox = new UI2.Toolbar.ToolbarCheckbox(i18nString2(UIStrings2.enableNetworkRequestBlocking), void 0, this.toggleEnabled.bind(this), "network.enable-request-blocking");
-    this.toolbar.appendToolbarItem(this.enabledCheckbox);
-    this.toolbar.appendSeparator();
-    this.toolbar.appendToolbarItem(UI2.Toolbar.Toolbar.createActionButton("network.add-network-request-blocking-pattern"));
-    this.toolbar.appendToolbarItem(UI2.Toolbar.Toolbar.createActionButton("network.remove-all-network-request-blocking-patterns"));
-    this.toolbar.setAttribute("jslog", `${VisualLogging.toolbar()}`);
     this.list = new UI2.ListWidget.ListWidget(this);
     this.list.registerRequiredCSS(blockedURLsPane_css_default);
     this.list.element.classList.add("blocked-urls");
-    this.list.setEmptyPlaceholder(this.createEmptyPlaceholder());
-    this.list.show(this.contentElement);
     this.editor = null;
     this.blockedCountForUrl = /* @__PURE__ */ new Map();
     SDK.TargetManager.TargetManager.instance().addModelListener(SDK.NetworkManager.NetworkManager, SDK.NetworkManager.Events.RequestFinished, this.onRequestFinished, this, { scoped: true });
     this.update();
     Logs.NetworkLog.NetworkLog.instance().addEventListener(Logs.NetworkLog.Events.Reset, this.onNetworkLogReset, this);
   }
-  createEmptyPlaceholder() {
-    const placeholder = this.contentElement.createChild("div", "empty-state");
-    placeholder.createChild("span", "empty-state-header").textContent = i18nString2(UIStrings2.noNetworkRequestsBlocked);
-    const description = placeholder.createChild("div", "empty-state-description");
-    description.createChild("span").textContent = i18nString2(UIStrings2.addPatternToBlock, { PH1: i18nString2(UIStrings2.addPattern) });
-    const link = UI2.XLink.XLink.create(NETWORK_REQUEST_BLOCKING_EXPLANATION_URL, i18nString2(UIStrings2.learnMore), void 0, void 0, "learn-more");
-    description.appendChild(link);
-    const addButton = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.addPattern), this.addPattern.bind(this), {
-      className: "add-button",
-      jslogContext: "network.add-network-request-blocking-pattern",
-      variant: "tonal"
-    });
-    UI2.ARIAUtils.setLabel(addButton, i18nString2(UIStrings2.addNetworkRequestBlockingPattern));
-    placeholder.appendChild(addButton);
-    return placeholder;
+  performUpdate() {
+    const enabled = this.manager.blockingEnabled();
+    this.list.element.classList.toggle("blocking-disabled", !enabled && Boolean(this.manager.blockedPatterns().length));
+    const input = {
+      addPattern: this.addPattern.bind(this),
+      toggleEnabled: this.toggleEnabled.bind(this),
+      enabled,
+      list: this.list
+    };
+    this.#view(input, {}, this.contentElement);
   }
   addPattern() {
     this.manager.setBlockingEnabled(true);
@@ -426,24 +458,29 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     const count = this.blockedRequestsCount(pattern.url);
     const element = document.createElement("div");
     element.classList.add("blocked-url");
-    const checkbox = element.createChild("input", "blocked-url-checkbox");
-    checkbox.type = "checkbox";
-    checkbox.checked = pattern.enabled;
-    checkbox.disabled = !editable;
-    checkbox.setAttribute("jslog", `${VisualLogging.toggle().track({ change: true })}`);
-    element.createChild("div", "blocked-url-label").textContent = pattern.url;
-    element.createChild("div", "blocked-url-count").textContent = i18nString2(UIStrings2.dBlocked, { PH1: count });
-    if (editable) {
-      element.addEventListener("click", (event) => this.togglePattern(pattern, event));
-      checkbox.addEventListener("click", (event) => this.togglePattern(pattern, event));
-    }
+    const toggle2 = (e) => {
+      if (editable) {
+        e.consume(true);
+        const patterns = this.manager.blockedPatterns();
+        patterns.splice(patterns.indexOf(pattern), 1, { enabled: !pattern.enabled, url: pattern.url });
+        this.manager.setBlockedPatterns(patterns);
+      }
+    };
+    render(
+      // clang-format off
+      html`
+    <input class=blocked-url-checkbox
+      @click=${toggle2}
+      type=checkbox
+      ?checked=${pattern.enabled}
+      ?disabled=${!editable}
+      .jslog=${VisualLogging.toggle().track({ change: true })}>
+    <div @click=${toggle2} class=blocked-url-label>${pattern.url}</div>
+    <div class=blocked-url-count>${i18nString2(UIStrings2.dBlocked, { PH1: count })}</div>`,
+      // clang-format off
+      element
+    );
     return element;
-  }
-  togglePattern(pattern, event) {
-    event.consume(true);
-    const patterns = this.manager.blockedPatterns();
-    patterns.splice(patterns.indexOf(pattern), 1, { enabled: !pattern.enabled, url: pattern.url });
-    this.manager.setBlockedPatterns(patterns);
   }
   toggleEnabled() {
     this.manager.setBlockingEnabled(!this.manager.blockingEnabled());
@@ -497,12 +534,11 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
   }
   update() {
     const enabled = this.manager.blockingEnabled();
-    this.list.element.classList.toggle("blocking-disabled", !enabled && Boolean(this.manager.blockedPatterns().length));
-    this.enabledCheckbox.setChecked(enabled);
     this.list.clear();
     for (const pattern of this.manager.blockedPatterns()) {
       this.list.appendItem(pattern, enabled);
     }
+    this.requestUpdate();
   }
   blockedRequestsCount(url) {
     if (!url) {
@@ -694,6 +730,7 @@ var EventSourceMessagesView = class extends UI3.Widget.VBox {
     this.request.addEventListener(SDK2.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, this.messageAdded, this);
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK2.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, this.messageAdded, this);
   }
   messageAdded(event) {
@@ -1666,7 +1703,7 @@ import * as DataGrid3 from "./../../ui/legacy/components/data_grid/data_grid.js"
 import * as PerfUI from "./../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI5 from "./../../ui/legacy/legacy.js";
-import { render } from "./../../ui/lit/lit.js";
+import { render as render2 } from "./../../ui/lit/lit.js";
 import { PanelUtils } from "./../utils/utils.js";
 var UIStrings5 = {
   /**
@@ -2426,11 +2463,11 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     UI5.Tooltip.Tooltip.install(element, title || text);
   }
   setTextAndTitleAsLink(element, cellText, titleText, handler) {
-    const link = document.createElement("span");
-    link.classList.add("devtools-link");
-    link.textContent = cellText;
-    link.addEventListener("click", handler);
-    element.appendChild(link);
+    const link2 = document.createElement("span");
+    link2.classList.add("devtools-link");
+    link2.textContent = cellText;
+    link2.addEventListener("click", handler);
+    element.appendChild(link2);
     UI5.Tooltip.Tooltip.install(element, titleText);
   }
   renderCell(c, columnId) {
@@ -2599,7 +2636,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
         cell.appendChild(ippIcon);
       }
       const iconElement = PanelUtils.getIconForNetworkRequest(this.requestInternal);
-      render(iconElement, cell);
+      render2(iconElement, cell);
       const aiButtonContainer = this.createAiButtonIfAvailable();
       if (aiButtonContainer) {
         cell.appendChild(aiButtonContainer);
@@ -2817,9 +2854,9 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
         cell.appendChild(document.createTextNode(i18nString5(UIStrings5.preflight)));
         if (initiator.initiatorRequest) {
           const icon = IconButton.Icon.create("arrow-up-down-circle");
-          const link = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
-          UI5.ARIAUtils.setLabel(link, i18nString5(UIStrings5.selectTheRequestThatTriggered));
-          cell.appendChild(link);
+          const link2 = Components.Linkifier.Linkifier.linkifyRevealable(initiator.initiatorRequest, icon, void 0, i18nString5(UIStrings5.selectTheRequestThatTriggered), "trailing-link-icon", "initator-request");
+          UI5.ARIAUtils.setLabel(link2, i18nString5(UIStrings5.selectTheRequestThatTriggered));
+          cell.appendChild(link2);
         }
         break;
       }
@@ -3272,6 +3309,7 @@ var RequestCookiesView = class extends UI6.Widget.Widget {
     this.refreshRequestCookiesView();
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK5.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
     this.request.removeEventListener(SDK5.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
   }
@@ -3437,6 +3475,7 @@ var RequestInitiatorView = class _RequestInitiatorView extends UI7.Widget.VBox {
     root.expand();
   }
   wasShown() {
+    super.wasShown();
     if (this.hasShown) {
       return;
     }
@@ -3948,6 +3987,7 @@ var RequestPayloadView = class _RequestPayloadView extends UI8.Widget.VBox {
     void this.refreshFormData();
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK7.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshFormData, this);
   }
   addEntryContextMenuHandler(treeElement, menuItem, jslogContext, getValue) {
@@ -4271,11 +4311,11 @@ import * as VisualLogging7 from "./../../ui/visual_logging/visual_logging.js";
 // gen/front_end/panels/network/RequestHTMLView.js
 var RequestHTMLView_exports = {};
 __export(RequestHTMLView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   RequestHTMLView: () => RequestHTMLView
 });
 import * as UI9 from "./../../ui/legacy/legacy.js";
-import { html, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import { html as html2, nothing, render as render3 } from "./../../ui/lit/lit.js";
 
 // gen/front_end/panels/network/requestHTMLView.css.js
 var requestHTMLView_css_default = `/*
@@ -4297,11 +4337,11 @@ var requestHTMLView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./requestHTMLView.css")} */`;
 
 // gen/front_end/panels/network/RequestHTMLView.js
-var DEFAULT_VIEW = (input, _output, target) => {
-  render2(html`
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render3(html2`
     <style>${requestHTMLView_css_default}</style>
     <div class="html request-view widget vbox">
-      ${input.dataURL ? html`
+      ${input.dataURL ? html2`
         <!-- @ts-ignore -->
         <iframe class="html-preview-frame" sandbox
           csp="default-src 'none';img-src data:;style-src 'unsafe-inline'" src=${input.dataURL}
@@ -4311,7 +4351,7 @@ var DEFAULT_VIEW = (input, _output, target) => {
 var RequestHTMLView = class _RequestHTMLView extends UI9.Widget.VBox {
   #dataURL;
   #view;
-  constructor(dataURL, view = DEFAULT_VIEW) {
+  constructor(dataURL, view = DEFAULT_VIEW2) {
     super({ useShadowDom: true });
     this.#dataURL = dataURL;
     this.#view = view;
@@ -4325,6 +4365,7 @@ var RequestHTMLView = class _RequestHTMLView extends UI9.Widget.VBox {
     this.requestUpdate();
   }
   willHide() {
+    super.willHide();
     this.requestUpdate();
   }
   performUpdate() {
@@ -4748,6 +4789,7 @@ var RequestPreviewView = class extends UI11.Widget.VBox {
     return view;
   }
   wasShown() {
+    super.wasShown();
     void this.doShowPreview();
   }
   doShowPreview() {
@@ -4790,7 +4832,7 @@ var RequestPreviewView = class extends UI11.Widget.VBox {
 // gen/front_end/panels/network/RequestResponseView.js
 var RequestResponseView_exports = {};
 __export(RequestResponseView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW2,
+  DEFAULT_VIEW: () => DEFAULT_VIEW3,
   RequestResponseView: () => RequestResponseView
 });
 import * as Common7 from "./../../core/common/common.js";
@@ -4800,7 +4842,7 @@ import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Lit from "./../../third_party/lit/lit.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
-var { html: html2, render: render3 } = Lit;
+var { html: html3, render: render4 } = Lit;
 var UIStrings11 = {
   /**
    * @description Text in Request Response View of the Network panel if no preview can be shown
@@ -4819,36 +4861,37 @@ var str_11 = i18n21.i18n.registerUIStrings("panels/network/RequestResponseView.t
 var i18nString11 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
 var widgetConfig = UI12.Widget.widgetConfig;
 var widgetRef = UI12.Widget.widgetRef;
-var DEFAULT_VIEW2 = (input, output, target) => {
+var DEFAULT_VIEW3 = (input, output, target) => {
   let widget;
   if (TextUtils2.StreamingContentData.isError(input.contentData)) {
-    widget = html2`<devtools-widget
+    widget = html3`<devtools-widget
                     .widgetConfig=${widgetConfig((element) => new UI12.EmptyWidget.EmptyWidget(i18nString11(UIStrings11.failedToLoadResponseData), input.contentData.error, element))}></devtools-widget>`;
-  } else if (input.request.statusCode === 204) {
-    widget = html2`<devtools-widget
+  } else if (input.request.statusCode === 204 || input.request.failed) {
+    widget = html3`<devtools-widget
                      .widgetConfig=${widgetConfig((element) => new UI12.EmptyWidget.EmptyWidget(i18nString11(UIStrings11.noPreview), i18nString11(UIStrings11.thisRequestHasNoResponseData), element))}></devtools-widget>`;
   } else if (input.renderAsText) {
-    widget = html2`<devtools-widget
+    widget = html3`<devtools-widget
                     .widgetConfig=${widgetConfig((element) => new SourceFrame3.ResourceSourceFrame.SearchableContainer(input.request, input.mimeType, element))}
                     ${widgetRef(SourceFrame3.ResourceSourceFrame.SearchableContainer, (widget2) => {
       output.revealPosition = widget2.revealPosition.bind(widget2);
     })}></devtools-widget>`;
   } else {
-    widget = html2`<devtools-widget
+    widget = html3`<devtools-widget
                     .widgetConfig=${widgetConfig((element) => new BinaryResourceView(input.contentData, input.request.url(), input.request.resourceType(), element))}></devtools-widget>`;
   }
-  render3(widget, target);
+  render4(widget, target);
 };
 var RequestResponseView = class extends UI12.Widget.VBox {
   request;
   #view;
   #revealPosition;
-  constructor(request, view = DEFAULT_VIEW2) {
+  constructor(request, view = DEFAULT_VIEW3) {
     super();
     this.request = request;
     this.#view = view;
   }
   wasShown() {
+    super.wasShown();
     this.requestUpdate();
   }
   async performUpdate() {
@@ -5512,8 +5555,8 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
       const informationRow = tableElement.createChild("tr");
       const information = informationRow.createChild("td");
       information.colSpan = 3;
-      const link = UI13.XLink.XLink.create("https://web.dev/custom-metrics/#server-timing-api", i18nString12(UIStrings12.theServerTimingApi), void 0, void 0, "server-timing-api");
-      information.appendChild(i18n23.i18n.getFormatLocalizedString(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: link }));
+      const link2 = UI13.XLink.XLink.create("https://web.dev/custom-metrics/#server-timing-api", i18nString12(UIStrings12.theServerTimingApi), void 0, void 0, "server-timing-api");
+      information.appendChild(i18n23.i18n.getFormatLocalizedString(str_12, UIStrings12.duringDevelopmentYouCanUseSToAdd, { PH1: link2 }));
       return tableElement;
     }
     serverTimings.filter((item) => item.metric.toLowerCase() !== "total").forEach((item) => addServerTiming(item, lastTimingRightEdge));
@@ -5685,12 +5728,14 @@ var RequestTimingView = class _RequestTimingView extends UI13.Widget.VBox {
     }
   }
   wasShown() {
+    super.wasShown();
     this.request.addEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
     this.request.addEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
     this.calculator.addEventListener("BoundariesChanged", this.boundaryChanged, this);
     this.refresh();
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK8.NetworkRequest.Events.TIMING_CHANGED, this.refresh, this);
     this.request.removeEventListener(SDK8.NetworkRequest.Events.FINISHED_LOADING, this.refresh, this);
     this.calculator.removeEventListener("BoundariesChanged", this.boundaryChanged, this);
@@ -6086,6 +6131,7 @@ var ResourceDirectSocketChunkView = class extends ResourceChunkView {
     this.request.addEventListener(SDK9.NetworkRequest.Events.DIRECTSOCKET_CHUNK_ADDED, this.onDirectSocketChunkAdded, this);
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK9.NetworkRequest.Events.DIRECTSOCKET_CHUNK_ADDED, this.onDirectSocketChunkAdded, this);
   }
   onDirectSocketChunkAdded(event) {
@@ -6273,6 +6319,7 @@ var ResourceWebSocketFrameView = class extends ResourceChunkView {
     this.request.addEventListener(SDK10.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
   }
   willHide() {
+    super.willHide();
     this.request.removeEventListener(SDK10.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
   }
   onWebSocketFrameAdded(event) {
@@ -6563,6 +6610,7 @@ var NetworkItemView = class extends UI17.TabbedPane.TabbedPane {
     }
   }
   willHide() {
+    super.willHide();
     this.#request.removeEventListener(SDK11.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.requestHeadersChanged, this);
     this.#request.removeEventListener(SDK11.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.maybeAppendCookiesPanel, this);
     this.#request.removeEventListener(SDK11.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.maybeShowErrorIconInTrustTokenTabHeader, this);
@@ -7468,6 +7516,7 @@ var NetworkOverview = class extends PerfUI2.TimelineOverviewPane.TimelineOvervie
     this.scheduleUpdate();
   }
   wasShown() {
+    super.wasShown();
     this.onResize();
   }
   calculator() {
@@ -10499,6 +10548,7 @@ var NetworkLogView = class _NetworkLogView extends Common16.ObjectWrapper.eventM
     this.columnsInternal.wasShown();
   }
   willHide() {
+    super.willHide();
     this.columnsInternal.willHide();
   }
   flatNodesList() {

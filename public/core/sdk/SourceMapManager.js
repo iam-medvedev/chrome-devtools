@@ -9,13 +9,16 @@ import { SourceMapCache } from './SourceMapCache.js';
 import { Type } from './Target.js';
 export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
     #target;
+    #factory;
     #isEnabled = true;
     #clientData = new Map();
     #sourceMaps = new Map();
     #attachingClient = null;
-    constructor(target) {
+    constructor(target, factory) {
         super();
         this.#target = target;
+        this.#factory =
+            factory ?? ((compiledURL, sourceMappingURL, payload) => new SourceMap(compiledURL, sourceMappingURL, payload));
     }
     setEnabled(isEnabled) {
         if (isEnabled === this.#isEnabled) {
@@ -89,7 +92,7 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
                     clientData.sourceMapPromise =
                         loadSourceMap(sourceMapURL, client.debugId(), initiator)
                             .then(payload => {
-                            const sourceMap = new SourceMap(sourceURL, sourceMapURL, payload);
+                            const sourceMap = this.#factory(sourceURL, sourceMapURL, payload, client);
                             if (this.#clientData.get(client) === clientData) {
                                 clientData.sourceMap = sourceMap;
                                 this.#sourceMaps.set(sourceMap, client);
@@ -147,6 +150,9 @@ export class SourceMapManager extends Common.ObjectWrapper.ObjectWrapper {
         else {
             this.dispatchEventToListeners(Events.SourceMapFailedToAttach, { client });
         }
+    }
+    waitForSourceMapsProcessedForTest() {
+        return Promise.all(this.#sourceMaps.keys().map(sourceMap => sourceMap.scopesFallbackPromiseForTest));
     }
 }
 export async function loadSourceMap(url, debugId, initiator) {

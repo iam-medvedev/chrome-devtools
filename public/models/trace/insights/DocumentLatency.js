@@ -14,7 +14,7 @@ export const UIStrings = {
     /**
      * @description Description of an insight that provides a breakdown for how long it took to download the main document.
      */
-    description: 'Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.',
+    description: 'Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.',
     /**
      * @description Text to tell the user that the document request does not have redirects.
      */
@@ -148,6 +148,7 @@ function finalize(partialModel) {
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
+        docs: 'https://developer.chrome.com/docs/performance/insights/document-latency',
         category: InsightCategory.ALL,
         state: hasFailure ? 'fail' : 'pass',
         ...partialModel,

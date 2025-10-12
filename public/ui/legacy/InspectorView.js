@@ -302,6 +302,7 @@ export class InspectorView extends VBox {
         this.element.style.setProperty('--devtools-window-height', `${rect.height}px`);
     }
     wasShown() {
+        super.wasShown();
         this.#resizeObserver.observe(this.element);
         this.#observedResize();
         this.element.ownerDocument.addEventListener('keydown', this.keyDownBound, false);
@@ -309,6 +310,7 @@ export class InspectorView extends VBox {
         this.#applyDrawerOrientationForDockSide();
     }
     willHide() {
+        super.willHide();
         this.#resizeObserver.unobserve(this.element);
         this.element.ownerDocument.removeEventListener('keydown', this.keyDownBound, false);
         DockController.instance().removeEventListener("DockSideChanged" /* DockControllerEvents.DOCK_SIDE_CHANGED */, this.#applyDrawerOrientationForDockSide, this);

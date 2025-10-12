@@ -58,6 +58,7 @@ export type InsightModel<UIStrings extends Record<string, string> = Record<strin
     strings: UIStrings;
     title: Common.UIString.LocalizedString;
     description: Common.UIString.LocalizedString;
+    docs: string;
     category: InsightCategory;
     state: 'pass' | 'fail' | 'informative';
     /** Used by RelatedInsightChips.ts */
@@ -81,7 +82,7 @@ export type InsightModel<UIStrings extends Record<string, string> = Record<strin
     /** This is lazily-generated because some insights may create many overlays. */
     createOverlays?: () => Types.Overlays.Overlay[];
 };
-export type PartialInsightModel<T> = Omit<T, 'strings' | 'title' | 'description' | 'category' | 'state' | 'insightKey' | 'navigationId' | 'frameId'>;
+export type PartialInsightModel<T> = Omit<T, 'strings' | 'title' | 'description' | 'docs' | 'category' | 'state' | 'insightKey' | 'navigationId' | 'frameId'>;
 /**
  * Contains insights for a specific navigation. If a trace began after a navigation already started,
  * this could instead represent the duration from the beginning of the trace up to the first recorded

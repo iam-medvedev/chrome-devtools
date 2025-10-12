@@ -225,12 +225,14 @@ export class TickingFlameChart extends UI.Widget.VBox {
         this.updateRender();
     }
     willHide() {
+        super.willHide();
         this.isShown = false;
         if (this.ticking) {
             this.stop();
         }
     }
     wasShown() {
+        super.wasShown();
         this.isShown = true;
         if (this.#canTick && !this.ticking) {
             this.start();

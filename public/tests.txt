@@ -81,6 +81,7 @@ core/sdk/RehydratingConnection.test.js
 core/sdk/RemoteObject.test.js
 core/sdk/ResourceTreeModel.test.js
 core/sdk/RuntimeModel.test.js
+core/sdk/ScopeTreeCache.test.js
 core/sdk/ScreenCaptureModel.test.js
 core/sdk/Script.test.js
 core/sdk/ServerSentEventsProtocol.test.js
@@ -193,7 +194,6 @@ models/persistence/PlatformFileSystem.test.js
 models/project_settings/ProjectSettingsModel.test.js
 models/source_map_scopes/NamesResolver.test.js
 models/source_map_scopes/ScopeChainModel.test.js
-models/source_map_scopes/ScopeTreeCache.test.js
 models/stack_trace/StackTraceImpl.test.js
 models/stack_trace/StackTraceModel.test.js
 models/stack_trace/Trie.test.js
@@ -368,6 +368,7 @@ panels/console/ConsoleView.test.js
 panels/console/ConsoleViewMessage.test.js
 panels/console/ConsoleViewport.test.js
 panels/console/ErrorStackParser.test.js
+panels/console/PromptBuilder.test.js
 panels/console_counters/console_counters.test.js
 panels/coverage/CoverageDecorationManager.test.js
 panels/coverage/CoverageListView.test.js
@@ -418,7 +419,6 @@ panels/elements/WebCustomData.test.js
 panels/emulation/AdvancedApp.test.js
 panels/emulation/MediaQueryInspector.test.js
 panels/event_listeners/EventListenersView.test.js
-panels/explain/PromptBuilder.test.js
 panels/explain/components/ConsoleInsight.test.js
 panels/issues/IssueAggregator.test.js
 panels/issues/IssueView.test.js

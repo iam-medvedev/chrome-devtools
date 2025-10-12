@@ -162,10 +162,12 @@ export class ServiceWorkerCacheView extends UI.View.SimpleView {
         dataGridWidget.setMinimumSize(0, 250);
     }
     wasShown() {
+        super.wasShown();
         this.model.addEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CACHE_STORAGE_CONTENT_UPDATED */, this.cacheContentUpdated, this);
         void this.updateData(true);
     }
     willHide() {
+        super.willHide();
         this.model.removeEventListener("CacheStorageContentUpdated" /* SDK.ServiceWorkerCacheModel.Events.CACHE_STORAGE_CONTENT_UPDATED */, this.cacheContentUpdated, this);
     }
     showPreview(preview) {

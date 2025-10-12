@@ -67,6 +67,7 @@ export class ResourceDirectSocketChunkView extends ResourceChunkView {
         this.request.addEventListener(SDK.NetworkRequest.Events.DIRECTSOCKET_CHUNK_ADDED, this.onDirectSocketChunkAdded, this);
     }
     willHide() {
+        super.willHide();
         this.request.removeEventListener(SDK.NetworkRequest.Events.DIRECTSOCKET_CHUNK_ADDED, this.onDirectSocketChunkAdded, this);
     }
     onDirectSocketChunkAdded(event) {

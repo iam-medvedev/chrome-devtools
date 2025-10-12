@@ -2850,6 +2850,10 @@ var Widget = class _Widget {
     if (!this.isShowing()) {
       return;
     }
+    if (this.#shadowRoot?.delegatesFocus && this.contentElement.querySelector("[autofocus]")) {
+      this.element.focus();
+      return;
+    }
     const element = this.#defaultFocusedElement;
     if (element) {
       if (!element.hasFocus()) {
@@ -3647,10 +3651,12 @@ var SplitWidget = class extends Common7.ObjectWrapper.eventMixin(Widget) {
     return Math.max(0, totalSize - minMainSize);
   }
   wasShown() {
+    super.wasShown();
     this.#forceUpdateLayout();
     ZoomManager.instance().addEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   willHide() {
+    super.willHide();
     ZoomManager.instance().removeEventListener("ZoomChanged", this.onZoomChanged, this);
   }
   onResize() {
@@ -4870,6 +4876,7 @@ var TabbedPane = class extends Common8.ObjectWrapper.eventMixin(VBox) {
     this.requestUpdate();
   }
   wasShown() {
+    super.wasShown();
     const effectiveTab = this.currentTab || this.tabsHistory[0];
     if (effectiveTab && this.autoSelectFirstItemOnShow) {
       this.selectTab(effectiveTab.id);
@@ -6173,6 +6180,7 @@ var ContainerWidget = class extends VBox {
     return this.materializePromise;
   }
   wasShown() {
+    super.wasShown();
     void this.materialize().then(() => {
       const widget = widgetForView.get(this.view);
       if (widget) {
@@ -6919,6 +6927,7 @@ var InspectorView = class _InspectorView extends VBox {
     this.element.style.setProperty("--devtools-window-height", `${rect.height}px`);
   }
   wasShown() {
+    super.wasShown();
     this.#resizeObserver.observe(this.element);
     this.#observedResize();
     this.element.ownerDocument.addEventListener("keydown", this.keyDownBound, false);
@@ -6926,6 +6935,7 @@ var InspectorView = class _InspectorView extends VBox {
     this.#applyDrawerOrientationForDockSide();
   }
   willHide() {
+    super.willHide();
     this.#resizeObserver.unobserve(this.element);
     this.element.ownerDocument.removeEventListener("keydown", this.keyDownBound, false);
     DockController.instance().removeEventListener("DockSideChanged", this.#applyDrawerOrientationForDockSide, this);
@@ -11653,10 +11663,11 @@ var ToolbarFilter = class extends ToolbarInput {
   }
 };
 var ToolbarInputElement = class extends HTMLElement {
-  static observedAttributes = ["value"];
+  static observedAttributes = ["value", "disabled"];
   item;
   datalist = null;
   value = void 0;
+  #disabled = false;
   connectedCallback() {
     if (this.item) {
       return;
@@ -11703,6 +11714,9 @@ var ToolbarInputElement = class extends HTMLElement {
     if (this.value) {
       this.item.setValue(this.value);
     }
+    if (this.#disabled) {
+      this.item.setEnabled(false);
+    }
     this.item.addEventListener("TextChanged", (event) => {
       this.dispatchEvent(new CustomEvent("change", { detail: event.data }));
     });
@@ -11711,7 +11725,7 @@ var ToolbarInputElement = class extends HTMLElement {
     });
   }
   focus() {
-    this.item.focus();
+    this.item?.focus();
   }
   async #onAutocomplete(expression, prefix, force) {
     if (!prefix && !force && expression || !this.datalist) {
@@ -11727,7 +11741,22 @@ var ToolbarInputElement = class extends HTMLElement {
       } else {
         this.value = newValue;
       }
+    } else if (name === "disabled") {
+      this.#disabled = typeof newValue === "string";
+      if (this.item) {
+        this.item.setEnabled(!this.#disabled);
+      }
     }
+  }
+  set disabled(disabled) {
+    if (disabled) {
+      this.setAttribute("disabled", "");
+    } else {
+      this.removeAttribute("disabled");
+    }
+  }
+  get disabled() {
+    return this.hasAttribute("disabled");
   }
 };
 customElements.define("devtools-toolbar-input", ToolbarInputElement);
@@ -15258,22 +15287,48 @@ function maybeCreateNewBadge(promotionId) {
 function bindToAction(actionName) {
   const action6 = ActionRegistry.instance().getAction(actionName);
   let setEnabled;
+  let toggled;
   function actionEnabledChanged(event) {
     setEnabled(event.data);
   }
   return Directives3.ref((e) => {
     if (!e || !(e instanceof Buttons6.Button.Button)) {
       action6.removeEventListener("Enabled", actionEnabledChanged);
+      action6.removeEventListener("Toggled", toggled);
       return;
     }
     setEnabled = (enabled) => {
       e.disabled = !enabled;
     };
     action6.addEventListener("Enabled", actionEnabledChanged);
+    const toggleable = action6.toggleable();
     const title = action6.title();
-    const iconName = action6.icon();
+    const iconName = action6.icon() ?? "";
     const jslogContext = action6.id();
-    if (iconName) {
+    const toggledIconName = action6.toggledIcon() ?? iconName;
+    const toggleType = action6.toggleWithRedColor() ? "red-toggle" : "primary-toggle";
+    if (e.childNodes.length) {
+      e.jslogContext = jslogContext;
+    } else if (toggleable) {
+      toggled = () => {
+        e.toggled = action6.toggled();
+        if (action6.title()) {
+          e.title = action6.title();
+          Tooltip.installWithActionBinding(e, action6.title(), action6.id());
+        }
+      };
+      action6.addEventListener("Toggled", toggled);
+      e.data = {
+        jslogContext,
+        title,
+        variant: "icon_toggle",
+        iconName,
+        toggledIconName,
+        toggleType,
+        toggled: action6.toggled()
+      };
+      toggled();
+    } else if (iconName) {
       e.data = {
         iconName,
         jslogContext,
@@ -16769,6 +16824,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         <span>${input.text}</span>
         ${input.link ? XLink.create(input.link, i18nString13(UIStrings13.learnMore), void 0, void 0, "learn-more") : ""}
       </div>
+      ${input.extraElements}
     </div>`, target);
 };
 var EmptyWidget = class extends VBox {
@@ -16776,6 +16832,8 @@ var EmptyWidget = class extends VBox {
   #text;
   #link;
   #view;
+  #firstUpdate = true;
+  #extraElements = [];
   constructor(headerOrElement, text = "", element, view = DEFAULT_VIEW) {
     const header = typeof headerOrElement === "string" ? headerOrElement : "";
     if (!element && headerOrElement instanceof HTMLElement) {
@@ -16801,8 +16859,12 @@ var EmptyWidget = class extends VBox {
     this.performUpdate();
   }
   performUpdate() {
+    if (this.#firstUpdate) {
+      this.#extraElements = [...this.element.children];
+      this.#firstUpdate = false;
+    }
     const output = { contentElement: void 0 };
-    this.#view({ header: this.#header, text: this.#text, link: this.#link }, output, this.element);
+    this.#view({ header: this.#header, text: this.#text, link: this.#link, extraElements: this.#extraElements }, output, this.element);
     if (output.contentElement) {
       this.contentElement = output.contentElement;
     }
@@ -20418,6 +20480,7 @@ var TargetCrashedScreen = class extends VBox {
     this.hideCallback = hideCallback;
   }
   willHide() {
+    super.willHide();
     this.hideCallback.call(null);
   }
 };

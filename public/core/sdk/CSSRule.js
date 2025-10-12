@@ -18,10 +18,12 @@ export class CSSRule {
     origin;
     style;
     header;
+    treeScope;
     constructor(cssModel, payload) {
         this.header = payload.header;
         this.cssModelInternal = cssModel;
         this.origin = payload.origin;
+        this.treeScope = payload.originTreeScopeNodeId;
         this.style = new CSSStyleDeclaration(this.cssModelInternal, this, payload.style, Type.Regular);
     }
     get sourceURL() {
@@ -87,7 +89,12 @@ export class CSSStyleRule extends CSSRule {
     startingStyles;
     wasUsed;
     constructor(cssModel, payload, wasUsed) {
-        super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+        super(cssModel, {
+            origin: payload.origin,
+            style: payload.style,
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: payload.originTreeScopeNodeId
+        });
         this.reinitializeSelectors(payload.selectorList);
         this.nestingSelectors = payload.nestingSelectors;
         this.media = payload.media ? CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
@@ -188,7 +195,12 @@ export class CSSStyleRule extends CSSRule {
 export class CSSPropertyRule extends CSSRule {
     #name;
     constructor(cssModel, payload) {
-        super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+        super(cssModel, {
+            origin: payload.origin,
+            style: payload.style,
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: undefined,
+        });
         this.#name = new CSSValue(payload.propertyName);
     }
     propertyName() {
@@ -218,7 +230,12 @@ export class CSSPropertyRule extends CSSRule {
 export class CSSFontPaletteValuesRule extends CSSRule {
     #paletteName;
     constructor(cssModel, payload) {
-        super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+        super(cssModel, {
+            origin: payload.origin,
+            style: payload.style,
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: undefined
+        });
         this.#paletteName = new CSSValue(payload.fontPaletteName);
     }
     name() {
@@ -244,7 +261,12 @@ export class CSSKeyframeRule extends CSSRule {
     #keyText;
     #parentRuleName;
     constructor(cssModel, payload, parentRuleName) {
-        super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+        super(cssModel, {
+            origin: payload.origin,
+            style: payload.style,
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: undefined
+        });
         this.reinitializeKey(payload.keyText);
         this.#parentRuleName = parentRuleName;
     }
@@ -288,7 +310,12 @@ export class CSSPositionTryRule extends CSSRule {
     #name;
     #active;
     constructor(cssModel, payload) {
-        super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+        super(cssModel, {
+            origin: payload.origin,
+            style: payload.style,
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: undefined
+        });
         this.#name = new CSSValue(payload.name);
         this.#active = payload.active;
     }
@@ -307,7 +334,8 @@ export class CSSFunctionRule extends CSSRule {
         super(cssModel, {
             origin: payload.origin,
             style: { cssProperties: [], shorthandEntries: [] },
-            header: styleSheetHeaderForRule(cssModel, payload)
+            header: styleSheetHeaderForRule(cssModel, payload),
+            originTreeScopeNodeId: undefined
         });
         this.#name = new CSSValue(payload.name);
         this.#parameters = payload.parameters.map(({ name }) => name);

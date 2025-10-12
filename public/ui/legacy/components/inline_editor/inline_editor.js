@@ -861,6 +861,7 @@ var BezierEditor = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.VBox
     this.updateUI();
   }
   wasShown() {
+    super.wasShown();
     this.unselectPresets();
     for (const category of this.presetCategories) {
       for (let i = 0; i < category.presets.length; i++) {

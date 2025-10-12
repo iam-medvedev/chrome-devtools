@@ -154,6 +154,7 @@ export class ScreencastView extends UI.Widget.VBox {
         this.updateGlasspane();
     }
     willHide() {
+        super.willHide();
         this.stopCasting();
     }
     async startCasting() {

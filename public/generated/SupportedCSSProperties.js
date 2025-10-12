@@ -732,7 +732,6 @@ export const generatedProperties = [
             "text-wrap-mode",
             "text-wrap-style",
             "timeline-scope",
-            "timeline-trigger-behavior",
             "timeline-trigger-exit-range-end",
             "timeline-trigger-exit-range-start",
             "timeline-trigger-name",
@@ -4431,22 +4430,12 @@ export const generatedProperties = [
         "longhands": [
             "timeline-trigger-name",
             "timeline-trigger-source",
-            "timeline-trigger-behavior",
             "timeline-trigger-range-start",
             "timeline-trigger-range-end",
             "timeline-trigger-exit-range-start",
             "timeline-trigger-exit-range-end"
         ],
         "name": "timeline-trigger"
-    },
-    {
-        "keywords": [
-            "once",
-            "repeat",
-            "alternate",
-            "state"
-        ],
-        "name": "timeline-trigger-behavior"
     },
     {
         "name": "timeline-trigger-exit-range-end"
@@ -6843,14 +6832,6 @@ export const generatedPropertyValues = {
             "balance",
             "pretty",
             "stable"
-        ]
-    },
-    "timeline-trigger-behavior": {
-        "values": [
-            "once",
-            "repeat",
-            "alternate",
-            "state"
         ]
     },
     "timeline-trigger-source": {

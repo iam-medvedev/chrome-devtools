@@ -321,6 +321,7 @@ var GlobalAiButton = class extends UI.Widget.Widget {
     }
   }
   willHide() {
+    super.willHide();
     this.#removeHoverEventListeners();
     if (this.#returnToDefaultStateTimeout) {
       window.clearTimeout(this.#returnToDefaultStateTimeout);
@@ -819,11 +820,6 @@ var MainImpl = class {
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this.#revealSourceLine, this);
     await UI2.InspectorView.InspectorView.instance().createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
-    const value = Root2.Runtime.Runtime.queryParam("loadTimelineFromURL");
-    if (value !== null) {
-      const Timeline = await import("./../../panels/timeline/timeline.js");
-      Timeline.TimelinePanel.LoadTimelineHandler.instance().handleQueryParam(value);
-    }
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
     window.setTimeout(this.#initializeTarget.bind(this), 0);

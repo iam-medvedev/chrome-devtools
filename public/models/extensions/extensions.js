@@ -932,6 +932,7 @@ var ExtensionView = class extends UI.Widget.Widget {
     }
   }
   willHide() {
+    super.willHide();
     if (typeof this.#frameIndex === "number") {
       this.#server.notifyViewHidden(this.#id);
     }
@@ -956,9 +957,11 @@ var ExtensionNotifierView = class extends UI.Widget.VBox {
     this.id = id;
   }
   wasShown() {
+    super.wasShown();
     this.server.notifyViewShown(this.id);
   }
   willHide() {
+    super.willHide();
     this.server.notifyViewHidden(this.id);
   }
 };

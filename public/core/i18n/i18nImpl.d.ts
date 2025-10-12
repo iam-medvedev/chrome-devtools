@@ -24,6 +24,7 @@ export declare function getAllSupportedDevToolsLocales(): string[];
 export declare function fetchAndRegisterLocaleData(locale: Intl.UnicodeBCP47LocaleIdentifier, location?: string): Promise<void>;
 export declare function hasLocaleDataForTest(locale: Intl.UnicodeBCP47LocaleIdentifier): boolean;
 export declare function resetLocaleDataForTest(): void;
+export declare function registerLocaleDataForTest(locale: Intl.UnicodeBCP47LocaleIdentifier, messages: I18n.I18n.LocalizedMessages): void;
 /**
  * Returns an anonymous function that wraps a call to retrieve a localized string.
  * This is introduced so that localized strings can be declared in environments where

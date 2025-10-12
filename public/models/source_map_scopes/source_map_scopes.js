@@ -23,40 +23,16 @@ __export(NamesResolver_exports, {
   setScopeResolvedForTest: () => setScopeResolvedForTest
 });
 import * as Common from "./../../core/common/common.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Bindings from "./../bindings/bindings.js";
-import * as Formatter2 from "./../formatter/formatter.js";
-import * as TextUtils2 from "./../text_utils/text_utils.js";
-
-// gen/front_end/models/source_map_scopes/ScopeTreeCache.js
-var ScopeTreeCache_exports = {};
-__export(ScopeTreeCache_exports, {
-  scopeTreeForScript: () => scopeTreeForScript
-});
 import * as Formatter from "./../formatter/formatter.js";
 import * as TextUtils from "./../text_utils/text_utils.js";
-var scopeTrees = /* @__PURE__ */ new WeakMap();
-function scopeTreeForScript(script) {
-  let promise = scopeTrees.get(script);
-  if (promise === void 0) {
-    promise = script.requestContentData().then((content) => {
-      if (TextUtils.ContentData.ContentData.isError(content)) {
-        return null;
-      }
-      const sourceType = script.isModule ? "module" : "script";
-      return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content.text, sourceType).catch(() => null);
-    });
-    scopeTrees.set(script, promise);
-  }
-  return promise;
-}
-
-// gen/front_end/models/source_map_scopes/NamesResolver.js
 var scopeToCachedIdentifiersMap = /* @__PURE__ */ new WeakMap();
 var cachedMapByCallFrame = /* @__PURE__ */ new WeakMap();
 async function getTextFor(contentProvider) {
   const contentData = await contentProvider.requestContentData();
-  if (TextUtils2.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
+  if (TextUtils.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
     return null;
   }
   return contentData.textObj;
@@ -76,15 +52,7 @@ var computeScopeTree = async function(script) {
   if (!script.sourceMapURL) {
     return null;
   }
-  const text = await getTextFor(script);
-  if (!text) {
-    return null;
-  }
-  const scopeTree = await scopeTreeForScript(script);
-  if (!scopeTree) {
-    return null;
-  }
-  return { scopeTree, text };
+  return await SDK.ScopeTreeCache.scopeTreeForScript(script);
 };
 var findScopeChain = function(scopeTree, scopeNeedle) {
   if (!contains(scopeTree, scopeNeedle)) {
@@ -145,7 +113,7 @@ var scopeIdentifiers = async function(script, scope, ancestorScopes) {
     return null;
   }
   const boundVariables = [];
-  const cursor = new TextUtils2.TextCursor.TextCursor(text.lineEndings());
+  const cursor = new TextUtils.TextCursor.TextCursor(text.lineEndings());
   for (const variable of scope.variables) {
     if (variable.kind === 3 && variable.offsets.length <= 1) {
       continue;
@@ -324,7 +292,10 @@ var resolveScopeChain = async function(callFrame) {
   if (scopeChain) {
     return scopeChain;
   }
-  scopeChain = callFrame.script.sourceMap()?.resolveScopeChain(callFrame);
+  scopeChain = Root.Runtime.experiments.isEnabled(
+    "use-source-map-scopes"
+    /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
+  ) ? callFrame.script.sourceMap()?.resolveScopeChain(callFrame) : null;
   if (scopeChain) {
     return scopeChain;
   }
@@ -583,7 +554,7 @@ async function getFunctionNameFromScopeStart(script, lineNumber, columnNumber) {
   if (!text) {
     return null;
   }
-  const openRange = new TextUtils2.TextRange.TextRange(lineNumber, columnNumber, lineNumber, columnNumber + 1);
+  const openRange = new TextUtils.TextRange.TextRange(lineNumber, columnNumber, lineNumber, columnNumber + 1);
   if (text.extract(openRange) !== "(") {
     return null;
   }
@@ -673,7 +644,6 @@ var ScopeChain = class {
 };
 export {
   NamesResolver_exports as NamesResolver,
-  ScopeChainModel_exports as ScopeChainModel,
-  ScopeTreeCache_exports as ScopeTreeCache
+  ScopeChainModel_exports as ScopeChainModel
 };
 //# sourceMappingURL=source_map_scopes.js.map

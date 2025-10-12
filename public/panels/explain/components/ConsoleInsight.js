@@ -14,7 +14,7 @@ import * as MarkdownView from '../../../ui/components/markdown_view/markdown_vie
 import * as UI from '../../../ui/legacy/legacy.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
-import { SourceType } from '../PromptBuilder.js';
+import * as Console from '../../console/console.js';
 import styles from './consoleInsight.css.js';
 import listStyles from './consoleInsightSourcesList.css.js';
 // Note: privacy and legal notices are not localized so far.
@@ -154,13 +154,13 @@ export class CloseEvent extends Event {
 }
 function localizeType(sourceType) {
     switch (sourceType) {
-        case SourceType.MESSAGE:
+        case Console.PromptBuilder.SourceType.MESSAGE:
             return i18nString(UIStrings.consoleMessage);
-        case SourceType.STACKTRACE:
+        case Console.PromptBuilder.SourceType.STACKTRACE:
             return i18nString(UIStrings.stackTrace);
-        case SourceType.NETWORK_REQUEST:
+        case Console.PromptBuilder.SourceType.NETWORK_REQUEST:
             return i18nString(UIStrings.networkRequest);
-        case SourceType.RELATED_CODE:
+        case Console.PromptBuilder.SourceType.RELATED_CODE:
             return i18nString(UIStrings.relatedCode);
     }
 }

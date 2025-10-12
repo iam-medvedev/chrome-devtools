@@ -44,6 +44,10 @@ interface CommonButtonData {
     jslogContext?: string;
     longClickable?: boolean;
     inverseColorTheme?: boolean;
+    /**
+     * Sets aria-label on the internal <button> element.
+     */
+    accessibleLabel?: string;
 }
 export type ButtonData = CommonButtonData & ({
     variant: Variant.PRIMARY_TOOLBAR | Variant.TOOLBAR | Variant.ICON;
@@ -72,6 +76,7 @@ export declare class Button extends HTMLElement {
     set toggleType(toggleType: ToggleType);
     set variant(variant: Variant);
     set size(size: Size);
+    set accessibleLabel(label: string);
     set reducedFocusRing(reducedFocusRing: boolean);
     set type(type: ButtonType);
     set title(title: string);

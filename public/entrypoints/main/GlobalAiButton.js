@@ -63,6 +63,7 @@ export class GlobalAiButton extends UI.Widget.Widget {
         }
     }
     willHide() {
+        super.willHide();
         this.#removeHoverEventListeners();
         if (this.#returnToDefaultStateTimeout) {
             window.clearTimeout(this.#returnToDefaultStateTimeout);

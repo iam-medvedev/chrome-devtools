@@ -305,7 +305,7 @@ export class CSSMatchedStyles {
         if (!addedAttributesStyle) {
             addAttributesStyle.call(this);
         }
-        nodeCascades.push(new NodeCascade(this, nodeStyles, false /* #isInherited */));
+        nodeCascades.push(new NodeCascade(this, nodeStyles, this.#node, false /* #isInherited */));
         // Walk the node structure and identify styles with inherited properties.
         let parentNode = this.#node.parentNode;
         const traverseParentInFlatTree = async (node) => {
@@ -361,8 +361,9 @@ export class CSSMatchedStyles {
                 inheritedStyles.push(inheritedRule.style);
                 this.#inheritedStyles.add(inheritedRule.style);
             }
+            const node = parentNode;
             parentNode = await traverseParentInFlatTree(parentNode);
-            nodeCascades.push(new NodeCascade(this, inheritedStyles, true /* #isInherited */));
+            nodeCascades.push(new NodeCascade(this, inheritedStyles, node, true /* #isInherited */));
         }
         return new DOMInheritanceCascade(this, nodeCascades, this.#registeredProperties);
     }
@@ -396,7 +397,7 @@ export class CSSMatchedStyles {
             }
         }
         for (const [highlightName, highlightStyles] of splitHighlightRules) {
-            const nodeCascade = new NodeCascade(this, highlightStyles, isInherited, true /* #isHighlightPseudoCascade*/);
+            const nodeCascade = new NodeCascade(this, highlightStyles, node, isInherited, true /* #isHighlightPseudoCascade*/);
             const cascadeListForHighlightName = pseudoCascades.get(highlightName);
             if (cascadeListForHighlightName) {
                 cascadeListForHighlightName.push(nodeCascade);
@@ -434,7 +435,7 @@ export class CSSMatchedStyles {
                     }
                 }
                 const isHighlightPseudoCascade = cssMetadata().isHighlightPseudoType(entryPayload.pseudoType);
-                const nodeCascade = new NodeCascade(this, pseudoStyles, false /* #isInherited */, isHighlightPseudoCascade /* #isHighlightPseudoCascade*/);
+                const nodeCascade = new NodeCascade(this, pseudoStyles, this.#node, false /* #isInherited */, isHighlightPseudoCascade /* #isHighlightPseudoCascade*/);
                 pseudoCascades.set(entryPayload.pseudoType, [nodeCascade]);
             }
         }
@@ -458,7 +459,7 @@ export class CSSMatchedStyles {
                             this.addMatchingSelectors(parentNode, pseudoRule, rules[k].matchingSelectors);
                         }
                         const isHighlightPseudoCascade = cssMetadata().isHighlightPseudoType(inheritedEntryPayload.pseudoType);
-                        const nodeCascade = new NodeCascade(this, pseudoStyles, true /* #isInherited */, isHighlightPseudoCascade /* #isHighlightPseudoCascade*/);
+                        const nodeCascade = new NodeCascade(this, pseudoStyles, parentNode, true /* #isInherited */, isHighlightPseudoCascade /* #isHighlightPseudoCascade*/);
                         const cascadeListForPseudoType = pseudoCascades.get(inheritedEntryPayload.pseudoType);
                         if (cascadeListForPseudoType) {
                             cascadeListForPseudoType.push(nodeCascade);
@@ -736,11 +737,13 @@ class NodeCascade {
     #isHighlightPseudoCascade;
     propertiesState = new Map();
     activeProperties = new Map();
-    constructor(matchedStyles, styles, isInherited, isHighlightPseudoCascade = false) {
+    #node;
+    constructor(matchedStyles, styles, node, isInherited, isHighlightPseudoCascade = false) {
         this.#matchedStyles = matchedStyles;
         this.styles = styles;
         this.#isInherited = isInherited;
         this.#isHighlightPseudoCascade = isHighlightPseudoCascade;
+        this.#node = node;
     }
     computeActiveProperties() {
         this.propertiesState.clear();
@@ -791,9 +794,41 @@ class NodeCascade {
             }
         }
     }
+    #treeScopeDistance(property) {
+        if (!property.ownerStyle.parentRule && property.ownerStyle.type !== Type.Inline) {
+            return -1;
+        }
+        const root = this.#node.getTreeRoot();
+        const nodeId = property.ownerStyle.parentRule?.treeScope ?? root?.backendNodeId();
+        if (nodeId === undefined) {
+            return -1;
+        }
+        let distance = 0;
+        for (let ancestor = this.#node; ancestor; ancestor = ancestor.parentNode) {
+            if (ancestor.backendNodeId() === nodeId) {
+                return distance;
+            }
+            distance++;
+        }
+        return -1;
+    }
+    #needsCascadeContextStep() {
+        if (!this.#node.isInShadowTree()) {
+            return false;
+        }
+        if (this.#node.ancestorShadowRoot()?.shadowRootType() === 'user-agent') {
+            // In UA shadow dom, only standards-track pseudo elements override style attributes. -webkit-* and -internal-*
+            // pseudos are still exempt from that to retain legacy behavior.
+            const pseudoElement = this.#node.getAttribute('pseudo');
+            return !pseudoElement?.startsWith('-webkit-') && !pseudoElement?.startsWith('-internal-');
+        }
+        return true;
+    }
     updatePropertyState(propertyWithHigherSpecificity, canonicalName) {
         const activeProperty = this.activeProperties.get(canonicalName);
-        if (activeProperty?.important && !propertyWithHigherSpecificity.important) {
+        if (activeProperty?.important && !propertyWithHigherSpecificity.important ||
+            activeProperty && this.#needsCascadeContextStep() &&
+                this.#treeScopeDistance(activeProperty) > this.#treeScopeDistance(propertyWithHigherSpecificity)) {
             this.propertiesState.set(propertyWithHigherSpecificity, "Overloaded" /* PropertyState.OVERLOADED */);
             return;
         }

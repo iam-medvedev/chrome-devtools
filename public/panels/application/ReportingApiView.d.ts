@@ -11,11 +11,10 @@ interface ViewInput {
     focusedReport?: Protocol.Network.ReportingApiReport;
     onReportSelected: (id: string) => void;
 }
-type View = (input: ViewInput, output: object, target: HTMLElement) => void;
-export declare const DEFAULT_VIEW: View;
+export declare const DEFAULT_VIEW: (input: ViewInput, output: undefined, target: HTMLElement) => void;
 export declare class ReportingApiView extends UI.Widget.VBox implements SDK.TargetManager.SDKModelObserver<SDK.NetworkManager.NetworkManager> {
     #private;
-    constructor(view?: View);
+    constructor(view?: (input: ViewInput, output: undefined, target: HTMLElement) => void);
     modelAdded(networkManager: SDK.NetworkManager.NetworkManager): void;
     modelRemoved(networkManager: SDK.NetworkManager.NetworkManager): void;
     performUpdate(): void;

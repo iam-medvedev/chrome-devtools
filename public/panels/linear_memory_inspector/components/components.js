@@ -246,10 +246,8 @@ customElements.define("devtools-linear-memory-highlight-chip-list", LinearMemory
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryInspector.js
 var LinearMemoryInspector_exports = {};
 __export(LinearMemoryInspector_exports, {
-  AddressChangedEvent: () => AddressChangedEvent,
-  LinearMemoryInspector: () => LinearMemoryInspector,
-  MemoryRequestEvent: () => MemoryRequestEvent,
-  SettingsChangedEvent: () => SettingsChangedEvent
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  LinearMemoryInspector: () => LinearMemoryInspector
 });
 
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryValueInterpreter.js
@@ -1393,6 +1391,7 @@ customElements.define("devtools-linear-memory-inspector-viewer", LinearMemoryVie
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryInspector.js
 import * as Common from "./../../../core/common/common.js";
 import * as i18n11 from "./../../../core/i18n/i18n.js";
+import * as UI3 from "./../../../ui/legacy/legacy.js";
 import { html as html6, nothing, render as render6 } from "./../../../ui/lit/lit.js";
 
 // gen/front_end/panels/linear_memory_inspector/components/linearMemoryInspector.css.js
@@ -1402,31 +1401,38 @@ var linearMemoryInspector_css_default = `/*
  * found in the LICENSE file.
  */
 
-:host {
-  flex: auto;
-  display: flex;
-}
+@scope to (devtools-widget > *) {
+  :scope {
+    flex: auto;
+    display: flex;
+  }
 
-.view {
-  width: 100%;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  font-family: var(--monospace-font-family);
-  font-size: var(--monospace-font-size);
-  padding: 9px 12px 9px 7px;
-}
+  * {
+      min-width: unset;
+      box-sizing: content-box;
+  }
 
-devtools-linear-memory-inspector-viewer {
-  justify-content: center;
-}
+  .view {
+    width: 100%;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    font-family: var(--monospace-font-family);
+    font-size: var(--monospace-font-size);
+    padding: 9px 12px 9px 7px;
+  }
 
-devtools-linear-memory-inspector-navigator + devtools-linear-memory-inspector-viewer {
-  margin-top: 12px;
-}
+  devtools-linear-memory-inspector-viewer {
+    justify-content: center;
+  }
 
-.value-interpreter {
-  display: flex;
+  devtools-linear-memory-inspector-navigator + devtools-linear-memory-inspector-viewer {
+    margin-top: 12px;
+  }
+
+  .value-interpreter {
+    display: flex;
+}
 }
 
 /*# sourceURL=${import.meta.resolve("./linearMemoryInspector.css")} */`;
@@ -1442,30 +1448,6 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/linear_memory_inspector/components/LinearMemoryInspector.ts", UIStrings6);
 var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var MemoryRequestEvent = class _MemoryRequestEvent extends Event {
-  static eventName = "memoryrequest";
-  data;
-  constructor(start, end, address) {
-    super(_MemoryRequestEvent.eventName);
-    this.data = { start, end, address };
-  }
-};
-var AddressChangedEvent = class _AddressChangedEvent extends Event {
-  static eventName = "addresschanged";
-  data;
-  constructor(address) {
-    super(_AddressChangedEvent.eventName);
-    this.data = address;
-  }
-};
-var SettingsChangedEvent = class _SettingsChangedEvent extends Event {
-  static eventName = "settingschanged";
-  data;
-  constructor(settings) {
-    super(_SettingsChangedEvent.eventName);
-    this.data = settings;
-  }
-};
 var AddressHistoryEntry = class {
   #address = 0;
   #callback;
@@ -1483,8 +1465,90 @@ var AddressHistoryEntry = class {
     this.#callback(this.#address);
   }
 };
-var LinearMemoryInspector = class extends HTMLElement {
-  #shadow = this.attachShadow({ mode: "open" });
+var DEFAULT_VIEW = (input, _output, target) => {
+  const navigatorAddressToShow = input.currentNavigatorMode === "Submitted" ? formatAddress(input.address) : input.currentNavigatorAddressLine;
+  const navigatorAddressIsValid = isValidAddress(navigatorAddressToShow, input.outerMemoryLength);
+  const invalidAddressMsg = i18nString6(UIStrings6.addressHasToBeANumberBetweenSAnd, { PH1: formatAddress(0), PH2: formatAddress(input.outerMemoryLength) });
+  const errorMsg = navigatorAddressIsValid ? void 0 : invalidAddressMsg;
+  const highlightedMemoryAreas = input.highlightInfo ? [input.highlightInfo] : [];
+  const focusedMemoryHighlight = getSmallestEnclosingMemoryHighlight(highlightedMemoryAreas, input.address);
+  render6(html6`
+    <style>${linearMemoryInspector_css_default}</style>
+    <div class="view">
+      <devtools-linear-memory-inspector-navigator
+        .data=${{
+    address: navigatorAddressToShow,
+    valid: navigatorAddressIsValid,
+    mode: input.currentNavigatorMode,
+    error: errorMsg,
+    canGoBackInHistory: input.canGoBackInHistory,
+    canGoForwardInHistory: input.canGoForwardInHistory
+  }}
+        @refreshrequested=${input.onRefreshRequest}
+        @addressinputchanged=${input.onAddressChange}
+        @pagenavigation=${input.onNavigatePage}
+        @historynavigation=${input.onNavigateHistory}></devtools-linear-memory-inspector-navigator>
+        <devtools-linear-memory-highlight-chip-list
+        .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight }}
+        @jumptohighlightedmemory=${input.onJumpToAddress}
+        @deletememoryhighlight=${input.onDeleteMemoryHighlight}>
+        </devtools-linear-memory-highlight-chip-list>
+      <devtools-linear-memory-inspector-viewer
+        .data=${{
+    memory: input.memorySlice,
+    address: input.address,
+    memoryOffset: input.viewerStart,
+    focus: input.currentNavigatorMode === "Submitted",
+    highlightInfo: input.highlightInfo,
+    focusedMemoryHighlight
+  }}
+        @byteselected=${input.onByteSelected}
+        @resize=${input.onResize}>
+      </devtools-linear-memory-inspector-viewer>
+    </div>
+    ${input.hideValueInspector ? nothing : html6`
+    <div class="value-interpreter">
+      <devtools-linear-memory-inspector-interpreter
+        .data=${{
+    value: input.memory.slice(input.address - input.memoryOffset, input.address + VALUE_INTEPRETER_MAX_NUM_BYTES).buffer,
+    valueTypes: input.valueTypes,
+    valueTypeModes: input.valueTypeModes,
+    endianness: input.endianness,
+    memoryLength: input.outerMemoryLength
+  }}
+        @valuetypetoggled=${input.onValueTypeToggled}
+        @valuetypemodechanged=${input.onValueTypeModeChanged}
+        @endiannesschanged=${input.onEndiannessChanged}
+        @jumptopointeraddress=${input.onJumpToAddress}
+        >
+      </devtools-linear-memory-inspector-interpreter/>
+    </div>`}
+    `, target);
+};
+function getPageRangeForAddress(address, numBytesPerPage, outerMemoryLength) {
+  const pageNumber = Math.floor(address / numBytesPerPage);
+  const pageStartAddress = pageNumber * numBytesPerPage;
+  const pageEndAddress = Math.min(pageStartAddress + numBytesPerPage, outerMemoryLength);
+  return { start: pageStartAddress, end: pageEndAddress };
+}
+function isValidAddress(address, outerMemoryLength) {
+  const newAddress = parseAddress(address);
+  return newAddress !== void 0 && newAddress >= 0 && newAddress < outerMemoryLength;
+}
+function getSmallestEnclosingMemoryHighlight(highlightedMemoryAreas, address) {
+  let smallestEnclosingHighlight;
+  for (const highlightedMemory of highlightedMemoryAreas) {
+    if (highlightedMemory.startAddress <= address && address < highlightedMemory.startAddress + highlightedMemory.size) {
+      if (!smallestEnclosingHighlight) {
+        smallestEnclosingHighlight = highlightedMemory;
+      } else if (highlightedMemory.size < smallestEnclosingHighlight.size) {
+        smallestEnclosingHighlight = highlightedMemory;
+      }
+    }
+  }
+  return smallestEnclosingHighlight;
+}
+var LinearMemoryInspector = class extends Common.ObjectWrapper.eventMixin(UI3.Widget.Widget) {
   #history = new Common.SimpleHistoryManager.SimpleHistoryManager(10);
   #memory = new Uint8Array();
   #memoryOffset = 0;
@@ -1498,88 +1562,94 @@ var LinearMemoryInspector = class extends HTMLElement {
   #valueTypes = new Set(this.#valueTypeModes.keys());
   #endianness = "Little Endian";
   #hideValueInspector = false;
-  set data(data) {
-    if (data.address < data.memoryOffset || data.address > data.memoryOffset + data.memory.length || data.address < 0) {
+  #view;
+  constructor(element, view) {
+    super(element);
+    this.#view = view ?? DEFAULT_VIEW;
+  }
+  set memory(value) {
+    this.#memory = value;
+    void this.requestUpdate();
+  }
+  set memoryOffset(value) {
+    this.#memoryOffset = value;
+    void this.requestUpdate();
+  }
+  set outerMemoryLength(value) {
+    this.#outerMemoryLength = value;
+    void this.requestUpdate();
+  }
+  set highlightInfo(value) {
+    this.#highlightInfo = value;
+    void this.requestUpdate();
+  }
+  set valueTypeModes(value) {
+    this.#valueTypeModes = value;
+    void this.requestUpdate();
+  }
+  set valueTypes(value) {
+    this.#valueTypes = value;
+    void this.requestUpdate();
+  }
+  set endianness(value) {
+    this.#endianness = value;
+    void this.requestUpdate();
+  }
+  set hideValueInspector(value) {
+    this.#hideValueInspector = value;
+    void this.requestUpdate();
+  }
+  get hideValueInspector() {
+    return this.#hideValueInspector;
+  }
+  performUpdate() {
+    const { start, end } = getPageRangeForAddress(this.#address, this.#numBytesPerPage, this.#outerMemoryLength);
+    if (start < this.#memoryOffset || end > this.#memoryOffset + this.#memory.length) {
+      this.dispatchEventToListeners("MemoryRequest", { start, end, address: this.#address });
+      return;
+    }
+    if (this.#address < this.#memoryOffset || this.#address > this.#memoryOffset + this.#memory.length || this.#address < 0) {
       throw new Error("Address is out of bounds.");
     }
-    if (data.memoryOffset < 0) {
-      throw new Error("Memory offset has to be greater or equal to zero.");
-    }
-    if (data.highlightInfo) {
-      if (data.highlightInfo.size < 0) {
+    if (this.#highlightInfo) {
+      if (this.#highlightInfo.size < 0) {
+        this.#highlightInfo = void 0;
         throw new Error("Object size has to be greater than or equal to zero");
       }
-      if (data.highlightInfo.startAddress < 0 || data.highlightInfo.startAddress >= data.outerMemoryLength) {
+      if (this.#highlightInfo.startAddress < 0 || this.#highlightInfo.startAddress >= this.#outerMemoryLength) {
+        this.#highlightInfo = void 0;
         throw new Error("Object start address is out of bounds.");
       }
     }
-    this.#memory = data.memory;
-    this.#memoryOffset = data.memoryOffset;
-    this.#outerMemoryLength = data.outerMemoryLength;
-    this.#valueTypeModes = data.valueTypeModes || this.#valueTypeModes;
-    this.#valueTypes = data.valueTypes || this.#valueTypes;
-    this.#endianness = data.endianness || this.#endianness;
-    this.#highlightInfo = data.highlightInfo;
-    this.#hideValueInspector = data.hideValueInspector ?? this.#hideValueInspector;
-    this.#setAddress(data.address);
-    this.#render();
-  }
-  #render() {
-    const { start, end } = this.#getPageRangeForAddress(this.#address, this.#numBytesPerPage);
-    const navigatorAddressToShow = this.#currentNavigatorMode === "Submitted" ? formatAddress(this.#address) : this.#currentNavigatorAddressLine;
-    const navigatorAddressIsValid = this.#isValidAddress(navigatorAddressToShow);
-    const invalidAddressMsg = i18nString6(UIStrings6.addressHasToBeANumberBetweenSAnd, { PH1: formatAddress(0), PH2: formatAddress(this.#outerMemoryLength) });
-    const errorMsg = navigatorAddressIsValid ? void 0 : invalidAddressMsg;
-    const canGoBackInHistory = this.#history.canRollback();
-    const canGoForwardInHistory = this.#history.canRollover();
-    const highlightedMemoryAreas = this.#highlightInfo ? [this.#highlightInfo] : [];
-    const focusedMemoryHighlight = this.#getSmallestEnclosingMemoryHighlight(highlightedMemoryAreas, this.#address);
-    render6(html6`
-      <style>${linearMemoryInspector_css_default}</style>
-      <div class="view">
-        <devtools-linear-memory-inspector-navigator
-          .data=${{ address: navigatorAddressToShow, valid: navigatorAddressIsValid, mode: this.#currentNavigatorMode, error: errorMsg, canGoBackInHistory, canGoForwardInHistory }}
-          @refreshrequested=${this.#onRefreshRequest}
-          @addressinputchanged=${this.#onAddressChange}
-          @pagenavigation=${this.#navigatePage}
-          @historynavigation=${this.#navigateHistory}></devtools-linear-memory-inspector-navigator>
-          <devtools-linear-memory-highlight-chip-list
-          .data=${{ highlightInfos: highlightedMemoryAreas, focusedMemoryHighlight }}
-          @jumptohighlightedmemory=${this.#onJumpToAddress}>
-          </devtools-linear-memory-highlight-chip-list>
-        <devtools-linear-memory-inspector-viewer
-          .data=${{
-      memory: this.#memory.slice(start - this.#memoryOffset, end - this.#memoryOffset),
+    const viewInput = {
+      memory: this.#memory,
       address: this.#address,
-      memoryOffset: start,
-      focus: this.#currentNavigatorMode === "Submitted",
-      highlightInfo: this.#highlightInfo,
-      focusedMemoryHighlight
-    }}
-          @byteselected=${this.#onByteSelected}
-          @resize=${this.#resize}>
-        </devtools-linear-memory-inspector-viewer>
-      </div>
-      ${this.#hideValueInspector ? nothing : html6`
-      <div class="value-interpreter">
-        <devtools-linear-memory-inspector-interpreter
-          .data=${{
-      value: this.#memory.slice(this.#address - this.#memoryOffset, this.#address + VALUE_INTEPRETER_MAX_NUM_BYTES).buffer,
+      memoryOffset: this.#memoryOffset,
+      outerMemoryLength: this.#outerMemoryLength,
       valueTypes: this.#valueTypes,
       valueTypeModes: this.#valueTypeModes,
       endianness: this.#endianness,
-      memoryLength: this.#outerMemoryLength
-    }}
-          @valuetypetoggled=${this.#onValueTypeToggled}
-          @valuetypemodechanged=${this.#onValueTypeModeChanged}
-          @endiannesschanged=${this.#onEndiannessChanged}
-          @jumptopointeraddress=${this.#onJumpToAddress}
-          >
-        </devtools-linear-memory-inspector-interpreter/>
-      </div>`}
-      `, this.#shadow, {
-      host: this
-    });
+      highlightInfo: this.#highlightInfo,
+      hideValueInspector: this.#hideValueInspector,
+      currentNavigatorMode: this.#currentNavigatorMode,
+      currentNavigatorAddressLine: this.#currentNavigatorAddressLine,
+      canGoBackInHistory: this.#history.canRollback(),
+      canGoForwardInHistory: this.#history.canRollover(),
+      onRefreshRequest: this.#onRefreshRequest.bind(this),
+      onAddressChange: this.#onAddressChange.bind(this),
+      onNavigatePage: this.#navigatePage.bind(this),
+      onNavigateHistory: this.#navigateHistory.bind(this),
+      onJumpToAddress: this.#onJumpToAddress.bind(this),
+      onDeleteMemoryHighlight: this.#onDeleteMemoryHighlight.bind(this),
+      onByteSelected: this.#onByteSelected.bind(this),
+      onResize: this.#resize.bind(this),
+      onValueTypeToggled: this.#onValueTypeToggled.bind(this),
+      onValueTypeModeChanged: this.#onValueTypeModeChanged.bind(this),
+      onEndiannessChanged: this.#onEndiannessChanged.bind(this),
+      memorySlice: this.#memory.slice(start - this.#memoryOffset, end - this.#memoryOffset),
+      viewerStart: start
+    };
+    this.#view(viewInput, {}, this.contentElement);
   }
   #onJumpToAddress(e) {
     e.stopPropagation();
@@ -1587,9 +1657,13 @@ var LinearMemoryInspector = class extends HTMLElement {
     const addressInRange = Math.max(0, Math.min(e.data, this.#outerMemoryLength - 1));
     this.#jumpToAddress(addressInRange);
   }
+  #onDeleteMemoryHighlight(e) {
+    e.stopPropagation();
+    this.dispatchEventToListeners("DeleteMemoryHighlight", e.data);
+  }
   #onRefreshRequest() {
-    const { start, end } = this.#getPageRangeForAddress(this.#address, this.#numBytesPerPage);
-    this.dispatchEvent(new MemoryRequestEvent(start, end, this.#address));
+    const { start, end } = getPageRangeForAddress(this.#address, this.#numBytesPerPage, this.#outerMemoryLength);
+    this.dispatchEventToListeners("MemoryRequest", { start, end, address: this.#address });
   }
   #onByteSelected(e) {
     this.#currentNavigatorMode = "Submitted";
@@ -1601,16 +1675,12 @@ var LinearMemoryInspector = class extends HTMLElement {
   }
   #onEndiannessChanged(e) {
     this.#endianness = e.data;
-    this.dispatchEvent(new SettingsChangedEvent(this.#createSettings()));
-    this.#render();
-  }
-  #isValidAddress(address) {
-    const newAddress = parseAddress(address);
-    return newAddress !== void 0 && newAddress >= 0 && newAddress < this.#outerMemoryLength;
+    this.dispatchEventToListeners("SettingsChanged", this.#createSettings());
+    void this.requestUpdate();
   }
   #onAddressChange(e) {
     const { address, mode } = e.data;
-    const isValid = this.#isValidAddress(address);
+    const isValid = isValidAddress(address, this.#outerMemoryLength);
     const newAddress = parseAddress(address);
     this.#currentNavigatorAddressLine = address;
     if (newAddress !== void 0 && isValid) {
@@ -1623,7 +1693,7 @@ var LinearMemoryInspector = class extends HTMLElement {
     } else {
       this.#currentNavigatorMode = "Edit";
     }
-    this.#render();
+    void this.requestUpdate();
   }
   #onValueTypeToggled(e) {
     const { type, checked } = e.data;
@@ -1632,15 +1702,15 @@ var LinearMemoryInspector = class extends HTMLElement {
     } else {
       this.#valueTypes.delete(type);
     }
-    this.dispatchEvent(new SettingsChangedEvent(this.#createSettings()));
-    this.#render();
+    this.dispatchEventToListeners("SettingsChanged", this.#createSettings());
+    void this.requestUpdate();
   }
   #onValueTypeModeChanged(e) {
     e.stopImmediatePropagation();
     const { type, mode } = e.data;
     this.#valueTypeModes.set(type, mode);
-    this.dispatchEvent(new SettingsChangedEvent(this.#createSettings()));
-    this.#render();
+    this.dispatchEventToListeners("SettingsChanged", this.#createSettings());
+    void this.requestUpdate();
   }
   #navigateHistory(e) {
     return e.data === "Forward" ? this.#history.rollover() : this.#history.rollback();
@@ -1655,58 +1725,24 @@ var LinearMemoryInspector = class extends HTMLElement {
       console.warn(`Specified address is out of bounds: ${address}`);
       return;
     }
-    this.#setAddress(address);
-    this.#update();
-  }
-  #getPageRangeForAddress(address, numBytesPerPage) {
-    const pageNumber = Math.floor(address / numBytesPerPage);
-    const pageStartAddress = pageNumber * numBytesPerPage;
-    const pageEndAddress = Math.min(pageStartAddress + numBytesPerPage, this.#outerMemoryLength);
-    return { start: pageStartAddress, end: pageEndAddress };
+    this.address = address;
+    void this.requestUpdate();
   }
   #resize(event) {
     this.#numBytesPerPage = event.data;
-    this.#update();
+    void this.requestUpdate();
   }
-  #update() {
-    const { start, end } = this.#getPageRangeForAddress(this.#address, this.#numBytesPerPage);
-    if (start < this.#memoryOffset || end > this.#memoryOffset + this.#memory.length) {
-      this.dispatchEvent(new MemoryRequestEvent(start, end, this.#address));
-    } else {
-      this.#render();
-    }
-  }
-  #setAddress(address) {
+  set address(address) {
     if (this.#address === address) {
       return;
     }
     const historyEntry = new AddressHistoryEntry(address, () => this.#jumpToAddress(address));
     this.#history.push(historyEntry);
     this.#address = address;
-    this.dispatchEvent(new AddressChangedEvent(this.#address));
-  }
-  // Returns the highlightInfo with the smallest size property that encloses the provided address.
-  // If there are multiple smallest enclosing highlights, we pick the one appearing the earliest in highlightedMemoryAreas.
-  // If no such highlightInfo exists, it returns undefined.
-  //
-  // Selecting the smallest enclosing memory highlight is a heuristic that aims to pick the
-  // most specific highlight given a provided address. This way, objects contained in other objects are
-  // potentially still accessible.
-  #getSmallestEnclosingMemoryHighlight(highlightedMemoryAreas, address) {
-    let smallestEnclosingHighlight;
-    for (const highlightedMemory of highlightedMemoryAreas) {
-      if (highlightedMemory.startAddress <= address && address < highlightedMemory.startAddress + highlightedMemory.size) {
-        if (!smallestEnclosingHighlight) {
-          smallestEnclosingHighlight = highlightedMemory;
-        } else if (highlightedMemory.size < smallestEnclosingHighlight.size) {
-          smallestEnclosingHighlight = highlightedMemory;
-        }
-      }
-    }
-    return smallestEnclosingHighlight;
+    this.dispatchEventToListeners("AddressChanged", this.#address);
+    void this.requestUpdate();
   }
 };
-customElements.define("devtools-linear-memory-inspector-inspector", LinearMemoryInspector);
 
 // gen/front_end/panels/linear_memory_inspector/components/LinearMemoryNavigator.js
 var LinearMemoryNavigator_exports = {};

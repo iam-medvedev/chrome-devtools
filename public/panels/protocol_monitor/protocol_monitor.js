@@ -1609,6 +1609,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     }, sessionId);
   }
   wasShown() {
+    super.wasShown();
     if (this.started) {
       return;
     }

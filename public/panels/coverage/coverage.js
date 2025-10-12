@@ -869,14 +869,14 @@ var CoverageInfo = class {
 var CoverageListView_exports = {};
 __export(CoverageListView_exports, {
   CoverageListView: () => CoverageListView,
-  GridNode: () => GridNode,
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   coverageTypeToString: () => coverageTypeToString
 });
+import "./../../ui/components/highlighting/highlighting.js";
+import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as Common2 from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
-import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Workspace3 from "./../../models/workspace/workspace.js";
-import * as DataGrid from "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as UI from "./../../ui/legacy/legacy.js";
 import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
 
@@ -1060,7 +1060,7 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("panels/coverage/CoverageListView.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
-var { styleMap } = Directives;
+var { styleMap, repeat } = Directives;
 function coverageTypeToString(type) {
   const types = [];
   if (type & 1) {
@@ -1073,155 +1073,89 @@ function coverageTypeToString(type) {
   }
   return types.join("+");
 }
+var formatBytes = (value) => {
+  return getBytesFormatter().format(value ?? 0);
+};
+var formatPercent = (value) => {
+  return getPercentageFormatter().format(value ?? 0);
+};
+var DEFAULT_VIEW = (input, _output, target) => {
+  render(html`
+    <style>${coverageListView_css_default}</style>
+    <devtools-data-grid class="flex-auto" name=${i18nString(UIStrings.codeCoverage)} striped autofocus resize="last"
+      .template=${html`
+        <table>
+          <tr>
+            <th id="url" width="250px" weight="3" sortable>${i18nString(UIStrings.url)}</th>
+            <th id="type" width="45px" weight="1" fixed sortable>${i18nString(UIStrings.type)}</th>
+            <th id="size" width="60px" align="right" weight="1" fixed sortable>${i18nString(UIStrings.totalBytes)}</th>
+            <th id="unused-size" width="100px" align="right" weight="1" fixed sortable sort="descending">${i18nString(UIStrings.unusedBytes)}</th>
+            <th id="bars" width="250px" weight="1" sortable>${i18nString(UIStrings.usageVisualization)}</th>
+          </tr>
+          ${repeat(input.items, (info) => info.url, (info) => renderItem(info, input))}
+        </table>`}>
+      </devtools-data-grid>`, target);
+};
 var CoverageListView = class extends UI.Widget.VBox {
-  nodeForUrl;
-  highlightRegExp;
-  dataGrid;
-  constructor() {
-    super({ useShadowDom: true });
-    this.registerRequiredCSS(coverageListView_css_default);
-    this.nodeForUrl = /* @__PURE__ */ new Map();
-    this.highlightRegExp = null;
-    const columns = [
-      {
-        id: "url",
-        title: i18nString(UIStrings.url),
-        width: "250px",
-        weight: 3,
-        fixedWidth: false,
-        sortable: true,
-        disclosure: true
-      },
-      { id: "type", title: i18nString(UIStrings.type), width: "45px", weight: 1, fixedWidth: true, sortable: true },
-      {
-        id: "size",
-        title: i18nString(UIStrings.totalBytes),
-        width: "60px",
-        fixedWidth: true,
-        sortable: true,
-        align: "right",
-        weight: 1
-      },
-      {
-        id: "unused-size",
-        title: i18nString(UIStrings.unusedBytes),
-        width: "100px",
-        fixedWidth: true,
-        sortable: true,
-        align: "right",
-        sort: DataGrid.DataGrid.Order.Descending,
-        weight: 1
-      },
-      {
-        id: "bars",
-        title: i18nString(UIStrings.usageVisualization),
-        width: "250px",
-        fixedWidth: false,
-        sortable: true,
-        weight: 1
-      }
-    ];
-    this.dataGrid = DataGrid.SortableDataGrid.SortableDataGrid.create(["dummy"], [], i18nString(UIStrings.codeCoverage));
-    this.dataGrid.removeColumn("dummy");
-    for (const column of columns) {
-      this.dataGrid.addColumn(column);
-    }
-    this.dataGrid.setColumnsVisibility(new Set(columns.map((column) => column.id)));
-    this.dataGrid.setResizeMethod(
-      "last"
-      /* DataGrid.DataGrid.ResizeMethod.LAST */
-    );
-    this.dataGrid.setStriped(true);
-    this.dataGrid.element.classList.add("flex-auto");
-    this.dataGrid.addEventListener("OpenedNode", this.onOpenedNode, this);
-    const dataGridWidget = this.dataGrid.asWidget();
-    dataGridWidget.show(this.contentElement);
-    this.setDefaultFocusedChild(dataGridWidget);
+  #highlightRegExp;
+  #coverageInfo = [];
+  #selectedUrl = null;
+  #maxSize = 0;
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true, delegatesFocus: true });
+    this.#view = view;
+    this.#highlightRegExp = null;
   }
-  update(coverageInfo, highlightRegExp) {
-    this.highlightRegExp = highlightRegExp;
-    const maxSize = coverageInfo.reduce((acc, entry) => Math.max(acc, entry.size), 0);
-    const coverageUrls = new Set(coverageInfo.map((info) => info.url));
-    for (const [url, node] of this.nodeForUrl.entries()) {
-      if (!coverageUrls.has(url)) {
-        node.remove();
-        this.nodeForUrl.delete(url);
-      }
-    }
-    let hadUpdates = false;
-    for (const entry of coverageInfo) {
-      let node = this.nodeForUrl.get(entry.url);
-      if (node) {
-        hadUpdates = node.refreshIfNeeded(maxSize, entry) || hadUpdates;
-        if (entry.sources.length > 0) {
-          this.updateSourceNodes(entry.sources, maxSize, node);
-        }
-        node.setHighlight(this.highlightRegExp);
-        continue;
-      }
-      node = new GridNode(entry, maxSize);
-      this.nodeForUrl.set(entry.url, node);
-      this.appendNodeByType(node);
-      if (entry.sources.length > 0) {
-        this.updateSourceNodes(entry.sources, maxSize, node);
-      }
-      node.setHighlight(this.highlightRegExp);
-      hadUpdates = true;
-    }
-    if (hadUpdates) {
-      this.dataGrid.dispatchEventToListeners(
-        "SortingChanged"
-        /* DataGrid.DataGrid.Events.SORTING_CHANGED */
-      );
-    }
+  set highlightRegExp(highlightRegExp) {
+    this.#highlightRegExp = highlightRegExp;
+    this.requestUpdate();
   }
-  updateSourceNodes(sources, maxSize, node) {
-    for (const coverageInfo of sources) {
-      const sourceNode = this.nodeForUrl.get(coverageInfo.url);
-      if (sourceNode) {
-        sourceNode.refreshIfNeeded(maxSize, coverageInfo);
-      } else {
-        const sourceNode2 = new GridNode(coverageInfo, maxSize);
-        node.appendChild(sourceNode2);
-        this.nodeForUrl.set(coverageInfo.url, sourceNode2);
-      }
-    }
+  get highlightRegExp() {
+    return this.#highlightRegExp;
+  }
+  set coverageInfo(coverageInfo) {
+    this.#coverageInfo = coverageInfo;
+    this.#maxSize = coverageInfo.reduce((acc, entry) => Math.max(acc, entry.size), 0);
+    this.requestUpdate();
+  }
+  get coverageInfo() {
+    return this.#coverageInfo;
+  }
+  performUpdate() {
+    const input = {
+      items: this.#coverageInfo,
+      selectedUrl: this.#selectedUrl,
+      maxSize: this.#maxSize,
+      onOpen: (url) => {
+        this.selectedUrl = url;
+      },
+      highlightRegExp: this.#highlightRegExp
+    };
+    this.#view(input, {}, this.contentElement);
   }
   reset() {
-    this.nodeForUrl.clear();
-    this.dataGrid.rootNode().removeChildren();
+    this.#coverageInfo = [];
+    this.#maxSize = 0;
+    this.requestUpdate();
   }
-  appendNodeByType(node) {
-    if (node.coverageInfo.generatedUrl) {
-      const parentNode = this.nodeForUrl.get(node.coverageInfo.generatedUrl);
-      parentNode?.appendChild(node);
-    } else {
-      this.dataGrid.rootNode().appendChild(node);
-    }
-  }
-  selectByUrl(url) {
-    const node = this.nodeForUrl.get(url);
-    if (node) {
-      node.revealAndSelect();
-    }
-  }
-  onOpenedNode() {
-    void this.revealSourceForSelectedNode();
-  }
-  async revealSourceForSelectedNode() {
-    const node = this.dataGrid.selectedNode;
-    if (!node) {
+  set selectedUrl(url) {
+    const info = this.#coverageInfo.find((info2) => info2.url === url);
+    if (!info) {
       return;
     }
-    const coverageInfo = node.coverageInfo;
-    const sourceCode = Workspace3.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(coverageInfo.url);
+    if (this.#selectedUrl !== url) {
+      this.#selectedUrl = url;
+      this.requestUpdate();
+    }
+    const sourceCode = url ? Workspace3.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url) : null;
     if (!sourceCode) {
       return;
     }
-    if (this.dataGrid.selectedNode !== node) {
-      return;
-    }
     void Common2.Revealer.reveal(sourceCode);
+  }
+  get selectedUrl() {
+    return this.#selectedUrl;
   }
 };
 var percentageFormatter = null;
@@ -1241,129 +1175,62 @@ function getBytesFormatter() {
   }
   return bytesFormatter;
 }
-var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
-  coverageInfo;
-  lastUsedSize;
-  url;
-  maxSize;
-  highlightRegExp;
-  constructor(coverageInfo, maxSize) {
-    super();
-    this.coverageInfo = coverageInfo;
-    this.url = coverageInfo.url;
-    this.maxSize = maxSize;
-    this.highlightRegExp = null;
-    this.#updateData(coverageInfo);
+function renderItem(info, input) {
+  function highlightRange(textContent) {
+    const matches = input.highlightRegExp?.exec(textContent);
+    return matches?.length ? `${matches.index},${matches[0].length}` : "";
   }
-  #updateData(coverageInfo) {
-    this.data["url"] = this.url;
-    this.data["type"] = coverageTypeToString(coverageInfo.type);
-    this.data["size"] = coverageInfo.size;
-    this.data["unused-size"] = coverageInfo.unusedSize;
-    this.data["bars"] = coverageInfo.unusedSize;
-    this.coverageInfo = coverageInfo;
-  }
-  setHighlight(highlightRegExp) {
-    if (this.highlightRegExp === highlightRegExp) {
-      return;
-    }
-    this.highlightRegExp = highlightRegExp;
-    for (const child of this.children) {
-      child.setHighlight(this.highlightRegExp);
-    }
-    this.refresh();
-  }
-  refreshIfNeeded(maxSize, coverageInfo) {
-    if (this.lastUsedSize === coverageInfo.usedSize && maxSize === this.maxSize) {
-      return false;
-    }
-    this.lastUsedSize = coverageInfo.usedSize;
-    this.maxSize = maxSize;
-    this.refresh();
-    this.#updateData(coverageInfo);
-    return true;
-  }
-  createCell(columnId) {
-    const cell = this.createTD(columnId);
-    const info = this.coverageInfo;
-    const formatBytes = (value) => {
-      return getBytesFormatter().format(value ?? 0);
-    };
-    const formatPercent = (value) => {
-      return getPercentageFormatter().format(value ?? 0);
-    };
-    switch (columnId) {
-      case "url": {
-        UI.Tooltip.Tooltip.install(cell, this.url);
-        this.setCellAccessibleName(this.url, cell, columnId);
-        const splitURL = /^(.*)(\/[^/]*)$/.exec(this.url);
-        render(html`
-          <div class="url-outer">
-            <div class="url-prefix">${splitURL ? splitURL[1] : this.url}</div>
-            <div class="url-suffix">${splitURL ? splitURL[2] : ""}</div>
-          </div>`, cell);
-        if (this.highlightRegExp) {
-          this.highlight(cell, this.url);
-        }
-        break;
-      }
-      case "type": {
-        UI.Tooltip.Tooltip.install(cell, info.type & 4 ? i18nString(UIStrings.jsCoverageWithPerFunction) : info.type & 2 ? i18nString(UIStrings.jsCoverageWithPerBlock) : "");
-        render(coverageTypeToString(this.coverageInfo.type), cell);
-        break;
-      }
-      case "size": {
-        this.setCellAccessibleName(i18nString(UIStrings.sBytes, { n: info.size || 0 }), cell, columnId);
-        render(html`<span>${formatBytes(info.size)}</span>`, cell);
-        break;
-      }
-      case "unused-size": {
-        this.setCellAccessibleName(i18nString(UIStrings.sBytesS, { n: info.unusedSize, percentage: formatPercent(info.unusedPercentage) }), cell, columnId);
-        render(html`
-          <span>${formatBytes(info.unusedSize)}</span>
-          <span class="percent-value">
-            ${formatPercent(info.unusedPercentage)}
-          </span>`, cell);
-        break;
-      }
-      case "bars": {
-        this.setCellAccessibleName(i18nString(UIStrings.sOfFileUnusedSOfFileUsed, { PH1: formatPercent(info.unusedPercentage), PH2: formatPercent(info.usedPercentage) }), cell, columnId);
-        render(html`
-          <div class="bar-container">
-            ${info.unusedSize > 0 ? html`
-              <div class="bar bar-unused-size"
-                  title=${info.type & 4 ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHave, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) : info.type & 2 ? i18nString(UIStrings.sBytesSBelongToBlocksOf, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) : ""}
-                  style=${styleMap({ width: (info.unusedSize / this.maxSize * 100 || 0) + "%" })}>
-              </div>` : nothing}
-            ${info.usedSize > 0 ? html`
+  const splitURL = /^(.*)(\/[^/]*)$/.exec(info.url);
+  return html`
+    <style>${coverageListView_css_default}</style>
+    <tr data-url=${info.url} selected=${info.url === input.selectedUrl}
+        @open=${() => input.onOpen(info.url)}>
+      <td data-value=${info.url} title=${info.url} aria-label=${info.url}>
+        <devtools-highlight ranges=${highlightRange(info.url)} class="url-outer" aria-hidden="true">
+          <div class="url-prefix">${splitURL ? splitURL[1] : info.url}</div>
+          <div class="url-suffix">${splitURL ? splitURL[2] : ""}</div>
+        </devtools-highlight>
+      </td>
+      <td data-value=${coverageTypeToString(info.type)}
+          title=${info.type & 4 ? i18nString(UIStrings.jsCoverageWithPerFunction) : info.type & 2 ? i18nString(UIStrings.jsCoverageWithPerBlock) : ""}>
+        ${coverageTypeToString(info.type)}
+      </td>
+      <td data-value=${info.size} aria-label=${i18nString(UIStrings.sBytes, { n: info.size || 0 })}>
+        <span>${formatBytes(info.size)}</span>
+      </td>
+      <td data-value=${info.unusedSize} aria-label=${i18nString(UIStrings.sBytesS, { n: info.unusedSize, percentage: formatPercent(info.unusedPercentage) })}>
+        <span>${formatBytes(info.unusedSize)}</span>
+        <span class="percent-value">
+          ${formatPercent(info.unusedPercentage)}
+        </span>
+      </td>
+      <td data-value=${info.unusedSize} aria-label=${i18nString(UIStrings.sOfFileUnusedSOfFileUsed, { PH1: formatPercent(info.unusedPercentage), PH2: formatPercent(info.usedPercentage) })}>
+        <div class="bar-container">
+          ${info.unusedSize > 0 ? html`
+            <div class="bar bar-unused-size"
+                title=${info.type & 4 ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHave, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) : info.type & 2 ? i18nString(UIStrings.sBytesSBelongToBlocksOf, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) : ""}
+                  style=${styleMap({ width: (info.unusedSize / input.maxSize * 100 || 0) + "%" })}>
+            </div>` : nothing}
+          ${info.usedSize > 0 ? html`
             <div class="bar bar-used-size"
                   title=${info.type & 4 ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHaveExecuted, { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) }) : info.type & 2 ? i18nString(UIStrings.sBytesSBelongToBlocksOfJavascript, { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) }) : ""}
-                  { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) })}
-                style=${styleMap({ width: (info.usedSize / this.maxSize * 100 || 0) + "%" })}>
+                style=${styleMap({ width: (info.usedSize / input.maxSize * 100 || 0) + "%" })}>
             </div>` : nothing}
-          </div>`, cell);
-      }
-    }
-    return cell;
-  }
-  highlight(element, textContent) {
-    if (!this.highlightRegExp) {
-      return;
-    }
-    const matches = this.highlightRegExp.exec(textContent);
-    if (!matches?.length) {
-      return;
-    }
-    const range = new TextUtils2.TextRange.SourceRange(matches.index, matches[0].length);
-    UI.UIUtils.highlightRangesWithStyleClass(element, [range], "filter-highlight");
-  }
-};
+        </div>
+      </td>
+      ${info.sources.length > 0 ? html`
+        <td><table>
+          ${repeat(info.sources, (source) => source.url, (source) => renderItem(source, input))}
+        </table></td>` : nothing}
+    </tr>`;
+}
 
 // gen/front_end/panels/coverage/CoverageView.js
 var CoverageView_exports = {};
 __export(CoverageView_exports, {
   ActionDelegate: () => ActionDelegate,
-  CoverageView: () => CoverageView
+  CoverageView: () => CoverageView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common3 from "./../../core/common/common.js";
@@ -1375,6 +1242,7 @@ import * as Bindings from "./../../models/bindings/bindings.js";
 import * as Workspace7 from "./../../models/workspace/workspace.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as UI2 from "./../../ui/legacy/legacy.js";
+import { Directives as Directives2, html as html2, i18nTemplate as unboundI18nTemplate, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/coverage/CoverageDecorationManager.js
@@ -1384,7 +1252,7 @@ __export(CoverageDecorationManager_exports, {
   decoratorType: () => decoratorType
 });
 import * as Platform2 from "./../../core/platform/platform.js";
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as Workspace5 from "./../../models/workspace/workspace.js";
 var decoratorType = "coverage";
 var CoverageDecorationManager = class _CoverageDecorationManager {
@@ -1487,7 +1355,7 @@ var CoverageDecorationManager = class _CoverageDecorationManager {
     await Promise.all(promises);
   }
   async updateTextForProvider(contentProvider) {
-    const contentData = TextUtils3.ContentData.ContentData.contentDataOrEmpty(await contentProvider.requestContentData());
+    const contentData = TextUtils2.ContentData.ContentData.contentDataOrEmpty(await contentProvider.requestContentData());
     this.textByProvider.set(contentProvider, contentData.textObj);
   }
   async rawLocationsForSourceLocation(uiSourceCode, line, column) {
@@ -1604,9 +1472,27 @@ var coverageView_css_default = `/*
   text-align: center;
 }
 
+.inline-button {
+  display: inline-flex;
+  border: 1px solid var(--sys-color-neutral-outline);
+  border-radius: 4px;
+  position: relative;
+  vertical-align: sub;
+  margin: 2px;
+  background-color: var(--sys-color-cdt-base-container);
+  justify-content: center;
+  width: 28px;
+}
+
+.inline-button:hover {
+  border-color: transparent;
+  background-color: var(--sys-color-state-hover-on-subtle);
+}
+
 /*# sourceURL=${import.meta.resolve("./coverageView.css")} */`;
 
 // gen/front_end/panels/coverage/CoverageView.js
+var _a;
 var UIStrings2 = {
   /**
    * @description Tooltip in Coverage List View of the Coverage tab for selecting JavaScript coverage mode
@@ -1700,195 +1586,218 @@ var UIStrings2 = {
 };
 var str_2 = i18n3.i18n.registerUIStrings("panels/coverage/CoverageView.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var i18nTemplate = unboundI18nTemplate.bind(void 0, str_2);
+var { ref } = Directives2;
+var { bindToAction } = UI2.UIUtils;
+var { bindToSetting } = UI2.SettingsUI;
+var { widgetConfig } = UI2.Widget;
 var coverageViewInstance;
-var CoverageView = class _CoverageView extends UI2.Widget.VBox {
-  model;
-  decorationManager;
-  coverageTypeComboBox;
-  coverageTypeComboBoxSetting;
-  toggleRecordAction;
-  toggleRecordButton;
-  inlineReloadButton;
-  startWithReloadButton;
-  clearAction;
-  exportAction;
-  textFilterRegExp;
-  filterInput;
-  typeFilterValue;
-  filterByTypeComboBox;
-  showContentScriptsSetting;
-  contentScriptsCheckbox;
-  coverageResultsElement;
-  landingPage;
-  bfcacheReloadPromptPage;
-  activationReloadPromptPage;
-  listView;
-  statusToolbarElement;
-  statusMessageElement;
-  constructor() {
+var DEFAULT_VIEW2 = (input, output, target) => {
+  render2(html2`
+      <style>${coverageView_css_default}</style>
+      <div class="coverage-toolbar-container" jslog=${VisualLogging.toolbar()} role="toolbar">
+        <devtools-toolbar class="coverage-toolbar" role="presentation" wrappable>
+          <select title=${i18nString2(UIStrings2.chooseCoverageGranularityPer)}
+              aria-label=${i18nString2(UIStrings2.chooseCoverageGranularityPer)}
+              jslog=${VisualLogging.dropDown("coverage-type").track({ change: true })}
+              @change=${(event) => input.onCoverageTypeChanged(event.target.selectedIndex)}
+              .selectedIndex=${input.coverageType}
+              ?disabled=${input.recording}>
+            <option value=${2 | 4}
+                    jslog=${VisualLogging.item(`${2 | 4}`).track({ click: true })}>
+                 ${i18nString2(UIStrings2.perFunction)}
+            </option>
+            <option value=${2}
+                    jslog=${VisualLogging.item(`${2}`).track({ click: true })}>
+              ${i18nString2(UIStrings2.perBlock)}
+            </option>
+          </select>
+          <devtools-button ${bindToAction(input.supportsRecordOnReload && !input.recording ? "coverage.start-with-reload" : "coverage.toggle-recording")}>
+          </devtools-button>
+          <devtools-button ${bindToAction("coverage.clear")}></devtools-button>
+          <div class="toolbar-divider"></div>
+          <devtools-button ${bindToAction("coverage.export")}></devtools-button>
+          <div class="toolbar-divider"></div>
+          <devtools-toolbar-input type="filter" placeholder=${i18nString2(UIStrings2.filterByUrl)}
+              ?disabled=${!Boolean(input.coverageInfo)}
+               @change=${(e) => input.onFilterChanged(e.detail)}
+               style="flex-grow:1; flex-shrink:1">
+          </devtools-toolbar-input>
+          <div class="toolbar-divider"></div>
+          <select title=${i18nString2(UIStrings2.filterCoverageByType)}
+              aria-label=${i18nString2(UIStrings2.filterCoverageByType)}
+              jslog=${VisualLogging.dropDown("coverage-by-type").track({ change: true })}
+              ?disabled=${!Boolean(input.coverageInfo)}
+              @change=${(event) => input.onTypeFilterChanged(Number(event.target.selectedOptions[0]?.value))}>
+            <option value="" jslog=${VisualLogging.item("").track({ click: true })}
+                    .selected=${input.typeFilter === null}>${i18nString2(UIStrings2.all)}</option>
+            <option value=${1}
+                    jslog=${VisualLogging.item(`${1}`).track({ click: true })}
+                    .selected=${input.typeFilter === 1}>
+              ${i18nString2(UIStrings2.css)}
+            </option>
+            <option value=${2 | 4}
+                   jslog=${VisualLogging.item(`${2 | 4}`).track({ click: true })}
+                   .selected=${input.typeFilter !== null && Boolean(input.typeFilter & (2 | 4))}>
+              ${i18nString2(UIStrings2.javascript)}
+            </option>
+          </select>
+          <div class="toolbar-divider"></div>
+          <devtools-checkbox title=${i18nString2(UIStrings2.includeExtensionContentScripts)}
+              ${bindToSetting(input.showContentScriptsSetting)}
+              ?disabled=${!Boolean(input.coverageInfo)}>
+            ${i18nString2(UIStrings2.contentScripts)}
+          </devtools-checkbox>
+        </devtools-toolbar>
+      </div>
+      <div class="coverage-results">
+        ${input.needsReload ? renderReloadPromptPage(input.needsReload === "bfcache-page" ? i18nString2(UIStrings2.bfcacheNoCapture) : i18nString2(UIStrings2.activationNoCapture), input.needsReload) : input.coverageInfo ? html2`
+          <devtools-widget autofocus class="results" .widgetConfig=${widgetConfig(CoverageListView, {
+    coverageInfo: input.coverageInfo,
+    highlightRegExp: input.textFilter,
+    selectedUrl: input.selectedUrl
+  })}
+            ${ref((e) => {
+    if (e instanceof HTMLElement) {
+      output.focusResults = () => {
+        e.focus();
+      };
+    }
+  })}>` : renderLandingPage(input.supportsRecordOnReload)}
+      </div>
+      <div class="coverage-toolbar-summary">
+        <div class="coverage-message">
+            ${input.statusMessage}
+        </div>
+    </div>`, target);
+};
+function renderLandingPage(supportsRecordOnReload) {
+  if (supportsRecordOnReload) {
+    return html2`
+      <devtools-widget .widgetConfig=${widgetConfig(UI2.EmptyWidget.EmptyWidget, {
+      header: i18nString2(UIStrings2.noCoverageData),
+      link: "https://developer.chrome.com/docs/devtools/coverage",
+      text: i18nString2(UIStrings2.clickTheReloadButtonSToReloadAnd, { PH1: i18nString2(UIStrings2.reloadPage) })
+    })}>
+        <devtools-button ${bindToAction("coverage.start-with-reload")}
+                          .variant=${"tonal"} .iconName=${void 0}>
+          ${i18nString2(UIStrings2.reloadPage)}
+        </devtools-button>
+      </devtools-widget>`;
+  }
+  return html2`
+    <devtools-widget .widgetConfig=${widgetConfig(UI2.EmptyWidget.EmptyWidget, {
+    header: i18nString2(UIStrings2.noCoverageData),
+    link: "https://developer.chrome.com/docs/devtools/coverage",
+    text: i18nString2(UIStrings2.clickTheRecordButtonSToStart, { PH1: i18nString2(UIStrings2.startRecording) })
+  })}>
+      <devtools-button ${bindToAction("coverage.toggle-recording")}
+                       .variant=${"tonal"} .iconName=${void 0}>
+        ${i18nString2(UIStrings2.startRecording)}
+      </devtools-button>
+    </devtools-widget>`;
+}
+function renderReloadPromptPage(message, className) {
+  return html2`
+    <div class="widget vbox ${className}">
+      <div class="message">${message}</div>
+      <span class="message">
+        ${i18nTemplate(UIStrings2.reloadPrompt, { PH1: html2`
+          <devtools-button class="inline-button" ${bindToAction("inspector-main.reload")}></devtools-button>` })}
+      </span>
+    </div>`;
+}
+var CoverageView = class extends UI2.Widget.VBox {
+  #model;
+  #decorationManager;
+  #coverageTypeComboBoxSetting;
+  #toggleRecordAction;
+  #clearAction;
+  #exportAction;
+  #textFilter;
+  #typeFilter;
+  #showContentScriptsSetting;
+  #view;
+  #supportsRecordOnReload;
+  #needsReload = null;
+  #statusMessage = "";
+  #output = { focusResults: () => {
+  } };
+  #coverageInfo = null;
+  #selectedUrl = null;
+  constructor(view = DEFAULT_VIEW2) {
     super({
       jslog: `${VisualLogging.panel("coverage").track({ resize: true })}`,
-      useShadowDom: true
+      useShadowDom: true,
+      delegatesFocus: true
     });
     this.registerRequiredCSS(coverageView_css_default);
-    this.model = null;
-    this.decorationManager = null;
-    const toolbarContainer = this.contentElement.createChild("div", "coverage-toolbar-container");
-    toolbarContainer.setAttribute("jslog", `${VisualLogging.toolbar()}`);
-    toolbarContainer.role = "toolbar";
-    const toolbar2 = toolbarContainer.createChild("devtools-toolbar", "coverage-toolbar");
-    toolbar2.role = "presentation";
-    toolbar2.wrappable = true;
-    this.coverageTypeComboBox = new UI2.Toolbar.ToolbarComboBox(this.onCoverageTypeComboBoxSelectionChanged.bind(this), i18nString2(UIStrings2.chooseCoverageGranularityPer), void 0, "coverage-type");
-    const coverageTypes = [
-      {
-        label: i18nString2(UIStrings2.perFunction),
-        value: 2 | 4
-      },
-      {
-        label: i18nString2(UIStrings2.perBlock),
-        value: 2
-      }
-    ];
-    for (const type of coverageTypes) {
-      this.coverageTypeComboBox.addOption(this.coverageTypeComboBox.createOption(type.label, `${type.value}`));
-    }
-    this.coverageTypeComboBoxSetting = Common3.Settings.Settings.instance().createSetting("coverage-view-coverage-type", 0);
-    this.coverageTypeComboBox.setSelectedIndex(this.coverageTypeComboBoxSetting.get());
-    this.coverageTypeComboBox.setEnabled(true);
-    toolbar2.appendToolbarItem(this.coverageTypeComboBox);
-    this.toggleRecordAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.toggle-recording");
-    this.toggleRecordButton = UI2.Toolbar.Toolbar.createActionButton(this.toggleRecordAction);
-    toolbar2.appendToolbarItem(this.toggleRecordButton);
+    this.#view = view;
+    this.#model = null;
+    this.#decorationManager = null;
+    this.#coverageTypeComboBoxSetting = Common3.Settings.Settings.instance().createSetting("coverage-view-coverage-type", 0);
+    this.#toggleRecordAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.toggle-recording");
     const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
-    const mainTargetSupportsRecordOnReload = mainTarget?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
-    this.inlineReloadButton = null;
-    if (mainTargetSupportsRecordOnReload) {
-      this.startWithReloadButton = UI2.Toolbar.Toolbar.createActionButton("coverage.start-with-reload");
-      toolbar2.appendToolbarItem(this.startWithReloadButton);
-      this.toggleRecordButton.setEnabled(false);
-      this.toggleRecordButton.setVisible(false);
-    }
-    this.clearAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.clear");
-    this.clearAction.setEnabled(false);
-    toolbar2.appendToolbarItem(UI2.Toolbar.Toolbar.createActionButton(this.clearAction));
-    toolbar2.appendSeparator();
-    this.exportAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.export");
-    this.exportAction.setEnabled(false);
-    toolbar2.appendToolbarItem(UI2.Toolbar.Toolbar.createActionButton(this.exportAction));
-    this.textFilterRegExp = null;
-    toolbar2.appendSeparator();
-    this.filterInput = new UI2.Toolbar.ToolbarFilter(i18nString2(UIStrings2.filterByUrl), 1, 1);
-    this.filterInput.setEnabled(false);
-    this.filterInput.addEventListener("TextChanged", this.onFilterChanged, this);
-    toolbar2.appendToolbarItem(this.filterInput);
-    toolbar2.appendSeparator();
-    this.typeFilterValue = null;
-    this.filterByTypeComboBox = new UI2.Toolbar.ToolbarComboBox(this.onFilterByTypeChanged.bind(this), i18nString2(UIStrings2.filterCoverageByType), void 0, "coverage-by-type");
-    const options = [
-      {
-        label: i18nString2(UIStrings2.all),
-        value: ""
+    this.#supportsRecordOnReload = Boolean(mainTarget?.model(SDK2.ResourceTreeModel.ResourceTreeModel));
+    this.#clearAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.clear");
+    this.#clearAction.setEnabled(false);
+    this.#exportAction = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.export");
+    this.#exportAction.setEnabled(false);
+    this.#textFilter = null;
+    this.#typeFilter = null;
+    this.#showContentScriptsSetting = Common3.Settings.Settings.instance().createSetting("show-content-scripts", false);
+    this.#showContentScriptsSetting.addChangeListener(this.#onFilterChanged, this);
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const input = {
+      coverageType: this.#coverageTypeComboBoxSetting.get(),
+      recording: this.#toggleRecordAction.toggled(),
+      supportsRecordOnReload: this.#supportsRecordOnReload,
+      typeFilter: this.#typeFilter,
+      showContentScriptsSetting: this.#showContentScriptsSetting,
+      needsReload: this.#needsReload,
+      coverageInfo: this.#coverageInfo,
+      textFilter: this.#textFilter,
+      selectedUrl: this.#selectedUrl,
+      statusMessage: this.#statusMessage,
+      onCoverageTypeChanged: this.#onCoverageTypeChanged.bind(this),
+      onFilterChanged: (value) => {
+        this.#textFilter = value ? Platform3.StringUtilities.createPlainTextSearchRegex(value, "i") : null;
+        this.#onFilterChanged();
       },
-      {
-        label: i18nString2(UIStrings2.css),
-        value: 1
-      },
-      {
-        label: i18nString2(UIStrings2.javascript),
-        value: 2 | 4
-      }
-    ];
-    for (const option of options) {
-      this.filterByTypeComboBox.addOption(this.filterByTypeComboBox.createOption(option.label, `${option.value}`));
-    }
-    this.filterByTypeComboBox.setSelectedIndex(0);
-    this.filterByTypeComboBox.setEnabled(false);
-    toolbar2.appendToolbarItem(this.filterByTypeComboBox);
-    toolbar2.appendSeparator();
-    this.showContentScriptsSetting = Common3.Settings.Settings.instance().createSetting("show-content-scripts", false);
-    this.showContentScriptsSetting.addChangeListener(this.onFilterChanged, this);
-    this.contentScriptsCheckbox = new UI2.Toolbar.ToolbarSettingCheckbox(this.showContentScriptsSetting, i18nString2(UIStrings2.includeExtensionContentScripts), i18nString2(UIStrings2.contentScripts));
-    this.contentScriptsCheckbox.setEnabled(false);
-    toolbar2.appendToolbarItem(this.contentScriptsCheckbox);
-    this.coverageResultsElement = this.contentElement.createChild("div", "coverage-results");
-    this.landingPage = this.buildLandingPage();
-    this.bfcacheReloadPromptPage = this.buildReloadPromptPage(i18nString2(UIStrings2.bfcacheNoCapture), "bfcache-page");
-    this.activationReloadPromptPage = this.buildReloadPromptPage(i18nString2(UIStrings2.activationNoCapture), "prerender-page");
-    this.listView = new CoverageListView();
-    this.statusToolbarElement = this.contentElement.createChild("div", "coverage-toolbar-summary");
-    this.statusMessageElement = this.statusToolbarElement.createChild("div", "coverage-message");
-    this.landingPage.show(this.coverageResultsElement);
+      onTypeFilterChanged: this.#onTypeFilterChanged.bind(this)
+    };
+    this.#view(input, this.#output, this.contentElement);
   }
   static instance() {
     if (!coverageViewInstance) {
-      coverageViewInstance = new _CoverageView();
+      coverageViewInstance = new _a();
     }
     return coverageViewInstance;
   }
   static removeInstance() {
     coverageViewInstance = void 0;
   }
-  buildLandingPage() {
-    const widget = new UI2.EmptyWidget.EmptyWidget(i18nString2(UIStrings2.noCoverageData), "");
-    widget.link = "https://developer.chrome.com/docs/devtools/coverage";
-    if (this.startWithReloadButton) {
-      const action = UI2.ActionRegistry.ActionRegistry.instance().getAction("coverage.start-with-reload");
-      if (action) {
-        widget.text = i18nString2(UIStrings2.clickTheReloadButtonSToReloadAnd, { PH1: i18nString2(UIStrings2.reloadPage) });
-        const button = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.reloadPage), () => action.execute(), {
-          jslogContext: action.id(),
-          variant: "tonal"
-          /* Buttons.Button.Variant.TONAL */
-        });
-        widget.contentElement.append(button);
-      }
-    } else {
-      widget.text = i18nString2(UIStrings2.clickTheRecordButtonSToStart, { PH1: i18nString2(UIStrings2.startRecording) });
-      const button = UI2.UIUtils.createTextButton(i18nString2(UIStrings2.startRecording), () => this.toggleRecordAction.execute(), {
-        jslogContext: this.toggleRecordAction.id(),
-        variant: "tonal"
-        /* Buttons.Button.Variant.TONAL */
-      });
-      widget.contentElement.append(button);
-    }
-    return widget;
-  }
-  buildReloadPromptPage(message, className) {
-    const widget = new UI2.Widget.VBox();
-    const reasonDiv = document.createElement("div");
-    reasonDiv.classList.add("message");
-    reasonDiv.textContent = message;
-    widget.contentElement.appendChild(reasonDiv);
-    this.inlineReloadButton = UI2.UIUtils.createInlineButton(UI2.Toolbar.Toolbar.createActionButton("inspector-main.reload"));
-    const messageElement = i18n3.i18n.getFormatLocalizedString(str_2, UIStrings2.reloadPrompt, { PH1: this.inlineReloadButton });
-    messageElement.classList.add("message");
-    widget.contentElement.appendChild(messageElement);
-    widget.element.classList.add(className);
-    return widget;
-  }
   clear() {
-    if (this.model) {
-      this.model.reset();
+    if (this.#model) {
+      this.#model.reset();
     }
-    this.reset();
+    this.#reset();
   }
-  reset() {
-    if (this.decorationManager) {
-      this.decorationManager.dispose();
-      this.decorationManager = null;
+  #reset() {
+    if (this.#decorationManager) {
+      this.#decorationManager.dispose();
+      this.#decorationManager = null;
     }
-    this.listView.reset();
-    this.listView.detach();
-    this.landingPage.show(this.coverageResultsElement);
-    this.statusMessageElement.textContent = "";
-    this.filterInput.setEnabled(false);
-    this.filterByTypeComboBox.setEnabled(false);
-    this.contentScriptsCheckbox.setEnabled(false);
-    this.exportAction.setEnabled(false);
+    this.#needsReload = null;
+    this.#coverageInfo = null;
+    this.#statusMessage = "";
+    this.#exportAction.setEnabled(false);
+    this.requestUpdate();
   }
   toggleRecording() {
-    const enable = !this.toggleRecordAction.toggled();
+    const enable = !this.#toggleRecordAction.toggled();
     if (enable) {
       void this.startRecording({ reload: false, jsCoveragePerBlock: this.isBlockCoverageSelected() });
     } else {
@@ -1896,87 +1805,64 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
     }
   }
   isBlockCoverageSelected() {
-    const option = this.coverageTypeComboBox.selectedOption();
-    const coverageType = Number(option ? option.value : Number.NaN);
-    return coverageType === 2;
+    return this.#coverageTypeComboBoxSetting.get() === 2;
   }
-  selectCoverageType(jsCoveragePerBlock) {
+  #selectCoverageType(jsCoveragePerBlock) {
     const selectedIndex = jsCoveragePerBlock ? 1 : 0;
-    this.coverageTypeComboBox.setSelectedIndex(selectedIndex);
+    this.#coverageTypeComboBoxSetting.set(selectedIndex);
   }
-  onCoverageTypeComboBoxSelectionChanged() {
-    this.coverageTypeComboBoxSetting.set(this.coverageTypeComboBox.selectedIndex());
+  #onCoverageTypeChanged(newValue) {
+    this.#coverageTypeComboBoxSetting.set(newValue);
   }
   async startRecording(options) {
-    let hadFocus, reloadButtonFocused;
-    if (this.startWithReloadButton?.element.hasFocus() || this.inlineReloadButton?.hasFocus()) {
-      reloadButtonFocused = true;
-    } else if (this.hasFocus()) {
-      hadFocus = true;
-    }
-    this.reset();
+    this.#reset();
     const mainTarget = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
     if (!mainTarget) {
       return;
     }
     const { reload, jsCoveragePerBlock } = { reload: false, jsCoveragePerBlock: false, ...options };
-    if (!this.model || reload) {
-      this.model = mainTarget.model(CoverageModel);
+    if (!this.#model || reload) {
+      this.#model = mainTarget.model(CoverageModel);
     }
-    if (!this.model) {
+    if (!this.#model) {
       return;
     }
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageStarted);
     if (jsCoveragePerBlock) {
       Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageStartedPerBlock);
     }
-    const success = await this.model.start(Boolean(jsCoveragePerBlock));
+    const success = await this.#model.start(Boolean(jsCoveragePerBlock));
     if (!success) {
       return;
     }
-    this.selectCoverageType(Boolean(jsCoveragePerBlock));
-    this.model.addEventListener(Events.CoverageUpdated, this.onCoverageDataReceived, this);
-    this.model.addEventListener(Events.SourceMapResolved, this.updateListView, this);
+    this.#selectCoverageType(Boolean(jsCoveragePerBlock));
+    this.#model.addEventListener(Events.CoverageUpdated, this.#onCoverageDataReceived, this);
+    this.#model.addEventListener(Events.SourceMapResolved, this.#updateListView, this);
     const resourceTreeModel = mainTarget.model(SDK2.ResourceTreeModel.ResourceTreeModel);
-    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-    this.decorationManager = new CoverageDecorationManager(this.model, Workspace7.Workspace.WorkspaceImpl.instance(), Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance());
-    this.toggleRecordAction.setToggled(true);
-    this.clearAction.setEnabled(false);
-    if (this.startWithReloadButton) {
-      this.startWithReloadButton.setEnabled(false);
-      this.startWithReloadButton.setVisible(false);
-      this.toggleRecordButton.setEnabled(true);
-      this.toggleRecordButton.setVisible(true);
-      if (reloadButtonFocused) {
-        this.toggleRecordButton.focus();
-      }
-    }
-    this.coverageTypeComboBox.setEnabled(false);
-    this.filterInput.setEnabled(true);
-    this.filterByTypeComboBox.setEnabled(true);
-    this.contentScriptsCheckbox.setEnabled(true);
-    if (this.landingPage.isShowing()) {
-      this.landingPage.detach();
-    }
-    this.listView.show(this.coverageResultsElement);
-    if (hadFocus && !reloadButtonFocused) {
-      this.listView.focus();
-    }
+    SDK2.TargetManager.TargetManager.instance().addModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    this.#decorationManager = new CoverageDecorationManager(this.#model, Workspace7.Workspace.WorkspaceImpl.instance(), Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance());
+    this.#toggleRecordAction.setToggled(true);
+    this.#clearAction.setEnabled(false);
+    this.#coverageInfo = [];
+    this.#needsReload = null;
+    this.requestUpdate();
+    await this.updateComplete;
+    this.#output.focusResults();
     if (reload && resourceTreeModel) {
       resourceTreeModel.reloadPage();
     } else {
-      void this.model.startPolling();
+      void this.#model.startPolling();
     }
   }
-  onCoverageDataReceived(event) {
+  #onCoverageDataReceived(event) {
     const data = event.data;
-    this.updateViews(data);
+    this.#updateViews(data);
   }
-  updateListView() {
-    const entries = (this.model?.entries() || []).map((entry) => this.toCoverageListItem(entry)).filter((info) => this.isVisible(info)).map((entry) => ({ ...entry, sources: entry.sources.filter((entry2) => this.isVisible(entry2)) }));
-    this.listView.update(entries, this.textFilterRegExp);
+  #updateListView() {
+    const entries = (this.#model?.entries() || []).map((entry) => this.#toCoverageListItem(entry)).filter((info) => this.#isVisible(info)).map((entry) => ({ ...entry, sources: entry.sources.filter((entry2) => this.#isVisible(entry2)) }));
+    this.#coverageInfo = entries;
   }
-  toCoverageListItem(info) {
+  #toCoverageListItem(info) {
     return {
       url: info.url(),
       type: info.type(),
@@ -1985,92 +1871,76 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
       unusedSize: info.unusedSize(),
       usedPercentage: info.usedPercentage(),
       unusedPercentage: info.unusedPercentage(),
-      sources: [...info.sourcesURLCoverageInfo.values()].map(this.toCoverageListItem, this),
+      sources: [...info.sourcesURLCoverageInfo.values()].map(this.#toCoverageListItem, this),
       isContentScript: info.isContentScript(),
       generatedUrl: info instanceof SourceURLCoverageInfo ? info.generatedURLCoverageInfo.url() : void 0
     };
   }
   async stopRecording() {
-    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
-    if (this.hasFocus()) {
-      this.listView.focus();
+    SDK2.TargetManager.TargetManager.instance().removeModelListener(SDK2.ResourceTreeModel.ResourceTreeModel, SDK2.ResourceTreeModel.Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    if (this.#model) {
+      await this.#model.stop();
+      this.#model.removeEventListener(Events.CoverageUpdated, this.#onCoverageDataReceived, this);
     }
-    if (this.model) {
-      await this.model.stop();
-      this.model.removeEventListener(Events.CoverageUpdated, this.onCoverageDataReceived, this);
-    }
-    this.toggleRecordAction.setToggled(false);
-    this.coverageTypeComboBox.setEnabled(true);
-    if (this.startWithReloadButton) {
-      this.startWithReloadButton.setEnabled(true);
-      this.startWithReloadButton.setVisible(true);
-      this.toggleRecordButton.setEnabled(false);
-      this.toggleRecordButton.setVisible(false);
-    }
-    this.clearAction.setEnabled(true);
+    this.#toggleRecordAction.setToggled(false);
+    this.#clearAction.setEnabled(true);
+    this.requestUpdate();
   }
-  async onPrimaryPageChanged(event) {
+  async #onPrimaryPageChanged(event) {
     const frame = event.data.frame;
     const coverageModel = frame.resourceTreeModel().target().model(CoverageModel);
     if (!coverageModel) {
       return;
     }
-    if (this.model !== coverageModel) {
-      if (this.model) {
-        await this.model.stop();
-        this.model.removeEventListener(Events.CoverageUpdated, this.onCoverageDataReceived, this);
+    if (this.#model !== coverageModel) {
+      if (this.#model) {
+        await this.#model.stop();
+        this.#model.removeEventListener(Events.CoverageUpdated, this.#onCoverageDataReceived, this);
       }
-      this.model = coverageModel;
-      const success = await this.model.start(this.isBlockCoverageSelected());
+      this.#model = coverageModel;
+      const success = await this.#model.start(this.isBlockCoverageSelected());
       if (!success) {
         return;
       }
-      this.model.addEventListener(Events.CoverageUpdated, this.onCoverageDataReceived, this);
-      this.decorationManager = new CoverageDecorationManager(this.model, Workspace7.Workspace.WorkspaceImpl.instance(), Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance());
-    }
-    if (this.bfcacheReloadPromptPage.isShowing()) {
-      this.bfcacheReloadPromptPage.detach();
-      this.listView.show(this.coverageResultsElement);
-    }
-    if (this.activationReloadPromptPage.isShowing()) {
-      this.activationReloadPromptPage.detach();
-      this.listView.show(this.coverageResultsElement);
-    }
-    if (frame.backForwardCacheDetails.restoredFromCache) {
-      this.listView.detach();
-      this.bfcacheReloadPromptPage.show(this.coverageResultsElement);
+      this.#model.addEventListener(Events.CoverageUpdated, this.#onCoverageDataReceived, this);
+      this.#decorationManager = new CoverageDecorationManager(this.#model, Workspace7.Workspace.WorkspaceImpl.instance(), Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(), Bindings.CSSWorkspaceBinding.CSSWorkspaceBinding.instance());
     }
     if (event.data.type === "Activation") {
-      this.listView.detach();
-      this.activationReloadPromptPage.show(this.coverageResultsElement);
+      this.#needsReload = "prerender-page";
+    } else if (frame.backForwardCacheDetails.restoredFromCache) {
+      this.#needsReload = "bfcache-page";
+    } else {
+      this.#needsReload = null;
+      this.#coverageInfo = [];
     }
-    this.model.reset();
-    this.decorationManager?.reset();
-    this.listView.reset();
-    void this.model.startPolling();
+    this.requestUpdate();
+    this.#model.reset();
+    this.#decorationManager?.reset();
+    void this.#model.startPolling();
   }
-  updateViews(updatedEntries) {
-    this.updateStats();
-    this.updateListView();
-    this.exportAction.setEnabled(this.model !== null && this.model.entries().length > 0);
-    this.decorationManager?.update(updatedEntries);
+  #updateViews(updatedEntries) {
+    this.#updateStats();
+    this.#updateListView();
+    this.#exportAction.setEnabled(this.#model !== null && this.#model.entries().length > 0);
+    this.#decorationManager?.update(updatedEntries);
+    this.requestUpdate();
   }
-  updateStats() {
+  #updateStats() {
     const all = { total: 0, unused: 0 };
     const filtered = { total: 0, unused: 0 };
-    const filterApplied = this.textFilterRegExp !== null;
-    if (this.model) {
-      for (const info of this.model.entries()) {
+    const filterApplied = this.#textFilter !== null;
+    if (this.#model) {
+      for (const info of this.#model.entries()) {
         all.total += info.size();
         all.unused += info.unusedSize();
-        const listItem = this.toCoverageListItem(info);
-        if (this.isVisible(listItem)) {
-          if (this.textFilterRegExp?.test(info.url())) {
+        const listItem = this.#toCoverageListItem(info);
+        if (this.#isVisible(listItem)) {
+          if (this.#textFilter?.test(info.url())) {
             filtered.total += info.size();
             filtered.unused += info.unusedSize();
           } else {
             for (const childInfo of info.sourcesURLCoverageInfo.values()) {
-              if (this.isVisible(this.toCoverageListItem(childInfo))) {
+              if (this.#isVisible(this.#toCoverageListItem(childInfo))) {
                 filtered.total += childInfo.size();
                 filtered.unused += childInfo.unusedSize();
               }
@@ -2079,7 +1949,7 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
         }
       }
     }
-    this.statusMessageElement.textContent = filterApplied ? i18nString2(UIStrings2.filteredSTotalS, { PH1: formatStat(filtered), PH2: formatStat(all) }) : formatStat(all);
+    this.#statusMessage = filterApplied ? i18nString2(UIStrings2.filteredSTotalS, { PH1: formatStat(filtered), PH2: formatStat(all) }) : formatStat(all);
     function formatStat({ total, unused }) {
       const used = total - unused;
       const percentUsed = total ? Math.round(100 * used / total) : 0;
@@ -2091,45 +1961,37 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
       });
     }
   }
-  onFilterChanged() {
-    if (!this.listView) {
-      return;
-    }
-    const text = this.filterInput.value();
-    this.textFilterRegExp = text ? Platform3.StringUtilities.createPlainTextSearchRegex(text, "i") : null;
-    this.updateListView();
-    this.updateStats();
+  #onFilterChanged() {
+    this.#updateListView();
+    this.#updateStats();
+    this.requestUpdate();
   }
-  onFilterByTypeChanged() {
-    if (!this.listView) {
-      return;
-    }
+  #onTypeFilterChanged(typeFilter) {
     Host.userMetrics.actionTaken(Host.UserMetrics.Action.CoverageReportFiltered);
-    const option = this.filterByTypeComboBox.selectedOption();
-    const type = option?.value;
-    this.typeFilterValue = parseInt(type || "", 10) || null;
-    this.updateListView();
-    this.updateStats();
+    this.#typeFilter = typeFilter;
+    this.#updateListView();
+    this.#updateStats();
+    this.requestUpdate();
   }
-  isVisible(coverageInfo) {
+  #isVisible(coverageInfo) {
     const url = coverageInfo.url;
-    if (url.startsWith(_CoverageView.EXTENSION_BINDINGS_URL_PREFIX)) {
+    if (url.startsWith(_a.EXTENSION_BINDINGS_URL_PREFIX)) {
       return false;
     }
-    if (coverageInfo.isContentScript && !this.showContentScriptsSetting.get()) {
+    if (coverageInfo.isContentScript && !this.#showContentScriptsSetting.get()) {
       return false;
     }
-    if (this.typeFilterValue && !(coverageInfo.type & this.typeFilterValue)) {
+    if (this.#typeFilter && !(coverageInfo.type & this.#typeFilter)) {
       return false;
     }
     if (coverageInfo.sources.length > 0) {
       for (const sourceURLCoverageInfo of coverageInfo.sources) {
-        if (this.isVisible(sourceURLCoverageInfo)) {
+        if (this.#isVisible(sourceURLCoverageInfo)) {
           return true;
         }
       }
     }
-    return !this.textFilterRegExp || this.textFilterRegExp.test(url);
+    return !this.#textFilter || this.#textFilter.test(url);
   }
   async exportReport() {
     const fos = new Bindings.FileUtils.FileOutputStream();
@@ -2138,21 +2000,26 @@ var CoverageView = class _CoverageView extends UI2.Widget.VBox {
     if (!accepted) {
       return;
     }
-    this.model && await this.model.exportReport(fos);
+    this.#model && await this.#model.exportReport(fos);
   }
   selectCoverageItemByUrl(url) {
-    this.listView.selectByUrl(url);
+    this.#selectedUrl = url;
+    this.requestUpdate();
   }
   static EXTENSION_BINDINGS_URL_PREFIX = "extensions::";
   wasShown() {
-    UI2.Context.Context.instance().setFlavor(_CoverageView, this);
+    UI2.Context.Context.instance().setFlavor(_a, this);
     super.wasShown();
   }
   willHide() {
     super.willHide();
-    UI2.Context.Context.instance().setFlavor(_CoverageView, null);
+    UI2.Context.Context.instance().setFlavor(_a, null);
+  }
+  get model() {
+    return this.#model;
   }
 };
+_a = CoverageView;
 var ActionDelegate = class {
   handleAction(_context, actionId) {
     const coverageViewId = "coverage";

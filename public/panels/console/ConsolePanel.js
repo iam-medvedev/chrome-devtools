@@ -60,6 +60,7 @@ export class WrapperView extends UI.Widget.VBox {
         return wrapperViewInstance;
     }
     wasShown() {
+        super.wasShown();
         if (!ConsolePanel.instance().isShowing()) {
             this.showViewInWrapper();
         }
@@ -69,6 +70,7 @@ export class WrapperView extends UI.Widget.VBox {
         ConsolePanel.updateContextFlavor();
     }
     willHide() {
+        super.willHide();
         UI.InspectorView.InspectorView.instance().setDrawerMinimized(false);
         ConsolePanel.updateContextFlavor();
     }

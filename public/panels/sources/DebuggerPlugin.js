@@ -383,6 +383,7 @@ export class DebuggerPlugin extends Plugin {
         this.ignoreListInfobar = null;
     }
     willHide() {
+        super.willHide();
         this.popoverHelper?.hidePopover();
     }
     editBreakpointLocation({ breakpoint, uiLocation }) {

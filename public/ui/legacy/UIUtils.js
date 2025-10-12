@@ -1802,22 +1802,50 @@ export function maybeCreateNewBadge(promotionId) {
 export function bindToAction(actionName) {
     const action = ActionRegistry.instance().getAction(actionName);
     let setEnabled;
+    let toggled;
     function actionEnabledChanged(event) {
         setEnabled(event.data);
     }
     return Directives.ref((e) => {
         if (!e || !(e instanceof Buttons.Button.Button)) {
             action.removeEventListener("Enabled" /* ActionRegistration.Events.ENABLED */, actionEnabledChanged);
+            action.removeEventListener("Toggled" /* ActionRegistration.Events.TOGGLED */, toggled);
             return;
         }
         setEnabled = enabled => {
             e.disabled = !enabled;
         };
         action.addEventListener("Enabled" /* ActionRegistration.Events.ENABLED */, actionEnabledChanged);
+        const toggleable = action.toggleable();
         const title = action.title();
-        const iconName = action.icon();
+        const iconName = action.icon() ?? '';
         const jslogContext = action.id();
-        if (iconName) {
+        const toggledIconName = action.toggledIcon() ?? iconName;
+        const toggleType = action.toggleWithRedColor() ? "red-toggle" /* Buttons.Button.ToggleType.RED */ : "primary-toggle" /* Buttons.Button.ToggleType.PRIMARY */;
+        if (e.childNodes.length) {
+            e.jslogContext = jslogContext;
+        }
+        else if (toggleable) {
+            toggled = () => {
+                e.toggled = action.toggled();
+                if (action.title()) {
+                    e.title = action.title();
+                    Tooltip.installWithActionBinding(e, action.title(), action.id());
+                }
+            };
+            action.addEventListener("Toggled" /* ActionRegistration.Events.TOGGLED */, toggled);
+            e.data = {
+                jslogContext,
+                title,
+                variant: "icon_toggle" /* Buttons.Button.Variant.ICON_TOGGLE */,
+                iconName,
+                toggledIconName,
+                toggleType,
+                toggled: action.toggled(),
+            };
+            toggled();
+        }
+        else if (iconName) {
             e.data = { iconName, jslogContext, title, variant: "icon" /* Buttons.Button.Variant.ICON */ };
         }
         else {

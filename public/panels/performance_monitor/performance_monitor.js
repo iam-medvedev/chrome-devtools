@@ -223,6 +223,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     this.recalcChartHeight();
   }
   wasShown() {
+    super.wasShown();
     if (!this.model) {
       return;
     }
@@ -238,6 +239,7 @@ var PerformanceMonitorImpl = class extends UI.Widget.HBox {
     this.requestUpdate();
   }
   willHide() {
+    super.willHide();
     if (!this.model) {
       return;
     }

@@ -9,8 +9,7 @@ import * as SourceFrame from './source_frame.js';
 describeWithEnvironment('StreamingContentHexView', () => {
     function getMemoryViewer(view) {
         const inspector = view.contentElement.firstChild;
-        assert.isNotNull(inspector.shadowRoot);
-        const viewer = inspector.shadowRoot.querySelector('devtools-linear-memory-inspector-viewer');
+        const viewer = inspector.querySelector('devtools-linear-memory-inspector-viewer');
         assert.instanceOf(viewer, LinearMemoryInspectorComponents.LinearMemoryViewer.LinearMemoryViewer);
         return viewer;
     }

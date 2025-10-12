@@ -1231,7 +1231,7 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
-     * Set permission settings for given requesting and embedding origins.
+     * Set permission settings for given embedding and embedded origins.
      */
     'Browser.setPermission': {
       paramsType: [Protocol.Browser.SetPermissionRequest];
@@ -3349,7 +3349,9 @@ export namespace ProtocolMapping {
       returnType: void;
     };
     /**
-     * Activates emulation of network conditions for individual requests using URL match patterns.
+     * Activates emulation of network conditions for individual requests using URL match patterns. Unlike the deprecated
+     * Network.emulateNetworkConditions this method does not affect `navigator` state. Use Network.overrideNetworkState to
+     * explicitly modify `navigator` behavior.
      */
     'Network.emulateNetworkConditionsByRule': {
       paramsType: [Protocol.Network.EmulateNetworkConditionsByRuleRequest];

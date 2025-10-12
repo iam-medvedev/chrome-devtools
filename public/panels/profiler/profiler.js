@@ -1399,6 +1399,7 @@ var IsolateSelector = class _IsolateSelector extends UI2.Widget.VBox {
     SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged", this.heapStatsChanged, this);
   }
   willHide() {
+    super.willHide();
     SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged", this.heapStatsChanged, this);
   }
   isolateAdded(isolate) {
@@ -3826,6 +3827,7 @@ var ProfileView = class extends UI8.View.SimpleView {
     }
   }
   willHide() {
+    super.willHide();
     this.currentSearchResultIndex = -1;
   }
   refresh() {
@@ -6503,6 +6505,7 @@ var HeapSnapshotSortableDataGrid = class extends Common11.ObjectWrapper.eventMix
     }
   }
   wasShown() {
+    super.wasShown();
     if (this.nameFilter) {
       this.nameFilter.addEventListener("TextChanged", this.onNameFilterChanged, this);
       this.updateVisibleNodes(true);
@@ -6517,6 +6520,7 @@ var HeapSnapshotSortableDataGrid = class extends Common11.ObjectWrapper.eventMix
     this.dispatchEventToListeners(HeapSnapshotSortableDataGridEvents.ContentShown, this);
   }
   willHide() {
+    super.willHide();
     if (this.nameFilter) {
       this.nameFilter.removeEventListener("TextChanged", this.onNameFilterChanged, this);
     }
@@ -8138,6 +8142,7 @@ var HeapSnapshotView = class _HeapSnapshotView extends UI14.View.SimpleView {
     return result;
   }
   willHide() {
+    super.willHide();
     this.currentSearchResultIndex = -1;
     this.popoverHelper.hidePopover();
   }
@@ -9559,6 +9564,7 @@ var LiveHeapProfileView = class _LiveHeapProfileView extends UI16.Widget.VBox {
     this.setting.addChangeListener(this.settingChanged, this);
   }
   willHide() {
+    super.willHide();
     ++this.currentPollId;
     this.setting.removeChangeListener(this.settingChanged, this);
   }

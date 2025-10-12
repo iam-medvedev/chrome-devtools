@@ -11,6 +11,7 @@ export declare class JSONView extends UI.Widget.VBox implements UI.SearchableVie
     constructor(parsedJSON: ParsedJSON, startCollapsed?: boolean);
     static createView(content: string): Promise<UI.SearchableView.SearchableView | null>;
     static createViewSync(obj: Object | null, element?: HTMLElement): UI.SearchableView.SearchableView;
+    setSearchableView(searchableView: UI.SearchableView.SearchableView): void;
     private static parseJSON;
     private static extractJSON;
     private static findBrackets;
@@ -32,4 +33,9 @@ export declare class ParsedJSON<T extends unknown = unknown> {
     prefix: string;
     suffix: string;
     constructor(data: T, prefix: string, suffix: string);
+}
+export declare class SearchableJsonView extends UI.SearchableView.SearchableView {
+    #private;
+    constructor(element: HTMLElement);
+    set jsonObject(obj: Object);
 }

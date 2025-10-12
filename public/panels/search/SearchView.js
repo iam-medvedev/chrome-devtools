@@ -459,6 +459,7 @@ export class SearchView extends UI.Widget.VBox {
         this.#focusSearchInput();
     }
     willHide() {
+        super.willHide();
         this.#stopSearch();
     }
     #onQueryKeyDown(event) {

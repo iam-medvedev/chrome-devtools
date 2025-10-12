@@ -30,7 +30,7 @@ export declare class Settings {
      * to store UI state such as how a user choses to position a split widget or
      * which panel they last opened.
      * If you are creating a setting that you expect the user to control, and
-     * sync, prefer {@see createSetting}
+     * sync, prefer {@link Settings.createSetting}
      */
     moduleSetting<T = any>(settingName: string): Setting<T>;
     settingForTest(settingName: string): Setting<unknown>;

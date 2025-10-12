@@ -10,6 +10,7 @@ import '../../../ui/components/menus/menus.js';
 import './MetricCard.js';
 import * as Common from '../../../core/common/common.js';
 import * as i18n from '../../../core/i18n/i18n.js';
+import * as Root from '../../../core/root/root.js';
 import * as SDK from '../../../core/sdk/sdk.js';
 import * as CrUXManager from '../../../models/crux-manager/crux-manager.js';
 import * as EmulationModel from '../../../models/emulation/emulation.js';
@@ -277,7 +278,7 @@ const str_ = i18n.i18n.registerUIStrings('panels/timeline/components/LiveMetrics
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableComponent {
     #shadow = this.attachShadow({ mode: 'open' });
-    #isNode = false;
+    isNode = Root.Runtime.Runtime.isNode();
     #lcpValue;
     #clsValue;
     #inpValue;
@@ -296,10 +297,6 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         super();
         this.#toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.#recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
-    }
-    set isNode(isNode) {
-        this.#isNode = isNode;
-        void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     #onMetricStatus(event) {
         this.#lcpValue = event.data.lcp;
@@ -346,7 +343,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
     }
     async #refreshFieldDataForCurrentPage() {
-        if (!this.#isNode) {
+        if (!this.isNode) {
             await this.#cruxManager.refresh();
         }
         void ComponentHelpers.ScheduledRender.scheduleRender(this, this.#render);
@@ -938,7 +935,7 @@ export class LiveMetricsView extends LegacyWrapper.LegacyWrapper.WrappableCompon
     `;
     }
     #render = () => {
-        if (this.#isNode) {
+        if (this.isNode) {
             Lit.render(this.#renderNodeView(), this.#shadow, { host: this });
             return;
         }

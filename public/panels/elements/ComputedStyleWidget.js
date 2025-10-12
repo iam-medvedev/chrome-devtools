@@ -263,6 +263,7 @@ export class ComputedStyleWidget extends UI.ThrottledWidget.ThrottledWidget {
         super.wasShown();
     }
     willHide() {
+        super.willHide();
         UI.Context.Context.instance().setFlavor(ComputedStyleWidget, null);
     }
     async doUpdate() {

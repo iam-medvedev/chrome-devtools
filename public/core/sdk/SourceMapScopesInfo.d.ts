@@ -1,12 +1,24 @@
+import * as Formatter from '../../models/formatter/formatter.js';
+import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import type * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { SourceMap } from './SourceMap.js';
 export declare class SourceMapScopesInfo {
     #private;
     constructor(sourceMap: SourceMap, scopeInfo: ScopesCodec.ScopeInfo);
+    /**
+     * If the source map does not contain any scopes information, this factory function attempts to create bare bones scope information
+     * via the script's AST combined with the mappings.
+     *
+     * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
+     * We don't map the bounds via mappings as mappings are often iffy and it's not strictly required to translate stack traces where we
+     * map call-sites separately.
+     */
+    static createFromAst(sourceMap: SourceMap, scopeTree: Formatter.FormatterWorkerPool.ScopeTreeNode, text: TextUtils.Text.Text): SourceMapScopesInfo;
     addOriginalScopes(scopes: Array<ScopesCodec.OriginalScope | null>): void;
     addGeneratedRanges(ranges: ScopesCodec.GeneratedRange[]): void;
     hasOriginalScopes(sourceIdx: number): boolean;
+    isEmpty(): boolean;
     addOriginalScopesAtIndex(sourceIdx: number, scope: ScopesCodec.OriginalScope): void;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as

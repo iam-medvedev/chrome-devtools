@@ -156,6 +156,9 @@ export class ChildTargetManager extends SDKModel {
         else if (targetInfo.type === 'page') {
             type = Type.FRAME;
         }
+        else if (targetInfo.type === 'browser_ui') {
+            type = Type.FRAME;
+        }
         else if (targetInfo.type === 'worker') {
             type = Type.Worker;
         }

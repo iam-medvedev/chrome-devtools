@@ -65,7 +65,6 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     set3PCheckboxDisabled(disabled: boolean): void;
     static instance(opts?: {
         forceNew: boolean | null;
-        isNode: boolean;
         traceModel?: Trace.TraceModel.Model;
     } | undefined): TimelinePanel;
     static removeInstance(): void;
@@ -101,23 +100,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
     private setState;
     private createSettingCheckbox;
     /**
-     * Returns false if DevTools is in a standalone context where tracing/recording are NOT available.
-     *
-     * This includes scenarios like:
-     * - viewing an enhanced trace
-     * - viewing a trace in trace.cafe
-     * - other devtools_app.html scenarios without valid `ws=` param.
-     *   - See also the `isHostedMode` comment in `InspectorFrontendHost.ts`
-     *
-     * Possible signals to find a no-record (NR) context:
-     * - `primaryPageTarget()?.sessionId` is empty in NR, but populated when viewing an enhanced trace.
-     * - `primaryPageTarget.#capabilitiesMask` There's a tracing capability but the advertised capabilities are quite unreliable.
-     * - `primaryPageTarget.targets().length === 1` Mostly correct for NC but its 2 when viewing an enhanced trace.
-     * - `primaryPageTarget.router().connection()` Perhaps StubConnection or RehydratingConnection but MainConnection is incorrectly used sometimes. (eg devtools://devtools/bundled/devtools_app.html)
-     * - `resourceTreeModel?.mainFrame === null`. Correct for NR, HOWEVER  Node.js canRecord despite no main frame.
-     * - `rootTarget.type !== 'tab'` Has potential but it lies. (It's "browser" for Node despite a node type)
-     *
-     * The best signal, for now, is this combo (`isNode || hasMainFrame`), which is both well-maintained and correct in all known cases:
+     * Returns false if DevTools is in a standalone context where tracing/recording are
+     * NOT available.
      */
     private canRecord;
     private populateToolbar;

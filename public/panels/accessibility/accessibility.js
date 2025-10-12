@@ -3614,6 +3614,7 @@ var AXBreadcrumbsPane = class extends AccessibilitySubPane {
     this.collapsingBreadcrumbId = -1;
   }
   willHide() {
+    super.willHide();
     this.setPreselectedBreadcrumb(null);
   }
   onKeyDown(event) {
@@ -4218,6 +4219,7 @@ var AccessibilitySidebarView = class _AccessibilitySidebarView extends UI5.Throt
     SDK4.TargetManager.TargetManager.instance().addModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.ChildNodeCountUpdated, this.onNodeChange, this, { scoped: true });
   }
   willHide() {
+    super.willHide();
     SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrModified, this.onNodeChange, this);
     SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.AttrRemoved, this.onNodeChange, this);
     SDK4.TargetManager.TargetManager.instance().removeModelListener(SDK4.DOMModel.DOMModel, SDK4.DOMModel.Events.CharacterDataModified, this.onNodeChange, this);

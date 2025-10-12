@@ -6,6 +6,7 @@ const queryParamsObject = new URLSearchParams(location.search);
 let runtimePlatform = '';
 let runtimeInstance;
 let isNode;
+let isTraceAppEntry;
 /**
  * Returns the base URL (similar to `<base>`).
  * Used to resolve the relative URLs of any additional DevTools files (locale strings, etc) needed.
@@ -62,6 +63,16 @@ export class Runtime {
             isNode = isNodeEntry(getPathName());
         }
         return isNode;
+    }
+    /**
+     * Returns true if viewing the slimmed-down devtools meant for just viewing a
+     * performance trace, e.g. devtools://devtools/bundled/trace_app.html?traceURL=http://...
+     */
+    static isTraceApp() {
+        if (isTraceAppEntry === undefined) {
+            isTraceAppEntry = getPathName().includes('trace_app');
+        }
+        return isTraceAppEntry;
     }
     static setPlatform(platform) {
         runtimePlatform = platform;

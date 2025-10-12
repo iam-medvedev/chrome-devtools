@@ -8,7 +8,7 @@ export declare const UIStrings: {
     /**
      * @description Text to tell the user about the font-display CSS feature to help improve a the UX of a page.
      */
-    readonly description: "Consider setting [`font-display`](https://developer.chrome.com/blog/font-display) to `swap` or `optional` to ensure text is consistently visible. `swap` can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks).";
+    readonly description: "Consider setting [`font-display`](https://developer.chrome.com/docs/performance/insights/font-display) to `swap` or `optional` to ensure text is consistently visible. `swap` can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks).";
     /** Column for a font loaded by the page to render text. */
     readonly fontColumn: "Font";
     /** Column for the amount of time wasted. */

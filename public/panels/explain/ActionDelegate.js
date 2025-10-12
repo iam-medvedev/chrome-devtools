@@ -4,7 +4,6 @@
 import * as Host from '../../core/host/host.js';
 import * as Console from '../console/console.js';
 import { ConsoleInsight } from './components/ConsoleInsight.js';
-import { PromptBuilder } from './PromptBuilder.js';
 export class ActionDelegate {
     handleAction(context, actionId) {
         switch (actionId) {
@@ -21,7 +20,7 @@ export class ActionDelegate {
                     else if (actionId === 'explain.console-message.hover') {
                         Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightRequestedViaHoverButton);
                     }
-                    const promptBuilder = new PromptBuilder(consoleViewMessage);
+                    const promptBuilder = new Console.PromptBuilder.PromptBuilder(consoleViewMessage);
                     const aidaClient = new Host.AidaClient.AidaClient();
                     void ConsoleInsight.create(promptBuilder, aidaClient).then(insight => {
                         consoleViewMessage.setInsight(insight);

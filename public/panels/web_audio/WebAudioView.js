@@ -163,6 +163,7 @@ export class WebAudioView extends UI.Widget.VBox {
         }
     }
     willHide() {
+        super.willHide();
         for (const model of SDK.TargetManager.TargetManager.instance().models(WebAudioModel)) {
             this.removeEventListeners(model);
         }

@@ -40,6 +40,7 @@ export class TimelineLayersView extends UI.SplitWidget.SplitWidget {
         }
     }
     wasShown() {
+        super.wasShown();
         if (this.updateWhenVisible) {
             this.updateWhenVisible = false;
             this.update();

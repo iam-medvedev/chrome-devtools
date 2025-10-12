@@ -18,7 +18,8 @@ declare const ChangesSidebar_base: (new (...args: any[]) => {
 }) & typeof UI.Widget.Widget;
 export declare class ChangesSidebar extends ChangesSidebar_base {
     #private;
-    constructor(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl, target?: HTMLElement, view?: View);
+    constructor(target?: HTMLElement, view?: View);
+    set workspaceDiff(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
     selectedUISourceCode(): Workspace.UISourceCode.UISourceCode | null;
     performUpdate(): void;
     private uiSourceCodeModifiedStatusChanged;

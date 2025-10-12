@@ -2002,10 +2002,12 @@ var DeviceModeView = class extends UI3.Widget.VBox {
     }
   }
   wasShown() {
+    super.wasShown();
     this.measureHandles();
     this.toolbar.restore();
   }
   willHide() {
+    super.willHide();
     this.model.emulate(EmulationModel2.DeviceModeModel.Type.None, null, null);
   }
   async captureScreenshot() {

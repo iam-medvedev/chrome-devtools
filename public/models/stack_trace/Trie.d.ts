@@ -10,6 +10,11 @@ export interface RawFrame {
     readonly lineNumber: number;
     readonly columnNumber: number;
 }
+/**
+ * @returns whether the frame is a V8 builtin frame e.g. Array.map. Builtin frames
+ * have neither source position nor script or URL. They only have a name.
+ */
+export declare function isBuiltinFrame(rawFrame: RawFrame): boolean;
 interface FrameNodeBase<ChildT, ParentT> {
     readonly parent: ParentT;
     readonly children: ChildT[];

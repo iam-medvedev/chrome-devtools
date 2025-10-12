@@ -407,7 +407,7 @@ var UIStrings = {
   /**
    * @description Text to tell the user about how caching can help improve performance.
    */
-  description: "A long cache lifetime can speed up repeat visits to your page. [Learn more](https://web.dev/uses-long-cache-ttl/).",
+  description: "A long cache lifetime can speed up repeat visits to your page. [Learn more about caching](https://developer.chrome.com/docs/performance/insights/cache).",
   /**
    * @description Column for a font loaded by the page to render text.
    */
@@ -435,6 +435,7 @@ function finalize(partialModel) {
     strings: UIStrings,
     title: i18nString(UIStrings.title),
     description: i18nString(UIStrings.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/cache",
     category: InsightCategory.ALL,
     state: partialModel.requests.length > 0 ? "fail" : "pass",
     ...partialModel
@@ -606,7 +607,7 @@ var UIStrings2 = {
    * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
    * This is displayed after a user expands the section to see more. No character length limits.
    */
-  description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.",
+  description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://developer.chrome.com/docs/performance/insights/cls-culprit), such as elements being added, removed, or their fonts changing as the page loads.",
   /**
    * @description Text indicating the worst layout shift cluster.
    */
@@ -943,6 +944,7 @@ function finalize2(partialModel) {
     strings: UIStrings2,
     title: i18nString2(UIStrings2.title),
     description: i18nString2(UIStrings2.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/cls-culprit",
     category: InsightCategory.CLS,
     state,
     ...partialModel
@@ -1031,7 +1033,7 @@ var UIStrings3 = {
   /**
    * @description Description of an insight that provides a breakdown for how long it took to download the main document.
    */
-  description: "Your first network request is the most important.  Reduce its latency by avoiding redirects, ensuring a fast server response, and enabling text compression.",
+  description: "Your first network request is the most important. [Reduce its latency](https://developer.chrome.com/docs/performance/insights/document-latency) by avoiding redirects, ensuring a fast server response, and enabling text compression.",
   /**
    * @description Text to tell the user that the document request does not have redirects.
    */
@@ -1146,6 +1148,7 @@ function finalize3(partialModel) {
     strings: UIStrings3,
     title: i18nString3(UIStrings3.title),
     description: i18nString3(UIStrings3.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/document-latency",
     category: InsightCategory.ALL,
     state: hasFailure ? "fail" : "pass",
     ...partialModel
@@ -1271,7 +1274,7 @@ var UIStrings4 = {
   /**
    * @description Description of an insight that recommends reducing the size of the DOM tree as a means to improve page responsiveness. "DOM" is an acronym and should not be translated. "layout reflows" are when the browser will recompute the layout of content on the page.
    */
-  description: "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/lighthouse/performance/dom-size/).",
+  description: "A large DOM can increase the duration of style calculations and layout reflows, impacting page responsiveness. A large DOM will also increase memory usage. [Learn how to avoid an excessive DOM size](https://developer.chrome.com/docs/performance/insights/dom-size).",
   /**
    * @description Header for a column containing the names of statistics as opposed to the actual statistic values.
    */
@@ -1327,6 +1330,7 @@ function finalize4(partialModel) {
     strings: UIStrings4,
     title: i18nString4(UIStrings4.title),
     description: i18nString4(UIStrings4.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/dom-size",
     category: InsightCategory.INP,
     state: relatedEvents.length > 0 ? "informative" : "pass",
     ...partialModel,
@@ -1447,7 +1451,7 @@ var UIStrings5 = {
   /**
    * @description Description of an insight that identifies multiple copies of the same JavaScript sources, and recommends removing the duplication.
    */
-  description: "Remove large, duplicate JavaScript modules from bundles to reduce unnecessary bytes consumed by network activity.",
+  description: "Remove large, [duplicate JavaScript modules](https://developer.chrome.com/docs/performance/insights/duplicated-javascript) from bundles to reduce unnecessary bytes consumed by network activity.",
   /** Label for a column in a data table; entries will be the locations of JavaScript or CSS code, e.g. the name of a Javascript package or module. */
   columnSource: "Source",
   /** Label for a column in a data table; entries will be the number of wasted bytes due to duplication of a web resource. */
@@ -1462,6 +1466,7 @@ function finalize5(partialModel) {
     strings: UIStrings5,
     title: i18nString5(UIStrings5.title),
     description: i18nString5(UIStrings5.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/duplicated-javascript",
     category: InsightCategory.LCP,
     state: Boolean(partialModel.duplication.values().next().value) ? "fail" : "pass",
     relatedEvents: [...new Set(requests)],
@@ -1540,7 +1545,7 @@ var UIStrings6 = {
   /**
    * @description Text to tell the user about the font-display CSS feature to help improve a the UX of a page.
    */
-  description: "Consider setting [`font-display`](https://developer.chrome.com/blog/font-display) to `swap` or `optional` to ensure text is consistently visible. `swap` can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks).",
+  description: "Consider setting [`font-display`](https://developer.chrome.com/docs/performance/insights/font-display) to `swap` or `optional` to ensure text is consistently visible. `swap` can be further optimized to mitigate layout shifts with [font metric overrides](https://developer.chrome.com/blog/font-fallbacks).",
   /** Column for a font loaded by the page to render text. */
   fontColumn: "Font",
   /** Column for the amount of time wasted. */
@@ -1554,6 +1559,7 @@ function finalize6(partialModel) {
     strings: UIStrings6,
     title: i18nString6(UIStrings6.title),
     description: i18nString6(UIStrings6.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/font-display",
     category: InsightCategory.INP,
     state: partialModel.fonts.find((font) => font.wastedTime > 0) ? "fail" : "pass",
     ...partialModel
@@ -1629,7 +1635,7 @@ var UIStrings7 = {
   /**
    * @description Text to describe the forced reflow.
    */
-  description: "A forced reflow occurs when JavaScript queries geometric properties (such as `offsetWidth`) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about [forced reflows](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing#avoid-forced-synchronous-layouts) and possible mitigations.",
+  description: "A forced reflow occurs when JavaScript queries geometric properties (such as `offsetWidth`) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about [forced reflows](https://developer.chrome.com/docs/performance/insights/forced-reflow) and possible mitigations.",
   /**
    * @description Title of a list to provide related stack trace data
    */
@@ -1710,6 +1716,7 @@ function finalize7(partialModel) {
     strings: UIStrings7,
     title: i18nString7(UIStrings7.title),
     description: i18nString7(UIStrings7.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/forced-reflow",
     category: InsightCategory.ALL,
     state: partialModel.aggregatedBottomUpData.length !== 0 ? "fail" : "pass",
     ...partialModel
@@ -1792,7 +1799,7 @@ var UIStrings8 = {
   /**
    * @description Description of an insight that recommends ways to reduce the size of images downloaded and used on the page.
    */
-  description: "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)",
+  description: "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)",
   /**
    * @description Message displayed in a chip explaining that an image file size is large for the # of pixels it has and recommends possible adjustments to improve the image size.
    */
@@ -1873,6 +1880,7 @@ function finalize8(partialModel) {
     strings: UIStrings8,
     title: i18nString8(UIStrings8.title),
     description: i18nString8(UIStrings8.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/image-delivery",
     category: InsightCategory.LCP,
     state: partialModel.optimizableImages.length > 0 ? "fail" : "pass",
     ...partialModel,
@@ -2012,7 +2020,7 @@ var UIStrings9 = {
   /**
    * @description Text to tell the user about the longest user interaction.
    */
-  description: "Start investigating with the longest subpart. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.",
+  description: "Start investigating [how to improve INP](https://developer.chrome.com/docs/performance/insights/inp-breakdown) by looking at the longest subpart.",
   /**
    * @description Title for the performance insight "INP breakdown", which shows a breakdown of INP by subparts / sections.
    */
@@ -2063,6 +2071,7 @@ function finalize9(partialModel) {
     strings: UIStrings9,
     title: i18nString9(UIStrings9.title),
     description: i18nString9(UIStrings9.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/inp-breakdown",
     category: InsightCategory.INP,
     state,
     ...partialModel
@@ -2143,7 +2152,7 @@ var UIStrings10 = {
    * @description Description of a DevTools insight that presents a breakdown for the LCP metric by subparts.
    * This is displayed after a user expands the section to see more. No character length limits.
    */
-  description: "Each [subpart has specific improvement strategies](https://web.dev/articles/optimize-lcp#lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays.",
+  description: "Each [subpart has specific improvement strategies](https://developer.chrome.com/docs/performance/insights/lcp-breakdown). Ideally, most of the LCP time should be spent on loading the resources, not within delays.",
   /**
    * @description Time to first byte title for the Largest Contentful Paint's subparts timespan breakdown.
    */
@@ -2240,6 +2249,7 @@ function finalize10(partialModel) {
     strings: UIStrings10,
     title: i18nString10(UIStrings10.title),
     description: i18nString10(UIStrings10.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/lcp-breakdown",
     category: InsightCategory.LCP,
     state,
     ...partialModel,
@@ -2320,7 +2330,7 @@ var UIStrings11 = {
   /**
    * @description Description of an insight that provides details about the LCP metric, and the network requests necessary to load it.
    */
-  description: "Optimize LCP by making the LCP image [discoverable](https://web.dev/articles/optimize-lcp#1_eliminate_resource_load_delay) from the HTML immediately, and [avoiding lazy-loading](https://web.dev/articles/lcp-lazy-loading)",
+  description: "[Optimize LCP](https://developer.chrome.com/docs/performance/insights/lcp-discovery) by making the LCP image discoverable from the HTML immediately, and avoiding lazy-loading",
   /**
    * @description Text to tell the user how long after the earliest discovery time their LCP element loaded.
    * @example {401ms} PH1
@@ -2366,6 +2376,7 @@ function finalize11(partialModel) {
     strings: UIStrings11,
     title: i18nString11(UIStrings11.title),
     description: i18nString11(UIStrings11.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/lcp-discovery",
     category: InsightCategory.LCP,
     state: partialModel.lcpRequest && partialModel.checklist && (!partialModel.checklist.eagerlyLoaded.value || !partialModel.checklist.requestDiscoverable.value || !partialModel.checklist.priorityHinted.value) ? "fail" : "pass",
     ...partialModel,
@@ -2497,7 +2508,7 @@ var UIStrings12 = {
   /**
    * @description Description of an insight that identifies polyfills for modern JavaScript features, and recommends their removal.
    */
-  description: "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://philipwalton.com/articles/the-state-of-es5-on-the-web/)",
+  description: "Polyfills and transforms enable older browsers to use new JavaScript features. However, many aren't necessary for modern browsers. Consider modifying your JavaScript build process to not transpile [Baseline](https://web.dev/articles/baseline-and-polyfills) features, unless you know you must support older browsers. [Learn why most sites can deploy ES6+ code without transpiling](https://developer.chrome.com/docs/performance/insights/legacy-javascript)",
   /** Label for a column in a data table; entries will be the individual JavaScript scripts. */
   columnScript: "Script",
   /** Label for a column in a data table; entries will be the number of wasted bytes (aka the estimated savings in terms of bytes). */
@@ -2513,6 +2524,7 @@ function finalize12(partialModel) {
     strings: UIStrings12,
     title: i18nString12(UIStrings12.title),
     description: i18nString12(UIStrings12.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/legacy-javascript",
     category: InsightCategory.ALL,
     state: requests.length ? "fail" : "pass",
     relatedEvents: [...new Set(requests)],
@@ -2591,7 +2603,7 @@ var UIStrings13 = {
   /**
    * @description Description of an insight that recommends recommends using HTTP/2 over HTTP/1.1 because of the performance benefits. "HTTP" should not be translated.
    */
-  description: "HTTP/2 and HTTP/3 offer many benefits over HTTP/1.1, such as multiplexing. [Learn more about using modern HTTP](https://developer.chrome.com/docs/lighthouse/best-practices/uses-http2/).",
+  description: "HTTP/2 and HTTP/3 offer many benefits over HTTP/1.1, such as multiplexing. [Learn more about using modern HTTP](https://developer.chrome.com/docs/performance/insights/modern-http).",
   /**
    * @description Column header for a table where each cell represents a network request.
    */
@@ -2708,6 +2720,7 @@ function finalize13(partialModel) {
     strings: UIStrings13,
     title: i18nString13(UIStrings13.title),
     description: i18nString13(UIStrings13.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/modern-http",
     category: InsightCategory.LCP,
     state: partialModel.http1Requests.length > 0 ? "fail" : "pass",
     ...partialModel,
@@ -2763,7 +2776,7 @@ var UIStrings14 = {
   /**
    * @description Description of an insight that recommends avoiding chaining critical requests.
    */
-  description: "[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.",
+  description: "[Avoid chaining critical requests](https://developer.chrome.com/docs/performance/insights/network-dependency-tree) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.",
   /**
    * @description Description of the warning that recommends avoiding chaining critical requests.
    */
@@ -2847,6 +2860,7 @@ function finalize14(partialModel) {
     strings: UIStrings14,
     title: i18nString14(UIStrings14.title),
     description: i18nString14(UIStrings14.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/network-dependency-tree",
     category: InsightCategory.LCP,
     state: partialModel.fail ? "fail" : "pass",
     ...partialModel
@@ -3251,7 +3265,7 @@ var UIStrings15 = {
   /**
    * @description Text to describe that there are requests blocking rendering, which may affect LCP.
    */
-  description: "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://web.dev/learn/performance/understanding-the-critical-path#render-blocking_resources) can move these network requests out of the critical path.",
+  description: "Requests are blocking the page's initial render, which may delay LCP. [Deferring or inlining](https://developer.chrome.com/docs/performance/insights/render-blocking) can move these network requests out of the critical path.",
   /**
    * @description Label to describe a network request (that happens to be render-blocking).
    */
@@ -3340,6 +3354,7 @@ function finalize15(partialModel) {
     strings: UIStrings15,
     title: i18nString15(UIStrings15.title),
     description: i18nString15(UIStrings15.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/render-blocking",
     category: InsightCategory.LCP,
     state: partialModel.renderBlockingRequests.length > 0 ? "fail" : "pass",
     ...partialModel
@@ -3474,7 +3489,7 @@ var UIStrings16 = {
   /**
    * @description Text to describe how to improve the performance of CSS selectors.
    */
-  description: "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/devtools/performance/selector-stats) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs.",
+  description: "If Recalculate Style costs remain high, selector optimization can reduce them. [Optimize the selectors](https://developer.chrome.com/docs/performance/insights/slow-css-selector) with both high elapsed time and high slow-path %. Simpler selectors, fewer selectors, a smaller DOM, and a shallower DOM will all reduce matching costs.",
   /**
    * @description Column name for count of elements that the engine attempted to match against a style rule
    */
@@ -3541,6 +3556,7 @@ function finalize16(partialModel) {
     strings: UIStrings16,
     title: i18nString16(UIStrings16.title),
     description: i18nString16(UIStrings16.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/slow-css-selector",
     category: InsightCategory.ALL,
     state: partialModel.topSelectorElapsedMs && partialModel.topSelectorMatchAttempts ? "informative" : "pass",
     ...partialModel
@@ -3611,7 +3627,7 @@ var UIStrings17 = {
    * @description Description of a DevTools insight that identifies the code on the page that the user doesn't control.
    * This is displayed after a user expands the section to see more. No character length limits.
    */
-  description: "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://web.dev/articles/optimizing-content-efficiency-loading-third-party-javascript/) to prioritize your page's content.",
+  description: "3rd party code can significantly impact load performance. [Reduce and defer loading of 3rd party code](https://developer.chrome.com/docs/performance/insights/third-parties) to prioritize your page's content.",
   /** Label for a table column that displays the name of a third-party provider. */
   columnThirdParty: "3rd party",
   /** Label for a column in a data table; entries will be the download size of a web resource in kilobytes. */
@@ -3640,6 +3656,7 @@ function finalize17(partialModel) {
     strings: UIStrings17,
     title: i18nString17(UIStrings17.title),
     description: i18nString17(UIStrings17.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/third-parties",
     category: InsightCategory.ALL,
     state: partialModel.entitySummaries.find((summary) => summary.entity !== partialModel.firstPartyEntity) ? "informative" : "pass",
     ...partialModel
@@ -3706,7 +3723,7 @@ var UIStrings18 = {
   /**
    * @description Text to tell the user how a viewport meta element can improve performance. \xa0 is a non-breaking space
    */
-  description: "Tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/blog/300ms-tap-delay-gone-away/) if the viewport is not optimized for mobile.",
+  description: "Tap interactions may be [delayed by up to 300\xA0ms](https://developer.chrome.com/docs/performance/insights/viewport) if the viewport is not optimized for mobile.",
   /**
    * @description Text for a label describing the portion of an interaction event that was delayed due to a bad mobile viewport.
    */
@@ -3720,6 +3737,7 @@ function finalize18(partialModel) {
     strings: UIStrings18,
     title: i18nString18(UIStrings18.title),
     description: i18nString18(UIStrings18.description),
+    docs: "https://developer.chrome.com/docs/performance/insights/viewport",
     category: InsightCategory.INP,
     state: partialModel.mobileOptimized === false ? "fail" : "pass",
     ...partialModel

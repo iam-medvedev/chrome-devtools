@@ -589,6 +589,10 @@ export class Widget {
         if (!this.isShowing()) {
             return;
         }
+        if (this.#shadowRoot?.delegatesFocus && this.contentElement.querySelector('[autofocus]')) {
+            this.element.focus();
+            return;
+        }
         const element = this.#defaultFocusedElement;
         if (element) {
             if (!element.hasFocus()) {

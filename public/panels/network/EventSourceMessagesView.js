@@ -101,6 +101,7 @@ export class EventSourceMessagesView extends UI.Widget.VBox {
         this.request.addEventListener(SDK.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, this.messageAdded, this);
     }
     willHide() {
+        super.willHide();
         this.request.removeEventListener(SDK.NetworkRequest.Events.EVENT_SOURCE_MESSAGE_ADDED, this.messageAdded, this);
     }
     messageAdded(event) {

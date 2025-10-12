@@ -1209,6 +1209,7 @@ export class NetworkLogView extends Common.ObjectWrapper.eventMixin(UI.Widget.VB
         this.columnsInternal.wasShown();
     }
     willHide() {
+        super.willHide();
         this.columnsInternal.willHide();
     }
     flatNodesList() {

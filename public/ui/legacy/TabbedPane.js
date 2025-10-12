@@ -435,6 +435,7 @@ export class TabbedPane extends Common.ObjectWrapper.eventMixin(VBox) {
         this.requestUpdate();
     }
     wasShown() {
+        super.wasShown();
         const effectiveTab = this.currentTab || this.tabsHistory[0];
         if (effectiveTab && this.autoSelectFirstItemOnShow) {
             this.selectTab(effectiveTab.id);

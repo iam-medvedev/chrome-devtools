@@ -91,6 +91,7 @@ export class EditFileSystemView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     wasShown() {
+        super.wasShown();
         this.#resyncExcludedFolderPaths();
         this.requestUpdate();
     }

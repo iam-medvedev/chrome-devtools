@@ -447,6 +447,7 @@ var SourceFrameImpl = class extends Common.ObjectWrapper.eventMixin(UI.View.Simp
     return this.loadError;
   }
   wasShown() {
+    super.wasShown();
     void this.ensureContentLoaded();
     this.wasShownOrLoaded();
   }
@@ -1150,13 +1151,14 @@ var LinearMemoryInspectorView = class extends UI3.Widget.VBox {
   #inspector = new LinearMemoryInspectorComponents.LinearMemoryInspector.LinearMemoryInspector();
   constructor() {
     super();
-    this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.MemoryRequestEvent.eventName, this.#memoryRequested.bind(this));
-    this.#inspector.addEventListener(LinearMemoryInspectorComponents.LinearMemoryInspector.AddressChangedEvent.eventName, (event) => {
+    this.#inspector.addEventListener("MemoryRequest", this.#memoryRequested, this);
+    this.#inspector.addEventListener("AddressChanged", (event) => {
       this.#address = event.data;
     });
-    this.contentElement.appendChild(this.#inspector);
+    this.#inspector.show(this.contentElement);
   }
   wasShown() {
+    super.wasShown();
     this.refreshData();
   }
   setMemory(memory) {
@@ -1167,13 +1169,11 @@ var LinearMemoryInspectorView = class extends UI3.Widget.VBox {
     const memoryChunkStart = Math.max(0, this.#address - MEMORY_TRANSFER_MIN_CHUNK_SIZE / 2);
     const memoryChunkEnd = memoryChunkStart + MEMORY_TRANSFER_MIN_CHUNK_SIZE;
     const memory = this.#memory.slice(memoryChunkStart, memoryChunkEnd);
-    this.#inspector.data = {
-      memory,
-      address: this.#address,
-      memoryOffset: memoryChunkStart,
-      outerMemoryLength: this.#memory.length,
-      hideValueInspector: true
-    };
+    this.#inspector.memory = memory;
+    this.#inspector.address = this.#address;
+    this.#inspector.memoryOffset = memoryChunkStart;
+    this.#inspector.outerMemoryLength = this.#memory.length;
+    this.#inspector.hideValueInspector = true;
   }
   #memoryRequested(event) {
     const { start, end, address } = event.data;
@@ -1185,13 +1185,11 @@ var LinearMemoryInspectorView = class extends UI3.Widget.VBox {
     }
     const chunkEnd = Math.max(end, start + MEMORY_TRANSFER_MIN_CHUNK_SIZE);
     const memory = this.#memory.slice(start, chunkEnd);
-    this.#inspector.data = {
-      memory,
-      address,
-      memoryOffset: start,
-      outerMemoryLength: this.#memory.length,
-      hideValueInspector: true
-    };
+    this.#inspector.memory = memory;
+    this.#inspector.address = address;
+    this.#inspector.memoryOffset = start;
+    this.#inspector.outerMemoryLength = this.#memory.length;
+    this.#inspector.hideValueInspector = true;
   }
 };
 var StreamingContentHexView = class extends LinearMemoryInspectorView {
@@ -1201,6 +1199,7 @@ var StreamingContentHexView = class extends LinearMemoryInspectorView {
     this.#streamingContentData = streamingContentData;
   }
   wasShown() {
+    super.wasShown();
     this.#updateMemoryFromContentData();
     this.#streamingContentData.addEventListener("ChunkAdded", this.#updateMemoryFromContentData, this);
   }
@@ -1384,6 +1383,7 @@ var FontView = class extends UI4.View.SimpleView {
     this.element.appendChild(this.fontPreviewElement);
   }
   wasShown() {
+    super.wasShown();
     this.createContentIfNeeded();
     this.updateFontPreviewSize();
   }
@@ -1566,6 +1566,7 @@ var ImageView = class extends UI5.View.SimpleView {
     ];
   }
   wasShown() {
+    super.wasShown();
     void this.updateContentIfNeeded();
   }
   disposeView() {
@@ -1691,7 +1692,8 @@ var ImageView = class extends UI5.View.SimpleView {
 var JSONView_exports = {};
 __export(JSONView_exports, {
   JSONView: () => JSONView,
-  ParsedJSON: () => ParsedJSON
+  ParsedJSON: () => ParsedJSON,
+  SearchableJsonView: () => SearchableJsonView
 });
 import * as i18n9 from "./../../../../core/i18n/i18n.js";
 import * as Platform4 from "./../../../../core/platform/platform.js";
@@ -1765,6 +1767,9 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     jsonView.element.tabIndex = 0;
     return searchableView;
   }
+  setSearchableView(searchableView) {
+    this.searchableView = searchableView;
+  }
   static parseJSON(text) {
     let returnObj = null;
     if (text) {
@@ -1812,6 +1817,7 @@ var JSONView = class _JSONView extends UI6.Widget.VBox {
     return { start, end, length };
   }
   wasShown() {
+    super.wasShown();
     this.initialize();
   }
   initialize() {
@@ -1949,6 +1955,26 @@ var ParsedJSON = class {
     this.data = data;
     this.prefix = prefix;
     this.suffix = suffix;
+  }
+};
+var SearchableJsonView = class extends UI6.SearchableView.SearchableView {
+  #jsonView;
+  constructor(element) {
+    const jsonView = new JSONView(new ParsedJSON("", "", ""));
+    super(jsonView, null, void 0, element);
+    this.#jsonView = jsonView;
+    this.setPlaceholder(i18nString5(UIStrings5.find));
+    jsonView.setSearchableView(this);
+    jsonView.show(this.element);
+    jsonView.element.tabIndex = 0;
+  }
+  set jsonObject(obj) {
+    const jsonView = new JSONView(new ParsedJSON(obj, "", ""));
+    this.#jsonView.detach();
+    this.#jsonView = jsonView;
+    this.searchProvider = jsonView;
+    jsonView.show(this.element);
+    this.requestUpdate();
   }
 };
 

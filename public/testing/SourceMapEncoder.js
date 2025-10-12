@@ -1,6 +1,7 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as SDK from '../core/sdk/sdk.js';
 const base64Digits = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 export function encodeVlq(n) {
     // Set the sign bit as the least significant bit.
@@ -115,5 +116,11 @@ export function encodeSourceMap(textMap, sourceRoot) {
         array.push(s);
         return array.length - 1;
     }
+}
+export function waitForAllSourceMapsProcessed() {
+    return Promise.all(SDK.TargetManager.TargetManager.instance().targets().map(target => {
+        const model = target.model(SDK.DebuggerModel.DebuggerModel);
+        return model.sourceMapManager().waitForSourceMapsProcessedForTest();
+    }));
 }
 //# sourceMappingURL=SourceMapEncoder.js.map

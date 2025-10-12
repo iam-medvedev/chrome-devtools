@@ -11,6 +11,7 @@ import { Events as ResourceTreeModelEvents, ResourceTreeModel } from './Resource
 import { RuntimeModel } from './RuntimeModel.js';
 import { Script } from './Script.js';
 import { SDKModel } from './SDKModel.js';
+import { SourceMap } from './SourceMap.js';
 import { SourceMapManager } from './SourceMapManager.js';
 import { Type } from './Target.js';
 const UIStrings = {
@@ -146,7 +147,7 @@ export class DebuggerModel extends SDKModel {
         target.registerDebuggerDispatcher(new DebuggerDispatcher(this));
         this.agent = target.debuggerAgent();
         this.#runtimeModel = target.model(RuntimeModel);
-        this.#sourceMapManager = new SourceMapManager(target);
+        this.#sourceMapManager = new SourceMapManager(target, (compiledURL, sourceMappingURL, payload, script) => new SourceMap(compiledURL, sourceMappingURL, payload, script));
         Common.Settings.Settings.instance()
             .moduleSetting('pause-on-exception-enabled')
             .addChangeListener(this.pauseOnExceptionStateChanged, this);

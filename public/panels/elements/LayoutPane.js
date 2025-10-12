@@ -401,6 +401,7 @@ export class LayoutPane extends UI.Widget.Widget {
         this.requestUpdate();
     }
     willHide() {
+        super.willHide();
         for (const setting of this.#settings) {
             Common.Settings.Settings.instance().moduleSetting(setting.name).removeChangeListener(this.requestUpdate, this);
         }

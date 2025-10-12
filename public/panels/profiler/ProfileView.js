@@ -282,6 +282,7 @@ export class ProfileView extends UI.View.SimpleView {
         }
     }
     willHide() {
+        super.willHide();
         this.currentSearchResultIndex = -1;
     }
     refresh() {

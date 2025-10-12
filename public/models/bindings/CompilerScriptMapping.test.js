@@ -6,7 +6,7 @@ import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { MockProtocolBackend } from '../../testing/MockScopeChain.js';
-import { encodeSourceMap } from '../../testing/SourceMapEncoder.js';
+import { encodeSourceMap, waitForAllSourceMapsProcessed } from '../../testing/SourceMapEncoder.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import * as Bindings from './bindings.js';
@@ -27,6 +27,9 @@ describeWithMockConnection('CompilerScriptMapping', () => {
             ignoreListManager,
         });
         backend = new MockProtocolBackend();
+    });
+    afterEach(async () => {
+        await waitForAllSourceMapsProcessed();
     });
     const waitForUISourceCodeAdded = (url, target) => debuggerWorkspaceBinding.waitForUISourceCodeAdded(urlString `${url}`, target);
     const waitForUISourceCodeRemoved = (uiSourceCode) => new Promise(resolve => {

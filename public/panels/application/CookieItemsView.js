@@ -200,6 +200,7 @@ export class CookieItemsView extends UI.Widget.VBox {
         this.model.addEventListener("CookieListUpdated" /* SDK.CookieModel.Events.COOKIE_LIST_UPDATED */, this.onCookieListUpdate, this);
     }
     wasShown() {
+        super.wasShown();
         this.refreshItems();
     }
     showPreview(cookie) {

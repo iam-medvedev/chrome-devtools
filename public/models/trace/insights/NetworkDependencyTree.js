@@ -15,7 +15,7 @@ export const UIStrings = {
     /**
      * @description Description of an insight that recommends avoiding chaining critical requests.
      */
-    description: '[Avoid chaining critical requests](https://developer.chrome.com/docs/lighthouse/performance/critical-request-chains) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.',
+    description: '[Avoid chaining critical requests](https://developer.chrome.com/docs/performance/insights/network-dependency-tree) by reducing the length of chains, reducing the download size of resources, or deferring the download of unnecessary resources to improve page load.',
     /**
      * @description Description of the warning that recommends avoiding chaining critical requests.
      */
@@ -105,6 +105,7 @@ function finalize(partialModel) {
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
+        docs: 'https://developer.chrome.com/docs/performance/insights/network-dependency-tree',
         category: InsightCategory.LCP,
         state: partialModel.fail ? 'fail' : 'pass',
         ...partialModel,

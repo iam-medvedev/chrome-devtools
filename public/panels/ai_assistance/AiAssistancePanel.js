@@ -590,6 +590,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistancePanelOpened);
     }
     willHide() {
+        super.willHide();
         this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
         Host.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#handleAidaAvailabilityChange);
         this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);

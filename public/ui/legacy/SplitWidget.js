@@ -553,10 +553,12 @@ export class SplitWidget extends Common.ObjectWrapper.eventMixin(Widget) {
         return Math.max(0, totalSize - minMainSize);
     }
     wasShown() {
+        super.wasShown();
         this.#forceUpdateLayout();
         ZoomManager.instance().addEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
     }
     willHide() {
+        super.willHide();
         ZoomManager.instance().removeEventListener("ZoomChanged" /* ZoomManagerEvents.ZOOM_CHANGED */, this.onZoomChanged, this);
     }
     onResize() {

@@ -88,6 +88,7 @@ export class IsolateSelector extends UI.Widget.VBox {
         SDK.IsolateManager.IsolateManager.instance().addEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MEMORY_CHANGED */, this.heapStatsChanged, this);
     }
     willHide() {
+        super.willHide();
         SDK.IsolateManager.IsolateManager.instance().removeEventListener("MemoryChanged" /* SDK.IsolateManager.Events.MEMORY_CHANGED */, this.heapStatsChanged, this);
     }
     isolateAdded(isolate) {

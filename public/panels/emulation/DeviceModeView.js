@@ -385,10 +385,12 @@ export class DeviceModeView extends UI.Widget.VBox {
         }
     }
     wasShown() {
+        super.wasShown();
         this.measureHandles();
         this.toolbar.restore();
     }
     willHide() {
+        super.willHide();
         this.model.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
     }
     async captureScreenshot() {

@@ -389,6 +389,7 @@ var ScreencastView = class extends UI.Widget.VBox {
     this.updateGlasspane();
   }
   willHide() {
+    super.willHide();
     this.stopCasting();
   }
   async startCasting() {

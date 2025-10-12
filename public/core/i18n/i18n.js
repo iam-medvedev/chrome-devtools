@@ -185,6 +185,7 @@ __export(i18nImpl_exports, {
   lockedLazyString: () => lockedLazyString,
   lockedString: () => lockedString,
   lookupClosestSupportedDevToolsLocale: () => lookupClosestSupportedDevToolsLocale,
+  registerLocaleDataForTest: () => registerLocaleDataForTest,
   registerUIStrings: () => registerUIStrings,
   resetLocaleDataForTest: () => resetLocaleDataForTest,
   serializeUIString: () => serializeUIString
@@ -313,6 +314,9 @@ function hasLocaleDataForTest(locale) {
 }
 function resetLocaleDataForTest() {
   i18nInstance.resetLocaleDataForTest();
+}
+function registerLocaleDataForTest(locale, messages) {
+  i18nInstance.registerLocaleData(locale, messages);
 }
 function getLazilyComputedLocalizedString(registeredStrings, id, values = {}) {
   return () => getLocalizedString(registeredStrings, id, values);

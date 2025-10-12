@@ -24,11 +24,13 @@ export class RecorderPanel extends UI.Panel.Panel {
         return recorderPanelInstance;
     }
     wasShown() {
+        super.wasShown();
         UI.Context.Context.instance().setFlavor(RecorderPanel, this);
         // Focus controller so shortcuts become active
         this.#controller.focus();
     }
     willHide() {
+        super.willHide();
         UI.Context.Context.instance().setFlavor(RecorderPanel, null);
     }
     handleActions(actionId) {

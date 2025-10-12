@@ -280,6 +280,7 @@ export class UserActionRow extends UI.Widget.Widget {
         rightScrollButtonContainer.classList.toggle('hidden', !shouldShowRightButton);
     };
     willHide() {
+        super.willHide();
         this.#suggestionsResizeObserver.disconnect();
     }
     #handleSuggestionsScrollOrResize() {

@@ -61,6 +61,7 @@ export class SidebarWidget extends UI.Widget.VBox {
         this.#tabbedPane.selectTab("insights" /* SidebarTabs.INSIGHTS */);
     }
     wasShown() {
+        super.wasShown();
         this.#tabbedPane.show(this.element);
         this.#updateAnnotationsCountBadge();
         if (this.#insightToRestoreOnOpen) {
@@ -76,6 +77,7 @@ export class SidebarWidget extends UI.Widget.VBox {
         }
     }
     willHide() {
+        super.willHide();
         const currentlyActiveInsight = this.#insightsView.getActiveInsight();
         this.#insightToRestoreOnOpen = currentlyActiveInsight;
         if (currentlyActiveInsight) {

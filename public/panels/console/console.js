@@ -1342,7 +1342,7 @@ var DEFAULT_VIEW = (input, output, target) => {
     n: group.messageCount
   })}
                   ${group.messageCount === 0 ? nothing : html`
-                  <ul role="group" ?hidden=${group.filter !== input.selectedFilter}>
+                  <ul role="group" hidden>
                     ${group.urlGroups.values().map((urlGroup) => html`
                       <li
                         ${Directives.ref((element) => element && nodeFilterMap.set(element, group.filter))}
@@ -5413,6 +5413,7 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     this.prompt.clearAutocomplete();
   }
   willHide() {
+    super.willHide();
     this.hidePromptSuggestBox();
   }
   wasShown() {
@@ -6165,6 +6166,17 @@ var ConsoleView = class _ConsoleView extends UI6.Widget.VBox {
     }
   }
   isAiCodeCompletionEnabled() {
+    const devtoolsLocale = i18n9.DevToolsLocale.DevToolsLocale.instance();
+    const aidaAvailability = Root3.Runtime.hostConfig.aidaAvailability;
+    if (!devtoolsLocale.locale.startsWith("en-")) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByGeo) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByAge) {
+      return false;
+    }
     return Boolean(Root3.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
   }
 };
@@ -6424,6 +6436,7 @@ var WrapperView = class _WrapperView extends UI7.Widget.VBox {
     return wrapperViewInstance;
   }
   wasShown() {
+    super.wasShown();
     if (!ConsolePanel.instance().isShowing()) {
       this.showViewInWrapper();
     } else {
@@ -6432,6 +6445,7 @@ var WrapperView = class _WrapperView extends UI7.Widget.VBox {
     ConsolePanel.updateContextFlavor();
   }
   willHide() {
+    super.willHide();
     UI7.InspectorView.InspectorView.instance().setDrawerMinimized(false);
     ConsolePanel.updateContextFlavor();
   }
@@ -6786,14 +6800,27 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
   }
   editorKeymap() {
     const keymap3 = [
-      { key: "ArrowUp", run: () => this.#editorHistory.moveHistory(
-        -1
-        /* Direction.BACKWARD */
-      ) },
-      { key: "ArrowDown", run: () => this.#editorHistory.moveHistory(
-        1
-        /* Direction.FORWARD */
-      ) },
+      {
+        // Handle the KeyboardEvent manually.
+        any: (_view, event) => {
+          if (event.repeat) {
+            return false;
+          }
+          if (event.key === "ArrowUp") {
+            return this.#editorHistory.moveHistory(
+              -1
+              /* Direction.BACKWARD */
+            );
+          }
+          if (event.key === "ArrowDown") {
+            return this.#editorHistory.moveHistory(
+              1
+              /* Direction.FORWARD */
+            );
+          }
+          return false;
+        }
+      },
       { mac: "Ctrl-p", run: () => this.#editorHistory.moveHistory(-1, true) },
       { mac: "Ctrl-n", run: () => this.#editorHistory.moveHistory(1, true) },
       {
@@ -7011,7 +7038,18 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     });
   }
   isAiCodeCompletionEnabled() {
-    return Boolean(Root4.Runtime.hostConfig.aidaAvailability?.enabled && Root4.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+    const devtoolsLocale = i18n11.DevToolsLocale.DevToolsLocale.instance();
+    const aidaAvailability = Root4.Runtime.hostConfig.aidaAvailability;
+    if (!devtoolsLocale.locale.startsWith("en-")) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByGeo) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByAge) {
+      return false;
+    }
+    return Boolean(aidaAvailability?.enabled && Root4.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
   }
   editorSetForTest() {
   }
@@ -7019,6 +7057,251 @@ var ConsolePrompt = class extends Common8.ObjectWrapper.eventMixin(UI8.Widget.Wi
     this.aidaClient = aidaClient;
   }
 };
+
+// gen/front_end/panels/console/PromptBuilder.js
+var PromptBuilder_exports = {};
+__export(PromptBuilder_exports, {
+  PromptBuilder: () => PromptBuilder,
+  SourceType: () => SourceType,
+  allowHeader: () => allowHeader,
+  formatConsoleMessage: () => formatConsoleMessage,
+  formatNetworkRequest: () => formatNetworkRequest,
+  formatRelatedCode: () => formatRelatedCode,
+  formatStackTrace: () => formatStackTrace,
+  lineWhitespace: () => lineWhitespace
+});
+import * as SDK8 from "./../../core/sdk/sdk.js";
+import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
+import * as Bindings3 from "./../../models/bindings/bindings.js";
+import * as Formatter2 from "./../../models/formatter/formatter.js";
+import * as Logs3 from "./../../models/logs/logs.js";
+import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
+import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
+var MAX_MESSAGE_SIZE = 1e3;
+var MAX_STACK_TRACE_SIZE = 1e3;
+var MAX_CODE_SIZE = 1e3;
+var SourceType;
+(function(SourceType2) {
+  SourceType2["MESSAGE"] = "message";
+  SourceType2["STACKTRACE"] = "stacktrace";
+  SourceType2["NETWORK_REQUEST"] = "networkRequest";
+  SourceType2["RELATED_CODE"] = "relatedCode";
+})(SourceType || (SourceType = {}));
+var PromptBuilder = class {
+  #consoleMessage;
+  constructor(consoleMessage) {
+    this.#consoleMessage = consoleMessage;
+  }
+  async getNetworkRequest() {
+    const requestId = this.#consoleMessage.consoleMessage().getAffectedResources()?.requestId;
+    if (!requestId) {
+      return;
+    }
+    const log = Logs3.NetworkLog.NetworkLog.instance();
+    return log.requestsForId(requestId)[0];
+  }
+  /**
+   * Gets the source file associated with the top of the message's stacktrace.
+   * Returns an empty string if the source is not available for any reasons.
+   */
+  async getMessageSourceCode() {
+    const callframe = this.#consoleMessage.consoleMessage().stackTrace?.callFrames[0];
+    const runtimeModel = this.#consoleMessage.consoleMessage().runtimeModel();
+    const debuggerModel = runtimeModel?.debuggerModel();
+    if (!debuggerModel || !runtimeModel || !callframe) {
+      return { text: "", columnNumber: 0, lineNumber: 0 };
+    }
+    const rawLocation = new SDK8.DebuggerModel.Location(debuggerModel, callframe.scriptId, callframe.lineNumber, callframe.columnNumber);
+    const mappedLocation = await Bindings3.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().rawLocationToUILocation(rawLocation);
+    const content = await mappedLocation?.uiSourceCode.requestContentData().then((contentDataOrError) => TextUtils7.ContentData.ContentData.asDeferredContent(contentDataOrError));
+    const text = !content?.isEncoded && content?.content ? content.content : "";
+    const firstNewline = text.indexOf("\n");
+    if (text.length > MAX_CODE_SIZE && (firstNewline < 0 || firstNewline > MAX_CODE_SIZE)) {
+      const { formattedContent, formattedMapping } = await Formatter2.ScriptFormatter.formatScriptContent(mappedLocation?.uiSourceCode.mimeType() ?? "text/javascript", text);
+      const [lineNumber, columnNumber] = formattedMapping.originalToFormatted(mappedLocation?.lineNumber ?? 0, mappedLocation?.columnNumber ?? 0);
+      return { text: formattedContent, columnNumber, lineNumber };
+    }
+    return { text, columnNumber: mappedLocation?.columnNumber ?? 0, lineNumber: mappedLocation?.lineNumber ?? 0 };
+  }
+  async buildPrompt(sourcesTypes = Object.values(SourceType)) {
+    const [sourceCode, request] = await Promise.all([
+      sourcesTypes.includes(SourceType.RELATED_CODE) ? this.getMessageSourceCode() : void 0,
+      sourcesTypes.includes(SourceType.NETWORK_REQUEST) ? this.getNetworkRequest() : void 0
+    ]);
+    const relatedCode = sourceCode?.text ? formatRelatedCode(sourceCode) : "";
+    const relatedRequest = request ? formatNetworkRequest(request) : "";
+    const stacktrace = sourcesTypes.includes(SourceType.STACKTRACE) ? formatStackTrace(this.#consoleMessage) : "";
+    const message = formatConsoleMessage(this.#consoleMessage);
+    const prompt = this.formatPrompt({
+      message: [message, stacktrace].join("\n").trim(),
+      relatedCode,
+      relatedRequest
+    });
+    const sources = [
+      {
+        type: SourceType.MESSAGE,
+        value: message
+      }
+    ];
+    if (stacktrace) {
+      sources.push({
+        type: SourceType.STACKTRACE,
+        value: stacktrace
+      });
+    }
+    if (relatedCode) {
+      sources.push({
+        type: SourceType.RELATED_CODE,
+        value: relatedCode
+      });
+    }
+    if (relatedRequest) {
+      sources.push({
+        type: SourceType.NETWORK_REQUEST,
+        value: relatedRequest
+      });
+    }
+    return {
+      prompt,
+      sources,
+      isPageReloadRecommended: sourcesTypes.includes(SourceType.NETWORK_REQUEST) && Boolean(this.#consoleMessage.consoleMessage().getAffectedResources()?.requestId) && !relatedRequest
+    };
+  }
+  formatPrompt({ message, relatedCode, relatedRequest }) {
+    let prompt = `Please explain the following console error or warning:
+
+\`\`\`
+${message}
+\`\`\``;
+    if (relatedCode) {
+      prompt += `
+For the following code:
+
+\`\`\`
+${relatedCode}
+\`\`\``;
+    }
+    if (relatedRequest) {
+      prompt += `
+For the following network request:
+
+\`\`\`
+${relatedRequest}
+\`\`\``;
+    }
+    return prompt;
+  }
+  getSearchQuery() {
+    let message = this.#consoleMessage.toMessageTextString();
+    if (message) {
+      message = message.split("\n")[0];
+    }
+    return message;
+  }
+};
+function allowHeader(header) {
+  const normalizedName = header.name.toLowerCase().trim();
+  if (normalizedName.startsWith("x-")) {
+    return false;
+  }
+  if (normalizedName === "cookie" || normalizedName === "set-cookie") {
+    return false;
+  }
+  if (normalizedName === "authorization") {
+    return false;
+  }
+  return true;
+}
+function lineWhitespace(line) {
+  const matches = /^\s*/.exec(line);
+  if (!matches?.length) {
+    return null;
+  }
+  const whitespace = matches[0];
+  if (whitespace === line) {
+    return null;
+  }
+  return whitespace;
+}
+function formatRelatedCode({ text, columnNumber, lineNumber }, maxCodeSize = MAX_CODE_SIZE) {
+  const lines = text.split("\n");
+  if (lines[lineNumber].length >= maxCodeSize / 2) {
+    const start = Math.max(columnNumber - maxCodeSize / 2, 0);
+    const end = Math.min(columnNumber + maxCodeSize / 2, lines[lineNumber].length);
+    return lines[lineNumber].substring(start, end);
+  }
+  let relatedCodeSize = 0;
+  let currentLineNumber = lineNumber;
+  let currentWhitespace = lineWhitespace(lines[lineNumber]);
+  const startByPrefix = /* @__PURE__ */ new Map();
+  while (lines[currentLineNumber] !== void 0 && relatedCodeSize + lines[currentLineNumber].length <= maxCodeSize / 2) {
+    const whitespace = lineWhitespace(lines[currentLineNumber]);
+    if (whitespace !== null && currentWhitespace !== null && (whitespace === currentWhitespace || !whitespace.startsWith(currentWhitespace))) {
+      if (!/^\s*[\}\)\]]/.exec(lines[currentLineNumber])) {
+        startByPrefix.set(whitespace, currentLineNumber);
+      }
+      currentWhitespace = whitespace;
+    }
+    relatedCodeSize += lines[currentLineNumber].length + 1;
+    currentLineNumber--;
+  }
+  currentLineNumber = lineNumber + 1;
+  let startLine = lineNumber;
+  let endLine = lineNumber;
+  currentWhitespace = lineWhitespace(lines[lineNumber]);
+  while (lines[currentLineNumber] !== void 0 && relatedCodeSize + lines[currentLineNumber].length <= maxCodeSize) {
+    relatedCodeSize += lines[currentLineNumber].length;
+    const whitespace = lineWhitespace(lines[currentLineNumber]);
+    if (whitespace !== null && currentWhitespace !== null && (whitespace === currentWhitespace || !whitespace.startsWith(currentWhitespace))) {
+      const nextLine = lines[currentLineNumber + 1];
+      const nextWhitespace = nextLine ? lineWhitespace(nextLine) : null;
+      if (!nextWhitespace || nextWhitespace === whitespace || !nextWhitespace.startsWith(whitespace)) {
+        if (startByPrefix.has(whitespace)) {
+          startLine = startByPrefix.get(whitespace) ?? 0;
+          endLine = currentLineNumber;
+        }
+      }
+      currentWhitespace = whitespace;
+    }
+    currentLineNumber++;
+  }
+  return lines.slice(startLine, endLine + 1).join("\n");
+}
+function formatLines(title, lines, maxLength) {
+  let result = "";
+  for (const line of lines) {
+    if (result.length + line.length > maxLength) {
+      break;
+    }
+    result += line;
+  }
+  result = result.trim();
+  return result && title ? title + "\n" + result : result;
+}
+function formatNetworkRequest(request) {
+  return `Request: ${request.url()}
+
+${AiAssistanceModel.NetworkRequestFormatter.formatHeaders("Request headers:", request.requestHeaders())}
+
+${AiAssistanceModel.NetworkRequestFormatter.formatHeaders("Response headers:", request.responseHeaders)}
+
+Response status: ${request.statusCode} ${request.statusText}`;
+}
+function formatConsoleMessage(message) {
+  return message.toMessageTextString().substr(0, MAX_MESSAGE_SIZE);
+}
+function formatStackTrace(message) {
+  const previewContainer = message.contentElement().querySelector(".stack-preview-container");
+  if (!previewContainer) {
+    return "";
+  }
+  const preview = previewContainer.shadowRoot?.querySelector(".stack-preview-container");
+  const nodes = preview.childTextNodes();
+  const messageContent = nodes.filter((n) => {
+    return !n.parentElement?.closest(".show-all-link,.show-less-link,.hidden-row");
+  }).map(Components4.Linkifier.Linkifier.untruncatedNodeText);
+  return formatLines("", messageContent, MAX_STACK_TRACE_SIZE);
+}
 export {
   ConsoleContextSelector_exports as ConsoleContextSelector,
   ConsoleFilter_exports as ConsoleFilter,
@@ -7030,6 +7313,7 @@ export {
   ConsoleView_exports as ConsoleView,
   ConsoleViewMessage_exports as ConsoleViewMessage,
   ConsoleViewport_exports as ConsoleViewport,
-  ErrorStackParser_exports as ErrorStackParser
+  ErrorStackParser_exports as ErrorStackParser,
+  PromptBuilder_exports as PromptBuilder
 };
 //# sourceMappingURL=console.js.map

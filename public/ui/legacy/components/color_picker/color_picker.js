@@ -964,14 +964,12 @@ __export(FormatPickerContextMenu_exports, {
 });
 import * as Common5 from "./../../../../core/common/common.js";
 import * as i18n3 from "./../../../../core/i18n/i18n.js";
-import * as IconButton2 from "./../../../components/icon_button/icon_button.js";
 import * as UI3 from "./../../legacy.js";
 var UIStrings2 = {
   /**
-   * @description Tooltip text describing that a color was clipped after conversion to match the target gamut
-   * @example {rgb(255 255 255)} PH1
+   * @description Menu warning that some color will be clipped after conversion to match the target gamut
    */
-  colorClippedTooltipText: "This color was clipped to match the format's gamut. The actual result was {PH1}"
+  colorShiftWarning: "\u26A0\uFE0F Conversion to a narrow gamut will cause color shifts"
 };
 var str_2 = i18n3.i18n.registerUIStrings("ui/legacy/components/color_picker/FormatPickerContextMenu.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -1006,9 +1004,12 @@ var FormatPickerContextMenu = class {
       "xyz-d65"
     ];
     const menu = new UI3.ContextMenu.ContextMenu(e, { onSoftMenuClosed: () => resolve() });
+    const disclamerSection = menu.section("disclaimer");
     const legacySection = menu.section("legacy");
     const wideSection = menu.section("wide");
     const colorFunctionSection = menu.section("color-function").appendSubMenuItem("color()", false, "color").section();
+    disclamerSection.appendItem(i18nString2(UIStrings2.colorShiftWarning), () => {
+    }, { disabled: true });
     if (!(this.#color instanceof Common5.Color.Nickname)) {
       const nickname = this.#color.asLegacyColor().nickname();
       if (nickname) {
@@ -1043,23 +1044,12 @@ var FormatPickerContextMenu = class {
         return;
       }
     }
-    const label = newColor.asString();
+    const label = newColor.isGamutClipped() ? newColor.asString() + " \u26A0\uFE0F" : newColor.asString();
     if (!label) {
       return;
     }
-    let icon = void 0;
-    if (newColor.isGamutClipped()) {
-      icon = new IconButton2.Icon.Icon();
-      icon.name = "warning";
-      icon.classList.add("medium");
-      icon.style.marginLeft = "1px";
-      icon.style.marginTop = "-1px";
-      icon.style.minWidth = "16px";
-      icon.style.minHeight = "16px";
-    }
-    const tooltip = icon ? i18nString2(UIStrings2.colorClippedTooltipText, { PH1: newColor.getAsRawString() ?? "none" }) : void 0;
     const handler = () => onSelect(newColor);
-    section2.appendItem(label, handler, { additionalElement: icon, tooltip, jslogContext: newColor.isGamutClipped() ? "color" : "clipped-color" });
+    section2.appendItem(label, handler, { jslogContext: newColor.isGamutClipped() ? "color" : "clipped-color" });
   }
 };
 
@@ -1079,7 +1069,7 @@ import * as i18n5 from "./../../../../core/i18n/i18n.js";
 import * as Platform3 from "./../../../../core/platform/platform.js";
 import * as SDK from "./../../../../core/sdk/sdk.js";
 import * as TextUtils from "./../../../../models/text_utils/text_utils.js";
-import * as IconButton3 from "./../../../components/icon_button/icon_button.js";
+import * as IconButton2 from "./../../../components/icon_button/icon_button.js";
 import * as SrgbOverlay from "./../../../components/srgb_overlay/srgb_overlay.js";
 import * as VisualLogging from "./../../../visual_logging/visual_logging.js";
 import * as UI4 from "./../../legacy.js";
@@ -2250,7 +2240,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
       return unit;
     }
     function appendSwitcherIcon(parentElement) {
-      const switcherIcon = new IconButton3.Icon.Icon();
+      const switcherIcon = new IconButton2.Icon.Icon();
       switcherIcon.name = "fold-more";
       switcherIcon.classList.add("medium");
       parentElement.appendChild(switcherIcon);
@@ -2924,6 +2914,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     this.#setColor(color, void 0, void 0, colorFormat, ChangeSource.Input);
   }
   wasShown() {
+    super.wasShown();
     this.hueAlphaWidth = this.hueElement.offsetWidth;
     this.slideHelperWidth = this.hueSlider.offsetWidth / 2;
     this.dragWidth = this.colorElement.offsetWidth;
@@ -2940,6 +2931,7 @@ var Spectrum = class extends Common6.ObjectWrapper.eventMixin(UI4.Widget.VBox) {
     }
   }
   willHide() {
+    super.willHide();
     void this.toggleColorPicker(false);
     if (this.contrastDetails && this.contrastDetailsBackgroundColorPickerToggledBound) {
       this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled", this.contrastDetailsBackgroundColorPickerToggledBound);
@@ -3168,7 +3160,7 @@ var Swatch2 = class {
     self.onInvokeElement(this.swatchOverlayElement, this.onCopyText.bind(this));
     this.swatchOverlayElement.addEventListener("mouseout", this.onCopyIconMouseout.bind(this));
     this.swatchOverlayElement.addEventListener("blur", this.onCopyIconMouseout.bind(this));
-    this.swatchCopyIcon = IconButton3.Icon.create("copy", "copy-color-icon");
+    this.swatchCopyIcon = IconButton2.Icon.create("copy", "copy-color-icon");
     UI4.Tooltip.Tooltip.install(this.swatchCopyIcon, i18nString3(UIStrings3.copyColorToClipboard));
     this.swatchOverlayElement.appendChild(this.swatchCopyIcon);
     UI4.ARIAUtils.setLabel(this.swatchOverlayElement, this.swatchCopyIcon.title);

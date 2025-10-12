@@ -3369,6 +3369,7 @@ var EditFileSystemView = class extends UI3.Widget.VBox {
     this.requestUpdate();
   }
   wasShown() {
+    super.wasShown();
     this.#resyncExcludedFolderPaths();
     this.requestUpdate();
   }

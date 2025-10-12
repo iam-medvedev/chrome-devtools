@@ -257,6 +257,7 @@ export class RequestCookiesView extends UI.Widget.Widget {
         this.refreshRequestCookiesView();
     }
     willHide() {
+        super.willHide();
         this.request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
         this.request.removeEventListener(SDK.NetworkRequest.Events.RESPONSE_HEADERS_CHANGED, this.refreshRequestCookiesView, this);
     }

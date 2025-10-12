@@ -570,6 +570,7 @@ export class BreakpointsView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     wasShown() {
+        super.wasShown();
         this.requestUpdate();
     }
     performUpdate() {

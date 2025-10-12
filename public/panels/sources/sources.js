@@ -132,6 +132,7 @@ __export(AiCodeCompletionPlugin_exports, {
 });
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
+import * as i18n3 from "./../../core/i18n/i18n.js";
 import * as Root from "./../../core/root/root.js";
 import * as AiCodeCompletion from "./../../models/ai_code_completion/ai_code_completion.js";
 import * as CodeMirror from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -459,6 +460,17 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#teaser = void 0;
   }
   #isAiCodeCompletionEnabled() {
+    const devtoolsLocale = i18n3.DevToolsLocale.DevToolsLocale.instance();
+    const aidaAvailability = Root.Runtime.hostConfig.aidaAvailability;
+    if (!devtoolsLocale.locale.startsWith("en-")) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByGeo) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByAge) {
+      return false;
+    }
     return Boolean(Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
   }
   #getInferenceLanguage() {
@@ -572,7 +584,7 @@ var AiWarningInfobarPlugin_exports = {};
 __export(AiWarningInfobarPlugin_exports, {
   AiWarningInfobarPlugin: () => AiWarningInfobarPlugin
 });
-import * as i18n3 from "./../../core/i18n/i18n.js";
+import * as i18n4 from "./../../core/i18n/i18n.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
 import * as SourceFrame3 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
@@ -582,8 +594,8 @@ var UIStrings2 = {
    */
   aiContentWarning: "This file contains AI-generated content"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/sources/AiWarningInfobarPlugin.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var str_2 = i18n4.i18n.registerUIStrings("panels/sources/AiWarningInfobarPlugin.ts", UIStrings2);
+var i18nString2 = i18n4.i18n.getLocalizedString.bind(void 0, str_2);
 var AiWarningInfobarPlugin = class extends Plugin {
   #editor = void 0;
   #aiWarningInfobar = null;
@@ -637,7 +649,7 @@ __export(BreakpointEditDialog_exports, {
 });
 import "./../../ui/legacy/legacy.js";
 import * as Common2 from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n6 from "./../../core/i18n/i18n.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as CodeMirror2 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
@@ -761,8 +773,8 @@ var UIStrings3 = {
    */
   logAMessageToConsoleDoNotBreak: "Log a message to Console, do not break"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/sources/BreakpointEditDialog.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_3 = i18n6.i18n.registerUIStrings("panels/sources/BreakpointEditDialog.ts", UIStrings3);
+var i18nString3 = i18n6.i18n.getLocalizedString.bind(void 0, str_3);
 var BreakpointEditDialog = class extends UI4.Widget.Widget {
   onFinish;
   finished;
@@ -950,7 +962,7 @@ __export(BreakpointsView_exports, {
 import "./../../ui/components/icon_button/icon_button.js";
 import * as Common4 from "./../../core/common/common.js";
 import * as Host2 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
+import * as i18n8 from "./../../core/i18n/i18n.js";
 import * as Platform2 from "./../../core/platform/platform.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../../core/platform/platform.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
@@ -1550,8 +1562,8 @@ var UIStrings4 = {
    */
   logpointCode: "Logpoint: {PH1}"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/sources/BreakpointsView.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_4 = i18n8.i18n.registerUIStrings("panels/sources/BreakpointsView.ts", UIStrings4);
+var i18nString4 = i18n8.i18n.getLocalizedString.bind(void 0, str_4);
 var MAX_SNIPPET_LENGTH = 200;
 var breakpointsViewInstance = null;
 var breakpointsViewControllerInstance;
@@ -2016,6 +2028,7 @@ var BreakpointsView = class _BreakpointsView extends UI5.Widget.VBox {
     this.requestUpdate();
   }
   wasShown() {
+    super.wasShown();
     this.requestUpdate();
   }
   performUpdate() {
@@ -2313,7 +2326,7 @@ __export(CallStackSidebarPane_exports, {
 });
 import * as Common5 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n10 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../../models/bindings/bindings.js";
@@ -2505,8 +2518,8 @@ var UIStrings5 = {
    */
   restartFrame: "Restart frame"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_5 = i18n10.i18n.registerUIStrings("panels/sources/CallStackSidebarPane.ts", UIStrings5);
+var i18nString5 = i18n10.i18n.getLocalizedString.bind(void 0, str_5);
 var callstackSidebarPaneInstance;
 var CallStackSidebarPane = class _CallStackSidebarPane extends UI6.View.SimpleView {
   ignoreListMessageElement;
@@ -2975,7 +2988,7 @@ var CategorizedBreakpointL10n_exports = {};
 __export(CategorizedBreakpointL10n_exports, {
   getLocalizedBreakpointName: () => getLocalizedBreakpointName
 });
-import * as i18n11 from "./../../core/i18n/i18n.js";
+import * as i18n12 from "./../../core/i18n/i18n.js";
 import * as SDK4 from "./../../core/sdk/sdk.js";
 var UIStrings6 = {
   /**
@@ -3067,10 +3080,10 @@ var UIStrings6 = {
    */
   policyViolations: "Policy Violations"
 };
-var str_6 = i18n11.i18n.registerUIStrings("panels/sources/CategorizedBreakpointL10n.ts", UIStrings6);
-var i18nLazyString = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
+var str_6 = i18n12.i18n.registerUIStrings("panels/sources/CategorizedBreakpointL10n.ts", UIStrings6);
+var i18nLazyString = i18n12.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
 function getLocalizedBreakpointName(name) {
-  const l10nLazyName = LOCALIZED_NAMES.get(name) ?? i18n11.i18n.lockedLazyString(name);
+  const l10nLazyName = LOCALIZED_NAMES.get(name) ?? i18n12.i18n.lockedLazyString(name);
   return l10nLazyName();
 }
 var LOCALIZED_INSTRUMENTATION_NAMES = {
@@ -3093,11 +3106,11 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "setTimeout"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_TIMEOUT */
-  ]: i18n11.i18n.lockedLazyString("setTimeout"),
+  ]: i18n12.i18n.lockedLazyString("setTimeout"),
   [
     "clearTimeout"
     /* SDK.EventBreakpointsModel.InstrumentationNames.CLEAR_TIMEOUT */
-  ]: i18n11.i18n.lockedLazyString("clearTimeout"),
+  ]: i18n12.i18n.lockedLazyString("clearTimeout"),
   [
     "setTimeout.callback"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_TIMEOUT_CALLBACK */
@@ -3105,11 +3118,11 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "setInterval"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_INTERVAL */
-  ]: i18n11.i18n.lockedLazyString("setInterval"),
+  ]: i18n12.i18n.lockedLazyString("setInterval"),
   [
     "clearInterval"
     /* SDK.EventBreakpointsModel.InstrumentationNames.CLEAR_INTERVAL */
-  ]: i18n11.i18n.lockedLazyString("clearInterval"),
+  ]: i18n12.i18n.lockedLazyString("clearInterval"),
   [
     "setInterval.callback"
     /* SDK.EventBreakpointsModel.InstrumentationNames.SET_INTERVAL_CALLBACK */
@@ -3157,23 +3170,23 @@ var LOCALIZED_INSTRUMENTATION_NAMES = {
   [
     "Geolocation.getCurrentPosition"
     /* SDK.EventBreakpointsModel.InstrumentationNames.GEOLOCATION_GET_CURRENT_POSITION */
-  ]: i18n11.i18n.lockedLazyString("getCurrentPosition"),
+  ]: i18n12.i18n.lockedLazyString("getCurrentPosition"),
   [
     "Geolocation.watchPosition"
     /* SDK.EventBreakpointsModel.InstrumentationNames.GEOLOCATION_WATCH_POSITION */
-  ]: i18n11.i18n.lockedLazyString("watchPosition"),
+  ]: i18n12.i18n.lockedLazyString("watchPosition"),
   [
     "Notification.requestPermission"
     /* SDK.EventBreakpointsModel.InstrumentationNames.NOTIFICATION_REQUEST_PERMISSION */
-  ]: i18n11.i18n.lockedLazyString("requestPermission"),
+  ]: i18n12.i18n.lockedLazyString("requestPermission"),
   [
     "DOMWindow.close"
     /* SDK.EventBreakpointsModel.InstrumentationNames.DOM_WINDOW_CLOSE */
-  ]: i18n11.i18n.lockedLazyString("window.close"),
+  ]: i18n12.i18n.lockedLazyString("window.close"),
   [
     "Document.write"
     /* SDK.EventBreakpointsModel.InstrumentationNames.DOCUMENT_WRITE */
-  ]: i18n11.i18n.lockedLazyString("document.write"),
+  ]: i18n12.i18n.lockedLazyString("document.write"),
   [
     "audioContextCreated"
     /* SDK.EventBreakpointsModel.InstrumentationNames.AUDIO_CONTEXT_CREATED */
@@ -3211,7 +3224,7 @@ var CoveragePlugin_exports = {};
 __export(CoveragePlugin_exports, {
   CoveragePlugin: () => CoveragePlugin
 });
-import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as i18n14 from "./../../core/i18n/i18n.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
 import * as TextUtils2 from "./../../models/text_utils/text_utils.js";
 import * as CodeMirror3 from "./../../third_party/codemirror.next/codemirror.next.js";
@@ -3237,8 +3250,8 @@ var UIStrings7 = {
    */
   coverageNa: "Coverage: n/a"
 };
-var str_7 = i18n13.i18n.registerUIStrings("panels/sources/CoveragePlugin.ts", UIStrings7);
-var i18nString6 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
+var str_7 = i18n14.i18n.registerUIStrings("panels/sources/CoveragePlugin.ts", UIStrings7);
+var i18nString6 = i18n14.i18n.getLocalizedString.bind(void 0, str_7);
 var CoveragePlugin = class extends Plugin {
   originalSourceCode;
   infoInToolbar;
@@ -3288,7 +3301,7 @@ var CoveragePlugin = class extends Plugin {
   updateStats() {
     if (this.coverage) {
       this.infoInToolbar.setTitle(i18nString6(UIStrings7.showDetails));
-      const formatter = new Intl.NumberFormat(i18n13.DevToolsLocale.DevToolsLocale.instance().locale, {
+      const formatter = new Intl.NumberFormat(i18n14.DevToolsLocale.DevToolsLocale.instance().locale, {
         style: "percent",
         maximumFractionDigits: 1
       });
@@ -3427,7 +3440,7 @@ __export(CSSPlugin_exports, {
   cssBindings: () => cssBindings
 });
 import * as Common6 from "./../../core/common/common.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as i18n16 from "./../../core/i18n/i18n.js";
 import { assertNotNullOrUndefined as assertNotNullOrUndefined3 } from "./../../core/platform/platform.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as Bindings3 from "./../../models/bindings/bindings.js";
@@ -3453,8 +3466,8 @@ var UIStrings8 = {
    */
   addSourceMap: "Add source map\u2026"
 };
-var str_8 = i18n15.i18n.registerUIStrings("panels/sources/CSSPlugin.ts", UIStrings8);
-var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_8);
+var str_8 = i18n16.i18n.registerUIStrings("panels/sources/CSSPlugin.ts", UIStrings8);
+var i18nString7 = i18n16.i18n.getLocalizedString.bind(void 0, str_8);
 var doNotCompleteIn = /* @__PURE__ */ new Set(["ColorLiteral", "NumberLiteral", "StringLiteral", "Comment", "Important"]);
 function findPropertyAt(node, pos) {
   if (doNotCompleteIn.has(node.name)) {
@@ -3837,7 +3850,7 @@ __export(DebuggerPausedMessage_exports, {
   DebuggerPausedMessage: () => DebuggerPausedMessage
 });
 import * as Common7 from "./../../core/common/common.js";
-import * as i18n17 from "./../../core/i18n/i18n.js";
+import * as i18n18 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as IconButton4 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI9 from "./../../ui/legacy/legacy.js";
@@ -3986,9 +3999,9 @@ var UIStrings9 = {
    */
   scriptBlockedDueToContent: "Script blocked due to Content Security Policy directive: {PH1}"
 };
-var str_9 = i18n17.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.ts", UIStrings9);
-var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
-var i18nLazyString2 = i18n17.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
+var str_9 = i18n18.i18n.registerUIStrings("panels/sources/DebuggerPausedMessage.ts", UIStrings9);
+var i18nString8 = i18n18.i18n.getLocalizedString.bind(void 0, str_9);
+var i18nLazyString2 = i18n18.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
 var DebuggerPausedMessage = class _DebuggerPausedMessage {
   #element;
   contentElement;
@@ -4034,12 +4047,12 @@ var DebuggerPausedMessage = class _DebuggerPausedMessage {
       let messageElement;
       if (data.insertion) {
         if (data.targetNode === data.node) {
-          messageElement = i18n17.i18n.getFormatLocalizedString(str_9, UIStrings9.childSAdded, { PH1: targetNodeLink });
+          messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.childSAdded, { PH1: targetNodeLink });
         } else {
-          messageElement = i18n17.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSAdded, { PH1: targetNodeLink });
+          messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSAdded, { PH1: targetNodeLink });
         }
       } else {
-        messageElement = i18n17.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSRemoved, { PH1: targetNodeLink });
+        messageElement = i18n18.i18n.getFormatLocalizedString(str_9, UIStrings9.descendantSRemoved, { PH1: targetNodeLink });
       }
       subElement.appendChild(document.createElement("br"));
       subElement.appendChild(messageElement);
@@ -4156,7 +4169,7 @@ __export(DebuggerPlugin_exports, {
 });
 import * as Common15 from "./../../core/common/common.js";
 import * as Host9 from "./../../core/host/host.js";
-import * as i18n35 from "./../../core/i18n/i18n.js";
+import * as i18n37 from "./../../core/i18n/i18n.js";
 import * as Platform13 from "./../../core/platform/platform.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Badges2 from "./../../models/badges/badges.js";
@@ -4193,7 +4206,7 @@ __export(SourcesPanel_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common14 from "./../../core/common/common.js";
 import * as Host8 from "./../../core/host/host.js";
-import * as i18n33 from "./../../core/i18n/i18n.js";
+import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform12 from "./../../core/platform/platform.js";
 import * as Root4 from "./../../core/root/root.js";
 import * as SDK11 from "./../../core/sdk/sdk.js";
@@ -4222,7 +4235,7 @@ __export(NavigatorView_exports, {
 });
 import * as Common10 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
-import * as i18n19 from "./../../core/i18n/i18n.js";
+import * as i18n20 from "./../../core/i18n/i18n.js";
 import * as Platform6 from "./../../core/platform/platform.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK8 from "./../../core/sdk/sdk.js";
@@ -4819,8 +4832,8 @@ var UIStrings10 = {
    */
   connectFolderToWorkspace: "Connect to workspace"
 };
-var str_10 = i18n19.i18n.registerUIStrings("panels/sources/NavigatorView.ts", UIStrings10);
-var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_10);
+var str_10 = i18n20.i18n.registerUIStrings("panels/sources/NavigatorView.ts", UIStrings10);
+var i18nString9 = i18n20.i18n.getLocalizedString.bind(void 0, str_10);
 var Types = {
   Authored: "authored",
   AutomaticFileSystem: "automatic-fs",
@@ -6511,7 +6524,7 @@ __export(SourcesView_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common13 from "./../../core/common/common.js";
 import * as Host7 from "./../../core/host/host.js";
-import * as i18n29 from "./../../core/i18n/i18n.js";
+import * as i18n31 from "./../../core/i18n/i18n.js";
 import * as Platform11 from "./../../core/platform/platform.js";
 import * as SDK9 from "./../../core/sdk/sdk.js";
 import * as Bindings7 from "./../../models/bindings/bindings.js";
@@ -6676,7 +6689,7 @@ __export(TabbedEditorContainer_exports, {
   TabbedEditorContainer: () => TabbedEditorContainer
 });
 import * as Common12 from "./../../core/common/common.js";
-import * as i18n27 from "./../../core/i18n/i18n.js";
+import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
 import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Persistence9 from "./../../models/persistence/persistence.js";
@@ -6696,6 +6709,7 @@ __export(UISourceCodeFrame_exports, {
 });
 import * as Common11 from "./../../core/common/common.js";
 import * as Host6 from "./../../core/host/host.js";
+import * as i18n28 from "./../../core/i18n/i18n.js";
 import * as Root3 from "./../../core/root/root.js";
 
 // gen/front_end/entrypoints/formatter_worker/FormatterActions.js
@@ -6721,7 +6735,7 @@ import * as SourceFrame8 from "./../../ui/legacy/components/source_frame/source_
 import * as UI14 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/sources/ProfilePlugin.js
-import * as i18n21 from "./../../core/i18n/i18n.js";
+import * as i18n22 from "./../../core/i18n/i18n.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as CodeMirror5 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as SourceFrame7 from "./../../ui/legacy/components/source_frame/source_frame.js";
@@ -6739,8 +6753,8 @@ var UIStrings11 = {
    */
   kb: "kB"
 };
-var str_11 = i18n21.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
-var i18nString10 = i18n21.i18n.getLocalizedString.bind(void 0, str_11);
+var str_11 = i18n22.i18n.registerUIStrings("panels/sources/ProfilePlugin.ts", UIStrings11);
+var i18nString10 = i18n22.i18n.getLocalizedString.bind(void 0, str_11);
 var MemoryMarker = class extends CodeMirror5.GutterMarker {
   value;
   constructor(value2) {
@@ -6895,7 +6909,7 @@ __export(ResourceOriginPlugin_exports, {
   ResourceOriginPlugin: () => ResourceOriginPlugin,
   linkifier: () => linkifier
 });
-import * as i18n23 from "./../../core/i18n/i18n.js";
+import * as i18n24 from "./../../core/i18n/i18n.js";
 import * as Bindings6 from "./../../models/bindings/bindings.js";
 import * as Components from "./../../ui/legacy/components/utils/utils.js";
 import * as UI12 from "./../../ui/legacy/legacy.js";
@@ -6911,8 +6925,8 @@ var UIStrings12 = {
    */
   sourceMappedFromS: "(Source mapped from {PH1})"
 };
-var str_12 = i18n23.i18n.registerUIStrings("panels/sources/ResourceOriginPlugin.ts", UIStrings12);
-var i18nString11 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
+var str_12 = i18n24.i18n.registerUIStrings("panels/sources/ResourceOriginPlugin.ts", UIStrings12);
+var i18nString11 = i18n24.i18n.getLocalizedString.bind(void 0, str_12);
 var ResourceOriginPlugin = class extends Plugin {
   static accepts(uiSourceCode) {
     const contentType = uiSourceCode.contentType();
@@ -6945,12 +6959,12 @@ var ResourceOriginPlugin = class extends Plugin {
         }
         element.append(link2);
       });
-      return [new UI12.Toolbar.ToolbarItem(i18n23.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: element }))];
+      return [new UI12.Toolbar.ToolbarItem(i18n24.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: element }))];
     }
     for (const script of debuggerWorkspaceBinding.scriptsForUISourceCode(this.uiSourceCode)) {
       if (script.originStackTrace?.callFrames.length) {
         const link2 = linkifier.linkifyStackTraceTopFrame(script.debuggerModel.target(), script.originStackTrace);
-        return [new UI12.Toolbar.ToolbarItem(i18n23.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: link2 }))];
+        return [new UI12.Toolbar.ToolbarItem(i18n24.i18n.getFormatLocalizedString(str_12, UIStrings12.fromS, { PH1: link2 }))];
       }
     }
     return [];
@@ -6964,7 +6978,7 @@ __export(SnippetsPlugin_exports, {
   SnippetsPlugin: () => SnippetsPlugin
 });
 import * as Host5 from "./../../core/host/host.js";
-import * as i18n25 from "./../../core/i18n/i18n.js";
+import * as i18n26 from "./../../core/i18n/i18n.js";
 import * as TextEditor4 from "./../../ui/components/text_editor/text_editor.js";
 import * as UI13 from "./../../ui/legacy/legacy.js";
 import * as Snippets2 from "./../snippets/snippets.js";
@@ -6978,8 +6992,8 @@ var UIStrings13 = {
    */
   ctrlenter: "Ctrl+Enter"
 };
-var str_13 = i18n25.i18n.registerUIStrings("panels/sources/SnippetsPlugin.ts", UIStrings13);
-var i18nString12 = i18n25.i18n.getLocalizedString.bind(void 0, str_13);
+var str_13 = i18n26.i18n.registerUIStrings("panels/sources/SnippetsPlugin.ts", UIStrings13);
+var i18nString12 = i18n26.i18n.getLocalizedString.bind(void 0, str_13);
 var SnippetsPlugin = class extends Plugin {
   static accepts(uiSourceCode) {
     return Snippets2.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode);
@@ -7225,7 +7239,7 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
       PerformanceProfilePlugin,
       AiWarningInfobarPlugin
     ];
-    if (Root3.Runtime.hostConfig.aidaAvailability?.enabled && Root3.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled) {
+    if (this.#isAiCodeCompletionEnabled()) {
       sourceFramePluginsList.push(AiCodeCompletionPlugin);
     }
     return sourceFramePluginsList;
@@ -7387,6 +7401,20 @@ var UISourceCodeFrame = class _UISourceCodeFrame extends Common11.ObjectWrapper.
     const mimeType = Common11.ResourceType.ResourceType.mimeFromURL(this.#uiSourceCode.url());
     const mediaType = Common11.ResourceType.ResourceType.mediaTypeForMetrics(mimeType ?? "", this.#uiSourceCode.contentType().isFromSourceMap(), TextUtils6.TextUtils.isMinified(this.#uiSourceCode.content()), this.#uiSourceCode.url().startsWith("snippet://"), this.#uiSourceCode.url().startsWith("debugger://"));
     Host6.userMetrics.sourcesPanelFileOpened(mediaType);
+  }
+  static #isAiCodeCompletionEnabled() {
+    const devtoolsLocale = i18n28.DevToolsLocale.DevToolsLocale.instance();
+    const aidaAvailability = Root3.Runtime.hostConfig.aidaAvailability;
+    if (!devtoolsLocale.locale.startsWith("en-")) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByGeo) {
+      return false;
+    }
+    if (aidaAvailability?.blockedByAge) {
+      return false;
+    }
+    return Boolean(aidaAvailability?.enabled && Root3.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
   }
 };
 function getIconDataForLevel(level) {
@@ -7701,8 +7729,8 @@ var UIStrings14 = {
    */
   changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace: "Changes weren't saved to file system. To save, set up your {PH1}."
 };
-var str_14 = i18n27.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings14);
-var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
+var str_14 = i18n29.i18n.registerUIStrings("panels/sources/TabbedEditorContainer.ts", UIStrings14);
+var i18nString13 = i18n29.i18n.getLocalizedString.bind(void 0, str_14);
 var tabId = 0;
 var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
   delegate;
@@ -8166,10 +8194,10 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
               true
             );
           });
-          tooltip2.append(i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link2 }));
+          tooltip2.append(i18n29.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveAddFolderToWorkspace, { PH1: link2 }));
         } else {
           const link2 = UI15.XLink.XLink.create("https://developer.chrome.com/docs/devtools/workspaces/", "Workspace");
-          tooltip2.append(i18n27.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link2 }));
+          tooltip2.append(i18n29.i18n.getFormatLocalizedString(str_14, UIStrings14.changesWereNotSavedToFileSystemToSaveSetUpYourWorkspace, { PH1: link2 }));
         }
         suffixElement.append(icon, tooltip2);
         this.tabbedPane.setSuffixElement(tabId2, suffixElement);
@@ -8369,8 +8397,8 @@ var UIStrings15 = {
    */
   sourceViewActions: "Source View Actions"
 };
-var str_15 = i18n29.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings15);
-var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
+var str_15 = i18n31.i18n.registerUIStrings("panels/sources/SourcesView.ts", UIStrings15);
+var i18nString14 = i18n31.i18n.getLocalizedString.bind(void 0, str_15);
 var SourcesView = class _SourcesView extends Common13.ObjectWrapper.eventMixin(UI16.Widget.VBox) {
   #searchableView;
   sourceViewByUISourceCode;
@@ -8938,7 +8966,7 @@ var ThreadsSidebarPane_exports = {};
 __export(ThreadsSidebarPane_exports, {
   ThreadsSidebarPane: () => ThreadsSidebarPane
 });
-import * as i18n31 from "./../../core/i18n/i18n.js";
+import * as i18n33 from "./../../core/i18n/i18n.js";
 import * as SDK10 from "./../../core/sdk/sdk.js";
 import * as IconButton9 from "./../../ui/components/icon_button/icon_button.js";
 import * as UI17 from "./../../ui/legacy/legacy.js";
@@ -9018,8 +9046,8 @@ var UIStrings16 = {
    */
   paused: "paused"
 };
-var str_16 = i18n31.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings16);
-var i18nString15 = i18n31.i18n.getLocalizedString.bind(void 0, str_16);
+var str_16 = i18n33.i18n.registerUIStrings("panels/sources/ThreadsSidebarPane.ts", UIStrings16);
+var i18nString15 = i18n33.i18n.getLocalizedString.bind(void 0, str_16);
 var ThreadsSidebarPane = class extends UI17.Widget.VBox {
   items;
   list;
@@ -9260,8 +9288,8 @@ var UIStrings17 = {
    */
   explainInputHandling: "Explain input handling"
 };
-var str_17 = i18n33.i18n.registerUIStrings("panels/sources/SourcesPanel.ts", UIStrings17);
-var i18nString16 = i18n33.i18n.getLocalizedString.bind(void 0, str_17);
+var str_17 = i18n35.i18n.registerUIStrings("panels/sources/SourcesPanel.ts", UIStrings17);
+var i18nString16 = i18n35.i18n.getLocalizedString.bind(void 0, str_17);
 var primitiveRemoteObjectTypes = /* @__PURE__ */ new Set(["number", "boolean", "bigint", "undefined"]);
 var sourcesPanelInstance;
 var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
@@ -10387,8 +10415,8 @@ var UIStrings18 = {
    */
   openDeveloperResources: "Opens the request in the Developer resource panel"
 };
-var str_18 = i18n35.i18n.registerUIStrings("panels/sources/DebuggerPlugin.ts", UIStrings18);
-var i18nString17 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
+var str_18 = i18n37.i18n.registerUIStrings("panels/sources/DebuggerPlugin.ts", UIStrings18);
+var i18nString17 = i18n37.i18n.getLocalizedString.bind(void 0, str_18);
 var MAX_POSSIBLE_BREAKPOINT_LINE = 2500;
 var MAX_CODE_SIZE_FOR_VALUE_DECORATIONS = 1e4;
 var MAX_PROPERTIES_IN_SCOPE_FOR_VALUE_DECORATIONS = 500;
@@ -10616,6 +10644,7 @@ var DebuggerPlugin = class extends Plugin {
     this.ignoreListInfobar = null;
   }
   willHide() {
+    super.willHide();
     this.popoverHelper?.hidePopover();
   }
   editBreakpointLocation({ breakpoint, uiLocation }) {
@@ -12488,7 +12517,7 @@ var FilteredUISourceCodeListProvider_exports = {};
 __export(FilteredUISourceCodeListProvider_exports, {
   FilteredUISourceCodeListProvider: () => FilteredUISourceCodeListProvider
 });
-import * as i18n37 from "./../../core/i18n/i18n.js";
+import * as i18n39 from "./../../core/i18n/i18n.js";
 import * as Root5 from "./../../core/root/root.js";
 import * as Persistence12 from "./../../models/persistence/persistence.js";
 import * as Workspace23 from "./../../models/workspace/workspace.js";
@@ -12505,8 +12534,8 @@ var UIStrings19 = {
    */
   sIgnoreListed: "{PH1} (ignore listed)"
 };
-var str_19 = i18n37.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings19);
-var i18nString18 = i18n37.i18n.getLocalizedString.bind(void 0, str_19);
+var str_19 = i18n39.i18n.registerUIStrings("panels/sources/FilteredUISourceCodeListProvider.ts", UIStrings19);
+var i18nString18 = i18n39.i18n.getLocalizedString.bind(void 0, str_19);
 var FilteredUISourceCodeListProvider = class extends QuickOpen3.FilteredListWidget.Provider {
   queryLineNumberAndColumnNumber;
   defaultScores;
@@ -12698,7 +12727,7 @@ var GoToLineQuickOpen_exports = {};
 __export(GoToLineQuickOpen_exports, {
   GoToLineQuickOpen: () => GoToLineQuickOpen
 });
-import * as i18n39 from "./../../core/i18n/i18n.js";
+import * as i18n41 from "./../../core/i18n/i18n.js";
 import * as IconButton10 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen4 from "./../../ui/legacy/components/quick_open/quick_open.js";
 import * as UI21 from "./../../ui/legacy/legacy.js";
@@ -12743,8 +12772,8 @@ var UIStrings20 = {
    */
   goToLineS: "Go to line {PH1}"
 };
-var str_20 = i18n39.i18n.registerUIStrings("panels/sources/GoToLineQuickOpen.ts", UIStrings20);
-var i18nString19 = i18n39.i18n.getLocalizedString.bind(void 0, str_20);
+var str_20 = i18n41.i18n.registerUIStrings("panels/sources/GoToLineQuickOpen.ts", UIStrings20);
+var i18nString19 = i18n41.i18n.getLocalizedString.bind(void 0, str_20);
 var GoToLineQuickOpen = class extends QuickOpen4.FilteredListWidget.Provider {
   #goToLineStrings = [];
   constructor() {
@@ -12851,7 +12880,7 @@ __export(InplaceFormatterEditorAction_exports, {
   InplaceFormatterEditorAction: () => InplaceFormatterEditorAction
 });
 import * as Common16 from "./../../core/common/common.js";
-import * as i18n41 from "./../../core/i18n/i18n.js";
+import * as i18n43 from "./../../core/i18n/i18n.js";
 import * as Formatter2 from "./../../models/formatter/formatter.js";
 import * as Persistence14 from "./../../models/persistence/persistence.js";
 import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
@@ -12868,8 +12897,8 @@ var UIStrings21 = {
    */
   format: "Format"
 };
-var str_21 = i18n41.i18n.registerUIStrings("panels/sources/InplaceFormatterEditorAction.ts", UIStrings21);
-var i18nString20 = i18n41.i18n.getLocalizedString.bind(void 0, str_21);
+var str_21 = i18n43.i18n.registerUIStrings("panels/sources/InplaceFormatterEditorAction.ts", UIStrings21);
+var i18nString20 = i18n43.i18n.getLocalizedString.bind(void 0, str_21);
 var inplaceFormatterEditorActionInstance;
 var InplaceFormatterEditorAction = class _InplaceFormatterEditorAction {
   button;
@@ -13010,7 +13039,7 @@ __export(OutlineQuickOpen_exports, {
   OutlineQuickOpen: () => OutlineQuickOpen,
   outline: () => outline
 });
-import * as i18n43 from "./../../core/i18n/i18n.js";
+import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as CodeMirror8 from "./../../third_party/codemirror.next/codemirror.next.js";
 import * as IconButton12 from "./../../ui/components/icon_button/icon_button.js";
 import * as QuickOpen5 from "./../../ui/legacy/components/quick_open/quick_open.js";
@@ -13029,8 +13058,8 @@ var UIStrings22 = {
    */
   noResultsFound: "No results found"
 };
-var str_22 = i18n43.i18n.registerUIStrings("panels/sources/OutlineQuickOpen.ts", UIStrings22);
-var i18nString21 = i18n43.i18n.getLocalizedString.bind(void 0, str_22);
+var str_22 = i18n45.i18n.registerUIStrings("panels/sources/OutlineQuickOpen.ts", UIStrings22);
+var i18nString21 = i18n45.i18n.getLocalizedString.bind(void 0, str_22);
 function outline(state) {
   function toLineColumn(offset) {
     offset = Math.max(0, Math.min(offset, state.doc.length));
@@ -13353,7 +13382,7 @@ var ScopeChainSidebarPane_exports = {};
 __export(ScopeChainSidebarPane_exports, {
   ScopeChainSidebarPane: () => ScopeChainSidebarPane
 });
-import * as i18n45 from "./../../core/i18n/i18n.js";
+import * as i18n47 from "./../../core/i18n/i18n.js";
 import * as SDK13 from "./../../core/sdk/sdk.js";
 import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
@@ -13422,8 +13451,8 @@ var UIStrings23 = {
    */
   closure: "Closure"
 };
-var str_23 = i18n45.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings23);
-var i18nString22 = i18n45.i18n.getLocalizedString.bind(void 0, str_23);
+var str_23 = i18n47.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings23);
+var i18nString22 = i18n47.i18n.getLocalizedString.bind(void 0, str_23);
 var scopeChainSidebarPaneInstance;
 var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBox {
   treeOutline;
@@ -13559,7 +13588,7 @@ __export(SourcesNavigator_exports, {
 import "./../../ui/legacy/legacy.js";
 import * as Common18 from "./../../core/common/common.js";
 import * as Host11 from "./../../core/host/host.js";
-import * as i18n47 from "./../../core/i18n/i18n.js";
+import * as i18n49 from "./../../core/i18n/i18n.js";
 import * as Platform14 from "./../../core/platform/platform.js";
 import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as Bindings10 from "./../../models/bindings/bindings.js";
@@ -13679,8 +13708,8 @@ var UIStrings24 = {
    */
   automaticWorkspaceNudge: "Use {PH1} to automatically connect your project folder"
 };
-var str_24 = i18n47.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings24);
-var i18nString23 = i18n47.i18n.getLocalizedString.bind(void 0, str_24);
+var str_24 = i18n49.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings24);
+var i18nString23 = i18n49.i18n.getLocalizedString.bind(void 0, str_24);
 var networkNavigatorViewInstance;
 var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
   constructor() {
@@ -13746,7 +13775,7 @@ var FilesNavigatorView = class extends NavigatorView {
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/workspaces/";
     const link2 = UI25.XLink.XLink.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
-    this.#automaticFileSystemNudge = i18n47.i18n.getFormatLocalizedString(str_24, UIStrings24.automaticWorkspaceNudge, { PH1: link2 });
+    this.#automaticFileSystemNudge = i18n49.i18n.getFormatLocalizedString(str_24, UIStrings24.automaticWorkspaceNudge, { PH1: link2 });
     this.#automaticFileSystemNudge.classList.add("automatic-file-system-nudge");
     this.contentElement.insertBefore(this.#automaticFileSystemNudge, this.contentElement.firstChild);
     const toolbar4 = document.createElement("devtools-toolbar");
@@ -13958,7 +13987,7 @@ __export(WatchExpressionsSidebarPane_exports, {
 });
 import * as Common19 from "./../../core/common/common.js";
 import * as Host12 from "./../../core/host/host.js";
-import * as i18n49 from "./../../core/i18n/i18n.js";
+import * as i18n51 from "./../../core/i18n/i18n.js";
 import * as Platform15 from "./../../core/platform/platform.js";
 import * as SDK15 from "./../../core/sdk/sdk.js";
 import * as Formatter3 from "./../../models/formatter/formatter.js";
@@ -14284,8 +14313,8 @@ var UIStrings25 = {
    */
   watchExpressionDeleted: "Watch expression deleted"
 };
-var str_25 = i18n49.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings25);
-var i18nString24 = i18n49.i18n.getLocalizedString.bind(void 0, str_25);
+var str_25 = i18n51.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings25);
+var i18nString24 = i18n51.i18n.getLocalizedString.bind(void 0, str_25);
 var watchExpressionsSidebarPaneInstance;
 var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI26.ThrottledWidget.ThrottledWidget {
   watchExpressions;

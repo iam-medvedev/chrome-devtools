@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../../../../core/host/host.js';
+import * as Console from '../../../../panels/console/console.js';
 import * as Explain from '../../../../panels/explain/explain.js';
 import * as FrontendHelpers from '../../../../testing/EnvironmentHelpers.js';
 import * as ComponentHelpers from '../../helpers/helpers.js';
@@ -18,11 +19,11 @@ const component = new ConsoleInsight({
             isPageReloadRecommended: false,
             sources: [
                 {
-                    type: Explain.SourceType.MESSAGE,
+                    type: Console.PromptBuilder.SourceType.MESSAGE,
                     value: 'Something went wrong\n\nSomething went wrong',
                 },
                 {
-                    type: Explain.SourceType.NETWORK_REQUEST,
+                    type: Console.PromptBuilder.SourceType.NETWORK_REQUEST,
                     value: `Request: https://example.com/data.html
 
 Request headers:

@@ -6,14 +6,18 @@ import * as Host from '../../core/host/host.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import { createTarget, registerNoopActions, updateHostConfig, } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection, dispatchEvent, } from '../../testing/MockConnection.js';
-import * as CodeMirror from '../../third_party/codemirror.next/codemirror.next.js';
+import * as TextEditor from '../../ui/components/text_editor/text_editor.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Console from './console.js';
+function compileScriptResponse(exception) {
+    const exceptionDetails = exception ? { exception: { description: exception } } : undefined;
+    return { exceptionDetails, getError: () => { } };
+}
 describeWithMockConnection('ConsoleContextSelector', () => {
     let target;
     let consolePrompt;
-    let keyBinding;
     let evaluateOnTarget;
+    let compileScript;
     let checkAccessPreconditionsStub;
     let editor;
     beforeEach(() => {
@@ -27,18 +31,14 @@ describeWithMockConnection('ConsoleContextSelector', () => {
             aidaAvailability: { enabled: true },
         });
         registerNoopActions(['console.clear', 'console.clear.history', 'console.create-pin']);
-        const keymapOf = sinon.spy(CodeMirror.keymap, 'of');
         consolePrompt = new Console.ConsolePrompt.ConsolePrompt();
-        sinon.assert.called(keymapOf);
-        keyBinding = keymapOf.firstCall.firstArg;
-        const editorContainer = consolePrompt.element.querySelector('.console-prompt-editor-container');
-        editor = editorContainer.firstElementChild;
-        editor.state = { doc: 'foo', selection: { main: { head: 42 } } };
-        editor.dispatch = () => { };
+        editor = consolePrompt.element.querySelector('devtools-text-editor');
+        setCodeMirrorContent('foo');
         target = createTarget();
         const targetContext = createExecutionContext(target);
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, targetContext);
         evaluateOnTarget = sinon.stub(target.runtimeAgent(), 'invoke_evaluate');
+        compileScript = sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
         Common.Settings.Settings.instance().createSetting('ai-code-completion-enabled', false);
     });
     let id = 0;
@@ -61,45 +61,46 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         assert.exists(executionContext);
         return executionContext;
     }
-    function compileScriptResponse(exception) {
-        const exceptionDetails = exception ? { exception: { description: exception } } : undefined;
-        return { exceptionDetails, getError: () => { } };
+    function dispatchKeydown(key, options = {}) {
+        editor.editor.contentDOM.dispatchEvent(new KeyboardEvent('keydown', {
+            key,
+            bubbles: true,
+            ...options,
+        }));
+    }
+    function setCodeMirrorContent(content, { selectionHead } = { selectionHead: content.length }) {
+        editor.dispatch({
+            changes: { from: 0, to: editor.state.doc.length, insert: content },
+            selection: { anchor: selectionHead },
+        });
     }
     it('evaluates on enter', async () => {
-        const enterBinding = keyBinding.find(b => b.key === 'Enter');
-        sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
-        enterBinding.run({});
+        dispatchKeydown('Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.called(evaluateOnTarget);
     });
     it('allows user to enable pasting by typing \'allow pasting\'', async () => {
         const setting = Common.Settings.Settings.instance().createSetting('disable-self-xss-warning', false, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
         assert.isFalse(setting.get());
-        const enterBinding = keyBinding.find(b => b.key === 'Enter');
-        sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
         consolePrompt.showSelfXssWarning();
-        enterBinding.run({});
+        dispatchKeydown('Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isFalse(setting.get());
         consolePrompt.showSelfXssWarning();
-        editor.state = { doc: 'allow pasting', selection: { main: { head: 42 } } };
-        enterBinding.run({});
+        setCodeMirrorContent('allow pasting');
+        dispatchKeydown('Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
         assert.isTrue(setting.get());
     });
     it('does not evaluate incomplete expression', async () => {
-        const enterBinding = keyBinding.find(b => b.key === 'Enter');
-        sinon.stub(target.runtimeAgent(), 'invoke_compileScript')
-            .resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
-        enterBinding.run({});
+        compileScript.resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
+        dispatchKeydown('Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.notCalled(evaluateOnTarget);
     });
     it('evaluate incomplete expression if forced', async () => {
-        const ctrlEnterBinding = keyBinding.find(b => b.key === 'Ctrl-Enter');
-        sinon.stub(target.runtimeAgent(), 'invoke_compileScript')
-            .resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
-        ctrlEnterBinding.run({});
+        compileScript.resolves(compileScriptResponse('SyntaxError: Unexpected end of input'));
+        dispatchKeydown('Ctrl-Enter');
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.called(evaluateOnTarget);
     });
@@ -107,10 +108,8 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         const anotherTarget = createTarget();
         const anotherTargetContext = createExecutionContext(target);
         const evaluateOnAnotherTarget = sinon.stub(anotherTarget.runtimeAgent(), 'invoke_evaluate');
-        const enterBinding = keyBinding.find(b => b.key === 'Enter');
-        sinon.stub(target.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
         sinon.stub(anotherTarget.runtimeAgent(), 'invoke_compileScript').resolves(compileScriptResponse());
-        enterBinding.run({});
+        dispatchKeydown('Enter');
         UI.Context.Context.instance().setFlavor(SDK.RuntimeModel.ExecutionContext, anotherTargetContext);
         await new Promise(resolve => setTimeout(resolve, 0));
         sinon.assert.notCalled(evaluateOnAnotherTarget);
@@ -159,10 +158,31 @@ describeWithMockConnection('ConsoleContextSelector', () => {
         assert.exists(consoleModel);
         const message = new SDK.ConsoleModel.ConsoleMessage(target.model(SDK.RuntimeModel.RuntimeModel), "javascript" /* Protocol.Log.LogEntrySource.Javascript */, null, 'let x = 1;', { type: SDK.ConsoleModel.FrontendMessageType.Command });
         consoleModel.addMessage(message);
-        editor.state = { doc: 'console.log();', selection: { main: { head: 12 } } };
+        setCodeMirrorContent('console.log();', { selectionHead: 12 });
+        onTextChangedSpy.resetHistory();
         consolePrompt.triggerAiCodeCompletion();
         sinon.assert.calledOnce(onTextChangedSpy);
         assert.deepEqual(onTextChangedSpy.firstCall.args, ['let x = 1;\n\nconsole.log(', ');', 12]);
+    });
+    it('handles event sequence correctly', async () => {
+        const stub = sinon.stub(TextEditor.TextEditorHistory.TextEditorHistory.prototype, 'moveHistory');
+        // Verify that ArrowUp with repeat does not move history.
+        dispatchKeydown('ArrowUp', { repeat: true });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.notCalled(stub);
+        // Verify that ArrowUp does move history.
+        dispatchKeydown('ArrowUp');
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnceWithExactly(stub, -1 /* TextEditor.TextEditorHistory.Direction.BACKWARD */);
+        stub.resetHistory();
+        // Verify that ArrowDown with repeat does not move history.
+        dispatchKeydown('ArrowDown', { repeat: true });
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.notCalled(stub);
+        // Verify that ArrowDown does move history.
+        dispatchKeydown('ArrowDown');
+        await new Promise(resolve => setTimeout(resolve, 0));
+        sinon.assert.calledOnceWithExactly(stub, 1 /* TextEditor.TextEditorHistory.Direction.FORWARD */);
     });
 });
 //# sourceMappingURL=ConsolePrompt.test.js.map
