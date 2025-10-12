@@ -2776,7 +2776,7 @@ var FlameChart = class extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
     context.restore();
   }
   /**
-   * Draws decorations onto events. {@see FlameChartDecoration}.
+   * Draws decorations onto events. {@link FlameChartDecoration}.
    */
   #drawDecorations(context, timelineData, indexes) {
     const { entryTotalTimes, entryStartTimes, entryLevels } = timelineData;
@@ -4615,6 +4615,7 @@ var ChartViewport = class extends UI2.Widget.VBox {
     this.delegate.update();
   }
   willHide() {
+    super.willHide();
     if (this.cancelWindowTimesAnimation) {
       this.cancelWindowTimesAnimation();
       this.setWindowTimes(this.targetLeftTime, this.targetRightTime, false);

@@ -9,7 +9,7 @@ export const UIStrings = {
     /**
      * @description Text to tell the user about the longest user interaction.
      */
-    description: 'Start investigating with the longest subpart. [Delays can be minimized](https://web.dev/articles/optimize-inp#optimize_interactions). To reduce processing duration, [optimize the main-thread costs](https://web.dev/articles/optimize-long-tasks), often JS.',
+    description: 'Start investigating [how to improve INP](https://developer.chrome.com/docs/performance/insights/inp-breakdown) by looking at the longest subpart.',
     /**
      * @description Title for the performance insight "INP breakdown", which shows a breakdown of INP by subparts / sections.
      */
@@ -61,6 +61,7 @@ function finalize(partialModel) {
         strings: UIStrings,
         title: i18nString(UIStrings.title),
         description: i18nString(UIStrings.description),
+        docs: 'https://developer.chrome.com/docs/performance/insights/inp-breakdown',
         category: InsightCategory.INP,
         state,
         ...partialModel,

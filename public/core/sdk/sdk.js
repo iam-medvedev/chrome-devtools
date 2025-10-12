@@ -795,7 +795,6 @@ var generatedProperties = [
       "text-wrap-mode",
       "text-wrap-style",
       "timeline-scope",
-      "timeline-trigger-behavior",
       "timeline-trigger-exit-range-end",
       "timeline-trigger-exit-range-start",
       "timeline-trigger-name",
@@ -4494,22 +4493,12 @@ var generatedProperties = [
     "longhands": [
       "timeline-trigger-name",
       "timeline-trigger-source",
-      "timeline-trigger-behavior",
       "timeline-trigger-range-start",
       "timeline-trigger-range-end",
       "timeline-trigger-exit-range-start",
       "timeline-trigger-exit-range-end"
     ],
     "name": "timeline-trigger"
-  },
-  {
-    "keywords": [
-      "once",
-      "repeat",
-      "alternate",
-      "state"
-    ],
-    "name": "timeline-trigger-behavior"
   },
   {
     "name": "timeline-trigger-exit-range-end"
@@ -6908,14 +6897,6 @@ var generatedPropertyValues = {
       "stable"
     ]
   },
-  "timeline-trigger-behavior": {
-    "values": [
-      "once",
-      "repeat",
-      "alternate",
-      "state"
-    ]
-  },
   "timeline-trigger-source": {
     "values": [
       "none",
@@ -9095,7 +9076,7 @@ __export(NetworkRequest_exports, {
   DirectSocketChunkType: () => DirectSocketChunkType,
   DirectSocketStatus: () => DirectSocketStatus,
   DirectSocketType: () => DirectSocketType,
-  Events: () => Events9,
+  Events: () => Events,
   NetworkRequest: () => NetworkRequest,
   WebSocketFrameType: () => WebSocketFrameType,
   cookieBlockedReasonToAttribute: () => cookieBlockedReasonToAttribute,
@@ -9104,9 +9085,9 @@ __export(NetworkRequest_exports, {
   setCookieBlockedReasonToAttribute: () => setCookieBlockedReasonToAttribute,
   setCookieBlockedReasonToUiString: () => setCookieBlockedReasonToUiString
 });
-import * as TextUtils22 from "./../../models/text_utils/text_utils.js";
-import * as Common31 from "./../common/common.js";
-import * as i18n25 from "./../i18n/i18n.js";
+import * as TextUtils23 from "./../../models/text_utils/text_utils.js";
+import * as Common27 from "./../common/common.js";
+import * as i18n21 from "./../i18n/i18n.js";
 import * as Platform18 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/CookieModel.js
@@ -9114,9 +9095,9 @@ var CookieModel_exports = {};
 __export(CookieModel_exports, {
   CookieModel: () => CookieModel
 });
-import * as Common29 from "./../common/common.js";
+import * as Common25 from "./../common/common.js";
 import * as Platform17 from "./../platform/platform.js";
-import * as Root10 from "./../root/root.js";
+import * as Root9 from "./../root/root.js";
 
 // gen/front_end/core/sdk/Cookie.js
 var Cookie_exports = {};
@@ -9383,7 +9364,7 @@ var Cookie = class _Cookie {
 // gen/front_end/core/sdk/NetworkManager.js
 var NetworkManager_exports = {};
 __export(NetworkManager_exports, {
-  Events: () => Events8,
+  Events: () => Events2,
   Fast4GConditions: () => Fast4GConditions,
   FetchDispatcher: () => FetchDispatcher,
   InterceptedRequest: () => InterceptedRequest,
@@ -9402,12 +9383,12 @@ __export(NetworkManager_exports, {
   keyIsCustomUser: () => keyIsCustomUser,
   networkConditionsEqual: () => networkConditionsEqual
 });
-import * as TextUtils19 from "./../../models/text_utils/text_utils.js";
-import * as Common28 from "./../common/common.js";
-import * as Host7 from "./../host/host.js";
-import * as i18n19 from "./../i18n/i18n.js";
-import * as Platform16 from "./../platform/platform.js";
-import * as Root9 from "./../root/root.js";
+import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as Common5 from "./../common/common.js";
+import * as Host2 from "./../host/host.js";
+import * as i18n from "./../i18n/i18n.js";
+import * as Platform3 from "./../platform/platform.js";
+import * as Root2 from "./../root/root.js";
 
 // gen/front_end/core/sdk/TargetManager.js
 var TargetManager_exports = {};
@@ -9416,361 +9397,2409 @@ __export(TargetManager_exports, {
   SDKModelObserver: () => SDKModelObserver,
   TargetManager: () => TargetManager
 });
-import * as Common27 from "./../common/common.js";
-import * as Host6 from "./../host/host.js";
-import * as Platform15 from "./../platform/platform.js";
-import { assertNotNullOrUndefined as assertNotNullOrUndefined2 } from "./../platform/platform.js";
-import * as Root8 from "./../root/root.js";
+import * as Common4 from "./../common/common.js";
+import * as Host from "./../host/host.js";
+import * as Platform2 from "./../platform/platform.js";
+import { assertNotNullOrUndefined } from "./../platform/platform.js";
+import * as Root from "./../root/root.js";
 
-// gen/front_end/core/sdk/Connections.js
-var Connections_exports = {};
-__export(Connections_exports, {
-  MainConnection: () => MainConnection,
-  ParallelConnection: () => ParallelConnection,
-  StubConnection: () => StubConnection,
-  WebSocketConnection: () => WebSocketConnection,
-  initMainConnection: () => initMainConnection
-});
-import * as i18n17 from "./../i18n/i18n.js";
-import * as Common26 from "./../common/common.js";
-import * as Host5 from "./../host/host.js";
-import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
-import * as Root7 from "./../root/root.js";
-
-// gen/front_end/core/sdk/RehydratingConnection.js
-var RehydratingConnection_exports = {};
-__export(RehydratingConnection_exports, {
-  RehydratingConnection: () => RehydratingConnection,
-  RehydratingSession: () => RehydratingSession
-});
-import * as Common25 from "./../common/common.js";
-import * as i18n15 from "./../i18n/i18n.js";
-
-// gen/front_end/core/sdk/EnhancedTracesParser.js
-var EnhancedTracesParser_exports = {};
-__export(EnhancedTracesParser_exports, {
-  EnhancedTracesParser: () => EnhancedTracesParser
+// gen/front_end/core/sdk/Target.js
+var Target_exports = {};
+__export(Target_exports, {
+  Target: () => Target,
+  Type: () => Type
 });
 import * as Common3 from "./../common/common.js";
-import { UserVisibleError } from "./../platform/platform.js";
-var EnhancedTracesParser = class {
-  #trace;
-  #scriptRundownEvents = [];
-  #scriptToV8Context = /* @__PURE__ */ new Map();
-  #scriptToFrame = /* @__PURE__ */ new Map();
-  #scriptToScriptSource = /* @__PURE__ */ new Map();
-  #largeScriptToScriptSource = /* @__PURE__ */ new Map();
-  #scriptToSourceLength = /* @__PURE__ */ new Map();
-  #targets = [];
-  #executionContexts = [];
-  #scripts = [];
-  static enhancedTraceVersion = 1;
-  constructor(trace) {
-    this.#trace = trace;
-    try {
-      this.parseEnhancedTrace();
-    } catch (e) {
-      throw new UserVisibleError.UserVisibleError(e);
-    }
-  }
-  parseEnhancedTrace() {
-    for (const event of this.#trace.traceEvents) {
-      if (this.isTracingStartedInBrowser(event)) {
-        const data = event.args?.data;
-        for (const frame of data.frames) {
-          if (frame.url === "about:blank") {
-            continue;
-          }
-          const frameId = frame.frame;
-          if (!this.#targets.find((target) => target.targetId === frameId)) {
-            const frameType = frame.isOutermostMainFrame ? "page" : "iframe";
-            this.#targets.push({
-              targetId: frameId,
-              type: frameType,
-              pid: frame.processId,
-              url: frame.url
-            });
-          }
-        }
-      } else if (this.isFunctionCallEvent(event)) {
-        const data = event.args?.data;
-        if (data.isolate) {
-          this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
-        }
-      } else if (this.isRundownScriptCompiled(event)) {
-        const data = event.args?.data;
-        this.#scriptToV8Context.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.v8context);
-        this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
-        const frameId = data.frame;
-        if (!this.#targets.find((target) => target.targetId === frameId)) {
-          this.#targets.push({
-            targetId: frameId,
-            type: data.frameType,
-            isolate: String(data.isolate),
-            pid: event.pid,
-            url: data.url
-          });
-        }
-        if (!this.#executionContexts.find((executionContext) => executionContext.v8Context === data.v8context)) {
-          this.#executionContexts.push({
-            id: -1,
-            origin: data.origin,
-            v8Context: data.v8context,
-            auxData: {
-              frameId: data.frame,
-              isDefault: data.isDefault,
-              type: data.contextType
-            },
-            isolate: String(data.isolate),
-            name: data.origin,
-            uniqueId: `${data.v8context}-${data.isolate}`
-          });
-        }
-      } else if (this.isRundownScript(event)) {
-        this.#scriptRundownEvents.push(event);
-        const data = event.args.data;
-        if (!this.#scripts.find((script) => script.scriptId === String(data.scriptId) && script.isolate === String(data.isolate))) {
-          this.#scripts.push({
-            scriptId: String(data.scriptId),
-            isolate: String(data.isolate),
-            buildId: "",
-            executionContextId: data.executionContextId,
-            startLine: data.startLine ?? 0,
-            startColumn: data.startColumn ?? 0,
-            endLine: data.endLine ?? 0,
-            endColumn: data.endColumn ?? 0,
-            hash: data.hash ?? "",
-            isModule: data.isModule,
-            url: data.url ?? "",
-            hasSourceURL: data.hasSourceUrl,
-            sourceURL: data.sourceUrl ?? "",
-            sourceMapURL: data.sourceMapUrl,
-            pid: event.pid
-          });
-        }
-      } else if (this.isRundownScriptSource(event)) {
-        const data = event.args.data;
-        const scriptIsolateId = this.getScriptIsolateId(data.isolate, data.scriptId);
-        if ("splitIndex" in data && "splitCount" in data) {
-          if (!this.#largeScriptToScriptSource.has(scriptIsolateId)) {
-            this.#largeScriptToScriptSource.set(scriptIsolateId, new Array(data.splitCount).fill(""));
-          }
-          const splittedSource = this.#largeScriptToScriptSource.get(scriptIsolateId);
-          if (splittedSource && data.sourceText) {
-            splittedSource[data.splitIndex] = data.sourceText;
-          }
-        } else {
-          if (data.sourceText) {
-            this.#scriptToScriptSource.set(scriptIsolateId, data.sourceText);
-          }
-          if (data.length) {
-            this.#scriptToSourceLength.set(scriptIsolateId, data.length);
+import * as Platform from "./../platform/platform.js";
+import * as ProtocolClient from "./../protocol_client/protocol_client.js";
+var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
+  #targetManager;
+  #name;
+  #inspectedURL = Platform.DevToolsPath.EmptyUrlString;
+  #inspectedURLName = "";
+  #capabilitiesMask;
+  #type;
+  #parentTarget;
+  #id;
+  #modelByConstructor = /* @__PURE__ */ new Map();
+  #isSuspended;
+  /**
+   * Generally when a target crashes we don't need to know, with one exception.
+   * If a target crashes during the recording of a performance trace, after the
+   * trace when we try to resume() it, it will fail because it has crashed. This
+   * causes the performance panel to freeze (see crbug.com/333989070). So we
+   * mark the target as crashed so we can exit without trying to resume it. In
+   * `ChildTargetManager` we will mark a target as "un-crashed" when we get the
+   * `targetInfoChanged` event. This helps ensure we can deal with cases where
+   * the page crashes, but a reload fixes it and the targets get restored (see
+   * crbug.com/387258086).
+   */
+  #hasCrashed = false;
+  #targetInfo;
+  #creatingModels;
+  constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection, targetInfo) {
+    const needsNodeJSPatching = type === Type.NODE;
+    super(needsNodeJSPatching, parentTarget, sessionId, connection);
+    this.#targetManager = targetManager;
+    this.#name = name;
+    this.#capabilitiesMask = 0;
+    switch (type) {
+      case Type.FRAME:
+        this.#capabilitiesMask = 1 | 8192 | 2 | 4 | 8 | 16 | 32 | 128 | 256 | 1024 | 2048 | 32768 | 65536 | 131072 | 262144 | 524288;
+        if (parentTarget?.type() !== Type.FRAME) {
+          this.#capabilitiesMask |= 4096 | 64 | 512 | 16384;
+          if (Common3.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
+            this.#capabilitiesMask &= ~512;
           }
         }
+        break;
+      case Type.ServiceWorker:
+        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 2048 | 131072 | 524288;
+        if (parentTarget?.type() !== Type.FRAME) {
+          this.#capabilitiesMask |= 1 | 8192;
+        }
+        break;
+      case Type.SHARED_WORKER:
+        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 2048 | 524288;
+        if (parentTarget?.type() !== Type.FRAME) {
+          this.#capabilitiesMask |= 8192;
+        }
+        break;
+      case Type.SHARED_STORAGE_WORKLET:
+        this.#capabilitiesMask = 4 | 8 | 2048 | 524288;
+        break;
+      case Type.Worker:
+        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 256 | 524288;
+        if (parentTarget?.type() !== Type.FRAME) {
+          this.#capabilitiesMask |= 8192;
+        }
+        break;
+      case Type.WORKLET:
+        this.#capabilitiesMask = 4 | 8 | 524288 | 16;
+        break;
+      case Type.NODE:
+        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
+        break;
+      case Type.AUCTION_WORKLET:
+        this.#capabilitiesMask = 4 | 524288;
+        break;
+      case Type.BROWSER:
+        this.#capabilitiesMask = 32 | 131072;
+        break;
+      case Type.TAB:
+        this.#capabilitiesMask = 32 | 128;
+        break;
+      case Type.NODE_WORKER:
+        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
+    }
+    this.#type = type;
+    this.#parentTarget = parentTarget;
+    this.#id = id;
+    this.#isSuspended = suspended;
+    this.#targetInfo = targetInfo;
+  }
+  createModels(required) {
+    this.#creatingModels = true;
+    const registeredModels2 = Array.from(SDKModel.registeredModels.entries());
+    for (const [modelClass, info] of registeredModels2) {
+      if (info.early) {
+        this.model(modelClass);
       }
     }
-  }
-  data() {
-    const v8ContextToExecutionContextId = /* @__PURE__ */ new Map();
-    this.#scriptRundownEvents.forEach((scriptRundownEvent) => {
-      const data = scriptRundownEvent.args.data;
-      const v8Context = this.#scriptToV8Context.get(this.getScriptIsolateId(data.isolate, data.scriptId));
-      if (v8Context) {
-        v8ContextToExecutionContextId.set(v8Context, data.executionContextId);
+    for (const [modelClass, info] of registeredModels2) {
+      if (info.autostart || required.has(modelClass)) {
+        this.model(modelClass);
       }
-    });
-    this.#executionContexts.forEach((executionContext) => {
-      if (executionContext.v8Context) {
-        const id = v8ContextToExecutionContextId.get(executionContext.v8Context);
-        if (id) {
-          executionContext.id = id;
-        }
-      }
-    });
-    this.#scripts.forEach((script) => {
-      const scriptIsolateId = this.getScriptIsolateId(script.isolate, script.scriptId);
-      if (this.#scriptToScriptSource.has(scriptIsolateId)) {
-        script.sourceText = this.#scriptToScriptSource.get(scriptIsolateId);
-        script.length = this.#scriptToSourceLength.get(scriptIsolateId);
-      } else if (this.#largeScriptToScriptSource.has(scriptIsolateId)) {
-        const splittedSources = this.#largeScriptToScriptSource.get(scriptIsolateId);
-        if (splittedSources) {
-          script.sourceText = splittedSources.join("");
-          script.length = script.sourceText.length;
-        }
-      }
-      const linkedExecutionContext = this.#executionContexts.find((context) => context.id === script.executionContextId && context.isolate === script.isolate);
-      if (linkedExecutionContext) {
-        script.executionContextAuxData = linkedExecutionContext.auxData;
-        if (script.executionContextAuxData?.frameId) {
-          this.#scriptToFrame.set(scriptIsolateId, script.executionContextAuxData?.frameId);
-        }
-      }
-    });
-    for (const script of this.#scripts) {
-      this.resolveSourceMap(script);
     }
-    return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts);
+    this.#creatingModels = false;
   }
-  resolveSourceMap(script) {
-    if (script.sourceMapURL?.startsWith("data:")) {
+  id() {
+    return this.#id;
+  }
+  name() {
+    return this.#name || this.#inspectedURLName;
+  }
+  setName(name) {
+    if (this.#name === name) {
       return;
     }
-    const sourceMap = this.getSourceMapFromMetadata(script);
-    if (!sourceMap) {
-      return;
-    }
-    const payload = encodeURIComponent(JSON.stringify(sourceMap));
-    script.sourceMapURL = `data:application/json;charset=utf-8,${payload}`;
+    this.#name = name;
+    this.#targetManager.onNameChange(this);
   }
-  getSourceMapFromMetadata(script) {
-    const { hasSourceURL, sourceURL, url, sourceMapURL, isolate, scriptId } = script;
-    if (!sourceMapURL || !this.#trace.metadata.sourceMaps) {
-      return;
-    }
-    const frame = this.#scriptToFrame.get(this.getScriptIsolateId(isolate, scriptId));
-    if (!frame) {
-      return;
-    }
-    const target = this.#targets.find((t) => t.targetId === frame);
-    if (!target) {
-      return;
-    }
-    let resolvedSourceUrl = url;
-    if (hasSourceURL && sourceURL) {
-      const targetUrl = target.url;
-      resolvedSourceUrl = Common3.ParsedURL.ParsedURL.completeURL(targetUrl, sourceURL) ?? sourceURL;
-    }
-    const resolvedSourceMapUrl = Common3.ParsedURL.ParsedURL.completeURL(resolvedSourceUrl, sourceMapURL);
-    if (!resolvedSourceMapUrl) {
-      return;
-    }
-    const { sourceMap } = this.#trace.metadata.sourceMaps.find((m) => m.sourceMapUrl === resolvedSourceMapUrl) ?? {};
-    return sourceMap;
+  type() {
+    return this.#type;
   }
-  getScriptIsolateId(isolate, scriptId) {
-    return `${scriptId}@${isolate}`;
+  markAsNodeJSForTest() {
+    super.markAsNodeJSForTest();
+    this.#type = Type.NODE;
   }
-  getExecutionContextIsolateId(isolate, executionContextId) {
-    return `${executionContextId}@${isolate}`;
+  targetManager() {
+    return this.#targetManager;
   }
-  isTraceEvent(event) {
-    return "cat" in event && "pid" in event && "args" in event && "data" in event.args;
+  hasAllCapabilities(capabilitiesMask) {
+    return (this.#capabilitiesMask & capabilitiesMask) === capabilitiesMask;
   }
-  isRundownScriptCompiled(event) {
-    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.target-rundown";
+  decorateLabel(label) {
+    return this.#type === Type.Worker || this.#type === Type.ServiceWorker ? "\u2699 " + label : label;
   }
-  isRundownScript(event) {
-    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown";
+  parentTarget() {
+    return this.#parentTarget;
   }
-  isRundownScriptSource(event) {
-    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown-sources";
-  }
-  isTracingStartedInBrowser(event) {
-    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.timeline" && event.name === "TracingStartedInBrowser";
-  }
-  isFunctionCallEvent(event) {
-    return this.isTraceEvent(event) && event.cat === "devtools.timeline" && event.name === "FunctionCall";
-  }
-  groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts) {
-    const data = [];
-    const targetIds = /* @__PURE__ */ new Set();
-    const targetToExecutionContexts = /* @__PURE__ */ new Map();
-    const executionContextIsolateToTarget = /* @__PURE__ */ new Map();
-    const targetToScripts = /* @__PURE__ */ new Map();
-    const orphanScripts = [];
-    for (const target of targets) {
-      targetIds.add(target.targetId);
-      targetToExecutionContexts.set(target.targetId, []);
-      targetToScripts.set(target.targetId, []);
-    }
-    for (const executionContext of executionContexts) {
-      const frameId = executionContext.auxData?.frameId;
-      if (frameId && targetIds.has(frameId)) {
-        targetToExecutionContexts.get(frameId)?.push(executionContext);
-        executionContextIsolateToTarget.set(this.getExecutionContextIsolateId(executionContext.isolate, executionContext.id), frameId);
-      } else {
-        console.error("Execution context can't be linked to a target", executionContext);
+  outermostTarget() {
+    let lastTarget = null;
+    let currentTarget = this;
+    do {
+      if (currentTarget.type() !== Type.TAB && currentTarget.type() !== Type.BROWSER) {
+        lastTarget = currentTarget;
       }
+      currentTarget = currentTarget.parentTarget();
+    } while (currentTarget);
+    return lastTarget;
+  }
+  dispose(reason) {
+    super.dispose(reason);
+    this.#targetManager.removeTarget(this);
+    for (const model of this.#modelByConstructor.values()) {
+      model.dispose();
     }
-    for (const script of scripts) {
-      const scriptExecutionContextIsolateId = this.getExecutionContextIsolateId(script.isolate, script.executionContextId);
-      const scriptFrameId = script.executionContextAuxData?.frameId;
-      if (script.executionContextAuxData?.frameId && targetIds.has(scriptFrameId)) {
-        targetToScripts.get(scriptFrameId)?.push(script);
-        executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, scriptFrameId);
-      } else if (this.#scriptToFrame.has(this.getScriptIsolateId(script.isolate, script.scriptId))) {
-        const targetId = this.#scriptToFrame.get(this.getScriptIsolateId(script.isolate, script.scriptId));
-        if (targetId) {
-          targetToScripts.get(targetId)?.push(script);
-          executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, targetId);
-        }
-      } else {
-        orphanScripts.push(script);
+  }
+  model(modelClass) {
+    if (!this.#modelByConstructor.get(modelClass)) {
+      const info = SDKModel.registeredModels.get(modelClass);
+      if (info === void 0) {
+        throw new Error("Model class is not registered");
       }
-    }
-    for (const orphanScript of orphanScripts) {
-      const orphanScriptExecutionContextIsolateId = this.getExecutionContextIsolateId(orphanScript.isolate, orphanScript.executionContextId);
-      const frameId = executionContextIsolateToTarget.get(orphanScriptExecutionContextIsolateId);
-      if (frameId) {
-        targetToScripts.get(frameId)?.push(orphanScript);
-      } else if (orphanScript.pid) {
-        const target = targets.find((target2) => target2.pid === orphanScript.pid);
-        if (target) {
-          targetToScripts.get(target.targetId)?.push(orphanScript);
-        }
-      } else {
-        console.error("Script can't be linked to any target", orphanScript);
-      }
-    }
-    for (const target of targets) {
-      const targetId = target.targetId;
-      const executionContexts2 = targetToExecutionContexts.get(targetId) || [];
-      const scripts2 = targetToScripts.get(targetId) || [];
-      for (const script of scripts2) {
-        if (!executionContexts2.find((context) => context.id === script.executionContextId)) {
-          const artificialContext = {
-            id: script.executionContextId,
-            origin: "",
-            v8Context: "",
-            name: "",
-            auxData: {
-              frameId: targetId,
-              isDefault: false,
-              type: "type"
-            },
-            isolate: script.isolate,
-            uniqueId: `${targetId}-${script.isolate}`
-          };
-          executionContexts2.push(artificialContext);
+      if ((this.#capabilitiesMask & info.capabilities) === info.capabilities) {
+        const model = new modelClass(this);
+        this.#modelByConstructor.set(modelClass, model);
+        if (!this.#creatingModels) {
+          this.#targetManager.modelAdded(modelClass, model, this.#targetManager.isInScope(this));
         }
       }
-      data.push({ target, executionContexts: executionContexts2, scripts: scripts2 });
     }
-    return data;
+    return this.#modelByConstructor.get(modelClass) || null;
+  }
+  models() {
+    return this.#modelByConstructor;
+  }
+  inspectedURL() {
+    return this.#inspectedURL;
+  }
+  setInspectedURL(inspectedURL) {
+    this.#inspectedURL = inspectedURL;
+    const parsedURL = Common3.ParsedURL.ParsedURL.fromString(inspectedURL);
+    this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + this.#id;
+    this.#targetManager.onInspectedURLChange(this);
+    if (!this.#name) {
+      this.#targetManager.onNameChange(this);
+    }
+  }
+  hasCrashed() {
+    return this.#hasCrashed;
+  }
+  setHasCrashed(isCrashed) {
+    const wasCrashed = this.#hasCrashed;
+    this.#hasCrashed = isCrashed;
+    if (wasCrashed && !isCrashed) {
+      void this.resume();
+    }
+  }
+  async suspend(reason) {
+    if (this.#isSuspended) {
+      return;
+    }
+    this.#isSuspended = true;
+    if (this.#hasCrashed) {
+      return;
+    }
+    await Promise.all(Array.from(this.models().values(), (m) => m.preSuspendModel(reason)));
+    await Promise.all(Array.from(this.models().values(), (m) => m.suspendModel(reason)));
+  }
+  async resume() {
+    if (!this.#isSuspended) {
+      return;
+    }
+    this.#isSuspended = false;
+    if (this.#hasCrashed) {
+      return;
+    }
+    await Promise.all(Array.from(this.models().values(), (m) => m.resumeModel()));
+    await Promise.all(Array.from(this.models().values(), (m) => m.postResumeModel()));
+  }
+  suspended() {
+    return this.#isSuspended;
+  }
+  updateTargetInfo(targetInfo) {
+    this.#targetInfo = targetInfo;
+  }
+  targetInfo() {
+    return this.#targetInfo;
   }
 };
+var Type;
+(function(Type3) {
+  Type3["FRAME"] = "frame";
+  Type3["ServiceWorker"] = "service-worker";
+  Type3["Worker"] = "worker";
+  Type3["SHARED_WORKER"] = "shared-worker";
+  Type3["SHARED_STORAGE_WORKLET"] = "shared-storage-worklet";
+  Type3["NODE"] = "node";
+  Type3["BROWSER"] = "browser";
+  Type3["AUCTION_WORKLET"] = "auction-worklet";
+  Type3["WORKLET"] = "worklet";
+  Type3["TAB"] = "tab";
+  Type3["NODE_WORKER"] = "node-worker";
+})(Type || (Type = {}));
 
-// gen/front_end/core/sdk/TraceObject.js
-var TraceObject_exports = {};
-__export(TraceObject_exports, {
-  RevealableEvent: () => RevealableEvent,
-  RevealableNetworkRequest: () => RevealableNetworkRequest,
-  TraceObject: () => TraceObject
-});
-import * as Common24 from "./../common/common.js";
+// gen/front_end/core/sdk/TargetManager.js
+var targetManagerInstance;
+var TargetManager = class _TargetManager extends Common4.ObjectWrapper.ObjectWrapper {
+  #targets;
+  #observers;
+  /* eslint-disable @typescript-eslint/no-explicit-any */
+  #modelListeners;
+  #modelObservers;
+  #scopedObservers;
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+  #isSuspended;
+  #browserTarget;
+  #scopeTarget;
+  #defaultScopeSet;
+  #scopeChangeListeners;
+  constructor() {
+    super();
+    this.#targets = /* @__PURE__ */ new Set();
+    this.#observers = /* @__PURE__ */ new Set();
+    this.#modelListeners = new Platform2.MapUtilities.Multimap();
+    this.#modelObservers = new Platform2.MapUtilities.Multimap();
+    this.#isSuspended = false;
+    this.#browserTarget = null;
+    this.#scopeTarget = null;
+    this.#scopedObservers = /* @__PURE__ */ new WeakSet();
+    this.#defaultScopeSet = false;
+    this.#scopeChangeListeners = /* @__PURE__ */ new Set();
+  }
+  static instance({ forceNew } = { forceNew: false }) {
+    if (!targetManagerInstance || forceNew) {
+      targetManagerInstance = new _TargetManager();
+    }
+    return targetManagerInstance;
+  }
+  static removeInstance() {
+    targetManagerInstance = void 0;
+  }
+  onInspectedURLChange(target) {
+    if (target !== this.#scopeTarget) {
+      return;
+    }
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(target.inspectedURL() || Platform2.DevToolsPath.EmptyUrlString);
+    this.dispatchEventToListeners("InspectedURLChanged", target);
+  }
+  onNameChange(target) {
+    this.dispatchEventToListeners("NameChanged", target);
+  }
+  async suspendAllTargets(reason) {
+    if (this.#isSuspended) {
+      return;
+    }
+    this.#isSuspended = true;
+    this.dispatchEventToListeners(
+      "SuspendStateChanged"
+      /* Events.SUSPEND_STATE_CHANGED */
+    );
+    const suspendPromises = Array.from(this.#targets.values(), (target) => target.suspend(reason));
+    await Promise.all(suspendPromises);
+  }
+  async resumeAllTargets() {
+    if (!this.#isSuspended) {
+      return;
+    }
+    this.#isSuspended = false;
+    this.dispatchEventToListeners(
+      "SuspendStateChanged"
+      /* Events.SUSPEND_STATE_CHANGED */
+    );
+    const resumePromises = Array.from(this.#targets.values(), (target) => target.resume());
+    await Promise.all(resumePromises);
+  }
+  allTargetsSuspended() {
+    return this.#isSuspended;
+  }
+  models(modelClass, opts) {
+    const result = [];
+    for (const target of this.#targets) {
+      if (opts?.scoped && !this.isInScope(target)) {
+        continue;
+      }
+      const model = target.model(modelClass);
+      if (!model) {
+        continue;
+      }
+      result.push(model);
+    }
+    return result;
+  }
+  inspectedURL() {
+    const mainTarget = this.primaryPageTarget();
+    return mainTarget ? mainTarget.inspectedURL() : "";
+  }
+  observeModels(modelClass, observer, opts) {
+    const models = this.models(modelClass, opts);
+    this.#modelObservers.set(modelClass, observer);
+    if (opts?.scoped) {
+      this.#scopedObservers.add(observer);
+    }
+    for (const model of models) {
+      observer.modelAdded(model);
+    }
+  }
+  unobserveModels(modelClass, observer) {
+    this.#modelObservers.delete(modelClass, observer);
+    this.#scopedObservers.delete(observer);
+  }
+  modelAdded(modelClass, model, inScope) {
+    for (const observer of this.#modelObservers.get(modelClass).values()) {
+      if (!this.#scopedObservers.has(observer) || inScope) {
+        observer.modelAdded(model);
+      }
+    }
+  }
+  modelRemoved(modelClass, model, inScope) {
+    for (const observer of this.#modelObservers.get(modelClass).values()) {
+      if (!this.#scopedObservers.has(observer) || inScope) {
+        observer.modelRemoved(model);
+      }
+    }
+  }
+  addModelListener(modelClass, eventType, listener, thisObject, opts) {
+    const wrappedListener = (event) => {
+      if (!opts?.scoped || this.isInScope(event)) {
+        listener.call(thisObject, event);
+      }
+    };
+    for (const model of this.models(modelClass)) {
+      model.addEventListener(eventType, wrappedListener);
+    }
+    this.#modelListeners.set(eventType, { modelClass, thisObject, listener, wrappedListener });
+  }
+  removeModelListener(modelClass, eventType, listener, thisObject) {
+    if (!this.#modelListeners.has(eventType)) {
+      return;
+    }
+    let wrappedListener = null;
+    for (const info of this.#modelListeners.get(eventType)) {
+      if (info.modelClass === modelClass && info.listener === listener && info.thisObject === thisObject) {
+        wrappedListener = info.wrappedListener;
+        this.#modelListeners.delete(eventType, info);
+      }
+    }
+    if (wrappedListener) {
+      for (const model of this.models(modelClass)) {
+        model.removeEventListener(eventType, wrappedListener);
+      }
+    }
+  }
+  observeTargets(targetObserver, opts) {
+    if (this.#observers.has(targetObserver)) {
+      throw new Error("Observer can only be registered once");
+    }
+    if (opts?.scoped) {
+      this.#scopedObservers.add(targetObserver);
+    }
+    for (const target of this.#targets) {
+      if (!opts?.scoped || this.isInScope(target)) {
+        targetObserver.targetAdded(target);
+      }
+    }
+    this.#observers.add(targetObserver);
+  }
+  unobserveTargets(targetObserver) {
+    this.#observers.delete(targetObserver);
+    this.#scopedObservers.delete(targetObserver);
+  }
+  createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection, targetInfo) {
+    const target = new Target(this, id, name, type, parentTarget, sessionId || "", this.#isSuspended, connection || null, targetInfo);
+    if (waitForDebuggerInPage) {
+      void target.pageAgent().invoke_waitForDebugger();
+    }
+    target.createModels(new Set(this.#modelObservers.keysArray()));
+    this.#targets.add(target);
+    const inScope = this.isInScope(target);
+    for (const observer of [...this.#observers]) {
+      if (!this.#scopedObservers.has(observer) || inScope) {
+        observer.targetAdded(target);
+      }
+    }
+    for (const [modelClass, model] of target.models().entries()) {
+      this.modelAdded(modelClass, model, inScope);
+    }
+    for (const key of this.#modelListeners.keysArray()) {
+      for (const info of this.#modelListeners.get(key)) {
+        const model = target.model(info.modelClass);
+        if (model) {
+          model.addEventListener(key, info.wrappedListener);
+        }
+      }
+    }
+    if (target === target.outermostTarget() && (target.type() !== Type.FRAME || target === this.primaryPageTarget()) && !this.#defaultScopeSet) {
+      this.setScopeTarget(target);
+    }
+    return target;
+  }
+  removeTarget(target) {
+    if (!this.#targets.has(target)) {
+      return;
+    }
+    const inScope = this.isInScope(target);
+    this.#targets.delete(target);
+    for (const modelClass of target.models().keys()) {
+      const model = target.models().get(modelClass);
+      assertNotNullOrUndefined(model);
+      this.modelRemoved(modelClass, model, inScope);
+    }
+    for (const observer of [...this.#observers]) {
+      if (!this.#scopedObservers.has(observer) || inScope) {
+        observer.targetRemoved(target);
+      }
+    }
+    for (const key of this.#modelListeners.keysArray()) {
+      for (const info of this.#modelListeners.get(key)) {
+        const model = target.model(info.modelClass);
+        if (model) {
+          model.removeEventListener(key, info.wrappedListener);
+        }
+      }
+    }
+  }
+  targets() {
+    return [...this.#targets];
+  }
+  targetById(id) {
+    return this.targets().find((target) => target.id() === id) || null;
+  }
+  rootTarget() {
+    if (this.#targets.size === 0) {
+      return null;
+    }
+    return this.#targets.values().next().value ?? null;
+  }
+  primaryPageTarget() {
+    let target = this.rootTarget();
+    if (target?.type() === Type.TAB) {
+      target = this.targets().find((t) => t.parentTarget() === target && t.type() === Type.FRAME && !t.targetInfo()?.subtype?.length) || null;
+    }
+    return target;
+  }
+  browserTarget() {
+    return this.#browserTarget;
+  }
+  async maybeAttachInitialTarget() {
+    if (!Boolean(Root.Runtime.Runtime.queryParam("browserConnection"))) {
+      return false;
+    }
+    if (!this.#browserTarget) {
+      this.#browserTarget = new Target(
+        this,
+        /* #id*/
+        "main",
+        /* #name*/
+        "browser",
+        Type.BROWSER,
+        /* #parentTarget*/
+        null,
+        /* #sessionId */
+        "",
+        /* suspended*/
+        false,
+        /* #connection*/
+        null,
+        /* targetInfo*/
+        void 0
+      );
+      this.#browserTarget.createModels(new Set(this.#modelObservers.keysArray()));
+    }
+    const targetId = await Host.InspectorFrontendHost.InspectorFrontendHostInstance.initialTargetId();
+    void this.#browserTarget.targetAgent().invoke_autoAttachRelated({
+      targetId,
+      waitForDebuggerOnStart: true
+    });
+    return true;
+  }
+  clearAllTargetsForTest() {
+    this.#targets.clear();
+  }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  isInScope(arg) {
+    if (!arg) {
+      return false;
+    }
+    if (isSDKModelEvent(arg)) {
+      arg = arg.source;
+    }
+    if (arg instanceof SDKModel) {
+      arg = arg.target();
+    }
+    while (arg && arg !== this.#scopeTarget) {
+      arg = arg.parentTarget();
+    }
+    return Boolean(arg) && arg === this.#scopeTarget;
+  }
+  // Sets a root of a scope substree.
+  // TargetManager API invoked with `scoped: true` will behave as if targets
+  // outside of the scope subtree don't exist. Concretely this means that
+  // target observers, model observers and model listeners won't be invoked for targets outside of the
+  // scope tree. This method will invoke targetRemoved and modelRemoved for
+  // objects in the previous scope, as if they disappear and then will invoke
+  // targetAdded and modelAdded as if they just appeared.
+  // Note that scopeTarget could be null, which will effectively prevent scoped
+  // observes from getting any events.
+  setScopeTarget(scopeTarget) {
+    if (scopeTarget === this.#scopeTarget) {
+      return;
+    }
+    for (const target of this.targets()) {
+      if (!this.isInScope(target)) {
+        continue;
+      }
+      for (const modelClass of this.#modelObservers.keysArray()) {
+        const model = target.models().get(modelClass);
+        if (!model) {
+          continue;
+        }
+        for (const observer of [...this.#modelObservers.get(modelClass)].filter((o) => this.#scopedObservers.has(o))) {
+          observer.modelRemoved(model);
+        }
+      }
+      for (const observer of [...this.#observers].filter((o) => this.#scopedObservers.has(o))) {
+        observer.targetRemoved(target);
+      }
+    }
+    this.#scopeTarget = scopeTarget;
+    for (const target of this.targets()) {
+      if (!this.isInScope(target)) {
+        continue;
+      }
+      for (const observer of [...this.#observers].filter((o) => this.#scopedObservers.has(o))) {
+        observer.targetAdded(target);
+      }
+      for (const [modelClass, model] of target.models().entries()) {
+        for (const observer of [...this.#modelObservers.get(modelClass)].filter((o) => this.#scopedObservers.has(o))) {
+          observer.modelAdded(model);
+        }
+      }
+    }
+    for (const scopeChangeListener of this.#scopeChangeListeners) {
+      scopeChangeListener();
+    }
+    if (scopeTarget?.inspectedURL()) {
+      this.onInspectedURLChange(scopeTarget);
+    }
+  }
+  addScopeChangeListener(listener) {
+    this.#scopeChangeListeners.add(listener);
+  }
+  scopeTarget() {
+    return this.#scopeTarget;
+  }
+};
+var Observer = class {
+  targetAdded(_target) {
+  }
+  targetRemoved(_target) {
+  }
+};
+var SDKModelObserver = class {
+  modelAdded(_model) {
+  }
+  modelRemoved(_model) {
+  }
+};
+function isSDKModelEvent(arg) {
+  return "source" in arg && arg.source instanceof SDKModel;
+}
+
+// gen/front_end/core/sdk/NetworkManager.js
+var UIStrings = {
+  /**
+   * @description Explanation why no content is shown for WebSocket connection.
+   */
+  noContentForWebSocket: "Content for WebSockets is currently not supported",
+  /**
+   * @description Explanation why no content is shown for redirect response.
+   */
+  noContentForRedirect: "No content available because this request was redirected",
+  /**
+   * @description Explanation why no content is shown for preflight request.
+   */
+  noContentForPreflight: "No content available for preflight request",
+  /**
+   * @description Text to indicate that network throttling is disabled
+   */
+  noThrottling: "No throttling",
+  /**
+   * @description Text to indicate the network connectivity is offline
+   */
+  offline: "Offline",
+  /**
+   * @description Text in Network Manager representing the "3G" throttling preset.
+   */
+  slowG: "3G",
+  // Named `slowG` for legacy reasons and because this value
+  // is serialized locally on the user's machine: if we
+  // change it we break their stored throttling settings.
+  // (See crrev.com/c/2947255)
+  /**
+   * @description Text in Network Manager representing the "Slow 4G" throttling preset
+   */
+  fastG: "Slow 4G",
+  // Named `fastG` for legacy reasons and because this value
+  // is serialized locally on the user's machine: if we
+  // change it we break their stored throttling settings.
+  // (See crrev.com/c/2947255)
+  /**
+   * @description Text in Network Manager representing the "Fast 4G" throttling preset
+   */
+  fast4G: "Fast 4G",
+  /**
+   * @description Text in Network Manager
+   * @example {https://example.com} PH1
+   */
+  requestWasBlockedByDevtoolsS: 'Request was blocked by DevTools: "{PH1}"',
+  /**
+   * @description Message in Network Manager
+   * @example {XHR} PH1
+   * @example {GET} PH2
+   * @example {https://example.com} PH3
+   */
+  sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
+  /**
+   * @description Message in Network Manager
+   * @example {XHR} PH1
+   * @example {GET} PH2
+   * @example {https://example.com} PH3
+   */
+  sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
+  /**
+   * @description One of direct socket connection statuses
+   */
+  directSocketStatusOpening: "Opening",
+  /**
+   * @description One of direct socket connection statuses
+   */
+  directSocketStatusOpen: "Open",
+  /**
+   * @description One of direct socket connection statuses
+   */
+  directSocketStatusClosed: "Closed",
+  /**
+   * @description One of direct socket connection statuses
+   */
+  directSocketStatusAborted: "Aborted"
+};
+var str_ = i18n.i18n.registerUIStrings("core/sdk/NetworkManager.ts", UIStrings);
+var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
+var requestToManagerMap = /* @__PURE__ */ new WeakMap();
+var CONNECTION_TYPES = /* @__PURE__ */ new Map([
+  [
+    "2g",
+    "cellular2g"
+    /* Protocol.Network.ConnectionType.Cellular2g */
+  ],
+  [
+    "3g",
+    "cellular3g"
+    /* Protocol.Network.ConnectionType.Cellular3g */
+  ],
+  [
+    "4g",
+    "cellular4g"
+    /* Protocol.Network.ConnectionType.Cellular4g */
+  ],
+  [
+    "bluetooth",
+    "bluetooth"
+    /* Protocol.Network.ConnectionType.Bluetooth */
+  ],
+  [
+    "wifi",
+    "wifi"
+    /* Protocol.Network.ConnectionType.Wifi */
+  ],
+  [
+    "wimax",
+    "wimax"
+    /* Protocol.Network.ConnectionType.Wimax */
+  ]
+]);
+function customUserNetworkConditionsSetting() {
+  return Common5.Settings.Settings.instance().moduleSetting("custom-network-conditions");
+}
+function activeNetworkThrottlingKeySetting() {
+  return Common5.Settings.Settings.instance().createSetting(
+    "active-network-condition-key",
+    "NO_THROTTLING"
+    /* PredefinedThrottlingConditionKey.NO_THROTTLING */
+  );
+}
+var NetworkManager = class _NetworkManager extends SDKModel {
+  dispatcher;
+  fetchDispatcher;
+  #networkAgent;
+  #bypassServiceWorkerSetting;
+  activeNetworkThrottlingKey = activeNetworkThrottlingKeySetting();
+  constructor(target) {
+    super(target);
+    this.dispatcher = new NetworkDispatcher(this);
+    this.fetchDispatcher = new FetchDispatcher(target.fetchAgent(), this);
+    this.#networkAgent = target.networkAgent();
+    target.registerNetworkDispatcher(this.dispatcher);
+    target.registerFetchDispatcher(this.fetchDispatcher);
+    if (Common5.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
+      void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
+    }
+    if (Root2.Runtime.hostConfig.devToolsPrivacyUI?.enabled && Root2.Runtime.hostConfig.thirdPartyCookieControls?.managedBlockThirdPartyCookies !== true && (Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get() || Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get() || Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get())) {
+      this.cookieControlFlagsSettingChanged();
+    }
+    void this.#networkAgent.invoke_enable({
+      maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH,
+      reportDirectSocketTraffic: true
+    });
+    void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
+    this.#bypassServiceWorkerSetting = Common5.Settings.Settings.instance().createSetting("bypass-service-worker", false);
+    if (this.#bypassServiceWorkerSetting.get()) {
+      this.bypassServiceWorkerChanged();
+    }
+    this.#bypassServiceWorkerSetting.addChangeListener(this.bypassServiceWorkerChanged, this);
+    Common5.Settings.Settings.instance().moduleSetting("cache-disabled").addChangeListener(this.cacheDisabledSettingChanged, this);
+    Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
+    Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
+    Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
+  }
+  static forRequest(request) {
+    return requestToManagerMap.get(request) || null;
+  }
+  static canReplayRequest(request) {
+    return Boolean(requestToManagerMap.get(request)) && Boolean(request.backendRequestId()) && !request.isRedirect() && request.resourceType() === Common5.ResourceType.resourceTypes.XHR;
+  }
+  static replayRequest(request) {
+    const manager = requestToManagerMap.get(request);
+    const requestId = request.backendRequestId();
+    if (!manager || !requestId || request.isRedirect()) {
+      return;
+    }
+    void manager.#networkAgent.invoke_replayXHR({ requestId });
+  }
+  static async searchInRequest(request, query, caseSensitive, isRegex) {
+    const manager = _NetworkManager.forRequest(request);
+    const requestId = request.backendRequestId();
+    if (!manager || !requestId || request.isRedirect()) {
+      return [];
+    }
+    const response = await manager.#networkAgent.invoke_searchInResponseBody({ requestId, query, caseSensitive, isRegex });
+    return TextUtils.TextUtils.performSearchInSearchMatches(response.result || [], query, caseSensitive, isRegex);
+  }
+  static async requestContentData(request) {
+    if (request.resourceType() === Common5.ResourceType.resourceTypes.WebSocket) {
+      return { error: i18nString(UIStrings.noContentForWebSocket) };
+    }
+    if (!request.finished) {
+      await request.once(Events.FINISHED_LOADING);
+    }
+    if (request.isRedirect()) {
+      return { error: i18nString(UIStrings.noContentForRedirect) };
+    }
+    if (request.isPreflightRequest()) {
+      return { error: i18nString(UIStrings.noContentForPreflight) };
+    }
+    const manager = _NetworkManager.forRequest(request);
+    if (!manager) {
+      return { error: "No network manager for request" };
+    }
+    const requestId = request.backendRequestId();
+    if (!requestId) {
+      return { error: "No backend request id for request" };
+    }
+    const response = await manager.#networkAgent.invoke_getResponseBody({ requestId });
+    const error = response.getError();
+    if (error) {
+      return { error };
+    }
+    return new TextUtils.ContentData.ContentData(response.body, response.base64Encoded, request.mimeType, request.charset() ?? void 0);
+  }
+  /**
+   * Returns the already received bytes for an in-flight request. After calling this method
+   * "dataReceived" events will contain additional data.
+   */
+  static async streamResponseBody(request) {
+    if (request.finished) {
+      return { error: "Streaming the response body is only available for in-flight requests." };
+    }
+    const manager = _NetworkManager.forRequest(request);
+    if (!manager) {
+      return { error: "No network manager for request" };
+    }
+    const requestId = request.backendRequestId();
+    if (!requestId) {
+      return { error: "No backend request id for request" };
+    }
+    const response = await manager.#networkAgent.invoke_streamResourceContent({ requestId });
+    const error = response.getError();
+    if (error) {
+      return { error };
+    }
+    await request.waitForResponseReceived();
+    return new TextUtils.ContentData.ContentData(
+      response.bufferedData,
+      /* isBase64=*/
+      true,
+      request.mimeType,
+      request.charset() ?? void 0
+    );
+  }
+  static async requestPostData(request) {
+    const manager = _NetworkManager.forRequest(request);
+    if (!manager) {
+      console.error("No network manager for request");
+      return null;
+    }
+    const requestId = request.backendRequestId();
+    if (!requestId) {
+      console.error("No backend request id for request");
+      return null;
+    }
+    try {
+      const { postData } = await manager.#networkAgent.invoke_getRequestPostData({ requestId });
+      return postData;
+    } catch (e) {
+      return e.message;
+    }
+  }
+  static connectionType(conditions) {
+    if (!conditions.download && !conditions.upload) {
+      return "none";
+    }
+    try {
+      const title = typeof conditions.title === "function" ? conditions.title().toLowerCase() : conditions.title.toLowerCase();
+      for (const [name, protocolType] of CONNECTION_TYPES) {
+        if (title.includes(name)) {
+          return protocolType;
+        }
+      }
+    } catch {
+      return "none";
+    }
+    return "other";
+  }
+  static lowercaseHeaders(headers) {
+    const newHeaders = {};
+    for (const headerName in headers) {
+      newHeaders[headerName.toLowerCase()] = headers[headerName];
+    }
+    return newHeaders;
+  }
+  requestForURL(url) {
+    return this.dispatcher.requestForURL(url);
+  }
+  requestForId(id) {
+    return this.dispatcher.requestForId(id);
+  }
+  requestForLoaderId(loaderId) {
+    return this.dispatcher.requestForLoaderId(loaderId);
+  }
+  cacheDisabledSettingChanged({ data: enabled }) {
+    void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: enabled });
+  }
+  cookieControlFlagsSettingChanged() {
+    const overridesEnabled = Boolean(Common5.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get());
+    const gracePeriodEnabled = overridesEnabled ? Boolean(Common5.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get()) : false;
+    const heuristicEnabled = overridesEnabled ? Boolean(Common5.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get()) : false;
+    void this.#networkAgent.invoke_setCookieControls({
+      enableThirdPartyCookieRestriction: overridesEnabled,
+      disableThirdPartyCookieMetadata: gracePeriodEnabled,
+      disableThirdPartyCookieHeuristics: heuristicEnabled
+    });
+  }
+  dispose() {
+    Common5.Settings.Settings.instance().moduleSetting("cache-disabled").removeChangeListener(this.cacheDisabledSettingChanged, this);
+  }
+  bypassServiceWorkerChanged() {
+    void this.#networkAgent.invoke_setBypassServiceWorker({ bypass: this.#bypassServiceWorkerSetting.get() });
+  }
+  async getSecurityIsolationStatus(frameId) {
+    const result = await this.#networkAgent.invoke_getSecurityIsolationStatus({ frameId: frameId ?? void 0 });
+    if (result.getError()) {
+      return null;
+    }
+    return result.status;
+  }
+  async getIpProtectionProxyStatus() {
+    const result = await this.#networkAgent.invoke_getIPProtectionProxyStatus();
+    if (result.getError()) {
+      return null;
+    }
+    return result.status;
+  }
+  async enableReportingApi(enable = true) {
+    return await this.#networkAgent.invoke_enableReportingApi({ enable });
+  }
+  async loadNetworkResource(frameId, url, options) {
+    const result = await this.#networkAgent.invoke_loadNetworkResource({ frameId: frameId ?? void 0, url, options });
+    if (result.getError()) {
+      throw new Error(result.getError());
+    }
+    return result.resource;
+  }
+  clearRequests() {
+    this.dispatcher.clearRequests();
+  }
+};
+var Events2;
+(function(Events12) {
+  Events12["RequestStarted"] = "RequestStarted";
+  Events12["RequestUpdated"] = "RequestUpdated";
+  Events12["RequestFinished"] = "RequestFinished";
+  Events12["RequestUpdateDropped"] = "RequestUpdateDropped";
+  Events12["ResponseReceived"] = "ResponseReceived";
+  Events12["MessageGenerated"] = "MessageGenerated";
+  Events12["RequestRedirected"] = "RequestRedirected";
+  Events12["LoadingFinished"] = "LoadingFinished";
+  Events12["ReportingApiReportAdded"] = "ReportingApiReportAdded";
+  Events12["ReportingApiReportUpdated"] = "ReportingApiReportUpdated";
+  Events12["ReportingApiEndpointsChangedForOrigin"] = "ReportingApiEndpointsChangedForOrigin";
+})(Events2 || (Events2 = {}));
+var NoThrottlingConditions = {
+  key: "NO_THROTTLING",
+  title: i18nLazyString(UIStrings.noThrottling),
+  i18nTitleKey: UIStrings.noThrottling,
+  download: -1,
+  upload: -1,
+  latency: 0
+};
+var OfflineConditions = {
+  key: "OFFLINE",
+  title: i18nLazyString(UIStrings.offline),
+  i18nTitleKey: UIStrings.offline,
+  download: 0,
+  upload: 0,
+  latency: 0
+};
+var slow3GTargetLatency = 400;
+var Slow3GConditions = {
+  key: "SPEED_3G",
+  title: i18nLazyString(UIStrings.slowG),
+  i18nTitleKey: UIStrings.slowG,
+  // ~500Kbps down
+  download: 500 * 1e3 / 8 * 0.8,
+  // ~500Kbps up
+  upload: 500 * 1e3 / 8 * 0.8,
+  // 400ms RTT
+  latency: slow3GTargetLatency * 5,
+  targetLatency: slow3GTargetLatency
+};
+var slow4GTargetLatency = 150;
+var Slow4GConditions = {
+  key: "SPEED_SLOW_4G",
+  title: i18nLazyString(UIStrings.fastG),
+  i18nTitleKey: UIStrings.fastG,
+  // ~1.6 Mbps down
+  download: 1.6 * 1e3 * 1e3 / 8 * 0.9,
+  // ~0.75 Mbps up
+  upload: 750 * 1e3 / 8 * 0.9,
+  // 150ms RTT
+  latency: slow4GTargetLatency * 3.75,
+  targetLatency: slow4GTargetLatency
+};
+var fast4GTargetLatency = 60;
+var Fast4GConditions = {
+  key: "SPEED_FAST_4G",
+  title: i18nLazyString(UIStrings.fast4G),
+  i18nTitleKey: UIStrings.fast4G,
+  // 9 Mbps down
+  download: 9 * 1e3 * 1e3 / 8 * 0.9,
+  // 1.5 Mbps up
+  upload: 1.5 * 1e3 * 1e3 / 8 * 0.9,
+  // 60ms RTT
+  latency: fast4GTargetLatency * 2.75,
+  targetLatency: fast4GTargetLatency
+};
+var MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;
+var FetchDispatcher = class {
+  #fetchAgent;
+  #manager;
+  constructor(agent, manager) {
+    this.#fetchAgent = agent;
+    this.#manager = manager;
+  }
+  requestPaused({ requestId, request, resourceType, responseStatusCode, responseHeaders, networkId }) {
+    const networkRequest = networkId ? this.#manager.requestForId(networkId) : null;
+    if (networkRequest?.originalResponseHeaders.length === 0 && responseHeaders) {
+      networkRequest.originalResponseHeaders = responseHeaders;
+    }
+    void MultitargetNetworkManager.instance().requestIntercepted(new InterceptedRequest(this.#fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders));
+  }
+  authRequired({}) {
+  }
+};
+var NetworkDispatcher = class {
+  #manager;
+  #requestsById = /* @__PURE__ */ new Map();
+  #requestsByURL = /* @__PURE__ */ new Map();
+  #requestsByLoaderId = /* @__PURE__ */ new Map();
+  #requestIdToExtraInfoBuilder = /* @__PURE__ */ new Map();
+  /**
+   * In case of an early abort or a cache hit, the Trust Token done event is
+   * reported before the request itself is created in `requestWillBeSent`.
+   * This causes the event to be lost as no `NetworkRequest` instance has been
+   * created yet.
+   * This map caches the events temporarily and populates the NetworkRequest
+   * once it is created in `requestWillBeSent`.
+   */
+  #requestIdToTrustTokenEvent = /* @__PURE__ */ new Map();
+  constructor(manager) {
+    this.#manager = manager;
+    MultitargetNetworkManager.instance().addEventListener("RequestIntercepted", this.#markAsIntercepted.bind(this));
+  }
+  #markAsIntercepted(event) {
+    const request = this.requestForId(event.data);
+    if (request) {
+      request.setWasIntercepted(true);
+    }
+  }
+  headersMapToHeadersArray(headersMap) {
+    const result = [];
+    for (const name in headersMap) {
+      const values = headersMap[name].split("\n");
+      for (let i = 0; i < values.length; ++i) {
+        result.push({ name, value: values[i] });
+      }
+    }
+    return result;
+  }
+  updateNetworkRequestWithRequest(networkRequest, request) {
+    networkRequest.requestMethod = request.method;
+    networkRequest.setRequestHeaders(this.headersMapToHeadersArray(request.headers));
+    networkRequest.setRequestFormData(Boolean(request.hasPostData), request.postData || null);
+    networkRequest.setInitialPriority(request.initialPriority);
+    networkRequest.mixedContentType = request.mixedContentType || "none";
+    networkRequest.setReferrerPolicy(request.referrerPolicy);
+    networkRequest.setIsSameSite(request.isSameSite || false);
+    networkRequest.setIsAdRelated(request.isAdRelated || false);
+  }
+  updateNetworkRequestWithResponse(networkRequest, response) {
+    if (response.url && networkRequest.url() !== response.url) {
+      networkRequest.setUrl(response.url);
+    }
+    networkRequest.mimeType = response.mimeType;
+    networkRequest.setCharset(response.charset);
+    if (!networkRequest.statusCode || networkRequest.wasIntercepted()) {
+      networkRequest.statusCode = response.status;
+    }
+    if (!networkRequest.statusText || networkRequest.wasIntercepted()) {
+      networkRequest.statusText = response.statusText;
+    }
+    if (!networkRequest.hasExtraResponseInfo() || networkRequest.wasIntercepted()) {
+      networkRequest.responseHeaders = this.headersMapToHeadersArray(response.headers);
+    }
+    if (response.encodedDataLength >= 0) {
+      networkRequest.setTransferSize(response.encodedDataLength);
+    }
+    if (response.requestHeaders && !networkRequest.hasExtraRequestInfo()) {
+      networkRequest.setRequestHeaders(this.headersMapToHeadersArray(response.requestHeaders));
+      networkRequest.setRequestHeadersText(response.requestHeadersText || "");
+    }
+    networkRequest.connectionReused = response.connectionReused;
+    networkRequest.connectionId = String(response.connectionId);
+    if (response.remoteIPAddress) {
+      networkRequest.setRemoteAddress(response.remoteIPAddress, response.remotePort || -1);
+    }
+    if (response.fromServiceWorker) {
+      networkRequest.fetchedViaServiceWorker = true;
+    }
+    if (response.fromDiskCache) {
+      networkRequest.setFromDiskCache();
+    }
+    if (response.fromPrefetchCache) {
+      networkRequest.setFromPrefetchCache();
+    }
+    if (response.fromEarlyHints) {
+      networkRequest.setFromEarlyHints();
+    }
+    if (response.cacheStorageCacheName) {
+      networkRequest.setResponseCacheStorageCacheName(response.cacheStorageCacheName);
+    }
+    if (response.serviceWorkerRouterInfo) {
+      networkRequest.serviceWorkerRouterInfo = response.serviceWorkerRouterInfo;
+    }
+    if (response.responseTime) {
+      networkRequest.setResponseRetrievalTime(new Date(response.responseTime));
+    }
+    networkRequest.timing = response.timing;
+    networkRequest.protocol = response.protocol || "";
+    networkRequest.alternateProtocolUsage = response.alternateProtocolUsage;
+    if (response.serviceWorkerResponseSource) {
+      networkRequest.setServiceWorkerResponseSource(response.serviceWorkerResponseSource);
+    }
+    networkRequest.setSecurityState(response.securityState);
+    if (response.securityDetails) {
+      networkRequest.setSecurityDetails(response.securityDetails);
+    }
+    if (Root2.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
+      if (response.isIpProtectionUsed) {
+        networkRequest.setIsIpProtectionUsed(response.isIpProtectionUsed);
+      }
+    }
+    const newResourceType = Common5.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
+    if (newResourceType) {
+      networkRequest.setResourceType(newResourceType);
+    }
+    if (networkRequest.responseReceivedPromiseResolve) {
+      networkRequest.responseReceivedPromiseResolve();
+    } else {
+      networkRequest.responseReceivedPromise = Promise.resolve();
+    }
+  }
+  requestForId(id) {
+    return this.#requestsById.get(id) || null;
+  }
+  requestForURL(url) {
+    return this.#requestsByURL.get(url) || null;
+  }
+  requestForLoaderId(loaderId) {
+    return this.#requestsByLoaderId.get(loaderId) || null;
+  }
+  resourceChangedPriority({ requestId, newPriority }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (networkRequest) {
+      networkRequest.setPriority(newPriority);
+    }
+  }
+  signedExchangeReceived({ requestId, info }) {
+    let networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      networkRequest = this.#requestsByURL.get(info.outerResponse.url);
+      if (!networkRequest) {
+        return;
+      }
+      const backendRequestId = networkRequest.backendRequestId() || requestId;
+      requestId = backendRequestId;
+    }
+    networkRequest.setSignedExchangeInfo(info);
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes.SignedExchange);
+    this.updateNetworkRequestWithResponse(networkRequest, info.outerResponse);
+    this.updateNetworkRequest(networkRequest);
+    this.getExtraInfoBuilder(requestId).addHasExtraInfo(info.hasExtraInfo);
+    this.#manager.dispatchEventToListeners(Events2.ResponseReceived, { request: networkRequest, response: info.outerResponse });
+  }
+  requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectHasExtraInfo, redirectResponse, type, frameId, hasUserGesture }) {
+    let networkRequest = this.#requestsById.get(requestId);
+    if (networkRequest) {
+      if (!redirectResponse) {
+        return;
+      }
+      if (!networkRequest.signedExchangeInfo()) {
+        this.responseReceived({
+          requestId,
+          loaderId,
+          timestamp,
+          type: type || "Other",
+          response: redirectResponse,
+          hasExtraInfo: redirectHasExtraInfo,
+          frameId
+        });
+      }
+      networkRequest = this.appendRedirect(requestId, timestamp, request.url);
+      this.#manager.dispatchEventToListeners(Events2.RequestRedirected, networkRequest);
+    } else {
+      networkRequest = NetworkRequest.create(requestId, request.url, documentURL, frameId ?? null, loaderId, initiator, hasUserGesture);
+      requestToManagerMap.set(networkRequest, this.#manager);
+    }
+    networkRequest.hasNetworkData = true;
+    this.updateNetworkRequestWithRequest(networkRequest, request);
+    networkRequest.setIssueTime(timestamp, wallTime);
+    networkRequest.setResourceType(type ? Common5.ResourceType.resourceTypes[type] : Common5.ResourceType.resourceTypes.Other);
+    if (request.trustTokenParams) {
+      networkRequest.setTrustTokenParams(request.trustTokenParams);
+    }
+    const maybeTrustTokenEvent = this.#requestIdToTrustTokenEvent.get(requestId);
+    if (maybeTrustTokenEvent) {
+      networkRequest.setTrustTokenOperationDoneEvent(maybeTrustTokenEvent);
+      this.#requestIdToTrustTokenEvent.delete(requestId);
+    }
+    this.getExtraInfoBuilder(requestId).addRequest(networkRequest);
+    this.startNetworkRequest(networkRequest, request);
+  }
+  requestServedFromCache({ requestId }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.setFromMemoryCache();
+  }
+  responseReceived({ requestId, loaderId, timestamp, type, response, hasExtraInfo, frameId }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    const lowercaseHeaders = NetworkManager.lowercaseHeaders(response.headers);
+    if (!networkRequest) {
+      const lastModifiedHeader = lowercaseHeaders["last-modified"];
+      const eventData = {
+        url: response.url,
+        frameId: frameId ?? null,
+        loaderId,
+        resourceType: type,
+        mimeType: response.mimeType,
+        lastModified: lastModifiedHeader ? new Date(lastModifiedHeader) : null
+      };
+      this.#manager.dispatchEventToListeners(Events2.RequestUpdateDropped, eventData);
+      return;
+    }
+    networkRequest.responseReceivedTime = timestamp;
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes[type]);
+    this.updateNetworkRequestWithResponse(networkRequest, response);
+    this.updateNetworkRequest(networkRequest);
+    this.getExtraInfoBuilder(requestId).addHasExtraInfo(hasExtraInfo);
+    this.#manager.dispatchEventToListeners(Events2.ResponseReceived, { request: networkRequest, response });
+  }
+  dataReceived(event) {
+    let networkRequest = this.#requestsById.get(event.requestId);
+    if (!networkRequest) {
+      networkRequest = this.maybeAdoptMainResourceRequest(event.requestId);
+    }
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addDataReceivedEvent(event);
+    this.updateNetworkRequest(networkRequest);
+  }
+  loadingFinished({ requestId, timestamp: finishTime, encodedDataLength }) {
+    let networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      networkRequest = this.maybeAdoptMainResourceRequest(requestId);
+    }
+    if (!networkRequest) {
+      return;
+    }
+    this.getExtraInfoBuilder(requestId).finished();
+    this.finishNetworkRequest(networkRequest, finishTime, encodedDataLength);
+    this.#manager.dispatchEventToListeners(Events2.LoadingFinished, networkRequest);
+  }
+  loadingFailed({ requestId, timestamp: time, type: resourceType, errorText: localizedDescription, canceled, blockedReason, corsErrorStatus }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.failed = true;
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes[resourceType]);
+    networkRequest.canceled = Boolean(canceled);
+    if (blockedReason) {
+      networkRequest.setBlockedReason(blockedReason);
+      if (blockedReason === "inspector") {
+        const message = i18nString(UIStrings.requestWasBlockedByDevtoolsS, { PH1: networkRequest.url() });
+        this.#manager.dispatchEventToListeners(Events2.MessageGenerated, { message, requestId, warning: true });
+      }
+    }
+    if (corsErrorStatus) {
+      networkRequest.setCorsErrorStatus(corsErrorStatus);
+    }
+    networkRequest.localizedFailDescription = localizedDescription;
+    this.getExtraInfoBuilder(requestId).finished();
+    this.finishNetworkRequest(networkRequest, time, -1);
+  }
+  webSocketCreated({ requestId, url: requestURL, initiator }) {
+    const networkRequest = NetworkRequest.createForSocket(requestId, requestURL, initiator);
+    requestToManagerMap.set(networkRequest, this.#manager);
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes.WebSocket);
+    this.startNetworkRequest(networkRequest, null);
+  }
+  webSocketWillSendHandshakeRequest({ requestId, timestamp: time, wallTime, request }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.requestMethod = "GET";
+    networkRequest.setRequestHeaders(this.headersMapToHeadersArray(request.headers));
+    networkRequest.setIssueTime(time, wallTime);
+    this.updateNetworkRequest(networkRequest);
+  }
+  webSocketHandshakeResponseReceived({ requestId, timestamp: time, response }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.statusCode = response.status;
+    networkRequest.statusText = response.statusText;
+    networkRequest.responseHeaders = this.headersMapToHeadersArray(response.headers);
+    networkRequest.responseHeadersText = response.headersText || "";
+    if (response.requestHeaders) {
+      networkRequest.setRequestHeaders(this.headersMapToHeadersArray(response.requestHeaders));
+    }
+    if (response.requestHeadersText) {
+      networkRequest.setRequestHeadersText(response.requestHeadersText);
+    }
+    networkRequest.responseReceivedTime = time;
+    networkRequest.protocol = "websocket";
+    this.updateNetworkRequest(networkRequest);
+  }
+  webSocketFrameReceived({ requestId, timestamp: time, response }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addProtocolFrame(response, time, false);
+    networkRequest.responseReceivedTime = time;
+    this.updateNetworkRequest(networkRequest);
+  }
+  webSocketFrameSent({ requestId, timestamp: time, response }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addProtocolFrame(response, time, true);
+    networkRequest.responseReceivedTime = time;
+    this.updateNetworkRequest(networkRequest);
+  }
+  webSocketFrameError({ requestId, timestamp: time, errorMessage }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addProtocolFrameError(errorMessage, time);
+    networkRequest.responseReceivedTime = time;
+    this.updateNetworkRequest(networkRequest);
+  }
+  webSocketClosed({ requestId, timestamp: time }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    this.finishNetworkRequest(networkRequest, time, -1);
+  }
+  eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }) {
+    const networkRequest = this.#requestsById.get(requestId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addEventSourceMessage(time, eventName, eventId, data);
+  }
+  requestIntercepted({}) {
+  }
+  requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }) {
+    const blockedRequestCookies = [];
+    const includedRequestCookies = [];
+    for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
+      if (blockedReasons.length === 0) {
+        includedRequestCookies.push({ exemptionReason, cookie: Cookie.fromProtocolCookie(cookie) });
+      } else {
+        blockedRequestCookies.push({ blockedReasons, cookie: Cookie.fromProtocolCookie(cookie) });
+      }
+    }
+    const extraRequestInfo = {
+      blockedRequestCookies,
+      includedRequestCookies,
+      requestHeaders: this.headersMapToHeadersArray(headers),
+      clientSecurityState,
+      connectTiming,
+      siteHasCookieInOtherPartition
+    };
+    this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
+  }
+  responseReceivedEarlyHints({ requestId, headers }) {
+    this.getExtraInfoBuilder(requestId).setEarlyHintsHeaders(this.headersMapToHeadersArray(headers));
+  }
+  responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies }) {
+    const extraResponseInfo = {
+      blockedResponseCookies: blockedCookies.map((blockedCookie) => ({
+        blockedReasons: blockedCookie.blockedReasons,
+        cookieLine: blockedCookie.cookieLine,
+        cookie: blockedCookie.cookie ? Cookie.fromProtocolCookie(blockedCookie.cookie) : null
+      })),
+      responseHeaders: this.headersMapToHeadersArray(headers),
+      responseHeadersText: headersText,
+      resourceIPAddressSpace,
+      statusCode,
+      cookiePartitionKey,
+      cookiePartitionKeyOpaque,
+      exemptedResponseCookies: exemptedCookies?.map((exemptedCookie) => ({
+        cookie: Cookie.fromProtocolCookie(exemptedCookie.cookie),
+        cookieLine: exemptedCookie.cookieLine,
+        exemptionReason: exemptedCookie.exemptionReason
+      }))
+    };
+    this.getExtraInfoBuilder(requestId).addResponseExtraInfo(extraResponseInfo);
+  }
+  getExtraInfoBuilder(requestId) {
+    let builder;
+    if (!this.#requestIdToExtraInfoBuilder.has(requestId)) {
+      builder = new ExtraInfoBuilder();
+      this.#requestIdToExtraInfoBuilder.set(requestId, builder);
+    } else {
+      builder = this.#requestIdToExtraInfoBuilder.get(requestId);
+    }
+    return builder;
+  }
+  appendRedirect(requestId, time, redirectURL) {
+    const originalNetworkRequest = this.#requestsById.get(requestId);
+    if (!originalNetworkRequest) {
+      throw new Error(`Could not find original network request for ${requestId}`);
+    }
+    let redirectCount = 0;
+    for (let redirect = originalNetworkRequest.redirectSource(); redirect; redirect = redirect.redirectSource()) {
+      redirectCount++;
+    }
+    originalNetworkRequest.markAsRedirect(redirectCount);
+    this.finishNetworkRequest(originalNetworkRequest, time, -1);
+    const newNetworkRequest = NetworkRequest.create(requestId, redirectURL, originalNetworkRequest.documentURL, originalNetworkRequest.frameId, originalNetworkRequest.loaderId, originalNetworkRequest.initiator(), originalNetworkRequest.hasUserGesture() ?? void 0);
+    requestToManagerMap.set(newNetworkRequest, this.#manager);
+    newNetworkRequest.setRedirectSource(originalNetworkRequest);
+    originalNetworkRequest.setRedirectDestination(newNetworkRequest);
+    return newNetworkRequest;
+  }
+  maybeAdoptMainResourceRequest(requestId) {
+    const request = MultitargetNetworkManager.instance().inflightMainResourceRequests.get(requestId);
+    if (!request) {
+      return null;
+    }
+    const oldDispatcher = NetworkManager.forRequest(request).dispatcher;
+    oldDispatcher.#requestsById.delete(requestId);
+    oldDispatcher.#requestsByURL.delete(request.url());
+    const loaderId = request.loaderId;
+    if (loaderId) {
+      oldDispatcher.#requestsByLoaderId.delete(loaderId);
+    }
+    const builder = oldDispatcher.#requestIdToExtraInfoBuilder.get(requestId);
+    oldDispatcher.#requestIdToExtraInfoBuilder.delete(requestId);
+    this.#requestsById.set(requestId, request);
+    this.#requestsByURL.set(request.url(), request);
+    if (loaderId) {
+      this.#requestsByLoaderId.set(loaderId, request);
+    }
+    if (builder) {
+      this.#requestIdToExtraInfoBuilder.set(requestId, builder);
+    }
+    requestToManagerMap.set(request, this.#manager);
+    return request;
+  }
+  startNetworkRequest(networkRequest, originalRequest) {
+    this.#requestsById.set(networkRequest.requestId(), networkRequest);
+    this.#requestsByURL.set(networkRequest.url(), networkRequest);
+    const loaderId = networkRequest.loaderId;
+    if (loaderId) {
+      this.#requestsByLoaderId.set(loaderId, networkRequest);
+    }
+    if (networkRequest.loaderId === networkRequest.requestId() || networkRequest.loaderId === "") {
+      MultitargetNetworkManager.instance().inflightMainResourceRequests.set(networkRequest.requestId(), networkRequest);
+    }
+    this.#manager.dispatchEventToListeners(Events2.RequestStarted, { request: networkRequest, originalRequest });
+  }
+  updateNetworkRequest(networkRequest) {
+    this.#manager.dispatchEventToListeners(Events2.RequestUpdated, networkRequest);
+  }
+  finishNetworkRequest(networkRequest, finishTime, encodedDataLength) {
+    networkRequest.endTime = finishTime;
+    networkRequest.finished = true;
+    if (encodedDataLength >= 0) {
+      const redirectSource = networkRequest.redirectSource();
+      if (redirectSource?.signedExchangeInfo()) {
+        networkRequest.setTransferSize(0);
+        redirectSource.setTransferSize(encodedDataLength);
+        this.updateNetworkRequest(redirectSource);
+      } else {
+        networkRequest.setTransferSize(encodedDataLength);
+      }
+    }
+    this.#manager.dispatchEventToListeners(Events2.RequestFinished, networkRequest);
+    MultitargetNetworkManager.instance().inflightMainResourceRequests.delete(networkRequest.requestId());
+    if (Common5.Settings.Settings.instance().moduleSetting("monitoring-xhr-enabled").get() && networkRequest.resourceType().category() === Common5.ResourceType.resourceCategories.XHR) {
+      let message;
+      const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
+      if (failedToLoad) {
+        message = i18nString(UIStrings.sFailedLoadingSS, { PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url() });
+      } else {
+        message = i18nString(UIStrings.sFinishedLoadingSS, { PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url() });
+      }
+      this.#manager.dispatchEventToListeners(Events2.MessageGenerated, { message, requestId: networkRequest.requestId(), warning: false });
+    }
+  }
+  clearRequests() {
+    for (const [requestId, request] of this.#requestsById) {
+      if (request.finished) {
+        this.#requestsById.delete(requestId);
+      }
+    }
+    for (const [requestURL, request] of this.#requestsByURL) {
+      if (request.finished) {
+        this.#requestsByURL.delete(requestURL);
+      }
+    }
+    for (const [requestLoaderId, request] of this.#requestsByLoaderId) {
+      if (request.finished) {
+        this.#requestsByLoaderId.delete(requestLoaderId);
+      }
+    }
+    for (const [requestId, builder] of this.#requestIdToExtraInfoBuilder) {
+      if (builder.isFinished()) {
+        this.#requestIdToExtraInfoBuilder.delete(requestId);
+      }
+    }
+  }
+  webTransportCreated({ transportId, url: requestURL, timestamp: time, initiator }) {
+    const networkRequest = NetworkRequest.createForSocket(transportId, requestURL, initiator);
+    networkRequest.hasNetworkData = true;
+    requestToManagerMap.set(networkRequest, this.#manager);
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes.WebTransport);
+    networkRequest.setIssueTime(time, 0);
+    this.startNetworkRequest(networkRequest, null);
+  }
+  webTransportConnectionEstablished({ transportId, timestamp: time }) {
+    const networkRequest = this.#requestsById.get(transportId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.responseReceivedTime = time;
+    networkRequest.endTime = time + 1e-3;
+    this.updateNetworkRequest(networkRequest);
+  }
+  webTransportClosed({ transportId, timestamp: time }) {
+    const networkRequest = this.#requestsById.get(transportId);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.endTime = time;
+    this.finishNetworkRequest(networkRequest, time, 0);
+  }
+  directTCPSocketCreated(event) {
+    const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
+    const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
+    networkRequest.hasNetworkData = true;
+    networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+    networkRequest.protocol = i18n.i18n.lockedString("tcp");
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpening);
+    networkRequest.directSocketInfo = {
+      type: DirectSocketType.TCP,
+      status: DirectSocketStatus.OPENING,
+      createOptions: {
+        remoteAddr: event.remoteAddr,
+        remotePort: event.remotePort,
+        noDelay: event.options.noDelay,
+        keepAliveDelay: event.options.keepAliveDelay,
+        sendBufferSize: event.options.sendBufferSize,
+        receiveBufferSize: event.options.receiveBufferSize,
+        dnsQueryType: event.options.dnsQueryType
+      }
+    };
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes.DirectSocket);
+    networkRequest.setIssueTime(event.timestamp, event.timestamp);
+    requestToManagerMap.set(networkRequest, this.#manager);
+    this.startNetworkRequest(networkRequest, null);
+  }
+  directTCPSocketOpened(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    networkRequest.responseReceivedTime = event.timestamp;
+    networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpen);
+    networkRequest.directSocketInfo.openInfo = {
+      remoteAddr: event.remoteAddr,
+      remotePort: event.remotePort,
+      localAddr: event.localAddr,
+      localPort: event.localPort
+    };
+    networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+    const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
+    networkRequest.setUrl(requestURL);
+    this.updateNetworkRequest(networkRequest);
+  }
+  directTCPSocketAborted(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    networkRequest.failed = true;
+    networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusAborted);
+    networkRequest.directSocketInfo.errorMessage = event.errorMessage;
+    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+  }
+  directTCPSocketClosed(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusClosed);
+    networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
+    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+  }
+  directTCPSocketChunkSent(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addDirectSocketChunk({
+      data: event.data,
+      type: DirectSocketChunkType.SEND,
+      timestamp: event.timestamp
+    });
+    networkRequest.responseReceivedTime = event.timestamp;
+    this.updateNetworkRequest(networkRequest);
+  }
+  directTCPSocketChunkReceived(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addDirectSocketChunk({
+      data: event.data,
+      type: DirectSocketChunkType.RECEIVE,
+      timestamp: event.timestamp
+    });
+    networkRequest.responseReceivedTime = event.timestamp;
+    this.updateNetworkRequest(networkRequest);
+  }
+  directUDPSocketCreated(event) {
+    let requestURL = "";
+    let type;
+    if (event.options.remoteAddr && event.options.remotePort) {
+      requestURL = this.concatHostPort(event.options.remoteAddr, event.options.remotePort);
+      type = DirectSocketType.UDP_CONNECTED;
+    } else if (event.options.localAddr) {
+      requestURL = this.concatHostPort(event.options.localAddr, event.options.localPort);
+      type = DirectSocketType.UDP_BOUND;
+    } else {
+      return;
+    }
+    const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
+    networkRequest.hasNetworkData = true;
+    if (event.options.remoteAddr && event.options.remotePort) {
+      networkRequest.setRemoteAddress(event.options.remoteAddr, event.options.remotePort);
+    }
+    networkRequest.protocol = i18n.i18n.lockedString("udp");
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpening);
+    networkRequest.directSocketInfo = {
+      type,
+      status: DirectSocketStatus.OPENING,
+      createOptions: {
+        remoteAddr: event.options.remoteAddr,
+        remotePort: event.options.remotePort,
+        localAddr: event.options.localAddr,
+        localPort: event.options.localPort,
+        sendBufferSize: event.options.sendBufferSize,
+        receiveBufferSize: event.options.receiveBufferSize,
+        dnsQueryType: event.options.dnsQueryType
+      }
+    };
+    networkRequest.setResourceType(Common5.ResourceType.resourceTypes.DirectSocket);
+    networkRequest.setIssueTime(event.timestamp, event.timestamp);
+    requestToManagerMap.set(networkRequest, this.#manager);
+    this.startNetworkRequest(networkRequest, null);
+  }
+  directUDPSocketOpened(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    let requestURL;
+    if (networkRequest.directSocketInfo.type === DirectSocketType.UDP_CONNECTED) {
+      if (!event.remoteAddr || !event.remotePort) {
+        return;
+      }
+      networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
+      requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
+    } else {
+      requestURL = this.concatHostPort(event.localAddr, event.localPort);
+    }
+    networkRequest.setUrl(requestURL);
+    networkRequest.responseReceivedTime = event.timestamp;
+    networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusOpen);
+    networkRequest.directSocketInfo.openInfo = {
+      remoteAddr: event.remoteAddr,
+      remotePort: event.remotePort,
+      localAddr: event.localAddr,
+      localPort: event.localPort
+    };
+    this.updateNetworkRequest(networkRequest);
+  }
+  directUDPSocketAborted(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    networkRequest.failed = true;
+    networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusAborted);
+    networkRequest.directSocketInfo.errorMessage = event.errorMessage;
+    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+  }
+  directUDPSocketClosed(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest?.directSocketInfo) {
+      return;
+    }
+    networkRequest.statusText = i18nString(UIStrings.directSocketStatusClosed);
+    networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
+    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
+  }
+  directUDPSocketChunkSent(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addDirectSocketChunk({
+      data: event.message.data,
+      type: DirectSocketChunkType.SEND,
+      timestamp: event.timestamp,
+      remoteAddress: event.message.remoteAddr,
+      remotePort: event.message.remotePort
+    });
+    networkRequest.responseReceivedTime = event.timestamp;
+    this.updateNetworkRequest(networkRequest);
+  }
+  directUDPSocketChunkReceived(event) {
+    const networkRequest = this.#requestsById.get(event.identifier);
+    if (!networkRequest) {
+      return;
+    }
+    networkRequest.addDirectSocketChunk({
+      data: event.message.data,
+      type: DirectSocketChunkType.RECEIVE,
+      timestamp: event.timestamp,
+      remoteAddress: event.message.remoteAddr,
+      remotePort: event.message.remotePort
+    });
+    networkRequest.responseReceivedTime = event.timestamp;
+    this.updateNetworkRequest(networkRequest);
+  }
+  trustTokenOperationDone(event) {
+    const request = this.#requestsById.get(event.requestId);
+    if (!request) {
+      this.#requestIdToTrustTokenEvent.set(event.requestId, event);
+      return;
+    }
+    request.setTrustTokenOperationDoneEvent(event);
+  }
+  subresourceWebBundleMetadataReceived() {
+  }
+  subresourceWebBundleMetadataError() {
+  }
+  subresourceWebBundleInnerResponseParsed() {
+  }
+  subresourceWebBundleInnerResponseError() {
+  }
+  reportingApiReportAdded(data) {
+    this.#manager.dispatchEventToListeners(Events2.ReportingApiReportAdded, data.report);
+  }
+  reportingApiReportUpdated(data) {
+    this.#manager.dispatchEventToListeners(Events2.ReportingApiReportUpdated, data.report);
+  }
+  reportingApiEndpointsChangedForOrigin(data) {
+    this.#manager.dispatchEventToListeners(Events2.ReportingApiEndpointsChangedForOrigin, data);
+  }
+  policyUpdated() {
+  }
+  /**
+   * @deprecated
+   * This method is only kept for usage in a web test.
+   */
+  createNetworkRequest(requestId, frameId, loaderId, url, documentURL, initiator) {
+    const request = NetworkRequest.create(requestId, url, documentURL, frameId, loaderId, initiator);
+    requestToManagerMap.set(request, this.#manager);
+    return request;
+  }
+  concatHostPort(host, port) {
+    if (!port || port === 0) {
+      return host;
+    }
+    return `${host}:${port}`;
+  }
+};
+var multiTargetNetworkManagerInstance;
+var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common5.ObjectWrapper.ObjectWrapper {
+  #userAgentOverride = "";
+  #userAgentMetadataOverride = null;
+  #customAcceptedEncodings = null;
+  #networkAgents = /* @__PURE__ */ new Set();
+  #fetchAgents = /* @__PURE__ */ new Set();
+  inflightMainResourceRequests = /* @__PURE__ */ new Map();
+  #networkConditions = NoThrottlingConditions;
+  #updatingInterceptionPatternsPromise = null;
+  #blockingEnabledSetting = Common5.Settings.Settings.instance().moduleSetting("request-blocking-enabled");
+  #blockedPatternsSetting = Common5.Settings.Settings.instance().createSetting("network-blocked-patterns", []);
+  #effectiveBlockedURLs = [];
+  #urlsForRequestInterceptor = new Platform3.MapUtilities.Multimap();
+  #extraHeaders;
+  #customUserAgent;
+  constructor() {
+    super();
+    const blockedPatternChanged = () => {
+      this.updateBlockedPatterns();
+      this.dispatchEventToListeners(
+        "BlockedPatternsChanged"
+        /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */
+      );
+    };
+    this.#blockingEnabledSetting.addChangeListener(blockedPatternChanged);
+    this.#blockedPatternsSetting.addChangeListener(blockedPatternChanged);
+    this.updateBlockedPatterns();
+    TargetManager.instance().observeModels(NetworkManager, this);
+  }
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!multiTargetNetworkManagerInstance || forceNew) {
+      multiTargetNetworkManagerInstance = new _MultitargetNetworkManager();
+    }
+    return multiTargetNetworkManagerInstance;
+  }
+  static dispose() {
+    multiTargetNetworkManagerInstance = null;
+  }
+  static patchUserAgentWithChromeVersion(uaString) {
+    const chromeVersion = Root2.Runtime.getChromeVersion();
+    if (chromeVersion.length > 0) {
+      const additionalAppVersion = chromeVersion.split(".", 1)[0] + ".0.100.0";
+      return Platform3.StringUtilities.sprintf(uaString, chromeVersion, additionalAppVersion);
+    }
+    return uaString;
+  }
+  static patchUserAgentMetadataWithChromeVersion(userAgentMetadata) {
+    if (!userAgentMetadata.brands) {
+      return;
+    }
+    const chromeVersion = Root2.Runtime.getChromeVersion();
+    if (chromeVersion.length === 0) {
+      return;
+    }
+    const majorVersion = chromeVersion.split(".", 1)[0];
+    for (const brand of userAgentMetadata.brands) {
+      if (brand.version.includes("%s")) {
+        brand.version = Platform3.StringUtilities.sprintf(brand.version, majorVersion);
+      }
+    }
+    if (userAgentMetadata.fullVersion) {
+      if (userAgentMetadata.fullVersion.includes("%s")) {
+        userAgentMetadata.fullVersion = Platform3.StringUtilities.sprintf(userAgentMetadata.fullVersion, chromeVersion);
+      }
+    }
+  }
+  modelAdded(networkManager) {
+    const networkAgent = networkManager.target().networkAgent();
+    const fetchAgent = networkManager.target().fetchAgent();
+    if (this.#extraHeaders) {
+      void networkAgent.invoke_setExtraHTTPHeaders({ headers: this.#extraHeaders });
+    }
+    if (this.currentUserAgent()) {
+      void networkAgent.invoke_setUserAgentOverride({ userAgent: this.currentUserAgent(), userAgentMetadata: this.#userAgentMetadataOverride || void 0 });
+    }
+    if (this.#effectiveBlockedURLs.length) {
+      void networkAgent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
+    }
+    if (this.isIntercepting()) {
+      void fetchAgent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() });
+    }
+    if (this.#customAcceptedEncodings === null) {
+      void networkAgent.invoke_clearAcceptedEncodingsOverride();
+    } else {
+      void networkAgent.invoke_setAcceptedEncodings({ encodings: this.#customAcceptedEncodings });
+    }
+    this.#networkAgents.add(networkAgent);
+    this.#fetchAgents.add(fetchAgent);
+    if (this.isThrottling()) {
+      this.updateNetworkConditions(networkAgent);
+    }
+  }
+  modelRemoved(networkManager) {
+    for (const entry of this.inflightMainResourceRequests) {
+      const manager = NetworkManager.forRequest(entry[1]);
+      if (manager !== networkManager) {
+        continue;
+      }
+      this.inflightMainResourceRequests.delete(entry[0]);
+    }
+    this.#networkAgents.delete(networkManager.target().networkAgent());
+    this.#fetchAgents.delete(networkManager.target().fetchAgent());
+  }
+  isThrottling() {
+    return this.#networkConditions.download >= 0 || this.#networkConditions.upload >= 0 || this.#networkConditions.latency > 0;
+  }
+  isOffline() {
+    return !this.#networkConditions.download && !this.#networkConditions.upload;
+  }
+  setNetworkConditions(conditions) {
+    this.#networkConditions = conditions;
+    for (const agent of this.#networkAgents) {
+      this.updateNetworkConditions(agent);
+    }
+    this.dispatchEventToListeners(
+      "ConditionsChanged"
+      /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */
+    );
+  }
+  networkConditions() {
+    return this.#networkConditions;
+  }
+  updateNetworkConditions(networkAgent) {
+    const conditions = this.#networkConditions;
+    if (!this.isThrottling()) {
+      void networkAgent.invoke_emulateNetworkConditions({
+        offline: false,
+        latency: 0,
+        downloadThroughput: 0,
+        uploadThroughput: 0
+      });
+    } else {
+      void networkAgent.invoke_emulateNetworkConditions({
+        offline: this.isOffline(),
+        latency: conditions.latency,
+        downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
+        uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+        packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+        packetQueueLength: conditions.packetQueueLength,
+        packetReordering: conditions.packetReordering,
+        connectionType: NetworkManager.connectionType(conditions)
+      });
+    }
+  }
+  setExtraHTTPHeaders(headers) {
+    this.#extraHeaders = headers;
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setExtraHTTPHeaders({ headers: this.#extraHeaders });
+    }
+  }
+  currentUserAgent() {
+    return this.#customUserAgent ? this.#customUserAgent : this.#userAgentOverride;
+  }
+  updateUserAgentOverride() {
+    const userAgent = this.currentUserAgent();
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setUserAgentOverride({ userAgent, userAgentMetadata: this.#userAgentMetadataOverride || void 0 });
+    }
+  }
+  setUserAgentOverride(userAgent, userAgentMetadataOverride) {
+    const uaChanged = this.#userAgentOverride !== userAgent;
+    this.#userAgentOverride = userAgent;
+    if (!this.#customUserAgent) {
+      this.#userAgentMetadataOverride = userAgentMetadataOverride;
+      this.updateUserAgentOverride();
+    } else {
+      this.#userAgentMetadataOverride = null;
+    }
+    if (uaChanged) {
+      this.dispatchEventToListeners(
+        "UserAgentChanged"
+        /* MultitargetNetworkManager.Events.USER_AGENT_CHANGED */
+      );
+    }
+  }
+  setCustomUserAgentOverride(userAgent, userAgentMetadataOverride = null) {
+    this.#customUserAgent = userAgent;
+    this.#userAgentMetadataOverride = userAgentMetadataOverride;
+    this.updateUserAgentOverride();
+  }
+  setCustomAcceptedEncodingsOverride(acceptedEncodings) {
+    this.#customAcceptedEncodings = acceptedEncodings;
+    this.updateAcceptedEncodingsOverride();
+    this.dispatchEventToListeners(
+      "AcceptedEncodingsChanged"
+      /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */
+    );
+  }
+  clearCustomAcceptedEncodingsOverride() {
+    this.#customAcceptedEncodings = null;
+    this.updateAcceptedEncodingsOverride();
+    this.dispatchEventToListeners(
+      "AcceptedEncodingsChanged"
+      /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */
+    );
+  }
+  isAcceptedEncodingOverrideSet() {
+    return this.#customAcceptedEncodings !== null;
+  }
+  updateAcceptedEncodingsOverride() {
+    const customAcceptedEncodings = this.#customAcceptedEncodings;
+    for (const agent of this.#networkAgents) {
+      if (customAcceptedEncodings === null) {
+        void agent.invoke_clearAcceptedEncodingsOverride();
+      } else {
+        void agent.invoke_setAcceptedEncodings({ encodings: customAcceptedEncodings });
+      }
+    }
+  }
+  // TODO(allada) Move all request blocking into interception and let view manage blocking.
+  blockedPatterns() {
+    return this.#blockedPatternsSetting.get().slice();
+  }
+  blockingEnabled() {
+    return this.#blockingEnabledSetting.get();
+  }
+  isBlocking() {
+    return Boolean(this.#effectiveBlockedURLs.length);
+  }
+  setBlockedPatterns(patterns) {
+    this.#blockedPatternsSetting.set(patterns);
+  }
+  setBlockingEnabled(enabled) {
+    if (this.#blockingEnabledSetting.get() === enabled) {
+      return;
+    }
+    this.#blockingEnabledSetting.set(enabled);
+  }
+  updateBlockedPatterns() {
+    const urls = [];
+    if (this.#blockingEnabledSetting.get()) {
+      for (const pattern of this.#blockedPatternsSetting.get()) {
+        if (pattern.enabled) {
+          urls.push(pattern.url);
+        }
+      }
+    }
+    if (!urls.length && !this.#effectiveBlockedURLs.length) {
+      return;
+    }
+    this.#effectiveBlockedURLs = urls;
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
+    }
+  }
+  isIntercepting() {
+    return Boolean(this.#urlsForRequestInterceptor.size);
+  }
+  setInterceptionHandlerForPatterns(patterns, requestInterceptor) {
+    this.#urlsForRequestInterceptor.deleteAll(requestInterceptor);
+    for (const newPattern of patterns) {
+      this.#urlsForRequestInterceptor.set(requestInterceptor, newPattern);
+    }
+    return this.updateInterceptionPatternsOnNextTick();
+  }
+  updateInterceptionPatternsOnNextTick() {
+    if (!this.#updatingInterceptionPatternsPromise) {
+      this.#updatingInterceptionPatternsPromise = Promise.resolve().then(this.updateInterceptionPatterns.bind(this));
+    }
+    return this.#updatingInterceptionPatternsPromise;
+  }
+  async updateInterceptionPatterns() {
+    if (!Common5.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
+      Common5.Settings.Settings.instance().moduleSetting("cache-disabled").set(true);
+    }
+    this.#updatingInterceptionPatternsPromise = null;
+    const promises = [];
+    for (const agent of this.#fetchAgents) {
+      promises.push(agent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() }));
+    }
+    this.dispatchEventToListeners(
+      "InterceptorsChanged"
+      /* MultitargetNetworkManager.Events.INTERCEPTORS_CHANGED */
+    );
+    await Promise.all(promises);
+  }
+  async requestIntercepted(interceptedRequest) {
+    for (const requestInterceptor of this.#urlsForRequestInterceptor.keysArray()) {
+      await requestInterceptor(interceptedRequest);
+      if (interceptedRequest.hasResponded() && interceptedRequest.networkRequest) {
+        this.dispatchEventToListeners("RequestIntercepted", interceptedRequest.networkRequest.requestId());
+        return;
+      }
+    }
+    if (!interceptedRequest.hasResponded()) {
+      interceptedRequest.continueRequestWithoutChange();
+    }
+  }
+  clearBrowserCache() {
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_clearBrowserCache();
+    }
+  }
+  clearBrowserCookies() {
+    for (const agent of this.#networkAgents) {
+      void agent.invoke_clearBrowserCookies();
+    }
+  }
+  async getCertificate(origin) {
+    const target = TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return [];
+    }
+    const certificate = await target.networkAgent().invoke_getCertificate({ origin });
+    if (!certificate) {
+      return [];
+    }
+    return certificate.tableNames;
+  }
+  async loadResource(url) {
+    const headers = {};
+    const currentUserAgent = this.currentUserAgent();
+    if (currentUserAgent) {
+      headers["User-Agent"] = currentUserAgent;
+    }
+    if (Common5.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
+      headers["Cache-Control"] = "no-cache";
+    }
+    const allowRemoteFilePaths = Common5.Settings.Settings.instance().moduleSetting("network.enable-remote-file-loading").get();
+    return await new Promise((resolve) => Host2.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
+      resolve({ success, content, errorDescription });
+    }, allowRemoteFilePaths));
+  }
+};
+var InterceptedRequest = class _InterceptedRequest {
+  #fetchAgent;
+  #hasResponded = false;
+  request;
+  resourceType;
+  responseStatusCode;
+  responseHeaders;
+  requestId;
+  networkRequest;
+  constructor(fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders) {
+    this.#fetchAgent = fetchAgent;
+    this.request = request;
+    this.resourceType = resourceType;
+    this.responseStatusCode = responseStatusCode;
+    this.responseHeaders = responseHeaders;
+    this.requestId = requestId;
+    this.networkRequest = networkRequest;
+  }
+  hasResponded() {
+    return this.#hasResponded;
+  }
+  static mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides) {
+    const generateHeaderMap = (headers) => {
+      const result = /* @__PURE__ */ new Map();
+      for (const header of headers) {
+        const match = header.value.match(/^([a-zA-Z0-9!#$%&'*+.^_`|~-]+=)(.*)$/);
+        if (match) {
+          if (result.has(match[1])) {
+            result.get(match[1])?.push(header.value);
+          } else {
+            result.set(match[1], [header.value]);
+          }
+        } else if (result.has(header.value)) {
+          result.get(header.value)?.push(header.value);
+        } else {
+          result.set(header.value, [header.value]);
+        }
+      }
+      return result;
+    };
+    const originalHeadersMap = generateHeaderMap(originalSetCookieHeaders);
+    const overridesHeaderMap = generateHeaderMap(setCookieHeadersFromOverrides);
+    const mergedHeaders = [];
+    for (const [key, headerValues] of originalHeadersMap) {
+      if (overridesHeaderMap.has(key)) {
+        for (const headerValue of overridesHeaderMap.get(key) || []) {
+          mergedHeaders.push({ name: "set-cookie", value: headerValue });
+        }
+      } else {
+        for (const headerValue of headerValues) {
+          mergedHeaders.push({ name: "set-cookie", value: headerValue });
+        }
+      }
+    }
+    for (const [key, headerValues] of overridesHeaderMap) {
+      if (originalHeadersMap.has(key)) {
+        continue;
+      }
+      for (const headerValue of headerValues) {
+        mergedHeaders.push({ name: "set-cookie", value: headerValue });
+      }
+    }
+    return mergedHeaders;
+  }
+  async continueRequestWithContent(contentBlob, encoded, responseHeaders, isBodyOverridden) {
+    this.#hasResponded = true;
+    const body = encoded ? await contentBlob.text() : await Common5.Base64.encode(contentBlob).catch((err) => {
+      console.error(err);
+      return "";
+    });
+    const responseCode = isBodyOverridden ? 200 : this.responseStatusCode || 200;
+    if (this.networkRequest) {
+      const originalSetCookieHeaders = this.networkRequest?.originalResponseHeaders.filter((header) => header.name === "set-cookie") || [];
+      const setCookieHeadersFromOverrides = responseHeaders.filter((header) => header.name === "set-cookie");
+      this.networkRequest.setCookieHeaders = _InterceptedRequest.mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides);
+      this.networkRequest.hasOverriddenContent = isBodyOverridden;
+    }
+    void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
+    MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled", this.request.url);
+  }
+  continueRequestWithoutChange() {
+    console.assert(!this.#hasResponded);
+    this.#hasResponded = true;
+    void this.#fetchAgent.invoke_continueRequest({ requestId: this.requestId });
+  }
+  async responseBody() {
+    const response = await this.#fetchAgent.invoke_getResponseBody({ requestId: this.requestId });
+    const error = response.getError();
+    if (error) {
+      return { error };
+    }
+    const { mimeType, charset } = this.getMimeTypeAndCharset();
+    return new TextUtils.ContentData.ContentData(response.body, response.base64Encoded, mimeType ?? "application/octet-stream", charset ?? void 0);
+  }
+  isRedirect() {
+    return this.responseStatusCode !== void 0 && this.responseStatusCode >= 300 && this.responseStatusCode < 400;
+  }
+  /**
+   * Tries to determine the MIME type and charset for this intercepted request.
+   * Looks at the intercepted response headers first (for Content-Type header), then
+   * checks the `NetworkRequest` if we have one.
+   */
+  getMimeTypeAndCharset() {
+    for (const header of this.responseHeaders ?? []) {
+      if (header.name.toLowerCase() === "content-type") {
+        return Platform3.MimeType.parseContentType(header.value);
+      }
+    }
+    const mimeType = this.networkRequest?.mimeType ?? null;
+    const charset = this.networkRequest?.charset() ?? null;
+    return { mimeType, charset };
+  }
+};
+var ExtraInfoBuilder = class {
+  #requests = [];
+  #responseExtraInfoFlag = [];
+  #requestExtraInfos = [];
+  #responseExtraInfos = [];
+  #responseEarlyHintsHeaders = [];
+  #finished = false;
+  addRequest(req) {
+    this.#requests.push(req);
+    this.sync(this.#requests.length - 1);
+  }
+  addHasExtraInfo(hasExtraInfo) {
+    this.#responseExtraInfoFlag.push(hasExtraInfo);
+    console.assert(this.#requests.length === this.#responseExtraInfoFlag.length, "request/response count mismatch");
+    if (!hasExtraInfo) {
+      this.#requestExtraInfos.splice(this.#requests.length - 1, 0, null);
+      this.#responseExtraInfos.splice(this.#requests.length - 1, 0, null);
+    }
+    this.sync(this.#requests.length - 1);
+  }
+  addRequestExtraInfo(info) {
+    this.#requestExtraInfos.push(info);
+    this.sync(this.#requestExtraInfos.length - 1);
+  }
+  addResponseExtraInfo(info) {
+    this.#responseExtraInfos.push(info);
+    this.sync(this.#responseExtraInfos.length - 1);
+  }
+  setEarlyHintsHeaders(earlyHintsHeaders) {
+    this.#responseEarlyHintsHeaders = earlyHintsHeaders;
+    this.updateFinalRequest();
+  }
+  finished() {
+    this.#finished = true;
+    if (this.#responseExtraInfoFlag.length < this.#requests.length) {
+      this.#responseExtraInfoFlag.push(true);
+      this.sync(this.#responseExtraInfoFlag.length - 1);
+    }
+    console.assert(this.#requests.length === this.#responseExtraInfoFlag.length, "request/response count mismatch when request finished");
+    this.updateFinalRequest();
+  }
+  isFinished() {
+    return this.#finished;
+  }
+  sync(index) {
+    const req = this.#requests[index];
+    if (!req) {
+      return;
+    }
+    if (index >= this.#responseExtraInfoFlag.length) {
+      return;
+    }
+    if (!this.#responseExtraInfoFlag[index]) {
+      return;
+    }
+    const requestExtraInfo = this.#requestExtraInfos[index];
+    if (requestExtraInfo) {
+      req.addExtraRequestInfo(requestExtraInfo);
+      this.#requestExtraInfos[index] = null;
+    }
+    const responseExtraInfo = this.#responseExtraInfos[index];
+    if (responseExtraInfo) {
+      req.addExtraResponseInfo(responseExtraInfo);
+      this.#responseExtraInfos[index] = null;
+    }
+  }
+  finalRequest() {
+    if (!this.#finished) {
+      return null;
+    }
+    return this.#requests[this.#requests.length - 1] || null;
+  }
+  updateFinalRequest() {
+    if (!this.#finished) {
+      return;
+    }
+    const finalRequest = this.finalRequest();
+    finalRequest?.setEarlyHintsHeaders(this.#responseEarlyHintsHeaders);
+  }
+};
+SDKModel.register(NetworkManager, { capabilities: 16, autostart: true });
+function networkConditionsEqual(first, second) {
+  const firstTitle = first.i18nTitleKey || (typeof first.title === "function" ? first.title() : first.title);
+  const secondTitle = second.i18nTitleKey || (typeof second.title === "function" ? second.title() : second.title);
+  return second.download === first.download && second.upload === first.upload && second.latency === first.latency && first.packetLoss === second.packetLoss && first.packetQueueLength === second.packetQueueLength && first.packetReordering === second.packetReordering && secondTitle === firstTitle;
+}
+var THROTTLING_CONDITIONS_LOOKUP = /* @__PURE__ */ new Map([
+  ["NO_THROTTLING", NoThrottlingConditions],
+  ["OFFLINE", OfflineConditions],
+  ["SPEED_3G", Slow3GConditions],
+  ["SPEED_SLOW_4G", Slow4GConditions],
+  ["SPEED_FAST_4G", Fast4GConditions]
+]);
+function keyIsPredefined(key) {
+  return !key.startsWith("USER_CUSTOM_SETTING_");
+}
+function keyIsCustomUser(key) {
+  return key.startsWith("USER_CUSTOM_SETTING_");
+}
+function getPredefinedCondition(key) {
+  if (!keyIsPredefined(key)) {
+    return null;
+  }
+  return THROTTLING_CONDITIONS_LOOKUP.get(key) ?? null;
+}
+function getRecommendedNetworkPreset(rtt) {
+  const RTT_COMPARISON_THRESHOLD = 200;
+  const RTT_MINIMUM = 60;
+  if (!Number.isFinite(rtt)) {
+    return null;
+  }
+  if (rtt < RTT_MINIMUM) {
+    return null;
+  }
+  const presets = THROTTLING_CONDITIONS_LOOKUP.values().filter((condition) => {
+    return condition !== NoThrottlingConditions;
+  }).toArray();
+  let closestPreset = null;
+  let smallestDiff = Infinity;
+  for (const preset of presets) {
+    const { targetLatency } = preset;
+    if (!targetLatency) {
+      continue;
+    }
+    const diff = Math.abs(targetLatency - rtt);
+    if (diff > RTT_COMPARISON_THRESHOLD) {
+      continue;
+    }
+    if (smallestDiff < diff) {
+      continue;
+    }
+    closestPreset = preset;
+    smallestDiff = diff;
+  }
+  return closestPreset;
+}
 
 // gen/front_end/core/sdk/ResourceTreeModel.js
 var ResourceTreeModel_exports = {};
 __export(ResourceTreeModel_exports, {
-  Events: () => Events,
+  Events: () => Events3,
   PageDispatcher: () => PageDispatcher,
   ResourceTreeFrame: () => ResourceTreeFrame,
   ResourceTreeModel: () => ResourceTreeModel
 });
-import * as Common23 from "./../common/common.js";
-import * as i18n13 from "./../i18n/i18n.js";
-import * as Platform14 from "./../platform/platform.js";
+import * as Common24 from "./../common/common.js";
+import * as i18n15 from "./../i18n/i18n.js";
+import * as Platform16 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/DOMModel.js
 var DOMModel_exports = {};
@@ -9782,11 +11811,11 @@ __export(DOMModel_exports, {
   DOMNode: () => DOMNode,
   DOMNodeShortcut: () => DOMNodeShortcut,
   DeferredDOMNode: () => DeferredDOMNode,
-  Events: () => Events6
+  Events: () => Events8
 });
-import * as Common20 from "./../common/common.js";
-import * as Platform12 from "./../platform/platform.js";
-import * as Root6 from "./../root/root.js";
+import * as Common21 from "./../common/common.js";
+import * as Platform14 from "./../platform/platform.js";
+import * as Root8 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSModel.js
 var CSSModel_exports = {};
@@ -9795,14 +11824,14 @@ __export(CSSModel_exports, {
   CSSModel: () => CSSModel,
   CSSPropertyTracker: () => CSSPropertyTracker,
   Edit: () => Edit,
-  Events: () => Events3,
+  Events: () => Events5,
   InlineStyleResult: () => InlineStyleResult
 });
-import * as TextUtils14 from "./../../models/text_utils/text_utils.js";
-import * as Common13 from "./../common/common.js";
-import * as Host2 from "./../host/host.js";
-import * as Platform8 from "./../platform/platform.js";
-import * as Root3 from "./../root/root.js";
+import * as TextUtils17 from "./../../models/text_utils/text_utils.js";
+import * as Common14 from "./../common/common.js";
+import * as Host4 from "./../host/host.js";
+import * as Platform10 from "./../platform/platform.js";
+import * as Root5 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSFontFace.js
 var CSSFontFace_exports = {};
@@ -9845,18 +11874,18 @@ __export(CSSMatchedStyles_exports, {
   CSSRegisteredProperty: () => CSSRegisteredProperty,
   CSSValueSource: () => CSSValueSource
 });
-import * as Platform3 from "./../platform/platform.js";
+import * as Platform6 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/CSSProperty.js
 var CSSProperty_exports = {};
 __export(CSSProperty_exports, {
   CSSProperty: () => CSSProperty
 });
-import * as TextUtils from "./../../models/text_utils/text_utils.js";
-import * as Common5 from "./../common/common.js";
+import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as Common7 from "./../common/common.js";
 import * as HostModule from "./../host/host.js";
-import * as Platform from "./../platform/platform.js";
-import * as Root from "./../root/root.js";
+import * as Platform4 from "./../platform/platform.js";
+import * as Root3 from "./../root/root.js";
 
 // gen/front_end/core/sdk/CSSPropertyParser.js
 var CSSPropertyParser_exports = {};
@@ -9945,7 +11974,7 @@ __export(CSSPropertyParserMatchers_exports, {
   isValidCSSType: () => isValidCSSType,
   localEvalCSS: () => localEvalCSS
 });
-import * as Common4 from "./../common/common.js";
+import * as Common6 from "./../common/common.js";
 var BaseVariableMatch = class {
   text;
   node;
@@ -10362,7 +12391,7 @@ var ColorMatcher = class _ColorMatcher extends matcherBase(ColorMatch) {
       return new ColorMatch(text, node);
     }
     if (node.name === "ValueName") {
-      if (Common4.Color.Nicknames.has(text)) {
+      if (Common6.Color.Nicknames.has(text)) {
         return new ColorMatch(text, node);
       }
       if (text.toLowerCase() === "currentcolor" && this.currentColorCallback) {
@@ -10388,7 +12417,7 @@ var ColorMatcher = class _ColorMatcher extends matcherBase(ColorMatch) {
         if (colorArgs.length !== (colorFunc === "color" ? 6 : 5)) {
           return null;
         }
-        const colorSpace = Common4.Color.getFormat(colorFunc !== "color" ? colorFunc : matching.ast.text(colorArgs[2]));
+        const colorSpace = Common6.Color.getFormat(colorFunc !== "color" ? colorFunc : matching.ast.text(colorArgs[2]));
         if (!colorSpace) {
           return null;
         }
@@ -10431,8 +12460,8 @@ var RelativeColorChannelMatch = class {
     this.node = node;
   }
   getColorChannelValue(relativeColor) {
-    const color = Common4.Color.parse(relativeColor.baseColor.text)?.as(relativeColor.colorSpace);
-    if (color instanceof Common4.Color.ColorFunction) {
+    const color = Common6.Color.parse(relativeColor.baseColor.text)?.as(relativeColor.colorSpace);
+    if (color instanceof Common6.Color.ColorFunction) {
       switch (this.text) {
         case "r":
           return color.isXYZ() ? null : color.p0;
@@ -10449,7 +12478,7 @@ var RelativeColorChannelMatch = class {
         case "alpha":
           return color.alpha;
       }
-    } else if (color instanceof Common4.Color.Legacy) {
+    } else if (color instanceof Common6.Color.Legacy) {
       switch (this.text) {
         case "r":
           return color.rgba()[0];
@@ -11743,7 +13772,7 @@ var TreeSearch = class _TreeSearch extends TreeWalker {
 };
 
 // gen/front_end/core/sdk/CSSProperty.js
-var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper {
+var CSSProperty = class _CSSProperty extends Common7.ObjectWrapper.ObjectWrapper {
   ownerStyle;
   index;
   name;
@@ -11770,7 +13799,7 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
     this.parsedOk = parsedOk;
     this.implicit = implicit;
     this.text = text;
-    this.range = range ? TextUtils.TextRange.TextRange.fromObject(range) : null;
+    this.range = range ? TextUtils3.TextRange.TextRange.fromObject(range) : null;
     this.#active = true;
     this.#nameRange = null;
     this.#valueRange = null;
@@ -11804,7 +13833,7 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
   #matchers(matchedStyles, computedStyles) {
     const matchers = matchedStyles.propertyMatchers(this.ownerStyle, computedStyles);
     matchers.push(new CSSWideKeywordMatcher(this, matchedStyles));
-    if (Root.Runtime.experiments.isEnabled("font-editor")) {
+    if (Root3.Runtime.experiments.isEnabled("font-editor")) {
       matchers.push(new FontMatcher());
     }
     return matchers;
@@ -11814,7 +13843,7 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
       return;
     }
     const range = this.range;
-    const text = this.text ? new TextUtils.Text.Text(this.text) : null;
+    const text = this.text ? new TextUtils3.Text.Text(this.text) : null;
     if (!range || !text) {
       return;
     }
@@ -11823,8 +13852,8 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
     if (nameIndex === -1 || valueIndex === -1 || nameIndex > valueIndex) {
       return;
     }
-    const nameSourceRange = new TextUtils.TextRange.SourceRange(nameIndex, this.name.length);
-    const valueSourceRange = new TextUtils.TextRange.SourceRange(valueIndex, this.value.length);
+    const nameSourceRange = new TextUtils3.TextRange.SourceRange(nameIndex, this.name.length);
+    const valueSourceRange = new TextUtils3.TextRange.SourceRange(valueIndex, this.value.length);
     this.#nameRange = rebase(text.toTextRange(nameSourceRange), range.startLine, range.startColumn);
     this.#valueRange = rebase(text.toTextRange(valueSourceRange), range.startLine, range.startColumn);
     function rebase(oneLineRange, lineOffset, columnOffset) {
@@ -11892,10 +13921,10 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
       return true;
     }
     const range = this.range.relativeTo(this.ownerStyle.range.startLine, this.ownerStyle.range.startColumn);
-    const indentation = this.ownerStyle.cssText ? this.detectIndentation(this.ownerStyle.cssText) : Common5.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
+    const indentation = this.ownerStyle.cssText ? this.detectIndentation(this.ownerStyle.cssText) : Common7.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
     const endIndentation = this.ownerStyle.cssText ? indentation.substring(0, this.ownerStyle.range.endColumn) : "";
-    const text = new TextUtils.Text.Text(this.ownerStyle.cssText || "");
-    const newStyleText = text.replaceRange(range, Platform.StringUtilities.sprintf(";%s;", propertyText));
+    const text = new TextUtils3.Text.Text(this.ownerStyle.cssText || "");
+    const newStyleText = text.replaceRange(range, Platform4.StringUtilities.sprintf(";%s;", propertyText));
     const styleText = await _CSSProperty.formatStyle(newStyleText, indentation, endIndentation);
     return await this.ownerStyle.setText(styleText, majorChange);
   }
@@ -11909,7 +13938,7 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
     let propertyText = "";
     let insideProperty = false;
     let needsSemi = false;
-    const tokenize = TextUtils.CodeMirrorUtils.createCssTokenizer();
+    const tokenize = TextUtils3.CodeMirrorUtils.createCssTokenizer();
     await tokenize("*{" + styleText + "}", processToken);
     if (insideProperty) {
       result += propertyText;
@@ -11969,7 +13998,7 @@ var CSSProperty = class _CSSProperty extends Common5.ObjectWrapper.ObjectWrapper
     if (lines.length < 2) {
       return "";
     }
-    return TextUtils.TextUtils.Utils.lineIndent(lines[1]);
+    return TextUtils3.TextUtils.Utils.lineIndent(lines[1]);
   }
   setValue(newValue, majorChange, overwrite, userCallback) {
     const text = this.name + ": " + newValue + (this.important ? " !important" : "") + ";";
@@ -12032,8 +14061,8 @@ __export(CSSRule_exports, {
   CSSRule: () => CSSRule,
   CSSStyleRule: () => CSSStyleRule
 });
-import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
-import * as Platform2 from "./../platform/platform.js";
+import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
+import * as Platform5 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/CSSContainerQuery.js
 var CSSContainerQuery_exports = {};
@@ -12043,7 +14072,7 @@ __export(CSSContainerQuery_exports, {
   getPhysicalAxisFromQueryAxis: () => getPhysicalAxisFromQueryAxis,
   getQueryAxisFromContainerType: () => getQueryAxisFromContainerType
 });
-import * as TextUtils3 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
 
 // gen/front_end/core/sdk/CSSQuery.js
 var CSSQuery_exports = {};
@@ -12115,7 +14144,7 @@ var CSSContainerQuery = class _CSSContainerQuery extends CSSQuery {
   }
   reinitialize(payload) {
     this.text = payload.text;
-    this.range = payload.range ? TextUtils3.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils5.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
     this.name = payload.name;
     this.physicalAxes = payload.physicalAxes;
@@ -12199,7 +14228,7 @@ var CSSLayer_exports = {};
 __export(CSSLayer_exports, {
   CSSLayer: () => CSSLayer
 });
-import * as TextUtils4 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
 var CSSLayer = class _CSSLayer extends CSSQuery {
   static parseLayerPayload(cssModel, payload) {
     return payload.map((supports) => new _CSSLayer(cssModel, supports));
@@ -12210,7 +14239,7 @@ var CSSLayer = class _CSSLayer extends CSSQuery {
   }
   reinitialize(payload) {
     this.text = payload.text;
-    this.range = payload.range ? TextUtils4.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils6.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
   }
   active() {
@@ -12226,7 +14255,7 @@ __export(CSSMedia_exports, {
   CSSMediaQueryExpression: () => CSSMediaQueryExpression,
   Source: () => Source
 });
-import * as TextUtils5 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
 var CSSMediaQuery = class _CSSMediaQuery {
   #active;
   #expressions;
@@ -12257,7 +14286,7 @@ var CSSMediaQueryExpression = class _CSSMediaQueryExpression {
     this.#value = payload.value;
     this.#unit = payload.unit;
     this.#feature = payload.feature;
-    this.#valueRange = payload.valueRange ? TextUtils5.TextRange.TextRange.fromObject(payload.valueRange) : null;
+    this.#valueRange = payload.valueRange ? TextUtils7.TextRange.TextRange.fromObject(payload.valueRange) : null;
     this.#computedLength = payload.computedLength || null;
   }
   static parsePayload(payload) {
@@ -12294,7 +14323,7 @@ var CSSMedia = class _CSSMedia extends CSSQuery {
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || "";
-    this.range = payload.range ? TextUtils5.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils7.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
     this.mediaList = null;
     if (payload.mediaList) {
@@ -12328,7 +14357,7 @@ var CSSScope_exports = {};
 __export(CSSScope_exports, {
   CSSScope: () => CSSScope
 });
-import * as TextUtils6 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 var CSSScope = class _CSSScope extends CSSQuery {
   static parseScopesPayload(cssModel, payload) {
     return payload.map((scope) => new _CSSScope(cssModel, scope));
@@ -12339,7 +14368,7 @@ var CSSScope = class _CSSScope extends CSSQuery {
   }
   reinitialize(payload) {
     this.text = payload.text;
-    this.range = payload.range ? TextUtils6.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils8.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
   }
   active() {
@@ -12352,7 +14381,7 @@ var CSSStartingStyle_exports = {};
 __export(CSSStartingStyle_exports, {
   CSSStartingStyle: () => CSSStartingStyle
 });
-import * as TextUtils7 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
 var CSSStartingStyle = class _CSSStartingStyle extends CSSQuery {
   static parseStartingStylePayload(cssModel, payload) {
     return payload.map((p) => new _CSSStartingStyle(cssModel, p));
@@ -12362,7 +14391,7 @@ var CSSStartingStyle = class _CSSStartingStyle extends CSSQuery {
     this.reinitialize(payload);
   }
   reinitialize(payload) {
-    this.range = payload.range ? TextUtils7.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils9.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
   }
   active() {
@@ -12374,9 +14403,9 @@ var CSSStartingStyle = class _CSSStartingStyle extends CSSQuery {
 var CSSStyleDeclaration_exports = {};
 __export(CSSStyleDeclaration_exports, {
   CSSStyleDeclaration: () => CSSStyleDeclaration,
-  Type: () => Type
+  Type: () => Type2
 });
-import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils10 from "./../../models/text_utils/text_utils.js";
 var CSSStyleDeclaration = class {
   #cssModel;
   parentRule;
@@ -12417,7 +14446,7 @@ var CSSStyleDeclaration = class {
   }
   #reinitialize(payload) {
     this.styleSheetId = payload.styleSheetId;
-    this.range = payload.range ? TextUtils8.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils10.TextRange.TextRange.fromObject(payload.range) : null;
     const shorthandEntries = payload.shorthandEntries;
     this.#shorthandValues = /* @__PURE__ */ new Map();
     this.#shorthandIsImportant = /* @__PURE__ */ new Set();
@@ -12620,7 +14649,7 @@ var CSSStyleDeclaration = class {
     this.insertPropertyAt(this.allProperties().length, name, value, userCallback);
   }
 };
-var Type;
+var Type2;
 (function(Type3) {
   Type3["Regular"] = "Regular";
   Type3["Inline"] = "Inline";
@@ -12628,14 +14657,14 @@ var Type;
   Type3["Pseudo"] = "Pseudo";
   Type3["Transition"] = "Transition";
   Type3["Animation"] = "Animation";
-})(Type || (Type = {}));
+})(Type2 || (Type2 = {}));
 
 // gen/front_end/core/sdk/CSSSupports.js
 var CSSSupports_exports = {};
 __export(CSSSupports_exports, {
   CSSSupports: () => CSSSupports
 });
-import * as TextUtils9 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
 var CSSSupports = class _CSSSupports extends CSSQuery {
   static parseSupportsPayload(cssModel, payload) {
     return payload.map((supports) => new _CSSSupports(cssModel, supports));
@@ -12647,7 +14676,7 @@ var CSSSupports = class _CSSSupports extends CSSQuery {
   }
   reinitialize(payload) {
     this.text = payload.text;
-    this.range = payload.range ? TextUtils9.TextRange.TextRange.fromObject(payload.range) : null;
+    this.range = payload.range ? TextUtils11.TextRange.TextRange.fromObject(payload.range) : null;
     this.styleSheetId = payload.styleSheetId;
     this.#active = payload.active;
   }
@@ -12665,11 +14694,13 @@ var CSSRule = class {
   origin;
   style;
   header;
+  treeScope;
   constructor(cssModel, payload) {
     this.header = payload.header;
     this.cssModelInternal = cssModel;
     this.origin = payload.origin;
-    this.style = new CSSStyleDeclaration(this.cssModelInternal, this, payload.style, Type.Regular);
+    this.treeScope = payload.originTreeScopeNodeId;
+    this.style = new CSSStyleDeclaration(this.cssModelInternal, this, payload.style, Type2.Regular);
   }
   get sourceURL() {
     return this.header?.sourceURL;
@@ -12681,7 +14712,7 @@ var CSSRule = class {
     this.style.rebase(edit);
   }
   resourceURL() {
-    return this.header?.resourceURL() ?? Platform2.DevToolsPath.EmptyUrlString;
+    return this.header?.resourceURL() ?? Platform5.DevToolsPath.EmptyUrlString;
   }
   isUserAgent() {
     return this.origin === "user-agent";
@@ -12709,7 +14740,7 @@ var CSSValue = class {
   constructor(payload) {
     this.text = payload.text;
     if (payload.range) {
-      this.range = TextUtils10.TextRange.TextRange.fromObject(payload.range);
+      this.range = TextUtils12.TextRange.TextRange.fromObject(payload.range);
     }
     if (payload.specificity) {
       this.specificity = payload.specificity;
@@ -12734,7 +14765,12 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
   startingStyles;
   wasUsed;
   constructor(cssModel, payload, wasUsed) {
-    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+    super(cssModel, {
+      origin: payload.origin,
+      style: payload.style,
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: payload.originTreeScopeNodeId
+    });
     this.reinitializeSelectors(payload.selectorList);
     this.nestingSelectors = payload.nestingSelectors;
     this.media = payload.media ? CSSMedia.parseMediaArrayPayload(cssModel, payload.media) : [];
@@ -12754,7 +14790,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
       },
       style: {
         styleSheetId: "0",
-        range: new TextUtils10.TextRange.TextRange(0, 0, 0, 0),
+        range: new TextUtils12.TextRange.TextRange(0, 0, 0, 0),
         shorthandEntries: [],
         cssProperties: []
       },
@@ -12791,7 +14827,7 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
     if (!firstRange || !lastRange) {
       return null;
     }
-    return new TextUtils10.TextRange.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
+    return new TextUtils12.TextRange.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
   }
   lineNumberInSource(selectorIndex) {
     const selector = this.selectors[selectorIndex];
@@ -12829,7 +14865,12 @@ var CSSStyleRule = class _CSSStyleRule extends CSSRule {
 var CSSPropertyRule = class extends CSSRule {
   #name;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+    super(cssModel, {
+      origin: payload.origin,
+      style: payload.style,
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: void 0
+    });
     this.#name = new CSSValue(payload.propertyName);
   }
   propertyName() {
@@ -12859,7 +14900,12 @@ var CSSPropertyRule = class extends CSSRule {
 var CSSFontPaletteValuesRule = class extends CSSRule {
   #paletteName;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+    super(cssModel, {
+      origin: payload.origin,
+      style: payload.style,
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: void 0
+    });
     this.#paletteName = new CSSValue(payload.fontPaletteName);
   }
   name() {
@@ -12884,7 +14930,12 @@ var CSSKeyframeRule = class extends CSSRule {
   #keyText;
   #parentRuleName;
   constructor(cssModel, payload, parentRuleName) {
-    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+    super(cssModel, {
+      origin: payload.origin,
+      style: payload.style,
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: void 0
+    });
     this.reinitializeKey(payload.keyText);
     this.#parentRuleName = parentRuleName;
   }
@@ -12927,7 +14978,12 @@ var CSSPositionTryRule = class extends CSSRule {
   #name;
   #active;
   constructor(cssModel, payload) {
-    super(cssModel, { origin: payload.origin, style: payload.style, header: styleSheetHeaderForRule(cssModel, payload) });
+    super(cssModel, {
+      origin: payload.origin,
+      style: payload.style,
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: void 0
+    });
     this.#name = new CSSValue(payload.name);
     this.#active = payload.active;
   }
@@ -12946,7 +15002,8 @@ var CSSFunctionRule = class extends CSSRule {
     super(cssModel, {
       origin: payload.origin,
       style: { cssProperties: [], shorthandEntries: [] },
-      header: styleSheetHeaderForRule(cssModel, payload)
+      header: styleSheetHeaderForRule(cssModel, payload),
+      originTreeScopeNodeId: void 0
     });
     this.#name = new CSSValue(payload.name);
     this.#parameters = payload.parameters.map(({ name }) => name);
@@ -12976,7 +15033,7 @@ var CSSFunctionRule = class extends CSSRule {
   }
   protocolNodeToNestedStyle(node) {
     if (node.style) {
-      return { style: new CSSStyleDeclaration(this.cssModelInternal, this, node.style, Type.Regular) };
+      return { style: new CSSStyleDeclaration(this.cssModelInternal, this, node.style, Type2.Regular) };
     }
     if (node.condition) {
       const children = this.protocolNodesToNestedStyles(node.condition.children);
@@ -13151,7 +15208,7 @@ var CSSRegisteredProperty = class {
   }
   style() {
     if (!this.#style) {
-      this.#style = this.#registration instanceof CSSPropertyRule ? this.#registration.style : new CSSStyleDeclaration(this.#cssModel, null, { cssProperties: this.#asCSSProperties(), shorthandEntries: [] }, Type.Pseudo);
+      this.#style = this.#registration instanceof CSSPropertyRule ? this.#registration.style : new CSSStyleDeclaration(this.#cssModel, null, { cssProperties: this.#asCSSProperties(), shorthandEntries: [] }, Type2.Pseudo);
     }
     return this.#style;
   }
@@ -13225,22 +15282,22 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       if (!attributesPayload) {
         return;
       }
-      const style = new CSSStyleDeclaration(this.#cssModel, null, attributesPayload, Type.Attributes);
+      const style = new CSSStyleDeclaration(this.#cssModel, null, attributesPayload, Type2.Attributes);
       this.#nodeForStyle.set(style, this.#node);
       nodeStyles.push(style);
     }
     if (transitionsStylePayload) {
-      const style = new CSSStyleDeclaration(this.#cssModel, null, transitionsStylePayload, Type.Transition);
+      const style = new CSSStyleDeclaration(this.#cssModel, null, transitionsStylePayload, Type2.Transition);
       this.#nodeForStyle.set(style, this.#node);
       nodeStyles.push(style);
     }
     for (const animationsStyle of animationStylesPayload) {
-      const style = new CSSStyleDeclaration(this.#cssModel, null, animationsStyle.style, Type.Animation, animationsStyle.name);
+      const style = new CSSStyleDeclaration(this.#cssModel, null, animationsStyle.style, Type2.Animation, animationsStyle.name);
       this.#nodeForStyle.set(style, this.#node);
       nodeStyles.push(style);
     }
     if (inlinePayload && this.#node.nodeType() === Node.ELEMENT_NODE) {
-      const style = new CSSStyleDeclaration(this.#cssModel, null, inlinePayload, Type.Inline);
+      const style = new CSSStyleDeclaration(this.#cssModel, null, inlinePayload, Type2.Inline);
       this.#nodeForStyle.set(style, this.#node);
       nodeStyles.push(style);
     }
@@ -13261,6 +15318,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     nodeCascades.push(new NodeCascade(
       this,
       nodeStyles,
+      this.#node,
       false
       /* #isInherited */
     ));
@@ -13275,9 +15333,9 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       const inheritedStyles = [];
       const entryPayload = inheritedPayload[i];
       const inheritedAnimatedEntryPayload = inheritedAnimatedPayload[i];
-      const inheritedInlineStyle = entryPayload.inlineStyle ? new CSSStyleDeclaration(this.#cssModel, null, entryPayload.inlineStyle, Type.Inline) : null;
-      const inheritedTransitionsStyle = inheritedAnimatedEntryPayload?.transitionsStyle ? new CSSStyleDeclaration(this.#cssModel, null, inheritedAnimatedEntryPayload?.transitionsStyle, Type.Transition) : null;
-      const inheritedAnimationStyles = inheritedAnimatedEntryPayload?.animationStyles?.map((animationStyle) => new CSSStyleDeclaration(this.#cssModel, null, animationStyle.style, Type.Animation, animationStyle.name)) ?? [];
+      const inheritedInlineStyle = entryPayload.inlineStyle ? new CSSStyleDeclaration(this.#cssModel, null, entryPayload.inlineStyle, Type2.Inline) : null;
+      const inheritedTransitionsStyle = inheritedAnimatedEntryPayload?.transitionsStyle ? new CSSStyleDeclaration(this.#cssModel, null, inheritedAnimatedEntryPayload?.transitionsStyle, Type2.Transition) : null;
+      const inheritedAnimationStyles = inheritedAnimatedEntryPayload?.animationStyles?.map((animationStyle) => new CSSStyleDeclaration(this.#cssModel, null, animationStyle.style, Type2.Animation, animationStyle.name)) ?? [];
       if (inheritedTransitionsStyle && containsInherited(inheritedTransitionsStyle)) {
         this.#nodeForStyle.set(inheritedTransitionsStyle, parentNode);
         inheritedStyles.push(inheritedTransitionsStyle);
@@ -13312,10 +15370,12 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
         inheritedStyles.push(inheritedRule.style);
         this.#inheritedStyles.add(inheritedRule.style);
       }
+      const node = parentNode;
       parentNode = await traverseParentInFlatTree(parentNode);
       nodeCascades.push(new NodeCascade(
         this,
         inheritedStyles,
+        node,
         true
         /* #isInherited */
       ));
@@ -13354,6 +15414,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
       const nodeCascade = new NodeCascade(
         this,
         highlightStyles,
+        node,
         isInherited,
         true
         /* #isHighlightPseudoCascade*/
@@ -13395,6 +15456,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
         const nodeCascade = new NodeCascade(
           this,
           pseudoStyles,
+          this.#node,
           false,
           isHighlightPseudoCascade
           /* #isHighlightPseudoCascade*/
@@ -13424,6 +15486,7 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
             const nodeCascade = new NodeCascade(
               this,
               pseudoStyles,
+              parentNode,
               true,
               isHighlightPseudoCascade
               /* #isHighlightPseudoCascade*/
@@ -13534,17 +15597,17 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     map.set(selectorText, value);
   }
   nodeStyles() {
-    Platform3.assertNotNullOrUndefined(this.#mainDOMCascade);
+    Platform6.assertNotNullOrUndefined(this.#mainDOMCascade);
     return this.#mainDOMCascade.styles();
   }
   inheritedStyles() {
     return this.#mainDOMCascade?.styles().filter((style) => this.isInherited(style)) ?? [];
   }
   animationStyles() {
-    return this.#mainDOMCascade?.styles().filter((style) => !this.isInherited(style) && style.type === Type.Animation) ?? [];
+    return this.#mainDOMCascade?.styles().filter((style) => !this.isInherited(style) && style.type === Type2.Animation) ?? [];
   }
   transitionsStyle() {
-    return this.#mainDOMCascade?.styles().find((style) => !this.isInherited(style) && style.type === Type.Transition) ?? null;
+    return this.#mainDOMCascade?.styles().find((style) => !this.isInherited(style) && style.type === Type2.Transition) ?? null;
   }
   registeredProperties() {
     return this.#registeredProperties;
@@ -13572,21 +15635,21 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     return this.#activePositionFallbackIndex;
   }
   pseudoStyles(pseudoType) {
-    Platform3.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#pseudoDOMCascades);
     const domCascade = this.#pseudoDOMCascades.get(pseudoType);
     return domCascade ? domCascade.styles() : [];
   }
   pseudoTypes() {
-    Platform3.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#pseudoDOMCascades);
     return new Set(this.#pseudoDOMCascades.keys());
   }
   customHighlightPseudoStyles(highlightName) {
-    Platform3.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     const domCascade = this.#customHighlightPseudoDOMCascades.get(highlightName);
     return domCascade ? domCascade.styles() : [];
   }
   customHighlightPseudoNames() {
-    Platform3.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     return new Set(this.#customHighlightPseudoDOMCascades.keys());
   }
   nodeForStyle(style) {
@@ -13646,9 +15709,9 @@ var CSSMatchedStyles = class _CSSMatchedStyles {
     return domCascade ? domCascade.propertyState(property) : null;
   }
   resetActiveProperties() {
-    Platform3.assertNotNullOrUndefined(this.#mainDOMCascade);
-    Platform3.assertNotNullOrUndefined(this.#pseudoDOMCascades);
-    Platform3.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#mainDOMCascade);
+    Platform6.assertNotNullOrUndefined(this.#pseudoDOMCascades);
+    Platform6.assertNotNullOrUndefined(this.#customHighlightPseudoDOMCascades);
     this.#mainDOMCascade.reset();
     for (const domCascade of this.#pseudoDOMCascades.values()) {
       domCascade.reset();
@@ -13696,11 +15759,13 @@ var NodeCascade = class {
   #isHighlightPseudoCascade;
   propertiesState = /* @__PURE__ */ new Map();
   activeProperties = /* @__PURE__ */ new Map();
-  constructor(matchedStyles, styles, isInherited, isHighlightPseudoCascade = false) {
+  #node;
+  constructor(matchedStyles, styles, node, isInherited, isHighlightPseudoCascade = false) {
     this.#matchedStyles = matchedStyles;
     this.styles = styles;
     this.#isInherited = isInherited;
     this.#isHighlightPseudoCascade = isHighlightPseudoCascade;
+    this.#node = node;
   }
   computeActiveProperties() {
     this.propertiesState.clear();
@@ -13751,9 +15816,37 @@ var NodeCascade = class {
       }
     }
   }
+  #treeScopeDistance(property) {
+    if (!property.ownerStyle.parentRule && property.ownerStyle.type !== Type2.Inline) {
+      return -1;
+    }
+    const root = this.#node.getTreeRoot();
+    const nodeId = property.ownerStyle.parentRule?.treeScope ?? root?.backendNodeId();
+    if (nodeId === void 0) {
+      return -1;
+    }
+    let distance = 0;
+    for (let ancestor = this.#node; ancestor; ancestor = ancestor.parentNode) {
+      if (ancestor.backendNodeId() === nodeId) {
+        return distance;
+      }
+      distance++;
+    }
+    return -1;
+  }
+  #needsCascadeContextStep() {
+    if (!this.#node.isInShadowTree()) {
+      return false;
+    }
+    if (this.#node.ancestorShadowRoot()?.shadowRootType() === "user-agent") {
+      const pseudoElement = this.#node.getAttribute("pseudo");
+      return !pseudoElement?.startsWith("-webkit-") && !pseudoElement?.startsWith("-internal-");
+    }
+    return true;
+  }
   updatePropertyState(propertyWithHigherSpecificity, canonicalName) {
     const activeProperty = this.activeProperties.get(canonicalName);
-    if (activeProperty?.important && !propertyWithHigherSpecificity.important) {
+    if (activeProperty?.important && !propertyWithHigherSpecificity.important || activeProperty && this.#needsCascadeContextStep() && this.#treeScopeDistance(activeProperty) > this.#treeScopeDistance(propertyWithHigherSpecificity)) {
       this.propertiesState.set(
         propertyWithHigherSpecificity,
         "Overloaded"
@@ -13936,7 +16029,7 @@ var DOMInheritanceCascade = class {
       if (!(other.ownerStyle.parentRule instanceof CSSStyleRule)) {
         return false;
       }
-      if (property.ownerStyle.type === Type.Inline) {
+      if (property.ownerStyle.type === Type2.Inline) {
         return true;
       }
       if (property.ownerStyle.parentRule instanceof CSSStyleRule && other.ownerStyle.parentRule?.origin === "regular") {
@@ -14251,11 +16344,11 @@ var CSSStyleSheetHeader_exports = {};
 __export(CSSStyleSheetHeader_exports, {
   CSSStyleSheetHeader: () => CSSStyleSheetHeader
 });
-import * as TextUtils11 from "./../../models/text_utils/text_utils.js";
-import * as Common6 from "./../common/common.js";
-import * as i18n from "./../i18n/i18n.js";
-import * as Platform4 from "./../platform/platform.js";
-var UIStrings = {
+import * as TextUtils13 from "./../../models/text_utils/text_utils.js";
+import * as Common8 from "./../common/common.js";
+import * as i18n3 from "./../i18n/i18n.js";
+import * as Platform7 from "./../platform/platform.js";
+var UIStrings2 = {
   /**
    * @description Error message for when a CSS file can't be loaded
    */
@@ -14265,8 +16358,8 @@ var UIStrings = {
    */
   thereWasAnErrorRetrievingThe: "There was an error retrieving the source styles."
 };
-var str_ = i18n.i18n.registerUIStrings("core/sdk/CSSStyleSheetHeader.ts", UIStrings);
-var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
+var str_2 = i18n3.i18n.registerUIStrings("core/sdk/CSSStyleSheetHeader.ts", UIStrings2);
+var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var CSSStyleSheetHeader = class {
   #cssModel;
   id;
@@ -14317,16 +16410,16 @@ var CSSStyleSheetHeader = class {
       const lazyContent = async () => {
         const originalText = await this.#cssModel.originalStyleSheetText(this);
         if (originalText === null) {
-          return { error: i18nString(UIStrings.couldNotFindTheOriginalStyle) };
+          return { error: i18nString2(UIStrings2.couldNotFindTheOriginalStyle) };
         }
-        return new TextUtils11.ContentData.ContentData(
+        return new TextUtils13.ContentData.ContentData(
           originalText,
           /* isBase64=*/
           false,
           "text/css"
         );
       };
-      this.#originalContentProvider = new TextUtils11.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
+      this.#originalContentProvider = new TextUtils13.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), lazyContent);
     }
     return this.#originalContentProvider;
   }
@@ -14356,7 +16449,7 @@ var CSSStyleSheetHeader = class {
       return "";
     }
     console.assert(Boolean(frame));
-    const parsedURL = new Common6.ParsedURL.ParsedURL(frame.url);
+    const parsedURL = new Common8.ParsedURL.ParsedURL(frame.url);
     let urlPath = parsedURL.host;
     if (parsedURL.port) {
       urlPath += ":" + parsedURL.port;
@@ -14389,14 +16482,14 @@ var CSSStyleSheetHeader = class {
     return this.resourceURL();
   }
   contentType() {
-    return Common6.ResourceType.resourceTypes.Stylesheet;
+    return Common8.ResourceType.resourceTypes.Stylesheet;
   }
   async requestContentData() {
     const cssText = await this.#cssModel.getStyleSheetText(this.id);
     if (cssText === null) {
-      return { error: i18nString(UIStrings.thereWasAnErrorRetrievingThe) };
+      return { error: i18nString2(UIStrings2.thereWasAnErrorRetrievingThe) };
     }
-    return new TextUtils11.ContentData.ContentData(
+    return new TextUtils13.ContentData.ContentData(
       cssText,
       /* isBase64=*/
       false,
@@ -14405,7 +16498,7 @@ var CSSStyleSheetHeader = class {
   }
   async searchInContent(query, caseSensitive, isRegex) {
     const contentData = await this.requestContentData();
-    return TextUtils11.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
+    return TextUtils13.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
   }
   isViaInspector() {
     return this.origin === "inspector";
@@ -14414,7 +16507,7 @@ var CSSStyleSheetHeader = class {
     return {
       target: this.#cssModel.target(),
       frameId: this.frameId,
-      initiatorUrl: this.hasSourceURL ? Platform4.DevToolsPath.EmptyUrlString : this.sourceURL
+      initiatorUrl: this.hasSourceURL ? Platform7.DevToolsPath.EmptyUrlString : this.sourceURL
     };
   }
   debugId() {
@@ -14425,13 +16518,13 @@ var CSSStyleSheetHeader = class {
 // gen/front_end/core/sdk/SourceMapManager.js
 var SourceMapManager_exports = {};
 __export(SourceMapManager_exports, {
-  Events: () => Events2,
+  Events: () => Events4,
   SourceMapManager: () => SourceMapManager,
   loadSourceMap: () => loadSourceMap,
   tryLoadSourceMap: () => tryLoadSourceMap
 });
-import * as Common12 from "./../common/common.js";
-import * as Platform7 from "./../platform/platform.js";
+import * as Common13 from "./../common/common.js";
+import * as Platform9 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/PageResourceLoader.js
 var PageResourceLoader_exports = {};
@@ -14440,18 +16533,18 @@ __export(PageResourceLoader_exports, {
   ResourceKey: () => ResourceKey,
   getLoadThroughTargetSetting: () => getLoadThroughTargetSetting
 });
-import * as Common9 from "./../common/common.js";
-import * as Host from "./../host/host.js";
-import * as i18n3 from "./../i18n/i18n.js";
+import * as Common11 from "./../common/common.js";
+import * as Host3 from "./../host/host.js";
+import * as i18n5 from "./../i18n/i18n.js";
 
 // gen/front_end/core/sdk/FrameManager.js
 var FrameManager_exports = {};
 __export(FrameManager_exports, {
   FrameManager: () => FrameManager
 });
-import * as Common7 from "./../common/common.js";
+import * as Common9 from "./../common/common.js";
 var frameManagerInstance = null;
-var FrameManager = class _FrameManager extends Common7.ObjectWrapper.ObjectWrapper {
+var FrameManager = class _FrameManager extends Common9.ObjectWrapper.ObjectWrapper {
   #eventListeners = /* @__PURE__ */ new WeakMap();
   // Maps frameIds to #frames and a count of how many ResourceTreeModels contain this frame.
   // (OOPIFs are usually first attached to a new target and then detached from their old target,
@@ -14475,17 +16568,17 @@ var FrameManager = class _FrameManager extends Common7.ObjectWrapper.ObjectWrapp
     frameManagerInstance = null;
   }
   modelAdded(resourceTreeModel) {
-    const addListener = resourceTreeModel.addEventListener(Events.FrameAdded, this.frameAdded, this);
-    const detachListener = resourceTreeModel.addEventListener(Events.FrameDetached, this.frameDetached, this);
-    const navigatedListener = resourceTreeModel.addEventListener(Events.FrameNavigated, this.frameNavigated, this);
-    const resourceAddedListener = resourceTreeModel.addEventListener(Events.ResourceAdded, this.resourceAdded, this);
+    const addListener = resourceTreeModel.addEventListener(Events3.FrameAdded, this.frameAdded, this);
+    const detachListener = resourceTreeModel.addEventListener(Events3.FrameDetached, this.frameDetached, this);
+    const navigatedListener = resourceTreeModel.addEventListener(Events3.FrameNavigated, this.frameNavigated, this);
+    const resourceAddedListener = resourceTreeModel.addEventListener(Events3.ResourceAdded, this.resourceAdded, this);
     this.#eventListeners.set(resourceTreeModel, [addListener, detachListener, navigatedListener, resourceAddedListener]);
     this.#framesForTarget.set(resourceTreeModel.target().id(), /* @__PURE__ */ new Set());
   }
   modelRemoved(resourceTreeModel) {
     const listeners = this.#eventListeners.get(resourceTreeModel);
     if (listeners) {
-      Common7.EventTarget.removeEventListeners(listeners);
+      Common9.EventTarget.removeEventListeners(listeners);
     }
     const frameSet = this.#framesForTarget.get(resourceTreeModel.target().id());
     if (frameSet) {
@@ -14626,7 +16719,7 @@ var IOModel_exports = {};
 __export(IOModel_exports, {
   IOModel: () => IOModel
 });
-import * as Common8 from "./../common/common.js";
+import * as Common10 from "./../common/common.js";
 
 // gen/front_end/core/sdk/RemoteObject.js
 var RemoteObject_exports = {};
@@ -15525,7 +17618,7 @@ var IOModel = class extends SDKModel {
       return null;
     }
     if (result.base64Encoded) {
-      return Common8.Base64.decode(result.data);
+      return Common10.Base64.decode(result.data);
     }
     return result.data;
   }
@@ -15592,14 +17685,14 @@ var IOModel = class extends SDKModel {
 SDKModel.register(IOModel, { capabilities: 131072, autostart: true });
 
 // gen/front_end/core/sdk/PageResourceLoader.js
-var UIStrings2 = {
+var UIStrings3 = {
   /**
    * @description Error message for canceled source map loads
    */
   loadCanceledDueToReloadOf: "Load canceled due to reload of inspected page"
 };
-var str_2 = i18n3.i18n.registerUIStrings("core/sdk/PageResourceLoader.ts", UIStrings2);
-var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
+var str_3 = i18n5.i18n.registerUIStrings("core/sdk/PageResourceLoader.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
 function isExtensionInitiator(initiator) {
   return "extensionId" in initiator;
 }
@@ -15610,7 +17703,7 @@ var ResourceKey = class {
   }
 };
 var pageResourceLoader = null;
-var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper.ObjectWrapper {
+var PageResourceLoader = class _PageResourceLoader extends Common11.ObjectWrapper.ObjectWrapper {
   #currentlyLoading = 0;
   #currentlyLoadingPerTarget = /* @__PURE__ */ new Map();
   #maxConcurrentLoads;
@@ -15620,7 +17713,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
   constructor(loadOverride, maxConcurrentLoads) {
     super();
     this.#maxConcurrentLoads = maxConcurrentLoads;
-    TargetManager.instance().addModelListener(ResourceTreeModel, Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    TargetManager.instance().addModelListener(ResourceTreeModel, Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     this.#loadOverride = loadOverride;
   }
   static instance({ forceNew, loadOverride, maxConcurrentLoads } = {
@@ -15642,7 +17735,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
       return;
     }
     for (const { reject } of this.#queuedLoads) {
-      reject(new Error(i18nString2(UIStrings2.loadCanceledDueToReloadOf)));
+      reject(new Error(i18nString3(UIStrings3.loadCanceledDueToReloadOf)));
     }
     this.#queuedLoads = [];
     const mainFrameTarget = mainFrame.resourceTreeModel().target();
@@ -15779,13 +17872,13 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
     if (this.#loadOverride) {
       return await this.#loadOverride(url);
     }
-    const parsedURL = new Common9.ParsedURL.ParsedURL(url);
+    const parsedURL = new Common11.ParsedURL.ParsedURL(url);
     const eligibleForLoadFromTarget = getLoadThroughTargetSetting().get() && parsedURL && parsedURL.scheme !== "file" && parsedURL.scheme !== "data" && parsedURL.scheme !== "devtools";
-    Host.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
+    Host3.userMetrics.developerResourceScheme(this.getDeveloperResourceScheme(parsedURL));
     if (eligibleForLoadFromTarget) {
       try {
         if (initiator.target) {
-          Host.userMetrics.developerResourceLoaded(
+          Host3.userMetrics.developerResourceLoaded(
             0
             /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_TARGET */
           );
@@ -15794,7 +17887,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
         }
         const frame = FrameManager.instance().getFrame(initiator.frameId);
         if (frame) {
-          Host.userMetrics.developerResourceLoaded(
+          Host3.userMetrics.developerResourceLoaded(
             1
             /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_VIA_FRAME */
           );
@@ -15803,7 +17896,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
         }
       } catch (e) {
         if (e instanceof Error) {
-          Host.userMetrics.developerResourceLoaded(
+          Host3.userMetrics.developerResourceLoaded(
             2
             /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FAILURE */
           );
@@ -15816,17 +17909,17 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
           }
         }
       }
-      Host.userMetrics.developerResourceLoaded(
+      Host3.userMetrics.developerResourceLoaded(
         3
         /* Host.UserMetrics.DeveloperResourceLoaded.LOAD_THROUGH_PAGE_FALLBACK */
       );
     } else {
       const code = getLoadThroughTargetSetting().get() ? 6 : 5;
-      Host.userMetrics.developerResourceLoaded(code);
+      Host3.userMetrics.developerResourceLoaded(code);
     }
     const result = await MultitargetNetworkManager.instance().loadResource(url);
     if (eligibleForLoadFromTarget && !result.success) {
-      Host.userMetrics.developerResourceLoaded(
+      Host3.userMetrics.developerResourceLoaded(
         7
         /* Host.UserMetrics.DeveloperResourceLoaded.FALLBACK_FAILURE */
       );
@@ -15858,7 +17951,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
   async loadFromTarget(target, frameId, url, isBinary) {
     const networkManager = target.model(NetworkManager);
     const ioModel = target.model(IOModel);
-    const disableCache = Common9.Settings.Settings.instance().moduleSetting("cache-disabled").get();
+    const disableCache = Common11.Settings.Settings.instance().moduleSetting("cache-disabled").get();
     const resource = await networkManager.loadNetworkResource(frameId, url, { disableCache, includeCredentials: true });
     try {
       const content = resource.stream ? isBinary ? await ioModel.readToBuffer(resource.stream) : await ioModel.readToString(resource.stream) : "";
@@ -15869,7 +17962,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
           statusCode: resource.httpStatusCode || 0,
           netError: resource.netError,
           netErrorName: resource.netErrorName,
-          message: Host.ResourceLoader.netErrorToMessage(resource.netError, resource.httpStatusCode, resource.netErrorName) || "",
+          message: Host3.ResourceLoader.netErrorToMessage(resource.netError, resource.httpStatusCode, resource.netErrorName) || "",
           urlValid: void 0
         }
       };
@@ -15881,7 +17974,7 @@ var PageResourceLoader = class _PageResourceLoader extends Common9.ObjectWrapper
   }
 };
 function getLoadThroughTargetSetting() {
-  return Common9.Settings.Settings.instance().createSetting("load-through-target", true);
+  return Common11.Settings.Settings.instance().createSetting("load-through-target", true);
 }
 
 // gen/front_end/core/sdk/SourceMap.js
@@ -15892,11 +17985,34 @@ __export(SourceMap_exports, {
   TokenIterator: () => TokenIterator,
   parseSourceMap: () => parseSourceMap
 });
-import * as TextUtils13 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils16 from "./../../models/text_utils/text_utils.js";
 import * as ScopesCodec from "./../../third_party/source-map-scopes-codec/source-map-scopes-codec.js";
-import * as Common10 from "./../common/common.js";
-import * as Platform5 from "./../platform/platform.js";
-import * as Root2 from "./../root/root.js";
+import * as Common12 from "./../common/common.js";
+import * as Platform8 from "./../platform/platform.js";
+import * as Root4 from "./../root/root.js";
+
+// gen/front_end/core/sdk/ScopeTreeCache.js
+var ScopeTreeCache_exports = {};
+__export(ScopeTreeCache_exports, {
+  scopeTreeForScript: () => scopeTreeForScript
+});
+import * as Formatter from "./../../models/formatter/formatter.js";
+import * as TextUtils15 from "./../../models/text_utils/text_utils.js";
+var scopeTrees = /* @__PURE__ */ new WeakMap();
+function scopeTreeForScript(script) {
+  let promise = scopeTrees.get(script);
+  if (promise === void 0) {
+    promise = script.requestContentData().then((content) => {
+      if (TextUtils15.ContentData.ContentData.isError(content)) {
+        return null;
+      }
+      const sourceType = script.isModule ? "module" : "script";
+      return Formatter.FormatterWorkerPool.formatterWorkerPool().javaScriptScopeTree(content.text, sourceType).then((scopeTree) => scopeTree ? { scopeTree, text: content.textObj } : null).catch(() => null);
+    });
+    scopeTrees.set(script, promise);
+  }
+  return promise;
+}
 
 // gen/front_end/core/sdk/SourceMapFunctionRanges.js
 var SourceMapFunctionRanges_exports = {};
@@ -15999,14 +18115,15 @@ __export(SourceMapScopesInfo_exports, {
   SourceMapScopesInfo: () => SourceMapScopesInfo,
   contains: () => contains
 });
+import * as Formatter2 from "./../../models/formatter/formatter.js";
 
 // gen/front_end/core/sdk/SourceMapScopeChainEntry.js
 var SourceMapScopeChainEntry_exports = {};
 __export(SourceMapScopeChainEntry_exports, {
   SourceMapScopeChainEntry: () => SourceMapScopeChainEntry
 });
-import * as i18n5 from "./../i18n/i18n.js";
-var UIStrings3 = {
+import * as i18n7 from "./../i18n/i18n.js";
+var UIStrings4 = {
   /**
    * @description Title of a section in the debugger showing local JavaScript variables.
    */
@@ -16028,8 +18145,8 @@ var UIStrings3 = {
    */
   returnValue: "Return value"
 };
-var str_3 = i18n5.i18n.registerUIStrings("core/sdk/SourceMapScopeChainEntry.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var str_4 = i18n7.i18n.registerUIStrings("core/sdk/SourceMapScopeChainEntry.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var SourceMapScopeChainEntry = class {
   #callFrame;
   #scope;
@@ -16050,7 +18167,7 @@ var SourceMapScopeChainEntry = class {
   extraProperties() {
     if (this.#returnValue) {
       return [new RemoteObjectProperty(
-        i18nString3(UIStrings3.returnValue),
+        i18nString4(UIStrings4.returnValue),
         this.#returnValue,
         void 0,
         void 0,
@@ -16080,11 +18197,11 @@ var SourceMapScopeChainEntry = class {
   typeName() {
     switch (this.#scope.kind) {
       case "global":
-        return i18nString3(UIStrings3.global);
+        return i18nString4(UIStrings4.global);
       case "function":
-        return this.#isInnerMostFunction ? i18nString3(UIStrings3.local) : i18nString3(UIStrings3.closure);
+        return this.#isInnerMostFunction ? i18nString4(UIStrings4.local) : i18nString4(UIStrings4.closure);
       case "block":
-        return i18nString3(UIStrings3.block);
+        return i18nString4(UIStrings4.block);
     }
     return this.#scope.kind ?? "";
   }
@@ -16191,7 +18308,7 @@ var SourceMapScopeRemoteObject = class _SourceMapScopeRemoteObject extends Remot
 };
 
 // gen/front_end/core/sdk/SourceMapScopesInfo.js
-var SourceMapScopesInfo = class {
+var SourceMapScopesInfo = class _SourceMapScopesInfo {
   #sourceMap;
   #originalScopes;
   #generatedRanges;
@@ -16200,6 +18317,48 @@ var SourceMapScopesInfo = class {
     this.#sourceMap = sourceMap;
     this.#originalScopes = scopeInfo.scopes;
     this.#generatedRanges = scopeInfo.ranges;
+  }
+  /**
+   * If the source map does not contain any scopes information, this factory function attempts to create bare bones scope information
+   * via the script's AST combined with the mappings.
+   *
+   * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
+   * We don't map the bounds via mappings as mappings are often iffy and it's not strictly required to translate stack traces where we
+   * map call-sites separately.
+   */
+  static createFromAst(sourceMap, scopeTree, text) {
+    const { scope, range } = convertScope(scopeTree, void 0, void 0);
+    return new _SourceMapScopesInfo(sourceMap, { scopes: [scope], ranges: [range] });
+    function convertScope(node, parentScope, parentRange) {
+      const start = positionFromOffset(node.start);
+      const end = positionFromOffset(node.end);
+      const isStackFrame = node.kind === 2;
+      const scope2 = {
+        start,
+        end,
+        name: sourceMap.findEntry(start.line, start.column, 0)?.name,
+        isStackFrame,
+        variables: [],
+        children: []
+      };
+      const range2 = {
+        start,
+        end,
+        originalScope: scope2,
+        isStackFrame,
+        isHidden: false,
+        values: [],
+        children: []
+      };
+      parentRange?.children.push(range2);
+      parentScope?.children.push(scope2);
+      node.children.forEach((child) => convertScope(child, scope2, range2));
+      return { scope: scope2, range: range2 };
+    }
+    function positionFromOffset(offset) {
+      const location = text.positionFromOffset(offset);
+      return { line: location.lineNumber, column: location.columnNumber };
+    }
   }
   addOriginalScopes(scopes) {
     for (const scope of scopes) {
@@ -16213,6 +18372,9 @@ var SourceMapScopesInfo = class {
   }
   hasOriginalScopes(sourceIdx) {
     return Boolean(this.#originalScopes[sourceIdx]);
+  }
+  isEmpty() {
+    return !this.#originalScopes.length && !this.#generatedRanges.length;
   }
   addOriginalScopesAtIndex(sourceIdx, scope) {
     if (!this.#originalScopes[sourceIdx]) {
@@ -16474,22 +18636,25 @@ var SourceMap = class {
   #mappings;
   #sourceInfos = [];
   #sourceInfoByURL = /* @__PURE__ */ new Map();
+  #script;
   #scopesInfo = null;
   #debugId;
+  scopesFallbackPromiseForTest;
   /**
    * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
    * for format description.
    */
-  constructor(compiledURL, sourceMappingURL, payload) {
+  constructor(compiledURL, sourceMappingURL, payload, script) {
     this.#json = payload;
+    this.#script = script;
     this.#compiledURL = compiledURL;
     this.#sourceMappingURL = sourceMappingURL;
-    this.#baseURL = Common10.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
+    this.#baseURL = Common12.ParsedURL.schemeIs(sourceMappingURL, "data:") ? compiledURL : sourceMappingURL;
     this.#debugId = "debugId" in payload ? payload.debugId : void 0;
     this.#mappings = null;
     if ("sections" in this.#json) {
       if (this.#json.sections.find((section) => "url" in section)) {
-        Common10.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
+        Common12.Console.Console.instance().warn(`SourceMap "${sourceMappingURL}" contains unsupported "URL" field in one of its sections.`);
       }
     }
     this.eachSection(this.parseSources.bind(this));
@@ -16498,7 +18663,7 @@ var SourceMap = class {
     return this.#json;
   }
   augmentWithScopes(scriptUrl, ranges) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     if (this.#json && this.#json.version > 3) {
       throw new Error("Only support augmenting source maps up to version 3.");
     }
@@ -16538,11 +18703,11 @@ var SourceMap = class {
     return entry.content;
   }
   hasScopeInfo() {
-    this.#ensureMappingsProcessed();
-    return this.#scopesInfo !== null;
+    this.#ensureSourceMapProcessed();
+    return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
   }
   findEntry(lineNumber, columnNumber, inlineFrameIndex) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     if (inlineFrameIndex && this.#scopesInfo !== null) {
       const { inlinedFunctions } = this.#scopesInfo.findInlinedFunctions(lineNumber, columnNumber);
       const { callsite } = inlinedFunctions[inlineFrameIndex - 1];
@@ -16561,12 +18726,12 @@ var SourceMap = class {
       };
     }
     const mappings = this.mappings();
-    const index = Platform5.ArrayUtilities.upperBound(mappings, void 0, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
+    const index = Platform8.ArrayUtilities.upperBound(mappings, void 0, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
     return index ? mappings[index - 1] : null;
   }
   findEntryRanges(lineNumber, columnNumber) {
     const mappings = this.mappings();
-    const endIndex = Platform5.ArrayUtilities.upperBound(mappings, void 0, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
+    const endIndex = Platform8.ArrayUtilities.upperBound(mappings, void 0, (_, entry) => lineNumber - entry.lineNumber || columnNumber - entry.columnNumber);
     if (!endIndex) {
       return null;
     }
@@ -16577,24 +18742,24 @@ var SourceMap = class {
     }
     const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
     const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
-    const range = new TextUtils13.TextRange.TextRange(mappings[startIndex].lineNumber, mappings[startIndex].columnNumber, endLine, endColumn);
+    const range = new TextUtils16.TextRange.TextRange(mappings[startIndex].lineNumber, mappings[startIndex].columnNumber, endLine, endColumn);
     const reverseMappings = this.reversedMappings(sourceURL);
     const startSourceLine = mappings[startIndex].sourceLineNumber;
     const startSourceColumn = mappings[startIndex].sourceColumnNumber;
-    const endReverseIndex = Platform5.ArrayUtilities.upperBound(reverseMappings, void 0, (_, i) => startSourceLine - mappings[i].sourceLineNumber || startSourceColumn - mappings[i].sourceColumnNumber);
+    const endReverseIndex = Platform8.ArrayUtilities.upperBound(reverseMappings, void 0, (_, i) => startSourceLine - mappings[i].sourceLineNumber || startSourceColumn - mappings[i].sourceColumnNumber);
     if (!endReverseIndex) {
       return null;
     }
     const endSourceLine = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceLineNumber : 2 ** 31 - 1;
     const endSourceColumn = endReverseIndex < reverseMappings.length ? mappings[reverseMappings[endReverseIndex]].sourceColumnNumber : 2 ** 31 - 1;
-    const sourceRange = new TextUtils13.TextRange.TextRange(startSourceLine, startSourceColumn, endSourceLine, endSourceColumn);
+    const sourceRange = new TextUtils16.TextRange.TextRange(startSourceLine, startSourceColumn, endSourceLine, endSourceColumn);
     return { range, sourceRange, sourceURL };
   }
   sourceLineMapping(sourceURL, lineNumber, columnNumber) {
     const mappings = this.mappings();
     const reverseMappings = this.reversedMappings(sourceURL);
-    const first = Platform5.ArrayUtilities.lowerBound(reverseMappings, lineNumber, lineComparator);
-    const last = Platform5.ArrayUtilities.upperBound(reverseMappings, lineNumber, lineComparator);
+    const first = Platform8.ArrayUtilities.lowerBound(reverseMappings, lineNumber, lineComparator);
+    const last = Platform8.ArrayUtilities.upperBound(reverseMappings, lineNumber, lineComparator);
     if (first >= reverseMappings.length || mappings[reverseMappings[first]].sourceLineNumber !== lineNumber) {
       return null;
     }
@@ -16602,7 +18767,7 @@ var SourceMap = class {
     if (!columnMappings.length) {
       return null;
     }
-    const index = Platform5.ArrayUtilities.lowerBound(columnMappings, columnNumber, (columnNumber2, i) => columnNumber2 - mappings[i].sourceColumnNumber);
+    const index = Platform8.ArrayUtilities.lowerBound(columnMappings, columnNumber, (columnNumber2, i) => columnNumber2 - mappings[i].sourceColumnNumber);
     return index >= columnMappings.length ? mappings[columnMappings[columnMappings.length - 1]] : mappings[columnMappings[index]];
     function lineComparator(lineNumber2, i) {
       return lineNumber2 - mappings[i].sourceLineNumber;
@@ -16611,7 +18776,7 @@ var SourceMap = class {
   findReverseIndices(sourceURL, lineNumber, columnNumber) {
     const mappings = this.mappings();
     const reverseMappings = this.reversedMappings(sourceURL);
-    const endIndex = Platform5.ArrayUtilities.upperBound(reverseMappings, void 0, (_, i) => lineNumber - mappings[i].sourceLineNumber || columnNumber - mappings[i].sourceColumnNumber);
+    const endIndex = Platform8.ArrayUtilities.upperBound(reverseMappings, void 0, (_, i) => lineNumber - mappings[i].sourceLineNumber || columnNumber - mappings[i].sourceColumnNumber);
     let startIndex = endIndex;
     while (startIndex > 0 && mappings[reverseMappings[startIndex - 1]].sourceLineNumber === mappings[reverseMappings[endIndex - 1]].sourceLineNumber && mappings[reverseMappings[startIndex - 1]].sourceColumnNumber === mappings[reverseMappings[endIndex - 1]].sourceColumnNumber) {
       --startIndex;
@@ -16637,23 +18802,41 @@ var SourceMap = class {
       const startColumn = mappings[startIndex].columnNumber;
       const endLine = endIndex < mappings.length ? mappings[endIndex].lineNumber : 2 ** 31 - 1;
       const endColumn = endIndex < mappings.length ? mappings[endIndex].columnNumber : 2 ** 31 - 1;
-      ranges.push(new TextUtils13.TextRange.TextRange(startLine, startColumn, endLine, endColumn));
+      ranges.push(new TextUtils16.TextRange.TextRange(startLine, startColumn, endLine, endColumn));
     }
     return ranges;
   }
   mappings() {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     return this.#mappings ?? [];
   }
+  /**
+   * If the source map does not contain scope information by itself (e.g. "scopes proposal"
+   * or "pasta" scopes), then we'll use this getter to calculate basic function name information from
+   * the AST and mappings.
+   */
+  async #buildScopesFallback() {
+    const scopeTreeAndText = this.#script ? await scopeTreeForScript(this.#script) : null;
+    if (!scopeTreeAndText) {
+      return null;
+    }
+    const { scopeTree, text } = scopeTreeAndText;
+    return SourceMapScopesInfo.createFromAst(this, scopeTree, text);
+  }
   reversedMappings(sourceURL) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
   }
-  #ensureMappingsProcessed() {
+  #ensureSourceMapProcessed() {
     if (this.#mappings === null) {
       this.#mappings = [];
       try {
         this.eachSection(this.parseMap.bind(this));
+        if (!this.hasScopeInfo()) {
+          this.scopesFallbackPromiseForTest = this.#buildScopesFallback().then((info) => {
+            this.#scopesInfo = info;
+          });
+        }
       } catch (e) {
         console.error("Failed to parse source map", e);
         this.#mappings = [];
@@ -16714,14 +18897,14 @@ var SourceMap = class {
     const ignoreList = new Set(sourceMap.ignoreList ?? sourceMap.x_google_ignoreList);
     for (let i = 0; i < sourceMap.sources.length; ++i) {
       let href = sourceMap.sources[i];
-      if (Common10.ParsedURL.ParsedURL.isRelativeURL(href)) {
+      if (Common12.ParsedURL.ParsedURL.isRelativeURL(href)) {
         if (sourceRoot && !sourceRoot.endsWith("/") && href && !href.startsWith("/")) {
           href = sourceRoot.concat("/", href);
         } else {
           href = sourceRoot.concat(href);
         }
       }
-      const url = Common10.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
+      const url = Common12.ParsedURL.ParsedURL.completeURL(this.#baseURL, href) || href;
       const source = sourceMap.sourcesContent?.[i];
       const sourceInfo = {
         sourceURL: url,
@@ -16777,7 +18960,7 @@ var SourceMap = class {
       nameIndex += tokenIter.nextVLQ();
       this.mappings().push(new SourceMapEntry(lineNumber, columnNumber, sourceIndex, sourceURL, sourceLineNumber, sourceColumnNumber, names[nameIndex]));
     }
-    if (Root2.Runtime.experiments.isEnabled(
+    if (Root4.Runtime.experiments.isEnabled(
       "use-source-map-scopes"
       /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
     )) {
@@ -16832,7 +19015,7 @@ var SourceMap = class {
     if (reverseMappings.length === 0) {
       return [];
     }
-    let startReverseIndex = Platform5.ArrayUtilities.lowerBound(reverseMappings, textRange, ({ startLine, startColumn }, index) => {
+    let startReverseIndex = Platform8.ArrayUtilities.lowerBound(reverseMappings, textRange, ({ startLine, startColumn }, index) => {
       const { sourceLineNumber, sourceColumnNumber } = mappings[index];
       return startLine - sourceLineNumber || startColumn - sourceColumnNumber;
     });
@@ -16850,14 +19033,14 @@ var SourceMap = class {
     const ranges = [];
     for (let reverseIndex = startReverseIndex; reverseIndex < endReverseIndex; ++reverseIndex) {
       const startIndex = reverseMappings[reverseIndex], endIndex = startIndex + 1;
-      const range = TextUtils13.TextRange.TextRange.createUnboundedFromLocation(mappings[startIndex].lineNumber, mappings[startIndex].columnNumber);
+      const range = TextUtils16.TextRange.TextRange.createUnboundedFromLocation(mappings[startIndex].lineNumber, mappings[startIndex].columnNumber);
       if (endIndex < mappings.length) {
         range.endLine = mappings[endIndex].lineNumber;
         range.endColumn = mappings[endIndex].columnNumber;
       }
       ranges.push(range);
     }
-    ranges.sort(TextUtils13.TextRange.TextRange.comparator);
+    ranges.sort(TextUtils16.TextRange.TextRange.comparator);
     let j = 0;
     for (let i = 1; i < ranges.length; ++i) {
       if (ranges[j].immediatelyPrecedes(ranges[i])) {
@@ -16895,13 +19078,13 @@ var SourceMap = class {
     }
     let current = null;
     if ((mappings[0].lineNumber !== 0 || mappings[0].columnNumber !== 0) && options?.isStartMatching) {
-      current = TextUtils13.TextRange.TextRange.createUnboundedFromLocation(0, 0);
+      current = TextUtils16.TextRange.TextRange.createUnboundedFromLocation(0, 0);
       ranges.push(current);
     }
     for (const { sourceURL, lineNumber, columnNumber } of mappings) {
       const ignoreListHint = sourceURL && predicate(sourceURL);
       if (!current && ignoreListHint) {
-        current = TextUtils13.TextRange.TextRange.createUnboundedFromLocation(lineNumber, columnNumber);
+        current = TextUtils16.TextRange.TextRange.createUnboundedFromLocation(lineNumber, columnNumber);
         ranges.push(current);
         continue;
       }
@@ -16928,21 +19111,21 @@ var SourceMap = class {
     return this.embeddedContentByURL(sourceURL) === other.embeddedContentByURL(sourceURL) && this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
   }
   expandCallFrame(frame) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     if (this.#scopesInfo === null) {
       return [frame];
     }
     return this.#scopesInfo.expandCallFrame(frame);
   }
   resolveScopeChain(frame) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     if (this.#scopesInfo === null) {
       return null;
     }
     return this.#scopesInfo.resolveMappedScopeChain(frame);
   }
   findOriginalFunctionName(position) {
-    this.#ensureMappingsProcessed();
+    this.#ensureSourceMapProcessed();
     return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
   }
 };
@@ -16979,7 +19162,7 @@ var TokenIterator = class {
         throw new Error("Unexpected end of input while decodling VLQ number!");
       }
       const charCode = this.nextCharCode();
-      digit = Common10.Base64.BASE64_CODES[charCode];
+      digit = Common12.Base64.BASE64_CODES[charCode];
       if (charCode !== 65 && digit === 0) {
         throw new Error(`Unexpected char '${String.fromCharCode(charCode)}' encountered while decoding`);
       }
@@ -17049,264 +19232,18 @@ var SourceMapCache = class _SourceMapCache {
   }
 };
 
-// gen/front_end/core/sdk/Target.js
-var Target_exports = {};
-__export(Target_exports, {
-  Target: () => Target,
-  Type: () => Type2
-});
-import * as Common11 from "./../common/common.js";
-import * as Platform6 from "./../platform/platform.js";
-import * as ProtocolClient from "./../protocol_client/protocol_client.js";
-var Target = class extends ProtocolClient.InspectorBackend.TargetBase {
-  #targetManager;
-  #name;
-  #inspectedURL = Platform6.DevToolsPath.EmptyUrlString;
-  #inspectedURLName = "";
-  #capabilitiesMask;
-  #type;
-  #parentTarget;
-  #id;
-  #modelByConstructor = /* @__PURE__ */ new Map();
-  #isSuspended;
-  /**
-   * Generally when a target crashes we don't need to know, with one exception.
-   * If a target crashes during the recording of a performance trace, after the
-   * trace when we try to resume() it, it will fail because it has crashed. This
-   * causes the performance panel to freeze (see crbug.com/333989070). So we
-   * mark the target as crashed so we can exit without trying to resume it. In
-   * `ChildTargetManager` we will mark a target as "un-crashed" when we get the
-   * `targetInfoChanged` event. This helps ensure we can deal with cases where
-   * the page crashes, but a reload fixes it and the targets get restored (see
-   * crbug.com/387258086).
-   */
-  #hasCrashed = false;
-  #targetInfo;
-  #creatingModels;
-  constructor(targetManager, id, name, type, parentTarget, sessionId, suspended, connection, targetInfo) {
-    const needsNodeJSPatching = type === Type2.NODE;
-    super(needsNodeJSPatching, parentTarget, sessionId, connection);
-    this.#targetManager = targetManager;
-    this.#name = name;
-    this.#capabilitiesMask = 0;
-    switch (type) {
-      case Type2.FRAME:
-        this.#capabilitiesMask = 1 | 8192 | 2 | 4 | 8 | 16 | 32 | 128 | 256 | 1024 | 2048 | 32768 | 65536 | 131072 | 262144 | 524288;
-        if (parentTarget?.type() !== Type2.FRAME) {
-          this.#capabilitiesMask |= 4096 | 64 | 512 | 16384;
-          if (Common11.ParsedURL.schemeIs(targetInfo?.url, "chrome-extension:")) {
-            this.#capabilitiesMask &= ~512;
-          }
-        }
-        break;
-      case Type2.ServiceWorker:
-        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 2048 | 131072 | 524288;
-        if (parentTarget?.type() !== Type2.FRAME) {
-          this.#capabilitiesMask |= 1 | 8192;
-        }
-        break;
-      case Type2.SHARED_WORKER:
-        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 2048 | 524288;
-        if (parentTarget?.type() !== Type2.FRAME) {
-          this.#capabilitiesMask |= 8192;
-        }
-        break;
-      case Type2.SHARED_STORAGE_WORKLET:
-        this.#capabilitiesMask = 4 | 8 | 2048 | 524288;
-        break;
-      case Type2.Worker:
-        this.#capabilitiesMask = 4 | 8 | 16 | 32 | 131072 | 262144 | 256 | 524288;
-        if (parentTarget?.type() !== Type2.FRAME) {
-          this.#capabilitiesMask |= 8192;
-        }
-        break;
-      case Type2.WORKLET:
-        this.#capabilitiesMask = 4 | 8 | 524288 | 16;
-        break;
-      case Type2.NODE:
-        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
-        break;
-      case Type2.AUCTION_WORKLET:
-        this.#capabilitiesMask = 4 | 524288;
-        break;
-      case Type2.BROWSER:
-        this.#capabilitiesMask = 32 | 131072;
-        break;
-      case Type2.TAB:
-        this.#capabilitiesMask = 32 | 128;
-        break;
-      case Type2.NODE_WORKER:
-        this.#capabilitiesMask = 4 | 16 | 32 | 131072;
-    }
-    this.#type = type;
-    this.#parentTarget = parentTarget;
-    this.#id = id;
-    this.#isSuspended = suspended;
-    this.#targetInfo = targetInfo;
-  }
-  createModels(required) {
-    this.#creatingModels = true;
-    const registeredModels2 = Array.from(SDKModel.registeredModels.entries());
-    for (const [modelClass, info] of registeredModels2) {
-      if (info.early) {
-        this.model(modelClass);
-      }
-    }
-    for (const [modelClass, info] of registeredModels2) {
-      if (info.autostart || required.has(modelClass)) {
-        this.model(modelClass);
-      }
-    }
-    this.#creatingModels = false;
-  }
-  id() {
-    return this.#id;
-  }
-  name() {
-    return this.#name || this.#inspectedURLName;
-  }
-  setName(name) {
-    if (this.#name === name) {
-      return;
-    }
-    this.#name = name;
-    this.#targetManager.onNameChange(this);
-  }
-  type() {
-    return this.#type;
-  }
-  markAsNodeJSForTest() {
-    super.markAsNodeJSForTest();
-    this.#type = Type2.NODE;
-  }
-  targetManager() {
-    return this.#targetManager;
-  }
-  hasAllCapabilities(capabilitiesMask) {
-    return (this.#capabilitiesMask & capabilitiesMask) === capabilitiesMask;
-  }
-  decorateLabel(label) {
-    return this.#type === Type2.Worker || this.#type === Type2.ServiceWorker ? "\u2699 " + label : label;
-  }
-  parentTarget() {
-    return this.#parentTarget;
-  }
-  outermostTarget() {
-    let lastTarget = null;
-    let currentTarget = this;
-    do {
-      if (currentTarget.type() !== Type2.TAB && currentTarget.type() !== Type2.BROWSER) {
-        lastTarget = currentTarget;
-      }
-      currentTarget = currentTarget.parentTarget();
-    } while (currentTarget);
-    return lastTarget;
-  }
-  dispose(reason) {
-    super.dispose(reason);
-    this.#targetManager.removeTarget(this);
-    for (const model of this.#modelByConstructor.values()) {
-      model.dispose();
-    }
-  }
-  model(modelClass) {
-    if (!this.#modelByConstructor.get(modelClass)) {
-      const info = SDKModel.registeredModels.get(modelClass);
-      if (info === void 0) {
-        throw new Error("Model class is not registered");
-      }
-      if ((this.#capabilitiesMask & info.capabilities) === info.capabilities) {
-        const model = new modelClass(this);
-        this.#modelByConstructor.set(modelClass, model);
-        if (!this.#creatingModels) {
-          this.#targetManager.modelAdded(modelClass, model, this.#targetManager.isInScope(this));
-        }
-      }
-    }
-    return this.#modelByConstructor.get(modelClass) || null;
-  }
-  models() {
-    return this.#modelByConstructor;
-  }
-  inspectedURL() {
-    return this.#inspectedURL;
-  }
-  setInspectedURL(inspectedURL) {
-    this.#inspectedURL = inspectedURL;
-    const parsedURL = Common11.ParsedURL.ParsedURL.fromString(inspectedURL);
-    this.#inspectedURLName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + this.#id;
-    this.#targetManager.onInspectedURLChange(this);
-    if (!this.#name) {
-      this.#targetManager.onNameChange(this);
-    }
-  }
-  hasCrashed() {
-    return this.#hasCrashed;
-  }
-  setHasCrashed(isCrashed) {
-    const wasCrashed = this.#hasCrashed;
-    this.#hasCrashed = isCrashed;
-    if (wasCrashed && !isCrashed) {
-      void this.resume();
-    }
-  }
-  async suspend(reason) {
-    if (this.#isSuspended) {
-      return;
-    }
-    this.#isSuspended = true;
-    if (this.#hasCrashed) {
-      return;
-    }
-    await Promise.all(Array.from(this.models().values(), (m) => m.preSuspendModel(reason)));
-    await Promise.all(Array.from(this.models().values(), (m) => m.suspendModel(reason)));
-  }
-  async resume() {
-    if (!this.#isSuspended) {
-      return;
-    }
-    this.#isSuspended = false;
-    if (this.#hasCrashed) {
-      return;
-    }
-    await Promise.all(Array.from(this.models().values(), (m) => m.resumeModel()));
-    await Promise.all(Array.from(this.models().values(), (m) => m.postResumeModel()));
-  }
-  suspended() {
-    return this.#isSuspended;
-  }
-  updateTargetInfo(targetInfo) {
-    this.#targetInfo = targetInfo;
-  }
-  targetInfo() {
-    return this.#targetInfo;
-  }
-};
-var Type2;
-(function(Type3) {
-  Type3["FRAME"] = "frame";
-  Type3["ServiceWorker"] = "service-worker";
-  Type3["Worker"] = "worker";
-  Type3["SHARED_WORKER"] = "shared-worker";
-  Type3["SHARED_STORAGE_WORKLET"] = "shared-storage-worklet";
-  Type3["NODE"] = "node";
-  Type3["BROWSER"] = "browser";
-  Type3["AUCTION_WORKLET"] = "auction-worklet";
-  Type3["WORKLET"] = "worklet";
-  Type3["TAB"] = "tab";
-  Type3["NODE_WORKER"] = "node-worker";
-})(Type2 || (Type2 = {}));
-
 // gen/front_end/core/sdk/SourceMapManager.js
-var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.ObjectWrapper {
+var SourceMapManager = class _SourceMapManager extends Common13.ObjectWrapper.ObjectWrapper {
   #target;
+  #factory;
   #isEnabled = true;
   #clientData = /* @__PURE__ */ new Map();
   #sourceMaps = /* @__PURE__ */ new Map();
   #attachingClient = null;
-  constructor(target) {
+  constructor(target, factory) {
     super();
     this.#target = target;
+    this.#factory = factory ?? ((compiledURL, sourceMappingURL, payload) => new SourceMap(compiledURL, sourceMappingURL, payload));
   }
   setEnabled(isEnabled) {
     if (isEnabled === this.#isEnabled) {
@@ -17322,13 +19259,13 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     }
   }
   static getBaseUrl(target) {
-    while (target && target.type() !== Type2.FRAME) {
+    while (target && target.type() !== Type.FRAME) {
       target = target.parentTarget();
     }
-    return target?.inspectedURL() ?? Platform7.DevToolsPath.EmptyUrlString;
+    return target?.inspectedURL() ?? Platform9.DevToolsPath.EmptyUrlString;
   }
   static resolveRelativeSourceURL(target, url) {
-    url = Common12.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
+    url = Common13.ParsedURL.ParsedURL.completeURL(_SourceMapManager.getBaseUrl(target), url) ?? url;
     return url;
   }
   sourceMapForClient(client) {
@@ -17361,27 +19298,27 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     };
     if (this.#isEnabled) {
       const sourceURL = _SourceMapManager.resolveRelativeSourceURL(this.#target, relativeSourceURL);
-      const sourceMapURL = Common12.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
+      const sourceMapURL = Common13.ParsedURL.ParsedURL.completeURL(sourceURL, relativeSourceMapURL);
       if (sourceMapURL) {
         if (this.#attachingClient) {
           console.error("Attaching source map may cancel previously attaching source map");
         }
         this.#attachingClient = client;
-        this.dispatchEventToListeners(Events2.SourceMapWillAttach, { client });
+        this.dispatchEventToListeners(Events4.SourceMapWillAttach, { client });
         if (this.#attachingClient === client) {
           this.#attachingClient = null;
           const initiator = client.createPageResourceLoadInitiator();
           clientData.sourceMapPromise = loadSourceMap(sourceMapURL, client.debugId(), initiator).then((payload) => {
-            const sourceMap = new SourceMap(sourceURL, sourceMapURL, payload);
+            const sourceMap = this.#factory(sourceURL, sourceMapURL, payload, client);
             if (this.#clientData.get(client) === clientData) {
               clientData.sourceMap = sourceMap;
               this.#sourceMaps.set(sourceMap, client);
-              this.dispatchEventToListeners(Events2.SourceMapAttached, { client, sourceMap });
+              this.dispatchEventToListeners(Events4.SourceMapAttached, { client, sourceMap });
             }
             return sourceMap;
           }, () => {
             if (this.#clientData.get(client) === clientData) {
-              this.dispatchEventToListeners(Events2.SourceMapFailedToAttach, { client });
+              this.dispatchEventToListeners(Events4.SourceMapFailedToAttach, { client });
             }
             return void 0;
           });
@@ -17390,7 +19327,7 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
             console.error("Cancelling source map attach because another source map is attaching");
           }
           clientData = null;
-          this.dispatchEventToListeners(Events2.SourceMapFailedToAttach, { client });
+          this.dispatchEventToListeners(Events4.SourceMapFailedToAttach, { client });
         }
       }
     }
@@ -17419,10 +19356,13 @@ var SourceMapManager = class _SourceMapManager extends Common12.ObjectWrapper.Ob
     const { sourceMap } = clientData;
     if (sourceMap) {
       this.#sourceMaps.delete(sourceMap);
-      this.dispatchEventToListeners(Events2.SourceMapDetached, { client, sourceMap });
+      this.dispatchEventToListeners(Events4.SourceMapDetached, { client, sourceMap });
     } else {
-      this.dispatchEventToListeners(Events2.SourceMapFailedToAttach, { client });
+      this.dispatchEventToListeners(Events4.SourceMapFailedToAttach, { client });
     }
+  }
+  waitForSourceMapsProcessedForTest() {
+    return Promise.all(this.#sourceMaps.keys().map((sourceMap) => sourceMap.scopesFallbackPromiseForTest));
   }
 };
 async function loadSourceMap(url, debugId, initiator) {
@@ -17451,13 +19391,13 @@ async function tryLoadSourceMap(url, initiator) {
     return null;
   }
 }
-var Events2;
+var Events4;
 (function(Events12) {
   Events12["SourceMapWillAttach"] = "SourceMapWillAttach";
   Events12["SourceMapFailedToAttach"] = "SourceMapFailedToAttach";
   Events12["SourceMapAttached"] = "SourceMapAttached";
   Events12["SourceMapDetached"] = "SourceMapDetached";
-})(Events2 || (Events2 = {}));
+})(Events4 || (Events4 = {}));
 
 // gen/front_end/core/sdk/CSSModel.js
 var CSSModel = class _CSSModel extends SDKModel {
@@ -17468,7 +19408,7 @@ var CSSModel = class _CSSModel extends SDKModel {
   #resourceTreeModel;
   #sourceMapManager;
   #styleLoader;
-  #stylePollingThrottler = new Common13.Throttler.Throttler(StylePollingInterval);
+  #stylePollingThrottler = new Common14.Throttler.Throttler(StylePollingInterval);
   #styleSheetIdsForURL = /* @__PURE__ */ new Map();
   #styleSheetIdToHeader = /* @__PURE__ */ new Map();
   #cachedMatchedCascadeNode = null;
@@ -17487,14 +19427,14 @@ var CSSModel = class _CSSModel extends SDKModel {
     this.#styleLoader = new ComputedStyleLoader(this);
     this.#resourceTreeModel = target.model(ResourceTreeModel);
     if (this.#resourceTreeModel) {
-      this.#resourceTreeModel.addEventListener(Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+      this.#resourceTreeModel.addEventListener(Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     }
     target.registerCSSDispatcher(new CSSDispatcher(this));
     if (!target.suspended()) {
       void this.enable();
     }
-    this.#sourceMapManager.setEnabled(Common13.Settings.Settings.instance().moduleSetting("css-source-maps-enabled").get());
-    Common13.Settings.Settings.instance().moduleSetting("css-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
+    this.#sourceMapManager.setEnabled(Common14.Settings.Settings.instance().moduleSetting("css-source-maps-enabled").get());
+    Common14.Settings.Settings.instance().moduleSetting("css-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
   }
   async colorScheme() {
     if (!this.#colorScheme) {
@@ -17528,7 +19468,7 @@ var CSSModel = class _CSSModel extends SDKModel {
   createRawLocationsByURL(sourceURL, lineNumber, columnNumber = 0) {
     const headers = this.headersForSourceURL(sourceURL);
     headers.sort(stylesheetComparator);
-    const endIndex = Platform8.ArrayUtilities.upperBound(headers, void 0, (_, header) => lineNumber - header.startLine || columnNumber - header.startColumn);
+    const endIndex = Platform10.ArrayUtilities.upperBound(headers, void 0, (_, header) => lineNumber - header.startLine || columnNumber - header.startColumn);
     if (!endIndex) {
       return [];
     }
@@ -17592,7 +19532,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setSelectorText(styleSheetId, range, text) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { selectorList } = await this.agent.invoke_setRuleSelector({ styleSheetId, range, selector: text });
@@ -17609,7 +19549,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setPropertyRulePropertyName(styleSheetId, range, text) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { propertyName } = await this.agent.invoke_setPropertyRulePropertyName({ styleSheetId, range, propertyName: text });
@@ -17626,7 +19566,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setKeyframeKey(styleSheetId, range, text) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { keyText } = await this.agent.invoke_setKeyframeKey({ styleSheetId, range, keyText: text });
@@ -17678,7 +19618,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     if (this.#isRuleUsageTrackingEnabled) {
       await this.startCoverage();
     }
-    this.dispatchEventToListeners(Events3.ModelWasEnabled);
+    this.dispatchEventToListeners(Events5.ModelWasEnabled);
   }
   async getAnimatedStylesForNode(nodeId) {
     const response = await this.agent.invoke_getAnimatedStylesForNode({ nodeId });
@@ -17692,7 +19632,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     if (!node) {
       return null;
     }
-    const shouldGetAnimatedStyles = Root3.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled;
+    const shouldGetAnimatedStyles = Root5.Runtime.hostConfig.devToolsAnimationStylesInStylesTab?.enabled;
     const [matchedStylesResponse, animatedStylesResponse] = await Promise.all([
       this.agent.invoke_getMatchedStylesForNode({ nodeId }),
       shouldGetAnimatedStyles ? this.agent.invoke_getAnimatedStylesForNode({ nodeId }) : void 0
@@ -17796,13 +19736,13 @@ var CSSModel = class _CSSModel extends SDKModel {
     if (response.getError() || !response.inlineStyle) {
       return null;
     }
-    const inlineStyle = new CSSStyleDeclaration(this, null, response.inlineStyle, Type.Inline);
-    const attributesStyle = response.attributesStyle ? new CSSStyleDeclaration(this, null, response.attributesStyle, Type.Attributes) : null;
+    const inlineStyle = new CSSStyleDeclaration(this, null, response.inlineStyle, Type2.Inline);
+    const attributesStyle = response.attributesStyle ? new CSSStyleDeclaration(this, null, response.attributesStyle, Type2.Attributes) : null;
     return new InlineStyleResult(inlineStyle, attributesStyle);
   }
   forceStartingStyle(node, forced) {
     void this.agent.invoke_forceStartingStyle({ nodeId: node.id, forced });
-    this.dispatchEventToListeners(Events3.StartingStylesStateForced, node);
+    this.dispatchEventToListeners(Events5.StartingStylesStateForced, node);
     return true;
   }
   forcePseudoState(node, pseudoClass, enable) {
@@ -17818,7 +19758,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       if (!hasPseudoClass) {
         return false;
       }
-      Platform8.ArrayUtilities.removeElement(forcedPseudoClasses, pseudoClass);
+      Platform10.ArrayUtilities.removeElement(forcedPseudoClasses, pseudoClass);
       if (forcedPseudoClasses.length) {
         node.setMarker(PseudoStateMarker, forcedPseudoClasses);
       } else {
@@ -17829,14 +19769,14 @@ var CSSModel = class _CSSModel extends SDKModel {
       return false;
     }
     void this.agent.invoke_forcePseudoState({ nodeId: node.id, forcedPseudoClasses });
-    this.dispatchEventToListeners(Events3.PseudoStateForced, { node, pseudoClass, enable });
+    this.dispatchEventToListeners(Events5.PseudoStateForced, { node, pseudoClass, enable });
     return true;
   }
   pseudoState(node) {
     return node.marker(PseudoStateMarker) || [];
   }
   async setMediaText(styleSheetId, range, newMediaText) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { media } = await this.agent.invoke_setMediaText({ styleSheetId, range, text: newMediaText });
@@ -17853,7 +19793,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setContainerQueryText(styleSheetId, range, newContainerQueryText) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { containerQuery } = await this.agent.invoke_setContainerQueryText({ styleSheetId, range, text: newContainerQueryText });
@@ -17870,7 +19810,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setSupportsText(styleSheetId, range, newSupportsText) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { supports } = await this.agent.invoke_setSupportsText({ styleSheetId, range, text: newSupportsText });
@@ -17887,7 +19827,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
   }
   async setScopeText(styleSheetId, range, newScopeText) {
-    Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.StyleRuleEdited);
+    Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.StyleRuleEdited);
     try {
       await this.ensureOriginalStyleSheetText(styleSheetId);
       const { scope } = await this.agent.invoke_setScopeText({ styleSheetId, range, text: newScopeText });
@@ -17945,13 +19885,13 @@ var CSSModel = class _CSSModel extends SDKModel {
   }
   mediaQueryResultChanged() {
     this.#colorScheme = void 0;
-    this.dispatchEventToListeners(Events3.MediaQueryResultChanged);
+    this.dispatchEventToListeners(Events5.MediaQueryResultChanged);
   }
   fontsUpdated(fontFace) {
     if (fontFace) {
       this.#fontFaces.set(fontFace.src, new CSSFontFace(fontFace));
     }
-    this.dispatchEventToListeners(Events3.FontsUpdated);
+    this.dispatchEventToListeners(Events5.FontsUpdated);
   }
   fontFaces() {
     return [...this.#fontFaces.values()];
@@ -17966,7 +19906,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     return [...this.#styleSheetIdToHeader.values()];
   }
   fireStyleSheetChanged(styleSheetId, edit) {
-    this.dispatchEventToListeners(Events3.StyleSheetChanged, { styleSheetId, edit });
+    this.dispatchEventToListeners(Events5.StyleSheetChanged, { styleSheetId, edit });
   }
   ensureOriginalStyleSheetText(styleSheetId) {
     const header = this.styleSheetHeaderForId(styleSheetId);
@@ -17990,7 +19930,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     return this.#styleSheetIdToHeader.values();
   }
   computedStyleUpdated(nodeId) {
-    this.dispatchEventToListeners(Events3.ComputedStyleUpdated, { nodeId });
+    this.dispatchEventToListeners(Events5.ComputedStyleUpdated, { nodeId });
   }
   styleSheetAdded(header) {
     console.assert(!this.#styleSheetIdToHeader.get(header.styleSheetId));
@@ -18019,7 +19959,7 @@ var CSSModel = class _CSSModel extends SDKModel {
       styleSheetIds.add(styleSheetHeader.id);
     }
     this.#sourceMapManager.attachSourceMap(styleSheetHeader, styleSheetHeader.sourceURL, styleSheetHeader.sourceMapURL);
-    this.dispatchEventToListeners(Events3.StyleSheetAdded, styleSheetHeader);
+    this.dispatchEventToListeners(Events5.StyleSheetAdded, styleSheetHeader);
   }
   styleSheetRemoved(id) {
     const header = this.#styleSheetIdToHeader.get(id);
@@ -18045,7 +19985,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     }
     this.#originalStyleSheetText.delete(header);
     this.#sourceMapManager.detachSourceMap(header);
-    this.dispatchEventToListeners(Events3.StyleSheetRemoved, header);
+    this.dispatchEventToListeners(Events5.StyleSheetRemoved, header);
   }
   getStyleSheetIdsForURL(url) {
     const frameIdToStyleSheetIds = this.#styleSheetIdsForURL.get(url);
@@ -18103,7 +20043,7 @@ var CSSModel = class _CSSModel extends SDKModel {
     this.#styleSheetIdToHeader.clear();
     for (const header of headers) {
       this.#sourceMapManager.detachSourceMap(header);
-      this.dispatchEventToListeners(Events3.StyleSheetRemoved, header);
+      this.dispatchEventToListeners(Events5.StyleSheetRemoved, header);
     }
   }
   resetFontFaces() {
@@ -18182,13 +20122,13 @@ var CSSModel = class _CSSModel extends SDKModel {
   dispose() {
     this.disableCSSPropertyTracker();
     super.dispose();
-    this.dispatchEventToListeners(Events3.ModelDisposed, this);
+    this.dispatchEventToListeners(Events5.ModelDisposed, this);
   }
   getAgent() {
     return this.agent;
   }
 };
-var Events3;
+var Events5;
 (function(Events12) {
   Events12["FontsUpdated"] = "FontsUpdated";
   Events12["MediaQueryResultChanged"] = "MediaQueryResultChanged";
@@ -18200,7 +20140,7 @@ var Events3;
   Events12["StyleSheetChanged"] = "StyleSheetChanged";
   Events12["StyleSheetRemoved"] = "StyleSheetRemoved";
   Events12["ComputedStyleUpdated"] = "ComputedStyleUpdated";
-})(Events3 || (Events3 = {}));
+})(Events5 || (Events5 = {}));
 var PseudoStateMarker = "pseudo-state-marker";
 var Edit = class {
   styleSheetId;
@@ -18211,7 +20151,7 @@ var Edit = class {
   constructor(styleSheetId, oldRange, newText, payload) {
     this.styleSheetId = styleSheetId;
     this.oldRange = oldRange;
-    this.newRange = TextUtils14.TextRange.TextRange.fromEdit(oldRange, newText);
+    this.newRange = TextUtils17.TextRange.TextRange.fromEdit(oldRange, newText);
     this.newText = newText;
     this.payload = payload;
   }
@@ -18294,7 +20234,7 @@ var InlineStyleResult = class {
     this.attributesStyle = attributesStyle;
   }
 };
-var CSSPropertyTracker = class extends Common13.ObjectWrapper.ObjectWrapper {
+var CSSPropertyTracker = class extends Common14.ObjectWrapper.ObjectWrapper {
   #cssModel;
   #properties;
   constructor(cssModel, propertiesToTrack) {
@@ -18322,9 +20262,9 @@ __export(OverlayModel_exports, {
   SourceOrderHighlighter: () => SourceOrderHighlighter,
   WindowControls: () => WindowControls
 });
-import * as Common19 from "./../common/common.js";
-import * as i18n11 from "./../i18n/i18n.js";
-import * as Root5 from "./../root/root.js";
+import * as Common20 from "./../common/common.js";
+import * as i18n13 from "./../i18n/i18n.js";
+import * as Root7 from "./../root/root.js";
 
 // gen/front_end/core/sdk/DebuggerModel.js
 var DebuggerModel_exports = {};
@@ -18334,7 +20274,7 @@ __export(DebuggerModel_exports, {
   CallFrame: () => CallFrame,
   DebuggerModel: () => DebuggerModel,
   DebuggerPausedDetails: () => DebuggerPausedDetails,
-  Events: () => Events5,
+  Events: () => Events7,
   LOGPOINT_SOURCE_URL: () => LOGPOINT_SOURCE_URL,
   Location: () => Location,
   PauseOnExceptionsState: () => PauseOnExceptionsState,
@@ -18342,21 +20282,21 @@ __export(DebuggerModel_exports, {
   WASM_SYMBOLS_PRIORITY: () => WASM_SYMBOLS_PRIORITY,
   sortAndMergeRanges: () => sortAndMergeRanges
 });
-import * as Common16 from "./../common/common.js";
-import * as Host4 from "./../host/host.js";
-import * as i18n9 from "./../i18n/i18n.js";
-import * as Platform10 from "./../platform/platform.js";
-import * as Root4 from "./../root/root.js";
+import * as Common17 from "./../common/common.js";
+import * as Host6 from "./../host/host.js";
+import * as i18n11 from "./../i18n/i18n.js";
+import * as Platform12 from "./../platform/platform.js";
+import * as Root6 from "./../root/root.js";
 
 // gen/front_end/core/sdk/RuntimeModel.js
 var RuntimeModel_exports = {};
 __export(RuntimeModel_exports, {
-  Events: () => Events4,
+  Events: () => Events6,
   ExecutionContext: () => ExecutionContext,
   RuntimeModel: () => RuntimeModel
 });
-import * as Common14 from "./../common/common.js";
-import * as Host3 from "./../host/host.js";
+import * as Common15 from "./../common/common.js";
+import * as Host5 from "./../host/host.js";
 
 // gen/front_end/core/sdk/HeapProfilerModel.js
 var HeapProfilerModel_exports = {};
@@ -18499,10 +20439,10 @@ var RuntimeModel = class extends SDKModel {
     this.agent = target.runtimeAgent();
     this.target().registerRuntimeDispatcher(new RuntimeDispatcher(this));
     void this.agent.invoke_enable();
-    if (Common14.Settings.Settings.instance().moduleSetting("custom-formatters").get()) {
+    if (Common15.Settings.Settings.instance().moduleSetting("custom-formatters").get()) {
       void this.agent.invoke_setCustomObjectFormatterEnabled({ enabled: true });
     }
-    Common14.Settings.Settings.instance().moduleSetting("custom-formatters").addChangeListener(this.customFormattersStateChanged.bind(this));
+    Common15.Settings.Settings.instance().moduleSetting("custom-formatters").addChangeListener(this.customFormattersStateChanged.bind(this));
   }
   static isSideEffectFailure(response) {
     const exceptionDetails = "exceptionDetails" in response && response.exceptionDetails;
@@ -18541,7 +20481,7 @@ var RuntimeModel = class extends SDKModel {
     const data = context.auxData || { isDefault: true };
     const executionContext = new ExecutionContext(this, context.id, context.uniqueId, context.name, context.origin, data["isDefault"], data["frameId"]);
     this.#executionContextById.set(executionContext.id, executionContext);
-    this.dispatchEventToListeners(Events4.ExecutionContextCreated, executionContext);
+    this.dispatchEventToListeners(Events6.ExecutionContextCreated, executionContext);
   }
   executionContextDestroyed(executionContextId) {
     const executionContext = this.#executionContextById.get(executionContextId);
@@ -18550,17 +20490,17 @@ var RuntimeModel = class extends SDKModel {
     }
     this.debuggerModel().executionContextDestroyed(executionContext);
     this.#executionContextById.delete(executionContextId);
-    this.dispatchEventToListeners(Events4.ExecutionContextDestroyed, executionContext);
+    this.dispatchEventToListeners(Events6.ExecutionContextDestroyed, executionContext);
   }
   fireExecutionContextOrderChanged() {
-    this.dispatchEventToListeners(Events4.ExecutionContextOrderChanged, this);
+    this.dispatchEventToListeners(Events6.ExecutionContextOrderChanged, this);
   }
   executionContextsCleared() {
     this.debuggerModel().globalObjectCleared();
     const contexts = this.executionContexts();
     this.#executionContextById.clear();
     for (let i = 0; i < contexts.length; ++i) {
-      this.dispatchEventToListeners(Events4.ExecutionContextDestroyed, contexts[i]);
+      this.dispatchEventToListeners(Events6.ExecutionContextDestroyed, contexts[i]);
     }
   }
   createRemoteObject(payload) {
@@ -18674,7 +20614,7 @@ var RuntimeModel = class extends SDKModel {
       }
     }
     if (object.isNode()) {
-      void Common14.Revealer.reveal(object).then(object.release.bind(object));
+      void Common15.Revealer.reveal(object).then(object.release.bind(object));
       return;
     }
     if (object.type === "function") {
@@ -18686,7 +20626,7 @@ var RuntimeModel = class extends SDKModel {
       if (!response?.location) {
         return;
       }
-      void Common14.Revealer.reveal(response.location);
+      void Common15.Revealer.reveal(response.location);
     }
     object.release();
   }
@@ -18697,20 +20637,20 @@ var RuntimeModel = class extends SDKModel {
     return await this.agent.invoke_removeBinding(request);
   }
   bindingCalled(event) {
-    this.dispatchEventToListeners(Events4.BindingCalled, event);
+    this.dispatchEventToListeners(Events6.BindingCalled, event);
   }
   copyRequested(object) {
     if (!object.objectId) {
-      Host3.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(object.unserializableValue() || object.value);
+      Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(object.unserializableValue() || object.value);
       return;
     }
-    const indent = Common14.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
+    const indent = Common15.Settings.Settings.instance().moduleSetting("text-editor-indent").get();
     void object.callFunctionJSON(toStringForClipboard, [{
       value: {
         subtype: object.subtype,
         indent
       }
-    }]).then(Host3.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host3.InspectorFrontendHost.InspectorFrontendHostInstance));
+    }]).then(Host5.InspectorFrontendHost.InspectorFrontendHostInstance.copyText.bind(Host5.InspectorFrontendHost.InspectorFrontendHostInstance));
     function toStringForClipboard(data) {
       const subtype = data.subtype;
       const indent2 = data.indent;
@@ -18731,10 +20671,10 @@ var RuntimeModel = class extends SDKModel {
     const result = await this.queryObjects(object);
     object.release();
     if ("error" in result) {
-      Common14.Console.Console.instance().error(result.error);
+      Common15.Console.Console.instance().error(result.error);
       return;
     }
-    this.dispatchEventToListeners(Events4.QueryObjectRequested, { objects: result.objects, executionContextId });
+    this.dispatchEventToListeners(Events6.QueryObjectRequested, { objects: result.objects, executionContextId });
   }
   static simpleTextFromException(exceptionDetails) {
     let text = exceptionDetails.text;
@@ -18749,10 +20689,10 @@ var RuntimeModel = class extends SDKModel {
   }
   exceptionThrown(timestamp, exceptionDetails) {
     const exceptionWithTimestamp = { timestamp, details: exceptionDetails };
-    this.dispatchEventToListeners(Events4.ExceptionThrown, exceptionWithTimestamp);
+    this.dispatchEventToListeners(Events6.ExceptionThrown, exceptionWithTimestamp);
   }
   exceptionRevoked(exceptionId) {
-    this.dispatchEventToListeners(Events4.ExceptionRevoked, exceptionId);
+    this.dispatchEventToListeners(Events6.ExceptionRevoked, exceptionId);
   }
   consoleAPICalled(type, args, executionContextId, timestamp, stackTrace, context) {
     const consoleAPICall = {
@@ -18763,7 +20703,7 @@ var RuntimeModel = class extends SDKModel {
       stackTrace,
       context
     };
-    this.dispatchEventToListeners(Events4.ConsoleAPICalled, consoleAPICall);
+    this.dispatchEventToListeners(Events6.ConsoleAPICalled, consoleAPICall);
   }
   executionContextIdForScriptId(scriptId) {
     const script = this.debuggerModel().scriptForId(scriptId);
@@ -18790,7 +20730,7 @@ var RuntimeModel = class extends SDKModel {
     return response.exceptionDetails;
   }
 };
-var Events4;
+var Events6;
 (function(Events12) {
   Events12["BindingCalled"] = "BindingCalled";
   Events12["ExecutionContextCreated"] = "ExecutionContextCreated";
@@ -18801,7 +20741,7 @@ var Events4;
   Events12["ExceptionRevoked"] = "ExceptionRevoked";
   Events12["ConsoleAPICalled"] = "ConsoleAPICalled";
   Events12["QueryObjectRequested"] = "QueryObjectRequested";
-})(Events4 || (Events4 = {}));
+})(Events6 || (Events6 = {}));
 var RuntimeDispatcher = class {
   #runtimeModel;
   constructor(runtimeModel) {
@@ -18859,16 +20799,16 @@ var ExecutionContext = class {
   }
   static comparator(a, b) {
     function targetWeight(target) {
-      if (target.parentTarget()?.type() !== Type2.FRAME) {
+      if (target.parentTarget()?.type() !== Type.FRAME) {
         return 5;
       }
-      if (target.type() === Type2.FRAME) {
+      if (target.type() === Type.FRAME) {
         return 4;
       }
-      if (target.type() === Type2.ServiceWorker) {
+      if (target.type() === Type.ServiceWorker) {
         return 3;
       }
-      if (target.type() === Type2.Worker || target.type() === Type2.SHARED_WORKER) {
+      if (target.type() === Type.Worker || target.type() === Type.SHARED_WORKER) {
         return 2;
       }
       return 1;
@@ -18987,7 +20927,7 @@ var ExecutionContext = class {
   }
   setLabel(label) {
     this.#setLabel(label);
-    this.runtimeModel.dispatchEventToListeners(Events4.ExecutionContextChanged, this);
+    this.runtimeModel.dispatchEventToListeners(Events6.ExecutionContextChanged, this);
   }
   #setLabel(label) {
     if (label) {
@@ -18998,7 +20938,7 @@ var ExecutionContext = class {
       this.#label = this.name;
       return;
     }
-    const parsedUrl = Common14.ParsedURL.ParsedURL.fromString(this.origin);
+    const parsedUrl = Common15.ParsedURL.ParsedURL.fromString(this.origin);
     this.#label = parsedUrl ? parsedUrl.lastPathComponentWithFragment() : "";
   }
 };
@@ -19011,10 +20951,10 @@ __export(Script_exports, {
   disassembleWasm: () => disassembleWasm,
   sourceURLRegex: () => sourceURLRegex
 });
-import * as TextUtils15 from "./../../models/text_utils/text_utils.js";
-import * as Common15 from "./../common/common.js";
-import * as i18n7 from "./../i18n/i18n.js";
-var UIStrings4 = {
+import * as TextUtils18 from "./../../models/text_utils/text_utils.js";
+import * as Common16 from "./../common/common.js";
+import * as i18n9 from "./../i18n/i18n.js";
+var UIStrings5 = {
   /**
    * @description Error message for when a script can't be loaded which had been previously
    */
@@ -19024,8 +20964,8 @@ var UIStrings4 = {
    */
   unableToFetchScriptSource: "Unable to fetch script source."
 };
-var str_4 = i18n7.i18n.registerUIStrings("core/sdk/Script.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var str_5 = i18n9.i18n.registerUIStrings("core/sdk/Script.ts", UIStrings5);
+var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var scriptCacheInstance = null;
 var Script = class _Script {
   debuggerModel;
@@ -19127,7 +21067,7 @@ var Script = class _Script {
     return this.sourceURL;
   }
   contentType() {
-    return Common15.ResourceType.resourceTypes.Script;
+    return Common16.ResourceType.resourceTypes.Script;
   }
   async loadTextContent() {
     const result = await this.debuggerModel.target().debuggerAgent().invoke_getScriptSource({ scriptId: this.scriptId });
@@ -19136,7 +21076,7 @@ var Script = class _Script {
     }
     const { scriptSource, bytecode } = result;
     if (bytecode) {
-      return new TextUtils15.ContentData.ContentData(
+      return new TextUtils18.ContentData.ContentData(
         bytecode,
         /* isBase64 */
         true,
@@ -19144,10 +21084,10 @@ var Script = class _Script {
       );
     }
     let content = scriptSource || "";
-    if (this.hasSourceURL && Common15.ParsedURL.schemeIs(this.sourceURL, "snippet:")) {
+    if (this.hasSourceURL && Common16.ParsedURL.schemeIs(this.sourceURL, "snippet:")) {
       content = _Script.trimSourceURLComment(content);
     }
-    return new TextUtils15.ContentData.ContentData(
+    return new TextUtils18.ContentData.ContentData(
       content,
       /* isBase64 */
       false,
@@ -19193,7 +21133,7 @@ var Script = class _Script {
     for (let i = 0; i < functionBodyOffsets.length; i += 2) {
       functionBodyRanges.push({ start: functionBodyOffsets[i], end: functionBodyOffsets[i + 1] });
     }
-    return new TextUtils15.WasmDisassembly.WasmDisassembly(lines.concat(...lineChunks), bytecodeOffsets.concat(...bytecodeOffsetChunks), functionBodyRanges);
+    return new TextUtils18.WasmDisassembly.WasmDisassembly(lines.concat(...lineChunks), bytecodeOffsets.concat(...bytecodeOffsetChunks), functionBodyRanges);
   }
   requestContentData() {
     if (!this.#contentPromise) {
@@ -19231,12 +21171,12 @@ var Script = class _Script {
   }
   async #requestContent() {
     if (!this.scriptId) {
-      return { error: i18nString4(UIStrings4.scriptRemovedOrDeleted) };
+      return { error: i18nString5(UIStrings5.scriptRemovedOrDeleted) };
     }
     try {
       return this.isWasm() ? await this.loadWasmContent() : await this.loadTextContent();
     } catch {
-      return { error: i18nString4(UIStrings4.unableToFetchScriptSource) };
+      return { error: i18nString5(UIStrings5.unableToFetchScriptSource) };
     }
   }
   async getWasmBytecode() {
@@ -19245,14 +21185,14 @@ var Script = class _Script {
     return await response.arrayBuffer();
   }
   originalContentProvider() {
-    return new TextUtils15.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => this.requestContentData());
+    return new TextUtils18.StaticContentProvider.StaticContentProvider(this.contentURL(), this.contentType(), () => this.requestContentData());
   }
   async searchInContent(query, caseSensitive, isRegex) {
     if (!this.scriptId) {
       return [];
     }
     const matches = await this.debuggerModel.target().debuggerAgent().invoke_searchInContent({ scriptId: this.scriptId, query, caseSensitive, isRegex });
-    return TextUtils15.TextUtils.performSearchInSearchMatches(matches.result || [], query, caseSensitive, isRegex);
+    return TextUtils18.TextUtils.performSearchInSearchMatches(matches.result || [], query, caseSensitive, isRegex);
   }
   appendSourceURLCommentIfNeeded(source) {
     if (!this.hasSourceURL) {
@@ -19263,7 +21203,7 @@ var Script = class _Script {
   async editSource(newSource) {
     newSource = _Script.trimSourceURLComment(newSource);
     newSource = this.appendSourceURLCommentIfNeeded(newSource);
-    const oldSource = TextUtils15.ContentData.ContentData.textOr(await this.requestContentData(), null);
+    const oldSource = TextUtils18.ContentData.ContentData.textOr(await this.requestContentData(), null);
     if (oldSource === newSource) {
       return {
         changed: false,
@@ -19276,14 +21216,14 @@ var Script = class _Script {
       throw new Error(`Script#editSource failed for script with id ${this.scriptId}: ${response.getError()}`);
     }
     if (!response.getError() && response.status === "Ok") {
-      this.#contentPromise = Promise.resolve(new TextUtils15.ContentData.ContentData(
+      this.#contentPromise = Promise.resolve(new TextUtils18.ContentData.ContentData(
         newSource,
         /* isBase64 */
         false,
         "text/javascript"
       ));
     }
-    this.debuggerModel.dispatchEventToListeners(Events5.ScriptSourceWasEdited, { script: this, status: response.status });
+    this.debuggerModel.dispatchEventToListeners(Events7.ScriptSourceWasEdited, { script: this, status: response.status });
     return { changed: true, status: response.status, exceptionDetails: response.exceptionDetails };
   }
   rawLocation(lineNumber, columnNumber) {
@@ -19368,7 +21308,7 @@ function frameIdForScript(script) {
 }
 var sourceURLRegex = /^[\x20\t]*\/\/[@#] sourceURL=\s*(\S*?)\s*$/;
 async function disassembleWasm(content) {
-  const worker = Common15.Worker.WorkerWrapper.fromURL(new URL("../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js", import.meta.url));
+  const worker = Common16.Worker.WorkerWrapper.fromURL(new URL("../../entrypoints/wasmparser_worker/wasmparser_worker-entrypoint.js", import.meta.url));
   const promise = new Promise((resolve, reject) => {
     worker.onmessage = ({ data }) => {
       if ("method" in data) {
@@ -19378,7 +21318,7 @@ async function disassembleWasm(content) {
               reject(data.error);
             } else if ("result" in data) {
               const { lines, offsets, functionBodyOffsets } = data.result;
-              resolve(new TextUtils15.WasmDisassembly.WasmDisassembly(lines, offsets, functionBodyOffsets));
+              resolve(new TextUtils18.WasmDisassembly.WasmDisassembly(lines, offsets, functionBodyOffsets));
             }
             break;
         }
@@ -19395,7 +21335,7 @@ async function disassembleWasm(content) {
 }
 
 // gen/front_end/core/sdk/DebuggerModel.js
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Title of a section in the debugger showing local JavaScript variables.
    */
@@ -19445,8 +21385,8 @@ var UIStrings5 = {
    */
   returnValue: "Return value"
 };
-var str_5 = i18n9.i18n.registerUIStrings("core/sdk/DebuggerModel.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var str_6 = i18n11.i18n.registerUIStrings("core/sdk/DebuggerModel.ts", UIStrings6);
+var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 function sortAndMergeRanges(locationRanges) {
   function compare(p1, p2) {
     return p1.lineNumber - p2.lineNumber || p1.columnNumber - p2.columnNumber;
@@ -19517,7 +21457,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   #synchronizeBreakpointsCallback = null;
   // We need to be able to register listeners for individual breakpoints. As such, we dispatch
   // on breakpoint ids, which are not statically known. The event #payload will always be a `Location`.
-  #breakpointResolvedEventTarget = new Common16.ObjectWrapper.ObjectWrapper();
+  #breakpointResolvedEventTarget = new Common17.ObjectWrapper.ObjectWrapper();
   // When stepping over with autostepping enabled, the context denotes the function to which autostepping is restricted
   // to by way of its functionLocation (as per Debugger.CallFrame).
   #autoSteppingContext = null;
@@ -19527,20 +21467,20 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     target.registerDebuggerDispatcher(new DebuggerDispatcher(this));
     this.agent = target.debuggerAgent();
     this.#runtimeModel = target.model(RuntimeModel);
-    this.#sourceMapManager = new SourceMapManager(target);
-    Common16.Settings.Settings.instance().moduleSetting("pause-on-exception-enabled").addChangeListener(this.pauseOnExceptionStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("pause-on-uncaught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").addChangeListener(this.asyncStackTracesStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("breakpoints-active").addChangeListener(this.breakpointsActiveChanged, this);
+    this.#sourceMapManager = new SourceMapManager(target, (compiledURL, sourceMappingURL, payload, script) => new SourceMap(compiledURL, sourceMappingURL, payload, script));
+    Common17.Settings.Settings.instance().moduleSetting("pause-on-exception-enabled").addChangeListener(this.pauseOnExceptionStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("pause-on-uncaught-exception").addChangeListener(this.pauseOnExceptionStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").addChangeListener(this.asyncStackTracesStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("breakpoints-active").addChangeListener(this.breakpointsActiveChanged, this);
     if (!target.suspended()) {
       void this.enableDebugger();
     }
-    this.#sourceMapManager.setEnabled(Common16.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").get());
-    Common16.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
+    this.#sourceMapManager.setEnabled(Common17.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").get());
+    Common17.Settings.Settings.instance().moduleSetting("js-source-maps-enabled").addChangeListener((event) => this.#sourceMapManager.setEnabled(event.data));
     const resourceTreeModel = target.model(ResourceTreeModel);
     if (resourceTreeModel) {
-      resourceTreeModel.addEventListener(Events.FrameNavigated, this.onFrameNavigated, this);
+      resourceTreeModel.addEventListener(Events3.FrameNavigated, this.onFrameNavigated, this);
     }
   }
   static selectSymbolSource(debugSymbols) {
@@ -19563,7 +21503,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     }
     console.assert(debugSymbolsSource !== null, "Unknown symbol types. Front-end and back-end should be kept in sync regarding Protocol.Debugger.DebugSymbolTypes");
     if (debugSymbolsSource && debugSymbols.length > 1) {
-      Common16.Console.Console.instance().warn(`Multiple debug symbols for script were found. Using ${debugSymbolsSource.type}`);
+      Common17.Console.Console.instance().warn(`Multiple debug symbols for script were found. Using ${debugSymbolsSource.type}`);
     }
     return debugSymbolsSource;
   }
@@ -19584,11 +21524,11 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     this.#debuggerEnabled = true;
-    const isRemoteFrontend = Root4.Runtime.Runtime.queryParam("remoteFrontend") || Root4.Runtime.Runtime.queryParam("ws");
+    const isRemoteFrontend = Root6.Runtime.Runtime.queryParam("remoteFrontend") || Root6.Runtime.Runtime.queryParam("ws");
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
     let instrumentationPromise;
-    if (Root4.Runtime.experiments.isEnabled(
+    if (Root6.Runtime.experiments.isEnabled(
       "instrumentation-breakpoints"
       /* Root.Runtime.ExperimentName.INSTRUMENTATION_BREAKPOINTS */
     )) {
@@ -19598,15 +21538,15 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     }
     this.pauseOnExceptionStateChanged();
     void this.asyncStackTracesStateChanged();
-    if (!Common16.Settings.Settings.instance().moduleSetting("breakpoints-active").get()) {
+    if (!Common17.Settings.Settings.instance().moduleSetting("breakpoints-active").get()) {
       this.breakpointsActiveChanged();
     }
-    this.dispatchEventToListeners(Events5.DebuggerWasEnabled, this);
+    this.dispatchEventToListeners(Events7.DebuggerWasEnabled, this);
     const [enableResult] = await Promise.all([enablePromise, instrumentationPromise]);
     this.registerDebugger(enableResult);
   }
   async syncDebuggerId() {
-    const isRemoteFrontend = Root4.Runtime.Runtime.queryParam("remoteFrontend") || Root4.Runtime.Runtime.queryParam("ws");
+    const isRemoteFrontend = Root6.Runtime.Runtime.queryParam("remoteFrontend") || Root6.Runtime.Runtime.queryParam("ws");
     const maxScriptsCacheSize = isRemoteFrontend ? 1e7 : 1e8;
     const enablePromise = this.agent.invoke_enable({ maxScriptsCacheSize });
     void enablePromise.then(this.registerDebugger.bind(this));
@@ -19626,7 +21566,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     const { debuggerId } = response;
     debuggerIdToModel.set(debuggerId, this);
     this.#debuggerId = debuggerId;
-    this.dispatchEventToListeners(Events5.DebuggerIsReadyToPause, this);
+    this.dispatchEventToListeners(Events7.DebuggerIsReadyToPause, this);
   }
   isReadyToPause() {
     return Boolean(this.#debuggerId);
@@ -19655,7 +21595,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     await this.agent.invoke_disable();
     this.#isPausing = false;
     this.globalObjectCleared();
-    this.dispatchEventToListeners(Events5.DebuggerWasDisabled, this);
+    this.dispatchEventToListeners(Events7.DebuggerWasDisabled, this);
     if (typeof this.#debuggerId === "string") {
       debuggerIdToModel.delete(this.#debuggerId);
     }
@@ -19676,9 +21616,9 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     this.#skipAllPausesTimeout = window.setTimeout(this.skipAllPauses.bind(this, false), timeout);
   }
   pauseOnExceptionStateChanged() {
-    const pauseOnCaughtEnabled = Common16.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").get();
+    const pauseOnCaughtEnabled = Common17.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").get();
     let state;
-    const pauseOnUncaughtEnabled = Common16.Settings.Settings.instance().moduleSetting("pause-on-uncaught-exception").get();
+    const pauseOnUncaughtEnabled = Common17.Settings.Settings.instance().moduleSetting("pause-on-uncaught-exception").get();
     if (pauseOnCaughtEnabled && pauseOnUncaughtEnabled) {
       state = "all";
     } else if (pauseOnCaughtEnabled) {
@@ -19692,12 +21632,12 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   }
   asyncStackTracesStateChanged() {
     const maxAsyncStackChainDepth = 32;
-    const enabled = !Common16.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").get() && this.#debuggerEnabled;
+    const enabled = !Common17.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").get() && this.#debuggerEnabled;
     const maxDepth = enabled ? maxAsyncStackChainDepth : 0;
     return this.agent.invoke_setAsyncCallStackDepth({ maxDepth });
   }
   breakpointsActiveChanged() {
-    void this.agent.invoke_setBreakpointsActive({ active: Common16.Settings.Settings.instance().moduleSetting("breakpoints-active").get() });
+    void this.agent.invoke_setBreakpointsActive({ active: Common17.Settings.Settings.instance().moduleSetting("breakpoints-active").get() });
   }
   setComputeAutoStepRangesCallback(callback) {
     this.#computeAutoStepRangesCallback = callback;
@@ -19760,10 +21700,10 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   }
   async setBreakpointByURL(url, lineNumber, columnNumber, condition) {
     let urlRegex;
-    if (this.target().type() === Type2.NODE && Common16.ParsedURL.schemeIs(url, "file:")) {
-      const platformPath = Common16.ParsedURL.ParsedURL.urlToRawPathString(url, Host4.Platform.isWin());
-      urlRegex = `${Platform10.StringUtilities.escapeForRegExp(platformPath)}|${Platform10.StringUtilities.escapeForRegExp(url)}`;
-      if (Host4.Platform.isWin() && platformPath.match(/^.:\\/)) {
+    if (this.target().type() === Type.NODE && Common17.ParsedURL.schemeIs(url, "file:")) {
+      const platformPath = Common17.ParsedURL.ParsedURL.urlToRawPathString(url, Host6.Platform.isWin());
+      urlRegex = `${Platform12.StringUtilities.escapeForRegExp(platformPath)}|${Platform12.StringUtilities.escapeForRegExp(url)}`;
+      if (Host6.Platform.isWin() && platformPath.match(/^.:\\/)) {
         urlRegex = `[${platformPath[0].toUpperCase()}${platformPath[0].toLowerCase()}]` + urlRegex.substr(1);
       }
     }
@@ -19827,7 +21767,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   globalObjectCleared() {
     this.resetDebuggerPausedDetails();
     this.reset();
-    this.dispatchEventToListeners(Events5.GlobalObjectCleared, this);
+    this.dispatchEventToListeners(Events7.GlobalObjectCleared, this);
   }
   reset() {
     for (const script of this.#scripts.values()) {
@@ -19875,7 +21815,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       }
     }
     this.#autoSteppingContext = null;
-    this.dispatchEventToListeners(Events5.DebuggerPaused, this);
+    this.dispatchEventToListeners(Events7.DebuggerPaused, this);
     this.setSelectedCallFrame(debuggerPausedDetails.callFrames[0]);
     return true;
   }
@@ -19921,7 +21861,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
         void this.stepInto();
       }
     } else {
-      Common16.EventTarget.fireEvent("DevTools.DebuggerPaused");
+      Common17.EventTarget.fireEvent("DevTools.DebuggerPaused");
     }
   }
   /** Delegates to the DebuggerLanguagePlugin and potential attached source maps to expand inlined call frames */
@@ -19929,7 +21869,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     if (this.#expandCallFramesCallback) {
       pausedDetails.callFrames = await this.#expandCallFramesCallback.call(null, pausedDetails.callFrames);
     }
-    if (!Root4.Runtime.experiments.isEnabled(
+    if (!Root6.Runtime.experiments.isEnabled(
       "use-source-map-scopes"
       /* Root.Runtime.ExperimentName.USE_SOURCE_MAP_SCOPES */
     )) {
@@ -19948,7 +21888,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
   }
   resumedScript() {
     this.resetDebuggerPausedDetails();
-    this.dispatchEventToListeners(Events5.DebuggerResumed, this);
+    this.dispatchEventToListeners(Events7.DebuggerResumed, this);
   }
   parsedScriptSource(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, executionContextAuxData, isLiveEdit, sourceMapURL, hasSourceURLComment, hasSyntaxError, length, isModule, originStackTrace, codeOffset, scriptLanguage, debugSymbols, embedderName, buildId) {
     const knownScript = this.#scripts.get(scriptId);
@@ -19962,7 +21902,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     const selectedDebugSymbol = _DebuggerModel.selectSymbolSource(debugSymbols);
     const script = new Script(this, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, executionContextId, hash, isContentScript, isLiveEdit, sourceMapURL, hasSourceURLComment, length, isModule, originStackTrace, codeOffset, scriptLanguage, selectedDebugSymbol, embedderName, buildId);
     this.registerScript(script);
-    this.dispatchEventToListeners(Events5.ParsedScriptSource, script);
+    this.dispatchEventToListeners(Events7.ParsedScriptSource, script);
     if (script.sourceMapURL && !hasSyntaxError) {
       this.#sourceMapManager.attachSourceMap(script, script.sourceURL, script.sourceMapURL);
     }
@@ -19982,7 +21922,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     if (this.#expandCallFramesCallback && this.#debuggerPausedDetails) {
       this.#debuggerPausedDetails.callFrames = await this.#expandCallFramesCallback.call(null, this.#debuggerPausedDetails.callFrames);
     }
-    this.dispatchEventToListeners(Events5.DebugInfoAttached, script);
+    this.dispatchEventToListeners(Events7.DebugInfoAttached, script);
   }
   executionContextDestroyed(executionContext) {
     for (const script of this.#scripts.values()) {
@@ -20014,7 +21954,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     const scriptsToDiscard = this.#discardableScripts.splice(0, 100);
     for (const script of scriptsToDiscard) {
       this.unregisterScript(script);
-      this.dispatchEventToListeners(Events5.DiscardedAnonymousScriptSource, script);
+      this.dispatchEventToListeners(Events7.DiscardedAnonymousScriptSource, script);
     }
   }
   createRawLocation(script, lineNumber, columnNumber, inlineFrameIndex) {
@@ -20055,7 +21995,7 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
       return;
     }
     this.#selectedCallFrame = callFrame;
-    this.dispatchEventToListeners(Events5.CallFrameSelected, this);
+    this.dispatchEventToListeners(Events7.CallFrameSelected, this);
   }
   selectedCallFrame() {
     return this.#selectedCallFrame;
@@ -20125,9 +22065,9 @@ var DebuggerModel = class _DebuggerModel extends SDKModel {
     if (this.#debuggerId) {
       debuggerIdToModel.delete(this.#debuggerId);
     }
-    Common16.Settings.Settings.instance().moduleSetting("pause-on-exception-enabled").removeChangeListener(this.pauseOnExceptionStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").removeChangeListener(this.pauseOnExceptionStateChanged, this);
-    Common16.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").removeChangeListener(this.asyncStackTracesStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("pause-on-exception-enabled").removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("pause-on-caught-exception").removeChangeListener(this.pauseOnExceptionStateChanged, this);
+    Common17.Settings.Settings.instance().moduleSetting("disable-async-stack-traces").removeChangeListener(this.asyncStackTracesStateChanged, this);
   }
   async suspendModel() {
     await this.disableDebugger();
@@ -20182,7 +22122,7 @@ var PauseOnExceptionsState;
   PauseOnExceptionsState2["PauseOnCaughtExceptions"] = "caught";
   PauseOnExceptionsState2["PauseOnUncaughtExceptions"] = "uncaught";
 })(PauseOnExceptionsState || (PauseOnExceptionsState = {}));
-var Events5;
+var Events7;
 (function(Events12) {
   Events12["DebuggerWasEnabled"] = "DebuggerWasEnabled";
   Events12["DebuggerWasDisabled"] = "DebuggerWasDisabled";
@@ -20195,7 +22135,7 @@ var Events5;
   Events12["CallFrameSelected"] = "CallFrameSelected";
   Events12["DebuggerIsReadyToPause"] = "DebuggerIsReadyToPause";
   Events12["ScriptSourceWasEdited"] = "ScriptSourceWasEdited";
-})(Events5 || (Events5 = {}));
+})(Events7 || (Events7 = {}));
 var DebuggerDispatcher = class {
   #debuggerModel;
   constructor(debuggerModel) {
@@ -20447,25 +22387,25 @@ var Scope = class {
   typeName() {
     switch (this.#type) {
       case "local":
-        return i18nString5(UIStrings5.local);
+        return i18nString6(UIStrings6.local);
       case "closure":
-        return i18nString5(UIStrings5.closure);
+        return i18nString6(UIStrings6.closure);
       case "catch":
-        return i18nString5(UIStrings5.catchBlock);
+        return i18nString6(UIStrings6.catchBlock);
       case "eval":
-        return i18n9.i18n.lockedString("Eval");
+        return i18n11.i18n.lockedString("Eval");
       case "block":
-        return i18nString5(UIStrings5.block);
+        return i18nString6(UIStrings6.block);
       case "script":
-        return i18nString5(UIStrings5.script);
+        return i18nString6(UIStrings6.script);
       case "with":
-        return i18nString5(UIStrings5.withBlock);
+        return i18nString6(UIStrings6.withBlock);
       case "global":
-        return i18nString5(UIStrings5.global);
+        return i18nString6(UIStrings6.global);
       case "module":
-        return i18nString5(UIStrings5.module);
+        return i18nString6(UIStrings6.module);
       case "wasm-expression-stack":
-        return i18nString5(UIStrings5.expression);
+        return i18nString6(UIStrings6.expression);
     }
     return "";
   }
@@ -20503,7 +22443,7 @@ var Scope = class {
     const exception = this.#callFrame.exception;
     if (exception) {
       extraProperties.push(new RemoteObjectProperty(
-        i18nString5(UIStrings5.exception),
+        i18nString6(UIStrings6.exception),
         exception,
         void 0,
         void 0,
@@ -20517,7 +22457,7 @@ var Scope = class {
     const returnValue = this.#callFrame.returnValue();
     if (returnValue) {
       extraProperties.push(new RemoteObjectProperty(
-        i18nString5(UIStrings5.returnValue),
+        i18nString6(UIStrings6.returnValue),
         returnValue,
         void 0,
         void 0,
@@ -20581,15 +22521,15 @@ var OverlayPersistentHighlighter_exports = {};
 __export(OverlayPersistentHighlighter_exports, {
   OverlayPersistentHighlighter: () => OverlayPersistentHighlighter
 });
-import * as Common18 from "./../common/common.js";
-import * as Platform11 from "./../platform/platform.js";
+import * as Common19 from "./../common/common.js";
+import * as Platform13 from "./../platform/platform.js";
 
 // gen/front_end/core/sdk/OverlayColorGenerator.js
 var OverlayColorGenerator_exports = {};
 __export(OverlayColorGenerator_exports, {
   OverlayColorGenerator: () => OverlayColorGenerator
 });
-import * as Common17 from "./../common/common.js";
+import * as Common18 from "./../common/common.js";
 var OverlayColorGenerator = class {
   #colors;
   #index;
@@ -20597,23 +22537,23 @@ var OverlayColorGenerator = class {
     const format = "rgba";
     this.#colors = [
       // F59794
-      new Common17.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
+      new Common18.Color.Legacy([0.9607843137254902, 0.592156862745098, 0.5803921568627451, 1], format),
       // F0BF4C
-      new Common17.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
+      new Common18.Color.Legacy([0.9411764705882353, 0.7490196078431373, 0.2980392156862745, 1], format),
       // D4ED31
-      new Common17.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
+      new Common18.Color.Legacy([0.8313725490196079, 0.9294117647058824, 0.19215686274509805, 1], format),
       // 9EEB47
-      new Common17.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
+      new Common18.Color.Legacy([0.6196078431372549, 0.9215686274509803, 0.2784313725490196, 1], format),
       // 5BD1D7
-      new Common17.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
+      new Common18.Color.Legacy([0.3568627450980392, 0.8196078431372549, 0.8431372549019608, 1], format),
       // BCCEFB
-      new Common17.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
+      new Common18.Color.Legacy([0.7372549019607844, 0.807843137254902, 0.984313725490196, 1], format),
       // C6BEEE
-      new Common17.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
+      new Common18.Color.Legacy([0.7764705882352941, 0.7450980392156863, 0.9333333333333333, 1], format),
       // D094EA
-      new Common17.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
+      new Common18.Color.Legacy([0.8156862745098039, 0.5803921568627451, 0.9176470588235294, 1], format),
       // EB94CF
-      new Common17.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
+      new Common18.Color.Legacy([0.9215686274509803, 0.5803921568627451, 0.8117647058823529, 1], format)
     ];
     this.#index = 0;
   }
@@ -20634,7 +22574,7 @@ var OverlayColorGenerator = class {
 var OverlayPersistentHighlighter = class {
   #model;
   #colors = /* @__PURE__ */ new Map();
-  #persistentHighlightSetting = Common18.Settings.Settings.instance().createLocalSetting("persistent-highlight-setting", []);
+  #persistentHighlightSetting = Common19.Settings.Settings.instance().createLocalSetting("persistent-highlight-setting", []);
   #gridHighlights = /* @__PURE__ */ new Map();
   #scrollSnapHighlights = /* @__PURE__ */ new Map();
   #flexHighlights = /* @__PURE__ */ new Map();
@@ -20645,10 +22585,10 @@ var OverlayPersistentHighlighter = class {
   /**
    * @see `front_end/core/sdk/sdk-meta.ts`
    */
-  #showGridLineLabelsSetting = Common18.Settings.Settings.instance().moduleSetting("show-grid-line-labels");
-  #extendGridLinesSetting = Common18.Settings.Settings.instance().moduleSetting("extend-grid-lines");
-  #showGridAreasSetting = Common18.Settings.Settings.instance().moduleSetting("show-grid-areas");
-  #showGridTrackSizesSetting = Common18.Settings.Settings.instance().moduleSetting("show-grid-track-sizes");
+  #showGridLineLabelsSetting = Common19.Settings.Settings.instance().moduleSetting("show-grid-line-labels");
+  #extendGridLinesSetting = Common19.Settings.Settings.instance().moduleSetting("extend-grid-lines");
+  #showGridAreasSetting = Common19.Settings.Settings.instance().moduleSetting("show-grid-areas");
+  #showGridTrackSizesSetting = Common19.Settings.Settings.instance().moduleSetting("show-grid-track-sizes");
   #callbacks;
   constructor(model, callbacks) {
     this.#model = model;
@@ -20716,12 +22656,12 @@ var OverlayPersistentHighlighter = class {
   buildScrollSnapContainerHighlightConfig(_nodeId) {
     return {
       snapAreaBorder: {
-        color: Common18.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        color: Common19.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         pattern: "dashed"
       },
-      snapportBorder: { color: Common18.Color.PageHighlight.GridBorder.toProtocolRGBA() },
-      scrollMarginColor: Common18.Color.PageHighlight.Margin.toProtocolRGBA(),
-      scrollPaddingColor: Common18.Color.PageHighlight.Padding.toProtocolRGBA()
+      snapportBorder: { color: Common19.Color.PageHighlight.GridBorder.toProtocolRGBA() },
+      scrollMarginColor: Common19.Color.PageHighlight.Margin.toProtocolRGBA(),
+      scrollPaddingColor: Common19.Color.PageHighlight.Padding.toProtocolRGBA()
     };
   }
   highlightGridInOverlay(nodeId) {
@@ -20817,11 +22757,11 @@ var OverlayPersistentHighlighter = class {
   buildContainerQueryContainerHighlightConfig() {
     return {
       containerBorder: {
-        color: Common18.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: "dashed"
       },
       descendantBorder: {
-        color: Common18.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         pattern: "dashed"
       }
     };
@@ -20843,9 +22783,9 @@ var OverlayPersistentHighlighter = class {
   }
   buildIsolationModeHighlightConfig() {
     return {
-      resizerColor: Common18.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
-      resizerHandleColor: Common18.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
-      maskColor: Common18.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
+      resizerColor: Common19.Color.IsolationModeHighlight.Resizer.toProtocolRGBA(),
+      resizerHandleColor: Common19.Color.IsolationModeHighlight.ResizerHandle.toProtocolRGBA(),
+      maskColor: Common19.Color.IsolationModeHighlight.Mask.toProtocolRGBA()
     };
   }
   hideAllInOverlayWithoutSave() {
@@ -20951,7 +22891,7 @@ var OverlayPersistentHighlighter = class {
     this.#containerQueryHighlights = /* @__PURE__ */ new Map();
     this.#isolatedElementHighlights = /* @__PURE__ */ new Map();
     const document2 = await this.#model.getDOMModel().requestDocument();
-    const currentURL = document2 ? document2.documentURL : Platform11.DevToolsPath.EmptyUrlString;
+    const currentURL = document2 ? document2.documentURL : Platform13.DevToolsPath.EmptyUrlString;
     await Promise.all(this.#persistentHighlightSetting.get().map(async (persistentHighlight) => {
       if (persistentHighlight.url === currentURL) {
         return await this.#model.getDOMModel().pushNodeByPathToFrontend(persistentHighlight.path).then((nodeId) => {
@@ -20987,7 +22927,7 @@ var OverlayPersistentHighlighter = class {
   }
   currentUrl() {
     const domDocument = this.#model.getDOMModel().existingDocument();
-    return domDocument ? domDocument.documentURL : Platform11.DevToolsPath.EmptyUrlString;
+    return domDocument ? domDocument.documentURL : Platform13.DevToolsPath.EmptyUrlString;
   }
   getPersistentHighlightSettingForOneType(highlights, type) {
     const persistentHighlights = [];
@@ -21035,14 +22975,14 @@ var OverlayPersistentHighlighter = class {
 };
 
 // gen/front_end/core/sdk/OverlayModel.js
-var UIStrings6 = {
+var UIStrings7 = {
   /**
    * @description Text in Overlay Model
    */
   pausedInDebugger: "Paused in debugger"
 };
-var str_6 = i18n11.i18n.registerUIStrings("core/sdk/OverlayModel.ts", UIStrings6);
-var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var str_7 = i18n13.i18n.registerUIStrings("core/sdk/OverlayModel.ts", UIStrings7);
+var i18nString7 = i18n13.i18n.getLocalizedString.bind(void 0, str_7);
 var platformOverlayDimensions = {
   mac: { x: 85, y: 0, width: 185, height: 40 },
   linux: { x: 0, y: 0, width: 196, height: 34 },
@@ -21075,19 +23015,19 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.overlayAgent = target.overlayAgent();
     this.#debuggerModel = target.model(DebuggerModel);
     if (this.#debuggerModel) {
-      Common19.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").addChangeListener(this.updatePausedInDebuggerMessage, this);
-      this.#debuggerModel.addEventListener(Events5.DebuggerPaused, this.updatePausedInDebuggerMessage, this);
-      this.#debuggerModel.addEventListener(Events5.DebuggerResumed, this.updatePausedInDebuggerMessage, this);
-      this.#debuggerModel.addEventListener(Events5.GlobalObjectCleared, this.updatePausedInDebuggerMessage, this);
+      Common20.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").addChangeListener(this.updatePausedInDebuggerMessage, this);
+      this.#debuggerModel.addEventListener(Events7.DebuggerPaused, this.updatePausedInDebuggerMessage, this);
+      this.#debuggerModel.addEventListener(Events7.DebuggerResumed, this.updatePausedInDebuggerMessage, this);
+      this.#debuggerModel.addEventListener(Events7.GlobalObjectCleared, this.updatePausedInDebuggerMessage, this);
     }
     this.#defaultHighlighter = new DefaultHighlighter(this);
     this.#highlighter = this.#defaultHighlighter;
-    this.#showPaintRectsSetting = Common19.Settings.Settings.instance().moduleSetting("show-paint-rects");
-    this.#showLayoutShiftRegionsSetting = Common19.Settings.Settings.instance().moduleSetting("show-layout-shift-regions");
-    this.#showAdHighlightsSetting = Common19.Settings.Settings.instance().moduleSetting("show-ad-highlights");
-    this.#showDebugBordersSetting = Common19.Settings.Settings.instance().moduleSetting("show-debug-borders");
-    this.#showFPSCounterSetting = Common19.Settings.Settings.instance().moduleSetting("show-fps-counter");
-    this.#showScrollBottleneckRectsSetting = Common19.Settings.Settings.instance().moduleSetting("show-scroll-bottleneck-rects");
+    this.#showPaintRectsSetting = Common20.Settings.Settings.instance().moduleSetting("show-paint-rects");
+    this.#showLayoutShiftRegionsSetting = Common20.Settings.Settings.instance().moduleSetting("show-layout-shift-regions");
+    this.#showAdHighlightsSetting = Common20.Settings.Settings.instance().moduleSetting("show-ad-highlights");
+    this.#showDebugBordersSetting = Common20.Settings.Settings.instance().moduleSetting("show-debug-borders");
+    this.#showFPSCounterSetting = Common20.Settings.Settings.instance().moduleSetting("show-fps-counter");
+    this.#showScrollBottleneckRectsSetting = Common20.Settings.Settings.instance().moduleSetting("show-scroll-bottleneck-rects");
     if (!target.suspended()) {
       void this.overlayAgent.invoke_enable();
       void this.wireAgentToSettings();
@@ -21098,13 +23038,13 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       onContainerQueryOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentContainerQueryOverlayStateChanged", { nodeId, enabled }),
       onScrollSnapOverlayStateChanged: ({ nodeId, enabled }) => this.dispatchEventToListeners("PersistentScrollSnapOverlayStateChanged", { nodeId, enabled })
     });
-    this.#domModel.addEventListener(Events6.NodeRemoved, () => {
+    this.#domModel.addEventListener(Events8.NodeRemoved, () => {
       if (!this.#persistentHighlighter) {
         return;
       }
       this.#persistentHighlighter.refreshHighlights();
     });
-    this.#domModel.addEventListener(Events6.DocumentUpdated, () => {
+    this.#domModel.addEventListener(Events8.DocumentUpdated, () => {
       if (!this.#persistentHighlighter) {
         return;
       }
@@ -21188,7 +23128,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.#persistentHighlighter?.resetOverlay();
   }
   async suspendModel() {
-    Common19.EventTarget.removeEventListeners(this.#registeredListeners);
+    Common20.EventTarget.removeEventListeners(this.#registeredListeners);
     await this.overlayAgent.invoke_disable();
   }
   async resumeModel() {
@@ -21208,7 +23148,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (this.target().suspended()) {
       return;
     }
-    const message = this.#debuggerModel && this.#debuggerModel.isPaused() && !Common19.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").get() ? i18nString6(UIStrings6.pausedInDebugger) : void 0;
+    const message = this.#debuggerModel && this.#debuggerModel.isPaused() && !Common20.Settings.Settings.instance().moduleSetting("disable-paused-state-overlay").get() ? i18nString7(UIStrings7.pausedInDebugger) : void 0;
     void this.overlayAgent.invoke_setPausedInDebuggerMessage({ message });
   }
   setHighlighter(highlighter) {
@@ -21315,8 +23255,8 @@ var OverlayModel = class _OverlayModel extends SDKModel {
   }
   highlightSourceOrderInOverlay(node) {
     const sourceOrderConfig = {
-      parentOutlineColor: Common19.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
-      childOutlineColor: Common19.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
+      parentOutlineColor: Common20.Color.SourceOrderHighlight.ParentOutline.toProtocolRGBA(),
+      childOutlineColor: Common20.Color.SourceOrderHighlight.ChildOutline.toProtocolRGBA()
     };
     this.#sourceOrderHighlighter.highlightSourceOrderInOverlay(node, sourceOrderConfig);
   }
@@ -21333,7 +23273,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common19.Color.parse(colorStr);
+    const color = Common20.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -21353,7 +23293,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     if (!this.#persistentHighlighter) {
       return;
     }
-    const color = Common19.Color.parse(colorStr);
+    const color = Common20.Color.parse(colorStr);
     if (!color) {
       return;
     }
@@ -21405,7 +23345,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
     this.setShowViewportSizeOnResize(!show);
   }
   buildHighlightConfig(mode = "all", showDetailedToolip = false) {
-    const showRulers = Common19.Settings.Settings.instance().moduleSetting("show-metrics-rulers").get();
+    const showRulers = Common20.Settings.Settings.instance().moduleSetting("show-metrics-rulers").get();
     const highlightConfig = {
       showInfo: mode === "all" || mode === "container-outline",
       showRulers,
@@ -21415,190 +23355,190 @@ var OverlayModel = class _OverlayModel extends SDKModel {
       gridHighlightConfig: {},
       flexContainerHighlightConfig: {},
       flexItemHighlightConfig: {},
-      contrastAlgorithm: Root5.Runtime.experiments.isEnabled("apca") ? "apca" : "aa"
+      contrastAlgorithm: Root7.Runtime.experiments.isEnabled("apca") ? "apca" : "aa"
     };
     if (mode === "all" || mode === "content") {
-      highlightConfig.contentColor = Common19.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common20.Color.PageHighlight.Content.toProtocolRGBA();
     }
     if (mode === "all" || mode === "padding") {
-      highlightConfig.paddingColor = Common19.Color.PageHighlight.Padding.toProtocolRGBA();
+      highlightConfig.paddingColor = Common20.Color.PageHighlight.Padding.toProtocolRGBA();
     }
     if (mode === "all" || mode === "border") {
-      highlightConfig.borderColor = Common19.Color.PageHighlight.Border.toProtocolRGBA();
+      highlightConfig.borderColor = Common20.Color.PageHighlight.Border.toProtocolRGBA();
     }
     if (mode === "all" || mode === "margin") {
-      highlightConfig.marginColor = Common19.Color.PageHighlight.Margin.toProtocolRGBA();
+      highlightConfig.marginColor = Common20.Color.PageHighlight.Margin.toProtocolRGBA();
     }
     if (mode === "all") {
-      highlightConfig.eventTargetColor = Common19.Color.PageHighlight.EventTarget.toProtocolRGBA();
-      highlightConfig.shapeColor = Common19.Color.PageHighlight.Shape.toProtocolRGBA();
-      highlightConfig.shapeMarginColor = Common19.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
+      highlightConfig.eventTargetColor = Common20.Color.PageHighlight.EventTarget.toProtocolRGBA();
+      highlightConfig.shapeColor = Common20.Color.PageHighlight.Shape.toProtocolRGBA();
+      highlightConfig.shapeMarginColor = Common20.Color.PageHighlight.ShapeMargin.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowGapColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        rowHatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        columnGapColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA(),
-        columnHatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-        rowLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowGapColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        rowHatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        columnGapColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA(),
+        columnHatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+        rowLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true
       };
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         itemSeparator: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         lineSeparator: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         mainDistributedSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         crossDistributedSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         rowGapSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         },
         columnGapSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         flexibilityArrow: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode.endsWith("gap")) {
       highlightConfig.gridHighlightConfig = {
-        gridBorderColor: Common19.Color.PageHighlight.GridBorder.toProtocolRGBA(),
+        gridBorderColor: Common20.Color.PageHighlight.GridBorder.toProtocolRGBA(),
         gridBorderDash: true
       };
       if (mode === "gap" || mode === "row-gap") {
-        highlightConfig.gridHighlightConfig.rowGapColor = Common19.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.rowHatchColor = Common19.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowGapColor = Common20.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.rowHatchColor = Common20.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
       if (mode === "gap" || mode === "column-gap") {
-        highlightConfig.gridHighlightConfig.columnGapColor = Common19.Color.PageHighlight.GapBackground.toProtocolRGBA();
-        highlightConfig.gridHighlightConfig.columnHatchColor = Common19.Color.PageHighlight.GapHatch.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnGapColor = Common20.Color.PageHighlight.GapBackground.toProtocolRGBA();
+        highlightConfig.gridHighlightConfig.columnHatchColor = Common20.Color.PageHighlight.GapHatch.toProtocolRGBA();
       }
     }
     if (mode.endsWith("gap")) {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         }
       };
       if (mode === "gap" || mode === "row-gap") {
         highlightConfig.flexContainerHighlightConfig.rowGapSpace = {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
       if (mode === "gap" || mode === "column-gap") {
         highlightConfig.flexContainerHighlightConfig.columnGapSpace = {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         };
       }
     }
     if (mode === "grid-areas") {
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
-        columnLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true,
         columnLineDash: true,
         showAreaNames: true,
-        areaBorderColor: Common19.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
+        areaBorderColor: Common20.Color.PageHighlight.GridAreaBorder.toProtocolRGBA()
       };
     }
     if (mode === "grid-template-columns") {
-      highlightConfig.contentColor = Common19.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common20.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        columnLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        columnLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         columnLineDash: true
       };
     }
     if (mode === "grid-template-rows") {
-      highlightConfig.contentColor = Common19.Color.PageHighlight.Content.toProtocolRGBA();
+      highlightConfig.contentColor = Common20.Color.PageHighlight.Content.toProtocolRGBA();
       highlightConfig.gridHighlightConfig = {
-        rowLineColor: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+        rowLineColor: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
         rowLineDash: true
       };
     }
     if (mode === "justify-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         mainDistributedSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-content") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         crossDistributedSpace: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA(),
-          fillColor: Common19.Color.PageHighlight.GapBackground.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA(),
+          fillColor: Common20.Color.PageHighlight.GapBackground.toProtocolRGBA()
         }
       };
     }
     if (mode === "align-items") {
       highlightConfig.flexContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
         lineSeparator: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         },
-        crossAlignment: { color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
+        crossAlignment: { color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA() }
       };
     }
     if (mode === "flexibility") {
       highlightConfig.flexItemHighlightConfig = {
         baseSizeBox: {
-          hatchColor: Common19.Color.PageHighlight.GapHatch.toProtocolRGBA()
+          hatchColor: Common20.Color.PageHighlight.GapHatch.toProtocolRGBA()
         },
         baseSizeBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dotted"
         },
         flexibilityArrow: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA()
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA()
         }
       };
     }
     if (mode === "container-outline") {
       highlightConfig.containerQueryContainerHighlightConfig = {
         containerBorder: {
-          color: Common19.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
+          color: Common20.Color.PageHighlight.LayoutLine.toProtocolRGBA(),
           pattern: "dashed"
         }
       };
@@ -21623,7 +23563,7 @@ var OverlayModel = class _OverlayModel extends SDKModel {
         }
       });
     } else {
-      void Common19.Revealer.reveal(deferredNode);
+      void Common20.Revealer.reveal(deferredNode);
     }
     this.dispatchEventToListeners(
       "InspectModeExited"
@@ -21717,7 +23657,7 @@ var WindowControls = class _WindowControls {
     return _WindowControls.#transformStyleSheet(overlayDimensions.x, overlayDimensions.y, overlayDimensions.width, overlayDimensions.height, originalStyleSheet);
   }
   #fetchCssSourceUrl(url) {
-    const parentURL = Common19.ParsedURL.ParsedURL.extractOrigin(url);
+    const parentURL = Common20.ParsedURL.ParsedURL.extractOrigin(url);
     const cssHeaders = this.#cssModel.styleSheetHeaders();
     const header = cssHeaders.find((header2) => header2.sourceURL && header2.sourceURL.includes(parentURL));
     return header?.sourceURL;
@@ -21762,8 +23702,8 @@ var DefaultHighlighter = class {
   highlightFrame(frameId) {
     void this.#model.target().overlayAgent().invoke_highlightFrame({
       frameId,
-      contentColor: Common19.Color.PageHighlight.Content.toProtocolRGBA(),
-      contentOutlineColor: Common19.Color.PageHighlight.ContentOutline.toProtocolRGBA()
+      contentColor: Common20.Color.PageHighlight.Content.toProtocolRGBA(),
+      contentOutlineColor: Common20.Color.PageHighlight.ContentOutline.toProtocolRGBA()
     });
   }
 };
@@ -22194,6 +24134,9 @@ var DOMNode = class _DOMNode {
   isInShadowTree() {
     return this.#isInShadowTree;
   }
+  getTreeRoot() {
+    return this.isShadowRoot() ? this : this.ancestorShadowRoot() ?? this.ownerDocument ?? this;
+  }
   ancestorShadowHost() {
     const ancestorShadowRoot = this.ancestorShadowRoot();
     return ancestorShadowRoot ? ancestorShadowRoot.parentNode : null;
@@ -22454,7 +24397,7 @@ var DOMNode = class _DOMNode {
     node.parentNode = null;
     this.#subtreeMarkerCount -= node.#subtreeMarkerCount;
     if (node.#subtreeMarkerCount) {
-      this.#domModel.dispatchEventToListeners(Events6.MarkersChanged, this);
+      this.#domModel.dispatchEventToListeners(Events8.MarkersChanged, this);
     }
     this.renumber();
   }
@@ -22569,7 +24512,7 @@ var DOMNode = class _DOMNode {
         --node.#subtreeMarkerCount;
       }
       for (let node = this; node; node = node.parentNode) {
-        this.#domModel.dispatchEventToListeners(Events6.MarkersChanged, node);
+        this.#domModel.dispatchEventToListeners(Events8.MarkersChanged, node);
       }
       return;
     }
@@ -22580,7 +24523,7 @@ var DOMNode = class _DOMNode {
     }
     this.#markers.set(name, value);
     for (let node = this; node; node = node.parentNode) {
-      this.#domModel.dispatchEventToListeners(Events6.MarkersChanged, node);
+      this.#domModel.dispatchEventToListeners(Events8.MarkersChanged, node);
     }
   }
   marker(name) {
@@ -22612,7 +24555,7 @@ var DOMNode = class _DOMNode {
     }
     for (let frameOwnerCandidate = this; frameOwnerCandidate; frameOwnerCandidate = frameOwnerCandidate.parentNode) {
       if (frameOwnerCandidate instanceof DOMDocument && frameOwnerCandidate.baseURL) {
-        return Common20.ParsedURL.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
+        return Common21.ParsedURL.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
       }
     }
     return null;
@@ -22818,7 +24761,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     if (!target.suspended()) {
       void this.agent.invoke_enable({});
     }
-    if (Root6.Runtime.experiments.isEnabled("capture-node-creation-stacks")) {
+    if (Root8.Runtime.experiments.isEnabled("capture-node-creation-stacks")) {
       void this.agent.invoke_setNodeStackTracesEnabled({ enable: true });
     }
   }
@@ -22837,16 +24780,16 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
   }
   scheduleMutationEvent(node) {
-    if (!this.hasEventListeners(Events6.DOMMutated)) {
+    if (!this.hasEventListeners(Events8.DOMMutated)) {
       return;
     }
     this.#lastMutationId = (this.#lastMutationId || 0) + 1;
     void Promise.resolve().then(callObserve.bind(this, node, this.#lastMutationId));
     function callObserve(node2, mutationId) {
-      if (!this.hasEventListeners(Events6.DOMMutated) || this.#lastMutationId !== mutationId) {
+      if (!this.hasEventListeners(Events8.DOMMutated) || this.#lastMutationId !== mutationId) {
         return;
       }
-      this.dispatchEventToListeners(Events6.DOMMutated, node2);
+      this.dispatchEventToListeners(Events8.DOMMutated, node2);
     }
   }
   requestDocument() {
@@ -22896,9 +24839,9 @@ var DOMModel = class _DOMModel extends SDKModel {
       this.#frameOwnerNode.setChildren([]);
       if (this.#document) {
         this.#document.parentNode = this.#frameOwnerNode;
-        this.dispatchEventToListeners(Events6.NodeInserted, this.#document);
+        this.dispatchEventToListeners(Events8.NodeInserted, this.#document);
       } else if (oldDocument) {
-        this.dispatchEventToListeners(Events6.NodeRemoved, { node: oldDocument, parent: this.#frameOwnerNode });
+        this.dispatchEventToListeners(Events8.NodeRemoved, { node: oldDocument, parent: this.#frameOwnerNode });
       }
     }
     return this.#document;
@@ -22935,7 +24878,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setAttributeInternal(name, value);
-    this.dispatchEventToListeners(Events6.AttrModified, { node, name });
+    this.dispatchEventToListeners(Events8.AttrModified, { node, name });
     this.scheduleMutationEvent(node);
   }
   attributeRemoved(nodeId, name) {
@@ -22944,7 +24887,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.removeAttributeInternal(name);
-    this.dispatchEventToListeners(Events6.AttrRemoved, { node, name });
+    this.dispatchEventToListeners(Events8.AttrRemoved, { node, name });
     this.scheduleMutationEvent(node);
   }
   inlineStyleInvalidated(nodeIds) {
@@ -22965,7 +24908,7 @@ var DOMModel = class _DOMModel extends SDKModel {
           return;
         }
         if (node.setAttributesPayload(attributes)) {
-          this.dispatchEventToListeners(Events6.AttrModified, { node, name: "style" });
+          this.dispatchEventToListeners(Events8.AttrModified, { node, name: "style" });
           this.scheduleMutationEvent(node);
         }
       });
@@ -22979,7 +24922,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setNodeValueInternal(newValue);
-    this.dispatchEventToListeners(Events6.CharacterDataModified, node);
+    this.dispatchEventToListeners(Events8.CharacterDataModified, node);
     this.scheduleMutationEvent(node);
   }
   nodeForId(nodeId) {
@@ -23001,7 +24944,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     DOMModelUndoStack.instance().dispose(this);
     if (!this.parentModel()) {
-      this.dispatchEventToListeners(Events6.DocumentUpdated, this);
+      this.dispatchEventToListeners(Events8.DocumentUpdated, this);
     }
   }
   setDocumentForTest(document2) {
@@ -23029,7 +24972,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setChildNodeCount(newValue);
-    this.dispatchEventToListeners(Events6.ChildNodeCountUpdated, node);
+    this.dispatchEventToListeners(Events8.ChildNodeCountUpdated, node);
     this.scheduleMutationEvent(node);
   }
   childNodeInserted(parentId, prevId, payload) {
@@ -23041,7 +24984,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     const node = parent.insertChild(prev, payload);
     this.idToDOMNode.set(node.id, node);
-    this.dispatchEventToListeners(Events6.NodeInserted, node);
+    this.dispatchEventToListeners(Events8.NodeInserted, node);
     this.scheduleMutationEvent(node);
   }
   childNodeRemoved(parentId, nodeId) {
@@ -23053,7 +24996,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     parent.removeChild(node);
     this.unbind(node);
-    this.dispatchEventToListeners(Events6.NodeRemoved, { node, parent });
+    this.dispatchEventToListeners(Events8.NodeRemoved, { node, parent });
     this.scheduleMutationEvent(node);
   }
   shadowRootPushed(hostId, root) {
@@ -23065,7 +25008,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     node.parentNode = host;
     this.idToDOMNode.set(node.id, node);
     host.shadowRootsInternal.unshift(node);
-    this.dispatchEventToListeners(Events6.NodeInserted, node);
+    this.dispatchEventToListeners(Events8.NodeInserted, node);
     this.scheduleMutationEvent(node);
   }
   shadowRootPopped(hostId, rootId) {
@@ -23079,7 +25022,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     host.removeChild(root);
     this.unbind(root);
-    this.dispatchEventToListeners(Events6.NodeRemoved, { node: root, parent: host });
+    this.dispatchEventToListeners(Events8.NodeRemoved, { node: root, parent: host });
     this.scheduleMutationEvent(root);
   }
   pseudoElementAdded(parentId, pseudoElement) {
@@ -23103,7 +25046,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     } else {
       parent.pseudoElements().set(pseudoType, [node]);
     }
-    this.dispatchEventToListeners(Events6.NodeInserted, node);
+    this.dispatchEventToListeners(Events8.NodeInserted, node);
     this.scheduleMutationEvent(node);
   }
   scrollableFlagUpdated(nodeId, isScrollable) {
@@ -23112,7 +25055,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setIsScrollable(isScrollable);
-    this.dispatchEventToListeners(Events6.ScrollableFlagUpdated, { node });
+    this.dispatchEventToListeners(Events8.ScrollableFlagUpdated, { node });
   }
   affectedByStartingStylesFlagUpdated(nodeId, affectedByStartingStyles) {
     const node = this.nodeForId(nodeId);
@@ -23120,10 +25063,10 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     node.setAffectedByStartingStyles(affectedByStartingStyles);
-    this.dispatchEventToListeners(Events6.AffectedByStartingStylesFlagUpdated, { node });
+    this.dispatchEventToListeners(Events8.AffectedByStartingStylesFlagUpdated, { node });
   }
   topLayerElementsUpdated() {
-    this.dispatchEventToListeners(Events6.TopLayerElementsChanged);
+    this.dispatchEventToListeners(Events8.TopLayerElementsChanged);
   }
   pseudoElementRemoved(parentId, pseudoElementId) {
     const parent = this.idToDOMNode.get(parentId);
@@ -23136,7 +25079,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     }
     parent.removeChild(pseudoElement);
     this.unbind(pseudoElement);
-    this.dispatchEventToListeners(Events6.NodeRemoved, { node: pseudoElement, parent });
+    this.dispatchEventToListeners(Events8.NodeRemoved, { node: pseudoElement, parent });
     this.scheduleMutationEvent(pseudoElement);
   }
   distributedNodesUpdated(insertionPointId, distributedNodes) {
@@ -23145,7 +25088,7 @@ var DOMModel = class _DOMModel extends SDKModel {
       return;
     }
     insertionPoint.setDistributedNodePayloads(distributedNodes);
-    this.dispatchEventToListeners(Events6.DistributedNodesChanged, insertionPoint);
+    this.dispatchEventToListeners(Events8.DistributedNodesChanged, insertionPoint);
     this.scheduleMutationEvent(insertionPoint);
   }
   unbind(node) {
@@ -23258,7 +25201,7 @@ var DOMModel = class _DOMModel extends SDKModel {
     this.idToDOMNode.set(node.id, node);
   }
 };
-var Events6;
+var Events8;
 (function(Events12) {
   Events12["AttrModified"] = "AttrModified";
   Events12["AttrRemoved"] = "AttrRemoved";
@@ -23273,7 +25216,7 @@ var Events6;
   Events12["TopLayerElementsChanged"] = "TopLayerElementsChanged";
   Events12["ScrollableFlagUpdated"] = "ScrollableFlagUpdated";
   Events12["AffectedByStartingStylesFlagUpdated"] = "AffectedByStartingStylesFlagUpdated";
-})(Events6 || (Events6 = {}));
+})(Events8 || (Events8 = {}));
 var DOMDispatcher = class {
   #domModel;
   constructor(domModel) {
@@ -23389,7 +25332,7 @@ var DOMModelUndoStack = class _DOMModelUndoStack {
         ++shift;
       }
     }
-    Platform12.ArrayUtilities.removeElement(this.#stack, model);
+    Platform14.ArrayUtilities.removeElement(this.#stack, model);
     this.#index -= shift;
     if (this.#lastModelWithMinorChange === model) {
       this.#lastModelWithMinorChange = null;
@@ -23403,9 +25346,9 @@ var Resource_exports = {};
 __export(Resource_exports, {
   Resource: () => Resource
 });
-import * as TextUtils17 from "./../../models/text_utils/text_utils.js";
-import * as Common21 from "./../common/common.js";
-import * as Platform13 from "./../platform/platform.js";
+import * as TextUtils20 from "./../../models/text_utils/text_utils.js";
+import * as Common22 from "./../common/common.js";
+import * as Platform15 from "./../platform/platform.js";
 var Resource = class {
   #resourceTreeModel;
   #request;
@@ -23432,10 +25375,10 @@ var Resource = class {
     this.#documentURL = documentURL;
     this.#frameId = frameId;
     this.#loaderId = loaderId;
-    this.#type = type || Common21.ResourceType.resourceTypes.Other;
+    this.#type = type || Common22.ResourceType.resourceTypes.Other;
     this.#mimeType = mimeType;
     this.#isGenerated = false;
-    this.#lastModified = lastModified && Platform13.DateUtilities.isValid(lastModified) ? lastModified : null;
+    this.#lastModified = lastModified && Platform15.DateUtilities.isValid(lastModified) ? lastModified : null;
     this.#contentSize = contentSize;
   }
   lastModified() {
@@ -23444,7 +25387,7 @@ var Resource = class {
     }
     const lastModifiedHeader = this.#request.responseLastModified();
     const date = lastModifiedHeader ? new Date(lastModifiedHeader) : null;
-    this.#lastModified = date && Platform13.DateUtilities.isValid(date) ? date : null;
+    this.#lastModified = date && Platform15.DateUtilities.isValid(date) ? date : null;
     return this.#lastModified;
   }
   contentSize() {
@@ -23461,7 +25404,7 @@ var Resource = class {
   }
   set url(x) {
     this.#url = x;
-    this.#parsedURL = new Common21.ParsedURL.ParsedURL(x);
+    this.#parsedURL = new Common22.ParsedURL.ParsedURL(x);
   }
   get parsedURL() {
     return this.#parsedURL;
@@ -23500,8 +25443,8 @@ var Resource = class {
     return this.#url;
   }
   contentType() {
-    if (this.resourceType() === Common21.ResourceType.resourceTypes.Document && this.mimeType.indexOf("javascript") !== -1) {
-      return Common21.ResourceType.resourceTypes.Script;
+    if (this.resourceType() === Common22.ResourceType.resourceTypes.Document && this.mimeType.indexOf("javascript") !== -1) {
+      return Common22.ResourceType.resourceTypes.Script;
     }
     return this.resourceType();
   }
@@ -23513,7 +25456,7 @@ var Resource = class {
       return await this.#pendingContentData;
     }
     this.#pendingContentData = this.innerRequestContent().then((contentData) => {
-      if (!TextUtils17.ContentData.ContentData.isError(contentData)) {
+      if (!TextUtils20.ContentData.ContentData.isError(contentData)) {
         this.#contentData = contentData;
       }
       this.#pendingContentData = null;
@@ -23532,11 +25475,11 @@ var Resource = class {
       return await this.request.searchInContent(query, caseSensitive, isRegex);
     }
     const result = await this.#resourceTreeModel.target().pageAgent().invoke_searchInResource({ frameId: this.frameId, url: this.url, query, caseSensitive, isRegex });
-    return TextUtils17.TextUtils.performSearchInSearchMatches(result.result || [], query, caseSensitive, isRegex);
+    return TextUtils20.TextUtils.performSearchInSearchMatches(result.result || [], query, caseSensitive, isRegex);
   }
   async populateImageSource(image) {
     const contentData = await this.requestContentData();
-    if (TextUtils17.ContentData.ContentData.isError(contentData)) {
+    if (TextUtils20.ContentData.ContentData.isError(contentData)) {
       return;
     }
     image.src = contentData.asDataUrl() ?? this.#url;
@@ -23550,7 +25493,7 @@ var Resource = class {
     if (error) {
       return { error };
     }
-    return new TextUtils17.ContentData.ContentData(response.content, response.base64Encoded, this.mimeType);
+    return new TextUtils20.ContentData.ContentData(response.content, response.base64Encoded, this.mimeType);
   }
   frame() {
     return this.#frameId ? this.#resourceTreeModel.frameForId(this.#frameId) : null;
@@ -23563,7 +25506,7 @@ var Resource = class {
 // gen/front_end/core/sdk/SecurityOriginManager.js
 var SecurityOriginManager_exports = {};
 __export(SecurityOriginManager_exports, {
-  Events: () => Events7,
+  Events: () => Events9,
   SecurityOriginManager: () => SecurityOriginManager
 });
 var SecurityOriginManager = class extends SDKModel {
@@ -23579,12 +25522,12 @@ var SecurityOriginManager = class extends SDKModel {
     this.#securityOrigins = securityOrigins;
     for (const origin of oldOrigins) {
       if (!this.#securityOrigins.has(origin)) {
-        this.dispatchEventToListeners(Events7.SecurityOriginRemoved, origin);
+        this.dispatchEventToListeners(Events9.SecurityOriginRemoved, origin);
       }
     }
     for (const origin of this.#securityOrigins) {
       if (!oldOrigins.has(origin)) {
-        this.dispatchEventToListeners(Events7.SecurityOriginAdded, origin);
+        this.dispatchEventToListeners(Events9.SecurityOriginAdded, origin);
       }
     }
   }
@@ -23600,18 +25543,18 @@ var SecurityOriginManager = class extends SDKModel {
   setMainSecurityOrigin(securityOrigin, unreachableSecurityOrigin) {
     this.#mainSecurityOrigin = securityOrigin;
     this.#unreachableMainSecurityOrigin = unreachableSecurityOrigin || null;
-    this.dispatchEventToListeners(Events7.MainSecurityOriginChanged, {
+    this.dispatchEventToListeners(Events9.MainSecurityOriginChanged, {
       mainSecurityOrigin: this.#mainSecurityOrigin,
       unreachableMainSecurityOrigin: this.#unreachableMainSecurityOrigin
     });
   }
 };
-var Events7;
+var Events9;
 (function(Events12) {
   Events12["SecurityOriginAdded"] = "SecurityOriginAdded";
   Events12["SecurityOriginRemoved"] = "SecurityOriginRemoved";
   Events12["MainSecurityOriginChanged"] = "MainSecurityOriginChanged";
-})(Events7 || (Events7 = {}));
+})(Events9 || (Events9 = {}));
 SDKModel.register(SecurityOriginManager, { capabilities: 0, autostart: false });
 
 // gen/front_end/core/sdk/StorageKeyManager.js
@@ -23620,7 +25563,7 @@ __export(StorageKeyManager_exports, {
   StorageKeyManager: () => StorageKeyManager,
   parseStorageKey: () => parseStorageKey
 });
-import * as Common22 from "./../common/common.js";
+import * as Common23 from "./../common/common.js";
 var StorageKeyManager = class extends SDKModel {
   #mainStorageKey;
   #storageKeys;
@@ -23658,7 +25601,7 @@ var StorageKeyManager = class extends SDKModel {
 };
 function parseStorageKey(storageKeyString) {
   const components = storageKeyString.split("^");
-  const origin = Common22.ParsedURL.ParsedURL.extractOrigin(components[0]);
+  const origin = Common23.ParsedURL.ParsedURL.extractOrigin(components[0]);
   const storageKey = { origin, components: /* @__PURE__ */ new Map() };
   for (let i = 1; i < components.length; ++i) {
     storageKey.components.set(components[i].charAt(0), components[i].substring(1));
@@ -23684,8 +25627,8 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     super(target);
     const networkManager = target.model(NetworkManager);
     if (networkManager) {
-      networkManager.addEventListener(Events8.RequestFinished, this.onRequestFinished, this);
-      networkManager.addEventListener(Events8.RequestUpdateDropped, this.onRequestUpdateDropped, this);
+      networkManager.addEventListener(Events2.RequestFinished, this.onRequestFinished, this);
+      networkManager.addEventListener(Events2.RequestUpdateDropped, this.onRequestUpdateDropped, this);
     }
     this.agent = target.pageAgent();
     this.storageAgent = target.storageAgent();
@@ -23730,7 +25673,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   }
   static reloadAllPages(bypassCache, scriptToEvaluateOnLoad) {
     for (const resourceTreeModel of TargetManager.instance().models(_ResourceTreeModel)) {
-      if (resourceTreeModel.target().parentTarget()?.type() !== Type2.FRAME) {
+      if (resourceTreeModel.target().parentTarget()?.type() !== Type.FRAME) {
         resourceTreeModel.reloadPage(bypassCache, scriptToEvaluateOnLoad);
       }
     }
@@ -23739,7 +25682,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (!this.framesInternal.has(frameId)) {
       return null;
     }
-    const response = await this.storageAgent.invoke_getStorageKeyForFrame({ frameId });
+    const response = await this.storageAgent.invoke_getStorageKey({ frameId });
     if (response.getError() === "Frame tree node for given frame not found") {
       return null;
     }
@@ -23750,7 +25693,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   }
   processCachedResources(mainFramePayload) {
     if (mainFramePayload && mainFramePayload.frame.url !== ":") {
-      this.dispatchEventToListeners(Events.WillLoadCachedResources);
+      this.dispatchEventToListeners(Events3.WillLoadCachedResources);
       this.addFramesRecursively(null, mainFramePayload);
       this.target().setInspectedURL(mainFramePayload.frame.url);
     }
@@ -23760,7 +25703,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       runtimeModel.setExecutionContextComparator(this.executionContextComparator.bind(this));
       runtimeModel.fireExecutionContextOrderChanged();
     }
-    this.dispatchEventToListeners(Events.CachedResourcesLoaded, this);
+    this.dispatchEventToListeners(Events3.CachedResourcesLoaded, this);
   }
   cachedResourcesLoaded() {
     return this.#cachedResourcesProcessed;
@@ -23770,7 +25713,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (frame.isMainFrame()) {
       this.mainFrame = frame;
     }
-    this.dispatchEventToListeners(Events.FrameAdded, frame);
+    this.dispatchEventToListeners(Events3.FrameAdded, frame);
     this.updateSecurityOrigins();
     void this.updateStorageKeys();
   }
@@ -23805,7 +25748,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
         return;
       }
     }
-    this.dispatchEventToListeners(Events.FrameWillNavigate, frame);
+    this.dispatchEventToListeners(Events3.FrameWillNavigate, frame);
     frame.navigate(framePayload);
     if (type) {
       frame.backForwardCacheDetails.restoredFromCache = type === "BackForwardCacheRestore";
@@ -23813,7 +25756,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (frame.isMainFrame()) {
       this.target().setInspectedURL(frame.url);
     }
-    this.dispatchEventToListeners(Events.FrameNavigated, frame);
+    this.dispatchEventToListeners(Events3.FrameNavigated, frame);
     if (frame.isPrimaryFrame()) {
       this.primaryPageChanged(
         frame,
@@ -23823,7 +25766,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     }
     const resources = frame.resources();
     for (let i = 0; i < resources.length; ++i) {
-      this.dispatchEventToListeners(Events.ResourceAdded, resources[i]);
+      this.dispatchEventToListeners(Events3.ResourceAdded, resources[i]);
     }
     this.updateSecurityOrigins();
     void this.updateStorageKeys();
@@ -23835,7 +25778,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   }
   primaryPageChanged(frame, type) {
     this.processPendingEvents(frame);
-    this.dispatchEventToListeners(Events.PrimaryPageChanged, { frame, type });
+    this.dispatchEventToListeners(Events3.PrimaryPageChanged, { frame, type });
     const networkManager = this.target().model(NetworkManager);
     if (networkManager && frame.isOutermostFrame()) {
       networkManager.clearRequests();
@@ -23845,7 +25788,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     this.frameNavigated(framePayload, void 0);
     const frame = this.framesInternal.get(framePayload.id);
     if (frame && !frame.getResourcesMap().get(framePayload.url)) {
-      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common23.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
+      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common24.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
       frameResource.isGenerated = true;
       frame.addResource(frameResource);
     }
@@ -23897,7 +25840,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (frame.getResourcesMap().get(url)) {
       return;
     }
-    const resource = new Resource(this, null, url, frame.url, frameId, data.loaderId, Common23.ResourceType.resourceTypes[data.resourceType], data.mimeType, data.lastModified, null);
+    const resource = new Resource(this, null, url, frame.url, frameId, data.loaderId, Common24.ResourceType.resourceTypes[data.resourceType], data.mimeType, data.lastModified, null);
     frame.addResource(resource);
   }
   frameForId(frameId) {
@@ -23927,11 +25870,11 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     }
     for (let i = 0; i < frameTreePayload.resources.length; ++i) {
       const subresource = frameTreePayload.resources[i];
-      const resource = this.createResourceFromFramePayload(framePayload, subresource.url, Common23.ResourceType.resourceTypes[subresource.type], subresource.mimeType, subresource.lastModified || null, subresource.contentSize || null);
+      const resource = this.createResourceFromFramePayload(framePayload, subresource.url, Common24.ResourceType.resourceTypes[subresource.type], subresource.mimeType, subresource.lastModified || null, subresource.contentSize || null);
       frame.addResource(resource);
     }
     if (!frame.getResourcesMap().get(framePayload.url)) {
-      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common23.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
+      const frameResource = this.createResourceFromFramePayload(framePayload, framePayload.url, Common24.ResourceType.resourceTypes.Document, framePayload.mimeType, null, null);
       frame.addResource(frameResource);
     }
   }
@@ -23956,7 +25899,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       return;
     }
     if (!this.#pendingReloadOptions) {
-      this.dispatchEventToListeners(Events.PageReloadRequested, this);
+      this.dispatchEventToListeners(Events3.PageReloadRequested, this);
     }
     if (this.#reloadSuspensionCount) {
       this.#pendingReloadOptions = { ignoreCache, scriptToEvaluateOnLoad };
@@ -23967,7 +25910,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     if (networkManager) {
       networkManager.clearRequests();
     }
-    this.dispatchEventToListeners(Events.WillReloadPage);
+    this.dispatchEventToListeners(Events3.WillReloadPage);
     void this.agent.invoke_reload({ ignoreCache, scriptToEvaluateOnLoad, loaderId });
   }
   navigate(url) {
@@ -24048,7 +25991,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
       if (frame.isMainFrame()) {
         mainSecurityOrigin = origin;
         if (frame.unreachableUrl()) {
-          const unreachableParsed = new Common23.ParsedURL.ParsedURL(frame.unreachableUrl());
+          const unreachableParsed = new Common24.ParsedURL.ParsedURL(frame.unreachableUrl());
           unreachableMainSecurityOrigin = unreachableParsed.securityOrigin();
         }
       }
@@ -24101,7 +26044,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
   onBackForwardCacheNotUsed(event) {
     if (this.mainFrame && this.mainFrame.id === event.frameId && this.mainFrame.loaderId === event.loaderId) {
       this.mainFrame.setBackForwardCacheDetails(event);
-      this.dispatchEventToListeners(Events.BackForwardCacheDetailsUpdated, this.mainFrame);
+      this.dispatchEventToListeners(Events3.BackForwardCacheDetailsUpdated, this.mainFrame);
     } else {
       this.#pendingBackForwardCacheNotUsedEvents.add(event);
     }
@@ -24119,7 +26062,7 @@ var ResourceTreeModel = class _ResourceTreeModel extends SDKModel {
     }
   }
 };
-var Events;
+var Events3;
 (function(Events12) {
   Events12["FrameAdded"] = "FrameAdded";
   Events12["FrameNavigated"] = "FrameNavigated";
@@ -24139,7 +26082,7 @@ var Events;
   Events12["InterstitialHidden"] = "InterstitialHidden";
   Events12["BackForwardCacheDetailsUpdated"] = "BackForwardCacheDetailsUpdated";
   Events12["JavaScriptDialogOpening"] = "JavaScriptDialogOpening";
-})(Events || (Events = {}));
+})(Events3 || (Events3 = {}));
 var ResourceTreeFrame = class {
   #model;
   #sameTargetParentFrame;
@@ -24172,11 +26115,11 @@ var ResourceTreeFrame = class {
     this.#id = frameId;
     this.#loaderId = payload?.loaderId ?? "";
     this.#name = payload?.name;
-    this.#url = payload && payload.url || Platform14.DevToolsPath.EmptyUrlString;
+    this.#url = payload && payload.url || Platform16.DevToolsPath.EmptyUrlString;
     this.#domainAndRegistry = payload?.domainAndRegistry || "";
     this.#securityOrigin = payload?.securityOrigin ?? null;
     this.#securityOriginDetails = payload?.securityOriginDetails;
-    this.#unreachableUrl = payload && payload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = payload && payload.unreachableUrl || Platform16.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = payload?.adFrameStatus;
     this.#secureContextType = payload?.secureContextType ?? null;
     this.#crossOriginIsolatedContextType = payload?.crossOriginIsolatedContextType ?? null;
@@ -24218,7 +26161,7 @@ var ResourceTreeFrame = class {
       /* forceFetch */
       true
     );
-    this.#unreachableUrl = framePayload.unreachableUrl || Platform14.DevToolsPath.EmptyUrlString;
+    this.#unreachableUrl = framePayload.unreachableUrl || Platform16.DevToolsPath.EmptyUrlString;
     this.#adFrameStatus = framePayload?.adFrameStatus;
     this.#secureContextType = framePayload.secureContextType;
     this.#crossOriginIsolatedContextType = framePayload.crossOriginIsolatedContextType;
@@ -24295,7 +26238,7 @@ var ResourceTreeFrame = class {
       return null;
     }
     const parentTarget = this.#model.target().parentTarget();
-    if (parentTarget?.type() !== Type2.FRAME) {
+    if (parentTarget?.type() !== Type.FRAME) {
       return null;
     }
     const parentModel = parentTarget.model(ResourceTreeModel);
@@ -24325,7 +26268,7 @@ var ResourceTreeFrame = class {
    * https://chromium.googlesource.com/chromium/src/+/HEAD/docs/frame_trees.md
    */
   isOutermostFrame() {
-    return this.#model.target().parentTarget()?.type() !== Type2.FRAME && !this.#sameTargetParentFrame && !this.crossTargetParentFrameId;
+    return this.#model.target().parentTarget()?.type() !== Type.FRAME && !this.#sameTargetParentFrame && !this.crossTargetParentFrameId;
   }
   /**
    * Returns true if this is the primary frame of the browser tab. There can only be one primary frame for each
@@ -24349,14 +26292,14 @@ var ResourceTreeFrame = class {
   remove(isSwap) {
     this.removeChildFrames();
     this.#model.framesInternal.delete(this.id);
-    this.#model.dispatchEventToListeners(Events.FrameDetached, { frame: this, isSwap });
+    this.#model.dispatchEventToListeners(Events3.FrameDetached, { frame: this, isSwap });
   }
   addResource(resource) {
     if (this.resourcesMap.get(resource.url) === resource) {
       return;
     }
     this.resourcesMap.set(resource.url, resource);
-    this.#model.dispatchEventToListeners(Events.ResourceAdded, resource);
+    this.#model.dispatchEventToListeners(Events3.ResourceAdded, resource);
   }
   addRequest(request) {
     let resource = this.resourcesMap.get(request.url());
@@ -24365,7 +26308,7 @@ var ResourceTreeFrame = class {
     }
     resource = new Resource(this.#model, request, request.url(), request.documentURL, request.frameId, request.loaderId, request.resourceType(), request.mimeType, null, null);
     this.resourcesMap.set(resource.url, resource);
-    this.#model.dispatchEventToListeners(Events.ResourceAdded, resource);
+    this.#model.dispatchEventToListeners(Events3.ResourceAdded, resource);
   }
   resources() {
     return Array.from(this.resourcesMap.values());
@@ -24398,16 +26341,16 @@ var ResourceTreeFrame = class {
   }
   displayName() {
     if (this.isOutermostFrame()) {
-      return i18n13.i18n.lockedString("top");
+      return i18n15.i18n.lockedString("top");
     }
-    const subtitle = new Common23.ParsedURL.ParsedURL(this.#url).displayName;
+    const subtitle = new Common24.ParsedURL.ParsedURL(this.#url).displayName;
     if (subtitle) {
       if (!this.#name) {
         return subtitle;
       }
       return this.#name + " (" + subtitle + ")";
     }
-    return i18n13.i18n.lockedString("iframe");
+    return i18n15.i18n.lockedString("iframe");
   }
   async getOwnerDeferredDOMNode() {
     const parentFrame = this.parentFrame();
@@ -24438,7 +26381,7 @@ var ResourceTreeFrame = class {
     if (parentFrame) {
       return await highlightFrameOwner(parentFrame.resourceTreeModel().domModel());
     }
-    if (parentTarget?.type() === Type2.FRAME) {
+    if (parentTarget?.type() === Type.FRAME) {
       const domModel = parentTarget.model(DOMModel);
       if (domModel) {
         return await highlightFrameOwner(domModel);
@@ -24485,13 +26428,13 @@ var PageDispatcher = class {
     this.#resourceTreeModel.onBackForwardCacheNotUsed(params);
   }
   domContentEventFired({ timestamp }) {
-    this.#resourceTreeModel.dispatchEventToListeners(Events.DOMContentLoaded, timestamp);
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.DOMContentLoaded, timestamp);
   }
   loadEventFired({ timestamp }) {
-    this.#resourceTreeModel.dispatchEventToListeners(Events.Load, { resourceTreeModel: this.#resourceTreeModel, loadTime: timestamp });
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.Load, { resourceTreeModel: this.#resourceTreeModel, loadTime: timestamp });
   }
   lifecycleEvent({ frameId, name }) {
-    this.#resourceTreeModel.dispatchEventToListeners(Events.LifecycleEvent, { frameId, name });
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.LifecycleEvent, { frameId, name });
   }
   frameAttached({ frameId, parentFrameId, stack }) {
     this.#resourceTreeModel.frameAttached(frameId, parentFrameId, stack);
@@ -24526,10 +26469,10 @@ var PageDispatcher = class {
   navigatedWithinDocument({}) {
   }
   frameResized() {
-    this.#resourceTreeModel.dispatchEventToListeners(Events.FrameResized);
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.FrameResized);
   }
   javascriptDialogOpening(event) {
-    this.#resourceTreeModel.dispatchEventToListeners(Events.JavaScriptDialogOpening, event);
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.JavaScriptDialogOpening, event);
     if (!event.hasBrowserHandler) {
       void this.#resourceTreeModel.agent.invoke_handleJavaScriptDialog({ accept: false });
     }
@@ -24542,11 +26485,11 @@ var PageDispatcher = class {
   }
   interstitialShown() {
     this.#resourceTreeModel.isInterstitialShowing = true;
-    this.#resourceTreeModel.dispatchEventToListeners(Events.InterstitialShown);
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.InterstitialShown);
   }
   interstitialHidden() {
     this.#resourceTreeModel.isInterstitialShowing = false;
-    this.#resourceTreeModel.dispatchEventToListeners(Events.InterstitialHidden);
+    this.#resourceTreeModel.dispatchEventToListeners(Events3.InterstitialHidden);
   }
   windowOpen({}) {
   }
@@ -24561,2710 +26504,17 @@ var PageDispatcher = class {
 };
 SDKModel.register(ResourceTreeModel, { capabilities: 2, autostart: true, early: true });
 
-// gen/front_end/core/sdk/TraceObject.js
-var TraceObject = class {
-  traceEvents;
-  metadata;
-  constructor(payload, meta = {}) {
-    const events = Array.isArray(payload) ? payload : payload.traceEvents;
-    const metadata = meta ?? (!Array.isArray(payload) && payload.metadata) ?? {};
-    this.traceEvents = events;
-    this.metadata = metadata;
-  }
-};
-var RevealableEvent = class {
-  event;
-  // Only Trace.Types.Events.Event are passed in, but we can't depend on that type from SDK
-  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-  constructor(event) {
-    this.event = event;
-  }
-};
-var RevealableNetworkRequest = class _RevealableNetworkRequest {
-  networkRequest;
-  constructor(networkRequest) {
-    this.networkRequest = networkRequest;
-  }
-  // Only Trace.Types.Events.SyntheticNetworkRequest are passed in, but we can't depend on that type from SDK
-  static create(event) {
-    const syntheticNetworkRequest = event;
-    const url = syntheticNetworkRequest.args.data.url;
-    const urlWithoutHash = Common24.ParsedURL.ParsedURL.urlWithoutHash(url);
-    const resource = ResourceTreeModel.resourceForURL(url) ?? ResourceTreeModel.resourceForURL(urlWithoutHash);
-    const sdkNetworkRequest = resource?.request;
-    return sdkNetworkRequest ? new _RevealableNetworkRequest(sdkNetworkRequest) : null;
-  }
-};
-
-// gen/front_end/core/sdk/RehydratingConnection.js
-var UIStrings7 = {
-  /**
-   * @description Text that appears when no source text is available for the given script
-   */
-  noSourceText: "No source text available",
-  /**
-   * @description Text to indicate rehydrating connection cannot find host window
-   */
-  noHostWindow: "Can not find host window",
-  /**
-   * @description Text to indicate that there is an error loading the log
-   */
-  errorLoadingLog: "Error loading log"
-};
-var str_7 = i18n15.i18n.registerUIStrings("core/sdk/RehydratingConnection.ts", UIStrings7);
-var i18nString7 = i18n15.i18n.getLocalizedString.bind(void 0, str_7);
-var RehydratingConnection = class {
-  rehydratingConnectionState = 1;
-  onDisconnect = null;
-  onMessage = null;
-  trace = null;
-  sessions = /* @__PURE__ */ new Map();
-  #onConnectionLost;
-  #rehydratingWindow;
-  #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
-  constructor(onConnectionLost) {
-    this.#onConnectionLost = onConnectionLost;
-    this.#rehydratingWindow = window;
-    this.#setupMessagePassing();
-  }
-  #setupMessagePassing() {
-    this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
-    if (!this.#rehydratingWindow.opener) {
-      this.#onConnectionLost(i18nString7(UIStrings7.noHostWindow));
-      return;
-    }
-    this.#rehydratingWindow.opener.postMessage({ type: "REHYDRATING_WINDOW_READY" });
-  }
-  /**
-   * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
-   * the trace event and all necessary data to power a rehydrated session.
-   */
-  onReceiveHostWindowPayload(event) {
-    if (event.data.type === "REHYDRATING_TRACE_FILE") {
-      const traceJson = event.data.traceJson;
-      let trace;
-      try {
-        trace = new TraceObject(JSON.parse(traceJson));
-      } catch {
-        this.#onConnectionLost(i18nString7(UIStrings7.errorLoadingLog));
-        return;
-      }
-      void this.startHydration(trace);
-    }
-    this.#rehydratingWindow.removeEventListener("message", this.#onReceiveHostWindowPayloadBound);
-  }
-  async startHydration(trace) {
-    if (!this.onMessage || this.rehydratingConnectionState !== 2) {
-      return false;
-    }
-    if (!("traceEvents" in trace)) {
-      console.error("RehydratingConnection failed to initialize due to missing trace events in payload");
-      return false;
-    }
-    this.trace = trace;
-    const enhancedTracesParser = new EnhancedTracesParser(trace);
-    const hydratingData = enhancedTracesParser.data();
-    let sessionId = 0;
-    this.sessions.set(sessionId, new RehydratingSessionBase(this));
-    for (const hydratingDataPerTarget of hydratingData) {
-      const target = hydratingDataPerTarget.target;
-      const executionContexts = hydratingDataPerTarget.executionContexts;
-      const scripts = hydratingDataPerTarget.scripts;
-      this.postToFrontend({
-        method: "Target.targetCreated",
-        params: {
-          targetInfo: {
-            targetId: target.targetId,
-            type: target.type,
-            title: target.url,
-            url: target.url,
-            attached: false,
-            canAccessOpener: false
-          }
-        }
-      });
-      sessionId += 1;
-      const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
-      this.sessions.set(sessionId, session);
-      session.declareSessionAttachedToTarget();
-    }
-    await this.#onRehydrated();
-    return true;
-  }
-  async #onRehydrated() {
-    if (!this.trace) {
-      return;
-    }
-    this.rehydratingConnectionState = 3;
-    await Common25.Revealer.reveal(this.trace);
-  }
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-    this.rehydratingConnectionState = 2;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.onDisconnect = onDisconnect;
-  }
-  // The function "sendRawMessage" is typically devtools front-end
-  // sending message to the backend via CDP. In this case, given that Rehydrating
-  // connection is an emulation of devtool back-end, sendRawMessage here
-  // is in fact rehydrating connection directly handling and acting on the
-  // receieved message.
-  sendRawMessage(message) {
-    if (typeof message === "string") {
-      message = JSON.parse(message);
-    }
-    const data = message;
-    if (typeof data.sessionId !== "undefined") {
-      const session = this.sessions.get(data.sessionId);
-      if (session) {
-        session.handleFrontendMessageAsFakeCDPAgent(data);
-      } else {
-        console.error("Invalid SessionId: " + data.sessionId);
-      }
-    } else {
-      this.sessions.get(0)?.handleFrontendMessageAsFakeCDPAgent(data);
-    }
-  }
-  // Posting rehydrating connection's message/response
-  // to devtools frontend through debugger protocol.
-  postToFrontend(arg) {
-    if (this.onMessage) {
-      this.onMessage(arg);
-    } else {
-      console.error("onMessage was not initialized");
-    }
-  }
-  disconnect() {
-    return Promise.reject();
-  }
-};
-var RehydratingSessionBase = class {
-  connection = null;
-  constructor(connection) {
-    this.connection = connection;
-  }
-  sendMessageToFrontend(payload) {
-    setTimeout(() => {
-      this.connection?.postToFrontend(payload);
-    });
-  }
-  handleFrontendMessageAsFakeCDPAgent(data) {
-    this.sendMessageToFrontend({
-      id: data.id,
-      result: {}
-    });
-  }
-};
-var RehydratingSession = class extends RehydratingSessionBase {
-  sessionId;
-  target;
-  executionContexts = [];
-  scripts = [];
-  constructor(sessionId, target, executionContexts, scripts, connection) {
-    super(connection);
-    this.sessionId = sessionId;
-    this.target = target;
-    this.executionContexts = executionContexts;
-    this.scripts = scripts;
-  }
-  sendMessageToFrontend(payload, attachSessionId = true) {
-    if (this.sessionId !== 0 && attachSessionId) {
-      payload.sessionId = this.sessionId;
-    }
-    super.sendMessageToFrontend(payload);
-  }
-  handleFrontendMessageAsFakeCDPAgent(data) {
-    switch (data.method) {
-      case "Runtime.enable":
-        this.handleRuntimeEnabled(data.id);
-        break;
-      case "Debugger.enable":
-        this.handleDebuggerEnable(data.id);
-        break;
-      case "Debugger.getScriptSource":
-        if (data.params) {
-          const params = data.params;
-          this.handleDebuggerGetScriptSource(data.id, params.scriptId);
-        }
-        break;
-      default:
-        this.sendMessageToFrontend({
-          id: data.id,
-          result: {}
-        });
-        break;
-    }
-  }
-  declareSessionAttachedToTarget() {
-    this.sendMessageToFrontend(
-      {
-        method: "Target.attachedToTarget",
-        params: {
-          sessionId: this.sessionId,
-          waitingForDebugger: false,
-          targetInfo: {
-            targetId: this.target.targetId,
-            type: this.target.type,
-            title: this.target.url,
-            url: this.target.url,
-            attached: true,
-            canAccessOpener: false
-          }
-        }
-      },
-      /* attachSessionId */
-      false
-    );
-  }
-  // Runtime.Enable indicates that Runtime domain is flushing the event to communicate
-  // the current state with the backend. In rehydrating connection, we made up the artificial
-  // execution context to support the rehydrated session.
-  handleRuntimeEnabled(id) {
-    for (const executionContext of this.executionContexts) {
-      executionContext.name = executionContext.origin;
-      this.sendMessageToFrontend({
-        method: "Runtime.executionContextCreated",
-        params: {
-          context: executionContext
-        }
-      });
-    }
-    this.sendMessageToFrontend({
-      id,
-      result: {}
-    });
-  }
-  handleDebuggerGetScriptSource(id, scriptId) {
-    const script = this.scripts.find((script2) => script2.scriptId === scriptId);
-    if (!script) {
-      console.error("No script for id: " + scriptId);
-      return;
-    }
-    this.sendMessageToFrontend({
-      id,
-      result: {
-        scriptSource: typeof script.sourceText === "undefined" ? i18nString7(UIStrings7.noSourceText) : script.sourceText
-      }
-    });
-  }
-  // Debugger.Enable indicates that Debugger domain is flushing the event to communicate
-  // the current state with the backend. In rehydrating connection, we made up the artificial
-  // script parsed event to communicate the current script state and respond with a mock
-  // debugger id.
-  handleDebuggerEnable(id) {
-    for (const script of this.scripts) {
-      this.sendMessageToFrontend({
-        method: "Debugger.scriptParsed",
-        params: script
-      });
-    }
-    const mockDebuggerId = "7777777777777777777.8888888888888888888";
-    this.sendMessageToFrontend({
-      id,
-      result: {
-        debuggerId: mockDebuggerId
-      }
-    });
-  }
-};
-
-// gen/front_end/core/sdk/Connections.js
-var UIStrings8 = {
-  /**
-   * @description Text on the remote debugging window to indicate the connection is lost
-   */
-  websocketDisconnected: "WebSocket disconnected"
-};
-var str_8 = i18n17.i18n.registerUIStrings("core/sdk/Connections.ts", UIStrings8);
-var i18nString8 = i18n17.i18n.getLocalizedString.bind(void 0, str_8);
-var MainConnection = class {
-  onMessage = null;
-  #onDisconnect = null;
-  #messageBuffer = "";
-  #messageSize = 0;
-  #eventListeners;
-  constructor() {
-    this.#eventListeners = [
-      Host5.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host5.InspectorFrontendHostAPI.Events.DispatchMessage, this.dispatchMessage, this),
-      Host5.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host5.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this.dispatchMessageChunk, this)
-    ];
-  }
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.#onDisconnect = onDisconnect;
-  }
-  sendRawMessage(message) {
-    if (this.onMessage) {
-      Host5.InspectorFrontendHost.InspectorFrontendHostInstance.sendMessageToBackend(message);
-    }
-  }
-  dispatchMessage(event) {
-    if (this.onMessage) {
-      this.onMessage.call(null, event.data);
-    }
-  }
-  dispatchMessageChunk(event) {
-    const { messageChunk, messageSize } = event.data;
-    if (messageSize) {
-      this.#messageBuffer = "";
-      this.#messageSize = messageSize;
-    }
-    this.#messageBuffer += messageChunk;
-    if (this.#messageBuffer.length === this.#messageSize && this.onMessage) {
-      this.onMessage.call(null, this.#messageBuffer);
-      this.#messageBuffer = "";
-      this.#messageSize = 0;
-    }
-  }
-  async disconnect() {
-    const onDisconnect = this.#onDisconnect;
-    Common26.EventTarget.removeEventListeners(this.#eventListeners);
-    this.#onDisconnect = null;
-    this.onMessage = null;
-    if (onDisconnect) {
-      onDisconnect.call(null, "force disconnect");
-    }
-  }
-};
-var WebSocketConnection = class {
-  #socket;
-  onMessage = null;
-  #onDisconnect = null;
-  #onWebSocketDisconnect;
-  #connected = false;
-  #messages = [];
-  constructor(url, onWebSocketDisconnect) {
-    this.#socket = new WebSocket(url);
-    this.#socket.onerror = this.onError.bind(this);
-    this.#socket.onopen = this.onOpen.bind(this);
-    this.#socket.onmessage = (messageEvent) => {
-      if (this.onMessage) {
-        this.onMessage.call(null, messageEvent.data);
-      }
-    };
-    this.#socket.onclose = this.onClose.bind(this);
-    this.#onWebSocketDisconnect = onWebSocketDisconnect;
-  }
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.#onDisconnect = onDisconnect;
-  }
-  onError() {
-    if (this.#onWebSocketDisconnect) {
-      this.#onWebSocketDisconnect.call(null, i18nString8(UIStrings8.websocketDisconnected));
-    }
-    if (this.#onDisconnect) {
-      this.#onDisconnect.call(null, "connection failed");
-    }
-    this.close();
-  }
-  onOpen() {
-    this.#connected = true;
-    if (this.#socket) {
-      this.#socket.onerror = console.error;
-      for (const message of this.#messages) {
-        this.#socket.send(message);
-      }
-    }
-    this.#messages = [];
-  }
-  onClose() {
-    if (this.#onWebSocketDisconnect) {
-      this.#onWebSocketDisconnect.call(null, i18nString8(UIStrings8.websocketDisconnected));
-    }
-    if (this.#onDisconnect) {
-      this.#onDisconnect.call(null, "websocket closed");
-    }
-    this.close();
-  }
-  close(callback) {
-    if (this.#socket) {
-      this.#socket.onerror = null;
-      this.#socket.onopen = null;
-      this.#socket.onclose = callback || null;
-      this.#socket.onmessage = null;
-      this.#socket.close();
-      this.#socket = null;
-    }
-    this.#onWebSocketDisconnect = null;
-  }
-  sendRawMessage(message) {
-    if (this.#connected && this.#socket) {
-      this.#socket.send(message);
-    } else {
-      this.#messages.push(message);
-    }
-  }
-  disconnect() {
-    return new Promise((fulfill) => {
-      this.close(() => {
-        if (this.#onDisconnect) {
-          this.#onDisconnect.call(null, "force disconnect");
-        }
-        fulfill();
-      });
-    });
-  }
-};
-var StubConnection = class {
-  onMessage = null;
-  #onDisconnect = null;
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.#onDisconnect = onDisconnect;
-  }
-  sendRawMessage(message) {
-    window.setTimeout(this.respondWithError.bind(this, message), 0);
-  }
-  respondWithError(message) {
-    const messageObject = JSON.parse(message);
-    const error = {
-      message: "This is a stub connection, can't dispatch message.",
-      code: ProtocolClient2.InspectorBackend.DevToolsStubErrorCode,
-      data: messageObject
-    };
-    if (this.onMessage) {
-      this.onMessage.call(null, { id: messageObject.id, error });
-    }
-  }
-  async disconnect() {
-    if (this.#onDisconnect) {
-      this.#onDisconnect.call(null, "force disconnect");
-    }
-    this.#onDisconnect = null;
-    this.onMessage = null;
-  }
-};
-var ParallelConnection = class {
-  #connection;
-  #sessionId;
-  onMessage = null;
-  #onDisconnect = null;
-  constructor(connection, sessionId) {
-    this.#connection = connection;
-    this.#sessionId = sessionId;
-  }
-  setOnMessage(onMessage) {
-    this.onMessage = onMessage;
-  }
-  setOnDisconnect(onDisconnect) {
-    this.#onDisconnect = onDisconnect;
-  }
-  getOnDisconnect() {
-    return this.#onDisconnect;
-  }
-  sendRawMessage(message) {
-    const messageObject = JSON.parse(message);
-    if (!messageObject.sessionId) {
-      messageObject.sessionId = this.#sessionId;
-    }
-    this.#connection.sendRawMessage(JSON.stringify(messageObject));
-  }
-  getSessionId() {
-    return this.#sessionId;
-  }
-  async disconnect() {
-    if (this.#onDisconnect) {
-      this.#onDisconnect.call(null, "force disconnect");
-    }
-    this.#onDisconnect = null;
-    this.onMessage = null;
-  }
-};
-async function initMainConnection(createRootTarget, onConnectionLost) {
-  ProtocolClient2.InspectorBackend.Connection.setFactory(createMainConnection.bind(null, onConnectionLost));
-  await createRootTarget();
-  Host5.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
-}
-function createMainConnection(onConnectionLost) {
-  if (Root7.Runtime.getPathName().includes("rehydrated_devtools_app")) {
-    return new RehydratingConnection(onConnectionLost);
-  }
-  const wsParam = Root7.Runtime.Runtime.queryParam("ws");
-  const wssParam = Root7.Runtime.Runtime.queryParam("wss");
-  if (wsParam || wssParam) {
-    const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
-    return new WebSocketConnection(ws, onConnectionLost);
-  }
-  const notEmbeddedOrWs = Host5.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode();
-  if (notEmbeddedOrWs) {
-    return new StubConnection();
-  }
-  return new MainConnection();
-}
-
-// gen/front_end/core/sdk/TargetManager.js
-var targetManagerInstance;
-var TargetManager = class _TargetManager extends Common27.ObjectWrapper.ObjectWrapper {
-  #targets;
-  #observers;
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  #modelListeners;
-  #modelObservers;
-  #scopedObservers;
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-  #isSuspended;
-  #browserTarget;
-  #scopeTarget;
-  #defaultScopeSet;
-  #scopeChangeListeners;
-  constructor() {
-    super();
-    this.#targets = /* @__PURE__ */ new Set();
-    this.#observers = /* @__PURE__ */ new Set();
-    this.#modelListeners = new Platform15.MapUtilities.Multimap();
-    this.#modelObservers = new Platform15.MapUtilities.Multimap();
-    this.#isSuspended = false;
-    this.#browserTarget = null;
-    this.#scopeTarget = null;
-    this.#scopedObservers = /* @__PURE__ */ new WeakSet();
-    this.#defaultScopeSet = false;
-    this.#scopeChangeListeners = /* @__PURE__ */ new Set();
-  }
-  static instance({ forceNew } = { forceNew: false }) {
-    if (!targetManagerInstance || forceNew) {
-      targetManagerInstance = new _TargetManager();
-    }
-    return targetManagerInstance;
-  }
-  static removeInstance() {
-    targetManagerInstance = void 0;
-  }
-  onInspectedURLChange(target) {
-    if (target !== this.#scopeTarget) {
-      return;
-    }
-    Host6.InspectorFrontendHost.InspectorFrontendHostInstance.inspectedURLChanged(target.inspectedURL() || Platform15.DevToolsPath.EmptyUrlString);
-    this.dispatchEventToListeners("InspectedURLChanged", target);
-  }
-  onNameChange(target) {
-    this.dispatchEventToListeners("NameChanged", target);
-  }
-  async suspendAllTargets(reason) {
-    if (this.#isSuspended) {
-      return;
-    }
-    this.#isSuspended = true;
-    this.dispatchEventToListeners(
-      "SuspendStateChanged"
-      /* Events.SUSPEND_STATE_CHANGED */
-    );
-    const suspendPromises = Array.from(this.#targets.values(), (target) => target.suspend(reason));
-    await Promise.all(suspendPromises);
-  }
-  async resumeAllTargets() {
-    if (!this.#isSuspended) {
-      return;
-    }
-    this.#isSuspended = false;
-    this.dispatchEventToListeners(
-      "SuspendStateChanged"
-      /* Events.SUSPEND_STATE_CHANGED */
-    );
-    const resumePromises = Array.from(this.#targets.values(), (target) => target.resume());
-    await Promise.all(resumePromises);
-  }
-  allTargetsSuspended() {
-    return this.#isSuspended;
-  }
-  models(modelClass, opts) {
-    const result = [];
-    for (const target of this.#targets) {
-      if (opts?.scoped && !this.isInScope(target)) {
-        continue;
-      }
-      const model = target.model(modelClass);
-      if (!model) {
-        continue;
-      }
-      result.push(model);
-    }
-    return result;
-  }
-  inspectedURL() {
-    const mainTarget = this.primaryPageTarget();
-    return mainTarget ? mainTarget.inspectedURL() : "";
-  }
-  observeModels(modelClass, observer, opts) {
-    const models = this.models(modelClass, opts);
-    this.#modelObservers.set(modelClass, observer);
-    if (opts?.scoped) {
-      this.#scopedObservers.add(observer);
-    }
-    for (const model of models) {
-      observer.modelAdded(model);
-    }
-  }
-  unobserveModels(modelClass, observer) {
-    this.#modelObservers.delete(modelClass, observer);
-    this.#scopedObservers.delete(observer);
-  }
-  modelAdded(modelClass, model, inScope) {
-    for (const observer of this.#modelObservers.get(modelClass).values()) {
-      if (!this.#scopedObservers.has(observer) || inScope) {
-        observer.modelAdded(model);
-      }
-    }
-  }
-  modelRemoved(modelClass, model, inScope) {
-    for (const observer of this.#modelObservers.get(modelClass).values()) {
-      if (!this.#scopedObservers.has(observer) || inScope) {
-        observer.modelRemoved(model);
-      }
-    }
-  }
-  addModelListener(modelClass, eventType, listener, thisObject, opts) {
-    const wrappedListener = (event) => {
-      if (!opts?.scoped || this.isInScope(event)) {
-        listener.call(thisObject, event);
-      }
-    };
-    for (const model of this.models(modelClass)) {
-      model.addEventListener(eventType, wrappedListener);
-    }
-    this.#modelListeners.set(eventType, { modelClass, thisObject, listener, wrappedListener });
-  }
-  removeModelListener(modelClass, eventType, listener, thisObject) {
-    if (!this.#modelListeners.has(eventType)) {
-      return;
-    }
-    let wrappedListener = null;
-    for (const info of this.#modelListeners.get(eventType)) {
-      if (info.modelClass === modelClass && info.listener === listener && info.thisObject === thisObject) {
-        wrappedListener = info.wrappedListener;
-        this.#modelListeners.delete(eventType, info);
-      }
-    }
-    if (wrappedListener) {
-      for (const model of this.models(modelClass)) {
-        model.removeEventListener(eventType, wrappedListener);
-      }
-    }
-  }
-  observeTargets(targetObserver, opts) {
-    if (this.#observers.has(targetObserver)) {
-      throw new Error("Observer can only be registered once");
-    }
-    if (opts?.scoped) {
-      this.#scopedObservers.add(targetObserver);
-    }
-    for (const target of this.#targets) {
-      if (!opts?.scoped || this.isInScope(target)) {
-        targetObserver.targetAdded(target);
-      }
-    }
-    this.#observers.add(targetObserver);
-  }
-  unobserveTargets(targetObserver) {
-    this.#observers.delete(targetObserver);
-    this.#scopedObservers.delete(targetObserver);
-  }
-  createTarget(id, name, type, parentTarget, sessionId, waitForDebuggerInPage, connection, targetInfo) {
-    const target = new Target(this, id, name, type, parentTarget, sessionId || "", this.#isSuspended, connection || null, targetInfo);
-    if (waitForDebuggerInPage) {
-      void target.pageAgent().invoke_waitForDebugger();
-    }
-    target.createModels(new Set(this.#modelObservers.keysArray()));
-    this.#targets.add(target);
-    const inScope = this.isInScope(target);
-    for (const observer of [...this.#observers]) {
-      if (!this.#scopedObservers.has(observer) || inScope) {
-        observer.targetAdded(target);
-      }
-    }
-    for (const [modelClass, model] of target.models().entries()) {
-      this.modelAdded(modelClass, model, inScope);
-    }
-    for (const key of this.#modelListeners.keysArray()) {
-      for (const info of this.#modelListeners.get(key)) {
-        const model = target.model(info.modelClass);
-        if (model) {
-          model.addEventListener(key, info.wrappedListener);
-        }
-      }
-    }
-    if (target === target.outermostTarget() && (target.type() !== Type2.FRAME || target === this.primaryPageTarget()) && !this.#defaultScopeSet) {
-      this.setScopeTarget(target);
-    }
-    return target;
-  }
-  removeTarget(target) {
-    if (!this.#targets.has(target)) {
-      return;
-    }
-    const inScope = this.isInScope(target);
-    this.#targets.delete(target);
-    for (const modelClass of target.models().keys()) {
-      const model = target.models().get(modelClass);
-      assertNotNullOrUndefined2(model);
-      this.modelRemoved(modelClass, model, inScope);
-    }
-    for (const observer of [...this.#observers]) {
-      if (!this.#scopedObservers.has(observer) || inScope) {
-        observer.targetRemoved(target);
-      }
-    }
-    for (const key of this.#modelListeners.keysArray()) {
-      for (const info of this.#modelListeners.get(key)) {
-        const model = target.model(info.modelClass);
-        if (model) {
-          model.removeEventListener(key, info.wrappedListener);
-        }
-      }
-    }
-  }
-  targets() {
-    return [...this.#targets];
-  }
-  targetById(id) {
-    return this.targets().find((target) => target.id() === id) || null;
-  }
-  rootTarget() {
-    if (this.#targets.size === 0) {
-      return null;
-    }
-    return this.#targets.values().next().value ?? null;
-  }
-  primaryPageTarget() {
-    let target = this.rootTarget();
-    if (target?.type() === Type2.TAB) {
-      target = this.targets().find((t) => t.parentTarget() === target && t.type() === Type2.FRAME && !t.targetInfo()?.subtype?.length) || null;
-    }
-    return target;
-  }
-  browserTarget() {
-    return this.#browserTarget;
-  }
-  /**
-   * If this returns true, the target is not connected to a legit CDP server.
-   * However, it's not exhaustive, so some `false` responses may be misleading.
-   *    (eg., tab URL of `devtools://devtools/bundled/devtools_app.html` uses a MainConnection but has no CDP server behind it).
-   */
-  hasFakeConnection() {
-    if (Root8.Runtime.getPathName().includes("rehydrated_devtools_app")) {
-      return true;
-    }
-    const connection = this.primaryPageTarget()?.router()?.connection();
-    if (!connection) {
-      return false;
-    }
-    const isFakeConnection = connection instanceof StubConnection || connection instanceof RehydratingConnection;
-    return isFakeConnection;
-  }
-  async maybeAttachInitialTarget() {
-    if (!Boolean(Root8.Runtime.Runtime.queryParam("browserConnection"))) {
-      return false;
-    }
-    if (!this.#browserTarget) {
-      this.#browserTarget = new Target(
-        this,
-        /* #id*/
-        "main",
-        /* #name*/
-        "browser",
-        Type2.BROWSER,
-        /* #parentTarget*/
-        null,
-        /* #sessionId */
-        "",
-        /* suspended*/
-        false,
-        /* #connection*/
-        null,
-        /* targetInfo*/
-        void 0
-      );
-      this.#browserTarget.createModels(new Set(this.#modelObservers.keysArray()));
-    }
-    const targetId = await Host6.InspectorFrontendHost.InspectorFrontendHostInstance.initialTargetId();
-    void this.#browserTarget.targetAgent().invoke_autoAttachRelated({
-      targetId,
-      waitForDebuggerOnStart: true
-    });
-    return true;
-  }
-  clearAllTargetsForTest() {
-    this.#targets.clear();
-  }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  isInScope(arg) {
-    if (!arg) {
-      return false;
-    }
-    if (isSDKModelEvent(arg)) {
-      arg = arg.source;
-    }
-    if (arg instanceof SDKModel) {
-      arg = arg.target();
-    }
-    while (arg && arg !== this.#scopeTarget) {
-      arg = arg.parentTarget();
-    }
-    return Boolean(arg) && arg === this.#scopeTarget;
-  }
-  // Sets a root of a scope substree.
-  // TargetManager API invoked with `scoped: true` will behave as if targets
-  // outside of the scope subtree don't exist. Concretely this means that
-  // target observers, model observers and model listeners won't be invoked for targets outside of the
-  // scope tree. This method will invoke targetRemoved and modelRemoved for
-  // objects in the previous scope, as if they disappear and then will invoke
-  // targetAdded and modelAdded as if they just appeared.
-  // Note that scopeTarget could be null, which will effectively prevent scoped
-  // observes from getting any events.
-  setScopeTarget(scopeTarget) {
-    if (scopeTarget === this.#scopeTarget) {
-      return;
-    }
-    for (const target of this.targets()) {
-      if (!this.isInScope(target)) {
-        continue;
-      }
-      for (const modelClass of this.#modelObservers.keysArray()) {
-        const model = target.models().get(modelClass);
-        if (!model) {
-          continue;
-        }
-        for (const observer of [...this.#modelObservers.get(modelClass)].filter((o) => this.#scopedObservers.has(o))) {
-          observer.modelRemoved(model);
-        }
-      }
-      for (const observer of [...this.#observers].filter((o) => this.#scopedObservers.has(o))) {
-        observer.targetRemoved(target);
-      }
-    }
-    this.#scopeTarget = scopeTarget;
-    for (const target of this.targets()) {
-      if (!this.isInScope(target)) {
-        continue;
-      }
-      for (const observer of [...this.#observers].filter((o) => this.#scopedObservers.has(o))) {
-        observer.targetAdded(target);
-      }
-      for (const [modelClass, model] of target.models().entries()) {
-        for (const observer of [...this.#modelObservers.get(modelClass)].filter((o) => this.#scopedObservers.has(o))) {
-          observer.modelAdded(model);
-        }
-      }
-    }
-    for (const scopeChangeListener of this.#scopeChangeListeners) {
-      scopeChangeListener();
-    }
-    if (scopeTarget?.inspectedURL()) {
-      this.onInspectedURLChange(scopeTarget);
-    }
-  }
-  addScopeChangeListener(listener) {
-    this.#scopeChangeListeners.add(listener);
-  }
-  scopeTarget() {
-    return this.#scopeTarget;
-  }
-};
-var Observer = class {
-  targetAdded(_target) {
-  }
-  targetRemoved(_target) {
-  }
-};
-var SDKModelObserver = class {
-  modelAdded(_model) {
-  }
-  modelRemoved(_model) {
-  }
-};
-function isSDKModelEvent(arg) {
-  return "source" in arg && arg.source instanceof SDKModel;
-}
-
-// gen/front_end/core/sdk/NetworkManager.js
-var UIStrings9 = {
-  /**
-   * @description Explanation why no content is shown for WebSocket connection.
-   */
-  noContentForWebSocket: "Content for WebSockets is currently not supported",
-  /**
-   * @description Explanation why no content is shown for redirect response.
-   */
-  noContentForRedirect: "No content available because this request was redirected",
-  /**
-   * @description Explanation why no content is shown for preflight request.
-   */
-  noContentForPreflight: "No content available for preflight request",
-  /**
-   * @description Text to indicate that network throttling is disabled
-   */
-  noThrottling: "No throttling",
-  /**
-   * @description Text to indicate the network connectivity is offline
-   */
-  offline: "Offline",
-  /**
-   * @description Text in Network Manager representing the "3G" throttling preset.
-   */
-  slowG: "3G",
-  // Named `slowG` for legacy reasons and because this value
-  // is serialized locally on the user's machine: if we
-  // change it we break their stored throttling settings.
-  // (See crrev.com/c/2947255)
-  /**
-   * @description Text in Network Manager representing the "Slow 4G" throttling preset
-   */
-  fastG: "Slow 4G",
-  // Named `fastG` for legacy reasons and because this value
-  // is serialized locally on the user's machine: if we
-  // change it we break their stored throttling settings.
-  // (See crrev.com/c/2947255)
-  /**
-   * @description Text in Network Manager representing the "Fast 4G" throttling preset
-   */
-  fast4G: "Fast 4G",
-  /**
-   * @description Text in Network Manager
-   * @example {https://example.com} PH1
-   */
-  requestWasBlockedByDevtoolsS: 'Request was blocked by DevTools: "{PH1}"',
-  /**
-   * @description Message in Network Manager
-   * @example {XHR} PH1
-   * @example {GET} PH2
-   * @example {https://example.com} PH3
-   */
-  sFailedLoadingSS: '{PH1} failed loading: {PH2} "{PH3}".',
-  /**
-   * @description Message in Network Manager
-   * @example {XHR} PH1
-   * @example {GET} PH2
-   * @example {https://example.com} PH3
-   */
-  sFinishedLoadingSS: '{PH1} finished loading: {PH2} "{PH3}".',
-  /**
-   * @description One of direct socket connection statuses
-   */
-  directSocketStatusOpening: "Opening",
-  /**
-   * @description One of direct socket connection statuses
-   */
-  directSocketStatusOpen: "Open",
-  /**
-   * @description One of direct socket connection statuses
-   */
-  directSocketStatusClosed: "Closed",
-  /**
-   * @description One of direct socket connection statuses
-   */
-  directSocketStatusAborted: "Aborted"
-};
-var str_9 = i18n19.i18n.registerUIStrings("core/sdk/NetworkManager.ts", UIStrings9);
-var i18nString9 = i18n19.i18n.getLocalizedString.bind(void 0, str_9);
-var i18nLazyString = i18n19.i18n.getLazilyComputedLocalizedString.bind(void 0, str_9);
-var requestToManagerMap = /* @__PURE__ */ new WeakMap();
-var CONNECTION_TYPES = /* @__PURE__ */ new Map([
-  [
-    "2g",
-    "cellular2g"
-    /* Protocol.Network.ConnectionType.Cellular2g */
-  ],
-  [
-    "3g",
-    "cellular3g"
-    /* Protocol.Network.ConnectionType.Cellular3g */
-  ],
-  [
-    "4g",
-    "cellular4g"
-    /* Protocol.Network.ConnectionType.Cellular4g */
-  ],
-  [
-    "bluetooth",
-    "bluetooth"
-    /* Protocol.Network.ConnectionType.Bluetooth */
-  ],
-  [
-    "wifi",
-    "wifi"
-    /* Protocol.Network.ConnectionType.Wifi */
-  ],
-  [
-    "wimax",
-    "wimax"
-    /* Protocol.Network.ConnectionType.Wimax */
-  ]
-]);
-function customUserNetworkConditionsSetting() {
-  return Common28.Settings.Settings.instance().moduleSetting("custom-network-conditions");
-}
-function activeNetworkThrottlingKeySetting() {
-  return Common28.Settings.Settings.instance().createSetting(
-    "active-network-condition-key",
-    "NO_THROTTLING"
-    /* PredefinedThrottlingConditionKey.NO_THROTTLING */
-  );
-}
-var NetworkManager = class _NetworkManager extends SDKModel {
-  dispatcher;
-  fetchDispatcher;
-  #networkAgent;
-  #bypassServiceWorkerSetting;
-  activeNetworkThrottlingKey = activeNetworkThrottlingKeySetting();
-  constructor(target) {
-    super(target);
-    this.dispatcher = new NetworkDispatcher(this);
-    this.fetchDispatcher = new FetchDispatcher(target.fetchAgent(), this);
-    this.#networkAgent = target.networkAgent();
-    target.registerNetworkDispatcher(this.dispatcher);
-    target.registerFetchDispatcher(this.fetchDispatcher);
-    if (Common28.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
-      void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: true });
-    }
-    if (Root9.Runtime.hostConfig.devToolsPrivacyUI?.enabled && Root9.Runtime.hostConfig.thirdPartyCookieControls?.managedBlockThirdPartyCookies !== true && (Common28.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get() || Common28.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get() || Common28.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get())) {
-      this.cookieControlFlagsSettingChanged();
-    }
-    void this.#networkAgent.invoke_enable({
-      maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH,
-      reportDirectSocketTraffic: true
-    });
-    void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
-    this.#bypassServiceWorkerSetting = Common28.Settings.Settings.instance().createSetting("bypass-service-worker", false);
-    if (this.#bypassServiceWorkerSetting.get()) {
-      this.bypassServiceWorkerChanged();
-    }
-    this.#bypassServiceWorkerSetting.addChangeListener(this.bypassServiceWorkerChanged, this);
-    Common28.Settings.Settings.instance().moduleSetting("cache-disabled").addChangeListener(this.cacheDisabledSettingChanged, this);
-    Common28.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
-    Common28.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
-    Common28.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).addChangeListener(this.cookieControlFlagsSettingChanged, this);
-  }
-  static forRequest(request) {
-    return requestToManagerMap.get(request) || null;
-  }
-  static canReplayRequest(request) {
-    return Boolean(requestToManagerMap.get(request)) && Boolean(request.backendRequestId()) && !request.isRedirect() && request.resourceType() === Common28.ResourceType.resourceTypes.XHR;
-  }
-  static replayRequest(request) {
-    const manager = requestToManagerMap.get(request);
-    const requestId = request.backendRequestId();
-    if (!manager || !requestId || request.isRedirect()) {
-      return;
-    }
-    void manager.#networkAgent.invoke_replayXHR({ requestId });
-  }
-  static async searchInRequest(request, query, caseSensitive, isRegex) {
-    const manager = _NetworkManager.forRequest(request);
-    const requestId = request.backendRequestId();
-    if (!manager || !requestId || request.isRedirect()) {
-      return [];
-    }
-    const response = await manager.#networkAgent.invoke_searchInResponseBody({ requestId, query, caseSensitive, isRegex });
-    return TextUtils19.TextUtils.performSearchInSearchMatches(response.result || [], query, caseSensitive, isRegex);
-  }
-  static async requestContentData(request) {
-    if (request.resourceType() === Common28.ResourceType.resourceTypes.WebSocket) {
-      return { error: i18nString9(UIStrings9.noContentForWebSocket) };
-    }
-    if (!request.finished) {
-      await request.once(Events9.FINISHED_LOADING);
-    }
-    if (request.isRedirect()) {
-      return { error: i18nString9(UIStrings9.noContentForRedirect) };
-    }
-    if (request.isPreflightRequest()) {
-      return { error: i18nString9(UIStrings9.noContentForPreflight) };
-    }
-    const manager = _NetworkManager.forRequest(request);
-    if (!manager) {
-      return { error: "No network manager for request" };
-    }
-    const requestId = request.backendRequestId();
-    if (!requestId) {
-      return { error: "No backend request id for request" };
-    }
-    const response = await manager.#networkAgent.invoke_getResponseBody({ requestId });
-    const error = response.getError();
-    if (error) {
-      return { error };
-    }
-    return new TextUtils19.ContentData.ContentData(response.body, response.base64Encoded, request.mimeType, request.charset() ?? void 0);
-  }
-  /**
-   * Returns the already received bytes for an in-flight request. After calling this method
-   * "dataReceived" events will contain additional data.
-   */
-  static async streamResponseBody(request) {
-    if (request.finished) {
-      return { error: "Streaming the response body is only available for in-flight requests." };
-    }
-    const manager = _NetworkManager.forRequest(request);
-    if (!manager) {
-      return { error: "No network manager for request" };
-    }
-    const requestId = request.backendRequestId();
-    if (!requestId) {
-      return { error: "No backend request id for request" };
-    }
-    const response = await manager.#networkAgent.invoke_streamResourceContent({ requestId });
-    const error = response.getError();
-    if (error) {
-      return { error };
-    }
-    await request.waitForResponseReceived();
-    return new TextUtils19.ContentData.ContentData(
-      response.bufferedData,
-      /* isBase64=*/
-      true,
-      request.mimeType,
-      request.charset() ?? void 0
-    );
-  }
-  static async requestPostData(request) {
-    const manager = _NetworkManager.forRequest(request);
-    if (!manager) {
-      console.error("No network manager for request");
-      return null;
-    }
-    const requestId = request.backendRequestId();
-    if (!requestId) {
-      console.error("No backend request id for request");
-      return null;
-    }
-    try {
-      const { postData } = await manager.#networkAgent.invoke_getRequestPostData({ requestId });
-      return postData;
-    } catch (e) {
-      return e.message;
-    }
-  }
-  static connectionType(conditions) {
-    if (!conditions.download && !conditions.upload) {
-      return "none";
-    }
-    try {
-      const title = typeof conditions.title === "function" ? conditions.title().toLowerCase() : conditions.title.toLowerCase();
-      for (const [name, protocolType] of CONNECTION_TYPES) {
-        if (title.includes(name)) {
-          return protocolType;
-        }
-      }
-    } catch {
-      return "none";
-    }
-    return "other";
-  }
-  static lowercaseHeaders(headers) {
-    const newHeaders = {};
-    for (const headerName in headers) {
-      newHeaders[headerName.toLowerCase()] = headers[headerName];
-    }
-    return newHeaders;
-  }
-  requestForURL(url) {
-    return this.dispatcher.requestForURL(url);
-  }
-  requestForId(id) {
-    return this.dispatcher.requestForId(id);
-  }
-  requestForLoaderId(loaderId) {
-    return this.dispatcher.requestForLoaderId(loaderId);
-  }
-  cacheDisabledSettingChanged({ data: enabled }) {
-    void this.#networkAgent.invoke_setCacheDisabled({ cacheDisabled: enabled });
-  }
-  cookieControlFlagsSettingChanged() {
-    const overridesEnabled = Boolean(Common28.Settings.Settings.instance().createSetting("cookie-control-override-enabled", void 0).get());
-    const gracePeriodEnabled = overridesEnabled ? Boolean(Common28.Settings.Settings.instance().createSetting("grace-period-mitigation-disabled", void 0).get()) : false;
-    const heuristicEnabled = overridesEnabled ? Boolean(Common28.Settings.Settings.instance().createSetting("heuristic-mitigation-disabled", void 0).get()) : false;
-    void this.#networkAgent.invoke_setCookieControls({
-      enableThirdPartyCookieRestriction: overridesEnabled,
-      disableThirdPartyCookieMetadata: gracePeriodEnabled,
-      disableThirdPartyCookieHeuristics: heuristicEnabled
-    });
-  }
-  dispose() {
-    Common28.Settings.Settings.instance().moduleSetting("cache-disabled").removeChangeListener(this.cacheDisabledSettingChanged, this);
-  }
-  bypassServiceWorkerChanged() {
-    void this.#networkAgent.invoke_setBypassServiceWorker({ bypass: this.#bypassServiceWorkerSetting.get() });
-  }
-  async getSecurityIsolationStatus(frameId) {
-    const result = await this.#networkAgent.invoke_getSecurityIsolationStatus({ frameId: frameId ?? void 0 });
-    if (result.getError()) {
-      return null;
-    }
-    return result.status;
-  }
-  async getIpProtectionProxyStatus() {
-    const result = await this.#networkAgent.invoke_getIPProtectionProxyStatus();
-    if (result.getError()) {
-      return null;
-    }
-    return result.status;
-  }
-  async enableReportingApi(enable = true) {
-    return await this.#networkAgent.invoke_enableReportingApi({ enable });
-  }
-  async loadNetworkResource(frameId, url, options) {
-    const result = await this.#networkAgent.invoke_loadNetworkResource({ frameId: frameId ?? void 0, url, options });
-    if (result.getError()) {
-      throw new Error(result.getError());
-    }
-    return result.resource;
-  }
-  clearRequests() {
-    this.dispatcher.clearRequests();
-  }
-};
-var Events8;
-(function(Events12) {
-  Events12["RequestStarted"] = "RequestStarted";
-  Events12["RequestUpdated"] = "RequestUpdated";
-  Events12["RequestFinished"] = "RequestFinished";
-  Events12["RequestUpdateDropped"] = "RequestUpdateDropped";
-  Events12["ResponseReceived"] = "ResponseReceived";
-  Events12["MessageGenerated"] = "MessageGenerated";
-  Events12["RequestRedirected"] = "RequestRedirected";
-  Events12["LoadingFinished"] = "LoadingFinished";
-  Events12["ReportingApiReportAdded"] = "ReportingApiReportAdded";
-  Events12["ReportingApiReportUpdated"] = "ReportingApiReportUpdated";
-  Events12["ReportingApiEndpointsChangedForOrigin"] = "ReportingApiEndpointsChangedForOrigin";
-})(Events8 || (Events8 = {}));
-var NoThrottlingConditions = {
-  key: "NO_THROTTLING",
-  title: i18nLazyString(UIStrings9.noThrottling),
-  i18nTitleKey: UIStrings9.noThrottling,
-  download: -1,
-  upload: -1,
-  latency: 0
-};
-var OfflineConditions = {
-  key: "OFFLINE",
-  title: i18nLazyString(UIStrings9.offline),
-  i18nTitleKey: UIStrings9.offline,
-  download: 0,
-  upload: 0,
-  latency: 0
-};
-var slow3GTargetLatency = 400;
-var Slow3GConditions = {
-  key: "SPEED_3G",
-  title: i18nLazyString(UIStrings9.slowG),
-  i18nTitleKey: UIStrings9.slowG,
-  // ~500Kbps down
-  download: 500 * 1e3 / 8 * 0.8,
-  // ~500Kbps up
-  upload: 500 * 1e3 / 8 * 0.8,
-  // 400ms RTT
-  latency: slow3GTargetLatency * 5,
-  targetLatency: slow3GTargetLatency
-};
-var slow4GTargetLatency = 150;
-var Slow4GConditions = {
-  key: "SPEED_SLOW_4G",
-  title: i18nLazyString(UIStrings9.fastG),
-  i18nTitleKey: UIStrings9.fastG,
-  // ~1.6 Mbps down
-  download: 1.6 * 1e3 * 1e3 / 8 * 0.9,
-  // ~0.75 Mbps up
-  upload: 750 * 1e3 / 8 * 0.9,
-  // 150ms RTT
-  latency: slow4GTargetLatency * 3.75,
-  targetLatency: slow4GTargetLatency
-};
-var fast4GTargetLatency = 60;
-var Fast4GConditions = {
-  key: "SPEED_FAST_4G",
-  title: i18nLazyString(UIStrings9.fast4G),
-  i18nTitleKey: UIStrings9.fast4G,
-  // 9 Mbps down
-  download: 9 * 1e3 * 1e3 / 8 * 0.9,
-  // 1.5 Mbps up
-  upload: 1.5 * 1e3 * 1e3 / 8 * 0.9,
-  // 60ms RTT
-  latency: fast4GTargetLatency * 2.75,
-  targetLatency: fast4GTargetLatency
-};
-var MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024;
-var FetchDispatcher = class {
-  #fetchAgent;
-  #manager;
-  constructor(agent, manager) {
-    this.#fetchAgent = agent;
-    this.#manager = manager;
-  }
-  requestPaused({ requestId, request, resourceType, responseStatusCode, responseHeaders, networkId }) {
-    const networkRequest = networkId ? this.#manager.requestForId(networkId) : null;
-    if (networkRequest?.originalResponseHeaders.length === 0 && responseHeaders) {
-      networkRequest.originalResponseHeaders = responseHeaders;
-    }
-    void MultitargetNetworkManager.instance().requestIntercepted(new InterceptedRequest(this.#fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders));
-  }
-  authRequired({}) {
-  }
-};
-var NetworkDispatcher = class {
-  #manager;
-  #requestsById = /* @__PURE__ */ new Map();
-  #requestsByURL = /* @__PURE__ */ new Map();
-  #requestsByLoaderId = /* @__PURE__ */ new Map();
-  #requestIdToExtraInfoBuilder = /* @__PURE__ */ new Map();
-  /**
-   * In case of an early abort or a cache hit, the Trust Token done event is
-   * reported before the request itself is created in `requestWillBeSent`.
-   * This causes the event to be lost as no `NetworkRequest` instance has been
-   * created yet.
-   * This map caches the events temporarily and populates the NetworkRequest
-   * once it is created in `requestWillBeSent`.
-   */
-  #requestIdToTrustTokenEvent = /* @__PURE__ */ new Map();
-  constructor(manager) {
-    this.#manager = manager;
-    MultitargetNetworkManager.instance().addEventListener("RequestIntercepted", this.#markAsIntercepted.bind(this));
-  }
-  #markAsIntercepted(event) {
-    const request = this.requestForId(event.data);
-    if (request) {
-      request.setWasIntercepted(true);
-    }
-  }
-  headersMapToHeadersArray(headersMap) {
-    const result = [];
-    for (const name in headersMap) {
-      const values = headersMap[name].split("\n");
-      for (let i = 0; i < values.length; ++i) {
-        result.push({ name, value: values[i] });
-      }
-    }
-    return result;
-  }
-  updateNetworkRequestWithRequest(networkRequest, request) {
-    networkRequest.requestMethod = request.method;
-    networkRequest.setRequestHeaders(this.headersMapToHeadersArray(request.headers));
-    networkRequest.setRequestFormData(Boolean(request.hasPostData), request.postData || null);
-    networkRequest.setInitialPriority(request.initialPriority);
-    networkRequest.mixedContentType = request.mixedContentType || "none";
-    networkRequest.setReferrerPolicy(request.referrerPolicy);
-    networkRequest.setIsSameSite(request.isSameSite || false);
-    networkRequest.setIsAdRelated(request.isAdRelated || false);
-  }
-  updateNetworkRequestWithResponse(networkRequest, response) {
-    if (response.url && networkRequest.url() !== response.url) {
-      networkRequest.setUrl(response.url);
-    }
-    networkRequest.mimeType = response.mimeType;
-    networkRequest.setCharset(response.charset);
-    if (!networkRequest.statusCode || networkRequest.wasIntercepted()) {
-      networkRequest.statusCode = response.status;
-    }
-    if (!networkRequest.statusText || networkRequest.wasIntercepted()) {
-      networkRequest.statusText = response.statusText;
-    }
-    if (!networkRequest.hasExtraResponseInfo() || networkRequest.wasIntercepted()) {
-      networkRequest.responseHeaders = this.headersMapToHeadersArray(response.headers);
-    }
-    if (response.encodedDataLength >= 0) {
-      networkRequest.setTransferSize(response.encodedDataLength);
-    }
-    if (response.requestHeaders && !networkRequest.hasExtraRequestInfo()) {
-      networkRequest.setRequestHeaders(this.headersMapToHeadersArray(response.requestHeaders));
-      networkRequest.setRequestHeadersText(response.requestHeadersText || "");
-    }
-    networkRequest.connectionReused = response.connectionReused;
-    networkRequest.connectionId = String(response.connectionId);
-    if (response.remoteIPAddress) {
-      networkRequest.setRemoteAddress(response.remoteIPAddress, response.remotePort || -1);
-    }
-    if (response.fromServiceWorker) {
-      networkRequest.fetchedViaServiceWorker = true;
-    }
-    if (response.fromDiskCache) {
-      networkRequest.setFromDiskCache();
-    }
-    if (response.fromPrefetchCache) {
-      networkRequest.setFromPrefetchCache();
-    }
-    if (response.fromEarlyHints) {
-      networkRequest.setFromEarlyHints();
-    }
-    if (response.cacheStorageCacheName) {
-      networkRequest.setResponseCacheStorageCacheName(response.cacheStorageCacheName);
-    }
-    if (response.serviceWorkerRouterInfo) {
-      networkRequest.serviceWorkerRouterInfo = response.serviceWorkerRouterInfo;
-    }
-    if (response.responseTime) {
-      networkRequest.setResponseRetrievalTime(new Date(response.responseTime));
-    }
-    networkRequest.timing = response.timing;
-    networkRequest.protocol = response.protocol || "";
-    networkRequest.alternateProtocolUsage = response.alternateProtocolUsage;
-    if (response.serviceWorkerResponseSource) {
-      networkRequest.setServiceWorkerResponseSource(response.serviceWorkerResponseSource);
-    }
-    networkRequest.setSecurityState(response.securityState);
-    if (response.securityDetails) {
-      networkRequest.setSecurityDetails(response.securityDetails);
-    }
-    if (Root9.Runtime.hostConfig.devToolsIpProtectionInDevTools?.enabled) {
-      if (response.isIpProtectionUsed) {
-        networkRequest.setIsIpProtectionUsed(response.isIpProtectionUsed);
-      }
-    }
-    const newResourceType = Common28.ResourceType.ResourceType.fromMimeTypeOverride(networkRequest.mimeType);
-    if (newResourceType) {
-      networkRequest.setResourceType(newResourceType);
-    }
-    if (networkRequest.responseReceivedPromiseResolve) {
-      networkRequest.responseReceivedPromiseResolve();
-    } else {
-      networkRequest.responseReceivedPromise = Promise.resolve();
-    }
-  }
-  requestForId(id) {
-    return this.#requestsById.get(id) || null;
-  }
-  requestForURL(url) {
-    return this.#requestsByURL.get(url) || null;
-  }
-  requestForLoaderId(loaderId) {
-    return this.#requestsByLoaderId.get(loaderId) || null;
-  }
-  resourceChangedPriority({ requestId, newPriority }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (networkRequest) {
-      networkRequest.setPriority(newPriority);
-    }
-  }
-  signedExchangeReceived({ requestId, info }) {
-    let networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      networkRequest = this.#requestsByURL.get(info.outerResponse.url);
-      if (!networkRequest) {
-        return;
-      }
-      const backendRequestId = networkRequest.backendRequestId() || requestId;
-      requestId = backendRequestId;
-    }
-    networkRequest.setSignedExchangeInfo(info);
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes.SignedExchange);
-    this.updateNetworkRequestWithResponse(networkRequest, info.outerResponse);
-    this.updateNetworkRequest(networkRequest);
-    this.getExtraInfoBuilder(requestId).addHasExtraInfo(info.hasExtraInfo);
-    this.#manager.dispatchEventToListeners(Events8.ResponseReceived, { request: networkRequest, response: info.outerResponse });
-  }
-  requestWillBeSent({ requestId, loaderId, documentURL, request, timestamp, wallTime, initiator, redirectHasExtraInfo, redirectResponse, type, frameId, hasUserGesture }) {
-    let networkRequest = this.#requestsById.get(requestId);
-    if (networkRequest) {
-      if (!redirectResponse) {
-        return;
-      }
-      if (!networkRequest.signedExchangeInfo()) {
-        this.responseReceived({
-          requestId,
-          loaderId,
-          timestamp,
-          type: type || "Other",
-          response: redirectResponse,
-          hasExtraInfo: redirectHasExtraInfo,
-          frameId
-        });
-      }
-      networkRequest = this.appendRedirect(requestId, timestamp, request.url);
-      this.#manager.dispatchEventToListeners(Events8.RequestRedirected, networkRequest);
-    } else {
-      networkRequest = NetworkRequest.create(requestId, request.url, documentURL, frameId ?? null, loaderId, initiator, hasUserGesture);
-      requestToManagerMap.set(networkRequest, this.#manager);
-    }
-    networkRequest.hasNetworkData = true;
-    this.updateNetworkRequestWithRequest(networkRequest, request);
-    networkRequest.setIssueTime(timestamp, wallTime);
-    networkRequest.setResourceType(type ? Common28.ResourceType.resourceTypes[type] : Common28.ResourceType.resourceTypes.Other);
-    if (request.trustTokenParams) {
-      networkRequest.setTrustTokenParams(request.trustTokenParams);
-    }
-    const maybeTrustTokenEvent = this.#requestIdToTrustTokenEvent.get(requestId);
-    if (maybeTrustTokenEvent) {
-      networkRequest.setTrustTokenOperationDoneEvent(maybeTrustTokenEvent);
-      this.#requestIdToTrustTokenEvent.delete(requestId);
-    }
-    this.getExtraInfoBuilder(requestId).addRequest(networkRequest);
-    this.startNetworkRequest(networkRequest, request);
-  }
-  requestServedFromCache({ requestId }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.setFromMemoryCache();
-  }
-  responseReceived({ requestId, loaderId, timestamp, type, response, hasExtraInfo, frameId }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    const lowercaseHeaders = NetworkManager.lowercaseHeaders(response.headers);
-    if (!networkRequest) {
-      const lastModifiedHeader = lowercaseHeaders["last-modified"];
-      const eventData = {
-        url: response.url,
-        frameId: frameId ?? null,
-        loaderId,
-        resourceType: type,
-        mimeType: response.mimeType,
-        lastModified: lastModifiedHeader ? new Date(lastModifiedHeader) : null
-      };
-      this.#manager.dispatchEventToListeners(Events8.RequestUpdateDropped, eventData);
-      return;
-    }
-    networkRequest.responseReceivedTime = timestamp;
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes[type]);
-    this.updateNetworkRequestWithResponse(networkRequest, response);
-    this.updateNetworkRequest(networkRequest);
-    this.getExtraInfoBuilder(requestId).addHasExtraInfo(hasExtraInfo);
-    this.#manager.dispatchEventToListeners(Events8.ResponseReceived, { request: networkRequest, response });
-  }
-  dataReceived(event) {
-    let networkRequest = this.#requestsById.get(event.requestId);
-    if (!networkRequest) {
-      networkRequest = this.maybeAdoptMainResourceRequest(event.requestId);
-    }
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addDataReceivedEvent(event);
-    this.updateNetworkRequest(networkRequest);
-  }
-  loadingFinished({ requestId, timestamp: finishTime, encodedDataLength }) {
-    let networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      networkRequest = this.maybeAdoptMainResourceRequest(requestId);
-    }
-    if (!networkRequest) {
-      return;
-    }
-    this.getExtraInfoBuilder(requestId).finished();
-    this.finishNetworkRequest(networkRequest, finishTime, encodedDataLength);
-    this.#manager.dispatchEventToListeners(Events8.LoadingFinished, networkRequest);
-  }
-  loadingFailed({ requestId, timestamp: time, type: resourceType, errorText: localizedDescription, canceled, blockedReason, corsErrorStatus }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.failed = true;
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes[resourceType]);
-    networkRequest.canceled = Boolean(canceled);
-    if (blockedReason) {
-      networkRequest.setBlockedReason(blockedReason);
-      if (blockedReason === "inspector") {
-        const message = i18nString9(UIStrings9.requestWasBlockedByDevtoolsS, { PH1: networkRequest.url() });
-        this.#manager.dispatchEventToListeners(Events8.MessageGenerated, { message, requestId, warning: true });
-      }
-    }
-    if (corsErrorStatus) {
-      networkRequest.setCorsErrorStatus(corsErrorStatus);
-    }
-    networkRequest.localizedFailDescription = localizedDescription;
-    this.getExtraInfoBuilder(requestId).finished();
-    this.finishNetworkRequest(networkRequest, time, -1);
-  }
-  webSocketCreated({ requestId, url: requestURL, initiator }) {
-    const networkRequest = NetworkRequest.createForSocket(requestId, requestURL, initiator);
-    requestToManagerMap.set(networkRequest, this.#manager);
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes.WebSocket);
-    this.startNetworkRequest(networkRequest, null);
-  }
-  webSocketWillSendHandshakeRequest({ requestId, timestamp: time, wallTime, request }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.requestMethod = "GET";
-    networkRequest.setRequestHeaders(this.headersMapToHeadersArray(request.headers));
-    networkRequest.setIssueTime(time, wallTime);
-    this.updateNetworkRequest(networkRequest);
-  }
-  webSocketHandshakeResponseReceived({ requestId, timestamp: time, response }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.statusCode = response.status;
-    networkRequest.statusText = response.statusText;
-    networkRequest.responseHeaders = this.headersMapToHeadersArray(response.headers);
-    networkRequest.responseHeadersText = response.headersText || "";
-    if (response.requestHeaders) {
-      networkRequest.setRequestHeaders(this.headersMapToHeadersArray(response.requestHeaders));
-    }
-    if (response.requestHeadersText) {
-      networkRequest.setRequestHeadersText(response.requestHeadersText);
-    }
-    networkRequest.responseReceivedTime = time;
-    networkRequest.protocol = "websocket";
-    this.updateNetworkRequest(networkRequest);
-  }
-  webSocketFrameReceived({ requestId, timestamp: time, response }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addProtocolFrame(response, time, false);
-    networkRequest.responseReceivedTime = time;
-    this.updateNetworkRequest(networkRequest);
-  }
-  webSocketFrameSent({ requestId, timestamp: time, response }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addProtocolFrame(response, time, true);
-    networkRequest.responseReceivedTime = time;
-    this.updateNetworkRequest(networkRequest);
-  }
-  webSocketFrameError({ requestId, timestamp: time, errorMessage }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addProtocolFrameError(errorMessage, time);
-    networkRequest.responseReceivedTime = time;
-    this.updateNetworkRequest(networkRequest);
-  }
-  webSocketClosed({ requestId, timestamp: time }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    this.finishNetworkRequest(networkRequest, time, -1);
-  }
-  eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }) {
-    const networkRequest = this.#requestsById.get(requestId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addEventSourceMessage(time, eventName, eventId, data);
-  }
-  requestIntercepted({}) {
-  }
-  requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }) {
-    const blockedRequestCookies = [];
-    const includedRequestCookies = [];
-    for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
-      if (blockedReasons.length === 0) {
-        includedRequestCookies.push({ exemptionReason, cookie: Cookie.fromProtocolCookie(cookie) });
-      } else {
-        blockedRequestCookies.push({ blockedReasons, cookie: Cookie.fromProtocolCookie(cookie) });
-      }
-    }
-    const extraRequestInfo = {
-      blockedRequestCookies,
-      includedRequestCookies,
-      requestHeaders: this.headersMapToHeadersArray(headers),
-      clientSecurityState,
-      connectTiming,
-      siteHasCookieInOtherPartition
-    };
-    this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
-  }
-  responseReceivedEarlyHints({ requestId, headers }) {
-    this.getExtraInfoBuilder(requestId).setEarlyHintsHeaders(this.headersMapToHeadersArray(headers));
-  }
-  responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies }) {
-    const extraResponseInfo = {
-      blockedResponseCookies: blockedCookies.map((blockedCookie) => ({
-        blockedReasons: blockedCookie.blockedReasons,
-        cookieLine: blockedCookie.cookieLine,
-        cookie: blockedCookie.cookie ? Cookie.fromProtocolCookie(blockedCookie.cookie) : null
-      })),
-      responseHeaders: this.headersMapToHeadersArray(headers),
-      responseHeadersText: headersText,
-      resourceIPAddressSpace,
-      statusCode,
-      cookiePartitionKey,
-      cookiePartitionKeyOpaque,
-      exemptedResponseCookies: exemptedCookies?.map((exemptedCookie) => ({
-        cookie: Cookie.fromProtocolCookie(exemptedCookie.cookie),
-        cookieLine: exemptedCookie.cookieLine,
-        exemptionReason: exemptedCookie.exemptionReason
-      }))
-    };
-    this.getExtraInfoBuilder(requestId).addResponseExtraInfo(extraResponseInfo);
-  }
-  getExtraInfoBuilder(requestId) {
-    let builder;
-    if (!this.#requestIdToExtraInfoBuilder.has(requestId)) {
-      builder = new ExtraInfoBuilder();
-      this.#requestIdToExtraInfoBuilder.set(requestId, builder);
-    } else {
-      builder = this.#requestIdToExtraInfoBuilder.get(requestId);
-    }
-    return builder;
-  }
-  appendRedirect(requestId, time, redirectURL) {
-    const originalNetworkRequest = this.#requestsById.get(requestId);
-    if (!originalNetworkRequest) {
-      throw new Error(`Could not find original network request for ${requestId}`);
-    }
-    let redirectCount = 0;
-    for (let redirect = originalNetworkRequest.redirectSource(); redirect; redirect = redirect.redirectSource()) {
-      redirectCount++;
-    }
-    originalNetworkRequest.markAsRedirect(redirectCount);
-    this.finishNetworkRequest(originalNetworkRequest, time, -1);
-    const newNetworkRequest = NetworkRequest.create(requestId, redirectURL, originalNetworkRequest.documentURL, originalNetworkRequest.frameId, originalNetworkRequest.loaderId, originalNetworkRequest.initiator(), originalNetworkRequest.hasUserGesture() ?? void 0);
-    requestToManagerMap.set(newNetworkRequest, this.#manager);
-    newNetworkRequest.setRedirectSource(originalNetworkRequest);
-    originalNetworkRequest.setRedirectDestination(newNetworkRequest);
-    return newNetworkRequest;
-  }
-  maybeAdoptMainResourceRequest(requestId) {
-    const request = MultitargetNetworkManager.instance().inflightMainResourceRequests.get(requestId);
-    if (!request) {
-      return null;
-    }
-    const oldDispatcher = NetworkManager.forRequest(request).dispatcher;
-    oldDispatcher.#requestsById.delete(requestId);
-    oldDispatcher.#requestsByURL.delete(request.url());
-    const loaderId = request.loaderId;
-    if (loaderId) {
-      oldDispatcher.#requestsByLoaderId.delete(loaderId);
-    }
-    const builder = oldDispatcher.#requestIdToExtraInfoBuilder.get(requestId);
-    oldDispatcher.#requestIdToExtraInfoBuilder.delete(requestId);
-    this.#requestsById.set(requestId, request);
-    this.#requestsByURL.set(request.url(), request);
-    if (loaderId) {
-      this.#requestsByLoaderId.set(loaderId, request);
-    }
-    if (builder) {
-      this.#requestIdToExtraInfoBuilder.set(requestId, builder);
-    }
-    requestToManagerMap.set(request, this.#manager);
-    return request;
-  }
-  startNetworkRequest(networkRequest, originalRequest) {
-    this.#requestsById.set(networkRequest.requestId(), networkRequest);
-    this.#requestsByURL.set(networkRequest.url(), networkRequest);
-    const loaderId = networkRequest.loaderId;
-    if (loaderId) {
-      this.#requestsByLoaderId.set(loaderId, networkRequest);
-    }
-    if (networkRequest.loaderId === networkRequest.requestId() || networkRequest.loaderId === "") {
-      MultitargetNetworkManager.instance().inflightMainResourceRequests.set(networkRequest.requestId(), networkRequest);
-    }
-    this.#manager.dispatchEventToListeners(Events8.RequestStarted, { request: networkRequest, originalRequest });
-  }
-  updateNetworkRequest(networkRequest) {
-    this.#manager.dispatchEventToListeners(Events8.RequestUpdated, networkRequest);
-  }
-  finishNetworkRequest(networkRequest, finishTime, encodedDataLength) {
-    networkRequest.endTime = finishTime;
-    networkRequest.finished = true;
-    if (encodedDataLength >= 0) {
-      const redirectSource = networkRequest.redirectSource();
-      if (redirectSource?.signedExchangeInfo()) {
-        networkRequest.setTransferSize(0);
-        redirectSource.setTransferSize(encodedDataLength);
-        this.updateNetworkRequest(redirectSource);
-      } else {
-        networkRequest.setTransferSize(encodedDataLength);
-      }
-    }
-    this.#manager.dispatchEventToListeners(Events8.RequestFinished, networkRequest);
-    MultitargetNetworkManager.instance().inflightMainResourceRequests.delete(networkRequest.requestId());
-    if (Common28.Settings.Settings.instance().moduleSetting("monitoring-xhr-enabled").get() && networkRequest.resourceType().category() === Common28.ResourceType.resourceCategories.XHR) {
-      let message;
-      const failedToLoad = networkRequest.failed || networkRequest.hasErrorStatusCode();
-      if (failedToLoad) {
-        message = i18nString9(UIStrings9.sFailedLoadingSS, { PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url() });
-      } else {
-        message = i18nString9(UIStrings9.sFinishedLoadingSS, { PH1: networkRequest.resourceType().title(), PH2: networkRequest.requestMethod, PH3: networkRequest.url() });
-      }
-      this.#manager.dispatchEventToListeners(Events8.MessageGenerated, { message, requestId: networkRequest.requestId(), warning: false });
-    }
-  }
-  clearRequests() {
-    for (const [requestId, request] of this.#requestsById) {
-      if (request.finished) {
-        this.#requestsById.delete(requestId);
-      }
-    }
-    for (const [requestURL, request] of this.#requestsByURL) {
-      if (request.finished) {
-        this.#requestsByURL.delete(requestURL);
-      }
-    }
-    for (const [requestLoaderId, request] of this.#requestsByLoaderId) {
-      if (request.finished) {
-        this.#requestsByLoaderId.delete(requestLoaderId);
-      }
-    }
-    for (const [requestId, builder] of this.#requestIdToExtraInfoBuilder) {
-      if (builder.isFinished()) {
-        this.#requestIdToExtraInfoBuilder.delete(requestId);
-      }
-    }
-  }
-  webTransportCreated({ transportId, url: requestURL, timestamp: time, initiator }) {
-    const networkRequest = NetworkRequest.createForSocket(transportId, requestURL, initiator);
-    networkRequest.hasNetworkData = true;
-    requestToManagerMap.set(networkRequest, this.#manager);
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes.WebTransport);
-    networkRequest.setIssueTime(time, 0);
-    this.startNetworkRequest(networkRequest, null);
-  }
-  webTransportConnectionEstablished({ transportId, timestamp: time }) {
-    const networkRequest = this.#requestsById.get(transportId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.responseReceivedTime = time;
-    networkRequest.endTime = time + 1e-3;
-    this.updateNetworkRequest(networkRequest);
-  }
-  webTransportClosed({ transportId, timestamp: time }) {
-    const networkRequest = this.#requestsById.get(transportId);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.endTime = time;
-    this.finishNetworkRequest(networkRequest, time, 0);
-  }
-  directTCPSocketCreated(event) {
-    const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
-    const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
-    networkRequest.hasNetworkData = true;
-    networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
-    networkRequest.protocol = i18n19.i18n.lockedString("tcp");
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusOpening);
-    networkRequest.directSocketInfo = {
-      type: DirectSocketType.TCP,
-      status: DirectSocketStatus.OPENING,
-      createOptions: {
-        remoteAddr: event.remoteAddr,
-        remotePort: event.remotePort,
-        noDelay: event.options.noDelay,
-        keepAliveDelay: event.options.keepAliveDelay,
-        sendBufferSize: event.options.sendBufferSize,
-        receiveBufferSize: event.options.receiveBufferSize,
-        dnsQueryType: event.options.dnsQueryType
-      }
-    };
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes.DirectSocket);
-    networkRequest.setIssueTime(event.timestamp, event.timestamp);
-    requestToManagerMap.set(networkRequest, this.#manager);
-    this.startNetworkRequest(networkRequest, null);
-  }
-  directTCPSocketOpened(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    networkRequest.responseReceivedTime = event.timestamp;
-    networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusOpen);
-    networkRequest.directSocketInfo.openInfo = {
-      remoteAddr: event.remoteAddr,
-      remotePort: event.remotePort,
-      localAddr: event.localAddr,
-      localPort: event.localPort
-    };
-    networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
-    const requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
-    networkRequest.setUrl(requestURL);
-    this.updateNetworkRequest(networkRequest);
-  }
-  directTCPSocketAborted(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    networkRequest.failed = true;
-    networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusAborted);
-    networkRequest.directSocketInfo.errorMessage = event.errorMessage;
-    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
-  }
-  directTCPSocketClosed(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusClosed);
-    networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
-    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
-  }
-  directTCPSocketChunkSent(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addDirectSocketChunk({
-      data: event.data,
-      type: DirectSocketChunkType.SEND,
-      timestamp: event.timestamp
-    });
-    networkRequest.responseReceivedTime = event.timestamp;
-    this.updateNetworkRequest(networkRequest);
-  }
-  directTCPSocketChunkReceived(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addDirectSocketChunk({
-      data: event.data,
-      type: DirectSocketChunkType.RECEIVE,
-      timestamp: event.timestamp
-    });
-    networkRequest.responseReceivedTime = event.timestamp;
-    this.updateNetworkRequest(networkRequest);
-  }
-  directUDPSocketCreated(event) {
-    let requestURL = "";
-    let type;
-    if (event.options.remoteAddr && event.options.remotePort) {
-      requestURL = this.concatHostPort(event.options.remoteAddr, event.options.remotePort);
-      type = DirectSocketType.UDP_CONNECTED;
-    } else if (event.options.localAddr) {
-      requestURL = this.concatHostPort(event.options.localAddr, event.options.localPort);
-      type = DirectSocketType.UDP_BOUND;
-    } else {
-      return;
-    }
-    const networkRequest = NetworkRequest.createForSocket(event.identifier, requestURL, event.initiator);
-    networkRequest.hasNetworkData = true;
-    if (event.options.remoteAddr && event.options.remotePort) {
-      networkRequest.setRemoteAddress(event.options.remoteAddr, event.options.remotePort);
-    }
-    networkRequest.protocol = i18n19.i18n.lockedString("udp");
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusOpening);
-    networkRequest.directSocketInfo = {
-      type,
-      status: DirectSocketStatus.OPENING,
-      createOptions: {
-        remoteAddr: event.options.remoteAddr,
-        remotePort: event.options.remotePort,
-        localAddr: event.options.localAddr,
-        localPort: event.options.localPort,
-        sendBufferSize: event.options.sendBufferSize,
-        receiveBufferSize: event.options.receiveBufferSize,
-        dnsQueryType: event.options.dnsQueryType
-      }
-    };
-    networkRequest.setResourceType(Common28.ResourceType.resourceTypes.DirectSocket);
-    networkRequest.setIssueTime(event.timestamp, event.timestamp);
-    requestToManagerMap.set(networkRequest, this.#manager);
-    this.startNetworkRequest(networkRequest, null);
-  }
-  directUDPSocketOpened(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    let requestURL;
-    if (networkRequest.directSocketInfo.type === DirectSocketType.UDP_CONNECTED) {
-      if (!event.remoteAddr || !event.remotePort) {
-        return;
-      }
-      networkRequest.setRemoteAddress(event.remoteAddr, event.remotePort);
-      requestURL = this.concatHostPort(event.remoteAddr, event.remotePort);
-    } else {
-      requestURL = this.concatHostPort(event.localAddr, event.localPort);
-    }
-    networkRequest.setUrl(requestURL);
-    networkRequest.responseReceivedTime = event.timestamp;
-    networkRequest.directSocketInfo.status = DirectSocketStatus.OPEN;
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusOpen);
-    networkRequest.directSocketInfo.openInfo = {
-      remoteAddr: event.remoteAddr,
-      remotePort: event.remotePort,
-      localAddr: event.localAddr,
-      localPort: event.localPort
-    };
-    this.updateNetworkRequest(networkRequest);
-  }
-  directUDPSocketAborted(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    networkRequest.failed = true;
-    networkRequest.directSocketInfo.status = DirectSocketStatus.ABORTED;
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusAborted);
-    networkRequest.directSocketInfo.errorMessage = event.errorMessage;
-    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
-  }
-  directUDPSocketClosed(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest?.directSocketInfo) {
-      return;
-    }
-    networkRequest.statusText = i18nString9(UIStrings9.directSocketStatusClosed);
-    networkRequest.directSocketInfo.status = DirectSocketStatus.CLOSED;
-    this.finishNetworkRequest(networkRequest, event.timestamp, 0);
-  }
-  directUDPSocketChunkSent(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addDirectSocketChunk({
-      data: event.message.data,
-      type: DirectSocketChunkType.SEND,
-      timestamp: event.timestamp,
-      remoteAddress: event.message.remoteAddr,
-      remotePort: event.message.remotePort
-    });
-    networkRequest.responseReceivedTime = event.timestamp;
-    this.updateNetworkRequest(networkRequest);
-  }
-  directUDPSocketChunkReceived(event) {
-    const networkRequest = this.#requestsById.get(event.identifier);
-    if (!networkRequest) {
-      return;
-    }
-    networkRequest.addDirectSocketChunk({
-      data: event.message.data,
-      type: DirectSocketChunkType.RECEIVE,
-      timestamp: event.timestamp,
-      remoteAddress: event.message.remoteAddr,
-      remotePort: event.message.remotePort
-    });
-    networkRequest.responseReceivedTime = event.timestamp;
-    this.updateNetworkRequest(networkRequest);
-  }
-  trustTokenOperationDone(event) {
-    const request = this.#requestsById.get(event.requestId);
-    if (!request) {
-      this.#requestIdToTrustTokenEvent.set(event.requestId, event);
-      return;
-    }
-    request.setTrustTokenOperationDoneEvent(event);
-  }
-  subresourceWebBundleMetadataReceived() {
-  }
-  subresourceWebBundleMetadataError() {
-  }
-  subresourceWebBundleInnerResponseParsed() {
-  }
-  subresourceWebBundleInnerResponseError() {
-  }
-  reportingApiReportAdded(data) {
-    this.#manager.dispatchEventToListeners(Events8.ReportingApiReportAdded, data.report);
-  }
-  reportingApiReportUpdated(data) {
-    this.#manager.dispatchEventToListeners(Events8.ReportingApiReportUpdated, data.report);
-  }
-  reportingApiEndpointsChangedForOrigin(data) {
-    this.#manager.dispatchEventToListeners(Events8.ReportingApiEndpointsChangedForOrigin, data);
-  }
-  policyUpdated() {
-  }
-  /**
-   * @deprecated
-   * This method is only kept for usage in a web test.
-   */
-  createNetworkRequest(requestId, frameId, loaderId, url, documentURL, initiator) {
-    const request = NetworkRequest.create(requestId, url, documentURL, frameId, loaderId, initiator);
-    requestToManagerMap.set(request, this.#manager);
-    return request;
-  }
-  concatHostPort(host, port) {
-    if (!port || port === 0) {
-      return host;
-    }
-    return `${host}:${port}`;
-  }
-};
-var multiTargetNetworkManagerInstance;
-var MultitargetNetworkManager = class _MultitargetNetworkManager extends Common28.ObjectWrapper.ObjectWrapper {
-  #userAgentOverride = "";
-  #userAgentMetadataOverride = null;
-  #customAcceptedEncodings = null;
-  #networkAgents = /* @__PURE__ */ new Set();
-  #fetchAgents = /* @__PURE__ */ new Set();
-  inflightMainResourceRequests = /* @__PURE__ */ new Map();
-  #networkConditions = NoThrottlingConditions;
-  #updatingInterceptionPatternsPromise = null;
-  #blockingEnabledSetting = Common28.Settings.Settings.instance().moduleSetting("request-blocking-enabled");
-  #blockedPatternsSetting = Common28.Settings.Settings.instance().createSetting("network-blocked-patterns", []);
-  #effectiveBlockedURLs = [];
-  #urlsForRequestInterceptor = new Platform16.MapUtilities.Multimap();
-  #extraHeaders;
-  #customUserAgent;
-  constructor() {
-    super();
-    const blockedPatternChanged = () => {
-      this.updateBlockedPatterns();
-      this.dispatchEventToListeners(
-        "BlockedPatternsChanged"
-        /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */
-      );
-    };
-    this.#blockingEnabledSetting.addChangeListener(blockedPatternChanged);
-    this.#blockedPatternsSetting.addChangeListener(blockedPatternChanged);
-    this.updateBlockedPatterns();
-    TargetManager.instance().observeModels(NetworkManager, this);
-  }
-  static instance(opts = { forceNew: null }) {
-    const { forceNew } = opts;
-    if (!multiTargetNetworkManagerInstance || forceNew) {
-      multiTargetNetworkManagerInstance = new _MultitargetNetworkManager();
-    }
-    return multiTargetNetworkManagerInstance;
-  }
-  static dispose() {
-    multiTargetNetworkManagerInstance = null;
-  }
-  static patchUserAgentWithChromeVersion(uaString) {
-    const chromeVersion = Root9.Runtime.getChromeVersion();
-    if (chromeVersion.length > 0) {
-      const additionalAppVersion = chromeVersion.split(".", 1)[0] + ".0.100.0";
-      return Platform16.StringUtilities.sprintf(uaString, chromeVersion, additionalAppVersion);
-    }
-    return uaString;
-  }
-  static patchUserAgentMetadataWithChromeVersion(userAgentMetadata) {
-    if (!userAgentMetadata.brands) {
-      return;
-    }
-    const chromeVersion = Root9.Runtime.getChromeVersion();
-    if (chromeVersion.length === 0) {
-      return;
-    }
-    const majorVersion = chromeVersion.split(".", 1)[0];
-    for (const brand of userAgentMetadata.brands) {
-      if (brand.version.includes("%s")) {
-        brand.version = Platform16.StringUtilities.sprintf(brand.version, majorVersion);
-      }
-    }
-    if (userAgentMetadata.fullVersion) {
-      if (userAgentMetadata.fullVersion.includes("%s")) {
-        userAgentMetadata.fullVersion = Platform16.StringUtilities.sprintf(userAgentMetadata.fullVersion, chromeVersion);
-      }
-    }
-  }
-  modelAdded(networkManager) {
-    const networkAgent = networkManager.target().networkAgent();
-    const fetchAgent = networkManager.target().fetchAgent();
-    if (this.#extraHeaders) {
-      void networkAgent.invoke_setExtraHTTPHeaders({ headers: this.#extraHeaders });
-    }
-    if (this.currentUserAgent()) {
-      void networkAgent.invoke_setUserAgentOverride({ userAgent: this.currentUserAgent(), userAgentMetadata: this.#userAgentMetadataOverride || void 0 });
-    }
-    if (this.#effectiveBlockedURLs.length) {
-      void networkAgent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
-    }
-    if (this.isIntercepting()) {
-      void fetchAgent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() });
-    }
-    if (this.#customAcceptedEncodings === null) {
-      void networkAgent.invoke_clearAcceptedEncodingsOverride();
-    } else {
-      void networkAgent.invoke_setAcceptedEncodings({ encodings: this.#customAcceptedEncodings });
-    }
-    this.#networkAgents.add(networkAgent);
-    this.#fetchAgents.add(fetchAgent);
-    if (this.isThrottling()) {
-      this.updateNetworkConditions(networkAgent);
-    }
-  }
-  modelRemoved(networkManager) {
-    for (const entry of this.inflightMainResourceRequests) {
-      const manager = NetworkManager.forRequest(entry[1]);
-      if (manager !== networkManager) {
-        continue;
-      }
-      this.inflightMainResourceRequests.delete(entry[0]);
-    }
-    this.#networkAgents.delete(networkManager.target().networkAgent());
-    this.#fetchAgents.delete(networkManager.target().fetchAgent());
-  }
-  isThrottling() {
-    return this.#networkConditions.download >= 0 || this.#networkConditions.upload >= 0 || this.#networkConditions.latency > 0;
-  }
-  isOffline() {
-    return !this.#networkConditions.download && !this.#networkConditions.upload;
-  }
-  setNetworkConditions(conditions) {
-    this.#networkConditions = conditions;
-    for (const agent of this.#networkAgents) {
-      this.updateNetworkConditions(agent);
-    }
-    this.dispatchEventToListeners(
-      "ConditionsChanged"
-      /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */
-    );
-  }
-  networkConditions() {
-    return this.#networkConditions;
-  }
-  updateNetworkConditions(networkAgent) {
-    const conditions = this.#networkConditions;
-    if (!this.isThrottling()) {
-      void networkAgent.invoke_emulateNetworkConditions({
-        offline: false,
-        latency: 0,
-        downloadThroughput: 0,
-        uploadThroughput: 0
-      });
-    } else {
-      void networkAgent.invoke_emulateNetworkConditions({
-        offline: this.isOffline(),
-        latency: conditions.latency,
-        downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
-        uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
-        packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
-        packetQueueLength: conditions.packetQueueLength,
-        packetReordering: conditions.packetReordering,
-        connectionType: NetworkManager.connectionType(conditions)
-      });
-    }
-  }
-  setExtraHTTPHeaders(headers) {
-    this.#extraHeaders = headers;
-    for (const agent of this.#networkAgents) {
-      void agent.invoke_setExtraHTTPHeaders({ headers: this.#extraHeaders });
-    }
-  }
-  currentUserAgent() {
-    return this.#customUserAgent ? this.#customUserAgent : this.#userAgentOverride;
-  }
-  updateUserAgentOverride() {
-    const userAgent = this.currentUserAgent();
-    for (const agent of this.#networkAgents) {
-      void agent.invoke_setUserAgentOverride({ userAgent, userAgentMetadata: this.#userAgentMetadataOverride || void 0 });
-    }
-  }
-  setUserAgentOverride(userAgent, userAgentMetadataOverride) {
-    const uaChanged = this.#userAgentOverride !== userAgent;
-    this.#userAgentOverride = userAgent;
-    if (!this.#customUserAgent) {
-      this.#userAgentMetadataOverride = userAgentMetadataOverride;
-      this.updateUserAgentOverride();
-    } else {
-      this.#userAgentMetadataOverride = null;
-    }
-    if (uaChanged) {
-      this.dispatchEventToListeners(
-        "UserAgentChanged"
-        /* MultitargetNetworkManager.Events.USER_AGENT_CHANGED */
-      );
-    }
-  }
-  setCustomUserAgentOverride(userAgent, userAgentMetadataOverride = null) {
-    this.#customUserAgent = userAgent;
-    this.#userAgentMetadataOverride = userAgentMetadataOverride;
-    this.updateUserAgentOverride();
-  }
-  setCustomAcceptedEncodingsOverride(acceptedEncodings) {
-    this.#customAcceptedEncodings = acceptedEncodings;
-    this.updateAcceptedEncodingsOverride();
-    this.dispatchEventToListeners(
-      "AcceptedEncodingsChanged"
-      /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */
-    );
-  }
-  clearCustomAcceptedEncodingsOverride() {
-    this.#customAcceptedEncodings = null;
-    this.updateAcceptedEncodingsOverride();
-    this.dispatchEventToListeners(
-      "AcceptedEncodingsChanged"
-      /* MultitargetNetworkManager.Events.ACCEPTED_ENCODINGS_CHANGED */
-    );
-  }
-  isAcceptedEncodingOverrideSet() {
-    return this.#customAcceptedEncodings !== null;
-  }
-  updateAcceptedEncodingsOverride() {
-    const customAcceptedEncodings = this.#customAcceptedEncodings;
-    for (const agent of this.#networkAgents) {
-      if (customAcceptedEncodings === null) {
-        void agent.invoke_clearAcceptedEncodingsOverride();
-      } else {
-        void agent.invoke_setAcceptedEncodings({ encodings: customAcceptedEncodings });
-      }
-    }
-  }
-  // TODO(allada) Move all request blocking into interception and let view manage blocking.
-  blockedPatterns() {
-    return this.#blockedPatternsSetting.get().slice();
-  }
-  blockingEnabled() {
-    return this.#blockingEnabledSetting.get();
-  }
-  isBlocking() {
-    return Boolean(this.#effectiveBlockedURLs.length);
-  }
-  setBlockedPatterns(patterns) {
-    this.#blockedPatternsSetting.set(patterns);
-  }
-  setBlockingEnabled(enabled) {
-    if (this.#blockingEnabledSetting.get() === enabled) {
-      return;
-    }
-    this.#blockingEnabledSetting.set(enabled);
-  }
-  updateBlockedPatterns() {
-    const urls = [];
-    if (this.#blockingEnabledSetting.get()) {
-      for (const pattern of this.#blockedPatternsSetting.get()) {
-        if (pattern.enabled) {
-          urls.push(pattern.url);
-        }
-      }
-    }
-    if (!urls.length && !this.#effectiveBlockedURLs.length) {
-      return;
-    }
-    this.#effectiveBlockedURLs = urls;
-    for (const agent of this.#networkAgents) {
-      void agent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
-    }
-  }
-  isIntercepting() {
-    return Boolean(this.#urlsForRequestInterceptor.size);
-  }
-  setInterceptionHandlerForPatterns(patterns, requestInterceptor) {
-    this.#urlsForRequestInterceptor.deleteAll(requestInterceptor);
-    for (const newPattern of patterns) {
-      this.#urlsForRequestInterceptor.set(requestInterceptor, newPattern);
-    }
-    return this.updateInterceptionPatternsOnNextTick();
-  }
-  updateInterceptionPatternsOnNextTick() {
-    if (!this.#updatingInterceptionPatternsPromise) {
-      this.#updatingInterceptionPatternsPromise = Promise.resolve().then(this.updateInterceptionPatterns.bind(this));
-    }
-    return this.#updatingInterceptionPatternsPromise;
-  }
-  async updateInterceptionPatterns() {
-    if (!Common28.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
-      Common28.Settings.Settings.instance().moduleSetting("cache-disabled").set(true);
-    }
-    this.#updatingInterceptionPatternsPromise = null;
-    const promises = [];
-    for (const agent of this.#fetchAgents) {
-      promises.push(agent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() }));
-    }
-    this.dispatchEventToListeners(
-      "InterceptorsChanged"
-      /* MultitargetNetworkManager.Events.INTERCEPTORS_CHANGED */
-    );
-    await Promise.all(promises);
-  }
-  async requestIntercepted(interceptedRequest) {
-    for (const requestInterceptor of this.#urlsForRequestInterceptor.keysArray()) {
-      await requestInterceptor(interceptedRequest);
-      if (interceptedRequest.hasResponded() && interceptedRequest.networkRequest) {
-        this.dispatchEventToListeners("RequestIntercepted", interceptedRequest.networkRequest.requestId());
-        return;
-      }
-    }
-    if (!interceptedRequest.hasResponded()) {
-      interceptedRequest.continueRequestWithoutChange();
-    }
-  }
-  clearBrowserCache() {
-    for (const agent of this.#networkAgents) {
-      void agent.invoke_clearBrowserCache();
-    }
-  }
-  clearBrowserCookies() {
-    for (const agent of this.#networkAgents) {
-      void agent.invoke_clearBrowserCookies();
-    }
-  }
-  async getCertificate(origin) {
-    const target = TargetManager.instance().primaryPageTarget();
-    if (!target) {
-      return [];
-    }
-    const certificate = await target.networkAgent().invoke_getCertificate({ origin });
-    if (!certificate) {
-      return [];
-    }
-    return certificate.tableNames;
-  }
-  async loadResource(url) {
-    const headers = {};
-    const currentUserAgent = this.currentUserAgent();
-    if (currentUserAgent) {
-      headers["User-Agent"] = currentUserAgent;
-    }
-    if (Common28.Settings.Settings.instance().moduleSetting("cache-disabled").get()) {
-      headers["Cache-Control"] = "no-cache";
-    }
-    const allowRemoteFilePaths = Common28.Settings.Settings.instance().moduleSetting("network.enable-remote-file-loading").get();
-    return await new Promise((resolve) => Host7.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
-      resolve({ success, content, errorDescription });
-    }, allowRemoteFilePaths));
-  }
-};
-var InterceptedRequest = class _InterceptedRequest {
-  #fetchAgent;
-  #hasResponded = false;
-  request;
-  resourceType;
-  responseStatusCode;
-  responseHeaders;
-  requestId;
-  networkRequest;
-  constructor(fetchAgent, request, resourceType, requestId, networkRequest, responseStatusCode, responseHeaders) {
-    this.#fetchAgent = fetchAgent;
-    this.request = request;
-    this.resourceType = resourceType;
-    this.responseStatusCode = responseStatusCode;
-    this.responseHeaders = responseHeaders;
-    this.requestId = requestId;
-    this.networkRequest = networkRequest;
-  }
-  hasResponded() {
-    return this.#hasResponded;
-  }
-  static mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides) {
-    const generateHeaderMap = (headers) => {
-      const result = /* @__PURE__ */ new Map();
-      for (const header of headers) {
-        const match = header.value.match(/^([a-zA-Z0-9!#$%&'*+.^_`|~-]+=)(.*)$/);
-        if (match) {
-          if (result.has(match[1])) {
-            result.get(match[1])?.push(header.value);
-          } else {
-            result.set(match[1], [header.value]);
-          }
-        } else if (result.has(header.value)) {
-          result.get(header.value)?.push(header.value);
-        } else {
-          result.set(header.value, [header.value]);
-        }
-      }
-      return result;
-    };
-    const originalHeadersMap = generateHeaderMap(originalSetCookieHeaders);
-    const overridesHeaderMap = generateHeaderMap(setCookieHeadersFromOverrides);
-    const mergedHeaders = [];
-    for (const [key, headerValues] of originalHeadersMap) {
-      if (overridesHeaderMap.has(key)) {
-        for (const headerValue of overridesHeaderMap.get(key) || []) {
-          mergedHeaders.push({ name: "set-cookie", value: headerValue });
-        }
-      } else {
-        for (const headerValue of headerValues) {
-          mergedHeaders.push({ name: "set-cookie", value: headerValue });
-        }
-      }
-    }
-    for (const [key, headerValues] of overridesHeaderMap) {
-      if (originalHeadersMap.has(key)) {
-        continue;
-      }
-      for (const headerValue of headerValues) {
-        mergedHeaders.push({ name: "set-cookie", value: headerValue });
-      }
-    }
-    return mergedHeaders;
-  }
-  async continueRequestWithContent(contentBlob, encoded, responseHeaders, isBodyOverridden) {
-    this.#hasResponded = true;
-    const body = encoded ? await contentBlob.text() : await Common28.Base64.encode(contentBlob).catch((err) => {
-      console.error(err);
-      return "";
-    });
-    const responseCode = isBodyOverridden ? 200 : this.responseStatusCode || 200;
-    if (this.networkRequest) {
-      const originalSetCookieHeaders = this.networkRequest?.originalResponseHeaders.filter((header) => header.name === "set-cookie") || [];
-      const setCookieHeadersFromOverrides = responseHeaders.filter((header) => header.name === "set-cookie");
-      this.networkRequest.setCookieHeaders = _InterceptedRequest.mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides);
-      this.networkRequest.hasOverriddenContent = isBodyOverridden;
-    }
-    void this.#fetchAgent.invoke_fulfillRequest({ requestId: this.requestId, responseCode, body, responseHeaders });
-    MultitargetNetworkManager.instance().dispatchEventToListeners("RequestFulfilled", this.request.url);
-  }
-  continueRequestWithoutChange() {
-    console.assert(!this.#hasResponded);
-    this.#hasResponded = true;
-    void this.#fetchAgent.invoke_continueRequest({ requestId: this.requestId });
-  }
-  async responseBody() {
-    const response = await this.#fetchAgent.invoke_getResponseBody({ requestId: this.requestId });
-    const error = response.getError();
-    if (error) {
-      return { error };
-    }
-    const { mimeType, charset } = this.getMimeTypeAndCharset();
-    return new TextUtils19.ContentData.ContentData(response.body, response.base64Encoded, mimeType ?? "application/octet-stream", charset ?? void 0);
-  }
-  isRedirect() {
-    return this.responseStatusCode !== void 0 && this.responseStatusCode >= 300 && this.responseStatusCode < 400;
-  }
-  /**
-   * Tries to determine the MIME type and charset for this intercepted request.
-   * Looks at the intercepted response headers first (for Content-Type header), then
-   * checks the `NetworkRequest` if we have one.
-   */
-  getMimeTypeAndCharset() {
-    for (const header of this.responseHeaders ?? []) {
-      if (header.name.toLowerCase() === "content-type") {
-        return Platform16.MimeType.parseContentType(header.value);
-      }
-    }
-    const mimeType = this.networkRequest?.mimeType ?? null;
-    const charset = this.networkRequest?.charset() ?? null;
-    return { mimeType, charset };
-  }
-};
-var ExtraInfoBuilder = class {
-  #requests = [];
-  #responseExtraInfoFlag = [];
-  #requestExtraInfos = [];
-  #responseExtraInfos = [];
-  #responseEarlyHintsHeaders = [];
-  #finished = false;
-  addRequest(req) {
-    this.#requests.push(req);
-    this.sync(this.#requests.length - 1);
-  }
-  addHasExtraInfo(hasExtraInfo) {
-    this.#responseExtraInfoFlag.push(hasExtraInfo);
-    console.assert(this.#requests.length === this.#responseExtraInfoFlag.length, "request/response count mismatch");
-    if (!hasExtraInfo) {
-      this.#requestExtraInfos.splice(this.#requests.length - 1, 0, null);
-      this.#responseExtraInfos.splice(this.#requests.length - 1, 0, null);
-    }
-    this.sync(this.#requests.length - 1);
-  }
-  addRequestExtraInfo(info) {
-    this.#requestExtraInfos.push(info);
-    this.sync(this.#requestExtraInfos.length - 1);
-  }
-  addResponseExtraInfo(info) {
-    this.#responseExtraInfos.push(info);
-    this.sync(this.#responseExtraInfos.length - 1);
-  }
-  setEarlyHintsHeaders(earlyHintsHeaders) {
-    this.#responseEarlyHintsHeaders = earlyHintsHeaders;
-    this.updateFinalRequest();
-  }
-  finished() {
-    this.#finished = true;
-    if (this.#responseExtraInfoFlag.length < this.#requests.length) {
-      this.#responseExtraInfoFlag.push(true);
-      this.sync(this.#responseExtraInfoFlag.length - 1);
-    }
-    console.assert(this.#requests.length === this.#responseExtraInfoFlag.length, "request/response count mismatch when request finished");
-    this.updateFinalRequest();
-  }
-  isFinished() {
-    return this.#finished;
-  }
-  sync(index) {
-    const req = this.#requests[index];
-    if (!req) {
-      return;
-    }
-    if (index >= this.#responseExtraInfoFlag.length) {
-      return;
-    }
-    if (!this.#responseExtraInfoFlag[index]) {
-      return;
-    }
-    const requestExtraInfo = this.#requestExtraInfos[index];
-    if (requestExtraInfo) {
-      req.addExtraRequestInfo(requestExtraInfo);
-      this.#requestExtraInfos[index] = null;
-    }
-    const responseExtraInfo = this.#responseExtraInfos[index];
-    if (responseExtraInfo) {
-      req.addExtraResponseInfo(responseExtraInfo);
-      this.#responseExtraInfos[index] = null;
-    }
-  }
-  finalRequest() {
-    if (!this.#finished) {
-      return null;
-    }
-    return this.#requests[this.#requests.length - 1] || null;
-  }
-  updateFinalRequest() {
-    if (!this.#finished) {
-      return;
-    }
-    const finalRequest = this.finalRequest();
-    finalRequest?.setEarlyHintsHeaders(this.#responseEarlyHintsHeaders);
-  }
-};
-SDKModel.register(NetworkManager, { capabilities: 16, autostart: true });
-function networkConditionsEqual(first, second) {
-  const firstTitle = first.i18nTitleKey || (typeof first.title === "function" ? first.title() : first.title);
-  const secondTitle = second.i18nTitleKey || (typeof second.title === "function" ? second.title() : second.title);
-  return second.download === first.download && second.upload === first.upload && second.latency === first.latency && first.packetLoss === second.packetLoss && first.packetQueueLength === second.packetQueueLength && first.packetReordering === second.packetReordering && secondTitle === firstTitle;
-}
-var THROTTLING_CONDITIONS_LOOKUP = /* @__PURE__ */ new Map([
-  ["NO_THROTTLING", NoThrottlingConditions],
-  ["OFFLINE", OfflineConditions],
-  ["SPEED_3G", Slow3GConditions],
-  ["SPEED_SLOW_4G", Slow4GConditions],
-  ["SPEED_FAST_4G", Fast4GConditions]
-]);
-function keyIsPredefined(key) {
-  return !key.startsWith("USER_CUSTOM_SETTING_");
-}
-function keyIsCustomUser(key) {
-  return key.startsWith("USER_CUSTOM_SETTING_");
-}
-function getPredefinedCondition(key) {
-  if (!keyIsPredefined(key)) {
-    return null;
-  }
-  return THROTTLING_CONDITIONS_LOOKUP.get(key) ?? null;
-}
-function getRecommendedNetworkPreset(rtt) {
-  const RTT_COMPARISON_THRESHOLD = 200;
-  const RTT_MINIMUM = 60;
-  if (!Number.isFinite(rtt)) {
-    return null;
-  }
-  if (rtt < RTT_MINIMUM) {
-    return null;
-  }
-  const presets = THROTTLING_CONDITIONS_LOOKUP.values().filter((condition) => {
-    return condition !== NoThrottlingConditions;
-  }).toArray();
-  let closestPreset = null;
-  let smallestDiff = Infinity;
-  for (const preset of presets) {
-    const { targetLatency } = preset;
-    if (!targetLatency) {
-      continue;
-    }
-    const diff = Math.abs(targetLatency - rtt);
-    if (diff > RTT_COMPARISON_THRESHOLD) {
-      continue;
-    }
-    if (smallestDiff < diff) {
-      continue;
-    }
-    closestPreset = preset;
-    smallestDiff = diff;
-  }
-  return closestPreset;
-}
-
 // gen/front_end/core/sdk/CookieModel.js
 var CookieModel = class extends SDKModel {
   #blockedCookies = /* @__PURE__ */ new Map();
   #cookieToBlockedReasons = /* @__PURE__ */ new Map();
-  #refreshThrottler = new Common29.Throttler.Throttler(300);
+  #refreshThrottler = new Common25.Throttler.Throttler(300);
   #cookies = /* @__PURE__ */ new Map();
   constructor(target) {
     super(target);
-    target.model(ResourceTreeModel)?.addEventListener(Events.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
-    target.model(NetworkManager)?.addEventListener(Events8.ResponseReceived, this.#onResponseReceived, this);
-    target.model(NetworkManager)?.addEventListener(Events8.LoadingFinished, this.#onLoadingFinished, this);
+    target.model(ResourceTreeModel)?.addEventListener(Events3.PrimaryPageChanged, this.#onPrimaryPageChanged, this);
+    target.model(NetworkManager)?.addEventListener(Events2.ResponseReceived, this.#onResponseReceived, this);
+    target.model(NetworkManager)?.addEventListener(Events2.LoadingFinished, this.#onLoadingFinished, this);
   }
   addBlockedCookie(cookie, blockedReasons) {
     const key = cookie.key();
@@ -27329,7 +26579,7 @@ var CookieModel = class extends SDKModel {
     if (cookie.expires()) {
       expires = Math.floor(Date.parse(`${cookie.expires()}`) / 1e3);
     }
-    const enabled = Root10.Runtime.experiments.isEnabled("experimental-cookie-features");
+    const enabled = Root9.Runtime.experiments.isEnabled("experimental-cookie-features");
     const preserveUnset = (scheme) => scheme === "Unset" ? scheme : void 0;
     const protocolCookie = {
       name: cookie.name(),
@@ -27408,7 +26658,7 @@ var CookieModel = class extends SDKModel {
   #refresh() {
     const resourceURLs = new Platform17.MapUtilities.Multimap();
     function populateResourceURLs(resource) {
-      const documentURL = Common29.ParsedURL.ParsedURL.fromString(resource.documentURL);
+      const documentURL = Common25.ParsedURL.ParsedURL.fromString(resource.documentURL);
       if (documentURL) {
         resourceURLs.set(documentURL.securityOrigin(), resource.url);
       }
@@ -27418,7 +26668,7 @@ var CookieModel = class extends SDKModel {
     if (resourceTreeModel) {
       const unreachableUrl = resourceTreeModel.mainFrame?.unreachableUrl();
       if (unreachableUrl) {
-        const documentURL = Common29.ParsedURL.ParsedURL.fromString(unreachableUrl);
+        const documentURL = Common25.ParsedURL.ParsedURL.fromString(unreachableUrl);
         if (documentURL) {
           resourceURLs.set(documentURL.securityOrigin(), unreachableUrl);
         }
@@ -27592,7 +26842,7 @@ var KeyValue = class {
 };
 
 // gen/front_end/core/sdk/HttpReasonPhraseStrings.js
-import * as i18n21 from "./../i18n/i18n.js";
+import * as i18n17 from "./../i18n/i18n.js";
 function getStatusText(statusCode) {
   const statusTextLookup = {
     100: "Continue",
@@ -27658,11 +26908,11 @@ function getStatusText(statusCode) {
     510: "Not Extended",
     511: "Network Authentication Required"
   };
-  return i18n21.i18n.lockedString(statusTextLookup[statusCode] ?? "");
+  return i18n17.i18n.lockedString(statusTextLookup[statusCode] ?? "");
 }
 
 // gen/front_end/core/sdk/ServerSentEvents.js
-import * as TextUtils21 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils22 from "./../../models/text_utils/text_utils.js";
 
 // gen/front_end/core/sdk/ServerSentEventsProtocol.js
 var ServerSentEventsProtocol_exports = {};
@@ -27769,7 +27019,7 @@ var ServerSentEvents = class {
       this.#lastDataReceivedTime = request.pseudoWallTime(request.startTime);
       this.#parser = new ServerSentEventsParser(this.#onParserEvent.bind(this), request.charset() ?? void 0);
       void this.#request.requestStreamingContent().then((streamingContentData) => {
-        if (!TextUtils21.StreamingContentData.isError(streamingContentData)) {
+        if (!TextUtils22.StreamingContentData.isError(streamingContentData)) {
           void this.#parser?.addBase64Chunk(streamingContentData.content().base64);
           streamingContentData.addEventListener("ChunkAdded", ({ data: { chunk } }) => {
             this.#lastDataReceivedTime = request.pseudoWallTime(request.endTime);
@@ -27801,7 +27051,7 @@ var ServerSentEvents = class {
   }
   #recordMessageAndDispatchEvent(message) {
     this.#eventSourceMessages.push(message);
-    this.#request.dispatchEventToListeners(Events9.EVENT_SOURCE_MESSAGE_ADDED, message);
+    this.#request.dispatchEventToListeners(Events.EVENT_SOURCE_MESSAGE_ADDED, message);
   }
 };
 
@@ -27812,9 +27062,9 @@ __export(ServerTiming_exports, {
   cloudflarePrefix: () => cloudflarePrefix,
   cloudinaryPrefix: () => cloudinaryPrefix
 });
-import * as Common30 from "./../common/common.js";
-import * as i18n23 from "./../i18n/i18n.js";
-var UIStrings10 = {
+import * as Common26 from "./../common/common.js";
+import * as i18n19 from "./../i18n/i18n.js";
+var UIStrings8 = {
   /**
    * @description Text in Server Timing
    * @example {sql-lookup} PH1
@@ -27846,8 +27096,8 @@ var UIStrings10 = {
    */
   unableToParseSValueS: 'Unable to parse "{PH1}" value "{PH2}".'
 };
-var str_10 = i18n23.i18n.registerUIStrings("core/sdk/ServerTiming.ts", UIStrings10);
-var i18nString10 = i18n23.i18n.getLocalizedString.bind(void 0, str_10);
+var str_8 = i18n19.i18n.registerUIStrings("core/sdk/ServerTiming.ts", UIStrings8);
+var i18nString8 = i18n19.i18n.getLocalizedString.bind(void 0, str_8);
 var cloudflarePrefix = "(cf) ";
 var cloudinaryPrefix = "(cld) ";
 var ServerTiming = class _ServerTiming {
@@ -27932,7 +27182,7 @@ var ServerTiming = class _ServerTiming {
     while ((name = consumeToken()) !== null) {
       const entry = { name };
       if (valueString.charAt(0) === "=") {
-        this.showWarning(i18nString10(UIStrings10.deprecatedSyntaxFoundPleaseUse, { PH1: name }));
+        this.showWarning(i18nString8(UIStrings8.deprecatedSyntaxFoundPleaseUse, { PH1: name }));
       }
       while (consumeDelimiter(";")) {
         let paramName;
@@ -27948,15 +27198,15 @@ var ServerTiming = class _ServerTiming {
         }
         if (parseParameter) {
           if (entry.hasOwnProperty(paramName)) {
-            this.showWarning(i18nString10(UIStrings10.duplicateParameterSIgnored, { PH1: paramName }));
+            this.showWarning(i18nString8(UIStrings8.duplicateParameterSIgnored, { PH1: paramName }));
             continue;
           }
           if (paramValue === null) {
-            this.showWarning(i18nString10(UIStrings10.noValueFoundForParameterS, { PH1: paramName }));
+            this.showWarning(i18nString8(UIStrings8.noValueFoundForParameterS, { PH1: paramName }));
           }
           parseParameter.call(this, entry, paramValue);
         } else {
-          this.showWarning(i18nString10(UIStrings10.unrecognizedParameterS, { PH1: paramName }));
+          this.showWarning(i18nString8(UIStrings8.unrecognizedParameterS, { PH1: paramName }));
         }
       }
       result.push(entry);
@@ -27975,7 +27225,7 @@ var ServerTiming = class _ServerTiming {
       }
     }
     if (valueString.length) {
-      this.showWarning(i18nString10(UIStrings10.extraneousTrailingCharacters));
+      this.showWarning(i18nString8(UIStrings8.extraneousTrailingCharacters));
     }
     return result;
   }
@@ -27987,7 +27237,7 @@ var ServerTiming = class _ServerTiming {
           if (paramValue !== null) {
             const duration = parseFloat(paramValue);
             if (isNaN(duration)) {
-              _ServerTiming.showWarning(i18nString10(UIStrings10.unableToParseSValueS, { PH1: paramName, PH2: paramValue }));
+              _ServerTiming.showWarning(i18nString8(UIStrings8.unableToParseSValueS, { PH1: paramName, PH2: paramValue }));
               return;
             }
             entry.dur = duration;
@@ -28007,12 +27257,12 @@ var ServerTiming = class _ServerTiming {
     }
   }
   static showWarning(msg) {
-    Common30.Console.Console.instance().warn(`ServerTiming: ${msg}`);
+    Common26.Console.Console.instance().warn(`ServerTiming: ${msg}`);
   }
 };
 
 // gen/front_end/core/sdk/NetworkRequest.js
-var UIStrings11 = {
+var UIStrings9 = {
   /**
    * @description Text in Network Request
    */
@@ -28193,9 +27443,9 @@ var UIStrings11 = {
    */
   exemptionReasonScheme: "This cookie is allowed by the top-level url scheme"
 };
-var str_11 = i18n25.i18n.registerUIStrings("core/sdk/NetworkRequest.ts", UIStrings11);
-var i18nString11 = i18n25.i18n.getLocalizedString.bind(void 0, str_11);
-var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.ObjectWrapper {
+var str_9 = i18n21.i18n.registerUIStrings("core/sdk/NetworkRequest.ts", UIStrings9);
+var i18nString9 = i18n21.i18n.getLocalizedString.bind(void 0, str_9);
+var NetworkRequest = class _NetworkRequest extends Common27.ObjectWrapper.ObjectWrapper {
   #requestId;
   #backendRequestId;
   #documentURL;
@@ -28223,7 +27473,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   #initialPriority = null;
   #currentPriority = null;
   #signedExchangeInfo = null;
-  #resourceType = Common31.ResourceType.resourceTypes.Other;
+  #resourceType = Common27.ResourceType.resourceTypes.Other;
   #contentData = null;
   #streamingContentData = null;
   #frames = [];
@@ -28347,14 +27597,14 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     return this.#url;
   }
   isBlobRequest() {
-    return Common31.ParsedURL.schemeIs(this.#url, "blob:");
+    return Common27.ParsedURL.schemeIs(this.#url, "blob:");
   }
   setUrl(x) {
     if (this.#url === x) {
       return;
     }
     this.#url = x;
-    this.#parsedURL = new Common31.ParsedURL.ParsedURL(x);
+    this.#parsedURL = new Common27.ParsedURL.ParsedURL(x);
     this.#queryString = void 0;
     this.#parsedQueryParameters = void 0;
     this.#name = void 0;
@@ -28374,7 +27624,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   setRemoteAddress(ip, port) {
     this.#remoteAddress = ip + ":" + port;
-    this.dispatchEventToListeners(Events9.REMOTE_ADDRESS_CHANGED, this);
+    this.dispatchEventToListeners(Events.REMOTE_ADDRESS_CHANGED, this);
   }
   remoteAddress() {
     return this.#remoteAddress;
@@ -28461,7 +27711,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
         this.#responseReceivedTime = x;
       }
     }
-    this.dispatchEventToListeners(Events9.TIMING_CHANGED, this);
+    this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   get duration() {
     if (this.#endTime === -1 || this.#startTime === -1) {
@@ -28499,7 +27749,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     }
     this.#finished = x;
     if (x) {
-      this.dispatchEventToListeners(Events9.FINISHED_LOADING, this);
+      this.dispatchEventToListeners(Events.FINISHED_LOADING, this);
     }
   }
   get failed() {
@@ -28594,7 +27844,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     if (!networkManager) {
       return false;
     }
-    return networkManager.target().type() === Type2.ServiceWorker;
+    return networkManager.target().type() === Type.ServiceWorker;
   }
   get timing() {
     return this.#timing;
@@ -28612,11 +27862,11 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
       this.#responseReceivedTime = this.#startTime;
     }
     this.#timing = timingInfo;
-    this.dispatchEventToListeners(Events9.TIMING_CHANGED, this);
+    this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   setConnectTimingFromExtraInfo(connectTiming) {
     this.#startTime = connectTiming.requestTime;
-    this.dispatchEventToListeners(Events9.TIMING_CHANGED, this);
+    this.dispatchEventToListeners(Events.TIMING_CHANGED, this);
   }
   get mimeType() {
     return this.#mimeType;
@@ -28624,7 +27874,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   set mimeType(x) {
     this.#mimeType = x;
     if (x === "text/event-stream" && !this.#serverSentEvents) {
-      const parseFromStreamedData = this.resourceType() !== Common31.ResourceType.resourceTypes.EventSource;
+      const parseFromStreamedData = this.resourceType() !== Common27.ResourceType.resourceTypes.EventSource;
       this.#serverSentEvents = new ServerSentEvents(this, parseFromStreamedData);
     }
   }
@@ -28658,7 +27908,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     } else {
       this.#path = this.#parsedURL.host + this.#parsedURL.folderPathComponents;
       const networkManager = NetworkManager.forRequest(this);
-      const inspectedURL = networkManager ? Common31.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
+      const inspectedURL = networkManager ? Common27.ParsedURL.ParsedURL.fromString(networkManager.target().inspectedURL()) : null;
       this.#path = Platform18.StringUtilities.trimURL(this.#path, inspectedURL ? inspectedURL.host : "");
       if (this.#parsedURL.lastPathComponent || this.#parsedURL.queryParams) {
         this.#name = this.#parsedURL.lastPathComponent + (this.#parsedURL.queryParams ? "?" + this.#parsedURL.queryParams : "");
@@ -28730,14 +27980,14 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   setRequestHeaders(headers) {
     this.#requestHeaders = headers;
-    this.dispatchEventToListeners(Events9.REQUEST_HEADERS_CHANGED);
+    this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
   }
   requestHeadersText() {
     return this.#requestHeadersText;
   }
   setRequestHeadersText(text) {
     this.#requestHeadersText = text;
-    this.dispatchEventToListeners(Events9.REQUEST_HEADERS_CHANGED);
+    this.dispatchEventToListeners(Events.REQUEST_HEADERS_CHANGED);
   }
   requestHeaderValue(headerName) {
     if (this.#requestHeaderValues[headerName]) {
@@ -28785,7 +28035,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     this.#serverTimings = void 0;
     this.#responseCookies = void 0;
     this.#responseHeaderValues = {};
-    this.dispatchEventToListeners(Events9.RESPONSE_HEADERS_CHANGED);
+    this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
   }
   get earlyHintsHeaders() {
     return this.#earlyHintsHeaders || [];
@@ -28811,7 +28061,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   set responseHeadersText(x) {
     this.#responseHeadersText = x;
-    this.dispatchEventToListeners(Events9.RESPONSE_HEADERS_CHANGED);
+    this.dispatchEventToListeners(Events.RESPONSE_HEADERS_CHANGED);
   }
   get sortedResponseHeaders() {
     if (this.#sortedResponseHeaders !== void 0) {
@@ -29043,7 +28293,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
       if (!match) {
         return result;
       }
-      const processedValue = filename || contentType ? i18nString11(UIStrings11.binary) : value;
+      const processedValue = filename || contentType ? i18nString9(UIStrings9.binary) : value;
       result.push({ name, value: processedValue });
       return result;
     }
@@ -29085,10 +28335,10 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     }
     const contentPromise = this.finished ? this.requestContentData() : NetworkManager.streamResponseBody(this);
     this.#streamingContentData = contentPromise.then((contentData) => {
-      if (TextUtils22.ContentData.ContentData.isError(contentData)) {
+      if (TextUtils23.ContentData.ContentData.isError(contentData)) {
         return contentData;
       }
-      return TextUtils22.StreamingContentData.StreamingContentData.from(contentData);
+      return TextUtils23.StreamingContentData.StreamingContentData.from(contentData);
     });
     return this.#streamingContentData;
   }
@@ -29103,10 +28353,10 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
       return await NetworkManager.searchInRequest(this, query, caseSensitive, isRegex);
     }
     const contentData = await this.requestContentData();
-    if (TextUtils22.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
+    if (TextUtils23.ContentData.ContentData.isError(contentData) || !contentData.isTextContent) {
       return [];
     }
-    return TextUtils22.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
+    return TextUtils23.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
   }
   requestContentType() {
     return this.requestHeaderValue("Content-Type");
@@ -29134,7 +28384,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   async populateImageSource(image) {
     const contentData = await this.requestContentData();
-    if (TextUtils22.ContentData.ContentData.isError(contentData)) {
+    if (TextUtils23.ContentData.ContentData.isError(contentData)) {
       return;
     }
     let imageSrc = contentData.asDataUrl();
@@ -29178,14 +28428,14 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   addFrame(frame) {
     this.#frames.push(frame);
-    this.dispatchEventToListeners(Events9.WEBSOCKET_FRAME_ADDED, frame);
+    this.dispatchEventToListeners(Events.WEBSOCKET_FRAME_ADDED, frame);
   }
   directSocketChunks() {
     return this.#directSocketChunks;
   }
   addDirectSocketChunk(chunk) {
     this.#directSocketChunks.push(chunk);
-    this.dispatchEventToListeners(Events9.DIRECTSOCKET_CHUNK_ADDED, chunk);
+    this.dispatchEventToListeners(Events.DIRECTSOCKET_CHUNK_ADDED, chunk);
   }
   eventSourceMessages() {
     return this.#serverSentEvents?.eventSourceMessages ?? [];
@@ -29289,10 +28539,10 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
         "NameValuePairExceedsMaxSize"
         /* Protocol.Network.SetCookieBlockedReason.NameValuePairExceedsMaxSize */
       )) {
-        const message = i18nString11(UIStrings11.setcookieHeaderIsIgnoredIn, {
+        const message = i18nString9(UIStrings9.setcookieHeaderIsIgnoredIn, {
           PH1: this.url()
         });
-        networkManager.dispatchEventToListeners(Events8.MessageGenerated, { message, requestId: this.#requestId, warning: true });
+        networkManager.dispatchEventToListeners(Events2.MessageGenerated, { message, requestId: this.#requestId, warning: true });
       }
     }
     const cookieModel = networkManager.target().model(CookieModel);
@@ -29360,7 +28610,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
   }
   setTrustTokenOperationDoneEvent(doneEvent) {
     this.#trustTokenOperationDoneEvent = doneEvent;
-    this.dispatchEventToListeners(Events9.TRUST_TOKEN_RESULT_ADDED);
+    this.dispatchEventToListeners(Events.TRUST_TOKEN_RESULT_ADDED);
   }
   trustTokenOperationDoneEvent() {
     return this.#trustTokenOperationDoneEvent;
@@ -29403,7 +28653,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     this.endTime = timestamp;
     if (data) {
       void this.#streamingContentData?.then((contentData) => {
-        if (!TextUtils22.StreamingContentData.isError(contentData)) {
+        if (!TextUtils23.StreamingContentData.isError(contentData)) {
           contentData.addChunk(data);
         }
       });
@@ -29419,7 +28669,7 @@ var NetworkRequest = class _NetworkRequest extends Common31.ObjectWrapper.Object
     return this.responseReceivedPromise;
   }
 };
-var Events9;
+var Events;
 (function(Events12) {
   Events12["FINISHED_LOADING"] = "FinishedLoading";
   Events12["TIMING_CHANGED"] = "TimingChanged";
@@ -29430,7 +28680,7 @@ var Events9;
   Events12["DIRECTSOCKET_CHUNK_ADDED"] = "DirectsocketChunkAdded";
   Events12["EVENT_SOURCE_MESSAGE_ADDED"] = "EventSourceMessageAdded";
   Events12["TRUST_TOKEN_RESULT_ADDED"] = "TrustTokenResultAdded";
-})(Events9 || (Events9 = {}));
+})(Events || (Events = {}));
 var WebSocketFrameType;
 (function(WebSocketFrameType2) {
   WebSocketFrameType2["Send"] = "send";
@@ -29440,107 +28690,107 @@ var WebSocketFrameType;
 var cookieExemptionReasonToUiString = function(exemptionReason) {
   switch (exemptionReason) {
     case "UserSetting":
-      return i18nString11(UIStrings11.exemptionReasonUserSetting);
+      return i18nString9(UIStrings9.exemptionReasonUserSetting);
     case "TPCDMetadata":
-      return i18nString11(UIStrings11.exemptionReasonTPCDMetadata);
+      return i18nString9(UIStrings9.exemptionReasonTPCDMetadata);
     case "TopLevelTPCDDeprecationTrial":
-      return i18nString11(UIStrings11.exemptionReasonTopLevelTPCDDeprecationTrial);
+      return i18nString9(UIStrings9.exemptionReasonTopLevelTPCDDeprecationTrial);
     case "TPCDDeprecationTrial":
-      return i18nString11(UIStrings11.exemptionReasonTPCDDeprecationTrial);
+      return i18nString9(UIStrings9.exemptionReasonTPCDDeprecationTrial);
     case "TPCDHeuristics":
-      return i18nString11(UIStrings11.exemptionReasonTPCDHeuristics);
+      return i18nString9(UIStrings9.exemptionReasonTPCDHeuristics);
     case "EnterprisePolicy":
-      return i18nString11(UIStrings11.exemptionReasonEnterprisePolicy);
+      return i18nString9(UIStrings9.exemptionReasonEnterprisePolicy);
     case "StorageAccess":
-      return i18nString11(UIStrings11.exemptionReasonStorageAccessAPI);
+      return i18nString9(UIStrings9.exemptionReasonStorageAccessAPI);
     case "TopLevelStorageAccess":
-      return i18nString11(UIStrings11.exemptionReasonTopLevelStorageAccessAPI);
+      return i18nString9(UIStrings9.exemptionReasonTopLevelStorageAccessAPI);
     case "Scheme":
-      return i18nString11(UIStrings11.exemptionReasonScheme);
+      return i18nString9(UIStrings9.exemptionReasonScheme);
   }
   return "";
 };
 var cookieBlockedReasonToUiString = function(blockedReason) {
   switch (blockedReason) {
     case "SecureOnly":
-      return i18nString11(UIStrings11.secureOnly);
+      return i18nString9(UIStrings9.secureOnly);
     case "NotOnPath":
-      return i18nString11(UIStrings11.notOnPath);
+      return i18nString9(UIStrings9.notOnPath);
     case "DomainMismatch":
-      return i18nString11(UIStrings11.domainMismatch);
+      return i18nString9(UIStrings9.domainMismatch);
     case "SameSiteStrict":
-      return i18nString11(UIStrings11.sameSiteStrict);
+      return i18nString9(UIStrings9.sameSiteStrict);
     case "SameSiteLax":
-      return i18nString11(UIStrings11.sameSiteLax);
+      return i18nString9(UIStrings9.sameSiteLax);
     case "SameSiteUnspecifiedTreatedAsLax":
-      return i18nString11(UIStrings11.sameSiteUnspecifiedTreatedAsLax);
+      return i18nString9(UIStrings9.sameSiteUnspecifiedTreatedAsLax);
     case "SameSiteNoneInsecure":
-      return i18nString11(UIStrings11.sameSiteNoneInsecure);
+      return i18nString9(UIStrings9.sameSiteNoneInsecure);
     case "UserPreferences":
-      return i18nString11(UIStrings11.userPreferences);
+      return i18nString9(UIStrings9.userPreferences);
     case "UnknownError":
-      return i18nString11(UIStrings11.unknownError);
+      return i18nString9(UIStrings9.unknownError);
     case "SchemefulSameSiteStrict":
-      return i18nString11(UIStrings11.schemefulSameSiteStrict);
+      return i18nString9(UIStrings9.schemefulSameSiteStrict);
     case "SchemefulSameSiteLax":
-      return i18nString11(UIStrings11.schemefulSameSiteLax);
+      return i18nString9(UIStrings9.schemefulSameSiteLax);
     case "SchemefulSameSiteUnspecifiedTreatedAsLax":
-      return i18nString11(UIStrings11.schemefulSameSiteUnspecifiedTreatedAsLax);
+      return i18nString9(UIStrings9.schemefulSameSiteUnspecifiedTreatedAsLax);
     case "SamePartyFromCrossPartyContext":
-      return i18nString11(UIStrings11.samePartyFromCrossPartyContext);
+      return i18nString9(UIStrings9.samePartyFromCrossPartyContext);
     case "NameValuePairExceedsMaxSize":
-      return i18nString11(UIStrings11.nameValuePairExceedsMaxSize);
+      return i18nString9(UIStrings9.nameValuePairExceedsMaxSize);
     case "ThirdPartyPhaseout":
-      return i18nString11(UIStrings11.thirdPartyPhaseout);
+      return i18nString9(UIStrings9.thirdPartyPhaseout);
   }
   return "";
 };
 var setCookieBlockedReasonToUiString = function(blockedReason) {
   switch (blockedReason) {
     case "SecureOnly":
-      return i18nString11(UIStrings11.blockedReasonSecureOnly);
+      return i18nString9(UIStrings9.blockedReasonSecureOnly);
     case "SameSiteStrict":
-      return i18nString11(UIStrings11.blockedReasonSameSiteStrictLax, {
+      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, {
         PH1: "SameSite=Strict"
       });
     case "SameSiteLax":
-      return i18nString11(UIStrings11.blockedReasonSameSiteStrictLax, {
+      return i18nString9(UIStrings9.blockedReasonSameSiteStrictLax, {
         PH1: "SameSite=Lax"
       });
     case "SameSiteUnspecifiedTreatedAsLax":
-      return i18nString11(UIStrings11.blockedReasonSameSiteUnspecifiedTreatedAsLax);
+      return i18nString9(UIStrings9.blockedReasonSameSiteUnspecifiedTreatedAsLax);
     case "SameSiteNoneInsecure":
-      return i18nString11(UIStrings11.blockedReasonSameSiteNoneInsecure);
+      return i18nString9(UIStrings9.blockedReasonSameSiteNoneInsecure);
     case "UserPreferences":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedDueToUser);
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedDueToUser);
     case "SyntaxError":
-      return i18nString11(UIStrings11.thisSetcookieHadInvalidSyntax);
+      return i18nString9(UIStrings9.thisSetcookieHadInvalidSyntax);
     case "SchemeNotSupported":
-      return i18nString11(UIStrings11.theSchemeOfThisConnectionIsNot);
+      return i18nString9(UIStrings9.theSchemeOfThisConnectionIsNot);
     case "OverwriteSecure":
-      return i18nString11(UIStrings11.blockedReasonOverwriteSecure);
+      return i18nString9(UIStrings9.blockedReasonOverwriteSecure);
     case "InvalidDomain":
-      return i18nString11(UIStrings11.blockedReasonInvalidDomain);
+      return i18nString9(UIStrings9.blockedReasonInvalidDomain);
     case "InvalidPrefix":
-      return i18nString11(UIStrings11.blockedReasonInvalidPrefix);
+      return i18nString9(UIStrings9.blockedReasonInvalidPrefix);
     case "UnknownError":
-      return i18nString11(UIStrings11.anUnknownErrorWasEncounteredWhenTrying);
+      return i18nString9(UIStrings9.anUnknownErrorWasEncounteredWhenTrying);
     case "SchemefulSameSiteStrict":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, { PH1: "SameSite=Strict" });
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, { PH1: "SameSite=Strict" });
     case "SchemefulSameSiteLax":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, { PH1: "SameSite=Lax" });
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSamesiteStrictLax, { PH1: "SameSite=Lax" });
     case "SchemefulSameSiteUnspecifiedTreatedAsLax":
-      return i18nString11(UIStrings11.thisSetcookieDidntSpecifyASamesite);
+      return i18nString9(UIStrings9.thisSetcookieDidntSpecifyASamesite);
     case "SamePartyFromCrossPartyContext":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedBecauseItHadTheSameparty);
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSameparty);
     case "SamePartyConflictsWithOtherAttributes":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute);
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseItHadTheSamepartyAttribute);
     case "NameValuePairExceedsMaxSize":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedBecauseTheNameValuePairExceedsMaxSize);
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedBecauseTheNameValuePairExceedsMaxSize);
     case "DisallowedCharacter":
-      return i18nString11(UIStrings11.thisSetcookieHadADisallowedCharacter);
+      return i18nString9(UIStrings9.thisSetcookieHadADisallowedCharacter);
     case "ThirdPartyPhaseout":
-      return i18nString11(UIStrings11.thisSetcookieWasBlockedDueThirdPartyPhaseout);
+      return i18nString9(UIStrings9.thisSetcookieWasBlockedDueThirdPartyPhaseout);
   }
   return "";
 };
@@ -29909,7 +29159,7 @@ __export(AnimationModel_exports, {
   KeyframeStyle: () => KeyframeStyle,
   KeyframesRule: () => KeyframesRule
 });
-import * as Common32 from "./../common/common.js";
+import * as Common28 from "./../common/common.js";
 var DEVTOOLS_ANIMATIONS_WORLD_NAME = "devtools_animations";
 var REPORT_SCROLL_POSITION_BINDING_NAME = "__devtools_report_scroll_position__";
 var getScrollListenerNameInPage = (id) => `__devtools_scroll_listener_${id}__`;
@@ -29954,7 +29204,7 @@ var AnimationDOMNode = class _AnimationDOMNode {
       name: REPORT_SCROLL_POSITION_BINDING_NAME,
       executionContextName: DEVTOOLS_ANIMATIONS_WORLD_NAME
     });
-    runtimeModel.addEventListener(Events4.BindingCalled, this.#scrollBindingListener);
+    runtimeModel.addEventListener(Events6.BindingCalled, this.#scrollBindingListener);
   }
   async #removeReportScrollPositionBinding() {
     if (!this.#scrollBindingListener) {
@@ -29964,7 +29214,7 @@ var AnimationDOMNode = class _AnimationDOMNode {
     await runtimeModel.removeBinding({
       name: REPORT_SCROLL_POSITION_BINDING_NAME
     });
-    runtimeModel.removeEventListener(Events4.BindingCalled, this.#scrollBindingListener);
+    runtimeModel.removeEventListener(Events6.BindingCalled, this.#scrollBindingListener);
     this.#scrollBindingListener = void 0;
   }
   async addScrollEventListener(onScroll) {
@@ -30112,8 +29362,8 @@ var AnimationModel = class extends SDKModel {
       void this.agent.invoke_enable();
     }
     const resourceTreeModel = target.model(ResourceTreeModel);
-    resourceTreeModel.addEventListener(Events.PrimaryPageChanged, this.reset, this);
-    this.#flushPendingAnimations = Common32.Debouncer.debounce(() => {
+    resourceTreeModel.addEventListener(Events3.PrimaryPageChanged, this.reset, this);
+    this.#flushPendingAnimations = Common28.Debouncer.debounce(() => {
       while (this.#pendingAnimations.size) {
         this.matchExistingGroups(this.createGroupFromPendingAnimations());
       }
@@ -30689,8 +29939,8 @@ var AutofillModel_exports = {};
 __export(AutofillModel_exports, {
   AutofillModel: () => AutofillModel
 });
-import * as Common33 from "./../common/common.js";
-import * as Host8 from "./../host/host.js";
+import * as Common29 from "./../common/common.js";
+import * as Host7 from "./../host/host.js";
 var AutofillModel = class extends SDKModel {
   agent;
   #enabled;
@@ -30698,7 +29948,7 @@ var AutofillModel = class extends SDKModel {
   constructor(target) {
     super(target);
     this.agent = target.autofillAgent();
-    this.#showTestAddressesInAutofillMenu = Common33.Settings.Settings.instance().createSetting("show-test-addresses-in-autofill-menu-on-event", false);
+    this.#showTestAddressesInAutofillMenu = Common29.Settings.Settings.instance().createSetting("show-test-addresses-in-autofill-menu-on-event", false);
     this.#showTestAddressesInAutofillMenu.addChangeListener(this.#setTestAddresses, this);
     target.registerAutofillDispatcher(this);
     this.enable();
@@ -30818,7 +30068,7 @@ var AutofillModel = class extends SDKModel {
     });
   }
   enable() {
-    if (this.#enabled || Host8.InspectorFrontendHost.isUnderTest()) {
+    if (this.#enabled || Host7.InspectorFrontendHost.isUnderTest()) {
       return;
     }
     void this.agent.invoke_enable();
@@ -30826,7 +30076,7 @@ var AutofillModel = class extends SDKModel {
     this.#enabled = true;
   }
   disable() {
-    if (!this.#enabled || Host8.InspectorFrontendHost.isUnderTest()) {
+    if (!this.#enabled || Host7.InspectorFrontendHost.isUnderTest()) {
       return;
     }
     this.#enabled = false;
@@ -30878,6 +30128,906 @@ __export(ChildTargetManager_exports, {
 import * as i18n27 from "./../i18n/i18n.js";
 import * as Common34 from "./../common/common.js";
 import * as Host9 from "./../host/host.js";
+
+// gen/front_end/core/sdk/Connections.js
+var Connections_exports = {};
+__export(Connections_exports, {
+  MainConnection: () => MainConnection,
+  ParallelConnection: () => ParallelConnection,
+  StubConnection: () => StubConnection,
+  WebSocketConnection: () => WebSocketConnection,
+  initMainConnection: () => initMainConnection
+});
+import * as i18n25 from "./../i18n/i18n.js";
+import * as Common33 from "./../common/common.js";
+import * as Host8 from "./../host/host.js";
+import * as ProtocolClient2 from "./../protocol_client/protocol_client.js";
+import * as Root11 from "./../root/root.js";
+
+// gen/front_end/core/sdk/RehydratingConnection.js
+var RehydratingConnection_exports = {};
+__export(RehydratingConnection_exports, {
+  RehydratingConnection: () => RehydratingConnection,
+  RehydratingSession: () => RehydratingSession
+});
+import * as Common32 from "./../common/common.js";
+import * as i18n23 from "./../i18n/i18n.js";
+import * as Root10 from "./../root/root.js";
+
+// gen/front_end/core/sdk/EnhancedTracesParser.js
+var EnhancedTracesParser_exports = {};
+__export(EnhancedTracesParser_exports, {
+  EnhancedTracesParser: () => EnhancedTracesParser
+});
+import * as Common30 from "./../common/common.js";
+import { UserVisibleError } from "./../platform/platform.js";
+var EnhancedTracesParser = class {
+  #trace;
+  #scriptRundownEvents = [];
+  #scriptToV8Context = /* @__PURE__ */ new Map();
+  #scriptToFrame = /* @__PURE__ */ new Map();
+  #scriptToScriptSource = /* @__PURE__ */ new Map();
+  #largeScriptToScriptSource = /* @__PURE__ */ new Map();
+  #scriptToSourceLength = /* @__PURE__ */ new Map();
+  #targets = [];
+  #executionContexts = [];
+  #scripts = [];
+  static enhancedTraceVersion = 1;
+  constructor(trace) {
+    this.#trace = trace;
+    try {
+      this.parseEnhancedTrace();
+    } catch (e) {
+      throw new UserVisibleError.UserVisibleError(e);
+    }
+  }
+  parseEnhancedTrace() {
+    for (const event of this.#trace.traceEvents) {
+      if (this.isTracingStartedInBrowser(event)) {
+        const data = event.args?.data;
+        for (const frame of data.frames) {
+          if (frame.url === "about:blank") {
+            continue;
+          }
+          const frameId = frame.frame;
+          if (!this.#targets.find((target) => target.targetId === frameId)) {
+            const frameType = frame.isOutermostMainFrame ? "page" : "iframe";
+            this.#targets.push({
+              targetId: frameId,
+              type: frameType,
+              pid: frame.processId,
+              url: frame.url
+            });
+          }
+        }
+      } else if (this.isFunctionCallEvent(event)) {
+        const data = event.args?.data;
+        if (data.isolate) {
+          this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
+        }
+      } else if (this.isRundownScriptCompiled(event)) {
+        const data = event.args?.data;
+        this.#scriptToV8Context.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.v8context);
+        this.#scriptToFrame.set(this.getScriptIsolateId(data.isolate, data.scriptId), data.frame);
+        const frameId = data.frame;
+        if (!this.#targets.find((target) => target.targetId === frameId)) {
+          this.#targets.push({
+            targetId: frameId,
+            type: data.frameType,
+            isolate: String(data.isolate),
+            pid: event.pid,
+            url: data.url
+          });
+        }
+        if (!this.#executionContexts.find((executionContext) => executionContext.v8Context === data.v8context)) {
+          this.#executionContexts.push({
+            id: -1,
+            origin: data.origin,
+            v8Context: data.v8context,
+            auxData: {
+              frameId: data.frame,
+              isDefault: data.isDefault,
+              type: data.contextType
+            },
+            isolate: String(data.isolate),
+            name: data.origin,
+            uniqueId: `${data.v8context}-${data.isolate}`
+          });
+        }
+      } else if (this.isRundownScript(event)) {
+        this.#scriptRundownEvents.push(event);
+        const data = event.args.data;
+        if (!this.#scripts.find((script) => script.scriptId === String(data.scriptId) && script.isolate === String(data.isolate))) {
+          this.#scripts.push({
+            scriptId: String(data.scriptId),
+            isolate: String(data.isolate),
+            buildId: "",
+            executionContextId: data.executionContextId,
+            startLine: data.startLine ?? 0,
+            startColumn: data.startColumn ?? 0,
+            endLine: data.endLine ?? 0,
+            endColumn: data.endColumn ?? 0,
+            hash: data.hash ?? "",
+            isModule: data.isModule,
+            url: data.url ?? "",
+            hasSourceURL: data.hasSourceUrl,
+            sourceURL: data.sourceUrl ?? "",
+            sourceMapURL: data.sourceMapUrl,
+            pid: event.pid
+          });
+        }
+      } else if (this.isRundownScriptSource(event)) {
+        const data = event.args.data;
+        const scriptIsolateId = this.getScriptIsolateId(data.isolate, data.scriptId);
+        if ("splitIndex" in data && "splitCount" in data) {
+          if (!this.#largeScriptToScriptSource.has(scriptIsolateId)) {
+            this.#largeScriptToScriptSource.set(scriptIsolateId, new Array(data.splitCount).fill(""));
+          }
+          const splittedSource = this.#largeScriptToScriptSource.get(scriptIsolateId);
+          if (splittedSource && data.sourceText) {
+            splittedSource[data.splitIndex] = data.sourceText;
+          }
+        } else {
+          if (data.sourceText) {
+            this.#scriptToScriptSource.set(scriptIsolateId, data.sourceText);
+          }
+          if (data.length) {
+            this.#scriptToSourceLength.set(scriptIsolateId, data.length);
+          }
+        }
+      }
+    }
+  }
+  data() {
+    const v8ContextToExecutionContextId = /* @__PURE__ */ new Map();
+    this.#scriptRundownEvents.forEach((scriptRundownEvent) => {
+      const data = scriptRundownEvent.args.data;
+      const v8Context = this.#scriptToV8Context.get(this.getScriptIsolateId(data.isolate, data.scriptId));
+      if (v8Context) {
+        v8ContextToExecutionContextId.set(v8Context, data.executionContextId);
+      }
+    });
+    this.#executionContexts.forEach((executionContext) => {
+      if (executionContext.v8Context) {
+        const id = v8ContextToExecutionContextId.get(executionContext.v8Context);
+        if (id) {
+          executionContext.id = id;
+        }
+      }
+    });
+    this.#scripts.forEach((script) => {
+      const scriptIsolateId = this.getScriptIsolateId(script.isolate, script.scriptId);
+      if (this.#scriptToScriptSource.has(scriptIsolateId)) {
+        script.sourceText = this.#scriptToScriptSource.get(scriptIsolateId);
+        script.length = this.#scriptToSourceLength.get(scriptIsolateId);
+      } else if (this.#largeScriptToScriptSource.has(scriptIsolateId)) {
+        const splittedSources = this.#largeScriptToScriptSource.get(scriptIsolateId);
+        if (splittedSources) {
+          script.sourceText = splittedSources.join("");
+          script.length = script.sourceText.length;
+        }
+      }
+      const linkedExecutionContext = this.#executionContexts.find((context) => context.id === script.executionContextId && context.isolate === script.isolate);
+      if (linkedExecutionContext) {
+        script.executionContextAuxData = linkedExecutionContext.auxData;
+        if (script.executionContextAuxData?.frameId) {
+          this.#scriptToFrame.set(scriptIsolateId, script.executionContextAuxData?.frameId);
+        }
+      }
+    });
+    for (const script of this.#scripts) {
+      this.resolveSourceMap(script);
+    }
+    return this.groupContextsAndScriptsUnderTarget(this.#targets, this.#executionContexts, this.#scripts);
+  }
+  resolveSourceMap(script) {
+    if (script.sourceMapURL?.startsWith("data:")) {
+      return;
+    }
+    const sourceMap = this.getSourceMapFromMetadata(script);
+    if (!sourceMap) {
+      return;
+    }
+    const payload = encodeURIComponent(JSON.stringify(sourceMap));
+    script.sourceMapURL = `data:application/json;charset=utf-8,${payload}`;
+  }
+  getSourceMapFromMetadata(script) {
+    const { hasSourceURL, sourceURL, url, sourceMapURL, isolate, scriptId } = script;
+    if (!sourceMapURL || !this.#trace.metadata.sourceMaps) {
+      return;
+    }
+    const frame = this.#scriptToFrame.get(this.getScriptIsolateId(isolate, scriptId));
+    if (!frame) {
+      return;
+    }
+    const target = this.#targets.find((t) => t.targetId === frame);
+    if (!target) {
+      return;
+    }
+    let resolvedSourceUrl = url;
+    if (hasSourceURL && sourceURL) {
+      const targetUrl = target.url;
+      resolvedSourceUrl = Common30.ParsedURL.ParsedURL.completeURL(targetUrl, sourceURL) ?? sourceURL;
+    }
+    const resolvedSourceMapUrl = Common30.ParsedURL.ParsedURL.completeURL(resolvedSourceUrl, sourceMapURL);
+    if (!resolvedSourceMapUrl) {
+      return;
+    }
+    const { sourceMap } = this.#trace.metadata.sourceMaps.find((m) => m.sourceMapUrl === resolvedSourceMapUrl) ?? {};
+    return sourceMap;
+  }
+  getScriptIsolateId(isolate, scriptId) {
+    return `${scriptId}@${isolate}`;
+  }
+  getExecutionContextIsolateId(isolate, executionContextId) {
+    return `${executionContextId}@${isolate}`;
+  }
+  isTraceEvent(event) {
+    return "cat" in event && "pid" in event && "args" in event && "data" in event.args;
+  }
+  isRundownScriptCompiled(event) {
+    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.target-rundown";
+  }
+  isRundownScript(event) {
+    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown";
+  }
+  isRundownScriptSource(event) {
+    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.v8-source-rundown-sources";
+  }
+  isTracingStartedInBrowser(event) {
+    return this.isTraceEvent(event) && event.cat === "disabled-by-default-devtools.timeline" && event.name === "TracingStartedInBrowser";
+  }
+  isFunctionCallEvent(event) {
+    return this.isTraceEvent(event) && event.cat === "devtools.timeline" && event.name === "FunctionCall";
+  }
+  groupContextsAndScriptsUnderTarget(targets, executionContexts, scripts) {
+    const data = [];
+    const targetIds = /* @__PURE__ */ new Set();
+    const targetToExecutionContexts = /* @__PURE__ */ new Map();
+    const executionContextIsolateToTarget = /* @__PURE__ */ new Map();
+    const targetToScripts = /* @__PURE__ */ new Map();
+    const orphanScripts = [];
+    for (const target of targets) {
+      targetIds.add(target.targetId);
+      targetToExecutionContexts.set(target.targetId, []);
+      targetToScripts.set(target.targetId, []);
+    }
+    for (const executionContext of executionContexts) {
+      const frameId = executionContext.auxData?.frameId;
+      if (frameId && targetIds.has(frameId)) {
+        targetToExecutionContexts.get(frameId)?.push(executionContext);
+        executionContextIsolateToTarget.set(this.getExecutionContextIsolateId(executionContext.isolate, executionContext.id), frameId);
+      } else {
+        console.error("Execution context can't be linked to a target", executionContext);
+      }
+    }
+    for (const script of scripts) {
+      const scriptExecutionContextIsolateId = this.getExecutionContextIsolateId(script.isolate, script.executionContextId);
+      const scriptFrameId = script.executionContextAuxData?.frameId;
+      if (script.executionContextAuxData?.frameId && targetIds.has(scriptFrameId)) {
+        targetToScripts.get(scriptFrameId)?.push(script);
+        executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, scriptFrameId);
+      } else if (this.#scriptToFrame.has(this.getScriptIsolateId(script.isolate, script.scriptId))) {
+        const targetId = this.#scriptToFrame.get(this.getScriptIsolateId(script.isolate, script.scriptId));
+        if (targetId) {
+          targetToScripts.get(targetId)?.push(script);
+          executionContextIsolateToTarget.set(scriptExecutionContextIsolateId, targetId);
+        }
+      } else {
+        orphanScripts.push(script);
+      }
+    }
+    for (const orphanScript of orphanScripts) {
+      const orphanScriptExecutionContextIsolateId = this.getExecutionContextIsolateId(orphanScript.isolate, orphanScript.executionContextId);
+      const frameId = executionContextIsolateToTarget.get(orphanScriptExecutionContextIsolateId);
+      if (frameId) {
+        targetToScripts.get(frameId)?.push(orphanScript);
+      } else if (orphanScript.pid) {
+        const target = targets.find((target2) => target2.pid === orphanScript.pid);
+        if (target) {
+          targetToScripts.get(target.targetId)?.push(orphanScript);
+        }
+      } else {
+        console.error("Script can't be linked to any target", orphanScript);
+      }
+    }
+    for (const target of targets) {
+      const targetId = target.targetId;
+      const executionContexts2 = targetToExecutionContexts.get(targetId) || [];
+      const scripts2 = targetToScripts.get(targetId) || [];
+      for (const script of scripts2) {
+        if (!executionContexts2.find((context) => context.id === script.executionContextId)) {
+          const artificialContext = {
+            id: script.executionContextId,
+            origin: "",
+            v8Context: "",
+            name: "",
+            auxData: {
+              frameId: targetId,
+              isDefault: false,
+              type: "type"
+            },
+            isolate: script.isolate,
+            uniqueId: `${targetId}-${script.isolate}`
+          };
+          executionContexts2.push(artificialContext);
+        }
+      }
+      data.push({ target, executionContexts: executionContexts2, scripts: scripts2 });
+    }
+    return data;
+  }
+};
+
+// gen/front_end/core/sdk/TraceObject.js
+var TraceObject_exports = {};
+__export(TraceObject_exports, {
+  RevealableEvent: () => RevealableEvent,
+  RevealableNetworkRequest: () => RevealableNetworkRequest,
+  TraceObject: () => TraceObject
+});
+import * as Common31 from "./../common/common.js";
+var TraceObject = class {
+  traceEvents;
+  metadata;
+  constructor(payload, meta) {
+    if (Array.isArray(payload)) {
+      this.traceEvents = payload;
+      this.metadata = meta ?? {};
+    } else {
+      this.traceEvents = payload.traceEvents;
+      this.metadata = payload.metadata;
+    }
+  }
+};
+var RevealableEvent = class {
+  event;
+  // Only Trace.Types.Events.Event are passed in, but we can't depend on that type from SDK
+  /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+  constructor(event) {
+    this.event = event;
+  }
+};
+var RevealableNetworkRequest = class _RevealableNetworkRequest {
+  networkRequest;
+  constructor(networkRequest) {
+    this.networkRequest = networkRequest;
+  }
+  // Only Trace.Types.Events.SyntheticNetworkRequest are passed in, but we can't depend on that type from SDK
+  static create(event) {
+    const syntheticNetworkRequest = event;
+    const url = syntheticNetworkRequest.args.data.url;
+    const urlWithoutHash = Common31.ParsedURL.ParsedURL.urlWithoutHash(url);
+    const resource = ResourceTreeModel.resourceForURL(url) ?? ResourceTreeModel.resourceForURL(urlWithoutHash);
+    const sdkNetworkRequest = resource?.request;
+    return sdkNetworkRequest ? new _RevealableNetworkRequest(sdkNetworkRequest) : null;
+  }
+};
+
+// gen/front_end/core/sdk/RehydratingConnection.js
+var UIStrings10 = {
+  /**
+   * @description Text that appears when no source text is available for the given script
+   */
+  noSourceText: "No source text available",
+  /**
+   * @description Text to indicate rehydrating connection cannot find host window
+   */
+  noHostWindow: "Can not find host window",
+  /**
+   * @description Text to indicate that there is an error loading the log
+   */
+  errorLoadingLog: "Error loading log"
+};
+var str_10 = i18n23.i18n.registerUIStrings("core/sdk/RehydratingConnection.ts", UIStrings10);
+var i18nString10 = i18n23.i18n.getLocalizedString.bind(void 0, str_10);
+var RehydratingConnection = class {
+  rehydratingConnectionState = 1;
+  onDisconnect = null;
+  onMessage = null;
+  trace = null;
+  sessions = /* @__PURE__ */ new Map();
+  #onConnectionLost;
+  #rehydratingWindow = window;
+  #onReceiveHostWindowPayloadBound = this.onReceiveHostWindowPayload.bind(this);
+  constructor(onConnectionLost) {
+    this.#onConnectionLost = onConnectionLost;
+    if (!this.#maybeHandleLoadingFromUrl()) {
+      this.#setupMessagePassing();
+    }
+  }
+  /** Returns true if found a trace URL. */
+  #maybeHandleLoadingFromUrl() {
+    let traceUrl = Root10.Runtime.Runtime.queryParam("traceURL");
+    if (!traceUrl) {
+      const timelineUrl = Root10.Runtime.Runtime.queryParam("loadTimelineFromURL");
+      if (timelineUrl) {
+        traceUrl = decodeURIComponent(timelineUrl);
+      }
+    }
+    if (traceUrl) {
+      void fetch(traceUrl).then((r) => r.arrayBuffer()).then((b) => Common32.Gzip.arrayBufferToString(b)).then((traceJson) => {
+        const trace = new TraceObject(JSON.parse(traceJson));
+        void this.startHydration(trace);
+      });
+      return true;
+    }
+    return false;
+  }
+  #setupMessagePassing() {
+    this.#rehydratingWindow.addEventListener("message", this.#onReceiveHostWindowPayloadBound);
+    if (!this.#rehydratingWindow.opener) {
+      this.#onConnectionLost(i18nString10(UIStrings10.noHostWindow));
+      return;
+    }
+    this.#rehydratingWindow.opener.postMessage({ type: "REHYDRATING_WINDOW_READY" });
+  }
+  /**
+   * This is a callback for rehydrated session to receive payload from host window. Payload includes but not limited to
+   * the trace event and all necessary data to power a rehydrated session.
+   */
+  onReceiveHostWindowPayload(event) {
+    if (event.data.type === "REHYDRATING_TRACE_FILE") {
+      const traceJson = event.data.traceJson;
+      let trace;
+      try {
+        trace = new TraceObject(JSON.parse(traceJson));
+      } catch {
+        this.#onConnectionLost(i18nString10(UIStrings10.errorLoadingLog));
+        return;
+      }
+      void this.startHydration(trace);
+    }
+    this.#rehydratingWindow.removeEventListener("message", this.#onReceiveHostWindowPayloadBound);
+  }
+  async startHydration(trace) {
+    if (!this.onMessage || this.rehydratingConnectionState !== 2) {
+      return false;
+    }
+    if (!("traceEvents" in trace)) {
+      console.error("RehydratingConnection failed to initialize due to missing trace events in payload");
+      return false;
+    }
+    this.trace = trace;
+    const enhancedTracesParser = new EnhancedTracesParser(trace);
+    const hydratingData = enhancedTracesParser.data();
+    let sessionId = 0;
+    this.sessions.set(sessionId, new RehydratingSessionBase(this));
+    for (const hydratingDataPerTarget of hydratingData) {
+      const target = hydratingDataPerTarget.target;
+      const executionContexts = hydratingDataPerTarget.executionContexts;
+      const scripts = hydratingDataPerTarget.scripts;
+      this.postToFrontend({
+        method: "Target.targetCreated",
+        params: {
+          targetInfo: {
+            targetId: target.targetId,
+            type: target.type,
+            title: target.url,
+            url: target.url,
+            attached: false,
+            canAccessOpener: false
+          }
+        }
+      });
+      sessionId += 1;
+      const session = new RehydratingSession(sessionId, target, executionContexts, scripts, this);
+      this.sessions.set(sessionId, session);
+      session.declareSessionAttachedToTarget();
+    }
+    await this.#onRehydrated();
+    return true;
+  }
+  async #onRehydrated() {
+    if (!this.trace) {
+      return;
+    }
+    this.rehydratingConnectionState = 3;
+    await Common32.Revealer.reveal(this.trace);
+  }
+  setOnMessage(onMessage) {
+    this.onMessage = onMessage;
+    this.rehydratingConnectionState = 2;
+  }
+  setOnDisconnect(onDisconnect) {
+    this.onDisconnect = onDisconnect;
+  }
+  // The function "sendRawMessage" is typically devtools front-end
+  // sending message to the backend via CDP. In this case, given that Rehydrating
+  // connection is an emulation of devtool back-end, sendRawMessage here
+  // is in fact rehydrating connection directly handling and acting on the
+  // receieved message.
+  sendRawMessage(message) {
+    if (typeof message === "string") {
+      message = JSON.parse(message);
+    }
+    const data = message;
+    if (typeof data.sessionId !== "undefined") {
+      const session = this.sessions.get(data.sessionId);
+      if (session) {
+        session.handleFrontendMessageAsFakeCDPAgent(data);
+      } else {
+        console.error("Invalid SessionId: " + data.sessionId);
+      }
+    } else {
+      this.sessions.get(0)?.handleFrontendMessageAsFakeCDPAgent(data);
+    }
+  }
+  // Posting rehydrating connection's message/response
+  // to devtools frontend through debugger protocol.
+  postToFrontend(arg) {
+    if (this.onMessage) {
+      this.onMessage(arg);
+    } else {
+      console.error("onMessage was not initialized");
+    }
+  }
+  disconnect() {
+    return Promise.reject();
+  }
+};
+var RehydratingSessionBase = class {
+  connection = null;
+  constructor(connection) {
+    this.connection = connection;
+  }
+  sendMessageToFrontend(payload) {
+    setTimeout(() => {
+      this.connection?.postToFrontend(payload);
+    });
+  }
+  handleFrontendMessageAsFakeCDPAgent(data) {
+    this.sendMessageToFrontend({
+      id: data.id,
+      result: {}
+    });
+  }
+};
+var RehydratingSession = class extends RehydratingSessionBase {
+  sessionId;
+  target;
+  executionContexts = [];
+  scripts = [];
+  constructor(sessionId, target, executionContexts, scripts, connection) {
+    super(connection);
+    this.sessionId = sessionId;
+    this.target = target;
+    this.executionContexts = executionContexts;
+    this.scripts = scripts;
+  }
+  sendMessageToFrontend(payload, attachSessionId = true) {
+    if (this.sessionId !== 0 && attachSessionId) {
+      payload.sessionId = this.sessionId;
+    }
+    super.sendMessageToFrontend(payload);
+  }
+  handleFrontendMessageAsFakeCDPAgent(data) {
+    switch (data.method) {
+      case "Runtime.enable":
+        this.handleRuntimeEnabled(data.id);
+        break;
+      case "Debugger.enable":
+        this.handleDebuggerEnable(data.id);
+        break;
+      case "Debugger.getScriptSource":
+        if (data.params) {
+          const params = data.params;
+          this.handleDebuggerGetScriptSource(data.id, params.scriptId);
+        }
+        break;
+      default:
+        this.sendMessageToFrontend({
+          id: data.id,
+          result: {}
+        });
+        break;
+    }
+  }
+  declareSessionAttachedToTarget() {
+    this.sendMessageToFrontend(
+      {
+        method: "Target.attachedToTarget",
+        params: {
+          sessionId: this.sessionId,
+          waitingForDebugger: false,
+          targetInfo: {
+            targetId: this.target.targetId,
+            type: this.target.type,
+            title: this.target.url,
+            url: this.target.url,
+            attached: true,
+            canAccessOpener: false
+          }
+        }
+      },
+      /* attachSessionId */
+      false
+    );
+  }
+  // Runtime.Enable indicates that Runtime domain is flushing the event to communicate
+  // the current state with the backend. In rehydrating connection, we made up the artificial
+  // execution context to support the rehydrated session.
+  handleRuntimeEnabled(id) {
+    for (const executionContext of this.executionContexts) {
+      executionContext.name = executionContext.origin;
+      this.sendMessageToFrontend({
+        method: "Runtime.executionContextCreated",
+        params: {
+          context: executionContext
+        }
+      });
+    }
+    this.sendMessageToFrontend({
+      id,
+      result: {}
+    });
+  }
+  handleDebuggerGetScriptSource(id, scriptId) {
+    const script = this.scripts.find((script2) => script2.scriptId === scriptId);
+    if (!script) {
+      console.error("No script for id: " + scriptId);
+      return;
+    }
+    this.sendMessageToFrontend({
+      id,
+      result: {
+        scriptSource: typeof script.sourceText === "undefined" ? i18nString10(UIStrings10.noSourceText) : script.sourceText
+      }
+    });
+  }
+  // Debugger.Enable indicates that Debugger domain is flushing the event to communicate
+  // the current state with the backend. In rehydrating connection, we made up the artificial
+  // script parsed event to communicate the current script state and respond with a mock
+  // debugger id.
+  handleDebuggerEnable(id) {
+    for (const script of this.scripts) {
+      this.sendMessageToFrontend({
+        method: "Debugger.scriptParsed",
+        params: script
+      });
+    }
+    const mockDebuggerId = "7777777777777777777.8888888888888888888";
+    this.sendMessageToFrontend({
+      id,
+      result: {
+        debuggerId: mockDebuggerId
+      }
+    });
+  }
+};
+
+// gen/front_end/core/sdk/Connections.js
+var UIStrings11 = {
+  /**
+   * @description Text on the remote debugging window to indicate the connection is lost
+   */
+  websocketDisconnected: "WebSocket disconnected"
+};
+var str_11 = i18n25.i18n.registerUIStrings("core/sdk/Connections.ts", UIStrings11);
+var i18nString11 = i18n25.i18n.getLocalizedString.bind(void 0, str_11);
+var MainConnection = class {
+  onMessage = null;
+  #onDisconnect = null;
+  #messageBuffer = "";
+  #messageSize = 0;
+  #eventListeners;
+  constructor() {
+    this.#eventListeners = [
+      Host8.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host8.InspectorFrontendHostAPI.Events.DispatchMessage, this.dispatchMessage, this),
+      Host8.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host8.InspectorFrontendHostAPI.Events.DispatchMessageChunk, this.dispatchMessageChunk, this)
+    ];
+  }
+  setOnMessage(onMessage) {
+    this.onMessage = onMessage;
+  }
+  setOnDisconnect(onDisconnect) {
+    this.#onDisconnect = onDisconnect;
+  }
+  sendRawMessage(message) {
+    if (this.onMessage) {
+      Host8.InspectorFrontendHost.InspectorFrontendHostInstance.sendMessageToBackend(message);
+    }
+  }
+  dispatchMessage(event) {
+    if (this.onMessage) {
+      this.onMessage.call(null, event.data);
+    }
+  }
+  dispatchMessageChunk(event) {
+    const { messageChunk, messageSize } = event.data;
+    if (messageSize) {
+      this.#messageBuffer = "";
+      this.#messageSize = messageSize;
+    }
+    this.#messageBuffer += messageChunk;
+    if (this.#messageBuffer.length === this.#messageSize && this.onMessage) {
+      this.onMessage.call(null, this.#messageBuffer);
+      this.#messageBuffer = "";
+      this.#messageSize = 0;
+    }
+  }
+  async disconnect() {
+    const onDisconnect = this.#onDisconnect;
+    Common33.EventTarget.removeEventListeners(this.#eventListeners);
+    this.#onDisconnect = null;
+    this.onMessage = null;
+    if (onDisconnect) {
+      onDisconnect.call(null, "force disconnect");
+    }
+  }
+};
+var WebSocketConnection = class {
+  #socket;
+  onMessage = null;
+  #onDisconnect = null;
+  #onWebSocketDisconnect;
+  #connected = false;
+  #messages = [];
+  constructor(url, onWebSocketDisconnect) {
+    this.#socket = new WebSocket(url);
+    this.#socket.onerror = this.onError.bind(this);
+    this.#socket.onopen = this.onOpen.bind(this);
+    this.#socket.onmessage = (messageEvent) => {
+      if (this.onMessage) {
+        this.onMessage.call(null, messageEvent.data);
+      }
+    };
+    this.#socket.onclose = this.onClose.bind(this);
+    this.#onWebSocketDisconnect = onWebSocketDisconnect;
+  }
+  setOnMessage(onMessage) {
+    this.onMessage = onMessage;
+  }
+  setOnDisconnect(onDisconnect) {
+    this.#onDisconnect = onDisconnect;
+  }
+  onError() {
+    if (this.#onWebSocketDisconnect) {
+      this.#onWebSocketDisconnect.call(null, i18nString11(UIStrings11.websocketDisconnected));
+    }
+    if (this.#onDisconnect) {
+      this.#onDisconnect.call(null, "connection failed");
+    }
+    this.close();
+  }
+  onOpen() {
+    this.#connected = true;
+    if (this.#socket) {
+      this.#socket.onerror = console.error;
+      for (const message of this.#messages) {
+        this.#socket.send(message);
+      }
+    }
+    this.#messages = [];
+  }
+  onClose() {
+    if (this.#onWebSocketDisconnect) {
+      this.#onWebSocketDisconnect.call(null, i18nString11(UIStrings11.websocketDisconnected));
+    }
+    if (this.#onDisconnect) {
+      this.#onDisconnect.call(null, "websocket closed");
+    }
+    this.close();
+  }
+  close(callback) {
+    if (this.#socket) {
+      this.#socket.onerror = null;
+      this.#socket.onopen = null;
+      this.#socket.onclose = callback || null;
+      this.#socket.onmessage = null;
+      this.#socket.close();
+      this.#socket = null;
+    }
+    this.#onWebSocketDisconnect = null;
+  }
+  sendRawMessage(message) {
+    if (this.#connected && this.#socket) {
+      this.#socket.send(message);
+    } else {
+      this.#messages.push(message);
+    }
+  }
+  disconnect() {
+    return new Promise((fulfill) => {
+      this.close(() => {
+        if (this.#onDisconnect) {
+          this.#onDisconnect.call(null, "force disconnect");
+        }
+        fulfill();
+      });
+    });
+  }
+};
+var StubConnection = class {
+  onMessage = null;
+  #onDisconnect = null;
+  setOnMessage(onMessage) {
+    this.onMessage = onMessage;
+  }
+  setOnDisconnect(onDisconnect) {
+    this.#onDisconnect = onDisconnect;
+  }
+  sendRawMessage(message) {
+    window.setTimeout(this.respondWithError.bind(this, message), 0);
+  }
+  respondWithError(message) {
+    const messageObject = JSON.parse(message);
+    const error = {
+      message: "This is a stub connection, can't dispatch message.",
+      code: ProtocolClient2.InspectorBackend.DevToolsStubErrorCode,
+      data: messageObject
+    };
+    if (this.onMessage) {
+      this.onMessage.call(null, { id: messageObject.id, error });
+    }
+  }
+  async disconnect() {
+    if (this.#onDisconnect) {
+      this.#onDisconnect.call(null, "force disconnect");
+    }
+    this.#onDisconnect = null;
+    this.onMessage = null;
+  }
+};
+var ParallelConnection = class {
+  #connection;
+  #sessionId;
+  onMessage = null;
+  #onDisconnect = null;
+  constructor(connection, sessionId) {
+    this.#connection = connection;
+    this.#sessionId = sessionId;
+  }
+  setOnMessage(onMessage) {
+    this.onMessage = onMessage;
+  }
+  setOnDisconnect(onDisconnect) {
+    this.#onDisconnect = onDisconnect;
+  }
+  getOnDisconnect() {
+    return this.#onDisconnect;
+  }
+  sendRawMessage(message) {
+    const messageObject = JSON.parse(message);
+    if (!messageObject.sessionId) {
+      messageObject.sessionId = this.#sessionId;
+    }
+    this.#connection.sendRawMessage(JSON.stringify(messageObject));
+  }
+  getSessionId() {
+    return this.#sessionId;
+  }
+  async disconnect() {
+    if (this.#onDisconnect) {
+      this.#onDisconnect.call(null, "force disconnect");
+    }
+    this.#onDisconnect = null;
+    this.onMessage = null;
+  }
+};
+async function initMainConnection(createRootTarget, onConnectionLost) {
+  ProtocolClient2.InspectorBackend.Connection.setFactory(createMainConnection.bind(null, onConnectionLost));
+  await createRootTarget();
+  Host8.InspectorFrontendHost.InspectorFrontendHostInstance.connectionReady();
+}
+function createMainConnection(onConnectionLost) {
+  if (Root11.Runtime.Runtime.isTraceApp()) {
+    return new RehydratingConnection(onConnectionLost);
+  }
+  const wsParam = Root11.Runtime.Runtime.queryParam("ws");
+  const wssParam = Root11.Runtime.Runtime.queryParam("wss");
+  if (wsParam || wssParam) {
+    const ws = wsParam ? `ws://${wsParam}` : `wss://${wssParam}`;
+    return new WebSocketConnection(ws, onConnectionLost);
+  }
+  const notEmbeddedOrWs = Host8.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode();
+  if (notEmbeddedOrWs) {
+    return new StubConnection();
+  }
+  return new MainConnection();
+}
+
+// gen/front_end/core/sdk/ChildTargetManager.js
 var UIStrings12 = {
   /**
    * @description Text that refers to the main target. The main target is the primary webpage that
@@ -30909,12 +31059,12 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
       if (browserTarget !== parentTarget) {
         void browserTarget.targetAgent().invoke_autoAttachRelated({ targetId: parentTarget.id(), waitForDebuggerOnStart: true });
       }
-    } else if (parentTarget.type() === Type2.NODE) {
+    } else if (parentTarget.type() === Type.NODE) {
       void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: true, flatten: false });
     } else {
       void this.#targetAgent.invoke_setAutoAttach({ autoAttach: true, waitForDebuggerOnStart: true, flatten: true });
     }
-    if (parentTarget.parentTarget()?.type() !== Type2.FRAME && !Host9.InspectorFrontendHost.isUnderTest()) {
+    if (parentTarget.parentTarget()?.type() !== Type.FRAME && !Host9.InspectorFrontendHost.isUnderTest()) {
       void this.#targetAgent.invoke_setDiscoverTargets({ discover: true });
       void this.#targetAgent.invoke_setRemoteLocations({ locations: [{ host: "localhost", port: 9229 }] });
     }
@@ -30992,7 +31142,7 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
     if (this.#parentTargetId === targetInfo.targetId) {
       return;
     }
-    let type = Type2.BROWSER;
+    let type = Type.BROWSER;
     let targetName = "";
     if (targetInfo.type === "worker" && targetInfo.title && targetInfo.title !== targetInfo.url) {
       targetName = targetInfo.title;
@@ -31006,32 +31156,34 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
         "^devtools://"
       ];
       if (KNOWN_FRAME_PATTERNS.some((p) => targetInfo.url.match(p))) {
-        type = Type2.FRAME;
+        type = Type.FRAME;
       } else {
         const parsedURL = Common34.ParsedURL.ParsedURL.fromString(targetInfo.url);
         targetName = parsedURL ? parsedURL.lastPathComponentWithFragment() : "#" + ++_ChildTargetManager.lastAnonymousTargetId;
       }
     }
     if (targetInfo.type === "iframe" || targetInfo.type === "webview") {
-      type = Type2.FRAME;
+      type = Type.FRAME;
     } else if (targetInfo.type === "background_page" || targetInfo.type === "app" || targetInfo.type === "popup_page") {
-      type = Type2.FRAME;
+      type = Type.FRAME;
     } else if (targetInfo.type === "page") {
-      type = Type2.FRAME;
+      type = Type.FRAME;
+    } else if (targetInfo.type === "browser_ui") {
+      type = Type.FRAME;
     } else if (targetInfo.type === "worker") {
-      type = Type2.Worker;
+      type = Type.Worker;
     } else if (targetInfo.type === "worklet") {
-      type = Type2.WORKLET;
+      type = Type.WORKLET;
     } else if (targetInfo.type === "shared_worker") {
-      type = Type2.SHARED_WORKER;
+      type = Type.SHARED_WORKER;
     } else if (targetInfo.type === "shared_storage_worklet") {
-      type = Type2.SHARED_STORAGE_WORKLET;
+      type = Type.SHARED_STORAGE_WORKLET;
     } else if (targetInfo.type === "service_worker") {
-      type = Type2.ServiceWorker;
+      type = Type.ServiceWorker;
     } else if (targetInfo.type === "auction_worklet") {
-      type = Type2.AUCTION_WORKLET;
+      type = Type.AUCTION_WORKLET;
     } else if (targetInfo.type === "node_worker") {
-      type = Type2.NODE_WORKER;
+      type = Type.NODE_WORKER;
     }
     const target = this.#targetManager.createTarget(targetInfo.targetId, targetName, type, this.#parentTarget, sessionId, void 0, void 0, targetInfo);
     this.#childTargetsBySessionId.set(sessionId, target);
@@ -31042,7 +31194,7 @@ var ChildTargetManager = class _ChildTargetManager extends SDKModel {
     if (waitingForDebugger) {
       void target.runtimeAgent().invoke_runIfWaitingForDebugger();
     }
-    if (type !== Type2.FRAME && target.hasAllCapabilities(
+    if (type !== Type.FRAME && target.hasAllCapabilities(
       8192
       /* Capability.STORAGE */
     )) {
@@ -31114,7 +31266,7 @@ var CompilerSourceMappingContentProvider_exports = {};
 __export(CompilerSourceMappingContentProvider_exports, {
   CompilerSourceMappingContentProvider: () => CompilerSourceMappingContentProvider
 });
-import * as TextUtils24 from "./../../models/text_utils/text_utils.js";
+import * as TextUtils25 from "./../../models/text_utils/text_utils.js";
 import * as i18n29 from "./../i18n/i18n.js";
 var UIStrings13 = {
   /**
@@ -31144,7 +31296,7 @@ var CompilerSourceMappingContentProvider = class {
   async requestContentData() {
     try {
       const { content } = await PageResourceLoader.instance().loadResource(this.#sourceURL, this.#initiator);
-      return new TextUtils24.ContentData.ContentData(
+      return new TextUtils25.ContentData.ContentData(
         content,
         /* isBase64=*/
         false,
@@ -31158,7 +31310,7 @@ var CompilerSourceMappingContentProvider = class {
   }
   async searchInContent(query, caseSensitive, isRegex) {
     const contentData = await this.requestContentData();
-    return TextUtils24.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
+    return TextUtils25.TextUtils.performSearchInContentData(contentData, query, caseSensitive, isRegex);
   }
 };
 
@@ -31367,7 +31519,7 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       this.initTarget(target);
       return;
     }
-    const eventListener = resourceTreeModel.addEventListener(Events.CachedResourcesLoaded, () => {
+    const eventListener = resourceTreeModel.addEventListener(Events3.CachedResourcesLoaded, () => {
       Common35.EventTarget.removeEventListeners([eventListener]);
       this.initTarget(target);
     });
@@ -31380,18 +31532,18 @@ var ConsoleModel = class _ConsoleModel extends SDKModel {
       eventListeners.push(cpuProfilerModel.addEventListener("ConsoleProfileFinished", this.consoleProfileFinished.bind(this, cpuProfilerModel)));
     }
     const resourceTreeModel = target.model(ResourceTreeModel);
-    if (resourceTreeModel && target.parentTarget()?.type() !== Type2.FRAME) {
-      eventListeners.push(resourceTreeModel.addEventListener(Events.PrimaryPageChanged, this.primaryPageChanged, this));
+    if (resourceTreeModel && target.parentTarget()?.type() !== Type.FRAME) {
+      eventListeners.push(resourceTreeModel.addEventListener(Events3.PrimaryPageChanged, this.primaryPageChanged, this));
     }
     const runtimeModel = target.model(RuntimeModel);
     if (runtimeModel) {
-      eventListeners.push(runtimeModel.addEventListener(Events4.ExceptionThrown, this.exceptionThrown.bind(this, runtimeModel)));
-      eventListeners.push(runtimeModel.addEventListener(Events4.ExceptionRevoked, this.exceptionRevoked.bind(this, runtimeModel)));
-      eventListeners.push(runtimeModel.addEventListener(Events4.ConsoleAPICalled, this.consoleAPICalled.bind(this, runtimeModel)));
-      if (target.parentTarget()?.type() !== Type2.FRAME) {
-        eventListeners.push(runtimeModel.debuggerModel().addEventListener(Events5.GlobalObjectCleared, this.clearIfNecessary, this));
+      eventListeners.push(runtimeModel.addEventListener(Events6.ExceptionThrown, this.exceptionThrown.bind(this, runtimeModel)));
+      eventListeners.push(runtimeModel.addEventListener(Events6.ExceptionRevoked, this.exceptionRevoked.bind(this, runtimeModel)));
+      eventListeners.push(runtimeModel.addEventListener(Events6.ConsoleAPICalled, this.consoleAPICalled.bind(this, runtimeModel)));
+      if (target.parentTarget()?.type() !== Type.FRAME) {
+        eventListeners.push(runtimeModel.debuggerModel().addEventListener(Events7.GlobalObjectCleared, this.clearIfNecessary, this));
       }
-      eventListeners.push(runtimeModel.addEventListener(Events4.QueryObjectRequested, this.queryObjectRequested.bind(this, runtimeModel)));
+      eventListeners.push(runtimeModel.addEventListener(Events6.QueryObjectRequested, this.queryObjectRequested.bind(this, runtimeModel)));
     }
     this.#targetListeners.set(target, eventListeners);
   }
@@ -32654,8 +32806,8 @@ var DOMDebuggerModel = class extends SDKModel {
     this.agent = target.domdebuggerAgent();
     this.#runtimeModel = target.model(RuntimeModel);
     this.#domModel = target.model(DOMModel);
-    this.#domModel.addEventListener(Events6.DocumentUpdated, this.documentUpdated, this);
-    this.#domModel.addEventListener(Events6.NodeRemoved, this.nodeRemoved, this);
+    this.#domModel.addEventListener(Events8.DocumentUpdated, this.documentUpdated, this);
+    this.#domModel.addEventListener(Events8.NodeRemoved, this.nodeRemoved, this);
     this.#domBreakpoints = [];
     this.#domBreakpointsSetting = Common38.Settings.Settings.instance().createLocalSetting("dom-breakpoints", []);
     if (this.#domModel.existingDocument()) {
@@ -33924,11 +34076,11 @@ var PreloadingModel = class _PreloadingModel extends SDKModel {
     if (targetInfo !== void 0 && targetInfo.subtype === "prerender") {
       this.lastPrimaryPageModel = TargetManager.instance().primaryPageTarget()?.model(_PreloadingModel) || null;
     }
-    TargetManager.instance().addModelListener(ResourceTreeModel, Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    TargetManager.instance().addModelListener(ResourceTreeModel, Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);
   }
   dispose() {
     super.dispose();
-    TargetManager.instance().removeModelListener(ResourceTreeModel, Events.PrimaryPageChanged, this.onPrimaryPageChanged, this);
+    TargetManager.instance().removeModelListener(ResourceTreeModel, Events3.PrimaryPageChanged, this.onPrimaryPageChanged, this);
     void this.agent.invoke_disable();
   }
   ensureDocumentPreloadingData(loaderId) {
@@ -34330,6 +34482,8 @@ var PreloadingAttemptRegistry = class {
           return 0;
         case "Prerender":
           return 1;
+        case "PrerenderUntilScript":
+          return 2;
       }
     }
     if (attempt.pipelineId === null) {
@@ -34416,6 +34570,7 @@ var PreloadingAttemptRegistry = class {
           };
           break;
         case "Prerender":
+        case "PrerenderUntilScript":
           attempt = {
             action: "Prerender",
             key,
@@ -35509,7 +35664,7 @@ var ServiceWorkerContextNamer = class {
     this.#serviceWorkerManager = serviceWorkerManager;
     serviceWorkerManager.addEventListener("RegistrationUpdated", this.registrationsUpdated, this);
     serviceWorkerManager.addEventListener("RegistrationDeleted", this.registrationsUpdated, this);
-    TargetManager.instance().addModelListener(RuntimeModel, Events4.ExecutionContextCreated, this.executionContextCreated, this);
+    TargetManager.instance().addModelListener(RuntimeModel, Events6.ExecutionContextCreated, this.executionContextCreated, this);
   }
   registrationsUpdated() {
     this.#versionByTargetId.clear();
@@ -35532,7 +35687,7 @@ var ServiceWorkerContextNamer = class {
     this.updateContextLabel(executionContext, this.#versionByTargetId.get(serviceWorkerTargetId) || null);
   }
   serviceWorkerTargetId(target) {
-    if (target.parentTarget() !== this.#target || target.type() !== Type2.ServiceWorker) {
+    if (target.parentTarget() !== this.#target || target.type() !== Type.ServiceWorker) {
       return null;
     }
     return target.id();
@@ -35692,6 +35847,7 @@ export {
   ResourceTreeModel_exports as ResourceTreeModel,
   RuntimeModel_exports as RuntimeModel,
   SDKModel_exports as SDKModel,
+  ScopeTreeCache_exports as ScopeTreeCache,
   ScreenCaptureModel_exports as ScreenCaptureModel,
   Script_exports as Script,
   SecurityOriginManager_exports as SecurityOriginManager,

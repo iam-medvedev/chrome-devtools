@@ -87,7 +87,7 @@ export class ResourceTreeModel extends SDKModel {
             return null;
         }
         // TODO(crbug.com/445966299): Refactor to use `storageAgent().invoke_getStorageKey()` instead.
-        const response = await this.storageAgent.invoke_getStorageKeyForFrame({ frameId });
+        const response = await this.storageAgent.invoke_getStorageKey({ frameId });
         if (response.getError() === 'Frame tree node for given frame not found') {
             return null;
         }

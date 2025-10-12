@@ -381,6 +381,9 @@ export class DOMNode {
     isInShadowTree() {
         return this.#isInShadowTree;
     }
+    getTreeRoot() {
+        return this.isShadowRoot() ? this : (this.ancestorShadowRoot() ?? this.ownerDocument ?? this);
+    }
     ancestorShadowHost() {
         const ancestorShadowRoot = this.ancestorShadowRoot();
         return ancestorShadowRoot ? ancestorShadowRoot.parentNode : null;

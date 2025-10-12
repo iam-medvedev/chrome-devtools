@@ -425,6 +425,8 @@ class PreloadingAttemptRegistry {
                     return 0;
                 case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
                     return 1;
+                case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+                    return 2;
             }
         }
         // Attempt with status `NOT_TRIGGERED` is a representative of a pipeline.
@@ -517,6 +519,7 @@ class PreloadingAttemptRegistry {
                     };
                     break;
                 case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
+                case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
                     attempt = {
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
                         key,

@@ -16,6 +16,8 @@ export declare const assertGridContents: (gridComponent: HTMLElement, headerExpe
     set inline(striped: boolean);
     get displayName(): string | null;
     set displayName(displayName: string);
+    get resizeMethod(): import("../ui/legacy/components/data_grid/DataGrid.js").ResizeMethod;
+    set resizeMethod(resizeMethod: import("../ui/legacy/components/data_grid/DataGrid.js").ResizeMethod);
     set filters(filters: import("../models/text_utils/TextUtils.js").ParsedFilter[]);
     get columns(): import("../ui/legacy/components/data_grid/DataGrid.js").ColumnDescriptor[];
     addNodes(nodes: NodeList): void;

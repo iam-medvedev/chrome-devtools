@@ -4,6 +4,8 @@ export declare class RangeWalker {
     readonly root: Node;
     constructor(root: Node);
     nextRange(start: number, length: number): Range | null;
+    goToTextNode(node: Text): void;
+    get offset(): number;
 }
 export declare const HIGHLIGHT_REGISTRY = "highlighted-search-result";
 export declare const CURRENT_HIGHLIGHT_REGISTRY = "current-search-result";

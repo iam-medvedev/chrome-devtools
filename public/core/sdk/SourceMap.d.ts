@@ -2,6 +2,7 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
 import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
+import type { Script } from './Script.js';
 import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
@@ -75,11 +76,12 @@ export declare class SourceMapEntry {
 export declare class SourceMap {
     #private;
     static retainRawSourceMaps: boolean;
+    scopesFallbackPromiseForTest?: Promise<unknown>;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
      */
-    constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3);
+    constructor(compiledURL: Platform.DevToolsPath.UrlString, sourceMappingURL: Platform.DevToolsPath.UrlString, payload: SourceMapV3, script?: Script);
     json(): SourceMapV3 | null;
     augmentWithScopes(scriptUrl: Platform.DevToolsPath.UrlString, ranges: NamedFunctionRange[]): void;
     compiledURL(): Platform.DevToolsPath.UrlString;

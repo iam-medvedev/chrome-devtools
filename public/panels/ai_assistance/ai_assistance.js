@@ -341,10 +341,12 @@ var SelectWorkspaceDialog = class _SelectWorkspaceDialog extends UI.Widget.VBox 
     });
   }
   wasShown() {
+    super.wasShown();
     this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
     this.#workspace.addEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
   }
   willHide() {
+    super.willHide();
     this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
     this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectRemoved, this.#onProjectRemoved, this);
   }
@@ -865,6 +867,7 @@ var PatchWidget = class extends UI2.Widget.Widget {
     }
   }
   willHide() {
+    super.willHide();
     this.#applyToDisconnectedAutomaticWorkspace = false;
     if (isAiAssistancePatchingEnabled()) {
       this.#workspace.removeEventListener(Workspace3.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);
@@ -2513,6 +2516,7 @@ var UserActionRow = class extends UI3.Widget.Widget {
     rightScrollButtonContainer.classList.toggle("hidden", !shouldShowRightButton);
   };
   willHide() {
+    super.willHide();
     this.#suggestionsResizeObserver.disconnect();
   }
   #handleSuggestionsScrollOrResize() {
@@ -4565,6 +4569,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     Host5.userMetrics.actionTaken(Host5.UserMetrics.Action.AiAssistancePanelOpened);
   }
   willHide() {
+    super.willHide();
     this.#aiAssistanceEnabledSetting?.removeChangeListener(this.requestUpdate, this);
     Host5.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#handleAidaAvailabilityChange);
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);

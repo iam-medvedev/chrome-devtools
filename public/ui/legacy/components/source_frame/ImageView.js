@@ -131,6 +131,7 @@ export class ImageView extends UI.View.SimpleView {
         ];
     }
     wasShown() {
+        super.wasShown();
         void this.updateContentIfNeeded();
     }
     disposeView() {

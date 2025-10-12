@@ -984,7 +984,7 @@ export const NativeFunctions = [
     {
         name: "from",
         signatures: [["value"]],
-        receivers: ["Observable"]
+        receivers: ["Observable", "Origin"]
     },
     {
         name: "drawArraysInstancedANGLE",
@@ -5354,18 +5354,13 @@ export const NativeFunctions = [
     },
     {
         name: "createImageBitmap",
-        signatures: [["image", "?options"], ["image", "sx", "sy", "sw", "sh", "?options"]],
+        signatures: [["image", "?options"], ["imageBitmap", "?options"], ["image", "sx", "sy", "sw", "sh", "?options"], ["imageBitmap", "sx", "sy", "sw", "sh", "?options"]],
         receivers: ["Window", "WorkerGlobalScope"]
     },
     {
         name: "createImageBitmap",
-        signatures: [["image", "?options"], ["imageBitmap", "?options"], ["image", "sx", "sy", "sw", "sh", "?options"], ["imageBitmap", "sx", "sy", "sw", "sh", "?options"]],
+        signatures: [["image", "?options"], ["image", "sx", "sy", "sw", "sh", "?options"]],
         receivers: ["Window"]
-    },
-    {
-        name: "createImageBitmap",
-        signatures: [["imageBitmap", "?options"], ["imageBitmap", "sx", "sy", "sw", "sh", "?options"]],
-        receivers: ["WorkerGlobalScope"]
     },
     {
         name: "fetch",

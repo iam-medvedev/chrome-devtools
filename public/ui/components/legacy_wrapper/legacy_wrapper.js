@@ -37,10 +37,12 @@ function legacyWrapper(base, component, jsLogContext) {
       }
     }
     wasShown() {
+      super.wasShown();
       this.#component.wasShown();
       void this.#component.render();
     }
     willHide() {
+      super.willHide();
       this.#component.willHide();
     }
     async performUpdate() {

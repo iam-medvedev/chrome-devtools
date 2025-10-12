@@ -96,6 +96,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
         void this.#initializeModifiedUISourceCodes();
     }
     willHide() {
+        super.willHide();
         this.#workspaceDiff?.removeEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.#onDiffModifiedStatusChanged, this);
     }
     set workspaceDiff(workspaceDiff) {

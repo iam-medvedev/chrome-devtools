@@ -986,6 +986,7 @@ var SearchView = class extends UI2.Widget.VBox {
     this.#focusSearchInput();
   }
   willHide() {
+    super.willHide();
     this.#stopSearch();
   }
   #onQueryKeyDown(event) {

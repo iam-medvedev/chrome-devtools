@@ -689,10 +689,11 @@ export class ToolbarFilter extends ToolbarInput {
     }
 }
 export class ToolbarInputElement extends HTMLElement {
-    static observedAttributes = ['value'];
+    static observedAttributes = ['value', 'disabled'];
     item;
     datalist = null;
     value = undefined;
+    #disabled = false;
     connectedCallback() {
         if (this.item) {
             return;
@@ -719,6 +720,9 @@ export class ToolbarInputElement extends HTMLElement {
         if (this.value) {
             this.item.setValue(this.value);
         }
+        if (this.#disabled) {
+            this.item.setEnabled(false);
+        }
         this.item.addEventListener("TextChanged" /* ToolbarInput.Event.TEXT_CHANGED */, event => {
             this.dispatchEvent(new CustomEvent('change', { detail: event.data }));
         });
@@ -727,7 +731,7 @@ export class ToolbarInputElement extends HTMLElement {
         });
     }
     focus() {
-        this.item.focus();
+        this.item?.focus();
     }
     async #onAutocomplete(expression, prefix, force) {
         if (!prefix && !force && expression || !this.datalist) {
@@ -745,6 +749,23 @@ export class ToolbarInputElement extends HTMLElement {
                 this.value = newValue;
             }
         }
+        else if (name === 'disabled') {
+            this.#disabled = typeof newValue === 'string';
+            if (this.item) {
+                this.item.setEnabled(!this.#disabled);
+            }
+        }
+    }
+    set disabled(disabled) {
+        if (disabled) {
+            this.setAttribute('disabled', '');
+        }
+        else {
+            this.removeAttribute('disabled');
+        }
+    }
+    get disabled() {
+        return this.hasAttribute('disabled');
     }
 }
 customElements.define('devtools-toolbar-input', ToolbarInputElement);

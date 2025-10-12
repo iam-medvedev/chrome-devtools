@@ -4927,11 +4927,13 @@ var Scope = class {
   parent;
   start;
   end;
+  kind;
   children = [];
-  constructor(start, end, parent) {
+  constructor(start, end, parent, kind) {
     this.start = start;
     this.end = end;
     this.parent = parent;
+    this.kind = kind;
     if (parent) {
       parent.children.push(this);
     }
@@ -4950,6 +4952,7 @@ var Scope = class {
       start: this.start,
       end: this.end,
       variables,
+      kind: this.kind,
       children
     };
   }
@@ -5021,7 +5024,13 @@ var ScopeVariableAnalysis = class {
   #rootNode;
   constructor(node) {
     this.#rootNode = node;
-    this.#rootScope = new Scope(node.start, node.end, null);
+    this.#rootScope = new Scope(
+      node.start,
+      node.end,
+      null,
+      3
+      /* ScopeKind.GLOBAL */
+    );
     this.#currentScope = this.#rootScope;
   }
   run() {
@@ -5051,7 +5060,12 @@ var ScopeVariableAnalysis = class {
         node.elements.forEach((item) => this.#processNode(item));
         break;
       case "ArrowFunctionExpression": {
-        this.#pushScope(node.start, node.end);
+        this.#pushScope(
+          node.start,
+          node.end,
+          2
+          /* ScopeKind.FUNCTION */
+        );
         node.params.forEach(this.#processNodeAsDefinition.bind(this, 2, false));
         if (node.body.type === "BlockStatement") {
           node.body.body.forEach(this.#processNode.bind(this));
@@ -5069,7 +5083,12 @@ var ScopeVariableAnalysis = class {
         this.#processNode(node.right);
         break;
       case "BlockStatement":
-        this.#pushScope(node.start, node.end);
+        this.#pushScope(
+          node.start,
+          node.end,
+          1
+          /* ScopeKind.BLOCK */
+        );
         node.body.forEach(this.#processNode.bind(this));
         this.#popScope(false);
         break;
@@ -5083,7 +5102,12 @@ var ScopeVariableAnalysis = class {
         break;
       }
       case "CatchClause":
-        this.#pushScope(node.start, node.end);
+        this.#pushScope(
+          node.start,
+          node.end,
+          1
+          /* ScopeKind.BLOCK */
+        );
         this.#processNodeAsDefinition(1, false, node.param);
         this.#processNode(node.body);
         this.#popScope(false);
@@ -5114,14 +5138,24 @@ var ScopeVariableAnalysis = class {
         break;
       case "ForInStatement":
       case "ForOfStatement":
-        this.#pushScope(node.start, node.end);
+        this.#pushScope(
+          node.start,
+          node.end,
+          1
+          /* ScopeKind.BLOCK */
+        );
         this.#processNode(node.left);
         this.#processNode(node.right);
         this.#processNode(node.body);
         this.#popScope(false);
         break;
       case "ForStatement":
-        this.#pushScope(node.start, node.end);
+        this.#pushScope(
+          node.start,
+          node.end,
+          1
+          /* ScopeKind.BLOCK */
+        );
         this.#processNode(node.init ?? null);
         this.#processNode(node.test ?? null);
         this.#processNode(node.update ?? null);
@@ -5130,7 +5164,12 @@ var ScopeVariableAnalysis = class {
         break;
       case "FunctionDeclaration":
         this.#processNodeAsDefinition(2, false, node.id);
-        this.#pushScope(node.id?.end ?? node.start, node.end);
+        this.#pushScope(
+          node.id?.end ?? node.start,
+          node.end,
+          2
+          /* ScopeKind.FUNCTION */
+        );
         this.#addVariable(
           "this",
           node.start,
@@ -5148,7 +5187,12 @@ var ScopeVariableAnalysis = class {
         this.#popScope(true);
         break;
       case "FunctionExpression":
-        this.#pushScope(node.id?.end ?? node.start, node.end);
+        this.#pushScope(
+          node.id?.end ?? node.start,
+          node.end,
+          2
+          /* ScopeKind.FUNCTION */
+        );
         this.#addVariable(
           "this",
           node.start,
@@ -5312,8 +5356,8 @@ var ScopeVariableAnalysis = class {
   getAllNames() {
     return this.#allNames;
   }
-  #pushScope(start, end) {
-    this.#currentScope = new Scope(start, end, this.#currentScope);
+  #pushScope(start, end, kind) {
+    this.#currentScope = new Scope(start, end, this.#currentScope, kind);
   }
   #popScope(isFunctionContext) {
     if (this.#currentScope.parent === null) {

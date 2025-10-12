@@ -133,6 +133,7 @@ export class RequestPayloadView extends UI.Widget.VBox {
         // this._root.select(/* omitFocus */ true, /* selectedByUser */ false);
     }
     willHide() {
+        super.willHide();
         this.request.removeEventListener(SDK.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.refreshFormData, this);
     }
     addEntryContextMenuHandler(treeElement, menuItem, jslogContext, getValue) {

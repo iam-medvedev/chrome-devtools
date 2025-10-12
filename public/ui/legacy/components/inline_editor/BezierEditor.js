@@ -82,6 +82,7 @@ export class BezierEditor extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox
         this.updateUI();
     }
     wasShown() {
+        super.wasShown();
         this.unselectPresets();
         // Check if bezier matches a preset
         for (const category of this.presetCategories) {

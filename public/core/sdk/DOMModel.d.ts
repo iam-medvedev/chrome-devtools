@@ -85,6 +85,7 @@ export declare class DOMNode {
     isInsertionPoint(): boolean;
     distributedNodes(): DOMNodeShortcut[];
     isInShadowTree(): boolean;
+    getTreeRoot(): DOMNode;
     ancestorShadowHost(): DOMNode | null;
     ancestorShadowRoot(): DOMNode | null;
     ancestorUserAgentShadowRoot(): DOMNode | null;

@@ -30,7 +30,7 @@ export declare class CombinedDiffView extends UI.Widget.Widget {
     wasShown(): void;
     willHide(): void;
     set workspaceDiff(workspaceDiff: WorkspaceDiff.WorkspaceDiff.WorkspaceDiffImpl);
-    set selectedFileUrl(fileUrl: string);
+    set selectedFileUrl(fileUrl: string | undefined);
     performUpdate(): Promise<void>;
 }
 export {};

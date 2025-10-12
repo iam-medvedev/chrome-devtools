@@ -444,6 +444,7 @@ export class PatchWidget extends UI.Widget.Widget {
         }
     }
     willHide() {
+        super.willHide();
         this.#applyToDisconnectedAutomaticWorkspace = false;
         if (isAiAssistancePatchingEnabled()) {
             this.#workspace.removeEventListener(Workspace.Workspace.Events.ProjectAdded, this.#onProjectAdded, this);

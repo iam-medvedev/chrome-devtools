@@ -1988,6 +1988,7 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
     this.setAttribute("jslog", `${VisualLogging6.pane("headers").track({ resize: true })}`);
   }
   wasShown() {
+    super.wasShown();
     this.#request.addEventListener(SDK3.NetworkRequest.Events.REMOTE_ADDRESS_CHANGED, this.#refreshHeadersView, this);
     this.#request.addEventListener(SDK3.NetworkRequest.Events.FINISHED_LOADING, this.#refreshHeadersView, this);
     this.#request.addEventListener(SDK3.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.#refreshHeadersView, this);
@@ -1996,6 +1997,7 @@ var RequestHeadersView = class extends LegacyWrapper.LegacyWrapper.WrappableComp
     this.#refreshHeadersView();
   }
   willHide() {
+    super.willHide();
     this.#request.removeEventListener(SDK3.NetworkRequest.Events.REMOTE_ADDRESS_CHANGED, this.#refreshHeadersView, this);
     this.#request.removeEventListener(SDK3.NetworkRequest.Events.FINISHED_LOADING, this.#refreshHeadersView, this);
     this.#request.removeEventListener(SDK3.NetworkRequest.Events.REQUEST_HEADERS_CHANGED, this.#refreshHeadersView, this);
@@ -2496,10 +2498,12 @@ var RequestTrustTokensView = class extends LegacyWrapper3.LegacyWrapper.Wrappabl
     this.#request = request;
   }
   wasShown() {
+    super.wasShown();
     this.#request.addEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.render, this);
     void this.render();
   }
   willHide() {
+    super.willHide();
     this.#request.removeEventListener(SDK4.NetworkRequest.Events.TRUST_TOKEN_RESULT_ADDED, this.render, this);
   }
   async render() {

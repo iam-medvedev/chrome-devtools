@@ -130,6 +130,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         this.recalcChartHeight();
     }
     wasShown() {
+        super.wasShown();
         if (!this.model) {
             return;
         }
@@ -147,6 +148,7 @@ export class PerformanceMonitorImpl extends UI.Widget.HBox {
         this.requestUpdate();
     }
     willHide() {
+        super.willHide();
         if (!this.model) {
             return;
         }

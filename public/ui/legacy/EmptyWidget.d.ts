@@ -4,6 +4,7 @@ interface EmptyWidgetInput {
     header: string;
     text: string;
     link?: Platform.DevToolsPath.UrlString | undefined | null;
+    extraElements?: Element[];
 }
 interface EmptyWidgetOutput {
     contentElement: Element | undefined;

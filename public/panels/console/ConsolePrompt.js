@@ -292,8 +292,24 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
     }
     editorKeymap() {
         const keymap = [
-            { key: 'ArrowUp', run: () => this.#editorHistory.moveHistory(-1 /* Direction.BACKWARD */) },
-            { key: 'ArrowDown', run: () => this.#editorHistory.moveHistory(1 /* Direction.FORWARD */) },
+            {
+                // Handle the KeyboardEvent manually.
+                any: (_view, event) => {
+                    // Events with `repeat=true` are excluded from altering the history state because
+                    // they are often not intended as such. Example:
+                    // Scrolling through long snippets.
+                    if (event.repeat) {
+                        return false;
+                    }
+                    if (event.key === 'ArrowUp') {
+                        return this.#editorHistory.moveHistory(-1 /* Direction.BACKWARD */);
+                    }
+                    if (event.key === 'ArrowDown') {
+                        return this.#editorHistory.moveHistory(1 /* Direction.FORWARD */);
+                    }
+                    return false;
+                },
+            },
             { mac: 'Ctrl-p', run: () => this.#editorHistory.moveHistory(-1 /* Direction.BACKWARD */, true) },
             { mac: 'Ctrl-n', run: () => this.#editorHistory.moveHistory(1 /* Direction.FORWARD */, true) },
             {
@@ -515,7 +531,18 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
         });
     }
     isAiCodeCompletionEnabled() {
-        return Boolean(Root.Runtime.hostConfig.aidaAvailability?.enabled && Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
+        const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
+        const aidaAvailability = Root.Runtime.hostConfig.aidaAvailability;
+        if (!devtoolsLocale.locale.startsWith('en-')) {
+            return false;
+        }
+        if (aidaAvailability?.blockedByGeo) {
+            return false;
+        }
+        if (aidaAvailability?.blockedByAge) {
+            return false;
+        }
+        return Boolean(aidaAvailability?.enabled && Root.Runtime.hostConfig.devToolsAiCodeCompletion?.enabled);
     }
     editorSetForTest() {
     }

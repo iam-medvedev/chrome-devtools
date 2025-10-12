@@ -259,6 +259,7 @@ export class CookiesTable extends UI.Widget.VBox {
         return this.cookies.find(cookie => cookie.key() === this.selectedKey) || null;
     }
     willHide() {
+        super.willHide();
         this.lastEditedColumnId = null;
     }
     performUpdate() {

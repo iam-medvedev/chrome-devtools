@@ -452,6 +452,7 @@ export class ProtocolMonitorImpl extends UI.Panel.Panel {
         test.sendRawMessage(command, parameters, () => { }, sessionId);
     }
     wasShown() {
+        super.wasShown();
         if (this.started) {
             return;
         }

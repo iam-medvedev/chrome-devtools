@@ -1,6 +1,14 @@
 // Copyright 2025 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+/**
+ * @returns whether the frame is a V8 builtin frame e.g. Array.map. Builtin frames
+ * have neither source position nor script or URL. They only have a name.
+ */
+export function isBuiltinFrame(rawFrame) {
+    return rawFrame.lineNumber === -1 && rawFrame.columnNumber === -1 && !Boolean(rawFrame.scriptId) &&
+        !Boolean(rawFrame.url);
+}
 export class FrameNode {
     parent;
     children = [];

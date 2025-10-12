@@ -317,6 +317,7 @@ export class AnimationTimeline extends UI.Widget.VBox {
         }
     }
     willHide() {
+        super.willHide();
         for (const animationModel of SDK.TargetManager.TargetManager.instance().models(SDK.AnimationModel.AnimationModel, { scoped: true })) {
             this.removeEventListeners(animationModel);
         }

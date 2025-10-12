@@ -535,6 +535,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         return result;
     }
     willHide() {
+        super.willHide();
         this.currentSearchResultIndex = -1;
         this.popoverHelper.hidePopover();
     }

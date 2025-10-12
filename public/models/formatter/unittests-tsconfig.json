@@ -56,15 +56,6 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
-      "path": "../../core/sdk/bundle-tsconfig.json"
-    },
-    {
-      "path": "../bindings/bundle-tsconfig.json"
-    },
-    {
-      "path": "../workspace/bundle-tsconfig.json"
-    },
-    {
       "path": "../../testing/testing-tsconfig.json"
     }
   ]

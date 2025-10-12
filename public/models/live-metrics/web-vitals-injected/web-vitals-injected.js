@@ -2,11 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as WebVitals from '../../../third_party/web-vitals/web-vitals.js';
-import * as OnEachInteraction from './OnEachInteraction.js';
 import * as OnEachLayoutShift from './OnEachLayoutShift.js';
 import * as Spec from './spec/spec.js';
 const { onLCP, onCLS, onINP } = WebVitals.Attribution;
-const { onEachInteraction } = OnEachInteraction;
 const { onEachLayoutShift } = OnEachLayoutShift;
 const windowListeners = [];
 const documentListeners = [];
@@ -144,28 +142,7 @@ function initialize() {
         };
         sendEventToDevTools(event);
     }, { reportAllChanges: true });
-    onINP(metric => {
-        // TODO(b/376777343): Remove this line when `interactionTargetElement` is removed from web-vitals.js
-        // The `metric` emitted in this callback is stored within web-vitals.js closures.
-        // This can lead to `interactionTargetElement` persisting in memory after it has been removed.
-        // We don't use `interactionTargetElement` here, and `onEachInteraction` will interaction
-        // elements separately so it is safe to remove here and prevent memory leaks.
-        metric.attribution.interactionTargetElement = undefined;
-        const event = {
-            name: 'INP',
-            value: metric.value,
-            phases: {
-                inputDelay: metric.attribution.inputDelay,
-                processingDuration: metric.attribution.processingDuration,
-                presentationDelay: metric.attribution.presentationDelay,
-            },
-            startTime: metric.entries[0].startTime,
-            entryGroupId: metric.entries[0].interactionId,
-            interactionType: metric.attribution.interactionType,
-        };
-        sendEventToDevTools(event);
-    }, { reportAllChanges: true, durationThreshold: 0 });
-    onEachInteraction(interaction => {
+    function onEachInteraction(interaction) {
         // Multiple `InteractionEntry` events can be emitted for the same `uniqueInteractionId`
         // However, it is easier to combine these entries in the DevTools client rather than in
         // this injected code.
@@ -185,11 +162,36 @@ function initialize() {
             // To limit the amount of events, just get the last 5 LoAFs
             longAnimationFrameEntries: limitScripts(interaction.attribution.longAnimationFrameEntries.slice(-Spec.LOAF_LIMIT).map(loaf => loaf.toJSON())),
         };
-        const node = interaction.attribution.interactionTargetElement;
-        if (node) {
-            event.nodeIndex = establishNodeIndex(node);
+        const target = interaction.attribution.interactionTarget;
+        if (target) {
+            event.nodeIndex = Number(target);
         }
         sendEventToDevTools(event);
+    }
+    onINP(metric => {
+        const event = {
+            name: 'INP',
+            value: metric.value,
+            phases: {
+                inputDelay: metric.attribution.inputDelay,
+                processingDuration: metric.attribution.processingDuration,
+                presentationDelay: metric.attribution.presentationDelay,
+            },
+            startTime: metric.entries[0].startTime,
+            entryGroupId: metric.entries[0].interactionId,
+            interactionType: metric.attribution.interactionType,
+        };
+        sendEventToDevTools(event);
+    }, {
+        reportAllChanges: true,
+        durationThreshold: 0,
+        onEachInteraction,
+        generateTarget(el) {
+            if (el) {
+                return String(establishNodeIndex(el));
+            }
+            return undefined;
+        },
     });
     onEachLayoutShift(layoutShift => {
         const event = {

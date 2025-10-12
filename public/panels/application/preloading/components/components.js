@@ -642,6 +642,8 @@ function capitalizedAction(action4) {
       return i18n.i18n.lockedString("Prefetch");
     case "Prerender":
       return i18n.i18n.lockedString("Prerender");
+    case "PrerenderUntilScript":
+      return i18n.i18n.lockedString("PrerenderUntilScript");
   }
 }
 function status(status2) {

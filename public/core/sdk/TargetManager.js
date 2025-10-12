@@ -6,8 +6,6 @@ import * as Host from '../host/host.js';
 import * as Platform from '../platform/platform.js';
 import { assertNotNullOrUndefined } from '../platform/platform.js';
 import * as Root from '../root/root.js';
-import { StubConnection } from './Connections.js';
-import { RehydratingConnection } from './RehydratingConnection.js';
 import { SDKModel } from './SDKModel.js';
 import { Target, Type as TargetType } from './Target.js';
 let targetManagerInstance;
@@ -251,25 +249,6 @@ export class TargetManager extends Common.ObjectWrapper.ObjectWrapper {
     }
     browserTarget() {
         return this.#browserTarget;
-    }
-    /**
-     * If this returns true, the target is not connected to a legit CDP server.
-     * However, it's not exhaustive, so some `false` responses may be misleading.
-     *    (eg., tab URL of `devtools://devtools/bundled/devtools_app.html` uses a MainConnection but has no CDP server behind it).
-     */
-    hasFakeConnection() {
-        // Rehydrated DevTools always has a fake connection, so we shortcut and avoid the race.
-        if (Root.Runtime.getPathName().includes('rehydrated_devtools_app')) {
-            return true;
-        }
-        // There _may_ be a race condition hiding here on the router/connection creation.
-        // So we play it safe and consider "no connection yet" as "not fake".
-        const connection = this.primaryPageTarget()?.router()?.connection();
-        if (!connection) {
-            return false;
-        }
-        const isFakeConnection = (connection instanceof StubConnection) || (connection instanceof RehydratingConnection);
-        return isFakeConnection;
     }
     async maybeAttachInitialTarget() {
         if (!Boolean(Root.Runtime.Runtime.queryParam('browserConnection'))) {

@@ -10214,6 +10214,7 @@ var ComputedStyleWidget = class _ComputedStyleWidget extends UI14.ThrottledWidge
     super.wasShown();
   }
   willHide() {
+    super.willHide();
     UI14.Context.Context.instance().setFlavor(_ComputedStyleWidget, null);
   }
   async doUpdate() {
@@ -16368,6 +16369,7 @@ var LayoutPane = class _LayoutPane extends UI20.Widget.Widget {
     this.requestUpdate();
   }
   willHide() {
+    super.willHide();
     for (const setting of this.#settings) {
       Common14.Settings.Settings.instance().moduleSetting(setting.name).removeChangeListener(this.requestUpdate, this);
     }
@@ -18661,6 +18663,7 @@ var NodeStackTraceWidget = class extends UI26.ThrottledWidget.ThrottledWidget {
     this.update();
   }
   willHide() {
+    super.willHide();
     UI26.Context.Context.instance().removeFlavorChangeListener(SDK23.DOMModel.DOMNode, this.update, this);
   }
   async doUpdate() {

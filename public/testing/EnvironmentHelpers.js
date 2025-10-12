@@ -4,6 +4,9 @@
 import * as Common from '../core/common/common.js';
 import * as Host from '../core/host/host.js';
 import * as i18n from '../core/i18n/i18n.js';
+// @ts-expect-error tsc doesn't like import assertions.
+// eslint-disable-next-line  rulesdir/es-modules-import
+import EnUsLocaleData from '../core/i18n/locales/en-US.json' with { type: 'json' };
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Bindings from '../models/bindings/bindings.js';
@@ -317,13 +320,7 @@ export async function initializeGlobalLocaleVars() {
     if (i18n.i18n.hasLocaleDataForTest('en-US')) {
         return;
     }
-    // Load the strings from the resource file.
-    try {
-        await i18n.i18n.fetchAndRegisterLocaleData('en-US');
-    }
-    catch (error) {
-        console.warn('EnvironmentHelper: Loading en-US locale failed', error.message);
-    }
+    i18n.i18n.registerLocaleDataForTest('en-US', EnUsLocaleData);
 }
 export function deinitializeGlobalLocaleVars() {
     i18n.DevToolsLocale.DevToolsLocale.removeInstance();

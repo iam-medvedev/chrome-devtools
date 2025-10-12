@@ -109,6 +109,7 @@ export class ResourceWebSocketFrameView extends ResourceChunkView {
         this.request.addEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
     }
     willHide() {
+        super.willHide();
         this.request.removeEventListener(SDK.NetworkRequest.Events.WEBSOCKET_FRAME_ADDED, this.onWebSocketFrameAdded, this);
     }
     onWebSocketFrameAdded(event) {

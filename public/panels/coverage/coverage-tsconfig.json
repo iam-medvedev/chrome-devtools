@@ -71,6 +71,9 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../../ui/components/highlighting/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

@@ -888,7 +888,7 @@ var ExportTraceOptions = class extends HTMLElement {
           ${checkboxesWithInfoDialog.has(checkboxId) ? html3`
             <devtools-button
               aria-details=${`export-trace-tooltip-${checkboxId}`}
-              aria-label=${this.#accessibleLabelForInfoCheckbox(checkboxId)}
+              .accessibleLabel=${this.#accessibleLabelForInfoCheckbox(checkboxId)}
               class="pen-icon"
               .iconName=${"info"}
               .variant=${"icon"}
@@ -4140,6 +4140,7 @@ customElements.define("devtools-metric-card", MetricCard);
 // gen/front_end/panels/timeline/components/LiveMetricsView.js
 import * as Common5 from "./../../../core/common/common.js";
 import * as i18n27 from "./../../../core/i18n/i18n.js";
+import * as Root2 from "./../../../core/root/root.js";
 import * as SDK6 from "./../../../core/sdk/sdk.js";
 import * as CrUXManager9 from "./../../../models/crux-manager/crux-manager.js";
 import * as EmulationModel from "./../../../models/emulation/emulation.js";
@@ -4835,7 +4836,7 @@ var str_14 = i18n27.i18n.registerUIStrings("panels/timeline/components/LiveMetri
 var i18nString13 = i18n27.i18n.getLocalizedString.bind(void 0, str_14);
 var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableComponent {
   #shadow = this.attachShadow({ mode: "open" });
-  #isNode = false;
+  isNode = Root2.Runtime.Runtime.isNode();
   #lcpValue;
   #clsValue;
   #inpValue;
@@ -4854,10 +4855,6 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     super();
     this.#toggleRecordAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.toggle-recording");
     this.#recordReloadAction = UI10.ActionRegistry.ActionRegistry.instance().getAction("timeline.record-reload");
-  }
-  set isNode(isNode) {
-    this.#isNode = isNode;
-    void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   #onMetricStatus(event) {
     this.#lcpValue = event.data.lcp;
@@ -4900,7 +4897,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
   }
   async #refreshFieldDataForCurrentPage() {
-    if (!this.#isNode) {
+    if (!this.isNode) {
       await this.#cruxManager.refresh();
     }
     void ComponentHelpers8.ScheduledRender.scheduleRender(this, this.#render);
@@ -5465,7 +5462,7 @@ var LiveMetricsView = class extends LegacyWrapper.LegacyWrapper.WrappableCompone
     `;
   }
   #render = () => {
-    if (this.#isNode) {
+    if (this.isNode) {
       Lit12.render(this.#renderNodeView(), this.#shadow, { host: this });
       return;
     }
@@ -7877,6 +7874,7 @@ var SidebarWidget = class extends UI14.Widget.VBox {
     );
   }
   wasShown() {
+    super.wasShown();
     this.#tabbedPane.show(this.element);
     this.#updateAnnotationsCountBadge();
     if (this.#insightToRestoreOnOpen) {
@@ -7894,6 +7892,7 @@ var SidebarWidget = class extends UI14.Widget.VBox {
     }
   }
   willHide() {
+    super.willHide();
     const currentlyActiveInsight = this.#insightsView.getActiveInsight();
     this.#insightToRestoreOnOpen = currentlyActiveInsight;
     if (currentlyActiveInsight) {

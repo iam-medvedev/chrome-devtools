@@ -35,6 +35,7 @@ export class RequestHTMLView extends UI.Widget.VBox {
         this.requestUpdate();
     }
     willHide() {
+        super.willHide();
         this.requestUpdate();
     }
     performUpdate() {

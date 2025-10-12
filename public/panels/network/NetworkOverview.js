@@ -76,6 +76,7 @@ export class NetworkOverview extends PerfUI.TimelineOverviewPane.TimelineOvervie
         this.scheduleUpdate();
     }
     wasShown() {
+        super.wasShown();
         this.onResize();
     }
     calculator() {

@@ -2712,6 +2712,7 @@ var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
     this.#view = view;
   }
   wasShown() {
+    super.wasShown();
     this.#eventListeners = [
       Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemAdded, this.requestUpdate.bind(this)),
       Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addEventListener(Persistence.IsolatedFileSystemManager.Events.FileSystemRemoved, this.requestUpdate.bind(this))
@@ -2719,6 +2720,7 @@ var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
     this.requestUpdate();
   }
   willHide() {
+    super.willHide();
     Common5.EventTarget.removeEventListeners(this.#eventListeners);
     this.#eventListeners = [];
   }

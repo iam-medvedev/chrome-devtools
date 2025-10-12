@@ -33,6 +33,7 @@ export class TargetCrashedScreen extends VBox {
         this.hideCallback = hideCallback;
     }
     willHide() {
+        super.willHide();
         this.hideCallback.call(null);
     }
 }

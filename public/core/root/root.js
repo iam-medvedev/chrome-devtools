@@ -26,6 +26,7 @@ var queryParamsObject = new URLSearchParams(location.search);
 var runtimePlatform = "";
 var runtimeInstance;
 var isNode;
+var isTraceAppEntry;
 function getRemoteBase(location2 = self.location.toString()) {
   const url = new URL(location2);
   const remoteBase = url.searchParams.get("remoteBase");
@@ -77,6 +78,16 @@ var Runtime = class _Runtime {
       isNode = isNodeEntry(getPathName());
     }
     return isNode;
+  }
+  /**
+   * Returns true if viewing the slimmed-down devtools meant for just viewing a
+   * performance trace, e.g. devtools://devtools/bundled/trace_app.html?traceURL=http://...
+   */
+  static isTraceApp() {
+    if (isTraceAppEntry === void 0) {
+      isTraceAppEntry = getPathName().includes("trace_app");
+    }
+    return isTraceAppEntry;
   }
   static setPlatform(platform) {
     runtimePlatform = platform;

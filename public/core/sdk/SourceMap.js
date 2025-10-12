@@ -7,6 +7,7 @@ import * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-m
 import * as Common from '../common/common.js';
 import * as Platform from '../platform/platform.js';
 import * as Root from '../root/root.js';
+import { scopeTreeForScript } from './ScopeTreeCache.js';
 import { buildOriginalScopes, decodePastaRanges } from './SourceMapFunctionRanges.js';
 import { SourceMapScopesInfo } from './SourceMapScopesInfo.js';
 /**
@@ -59,14 +60,17 @@ export class SourceMap {
     #mappings;
     #sourceInfos = [];
     #sourceInfoByURL = new Map();
+    #script;
     #scopesInfo = null;
     #debugId;
+    scopesFallbackPromiseForTest;
     /**
      * Implements Source Map V3 model. See https://github.com/google/closure-compiler/wiki/Source-Maps
      * for format description.
      */
-    constructor(compiledURL, sourceMappingURL, payload) {
+    constructor(compiledURL, sourceMappingURL, payload, script) {
         this.#json = payload;
+        this.#script = script;
         this.#compiledURL = compiledURL;
         this.#sourceMappingURL = sourceMappingURL;
         this.#baseURL = (Common.ParsedURL.schemeIs(sourceMappingURL, 'data:')) ? compiledURL : sourceMappingURL;
@@ -83,7 +87,7 @@ export class SourceMap {
         return this.#json;
     }
     augmentWithScopes(scriptUrl, ranges) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         if (this.#json && this.#json.version > 3) {
             throw new Error('Only support augmenting source maps up to version 3.');
         }
@@ -126,11 +130,11 @@ export class SourceMap {
         return entry.content;
     }
     hasScopeInfo() {
-        this.#ensureMappingsProcessed();
-        return this.#scopesInfo !== null;
+        this.#ensureSourceMapProcessed();
+        return this.#scopesInfo !== null && !this.#scopesInfo.isEmpty();
     }
     findEntry(lineNumber, columnNumber, inlineFrameIndex) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         if (inlineFrameIndex && this.#scopesInfo !== null) {
             // For inlineFrameIndex != 0 we use the callsite info for the corresponding inlining site.
             // Note that the callsite for "inlineFrameIndex" is actually in the previous frame.
@@ -253,18 +257,36 @@ export class SourceMap {
         return ranges;
     }
     mappings() {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         return this.#mappings ?? [];
     }
+    /**
+     * If the source map does not contain scope information by itself (e.g. "scopes proposal"
+     * or "pasta" scopes), then we'll use this getter to calculate basic function name information from
+     * the AST and mappings.
+     */
+    async #buildScopesFallback() {
+        const scopeTreeAndText = this.#script ? await scopeTreeForScript(this.#script) : null;
+        if (!scopeTreeAndText) {
+            return null;
+        }
+        const { scopeTree, text } = scopeTreeAndText;
+        return SourceMapScopesInfo.createFromAst(this, scopeTree, text);
+    }
     reversedMappings(sourceURL) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         return this.#sourceInfoByURL.get(sourceURL)?.reverseMappings ?? [];
     }
-    #ensureMappingsProcessed() {
+    #ensureSourceMapProcessed() {
         if (this.#mappings === null) {
             this.#mappings = [];
             try {
                 this.eachSection(this.parseMap.bind(this));
+                if (!this.hasScopeInfo()) {
+                    this.scopesFallbackPromiseForTest = this.#buildScopesFallback().then(info => {
+                        this.#scopesInfo = info;
+                    });
+                }
             }
             catch (e) {
                 console.error('Failed to parse source map', e);
@@ -568,21 +590,21 @@ export class SourceMap {
             this.hasIgnoreListHint(sourceURL) === other.hasIgnoreListHint(sourceURL);
     }
     expandCallFrame(frame) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         if (this.#scopesInfo === null) {
             return [frame];
         }
         return this.#scopesInfo.expandCallFrame(frame);
     }
     resolveScopeChain(frame) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         if (this.#scopesInfo === null) {
             return null;
         }
         return this.#scopesInfo.resolveMappedScopeChain(frame);
     }
     findOriginalFunctionName(position) {
-        this.#ensureMappingsProcessed();
+        this.#ensureSourceMapProcessed();
         return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
     }
 }

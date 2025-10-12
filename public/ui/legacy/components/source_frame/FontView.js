@@ -116,6 +116,7 @@ export class FontView extends UI.View.SimpleView {
         this.element.appendChild(this.fontPreviewElement);
     }
     wasShown() {
+        super.wasShown();
         this.createContentIfNeeded();
         this.updateFontPreviewSize();
     }

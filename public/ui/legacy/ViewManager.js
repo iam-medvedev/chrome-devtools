@@ -342,6 +342,7 @@ export class ContainerWidget extends VBox {
         return this.materializePromise;
     }
     wasShown() {
+        super.wasShown();
         void this.materialize().then(() => {
             const widget = widgetForView.get(this.view);
             if (widget) {

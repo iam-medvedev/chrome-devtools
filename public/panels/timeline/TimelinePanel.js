@@ -291,7 +291,6 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/timeline/TimelinePanel.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 let timelinePanelInstance;
-let isNode;
 export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Panel) {
     dropTarget;
     recordingOptionUIControls;
@@ -314,6 +313,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     #viewMode = { mode: 'LANDING_PAGE' };
     #dimThirdPartiesSetting = null;
     #thirdPartyCheckbox = null;
+    #isNode = Root.Runtime.Runtime.isNode();
     #onAnnotationModifiedEventBound = this.#onAnnotationModifiedEvent.bind(this);
     /**
      * We get given any filters for a new trace when it is recorded/imported.
@@ -405,7 +405,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.millisecondsToRecordAfterLoadEvent = 5000;
         this.toggleRecordAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.toggle-recording');
         this.recordReloadAction = UI.ActionRegistry.ActionRegistry.instance().getAction('timeline.record-reload');
-        this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, isNode);
+        this.#historyManager = new TimelineHistoryManager(this.#minimapComponent, this.#isNode);
         this.traceLoadStart = null;
         this.disableCaptureJSProfileSetting = Common.Settings.Settings.instance().createSetting('timeline-disable-js-sampling', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.disableCaptureJSProfileSetting.setTitle(i18nString(UIStrings.disableJavascriptSamples));
@@ -414,7 +414,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.captureSelectorStatsSetting = Common.Settings.Settings.instance().createSetting('timeline-capture-selector-stats', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
         this.captureSelectorStatsSetting.setTitle(i18nString(UIStrings.enableSelectorStats));
         this.showScreenshotsSetting =
-            Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', isNode ? false : true);
+            Common.Settings.Settings.instance().createSetting('timeline-show-screenshots', !this.#isNode);
         this.showScreenshotsSetting.setTitle(i18nString(UIStrings.screenshots));
         this.showScreenshotsSetting.addChangeListener(this.updateMiniMap, this);
         this.showMemorySetting = Common.Settings.Settings.instance().createSetting('timeline-show-memory', false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
@@ -434,7 +434,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.wrappable = true;
         this.panelRightToolbar = timelineToolbarContainer.createChild('devtools-toolbar');
         this.panelRightToolbar.role = 'presentation';
-        if (!isNode && this.canRecord()) {
+        if (!this.#isNode && this.canRecord()) {
             this.createSettingsPane();
             this.updateShowSettingsToolbarButton();
         }
@@ -587,9 +587,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.#thirdPartyCheckbox?.setIndeterminate(disabled);
         }
     }
-    static instance(opts = { forceNew: null, isNode: false }) {
-        const { forceNew, isNode: isNodeMode } = opts;
-        isNode = isNodeMode;
+    static instance(opts = { forceNew: null }) {
+        const { forceNew } = opts;
         if (!timelinePanelInstance || forceNew) {
             timelinePanelInstance = new TimelinePanel(opts.traceModel);
         }
@@ -630,6 +629,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.#onFieldDataChanged();
     }
     willHide() {
+        super.willHide();
         UI.Context.Context.instance().setFlavor(TimelinePanel, null);
         this.#historyManager.cancelIfShowing();
         const cruxManager = CrUXManager.CrUXManager.instance();
@@ -660,8 +660,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         return this.flameChart;
     }
     /**
-     * Determine if two view modes are equivalent. Useful because if {@see
-     * #changeView} gets called and the new mode is identical to the current,
+     * Determine if two view modes are equivalent. Useful because if
+     * {@link TimelinePanel.#changeView} gets called and the new mode is identical to the current,
      * we can bail without doing any UI updates.
      */
     #viewModesEquivalent(m1, m2) {
@@ -891,30 +891,15 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.removeToolbarItem(this.#sidebarToggleButton);
     }
     /**
-     * Returns false if DevTools is in a standalone context where tracing/recording are NOT available.
-     *
-     * This includes scenarios like:
-     * - viewing an enhanced trace
-     * - viewing a trace in trace.cafe
-     * - other devtools_app.html scenarios without valid `ws=` param.
-     *   - See also the `isHostedMode` comment in `InspectorFrontendHost.ts`
-     *
-     * Possible signals to find a no-record (NR) context:
-     * - `primaryPageTarget()?.sessionId` is empty in NR, but populated when viewing an enhanced trace.
-     * - `primaryPageTarget.#capabilitiesMask` There's a tracing capability but the advertised capabilities are quite unreliable.
-     * - `primaryPageTarget.targets().length === 1` Mostly correct for NC but its 2 when viewing an enhanced trace.
-     * - `primaryPageTarget.router().connection()` Perhaps StubConnection or RehydratingConnection but MainConnection is incorrectly used sometimes. (eg devtools://devtools/bundled/devtools_app.html)
-     * - `resourceTreeModel?.mainFrame === null`. Correct for NR, HOWEVER  Node.js canRecord despite no main frame.
-     * - `rootTarget.type !== 'tab'` Has potential but it lies. (It's "browser" for Node despite a node type)
-     *
-     * The best signal, for now, is this combo (`isNode || hasMainFrame`), which is both well-maintained and correct in all known cases:
+     * Returns false if DevTools is in a standalone context where tracing/recording are
+     * NOT available.
      */
     canRecord() {
-        return SDK.TargetManager.TargetManager.instance().hasFakeConnection() === false;
+        return !Root.Runtime.Runtime.isTraceApp();
     }
     populateToolbar() {
         const canRecord = this.canRecord();
-        if (canRecord || isNode) {
+        if (canRecord || this.#isNode) {
             this.panelToolbar.appendToolbarItem(UI.Toolbar.Toolbar.createActionButton(this.toggleRecordAction));
         }
         if (canRecord) {
@@ -941,7 +926,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.appendToolbarItem(this.saveButton);
         if (canRecord) {
             this.panelToolbar.appendSeparator();
-            if (!isNode) {
+            if (!this.#isNode) {
                 this.homeButton = new UI.Toolbar.ToolbarButton(i18nString(UIStrings.backToLiveMetrics), 'home', undefined, 'timeline.back-to-live-metrics');
                 this.homeButton.addEventListener("Click" /* UI.Toolbar.ToolbarButton.Events.CLICK */, () => {
                     this.#changeView({ mode: 'LANDING_PAGE' });
@@ -955,7 +940,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.panelToolbar.appendToolbarItem(this.#historyManager.button());
         // View
         this.panelToolbar.appendSeparator();
-        if (!isNode) {
+        if (!this.#isNode) {
             this.showScreenshotsToolbarCheckbox =
                 this.createSettingCheckbox(this.showScreenshotsSetting, i18nString(UIStrings.captureScreenshots));
             this.panelToolbar.appendToolbarItem(this.showScreenshotsToolbarCheckbox);
@@ -977,13 +962,13 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             this.panelToolbar.appendToolbarItem(dimThirdPartiesCheckbox);
         }
         // Isolate selector
-        if (isNode) {
+        if (this.#isNode) {
             const isolateSelector = new IsolateSelector();
             this.panelToolbar.appendSeparator();
             this.panelToolbar.appendToolbarItem(isolateSelector);
         }
         // Settings
-        if (!isNode && canRecord) {
+        if (!this.#isNode && canRecord) {
             this.panelRightToolbar.appendSeparator();
             this.panelRightToolbar.appendToolbarItem(this.showSettingsPaneButton);
         }
@@ -1378,9 +1363,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         let pathToLaunch = null;
         const url = new URL(window.location.href);
         const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf('/'));
-        url.pathname = `${pathToEntrypoint}/rehydrated_devtools_app.html`;
-        // The standalone devtools shouldn't retain any existing query params.
-        url.search = '';
+        url.pathname = `${pathToEntrypoint}/trace_app.html`;
         pathToLaunch = url.toString();
         // Clarifying the window the code is referring to
         const hostWindow = window;
@@ -1443,7 +1426,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.rebuildDataForTrace({ updateType: 'REDRAW_EXISTING_TRACE' });
     }
     updateSettingsPaneVisibility() {
-        if (isNode || !this.canRecord()) {
+        if (this.#isNode || !this.canRecord()) {
             return;
         }
         if (this.showSettingsPaneSetting.get()) {
@@ -1626,7 +1609,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         console.assert(!this.statusDialog, 'Status pane is already opened.');
         this.setState("StartPending" /* State.START_PENDING */);
         this.showRecordingStarted();
-        if (isNode) {
+        if (this.#isNode) {
             await this.#startCPUProfilingRecording();
         }
         else {
@@ -1719,7 +1702,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         if (!this.canRecord()) {
             return;
         }
-        this.recordReloadAction.setEnabled(isNode ? false : this.state === "Idle" /* State.IDLE */);
+        this.recordReloadAction.setEnabled(this.#isNode ? false : this.state === "Idle" /* State.IDLE */);
         this.homeButton?.setEnabled(this.state === "Idle" /* State.IDLE */ && this.#hasActiveTrace());
     }
     async toggleRecording() {
@@ -1765,14 +1748,14 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     /**
      * Called when we update the active trace that is being shown to the user.
-     * This is called from {@see changeView} when we change the UI to show a
+     * This is called from {@link TimelinePanel.#changeView} when we change the UI to show a
      * trace - either one the user has just recorded/imported, or one they have
      * navigated to via the dropdown.
      *
      * If you need code to execute whenever the active trace changes, this is the method to use.
-     * If you need code to execute ONLY ON NEW TRACES, then use {@see loadingComplete}
+     * If you need code to execute ONLY ON NEW TRACES, then use {@link TimelinePanel.loadingComplete}
      * You should not call this method directly if you want the UI to update; use
-     * {@see changeView} to control what is shown to the user.
+     * {@link TimelinePanel.#changeView} to control what is shown to the user.
      */
     #setModelForActiveTrace() {
         if (this.#viewMode.mode !== 'VIEWING_TRACE') {
@@ -1898,7 +1881,9 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
                 Host.userMetrics.navigationSettingAtFirstTimelineLoad(1 /* Host.UserMetrics.TimelineNavigationSetting.MODERN_AT_SESSION_FIRST_TRACE */);
             }
         }
-        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
+        if (parsedTrace.metadata.dataOrigin !== "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
+            UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
+        }
     }
     #onAnnotationModifiedEvent(e) {
         const event = e;
@@ -2059,7 +2044,6 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             return;
         }
         const liveMetrics = new TimelineComponents.LiveMetricsView.LiveMetricsView();
-        liveMetrics.isNode = isNode;
         this.landingPage = LegacyWrapper.LegacyWrapper.legacyWrapper(UI.Widget.Widget, liveMetrics);
         this.landingPage.element.classList.add('timeline-landing-page', 'fill');
         this.landingPage.contentElement.classList.add('fill');

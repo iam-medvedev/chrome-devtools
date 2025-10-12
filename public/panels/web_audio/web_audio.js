@@ -365,6 +365,7 @@ var WebAudioView = class extends UI.Widget.VBox {
     }
   }
   willHide() {
+    super.willHide();
     for (const model of SDK2.TargetManager.TargetManager.instance().models(WebAudioModel)) {
       this.removeEventListeners(model);
     }

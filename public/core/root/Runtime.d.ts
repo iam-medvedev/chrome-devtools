@@ -20,6 +20,11 @@ export declare class Runtime {
     static queryParam(name: string): string | null;
     static setQueryParamForTesting(name: string, value: string): void;
     static isNode(): boolean;
+    /**
+     * Returns true if viewing the slimmed-down devtools meant for just viewing a
+     * performance trace, e.g. devtools://devtools/bundled/trace_app.html?traceURL=http://...
+     */
+    static isTraceApp(): boolean;
     static setPlatform(platform: string): void;
     static platform(): string;
     static isDescriptorEnabled(descriptor: {

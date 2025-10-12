@@ -164,6 +164,7 @@ export class AXBreadcrumbsPane extends AccessibilitySubPane {
         this.collapsingBreadcrumbId = -1;
     }
     willHide() {
+        super.willHide();
         this.setPreselectedBreadcrumb(null);
     }
     onKeyDown(event) {

@@ -7,12 +7,14 @@ var __export = (target, all) => {
 // gen/front_end/panels/changes/ChangesView.js
 var ChangesView_exports = {};
 __export(ChangesView_exports, {
-  ChangesView: () => ChangesView
+  ChangesView: () => ChangesView,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2
 });
 import "./../../ui/legacy/legacy.js";
 import * as i18n5 from "./../../core/i18n/i18n.js";
 import * as WorkspaceDiff3 from "./../../models/workspace_diff/workspace_diff.js";
 import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as Lit3 from "./../../ui/lit/lit.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/changes/ChangesSidebar.js
@@ -128,13 +130,19 @@ var DEFAULT_VIEW = (input, output, target) => {
   );
 };
 var ChangesSidebar = class extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
-  #workspaceDiff;
+  #workspaceDiff = null;
   #view;
   #sourceCodes = /* @__PURE__ */ new Set();
   #selectedUISourceCode = null;
-  constructor(workspaceDiff, target, view = DEFAULT_VIEW) {
-    super({ jslog: `${VisualLogging.pane("sidebar").track({ resize: true })}` });
+  constructor(target, view = DEFAULT_VIEW) {
+    super(target, { jslog: `${VisualLogging.pane("sidebar").track({ resize: true })}` });
     this.#view = view;
+  }
+  set workspaceDiff(workspaceDiff) {
+    if (this.#workspaceDiff) {
+      this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#removeUISourceCode.bind(this));
+      this.#workspaceDiff.removeEventListener("ModifiedStatusChanged", this.uiSourceCodeModifiedStatusChanged, this);
+    }
     this.#workspaceDiff = workspaceDiff;
     this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
     this.#workspaceDiff.addEventListener("ModifiedStatusChanged", this.uiSourceCodeModifiedStatusChanged, this);
@@ -234,6 +242,10 @@ var changesView_css_default = `/*
 .changes-toolbar {
   background-color: var(--sys-color-cdt-base-container);
   border-top: 1px solid var(--sys-color-divider);
+}
+
+[hidden] {
+  display: none !important; /* stylelint-disable-line declaration-no-important */
 }
 
 /*# sourceURL=${import.meta.resolve("./changesView.css")} */`;
@@ -453,6 +465,7 @@ var CombinedDiffView = class extends UI2.Widget.Widget {
     void this.#initializeModifiedUISourceCodes();
   }
   willHide() {
+    super.willHide();
     this.#workspaceDiff?.removeEventListener("ModifiedStatusChanged", this.#onDiffModifiedStatusChanged, this);
   }
   set workspaceDiff(workspaceDiff) {
@@ -560,78 +573,77 @@ var UIStrings3 = {
 };
 var str_3 = i18n5.i18n.registerUIStrings("panels/changes/ChangesView.ts", UIStrings3);
 var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+var { render: render3, html: html3 } = Lit3;
+var DEFAULT_VIEW2 = (input, output, target) => {
+  const onSidebar = (sidebar) => {
+    sidebar.addEventListener("SelectedUISourceCodeChanged", () => input.onSelect(sidebar.selectedUISourceCode()));
+  };
+  render3(
+    // clang-format off
+    html3`
+      <style>${changesView_css_default}</style>
+      <devtools-split-view direction=column>
+        <div class=vbox slot="main">
+          <devtools-widget
+            ?hidden=${input.workspaceDiff.modifiedUISourceCodes().length > 0}
+            .widgetConfig=${UI3.Widget.widgetConfig(UI3.EmptyWidget.EmptyWidget, {
+      header: i18nString3(UIStrings3.noChanges),
+      text: i18nString3(UIStrings3.changesViewDescription),
+      link: CHANGES_VIEW_URL
+    })}>
+          </devtools-widget>
+          <div class=diff-container role=tabpanel ?hidden=${input.workspaceDiff.modifiedUISourceCodes().length === 0}>
+            <devtools-widget .widgetConfig=${UI3.Widget.widgetConfig(CombinedDiffView, {
+      selectedFileUrl: input.selectedSourceCode?.url(),
+      workspaceDiff: input.workspaceDiff
+    })}></devtools-widget>
+          </div>
+        </div>
+        <devtools-widget
+          slot="sidebar"
+          .widgetConfig=${UI3.Widget.widgetConfig(ChangesSidebar, {
+      workspaceDiff: input.workspaceDiff
+    })}
+          ${UI3.Widget.widgetRef(ChangesSidebar, onSidebar)}>
+        </devtools-widget>
+      </devtools-split-view>`,
+    // clang-format on
+    target
+  );
+};
 var ChangesView = class _ChangesView extends UI3.Widget.VBox {
-  emptyWidget;
-  workspaceDiff;
-  changesSidebar;
-  selectedUISourceCode;
-  diffContainer;
-  combinedDiffView;
-  constructor() {
-    super({
+  #workspaceDiff;
+  #selectedUISourceCode = null;
+  #view;
+  constructor(target, view = DEFAULT_VIEW2) {
+    super(target, {
       jslog: `${VisualLogging3.panel("changes").track({ resize: true })}`,
       useShadowDom: true
     });
-    this.registerRequiredCSS(changesView_css_default);
-    const splitWidget = new UI3.SplitWidget.SplitWidget(
-      true,
-      false
-      /* sidebar on left */
-    );
-    const mainWidget = new UI3.Widget.VBox();
-    splitWidget.setMainWidget(mainWidget);
-    splitWidget.show(this.contentElement);
-    this.emptyWidget = new UI3.EmptyWidget.EmptyWidget("", "");
-    this.emptyWidget.show(mainWidget.element);
-    this.workspaceDiff = WorkspaceDiff3.WorkspaceDiff.workspaceDiff();
-    this.changesSidebar = new ChangesSidebar(this.workspaceDiff);
-    this.changesSidebar.addEventListener("SelectedUISourceCodeChanged", this.selectedUISourceCodeChanged, this);
-    splitWidget.setSidebarWidget(this.changesSidebar);
-    this.selectedUISourceCode = null;
-    this.diffContainer = mainWidget.element.createChild("div", "diff-container");
-    UI3.ARIAUtils.markAsTabpanel(this.diffContainer);
-    this.combinedDiffView = new CombinedDiffView();
-    this.combinedDiffView.workspaceDiff = this.workspaceDiff;
-    this.combinedDiffView.show(this.diffContainer);
-    this.hideDiff();
-    this.selectedUISourceCodeChanged();
+    this.#workspaceDiff = WorkspaceDiff3.WorkspaceDiff.workspaceDiff();
+    this.#view = view;
+    this.requestUpdate();
   }
-  renderDiffOrEmptyState() {
-    if (this.workspaceDiff.modifiedUISourceCodes().length > 0) {
-      this.showDiff();
-    } else {
-      this.hideDiff();
-    }
-  }
-  selectedUISourceCodeChanged() {
-    const selectedUISourceCode = this.changesSidebar.selectedUISourceCode();
-    if (!selectedUISourceCode || this.selectedUISourceCode === selectedUISourceCode) {
-      return;
-    }
-    this.selectedUISourceCode = selectedUISourceCode;
-    this.combinedDiffView.selectedFileUrl = selectedUISourceCode.url();
+  performUpdate() {
+    this.#view({
+      workspaceDiff: this.#workspaceDiff,
+      selectedSourceCode: this.#selectedUISourceCode,
+      onSelect: (sourceCode) => {
+        this.#selectedUISourceCode = sourceCode;
+        this.requestUpdate();
+      }
+    }, {}, this.contentElement);
   }
   wasShown() {
     UI3.Context.Context.instance().setFlavor(_ChangesView, this);
     super.wasShown();
-    this.renderDiffOrEmptyState();
-    this.workspaceDiff.addEventListener("ModifiedStatusChanged", this.renderDiffOrEmptyState, this);
+    this.requestUpdate();
+    this.#workspaceDiff.addEventListener("ModifiedStatusChanged", this.requestUpdate, this);
   }
   willHide() {
     super.willHide();
     UI3.Context.Context.instance().setFlavor(_ChangesView, null);
-    this.workspaceDiff.removeEventListener("ModifiedStatusChanged", this.renderDiffOrEmptyState, this);
-  }
-  hideDiff() {
-    this.diffContainer.style.display = "none";
-    this.emptyWidget.header = i18nString3(UIStrings3.noChanges);
-    this.emptyWidget.text = i18nString3(UIStrings3.changesViewDescription);
-    this.emptyWidget.link = CHANGES_VIEW_URL;
-    this.emptyWidget.showWidget();
-  }
-  showDiff() {
-    this.emptyWidget.hideWidget();
-    this.diffContainer.style.display = "block";
+    this.#workspaceDiff.removeEventListener("ModifiedStatusChanged", this.requestUpdate, this);
   }
 };
 export {

@@ -7,12 +7,15 @@ import { ResourceTreeModel } from './ResourceTreeModel.js';
 export class TraceObject {
     traceEvents;
     metadata;
-    constructor(payload, meta = {}) {
-        // Handle the typical traceEvent array juggling here.
-        const events = Array.isArray(payload) ? payload : payload.traceEvents;
-        const metadata = meta ?? (!Array.isArray(payload) && payload.metadata) ?? {};
-        this.traceEvents = events;
-        this.metadata = metadata;
+    constructor(payload, meta) {
+        if (Array.isArray(payload)) {
+            this.traceEvents = payload;
+            this.metadata = meta ?? {};
+        }
+        else {
+            this.traceEvents = payload.traceEvents;
+            this.metadata = payload.metadata;
+        }
     }
 }
 /** Another thin wrapper class to enable revealing individual trace events (aka entries) in Timeline panel. **/

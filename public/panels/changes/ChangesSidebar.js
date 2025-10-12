@@ -53,13 +53,19 @@ export const DEFAULT_VIEW = (input, output, target) => {
     target);
 };
 export class ChangesSidebar extends Common.ObjectWrapper.eventMixin(UI.Widget.Widget) {
-    #workspaceDiff;
+    #workspaceDiff = null;
     #view;
     #sourceCodes = new Set();
     #selectedUISourceCode = null;
-    constructor(workspaceDiff, target, view = DEFAULT_VIEW) {
-        super({ jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}` });
+    constructor(target, view = DEFAULT_VIEW) {
+        super(target, { jslog: `${VisualLogging.pane('sidebar').track({ resize: true })}` });
         this.#view = view;
+    }
+    set workspaceDiff(workspaceDiff) {
+        if (this.#workspaceDiff) {
+            this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#removeUISourceCode.bind(this));
+            this.#workspaceDiff.removeEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);
+        }
         this.#workspaceDiff = workspaceDiff;
         this.#workspaceDiff.modifiedUISourceCodes().forEach(this.#addUISourceCode.bind(this));
         this.#workspaceDiff.addEventListener("ModifiedStatusChanged" /* WorkspaceDiff.WorkspaceDiff.Events.MODIFIED_STATUS_CHANGED */, this.uiSourceCodeModifiedStatusChanged, this);

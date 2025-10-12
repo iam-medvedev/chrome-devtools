@@ -5338,9 +5338,10 @@ var UIStrings12 = {
 var str_12 = i18n23.i18n.registerUIStrings("panels/application/ReportingApiView.ts", UIStrings12);
 var i18nString12 = i18n23.i18n.getLocalizedString.bind(void 0, str_12);
 var REPORTING_API_EXPLANATION_URL = "https://developer.chrome.com/docs/capabilities/web-apis/reporting-api";
-var DEFAULT_VIEW = (input, _output, target) => {
+var DEFAULT_VIEW = (input, output, target) => {
   if (input.hasReports || input.hasEndpoints) {
     render2(html3`
+      <style>${UI10.inspectorCommonStyles}</style>
       <devtools-split-view sidebar-position="second" sidebar-initial-size="150" jslog=${VisualLogging6.pane("reporting-api")}>
         ${input.hasReports ? html3`
           <devtools-split-view slot="main" sidebar-position="second" sidebar-initial-size="150">
@@ -5352,7 +5353,9 @@ var DEFAULT_VIEW = (input, _output, target) => {
             </div>
             <div slot="sidebar" class="vbox" jslog=${VisualLogging6.pane("preview").track({ resize: true })}>
               ${input.focusedReport ? html3`
-                <devtools-widget .widgetConfig=${widgetConfig((element) => SourceFrame2.JSONView.JSONView.createViewSync(input.focusedReport?.body || "", element))}></devtools-widget>
+                <devtools-widget .widgetConfig=${widgetConfig(SourceFrame2.JSONView.SearchableJsonView, {
+      jsonObject: input.focusedReport.body
+    })}></devtools-widget>
               ` : html3`
                 <devtools-widget .widgetConfig=${widgetConfig(UI10.EmptyWidget.EmptyWidget, {
       header: i18nString12(UIStrings12.noReportSelected),
@@ -5428,7 +5431,7 @@ var ReportingApiView = class extends UI10.Widget.VBox {
       focusedReport: this.#focusedReport,
       onReportSelected: this.#onReportSelected.bind(this)
     };
-    this.#view(viewInput, {}, this.element);
+    this.#view(viewInput, void 0, this.element);
   }
   #onEndpointsChangedForOrigin({ data }) {
     this.#endpoints.set(data.origin, data.endpoints);
@@ -5784,10 +5787,12 @@ var ServiceWorkerCacheView = class extends UI11.View.SimpleView {
     dataGridWidget.setMinimumSize(0, 250);
   }
   wasShown() {
+    super.wasShown();
     this.model.addEventListener("CacheStorageContentUpdated", this.cacheContentUpdated, this);
     void this.updateData(true);
   }
   willHide() {
+    super.willHide();
     this.model.removeEventListener("CacheStorageContentUpdated", this.cacheContentUpdated, this);
   }
   showPreview(preview) {
@@ -8245,6 +8250,7 @@ var KeyValueStorageItemsView = class extends UI17.Widget.VBox {
     this.showPreview(null, null);
   }
   wasShown() {
+    super.wasShown();
     this.refreshItems();
   }
   performUpdate() {
@@ -9031,6 +9037,7 @@ var StorageView = class _StorageView extends UI20.ThrottledWidget.ThrottledWidge
     this.quotaOverrideCheckbox.addEventListener("click", this.onClickCheckbox.bind(this), false);
     this.quotaOverrideControlRow = quota.appendRow();
     this.quotaOverrideEditor = this.quotaOverrideControlRow.createChild("input", "quota-override-notification-editor");
+    this.quotaOverrideEditor.setAttribute("placeholder", i18nString24(UIStrings24.pleaseEnterANumber));
     this.quotaOverrideEditor.setAttribute("jslog", `${VisualLogging14.textField("quota-override").track({ change: true })}`);
     this.quotaOverrideControlRow.appendChild(UI20.UIUtils.createLabel(i18nString24(UIStrings24.mb)));
     this.quotaOverrideControlRow.classList.add("hidden");
@@ -9188,7 +9195,7 @@ var StorageView = class _StorageView extends UI20.ThrottledWidget.ThrottledWidge
       this.quotaOverrideControlRow.classList.remove("hidden");
       this.quotaOverrideCheckbox.checked = true;
       this.quotaOverrideEditor.value = this.previousOverrideFieldValue;
-      this.quotaOverrideEditor.focus();
+      window.setTimeout(() => this.quotaOverrideEditor.focus(), 500);
     } else if (this.target && this.securityOrigin) {
       this.quotaOverrideControlRow.classList.add("hidden");
       this.quotaOverrideCheckbox.checked = false;
@@ -11641,6 +11648,7 @@ var CookieItemsView = class extends UI23.Widget.VBox {
     this.model.addEventListener("CookieListUpdated", this.onCookieListUpdate, this);
   }
   wasShown() {
+    super.wasShown();
     this.refreshItems();
   }
   showPreview(cookie) {

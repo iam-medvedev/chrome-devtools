@@ -1,6 +1,6 @@
 import type * as TextUtils from '../../../../models/text_utils/text_utils.js';
-import * as UI from '../../../../ui/legacy/legacy.js';
-import { type ColumnDescriptor } from './DataGrid.js';
+import * as UI from '../../legacy.js';
+import { type ColumnDescriptor, type ResizeMethod } from './DataGrid.js';
 /**
  * A data grid (table) element that can be used as progressive enhancement over a <table> element.
  *
@@ -24,8 +24,10 @@ import { type ColumnDescriptor } from './DataGrid.js';
  * Under the hood it uses SortableDataGrid, which extends ViewportDataGrid so only
  * visible rows are layed out and sorting is provided out of the box.
  *
- * @property filters
- * @attribute striped
+ * @property filters Set of text filters to be applied to the data grid.
+ * @attribute inline If true, the data grid will render inline instead of taking a full container height.
+ * @attribute resize Column resize method, one of 'nearest' (default), 'first' or 'last'.
+ * @attribute striped If true, the data grid will have striped rows.
  * @attribute displayName
  */
 declare class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate {
@@ -39,6 +41,8 @@ declare class DataGridElement extends UI.UIUtils.HTMLElementWithLightDOMTemplate
     get inline(): boolean;
     set displayName(displayName: string);
     get displayName(): string | null;
+    set resizeMethod(resizeMethod: ResizeMethod);
+    get resizeMethod(): ResizeMethod;
     set filters(filters: TextUtils.TextUtils.ParsedFilter[]);
     get columns(): ColumnDescriptor[];
     addNodes(nodes: NodeList): void;

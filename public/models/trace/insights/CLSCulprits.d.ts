@@ -10,7 +10,7 @@ export declare const UIStrings: {
      * @description Description of a DevTools insight that identifies the reasons that elements shift on the page.
      * This is displayed after a user expands the section to see more. No character length limits.
      */
-    readonly description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://web.dev/articles/optimize-cls), such as elements being added, removed, or their fonts changing as the page loads.";
+    readonly description: "Layout shifts occur when elements move absent any user interaction. [Investigate the causes of layout shifts](https://developer.chrome.com/docs/performance/insights/cls-culprit), such as elements being added, removed, or their fonts changing as the page loads.";
     /**
      * @description Text indicating the worst layout shift cluster.
      */

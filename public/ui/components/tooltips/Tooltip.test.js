@@ -79,7 +79,7 @@ describe('Tooltip', () => {
         await opened;
         assert.isTrue(tooltip.open);
         const closed = waitForToggle(tooltip, 'closed');
-        button?.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        document.body.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
         await closed;
         assert.isFalse(tooltip.open);
     });

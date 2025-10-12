@@ -1204,6 +1204,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         this.#setColor(color, undefined, undefined /* colorName */, colorFormat, ChangeSource.Input);
     }
     wasShown() {
+        super.wasShown();
         this.hueAlphaWidth = this.hueElement.offsetWidth;
         this.slideHelperWidth = this.hueSlider.offsetWidth / 2;
         this.dragWidth = this.colorElement.offsetWidth;
@@ -1223,6 +1224,7 @@ export class Spectrum extends Common.ObjectWrapper.eventMixin(UI.Widget.VBox) {
         }
     }
     willHide() {
+        super.willHide();
         void this.toggleColorPicker(false);
         if (this.contrastDetails && this.contrastDetailsBackgroundColorPickerToggledBound) {
             this.contrastDetails.removeEventListener("BackgroundColorPickerWillBeToggled" /* ContrastDetailsEvents.BACKGROUND_COLOR_PICKER_WILL_BE_TOGGLED */, this.contrastDetailsBackgroundColorPickerToggledBound);

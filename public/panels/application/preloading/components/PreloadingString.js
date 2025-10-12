@@ -661,6 +661,8 @@ export function capitalizedAction(action) {
             return i18n.i18n.lockedString('Prefetch');
         case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
             return i18n.i18n.lockedString('Prerender');
+        case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+            return i18n.i18n.lockedString('PrerenderUntilScript');
     }
 }
 export function status(status) {

@@ -545,12 +545,14 @@ var TickingFlameChart = class extends UI2.Widget.VBox {
     this.updateRender();
   }
   willHide() {
+    super.willHide();
     this.isShown = false;
     if (this.ticking) {
       this.stop();
     }
   }
   wasShown() {
+    super.wasShown();
     this.isShown = true;
     if (this.#canTick && !this.ticking) {
       this.start();
@@ -2382,6 +2384,7 @@ var MainView = class extends UI7.Panel.PanelWithSidebar {
     }
   }
   willHide() {
+    super.willHide();
     for (const model of SDK2.TargetManager.TargetManager.instance().models(MediaModel, { scoped: true })) {
       this.removeEventListeners(model);
     }

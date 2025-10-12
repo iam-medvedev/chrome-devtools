@@ -153,6 +153,7 @@ export class MainView extends UI.Panel.PanelWithSidebar {
         }
     }
     willHide() {
+        super.willHide();
         for (const model of SDK.TargetManager.TargetManager.instance().models(MediaModel, { scoped: true })) {
             this.removeEventListeners(model);
         }

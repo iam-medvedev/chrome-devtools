@@ -8,7 +8,15 @@ export class RangeWalker {
     #eof;
     constructor(root) {
         this.root = root;
-        this.#treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+        const nodeFilter = {
+            acceptNode(node) {
+                if (['STYLE', 'SCRIPT'].includes(node.parentNode?.nodeName ?? '')) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            },
+        };
+        this.#treeWalker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, nodeFilter);
         this.#eof = !this.#treeWalker.firstChild();
     }
     #next() {
@@ -49,6 +57,16 @@ export class RangeWalker {
         range.setStart(startNode, offsetInStartNode);
         range.setEnd(endNode, offsetInEndNode);
         return range;
+    }
+    goToTextNode(node) {
+        while (this.#treeWalker.currentNode !== node) {
+            if (!this.#next()) {
+                return;
+            }
+        }
+    }
+    get offset() {
+        return this.#offset;
     }
 }
 export const HIGHLIGHT_REGISTRY = 'highlighted-search-result';

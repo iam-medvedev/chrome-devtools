@@ -1,6 +1,7 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+import * as Formatter from '../../models/formatter/formatter.js';
 import { SourceMapScopeChainEntry } from './SourceMapScopeChainEntry.js';
 export class SourceMapScopesInfo {
     #sourceMap;
@@ -11,6 +12,48 @@ export class SourceMapScopesInfo {
         this.#sourceMap = sourceMap;
         this.#originalScopes = scopeInfo.scopes;
         this.#generatedRanges = scopeInfo.ranges;
+    }
+    /**
+     * If the source map does not contain any scopes information, this factory function attempts to create bare bones scope information
+     * via the script's AST combined with the mappings.
+     *
+     * We create the generated ranges from the scope tree and for each range we create an original scope that matches the bounds 1:1.
+     * We don't map the bounds via mappings as mappings are often iffy and it's not strictly required to translate stack traces where we
+     * map call-sites separately.
+     */
+    static createFromAst(sourceMap, scopeTree, text) {
+        const { scope, range } = convertScope(scopeTree, undefined, undefined);
+        return new SourceMapScopesInfo(sourceMap, { scopes: [scope], ranges: [range] });
+        function convertScope(node, parentScope, parentRange) {
+            const start = positionFromOffset(node.start);
+            const end = positionFromOffset(node.end);
+            const isStackFrame = node.kind === 2 /* Formatter.FormatterWorkerPool.ScopeKind.FUNCTION */;
+            const scope = {
+                start,
+                end,
+                name: sourceMap.findEntry(start.line, start.column, 0)?.name,
+                isStackFrame,
+                variables: [],
+                children: [],
+            };
+            const range = {
+                start,
+                end,
+                originalScope: scope,
+                isStackFrame,
+                isHidden: false,
+                values: [],
+                children: [],
+            };
+            parentRange?.children.push(range);
+            parentScope?.children.push(scope);
+            node.children.forEach(child => convertScope(child, scope, range));
+            return { scope, range };
+        }
+        function positionFromOffset(offset) {
+            const location = text.positionFromOffset(offset);
+            return { line: location.lineNumber, column: location.columnNumber };
+        }
     }
     addOriginalScopes(scopes) {
         for (const scope of scopes) {
@@ -24,6 +67,9 @@ export class SourceMapScopesInfo {
     }
     hasOriginalScopes(sourceIdx) {
         return Boolean(this.#originalScopes[sourceIdx]);
+    }
+    isEmpty() {
+        return !this.#originalScopes.length && !this.#generatedRanges.length;
     }
     addOriginalScopesAtIndex(sourceIdx, scope) {
         if (!this.#originalScopes[sourceIdx]) {

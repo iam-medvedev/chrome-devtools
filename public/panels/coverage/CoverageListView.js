@@ -1,13 +1,11 @@
 // Copyright 2017 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+import '../../ui/components/highlighting/highlighting.js';
+import '../../ui/legacy/components/data_grid/data_grid.js';
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
-import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Workspace from '../../models/workspace/workspace.js';
-import * as DataGrid from '../../ui/legacy/components/data_grid/data_grid.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { Directives, html, nothing, render } from '../../ui/lit/lit.js';
 import coverageListViewStyles from './coverageListView.css.js';
@@ -103,7 +101,7 @@ const UIStrings = {
 };
 const str_ = i18n.i18n.registerUIStrings('panels/coverage/CoverageListView.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
-const { styleMap } = Directives;
+const { styleMap, repeat } = Directives;
 export function coverageTypeToString(type) {
     const types = [];
     if (type & 1 /* CoverageType.CSS */) {
@@ -117,152 +115,91 @@ export function coverageTypeToString(type) {
     }
     return types.join('+');
 }
+const formatBytes = (value) => {
+    return getBytesFormatter().format(value ?? 0);
+};
+const formatPercent = (value) => {
+    return getPercentageFormatter().format(value ?? 0);
+};
+export const DEFAULT_VIEW = (input, _output, target) => {
+    // clang-format off
+    render(html `
+    <style>${coverageListViewStyles}</style>
+    <devtools-data-grid class="flex-auto" name=${i18nString(UIStrings.codeCoverage)} striped autofocus resize="last"
+      .template=${html `
+        <table>
+          <tr>
+            <th id="url" width="250px" weight="3" sortable>${i18nString(UIStrings.url)}</th>
+            <th id="type" width="45px" weight="1" fixed sortable>${i18nString(UIStrings.type)}</th>
+            <th id="size" width="60px" align="right" weight="1" fixed sortable>${i18nString(UIStrings.totalBytes)}</th>
+            <th id="unused-size" width="100px" align="right" weight="1" fixed sortable sort="descending">${i18nString(UIStrings.unusedBytes)}</th>
+            <th id="bars" width="250px" weight="1" sortable>${i18nString(UIStrings.usageVisualization)}</th>
+          </tr>
+          ${repeat(input.items, info => info.url, info => renderItem(info, input))}
+        </table>`}>
+      </devtools-data-grid>`, target);
+    // clang-format on
+};
 export class CoverageListView extends UI.Widget.VBox {
-    nodeForUrl;
-    highlightRegExp;
-    dataGrid;
-    constructor() {
-        super({ useShadowDom: true });
-        this.registerRequiredCSS(coverageListViewStyles);
-        this.nodeForUrl = new Map();
-        this.highlightRegExp = null;
-        const columns = [
-            {
-                id: 'url',
-                title: i18nString(UIStrings.url),
-                width: '250px',
-                weight: 3,
-                fixedWidth: false,
-                sortable: true,
-                disclosure: true,
-            },
-            { id: 'type', title: i18nString(UIStrings.type), width: '45px', weight: 1, fixedWidth: true, sortable: true },
-            {
-                id: 'size',
-                title: i18nString(UIStrings.totalBytes),
-                width: '60px',
-                fixedWidth: true,
-                sortable: true,
-                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
-                weight: 1,
-            },
-            {
-                id: 'unused-size',
-                title: i18nString(UIStrings.unusedBytes),
-                width: '100px',
-                fixedWidth: true,
-                sortable: true,
-                align: "right" /* DataGrid.DataGrid.Align.RIGHT */,
-                sort: DataGrid.DataGrid.Order.Descending,
-                weight: 1,
-            },
-            {
-                id: 'bars',
-                title: i18nString(UIStrings.usageVisualization),
-                width: '250px',
-                fixedWidth: false,
-                sortable: true,
-                weight: 1,
-            },
-        ];
-        this.dataGrid =
-            DataGrid.SortableDataGrid.SortableDataGrid.create(['dummy'], [], i18nString(UIStrings.codeCoverage));
-        this.dataGrid.removeColumn('dummy');
-        for (const column of columns) {
-            this.dataGrid.addColumn(column);
-        }
-        this.dataGrid.setColumnsVisibility(new Set(columns.map(column => column.id)));
-        this.dataGrid.setResizeMethod("last" /* DataGrid.DataGrid.ResizeMethod.LAST */);
-        this.dataGrid.setStriped(true);
-        this.dataGrid.element.classList.add('flex-auto');
-        this.dataGrid.addEventListener("OpenedNode" /* DataGrid.DataGrid.Events.OPENED_NODE */, this.onOpenedNode, this);
-        const dataGridWidget = this.dataGrid.asWidget();
-        dataGridWidget.show(this.contentElement);
-        this.setDefaultFocusedChild(dataGridWidget);
+    #highlightRegExp;
+    #coverageInfo = [];
+    #selectedUrl = null;
+    #maxSize = 0;
+    #view;
+    constructor(element, view = DEFAULT_VIEW) {
+        super(element, { useShadowDom: true, delegatesFocus: true });
+        this.#view = view;
+        this.#highlightRegExp = null;
     }
-    update(coverageInfo, highlightRegExp) {
-        this.highlightRegExp = highlightRegExp;
-        const maxSize = coverageInfo.reduce((acc, entry) => Math.max(acc, entry.size), 0);
-        const coverageUrls = new Set(coverageInfo.map(info => info.url));
-        for (const [url, node] of this.nodeForUrl.entries()) {
-            if (!coverageUrls.has(url)) {
-                node.remove();
-                this.nodeForUrl.delete(url);
-            }
-        }
-        let hadUpdates = false;
-        for (const entry of coverageInfo) {
-            let node = this.nodeForUrl.get(entry.url);
-            if (node) {
-                hadUpdates = node.refreshIfNeeded(maxSize, entry) || hadUpdates;
-                if (entry.sources.length > 0) {
-                    this.updateSourceNodes(entry.sources, maxSize, node);
-                }
-                node.setHighlight(this.highlightRegExp);
-                continue;
-            }
-            node = new GridNode(entry, maxSize);
-            this.nodeForUrl.set(entry.url, node);
-            this.appendNodeByType(node);
-            if (entry.sources.length > 0) {
-                this.updateSourceNodes(entry.sources, maxSize, node);
-            }
-            node.setHighlight(this.highlightRegExp);
-            hadUpdates = true;
-        }
-        if (hadUpdates) {
-            this.dataGrid.dispatchEventToListeners("SortingChanged" /* DataGrid.DataGrid.Events.SORTING_CHANGED */);
-        }
+    set highlightRegExp(highlightRegExp) {
+        this.#highlightRegExp = highlightRegExp;
+        this.requestUpdate();
     }
-    updateSourceNodes(sources, maxSize, node) {
-        for (const coverageInfo of sources) {
-            const sourceNode = this.nodeForUrl.get(coverageInfo.url);
-            if (sourceNode) {
-                sourceNode.refreshIfNeeded(maxSize, coverageInfo);
-            }
-            else {
-                const sourceNode = new GridNode(coverageInfo, maxSize);
-                node.appendChild(sourceNode);
-                this.nodeForUrl.set(coverageInfo.url, sourceNode);
-            }
-        }
+    get highlightRegExp() {
+        return this.#highlightRegExp;
+    }
+    set coverageInfo(coverageInfo) {
+        this.#coverageInfo = coverageInfo;
+        this.#maxSize = coverageInfo.reduce((acc, entry) => Math.max(acc, entry.size), 0);
+        this.requestUpdate();
+    }
+    get coverageInfo() {
+        return this.#coverageInfo;
+    }
+    performUpdate() {
+        const input = {
+            items: this.#coverageInfo,
+            selectedUrl: this.#selectedUrl,
+            maxSize: this.#maxSize,
+            onOpen: (url) => {
+                this.selectedUrl = url;
+            },
+            highlightRegExp: this.#highlightRegExp,
+        };
+        this.#view(input, {}, this.contentElement);
     }
     reset() {
-        this.nodeForUrl.clear();
-        this.dataGrid.rootNode().removeChildren();
+        this.#coverageInfo = [];
+        this.#maxSize = 0;
+        this.requestUpdate();
     }
-    appendNodeByType(node) {
-        if (node.coverageInfo.generatedUrl) {
-            const parentNode = this.nodeForUrl.get(node.coverageInfo.generatedUrl);
-            parentNode?.appendChild(node);
-        }
-        else {
-            this.dataGrid.rootNode().appendChild(node);
-        }
-    }
-    selectByUrl(url) {
-        const node = this.nodeForUrl.get(url);
-        if (node) {
-            node.revealAndSelect();
-        }
-    }
-    onOpenedNode() {
-        void this.revealSourceForSelectedNode();
-    }
-    async revealSourceForSelectedNode() {
-        const node = this.dataGrid.selectedNode;
-        if (!node) {
+    set selectedUrl(url) {
+        const info = this.#coverageInfo.find(info => info.url === url);
+        if (!info) {
             return;
         }
-        const coverageInfo = node.coverageInfo;
-        const sourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(coverageInfo.url);
+        if (this.#selectedUrl !== url) {
+            this.#selectedUrl = url;
+            this.requestUpdate();
+        }
+        const sourceCode = url ? Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url) : null;
         if (!sourceCode) {
             return;
         }
-        if (this.dataGrid.selectedNode !== node) {
-            return;
-        }
         void Common.Revealer.reveal(sourceCode);
+    }
+    get selectedUrl() {
+        return this.#selectedUrl;
     }
 }
 let percentageFormatter = null;
@@ -282,131 +219,61 @@ function getBytesFormatter() {
     }
     return bytesFormatter;
 }
-export class GridNode extends DataGrid.SortableDataGrid.SortableDataGridNode {
-    coverageInfo;
-    lastUsedSize;
-    url;
-    maxSize;
-    highlightRegExp;
-    constructor(coverageInfo, maxSize) {
-        super();
-        this.coverageInfo = coverageInfo;
-        this.url = coverageInfo.url;
-        this.maxSize = maxSize;
-        this.highlightRegExp = null;
-        this.#updateData(coverageInfo);
+function renderItem(info, input) {
+    function highlightRange(textContent) {
+        const matches = input.highlightRegExp?.exec(textContent);
+        return matches?.length ? `${matches.index},${matches[0].length}` : '';
     }
-    #updateData(coverageInfo) {
-        this.data['url'] = this.url;
-        this.data['type'] = coverageTypeToString(coverageInfo.type);
-        this.data['size'] = coverageInfo.size;
-        this.data['unused-size'] = coverageInfo.unusedSize;
-        this.data['bars'] = coverageInfo.unusedSize;
-        this.coverageInfo = coverageInfo;
-    }
-    setHighlight(highlightRegExp) {
-        if (this.highlightRegExp === highlightRegExp) {
-            return;
-        }
-        this.highlightRegExp = highlightRegExp;
-        for (const child of this.children) {
-            child.setHighlight(this.highlightRegExp);
-        }
-        this.refresh();
-    }
-    refreshIfNeeded(maxSize, coverageInfo) {
-        if (this.lastUsedSize === coverageInfo.usedSize && maxSize === this.maxSize) {
-            return false;
-        }
-        this.lastUsedSize = coverageInfo.usedSize;
-        this.maxSize = maxSize;
-        this.refresh();
-        this.#updateData(coverageInfo);
-        return true;
-    }
-    createCell(columnId) {
-        const cell = this.createTD(columnId);
-        const info = this.coverageInfo;
-        const formatBytes = (value) => {
-            return getBytesFormatter().format(value ?? 0);
-        };
-        const formatPercent = (value) => {
-            return getPercentageFormatter().format(value ?? 0);
-        };
-        switch (columnId) {
-            case 'url': {
-                UI.Tooltip.Tooltip.install(cell, this.url);
-                this.setCellAccessibleName(this.url, cell, columnId);
-                const splitURL = /^(.*)(\/[^/]*)$/.exec(this.url);
-                render(html `
-          <div class="url-outer">
-            <div class="url-prefix">${splitURL ? splitURL[1] : this.url}</div>
-            <div class="url-suffix">${splitURL ? splitURL[2] : ''}</div>
-          </div>`, cell);
-                if (this.highlightRegExp) {
-                    this.highlight(cell, this.url);
-                }
-                break;
-            }
-            case 'type': {
-                UI.Tooltip.Tooltip.install(cell, info.type & 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */ ? i18nString(UIStrings.jsCoverageWithPerFunction) :
-                    info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.jsCoverageWithPerBlock) :
-                        '');
-                render(coverageTypeToString(this.coverageInfo.type), cell);
-                break;
-            }
-            case 'size': {
-                this.setCellAccessibleName(i18nString(UIStrings.sBytes, { n: info.size || 0 }), cell, columnId);
-                render(html `<span>${formatBytes(info.size)}</span>`, cell);
-                break;
-            }
-            case 'unused-size': {
-                this.setCellAccessibleName(i18nString(UIStrings.sBytesS, { n: info.unusedSize, percentage: formatPercent(info.unusedPercentage) }), cell, columnId);
-                // clang-format off
-                render(html `
-          <span>${formatBytes(info.unusedSize)}</span>
-          <span class="percent-value">
-            ${formatPercent(info.unusedPercentage)}
-          </span>`, cell);
-                // clang-format on
-                break;
-            }
-            case 'bars': {
-                this.setCellAccessibleName(i18nString(UIStrings.sOfFileUnusedSOfFileUsed, { PH1: formatPercent(info.unusedPercentage), PH2: formatPercent(info.usedPercentage) }), cell, columnId);
-                // clang-format off
-                render(html `
-          <div class="bar-container">
-            ${info.unusedSize > 0 ? html `
-              <div class="bar bar-unused-size"
-                  title=${info.type & 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */ ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHave, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) :
-                    info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.sBytesSBelongToBlocksOf, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) :
-                        ''}
-                  style=${styleMap({ width: ((info.unusedSize / this.maxSize) * 100 || 0) + '%' })}>
-              </div>` : nothing}
-            ${info.usedSize > 0 ? html `
+    const splitURL = /^(.*)(\/[^/]*)$/.exec(info.url);
+    // clang-format off
+    return html `
+    <style>${coverageListViewStyles}</style>
+    <tr data-url=${info.url} selected=${info.url === input.selectedUrl}
+        @open=${() => input.onOpen(info.url)}>
+      <td data-value=${info.url} title=${info.url} aria-label=${info.url}>
+        <devtools-highlight ranges=${highlightRange(info.url)} class="url-outer" aria-hidden="true">
+          <div class="url-prefix">${splitURL ? splitURL[1] : info.url}</div>
+          <div class="url-suffix">${splitURL ? splitURL[2] : ''}</div>
+        </devtools-highlight>
+      </td>
+      <td data-value=${coverageTypeToString(info.type)}
+          title=${info.type & 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */ ? i18nString(UIStrings.jsCoverageWithPerFunction) :
+        info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.jsCoverageWithPerBlock) :
+            ''}>
+        ${coverageTypeToString(info.type)}
+      </td>
+      <td data-value=${info.size} aria-label=${i18nString(UIStrings.sBytes, { n: info.size || 0 })}>
+        <span>${formatBytes(info.size)}</span>
+      </td>
+      <td data-value=${info.unusedSize} aria-label=${i18nString(UIStrings.sBytesS, { n: info.unusedSize, percentage: formatPercent(info.unusedPercentage) })}>
+        <span>${formatBytes(info.unusedSize)}</span>
+        <span class="percent-value">
+          ${formatPercent(info.unusedPercentage)}
+        </span>
+      </td>
+      <td data-value=${info.unusedSize} aria-label=${i18nString(UIStrings.sOfFileUnusedSOfFileUsed, { PH1: formatPercent(info.unusedPercentage), PH2: formatPercent(info.usedPercentage) })}>
+        <div class="bar-container">
+          ${info.unusedSize > 0 ? html `
+            <div class="bar bar-unused-size"
+                title=${info.type & 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */ ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHave, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) :
+        info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.sBytesSBelongToBlocksOf, { PH1: info.unusedSize, PH2: formatPercent(info.unusedPercentage) }) :
+            ''}
+                  style=${styleMap({ width: ((info.unusedSize / input.maxSize) * 100 || 0) + '%' })}>
+            </div>` : nothing}
+          ${info.usedSize > 0 ? html `
             <div class="bar bar-used-size"
                   title=${info.type & 4 /* CoverageType.JAVA_SCRIPT_PER_FUNCTION */ ? i18nString(UIStrings.sBytesSBelongToFunctionsThatHaveExecuted, { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) }) :
-                    info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.sBytesSBelongToBlocksOfJavascript, { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) }) :
-                        ''}
-                  { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) })}
-                style=${styleMap({ width: ((info.usedSize / this.maxSize) * 100 || 0) + '%' })}>
+        info.type & 2 /* CoverageType.JAVA_SCRIPT */ ? i18nString(UIStrings.sBytesSBelongToBlocksOfJavascript, { PH1: info.usedSize, PH2: formatPercent(info.usedPercentage) }) :
+            ''}
+                style=${styleMap({ width: ((info.usedSize / input.maxSize) * 100 || 0) + '%' })}>
             </div>` : nothing}
-          </div>`, cell);
-                // clang-format on
-            }
-        }
-        return cell;
-    }
-    highlight(element, textContent) {
-        if (!this.highlightRegExp) {
-            return;
-        }
-        const matches = this.highlightRegExp.exec(textContent);
-        if (!matches?.length) {
-            return;
-        }
-        const range = new TextUtils.TextRange.SourceRange(matches.index, matches[0].length);
-        UI.UIUtils.highlightRangesWithStyleClass(element, [range], 'filter-highlight');
-    }
+        </div>
+      </td>
+      ${info.sources.length > 0 ? html `
+        <td><table>
+          ${repeat(info.sources, source => source.url, source => renderItem(source, input))}
+        </table></td>` : nothing}
+    </tr>`;
+    // clang-format on
 }
 //# sourceMappingURL=CoverageListView.js.map

@@ -155,12 +155,14 @@ export declare class ToolbarFilter extends ToolbarInput {
 export declare class ToolbarInputElement extends HTMLElement {
     #private;
     static observedAttributes: string[];
-    item: ToolbarInput;
+    item?: ToolbarInput;
     datalist: HTMLDataListElement | null;
     value: string | undefined;
     connectedCallback(): void;
     focus(): void;
     attributeChangedCallback(name: string, _oldValue: string, newValue: string): void;
+    set disabled(disabled: boolean);
+    get disabled(): boolean;
 }
 export declare namespace ToolbarInput {
     const enum Event {

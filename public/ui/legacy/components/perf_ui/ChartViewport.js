@@ -417,6 +417,7 @@ export class ChartViewport extends UI.Widget.VBox {
         this.delegate.update();
     }
     willHide() {
+        super.willHide();
         // Stop animations when the view is hidden (or destroyed).
         // In this case, we also jump the time immediately to the target time, so
         // that if the view is restored, the time shown is correct.

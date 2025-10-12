@@ -45,6 +45,7 @@ export class RequestPreviewView extends UI.Widget.VBox {
         return view;
     }
     wasShown() {
+        super.wasShown();
         void this.doShowPreview();
     }
     doShowPreview() {

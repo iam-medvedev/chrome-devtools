@@ -41,12 +41,6 @@ export declare class TargetManager extends Common.ObjectWrapper.ObjectWrapper<Ev
     rootTarget(): Target | null;
     primaryPageTarget(): Target | null;
     browserTarget(): Target | null;
-    /**
-     * If this returns true, the target is not connected to a legit CDP server.
-     * However, it's not exhaustive, so some `false` responses may be misleading.
-     *    (eg., tab URL of `devtools://devtools/bundled/devtools_app.html` uses a MainConnection but has no CDP server behind it).
-     */
-    hasFakeConnection(): boolean;
     maybeAttachInitialTarget(): Promise<boolean>;
     clearAllTargetsForTest(): void;
     isInScope(arg: SDKModel | Target | Common.EventTarget.EventTargetEvent<any, any> | null): boolean;

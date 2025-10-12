@@ -9,7 +9,7 @@ export declare const UIStrings: {
     /**
      * @description Description of an insight that recommends ways to reduce the size of images downloaded and used on the page.
      */
-    readonly description: "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/lighthouse/performance/uses-optimized-images/)";
+    readonly description: "Reducing the download time of images can improve the perceived load time of the page and LCP. [Learn more about optimizing image size](https://developer.chrome.com/docs/performance/insights/image-delivery)";
     /**
      * @description Message displayed in a chip explaining that an image file size is large for the # of pixels it has and recommends possible adjustments to improve the image size.
      */

@@ -1276,9 +1276,11 @@ var Layers3DView = class extends Common5.ObjectWrapper.eventMixin(UI4.Widget.VBo
     this.update();
   }
   willHide() {
+    super.willHide();
     this.textureManager.suspend();
   }
   wasShown() {
+    super.wasShown();
     this.textureManager.resume();
     if (!this.needsUpdate) {
       return;

@@ -42,4 +42,8 @@ export default `/*
   border-top: 1px solid var(--sys-color-divider);
 }
 
+[hidden] {
+  display: none !important; /* stylelint-disable-line declaration-no-important */
+}
+
 /*# sourceURL=${import.meta.resolve('./changesView.css')} */`;

@@ -196,6 +196,7 @@ export class FilteredListWidget extends Common.ObjectWrapper.eventMixin(UI.Widge
         this.attachProvider();
     }
     willHide() {
+        super.willHide();
         if (this.provider) {
             this.provider.detach();
         }

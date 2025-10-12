@@ -29,7 +29,7 @@ export interface UserTimingsData {
 }
 export declare function reset(): void;
 /**
- * Similar to the default {@see Helpers.Trace.eventTimeComparator}
+ * Similar to the default {@link Helpers.Trace.eventTimeComparator}
  * but with a twist:
  * In case of equal start and end times, put the second event (within a
  * track) first.

@@ -1,19 +1,25 @@
 import '../../ui/legacy/legacy.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
+interface ViewInput {
+    list: UI.ListWidget.ListWidget<SDK.NetworkManager.BlockedPattern>;
+    enabled: boolean;
+    toggleEnabled: () => void;
+    addPattern: () => void;
+}
+type View = (input: ViewInput, output: object, target: HTMLElement) => void;
+export declare const DEFAULT_VIEW: View;
 export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWidget.Delegate<SDK.NetworkManager.BlockedPattern> {
+    #private;
     private manager;
-    private readonly toolbar;
-    private readonly enabledCheckbox;
     private readonly list;
     private editor;
     private blockedCountForUrl;
-    constructor();
-    private createEmptyPlaceholder;
+    constructor(target?: HTMLElement, view?: View);
+    performUpdate(): void;
     addPattern(): void;
     removeAllPatterns(): void;
     renderItem(pattern: SDK.NetworkManager.BlockedPattern, editable: boolean): Element;
-    private togglePattern;
     private toggleEnabled;
     removeItemRequested(_pattern: SDK.NetworkManager.BlockedPattern, index: number): void;
     beginEdit(pattern: SDK.NetworkManager.BlockedPattern): UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>;
@@ -30,3 +36,4 @@ export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWi
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {
     handleAction(context: UI.Context.Context, actionId: string): boolean;
 }
+export {};
