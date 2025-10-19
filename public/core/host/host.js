@@ -1955,7 +1955,8 @@ var Action;
   Action2[Action2["AiCodeCompletionSuggestionAccepted"] = 187] = "AiCodeCompletionSuggestionAccepted";
   Action2[Action2["AiCodeCompletionError"] = 188] = "AiCodeCompletionError";
   Action2[Action2["AttributeLinkClicked"] = 189] = "AttributeLinkClicked";
-  Action2[Action2["MAX_VALUE"] = 190] = "MAX_VALUE";
+  Action2[Action2["InsightRequestedViaTeaser"] = 190] = "InsightRequestedViaTeaser";
+  Action2[Action2["MAX_VALUE"] = 191] = "MAX_VALUE";
 })(Action || (Action = {}));
 var PanelCodes;
 (function(PanelCodes2) {

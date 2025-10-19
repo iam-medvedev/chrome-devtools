@@ -12,4 +12,5 @@ export declare class Tracker {
     }): Tracker;
     registerFreshRecording(data: Trace.TraceModel.ParsedTrace): void;
     recordingIsFresh(data: Trace.TraceModel.ParsedTrace): boolean;
+    recordingIsFreshOrEnhanced(data: Trace.TraceModel.ParsedTrace): boolean;
 }

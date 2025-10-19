@@ -104,7 +104,7 @@ export class ListWidget extends VBox {
         if (this.isTable) {
             element.role = 'rowgroup';
         }
-        const content = this.delegate.renderItem(item, editable);
+        const content = this.delegate.renderItem(item, editable, this.items.length - 1);
         if (!content.hasAttribute('jslog')) {
             element.setAttribute('jslog', `${VisualLogging.item()}`);
         }

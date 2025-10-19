@@ -1063,7 +1063,7 @@ ${processedFiles.map((filename) => `* ${filename}`).join("\n")}`;
       throw new Error("Project does not exist");
     }
     this.#applyPatchAbortController = new AbortController();
-    const agent = new AiAssistanceModel.PatchAgent({
+    const agent = new AiAssistanceModel.PatchAgent.PatchAgent({
       aidaClient: this.#aidaClient,
       serverSideLoggingEnabled: false,
       project: this.#project
@@ -1089,7 +1089,7 @@ window.aiAssistanceTestPatchPrompt = async (projectName, changeSummary, expected
     throw new Error("project not found");
   }
   const aidaClient = new Host2.AidaClient.AidaClient();
-  const agent = new AiAssistanceModel.PatchAgent({
+  const agent = new AiAssistanceModel.PatchAgent.PatchAgent({
     aidaClient,
     serverSideLoggingEnabled: false,
     project
@@ -3220,7 +3220,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
   `;
 }
 function renderImageChatMessage(inlineData) {
-  if (inlineData.data === AiAssistanceModel2.NOT_FOUND_IMAGE_DATA) {
+  if (inlineData.data === AiAssistanceModel2.AiHistoryStorage.NOT_FOUND_IMAGE_DATA) {
     return html4`<div class="unavailable-image" title=${UIStringsNotTranslate4.imageUnavailable}>
       <devtools-icon name='file-image'></devtools-icon>
     </div>`;
@@ -3244,7 +3244,7 @@ function renderContextIcon(context) {
   if (item instanceof Workspace5.UISourceCode.UISourceCode) {
     return PanelUtils.PanelUtils.getIconForSourceFile(item);
   }
-  if (item instanceof AiAssistanceModel2.AgentFocus) {
+  if (item instanceof AiAssistanceModel2.AIContext.AgentFocus) {
     return html4`<devtools-icon name="performance" title="Performance"></devtools-icon>`;
   }
   if (item instanceof SDK.DOMModel.DOMNode) {
@@ -3255,7 +3255,7 @@ function renderContextIcon(context) {
 function renderContextTitle(context, disabled) {
   const item = context.getItem();
   if (item instanceof SDK.DOMModel.DOMNode) {
-    const hiddenClassList = item.classNames().filter((className) => className.startsWith(AiAssistanceModel2.AI_ASSISTANCE_CSS_CLASS_NAME));
+    const hiddenClassList = item.classNames().filter((className) => className.startsWith(AiAssistanceModel2.Injected.AI_ASSISTANCE_CSS_CLASS_NAME));
     return html4`<devtools-widget .widgetConfig=${UI4.Widget.widgetConfig(ElementsPanel.DOMLinkifier.DOMNodeLink, {
       node: item,
       options: { hiddenClassList, disabled }
@@ -4250,7 +4250,7 @@ async function getEmptyStateSuggestions(context, conversation) {
   }
 }
 function getMarkdownRenderer(context, conversation) {
-  if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
+  if (context instanceof AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext) {
     if (!context.external) {
       const focus = context.getItem();
       return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
@@ -4347,38 +4347,38 @@ function createNodeContext(node) {
   if (!node) {
     return null;
   }
-  return new AiAssistanceModel3.NodeContext(node);
+  return new AiAssistanceModel3.StylingAgent.NodeContext(node);
 }
 function createFileContext(file) {
   if (!file) {
     return null;
   }
-  return new AiAssistanceModel3.FileContext(file);
+  return new AiAssistanceModel3.FileAgent.FileContext(file);
 }
 function createRequestContext(request) {
   if (!request) {
     return null;
   }
   const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-  return new AiAssistanceModel3.RequestContext(request, calculator);
+  return new AiAssistanceModel3.NetworkAgent.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
   if (!focus) {
     return null;
   }
-  return new AiAssistanceModel3.PerformanceTraceContext(focus);
+  return new AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext(focus);
 }
 function agentToConversationType(agent) {
-  if (agent instanceof AiAssistanceModel3.StylingAgent) {
+  if (agent instanceof AiAssistanceModel3.StylingAgent.StylingAgent) {
     return "freestyler";
   }
-  if (agent instanceof AiAssistanceModel3.NetworkAgent) {
+  if (agent instanceof AiAssistanceModel3.NetworkAgent.NetworkAgent) {
     return "drjones-network-request";
   }
-  if (agent instanceof AiAssistanceModel3.FileAgent) {
+  if (agent instanceof AiAssistanceModel3.FileAgent.FileAgent) {
     return "drjones-file";
   }
-  if (agent instanceof AiAssistanceModel3.PerformanceAgent) {
+  if (agent instanceof AiAssistanceModel3.PerformanceAgent.PerformanceAgent) {
     return agent.getConversationType();
   }
   throw new Error("Provided agent does not have a corresponding conversation type");
@@ -4393,7 +4393,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   #viewOutput = {};
   #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
   #aiAssistanceEnabledSetting;
-  #changeManager = new AiAssistanceModel3.ChangeManager();
+  #changeManager = new AiAssistanceModel3.ChangeManager.ChangeManager();
   #mutex = new Common5.Mutex.Mutex();
   #conversationAgent;
   #conversation;
@@ -4436,11 +4436,11 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       accountImage: syncInfo.accountImage,
       accountFullName: syncInfo.accountFullName
     };
-    this.#conversationHandler = AiAssistanceModel3.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
+    this.#conversationHandler = AiAssistanceModel3.ConversationHandler.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
     if (UI6.ActionRegistry.ActionRegistry.instance().hasAction("elements.toggle-element-search")) {
       this.#toggleSearchElementAction = UI6.ActionRegistry.ActionRegistry.instance().getAction("elements.toggle-element-search");
     }
-    AiAssistanceModel3.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
+    AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted", this.#onHistoryDeleted, this);
   }
   #getChatUiState() {
     const blockedByAge = Root5.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -4526,7 +4526,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       this.#conversation?.archiveConversation();
       this.#conversationAgent = opts?.agent;
       if (opts?.agent) {
-        this.#conversation = new AiAssistanceModel3.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
+        this.#conversation = new AiAssistanceModel3.AiHistoryStorage.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
       }
     }
     if (!opts?.agent) {
@@ -4549,7 +4549,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     void this.#handleAidaAvailabilityChange();
     this.#selectedElement = createNodeContext(selectedElementFilter(UI6.Context.Context.instance().flavor(SDK3.DOMModel.DOMNode)));
     this.#selectedRequest = createRequestContext(UI6.Context.Context.instance().flavor(SDK3.NetworkRequest.NetworkRequest));
-    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(AiAssistanceModel3.AgentFocus));
+    this.#selectedPerformanceTrace = createPerformanceTraceContext(UI6.Context.Context.instance().flavor(AiAssistanceModel3.AIContext.AgentFocus));
     this.#selectedFile = createFileContext(UI6.Context.Context.instance().flavor(Workspace6.UISourceCode.UISourceCode));
     this.#updateConversationState({ agent: this.#conversationAgent });
     this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
@@ -4557,7 +4557,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#toggleSearchElementAction?.addEventListener("Toggled", this.requestUpdate, this);
     UI6.Context.Context.instance().addFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel3.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI6.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel3.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().addFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     SDK3.TargetManager.TargetManager.instance().addModelListener(SDK3.DOMModel.DOMModel, SDK3.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
@@ -4575,7 +4575,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     this.#toggleSearchElementAction?.removeEventListener("Toggled", this.requestUpdate, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(SDK3.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(SDK3.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-    UI6.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel3.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+    UI6.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel3.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
     UI6.Context.Context.instance().removeFlavorChangeListener(Workspace6.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
     UI6.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged", this.#selectDefaultAgentIfNeeded, this);
     UI6.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
@@ -4619,7 +4619,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
     if (Boolean(ev.data)) {
       const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-      this.#selectedRequest = new AiAssistanceModel3.RequestContext(ev.data, calculator);
+      this.#selectedRequest = new AiAssistanceModel3.NetworkAgent.RequestContext(ev.data, calculator);
     } else {
       this.#selectedRequest = null;
     }
@@ -4629,7 +4629,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (this.#selectedPerformanceTrace?.getItem() === ev.data) {
       return;
     }
-    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceTraceContext(ev.data) : null;
+    this.#selectedPerformanceTrace = Boolean(ev.data) ? new AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
     this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #handleUISourceCodeFlavorChange = (ev) => {
@@ -4640,7 +4640,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (this.#selectedFile?.getItem() === newFile) {
       return;
     }
-    this.#selectedFile = new AiAssistanceModel3.FileContext(ev.data);
+    this.#selectedFile = new AiAssistanceModel3.FileAgent.FileContext(ev.data);
     this.#updateConversationState({ agent: this.#conversationAgent });
   };
   #onPrimaryPageChanged() {
@@ -4829,7 +4829,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
   }
   #handleContextClick() {
     const context = this.#selectedContext;
-    if (context instanceof AiAssistanceModel3.RequestContext) {
+    if (context instanceof AiAssistanceModel3.NetworkAgent.RequestContext) {
       const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(
         context.getItem(),
         "headers-component"
@@ -4837,10 +4837,10 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       );
       return Common5.Revealer.reveal(requestLocation);
     }
-    if (context instanceof AiAssistanceModel3.FileContext) {
+    if (context instanceof AiAssistanceModel3.FileAgent.FileContext) {
       return Common5.Revealer.reveal(context.getItem().uiLocation(0, 0));
     }
-    if (context instanceof AiAssistanceModel3.PerformanceTraceContext) {
+    if (context instanceof AiAssistanceModel3.PerformanceAgent.PerformanceTraceContext) {
       const focus = context.getItem();
       if (focus.callTree) {
         const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
@@ -4927,7 +4927,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     }
   }
   #populateHistoryMenu(contextMenu) {
-    const historicalConversations = AiAssistanceModel3.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel3.Conversation.fromSerializedConversation(serializedConversation));
+    const historicalConversations = AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map((serializedConversation) => AiAssistanceModel3.AiHistoryStorage.Conversation.fromSerializedConversation(serializedConversation));
     for (const conversation of historicalConversations.reverse()) {
       if (conversation.isEmpty) {
         continue;
@@ -4938,7 +4938,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       }
       contextMenu.defaultSection().appendCheckboxItem(title, () => {
         void this.#openHistoricConversation(conversation);
-      }, { checked: this.#conversation === conversation });
+      }, { checked: this.#conversation === conversation, jslogContext: "freestyler.history-item" });
     }
     const historyEmpty = contextMenu.defaultSection().items.length === 0;
     if (historyEmpty) {
@@ -4948,7 +4948,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       });
     }
     contextMenu.footerSection().appendItem(i18nString2(UIStrings2.clearChatHistory), () => {
-      void AiAssistanceModel3.AiHistoryStorage.instance().deleteAll();
+      void AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
     }, {
       disabled: historyEmpty
     });
@@ -4960,7 +4960,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
     if (!this.#conversation) {
       return;
     }
-    void AiAssistanceModel3.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
+    void AiAssistanceModel3.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
     this.#updateConversationState();
     UI6.ARIAUtils.LiveAnnouncer.alert(i18nString2(UIStrings2.chatDeleted));
   }
@@ -5019,7 +5019,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
         data: bytes,
         mimeType: JPEG_MIME_TYPE,
         inputType: "screenshot"
-        /* AiAssistanceModel.MultimodalInputType.SCREENSHOT */
+        /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */
       };
       this.requestUpdate();
       void this.updateComplete.then(() => {
@@ -5088,7 +5088,7 @@ var AiAssistancePanel = class _AiAssistancePanel extends UI6.Panel.Panel {
       data: bytes,
       mimeType: file.type,
       inputType: "uploaded-image"
-      /* AiAssistanceModel.MultimodalInputType.UPLOADED_IMAGE */
+      /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
     };
     this.requestUpdate();
     void this.updateComplete.then(() => {
@@ -5306,7 +5306,7 @@ function getResponseMarkdown(message) {
       contentParts.push(`### ${step.title}`);
     }
     if (step.contextDetails) {
-      contentParts.push(AiAssistanceModel3.Conversation.generateContextDetailsMarkdown(step.contextDetails));
+      contentParts.push(AiAssistanceModel3.AiHistoryStorage.Conversation.generateContextDetailsMarkdown(step.contextDetails));
     }
     if (step.thought) {
       contentParts.push(step.thought);

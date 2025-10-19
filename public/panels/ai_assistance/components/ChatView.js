@@ -643,14 +643,14 @@ function renderError(message) {
     if (message.error) {
         let errorMessage;
         switch (message.error) {
-            case "unknown" /* AiAssistanceModel.ErrorType.UNKNOWN */:
-            case "block" /* AiAssistanceModel.ErrorType.BLOCK */:
+            case "unknown" /* AiAssistanceModel.AiAgent.ErrorType.UNKNOWN */:
+            case "block" /* AiAssistanceModel.AiAgent.ErrorType.BLOCK */:
                 errorMessage = UIStringsNotTranslate.systemError;
                 break;
-            case "max-steps" /* AiAssistanceModel.ErrorType.MAX_STEPS */:
+            case "max-steps" /* AiAssistanceModel.AiAgent.ErrorType.MAX_STEPS */:
                 errorMessage = UIStringsNotTranslate.maxStepsError;
                 break;
-            case "abort" /* AiAssistanceModel.ErrorType.ABORT */:
+            case "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */:
                 return html `<p class="aborted" jslog=${VisualLogging.section('aborted')}>${lockedString(UIStringsNotTranslate.stoppedResponse)}</p>`;
         }
         return html `<p class="error" jslog=${VisualLogging.section('error')}>${lockedString(errorMessage)}</p>`;
@@ -728,7 +728,7 @@ function renderChatMessage({ message, isLoading, isReadOnly, canShowFeedbackForm
     // clang-format on
 }
 function renderImageChatMessage(inlineData) {
-    if (inlineData.data === AiAssistanceModel.NOT_FOUND_IMAGE_DATA) {
+    if (inlineData.data === AiAssistanceModel.AiHistoryStorage.NOT_FOUND_IMAGE_DATA) {
         // clang-format off
         return html `<div class="unavailable-image" title=${UIStringsNotTranslate.imageUnavailable}>
       <devtools-icon name='file-image'></devtools-icon>
@@ -758,7 +758,7 @@ function renderContextIcon(context) {
     if (item instanceof Workspace.UISourceCode.UISourceCode) {
         return PanelUtils.PanelUtils.getIconForSourceFile(item);
     }
-    if (item instanceof AiAssistanceModel.AgentFocus) {
+    if (item instanceof AiAssistanceModel.AIContext.AgentFocus) {
         return html `<devtools-icon name="performance" title="Performance"></devtools-icon>`;
     }
     if (item instanceof SDK.DOMModel.DOMNode) {
@@ -770,7 +770,7 @@ function renderContextTitle(context, disabled) {
     const item = context.getItem();
     if (item instanceof SDK.DOMModel.DOMNode) {
         // FIXME: move this to the model code.
-        const hiddenClassList = item.classNames().filter(className => className.startsWith(AiAssistanceModel.AI_ASSISTANCE_CSS_CLASS_NAME));
+        const hiddenClassList = item.classNames().filter(className => className.startsWith(AiAssistanceModel.Injected.AI_ASSISTANCE_CSS_CLASS_NAME));
         return html `<devtools-widget .widgetConfig=${UI.Widget.widgetConfig(ElementsPanel.DOMLinkifier.DOMNodeLink, {
             node: item,
             options: { hiddenClassList, disabled }
@@ -783,7 +783,7 @@ function renderSelection({ selectedContext, inspectElementToggled, conversationT
         return Lit.nothing;
     }
     // TODO: currently the picker behavior is SDKNode specific.
-    const hasPickerBehavior = conversationType === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
+    const hasPickerBehavior = conversationType === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
     const resourceClass = Lit.Directives.classMap({
         'not-selected': !selectedContext,
         'resource-link': true,

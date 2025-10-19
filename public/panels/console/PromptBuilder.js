@@ -227,9 +227,9 @@ function formatLines(title, lines, maxLength) {
 export function formatNetworkRequest(request) {
     return `Request: ${request.url()}
 
-${AiAssistanceModel.NetworkRequestFormatter.formatHeaders('Request headers:', request.requestHeaders())}
+${AiAssistanceModel.NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('Request headers:', request.requestHeaders())}
 
-${AiAssistanceModel.NetworkRequestFormatter.formatHeaders('Response headers:', request.responseHeaders)}
+${AiAssistanceModel.NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('Response headers:', request.responseHeaders)}
 
 Response status: ${request.statusCode} ${request.statusText}`;
 }

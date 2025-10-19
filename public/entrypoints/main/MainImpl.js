@@ -40,6 +40,7 @@ import * as Platform from '../../core/platform/platform.js';
 import * as ProtocolClient from '../../core/protocol_client/protocol_client.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as AutofillManager from '../../models/autofill_manager/autofill_manager.js';
 import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
@@ -52,6 +53,7 @@ import * as Logs from '../../models/logs/logs.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as ProjectSettings from '../../models/project_settings/project_settings.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import * as PanelCommon from '../../panels/common/common.js';
 import * as Snippets from '../../panels/snippets/snippets.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as Snackbar from '../../ui/components/snackbars/snackbars.js';
@@ -115,6 +117,10 @@ const UIStrings = {
      * @description Text describing how to navigate the dock side menu
      */
     dockSideNavigation: 'Use left and right arrow keys to navigate the options',
+    /**
+     * @description Notification shown to the user whenever DevTools receives an external request.
+     */
+    externalRequestReceived: '`DevTools` received an external request',
 };
 const str_ = i18n.i18n.registerUIStrings('entrypoints/main/MainImpl.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
@@ -390,11 +396,13 @@ export class MainImpl {
         self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
         new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
         isolatedFileSystemManager.addPlatformFileSystem('snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
-        Persistence.Persistence.PersistenceImpl.instance({
+        const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance({
             forceNew: true,
             workspace: Workspace.Workspace.WorkspaceImpl.instance(),
             breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance(),
         });
+        const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(persistenceImpl);
+        Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
         Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
         new ExecutionContextSelector(targetManager, UI.Context.Context.instance());
         const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
@@ -417,6 +425,7 @@ export class MainImpl {
         AutofillManager.AutofillManager.AutofillManager.instance();
         LiveMetrics.LiveMetrics.instance();
         CrUXManager.CrUXManager.instance();
+        void AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
         new PauseListener();
         const actionRegistryInstance = UI.ActionRegistry.ActionRegistry.instance({ forceNew: true });
         // Required for legacy a11y layout tests
@@ -442,6 +451,9 @@ export class MainImpl {
                 void badgeNotification.present(ev.data);
             });
         }
+        const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
+        conversationHandler.addEventListener("ExternalRequestReceived" /* AiAssistanceModel.ConversationHandler.ConversationHandlerEvents.EXTERNAL_REQUEST_RECEIVED */, () => Snackbar.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) }));
+        conversationHandler.addEventListener("ExternalConversationStarted" /* AiAssistanceModel.ConversationHandler.ConversationHandlerEvents.EXTERNAL_CONVERSATION_STARTED */, event => void VisualLogging.logFunctionCall(`start-conversation-${event.data}`, 'external'));
         _a.timeEnd('Main._createAppUI');
         const appProvider = Common.AppProvider.getRegisteredAppProviders()[0];
         if (!appProvider) {
@@ -464,7 +476,11 @@ export class MainImpl {
             }, this);
         }
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this.#revealSourceLine, this);
-        await UI.InspectorView.InspectorView.instance().createToolbars();
+        const inspectorView = UI.InspectorView.InspectorView.instance();
+        Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("LocalOverridesRequested" /* Persistence.NetworkPersistenceManager.Events.LOCAL_OVERRIDES_REQUESTED */, event => {
+            inspectorView.displaySelectOverrideFolderInfobar(event.data);
+        });
+        await inspectorView.createToolbars();
         Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
         // Initialize elements for the live announcer functionality for a11y.
         UI.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
@@ -881,10 +897,10 @@ export async function handleExternalRequest(input) {
         result = await generator.next();
     } while (!result.done);
     const response = result.value;
-    if (response.type === "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */) {
+    if (response.type === "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */) {
         throw new Error(response.message);
     }
-    if (response.type === "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */) {
+    if (response.type === "answer" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ANSWER */) {
         return {
             response: response.message,
             devToolsLogs: response.devToolsLogs,
@@ -906,18 +922,18 @@ export async function handleExternalRequestGenerator(input) {
         }
         case 'NETWORK_DEBUGGER': {
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
-            const conversationHandler = await AiAssistanceModel.ConversationHandler.instance();
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
             return await conversationHandler.handleExternalRequest({
-                conversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
+                conversationType: "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */,
                 prompt: input.args.prompt,
                 requestUrl: input.args.requestUrl,
             });
         }
         case 'LIVE_STYLE_DEBUGGER': {
             const AiAssistanceModel = await import('../../models/ai_assistance/ai_assistance.js');
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
             return await conversationHandler.handleExternalRequest({
-                conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
                 prompt: input.args.prompt,
                 selector: input.args.selector,
             });
@@ -926,7 +942,7 @@ export async function handleExternalRequestGenerator(input) {
     // eslint-disable-next-line require-yield
     return (async function* () {
         return {
-            type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+            type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
             // @ts-expect-error
             message: `Debugging with an agent of type '${input.kind}' is not implemented yet.`,
         };

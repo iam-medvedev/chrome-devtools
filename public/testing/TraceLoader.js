@@ -4,7 +4,6 @@
 import * as Common from '../core/common/common.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Trace from '../models/trace/trace.js';
-import * as Timeline from '../panels/timeline/timeline.js';
 import * as TraceBounds from '../services/trace_bounds/trace_bounds.js';
 // We maintain two caches:
 // 1. The file contents JSON.parsed for a given trace file.
@@ -116,9 +115,15 @@ export class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static async traceEngine(context, name, config = Trace.Types.Configuration.defaults()) {
+    static async traceEngine(context, name, config = Trace.Types.Configuration.defaults(), opts = {
+        withTimelinePanel: true,
+    }) {
         if (context) {
             TraceLoader.setTestTimeout(context);
+        }
+        let timelineModule;
+        if (opts.withTimelinePanel) {
+            timelineModule = await import('../panels/timeline/timeline.js');
         }
         // Force the TraceBounds to be reset to empty. This ensures that in
         // tests where we are using the new engine data we don't accidentally
@@ -137,8 +142,10 @@ export class TraceLoader {
                 }
                 Trace.Helpers.SyntheticEvents.SyntheticEventsManager.activate(syntheticEventsManager);
                 TraceLoader.initTraceBoundsManager(parsedTrace);
-                Timeline.ModificationsManager.ModificationsManager.reset();
-                Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
+                if (timelineModule) {
+                    timelineModule.ModificationsManager.ModificationsManager.reset();
+                    timelineModule.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(fromCache.model, 0);
+                }
             }, 4_000, 'Initializing state for cached trace');
             return parsedTrace;
         }
@@ -152,10 +159,12 @@ export class TraceLoader {
         cacheByName.set(configCacheKey, parsedTraceFileAndModel);
         traceEngineCache.set(name, cacheByName);
         TraceLoader.initTraceBoundsManager(parsedTraceFileAndModel.parsedTrace);
-        await wrapInTimeout(context, () => {
-            Timeline.ModificationsManager.ModificationsManager.reset();
-            Timeline.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceFileAndModel.model, 0);
-        }, 5_000, `Creating modification manager for ${name}`);
+        if (timelineModule) {
+            await wrapInTimeout(context, () => {
+                timelineModule.ModificationsManager.ModificationsManager.reset();
+                timelineModule.ModificationsManager.ModificationsManager.initAndActivateModificationsManager(parsedTraceFileAndModel.model, 0);
+            }, 5_000, `Creating modification manager for ${name}`);
+        }
         return parsedTraceFileAndModel.parsedTrace;
     }
     /**
@@ -226,6 +235,16 @@ export class TraceLoader {
     }
 }
 export async function fetchFileAsText(url) {
+    if (typeof window === 'undefined') {
+        // @ts-expect-error no node types here.
+        const fs = await import('node:fs/promises');
+        // @ts-expect-error no node types here.
+        const { fileURLToPath } = await import('node:url');
+        const path = fileURLToPath(url);
+        const buffer = await fs.readFile(path);
+        const contents = await Common.Gzip.arrayBufferToString(buffer);
+        return contents;
+    }
     const response = await fetch(url);
     if (response.status !== 200) {
         throw new Error(`Unable to load ${url}`);

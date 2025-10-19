@@ -80,4 +80,9 @@ export default `/*
   height: 22px;
 }
 
+.conditions-selector {
+  max-width: 120px;
+  margin: var(--sys-size-3);
+}
+
 /*# sourceURL=${import.meta.resolve('./blockedURLsPane.css')} */`;

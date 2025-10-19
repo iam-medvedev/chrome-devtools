@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
-var _a;
 import * as Common from '../../core/common/common.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
@@ -140,7 +139,7 @@ export class TimelineHistoryManager {
         const modelUsedMoreTimeAgo = this.recordings.reduce((a, b) => lastUsedTime(a.parsedTraceIndex) < lastUsedTime(b.parsedTraceIndex) ? a : b);
         this.recordings.splice(this.recordings.indexOf(modelUsedMoreTimeAgo), 1);
         function lastUsedTime(index) {
-            const data = _a.dataForTraceIndex(index);
+            const data = TimelineHistoryManager.dataForTraceIndex(index);
             if (!data) {
                 throw new Error('Unable to find data for model');
             }
@@ -224,7 +223,7 @@ export class TimelineHistoryManager {
     }
     #setActiveTrace(item) {
         if (item.type === 'TRACE_INDEX') {
-            const data = _a.dataForTraceIndex(item.parsedTraceIndex);
+            const data = TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
             if (!data) {
                 throw new Error('Unable to find data for model');
             }
@@ -240,7 +239,7 @@ export class TimelineHistoryManager {
         this.action.setEnabled(this.recordings.length >= 1 && this.enabled);
     }
     static previewElement(parsedTraceIndex) {
-        const data = _a.dataForTraceIndex(parsedTraceIndex);
+        const data = TimelineHistoryManager.dataForTraceIndex(parsedTraceIndex);
         if (!data) {
             throw new Error('Unable to find data for model');
         }
@@ -250,7 +249,7 @@ export class TimelineHistoryManager {
         if (item.type === 'LANDING_PAGE') {
             return this.#landingPageTitle;
         }
-        const data = _a.dataForTraceIndex(item.parsedTraceIndex);
+        const data = TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
         if (!data) {
             throw new Error('Unable to find data for model');
         }
@@ -342,7 +341,6 @@ export class TimelineHistoryManager {
         return parsedTraceIndexToPerformancePreviewData.get(index) || null;
     }
 }
-_a = TimelineHistoryManager;
 export const maxRecordings = 5;
 export const previewWidth = 500;
 // The reason we store a global map is because the Dropdown component needs to

@@ -481,6 +481,57 @@ describeWithEnvironment('PreloadingDetailsReportView', () => {
         ]);
         assert.isNull(requestLinkIcon);
     });
+    it('renders prerender-until-script details', async () => {
+        const url = urlString `https://example.com/prerendered.html`;
+        const data = {
+            pipeline: SDK.PreloadingModel.PreloadPipeline.newFromAttemptsForTesting([
+                {
+                    action: "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
+                    key: {
+                        loaderId: 'loaderId',
+                        action: "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
+                        url,
+                        targetHint: undefined,
+                    },
+                    pipelineId: 'pipelineId:1',
+                    status: "Running" /* SDK.PreloadingModel.PreloadingStatus.RUNNING */,
+                    prerenderStatus: null,
+                    disallowedMojoInterface: null,
+                    mismatchedHeaders: null,
+                    ruleSetIds: ['ruleSetId'],
+                    nodeIds: [1],
+                },
+            ]),
+            ruleSets: [
+                {
+                    id: 'ruleSetId',
+                    loaderId: 'loaderId',
+                    sourceText: `
+{
+  "prerender_until_script": [
+    {
+      "source": "list",
+      "urls": ["/prerendered.html"],
+      "until": "script"
+    }
+  ]
+}
+`,
+                },
+            ],
+            pageURL: urlString `https://example.com/`,
+        };
+        const component = await renderPreloadingDetailsReportView(data);
+        const report = getElementWithinComponent(component, 'devtools-report', ReportView.ReportView.Report);
+        const keys = getCleanTextContentFromElements(report, 'devtools-report-key');
+        const values = getCleanTextContentFromElements(report, 'devtools-report-value');
+        assert.deepEqual(zip2(keys, values), [
+            ['URL', url],
+            ['Action', 'Prerender until script'],
+            ['Status', 'Speculative load is running.'],
+            ['Rule set', 'example.com/'],
+        ]);
+    });
     // TODO: Add test for pipeline
 });
 //# sourceMappingURL=PreloadingDetailsReportView.test.js.map

@@ -8,12 +8,12 @@ import { NetworkRequestFormatter } from '../ai_assistance.js';
 describe('NetworkRequestFormatter', () => {
     describe('allowHeader', () => {
         it('allows a header from the list', () => {
-            assert.isTrue(NetworkRequestFormatter.allowHeader('content-type'));
+            assert.isTrue(NetworkRequestFormatter.NetworkRequestFormatter.allowHeader('content-type'));
         });
         it('disallows headers not on the list', () => {
-            assert.isFalse(NetworkRequestFormatter.allowHeader('cookie'));
-            assert.isFalse(NetworkRequestFormatter.allowHeader('set-cookie'));
-            assert.isFalse(NetworkRequestFormatter.allowHeader('authorization'));
+            assert.isFalse(NetworkRequestFormatter.NetworkRequestFormatter.allowHeader('cookie'));
+            assert.isFalse(NetworkRequestFormatter.NetworkRequestFormatter.allowHeader('set-cookie'));
+            assert.isFalse(NetworkRequestFormatter.NetworkRequestFormatter.allowHeader('authorization'));
         });
     });
     describe('formatInitiatorUrl', () => {
@@ -51,7 +51,7 @@ describe('NetworkRequestFormatter', () => {
         ];
         for (const t of tests) {
             it(`${t.targetResource} test when allowed resource is ${t.allowedResource}`, () => {
-                const formatted = NetworkRequestFormatter.formatInitiatorUrl(new URL(t.targetResource).origin, new URL(t.allowedResource).origin);
+                const formatted = NetworkRequestFormatter.NetworkRequestFormatter.formatInitiatorUrl(new URL(t.targetResource).origin, new URL(t.allowedResource).origin);
                 if (t.shouldBeRedacted) {
                     assert.strictEqual(formatted, '<redacted cross-origin initiator URL>', `${JSON.stringify(t)} was not redacted`);
                 }
@@ -67,28 +67,28 @@ describe('NetworkRequestFormatter', () => {
             fakeRequest.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('', false, ''));
             };
-            const result = await NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
             assert.strictEqual(result, 'test:\n<empty response>');
         });
         it('handles base64 text correctly', async () => {
             fakeRequest.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('some base64 string', true, ''));
             };
-            const result = await NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
             assert.strictEqual(result, 'test:\n<binary data>');
         });
         it('handles the text limit correctly', async () => {
             fakeRequest.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData('some text that is longer than expected', false, 'text/plain'));
             };
-            const result = await NetworkRequestFormatter.formatBody('test:', fakeRequest, 20);
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', fakeRequest, 20);
             assert.strictEqual(result, `test:\nsome text that is lo... <truncated>`);
         });
         it('handles the text format correctly', async () => {
             fakeRequest.requestContentData = () => {
                 return Promise.resolve(new TextUtils.ContentData.ContentData(JSON.stringify({ response: 'body' }), false, 'application/json'));
             };
-            const result = await NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
             assert.strictEqual(result, `test:\n${JSON.stringify({ response: 'body' })}`);
         });
         it('handles error correctly', async () => {
@@ -97,18 +97,18 @@ describe('NetworkRequestFormatter', () => {
                     error: 'an error has occurred',
                 });
             };
-            const result = await NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
+            const result = await NetworkRequestFormatter.NetworkRequestFormatter.formatBody('test:', fakeRequest, 100);
             assert.strictEqual(result, '');
         });
     });
     describe('formatHeaders', () => {
         it('does not redact a header from the list', () => {
-            assert.strictEqual(NetworkRequestFormatter.formatHeaders('test:', [{ name: 'content-type', value: 'foo' }]), 'test:\ncontent-type: foo');
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('test:', [{ name: 'content-type', value: 'foo' }]), 'test:\ncontent-type: foo');
         });
         it('disallows headers not on the list', () => {
-            assert.strictEqual(NetworkRequestFormatter.formatHeaders('test:', [{ name: 'cookie', value: 'foo' }]), 'test:\ncookie: <redacted>');
-            assert.strictEqual(NetworkRequestFormatter.formatHeaders('test:', [{ name: 'set-cookie', value: 'foo' }]), 'test:\nset-cookie: <redacted>');
-            assert.strictEqual(NetworkRequestFormatter.formatHeaders('test:', [{ name: 'authorization', value: 'foo' }]), 'test:\nauthorization: <redacted>');
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('test:', [{ name: 'cookie', value: 'foo' }]), 'test:\ncookie: <redacted>');
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('test:', [{ name: 'set-cookie', value: 'foo' }]), 'test:\nset-cookie: <redacted>');
+            assert.strictEqual(NetworkRequestFormatter.NetworkRequestFormatter.formatHeaders('test:', [{ name: 'authorization', value: 'foo' }]), 'test:\nauthorization: <redacted>');
         });
     });
 });

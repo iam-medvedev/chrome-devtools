@@ -639,10 +639,10 @@ __export(UIUtils_exports, {
   cloneCustomElement: () => cloneCustomElement,
   copyFileNameLabel: () => copyFileNameLabel,
   copyLinkAddressLabel: () => copyLinkAddressLabel,
+  copyTextToClipboard: () => copyTextToClipboard,
   createFileSelectorElement: () => createFileSelectorElement,
   createHistoryInput: () => createHistoryInput,
   createIconLabel: () => createIconLabel,
-  createInlineButton: () => createInlineButton,
   createInput: () => createInput,
   createLabel: () => createLabel,
   createOption: () => createOption,
@@ -8001,7 +8001,6 @@ var SoftContextMenu = class _SoftContextMenu {
 };
 
 // gen/front_end/ui/legacy/ContextMenu.js
-var _a;
 var Item = class {
   typeInternal;
   label;
@@ -8467,7 +8466,7 @@ var SubMenu = class extends Item {
 };
 var MENU_ITEM_HEIGHT_FOR_LOGGING = 20;
 var MENU_ITEM_WIDTH_FOR_LOGGING = 200;
-var ContextMenu = class extends SubMenu {
+var ContextMenu = class _ContextMenu extends SubMenu {
   contextMenu;
   pendingTargets;
   event;
@@ -8522,7 +8521,7 @@ var ContextMenu = class extends SubMenu {
   static initialize() {
     Host6.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host6.InspectorFrontendHostAPI.Events.SetUseSoftMenu, setUseSoftMenu);
     function setUseSoftMenu(event) {
-      _a.useSoftMenu = event.data;
+      _ContextMenu.useSoftMenu = event.data;
     }
   }
   /**
@@ -8533,7 +8532,7 @@ var ContextMenu = class extends SubMenu {
   static installHandler(doc) {
     doc.body.addEventListener("contextmenu", handler, false);
     function handler(event) {
-      const contextMenu = new _a(event);
+      const contextMenu = new _ContextMenu(event);
       void contextMenu.show();
     }
   }
@@ -8571,16 +8570,16 @@ var ContextMenu = class extends SubMenu {
    * and then displaying either a soft or native menu.
    */
   async show() {
-    _a.pendingMenu = this;
+    _ContextMenu.pendingMenu = this;
     this.event.consume(true);
     const loadedProviders = await Promise.all(this.pendingTargets.map(async (target) => {
       const providers = await loadApplicableRegisteredProviders(target);
       return { target, providers };
     }));
-    if (_a.pendingMenu !== this) {
+    if (_ContextMenu.pendingMenu !== this) {
       return;
     }
-    _a.pendingMenu = null;
+    _ContextMenu.pendingMenu = null;
     for (const { target, providers } of loadedProviders) {
       for (const provider of providers) {
         provider.appendApplicableItems(this.event, this, target);
@@ -8619,7 +8618,7 @@ var ContextMenu = class extends SubMenu {
     }
     const menuObject = this.buildMenuDescriptors();
     const ownerDocument = this.eventTarget.ownerDocument;
-    if (this.useSoftMenu || _a.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
+    if (this.useSoftMenu || _ContextMenu.useSoftMenu || Host6.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
       this.softMenu = new SoftContextMenu(menuObject, this.itemSelected.bind(this), this.keepOpen, void 0, this.onSoftMenuClosed, this.loggableParent);
       const isMouseEvent = this.event.pointerType === "mouse" && this.event.button >= 0;
       this.softMenu.setFocusOnTheFirstItem(!isMouseEvent);
@@ -8759,7 +8758,6 @@ var ContextMenu = class extends SubMenu {
     "footer"
   ];
 };
-_a = ContextMenu;
 var MenuButton = class extends HTMLElement {
   static observedAttributes = ["icon-name", "disabled"];
   #shadow = this.attachShadow({ mode: "open" });
@@ -10191,8 +10189,7 @@ var textPrompt_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./textPrompt.css")} */`;
 
 // gen/front_end/ui/legacy/TextPrompt.js
-var _a2;
-var TextPromptElement = class extends HTMLElement {
+var TextPromptElement = class _TextPromptElement extends HTMLElement {
   static observedAttributes = ["editing", "completions"];
   #shadow = this.attachShadow({ mode: "open" });
   #entrypoint = this.#shadow.createChild("span");
@@ -10227,7 +10224,7 @@ var TextPromptElement = class extends HTMLElement {
   }
   async #willAutoComplete(expression, filter, force) {
     if (!force) {
-      this.dispatchEvent(new _a2.BeforeAutoCompleteEvent({ expression, filter }));
+      this.dispatchEvent(new _TextPromptElement.BeforeAutoCompleteEvent({ expression, filter }));
     }
     const listId = this.getAttribute("completions");
     if (!listId) {
@@ -10266,9 +10263,9 @@ var TextPromptElement = class extends HTMLElement {
     const target = e.target;
     const text = target.textContent || "";
     if (commit) {
-      this.dispatchEvent(new _a2.CommitEvent(text));
+      this.dispatchEvent(new _TextPromptElement.CommitEvent(text));
     } else {
-      this.dispatchEvent(new _a2.CancelEvent());
+      this.dispatchEvent(new _TextPromptElement.CancelEvent());
     }
     e.consume();
   }
@@ -10302,7 +10299,6 @@ var TextPromptElement = class extends HTMLElement {
     return clone;
   }
 };
-_a2 = TextPromptElement;
 (function(TextPromptElement2) {
   class CommitEvent extends CustomEvent {
     constructor(detail) {
@@ -12284,32 +12280,6 @@ var confirmDialog_css_default = `/*
 }
 
 /*# sourceURL=${import.meta.resolve("./confirmDialog.css")} */`;
-
-// gen/front_end/ui/legacy/inlineButton.css.js
-var inlineButton_css_default = `/*
- * Copyright 2017 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-:host {
-  display: inline-flex;
-  border: 1px solid var(--sys-color-neutral-outline);
-  border-radius: 4px;
-  position: relative;
-  vertical-align: sub;
-  margin: 2px;
-  background-color: var(--sys-color-cdt-base-container);
-  justify-content: center;
-  width: 28px;
-}
-
-:host:hover {
-  border: none;
-  background-color: var(--sys-color-state-hover-on-subtle);
-}
-
-/*# sourceURL=${import.meta.resolve("./inlineButton.css")} */`;
 
 // gen/front_end/ui/legacy/inspectorCommon.css.js
 var inspectorCommon_css_default = `/*
@@ -15042,14 +15012,6 @@ var ConfirmDialog = class {
     return result;
   }
 };
-function createInlineButton(toolbarButton) {
-  const element = document.createElement("span");
-  const shadowRoot = createShadowRootWithCoreStyles(element, { cssFile: inlineButton_css_default });
-  element.classList.add("inline-button");
-  const toolbar4 = shadowRoot.createChild("devtools-toolbar");
-  toolbar4.appendToolbarItem(toolbarButton);
-  return element;
-}
 var Renderer = class {
   static async render(object, options) {
     if (!object) {
@@ -15478,6 +15440,12 @@ var HTMLElementWithLightDOMTemplate = class _HTMLElementWithLightDOMTemplate ext
     return targetElement;
   }
 };
+function copyTextToClipboard(text, alert) {
+  Host8.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
+  if (alert) {
+    LiveAnnouncer.alert(alert);
+  }
+}
 
 // gen/front_end/ui/legacy/GlassPane.js
 var GlassPane = class _GlassPane {
@@ -18017,7 +17985,7 @@ var ListWidget = class extends VBox {
     if (this.isTable) {
       element.role = "rowgroup";
     }
-    const content = this.delegate.renderItem(item8, editable);
+    const content = this.delegate.renderItem(item8, editable, this.items.length - 1);
     if (!content.hasAttribute("jslog")) {
       element.setAttribute("jslog", `${VisualLogging20.item()}`);
     }

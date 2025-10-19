@@ -22,7 +22,6 @@ __export(Runtime_exports, {
   isNodeEntry: () => isNodeEntry
 });
 import * as Platform from "./../platform/platform.js";
-var queryParamsObject = new URLSearchParams(location.search);
 var runtimePlatform = "";
 var runtimeInstance;
 var isNode;
@@ -67,11 +66,18 @@ var Runtime = class _Runtime {
   static removeInstance() {
     runtimeInstance = void 0;
   }
+  static queryParamsObject;
+  static getSearchParams() {
+    if (!_Runtime.queryParamsObject) {
+      _Runtime.queryParamsObject = new URLSearchParams(location.search);
+    }
+    return _Runtime.queryParamsObject;
+  }
   static queryParam(name) {
-    return queryParamsObject.get(name);
+    return _Runtime.getSearchParams().get(name);
   }
   static setQueryParamForTesting(name, value) {
-    queryParamsObject.set(name, value);
+    _Runtime.getSearchParams().set(name, value);
   }
   static isNode() {
     if (isNode === void 0) {

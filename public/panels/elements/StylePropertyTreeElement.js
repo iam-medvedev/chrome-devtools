@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
-var _a;
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -940,7 +939,11 @@ export class BezierRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.B
         const bezierText = document.createElement('span');
         bezierText.append(...nodes);
         new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch: icon, bezierText });
-        return [icon, bezierText];
+        const iconAndTextContainer = document.createElement('span');
+        iconAndTextContainer.classList.add('bezier-icon-and-text');
+        iconAndTextContainer.append(icon);
+        iconAndTextContainer.append(bezierText);
+        return [iconAndTextContainer];
     }
 }
 // clang-format off
@@ -1649,7 +1652,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return this.#matchedStyles;
     }
     getLonghand() {
-        return this.parent instanceof _a && this.parent.isShorthand ? this.parent : null;
+        return this.parent instanceof StylePropertyTreeElement && this.parent.isShorthand ? this.parent : null;
     }
     editable() {
         const hasSourceData = Boolean(this.style.styleSheetId && this.style.range);
@@ -1823,7 +1826,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
             if (leadingProperty) {
                 overloaded = true;
             }
-            const item = new _a({
+            const item = new StylePropertyTreeElement({
                 stylesPane: this.#parentPane,
                 section: this.#parentSection,
                 matchedStyles: this.#matchedStyles,
@@ -2344,7 +2347,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
     #startEditing(context) {
         this.contextForTest = context;
         // FIXME: we don't allow editing of longhand properties under a shorthand right now.
-        if (this.parent instanceof _a && this.parent.isShorthand) {
+        if (this.parent instanceof StylePropertyTreeElement && this.parent.isShorthand) {
             return;
         }
         const selectedElement = context.isEditingName ? this.nameElement : this.valueElement;
@@ -2511,7 +2514,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         const selectionLeftOffset = this.#selectionLeftOffset(target);
         const isFieldInputTerminated = (context.isEditingName ? keyChar === ':' :
             keyChar === ';' && selectionLeftOffset !== null &&
-                _a.shouldCommitValueSemicolon(target.textContent || '', selectionLeftOffset));
+                StylePropertyTreeElement.shouldCommitValueSemicolon(target.textContent || '', selectionLeftOffset));
         if (isFieldInputTerminated) {
             // Enter or colon (for name)/semicolon outside of string (for value).
             event.consume(true);
@@ -2610,7 +2613,7 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         let target = this;
         do {
             const sibling = moveDirection === 'forward' ? target.nextSibling : target.previousSibling;
-            target = sibling instanceof _a ? sibling : null;
+            target = sibling instanceof StylePropertyTreeElement ? sibling : null;
         } while (target?.inherited());
         return target;
     }
@@ -2860,5 +2863,4 @@ export class StylePropertyTreeElement extends UI.TreeOutline.TreeElement {
         return event.target === this.expandElement;
     }
 }
-_a = StylePropertyTreeElement;
 //# sourceMappingURL=StylePropertyTreeElement.js.map

@@ -80,6 +80,38 @@ export class SourceMapScopesInfo {
         }
     }
     /**
+     * @returns true, iff the function surrounding the provided position is marked as "hidden".
+     */
+    isOutlinedFrame(generatedLine, generatedColumn) {
+        const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+        return this.#isOutlinedFrame(rangeChain);
+    }
+    #isOutlinedFrame(rangeChain) {
+        for (let i = rangeChain.length - 1; i >= 0; --i) {
+            if (rangeChain[i].isStackFrame) {
+                return rangeChain[i].isHidden;
+            }
+        }
+        return false;
+    }
+    /**
+     * @returns true, iff the range surrounding the provided position contains multiple
+     * inlined original functions.
+     */
+    hasInlinedFrames(generatedLine, generatedColumn) {
+        const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+        for (let i = rangeChain.length - 1; i >= 0; --i) {
+            if (rangeChain[i].isStackFrame) {
+                // We stop looking for inlined original functions once we reach the current frame.
+                return false;
+            }
+            if (rangeChain[i].callSite) {
+                return true;
+            }
+        }
+        return false;
+    }
+    /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their
      * respective callsites in the original code (ordered from inner to outer).
@@ -99,7 +131,10 @@ export class SourceMapScopesInfo {
             const range = rangeChain[i];
             if (range.callSite) {
                 // Record the name and call-site if the range corresponds to an inlined function.
-                result.inlinedFunctions.push({ name: range.originalScope?.name ?? '', callsite: range.callSite });
+                result.inlinedFunctions.push({
+                    name: range.originalScope?.name ?? '',
+                    callsite: { ...range.callSite, sourceURL: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex) }
+                });
             }
             if (range.isStackFrame) {
                 // We arrived at an actual generated JS function, don't go further.
@@ -281,13 +316,7 @@ export class SourceMapScopesInfo {
                 this.#findOriginalScopeChain({ sourceIndex: entry.sourceIndex, line: entry.sourceLineNumber, column: entry.sourceColumnNumber })
                     .at(-1);
         }
-        // Walk the original scope chain outwards until we find a function.
-        for (let originalScope = originalInnerMostScope; originalScope; originalScope = originalScope.parent) {
-            if (originalScope.isStackFrame) {
-                return originalScope.name ?? '';
-            }
-        }
-        return null;
+        return this.#findFunctionNameInOriginalScopeChain(originalInnerMostScope) ?? null;
     }
     /**
      * Given an original position, this returns all the surrounding original scopes from outer
@@ -308,6 +337,54 @@ export class SourceMapScopesInfo {
                 walkScopes(scope.children);
             }
         })([scope]);
+        return result;
+    }
+    #findFunctionNameInOriginalScopeChain(innerOriginalScope) {
+        for (let originalScope = innerOriginalScope; originalScope; originalScope = originalScope.parent) {
+            if (originalScope.isStackFrame) {
+                return originalScope.name ?? '';
+            }
+        }
+        return null;
+    }
+    /**
+     * Returns one or more original stack frames for this single "raw frame" or call-site.
+     *
+     * @returns An empty array if no mapping at the call-site was found, or the resulting frames
+     * in top-to-bottom order in case of inlining.
+     * @throws If this range is marked "hidden". Outlining needs to be handled externally as
+     * outlined function segments in stack traces can span across bundles.
+     */
+    translateCallSite(generatedLine, generatedColumn) {
+        const rangeChain = this.#findGeneratedRangeChain(generatedLine, generatedColumn);
+        if (this.#isOutlinedFrame(rangeChain)) {
+            throw new Error('SourceMapScopesInfo is unable to translate an outlined function by itself');
+        }
+        const mapping = this.#sourceMap.findEntry(generatedLine, generatedColumn);
+        if (mapping?.sourceIndex === undefined) {
+            return [];
+        }
+        // The top-most frame is translated the same even if we have inlined functions.
+        const result = [{
+                line: mapping.sourceLineNumber,
+                column: mapping.sourceColumnNumber,
+                name: this.findOriginalFunctionName({ line: generatedLine, column: generatedColumn }) ?? undefined,
+                url: mapping.sourceURL,
+            }];
+        // Walk the range chain inside out until we find a generated function and for each inlined function add a frame.
+        for (let i = rangeChain.length - 1; i >= 0 && !rangeChain[i].isStackFrame; --i) {
+            const range = rangeChain[i];
+            if (!range.callSite) {
+                continue;
+            }
+            const originalScopeChain = this.#findOriginalScopeChain(range.callSite);
+            result.push({
+                line: range.callSite.line,
+                column: range.callSite.column,
+                name: this.#findFunctionNameInOriginalScopeChain(originalScopeChain.at(-1)) ?? undefined,
+                url: this.#sourceMap.sourceURLForSourceIndex(range.callSite.sourceIndex),
+            });
+        }
         return result;
     }
 }

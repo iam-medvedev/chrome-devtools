@@ -309,4 +309,21 @@ devtools-icon.open-in-animations-panel {
   text-decoration: underline dotted var(--sys-color-token-meta);
 }
 
+devtools-icon.bezier-swatch-icon {
+  position: relative;
+  transform: scale(0.7);
+  margin: -5px -2px -3px -4px;
+  user-select: none;
+  color: var(--icon-css);
+  cursor: default;
+
+  &:hover {
+    color: var(--icon-css-hover);
+  }
+}
+
+span.bezier-icon-and-text {
+  white-space: nowrap;
+}
+
 /*# sourceURL=${import.meta.resolve('./stylePropertiesTreeOutline.css')} */`;

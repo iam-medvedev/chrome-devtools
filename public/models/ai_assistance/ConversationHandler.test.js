@@ -14,7 +14,6 @@ import { createTarget, registerNoopActions, updateHostConfig } from '../../testi
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
 import { TraceLoader } from '../../testing/TraceLoader.js';
-import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
 import * as UI from '../../ui/legacy/legacy.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('ConversationHandler', () => {
@@ -22,7 +21,7 @@ describeWithMockConnection('ConversationHandler', () => {
         const explanation = 'I need more information';
         let performSearchStub;
         beforeEach(async () => {
-            AiAssistanceModel.ConversationHandler.removeInstance(); // maybe move out
+            AiAssistanceModel.ConversationHandler.ConversationHandler.removeInstance(); // maybe move out
             registerNoopActions([
                 'elements.toggle-element-search', 'timeline.record-reload', 'timeline.toggle-recording',
                 'timeline.show-history', 'components.collect-garbage'
@@ -43,26 +42,26 @@ describeWithMockConnection('ConversationHandler', () => {
         describe('can be blocked', () => {
             it('by a setting', async () => {
                 Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
-                const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+                const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                     aidaClient: mockAidaClient([[{ explanation }]]),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                 });
                 const generator = await conversationHandler.handleExternalRequest({
                     prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                    conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
                 });
                 const response = await generator.next();
                 assert.strictEqual(response.value.type, 'error');
                 assert.strictEqual(response.value.message, 'For AI features to be available, you need to enable AI assistance in DevTools settings.');
             });
             it('by feature availability', async () => {
-                const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+                const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                     aidaClient: mockAidaClient([[{ explanation }]]),
                     aidaAvailability: "sync-is-paused" /* Host.AidaClient.AidaAccessPreconditions.SYNC_IS_PAUSED */,
                 });
                 const generator = await conversationHandler.handleExternalRequest({
                     prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                    conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
                 });
                 const response = await generator.next();
                 assert.strictEqual(response.value.type, 'error');
@@ -77,13 +76,13 @@ describeWithMockConnection('ConversationHandler', () => {
                         enabled: true,
                     },
                 });
-                const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+                const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                     aidaClient: mockAidaClient([[{ explanation }]]),
                     aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
                 });
                 const generator = await conversationHandler.handleExternalRequest({
                     prompt: 'Please help me debug this problem',
-                    conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */
+                    conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
                 });
                 const response = await generator.next();
                 assert.strictEqual(response.value.type, 'error');
@@ -91,24 +90,28 @@ describeWithMockConnection('ConversationHandler', () => {
             });
         });
         it('returns an explanation for styling assistance requests', async () => {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: mockAidaClient([[{ explanation }]]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
-            const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
-            const generator = await conversationHandler.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
+            const requestReceivedSpy = sinon.spy();
+            conversationHandler.addEventListener("ExternalRequestReceived" /* AiAssistanceModel.ConversationHandler.ConversationHandlerEvents.EXTERNAL_REQUEST_RECEIVED */, requestReceivedSpy);
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
+            });
             const response = await generator.next();
             assert.strictEqual(response.value.message, explanation);
-            sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
+            sinon.assert.calledOnce(requestReceivedSpy);
         });
         it('handles styling assistance requests which contain a selector', async () => {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: mockAidaClient([[{ explanation }]]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const generator = await conversationHandler.handleExternalRequest({
                 prompt: 'Please help me debug this problem',
-                conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
                 selector: 'h1'
             });
             const response = await generator.next();
@@ -117,7 +120,7 @@ describeWithMockConnection('ConversationHandler', () => {
             assert.strictEqual(performSearchStub.getCall(0).args[0].query, 'h1');
         });
         it('returns an error if no answer could be generated', async () => {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: mockAidaClient([
                     [{
                             functionCalls: [{
@@ -129,19 +132,25 @@ describeWithMockConnection('ConversationHandler', () => {
                 ]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
-            const generator = await conversationHandler.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
+            });
             const response = await generator.next();
             assert.strictEqual(response.value.type, 'error');
             assert.strictEqual(response.value.message, 'Something went wrong. No answer was generated.');
         });
         it('persists external conversations to history', async () => {
             const aidaClient = mockAidaClient([[{ explanation }]]);
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const { view } = await createAiAssistancePanel({ aidaClient });
-            const generator = await conversationHandler.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
+            });
             await generator.next();
             const { contextMenu, id } = openHistoryContextMenu(view.input, '[External] Please help me debug this problem');
             assert.isDefined(id);
@@ -202,7 +211,7 @@ describeWithMockConnection('ConversationHandler', () => {
             UI.Context.Context.instance().setFlavor(SDK.NetworkRequest.NetworkRequest, networkRequest);
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
             const aidaClient = mockAidaClient([[{ explanation: 'test' }], [{ explanation: 'test2' }], [{ explanation: 'test3' }]]);
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient,
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
@@ -223,7 +232,10 @@ describeWithMockConnection('ConversationHandler', () => {
                     steps,
                 },
             ]);
-            const generator = await conversationHandler.handleExternalRequest({ prompt: 'Please help me debug this problem', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */ });
+            const generator = await conversationHandler.handleExternalRequest({
+                prompt: 'Please help me debug this problem',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */
+            });
             const response = await generator.next();
             assert.strictEqual(response.value.message, 'test2');
             view.input.onTextSubmit('Follow-up question to DrJones?');
@@ -257,11 +269,12 @@ describeWithMockConnection('ConversationHandler', () => {
         it('returns an explanation for network assistance requests', async () => {
             await createNetworkPanelForMockConnection();
             Common.Settings.moduleSetting('ai-assistance-enabled').set(true);
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: mockAidaClient([[{ explanation }]]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
-            const snackbarShowStub = sinon.stub(Snackbars.Snackbar.Snackbar, 'show');
+            const requestReceivedSpy = sinon.spy();
+            conversationHandler.addEventListener("ExternalRequestReceived" /* AiAssistanceModel.ConversationHandler.ConversationHandlerEvents.EXTERNAL_REQUEST_RECEIVED */, requestReceivedSpy);
             const request = createNetworkRequest();
             sinon.stub(request, 'requestContentData')
                 .resolves(new TextUtils.ContentData.ContentData('', false, 'text/plain'));
@@ -271,17 +284,17 @@ describeWithMockConnection('ConversationHandler', () => {
             sinon.stub(SDK.TargetManager.TargetManager.instance(), 'models').returns([networkManager]);
             const generator = await conversationHandler.handleExternalRequest({
                 prompt: 'Please help me debug this problem',
-                conversationType: "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */,
+                conversationType: "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */,
                 requestUrl: 'https://localhost:8080/'
             });
             let response = await generator.next();
             assert.strictEqual(response.value.message, 'Analyzing network data');
             response = await generator.next();
             assert.strictEqual(response.value.message, explanation);
-            sinon.assert.calledOnceWithExactly(snackbarShowStub, { message: 'DevTools received an external request' });
+            sinon.assert.calledOnce(requestReceivedSpy);
         });
         it('handles performance requests', async function () {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance({
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: mockAidaClient([[{ explanation }]]),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
@@ -292,7 +305,7 @@ describeWithMockConnection('ConversationHandler', () => {
             Timeline.TimelinePanel.TimelinePanel.instance({ forceNew: true, traceModel });
             const generator = await conversationHandler.handleExternalRequest({
                 prompt: 'Please help me debug this problem',
-                conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
+                conversationType: "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */,
                 data: Timeline.TimelinePanel.TimelinePanel.instance().getOrCreateExternalAIConversationData(),
             });
             let response = await generator.next();

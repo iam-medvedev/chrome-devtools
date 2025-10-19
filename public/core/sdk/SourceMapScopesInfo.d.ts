@@ -1,6 +1,7 @@
 import * as Formatter from '../../models/formatter/formatter.js';
 import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import type * as ScopesCodec from '../../third_party/source-map-scopes-codec/source-map-scopes-codec.js';
+import type * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { SourceMap } from './SourceMap.js';
 export declare class SourceMapScopesInfo {
@@ -20,6 +21,15 @@ export declare class SourceMapScopesInfo {
     hasOriginalScopes(sourceIdx: number): boolean;
     isEmpty(): boolean;
     addOriginalScopesAtIndex(sourceIdx: number, scope: ScopesCodec.OriginalScope): void;
+    /**
+     * @returns true, iff the function surrounding the provided position is marked as "hidden".
+     */
+    isOutlinedFrame(generatedLine: number, generatedColumn: number): boolean;
+    /**
+     * @returns true, iff the range surrounding the provided position contains multiple
+     * inlined original functions.
+     */
+    hasInlinedFrames(generatedLine: number, generatedColumn: number): boolean;
     /**
      * Given a generated position, returns the original name of the surrounding function as well as
      * all the original function names that got inlined into the surrounding generated function and their
@@ -76,6 +86,27 @@ export declare class SourceMapScopesInfo {
      * Returns the authored function name of the function containing the provided generated position.
      */
     findOriginalFunctionName({ line, column }: ScopesCodec.Position): string | null;
+    /**
+     * Returns one or more original stack frames for this single "raw frame" or call-site.
+     *
+     * @returns An empty array if no mapping at the call-site was found, or the resulting frames
+     * in top-to-bottom order in case of inlining.
+     * @throws If this range is marked "hidden". Outlining needs to be handled externally as
+     * outlined function segments in stack traces can span across bundles.
+     */
+    translateCallSite(generatedLine: number, generatedColumn: number): TranslatedFrame[];
+}
+/**
+ * Represents a stack frame in original terms. It closely aligns with StackTrace.StackTrace.Frame,
+ * but since we can't import that type here we mirror it here somewhat.
+ *
+ * Equivalent to Pick<StackTrace.StackTrace.Frame, 'line'|'column'|'name'|'url'>.
+ */
+export interface TranslatedFrame {
+    line: number;
+    column: number;
+    name?: string;
+    url?: Platform.DevToolsPath.UrlString;
 }
 /**
  * Represents the inlining information for a given generated position.
@@ -89,7 +120,12 @@ export declare class SourceMapScopesInfo {
 export interface InlineInfo {
     inlinedFunctions: Array<{
         name: string;
-        callsite: ScopesCodec.OriginalPosition;
+        callsite: {
+            line: number;
+            column: number;
+            sourceIndex: number;
+            sourceURL?: Platform.DevToolsPath.UrlString;
+        };
     }>;
     originalFunctionName: string;
 }

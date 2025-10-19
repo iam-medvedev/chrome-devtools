@@ -4,6 +4,8 @@
 import * as Common from '../../core/common/common.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
+// eslint-disable-next-line rulesdir/es-modules-import
+import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import { ContentProviderBasedProject } from './ContentProviderBasedProject.js';
@@ -37,9 +39,11 @@ export class CompilerScriptMapping {
     #projects = new Map();
     #sourceMapToProject = new Map();
     #uiSourceCodeToSourceMaps = new Platform.MapUtilities.Multimap();
+    #debuggerModel;
     constructor(debuggerModel, workspace, debuggerWorkspaceBinding) {
         this.#sourceMapManager = debuggerModel.sourceMapManager();
         this.#debuggerWorkspaceBinding = debuggerWorkspaceBinding;
+        this.#debuggerModel = debuggerModel;
         this.#stubProject = new ContentProviderBasedProject(workspace, 'jsSourceMaps:stub:' + debuggerModel.target().id(), Workspace.Workspace.projectTypes.Service, '', true /* isServiceProject */);
         this.#eventListeners = [
             this.#sourceMapManager.addEventListener(SDK.SourceMapManager.Events.SourceMapWillAttach, this.sourceMapWillAttach, this),
@@ -214,8 +218,47 @@ export class CompilerScriptMapping {
         }
         return ranges;
     }
-    translateRawFramesStep(_rawFrames, _translatedFrames) {
-        // TODO(crbug.com/433162438): Implement source map stack trace translation.
+    translateRawFramesStep(rawFrames, translatedFrames) {
+        const frame = rawFrames[0];
+        if (StackTraceImpl.Trie.isBuiltinFrame(frame)) {
+            return false;
+        }
+        const sourceMapWithScopeInfoForFrame = (rawFrame) => {
+            const script = this.#debuggerModel.scriptForId(rawFrame.scriptId ?? '');
+            if (!script || this.#stubUISourceCodes.has(script)) {
+                // Use fallback while source map is being loaded.
+                return null;
+            }
+            const sourceMap = script.sourceMap();
+            return sourceMap?.hasScopeInfo() ? { sourceMap, script } : null;
+        };
+        const sourceMapAndScript = sourceMapWithScopeInfoForFrame(frame);
+        if (!sourceMapAndScript) {
+            return false;
+        }
+        const { sourceMap, script } = sourceMapAndScript;
+        const { lineNumber, columnNumber } = script.relativeLocationToRawLocation(frame);
+        if (!sourceMap.isOutlinedFrame(lineNumber, columnNumber)) {
+            const frames = sourceMap.translateCallSite(lineNumber, columnNumber);
+            if (!frames.length) {
+                return false;
+            }
+            rawFrames.shift();
+            const result = [];
+            translatedFrames.push(result);
+            const project = this.#sourceMapToProject.get(sourceMap);
+            for (const frame of frames) {
+                // Switch out url for UISourceCode where we have it.
+                const uiSourceCode = frame.url ? project?.uiSourceCodeForURL(frame.url) : undefined;
+                result.push({
+                    ...frame,
+                    url: uiSourceCode ? undefined : frame.url,
+                    uiSourceCode: uiSourceCode ?? undefined,
+                });
+            }
+            return true;
+        }
+        // TODO(crbug.com/433162438): Consolidate outlined frames.
         return false;
     }
     /**

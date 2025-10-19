@@ -5,6 +5,8 @@ export declare class FormatterWorkerPool {
     private workerTasks;
     constructor();
     static instance(): FormatterWorkerPool;
+    dispose(): void;
+    static removeInstance(): void;
     private createWorker;
     private processNextTask;
     private onWorkerMessage;

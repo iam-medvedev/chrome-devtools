@@ -10,12 +10,12 @@ __export(Automapping_exports, {
   Automapping: () => Automapping,
   AutomappingStatus: () => AutomappingStatus
 });
-import * as Common8 from "./../../core/common/common.js";
-import * as Host6 from "./../../core/host/host.js";
-import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Common6 from "./../../core/common/common.js";
+import * as Host5 from "./../../core/host/host.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
 import * as Bindings2 from "./../bindings/bindings.js";
-import * as TextUtils6 from "./../text_utils/text_utils.js";
-import * as Workspace9 from "./../workspace/workspace.js";
+import * as TextUtils5 from "./../text_utils/text_utils.js";
+import * as Workspace5 from "./../workspace/workspace.js";
 
 // gen/front_end/models/persistence/FileSystemWorkspaceBinding.js
 var FileSystemWorkspaceBinding_exports = {};
@@ -1312,940 +1312,26 @@ __export(PersistenceImpl_exports, {
   PersistenceBinding: () => PersistenceBinding,
   PersistenceImpl: () => PersistenceImpl
 });
-import * as Common7 from "./../../core/common/common.js";
-import * as Host5 from "./../../core/host/host.js";
-import * as Platform10 from "./../../core/platform/platform.js";
-import * as SDK2 from "./../../core/sdk/sdk.js";
-import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
-import * as Bindings from "./../bindings/bindings.js";
-import * as BreakpointManager2 from "./../breakpoints/breakpoints.js";
-import * as TextUtils5 from "./../text_utils/text_utils.js";
-import * as Workspace7 from "./../workspace/workspace.js";
-
-// gen/front_end/models/persistence/PersistenceUtils.js
-var PersistenceUtils_exports = {};
-__export(PersistenceUtils_exports, {
-  LinkDecorator: () => LinkDecorator,
-  PersistenceUtils: () => PersistenceUtils
-});
-import * as Common6 from "./../../core/common/common.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform8 from "./../../core/platform/platform.js";
-import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI2 from "./../../ui/legacy/legacy.js";
-import * as Workspace5 from "./../workspace/workspace.js";
-
-// gen/front_end/models/persistence/NetworkPersistenceManager.js
-var NetworkPersistenceManager_exports = {};
-__export(NetworkPersistenceManager_exports, {
-  HEADERS_FILENAME: () => HEADERS_FILENAME,
-  NetworkPersistenceManager: () => NetworkPersistenceManager,
-  escapeRegex: () => escapeRegex,
-  extractDirectoryIndex: () => extractDirectoryIndex,
-  isHeaderOverride: () => isHeaderOverride
-});
 import * as Common5 from "./../../core/common/common.js";
 import * as Host4 from "./../../core/host/host.js";
 import * as Platform7 from "./../../core/platform/platform.js";
 import * as SDK from "./../../core/sdk/sdk.js";
-import * as UI from "./../../ui/legacy/legacy.js";
-import * as Breakpoints from "./../breakpoints/breakpoints.js";
+import * as Bindings from "./../bindings/bindings.js";
+import * as BreakpointManager from "./../breakpoints/breakpoints.js";
 import * as TextUtils4 from "./../text_utils/text_utils.js";
 import * as Workspace3 from "./../workspace/workspace.js";
-var networkPersistenceManagerInstance;
-var forbiddenUrls = ["chromewebstore.google.com", "chrome.google.com"];
-var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common5.ObjectWrapper.ObjectWrapper {
-  #bindings = /* @__PURE__ */ new WeakMap();
-  #originalResponseContentPromises = /* @__PURE__ */ new WeakMap();
-  #savingForOverrides = /* @__PURE__ */ new WeakSet();
-  #enabledSetting = Common5.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
-  #workspace;
-  #networkUISourceCodeForEncodedPath = /* @__PURE__ */ new Map();
-  #interceptionHandlerBound;
-  #updateInterceptionThrottler = new Common5.Throttler.Throttler(50);
-  #project = null;
-  #active = false;
-  #enabled = false;
-  #eventDescriptors = [];
-  #headerOverridesMap = /* @__PURE__ */ new Map();
-  #sourceCodeToBindProcessMutex = /* @__PURE__ */ new WeakMap();
-  #eventDispatchThrottler = new Common5.Throttler.Throttler(50);
-  #headerOverridesForEventDispatch = /* @__PURE__ */ new Set();
-  constructor(workspace) {
-    super();
-    this.#enabledSetting.addChangeListener(this.enabledChanged, this);
-    this.#workspace = workspace;
-    this.#interceptionHandlerBound = this.interceptionHandler.bind(this);
-    this.#workspace.addEventListener(Workspace3.Workspace.Events.ProjectAdded, (event) => {
-      void this.onProjectAdded(event.data);
-    });
-    this.#workspace.addEventListener(Workspace3.Workspace.Events.ProjectRemoved, (event) => {
-      void this.onProjectRemoved(event.data);
-    });
-    PersistenceImpl.instance().addNetworkInterceptor(this.canHandleNetworkUISourceCode.bind(this));
-    Breakpoints.BreakpointManager.BreakpointManager.instance().addUpdateBindingsCallback(this.networkUISourceCodeAdded.bind(this));
-    void this.enabledChanged();
-    SDK.TargetManager.TargetManager.instance().observeTargets(this);
-  }
-  targetAdded() {
-    void this.updateActiveProject();
-  }
-  targetRemoved() {
-    void this.updateActiveProject();
-  }
-  static instance(opts = { forceNew: null, workspace: null }) {
-    const { forceNew, workspace } = opts;
-    if (!networkPersistenceManagerInstance || forceNew) {
-      if (!workspace) {
-        throw new Error("Missing workspace for NetworkPersistenceManager");
-      }
-      networkPersistenceManagerInstance = new _NetworkPersistenceManager(workspace);
-    }
-    return networkPersistenceManagerInstance;
-  }
-  active() {
-    return this.#active;
-  }
-  project() {
-    return this.#project;
-  }
-  originalContentForUISourceCode(uiSourceCode) {
-    const binding = this.#bindings.get(uiSourceCode);
-    if (!binding) {
-      return null;
-    }
-    const fileSystemUISourceCode = binding.fileSystem;
-    return this.#originalResponseContentPromises.get(fileSystemUISourceCode) || null;
-  }
-  async enabledChanged() {
-    if (this.#enabled === this.#enabledSetting.get()) {
-      return;
-    }
-    this.#enabled = this.#enabledSetting.get();
-    if (this.#enabled) {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.PersistenceNetworkOverridesEnabled);
-      this.#eventDescriptors = [
-        Workspace3.Workspace.WorkspaceImpl.instance().addEventListener(Workspace3.Workspace.Events.UISourceCodeRenamed, (event) => {
-          void this.uiSourceCodeRenamedListener(event);
-        }),
-        Workspace3.Workspace.WorkspaceImpl.instance().addEventListener(Workspace3.Workspace.Events.UISourceCodeAdded, (event) => {
-          void this.uiSourceCodeAdded(event);
-        }),
-        Workspace3.Workspace.WorkspaceImpl.instance().addEventListener(Workspace3.Workspace.Events.UISourceCodeRemoved, (event) => {
-          void this.uiSourceCodeRemovedListener(event);
-        }),
-        Workspace3.Workspace.WorkspaceImpl.instance().addEventListener(Workspace3.Workspace.Events.WorkingCopyCommitted, (event) => this.onUISourceCodeWorkingCopyCommitted(event.data.uiSourceCode))
-      ];
-      await this.updateActiveProject();
-    } else {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.PersistenceNetworkOverridesDisabled);
-      Common5.EventTarget.removeEventListeners(this.#eventDescriptors);
-      await this.updateActiveProject();
-    }
-    this.dispatchEventToListeners("LocalOverridesProjectUpdated", this.#enabled);
-  }
-  async uiSourceCodeRenamedListener(event) {
-    const uiSourceCode = event.data.uiSourceCode;
-    await this.onUISourceCodeRemoved(uiSourceCode);
-    await this.onUISourceCodeAdded(uiSourceCode);
-  }
-  async uiSourceCodeRemovedListener(event) {
-    await this.onUISourceCodeRemoved(event.data);
-  }
-  async uiSourceCodeAdded(event) {
-    await this.onUISourceCodeAdded(event.data);
-  }
-  async updateActiveProject() {
-    const wasActive = this.#active;
-    this.#active = Boolean(this.#enabledSetting.get() && SDK.TargetManager.TargetManager.instance().rootTarget() && this.#project);
-    if (this.#active === wasActive) {
-      return;
-    }
-    if (this.#active && this.#project) {
-      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeAdded(uiSourceCode)));
-      const networkProjects = this.#workspace.projectsForType(Workspace3.Workspace.projectTypes.Network);
-      for (const networkProject of networkProjects) {
-        await Promise.all([...networkProject.uiSourceCodes()].map((uiSourceCode) => this.networkUISourceCodeAdded(uiSourceCode)));
-      }
-    } else if (this.#project) {
-      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeRemoved(uiSourceCode)));
-      this.#networkUISourceCodeForEncodedPath.clear();
-    }
-    PersistenceImpl.instance().refreshAutomapping();
-  }
-  encodedPathFromUrl(url, ignoreInactive) {
-    return Common5.ParsedURL.ParsedURL.rawPathToEncodedPathString(this.rawPathFromUrl(url, ignoreInactive));
-  }
-  rawPathFromUrl(url, ignoreInactive) {
-    if (!this.#active && !ignoreInactive || !this.#project) {
-      return Platform7.DevToolsPath.EmptyRawPathString;
-    }
-    let initialEncodedPath = Common5.ParsedURL.ParsedURL.urlWithoutHash(url.replace(/^https?:\/\//, ""));
-    if (initialEncodedPath.endsWith("/") && initialEncodedPath.indexOf("?") === -1) {
-      initialEncodedPath = Common5.ParsedURL.ParsedURL.concatenate(initialEncodedPath, "index.html");
-    }
-    let encodedPathParts = _NetworkPersistenceManager.encodeEncodedPathToLocalPathParts(initialEncodedPath);
-    const projectPath = FileSystemWorkspaceBinding.fileSystemPath(this.#project.id());
-    const encodedPath = encodedPathParts.join("/");
-    if (projectPath.length + encodedPath.length > 200) {
-      const domain = encodedPathParts[0];
-      const encodedFileName = encodedPathParts[encodedPathParts.length - 1];
-      const shortFileName = encodedFileName ? encodedFileName.substr(0, 10) + "-" : "";
-      const extension = Common5.ParsedURL.ParsedURL.extractExtension(initialEncodedPath);
-      const extensionPart = extension ? "." + extension.substr(0, 10) : "";
-      encodedPathParts = [
-        domain,
-        "longurls",
-        shortFileName + Platform7.StringUtilities.hashCode(encodedPath).toString(16) + extensionPart
-      ];
-    }
-    return Common5.ParsedURL.ParsedURL.join(encodedPathParts, "/");
-  }
-  static encodeEncodedPathToLocalPathParts(encodedPath) {
-    const encodedParts = [];
-    for (const pathPart of this.#fileNamePartsFromEncodedPath(encodedPath)) {
-      if (!pathPart) {
-        continue;
-      }
-      let encodedName = encodeURI(pathPart).replace(/[\/\*]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
-      if (Host4.Platform.isWin()) {
-        encodedName = encodedName.replace(/[:\?]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
-        if (RESERVED_FILENAMES.has(encodedName.toLowerCase())) {
-          encodedName = encodedName.split("").map((char) => "%" + char.charCodeAt(0).toString(16).toUpperCase()).join("");
-        }
-        const lastChar = encodedName.charAt(encodedName.length - 1);
-        if (lastChar === ".") {
-          encodedName = encodedName.substr(0, encodedName.length - 1) + "%2E";
-        }
-      }
-      encodedParts.push(encodedName);
-    }
-    return encodedParts;
-  }
-  static #fileNamePartsFromEncodedPath(encodedPath) {
-    encodedPath = Common5.ParsedURL.ParsedURL.urlWithoutHash(encodedPath);
-    const queryIndex = encodedPath.indexOf("?");
-    if (queryIndex === -1) {
-      return encodedPath.split("/");
-    }
-    if (queryIndex === 0) {
-      return [encodedPath];
-    }
-    const endSection = encodedPath.substr(queryIndex);
-    const parts = encodedPath.substr(0, encodedPath.length - endSection.length).split("/");
-    parts[parts.length - 1] += endSection;
-    return parts;
-  }
-  fileUrlFromNetworkUrl(url, ignoreInactive) {
-    if (!this.#project) {
-      return Platform7.DevToolsPath.EmptyUrlString;
-    }
-    return Common5.ParsedURL.ParsedURL.concatenate(this.#project.fileSystemPath(), "/", this.encodedPathFromUrl(url, ignoreInactive));
-  }
-  getHeadersUISourceCodeFromUrl(url) {
-    const fileUrlFromRequest = this.fileUrlFromNetworkUrl(
-      url,
-      /* ignoreNoActive */
-      true
-    );
-    const folderUrlFromRequest = Common5.ParsedURL.ParsedURL.substring(fileUrlFromRequest, 0, fileUrlFromRequest.lastIndexOf("/"));
-    const headersFileUrl = Common5.ParsedURL.ParsedURL.concatenate(folderUrlFromRequest, "/", HEADERS_FILENAME);
-    return Workspace3.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(headersFileUrl);
-  }
-  async getOrCreateHeadersUISourceCodeFromUrl(url) {
-    let uiSourceCode = this.getHeadersUISourceCodeFromUrl(url);
-    if (!uiSourceCode && this.#project) {
-      const encodedFilePath = this.encodedPathFromUrl(
-        url,
-        /* ignoreNoActive */
-        true
-      );
-      const encodedPath = Common5.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
-      uiSourceCode = await this.#project.createFile(encodedPath, HEADERS_FILENAME, "");
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.HeaderOverrideFileCreated);
-    }
-    return uiSourceCode;
-  }
-  decodeLocalPathToUrlPath(path) {
-    try {
-      return unescape(path);
-    } catch (e) {
-      console.error(e);
-    }
-    return path;
-  }
-  async #unbind(uiSourceCode) {
-    const binding = this.#bindings.get(uiSourceCode);
-    const headerBinding = uiSourceCode.url().endsWith(HEADERS_FILENAME);
-    if (binding) {
-      const mutex = this.#getOrCreateMutex(binding.network);
-      await mutex.run(this.#innerUnbind.bind(this, binding));
-    } else if (headerBinding) {
-      this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged", uiSourceCode);
-    }
-  }
-  async #unbindUnguarded(uiSourceCode) {
-    const binding = this.#bindings.get(uiSourceCode);
-    if (binding) {
-      await this.#innerUnbind(binding);
-    }
-  }
-  #innerUnbind(binding) {
-    this.#bindings.delete(binding.network);
-    this.#bindings.delete(binding.fileSystem);
-    return PersistenceImpl.instance().removeBinding(binding);
-  }
-  async #bind(networkUISourceCode, fileSystemUISourceCode) {
-    const mutex = this.#getOrCreateMutex(networkUISourceCode);
-    await mutex.run(async () => {
-      const existingBinding = this.#bindings.get(networkUISourceCode);
-      if (existingBinding) {
-        const { network, fileSystem } = existingBinding;
-        if (networkUISourceCode === network && fileSystemUISourceCode === fileSystem) {
-          return;
-        }
-        await this.#unbindUnguarded(networkUISourceCode);
-        await this.#unbindUnguarded(fileSystemUISourceCode);
-      }
-      await this.#innerAddBinding(networkUISourceCode, fileSystemUISourceCode);
-    });
-  }
-  #getOrCreateMutex(networkUISourceCode) {
-    let mutex = this.#sourceCodeToBindProcessMutex.get(networkUISourceCode);
-    if (!mutex) {
-      mutex = new Common5.Mutex.Mutex();
-      this.#sourceCodeToBindProcessMutex.set(networkUISourceCode, mutex);
-    }
-    return mutex;
-  }
-  async #innerAddBinding(networkUISourceCode, fileSystemUISourceCode) {
-    const binding = new PersistenceBinding(networkUISourceCode, fileSystemUISourceCode);
-    this.#bindings.set(networkUISourceCode, binding);
-    this.#bindings.set(fileSystemUISourceCode, binding);
-    await PersistenceImpl.instance().addBinding(binding);
-    const uiSourceCodeOfTruth = this.#savingForOverrides.has(networkUISourceCode) ? networkUISourceCode : fileSystemUISourceCode;
-    const contentDataOrError = await uiSourceCodeOfTruth.requestContentData();
-    const { content, isEncoded } = TextUtils4.ContentData.ContentData.asDeferredContent(contentDataOrError);
-    PersistenceImpl.instance().syncContent(uiSourceCodeOfTruth, content || "", isEncoded);
-  }
-  onUISourceCodeWorkingCopyCommitted(uiSourceCode) {
-    void this.saveUISourceCodeForOverrides(uiSourceCode);
-    this.updateInterceptionPatterns();
-  }
-  isActiveHeaderOverrides(uiSourceCode) {
-    if (!this.#enabledSetting.get()) {
-      return false;
-    }
-    return uiSourceCode.url().endsWith(HEADERS_FILENAME) && this.hasMatchingNetworkUISourceCodeForHeaderOverridesFile(uiSourceCode);
-  }
-  isUISourceCodeOverridable(uiSourceCode) {
-    return uiSourceCode.project().type() === Workspace3.Workspace.projectTypes.Network && !_NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url());
-  }
-  #isUISourceCodeAlreadyOverridden(uiSourceCode) {
-    return this.#bindings.has(uiSourceCode) || this.#savingForOverrides.has(uiSourceCode);
-  }
-  #shouldPromptSaveForOverridesDialog(uiSourceCode) {
-    return this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode) && !this.#active && !this.#project;
-  }
-  #canSaveUISourceCodeForOverrides(uiSourceCode) {
-    return this.#active && this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode);
-  }
-  async setupAndStartLocalOverrides(uiSourceCode) {
-    if (this.#shouldPromptSaveForOverridesDialog(uiSourceCode)) {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverrideContentContextMenuSetup);
-      await new Promise((resolve) => UI.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(resolve));
-      await IsolatedFileSystemManager.instance().addFileSystem("overrides");
-    }
-    if (!this.project()) {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverrideContentContextMenuAbandonSetup);
-      return false;
-    }
-    if (!this.#enabledSetting.get()) {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverrideContentContextMenuActivateDisabled);
-      this.#enabledSetting.set(true);
-      await this.once(
-        "LocalOverridesProjectUpdated"
-        /* Events.LOCAL_OVERRIDES_PROJECT_UPDATED */
-      );
-    }
-    if (!this.#isUISourceCodeAlreadyOverridden(uiSourceCode)) {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverrideContentContextMenuSaveNewFile);
-      uiSourceCode.commitWorkingCopy();
-      await this.saveUISourceCodeForOverrides(uiSourceCode);
-    } else {
-      Host4.userMetrics.actionTaken(Host4.UserMetrics.Action.OverrideContentContextMenuOpenExistingFile);
-    }
-    return true;
-  }
-  async saveUISourceCodeForOverrides(uiSourceCode) {
-    if (!this.#canSaveUISourceCodeForOverrides(uiSourceCode)) {
-      return;
-    }
-    this.#savingForOverrides.add(uiSourceCode);
-    let encodedPath = this.encodedPathFromUrl(uiSourceCode.url());
-    const contentDataOrError = await uiSourceCode.requestContentData();
-    const { content, isEncoded } = TextUtils4.ContentData.ContentData.asDeferredContent(contentDataOrError);
-    const lastIndexOfSlash = encodedPath.lastIndexOf("/");
-    const encodedFileName = Common5.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
-    const rawFileName = Common5.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
-    encodedPath = Common5.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
-    if (this.#project) {
-      await this.#project.createFile(encodedPath, rawFileName, content ?? "", isEncoded);
-    }
-    this.fileCreatedForTest(encodedPath, rawFileName);
-    this.#savingForOverrides.delete(uiSourceCode);
-  }
-  fileCreatedForTest(_path, _fileName) {
-  }
-  patternForFileSystemUISourceCode(uiSourceCode) {
-    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    if (relativePathParts.length < 2) {
-      return "";
-    }
-    if (relativePathParts[1] === "longurls" && relativePathParts.length !== 2) {
-      if (relativePathParts[0] === "file:") {
-        return "file:///*";
-      }
-      return "http?://" + relativePathParts[0] + "/*";
-    }
-    const path = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts.join("/")));
-    if (path.startsWith("file:/")) {
-      return "file:///" + path.substring("file:/".length);
-    }
-    return "http?://" + path;
-  }
-  // 'chrome://'-URLs and the Chrome Web Store are privileged URLs. We don't want users
-  // to be able to override those. Ideally we'd have a similar check in the backend,
-  // because the fix here has no effect on non-DevTools CDP clients.
-  isForbiddenFileUrl(uiSourceCode) {
-    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    const host = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts[0] || ""));
-    return host === "chrome:" || forbiddenUrls.includes(host);
-  }
-  static isForbiddenNetworkUrl(urlString) {
-    const url = Common5.ParsedURL.ParsedURL.fromString(urlString);
-    if (!url) {
-      return false;
-    }
-    return url.scheme === "chrome" || forbiddenUrls.includes(url.host);
-  }
-  async onUISourceCodeAdded(uiSourceCode) {
-    await this.networkUISourceCodeAdded(uiSourceCode);
-    await this.filesystemUISourceCodeAdded(uiSourceCode);
-  }
-  canHandleNetworkUISourceCode(uiSourceCode) {
-    return this.#active && !Common5.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
-  }
-  async networkUISourceCodeAdded(uiSourceCode) {
-    if (uiSourceCode.project().type() !== Workspace3.Workspace.projectTypes.Network || !this.canHandleNetworkUISourceCode(uiSourceCode)) {
-      return;
-    }
-    const url = Common5.ParsedURL.ParsedURL.urlWithoutHash(uiSourceCode.url());
-    this.#networkUISourceCodeForEncodedPath.set(this.encodedPathFromUrl(url), uiSourceCode);
-    const project = this.#project;
-    const fileSystemUISourceCode = project.uiSourceCodeForURL(this.fileUrlFromNetworkUrl(url));
-    if (fileSystemUISourceCode) {
-      await this.#bind(uiSourceCode, fileSystemUISourceCode);
-    }
-    this.#maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode);
-  }
-  async filesystemUISourceCodeAdded(uiSourceCode) {
-    if (!this.#active || uiSourceCode.project() !== this.#project) {
-      return;
-    }
-    this.updateInterceptionPatterns();
-    const relativePath = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    const networkUISourceCode = this.#networkUISourceCodeForEncodedPath.get(Common5.ParsedURL.ParsedURL.join(relativePath, "/"));
-    if (networkUISourceCode) {
-      await this.#bind(networkUISourceCode, uiSourceCode);
-    }
-  }
-  async #getHeaderOverridesFromUiSourceCode(uiSourceCode) {
-    const contentData = await uiSourceCode.requestContentData().then(TextUtils4.ContentData.ContentData.contentDataOrEmpty);
-    const content = contentData.text || "[]";
-    let headerOverrides = [];
-    try {
-      headerOverrides = JSON.parse(content);
-      if (!headerOverrides.every(isHeaderOverride)) {
-        throw new Error("Type mismatch after parsing");
-      }
-    } catch {
-      console.error("Failed to parse", uiSourceCode.url(), "for locally overriding headers.");
-      return [];
-    }
-    return headerOverrides;
-  }
-  #doubleDecodeEncodedPathString(relativePath) {
-    const singlyDecodedPath = this.decodeLocalPathToUrlPath(relativePath);
-    const decodedPath = this.decodeLocalPathToUrlPath(singlyDecodedPath);
-    return { singlyDecodedPath, decodedPath };
-  }
-  async generateHeaderPatterns(uiSourceCode) {
-    const headerOverrides = await this.#getHeaderOverridesFromUiSourceCode(uiSourceCode);
-    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
-    const relativePath = Common5.ParsedURL.ParsedURL.slice(Common5.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
-    const { singlyDecodedPath, decodedPath } = this.#doubleDecodeEncodedPathString(relativePath);
-    let patterns;
-    if (relativePathParts.length > 2 && relativePathParts[1] === "longurls" && headerOverrides.length) {
-      patterns = this.#generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathParts[0]);
-    } else if (decodedPath.startsWith("file:/")) {
-      patterns = this.#generateHeaderPatternsForFileUrl(Common5.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length), headerOverrides);
-    } else {
-      patterns = this.#generateHeaderPatternsForHttpUrl(decodedPath, headerOverrides);
-    }
-    return { ...patterns, path: singlyDecodedPath };
-  }
-  #generateHeaderPatternsForHttpUrl(decodedPath, headerOverrides) {
-    const headerPatterns = /* @__PURE__ */ new Set();
-    const overridesWithRegex = [];
-    for (const headerOverride of headerOverrides) {
-      headerPatterns.add("http?://" + decodedPath + headerOverride.applyTo);
-      if (decodedPath === "") {
-        headerPatterns.add("file:///" + headerOverride.applyTo);
-        overridesWithRegex.push({
-          applyToRegex: new RegExp("^file:///" + escapeRegex(decodedPath + headerOverride.applyTo) + "$"),
-          headers: headerOverride.headers
-        });
-      }
-      const { head, tail } = extractDirectoryIndex(headerOverride.applyTo);
-      if (tail) {
-        headerPatterns.add("http?://" + decodedPath + head);
-        overridesWithRegex.push({
-          applyToRegex: new RegExp(`^${escapeRegex(decodedPath + head)}(${escapeRegex(tail)})?$`),
-          headers: headerOverride.headers
-        });
-      } else {
-        overridesWithRegex.push({
-          applyToRegex: new RegExp(`^${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
-          headers: headerOverride.headers
-        });
-      }
-    }
-    return { headerPatterns, overridesWithRegex };
-  }
-  #generateHeaderPatternsForFileUrl(decodedPath, headerOverrides) {
-    const headerPatterns = /* @__PURE__ */ new Set();
-    const overridesWithRegex = [];
-    for (const headerOverride of headerOverrides) {
-      headerPatterns.add("file:///" + decodedPath + headerOverride.applyTo);
-      overridesWithRegex.push({
-        applyToRegex: new RegExp(`^file:/${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
-        headers: headerOverride.headers
-      });
-    }
-    return { headerPatterns, overridesWithRegex };
-  }
-  // For very long URLs, part of the URL is hashed for local overrides, so that
-  // the URL appears shorter. This special case is handled here.
-  #generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathPart) {
-    const headerPatterns = /* @__PURE__ */ new Set();
-    let { decodedPath: decodedPattern } = this.#doubleDecodeEncodedPathString(Common5.ParsedURL.ParsedURL.concatenate(relativePathPart, "/*"));
-    const isFileUrl = decodedPath.startsWith("file:/");
-    if (isFileUrl) {
-      decodedPath = Common5.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length);
-      decodedPattern = Common5.ParsedURL.ParsedURL.substring(decodedPattern, "file:/".length);
-    }
-    headerPatterns.add((isFileUrl ? "file:///" : "http?://") + decodedPattern);
-    const overridesWithRegex = [];
-    for (const headerOverride of headerOverrides) {
-      overridesWithRegex.push({
-        applyToRegex: new RegExp(`^${isFileUrl ? "file:/" : ""}${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
-        headers: headerOverride.headers
-      });
-    }
-    return { headerPatterns, overridesWithRegex };
-  }
-  async updateInterceptionPatternsForTests() {
-    await this.#innerUpdateInterceptionPatterns();
-  }
-  updateInterceptionPatterns() {
-    void this.#updateInterceptionThrottler.schedule(this.#innerUpdateInterceptionPatterns.bind(this));
-  }
-  async #innerUpdateInterceptionPatterns() {
-    this.#headerOverridesMap.clear();
-    if (!this.#active || !this.#project) {
-      return await SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns([], this.#interceptionHandlerBound);
-    }
-    let patterns = /* @__PURE__ */ new Set();
-    for (const uiSourceCode of this.#project.uiSourceCodes()) {
-      if (this.isForbiddenFileUrl(uiSourceCode)) {
-        continue;
-      }
-      const pattern = this.patternForFileSystemUISourceCode(uiSourceCode);
-      if (uiSourceCode.name() === HEADERS_FILENAME) {
-        const { headerPatterns, path, overridesWithRegex } = await this.generateHeaderPatterns(uiSourceCode);
-        if (headerPatterns.size > 0) {
-          patterns = /* @__PURE__ */ new Set([...patterns, ...headerPatterns]);
-          this.#headerOverridesMap.set(path, overridesWithRegex);
-        }
-      } else {
-        patterns.add(pattern);
-      }
-      const { head, tail } = extractDirectoryIndex(pattern);
-      if (tail) {
-        patterns.add(head);
-      }
-    }
-    return await SDK.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns(Array.from(patterns).map((pattern) => ({
-      urlPattern: pattern,
-      requestStage: "Response"
-      /* Protocol.Fetch.RequestStage.Response */
-    })), this.#interceptionHandlerBound);
-  }
-  async onUISourceCodeRemoved(uiSourceCode) {
-    await this.networkUISourceCodeRemoved(uiSourceCode);
-    await this.filesystemUISourceCodeRemoved(uiSourceCode);
-  }
-  async networkUISourceCodeRemoved(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace3.Workspace.projectTypes.Network) {
-      await this.#unbind(uiSourceCode);
-      this.#sourceCodeToBindProcessMutex.delete(uiSourceCode);
-      this.#networkUISourceCodeForEncodedPath.delete(this.encodedPathFromUrl(uiSourceCode.url()));
-    }
-    this.#maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode);
-  }
-  // We consider a header override file as active, if it matches (= potentially contains
-  // header overrides for) some of the current page's requests.
-  // The editors (in the Sources panel) of active header override files should have an
-  // emphasized icon. For regular overrides we use bindings to determine which editors
-  // are active. For header overrides we do not have a 1:1 matching between the file
-  // defining the header overrides and the request matching the override definition,
-  // because a single '.headers' file can contain header overrides for multiple requests.
-  // For each request, we therefore look whether one or more matching header override
-  // files exist, and if they do, for each of them we emit an event, which causes
-  // potential matching editors to update their icon.
-  #maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode) {
-    if (!this.#project) {
-      return;
-    }
-    const project = this.#project;
-    const fileUrl = this.fileUrlFromNetworkUrl(uiSourceCode.url());
-    for (let i = project.fileSystemPath().length; i < fileUrl.length; i++) {
-      if (fileUrl[i] !== "/") {
-        continue;
-      }
-      const headersFilePath = Common5.ParsedURL.ParsedURL.concatenate(Common5.ParsedURL.ParsedURL.substring(fileUrl, 0, i + 1), ".headers");
-      const headersFileUiSourceCode = project.uiSourceCodeForURL(headersFilePath);
-      if (!headersFileUiSourceCode) {
-        continue;
-      }
-      this.#headerOverridesForEventDispatch.add(headersFileUiSourceCode);
-      void this.#eventDispatchThrottler.schedule(this.#dispatchRequestsForHeaderOverridesFileChanged.bind(this));
-    }
-  }
-  #dispatchRequestsForHeaderOverridesFileChanged() {
-    for (const headersFileUiSourceCode of this.#headerOverridesForEventDispatch) {
-      this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged", headersFileUiSourceCode);
-    }
-    this.#headerOverridesForEventDispatch.clear();
-    return Promise.resolve();
-  }
-  hasMatchingNetworkUISourceCodeForHeaderOverridesFile(headersFile) {
-    const relativePathParts = FileSystemWorkspaceBinding.relativePath(headersFile);
-    const relativePath = Common5.ParsedURL.ParsedURL.slice(Common5.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
-    for (const encodedNetworkPath of this.#networkUISourceCodeForEncodedPath.keys()) {
-      if (encodedNetworkPath.startsWith(relativePath)) {
-        return true;
-      }
-    }
-    return false;
-  }
-  async filesystemUISourceCodeRemoved(uiSourceCode) {
-    if (uiSourceCode.project() !== this.#project) {
-      return;
-    }
-    this.updateInterceptionPatterns();
-    this.#originalResponseContentPromises.delete(uiSourceCode);
-    await this.#unbind(uiSourceCode);
-  }
-  async setProject(project) {
-    if (project === this.#project) {
-      return;
-    }
-    if (this.#project) {
-      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeRemoved(uiSourceCode)));
-    }
-    this.#project = project;
-    if (this.#project) {
-      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeAdded(uiSourceCode)));
-    }
-    await this.updateActiveProject();
-    this.dispatchEventToListeners("ProjectChanged", this.#project);
-  }
-  async onProjectAdded(project) {
-    if (project.type() !== Workspace3.Workspace.projectTypes.FileSystem || FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
-      return;
-    }
-    const fileSystemPath = FileSystemWorkspaceBinding.fileSystemPath(project.id());
-    if (!fileSystemPath) {
-      return;
-    }
-    if (this.#project) {
-      this.#project.remove();
-    }
-    await this.setProject(project);
-  }
-  async onProjectRemoved(project) {
-    for (const uiSourceCode of project.uiSourceCodes()) {
-      await this.networkUISourceCodeRemoved(uiSourceCode);
-    }
-    if (project === this.#project) {
-      await this.setProject(null);
-    }
-  }
-  mergeHeaders(baseHeaders, overrideHeaders) {
-    const headerMap = new Platform7.MapUtilities.Multimap();
-    for (const { name, value } of overrideHeaders) {
-      if (name.toLowerCase() !== "set-cookie") {
-        headerMap.set(name.toLowerCase(), value);
-      }
-    }
-    const overriddenHeaderNames = new Set(headerMap.keysArray());
-    for (const { name, value } of baseHeaders) {
-      const lowerCaseName = name.toLowerCase();
-      if (!overriddenHeaderNames.has(lowerCaseName) && lowerCaseName !== "set-cookie") {
-        headerMap.set(lowerCaseName, value);
-      }
-    }
-    const result = [];
-    for (const headerName of headerMap.keysArray()) {
-      for (const headerValue of headerMap.get(headerName)) {
-        result.push({ name: headerName, value: headerValue });
-      }
-    }
-    const originalSetCookieHeaders = baseHeaders.filter((header) => header.name.toLowerCase() === "set-cookie") || [];
-    const setCookieHeadersFromOverrides = overrideHeaders.filter((header) => header.name.toLowerCase() === "set-cookie");
-    const mergedHeaders = SDK.NetworkManager.InterceptedRequest.mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides);
-    result.push(...mergedHeaders);
-    return result;
-  }
-  #maybeMergeHeadersForPathSegment(path, requestUrl, headers) {
-    const headerOverrides = this.#headerOverridesMap.get(path) || [];
-    for (const headerOverride of headerOverrides) {
-      const requestUrlWithLongUrlReplacement = this.decodeLocalPathToUrlPath(this.rawPathFromUrl(requestUrl));
-      if (headerOverride.applyToRegex.test(requestUrlWithLongUrlReplacement)) {
-        headers = this.mergeHeaders(headers, headerOverride.headers);
-      }
-    }
-    return headers;
-  }
-  handleHeaderInterception(interceptedRequest) {
-    let result = interceptedRequest.responseHeaders || [];
-    const urlSegments = this.rawPathFromUrl(interceptedRequest.request.url).split("/");
-    let path = Platform7.DevToolsPath.EmptyEncodedPathString;
-    result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
-    for (const segment of urlSegments) {
-      path = Common5.ParsedURL.ParsedURL.concatenate(path, segment, "/");
-      result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
-    }
-    return result;
-  }
-  async interceptionHandler(interceptedRequest) {
-    const method = interceptedRequest.request.method;
-    if (!this.#active || method === "OPTIONS") {
-      return;
-    }
-    const proj = this.#project;
-    const path = this.fileUrlFromNetworkUrl(interceptedRequest.request.url);
-    const fileSystemUISourceCode = proj.uiSourceCodeForURL(path);
-    let responseHeaders = this.handleHeaderInterception(interceptedRequest);
-    if (!fileSystemUISourceCode && !responseHeaders.length) {
-      return;
-    }
-    if (!responseHeaders.length) {
-      responseHeaders = interceptedRequest.responseHeaders || [];
-    }
-    let { mimeType } = interceptedRequest.getMimeTypeAndCharset();
-    if (!mimeType) {
-      const expectedResourceType = Common5.ResourceType.resourceTypes[interceptedRequest.resourceType] || Common5.ResourceType.resourceTypes.Other;
-      mimeType = fileSystemUISourceCode?.mimeType() || "";
-      if (Common5.ResourceType.ResourceType.fromMimeType(mimeType) !== expectedResourceType) {
-        mimeType = expectedResourceType.canonicalMimeType();
-      }
-    }
-    if (fileSystemUISourceCode) {
-      this.#originalResponseContentPromises.set(fileSystemUISourceCode, interceptedRequest.responseBody().then((response) => {
-        if (TextUtils4.ContentData.ContentData.isError(response) || !response.isTextContent) {
-          return null;
-        }
-        return response.text;
-      }));
-      const project = fileSystemUISourceCode.project();
-      const blob = await project.requestFileBlob(fileSystemUISourceCode);
-      if (blob) {
-        void interceptedRequest.continueRequestWithContent(
-          new Blob([blob], { type: mimeType }),
-          /* encoded */
-          false,
-          responseHeaders,
-          /* isBodyOverridden */
-          true
-        );
-      }
-    } else if (interceptedRequest.isRedirect()) {
-      void interceptedRequest.continueRequestWithContent(
-        new Blob([], { type: mimeType }),
-        /* encoded */
-        true,
-        responseHeaders,
-        /* isBodyOverridden */
-        false
-      );
-    } else {
-      const responseBody = await interceptedRequest.responseBody();
-      if (!TextUtils4.ContentData.ContentData.isError(responseBody)) {
-        const content = responseBody.isTextContent ? responseBody.text : responseBody.base64;
-        void interceptedRequest.continueRequestWithContent(
-          new Blob([content], { type: mimeType }),
-          /* encoded */
-          !responseBody.isTextContent,
-          responseHeaders,
-          /* isBodyOverridden */
-          false
-        );
-      }
-    }
-  }
-};
-var RESERVED_FILENAMES = /* @__PURE__ */ new Set([
-  "con",
-  "prn",
-  "aux",
-  "nul",
-  "com1",
-  "com2",
-  "com3",
-  "com4",
-  "com5",
-  "com6",
-  "com7",
-  "com8",
-  "com9",
-  "lpt1",
-  "lpt2",
-  "lpt3",
-  "lpt4",
-  "lpt5",
-  "lpt6",
-  "lpt7",
-  "lpt8",
-  "lpt9"
-]);
-var HEADERS_FILENAME = ".headers";
-function isHeaderOverride(arg) {
-  if (!(arg && typeof arg.applyTo === "string" && arg.headers?.length && Array.isArray(arg.headers))) {
-    return false;
-  }
-  return arg.headers.every((header) => typeof header.name === "string" && typeof header.value === "string");
-}
-function escapeRegex(pattern) {
-  return Platform7.StringUtilities.escapeCharacters(pattern, "[]{}()\\.^$+|-,?").replaceAll("*", ".*");
-}
-function extractDirectoryIndex(pattern) {
-  const lastSlash = pattern.lastIndexOf("/");
-  const tail = lastSlash >= 0 ? pattern.slice(lastSlash + 1) : pattern;
-  const head = lastSlash >= 0 ? pattern.slice(0, lastSlash + 1) : "";
-  const regex = new RegExp("^" + escapeRegex(tail) + "$");
-  if (tail !== "*" && (regex.test("index.html") || regex.test("index.htm") || regex.test("index.php"))) {
-    return { head, tail };
-  }
-  return { head: pattern };
-}
-
-// gen/front_end/models/persistence/PersistenceUtils.js
-var UIStrings4 = {
-  /**
-   * @description Text in Persistence Utils of the Workspace settings in Settings
-   * @example {example.url} PH1
-   */
-  linkedToSourceMapS: "Linked to source map: {PH1}",
-  /**
-   * @description Text to show something is linked to another
-   * @example {example.url} PH1
-   */
-  linkedToS: "Linked to {PH1}"
-};
-var str_4 = i18n7.i18n.registerUIStrings("models/persistence/PersistenceUtils.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var PersistenceUtils = class _PersistenceUtils {
-  static tooltipForUISourceCode(uiSourceCode) {
-    const binding = PersistenceImpl.instance().binding(uiSourceCode);
-    if (!binding) {
-      return "";
-    }
-    if (uiSourceCode === binding.network) {
-      return FileSystemWorkspaceBinding.tooltipForUISourceCode(binding.fileSystem);
-    }
-    if (binding.network.contentType().isFromSourceMap()) {
-      return i18nString4(UIStrings4.linkedToSourceMapS, { PH1: Platform8.StringUtilities.trimMiddle(binding.network.url(), 150) });
-    }
-    return i18nString4(UIStrings4.linkedToS, { PH1: Platform8.StringUtilities.trimMiddle(binding.network.url(), 150) });
-  }
-  static iconForUISourceCode(uiSourceCode) {
-    const binding = PersistenceImpl.instance().binding(uiSourceCode);
-    if (binding) {
-      if (!Common6.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
-        return null;
-      }
-      const icon2 = new IconButton.Icon.Icon();
-      icon2.name = "document";
-      icon2.classList.add("small");
-      UI2.Tooltip.Tooltip.install(icon2, _PersistenceUtils.tooltipForUISourceCode(binding.network));
-      if (NetworkPersistenceManager.instance().project() === binding.fileSystem.project()) {
-        icon2.classList.add("dot", "purple");
-      } else {
-        icon2.classList.add("dot", "green");
-      }
-      return icon2;
-    }
-    if (uiSourceCode.project().type() !== Workspace5.Workspace.projectTypes.FileSystem || !Common6.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
-      return null;
-    }
-    if (NetworkPersistenceManager.instance().isActiveHeaderOverrides(uiSourceCode)) {
-      const icon2 = new IconButton.Icon.Icon();
-      icon2.name = "document";
-      icon2.classList.add("small");
-      icon2.classList.add("dot", "purple");
-      return icon2;
-    }
-    const icon = new IconButton.Icon.Icon();
-    icon.name = "document";
-    icon.classList.add("small");
-    UI2.Tooltip.Tooltip.install(icon, _PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
-    return icon;
-  }
-};
-var LinkDecorator = class extends Common6.ObjectWrapper.ObjectWrapper {
-  constructor(persistence) {
-    super();
-    persistence.addEventListener(Events2.BindingCreated, this.bindingChanged, this);
-    persistence.addEventListener(Events2.BindingRemoved, this.bindingChanged, this);
-  }
-  bindingChanged(event) {
-    const binding = event.data;
-    this.dispatchEventToListeners("LinkIconChanged", binding.network);
-  }
-  linkIcon(uiSourceCode) {
-    return PersistenceUtils.iconForUISourceCode(uiSourceCode);
-  }
-};
-
-// gen/front_end/models/persistence/PersistenceImpl.js
 var persistenceInstance;
-var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.ObjectWrapper {
+var PersistenceImpl = class _PersistenceImpl extends Common5.ObjectWrapper.ObjectWrapper {
   #workspace;
   #breakpointManager;
   #filePathPrefixesToBindingCount = new FilePathPrefixesBindingCounts();
-  #subscribedBindingEventListeners = new Platform10.MapUtilities.Multimap();
+  #subscribedBindingEventListeners = new Platform7.MapUtilities.Multimap();
   #mapping;
   constructor(workspace, breakpointManager) {
     super();
     this.#workspace = workspace;
     this.#breakpointManager = breakpointManager;
     this.#breakpointManager.addUpdateBindingsCallback(this.#setupBindings.bind(this));
-    const linkDecorator = new LinkDecorator(this);
-    Components2.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
     this.#mapping = new Automapping(this.#workspace, this.onStatusAdded.bind(this), this.onStatusRemoved.bind(this));
   }
   static instance(opts = { forceNew: null, workspace: null, breakpointManager: null }) {
@@ -2277,7 +1363,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     await this.#removeBinding(binding);
   }
   #setupBindings(networkUISourceCode) {
-    if (networkUISourceCode.project().type() !== Workspace7.Workspace.projectTypes.Network) {
+    if (networkUISourceCode.project().type() !== Workspace3.Workspace.projectTypes.Network) {
       return Promise.resolve();
     }
     return this.#mapping.computeNetworkStatus(networkUISourceCode);
@@ -2286,10 +1372,10 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     bindings.set(binding.network, binding);
     bindings.set(binding.fileSystem, binding);
     binding.fileSystem.forceLoadOnCheckContent();
-    binding.network.addEventListener(Workspace7.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
-    binding.fileSystem.addEventListener(Workspace7.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
-    binding.network.addEventListener(Workspace7.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
-    binding.fileSystem.addEventListener(Workspace7.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
+    binding.network.addEventListener(Workspace3.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
+    binding.fileSystem.addEventListener(Workspace3.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
+    binding.network.addEventListener(Workspace3.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
+    binding.fileSystem.addEventListener(Workspace3.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
     this.#filePathPrefixesToBindingCount.add(binding.fileSystem.url());
     await this.moveBreakpoints(binding.fileSystem, binding.network);
     console.assert(!binding.fileSystem.isDirty() || !binding.network.isDirty());
@@ -2312,10 +1398,10 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     console.assert(bindings.get(binding.network) === bindings.get(binding.fileSystem), "ERROR: inconsistent binding for networkURL " + binding.network.url());
     bindings.delete(binding.network);
     bindings.delete(binding.fileSystem);
-    binding.network.removeEventListener(Workspace7.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
-    binding.fileSystem.removeEventListener(Workspace7.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
-    binding.network.removeEventListener(Workspace7.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
-    binding.fileSystem.removeEventListener(Workspace7.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
+    binding.network.removeEventListener(Workspace3.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
+    binding.fileSystem.removeEventListener(Workspace3.UISourceCode.Events.WorkingCopyCommitted, this.onWorkingCopyCommitted, this);
+    binding.network.removeEventListener(Workspace3.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
+    binding.fileSystem.removeEventListener(Workspace3.UISourceCode.Events.WorkingCopyChanged, this.onWorkingCopyChanged, this);
     this.#filePathPrefixesToBindingCount.remove(binding.fileSystem.url());
     await this.#breakpointManager.copyBreakpoints(binding.network, binding.fileSystem);
     this.notifyBindingEvent(binding.network);
@@ -2349,7 +1435,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
       return;
     }
     const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
-    if (target && target.type() === SDK2.Target.Type.NODE) {
+    if (target && target.type() === SDK.Target.Type.NODE) {
       const newContent = uiSourceCode.workingCopy();
       void other.requestContentData().then(() => {
         const nodeJSContent = _PersistenceImpl.rewrapNodeJSContent(other, other.workingCopy(), newContent);
@@ -2381,8 +1467,8 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     }
     const other = binding.network === uiSourceCode ? binding.fileSystem : binding.network;
     const target = Bindings.NetworkProject.NetworkProject.targetForUISourceCode(binding.network);
-    if (target && target.type() === SDK2.Target.Type.NODE) {
-      void other.requestContentData().then((contentDataOrError) => TextUtils5.ContentData.ContentData.textOr(contentDataOrError, "")).then((currentContent) => {
+    if (target && target.type() === SDK.Target.Type.NODE) {
+      void other.requestContentData().then((contentDataOrError) => TextUtils4.ContentData.ContentData.textOr(contentDataOrError, "")).then((currentContent) => {
         const nodeJSContent = _PersistenceImpl.rewrapNodeJSContent(other, currentContent, newContent);
         setContent.call(this, nodeJSContent);
       });
@@ -2401,7 +1487,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
     }
   }
   static rewrapNodeJSContent(uiSourceCode, currentContent, newContent) {
-    if (uiSourceCode.project().type() === Workspace7.Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() === Workspace3.Workspace.projectTypes.FileSystem) {
       if (newContent.startsWith(NodePrefix) && newContent.endsWith(NodeSuffix)) {
         newContent = newContent.substring(NodePrefix.length, newContent.length - NodeSuffix.length);
       }
@@ -2484,7 +1570,7 @@ var PersistenceImpl = class _PersistenceImpl extends Common7.ObjectWrapper.Objec
 var FilePathPrefixesBindingCounts = class {
   #prefixCounts = /* @__PURE__ */ new Map();
   getPlatformCanonicalFilePath(path) {
-    return Host5.Platform.isWin() ? Common7.ParsedURL.ParsedURL.toLowerCase(path) : path;
+    return Host4.Platform.isWin() ? Common5.ParsedURL.ParsedURL.toLowerCase(path) : path;
   }
   add(filePath) {
     filePath = this.getPlatformCanonicalFilePath(filePath);
@@ -2511,7 +1597,7 @@ var FilePathPrefixesBindingCounts = class {
   hasBindingPrefix(filePath) {
     filePath = this.getPlatformCanonicalFilePath(filePath);
     if (!filePath.endsWith("/")) {
-      filePath = Common7.ParsedURL.ParsedURL.concatenate(filePath, "/");
+      filePath = Common5.ParsedURL.ParsedURL.concatenate(filePath, "/");
     }
     return this.#prefixCounts.has(filePath);
   }
@@ -2546,7 +1632,7 @@ var Automapping = class {
   statuses = /* @__PURE__ */ new Set();
   #fileSystemUISourceCodes = new FileSystemUISourceCodes();
   // Used in web tests
-  sweepThrottler = new Common8.Throttler.Throttler(100);
+  sweepThrottler = new Common6.Throttler.Throttler(100);
   #sourceCodeToProcessingPromiseMap = /* @__PURE__ */ new WeakMap();
   #sourceCodeToAutoMappingStatusMap = /* @__PURE__ */ new WeakMap();
   #sourceCodeToMetadataMap = /* @__PURE__ */ new WeakMap();
@@ -2558,11 +1644,11 @@ var Automapping = class {
     this.#workspace = workspace;
     this.#onStatusAdded = onStatusAdded;
     this.#onStatusRemoved = onStatusRemoved;
-    this.#workspace.addEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, (event) => this.#onUISourceCodeAdded(event.data));
-    this.#workspace.addEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, (event) => this.#onUISourceCodeRemoved(event.data));
-    this.#workspace.addEventListener(Workspace9.Workspace.Events.UISourceCodeRenamed, this.#onUISourceCodeRenamed, this);
-    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectAdded, (event) => this.#onProjectAdded(event.data), this);
-    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectRemoved, (event) => this.#onProjectRemoved(event.data), this);
+    this.#workspace.addEventListener(Workspace5.Workspace.Events.UISourceCodeAdded, (event) => this.#onUISourceCodeAdded(event.data));
+    this.#workspace.addEventListener(Workspace5.Workspace.Events.UISourceCodeRemoved, (event) => this.#onUISourceCodeRemoved(event.data));
+    this.#workspace.addEventListener(Workspace5.Workspace.Events.UISourceCodeRenamed, this.#onUISourceCodeRenamed, this);
+    this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectAdded, (event) => this.#onProjectAdded(event.data), this);
+    this.#workspace.addEventListener(Workspace5.Workspace.Events.ProjectRemoved, (event) => this.#onProjectRemoved(event.data), this);
     for (const fileSystem of workspace.projects()) {
       this.#onProjectAdded(fileSystem);
     }
@@ -2583,7 +1669,7 @@ var Automapping = class {
   #scheduleSweep() {
     void this.sweepThrottler.schedule(sweepUnmapped.bind(this));
     function sweepUnmapped() {
-      const networkProjects = this.#workspace.projectsForType(Workspace9.Workspace.projectTypes.Network);
+      const networkProjects = this.#workspace.projectsForType(Workspace5.Workspace.projectTypes.Network);
       for (const networkProject of networkProjects) {
         for (const uiSourceCode of networkProject.uiSourceCodes()) {
           void this.computeNetworkStatus(uiSourceCode);
@@ -2599,7 +1685,7 @@ var Automapping = class {
     for (const uiSourceCode of project.uiSourceCodes()) {
       this.#onUISourceCodeRemoved(uiSourceCode);
     }
-    if (project.type() !== Workspace9.Workspace.projectTypes.FileSystem) {
+    if (project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return;
     }
     const fileSystem = project;
@@ -2610,7 +1696,7 @@ var Automapping = class {
     this.scheduleRemap();
   }
   #onProjectAdded(project) {
-    if (project.type() !== Workspace9.Workspace.projectTypes.FileSystem) {
+    if (project.type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return;
     }
     const fileSystem = project;
@@ -2625,32 +1711,32 @@ var Automapping = class {
   }
   #onUISourceCodeAdded(uiSourceCode) {
     const project = uiSourceCode.project();
-    if (project.type() === Workspace9.Workspace.projectTypes.FileSystem) {
+    if (project.type() === Workspace5.Workspace.projectTypes.FileSystem) {
       if (!FileSystemWorkspaceBinding.fileSystemSupportsAutomapping(project)) {
         return;
       }
       this.#filesIndex.addPath(uiSourceCode.url());
       this.#fileSystemUISourceCodes.add(uiSourceCode);
       this.#scheduleSweep();
-    } else if (project.type() === Workspace9.Workspace.projectTypes.Network) {
+    } else if (project.type() === Workspace5.Workspace.projectTypes.Network) {
       void this.computeNetworkStatus(uiSourceCode);
     }
   }
   #onUISourceCodeRemoved(uiSourceCode) {
-    if (uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.FileSystem) {
       this.#filesIndex.removePath(uiSourceCode.url());
       this.#fileSystemUISourceCodes.delete(uiSourceCode.url());
       const status = this.#sourceCodeToAutoMappingStatusMap.get(uiSourceCode);
       if (status) {
         this.#clearNetworkStatus(status.network);
       }
-    } else if (uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.Network) {
+    } else if (uiSourceCode.project().type() === Workspace5.Workspace.projectTypes.Network) {
       this.#clearNetworkStatus(uiSourceCode);
     }
   }
   #onUISourceCodeRenamed(event) {
     const { uiSourceCode, oldURL } = event.data;
-    if (uiSourceCode.project().type() !== Workspace9.Workspace.projectTypes.FileSystem) {
+    if (uiSourceCode.project().type() !== Workspace5.Workspace.projectTypes.FileSystem) {
       return;
     }
     this.#filesIndex.removePath(oldURL);
@@ -2674,7 +1760,7 @@ var Automapping = class {
     if (this.#interceptors.some((interceptor) => interceptor(networkSourceCode))) {
       return Promise.resolve();
     }
-    if (Common8.ParsedURL.schemeIs(networkSourceCode.url(), "wasm:")) {
+    if (Common6.ParsedURL.schemeIs(networkSourceCode.url(), "wasm:")) {
       return Promise.resolve();
     }
     const createBindingPromise = this.#createBinding(networkSourceCode).then(validateStatus.bind(this)).then(onStatus.bind(this));
@@ -2696,7 +1782,7 @@ var Automapping = class {
       const [fileSystemContent, networkContent] = (await Promise.all([
         status.fileSystem.requestContentData(),
         status.network.project().requestFileContent(status.network)
-      ])).map(TextUtils6.ContentData.ContentData.asDeferredContent);
+      ])).map(TextUtils5.ContentData.ContentData.asDeferredContent);
       if (fileSystemContent.content === null || networkContent === null) {
         return null;
       }
@@ -2706,7 +1792,7 @@ var Automapping = class {
       const target = Bindings2.NetworkProject.NetworkProject.targetForUISourceCode(status.network);
       let isValid = false;
       const fileContent = fileSystemContent.content;
-      if (target && target.type() === SDK3.Target.Type.NODE) {
+      if (target && target.type() === SDK2.Target.Type.NODE) {
         if (networkContent.content) {
           const rewrappedNetworkContent = PersistenceImpl.rewrapNodeJSContent(status.fileSystem, fileContent, networkContent.content);
           isValid = fileContent === rewrappedNetworkContent;
@@ -2773,17 +1859,17 @@ var Automapping = class {
   }
   async #createBinding(networkSourceCode) {
     const url = networkSourceCode.url();
-    if (Common8.ParsedURL.schemeIs(url, "file:") || Common8.ParsedURL.schemeIs(url, "snippet:")) {
+    if (Common6.ParsedURL.schemeIs(url, "file:") || Common6.ParsedURL.schemeIs(url, "snippet:")) {
       const fileSourceCode = this.#fileSystemUISourceCodes.get(url);
       const status = fileSourceCode ? new AutomappingStatus(networkSourceCode, fileSourceCode, false) : null;
       return status;
     }
-    let networkPath = Common8.ParsedURL.ParsedURL.extractPath(url);
+    let networkPath = Common6.ParsedURL.ParsedURL.extractPath(url);
     if (networkPath === null) {
       return null;
     }
     if (networkPath.endsWith("/")) {
-      networkPath = Common8.ParsedURL.ParsedURL.concatenate(networkPath, "index.html");
+      networkPath = Common6.ParsedURL.ParsedURL.concatenate(networkPath, "index.html");
     }
     const similarFiles = this.#filesIndex.similarFiles(networkPath).map((path) => this.#fileSystemUISourceCodes.get(path));
     if (!similarFiles.length) {
@@ -2822,7 +1908,7 @@ var Automapping = class {
   }
 };
 var FilePathIndex = class {
-  #reversedIndex = Common8.Trie.Trie.newArrayTrie();
+  #reversedIndex = Common6.Trie.Trie.newArrayTrie();
   addPath(path) {
     const reversePathParts = path.split("/").reverse();
     this.#reversedIndex.add(reversePathParts);
@@ -2841,7 +1927,7 @@ var FilePathIndex = class {
   }
 };
 var FolderIndex = class {
-  #index = Common8.Trie.Trie.newArrayTrie();
+  #index = Common6.Trie.Trie.newArrayTrie();
   #folderCount = /* @__PURE__ */ new Map();
   addFolder(path) {
     const pathParts = this.#removeTrailingSlash(path).split("/");
@@ -2877,7 +1963,7 @@ var FolderIndex = class {
   }
   #removeTrailingSlash(path) {
     if (path.endsWith("/")) {
-      return Common8.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
+      return Common6.ParsedURL.ParsedURL.substring(path, 0, path.length - 1);
     }
     return path;
   }
@@ -2885,7 +1971,7 @@ var FolderIndex = class {
 var FileSystemUISourceCodes = class {
   #sourceCodes = /* @__PURE__ */ new Map();
   getPlatformCanonicalFileUrl(path) {
-    return Host6.Platform.isWin() ? Common8.ParsedURL.ParsedURL.toLowerCase(path) : path;
+    return Host5.Platform.isWin() ? Common6.ParsedURL.ParsedURL.toLowerCase(path) : path;
   }
   add(sourceCode) {
     const fileUrl = this.getPlatformCanonicalFileUrl(sourceCode.url());
@@ -2916,11 +2002,11 @@ var AutomaticFileSystemManager_exports = {};
 __export(AutomaticFileSystemManager_exports, {
   AutomaticFileSystemManager: () => AutomaticFileSystemManager
 });
-import * as Common9 from "./../../core/common/common.js";
-import * as Host7 from "./../../core/host/host.js";
+import * as Common7 from "./../../core/common/common.js";
+import * as Host6 from "./../../core/host/host.js";
 import * as ProjectSettings from "./../project_settings/project_settings.js";
 var automaticFileSystemManagerInstance;
-var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Common9.ObjectWrapper.ObjectWrapper {
+var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Common7.ObjectWrapper.ObjectWrapper {
   #automaticFileSystem;
   #availability = "unavailable";
   #inspectorFrontendHost;
@@ -2955,7 +2041,7 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
     this.#automaticFileSystem = null;
     this.#inspectorFrontendHost = inspectorFrontendHost;
     this.#projectSettingsModel = projectSettingsModel;
-    this.#inspectorFrontendHost.events.addEventListener(Host7.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+    this.#inspectorFrontendHost.events.addEventListener(Host6.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
     this.#projectSettingsModel.addEventListener("AvailabilityChanged", this.#availabilityChanged, this);
     this.#availabilityChanged({ data: this.#projectSettingsModel.availability });
     this.#projectSettingsModel.addEventListener("ProjectSettingsChanged", this.#projectSettingsChanged, this);
@@ -2985,7 +2071,7 @@ var AutomaticFileSystemManager = class _AutomaticFileSystemManager extends Commo
     }
   }
   #dispose() {
-    this.#inspectorFrontendHost.events.removeEventListener(Host7.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
+    this.#inspectorFrontendHost.events.removeEventListener(Host6.InspectorFrontendHostAPI.Events.FileSystemRemoved, this.#fileSystemRemoved, this);
     this.#projectSettingsModel.removeEventListener("AvailabilityChanged", this.#availabilityChanged, this);
     this.#projectSettingsModel.removeEventListener("ProjectSettingsChanged", this.#projectSettingsChanged, this);
   }
@@ -3076,9 +2162,9 @@ __export(AutomaticFileSystemWorkspaceBinding_exports, {
   AutomaticFileSystemWorkspaceBinding: () => AutomaticFileSystemWorkspaceBinding,
   FileSystem: () => FileSystem2
 });
-import * as Common10 from "./../../core/common/common.js";
-import * as Host8 from "./../../core/host/host.js";
-import * as Workspace11 from "./../workspace/workspace.js";
+import * as Common8 from "./../../core/common/common.js";
+import * as Host7 from "./../../core/host/host.js";
+import * as Workspace7 from "./../workspace/workspace.js";
 var FileSystem2 = class {
   automaticFileSystem;
   automaticFileSystemManager;
@@ -3095,7 +2181,7 @@ var FileSystem2 = class {
     return `${this.type()}:${this.automaticFileSystem.root}:${this.automaticFileSystem.uuid}`;
   }
   type() {
-    return Workspace11.Workspace.projectTypes.ConnectableFileSystem;
+    return Workspace7.Workspace.projectTypes.ConnectableFileSystem;
   }
   isServiceProject() {
     return false;
@@ -3103,7 +2189,7 @@ var FileSystem2 = class {
   displayName() {
     const { root } = this.automaticFileSystem;
     let slash = root.lastIndexOf("/");
-    if (slash === -1 && Host8.Platform.isWin()) {
+    if (slash === -1 && Host7.Platform.isWin()) {
       slash = root.lastIndexOf("\\");
     }
     return root.substr(slash + 1);
@@ -3234,7 +2320,7 @@ var AutomaticFileSystemWorkspaceBinding = class _AutomaticFileSystemWorkspaceBin
       this.#fileSystem = null;
     }
     if (automaticFileSystem !== null && automaticFileSystem.state !== "connected") {
-      const fileSystemURL = Common10.ParsedURL.ParsedURL.rawPathToUrlString(automaticFileSystem.root);
+      const fileSystemURL = Common8.ParsedURL.ParsedURL.rawPathToUrlString(automaticFileSystem.root);
       if (this.#isolatedFileSystemManager.fileSystem(fileSystemURL) === null) {
         this.#fileSystem = new FileSystem2(automaticFileSystem, this.#automaticFileSystemManager, this.#workspace);
         this.#workspace.addProject(this.#fileSystem);
@@ -3243,452 +2329,830 @@ var AutomaticFileSystemWorkspaceBinding = class _AutomaticFileSystemWorkspaceBin
   }
 };
 
-// gen/front_end/models/persistence/EditFileSystemView.js
-var EditFileSystemView_exports = {};
-__export(EditFileSystemView_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
-  EditFileSystemView: () => EditFileSystemView
+// gen/front_end/models/persistence/NetworkPersistenceManager.js
+var NetworkPersistenceManager_exports = {};
+__export(NetworkPersistenceManager_exports, {
+  HEADERS_FILENAME: () => HEADERS_FILENAME,
+  NetworkPersistenceManager: () => NetworkPersistenceManager,
+  escapeRegex: () => escapeRegex,
+  extractDirectoryIndex: () => extractDirectoryIndex,
+  isHeaderOverride: () => isHeaderOverride
 });
-import "./../../ui/legacy/components/data_grid/data_grid.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
-import * as Platform13 from "./../../core/platform/platform.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
-import { Directives, html, render } from "./../../ui/lit/lit.js";
-
-// gen/front_end/models/persistence/editFileSystemView.css.js
-var editFileSystemView_css_default = `/*
- * Copyright 2015 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-@scope to (devtools-widget > *) {
-  .excluded-folder-header {
-    display: flex;
-    flex-direction: column;
-    min-height: var(--sys-size-16);
-    padding: var(--sys-size-4) var(--sys-size-6);
-    gap: var(--sys-size-4);
-
-    & > .excluded-folder-url {
-      color: var(--sys-color-on-surface-subtle);
-      overflow-wrap: break-word;
-    }
+import * as Common9 from "./../../core/common/common.js";
+import * as Host8 from "./../../core/host/host.js";
+import * as Platform11 from "./../../core/platform/platform.js";
+import * as SDK3 from "./../../core/sdk/sdk.js";
+import * as Breakpoints from "./../breakpoints/breakpoints.js";
+import * as TextUtils6 from "./../text_utils/text_utils.js";
+import * as Workspace9 from "./../workspace/workspace.js";
+var networkPersistenceManagerInstance;
+var forbiddenUrls = ["chromewebstore.google.com", "chrome.google.com"];
+var NetworkPersistenceManager = class _NetworkPersistenceManager extends Common9.ObjectWrapper.ObjectWrapper {
+  #bindings = /* @__PURE__ */ new WeakMap();
+  #originalResponseContentPromises = /* @__PURE__ */ new WeakMap();
+  #savingForOverrides = /* @__PURE__ */ new WeakSet();
+  #enabledSetting = Common9.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled");
+  #workspace;
+  #networkUISourceCodeForEncodedPath = /* @__PURE__ */ new Map();
+  #interceptionHandlerBound;
+  #updateInterceptionThrottler = new Common9.Throttler.Throttler(50);
+  #project = null;
+  #active = false;
+  #enabled = false;
+  #eventDescriptors = [];
+  #headerOverridesMap = /* @__PURE__ */ new Map();
+  #sourceCodeToBindProcessMutex = /* @__PURE__ */ new WeakMap();
+  #eventDispatchThrottler = new Common9.Throttler.Throttler(50);
+  #headerOverridesForEventDispatch = /* @__PURE__ */ new Set();
+  constructor(workspace) {
+    super();
+    this.#enabledSetting.addChangeListener(this.enabledChanged, this);
+    this.#workspace = workspace;
+    this.#interceptionHandlerBound = this.interceptionHandler.bind(this);
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectAdded, (event) => {
+      void this.onProjectAdded(event.data);
+    });
+    this.#workspace.addEventListener(Workspace9.Workspace.Events.ProjectRemoved, (event) => {
+      void this.onProjectRemoved(event.data);
+    });
+    PersistenceImpl.instance().addNetworkInterceptor(this.canHandleNetworkUISourceCode.bind(this));
+    Breakpoints.BreakpointManager.BreakpointManager.instance().addUpdateBindingsCallback(this.networkUISourceCodeAdded.bind(this));
+    void this.enabledChanged();
+    SDK3.TargetManager.TargetManager.instance().observeTargets(this);
   }
-
-  .exclude-subfolders-table {
-    padding: var(--sys-size-4) 0;
+  targetAdded() {
+    void this.updateActiveProject();
   }
-
-  .excluded-folder-error {
-    color: var(--sys-color-error);
+  targetRemoved() {
+    void this.updateActiveProject();
   }
-}
-
-/*# sourceURL=${import.meta.resolve("./editFileSystemView.css")} */`;
-
-// gen/front_end/models/persistence/EditFileSystemView.js
-var _a2;
-var { styleMap } = Directives;
-var UIStrings5 = {
-  /**
-   * @description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
-   */
-  url: "URL",
-  /**
-   * @description Text in Edit File System View of the Workspace settings in Settings
-   */
-  excludedFolders: "Excluded sub-folders",
-  /**
-   * @description Error message when a file system path is an empty string.
-   */
-  enterAPath: "Enter a path",
-  /**
-   * @description Error message when a file system path is identical to an existing path.
-   */
-  enterAUniquePath: "Enter a unique path"
-};
-var str_5 = i18n9.i18n.registerUIStrings("models/persistence/EditFileSystemView.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-function statusString(status) {
-  switch (status) {
-    case 2:
-      return i18nString5(UIStrings5.enterAPath);
-    case 3:
-      return i18nString5(UIStrings5.enterAUniquePath);
-    case 1:
-      throw new Error("unreachable");
-  }
-}
-var DEFAULT_VIEW = (input, _output, target) => {
-  render(html`
-      <style>${editFileSystemView_css_default}</style>
-      <div class="excluded-folder-header">
-        <span>${i18nString5(UIStrings5.url)}</span>
-        <span class="excluded-folder-url">${input.fileSystemPath}</span>
-        <devtools-data-grid
-          @create=${input.onCreate}
-          @edit=${input.onEdit}
-          @delete=${input.onDelete}
-          class="exclude-subfolders-table"
-          parts="excluded-folder-row-with-error"
-          inline striped>
-          <table>
-            <thead>
-              <tr>
-                <th id="url" editable>${i18nString5(UIStrings5.excludedFolders)}</th>
-              </tr>
-            </thead>
-            <tbody>
-            ${input.excludedFolderPaths.map((path, index) => html`
-              <tr data-url=${path.path} data-index=${index}>
-                <td style=${styleMap({ backgroundColor: path.status !== 1 ? "var(--sys-color-error-container)" : void 0 })}>${path.path}</td>
-              </tr>
-            `)}
-            <tr placeholder></tr>
-            </tbody>
-          </table>
-        </devtools-data-grid>
-        ${input.excludedFolderPaths.filter(
-    ({ status }) => status !== 1
-    /* ExcludedFolderStatus.VALID */
-  ).map(({ status }) => html`<span class="excluded-folder-error">${statusString(status)}</span>`)}
-    </div>`, target);
-};
-var EditFileSystemView = class extends UI3.Widget.VBox {
-  #fileSystem;
-  #excludedFolderPaths = [];
-  #view;
-  constructor(element, view = DEFAULT_VIEW) {
-    super(element);
-    this.#view = view;
-  }
-  set fileSystem(fileSystem) {
-    this.#fileSystem = fileSystem;
-    this.#resyncExcludedFolderPaths();
-    this.requestUpdate();
-  }
-  wasShown() {
-    super.wasShown();
-    this.#resyncExcludedFolderPaths();
-    this.requestUpdate();
-  }
-  #resyncExcludedFolderPaths() {
-    this.#excludedFolderPaths = this.#fileSystem?.excludedFolders().values().map((path) => ({
-      path,
-      status: 1
-      /* ExcludedFolderStatus.VALID */
-    })).toArray() ?? [];
-  }
-  performUpdate() {
-    const input = {
-      fileSystemPath: this.#fileSystem?.path() ?? Platform13.DevToolsPath.urlString``,
-      excludedFolderPaths: this.#excludedFolderPaths,
-      onCreate: (e) => this.#onCreate(e.detail.url),
-      onEdit: (e) => this.#onEdit(e.detail.node.dataset.index ?? "-1", e.detail.valueBeforeEditing, e.detail.newText),
-      onDelete: (e) => this.#onDelete(e.detail.dataset.index ?? "-1")
-    };
-    this.#view(input, {}, this.contentElement);
-  }
-  #onCreate(url) {
-    if (url === void 0) {
-      return;
-    }
-    const pathWithStatus = this.#validateFolder(url);
-    this.#excludedFolderPaths.push(pathWithStatus);
-    if (pathWithStatus.status === 1) {
-      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
-    }
-    this.requestUpdate();
-  }
-  #onEdit(idx, valueBeforeEditing, newText) {
-    const index = Number.parseInt(idx, 10);
-    if (index < 0 || index >= this.#excludedFolderPaths.length) {
-      return;
-    }
-    const pathWithStatus = this.#validateFolder(newText);
-    const oldPathWithStatus = this.#excludedFolderPaths[index];
-    this.#excludedFolderPaths[index] = pathWithStatus;
-    if (oldPathWithStatus.status === 1) {
-      this.#fileSystem?.removeExcludedFolder(valueBeforeEditing);
-    }
-    if (pathWithStatus.status === 1) {
-      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
-    }
-    this.requestUpdate();
-  }
-  #onDelete(idx) {
-    const index = Number.parseInt(idx, 10);
-    if (index < 0 || index >= this.#excludedFolderPaths.length) {
-      return;
-    }
-    this.#fileSystem?.removeExcludedFolder(this.#excludedFolderPaths[index].path);
-    this.#excludedFolderPaths.splice(index, 1);
-    this.requestUpdate();
-  }
-  #validateFolder(rawInput) {
-    const path = _a2.#normalizePrefix(rawInput.trim());
-    if (!path) {
-      return {
-        path,
-        status: 2
-        /* ExcludedFolderStatus.ERROR_NOT_A_PATH */
-      };
-    }
-    if (this.#excludedFolderPaths.findIndex(({ path: p }) => p === path) !== -1) {
-      return {
-        path,
-        status: 3
-        /* ExcludedFolderStatus.ERROR_NOT_UNIQUE */
-      };
-    }
-    return {
-      path,
-      status: 1
-      /* ExcludedFolderStatus.VALID */
-    };
-  }
-  static #normalizePrefix(prefix) {
-    if (!prefix) {
-      return "";
-    }
-    return prefix + (prefix[prefix.length - 1] === "/" ? "" : "/");
-  }
-};
-_a2 = EditFileSystemView;
-
-// gen/front_end/models/persistence/PersistenceActions.js
-var PersistenceActions_exports = {};
-__export(PersistenceActions_exports, {
-  ContextMenuProvider: () => ContextMenuProvider
-});
-import * as Common11 from "./../../core/common/common.js";
-import * as Host9 from "./../../core/host/host.js";
-import * as i18n11 from "./../../core/i18n/i18n.js";
-import * as SDK4 from "./../../core/sdk/sdk.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
-import * as Bindings3 from "./../bindings/bindings.js";
-import * as TextUtils7 from "./../text_utils/text_utils.js";
-import * as Workspace13 from "./../workspace/workspace.js";
-var UIStrings6 = {
-  /**
-   * @description Text to save content as a specific file type
-   */
-  saveAs: "Save as\u2026",
-  /**
-   * @description Context menu item for saving an image
-   */
-  saveImage: "Save image",
-  /**
-   * @description Context menu item for showing all overridden files
-   */
-  showOverrides: "Show all overrides",
-  /**
-   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
-   */
-  overrideContent: "Override content",
-  /**
-   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
-   */
-  openInContainingFolder: "Open in containing folder",
-  /**
-   * @description A message in a confirmation dialog in the Persistence Actions
-   * @example {bundle.min.js} PH1
-   */
-  overrideSourceMappedFileWarning: "Override \u2018{PH1}\u2019 instead?",
-  /**
-   * @description A message in a confirmation dialog to explain why the action is failed in the Persistence Actions
-   * @example {index.ts} PH1
-   */
-  overrideSourceMappedFileExplanation: "\u2018{PH1}\u2019 is a source mapped file and cannot be overridden.",
-  /**
-   * @description An error message shown in the DevTools console after the user clicked "Save as" in
-   * the context menu of a page resource.
-   */
-  saveFailed: "Failed to save file to disk.",
-  /**
-   * @description An error message shown in the DevTools console after the user clicked "Save as" in
-   * the context menu of a WebAssembly file.
-   */
-  saveWasmFailed: "Unable to save WASM module to disk. Most likely the module is too large."
-};
-var str_6 = i18n11.i18n.registerUIStrings("models/persistence/PersistenceActions.ts", UIStrings6);
-var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
-var ContextMenuProvider = class {
-  appendApplicableItems(_event, contextMenu, contentProvider) {
-    async function saveAs() {
-      if (contentProvider instanceof Workspace13.UISourceCode.UISourceCode) {
-        contentProvider.commitWorkingCopy();
+  static instance(opts = { forceNew: null, workspace: null }) {
+    const { forceNew, workspace } = opts;
+    if (!networkPersistenceManagerInstance || forceNew) {
+      if (!workspace) {
+        throw new Error("Missing workspace for NetworkPersistenceManager");
       }
-      const url = contentProvider.contentURL();
-      let contentData;
-      const maybeScript = getScript(contentProvider);
-      if (maybeScript?.isWasm()) {
-        try {
-          const base64 = await maybeScript.getWasmBytecode().then(Common11.Base64.encode);
-          contentData = new TextUtils7.ContentData.ContentData(
-            base64,
-            /* isBase64=*/
-            true,
-            "application/wasm"
-          );
-        } catch (e) {
-          console.error(`Unable to convert WASM byte code for ${url} to base64. Not saving to disk`, e.stack);
-          Common11.Console.Console.instance().error(
-            i18nString6(UIStrings6.saveWasmFailed),
-            /* show=*/
-            false
-          );
-          return;
-        }
-      } else {
-        const contentDataOrError = await contentProvider.requestContentData();
-        if (TextUtils7.ContentData.ContentData.isError(contentDataOrError)) {
-          console.error(`Failed to retrieve content for ${url}: ${contentDataOrError}`);
-          Common11.Console.Console.instance().error(
-            i18nString6(UIStrings6.saveFailed),
-            /* show=*/
-            false
-          );
-          return;
-        }
-        contentData = contentDataOrError;
-      }
-      await Workspace13.FileManager.FileManager.instance().save(
-        url,
-        contentData,
-        /* forceSaveAs=*/
-        true
-      );
-      Workspace13.FileManager.FileManager.instance().close(url);
+      networkPersistenceManagerInstance = new _NetworkPersistenceManager(workspace);
     }
-    async function saveImage() {
-      const targetObject = contentProvider;
-      const contentDataOrError = await targetObject.requestContentData();
-      const content = TextUtils7.ContentData.ContentData.textOr(contentDataOrError, "");
-      const link = document.createElement("a");
-      link.download = targetObject.displayName;
-      link.href = "data:" + targetObject.mimeType + ";base64," + content;
-      link.click();
-    }
-    if (contentProvider.contentType().isDocumentOrScriptOrStyleSheet()) {
-      contextMenu.saveSection().appendItem(i18nString6(UIStrings6.saveAs), saveAs, { jslogContext: "save-as" });
-    } else if (contentProvider instanceof SDK4.Resource.Resource && contentProvider.contentType().isImage()) {
-      contextMenu.saveSection().appendItem(i18nString6(UIStrings6.saveImage), saveImage, { jslogContext: "save-image" });
-    }
-    const uiSourceCode = Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(contentProvider.contentURL());
-    const networkPersistenceManager = NetworkPersistenceManager.instance();
-    const binding = uiSourceCode && PersistenceImpl.instance().binding(uiSourceCode);
-    const fileURL = binding ? binding.fileSystem.contentURL() : contentProvider.contentURL();
-    if (Common11.ParsedURL.schemeIs(fileURL, "file:")) {
-      const path = Common11.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host9.Platform.isWin());
-      contextMenu.revealSection().appendItem(i18nString6(UIStrings6.openInContainingFolder), () => Host9.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path), { jslogContext: "open-in-containing-folder" });
-    }
-    if (contentProvider instanceof Workspace13.UISourceCode.UISourceCode && contentProvider.project().type() === Workspace13.Workspace.projectTypes.FileSystem) {
-      return;
-    }
-    let disabled = true;
-    let handler = () => {
-    };
-    if (uiSourceCode && networkPersistenceManager.isUISourceCodeOverridable(uiSourceCode)) {
-      if (!uiSourceCode.contentType().isFromSourceMap()) {
-        disabled = false;
-        handler = this.handleOverrideContent.bind(this, uiSourceCode, contentProvider);
-      } else {
-        const deployedUiSourceCode = this.getDeployedUiSourceCode(uiSourceCode);
-        if (deployedUiSourceCode) {
-          disabled = false;
-          handler = this.redirectOverrideToDeployedUiSourceCode.bind(this, deployedUiSourceCode, uiSourceCode);
-        }
-      }
-    }
-    contextMenu.overrideSection().appendItem(i18nString6(UIStrings6.overrideContent), handler, { disabled, jslogContext: "override-content" });
-    if (contentProvider instanceof SDK4.NetworkRequest.NetworkRequest) {
-      contextMenu.overrideSection().appendItem(i18nString6(UIStrings6.showOverrides), async () => {
-        await UI4.ViewManager.ViewManager.instance().showView("navigator-overrides");
-        Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.ShowAllOverridesFromNetworkContextMenu);
-      }, { jslogContext: "show-overrides" });
-    }
+    return networkPersistenceManagerInstance;
   }
-  async handleOverrideContent(uiSourceCode, contentProvider) {
-    const networkPersistenceManager = NetworkPersistenceManager.instance();
-    const isSuccess = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
-    if (isSuccess) {
-      await Common11.Revealer.reveal(uiSourceCode);
-    }
-    if (contentProvider instanceof SDK4.NetworkRequest.NetworkRequest) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideContentFromNetworkContextMenu);
-    } else if (contentProvider instanceof Workspace13.UISourceCode.UISourceCode) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideContentFromSourcesContextMenu);
-    }
-    if (uiSourceCode.isFetchXHR()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideFetchXHR);
-    } else if (contentProvider.contentType().isScript()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideScript);
-    } else if (contentProvider.contentType().isDocument()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideDocument);
-    } else if (contentProvider.contentType().isStyleSheet()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideStyleSheet);
-    } else if (contentProvider.contentType().isImage()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideImage);
-    } else if (contentProvider.contentType().isFont()) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideFont);
-    }
+  active() {
+    return this.#active;
   }
-  async redirectOverrideToDeployedUiSourceCode(deployedUiSourceCode, originalUiSourceCode) {
-    Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideContentContextMenuSourceMappedWarning);
-    const deployedUrl = deployedUiSourceCode.url();
-    const deployedName = Bindings3.ResourceUtils.displayNameForURL(deployedUrl);
-    const originalUrl = originalUiSourceCode.url();
-    const originalName = Bindings3.ResourceUtils.displayNameForURL(originalUrl);
-    const shouldJumpToDeployedFile = await UI4.UIUtils.ConfirmDialog.show(i18nString6(UIStrings6.overrideSourceMappedFileExplanation, { PH1: originalName }), i18nString6(UIStrings6.overrideSourceMappedFileWarning, { PH1: deployedName }), void 0, { jslogContext: "override-source-mapped-file-warning" });
-    if (shouldJumpToDeployedFile) {
-      Host9.userMetrics.actionTaken(Host9.UserMetrics.Action.OverrideContentContextMenuRedirectToDeployed);
-      await this.handleOverrideContent(deployedUiSourceCode, deployedUiSourceCode);
-    }
+  project() {
+    return this.#project;
   }
-  getDeployedUiSourceCode(uiSourceCode) {
-    const debuggerWorkspaceBinding = Bindings3.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
-    for (const deployedScript of debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)) {
-      const deployedUiSourceCode2 = debuggerWorkspaceBinding.uiSourceCodeForScript(deployedScript);
-      if (deployedUiSourceCode2) {
-        return deployedUiSourceCode2;
-      }
-    }
-    const [deployedStylesUrl] = Bindings3.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(uiSourceCode);
-    if (!deployedStylesUrl) {
+  originalContentForUISourceCode(uiSourceCode) {
+    const binding = this.#bindings.get(uiSourceCode);
+    if (!binding) {
       return null;
     }
-    const deployedUiSourceCode = Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(deployedStylesUrl) || Workspace13.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(Common11.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl));
-    return deployedUiSourceCode;
+    const fileSystemUISourceCode = binding.fileSystem;
+    return this.#originalResponseContentPromises.get(fileSystemUISourceCode) || null;
   }
-};
-function getScript(contentProvider) {
-  if (!(contentProvider instanceof Workspace13.UISourceCode.UISourceCode)) {
-    return null;
+  async enabledChanged() {
+    if (this.#enabled === this.#enabledSetting.get()) {
+      return;
+    }
+    this.#enabled = this.#enabledSetting.get();
+    if (this.#enabled) {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.PersistenceNetworkOverridesEnabled);
+      this.#eventDescriptors = [
+        Workspace9.Workspace.WorkspaceImpl.instance().addEventListener(Workspace9.Workspace.Events.UISourceCodeRenamed, (event) => {
+          void this.uiSourceCodeRenamedListener(event);
+        }),
+        Workspace9.Workspace.WorkspaceImpl.instance().addEventListener(Workspace9.Workspace.Events.UISourceCodeAdded, (event) => {
+          void this.uiSourceCodeAdded(event);
+        }),
+        Workspace9.Workspace.WorkspaceImpl.instance().addEventListener(Workspace9.Workspace.Events.UISourceCodeRemoved, (event) => {
+          void this.uiSourceCodeRemovedListener(event);
+        }),
+        Workspace9.Workspace.WorkspaceImpl.instance().addEventListener(Workspace9.Workspace.Events.WorkingCopyCommitted, (event) => this.onUISourceCodeWorkingCopyCommitted(event.data.uiSourceCode))
+      ];
+      await this.updateActiveProject();
+    } else {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.PersistenceNetworkOverridesDisabled);
+      Common9.EventTarget.removeEventListeners(this.#eventDescriptors);
+      await this.updateActiveProject();
+    }
+    this.dispatchEventToListeners("LocalOverridesProjectUpdated", this.#enabled);
   }
-  const target = Bindings3.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider);
-  const model = target?.model(SDK4.DebuggerModel.DebuggerModel);
-  if (model) {
-    const resourceFile = Bindings3.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(contentProvider, model);
-    if (resourceFile?.script) {
-      return resourceFile.script;
+  async uiSourceCodeRenamedListener(event) {
+    const uiSourceCode = event.data.uiSourceCode;
+    await this.onUISourceCodeRemoved(uiSourceCode);
+    await this.onUISourceCodeAdded(uiSourceCode);
+  }
+  async uiSourceCodeRemovedListener(event) {
+    await this.onUISourceCodeRemoved(event.data);
+  }
+  async uiSourceCodeAdded(event) {
+    await this.onUISourceCodeAdded(event.data);
+  }
+  async updateActiveProject() {
+    const wasActive = this.#active;
+    this.#active = Boolean(this.#enabledSetting.get() && SDK3.TargetManager.TargetManager.instance().rootTarget() && this.#project);
+    if (this.#active === wasActive) {
+      return;
+    }
+    if (this.#active && this.#project) {
+      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeAdded(uiSourceCode)));
+      const networkProjects = this.#workspace.projectsForType(Workspace9.Workspace.projectTypes.Network);
+      for (const networkProject of networkProjects) {
+        await Promise.all([...networkProject.uiSourceCodes()].map((uiSourceCode) => this.networkUISourceCodeAdded(uiSourceCode)));
+      }
+    } else if (this.#project) {
+      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeRemoved(uiSourceCode)));
+      this.#networkUISourceCodeForEncodedPath.clear();
+    }
+    PersistenceImpl.instance().refreshAutomapping();
+  }
+  encodedPathFromUrl(url, ignoreInactive) {
+    return Common9.ParsedURL.ParsedURL.rawPathToEncodedPathString(this.rawPathFromUrl(url, ignoreInactive));
+  }
+  rawPathFromUrl(url, ignoreInactive) {
+    if (!this.#active && !ignoreInactive || !this.#project) {
+      return Platform11.DevToolsPath.EmptyRawPathString;
+    }
+    let initialEncodedPath = Common9.ParsedURL.ParsedURL.urlWithoutHash(url.replace(/^https?:\/\//, ""));
+    if (initialEncodedPath.endsWith("/") && initialEncodedPath.indexOf("?") === -1) {
+      initialEncodedPath = Common9.ParsedURL.ParsedURL.concatenate(initialEncodedPath, "index.html");
+    }
+    let encodedPathParts = _NetworkPersistenceManager.encodeEncodedPathToLocalPathParts(initialEncodedPath);
+    const projectPath = FileSystemWorkspaceBinding.fileSystemPath(this.#project.id());
+    const encodedPath = encodedPathParts.join("/");
+    if (projectPath.length + encodedPath.length > 200) {
+      const domain = encodedPathParts[0];
+      const encodedFileName = encodedPathParts[encodedPathParts.length - 1];
+      const shortFileName = encodedFileName ? encodedFileName.substr(0, 10) + "-" : "";
+      const extension = Common9.ParsedURL.ParsedURL.extractExtension(initialEncodedPath);
+      const extensionPart = extension ? "." + extension.substr(0, 10) : "";
+      encodedPathParts = [
+        domain,
+        "longurls",
+        shortFileName + Platform11.StringUtilities.hashCode(encodedPath).toString(16) + extensionPart
+      ];
+    }
+    return Common9.ParsedURL.ParsedURL.join(encodedPathParts, "/");
+  }
+  static encodeEncodedPathToLocalPathParts(encodedPath) {
+    const encodedParts = [];
+    for (const pathPart of this.#fileNamePartsFromEncodedPath(encodedPath)) {
+      if (!pathPart) {
+        continue;
+      }
+      let encodedName = encodeURI(pathPart).replace(/[\/\*]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
+      if (Host8.Platform.isWin()) {
+        encodedName = encodedName.replace(/[:\?]/g, (match) => "%" + match[0].charCodeAt(0).toString(16).toUpperCase());
+        if (RESERVED_FILENAMES.has(encodedName.toLowerCase())) {
+          encodedName = encodedName.split("").map((char) => "%" + char.charCodeAt(0).toString(16).toUpperCase()).join("");
+        }
+        const lastChar = encodedName.charAt(encodedName.length - 1);
+        if (lastChar === ".") {
+          encodedName = encodedName.substr(0, encodedName.length - 1) + "%2E";
+        }
+      }
+      encodedParts.push(encodedName);
+    }
+    return encodedParts;
+  }
+  static #fileNamePartsFromEncodedPath(encodedPath) {
+    encodedPath = Common9.ParsedURL.ParsedURL.urlWithoutHash(encodedPath);
+    const queryIndex = encodedPath.indexOf("?");
+    if (queryIndex === -1) {
+      return encodedPath.split("/");
+    }
+    if (queryIndex === 0) {
+      return [encodedPath];
+    }
+    const endSection = encodedPath.substr(queryIndex);
+    const parts = encodedPath.substr(0, encodedPath.length - endSection.length).split("/");
+    parts[parts.length - 1] += endSection;
+    return parts;
+  }
+  fileUrlFromNetworkUrl(url, ignoreInactive) {
+    if (!this.#project) {
+      return Platform11.DevToolsPath.EmptyUrlString;
+    }
+    return Common9.ParsedURL.ParsedURL.concatenate(this.#project.fileSystemPath(), "/", this.encodedPathFromUrl(url, ignoreInactive));
+  }
+  getHeadersUISourceCodeFromUrl(url) {
+    const fileUrlFromRequest = this.fileUrlFromNetworkUrl(
+      url,
+      /* ignoreNoActive */
+      true
+    );
+    const folderUrlFromRequest = Common9.ParsedURL.ParsedURL.substring(fileUrlFromRequest, 0, fileUrlFromRequest.lastIndexOf("/"));
+    const headersFileUrl = Common9.ParsedURL.ParsedURL.concatenate(folderUrlFromRequest, "/", HEADERS_FILENAME);
+    return Workspace9.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(headersFileUrl);
+  }
+  async getOrCreateHeadersUISourceCodeFromUrl(url) {
+    let uiSourceCode = this.getHeadersUISourceCodeFromUrl(url);
+    if (!uiSourceCode && this.#project) {
+      const encodedFilePath = this.encodedPathFromUrl(
+        url,
+        /* ignoreNoActive */
+        true
+      );
+      const encodedPath = Common9.ParsedURL.ParsedURL.substring(encodedFilePath, 0, encodedFilePath.lastIndexOf("/"));
+      uiSourceCode = await this.#project.createFile(encodedPath, HEADERS_FILENAME, "");
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.HeaderOverrideFileCreated);
+    }
+    return uiSourceCode;
+  }
+  decodeLocalPathToUrlPath(path) {
+    try {
+      return unescape(path);
+    } catch (e) {
+      console.error(e);
+    }
+    return path;
+  }
+  async #unbind(uiSourceCode) {
+    const binding = this.#bindings.get(uiSourceCode);
+    const headerBinding = uiSourceCode.url().endsWith(HEADERS_FILENAME);
+    if (binding) {
+      const mutex = this.#getOrCreateMutex(binding.network);
+      await mutex.run(this.#innerUnbind.bind(this, binding));
+    } else if (headerBinding) {
+      this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged", uiSourceCode);
     }
   }
-  return Bindings3.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider)[0] ?? null;
+  async #unbindUnguarded(uiSourceCode) {
+    const binding = this.#bindings.get(uiSourceCode);
+    if (binding) {
+      await this.#innerUnbind(binding);
+    }
+  }
+  #innerUnbind(binding) {
+    this.#bindings.delete(binding.network);
+    this.#bindings.delete(binding.fileSystem);
+    return PersistenceImpl.instance().removeBinding(binding);
+  }
+  async #bind(networkUISourceCode, fileSystemUISourceCode) {
+    const mutex = this.#getOrCreateMutex(networkUISourceCode);
+    await mutex.run(async () => {
+      const existingBinding = this.#bindings.get(networkUISourceCode);
+      if (existingBinding) {
+        const { network, fileSystem } = existingBinding;
+        if (networkUISourceCode === network && fileSystemUISourceCode === fileSystem) {
+          return;
+        }
+        await this.#unbindUnguarded(networkUISourceCode);
+        await this.#unbindUnguarded(fileSystemUISourceCode);
+      }
+      await this.#innerAddBinding(networkUISourceCode, fileSystemUISourceCode);
+    });
+  }
+  #getOrCreateMutex(networkUISourceCode) {
+    let mutex = this.#sourceCodeToBindProcessMutex.get(networkUISourceCode);
+    if (!mutex) {
+      mutex = new Common9.Mutex.Mutex();
+      this.#sourceCodeToBindProcessMutex.set(networkUISourceCode, mutex);
+    }
+    return mutex;
+  }
+  async #innerAddBinding(networkUISourceCode, fileSystemUISourceCode) {
+    const binding = new PersistenceBinding(networkUISourceCode, fileSystemUISourceCode);
+    this.#bindings.set(networkUISourceCode, binding);
+    this.#bindings.set(fileSystemUISourceCode, binding);
+    await PersistenceImpl.instance().addBinding(binding);
+    const uiSourceCodeOfTruth = this.#savingForOverrides.has(networkUISourceCode) ? networkUISourceCode : fileSystemUISourceCode;
+    const contentDataOrError = await uiSourceCodeOfTruth.requestContentData();
+    const { content, isEncoded } = TextUtils6.ContentData.ContentData.asDeferredContent(contentDataOrError);
+    PersistenceImpl.instance().syncContent(uiSourceCodeOfTruth, content || "", isEncoded);
+  }
+  onUISourceCodeWorkingCopyCommitted(uiSourceCode) {
+    void this.saveUISourceCodeForOverrides(uiSourceCode);
+    this.updateInterceptionPatterns();
+  }
+  isActiveHeaderOverrides(uiSourceCode) {
+    if (!this.#enabledSetting.get()) {
+      return false;
+    }
+    return uiSourceCode.url().endsWith(HEADERS_FILENAME) && this.hasMatchingNetworkUISourceCodeForHeaderOverridesFile(uiSourceCode);
+  }
+  isUISourceCodeOverridable(uiSourceCode) {
+    return uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.Network && !_NetworkPersistenceManager.isForbiddenNetworkUrl(uiSourceCode.url());
+  }
+  #isUISourceCodeAlreadyOverridden(uiSourceCode) {
+    return this.#bindings.has(uiSourceCode) || this.#savingForOverrides.has(uiSourceCode);
+  }
+  #shouldPromptSaveForOverridesDialog(uiSourceCode) {
+    return this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode) && !this.#active && !this.#project;
+  }
+  #canSaveUISourceCodeForOverrides(uiSourceCode) {
+    return this.#active && this.isUISourceCodeOverridable(uiSourceCode) && !this.#isUISourceCodeAlreadyOverridden(uiSourceCode);
+  }
+  async setupAndStartLocalOverrides(uiSourceCode) {
+    if (this.#shouldPromptSaveForOverridesDialog(uiSourceCode)) {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.OverrideContentContextMenuSetup);
+      await new Promise((resolve) => this.dispatchEventToListeners("LocalOverridesRequested", resolve));
+      await IsolatedFileSystemManager.instance().addFileSystem("overrides");
+    }
+    if (!this.project()) {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.OverrideContentContextMenuAbandonSetup);
+      return false;
+    }
+    if (!this.#enabledSetting.get()) {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.OverrideContentContextMenuActivateDisabled);
+      this.#enabledSetting.set(true);
+      await this.once(
+        "LocalOverridesProjectUpdated"
+        /* Events.LOCAL_OVERRIDES_PROJECT_UPDATED */
+      );
+    }
+    if (!this.#isUISourceCodeAlreadyOverridden(uiSourceCode)) {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.OverrideContentContextMenuSaveNewFile);
+      uiSourceCode.commitWorkingCopy();
+      await this.saveUISourceCodeForOverrides(uiSourceCode);
+    } else {
+      Host8.userMetrics.actionTaken(Host8.UserMetrics.Action.OverrideContentContextMenuOpenExistingFile);
+    }
+    return true;
+  }
+  async saveUISourceCodeForOverrides(uiSourceCode) {
+    if (!this.#canSaveUISourceCodeForOverrides(uiSourceCode)) {
+      return;
+    }
+    this.#savingForOverrides.add(uiSourceCode);
+    let encodedPath = this.encodedPathFromUrl(uiSourceCode.url());
+    const contentDataOrError = await uiSourceCode.requestContentData();
+    const { content, isEncoded } = TextUtils6.ContentData.ContentData.asDeferredContent(contentDataOrError);
+    const lastIndexOfSlash = encodedPath.lastIndexOf("/");
+    const encodedFileName = Common9.ParsedURL.ParsedURL.substring(encodedPath, lastIndexOfSlash + 1);
+    const rawFileName = Common9.ParsedURL.ParsedURL.encodedPathToRawPathString(encodedFileName);
+    encodedPath = Common9.ParsedURL.ParsedURL.substr(encodedPath, 0, lastIndexOfSlash);
+    if (this.#project) {
+      await this.#project.createFile(encodedPath, rawFileName, content ?? "", isEncoded);
+    }
+    this.fileCreatedForTest(encodedPath, rawFileName);
+    this.#savingForOverrides.delete(uiSourceCode);
+  }
+  fileCreatedForTest(_path, _fileName) {
+  }
+  patternForFileSystemUISourceCode(uiSourceCode) {
+    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
+    if (relativePathParts.length < 2) {
+      return "";
+    }
+    if (relativePathParts[1] === "longurls" && relativePathParts.length !== 2) {
+      if (relativePathParts[0] === "file:") {
+        return "file:///*";
+      }
+      return "http?://" + relativePathParts[0] + "/*";
+    }
+    const path = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts.join("/")));
+    if (path.startsWith("file:/")) {
+      return "file:///" + path.substring("file:/".length);
+    }
+    return "http?://" + path;
+  }
+  // 'chrome://'-URLs and the Chrome Web Store are privileged URLs. We don't want users
+  // to be able to override those. Ideally we'd have a similar check in the backend,
+  // because the fix here has no effect on non-DevTools CDP clients.
+  isForbiddenFileUrl(uiSourceCode) {
+    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
+    const host = this.decodeLocalPathToUrlPath(this.decodeLocalPathToUrlPath(relativePathParts[0] || ""));
+    return host === "chrome:" || forbiddenUrls.includes(host);
+  }
+  static isForbiddenNetworkUrl(urlString) {
+    const url = Common9.ParsedURL.ParsedURL.fromString(urlString);
+    if (!url) {
+      return false;
+    }
+    return url.scheme === "chrome" || forbiddenUrls.includes(url.host);
+  }
+  async onUISourceCodeAdded(uiSourceCode) {
+    await this.networkUISourceCodeAdded(uiSourceCode);
+    await this.filesystemUISourceCodeAdded(uiSourceCode);
+  }
+  canHandleNetworkUISourceCode(uiSourceCode) {
+    return this.#active && !Common9.ParsedURL.schemeIs(uiSourceCode.url(), "snippet:");
+  }
+  async networkUISourceCodeAdded(uiSourceCode) {
+    if (uiSourceCode.project().type() !== Workspace9.Workspace.projectTypes.Network || !this.canHandleNetworkUISourceCode(uiSourceCode)) {
+      return;
+    }
+    const url = Common9.ParsedURL.ParsedURL.urlWithoutHash(uiSourceCode.url());
+    this.#networkUISourceCodeForEncodedPath.set(this.encodedPathFromUrl(url), uiSourceCode);
+    const project = this.#project;
+    const fileSystemUISourceCode = project.uiSourceCodeForURL(this.fileUrlFromNetworkUrl(url));
+    if (fileSystemUISourceCode) {
+      await this.#bind(uiSourceCode, fileSystemUISourceCode);
+    }
+    this.#maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode);
+  }
+  async filesystemUISourceCodeAdded(uiSourceCode) {
+    if (!this.#active || uiSourceCode.project() !== this.#project) {
+      return;
+    }
+    this.updateInterceptionPatterns();
+    const relativePath = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
+    const networkUISourceCode = this.#networkUISourceCodeForEncodedPath.get(Common9.ParsedURL.ParsedURL.join(relativePath, "/"));
+    if (networkUISourceCode) {
+      await this.#bind(networkUISourceCode, uiSourceCode);
+    }
+  }
+  async #getHeaderOverridesFromUiSourceCode(uiSourceCode) {
+    const contentData = await uiSourceCode.requestContentData().then(TextUtils6.ContentData.ContentData.contentDataOrEmpty);
+    const content = contentData.text || "[]";
+    let headerOverrides = [];
+    try {
+      headerOverrides = JSON.parse(content);
+      if (!headerOverrides.every(isHeaderOverride)) {
+        throw new Error("Type mismatch after parsing");
+      }
+    } catch {
+      console.error("Failed to parse", uiSourceCode.url(), "for locally overriding headers.");
+      return [];
+    }
+    return headerOverrides;
+  }
+  #doubleDecodeEncodedPathString(relativePath) {
+    const singlyDecodedPath = this.decodeLocalPathToUrlPath(relativePath);
+    const decodedPath = this.decodeLocalPathToUrlPath(singlyDecodedPath);
+    return { singlyDecodedPath, decodedPath };
+  }
+  async generateHeaderPatterns(uiSourceCode) {
+    const headerOverrides = await this.#getHeaderOverridesFromUiSourceCode(uiSourceCode);
+    const relativePathParts = FileSystemWorkspaceBinding.relativePath(uiSourceCode);
+    const relativePath = Common9.ParsedURL.ParsedURL.slice(Common9.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
+    const { singlyDecodedPath, decodedPath } = this.#doubleDecodeEncodedPathString(relativePath);
+    let patterns;
+    if (relativePathParts.length > 2 && relativePathParts[1] === "longurls" && headerOverrides.length) {
+      patterns = this.#generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathParts[0]);
+    } else if (decodedPath.startsWith("file:/")) {
+      patterns = this.#generateHeaderPatternsForFileUrl(Common9.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length), headerOverrides);
+    } else {
+      patterns = this.#generateHeaderPatternsForHttpUrl(decodedPath, headerOverrides);
+    }
+    return { ...patterns, path: singlyDecodedPath };
+  }
+  #generateHeaderPatternsForHttpUrl(decodedPath, headerOverrides) {
+    const headerPatterns = /* @__PURE__ */ new Set();
+    const overridesWithRegex = [];
+    for (const headerOverride of headerOverrides) {
+      headerPatterns.add("http?://" + decodedPath + headerOverride.applyTo);
+      if (decodedPath === "") {
+        headerPatterns.add("file:///" + headerOverride.applyTo);
+        overridesWithRegex.push({
+          applyToRegex: new RegExp("^file:///" + escapeRegex(decodedPath + headerOverride.applyTo) + "$"),
+          headers: headerOverride.headers
+        });
+      }
+      const { head, tail } = extractDirectoryIndex(headerOverride.applyTo);
+      if (tail) {
+        headerPatterns.add("http?://" + decodedPath + head);
+        overridesWithRegex.push({
+          applyToRegex: new RegExp(`^${escapeRegex(decodedPath + head)}(${escapeRegex(tail)})?$`),
+          headers: headerOverride.headers
+        });
+      } else {
+        overridesWithRegex.push({
+          applyToRegex: new RegExp(`^${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
+          headers: headerOverride.headers
+        });
+      }
+    }
+    return { headerPatterns, overridesWithRegex };
+  }
+  #generateHeaderPatternsForFileUrl(decodedPath, headerOverrides) {
+    const headerPatterns = /* @__PURE__ */ new Set();
+    const overridesWithRegex = [];
+    for (const headerOverride of headerOverrides) {
+      headerPatterns.add("file:///" + decodedPath + headerOverride.applyTo);
+      overridesWithRegex.push({
+        applyToRegex: new RegExp(`^file:/${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
+        headers: headerOverride.headers
+      });
+    }
+    return { headerPatterns, overridesWithRegex };
+  }
+  // For very long URLs, part of the URL is hashed for local overrides, so that
+  // the URL appears shorter. This special case is handled here.
+  #generateHeaderPatternsForLongUrl(decodedPath, headerOverrides, relativePathPart) {
+    const headerPatterns = /* @__PURE__ */ new Set();
+    let { decodedPath: decodedPattern } = this.#doubleDecodeEncodedPathString(Common9.ParsedURL.ParsedURL.concatenate(relativePathPart, "/*"));
+    const isFileUrl = decodedPath.startsWith("file:/");
+    if (isFileUrl) {
+      decodedPath = Common9.ParsedURL.ParsedURL.substring(decodedPath, "file:/".length);
+      decodedPattern = Common9.ParsedURL.ParsedURL.substring(decodedPattern, "file:/".length);
+    }
+    headerPatterns.add((isFileUrl ? "file:///" : "http?://") + decodedPattern);
+    const overridesWithRegex = [];
+    for (const headerOverride of headerOverrides) {
+      overridesWithRegex.push({
+        applyToRegex: new RegExp(`^${isFileUrl ? "file:/" : ""}${escapeRegex(decodedPath + headerOverride.applyTo)}$`),
+        headers: headerOverride.headers
+      });
+    }
+    return { headerPatterns, overridesWithRegex };
+  }
+  async updateInterceptionPatternsForTests() {
+    await this.#innerUpdateInterceptionPatterns();
+  }
+  updateInterceptionPatterns() {
+    void this.#updateInterceptionThrottler.schedule(this.#innerUpdateInterceptionPatterns.bind(this));
+  }
+  async #innerUpdateInterceptionPatterns() {
+    this.#headerOverridesMap.clear();
+    if (!this.#active || !this.#project) {
+      return await SDK3.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns([], this.#interceptionHandlerBound);
+    }
+    let patterns = /* @__PURE__ */ new Set();
+    for (const uiSourceCode of this.#project.uiSourceCodes()) {
+      if (this.isForbiddenFileUrl(uiSourceCode)) {
+        continue;
+      }
+      const pattern = this.patternForFileSystemUISourceCode(uiSourceCode);
+      if (uiSourceCode.name() === HEADERS_FILENAME) {
+        const { headerPatterns, path, overridesWithRegex } = await this.generateHeaderPatterns(uiSourceCode);
+        if (headerPatterns.size > 0) {
+          patterns = /* @__PURE__ */ new Set([...patterns, ...headerPatterns]);
+          this.#headerOverridesMap.set(path, overridesWithRegex);
+        }
+      } else {
+        patterns.add(pattern);
+      }
+      const { head, tail } = extractDirectoryIndex(pattern);
+      if (tail) {
+        patterns.add(head);
+      }
+    }
+    return await SDK3.NetworkManager.MultitargetNetworkManager.instance().setInterceptionHandlerForPatterns(Array.from(patterns).map((pattern) => ({
+      urlPattern: pattern,
+      requestStage: "Response"
+      /* Protocol.Fetch.RequestStage.Response */
+    })), this.#interceptionHandlerBound);
+  }
+  async onUISourceCodeRemoved(uiSourceCode) {
+    await this.networkUISourceCodeRemoved(uiSourceCode);
+    await this.filesystemUISourceCodeRemoved(uiSourceCode);
+  }
+  async networkUISourceCodeRemoved(uiSourceCode) {
+    if (uiSourceCode.project().type() === Workspace9.Workspace.projectTypes.Network) {
+      await this.#unbind(uiSourceCode);
+      this.#sourceCodeToBindProcessMutex.delete(uiSourceCode);
+      this.#networkUISourceCodeForEncodedPath.delete(this.encodedPathFromUrl(uiSourceCode.url()));
+    }
+    this.#maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode);
+  }
+  // We consider a header override file as active, if it matches (= potentially contains
+  // header overrides for) some of the current page's requests.
+  // The editors (in the Sources panel) of active header override files should have an
+  // emphasized icon. For regular overrides we use bindings to determine which editors
+  // are active. For header overrides we do not have a 1:1 matching between the file
+  // defining the header overrides and the request matching the override definition,
+  // because a single '.headers' file can contain header overrides for multiple requests.
+  // For each request, we therefore look whether one or more matching header override
+  // files exist, and if they do, for each of them we emit an event, which causes
+  // potential matching editors to update their icon.
+  #maybeDispatchRequestsForHeaderOverridesFileChanged(uiSourceCode) {
+    if (!this.#project) {
+      return;
+    }
+    const project = this.#project;
+    const fileUrl = this.fileUrlFromNetworkUrl(uiSourceCode.url());
+    for (let i = project.fileSystemPath().length; i < fileUrl.length; i++) {
+      if (fileUrl[i] !== "/") {
+        continue;
+      }
+      const headersFilePath = Common9.ParsedURL.ParsedURL.concatenate(Common9.ParsedURL.ParsedURL.substring(fileUrl, 0, i + 1), ".headers");
+      const headersFileUiSourceCode = project.uiSourceCodeForURL(headersFilePath);
+      if (!headersFileUiSourceCode) {
+        continue;
+      }
+      this.#headerOverridesForEventDispatch.add(headersFileUiSourceCode);
+      void this.#eventDispatchThrottler.schedule(this.#dispatchRequestsForHeaderOverridesFileChanged.bind(this));
+    }
+  }
+  #dispatchRequestsForHeaderOverridesFileChanged() {
+    for (const headersFileUiSourceCode of this.#headerOverridesForEventDispatch) {
+      this.dispatchEventToListeners("RequestsForHeaderOverridesFileChanged", headersFileUiSourceCode);
+    }
+    this.#headerOverridesForEventDispatch.clear();
+    return Promise.resolve();
+  }
+  hasMatchingNetworkUISourceCodeForHeaderOverridesFile(headersFile) {
+    const relativePathParts = FileSystemWorkspaceBinding.relativePath(headersFile);
+    const relativePath = Common9.ParsedURL.ParsedURL.slice(Common9.ParsedURL.ParsedURL.join(relativePathParts, "/"), 0, -HEADERS_FILENAME.length);
+    for (const encodedNetworkPath of this.#networkUISourceCodeForEncodedPath.keys()) {
+      if (encodedNetworkPath.startsWith(relativePath)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  async filesystemUISourceCodeRemoved(uiSourceCode) {
+    if (uiSourceCode.project() !== this.#project) {
+      return;
+    }
+    this.updateInterceptionPatterns();
+    this.#originalResponseContentPromises.delete(uiSourceCode);
+    await this.#unbind(uiSourceCode);
+  }
+  async setProject(project) {
+    if (project === this.#project) {
+      return;
+    }
+    if (this.#project) {
+      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeRemoved(uiSourceCode)));
+    }
+    this.#project = project;
+    if (this.#project) {
+      await Promise.all([...this.#project.uiSourceCodes()].map((uiSourceCode) => this.filesystemUISourceCodeAdded(uiSourceCode)));
+    }
+    await this.updateActiveProject();
+    this.dispatchEventToListeners("ProjectChanged", this.#project);
+  }
+  async onProjectAdded(project) {
+    if (project.type() !== Workspace9.Workspace.projectTypes.FileSystem || FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
+      return;
+    }
+    const fileSystemPath = FileSystemWorkspaceBinding.fileSystemPath(project.id());
+    if (!fileSystemPath) {
+      return;
+    }
+    if (this.#project) {
+      this.#project.remove();
+    }
+    await this.setProject(project);
+  }
+  async onProjectRemoved(project) {
+    for (const uiSourceCode of project.uiSourceCodes()) {
+      await this.networkUISourceCodeRemoved(uiSourceCode);
+    }
+    if (project === this.#project) {
+      await this.setProject(null);
+    }
+  }
+  mergeHeaders(baseHeaders, overrideHeaders) {
+    const headerMap = new Platform11.MapUtilities.Multimap();
+    for (const { name, value } of overrideHeaders) {
+      if (name.toLowerCase() !== "set-cookie") {
+        headerMap.set(name.toLowerCase(), value);
+      }
+    }
+    const overriddenHeaderNames = new Set(headerMap.keysArray());
+    for (const { name, value } of baseHeaders) {
+      const lowerCaseName = name.toLowerCase();
+      if (!overriddenHeaderNames.has(lowerCaseName) && lowerCaseName !== "set-cookie") {
+        headerMap.set(lowerCaseName, value);
+      }
+    }
+    const result = [];
+    for (const headerName of headerMap.keysArray()) {
+      for (const headerValue of headerMap.get(headerName)) {
+        result.push({ name: headerName, value: headerValue });
+      }
+    }
+    const originalSetCookieHeaders = baseHeaders.filter((header) => header.name.toLowerCase() === "set-cookie") || [];
+    const setCookieHeadersFromOverrides = overrideHeaders.filter((header) => header.name.toLowerCase() === "set-cookie");
+    const mergedHeaders = SDK3.NetworkManager.InterceptedRequest.mergeSetCookieHeaders(originalSetCookieHeaders, setCookieHeadersFromOverrides);
+    result.push(...mergedHeaders);
+    return result;
+  }
+  #maybeMergeHeadersForPathSegment(path, requestUrl, headers) {
+    const headerOverrides = this.#headerOverridesMap.get(path) || [];
+    for (const headerOverride of headerOverrides) {
+      const requestUrlWithLongUrlReplacement = this.decodeLocalPathToUrlPath(this.rawPathFromUrl(requestUrl));
+      if (headerOverride.applyToRegex.test(requestUrlWithLongUrlReplacement)) {
+        headers = this.mergeHeaders(headers, headerOverride.headers);
+      }
+    }
+    return headers;
+  }
+  handleHeaderInterception(interceptedRequest) {
+    let result = interceptedRequest.responseHeaders || [];
+    const urlSegments = this.rawPathFromUrl(interceptedRequest.request.url).split("/");
+    let path = Platform11.DevToolsPath.EmptyEncodedPathString;
+    result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
+    for (const segment of urlSegments) {
+      path = Common9.ParsedURL.ParsedURL.concatenate(path, segment, "/");
+      result = this.#maybeMergeHeadersForPathSegment(path, interceptedRequest.request.url, result);
+    }
+    return result;
+  }
+  async interceptionHandler(interceptedRequest) {
+    const method = interceptedRequest.request.method;
+    if (!this.#active || method === "OPTIONS") {
+      return;
+    }
+    const proj = this.#project;
+    const path = this.fileUrlFromNetworkUrl(interceptedRequest.request.url);
+    const fileSystemUISourceCode = proj.uiSourceCodeForURL(path);
+    let responseHeaders = this.handleHeaderInterception(interceptedRequest);
+    if (!fileSystemUISourceCode && !responseHeaders.length) {
+      return;
+    }
+    if (!responseHeaders.length) {
+      responseHeaders = interceptedRequest.responseHeaders || [];
+    }
+    let { mimeType } = interceptedRequest.getMimeTypeAndCharset();
+    if (!mimeType) {
+      const expectedResourceType = Common9.ResourceType.resourceTypes[interceptedRequest.resourceType] || Common9.ResourceType.resourceTypes.Other;
+      mimeType = fileSystemUISourceCode?.mimeType() || "";
+      if (Common9.ResourceType.ResourceType.fromMimeType(mimeType) !== expectedResourceType) {
+        mimeType = expectedResourceType.canonicalMimeType();
+      }
+    }
+    if (fileSystemUISourceCode) {
+      this.#originalResponseContentPromises.set(fileSystemUISourceCode, interceptedRequest.responseBody().then((response) => {
+        if (TextUtils6.ContentData.ContentData.isError(response) || !response.isTextContent) {
+          return null;
+        }
+        return response.text;
+      }));
+      const project = fileSystemUISourceCode.project();
+      const blob = await project.requestFileBlob(fileSystemUISourceCode);
+      if (blob) {
+        void interceptedRequest.continueRequestWithContent(
+          new Blob([blob], { type: mimeType }),
+          /* encoded */
+          false,
+          responseHeaders,
+          /* isBodyOverridden */
+          true
+        );
+      }
+    } else if (interceptedRequest.isRedirect()) {
+      void interceptedRequest.continueRequestWithContent(
+        new Blob([], { type: mimeType }),
+        /* encoded */
+        true,
+        responseHeaders,
+        /* isBodyOverridden */
+        false
+      );
+    } else {
+      const responseBody = await interceptedRequest.responseBody();
+      if (!TextUtils6.ContentData.ContentData.isError(responseBody)) {
+        const content = responseBody.isTextContent ? responseBody.text : responseBody.base64;
+        void interceptedRequest.continueRequestWithContent(
+          new Blob([content], { type: mimeType }),
+          /* encoded */
+          !responseBody.isTextContent,
+          responseHeaders,
+          /* isBodyOverridden */
+          false
+        );
+      }
+    }
+  }
+};
+var RESERVED_FILENAMES = /* @__PURE__ */ new Set([
+  "con",
+  "prn",
+  "aux",
+  "nul",
+  "com1",
+  "com2",
+  "com3",
+  "com4",
+  "com5",
+  "com6",
+  "com7",
+  "com8",
+  "com9",
+  "lpt1",
+  "lpt2",
+  "lpt3",
+  "lpt4",
+  "lpt5",
+  "lpt6",
+  "lpt7",
+  "lpt8",
+  "lpt9"
+]);
+var HEADERS_FILENAME = ".headers";
+function isHeaderOverride(arg) {
+  if (!(arg && typeof arg.applyTo === "string" && arg.headers?.length && Array.isArray(arg.headers))) {
+    return false;
+  }
+  return arg.headers.every((header) => typeof header.name === "string" && typeof header.value === "string");
+}
+function escapeRegex(pattern) {
+  return Platform11.StringUtilities.escapeCharacters(pattern, "[]{}()\\.^$+|-,?").replaceAll("*", ".*");
+}
+function extractDirectoryIndex(pattern) {
+  const lastSlash = pattern.lastIndexOf("/");
+  const tail = lastSlash >= 0 ? pattern.slice(lastSlash + 1) : pattern;
+  const head = lastSlash >= 0 ? pattern.slice(0, lastSlash + 1) : "";
+  const regex = new RegExp("^" + escapeRegex(tail) + "$");
+  if (tail !== "*" && (regex.test("index.html") || regex.test("index.htm") || regex.test("index.php"))) {
+    return { head, tail };
+  }
+  return { head: pattern };
 }
 export {
   Automapping_exports as Automapping,
   AutomaticFileSystemManager_exports as AutomaticFileSystemManager,
   AutomaticFileSystemWorkspaceBinding_exports as AutomaticFileSystemWorkspaceBinding,
-  EditFileSystemView_exports as EditFileSystemView,
   FileSystemWorkspaceBinding_exports as FileSystemWorkspaceBinding,
   IsolatedFileSystem_exports as IsolatedFileSystem,
   IsolatedFileSystemManager_exports as IsolatedFileSystemManager,
   NetworkPersistenceManager_exports as NetworkPersistenceManager,
   PersistenceImpl_exports as Persistence,
-  PersistenceActions_exports as PersistenceActions,
-  PersistenceUtils_exports as PersistenceUtils,
   PlatformFileSystem_exports as PlatformFileSystem
 };
 //# sourceMappingURL=persistence.js.map

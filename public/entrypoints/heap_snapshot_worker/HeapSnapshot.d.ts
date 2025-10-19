@@ -337,6 +337,13 @@ export declare abstract class HeapSnapshot {
      */
     private addString;
     /**
+     * Gets the target node of an edge with the specified name.
+     * @param node The source node to search from
+     * @param edgeName The name of the edge to find
+     * @returns The target node if found, null otherwise
+     */
+    private getEdgeTarget;
+    /**
      * The phase propagates whether a node is attached or detached through the
      * graph and adjusts the low-level representation of nodes.
      *

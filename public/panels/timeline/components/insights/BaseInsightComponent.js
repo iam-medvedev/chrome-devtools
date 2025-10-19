@@ -140,17 +140,17 @@ export class BaseInsightComponent extends HTMLElement {
             // Shouldn't happen, but needed to satisfy TS.
             return;
         }
-        const focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+        const focus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
         if (this.#selected) {
             this.dispatchEvent(new SidebarInsight.InsightDeactivated());
             // Clear agent (but only if currently focused on an insight).
             if (focus) {
-                UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(null));
+                UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus.withInsight(null));
             }
             return;
         }
         if (focus) {
-            UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(this.model));
+            UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus.withInsight(this.model));
         }
         Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
         this.sharedTableState.selectedRowEl?.classList.remove('selected');
@@ -293,14 +293,14 @@ export class BaseInsightComponent extends HTMLElement {
         if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
             return;
         }
-        let focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+        let focus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
         if (focus) {
             focus = focus.withInsight(this.model);
         }
         else {
             focus = this.#agentFocus;
         }
-        UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
+        UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
         // Trigger the AI Assistance panel to open.
         const action = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
         void action.execute();

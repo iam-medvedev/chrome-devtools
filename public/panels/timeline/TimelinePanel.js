@@ -791,16 +791,16 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     getOrCreateExternalAIConversationData() {
         if (!this.#externalAIConversationData) {
-            const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-            const focus = AiAssistanceModel.getPerformanceAgentFocusFromModel(this.model);
+            const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
+            const focus = AiAssistanceModel.AIContext.getPerformanceAgentFocusFromModel(this.model);
             if (!focus) {
                 throw new Error('could not create performance agent focus');
             }
-            const agent = conversationHandler.createAgent("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */);
-            const conversation = new AiAssistanceModel.Conversation("drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */, [], agent.id, 
+            const agent = conversationHandler.createAgent("drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */);
+            const conversation = new AiAssistanceModel.AiHistoryStorage.Conversation("drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */, [], agent.id, 
             /* isReadOnly */ true, 
             /* isExternal */ true);
-            const selected = new AiAssistanceModel.PerformanceTraceContext(focus);
+            const selected = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(focus);
             selected.external = true;
             this.#externalAIConversationData = {
                 conversationHandler,
@@ -1211,9 +1211,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const { includeScriptContent, includeSourceMaps } = config;
         metadata.enhancedTraceVersion =
             includeScriptContent ? SDK.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : undefined;
-        let fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` :
-            includeScriptContent ? `EnhancedTrace-${isoDate}.json` :
-                `Trace-${isoDate}.json`);
+        let fileName = (isCpuProfile ? `CPU-${isoDate}.cpuprofile` : `Trace-${isoDate}.json`);
         let blobParts = [];
         if (isCpuProfile) {
             const profile = Trace.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
@@ -1364,6 +1362,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         const url = new URL(window.location.href);
         const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf('/'));
         url.pathname = `${pathToEntrypoint}/trace_app.html`;
+        url.search = '';
         pathToLaunch = url.toString();
         // Clarifying the window the code is referring to
         const hostWindow = window;
@@ -1732,7 +1731,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         this.flameChart.getNetworkDataProvider().reset();
         this.flameChart.reset();
         this.#changeView({ mode: 'LANDING_PAGE' });
-        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, null);
+        UI.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, null);
     }
     #hasActiveTrace() {
         return this.#viewMode.mode === 'VIEWING_TRACE';
@@ -1882,7 +1881,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             }
         }
         if (parsedTrace.metadata.dataOrigin !== "CPUProfile" /* Trace.Types.File.DataOrigin.CPU_PROFILE */) {
-            UI.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
+            UI.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, AiAssistanceModel.AIContext.AgentFocus.fromParsedTrace(parsedTrace));
         }
     }
     #onAnnotationModifiedEvent(e) {
@@ -2553,7 +2552,7 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
     }
     static async *handleExternalRecordRequest() {
         yield {
-            type: "notification" /* AiAssistanceModel.ExternalRequestResponseType.NOTIFICATION */,
+            type: "notification" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.NOTIFICATION */,
             message: 'Recording performance trace',
         };
         TimelinePanel.instance().invalidateExternalAIConversationData();
@@ -2566,28 +2565,28 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
         function onRecordingCompleted(eventData) {
             if ('errorText' in eventData) {
                 return {
-                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
                     message: `Error running the trace: ${eventData.errorText}`,
                 };
             }
             const parsedTrace = panelInstance.model.parsedTrace(eventData.traceIndex);
             if (!parsedTrace || !parsedTrace.insights || parsedTrace.insights.size === 0) {
                 return {
-                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
                     message: 'The trace was loaded successfully but no Insights were detected.',
                 };
             }
             const navigationId = Array.from(parsedTrace.insights.keys()).find(k => k !== 'NO_NAVIGATION');
             if (!navigationId) {
                 return {
-                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
                     message: 'The trace was loaded successfully but no navigation was detected.',
                 };
             }
             const insightsForNav = parsedTrace.insights.get(navigationId);
             if (!insightsForNav) {
                 return {
-                    type: "error" /* AiAssistanceModel.ExternalRequestResponseType.ERROR */,
+                    type: "error" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ERROR */,
                     message: 'The trace was loaded successfully but no Insights were detected.',
                 };
             }
@@ -2599,8 +2598,8 @@ export class TimelinePanel extends Common.ObjectWrapper.eventMixin(UI.Panel.Pane
             for (const modelName in insightsForNav.model) {
                 const model = modelName;
                 const insight = insightsForNav.model[model];
-                const focus = AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace);
-                const formatter = new AiAssistanceModel.PerformanceInsightFormatter(focus, insight);
+                const focus = AiAssistanceModel.AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+                const formatter = new AiAssistanceModel.PerformanceInsightFormatter.PerformanceInsightFormatter(focus, insight);
                 if (!formatter.insightIsSupported()) {
                     // Not all Insights are integrated with "Ask AI" yet, let's avoid
                     // filling up the response with those ones because there will be no
@@ -2628,7 +2627,7 @@ ${responseTextForNonPassedInsights}
 These insights are passing, which means they are not considered to highlight considerable performance problems.
 ${responseTextForPassedInsights}`;
             return {
-                type: "answer" /* AiAssistanceModel.ExternalRequestResponseType.ANSWER */,
+                type: "answer" /* AiAssistanceModel.AiAgent.ExternalRequestResponseType.ANSWER */,
                 message: finalText,
                 devToolsLogs: [],
             };
@@ -2645,7 +2644,7 @@ ${responseTextForPassedInsights}`;
     static async handleExternalAnalyzeRequest(prompt) {
         const data = TimelinePanel.instance().getOrCreateExternalAIConversationData();
         return await data.conversationHandler.handleExternalRequest({
-            conversationType: "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */,
+            conversationType: "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */,
             prompt,
             data,
         });

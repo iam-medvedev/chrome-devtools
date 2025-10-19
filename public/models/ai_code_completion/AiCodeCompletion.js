@@ -336,7 +336,7 @@ export class AiCodeCompletion extends Common.ObjectWrapper.ObjectWrapper {
     #updateCachedRequest(request, response) {
         this.#aidaRequestCache = { request, response };
     }
-    #registerUserImpression(rpcGlobalId, sampleId, latency) {
+    #registerUserImpression(rpcGlobalId, latency, sampleId) {
         const seconds = Math.floor(latency / 1_000);
         const remainingMs = latency % 1_000;
         const nanos = Math.floor(remainingMs * 1_000_000);

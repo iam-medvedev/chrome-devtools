@@ -643,7 +643,7 @@ function capitalizedAction(action4) {
     case "Prerender":
       return i18n.i18n.lockedString("Prerender");
     case "PrerenderUntilScript":
-      return i18n.i18n.lockedString("PrerenderUntilScript");
+      return i18n.i18n.lockedString("Prerender until script");
   }
 }
 function status(status2) {
@@ -679,7 +679,8 @@ function composedStatus(attempt) {
       const detail = prefetchFailureReason(attempt) ?? i18n.i18n.lockedString("Internal error");
       return short + " - " + detail;
     }
-    case "Prerender": {
+    case "Prerender":
+    case "PrerenderUntilScript": {
       const detail = prerenderFailureReason(attempt);
       assertNotNullOrUndefined(detail);
       return short + " - " + detail;
@@ -1074,6 +1075,13 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
         </devtools-report-value>
     `;
   }
+  #isPrerenderLike(speculationAction) {
+    return [
+      "Prerender",
+      "PrerenderUntilScript"
+      /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+    ].includes(speculationAction);
+  }
   #action(isFallbackToPrefetch) {
     assertNotNullOrUndefined2(this.#data);
     const attempt = this.#data.pipeline.getOriginallyTriggered();
@@ -1084,7 +1092,7 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
     }
     let maybeInspectButton = Lit2.nothing;
     (() => {
-      if (attempt.action !== "Prerender") {
+      if (!this.#isPrerenderLike(attempt.action)) {
         return;
       }
       const target = SDK3.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -1152,7 +1160,7 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
   #targetHint() {
     assertNotNullOrUndefined2(this.#data);
     const attempt = this.#data.pipeline.getOriginallyTriggered();
-    const hasTargetHint = attempt.action === "Prerender" && attempt.key.targetHint !== void 0;
+    const hasTargetHint = this.#isPrerenderLike(attempt.action) && attempt.key.targetHint !== void 0;
     if (!hasTargetHint) {
       return Lit2.nothing;
     }
@@ -1166,7 +1174,7 @@ var PreloadingDetailsReportView = class extends LegacyWrapper3.LegacyWrapper.Wra
   #maybePrerenderFailureReason() {
     assertNotNullOrUndefined2(this.#data);
     const attempt = this.#data.pipeline.getOriginallyTriggered();
-    if (attempt.action !== "Prerender") {
+    if (!this.#isPrerenderLike(attempt.action)) {
       return Lit2.nothing;
     }
     const failureReason = prerenderFailureReason(attempt);
@@ -2243,6 +2251,16 @@ var UsedPreloadingView = class extends LegacyWrapper15.LegacyWrapper.WrappableCo
       </devtools-report>
     `;
   }
+  #isPrerenderLike(speculationAction) {
+    return [
+      "Prerender",
+      "PrerenderUntilScript"
+      /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+    ].includes(speculationAction);
+  }
+  #isPrerenderAttempt(attempt) {
+    return this.#isPrerenderLike(attempt.action);
+  }
   #speculativeLoadingStatusForThisPageSections() {
     const pageURL = Common4.ParsedURL.ParsedURL.urlWithoutHash(this.#data.pageURL);
     const forThisPage = this.#data.previousAttempts.filter((attempt) => Common4.ParsedURL.ParsedURL.urlWithoutHash(attempt.key.url) === pageURL);
@@ -2250,20 +2268,17 @@ var UsedPreloadingView = class extends LegacyWrapper15.LegacyWrapper.WrappableCo
       (attempt) => attempt.key.action === "Prefetch"
       /* Protocol.Preload.SpeculationAction.Prefetch */
     )[0];
-    const prerender = forThisPage.filter(
-      (attempt) => attempt.key.action === "Prerender"
-      /* Protocol.Preload.SpeculationAction.Prerender */
-    )[0];
+    const prerenderLike = forThisPage.filter((attempt) => this.#isPrerenderLike(attempt.action))[0];
     let kind = "NoPreloads";
-    if (prerender?.status === "Failure" && prefetch?.status === "Success") {
+    if (prerenderLike?.status === "Failure" && prefetch?.status === "Success") {
       kind = "DowngradedPrerenderToPrefetchAndUsed";
     } else if (prefetch?.status === "Success") {
       kind = "PrefetchUsed";
-    } else if (prerender?.status === "Success") {
+    } else if (prerenderLike?.status === "Success") {
       kind = "PrerenderUsed";
     } else if (prefetch?.status === "Failure") {
       kind = "PrefetchFailed";
-    } else if (prerender?.status === "Failure") {
+    } else if (prerenderLike?.status === "Failure") {
       kind = "PrerenderFailed";
     } else {
       kind = "NoPreloads";
@@ -2301,8 +2316,8 @@ var UsedPreloadingView = class extends LegacyWrapper15.LegacyWrapper.WrappableCo
       assertNotNullOrUndefined5(prefetch);
       maybeFailureReasonMessage = prefetchFailureReason(prefetch);
     } else if (kind === "PrerenderFailed" || kind === "DowngradedPrerenderToPrefetchAndUsed") {
-      assertNotNullOrUndefined5(prerender);
-      maybeFailureReasonMessage = prerenderFailureReason(prerender);
+      assertNotNullOrUndefined5(prerenderLike);
+      maybeFailureReasonMessage = prerenderFailureReason(prerenderLike);
     }
     let maybeFailureReason = Lit8.nothing;
     if (maybeFailureReasonMessage !== void 0) {
@@ -2362,7 +2377,7 @@ var UsedPreloadingView = class extends LegacyWrapper15.LegacyWrapper.WrappableCo
     `;
   }
   #maybeMismatchedHTTPHeadersSections() {
-    const attempt = this.#data.previousAttempts.find((attempt2) => attempt2.action === "Prerender" && attempt2.mismatchedHeaders !== null);
+    const attempt = this.#data.previousAttempts.find((attempt2) => this.#isPrerenderAttempt(attempt2) && attempt2.mismatchedHeaders !== null);
     if (attempt === void 0) {
       return Lit8.nothing;
     }

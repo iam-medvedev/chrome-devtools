@@ -144,7 +144,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             const aiCodeCompletionTeaserDismissedSetting = Common.Settings.Settings.instance().createSetting('ai-code-completion-teaser-dismissed', false);
             if (!this.aiCodeCompletionSetting.get() && !aiCodeCompletionTeaserDismissedSetting.get()) {
                 this.teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.detachAiCodeCompletionTeaser.bind(this) });
-                extensions.push(this.placeholderCompartment.of(TextEditor.AiCodeCompletionTeaserPlaceholder.aiCodeCompletionTeaserPlaceholder(this.teaser)));
+                extensions.push(this.placeholderCompartment.of([]));
             }
             extensions.push(TextEditor.Config.aiAutoCompleteSuggestion);
         }
@@ -339,7 +339,7 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
                     const { accepted, suggestion } = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.editor.editor);
                     if (accepted) {
                         this.dispatchEventToListeners("AiCodeCompletionSuggestionAccepted" /* Events.AI_CODE_COMPLETION_SUGGESTION_ACCEPTED */, { citations: this.aiCodeCompletionCitations });
-                        if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+                        if (suggestion?.rpcGlobalId) {
                             this.aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
                         }
                     }
@@ -506,10 +506,18 @@ export class ConsolePrompt extends Common.ObjectWrapper.eventMixin(UI.Widget.Wid
             this.aidaAvailability = currentAidaAvailability;
             if (this.aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
                 this.onAiCodeCompletionSettingChanged();
+                if (this.teaser) {
+                    this.editor.dispatch({
+                        effects: this.placeholderCompartment.reconfigure([TextEditor.AiCodeCompletionTeaserPlaceholder.aiCodeCompletionTeaserPlaceholder(this.teaser)])
+                    });
+                }
             }
             else if (this.aiCodeCompletion) {
                 this.aiCodeCompletion.remove();
                 this.aiCodeCompletion = undefined;
+                if (this.teaser) {
+                    this.detachAiCodeCompletionTeaser();
+                }
             }
         }
     }

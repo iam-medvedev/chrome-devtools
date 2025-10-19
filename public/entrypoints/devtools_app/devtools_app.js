@@ -889,6 +889,7 @@ UI3.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString3(UIStrings3.showOverrides),
   order: 4,
   persistence: "permanent",
+  condition: () => !Root2.Runtime.Runtime.isTraceApp(),
   async loadView() {
     const Sources = await loadSourcesModule();
     return Sources.SourcesNavigator.OverridesNavigatorView.instance();
@@ -901,7 +902,7 @@ UI3.ViewManager.registerViewExtension({
   commandPrompt: i18nLazyString3(UIStrings3.showContentScripts),
   order: 5,
   persistence: "permanent",
-  condition: () => Root2.Runtime.getPathName() !== "/bundled/worker_app.html",
+  condition: () => Root2.Runtime.getPathName() !== "/bundled/worker_app.html" && !Root2.Runtime.Runtime.isTraceApp(),
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesNavigator.ContentScriptsNavigatorView();

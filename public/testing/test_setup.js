@@ -61,7 +61,7 @@ beforeEach(async () => {
     startTrackingAsyncActivity();
 });
 afterEach(async function () {
-    await cleanTestDOM(this.currentTest?.fullTitle());
+    cleanTestDOM(this.currentTest?.fullTitle());
     await checkForPendingActivity(this.currentTest?.fullTitle());
     stopTrackingAsyncActivity();
     // Clear out any Sinon stubs or spies between individual tests.

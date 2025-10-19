@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Platform from '../platform/platform.js';
-const queryParamsObject = new URLSearchParams(location.search);
 let runtimePlatform = '';
 let runtimeInstance;
 let isNode;
@@ -52,11 +51,18 @@ export class Runtime {
     static removeInstance() {
         runtimeInstance = undefined;
     }
+    static queryParamsObject;
+    static getSearchParams() {
+        if (!Runtime.queryParamsObject) {
+            Runtime.queryParamsObject = new URLSearchParams(location.search);
+        }
+        return Runtime.queryParamsObject;
+    }
     static queryParam(name) {
-        return queryParamsObject.get(name);
+        return Runtime.getSearchParams().get(name);
     }
     static setQueryParamForTesting(name, value) {
-        queryParamsObject.set(name, value);
+        Runtime.getSearchParams().set(name, value);
     }
     static isNode() {
         if (isNode === undefined) {

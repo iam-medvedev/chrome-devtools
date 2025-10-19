@@ -1321,7 +1321,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
         ).set(true);
       }
     } else if (setting.name === "ai-assistance-enabled" && !setting.get()) {
-      void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
+      void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
     }
     void this.render();
   }
@@ -1380,7 +1380,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     if (!settingData) {
       return Lit.nothing;
     }
-    const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
+    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
     const isDisabled = disabledReasons.length > 0;
     const disabledReasonsJoined = disabledReasons.join("\n") || void 0;
     const detailsClasses = {
@@ -1459,7 +1459,7 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
     `;
   }
   async render() {
-    const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
+    const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
     Lit.render(html2`
       <style>${Input.checkboxStyles}</style>
       <style>${aiSettingsTab_css_default}</style>
@@ -1477,6 +1477,218 @@ var AISettingsTab = class extends LegacyWrapper.LegacyWrapper.WrappableComponent
 };
 customElements.define("devtools-settings-ai-settings-tab", AISettingsTab);
 
+// gen/front_end/panels/settings/EditFileSystemView.js
+var EditFileSystemView_exports = {};
+__export(EditFileSystemView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  EditFileSystemView: () => EditFileSystemView
+});
+import "./../../ui/legacy/components/data_grid/data_grid.js";
+import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as Platform from "./../../core/platform/platform.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
+import { Directives, html as html3, render as render3 } from "./../../ui/lit/lit.js";
+
+// gen/front_end/panels/settings/editFileSystemView.css.js
+var editFileSystemView_css_default = `/*
+ * Copyright 2015 The Chromium Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+@scope to (devtools-widget > *) {
+  .excluded-folder-header {
+    display: flex;
+    flex-direction: column;
+    min-height: var(--sys-size-16);
+    padding: var(--sys-size-4) var(--sys-size-6);
+    gap: var(--sys-size-4);
+
+    & > .excluded-folder-url {
+      color: var(--sys-color-on-surface-subtle);
+      overflow-wrap: break-word;
+    }
+  }
+
+  .exclude-subfolders-table {
+    padding: var(--sys-size-4) 0;
+  }
+
+  .excluded-folder-error {
+    color: var(--sys-color-error);
+  }
+}
+
+/*# sourceURL=${import.meta.resolve("./editFileSystemView.css")} */`;
+
+// gen/front_end/panels/settings/EditFileSystemView.js
+var { styleMap } = Directives;
+var UIStrings3 = {
+  /**
+   * @description Text in Edit File System View of the Workspace settings in Settings to indicate that the following string is a folder URL
+   */
+  url: "URL",
+  /**
+   * @description Text in Edit File System View of the Workspace settings in Settings
+   */
+  excludedFolders: "Excluded sub-folders",
+  /**
+   * @description Error message when a file system path is an empty string.
+   */
+  enterAPath: "Enter a path",
+  /**
+   * @description Error message when a file system path is identical to an existing path.
+   */
+  enterAUniquePath: "Enter a unique path"
+};
+var str_3 = i18n5.i18n.registerUIStrings("panels/settings/EditFileSystemView.ts", UIStrings3);
+var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
+function statusString(status) {
+  switch (status) {
+    case 2:
+      return i18nString3(UIStrings3.enterAPath);
+    case 3:
+      return i18nString3(UIStrings3.enterAUniquePath);
+    case 1:
+      throw new Error("unreachable");
+  }
+}
+var DEFAULT_VIEW = (input, _output, target) => {
+  render3(html3`
+      <style>${editFileSystemView_css_default}</style>
+      <div class="excluded-folder-header">
+        <span>${i18nString3(UIStrings3.url)}</span>
+        <span class="excluded-folder-url">${input.fileSystemPath}</span>
+        <devtools-data-grid
+          @create=${input.onCreate}
+          @edit=${input.onEdit}
+          @delete=${input.onDelete}
+          class="exclude-subfolders-table"
+          parts="excluded-folder-row-with-error"
+          inline striped>
+          <table>
+            <thead>
+              <tr>
+                <th id="url" editable>${i18nString3(UIStrings3.excludedFolders)}</th>
+              </tr>
+            </thead>
+            <tbody>
+            ${input.excludedFolderPaths.map((path, index) => html3`
+              <tr data-url=${path.path} data-index=${index}>
+                <td style=${styleMap({ backgroundColor: path.status !== 1 ? "var(--sys-color-error-container)" : void 0 })}>${path.path}</td>
+              </tr>
+            `)}
+            <tr placeholder></tr>
+            </tbody>
+          </table>
+        </devtools-data-grid>
+        ${input.excludedFolderPaths.filter(
+    ({ status }) => status !== 1
+    /* ExcludedFolderStatus.VALID */
+  ).map(({ status }) => html3`<span class="excluded-folder-error">${statusString(status)}</span>`)}
+    </div>`, target);
+};
+var EditFileSystemView = class _EditFileSystemView extends UI3.Widget.VBox {
+  #fileSystem;
+  #excludedFolderPaths = [];
+  #view;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element);
+    this.#view = view;
+  }
+  set fileSystem(fileSystem) {
+    this.#fileSystem = fileSystem;
+    this.#resyncExcludedFolderPaths();
+    this.requestUpdate();
+  }
+  wasShown() {
+    super.wasShown();
+    this.#resyncExcludedFolderPaths();
+    this.requestUpdate();
+  }
+  #resyncExcludedFolderPaths() {
+    this.#excludedFolderPaths = this.#fileSystem?.excludedFolders().values().map((path) => ({
+      path,
+      status: 1
+      /* ExcludedFolderStatus.VALID */
+    })).toArray() ?? [];
+  }
+  performUpdate() {
+    const input = {
+      fileSystemPath: this.#fileSystem?.path() ?? Platform.DevToolsPath.urlString``,
+      excludedFolderPaths: this.#excludedFolderPaths,
+      onCreate: (e) => this.#onCreate(e.detail.url),
+      onEdit: (e) => this.#onEdit(e.detail.node.dataset.index ?? "-1", e.detail.valueBeforeEditing, e.detail.newText),
+      onDelete: (e) => this.#onDelete(e.detail.dataset.index ?? "-1")
+    };
+    this.#view(input, {}, this.contentElement);
+  }
+  #onCreate(url) {
+    if (url === void 0) {
+      return;
+    }
+    const pathWithStatus = this.#validateFolder(url);
+    this.#excludedFolderPaths.push(pathWithStatus);
+    if (pathWithStatus.status === 1) {
+      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
+    }
+    this.requestUpdate();
+  }
+  #onEdit(idx, valueBeforeEditing, newText) {
+    const index = Number.parseInt(idx, 10);
+    if (index < 0 || index >= this.#excludedFolderPaths.length) {
+      return;
+    }
+    const pathWithStatus = this.#validateFolder(newText);
+    const oldPathWithStatus = this.#excludedFolderPaths[index];
+    this.#excludedFolderPaths[index] = pathWithStatus;
+    if (oldPathWithStatus.status === 1) {
+      this.#fileSystem?.removeExcludedFolder(valueBeforeEditing);
+    }
+    if (pathWithStatus.status === 1) {
+      this.#fileSystem?.addExcludedFolder(pathWithStatus.path);
+    }
+    this.requestUpdate();
+  }
+  #onDelete(idx) {
+    const index = Number.parseInt(idx, 10);
+    if (index < 0 || index >= this.#excludedFolderPaths.length) {
+      return;
+    }
+    this.#fileSystem?.removeExcludedFolder(this.#excludedFolderPaths[index].path);
+    this.#excludedFolderPaths.splice(index, 1);
+    this.requestUpdate();
+  }
+  #validateFolder(rawInput) {
+    const path = _EditFileSystemView.#normalizePrefix(rawInput.trim());
+    if (!path) {
+      return {
+        path,
+        status: 2
+        /* ExcludedFolderStatus.ERROR_NOT_A_PATH */
+      };
+    }
+    if (this.#excludedFolderPaths.findIndex(({ path: p }) => p === path) !== -1) {
+      return {
+        path,
+        status: 3
+        /* ExcludedFolderStatus.ERROR_NOT_UNIQUE */
+      };
+    }
+    return {
+      path,
+      status: 1
+      /* ExcludedFolderStatus.VALID */
+    };
+  }
+  static #normalizePrefix(prefix) {
+    if (!prefix) {
+      return "";
+    }
+    return prefix + (prefix[prefix.length - 1] === "/" ? "" : "/");
+  }
+};
+
 // gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
 var FrameworkIgnoreListSettingsTab_exports = {};
 __export(FrameworkIgnoreListSettingsTab_exports, {
@@ -1484,9 +1696,9 @@ __export(FrameworkIgnoreListSettingsTab_exports, {
 });
 import "./../../ui/components/cards/cards.js";
 import * as Common3 from "./../../core/common/common.js";
-import * as i18n5 from "./../../core/i18n/i18n.js";
+import * as i18n7 from "./../../core/i18n/i18n.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/frameworkIgnoreListSettingsTab.css.js
@@ -1591,7 +1803,7 @@ var frameworkIgnoreListSettingsTab_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./frameworkIgnoreListSettingsTab.css")} */`;
 
 // gen/front_end/panels/settings/FrameworkIgnoreListSettingsTab.js
-var UIStrings3 = {
+var UIStrings4 = {
   /**
    * @description Header text content in Framework Ignore List Settings Tab of the Settings for enabling or disabling ignore listing
    */
@@ -1663,9 +1875,9 @@ var UIStrings3 = {
    */
   learnMore: "Learn more"
 };
-var str_3 = i18n5.i18n.registerUIStrings("panels/settings/FrameworkIgnoreListSettingsTab.ts", UIStrings3);
-var i18nString3 = i18n5.i18n.getLocalizedString.bind(void 0, str_3);
-var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
+var str_4 = i18n7.i18n.registerUIStrings("panels/settings/FrameworkIgnoreListSettingsTab.ts", UIStrings4);
+var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
+var FrameworkIgnoreListSettingsTab = class extends UI4.Widget.VBox {
   list;
   setting;
   editor;
@@ -1678,47 +1890,47 @@ var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
     const settingsContent = this.contentElement.createChild("div", "settings-card-container-wrapper").createChild("div");
     settingsContent.classList.add("settings-card-container", "ignore-list-settings");
     const ignoreListingDescription = document.createElement("span");
-    ignoreListingDescription.textContent = i18nString3(UIStrings3.ignoreListingDescription);
+    ignoreListingDescription.textContent = i18nString4(UIStrings4.ignoreListingDescription);
     const enabledSetting = Common3.Settings.Settings.instance().moduleSetting("enable-ignore-listing");
     const enableIgnoreListing = this.contentElement.createChild("div", "enable-ignore-listing");
-    enableIgnoreListing.appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.enableIgnoreListing), enabledSetting));
-    UI3.Tooltip.Tooltip.install(enableIgnoreListing, i18nString3(UIStrings3.enableIgnoreListingTooltip));
+    enableIgnoreListing.appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.enableIgnoreListing), enabledSetting));
+    UI4.Tooltip.Tooltip.install(enableIgnoreListing, i18nString4(UIStrings4.enableIgnoreListingTooltip));
     const enableIgnoreListingCard = settingsContent.createChild("devtools-card");
-    enableIgnoreListingCard.heading = i18nString3(UIStrings3.frameworkIgnoreList);
+    enableIgnoreListingCard.heading = i18nString4(UIStrings4.frameworkIgnoreList);
     enableIgnoreListingCard.append(ignoreListingDescription, enableIgnoreListing);
     const generalExclusionGroup = this.createSettingGroup();
     generalExclusionGroup.classList.add("general-exclusion-group");
-    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
+    const ignoreListContentScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListContentScripts), Common3.Settings.Settings.instance().moduleSetting("skip-content-scripts")));
     const automaticallyIgnoreListContainer = generalExclusionGroup.createChild("div", "ignore-list-option");
-    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
+    const automaticallyIgnoreList = automaticallyIgnoreListContainer.appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.automaticallyIgnoreListKnownThirdPartyScripts), Common3.Settings.Settings.instance().moduleSetting("automatically-ignore-list-known-third-party-scripts")));
     const automaticallyIgnoreLinkButton = new Buttons3.Button.Button();
     automaticallyIgnoreLinkButton.data = {
       iconName: "help",
       variant: "icon",
       size: "SMALL",
       jslogContext: "learn-more",
-      title: i18nString3(UIStrings3.learnMore)
+      title: i18nString4(UIStrings4.learnMore)
     };
-    automaticallyIgnoreLinkButton.addEventListener("click", () => UI3.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
+    automaticallyIgnoreLinkButton.addEventListener("click", () => UI4.UIUtils.openInNewTab("https://developer.chrome.com/docs/devtools/settings/ignore-list/#skip-third-party"));
     automaticallyIgnoreListContainer.appendChild(automaticallyIgnoreLinkButton);
-    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI3.SettingsUI.createSettingCheckbox(i18nString3(UIStrings3.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
+    const ignoreListAnonymousScripts = generalExclusionGroup.createChild("div", "ignore-list-option").appendChild(UI4.SettingsUI.createSettingCheckbox(i18nString4(UIStrings4.ignoreListAnonymousScripts), Common3.Settings.Settings.instance().moduleSetting("skip-anonymous-scripts")));
     const generalExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    generalExclusionGroupCard.heading = i18nString3(UIStrings3.generalExclusionRules);
+    generalExclusionGroupCard.heading = i18nString4(UIStrings4.generalExclusionRules);
     generalExclusionGroupCard.append(generalExclusionGroup);
     const customExclusionGroup = this.createSettingGroup();
     customExclusionGroup.classList.add("custom-exclusion-group");
     const customExclusionGroupCard = settingsContent.createChild("devtools-card", "ignore-list-options");
-    customExclusionGroupCard.heading = i18nString3(UIStrings3.customExclusionRules);
+    customExclusionGroupCard.heading = i18nString4(UIStrings4.customExclusionRules);
     customExclusionGroupCard.append(customExclusionGroup);
-    this.list = new UI3.ListWidget.ListWidget(this);
+    this.list = new UI4.ListWidget.ListWidget(this);
     this.list.element.classList.add("ignore-list");
     this.list.registerRequiredCSS(frameworkIgnoreListSettingsTab_css_default);
     const placeholder = document.createElement("div");
     placeholder.classList.add("ignore-list-empty");
     this.list.setEmptyPlaceholder(placeholder);
     this.list.show(customExclusionGroup);
-    const addPatternButton = UI3.UIUtils.createTextButton(i18nString3(UIStrings3.addPattern), this.addButtonClicked.bind(this), { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" });
-    UI3.ARIAUtils.setLabel(addPatternButton, i18nString3(UIStrings3.addFilenamePattern));
+    const addPatternButton = UI4.UIUtils.createTextButton(i18nString4(UIStrings4.addPattern), this.addButtonClicked.bind(this), { className: "add-button", jslogContext: "settings.add-ignore-list-pattern" });
+    UI4.ARIAUtils.setLabel(addPatternButton, i18nString4(UIStrings4.addFilenamePattern));
     customExclusionGroup.appendChild(addPatternButton);
     this.setting = Common3.Settings.Settings.instance().moduleSetting("skip-stack-frames-pattern");
     this.setting.addChangeListener(this.settingUpdated, this);
@@ -1752,15 +1964,15 @@ var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
   createSettingGroup() {
     const group = document.createElement("div");
     group.classList.add("ignore-list-option-group");
-    UI3.ARIAUtils.markAsGroup(group);
+    UI4.ARIAUtils.markAsGroup(group);
     return group;
   }
   renderItem(item2, editable) {
     const element = document.createElement("div");
     const listSetting = this.setting;
-    const checkbox = UI3.UIUtils.CheckboxLabel.createWithStringLiteral(item2.pattern, !item2.disabled, "settings.ignore-list-pattern");
-    const helpText = i18nString3(UIStrings3.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
-    UI3.Tooltip.Tooltip.install(checkbox, helpText);
+    const checkbox = UI4.UIUtils.CheckboxLabel.createWithStringLiteral(item2.pattern, !item2.disabled, "settings.ignore-list-pattern");
+    const helpText = i18nString4(UIStrings4.ignoreScriptsWhoseNamesMatchS, { PH1: item2.pattern });
+    UI4.Tooltip.Tooltip.install(checkbox, helpText);
     checkbox.ariaLabel = helpText;
     checkbox.addEventListener("change", inputChanged, false);
     checkbox.disabled = !editable;
@@ -1798,25 +2010,25 @@ var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
     if (this.editor) {
       return this.editor;
     }
-    const editor = new UI3.ListWidget.Editor();
+    const editor = new UI4.ListWidget.Editor();
     this.editor = editor;
     const content = editor.contentElement();
     const titles = content.createChild("div", "ignore-list-edit-row");
-    titles.createChild("div", "ignore-list-pattern").textContent = i18nString3(UIStrings3.pattern);
+    titles.createChild("div", "ignore-list-pattern").textContent = i18nString4(UIStrings4.pattern);
     const fields = content.createChild("div", "ignore-list-edit-row");
     const pattern = editor.createInput("pattern", "text", "/framework\\.js$", patternValidator.bind(this));
-    UI3.ARIAUtils.setLabel(pattern, i18nString3(UIStrings3.pattern));
+    UI4.ARIAUtils.setLabel(pattern, i18nString4(UIStrings4.pattern));
     fields.createChild("div", "ignore-list-pattern").appendChild(pattern);
     return editor;
     function patternValidator(_item, index, input) {
       const pattern2 = input.value.trim();
       const patterns = this.setting.getAsArray();
       if (!pattern2.length) {
-        return { valid: false, errorMessage: i18nString3(UIStrings3.patternCannotBeEmpty) };
+        return { valid: false, errorMessage: i18nString4(UIStrings4.patternCannotBeEmpty) };
       }
       for (let i = 0; i < patterns.length; ++i) {
         if (i !== index && patterns[i].pattern === pattern2) {
-          return { valid: false, errorMessage: i18nString3(UIStrings3.patternAlreadyExists) };
+          return { valid: false, errorMessage: i18nString4(UIStrings4.patternAlreadyExists) };
         }
       }
       let regex;
@@ -1825,7 +2037,7 @@ var FrameworkIgnoreListSettingsTab = class extends UI3.Widget.VBox {
       } catch {
       }
       if (!regex) {
-        return { valid: false, errorMessage: i18nString3(UIStrings3.patternMustBeAValidRegular) };
+        return { valid: false, errorMessage: i18nString4(UIStrings4.patternMustBeAValidRegular) };
       }
       return { valid: true, errorMessage: void 0 };
     }
@@ -1841,11 +2053,11 @@ __export(KeybindsSettingsTab_exports, {
 import "./../../ui/components/cards/cards.js";
 import * as Common4 from "./../../core/common/common.js";
 import * as Host3 from "./../../core/host/host.js";
-import * as i18n7 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
+import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as Platform3 from "./../../core/platform/platform.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
-import * as UI4 from "./../../ui/legacy/legacy.js";
+import * as UI5 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging4 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/keybindsSettingsTab.css.js
@@ -2017,7 +2229,7 @@ button.text-button {
 /*# sourceURL=${import.meta.resolve("./keybindsSettingsTab.css")} */`;
 
 // gen/front_end/panels/settings/KeybindsSettingsTab.js
-var UIStrings4 = {
+var UIStrings5 = {
   /**
    * @description Text for keyboard shortcuts
    */
@@ -2098,9 +2310,9 @@ var UIStrings4 = {
    */
   shortcutChangesDiscarded: "Changes to shortcut discarded"
 };
-var str_4 = i18n7.i18n.registerUIStrings("panels/settings/KeybindsSettingsTab.ts", UIStrings4);
-var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
-var KeybindsSettingsTab = class extends UI4.Widget.VBox {
+var str_5 = i18n9.i18n.registerUIStrings("panels/settings/KeybindsSettingsTab.ts", UIStrings5);
+var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
+var KeybindsSettingsTab = class extends UI5.Widget.VBox {
   items;
   list;
   editingItem;
@@ -2116,26 +2328,26 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
     const keybindsSetSetting = Common4.Settings.Settings.instance().moduleSetting("active-keybind-set");
     const userShortcutsSetting = Common4.Settings.Settings.instance().moduleSetting("user-shortcuts");
     keybindsSetSetting.addChangeListener(this.update, this);
-    const keybindsSetSelect = UI4.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString4(UIStrings4.matchShortcutsFromPreset));
+    const keybindsSetSelect = UI5.SettingsUI.createControlForSetting(keybindsSetSetting, i18nString5(UIStrings5.matchShortcutsFromPreset));
     const card = settingsContent.createChild("devtools-card");
-    card.heading = i18nString4(UIStrings4.shortcuts);
+    card.heading = i18nString5(UIStrings5.shortcuts);
     if (keybindsSetSelect) {
       keybindsSetSelect.classList.add("keybinds-set-select");
     }
-    this.items = new UI4.ListModel.ListModel();
-    this.list = new UI4.ListControl.ListControl(this.items, this, UI4.ListControl.ListMode.NonViewport);
+    this.items = new UI5.ListModel.ListModel();
+    this.list = new UI5.ListControl.ListControl(this.items, this, UI5.ListControl.ListMode.NonViewport);
     this.list.element.classList.add("shortcut-list");
     this.items.replaceAll(this.createListItems());
-    UI4.ARIAUtils.markAsList(this.list.element);
-    UI4.ARIAUtils.setLabel(this.list.element, i18nString4(UIStrings4.keyboardShortcutsList));
+    UI5.ARIAUtils.markAsList(this.list.element);
+    UI5.ARIAUtils.setLabel(this.list.element, i18nString5(UIStrings5.keyboardShortcutsList));
     const footer = document.createElement("div");
     footer.classList.add("keybinds-footer");
-    const docsLink = UI4.XLink.XLink.create("https://developer.chrome.com/docs/devtools/shortcuts/", i18nString4(UIStrings4.FullListOfDevtoolsKeyboard), void 0, void 0, "learn-more");
+    const docsLink = UI5.XLink.XLink.create("https://developer.chrome.com/docs/devtools/shortcuts/", i18nString5(UIStrings5.FullListOfDevtoolsKeyboard), void 0, void 0, "learn-more");
     docsLink.classList.add("docs-link");
     footer.appendChild(docsLink);
-    const restoreDefaultShortcutsButton = UI4.UIUtils.createTextButton(i18nString4(UIStrings4.RestoreDefaultShortcuts), () => {
+    const restoreDefaultShortcutsButton = UI5.UIUtils.createTextButton(i18nString5(UIStrings5.RestoreDefaultShortcuts), () => {
       userShortcutsSetting.set([]);
-      keybindsSetSetting.set(UI4.ShortcutRegistry.DefaultShortcutSetting);
+      keybindsSetSetting.set(UI5.ShortcutRegistry.DefaultShortcutSetting);
     }, { jslogContext: "restore-default-shortcuts" });
     footer.appendChild(restoreDefaultShortcutsButton);
     this.editingItem = null;
@@ -2152,12 +2364,12 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
     if (typeof item2 === "string") {
       itemContent = element;
       itemContent.classList.add("keybinds-category-header");
-      itemContent.textContent = UI4.ActionRegistration.getLocalizedActionCategory(item2);
-      UI4.ARIAUtils.setLevel(itemContent, 1);
+      itemContent.textContent = UI5.ActionRegistration.getLocalizedActionCategory(item2);
+      UI5.ARIAUtils.setLevel(itemContent, 1);
     } else {
       const listItem = new ShortcutListItem(item2, this, item2 === this.editingItem);
       itemContent = listItem.element;
-      UI4.ARIAUtils.setLevel(itemContent, 2);
+      UI5.ARIAUtils.setLevel(itemContent, 2);
       if (item2 === this.editingItem) {
         this.editingRow = listItem;
       }
@@ -2165,20 +2377,20 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
       element.classList.add("keybinds-list-item-wrapper");
       element.appendChild(itemContent);
     }
-    UI4.ARIAUtils.markAsListitem(itemContent);
+    UI5.ARIAUtils.markAsListitem(itemContent);
     itemContent.tabIndex = item2 === this.list.selectedItem() && item2 !== this.editingItem ? 0 : -1;
     return element;
   }
   commitChanges(item2, editedShortcuts) {
     for (const [originalShortcut, newDescriptors] of editedShortcuts) {
       if (originalShortcut.type !== "UnsetShortcut") {
-        UI4.ShortcutRegistry.ShortcutRegistry.instance().removeShortcut(originalShortcut);
+        UI5.ShortcutRegistry.ShortcutRegistry.instance().removeShortcut(originalShortcut);
         if (!newDescriptors) {
           Host3.userMetrics.actionTaken(Host3.UserMetrics.Action.ShortcutRemoved);
         }
       }
       if (newDescriptors) {
-        UI4.ShortcutRegistry.ShortcutRegistry.instance().registerUserShortcut(originalShortcut.changeKeys(newDescriptors).changeType(
+        UI5.ShortcutRegistry.ShortcutRegistry.instance().registerUserShortcut(originalShortcut.changeKeys(newDescriptors).changeType(
           "UserShortcut"
           /* UI.KeyboardShortcut.Type.USER_SHORTCUT */
         ));
@@ -2224,19 +2436,19 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
     if (this.editingItem) {
       this.stopEditing(this.editingItem);
     }
-    UI4.UIUtils.markBeingEdited(this.list.element, true);
+    UI5.UIUtils.markBeingEdited(this.list.element, true);
     this.editingItem = action2;
     this.list.refreshItem(action2);
   }
   stopEditing(action2) {
-    UI4.UIUtils.markBeingEdited(this.list.element, false);
+    UI5.UIUtils.markBeingEdited(this.list.element, false);
     this.editingItem = null;
     this.editingRow = null;
     this.list.refreshItem(action2);
     this.focus();
   }
   createListItems() {
-    const actions = UI4.ActionRegistry.ActionRegistry.instance().actions().sort((actionA, actionB) => {
+    const actions = UI5.ActionRegistry.ActionRegistry.instance().actions().sort((actionA, actionB) => {
       if (actionA.category() < actionB.category()) {
         return -1;
       }
@@ -2266,7 +2478,7 @@ var KeybindsSettingsTab = class extends UI4.Widget.VBox {
     return items;
   }
   onEscapeKeyPressed(event) {
-    const deepActiveElement = Platform2.DOMUtilities.deepActiveElement(document);
+    const deepActiveElement = Platform3.DOMUtilities.deepActiveElement(document);
     if (this.editingRow && deepActiveElement && deepActiveElement.nodeName === "INPUT") {
       this.editingRow.onEscapeKeyPressed(event);
     }
@@ -2308,7 +2520,7 @@ var ShortcutListItem = class {
     this.element.setAttribute("jslog", `${VisualLogging4.item().context(item2.id()).track({ keydown: "Escape" })}`);
     this.editedShortcuts = /* @__PURE__ */ new Map();
     this.shortcutInputs = /* @__PURE__ */ new Map();
-    this.shortcuts = UI4.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());
+    this.shortcuts = UI5.ShortcutRegistry.ShortcutRegistry.instance().shortcutsForAction(item2.id());
     this.elementToFocus = null;
     this.confirmButton = null;
     this.addShortcutLinkContainer = null;
@@ -2336,45 +2548,45 @@ var ShortcutListItem = class {
     }
   }
   createEmptyInfo() {
-    if (UI4.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(this.item.id())) {
+    if (UI5.ShortcutRegistry.ShortcutRegistry.instance().actionHasDefaultShortcut(this.item.id())) {
       const icon = IconButton2.Icon.create("keyboard-pen", "keybinds-modified");
-      UI4.ARIAUtils.setLabel(icon, i18nString4(UIStrings4.shortcutModified));
+      UI5.ARIAUtils.setLabel(icon, i18nString5(UIStrings5.shortcutModified));
       this.element.appendChild(icon);
     }
     if (!this.isEditing) {
       const emptyElement = this.element.createChild("div", "keybinds-shortcut keybinds-list-text");
-      UI4.ARIAUtils.setLabel(emptyElement, i18nString4(UIStrings4.noShortcutForAction));
+      UI5.ARIAUtils.setLabel(emptyElement, i18nString5(UIStrings5.noShortcutForAction));
       this.element.appendChild(this.createEditButton());
     }
   }
   setupEditor() {
     this.addShortcutLinkContainer = this.element.createChild("div", "keybinds-shortcut");
-    const addShortcutButton = UI4.UIUtils.createTextButton(i18nString4(UIStrings4.addAShortcut), this.addShortcut.bind(this), { jslogContext: "add-shortcut" });
+    const addShortcutButton = UI5.UIUtils.createTextButton(i18nString5(UIStrings5.addAShortcut), this.addShortcut.bind(this), { jslogContext: "add-shortcut" });
     this.addShortcutLinkContainer.appendChild(addShortcutButton);
     if (!this.elementToFocus) {
       this.elementToFocus = addShortcutButton;
     }
     this.errorMessageElement = this.element.createChild("div", "keybinds-info keybinds-error hidden");
-    UI4.ARIAUtils.markAsAlert(this.errorMessageElement);
-    this.element.appendChild(this.createIconButton(i18nString4(UIStrings4.ResetShortcutsForAction), "undo", "", "undo", this.resetShortcutsToDefaults.bind(this)));
-    this.confirmButton = this.createIconButton(i18nString4(UIStrings4.confirmChanges), "checkmark", "keybinds-confirm-button", "confirm", () => {
+    UI5.ARIAUtils.markAsAlert(this.errorMessageElement);
+    this.element.appendChild(this.createIconButton(i18nString5(UIStrings5.ResetShortcutsForAction), "undo", "", "undo", this.resetShortcutsToDefaults.bind(this)));
+    this.confirmButton = this.createIconButton(i18nString5(UIStrings5.confirmChanges), "checkmark", "keybinds-confirm-button", "confirm", () => {
       this.settingsTab.commitChanges(this.item, this.editedShortcuts);
-      UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesApplied, { PH1: this.item.title() }));
+      UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutChangesApplied, { PH1: this.item.title() }));
     });
     this.element.appendChild(this.confirmButton);
-    this.element.appendChild(this.createIconButton(i18nString4(UIStrings4.discardChanges), "cross", "keybinds-cancel-button", "cancel", () => {
+    this.element.appendChild(this.createIconButton(i18nString5(UIStrings5.discardChanges), "cross", "keybinds-cancel-button", "cancel", () => {
       this.settingsTab.stopEditing(this.item);
-      UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesDiscarded));
+      UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutChangesDiscarded));
     }));
     this.element.addEventListener("keydown", (event) => {
-      if (Platform2.KeyboardUtilities.isEscKey(event)) {
+      if (Platform3.KeyboardUtilities.isEscKey(event)) {
         this.settingsTab.stopEditing(this.item);
         event.consume(true);
       }
     });
   }
   addShortcut() {
-    const shortcut = new UI4.KeyboardShortcut.KeyboardShortcut(
+    const shortcut = new UI5.KeyboardShortcut.KeyboardShortcut(
       [],
       this.item.id(),
       "UnsetShortcut"
@@ -2394,7 +2606,7 @@ var ShortcutListItem = class {
     let icon;
     if (shortcut.type !== "UnsetShortcut" && !shortcut.isDefault()) {
       icon = IconButton2.Icon.create("keyboard-pen", "keybinds-modified");
-      UI4.ARIAUtils.setLabel(icon, i18nString4(UIStrings4.shortcutModified));
+      UI5.ARIAUtils.setLabel(icon, i18nString5(UIStrings5.shortcutModified));
       this.element.appendChild(icon);
     }
     const shortcutElement = this.element.createChild("div", "keybinds-shortcut keybinds-list-text");
@@ -2419,7 +2631,7 @@ var ShortcutListItem = class {
           this.secondKeyTimeout = null;
         }
       });
-      shortcutElement.appendChild(this.createIconButton(i18nString4(UIStrings4.removeShortcut), "bin", "keybinds-delete-button", "delete", () => {
+      shortcutElement.appendChild(this.createIconButton(i18nString5(UIStrings5.removeShortcut), "bin", "keybinds-delete-button", "delete", () => {
         const index2 = this.shortcuts.indexOf(shortcut);
         if (!shortcut.isDefault()) {
           this.shortcuts.splice(index2, 1);
@@ -2428,7 +2640,7 @@ var ShortcutListItem = class {
         this.update();
         this.focus();
         this.validateInputs();
-        UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutRemoved, { PH1: this.item.title() }));
+        UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutRemoved, { PH1: this.item.title() }));
       }));
     } else {
       const separator = Host3.Platform.isMac() ? "\u2004" : "\u200A+\u200A";
@@ -2442,13 +2654,13 @@ var ShortcutListItem = class {
     }
   }
   createEditButton() {
-    return this.createIconButton(i18nString4(UIStrings4.editShortcut), "edit", "keybinds-edit-button", "edit", () => this.settingsTab.startEditing(this.item));
+    return this.createIconButton(i18nString5(UIStrings5.editShortcut), "edit", "keybinds-edit-button", "edit", () => this.settingsTab.startEditing(this.item));
   }
   createIconButton(label, iconName, className, jslogContext, listener) {
     const button = new Buttons4.Button.Button();
     button.data = { variant: "icon", iconName, jslogContext, title: label };
     button.addEventListener("click", listener);
-    UI4.ARIAUtils.setLabel(button, label);
+    UI5.ARIAUtils.setLabel(button, label);
     if (className) {
       button.classList.add(className);
     }
@@ -2459,7 +2671,7 @@ var ShortcutListItem = class {
       const eventDescriptor = this.descriptorForEvent(event);
       const userDescriptors = this.editedShortcuts.get(shortcut) || [];
       this.editedShortcuts.set(shortcut, userDescriptors);
-      const isLastKeyOfShortcut = userDescriptors.length === 2 && UI4.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
+      const isLastKeyOfShortcut = userDescriptors.length === 2 && UI5.KeyboardShortcut.KeyboardShortcut.isModifier(userDescriptors[1].key);
       const shouldClearOldShortcut = userDescriptors.length === 2 && !isLastKeyOfShortcut;
       if (shouldClearOldShortcut) {
         userDescriptors.splice(0, 2);
@@ -2470,11 +2682,11 @@ var ShortcutListItem = class {
         userDescriptors.push(eventDescriptor);
       } else if (isLastKeyOfShortcut) {
         userDescriptors[1] = eventDescriptor;
-      } else if (!UI4.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
+      } else if (!UI5.KeyboardShortcut.KeyboardShortcut.isModifier(eventDescriptor.key)) {
         userDescriptors[0] = eventDescriptor;
         this.secondKeyTimeout = window.setTimeout(() => {
           this.secondKeyTimeout = null;
-        }, UI4.ShortcutRegistry.KeyTimeout);
+        }, UI5.ShortcutRegistry.KeyTimeout);
       } else {
         userDescriptors[0] = eventDescriptor;
       }
@@ -2484,19 +2696,19 @@ var ShortcutListItem = class {
     }
   }
   descriptorForEvent(event) {
-    const userKey = UI4.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
-    const codeAndModifiers = UI4.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
-    let key = UI4.KeyboardShortcut.Keys[event.key] || UI4.KeyboardShortcut.KeyBindings[event.key];
+    const userKey = UI5.KeyboardShortcut.KeyboardShortcut.makeKeyFromEvent(event);
+    const codeAndModifiers = UI5.KeyboardShortcut.KeyboardShortcut.keyCodeAndModifiersFromKey(userKey);
+    let key = UI5.KeyboardShortcut.Keys[event.key] || UI5.KeyboardShortcut.KeyBindings[event.key];
     if (!key && !/^[a-z]$/i.test(event.key)) {
       const keyCode = event.code;
-      key = UI4.KeyboardShortcut.Keys[keyCode] || UI4.KeyboardShortcut.KeyBindings[keyCode];
+      key = UI5.KeyboardShortcut.Keys[keyCode] || UI5.KeyboardShortcut.KeyBindings[keyCode];
       if (keyCode.startsWith("Digit")) {
         key = keyCode.slice(5);
       } else if (keyCode.startsWith("Key")) {
         key = keyCode.slice(3);
       }
     }
-    return UI4.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
+    return UI5.KeyboardShortcut.KeyboardShortcut.makeDescriptor(key || event.key, codeAndModifiers.modifiers);
   }
   shortcutInputTextForDescriptors(descriptors) {
     return descriptors.map((descriptor) => descriptor.name).join(" ");
@@ -2511,7 +2723,7 @@ var ShortcutListItem = class {
         this.editedShortcuts.set(shortcut, null);
       }
     }
-    const disabledDefaults = UI4.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.item.id());
+    const disabledDefaults = UI5.ShortcutRegistry.ShortcutRegistry.instance().disabledDefaultsForAction(this.item.id());
     disabledDefaults.forEach((shortcut) => {
       if (this.shortcuts.includes(shortcut)) {
         return;
@@ -2521,10 +2733,10 @@ var ShortcutListItem = class {
     });
     this.update();
     this.focus();
-    UI4.ARIAUtils.LiveAnnouncer.alert(i18nString4(UIStrings4.shortcutChangesRestored, { PH1: this.item.title() }));
+    UI5.ARIAUtils.LiveAnnouncer.alert(i18nString5(UIStrings5.shortcutChangesRestored, { PH1: this.item.title() }));
   }
   onEscapeKeyPressed(event) {
-    const activeElement = Platform2.DOMUtilities.deepActiveElement(document);
+    const activeElement = Platform3.DOMUtilities.deepActiveElement(document);
     for (const [shortcut, shortcutInput] of this.shortcutInputs.entries()) {
       if (activeElement === shortcutInput) {
         this.onShortcutInputKeyDown(shortcut, shortcutInput, event);
@@ -2544,31 +2756,31 @@ var ShortcutListItem = class {
       if (!userDescriptors) {
         return;
       }
-      if (userDescriptors.some((descriptor) => UI4.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
+      if (userDescriptors.some((descriptor) => UI5.KeyboardShortcut.KeyboardShortcut.isModifier(descriptor.key))) {
         confirmButton.disabled = true;
         shortcutInput.classList.add("error-input");
-        UI4.ARIAUtils.setInvalid(shortcutInput, true);
+        UI5.ARIAUtils.setInvalid(shortcutInput, true);
         errorMessageElement.classList.remove("hidden");
-        errorMessageElement.textContent = i18nString4(UIStrings4.shortcutsCannotContainOnly);
+        errorMessageElement.textContent = i18nString5(UIStrings5.shortcutsCannotContainOnly);
         return;
       }
-      const conflicts = UI4.ShortcutRegistry.ShortcutRegistry.instance().actionsForDescriptors(userDescriptors).filter((actionId) => actionId !== this.item.id());
+      const conflicts = UI5.ShortcutRegistry.ShortcutRegistry.instance().actionsForDescriptors(userDescriptors).filter((actionId) => actionId !== this.item.id());
       if (conflicts.length) {
         confirmButton.disabled = true;
         shortcutInput.classList.add("error-input");
-        UI4.ARIAUtils.setInvalid(shortcutInput, true);
+        UI5.ARIAUtils.setInvalid(shortcutInput, true);
         errorMessageElement.classList.remove("hidden");
-        if (!UI4.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
+        if (!UI5.ActionRegistry.ActionRegistry.instance().hasAction(conflicts[0])) {
           return;
         }
-        const action2 = UI4.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
+        const action2 = UI5.ActionRegistry.ActionRegistry.instance().getAction(conflicts[0]);
         const actionTitle = action2.title();
         const actionCategory = action2.category();
-        errorMessageElement.textContent = i18nString4(UIStrings4.thisShortcutIsInUseByS, { PH1: actionCategory, PH2: actionTitle });
+        errorMessageElement.textContent = i18nString5(UIStrings5.thisShortcutIsInUseByS, { PH1: actionCategory, PH2: actionTitle });
         return;
       }
       shortcutInput.classList.remove("error-input");
-      UI4.ARIAUtils.setInvalid(shortcutInput, false);
+      UI5.ARIAUtils.setInvalid(shortcutInput, false);
     });
   }
 };
@@ -2576,18 +2788,18 @@ var ShortcutListItem = class {
 // gen/front_end/panels/settings/WorkspaceSettingsTab.js
 var WorkspaceSettingsTab_exports = {};
 __export(WorkspaceSettingsTab_exports, {
-  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  DEFAULT_VIEW: () => DEFAULT_VIEW2,
   WorkspaceSettingsTab: () => WorkspaceSettingsTab
 });
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/buttons/buttons.js";
 import "./../../ui/components/cards/cards.js";
 import * as Common5 from "./../../core/common/common.js";
-import * as i18n9 from "./../../core/i18n/i18n.js";
+import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as Buttons5 from "./../../ui/components/buttons/buttons.js";
-import * as UI5 from "./../../ui/legacy/legacy.js";
-import { html as html3, render as render3 } from "./../../ui/lit/lit.js";
+import * as UI6 from "./../../ui/legacy/legacy.js";
+import { html as html4, render as render4 } from "./../../ui/lit/lit.js";
 import * as VisualLogging5 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/settings/workspaceSettingsTab.css.js
@@ -2640,7 +2852,7 @@ var workspaceSettingsTab_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./workspaceSettingsTab.css")} */`;
 
 // gen/front_end/panels/settings/WorkspaceSettingsTab.js
-var UIStrings5 = {
+var UIStrings6 = {
   /**
    * @description Text of a DOM element in Workspace Settings Tab of the Workspace settings in Settings
    */
@@ -2662,36 +2874,36 @@ var UIStrings5 = {
    */
   remove: "Remove"
 };
-var str_5 = i18n9.i18n.registerUIStrings("panels/settings/WorkspaceSettingsTab.ts", UIStrings5);
-var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
-var DEFAULT_VIEW = (input, _output, target) => {
-  render3(html3`
+var str_6 = i18n11.i18n.registerUIStrings("panels/settings/WorkspaceSettingsTab.ts", UIStrings6);
+var i18nString6 = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
+var DEFAULT_VIEW2 = (input, _output, target) => {
+  render4(html4`
     <style>${workspaceSettingsTab_css_default}</style>
     <div class="settings-card-container-wrapper" jslog=${VisualLogging5.pane("workspace")}>
       <div class="settings-card-container">
-        <devtools-card heading=${i18nString5(UIStrings5.workspace)}>
+        <devtools-card heading=${i18nString6(UIStrings6.workspace)}>
           <div class="folder-exclude-pattern">
-            <label for="workspace-setting-folder-exclude-pattern">${i18nString5(UIStrings5.folderExcludePattern)}</label>
+            <label for="workspace-setting-folder-exclude-pattern">${i18nString6(UIStrings6.folderExcludePattern)}</label>
             <input
               class="harmony-input"
               jslog=${VisualLogging5.textField().track({ keydown: "Enter", change: true }).context(input.excludePatternSetting.name)}
-              ${UI5.SettingsUI.bindToSetting(input.excludePatternSetting)}
+              ${UI6.SettingsUI.bindToSetting(input.excludePatternSetting)}
               id="workspace-setting-folder-exclude-pattern"></input>
           </div>
-          <div class="mappings-info">${i18nString5(UIStrings5.mappingsAreInferredAutomatically)}</div>
+          <div class="mappings-info">${i18nString6(UIStrings6.mappingsAreInferredAutomatically)}</div>
         </devtools-card>
-        ${input.fileSystems.map((fileSystem) => html3`
+        ${input.fileSystems.map((fileSystem) => html4`
           <devtools-card heading=${fileSystem.displayName}>
             <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
             <div class="mapping-view-container">
-              <devtools-widget .widgetConfig=${UI5.Widget.widgetConfig(Persistence.EditFileSystemView.EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
+              <devtools-widget .widgetConfig=${UI6.Widget.widgetConfig(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
               </devtools-widget>
             </div>
             <devtools-button
               slot="heading-suffix"
               .variant=${"outlined"}
               jslog=${VisualLogging5.action().track({ click: true }).context("settings.remove-file-system")}
-              @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString5(UIStrings5.remove)}</devtools-button>
+              @click=${input.onRemoveClicked.bind(null, fileSystem.fileSystem)}>${i18nString6(UIStrings6.remove)}</devtools-button>
           </devtools-card>
         `)}
         <div class="add-button-container">
@@ -2699,15 +2911,15 @@ var DEFAULT_VIEW = (input, _output, target) => {
             class="add-folder"
             .variant=${"outlined"}
             jslog=${VisualLogging5.action().track({ click: true }).context("sources.add-folder-to-workspace")}
-            @click=${input.onAddClicked}>${i18nString5(UIStrings5.addFolder)}</devtools-button>
+            @click=${input.onAddClicked}>${i18nString6(UIStrings6.addFolder)}</devtools-button>
         </div>
       </div>
     </div>`, target);
 };
-var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
+var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI6.Widget.VBox {
   #view;
   #eventListeners = [];
-  constructor(view = DEFAULT_VIEW) {
+  constructor(view = DEFAULT_VIEW2) {
     super();
     this.#view = view;
   }
@@ -2751,6 +2963,7 @@ var WorkspaceSettingsTab = class _WorkspaceSettingsTab extends UI5.Widget.VBox {
 };
 export {
   AISettingsTab_exports as AISettingsTab,
+  EditFileSystemView_exports as EditFileSystemView,
   FrameworkIgnoreListSettingsTab_exports as FrameworkIgnoreListSettingsTab,
   KeybindsSettingsTab_exports as KeybindsSettingsTab,
   SettingsScreen_exports as SettingsScreen,

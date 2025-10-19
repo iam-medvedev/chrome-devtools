@@ -925,45 +925,371 @@ describeWithMockConnection('MultitargetNetworkManager', () => {
         let eventCounter = 0;
         multitargetNetworkManager.addEventListener("BlockedPatternsChanged" /* SDK.NetworkManager.MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */, () => eventCounter++);
         const blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
-        const blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
         // Change blocking setting via Common.Settings.Settings.
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isFalse(multitargetNetworkManager.blockingEnabled());
+        assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
         blockingEnabledSetting.set(true);
         assert.strictEqual(eventCounter, 1);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
-        blockedPatternsSetting.set([{ url: 'example.com', enabled: true }]);
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }));
         assert.strictEqual(eventCounter, 2);
         assert.isTrue(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
-        blockedPatternsSetting.set([]);
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.clear();
         assert.strictEqual(eventCounter, 3);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
         blockingEnabledSetting.set(false);
         assert.strictEqual(eventCounter, 4);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isFalse(multitargetNetworkManager.blockingEnabled());
+        assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
         // Change blocking setting via MultitargetNetworkManager.
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isFalse(multitargetNetworkManager.blockingEnabled());
-        multitargetNetworkManager.setBlockingEnabled(true);
+        assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.conditionsEnabled = (true);
         assert.strictEqual(eventCounter, 5);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
-        multitargetNetworkManager.setBlockedPatterns([{ url: 'example.com', enabled: true }]);
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'example.com', enabled: true }));
         assert.strictEqual(eventCounter, 6);
         assert.isTrue(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
-        multitargetNetworkManager.setBlockedPatterns([]);
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.clear();
         assert.strictEqual(eventCounter, 7);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isTrue(multitargetNetworkManager.blockingEnabled());
-        multitargetNetworkManager.setBlockingEnabled(false);
+        assert.isTrue(multitargetNetworkManager.requestConditions.conditionsEnabled);
+        multitargetNetworkManager.requestConditions.conditionsEnabled = (false);
         assert.strictEqual(eventCounter, 8);
         assert.isFalse(multitargetNetworkManager.isBlocking());
-        assert.isFalse(multitargetNetworkManager.blockingEnabled());
+        assert.isFalse(multitargetNetworkManager.requestConditions.conditionsEnabled);
+    });
+    it('blocking settings allow deleting an item in the middle of the list', () => {
+        const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true }).requestConditions;
+        const condition1 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url1', enabled: true });
+        const condition2 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url2', enabled: true });
+        const condition3 = SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'url3', enabled: true });
+        conditions.add(condition1, condition2, condition3);
+        assert.deepEqual(conditions.conditions.toArray(), [condition1, condition2, condition3]);
+        conditions.delete(condition2);
+        assert.deepEqual(conditions.conditions.toArray(), [condition1, condition3]);
+    });
+    it('calls the deprecated emulateNetworkConditions if individual request throttling is disabled', () => {
+        updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: false } });
+        const manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
+        manager.setNetworkConditions(SDK.NetworkManager.Slow4GConditions);
+        const targetManager = new SDK.NetworkManager.NetworkManager(createTarget());
+        const stub = sinon.stub(targetManager.target().networkAgent(), 'invoke_emulateNetworkConditions');
+        manager.modelAdded(targetManager);
+        sinon.assert.calledOnce(stub);
+        assert.deepEqual(stub.args[0][0], {
+            offline: false,
+            latency: 562.5,
+            downloadThroughput: 180000,
+            uploadThroughput: 84375,
+            packetLoss: undefined,
+            packetQueueLength: undefined,
+            packetReordering: undefined,
+            connectionType: "cellular4g" /* Protocol.Network.ConnectionType.Cellular4g */,
+        });
+        manager.setNetworkConditions(SDK.NetworkManager.Slow3GConditions);
+        sinon.assert.calledTwice(stub);
+        assert.deepEqual(stub.args[1][0], {
+            offline: false,
+            latency: 2000,
+            downloadThroughput: 50000,
+            uploadThroughput: 50000,
+            packetLoss: undefined,
+            packetQueueLength: undefined,
+            packetReordering: undefined,
+            connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+        });
+    });
+    it('calls the request conditions model for global throttling if individual request throttling is enabled', () => {
+        updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
+        const manager = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true });
+        manager.setNetworkConditions(SDK.NetworkManager.Slow4GConditions);
+        const targetManager = new SDK.NetworkManager.NetworkManager(createTarget());
+        const emulateNetworkConditions = sinon.stub(targetManager.target().networkAgent(), 'invoke_emulateNetworkConditions');
+        const stub = sinon.stub(manager.requestConditions, 'applyConditions');
+        manager.modelAdded(targetManager);
+        sinon.assert.calledOnce(stub);
+        assert.deepEqual(stub.args[0], [false, SDK.NetworkManager.Slow4GConditions, targetManager.target().networkAgent()]);
+        manager.setNetworkConditions(SDK.NetworkManager.Slow3GConditions);
+        sinon.assert.calledTwice(stub);
+        assert.deepEqual(stub.args[1], [false, SDK.NetworkManager.Slow3GConditions, targetManager.target().networkAgent()]);
+        sinon.assert.notCalled(emulateNetworkConditions);
+    });
+});
+describe('RequestURLPattern', () => {
+    it('successfully upgrades url block patterns from wildcards', () => {
+        const testPattern = (pattern, expectation) => {
+            const urlPattern = SDK.NetworkManager.RequestURLPattern.upgradeFromWildcard(pattern);
+            const keys = [
+                'protocol',
+                'username',
+                'password',
+                'hostname',
+                'port',
+                'pathname',
+                'search',
+                'hash',
+            ];
+            const relevantProperties = urlPattern?.pattern &&
+                Object.assign({}, ...keys.map(key => key in urlPattern.pattern && urlPattern.pattern[key] !== '*' ?
+                    { [key]: urlPattern.pattern[key] } :
+                    {}));
+            assert.deepEqual(relevantProperties, expectation, pattern);
+        };
+        testPattern('http://example.com/foo/bar', { port: '', protocol: 'http', hostname: 'example.com', pathname: '/foo/bar' });
+        testPattern('http://example.com', { port: '', protocol: 'http', hostname: 'example.com' });
+        testPattern('http://example.com/', { port: '', protocol: 'http', hostname: 'example.com', pathname: '/' });
+        testPattern('*://example.com', { port: '', hostname: 'example.com' });
+        testPattern('example.com', { port: '', hostname: 'example.com*' });
+        testPattern('example.com/foo/bar', { port: '', hostname: 'example.com', pathname: '/foo/bar*' });
+        testPattern('http://*.com/foo', { port: '', protocol: 'http', hostname: '*.com', pathname: '/foo' });
+        testPattern('http://localhost:*/', { protocol: 'http', hostname: 'localhost', pathname: '/' });
+        testPattern('http://localhost:1234', { port: '1234', protocol: 'http', hostname: 'localhost' });
+        testPattern('localhost:1234', { port: '1234', hostname: 'localhost' });
+        testPattern('http://example.com*', { port: '', protocol: 'http', hostname: 'example.com*' });
+        testPattern('e*m', { port: '', hostname: 'e*m*' });
+        testPattern('ht tp://*', undefined);
+        testPattern('http://*/(:id)', undefined);
+    });
+    it('correctly reports pattern constructor string validity', () => {
+        assert.strictEqual(SDK.NetworkManager.RequestURLPattern.isValidPattern('ht tp://*'), "failed-to-parse" /* SDK.NetworkManager.RequestURLPatternValidity.FAILED_TO_PARSE */);
+        assert.strictEqual(SDK.NetworkManager.RequestURLPattern.isValidPattern('http://*/(:id)'), "has-regexp-groups" /* SDK.NetworkManager.RequestURLPatternValidity.HAS_REGEXP_GROUPS */);
+        assert.strictEqual(SDK.NetworkManager.RequestURLPattern.isValidPattern('http://*/*'), "valid" /* SDK.NetworkManager.RequestURLPatternValidity.VALID */);
+    });
+});
+describeWithEnvironment('RequestConditions', () => {
+    function getSetting(values) {
+        Common.Settings.Settings.instance().clearAll();
+        Common.Settings.Settings.instance().getRegistry().clear();
+        return Common.Settings.Settings.instance().createSetting('network-blocked-patterns', values);
+    }
+    it('loads settings with url pattern', () => {
+        getSetting([
+            {
+                enabled: true,
+                urlPattern: '*://example.com',
+                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
+            },
+        ]);
+        const conditions = new SDK.NetworkManager.RequestConditions();
+        const condition = conditions.conditions.next().value;
+        assert.exists(condition);
+        assert.isUndefined(condition.wildcardURL);
+        assert.strictEqual(condition.constructorString, '*://example.com');
+        assert.exists(condition.originalOrUpgradedURLPattern);
+    });
+    it('loads settings with url', () => {
+        getSetting([{ enabled: true, url: 'foo' }]);
+        const conditions = new SDK.NetworkManager.RequestConditions();
+        const condition = conditions.conditions.next().value;
+        assert.exists(condition);
+        assert.strictEqual(condition.wildcardURL, 'foo');
+        assert.strictEqual(condition.constructorString, '*://foo*');
+    });
+    it('stores settings correctly', () => {
+        const setting = getSetting([]);
+        const conditions = new SDK.NetworkManager.RequestConditions();
+        const patternCondition = SDK.NetworkManager.RequestCondition.createFromSetting({
+            enabled: true,
+            urlPattern: '*://example.com',
+            conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
+        });
+        assert.strictEqual(patternCondition.conditions, SDK.NetworkManager.NoThrottlingConditions);
+        conditions.add(patternCondition);
+        const wildcardCondition = SDK.NetworkManager.RequestCondition.createFromSetting({
+            enabled: true,
+            url: 'foo',
+        });
+        conditions.add(wildcardCondition);
+        assert.strictEqual(wildcardCondition.conditions, SDK.NetworkManager.BlockingConditions);
+        assert.deepEqual(setting.get()[0], {
+            enabled: true,
+            urlPattern: '*://example.com',
+            conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+        });
+        assert.deepEqual(setting.get()[1], { enabled: true, url: 'foo' });
+    });
+    it('upgrades url to url pattern', () => {
+        const setting = getSetting([]);
+        const conditions = new SDK.NetworkManager.RequestConditions();
+        const condition = SDK.NetworkManager.RequestCondition.createFromSetting({
+            enabled: true,
+            url: 'foo',
+        });
+        conditions.add(condition);
+        condition.conditions = SDK.NetworkManager.NoThrottlingConditions;
+        assert.deepEqual(setting.get()[0], {
+            enabled: true,
+            urlPattern: '*://foo*',
+            conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */,
+        });
+    });
+    describeWithMockConnection('applyConditions', () => {
+        function stubAgent() {
+            const target = createTarget();
+            const agent = target.networkAgent();
+            const setBlockedURLs = sinon.stub(agent, 'invoke_setBlockedURLs');
+            const emulateNetworkConditions = sinon.stub(agent, 'invoke_emulateNetworkConditions');
+            const emulateNetworkConditionsByRule = sinon.stub(agent, 'invoke_emulateNetworkConditionsByRule');
+            return { agent, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule };
+        }
+        it('applies blocking if individual request throttling is disabled', () => {
+            updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: false } });
+            const { agent, setBlockedURLs } = stubAgent();
+            const conditions = new SDK.NetworkManager.RequestConditions();
+            conditions.conditionsEnabled = true;
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'bar', enabled: false }));
+            conditions.applyConditions(false, null, agent);
+            sinon.assert.calledOnceWithExactly(setBlockedURLs, { urls: ['foo'] });
+        });
+        it('applies blocking, global, and local throttling if individual request throttling is enabled', () => {
+            updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
+            const { agent, setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule } = stubAgent();
+            const conditions = new SDK.NetworkManager.RequestConditions();
+            conditions.conditionsEnabled = true;
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'bar', enabled: false }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://nothrottle:*',
+                enabled: true,
+                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+            }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://block:*',
+                enabled: true,
+                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
+            }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://throttle:*',
+                enabled: true,
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+            }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://disabled_nothrottle:*',
+                enabled: false,
+                conditions: "NO_THROTTLING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.NO_THROTTLING */
+            }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://disabled_block:*',
+                enabled: false,
+                conditions: "BLOCKING" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.BLOCKING */
+            }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://disabled_throttle:*',
+                enabled: false,
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+            }));
+            conditions.applyConditions(false, null, agent);
+            sinon.assert.notCalled(emulateNetworkConditions);
+            sinon.assert.calledOnce(emulateNetworkConditionsByRule);
+            assert.deepEqual(emulateNetworkConditionsByRule.args[0][0], {
+                offline: false,
+                matchedNetworkConditions: [{
+                        urlPattern: '*://throttle:*',
+                        latency: 2000,
+                        downloadThroughput: 50000,
+                        uploadThroughput: 50000,
+                        packetLoss: undefined,
+                        packetQueueLength: undefined,
+                        packetReordering: undefined,
+                        connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                    }]
+            });
+            sinon.assert.calledOnceWithExactly(setBlockedURLs, {
+                urlPatterns: [
+                    { urlPattern: '*://foo*', block: true },
+                    { urlPattern: '*://block:*', block: true },
+                    { urlPattern: '*://throttle:*', block: false },
+                ]
+            });
+            setBlockedURLs.resetHistory();
+            emulateNetworkConditions.resetHistory();
+            emulateNetworkConditionsByRule.resetHistory();
+            conditions.applyConditions(true, SDK.NetworkManager.Slow4GConditions, agent);
+            sinon.assert.notCalled(emulateNetworkConditions);
+            sinon.assert.calledOnce(emulateNetworkConditionsByRule);
+            assert.deepEqual(emulateNetworkConditionsByRule.args[0][0], {
+                offline: true,
+                matchedNetworkConditions: [
+                    {
+                        urlPattern: '*://throttle:*',
+                        latency: 2000,
+                        downloadThroughput: 50000,
+                        uploadThroughput: 50000,
+                        packetLoss: undefined,
+                        packetQueueLength: undefined,
+                        packetReordering: undefined,
+                        connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                    },
+                    {
+                        urlPattern: '',
+                        latency: 562.5,
+                        downloadThroughput: 180000,
+                        uploadThroughput: 84375,
+                        packetLoss: undefined,
+                        packetQueueLength: undefined,
+                        packetReordering: undefined,
+                        connectionType: "cellular4g" /* Protocol.Network.ConnectionType.Cellular4g */,
+                    }
+                ]
+            });
+            sinon.assert.calledOnceWithExactly(setBlockedURLs, {
+                urlPatterns: [
+                    { urlPattern: '*://foo*', block: true },
+                    { urlPattern: '*://block:*', block: true },
+                    { urlPattern: '*://throttle:*', block: false },
+                ]
+            });
+        });
+        it('disables throttling and blocking when the effect gets disabled globally', () => {
+            updateHostConfig({ devToolsIndividualRequestThrottling: { enabled: true } });
+            const conditions = SDK.NetworkManager.MultitargetNetworkManager.instance({ forceNew: true }).requestConditions;
+            const { setBlockedURLs, emulateNetworkConditions, emulateNetworkConditionsByRule } = stubAgent();
+            conditions.conditionsEnabled = true;
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({ url: 'foo', enabled: true }));
+            conditions.add(SDK.NetworkManager.RequestCondition.createFromSetting({
+                urlPattern: '*://throttle:*',
+                enabled: true,
+                conditions: "SPEED_3G" /* SDK.NetworkManager.PredefinedThrottlingConditionKey.SPEED_3G */
+            }));
+            emulateNetworkConditions.resetHistory();
+            emulateNetworkConditionsByRule.resetHistory();
+            setBlockedURLs.resetHistory();
+            conditions.conditionsEnabled = false;
+            sinon.assert.notCalled(emulateNetworkConditions);
+            sinon.assert.calledOnceWithExactly(emulateNetworkConditionsByRule, { offline: false, matchedNetworkConditions: [] });
+            sinon.assert.calledOnceWithExactly(setBlockedURLs, { urlPatterns: [] });
+            emulateNetworkConditions.resetHistory();
+            emulateNetworkConditionsByRule.resetHistory();
+            setBlockedURLs.resetHistory();
+            conditions.conditionsEnabled = true;
+            sinon.assert.notCalled(emulateNetworkConditions);
+            sinon.assert.calledOnceWithExactly(emulateNetworkConditionsByRule, {
+                offline: false,
+                matchedNetworkConditions: [{
+                        urlPattern: '*://throttle:*',
+                        latency: 2000,
+                        downloadThroughput: 50000,
+                        uploadThroughput: 50000,
+                        packetLoss: undefined,
+                        packetQueueLength: undefined,
+                        packetReordering: undefined,
+                        connectionType: "cellular3g" /* Protocol.Network.ConnectionType.Cellular3g */,
+                    }]
+            });
+            sinon.assert.calledOnceWithExactly(setBlockedURLs, {
+                urlPatterns: [
+                    { urlPattern: '*://foo*', block: true },
+                    { urlPattern: '*://throttle:*', block: false },
+                ]
+            });
+        });
     });
 });
 describe('NetworkDispatcher', () => {

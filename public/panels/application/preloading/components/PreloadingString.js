@@ -655,14 +655,13 @@ export function ruleSetTagOrLocationShort(ruleSet, pageURL) {
     return ruleSetLocationShort(ruleSet, pageURL);
 }
 export function capitalizedAction(action) {
-    // Use "prefetch"/"prerender" as is in SpeculationRules.
     switch (action) {
         case "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */:
             return i18n.i18n.lockedString('Prefetch');
         case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
             return i18n.i18n.lockedString('Prerender');
         case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
-            return i18n.i18n.lockedString('PrerenderUntilScript');
+            return i18n.i18n.lockedString('Prerender until script');
     }
 }
 export function status(status) {
@@ -699,7 +698,8 @@ export function composedStatus(attempt) {
             const detail = prefetchFailureReason(attempt) ?? i18n.i18n.lockedString('Internal error');
             return short + ' - ' + detail;
         }
-        case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */: {
+        case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
+        case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */: {
             const detail = prerenderFailureReason(attempt);
             assertNotNullOrUndefined(detail);
             return short + ' - ' + detail;

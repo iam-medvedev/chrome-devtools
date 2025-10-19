@@ -152,30 +152,38 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
     `;
         // clang-format on
     }
+    #isPrerenderLike(speculationAction) {
+        return [
+            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */, "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+        ].includes(speculationAction);
+    }
+    #isPrerenderAttempt(attempt) {
+        return this.#isPrerenderLike(attempt.action);
+    }
     #speculativeLoadingStatusForThisPageSections() {
         const pageURL = Common.ParsedURL.ParsedURL.urlWithoutHash(this.#data.pageURL);
         const forThisPage = this.#data.previousAttempts.filter(attempt => Common.ParsedURL.ParsedURL.urlWithoutHash(attempt.key.url) === pageURL);
         const prefetch = forThisPage.filter(attempt => attempt.key.action === "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */)[0];
-        const prerender = forThisPage.filter(attempt => attempt.key.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */)[0];
+        const prerenderLike = forThisPage.filter(attempt => this.#isPrerenderLike(attempt.action))[0];
         let kind = "NoPreloads" /* UsedKind.NO_PRELOADS */;
         // Prerender -> prefetch downgrade case
         //
         // This code does not handle the case SpecRules designate these preloads rather than prerenderer automatically downgrade prerendering.
         // TODO(https://crbug.com/1410709): Improve this logic once automatic downgrade implemented.
-        if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
+        if (prerenderLike?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */ &&
             prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
             kind = "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */;
         }
         else if (prefetch?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
             kind = "PrefetchUsed" /* UsedKind.PREFETCH_USED */;
         }
-        else if (prerender?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
+        else if (prerenderLike?.status === "Success" /* SDK.PreloadingModel.PreloadingStatus.SUCCESS */) {
             kind = "PrerenderUsed" /* UsedKind.PRERENDER_USED */;
         }
         else if (prefetch?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
             kind = "PrefetchFailed" /* UsedKind.PREFETCH_FAILED */;
         }
-        else if (prerender?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
+        else if (prerenderLike?.status === "Failure" /* SDK.PreloadingModel.PreloadingStatus.FAILURE */) {
             kind = "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */;
         }
         else {
@@ -215,8 +223,8 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
             maybeFailureReasonMessage = prefetchFailureReason(prefetch);
         }
         else if (kind === "PrerenderFailed" /* UsedKind.PRERENDER_FAILED */ || kind === "DowngradedPrerenderToPrefetchAndUsed" /* UsedKind.DOWNGRADED_PRERENDER_TO_PREFETCH_AND_USED */) {
-            assertNotNullOrUndefined(prerender);
-            maybeFailureReasonMessage = prerenderFailureReason(prerender);
+            assertNotNullOrUndefined(prerenderLike);
+            maybeFailureReasonMessage = prerenderFailureReason(prerenderLike);
         }
         let maybeFailureReason = Lit.nothing;
         if (maybeFailureReasonMessage !== undefined) {
@@ -285,7 +293,7 @@ export class UsedPreloadingView extends LegacyWrapper.LegacyWrapper.WrappableCom
         // clang-format on
     }
     #maybeMismatchedHTTPHeadersSections() {
-        const attempt = this.#data.previousAttempts.find(attempt => attempt.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */ && attempt.mismatchedHeaders !== null);
+        const attempt = this.#data.previousAttempts.find(attempt => this.#isPrerenderAttempt(attempt) && attempt.mismatchedHeaders !== null);
         if (attempt === undefined) {
             return Lit.nothing;
         }

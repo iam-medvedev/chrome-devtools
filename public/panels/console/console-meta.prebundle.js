@@ -129,6 +129,11 @@ const UIStrings = {
      * @description Title of a setting under the Console category in Settings that controls whether `console.trace()` messages appear collapsed by default.
      */
     collapseConsoleTraceMessagesByDefault: 'Do not automatically expand `console.trace()` messages',
+    /**
+     * @description Title of a setting under the Console category in Settings that controls whether AI summaries should
+     * be shown for console warnings/errors.
+     */
+    showConsoleInsightTeasers: 'Show AI summaries for console messages',
 };
 const str_ = i18n.i18n.registerUIStrings('panels/console/console-meta.ts', UIStrings);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
@@ -412,6 +417,14 @@ Common.Settings.registerSettingExtension({
             title: i18nLazyString(UIStrings.collapseConsoleTraceMessagesByDefault),
         },
     ],
+});
+Common.Settings.registerSettingExtension({
+    category: "CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */,
+    storageType: "Synced" /* Common.Settings.SettingStorageType.SYNCED */,
+    title: i18nLazyString(UIStrings.showConsoleInsightTeasers),
+    settingName: 'console-insight-teasers-enabled',
+    settingType: "boolean" /* Common.Settings.SettingType.BOOLEAN */,
+    defaultValue: true,
 });
 Common.Revealer.registerRevealer({
     contextTypes() {

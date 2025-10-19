@@ -71,5 +71,5 @@ export declare function handleExternalRequest(input: ExternalRequestInput): Prom
     response: string;
     devToolsLogs: object[];
 }>;
-export declare function handleExternalRequestGenerator(input: ExternalRequestInput): Promise<AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>>;
+export declare function handleExternalRequestGenerator(input: ExternalRequestInput): Promise<AsyncGenerator<AiAssistanceModel.AiAgent.ExternalRequestResponse, AiAssistanceModel.AiAgent.ExternalRequestResponse>>;
 export {};

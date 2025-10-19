@@ -110,6 +110,7 @@ export declare class ConsoleViewMessage implements ConsoleViewportElement {
     toMessageElement(): HTMLElement;
     updateMessageElement(): void;
     shouldShowInsights(): boolean;
+    shouldShowTeaser(): boolean;
     getExplainLabel(): string;
     getExplainActionId(): string;
     private shouldRenderAsWarning;

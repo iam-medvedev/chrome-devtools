@@ -58,7 +58,9 @@ export declare class TraceLoader {
      * @param config The config the new trace engine should run with. Optional,
      * will fall back to the Default config if not provided.
      */
-    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration): Promise<Trace.TraceModel.ParsedTrace>;
+    static traceEngine(context: Mocha.Context | Mocha.Suite | null, name: string, config?: Trace.Types.Configuration.Configuration, opts?: {
+        withTimelinePanel: boolean;
+    }): Promise<Trace.TraceModel.ParsedTrace>;
     /**
      * Initialise the BoundsManager with the bounds from a trace.
      * This isn't always required, but some of our code - particularly at the UI

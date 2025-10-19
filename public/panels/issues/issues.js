@@ -2436,7 +2436,6 @@ import * as i18n35 from "./../../core/i18n/i18n.js";
 import * as Platform3 from "./../../core/platform/platform.js";
 import * as IssuesManager10 from "./../../models/issues_manager/issues_manager.js";
 import * as NetworkForward2 from "./../network/forward/forward.js";
-var _a;
 var UIStrings18 = {
   /**
    * @description Label for number of affected resources indication in issue view
@@ -2549,7 +2548,7 @@ var UIStrings18 = {
 };
 var str_18 = i18n35.i18n.registerUIStrings("panels/issues/CorsIssueDetailsView.ts", UIStrings18);
 var i18nString18 = i18n35.i18n.getLocalizedString.bind(void 0, str_18);
-var CorsIssueDetailsView = class extends AffectedResourcesView {
+var CorsIssueDetailsView = class _CorsIssueDetailsView extends AffectedResourcesView {
   constructor(parent, issue, jslogContext) {
     super(parent, issue, jslogContext);
     this.affectedResourcesCountElement.classList.add("cors-issue-affected-resource-label");
@@ -2720,7 +2719,7 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
     const corsError = details.corsErrorStatus.corsError;
     const highlightHeader = {
       section: "Response",
-      name: _a.getHeaderFromError(corsError)
+      name: _CorsIssueDetailsView.getHeaderFromError(corsError)
     };
     const opts = {
       additionalOnClickAction() {
@@ -2740,8 +2739,8 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
         } else {
           this.appendIssueDetailCell(element, "");
         }
-        this.appendIssueDetailCell(element, _a.getHeaderFromError(corsError), "code-example");
-        this.appendIssueDetailCell(element, _a.getProblemFromError(details.corsErrorStatus));
+        this.appendIssueDetailCell(element, _CorsIssueDetailsView.getHeaderFromError(corsError), "code-example");
+        this.appendIssueDetailCell(element, _CorsIssueDetailsView.getProblemFromError(details.corsErrorStatus));
         this.appendIssueDetailCell(element, details.corsErrorStatus.failedParameter, "code-example");
         break;
       case "CorsIssue::WildcardOriginWithCredentials":
@@ -2761,7 +2760,7 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
           name: "Status-Code"
         } : highlightHeader;
         element.appendChild(this.createRequestCell(details.request, { ...opts, linkToPreflight: true, highlightHeader: specialHighlightHeader }));
-        this.appendIssueDetailCell(element, _a.getProblemFromError(details.corsErrorStatus));
+        this.appendIssueDetailCell(element, _CorsIssueDetailsView.getProblemFromError(details.corsErrorStatus));
         break;
       }
       case "CorsIssue::OriginMismatch":
@@ -2831,7 +2830,7 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
           ...opts,
           highlightHeader: {
             section: "Response",
-            name: _a.getHeaderFromError(corsError)
+            name: _CorsIssueDetailsView.getHeaderFromError(corsError)
           }
         }));
         this.#appendStatus(element, details.isWarning);
@@ -2847,7 +2846,7 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
           ...opts,
           highlightHeader: {
             section: "Response",
-            name: _a.getHeaderFromError(corsError)
+            name: _CorsIssueDetailsView.getHeaderFromError(corsError)
           }
         }));
         this.#appendStatus(element, details.isWarning);
@@ -2865,7 +2864,7 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
         element.appendChild(this.createRequestCell(details.request, opts));
         this.#appendStatus(element, details.isWarning);
         element.appendChild(this.createRequestCell(details.request, { ...opts, linkToPreflight: true, highlightHeader }));
-        this.appendIssueDetailCell(element, _a.getHeaderFromError(corsError));
+        this.appendIssueDetailCell(element, _CorsIssueDetailsView.getHeaderFromError(corsError));
         this.appendIssueDetailCell(element, details.resourceIPAddressSpace ?? "");
         this.appendIssueDetailCell(element, details.clientSecurityState?.initiatorIPAddressSpace ?? "");
         this.#appendSecureContextCell(element, details.clientSecurityState?.initiatorIsSecureContext);
@@ -2889,7 +2888,6 @@ var CorsIssueDetailsView = class extends AffectedResourcesView {
     }
   }
 };
-_a = CorsIssueDetailsView;
 
 // gen/front_end/panels/issues/GenericIssueDetailsView.js
 import * as i18n37 from "./../../core/i18n/i18n.js";

@@ -5,7 +5,6 @@ import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Buttons from '../components/buttons/buttons.js';
 import * as IconButton from '../components/icon_button/icon_button.js';
 import * as Lit from '../lit/lit.js';
-import type { ToolbarButton } from './Toolbar.js';
 declare global {
     interface HTMLElementTagNameMap {
         'devtools-checkbox': CheckboxLabel;
@@ -209,7 +208,6 @@ export declare class MessageDialog {
 export declare class ConfirmDialog {
     static show(message: string, header?: string, where?: Element | Document, options?: ConfirmDialogOptions): Promise<boolean>;
 }
-export declare function createInlineButton(toolbarButton: ToolbarButton): Element;
 export interface RenderedObject {
     element: HTMLElement;
     forceSelect(): void;
@@ -338,4 +336,10 @@ export declare class HTMLElementWithLightDOMTemplate extends HTMLElement {
     protected removeNodes(_nodes: NodeList): void;
     static findCorrespondingElement(sourceElement: HTMLElement, sourceRootElement: HTMLElement, targetRootElement: Element): Element | null;
 }
+/**
+ * @param text Text to copy to clipboard
+ * @param alert Message to send for a11y only required if there
+ * were other UI changes that visually indicated this copy happened.
+ */
+export declare function copyTextToClipboard(text: string, alert?: string): void;
 export {};

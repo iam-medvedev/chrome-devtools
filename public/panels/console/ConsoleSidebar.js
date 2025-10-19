@@ -83,7 +83,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
                   <ul role="group" hidden>
                     ${group.urlGroups.values().map(urlGroup => html `
                       <li
-                        ${Directives.ref(element => element && nodeFilterMap.set(element, group.filter))}
+                        ${Directives.ref(element => element && nodeFilterMap.set(element, urlGroup.filter))}
                         role="treeitem"
                         ?selected=${urlGroup.filter === input.selectedFilter}
                         title=${urlGroup.url ?? ''}>
@@ -95,7 +95,7 @@ export const DEFAULT_VIEW = (input, output, target) => {
         </ul>`}
         ></devtools-tree>`, target);
 };
-class ConsoleFilterGroup {
+export class ConsoleFilterGroup {
     urlGroups = new Map();
     messageCount = 0;
     name;

@@ -8,7 +8,7 @@ export { InspectorBackend, NodeURL, };
 // Create the global here because registering commands will involve putting
 // items onto the global.
 // @ts-expect-error Global namespace instantiation
-self.Protocol = self.Protocol || {};
+globalThis.Protocol = globalThis.Protocol || {};
 // FIXME: This instance of InspectorBackend should not be a side effect of importing this module.
 InspectorBackendCommands.registerCommands(InspectorBackend.inspectorBackend);
 //# sourceMappingURL=protocol_client.prebundle.js.map

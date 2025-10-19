@@ -509,7 +509,6 @@ var isFrameTargetInfo = (target) => {
 };
 
 // gen/front_end/panels/recorder/models/RecordingSession.js
-var _a;
 var formatAsJSLiteral = Platform.StringUtilities.formatAsJSLiteral;
 var unrelatedNavigationTypes = /* @__PURE__ */ new Set([
   "typed",
@@ -548,7 +547,7 @@ var RecorderBinding = Object.freeze({
   addStep: "addStep",
   stopShortcut: "stopShortcut"
 });
-var RecordingSession = class extends Common3.ObjectWrapper.ObjectWrapper {
+var RecordingSession = class _RecordingSession extends Common3.ObjectWrapper.ObjectWrapper {
   #target;
   #pageAgent;
   #targetAgent;
@@ -923,7 +922,7 @@ var RecordingSession = class extends Common3.ObjectWrapper.ObjectWrapper {
     const script = `
       ${injectedScript};DevToolsRecorder.startRecording({getAccessibleName, getAccessibleRole}, {
         debug: ${Util.isDebugBuild},
-        allowUntrustedEvents: ${_a.#allowUntrustedEvents},
+        allowUntrustedEvents: ${_RecordingSession.#allowUntrustedEvents},
         selectorTypesToRecord: ${JSON.stringify(this.#selectorTypesToRecord)},
         selectorAttribute: ${this.#userFlow.selectorAttribute ? formatAsJSLiteral(this.#userFlow.selectorAttribute) : void 0},
         stopShortcuts: ${JSON.stringify(this.#getStopShortcuts())},
@@ -1064,7 +1063,6 @@ var RecordingSession = class extends Common3.ObjectWrapper.ObjectWrapper {
     ]);
   }
 };
-_a = RecordingSession;
 
 // gen/front_end/panels/recorder/models/RecordingSettings.js
 var RecordingSettings_exports = {};

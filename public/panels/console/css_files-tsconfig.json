@@ -5,6 +5,7 @@
     },
     "files": [
         "consoleContextSelector.css.js",
+        "consoleInsightTeaser.css.js",
         "consolePinPane.css.js",
         "consolePrompt.css.js",
         "consoleSidebar.css.js",

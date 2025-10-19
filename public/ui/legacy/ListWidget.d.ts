@@ -28,7 +28,7 @@ export declare class ListWidget<T> extends VBox {
     private stopEditing;
 }
 export interface Delegate<T> {
-    renderItem(item: T, editable: boolean): Element;
+    renderItem(item: T, editable: boolean, index: number): Element;
     removeItemRequested(item: T, index: number): void;
     beginEdit(item: T): Editor<T>;
     commitEdit(item: T, editor: Editor<T>, isNew: boolean): void;

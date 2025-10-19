@@ -73,4 +73,5 @@ export { GdpSignUpDialog } from './GdpSignUpDialog.js';
 export { AiCodeCompletionDisclaimer } from './AiCodeCompletionDisclaimer.js';
 export { AiCodeCompletionSummaryToolbar } from './AiCodeCompletionSummaryToolbar.js';
 export * from './BadgeNotification.js';
+export * as PersistenceUtils from './PersistenceUtils.js';
 //# sourceMappingURL=common.prebundle.js.map

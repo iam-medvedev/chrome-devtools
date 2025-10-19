@@ -223,8 +223,8 @@ function reset() {
   isEnabled = false;
 }
 var isEnabled = false;
-function handleUserConfig(config2) {
-  isEnabled = config2.enableAnimationsFrameHandler;
+function handleUserConfig(config3) {
+  isEnabled = config3.enableAnimationsFrameHandler;
 }
 function handleEvent(event) {
   if (!isEnabled) {
@@ -578,6 +578,7 @@ __export(MetaHandler_exports, {
 import * as Platform2 from "./../../../core/platform/platform.js";
 import * as Helpers4 from "./../helpers/helpers.js";
 import * as Types6 from "./../types/types.js";
+var config;
 var rendererProcessesByFrameId = /* @__PURE__ */ new Map();
 var mainFrameId = "";
 var mainFrameURL = "";
@@ -785,7 +786,8 @@ function handleEvent5(event) {
     return;
   }
 }
-async function finalize5() {
+async function finalize5(options) {
+  config = { showAllEvents: Boolean(options?.showAllEvents) };
   if (traceStartedTimeFromTracingStartedEvent >= 0) {
     traceBounds.min = traceStartedTimeFromTracingStartedEvent;
   }
@@ -829,6 +831,7 @@ async function finalize5() {
 }
 function data5() {
   return {
+    config,
     traceBounds,
     browserProcessId,
     browserThreadId,
@@ -1442,7 +1445,7 @@ var entityMappings2 = {
 var compositorTileWorkers = Array();
 var entryToNode2 = /* @__PURE__ */ new Map();
 var completeEventStack = [];
-var config = Types9.Configuration.defaults();
+var config2 = Types9.Configuration.defaults();
 var makeRendererProcess = () => ({
   url: null,
   isOnMainFrame: false,
@@ -1462,7 +1465,7 @@ var getOrCreateRendererThread = (process, tid) => {
   return Platform5.MapUtilities.getWithDefault(process.threads, tid, makeRendererThread);
 };
 function handleUserConfig2(userConfig) {
-  config = userConfig;
+  config2 = userConfig;
 }
 function reset8() {
   processes = /* @__PURE__ */ new Map();
@@ -1618,7 +1621,7 @@ function buildHierarchy(processes2, options) {
       const samplesDataForThread = samplesData.profilesInProcess.get(pid)?.get(tid);
       if (samplesDataForThread) {
         const cpuProfile = samplesDataForThread.parsedProfile;
-        const samplesIntegrator = cpuProfile && new Helpers7.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config);
+        const samplesIntegrator = cpuProfile && new Helpers7.SamplesIntegrator.SamplesIntegrator(cpuProfile, samplesDataForThread.profileId, pid, tid, config2);
         const profileCalls = samplesIntegrator?.buildProfileCalls(thread.entries);
         if (samplesIntegrator && profileCalls) {
           thread.entries = Helpers7.Trace.mergeEventsInOrder(thread.entries, profileCalls);

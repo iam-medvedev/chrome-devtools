@@ -50,6 +50,13 @@ var actions = [
     }
   },
   {
+    actionId: "explain.console-message.teaser",
+    title: i18nLazyString(UIStrings.explainThisMessage),
+    contextTypes() {
+      return [];
+    }
+  },
+  {
     actionId: "explain.console-message.context.error",
     title: i18nLazyString(UIStrings.explainThisError),
     contextTypes() {

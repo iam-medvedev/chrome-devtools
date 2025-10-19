@@ -46,7 +46,6 @@ export class AiCodeCompletionPlugin extends Plugin {
         this.#boundOnAiCodeCompletionSettingChanged = this.#onAiCodeCompletionSettingChanged.bind(this);
         this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
         Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged" /* Host.AidaClient.Events.AIDA_AVAILABILITY_CHANGED */, this.#boundOnAidaAvailabilityChange);
-        void this.#onAidaAvailabilityChange();
         const showTeaser = !this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get();
         if (showTeaser) {
             this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
@@ -70,9 +69,7 @@ export class AiCodeCompletionPlugin extends Plugin {
         this.#editor.addEventListener('keydown', this.#boundEditorKeyDown);
         this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
         this.#onAiCodeCompletionSettingChanged();
-        if (editor.state.doc.length === 0) {
-            this.#addTeaserPluginToCompartmentImmediate(editor.editor);
-        }
+        void this.#onAidaAvailabilityChange();
     }
     editorExtension() {
         return [
@@ -140,7 +137,7 @@ export class AiCodeCompletionPlugin extends Plugin {
                     if (this.#aiCodeCompletion && this.#editor && TextEditor.Config.hasActiveAiSuggestion(this.#editor.state)) {
                         const { accepted, suggestion } = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.#editor.editor);
                         if (accepted) {
-                            if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+                            if (suggestion?.rpcGlobalId) {
                                 this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
                             }
                             this.#onAiCodeCompletionSuggestionAccepted();
@@ -250,9 +247,17 @@ export class AiCodeCompletionPlugin extends Plugin {
             this.#aidaAvailability = currentAidaAvailability;
             if (this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */) {
                 this.#onAiCodeCompletionSettingChanged();
+                if (this.#editor?.state.doc.length === 0) {
+                    this.#addTeaserPluginToCompartmentImmediate(this.#editor?.editor);
+                }
             }
             else if (this.#aiCodeCompletion) {
                 this.#cleanupAiCodeCompletion();
+                if (this.#teaser) {
+                    this.#editor?.dispatch({
+                        effects: this.#teaserCompartment.reconfigure([]),
+                    });
+                }
             }
         }
     }

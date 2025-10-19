@@ -3760,10 +3760,24 @@ export const generatedProperties = [
     },
     {
         "longhands": [
+            "row-rule-break",
+            "column-rule-break"
+        ],
+        "name": "rule-break"
+    },
+    {
+        "longhands": [
             "column-rule-color",
             "row-rule-color"
         ],
         "name": "rule-color"
+    },
+    {
+        "longhands": [
+            "row-rule-outset",
+            "column-rule-outset"
+        ],
+        "name": "rule-outset"
     },
     {
         "longhands": [
@@ -4374,6 +4388,7 @@ export const generatedProperties = [
             "capitalize",
             "uppercase",
             "lowercase",
+            "full-width",
             "none",
             "math-auto"
         ],
@@ -6802,6 +6817,7 @@ export const generatedPropertyValues = {
             "capitalize",
             "uppercase",
             "lowercase",
+            "full-width",
             "none",
             "math-auto"
         ]

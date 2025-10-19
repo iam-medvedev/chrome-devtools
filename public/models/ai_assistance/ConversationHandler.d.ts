@@ -1,3 +1,4 @@
+import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import { type AiAgent, type ExternalRequestResponse, type ResponseData } from './agents/AiAgent.js';
 import { type PerformanceTraceContext } from './agents/PerformanceAgent.js';
@@ -24,7 +25,7 @@ export interface ExternalPerformanceRequestParameters {
     prompt: string;
     data: ExternalPerformanceAIConversationData;
 }
-export declare class ConversationHandler {
+export declare class ConversationHandler extends Common.ObjectWrapper.ObjectWrapper<EventTypes> {
     #private;
     private constructor();
     static instance(opts?: {
@@ -40,5 +41,13 @@ export declare class ConversationHandler {
     handleExternalRequest(parameters: ExternalStylingRequestParameters | ExternalNetworkRequestParameters | ExternalPerformanceRequestParameters): Promise<AsyncGenerator<ExternalRequestResponse, ExternalRequestResponse>>;
     handleConversationWithHistory(items: AsyncIterable<ResponseData, void, void>, conversation: Conversation | undefined): AsyncGenerator<ResponseData, void, void>;
     createAgent(conversationType: ConversationType, changeManager?: ChangeManager): AiAgent<unknown>;
+}
+export declare const enum ConversationHandlerEvents {
+    EXTERNAL_REQUEST_RECEIVED = "ExternalRequestReceived",
+    EXTERNAL_CONVERSATION_STARTED = "ExternalConversationStarted"
+}
+export interface EventTypes {
+    [ConversationHandlerEvents.EXTERNAL_REQUEST_RECEIVED]: void;
+    [ConversationHandlerEvents.EXTERNAL_CONVERSATION_STARTED]: ConversationType;
 }
 export {};

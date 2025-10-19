@@ -5,9 +5,6 @@ import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-// TODO(crbug.com/442509324): remove UI dependency
-// eslint-disable-next-line rulesdir/no-imports-in-directory
-import * as UI from '../../ui/legacy/legacy.js';
 import * as Breakpoints from '../breakpoints/breakpoints.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
@@ -322,7 +319,7 @@ export class NetworkPersistenceManager extends Common.ObjectWrapper.ObjectWrappe
         // No overrides folder, set it up
         if (this.#shouldPromptSaveForOverridesDialog(uiSourceCode)) {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.OverrideContentContextMenuSetup);
-            await new Promise(resolve => UI.InspectorView.InspectorView.instance().displaySelectOverrideFolderInfobar(resolve));
+            await new Promise(resolve => this.dispatchEventToListeners("LocalOverridesRequested" /* Events.LOCAL_OVERRIDES_REQUESTED */, resolve));
             await IsolatedFileSystemManager.instance().addFileSystem('overrides');
         }
         if (!this.project()) {

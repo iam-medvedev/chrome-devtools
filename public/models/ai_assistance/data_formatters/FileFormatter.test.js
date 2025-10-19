@@ -35,7 +35,7 @@ describeWithMockConnection('FileFormatter', () => {
             const script = (await loadBasicSourceMapExample(target)).script;
             const uiSourceCode = debuggerWorkspaceBinding.uiSourceCodeForScript(script);
             assert.exists(uiSourceCode);
-            const response = FileFormatter.formatSourceMapDetails(uiSourceCode, debuggerWorkspaceBinding);
+            const response = FileFormatter.FileFormatter.formatSourceMapDetails(uiSourceCode, debuggerWorkspaceBinding);
             assert.strictEqual(response, 'Source map: file://gen.js.map');
         });
     });
@@ -45,7 +45,7 @@ describeWithMockConnection('FileFormatter', () => {
                 content: 'lorem ipsum',
                 requestContentData: true,
             });
-            assert.strictEqual(new FileFormatter(uiSourceCode).formatFile(), `File name: script.js
+            assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile(), `File name: script.js
 URL: http://example.test/script.js
 File content:
 \`\`\`
@@ -62,7 +62,7 @@ lorem ipsum
             sinon.stub(SDK.ResourceTreeModel.ResourceTreeModel, 'resourceForURL').withArgs(networkRequest.url()).returns({
                 request: networkRequest
             });
-            assert.strictEqual(new FileFormatter(uiSourceCode).formatFile(), `File name: script.js
+            assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile(), `File name: script.js
 URL: https://www.example.com/script.js
 Request initiator chain:
 - URL: <redacted cross-origin initiator URL>
@@ -81,7 +81,7 @@ lorem ipsum
                 url: Platform.DevToolsPath.urlString `http://example.test/test.png`,
                 requestContentData: true,
             });
-            assert.strictEqual(new FileFormatter(uiSourceCode).formatFile(), `File name: test.png
+            assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile(), `File name: test.png
 URL: http://example.test/test.png
 File content:
 \`\`\`
@@ -93,7 +93,7 @@ File content:
                 content: 'lorem ipsum'.repeat(10_000),
                 requestContentData: true,
             });
-            assert.strictEqual(new FileFormatter(uiSourceCode).formatFile(), `File name: script.js
+            assert.strictEqual(new FileFormatter.FileFormatter(uiSourceCode).formatFile(), `File name: script.js
 URL: http://example.test/script.js
 File content:
 \`\`\`

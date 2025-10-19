@@ -4,7 +4,7 @@ export declare class WorkerWrapper {
     static fromURL(url: URL): WorkerWrapper;
     postMessage(message: unknown, transfer?: Transferable[]): void;
     dispose(): void;
-    terminate(): void;
+    terminate(immediately?: boolean): void;
     set onmessage(listener: (event: MessageEvent) => void);
     set onerror(listener: (event: Event) => void);
 }

@@ -425,7 +425,8 @@ export var Action;
     Action[Action["AiCodeCompletionSuggestionAccepted"] = 187] = "AiCodeCompletionSuggestionAccepted";
     Action[Action["AiCodeCompletionError"] = 188] = "AiCodeCompletionError";
     Action[Action["AttributeLinkClicked"] = 189] = "AttributeLinkClicked";
-    Action[Action["MAX_VALUE"] = 190] = "MAX_VALUE";
+    Action[Action["InsightRequestedViaTeaser"] = 190] = "InsightRequestedViaTeaser";
+    Action[Action["MAX_VALUE"] = 191] = "MAX_VALUE";
     /* eslint-enable @typescript-eslint/naming-convention */
 })(Action || (Action = {}));
 export var PanelCodes;

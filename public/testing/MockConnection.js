@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as ProtocolClient from '../core/protocol_client/protocol_client.js';
+import { raf } from './DOMHelpers.js';
 import { cleanTestDOM } from './DOMHooks.js';
 import { deinitializeGlobalVars, initializeGlobalVars } from './EnvironmentHelpers.js';
 import { setMockResourceTree } from './ResourceTreeHelpers.js';
@@ -91,7 +92,8 @@ async function disable() {
     }
     // Some Widgets rely on Global vars to be there so they
     // can properly remove state once they detach.
-    await cleanTestDOM();
+    cleanTestDOM();
+    await raf();
     await deinitializeGlobalVars();
     // @ts-expect-error Setting back to undefined as a hard reset.
     ProtocolClient.InspectorBackend.Connection.setFactory(undefined);

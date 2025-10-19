@@ -24,6 +24,9 @@ var Tracker = class _Tracker {
   recordingIsFresh(data) {
     return this.#freshRecordings.has(data);
   }
+  recordingIsFreshOrEnhanced(data) {
+    return this.#freshRecordings.has(data) || data.metadata.enhancedTraceVersion !== void 0;
+  }
 };
 
 // gen/front_end/services/tracing/PerformanceTracing.js

@@ -97,7 +97,6 @@ var snackbar_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./snackbar.css")} */`;
 
 // gen/front_end/ui/components/snackbars/Snackbar.js
-var _a;
 var { html } = Lit;
 var UIStrings = {
   /**
@@ -109,7 +108,7 @@ var str_ = i18n.i18n.registerUIStrings("ui/components/snackbars/Snackbar.ts", UI
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
 var DEFAULT_AUTO_DISMISS_MS = 5e3;
 var LONG_ACTION_THRESHOLD = 15;
-var Snackbar = class extends HTMLElement {
+var Snackbar = class _Snackbar extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #container;
   #timeout = null;
@@ -200,9 +199,9 @@ var Snackbar = class extends HTMLElement {
     }
   }
   static show(properties, container) {
-    const snackbar = new _a(properties, container);
-    _a.snackbarQueue.push(snackbar);
-    if (_a.snackbarQueue.length === 1) {
+    const snackbar = new _Snackbar(properties, container);
+    _Snackbar.snackbarQueue.push(snackbar);
+    if (_Snackbar.snackbarQueue.length === 1) {
       snackbar.#show();
     }
     return snackbar;
@@ -223,9 +222,9 @@ var Snackbar = class extends HTMLElement {
       window.clearTimeout(this.#timeout);
     }
     this.remove();
-    _a.snackbarQueue.shift();
-    if (_a.snackbarQueue.length > 0) {
-      const nextSnackbar = _a.snackbarQueue[0];
+    _Snackbar.snackbarQueue.shift();
+    if (_Snackbar.snackbarQueue.length > 0) {
+      const nextSnackbar = _Snackbar.snackbarQueue[0];
       if (nextSnackbar) {
         nextSnackbar.#show();
       }
@@ -279,7 +278,6 @@ var Snackbar = class extends HTMLElement {
     `, this.#shadow, { host: this });
   }
 };
-_a = Snackbar;
 customElements.define("devtools-snackbar", Snackbar);
 export {
   Snackbar_exports as Snackbar

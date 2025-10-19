@@ -8,13 +8,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -57,6 +57,9 @@
     },
     {
       "path": "../../models/persistence/meta-tsconfig.json"
+    },
+    {
+      "path": "../../panels/ai_assistance/meta-tsconfig.json"
     },
     {
       "path": "../../panels/browser_debugger/meta-tsconfig.json"

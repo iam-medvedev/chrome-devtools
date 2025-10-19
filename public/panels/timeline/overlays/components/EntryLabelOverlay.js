@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
-var _a;
 import '../../../../ui/components/icon_button/icon_button.js';
 import '../../../../ui/components/tooltips/tooltips.js';
 import '../../../../ui/components/spinners/spinners.js';
@@ -161,7 +160,7 @@ export class EntryLabelOverlay extends HTMLElement {
     #callTree = null;
     // Creates or gets the setting if it exists.
     #aiAnnotationsEnabledSetting = Common.Settings.Settings.instance().createSetting('ai-annotations-enabled', false);
-    #agent = new AiAssistanceModels.PerformanceAnnotationsAgent({
+    #agent = new AiAssistanceModels.PerformanceAnnotationsAgent.PerformanceAnnotationsAgent({
         aidaClient: new Host.AidaClient.AidaClient(),
         serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled(),
     });
@@ -272,7 +271,7 @@ export class EntryLabelOverlay extends HTMLElement {
         }
         // If the max limit is not reached, return true
         if (this.#inputField.textContent !== null &&
-            this.#inputField.textContent.length <= _a.MAX_LABEL_LENGTH) {
+            this.#inputField.textContent.length <= EntryLabelOverlay.MAX_LABEL_LENGTH) {
             return true;
         }
         if (allowedKeysAfterReachingLenLimit.includes(event.key)) {
@@ -293,7 +292,7 @@ export class EntryLabelOverlay extends HTMLElement {
         // Remove newline characters to ensure single-line paste.
         const pastedText = clipboardData.getData('text').replace(/(\r\n|\n|\r)/gm, '');
         const newText = this.#inputField.textContent + pastedText;
-        const trimmedText = newText.slice(0, _a.MAX_LABEL_LENGTH + 1);
+        const trimmedText = newText.slice(0, EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
         this.#inputField.textContent = trimmedText;
         this.#placeCursorAtInputEnd();
     }
@@ -316,7 +315,7 @@ export class EntryLabelOverlay extends HTMLElement {
             return;
         }
         if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
-            const translation = this.#entryLabelVisibleHeight + _a.LABEL_CONNECTOR_HEIGHT;
+            const translation = this.#entryLabelVisibleHeight + EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
             this.#connectorLineContainer.style.transform = `translateY(${translation}px) rotate(180deg)`;
         }
         const connector = this.#connectorLineContainer.querySelector('line');
@@ -329,21 +328,21 @@ export class EntryLabelOverlay extends HTMLElement {
         // Set the width of the canvas that draws the connector to be equal to the length of the shift multiplied by two.
         // That way, we can draw the connector from its corner to its middle. Since all elements are aligned in the middle, the connector
         // will end in the middle of the entry.
-        this.#connectorLineContainer.setAttribute('width', (_a.LABEL_AND_CONNECTOR_SHIFT_LENGTH * 2).toString());
-        this.#connectorLineContainer.setAttribute('height', _a.LABEL_CONNECTOR_HEIGHT.toString());
+        this.#connectorLineContainer.setAttribute('width', (EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * 2).toString());
+        this.#connectorLineContainer.setAttribute('height', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
         // Start drawing the top right corner.
         connector.setAttribute('x1', '0');
         connector.setAttribute('y1', '0');
         // Finish drawing in middle of the connector container.
-        connector.setAttribute('x2', _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
-        connector.setAttribute('y2', _a.LABEL_CONNECTOR_HEIGHT.toString());
+        connector.setAttribute('x2', EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
+        connector.setAttribute('y2', EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
         const connectorColor = ThemeSupport.ThemeSupport.instance().getComputedValue('--color-text-primary');
         connector.setAttribute('stroke', connectorColor);
         connector.setAttribute('stroke-width', '2');
         // Draw the circle at the bottom of the connector
-        circle.setAttribute('cx', _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
+        circle.setAttribute('cx', EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
         // Add one to the offset of the circle which positions it perfectly centered on the border of the overlay.
-        circle.setAttribute('cy', (_a.LABEL_CONNECTOR_HEIGHT + 1).toString());
+        circle.setAttribute('cy', (EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT + 1).toString());
         circle.setAttribute('r', '3');
         circle.setAttribute('fill', connectorColor);
     }
@@ -360,18 +359,18 @@ export class EntryLabelOverlay extends HTMLElement {
         // PART 1: draw the label box
         if (this.#shouldDrawBelowEntry) {
             // Label is drawn below and slightly to the right.
-            xTranslation = _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
         }
         else {
             // If the label is drawn above, the connector goes up and to the left, so
             // we pull the label back slightly to align it nicely.
-            xTranslation = _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
+            xTranslation = EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
         }
         if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
             // Move the label down from above the entry to below it. The label is positioned by default quite far above the entry, hence why we add:
             // 1. the height of the entry + of the label (inc its padding)
             // 2. the height of the connector (*2), so we have room to draw it
-            const verticalTransform = this.#entryLabelVisibleHeight + (_a.LABEL_CONNECTOR_HEIGHT * 2) +
+            const verticalTransform = this.#entryLabelVisibleHeight + (EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2) +
                 this.#inputField?.offsetHeight;
             yTranslation = verticalTransform;
         }
@@ -752,6 +751,5 @@ export class EntryLabelOverlay extends HTMLElement {
         // clang-format on
     }
 }
-_a = EntryLabelOverlay;
 customElements.define('devtools-entry-label-overlay', EntryLabelOverlay);
 //# sourceMappingURL=EntryLabelOverlay.js.map

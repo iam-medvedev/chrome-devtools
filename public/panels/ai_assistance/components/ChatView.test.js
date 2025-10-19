@@ -12,7 +12,7 @@ describeWithEnvironment('ChatView', () => {
     function getProp(options) {
         const noop = () => { };
         const messages = options.messages ?? [];
-        const selectedContext = sinon.createStubInstance(AiAssistanceModel.NodeContext);
+        const selectedContext = sinon.createStubInstance(AiAssistanceModel.StylingAgent.NodeContext);
         selectedContext.getTitle.returns('');
         return {
             onTextSubmit: noop,
@@ -23,10 +23,10 @@ describeWithEnvironment('ChatView', () => {
             onCopyResponseClick: noop,
             onNewConversation: noop,
             onTextInputChange: noop,
-            changeManager: new AiAssistanceModel.ChangeManager(),
+            changeManager: new AiAssistanceModel.ChangeManager.ChangeManager(),
             inspectElementToggled: false,
             state: "chat-view" /* AiAssistancePanel.State.CHAT_VIEW */,
-            conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+            conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
             aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             messages,
             selectedContext,

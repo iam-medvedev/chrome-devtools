@@ -576,7 +576,7 @@ export const aiAutoCompleteSuggestion = [
             }
             const latency = performance.now() - activeSuggestion.startTime;
             // only register impression for the first time AI generated suggestion is shown to the user.
-            activeSuggestion.onImpression(activeSuggestion.rpcGlobalId, activeSuggestion.sampleId, latency);
+            activeSuggestion.onImpression(activeSuggestion.rpcGlobalId, latency, activeSuggestion.sampleId);
             this.#lastLoggedSuggestion = activeSuggestion;
         }
     }, { decorations: p => p.decorations }),

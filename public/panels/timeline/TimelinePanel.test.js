@@ -139,11 +139,11 @@ describeWithEnvironment('TimelinePanel', function () {
     it('clears out AI related contexts when the user presses "Clear"', async () => {
         const context = UI.Context.Context.instance();
         const mockParsedTrace = { insights: new Map() };
-        context.setFlavor(AIAssistance.AgentFocus, AIAssistance.AgentFocus.fromParsedTrace(mockParsedTrace));
+        context.setFlavor(AIAssistance.AIContext.AgentFocus, AIAssistance.AIContext.AgentFocus.fromParsedTrace(mockParsedTrace));
         const clearButton = timeline.element.querySelector('[aria-label="Clear"]');
         assert.isOk(clearButton);
         dispatchClickEvent(clearButton);
-        assert.isNull(context.flavor(AIAssistance.AgentFocus));
+        assert.isNull(context.flavor(AIAssistance.AIContext.AgentFocus));
     });
     it('includes the trace metadata when saving to a file', async function () {
         const events = await TraceLoader.rawEvents(this, 'web-dev-with-commit.json.gz');
@@ -285,7 +285,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 sinon.assert.calledOnce(saveSpy);
                 sinon.assert.calledOnce(closeSpy);
                 const [fileName, contentData] = saveSpy.getCall(0).args;
-                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json\.gz$/);
+                assert.match(fileName, /Trace-[\d|T]+\.json\.gz$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
                 assert.isUndefined(file.metadata.sourceMaps);
@@ -301,7 +301,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 sinon.assert.calledOnce(saveSpy);
                 sinon.assert.calledOnce(closeSpy);
                 const [fileName, contentData] = saveSpy.getCall(0).args;
-                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json\.gz$/);
+                assert.match(fileName, /Trace-[\d|T]+\.json\.gz$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
                 assert.isDefined(file.metadata.sourceMaps);
@@ -372,7 +372,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 sinon.assert.calledOnce(saveSpy);
                 sinon.assert.calledOnce(closeSpy);
                 const [fileName, contentData] = saveSpy.getCall(0).args;
-                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json$/);
+                assert.match(fileName, /Trace-[\d|T]+\.json$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
                 // getting the same trace as before, but this time after saving has happened.
@@ -404,7 +404,7 @@ describeWithEnvironment('TimelinePanel', function () {
                 sinon.assert.calledOnce(saveSpy);
                 sinon.assert.calledOnce(closeSpy);
                 const [fileName, contentData] = saveSpy.getCall(0).args;
-                assert.match(fileName, /EnhancedTrace-[\d|T]+\.json$/);
+                assert.match(fileName, /Trace-[\d|T]+\.json$/);
                 const file = await contentDataToFile(contentData);
                 assert.isDefined(file.metadata.enhancedTraceVersion);
                 const totalSourceMapsWithChromExtensionProtocol = file.metadata.sourceMaps?.filter(value => {

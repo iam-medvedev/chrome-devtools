@@ -121,6 +121,11 @@ const UIStrings = {
      */
     objectsRetainedByConsole: 'Objects retained by DevTools Console',
     /**
+     * @description An option which will filter the heap snapshot to show only
+     * objects retained by event handlers
+     */
+    objectsRetainedByEventHandlers: 'Objects retained by Event Handlers',
+    /**
      * @description Text for the summary view
      */
     summary: 'Summary',
@@ -653,6 +658,7 @@ export class HeapSnapshotView extends UI.View.SimpleView {
         { uiName: i18nString(UIStrings.duplicatedStrings), filterName: 'duplicatedStrings' },
         { uiName: i18nString(UIStrings.objectsRetainedByDetachedDomNodes), filterName: 'objectsRetainedByDetachedDomNodes' },
         { uiName: i18nString(UIStrings.objectsRetainedByConsole), filterName: 'objectsRetainedByConsole' },
+        { uiName: i18nString(UIStrings.objectsRetainedByEventHandlers), filterName: 'objectsRetainedByEventHandlers' },
     ];
     changeFilter() {
         let selectedIndex = this.filterSelect.selectedIndex();

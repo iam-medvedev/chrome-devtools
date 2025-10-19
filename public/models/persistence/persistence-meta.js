@@ -1,9 +1,6 @@
 // gen/front_end/models/persistence/persistence-meta.prebundle.js
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
-import * as SDK from "./../../core/sdk/sdk.js";
-import * as Workspace from "./../workspace/workspace.js";
-import * as UI from "./../../ui/legacy/legacy.js";
 var UIStrings = {
   /**
    * @description Title of a setting under the Persistence category in Settings
@@ -41,13 +38,6 @@ var UIStrings = {
 };
 var str_ = i18n.i18n.registerUIStrings("models/persistence/persistence-meta.ts", UIStrings);
 var i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(void 0, str_);
-var loadedPersistenceModule;
-async function loadPersistenceModule() {
-  if (!loadedPersistenceModule) {
-    loadedPersistenceModule = await import("./persistence.js");
-  }
-  return loadedPersistenceModule;
-}
 Common.Settings.registerSettingExtension({
   category: "PERSISTENCE",
   title: i18nLazyString(UIStrings.enableLocalOverrides),
@@ -71,19 +61,5 @@ Common.Settings.registerSettingExtension({
       title: i18nLazyString(UIStrings.disableOverrideNetworkRequests)
     }
   ]
-});
-UI.ContextMenu.registerProvider({
-  contextTypes() {
-    return [
-      Workspace.UISourceCode.UISourceCode,
-      SDK.Resource.Resource,
-      SDK.NetworkRequest.NetworkRequest
-    ];
-  },
-  async loadProvider() {
-    const Persistence = await loadPersistenceModule();
-    return new Persistence.PersistenceActions.ContextMenuProvider();
-  },
-  experiment: void 0
 });
 //# sourceMappingURL=persistence-meta.js.map

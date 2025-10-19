@@ -7,7 +7,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as WorkspaceDiff from '../../models/workspace_diff/workspace_diff.js';
 import * as Buttons from '../../ui/components/buttons/buttons.js';
-import * as CopyToClipboard from '../../ui/components/copy_to_clipboard/copy_to_clipboard.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import * as Lit from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
@@ -119,7 +118,7 @@ export class CombinedDiffView extends UI.Widget.Widget {
         if (!content.isTextContent) {
             return;
         }
-        CopyToClipboard.copyTextToClipboard(content.text, i18nString(UIStrings.copied));
+        UI.UIUtils.copyTextToClipboard(content.text, i18nString(UIStrings.copied));
         this.#copiedFiles[fileUrl] = true;
         this.requestUpdate();
         setTimeout(() => {

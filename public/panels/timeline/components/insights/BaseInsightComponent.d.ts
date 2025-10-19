@@ -28,7 +28,7 @@ export declare abstract class BaseInsightComponent<T extends InsightModel> exten
     set insightSetKey(insightSetKey: string | null);
     get bounds(): Trace.Types.Timing.TraceWindowMicro | null;
     set bounds(bounds: Trace.Types.Timing.TraceWindowMicro | null);
-    set agentFocus(agentFocus: AIAssistance.AgentFocus);
+    set agentFocus(agentFocus: AIAssistance.AIContext.AgentFocus);
     set fieldMetrics(fieldMetrics: Trace.Insights.Common.CrUXFieldMetricResults);
     get fieldMetrics(): Trace.Insights.Common.CrUXFieldMetricResults | null;
     getOverlayOptionsForInitialOverlays(): Overlays.Overlays.TimelineOverlaySetOptions;

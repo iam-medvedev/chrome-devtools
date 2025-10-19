@@ -1,7 +1,6 @@
 // Copyright 2016 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-var _a;
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
@@ -306,7 +305,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     static instance() {
         if (!coverageViewInstance) {
-            coverageViewInstance = new _a();
+            coverageViewInstance = new CoverageView();
         }
         return coverageViewInstance;
     }
@@ -523,7 +522,7 @@ export class CoverageView extends UI.Widget.VBox {
     }
     #isVisible(coverageInfo) {
         const url = coverageInfo.url;
-        if (url.startsWith(_a.EXTENSION_BINDINGS_URL_PREFIX)) {
+        if (url.startsWith(CoverageView.EXTENSION_BINDINGS_URL_PREFIX)) {
             return false;
         }
         if (coverageInfo.isContentScript && !this.#showContentScriptsSetting.get()) {
@@ -557,18 +556,17 @@ export class CoverageView extends UI.Widget.VBox {
     }
     static EXTENSION_BINDINGS_URL_PREFIX = 'extensions::';
     wasShown() {
-        UI.Context.Context.instance().setFlavor(_a, this);
+        UI.Context.Context.instance().setFlavor(CoverageView, this);
         super.wasShown();
     }
     willHide() {
         super.willHide();
-        UI.Context.Context.instance().setFlavor(_a, null);
+        UI.Context.Context.instance().setFlavor(CoverageView, null);
     }
     get model() {
         return this.#model;
     }
 }
-_a = CoverageView;
 export class ActionDelegate {
     handleAction(_context, actionId) {
         const coverageViewId = 'coverage';

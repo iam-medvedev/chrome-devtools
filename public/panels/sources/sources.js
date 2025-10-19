@@ -217,7 +217,6 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#boundOnAiCodeCompletionSettingChanged = this.#onAiCodeCompletionSettingChanged.bind(this);
     this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     Host.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
-    void this.#onAidaAvailabilityChange();
     const showTeaser = !this.#aiCodeCompletionSetting.get() && !this.#aiCodeCompletionTeaserDismissedSetting.get();
     if (showTeaser) {
       this.#teaser = new PanelCommon.AiCodeCompletionTeaser({ onDetach: this.#detachAiCodeCompletionTeaser.bind(this) });
@@ -241,9 +240,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
     this.#editor.addEventListener("keydown", this.#boundEditorKeyDown);
     this.#aiCodeCompletionSetting.addChangeListener(this.#boundOnAiCodeCompletionSettingChanged);
     this.#onAiCodeCompletionSettingChanged();
-    if (editor.state.doc.length === 0) {
-      this.#addTeaserPluginToCompartmentImmediate(editor.editor);
-    }
+    void this.#onAidaAvailabilityChange();
   }
   editorExtension() {
     return [
@@ -311,7 +308,7 @@ var AiCodeCompletionPlugin = class extends Plugin {
           if (this.#aiCodeCompletion && this.#editor && TextEditor.Config.hasActiveAiSuggestion(this.#editor.state)) {
             const { accepted, suggestion } = TextEditor.Config.acceptAiAutoCompleteSuggestion(this.#editor.editor);
             if (accepted) {
-              if (suggestion?.rpcGlobalId && suggestion?.sampleId) {
+              if (suggestion?.rpcGlobalId) {
                 this.#aiCodeCompletion?.registerUserAcceptance(suggestion.rpcGlobalId, suggestion.sampleId);
               }
               this.#onAiCodeCompletionSuggestionAccepted();
@@ -416,8 +413,16 @@ var AiCodeCompletionPlugin = class extends Plugin {
       this.#aidaAvailability = currentAidaAvailability;
       if (this.#aidaAvailability === "available") {
         this.#onAiCodeCompletionSettingChanged();
+        if (this.#editor?.state.doc.length === 0) {
+          this.#addTeaserPluginToCompartmentImmediate(this.#editor?.editor);
+        }
       } else if (this.#aiCodeCompletion) {
         this.#cleanupAiCodeCompletion();
+        if (this.#teaser) {
+          this.#editor?.dispatch({
+            effects: this.#teaserCompartment.reconfigure([])
+          });
+        }
       }
     }
   }
@@ -6657,6 +6662,7 @@ var sourcesView_css_default = `/*
 #sources-panel-sources-view .sources-toolbar {
   display: flex;
   flex: 0 0 auto;
+  min-height: 27px;
   background-color: var(--sys-color-cdt-base-container);
   border-top: 1px solid var(--sys-color-divider);
   overflow: hidden;
@@ -6700,6 +6706,7 @@ import * as Tooltips from "./../../ui/components/tooltips/tooltips.js";
 import * as SourceFrame10 from "./../../ui/legacy/components/source_frame/source_frame.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
+import * as PanelCommon2 from "./../common/common.js";
 import * as Snippets3 from "./../snippets/snippets.js";
 
 // gen/front_end/panels/sources/UISourceCodeFrame.js
@@ -8202,7 +8209,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
         suffixElement.append(icon, tooltip2);
         this.tabbedPane.setSuffixElement(tabId2, suffixElement);
       } else {
-        const icon = Persistence9.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode);
+        const icon = PanelCommon2.PersistenceUtils.PersistenceUtils.iconForUISourceCode(uiSourceCode);
         this.tabbedPane.setTrailingTabIcon(tabId2, icon);
       }
     }
@@ -10055,6 +10062,10 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
     if (this.sidebarPaneView) {
       this.sidebarPaneView.detach();
+    }
+    if (Root4.Runtime.Runtime.isTraceApp()) {
+      this.splitWidget.hideSidebar();
+      return;
     }
     this.splitWidget.setVertical(!vertically);
     this.splitWidget.element.classList.toggle("sources-split-view-vertical", vertically);
@@ -13377,17 +13388,239 @@ var OutlineQuickOpen = class extends QuickOpen5.FilteredListWidget.Provider {
   }
 };
 
+// gen/front_end/panels/sources/PersistenceActions.js
+var PersistenceActions_exports = {};
+__export(PersistenceActions_exports, {
+  ContextMenuProvider: () => ContextMenuProvider
+});
+import * as Common18 from "./../../core/common/common.js";
+import * as Host11 from "./../../core/host/host.js";
+import * as i18n47 from "./../../core/i18n/i18n.js";
+import * as SDK13 from "./../../core/sdk/sdk.js";
+import * as Bindings10 from "./../../models/bindings/bindings.js";
+import * as Persistence16 from "./../../models/persistence/persistence.js";
+import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
+import * as Workspace26 from "./../../models/workspace/workspace.js";
+import * as UI24 from "./../../ui/legacy/legacy.js";
+var UIStrings23 = {
+  /**
+   * @description Text to save content as a specific file type
+   */
+  saveAs: "Save as\u2026",
+  /**
+   * @description Context menu item for saving an image
+   */
+  saveImage: "Save image",
+  /**
+   * @description Context menu item for showing all overridden files
+   */
+  showOverrides: "Show all overrides",
+  /**
+   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
+   */
+  overrideContent: "Override content",
+  /**
+   * @description A context menu item in the Persistence Actions of the Workspace settings in Settings
+   */
+  openInContainingFolder: "Open in containing folder",
+  /**
+   * @description A message in a confirmation dialog in the Persistence Actions
+   * @example {bundle.min.js} PH1
+   */
+  overrideSourceMappedFileWarning: "Override \u2018{PH1}\u2019 instead?",
+  /**
+   * @description A message in a confirmation dialog to explain why the action is failed in the Persistence Actions
+   * @example {index.ts} PH1
+   */
+  overrideSourceMappedFileExplanation: "\u2018{PH1}\u2019 is a source mapped file and cannot be overridden.",
+  /**
+   * @description An error message shown in the DevTools console after the user clicked "Save as" in
+   * the context menu of a page resource.
+   */
+  saveFailed: "Failed to save file to disk.",
+  /**
+   * @description An error message shown in the DevTools console after the user clicked "Save as" in
+   * the context menu of a WebAssembly file.
+   */
+  saveWasmFailed: "Unable to save WASM module to disk. Most likely the module is too large."
+};
+var str_23 = i18n47.i18n.registerUIStrings("panels/sources/PersistenceActions.ts", UIStrings23);
+var i18nString22 = i18n47.i18n.getLocalizedString.bind(void 0, str_23);
+var ContextMenuProvider = class {
+  appendApplicableItems(_event, contextMenu, contentProvider) {
+    async function saveAs() {
+      if (contentProvider instanceof Workspace26.UISourceCode.UISourceCode) {
+        contentProvider.commitWorkingCopy();
+      }
+      const url = contentProvider.contentURL();
+      let contentData;
+      const maybeScript = getScript(contentProvider);
+      if (maybeScript?.isWasm()) {
+        try {
+          const base64 = await maybeScript.getWasmBytecode().then(Common18.Base64.encode);
+          contentData = new TextUtils12.ContentData.ContentData(
+            base64,
+            /* isBase64=*/
+            true,
+            "application/wasm"
+          );
+        } catch (e) {
+          console.error(`Unable to convert WASM byte code for ${url} to base64. Not saving to disk`, e.stack);
+          Common18.Console.Console.instance().error(
+            i18nString22(UIStrings23.saveWasmFailed),
+            /* show=*/
+            false
+          );
+          return;
+        }
+      } else {
+        const contentDataOrError = await contentProvider.requestContentData();
+        if (TextUtils12.ContentData.ContentData.isError(contentDataOrError)) {
+          console.error(`Failed to retrieve content for ${url}: ${contentDataOrError}`);
+          Common18.Console.Console.instance().error(
+            i18nString22(UIStrings23.saveFailed),
+            /* show=*/
+            false
+          );
+          return;
+        }
+        contentData = contentDataOrError;
+      }
+      await Workspace26.FileManager.FileManager.instance().save(
+        url,
+        contentData,
+        /* forceSaveAs=*/
+        true
+      );
+      Workspace26.FileManager.FileManager.instance().close(url);
+    }
+    async function saveImage() {
+      const targetObject = contentProvider;
+      const contentDataOrError = await targetObject.requestContentData();
+      const content = TextUtils12.ContentData.ContentData.textOr(contentDataOrError, "");
+      const link2 = document.createElement("a");
+      link2.download = targetObject.displayName;
+      link2.href = "data:" + targetObject.mimeType + ";base64," + content;
+      link2.click();
+    }
+    if (contentProvider.contentType().isDocumentOrScriptOrStyleSheet()) {
+      contextMenu.saveSection().appendItem(i18nString22(UIStrings23.saveAs), saveAs, { jslogContext: "save-as" });
+    } else if (contentProvider instanceof SDK13.Resource.Resource && contentProvider.contentType().isImage()) {
+      contextMenu.saveSection().appendItem(i18nString22(UIStrings23.saveImage), saveImage, { jslogContext: "save-image" });
+    }
+    const uiSourceCode = Workspace26.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(contentProvider.contentURL());
+    const networkPersistenceManager = Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    const binding = uiSourceCode && Persistence16.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
+    const fileURL = binding ? binding.fileSystem.contentURL() : contentProvider.contentURL();
+    if (Common18.ParsedURL.schemeIs(fileURL, "file:")) {
+      const path = Common18.ParsedURL.ParsedURL.urlToRawPathString(fileURL, Host11.Platform.isWin());
+      contextMenu.revealSection().appendItem(i18nString22(UIStrings23.openInContainingFolder), () => Host11.InspectorFrontendHost.InspectorFrontendHostInstance.showItemInFolder(path), { jslogContext: "open-in-containing-folder" });
+    }
+    if (contentProvider instanceof Workspace26.UISourceCode.UISourceCode && contentProvider.project().type() === Workspace26.Workspace.projectTypes.FileSystem) {
+      return;
+    }
+    let disabled = true;
+    let handler = () => {
+    };
+    if (uiSourceCode && networkPersistenceManager.isUISourceCodeOverridable(uiSourceCode)) {
+      if (!uiSourceCode.contentType().isFromSourceMap()) {
+        disabled = false;
+        handler = this.handleOverrideContent.bind(this, uiSourceCode, contentProvider);
+      } else {
+        const deployedUiSourceCode = this.getDeployedUiSourceCode(uiSourceCode);
+        if (deployedUiSourceCode) {
+          disabled = false;
+          handler = this.redirectOverrideToDeployedUiSourceCode.bind(this, deployedUiSourceCode, uiSourceCode);
+        }
+      }
+    }
+    contextMenu.overrideSection().appendItem(i18nString22(UIStrings23.overrideContent), handler, { disabled, jslogContext: "override-content" });
+    if (contentProvider instanceof SDK13.NetworkRequest.NetworkRequest) {
+      contextMenu.overrideSection().appendItem(i18nString22(UIStrings23.showOverrides), async () => {
+        await UI24.ViewManager.ViewManager.instance().showView("navigator-overrides");
+        Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.ShowAllOverridesFromNetworkContextMenu);
+      }, { jslogContext: "show-overrides" });
+    }
+  }
+  async handleOverrideContent(uiSourceCode, contentProvider) {
+    const networkPersistenceManager = Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance();
+    const isSuccess = await networkPersistenceManager.setupAndStartLocalOverrides(uiSourceCode);
+    if (isSuccess) {
+      await Common18.Revealer.reveal(uiSourceCode);
+    }
+    if (contentProvider instanceof SDK13.NetworkRequest.NetworkRequest) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideContentFromNetworkContextMenu);
+    } else if (contentProvider instanceof Workspace26.UISourceCode.UISourceCode) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideContentFromSourcesContextMenu);
+    }
+    if (uiSourceCode.isFetchXHR()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideFetchXHR);
+    } else if (contentProvider.contentType().isScript()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideScript);
+    } else if (contentProvider.contentType().isDocument()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideDocument);
+    } else if (contentProvider.contentType().isStyleSheet()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideStyleSheet);
+    } else if (contentProvider.contentType().isImage()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideImage);
+    } else if (contentProvider.contentType().isFont()) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideFont);
+    }
+  }
+  async redirectOverrideToDeployedUiSourceCode(deployedUiSourceCode, originalUiSourceCode) {
+    Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideContentContextMenuSourceMappedWarning);
+    const deployedUrl = deployedUiSourceCode.url();
+    const deployedName = Bindings10.ResourceUtils.displayNameForURL(deployedUrl);
+    const originalUrl = originalUiSourceCode.url();
+    const originalName = Bindings10.ResourceUtils.displayNameForURL(originalUrl);
+    const shouldJumpToDeployedFile = await UI24.UIUtils.ConfirmDialog.show(i18nString22(UIStrings23.overrideSourceMappedFileExplanation, { PH1: originalName }), i18nString22(UIStrings23.overrideSourceMappedFileWarning, { PH1: deployedName }), void 0, { jslogContext: "override-source-mapped-file-warning" });
+    if (shouldJumpToDeployedFile) {
+      Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverrideContentContextMenuRedirectToDeployed);
+      await this.handleOverrideContent(deployedUiSourceCode, deployedUiSourceCode);
+    }
+  }
+  getDeployedUiSourceCode(uiSourceCode) {
+    const debuggerWorkspaceBinding = Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    for (const deployedScript of debuggerWorkspaceBinding.scriptsForUISourceCode(uiSourceCode)) {
+      const deployedUiSourceCode2 = debuggerWorkspaceBinding.uiSourceCodeForScript(deployedScript);
+      if (deployedUiSourceCode2) {
+        return deployedUiSourceCode2;
+      }
+    }
+    const [deployedStylesUrl] = Bindings10.SASSSourceMapping.SASSSourceMapping.uiSourceOrigin(uiSourceCode);
+    if (!deployedStylesUrl) {
+      return null;
+    }
+    const deployedUiSourceCode = Workspace26.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(deployedStylesUrl) || Workspace26.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(Common18.ParsedURL.ParsedURL.urlWithoutHash(deployedStylesUrl));
+    return deployedUiSourceCode;
+  }
+};
+function getScript(contentProvider) {
+  if (!(contentProvider instanceof Workspace26.UISourceCode.UISourceCode)) {
+    return null;
+  }
+  const target = Bindings10.NetworkProject.NetworkProject.targetForUISourceCode(contentProvider);
+  const model = target?.model(SDK13.DebuggerModel.DebuggerModel);
+  if (model) {
+    const resourceFile = Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptFile(contentProvider, model);
+    if (resourceFile?.script) {
+      return resourceFile.script;
+    }
+  }
+  return Bindings10.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider)[0] ?? null;
+}
+
 // gen/front_end/panels/sources/ScopeChainSidebarPane.js
 var ScopeChainSidebarPane_exports = {};
 __export(ScopeChainSidebarPane_exports, {
   ScopeChainSidebarPane: () => ScopeChainSidebarPane
 });
-import * as i18n47 from "./../../core/i18n/i18n.js";
-import * as SDK13 from "./../../core/sdk/sdk.js";
+import * as i18n49 from "./../../core/i18n/i18n.js";
+import * as SDK14 from "./../../core/sdk/sdk.js";
 import * as SourceMapScopes3 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as ObjectUI3 from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI24 from "./../../ui/legacy/legacy.js";
+import * as UI25 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging14 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/scopeChainSidebarPane.css.js
@@ -13428,7 +13661,7 @@ var scopeChainSidebarPane_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./scopeChainSidebarPane.css")} */`;
 
 // gen/front_end/panels/sources/ScopeChainSidebarPane.js
-var UIStrings23 = {
+var UIStrings24 = {
   /**
    * @description Loading indicator in Scope Sidebar Pane of the Sources panel
    */
@@ -13451,10 +13684,10 @@ var UIStrings23 = {
    */
   closure: "Closure"
 };
-var str_23 = i18n47.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings23);
-var i18nString22 = i18n47.i18n.getLocalizedString.bind(void 0, str_23);
+var str_24 = i18n49.i18n.registerUIStrings("panels/sources/ScopeChainSidebarPane.ts", UIStrings24);
+var i18nString23 = i18n49.i18n.getLocalizedString.bind(void 0, str_24);
 var scopeChainSidebarPaneInstance;
-var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBox {
+var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI25.Widget.VBox {
   treeOutline;
   expandController;
   linkifier;
@@ -13478,7 +13711,7 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
     this.infoElement = document.createElement("div");
     this.infoElement.className = "gray-info-message";
     this.infoElement.tabIndex = -1;
-    this.flavorChanged(UI24.Context.Context.instance().flavor(SDK13.DebuggerModel.CallFrame));
+    this.flavorChanged(UI25.Context.Context.instance().flavor(SDK14.DebuggerModel.CallFrame));
   }
   static instance() {
     if (!scopeChainSidebarPaneInstance) {
@@ -13493,18 +13726,18 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
     this.contentElement.removeChildren();
     this.contentElement.appendChild(this.infoElement);
     if (callFrame) {
-      this.infoElement.textContent = i18nString22(UIStrings23.loading);
+      this.infoElement.textContent = i18nString23(UIStrings24.loading);
       this.#scopeChainModel = new SourceMapScopes3.ScopeChainModel.ScopeChainModel(callFrame);
       this.#scopeChainModel.addEventListener("ScopeChainUpdated", (event) => this.buildScopeTreeOutline(event.data), this);
     } else {
-      this.infoElement.textContent = i18nString22(UIStrings23.notPaused);
+      this.infoElement.textContent = i18nString23(UIStrings24.notPaused);
     }
   }
   focus() {
     if (this.hasFocus()) {
       return;
     }
-    if (UI24.Context.Context.instance().flavor(SDK13.DebuggerModel.DebuggerPausedDetails)) {
+    if (UI25.Context.Context.instance().flavor(SDK14.DebuggerModel.DebuggerPausedDetails)) {
       this.treeOutline.forceSelect();
     }
   }
@@ -13537,15 +13770,15 @@ var ScopeChainSidebarPane = class _ScopeChainSidebarPane extends UI24.Widget.VBo
   createScopeSectionTreeElement(scope) {
     let emptyPlaceholder = null;
     if (scope.type() === "local" || scope.type() === "closure") {
-      emptyPlaceholder = i18nString22(UIStrings23.noVariables);
+      emptyPlaceholder = i18nString23(UIStrings24.noVariables);
     }
     let title = scope.typeName();
     if (scope.type() === "closure") {
       const scopeName = scope.name();
       if (scopeName) {
-        title = i18nString22(UIStrings23.closureS, { PH1: UI24.UIUtils.beautifyFunctionName(scopeName) });
+        title = i18nString23(UIStrings24.closureS, { PH1: UI25.UIUtils.beautifyFunctionName(scopeName) });
       } else {
-        title = i18nString22(UIStrings23.closure);
+        title = i18nString23(UIStrings24.closure);
       }
     }
     let subtitle = scope.description();
@@ -13586,16 +13819,16 @@ __export(SourcesNavigator_exports, {
   SnippetsNavigatorView: () => SnippetsNavigatorView
 });
 import "./../../ui/legacy/legacy.js";
-import * as Common18 from "./../../core/common/common.js";
-import * as Host11 from "./../../core/host/host.js";
-import * as i18n49 from "./../../core/i18n/i18n.js";
-import * as Platform14 from "./../../core/platform/platform.js";
-import * as SDK14 from "./../../core/sdk/sdk.js";
-import * as Bindings10 from "./../../models/bindings/bindings.js";
-import * as Persistence16 from "./../../models/persistence/persistence.js";
-import * as TextUtils12 from "./../../models/text_utils/text_utils.js";
-import * as Workspace26 from "./../../models/workspace/workspace.js";
-import * as UI25 from "./../../ui/legacy/legacy.js";
+import * as Common19 from "./../../core/common/common.js";
+import * as Host12 from "./../../core/host/host.js";
+import * as i18n51 from "./../../core/i18n/i18n.js";
+import * as Platform15 from "./../../core/platform/platform.js";
+import * as SDK15 from "./../../core/sdk/sdk.js";
+import * as Bindings11 from "./../../models/bindings/bindings.js";
+import * as Persistence18 from "./../../models/persistence/persistence.js";
+import * as TextUtils13 from "./../../models/text_utils/text_utils.js";
+import * as Workspace28 from "./../../models/workspace/workspace.js";
+import * as UI26 from "./../../ui/legacy/legacy.js";
 import * as Snippets5 from "./../snippets/snippets.js";
 
 // gen/front_end/panels/sources/sourcesNavigator.css.js
@@ -13626,7 +13859,7 @@ var sourcesNavigator_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./sourcesNavigator.css")} */`;
 
 // gen/front_end/panels/sources/SourcesNavigator.js
-var UIStrings24 = {
+var UIStrings25 = {
   /**
    * @description Text to show if no workspaces are set up. https://goo.gle/devtools-workspace
    */
@@ -13708,16 +13941,16 @@ var UIStrings24 = {
    */
   automaticWorkspaceNudge: "Use {PH1} to automatically connect your project folder"
 };
-var str_24 = i18n49.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings24);
-var i18nString23 = i18n49.i18n.getLocalizedString.bind(void 0, str_24);
+var str_25 = i18n51.i18n.registerUIStrings("panels/sources/SourcesNavigator.ts", UIStrings25);
+var i18nString24 = i18n51.i18n.getLocalizedString.bind(void 0, str_25);
 var networkNavigatorViewInstance;
 var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
   constructor() {
     super("navigator-network", true);
     this.registerRequiredCSS(sourcesNavigator_css_default);
-    SDK14.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.inspectedURLChanged, this);
-    Host11.userMetrics.panelLoaded("sources", "DevTools.Launch.Sources");
-    SDK14.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
+    SDK15.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.inspectedURLChanged, this);
+    Host12.userMetrics.panelLoaded("sources", "DevTools.Launch.Sources");
+    SDK15.TargetManager.TargetManager.instance().addScopeChangeListener(this.onScopeChange.bind(this));
   }
   static instance(opts = { forceNew: null }) {
     const { forceNew } = opts;
@@ -13727,10 +13960,10 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     return networkNavigatorViewInstance;
   }
   acceptProject(project) {
-    return project.type() === Workspace26.Workspace.projectTypes.Network && SDK14.TargetManager.TargetManager.instance().isInScope(Bindings10.NetworkProject.NetworkProject.getTargetForProject(project));
+    return project.type() === Workspace28.Workspace.projectTypes.Network && SDK15.TargetManager.TargetManager.instance().isInScope(Bindings11.NetworkProject.NetworkProject.getTargetForProject(project));
   }
   onScopeChange() {
-    for (const project of Workspace26.Workspace.WorkspaceImpl.instance().projects()) {
+    for (const project of Workspace28.Workspace.WorkspaceImpl.instance().projects()) {
       if (!this.acceptProject(project)) {
         this.removeProject(project);
       } else {
@@ -13739,7 +13972,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     }
   }
   inspectedURLChanged(event) {
-    const mainTarget = SDK14.TargetManager.TargetManager.instance().scopeTarget();
+    const mainTarget = SDK15.TargetManager.TargetManager.instance().scopeTarget();
     if (event.data !== mainTarget) {
       return;
     }
@@ -13754,7 +13987,7 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
     }
   }
   uiSourceCodeAdded(uiSourceCode) {
-    const mainTarget = SDK14.TargetManager.TargetManager.instance().scopeTarget();
+    const mainTarget = SDK15.TargetManager.TargetManager.instance().scopeTarget();
     const inspectedURL = mainTarget?.inspectedURL();
     if (!inspectedURL) {
       return;
@@ -13765,17 +13998,17 @@ var NetworkNavigatorView = class _NetworkNavigatorView extends NavigatorView {
   }
 };
 var FilesNavigatorView = class extends NavigatorView {
-  #automaticFileSystemManager = Persistence16.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
+  #automaticFileSystemManager = Persistence18.AutomaticFileSystemManager.AutomaticFileSystemManager.instance();
   #eventListeners = [];
   #automaticFileSystemNudge;
   constructor() {
     super("navigator-files");
     this.registerRequiredCSS(sourcesNavigator_css_default);
-    const placeholder2 = new UI25.EmptyWidget.EmptyWidget(i18nString23(UIStrings24.noWorkspace), i18nString23(UIStrings24.explainWorkspace));
+    const placeholder2 = new UI26.EmptyWidget.EmptyWidget(i18nString24(UIStrings25.noWorkspace), i18nString24(UIStrings25.explainWorkspace));
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/workspaces/";
-    const link2 = UI25.XLink.XLink.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
-    this.#automaticFileSystemNudge = i18n49.i18n.getFormatLocalizedString(str_24, UIStrings24.automaticWorkspaceNudge, { PH1: link2 });
+    const link2 = UI26.XLink.XLink.create("https://goo.gle/devtools-automatic-workspace-folders", "com.chrome.devtools.json");
+    this.#automaticFileSystemNudge = i18n51.i18n.getFormatLocalizedString(str_25, UIStrings25.automaticWorkspaceNudge, { PH1: link2 });
     this.#automaticFileSystemNudge.classList.add("automatic-file-system-nudge");
     this.contentElement.insertBefore(this.#automaticFileSystemNudge, this.contentElement.firstChild);
     const toolbar4 = document.createElement("devtools-toolbar");
@@ -13795,22 +14028,22 @@ var FilesNavigatorView = class extends NavigatorView {
     this.#automaticFileSystemChanged({ data: this.#automaticFileSystemManager.automaticFileSystem });
   }
   willHide() {
-    Common18.EventTarget.removeEventListeners(this.#eventListeners);
+    Common19.EventTarget.removeEventListeners(this.#eventListeners);
     this.#automaticFileSystemChanged({ data: null });
     super.willHide();
   }
   sourceSelected(uiSourceCode, focusSource) {
-    Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.WorkspaceSourceSelected);
+    Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.WorkspaceSourceSelected);
     super.sourceSelected(uiSourceCode, focusSource);
   }
   acceptProject(project) {
-    if (project.type() === Workspace26.Workspace.projectTypes.ConnectableFileSystem) {
+    if (project.type() === Workspace28.Workspace.projectTypes.ConnectableFileSystem) {
       return true;
     }
-    return project.type() === Workspace26.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides" && !Snippets5.ScriptSnippetFileSystem.isSnippetsProject(project);
+    return project.type() === Workspace28.Workspace.projectTypes.FileSystem && Persistence18.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides" && !Snippets5.ScriptSnippetFileSystem.isSnippetsProject(project);
   }
   handleContextMenu(event) {
-    const contextMenu = new UI25.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
     contextMenu.defaultSection().appendAction("sources.add-folder-to-workspace", void 0, true);
     void contextMenu.show();
   }
@@ -13828,15 +14061,15 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
   toolbar;
   constructor() {
     super("navigator-overrides");
-    const placeholder2 = new UI25.EmptyWidget.EmptyWidget(i18nString23(UIStrings24.noLocalOverrides), i18nString23(UIStrings24.explainLocalOverrides));
+    const placeholder2 = new UI26.EmptyWidget.EmptyWidget(i18nString24(UIStrings25.noLocalOverrides), i18nString24(UIStrings25.explainLocalOverrides));
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/overrides/";
     this.toolbar = document.createElement("devtools-toolbar");
     this.toolbar.classList.add("navigator-toolbar");
     this.contentElement.insertBefore(this.toolbar, this.contentElement.firstChild);
-    Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged", this.updateProjectAndUI, this);
-    this.workspace().addEventListener(Workspace26.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
-    this.workspace().addEventListener(Workspace26.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
+    Persistence18.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("ProjectChanged", this.updateProjectAndUI, this);
+    this.workspace().addEventListener(Workspace28.Workspace.Events.ProjectAdded, this.onProjectAddOrRemoved, this);
+    this.workspace().addEventListener(Workspace28.Workspace.Events.ProjectRemoved, this.onProjectAddOrRemoved, this);
     this.updateProjectAndUI();
   }
   static instance(opts = { forceNew: null }) {
@@ -13848,14 +14081,14 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
   }
   onProjectAddOrRemoved(event) {
     const project = event.data;
-    if (project && project.type() === Workspace26.Workspace.projectTypes.FileSystem && Persistence16.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
+    if (project && project.type() === Workspace28.Workspace.projectTypes.FileSystem && Persistence18.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.fileSystemType(project) !== "overrides") {
       return;
     }
     this.updateUI();
   }
   updateProjectAndUI() {
     this.reset();
-    const project = Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
+    const project = Persistence18.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
     if (project) {
       this.tryAddProject(project);
     }
@@ -13863,61 +14096,61 @@ var OverridesNavigatorView = class _OverridesNavigatorView extends NavigatorView
   }
   updateUI() {
     this.toolbar.removeToolbarItems();
-    const project = Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
+    const project = Persistence18.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
     if (project) {
-      const enableCheckbox = new UI25.Toolbar.ToolbarSettingCheckbox(Common18.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled"));
+      const enableCheckbox = new UI26.Toolbar.ToolbarSettingCheckbox(Common19.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled"));
       this.toolbar.appendToolbarItem(enableCheckbox);
-      this.toolbar.appendToolbarItem(new UI25.Toolbar.ToolbarSeparator(true));
-      const clearButton = new UI25.Toolbar.ToolbarButton(i18nString23(UIStrings24.clearConfiguration), "clear");
+      this.toolbar.appendToolbarItem(new UI26.Toolbar.ToolbarSeparator(true));
+      const clearButton = new UI26.Toolbar.ToolbarButton(i18nString24(UIStrings25.clearConfiguration), "clear");
       clearButton.addEventListener("Click", () => {
-        Common18.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(false);
+        Common19.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(false);
         project.remove();
       });
       this.toolbar.appendToolbarItem(clearButton);
       return;
     }
-    const title = i18nString23(UIStrings24.selectFolderForOverrides);
-    const setupButton = new UI25.Toolbar.ToolbarButton(title, "plus", title);
+    const title = i18nString24(UIStrings25.selectFolderForOverrides);
+    const setupButton = new UI26.Toolbar.ToolbarButton(title, "plus", title);
     setupButton.addEventListener("Click", (_event) => {
       void this.setupNewWorkspace();
     }, this);
     this.toolbar.appendToolbarItem(setupButton);
   }
   async setupNewWorkspace() {
-    const fileSystem = await Persistence16.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem("overrides");
+    const fileSystem = await Persistence18.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem("overrides");
     if (!fileSystem) {
       return;
     }
-    Common18.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
+    Common19.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").set(true);
   }
   sourceSelected(uiSourceCode, focusSource) {
-    Host11.userMetrics.actionTaken(Host11.UserMetrics.Action.OverridesSourceSelected);
+    Host12.userMetrics.actionTaken(Host12.UserMetrics.Action.OverridesSourceSelected);
     super.sourceSelected(uiSourceCode, focusSource);
   }
   acceptProject(project) {
-    return project === Persistence16.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
+    return project === Persistence18.NetworkPersistenceManager.NetworkPersistenceManager.instance().project();
   }
 };
 var ContentScriptsNavigatorView = class extends NavigatorView {
   constructor() {
     super("navigator-content-scripts");
-    const placeholder2 = new UI25.EmptyWidget.EmptyWidget(i18nString23(UIStrings24.noContentScripts), i18nString23(UIStrings24.explainContentScripts));
+    const placeholder2 = new UI26.EmptyWidget.EmptyWidget(i18nString24(UIStrings25.noContentScripts), i18nString24(UIStrings25.explainContentScripts));
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/extensions/content_scripts";
   }
   acceptProject(project) {
-    return project.type() === Workspace26.Workspace.projectTypes.ContentScripts;
+    return project.type() === Workspace28.Workspace.projectTypes.ContentScripts;
   }
 };
 var SnippetsNavigatorView = class extends NavigatorView {
   constructor() {
     super("navigator-snippets");
-    const placeholder2 = new UI25.EmptyWidget.EmptyWidget(i18nString23(UIStrings24.noSnippets), i18nString23(UIStrings24.explainSnippets));
+    const placeholder2 = new UI26.EmptyWidget.EmptyWidget(i18nString24(UIStrings25.noSnippets), i18nString24(UIStrings25.explainSnippets));
     this.setPlaceholder(placeholder2);
     placeholder2.link = "https://developer.chrome.com/docs/devtools/javascript/snippets/";
     const toolbar4 = document.createElement("devtools-toolbar");
     toolbar4.classList.add("navigator-toolbar");
-    const newButton = new UI25.Toolbar.ToolbarButton(i18nString23(UIStrings24.newSnippet), "plus", i18nString23(UIStrings24.newSnippet), "sources.new-snippet");
+    const newButton = new UI26.Toolbar.ToolbarButton(i18nString24(UIStrings25.newSnippet), "plus", i18nString24(UIStrings25.newSnippet), "sources.new-snippet");
     newButton.addEventListener("Click", (_event) => {
       void this.create(Snippets5.ScriptSnippetFileSystem.findSnippetsProject(), "");
     });
@@ -13928,51 +14161,51 @@ var SnippetsNavigatorView = class extends NavigatorView {
     return Snippets5.ScriptSnippetFileSystem.isSnippetsProject(project);
   }
   handleContextMenu(event) {
-    const contextMenu = new UI25.ContextMenu.ContextMenu(event);
-    contextMenu.headerSection().appendItem(i18nString23(UIStrings24.createNewSnippet), () => this.create(Snippets5.ScriptSnippetFileSystem.findSnippetsProject(), ""), { jslogContext: "create-new-snippet" });
+    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
+    contextMenu.headerSection().appendItem(i18nString24(UIStrings25.createNewSnippet), () => this.create(Snippets5.ScriptSnippetFileSystem.findSnippetsProject(), ""), { jslogContext: "create-new-snippet" });
     void contextMenu.show();
   }
   handleFileContextMenu(event, node) {
     const uiSourceCode = node.uiSourceCode();
-    const contextMenu = new UI25.ContextMenu.ContextMenu(event);
-    contextMenu.headerSection().appendItem(i18nString23(UIStrings24.run), () => Snippets5.ScriptSnippetFileSystem.evaluateScriptSnippet(uiSourceCode), { jslogContext: "run" });
-    contextMenu.editSection().appendItem(i18nString23(UIStrings24.rename), () => this.rename(node, false), { jslogContext: "rename" });
-    contextMenu.editSection().appendItem(i18nString23(UIStrings24.remove), () => uiSourceCode.project().deleteFile(uiSourceCode), { jslogContext: "remove" });
-    contextMenu.saveSection().appendItem(i18nString23(UIStrings24.saveAs), this.handleSaveAs.bind(this, uiSourceCode), { jslogContext: "save-as" });
+    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
+    contextMenu.headerSection().appendItem(i18nString24(UIStrings25.run), () => Snippets5.ScriptSnippetFileSystem.evaluateScriptSnippet(uiSourceCode), { jslogContext: "run" });
+    contextMenu.editSection().appendItem(i18nString24(UIStrings25.rename), () => this.rename(node, false), { jslogContext: "rename" });
+    contextMenu.editSection().appendItem(i18nString24(UIStrings25.remove), () => uiSourceCode.project().deleteFile(uiSourceCode), { jslogContext: "remove" });
+    contextMenu.saveSection().appendItem(i18nString24(UIStrings25.saveAs), this.handleSaveAs.bind(this, uiSourceCode), { jslogContext: "save-as" });
     void contextMenu.show();
   }
   async handleSaveAs(uiSourceCode) {
     uiSourceCode.commitWorkingCopy();
     const contentData = await uiSourceCode.requestContentData();
-    if (TextUtils12.ContentData.ContentData.isError(contentData)) {
+    if (TextUtils13.ContentData.ContentData.isError(contentData)) {
       console.error(`Failed to retrieve content for ${uiSourceCode.url()}: ${contentData}`);
-      Common18.Console.Console.instance().error(
-        i18nString23(UIStrings24.saveAsFailed),
+      Common19.Console.Console.instance().error(
+        i18nString24(UIStrings25.saveAsFailed),
         /* show=*/
         false
       );
       return;
     }
-    await Workspace26.FileManager.FileManager.instance().save(
+    await Workspace28.FileManager.FileManager.instance().save(
       this.addJSExtension(uiSourceCode.url()),
       contentData,
       /* forceSaveAs=*/
       true
     );
-    Workspace26.FileManager.FileManager.instance().close(uiSourceCode.url());
+    Workspace28.FileManager.FileManager.instance().close(uiSourceCode.url());
   }
   addJSExtension(url) {
-    return Common18.ParsedURL.ParsedURL.concatenate(url, ".js");
+    return Common19.ParsedURL.ParsedURL.concatenate(url, ".js");
   }
 };
 var ActionDelegate5 = class {
   handleAction(_context, actionId) {
     switch (actionId) {
       case "sources.create-snippet":
-        void Snippets5.ScriptSnippetFileSystem.findSnippetsProject().createFile(Platform14.DevToolsPath.EmptyEncodedPathString, null, "").then((uiSourceCode) => Common18.Revealer.reveal(uiSourceCode));
+        void Snippets5.ScriptSnippetFileSystem.findSnippetsProject().createFile(Platform15.DevToolsPath.EmptyEncodedPathString, null, "").then((uiSourceCode) => Common19.Revealer.reveal(uiSourceCode));
         return true;
       case "sources.add-folder-to-workspace":
-        void Persistence16.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
+        void Persistence18.IsolatedFileSystemManager.IsolatedFileSystemManager.instance().addFileSystem();
         return true;
     }
     return false;
@@ -13985,11 +14218,11 @@ __export(WatchExpressionsSidebarPane_exports, {
   WatchExpression: () => WatchExpression,
   WatchExpressionsSidebarPane: () => WatchExpressionsSidebarPane
 });
-import * as Common19 from "./../../core/common/common.js";
-import * as Host12 from "./../../core/host/host.js";
-import * as i18n51 from "./../../core/i18n/i18n.js";
-import * as Platform15 from "./../../core/platform/platform.js";
-import * as SDK15 from "./../../core/sdk/sdk.js";
+import * as Common20 from "./../../core/common/common.js";
+import * as Host13 from "./../../core/host/host.js";
+import * as i18n53 from "./../../core/i18n/i18n.js";
+import * as Platform16 from "./../../core/platform/platform.js";
+import * as SDK16 from "./../../core/sdk/sdk.js";
 import * as Formatter3 from "./../../models/formatter/formatter.js";
 import * as SourceMapScopes4 from "./../../models/source_map_scopes/source_map_scopes.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
@@ -14105,7 +14338,7 @@ var objectValue_css_default = `/*
 
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
 import * as Components4 from "./../../ui/legacy/components/utils/utils.js";
-import * as UI26 from "./../../ui/legacy/legacy.js";
+import * as UI27 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging15 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/sources/watchExpressionsSidebarPane.css.js
@@ -14274,8 +14507,7 @@ li.watch-expression-editing::before {
 /*# sourceURL=${import.meta.resolve("./watchExpressionsSidebarPane.css")} */`;
 
 // gen/front_end/panels/sources/WatchExpressionsSidebarPane.js
-var _a;
-var UIStrings25 = {
+var UIStrings26 = {
   /**
    * @description A context menu item in the Watch Expressions Sidebar Pane of the Sources panel
    */
@@ -14313,10 +14545,10 @@ var UIStrings25 = {
    */
   watchExpressionDeleted: "Watch expression deleted"
 };
-var str_25 = i18n51.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings25);
-var i18nString24 = i18n51.i18n.getLocalizedString.bind(void 0, str_25);
+var str_26 = i18n53.i18n.registerUIStrings("panels/sources/WatchExpressionsSidebarPane.ts", UIStrings26);
+var i18nString25 = i18n53.i18n.getLocalizedString.bind(void 0, str_26);
 var watchExpressionsSidebarPaneInstance;
-var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI26.ThrottledWidget.ThrottledWidget {
+var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI27.ThrottledWidget.ThrottledWidget {
   watchExpressions;
   emptyElement;
   watchExpressionsSetting;
@@ -14329,8 +14561,8 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     super(true);
     this.registerRequiredCSS(watchExpressionsSidebarPane_css_default, objectValue_css_default);
     this.watchExpressions = [];
-    this.watchExpressionsSetting = Common19.Settings.Settings.instance().createLocalSetting("watch-expressions", []);
-    this.addButton = new UI26.Toolbar.ToolbarButton(i18nString24(UIStrings25.addWatchExpression), "plus", void 0, "add-watch-expression");
+    this.watchExpressionsSetting = Common20.Settings.Settings.instance().createLocalSetting("watch-expressions", []);
+    this.addButton = new UI27.Toolbar.ToolbarButton(i18nString25(UIStrings26.addWatchExpression), "plus", void 0, "add-watch-expression");
     this.addButton.setSize(
       "SMALL"
       /* Buttons.Button.Size.SMALL */
@@ -14338,7 +14570,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.addButton.addEventListener("Click", (_event) => {
       void this.addButtonClicked();
     });
-    this.refreshButton = new UI26.Toolbar.ToolbarButton(i18nString24(UIStrings25.refreshWatchExpressions), "refresh", void 0, "refresh-watch-expressions");
+    this.refreshButton = new UI27.Toolbar.ToolbarButton(i18nString25(UIStrings26.refreshWatchExpressions), "refresh", void 0, "refresh-watch-expressions");
     this.refreshButton.setSize(
       "SMALL"
       /* Buttons.Button.Size.SMALL */
@@ -14355,8 +14587,8 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
       true
     );
     this.expandController = new ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSectionsTreeExpandController(this.treeOutline);
-    UI26.Context.Context.instance().addFlavorChangeListener(SDK15.RuntimeModel.ExecutionContext, this.update, this);
-    UI26.Context.Context.instance().addFlavorChangeListener(SDK15.DebuggerModel.CallFrame, this.update, this);
+    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.RuntimeModel.ExecutionContext, this.update, this);
+    UI27.Context.Context.instance().addFlavorChangeListener(SDK16.DebuggerModel.CallFrame, this.update, this);
     this.linkifier = new Components4.Linkifier.Linkifier();
     this.update();
   }
@@ -14388,7 +14620,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.watchExpressionsSetting.set(toSave);
   }
   async addButtonClicked() {
-    await UI26.ViewManager.ViewManager.instance().showView("sources.watch");
+    await UI27.ViewManager.ViewManager.instance().showView("sources.watch");
     this.emptyElement.classList.add("hidden");
     this.createWatchExpression(null).startEditing();
   }
@@ -14398,7 +14630,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.treeOutline.removeChildren();
     this.watchExpressions = [];
     this.emptyElement = this.contentElement.createChild("div", "gray-info-message");
-    this.emptyElement.textContent = i18nString24(UIStrings25.noWatchExpressions);
+    this.emptyElement.textContent = i18nString25(UIStrings26.noWatchExpressions);
     this.emptyElement.tabIndex = -1;
     const watchExpressionStrings = this.watchExpressionsSetting.get();
     if (watchExpressionStrings.length) {
@@ -14415,7 +14647,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   createWatchExpression(expression) {
     this.contentElement.appendChild(this.treeOutline.element);
     const watchExpression = new WatchExpression(expression, this.expandController, this.linkifier);
-    UI26.ARIAUtils.setLabel(this.contentElement, i18nString24(UIStrings25.addWatchExpression));
+    UI27.ARIAUtils.setLabel(this.contentElement, i18nString25(UIStrings26.addWatchExpression));
     watchExpression.addEventListener("ExpressionUpdated", this.watchExpressionUpdated, this);
     this.treeOutline.appendChild(watchExpression.treeElement());
     this.watchExpressions.push(watchExpression);
@@ -14423,7 +14655,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   }
   watchExpressionUpdated({ data: watchExpression }) {
     if (!watchExpression.expression()) {
-      Platform15.ArrayUtilities.removeElement(this.watchExpressions, watchExpression);
+      Platform16.ArrayUtilities.removeElement(this.watchExpressions, watchExpression);
       this.treeOutline.removeChild(watchExpression.treeElement());
       this.emptyElement.classList.toggle("hidden", Boolean(this.watchExpressions.length));
       if (this.watchExpressions.length === 0) {
@@ -14433,7 +14665,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.saveExpressions();
   }
   contextMenu(event) {
-    const contextMenu = new UI26.ContextMenu.ContextMenu(event);
+    const contextMenu = new UI27.ContextMenu.ContextMenu(event);
     this.populateContextMenu(contextMenu, event);
     void contextMenu.show();
   }
@@ -14443,10 +14675,10 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
       isEditing = isEditing || watchExpression.isEditing();
     }
     if (!isEditing) {
-      contextMenu.debugSection().appendItem(i18nString24(UIStrings25.addWatchExpression), this.addButtonClicked.bind(this), { jslogContext: "add-watch-expression" });
+      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.addWatchExpression), this.addButtonClicked.bind(this), { jslogContext: "add-watch-expression" });
     }
     if (this.watchExpressions.length > 1) {
-      contextMenu.debugSection().appendItem(i18nString24(UIStrings25.deleteAllWatchExpressions), this.deleteAllButtonClicked.bind(this), { jslogContext: "delete-all-watch-expressions" });
+      contextMenu.debugSection().appendItem(i18nString25(UIStrings26.deleteAllWatchExpressions), this.deleteAllButtonClicked.bind(this), { jslogContext: "delete-all-watch-expressions" });
     }
     const treeElement = this.treeOutline.treeElementFromEvent(event);
     if (!treeElement) {
@@ -14463,13 +14695,13 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     this.update();
   }
   async focusAndAddExpressionToWatch(expression) {
-    await UI26.ViewManager.ViewManager.instance().showView("sources.watch");
+    await UI27.ViewManager.ViewManager.instance().showView("sources.watch");
     this.createWatchExpression(expression);
     this.saveExpressions();
     this.update();
   }
   handleAction(_context, _actionId) {
-    const frame = UI26.Context.Context.instance().flavor(UISourceCodeFrame);
+    const frame = UI27.Context.Context.instance().flavor(UISourceCodeFrame);
     if (!frame) {
       return false;
     }
@@ -14481,7 +14713,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
   appendApplicableItems(_event, contextMenu, target) {
     if (target instanceof ObjectUI4.ObjectPropertiesSection.ObjectPropertyTreeElement) {
       if (!target.property.synthetic) {
-        contextMenu.debugSection().appendItem(i18nString24(UIStrings25.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()), { jslogContext: "add-property-path-to-watch" });
+        contextMenu.debugSection().appendItem(i18nString25(UIStrings26.addPropertyPathToWatch), () => this.focusAndAddExpressionToWatch(target.path()), { jslogContext: "add-property-path-to-watch" });
       }
       return;
     }
@@ -14491,7 +14723,7 @@ var WatchExpressionsSidebarPane = class _WatchExpressionsSidebarPane extends UI2
     contextMenu.debugSection().appendAction("sources.add-to-watch");
   }
 };
-var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
+var WatchExpression = class _WatchExpression extends Common20.ObjectWrapper.ObjectWrapper {
   #treeElement;
   nameElement;
   valueElement;
@@ -14533,7 +14765,7 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
     return await executionContext.evaluate(
       {
         expression,
-        objectGroup: _a.watchObjectGroupId,
+        objectGroup: _WatchExpression.watchObjectGroupId,
         includeCommandLineAPI: false,
         silent: true,
         returnByValue: false,
@@ -14546,7 +14778,7 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
     );
   }
   update() {
-    const currentExecutionContext = UI26.Context.Context.instance().flavor(SDK15.RuntimeModel.ExecutionContext);
+    const currentExecutionContext = UI27.Context.Context.instance().flavor(SDK16.RuntimeModel.ExecutionContext);
     if (currentExecutionContext && this.#expression) {
       void this.#evaluateExpression(currentExecutionContext, this.#expression).then((result) => {
         if ("object" in result) {
@@ -14611,7 +14843,7 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
   }
   deleteWatchExpression(event) {
     event.consume(true);
-    UI26.ARIAUtils.LiveAnnouncer.alert(i18nString24(UIStrings25.watchExpressionDeleted));
+    UI27.ARIAUtils.LiveAnnouncer.alert(i18nString25(UIStrings26.watchExpressionDeleted));
     this.updateExpression(null);
   }
   createWatchExpression(result, exceptionDetails) {
@@ -14637,7 +14869,7 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
       jslogContext: "delete-watch-expression"
     };
     deleteButton.className = "watch-expression-delete-button";
-    UI26.Tooltip.Tooltip.install(deleteButton, i18nString24(UIStrings25.deleteWatchExpression));
+    UI27.Tooltip.Tooltip.install(deleteButton, i18nString25(UIStrings26.deleteWatchExpression));
     deleteButton.addEventListener("click", this.deleteWatchExpression.bind(this), false);
     deleteButton.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
@@ -14647,15 +14879,15 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
     const titleElement = headerElement.createChild("div", "watch-expression-title tree-element-title");
     titleElement.appendChild(deleteButton);
     this.nameElement = ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSection.createNameElement(this.#expression);
-    UI26.Tooltip.Tooltip.install(this.nameElement, this.#expression);
+    UI27.Tooltip.Tooltip.install(this.nameElement, this.#expression);
     if (Boolean(exceptionDetails) || !expressionValue) {
       this.valueElement = document.createElement("span");
       this.valueElement.classList.add("watch-expression-error");
       this.valueElement.classList.add("value");
       titleElement.classList.add("dimmed");
-      this.valueElement.textContent = i18nString24(UIStrings25.notAvailable);
+      this.valueElement.textContent = i18nString25(UIStrings26.notAvailable);
       if (exceptionDetails?.exception?.description !== void 0) {
-        UI26.Tooltip.Tooltip.install(this.valueElement, exceptionDetails.exception.description);
+        UI27.Tooltip.Tooltip.install(this.valueElement, exceptionDetails.exception.description);
       }
     } else {
       const propertyValue = ObjectUI4.ObjectPropertiesSection.ObjectPropertiesSection.createPropertyValueWithCustomSupport(expressionValue, Boolean(exceptionDetails), false, this.linkifier);
@@ -14678,7 +14910,7 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
       this.#treeElement.listItemElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
     } else {
       headerElement.addEventListener("dblclick", this.dblClickOnWatchExpression.bind(this));
-      this.#treeElement = new UI26.TreeOutline.TreeElement();
+      this.#treeElement = new UI27.TreeOutline.TreeElement();
     }
     this.#treeElement.title = this.element;
     this.#treeElement.listItemElement.classList.add("watch-expression-tree-item");
@@ -14712,29 +14944,28 @@ var WatchExpression = class extends Common19.ObjectWrapper.ObjectWrapper {
     }
   }
   promptKeyDown(event) {
-    const isEscapeKey = Platform15.KeyboardUtilities.isEscKey(event);
+    const isEscapeKey = Platform16.KeyboardUtilities.isEscKey(event);
     if (event.key === "Enter" || isEscapeKey) {
       this.finishEditing(event, isEscapeKey);
     }
   }
   populateContextMenu(contextMenu, event) {
     if (!this.isEditing()) {
-      contextMenu.editSection().appendItem(i18nString24(UIStrings25.deleteWatchExpression), this.updateExpression.bind(this, null), { jslogContext: "delete-watch-expression" });
+      contextMenu.editSection().appendItem(i18nString25(UIStrings26.deleteWatchExpression), this.updateExpression.bind(this, null), { jslogContext: "delete-watch-expression" });
     }
     if (!this.isEditing() && this.result && (this.result.type === "number" || this.result.type === "string")) {
-      contextMenu.clipboardSection().appendItem(i18nString24(UIStrings25.copyValue), this.copyValueButtonClicked.bind(this), { jslogContext: "copy-watch-expression-value" });
+      contextMenu.clipboardSection().appendItem(i18nString25(UIStrings26.copyValue), this.copyValueButtonClicked.bind(this), { jslogContext: "copy-watch-expression-value" });
     }
-    const target = UI26.UIUtils.deepElementFromEvent(event);
+    const target = UI27.UIUtils.deepElementFromEvent(event);
     if (target && this.valueElement.isSelfOrAncestor(target) && this.result) {
       contextMenu.appendApplicableItems(this.result);
     }
   }
   copyValueButtonClicked() {
-    Host12.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.valueElement.textContent);
+    Host13.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(this.valueElement.textContent);
   }
   static watchObjectGroupId = "watch-group";
 };
-_a = WatchExpression;
 export {
   AddSourceMapURLDialog_exports as AddSourceMapURLDialog,
   AiCodeCompletionPlugin_exports as AiCodeCompletionPlugin,
@@ -14756,6 +14987,7 @@ export {
   NavigatorView_exports as NavigatorView,
   OpenFileQuickOpen_exports as OpenFileQuickOpen,
   OutlineQuickOpen_exports as OutlineQuickOpen,
+  PersistenceActions_exports as PersistenceActions,
   Plugin_exports as Plugin,
   ResourceOriginPlugin_exports as ResourceOriginPlugin,
   ScopeChainSidebarPane_exports as ScopeChainSidebarPane,

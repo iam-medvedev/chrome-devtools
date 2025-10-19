@@ -1,6 +1,7 @@
 // Copyright 2011 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+var _a;
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Common from '../common/common.js';
 import * as Host from '../host/host.js';
@@ -50,6 +51,10 @@ const UIStrings = {
      * @description Text in Network Manager representing the "Fast 4G" throttling preset
      */
     fast4G: 'Fast 4G',
+    /**
+     * @description Text in Network Manager representing the "Blocking" throttling preset
+     */
+    block: 'Block',
     /**
      * @description Text in Network Manager
      * @example {https://example.com} PH1
@@ -137,6 +142,8 @@ export class NetworkManager extends SDKModel {
         }
         void this.#networkAgent.invoke_enable({
             maxPostDataSize: MAX_EAGER_POST_REQUEST_BODY_LENGTH,
+            enableDurableMessages: Root.Runtime.hostConfig.devToolsEnableDurableMessages?.enabled,
+            maxTotalBufferSize: MAX_RESPONSE_BODY_TOTAL_BUFFER_LENGTH,
             reportDirectSocketTraffic: true,
         });
         void this.#networkAgent.invoke_setAttachDebugStack({ enabled: true });
@@ -364,6 +371,11 @@ export var Events;
  * @see https://docs.google.com/document/d/10lfVdS1iDWCRKQXPfbxEn4Or99D64mvNlugP1AQuFlE/edit for historical context.
  * @see https://crbug.com/342406608#comment10 for context around the addition of 4G presets in June 2024.
  */
+export const BlockingConditions = {
+    key: "BLOCKING" /* PredefinedThrottlingConditionKey.BLOCKING */,
+    block: true,
+    title: i18nLazyString(UIStrings.block),
+};
 export const NoThrottlingConditions = {
     key: "NO_THROTTLING" /* PredefinedThrottlingConditionKey.NO_THROTTLING */,
     title: i18nLazyString(UIStrings.noThrottling),
@@ -422,6 +434,7 @@ export const Fast4GConditions = {
     targetLatency: fast4GTargetLatency,
 };
 const MAX_EAGER_POST_REQUEST_BODY_LENGTH = 64 * 1024; // bytes
+const MAX_RESPONSE_BODY_TOTAL_BUFFER_LENGTH = 250 * 1024 * 1024; // bytes
 export class FetchDispatcher {
     #fetchAgent;
     #manager;
@@ -1267,6 +1280,273 @@ export class NetworkDispatcher {
         return `${host}:${port}`;
     }
 }
+export class RequestURLPattern {
+    constructorString;
+    pattern;
+    constructor(constructorString, pattern) {
+        this.constructorString = constructorString;
+        this.pattern = pattern;
+        if (pattern.hasRegExpGroups) {
+            throw new Error('RegExp groups are not allowed');
+        }
+    }
+    static isValidPattern(pattern) {
+        try {
+            const urlPattern = new URLPattern(pattern);
+            return urlPattern.hasRegExpGroups ? "has-regexp-groups" /* RequestURLPatternValidity.HAS_REGEXP_GROUPS */ : "valid" /* RequestURLPatternValidity.VALID */;
+        }
+        catch {
+            return "failed-to-parse" /* RequestURLPatternValidity.FAILED_TO_PARSE */;
+        }
+    }
+    static create(constructorString) {
+        try {
+            const urlPattern = new URLPattern(constructorString);
+            return urlPattern.hasRegExpGroups ? null : new RequestURLPattern(constructorString, urlPattern);
+        }
+        catch {
+            return null;
+        }
+    }
+    static upgradeFromWildcard(pattern) {
+        const tryCreate = (constructorString) => {
+            const result = this.create(constructorString);
+            if (result?.pattern.protocol === 'localhost' && result?.pattern.hostname === '') {
+                // localhost:1234 parses as a valid pattern, do the right thing here instead
+                return tryCreate(`*://${constructorString}`);
+            }
+            return result;
+        };
+        return tryCreate(pattern) // try as is
+            ??
+                // Try to upgrade patterns created from the network panel, which either blocks the full url (sans
+                // protocol) or just the domain name. In both cases the wildcard patterns had implicit wildcards at the end.
+                // We explicitly add that here, which will match both domain names without path (implicitly setting pathname
+                // to '*') and urls with path (appending * to the pathname).
+                tryCreate(`*://${pattern}*`);
+    }
+}
+export class RequestCondition extends Common.ObjectWrapper.ObjectWrapper {
+    #pattern;
+    #enabled;
+    #conditions;
+    static createFromSetting(setting) {
+        if ('urlPattern' in setting) {
+            const pattern = RequestURLPattern.create(setting.urlPattern) ?? {
+                wildcardURL: setting.urlPattern,
+                upgradedPattern: RequestURLPattern.upgradeFromWildcard(setting.urlPattern) ?? undefined,
+            };
+            const conditions = getPredefinedOrBlockingCondition(setting.conditions) ??
+                customUserNetworkConditionsSetting().get().find(condition => condition.key === setting.conditions) ??
+                NoThrottlingConditions;
+            return new this(pattern, setting.enabled, conditions);
+        }
+        const pattern = {
+            wildcardURL: setting.url,
+            upgradedPattern: RequestURLPattern.upgradeFromWildcard(setting.url) ?? undefined
+        };
+        return new this(pattern, setting.enabled, BlockingConditions);
+    }
+    static create(pattern, conditions) {
+        return new this(pattern, /* enabled=*/ true, conditions);
+    }
+    constructor(pattern, enabled, conditions) {
+        super();
+        this.#pattern = pattern;
+        this.#enabled = enabled;
+        this.#conditions = conditions;
+    }
+    get constructorString() {
+        return this.#pattern instanceof RequestURLPattern ? this.#pattern.constructorString :
+            this.#pattern.upgradedPattern?.constructorString;
+    }
+    get wildcardURL() {
+        return 'wildcardURL' in this.#pattern ? this.#pattern.wildcardURL : undefined;
+    }
+    get constructorStringOrWildcardURL() {
+        return this.#pattern instanceof RequestURLPattern ?
+            this.#pattern.constructorString :
+            (this.#pattern.upgradedPattern?.constructorString ?? this.#pattern.wildcardURL);
+    }
+    set pattern(pattern) {
+        if (typeof pattern === 'string') {
+            // TODO(pfaffe) Remove once the feature flag is no longer required
+            if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
+                throw new Error('Should not use wildcard urls');
+            }
+            this.#pattern = {
+                wildcardURL: pattern,
+                upgradedPattern: RequestURLPattern.upgradeFromWildcard(pattern) ?? undefined
+            };
+        }
+        else {
+            this.#pattern = pattern;
+        }
+        this.dispatchEventToListeners("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */);
+    }
+    get enabled() {
+        return this.#enabled;
+    }
+    set enabled(enabled) {
+        this.#enabled = enabled;
+        this.dispatchEventToListeners("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */);
+    }
+    get conditions() {
+        return this.#conditions;
+    }
+    set conditions(conditions) {
+        this.#conditions = conditions;
+        this.dispatchEventToListeners("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */);
+    }
+    toSetting() {
+        const enabled = this.enabled;
+        if (this.#pattern instanceof RequestURLPattern) {
+            return { enabled, urlPattern: this.#pattern.constructorString, conditions: this.#conditions.key };
+        }
+        if (this.#conditions !== BlockingConditions && this.#pattern.upgradedPattern) {
+            return { enabled, urlPattern: this.#pattern.upgradedPattern.constructorString, conditions: this.#conditions.key };
+        }
+        return { enabled, url: this.#pattern.wildcardURL };
+    }
+    get originalOrUpgradedURLPattern() {
+        return this.#pattern instanceof RequestURLPattern ? this.#pattern.pattern : this.#pattern.upgradedPattern?.pattern;
+    }
+}
+export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
+    #setting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
+    #conditionsEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
+    #conditions = [];
+    constructor() {
+        super();
+        for (const condition of this.#setting.get()) {
+            try {
+                this.#conditions.push(RequestCondition.createFromSetting(condition));
+            }
+            catch (e) {
+                console.error('Error loading throttling settings: ', e);
+            }
+        }
+        for (const condition of this.#conditions) {
+            condition.addEventListener("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */, this.#conditionsChanged, this);
+        }
+        this.#conditionsEnabledSetting.addChangeListener(() => this.dispatchEventToListeners("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */));
+    }
+    get count() {
+        return this.#conditions.length;
+    }
+    get conditionsEnabled() {
+        return this.#conditionsEnabledSetting.get();
+    }
+    set conditionsEnabled(enabled) {
+        if (this.#conditionsEnabledSetting.get() === enabled) {
+            return;
+        }
+        this.#conditionsEnabledSetting.set(enabled);
+    }
+    findCondition(pattern) {
+        if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
+            return this.#conditions.find(condition => condition.constructorString === pattern);
+        }
+        return this.#conditions.find(condition => condition.wildcardURL === pattern);
+    }
+    has(url) {
+        return Boolean(this.findCondition(url));
+    }
+    add(...conditions) {
+        this.#conditions.push(...conditions);
+        for (const condition of conditions) {
+            condition.addEventListener("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */, this.#conditionsChanged, this);
+        }
+        this.#conditionsChanged();
+    }
+    delete(condition) {
+        const index = this.#conditions.indexOf(condition);
+        if (index < 0) {
+            return;
+        }
+        condition.removeEventListener("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */, this.#conditionsChanged, this);
+        this.#conditions.splice(index, 1);
+        this.#conditionsChanged();
+    }
+    clear() {
+        this.#conditions.splice(0);
+        this.#conditionsChanged();
+        for (const condition of this.#conditions) {
+            condition.removeEventListener("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */, this.#conditionsChanged, this);
+        }
+    }
+    #conditionsChanged() {
+        this.#setting.set(this.#conditions.map(condition => condition.toSetting()));
+        this.dispatchEventToListeners("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */);
+    }
+    get conditions() {
+        return this.#conditions.values();
+    }
+    applyConditions(offline, globalConditions, ...agents) {
+        function isNonBlockingCondition(condition) {
+            return !('block' in condition);
+        }
+        if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
+            const urlPatterns = [];
+            const matchedNetworkConditions = [];
+            if (this.conditionsEnabled) {
+                for (const condition of this.#conditions) {
+                    const urlPattern = condition.constructorString;
+                    const conditions = condition.conditions;
+                    if (!condition.enabled || !urlPattern || conditions === NoThrottlingConditions) {
+                        continue;
+                    }
+                    const block = !isNonBlockingCondition(conditions);
+                    urlPatterns.push({ urlPattern, block });
+                    if (!block) {
+                        matchedNetworkConditions.push({
+                            urlPattern,
+                            latency: conditions.latency,
+                            downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
+                            uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+                            packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+                            packetQueueLength: conditions.packetQueueLength,
+                            packetReordering: conditions.packetReordering,
+                            connectionType: NetworkManager.connectionType(conditions),
+                        });
+                    }
+                }
+                if (globalConditions) {
+                    matchedNetworkConditions.push({
+                        urlPattern: '',
+                        latency: globalConditions.latency,
+                        downloadThroughput: globalConditions.download < 0 ? 0 : globalConditions.download,
+                        uploadThroughput: globalConditions.upload < 0 ? 0 : globalConditions.upload,
+                        packetLoss: (globalConditions.packetLoss ?? 0) < 0 ? 0 : globalConditions.packetLoss,
+                        packetQueueLength: globalConditions.packetQueueLength,
+                        packetReordering: globalConditions.packetReordering,
+                        connectionType: NetworkManager.connectionType(globalConditions),
+                    });
+                }
+            }
+            for (const agent of agents) {
+                void agent.invoke_setBlockedURLs({ urlPatterns });
+                void agent.invoke_emulateNetworkConditionsByRule({ offline, matchedNetworkConditions });
+                void agent.invoke_overrideNetworkState({
+                    offline,
+                    latency: globalConditions?.latency ?? 0,
+                    downloadThroughput: !globalConditions || globalConditions.download < 0 ? 0 : globalConditions.download,
+                    uploadThroughput: !globalConditions || globalConditions.upload < 0 ? 0 : globalConditions.upload,
+                });
+            }
+            return urlPatterns.length > 0;
+        }
+        const urls = this.conditionsEnabled ?
+            this.#conditions.filter(condition => condition.enabled && condition.wildcardURL)
+                .map(condition => condition.wildcardURL) :
+            [];
+        for (const agent of agents) {
+            void agent.invoke_setBlockedURLs({ urls });
+        }
+        return urls.length > 0;
+    }
+}
+_a = RequestConditions;
 let multiTargetNetworkManagerInstance;
 export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper {
     #userAgentOverride = '';
@@ -1277,12 +1557,11 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     inflightMainResourceRequests = new Map();
     #networkConditions = NoThrottlingConditions;
     #updatingInterceptionPatternsPromise = null;
-    #blockingEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
-    #blockedPatternsSetting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
-    #effectiveBlockedURLs = [];
+    #requestConditions = new RequestConditions();
     #urlsForRequestInterceptor = new Platform.MapUtilities.Multimap();
     #extraHeaders;
     #customUserAgent;
+    #isBlocking = false;
     constructor() {
         super();
         // TODO(allada) Remove these and merge it with request interception.
@@ -1290,8 +1569,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             this.updateBlockedPatterns();
             this.dispatchEventToListeners("BlockedPatternsChanged" /* MultitargetNetworkManager.Events.BLOCKED_PATTERNS_CHANGED */);
         };
-        this.#blockingEnabledSetting.addChangeListener(blockedPatternChanged);
-        this.#blockedPatternsSetting.addChangeListener(blockedPatternChanged);
+        this.#requestConditions.addEventListener("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */, blockedPatternChanged);
         this.updateBlockedPatterns();
         TargetManager.instance().observeModels(NetworkManager, this);
     }
@@ -1347,9 +1625,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         if (this.currentUserAgent()) {
             void networkAgent.invoke_setUserAgentOverride({ userAgent: this.currentUserAgent(), userAgentMetadata: this.#userAgentMetadataOverride || undefined });
         }
-        if (this.#effectiveBlockedURLs.length) {
-            void networkAgent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
-        }
+        this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, networkAgent);
         if (this.isIntercepting()) {
             void fetchAgent.invoke_enable({ patterns: this.#urlsForRequestInterceptor.valuesArray() });
         }
@@ -1361,7 +1637,7 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         }
         this.#networkAgents.add(networkAgent);
         this.#fetchAgents.add(fetchAgent);
-        if (this.isThrottling()) {
+        if (this.isThrottling() && !Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
             this.updateNetworkConditions(networkAgent);
         }
     }
@@ -1385,8 +1661,13 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
     }
     setNetworkConditions(conditions) {
         this.#networkConditions = conditions;
-        for (const agent of this.#networkAgents) {
-            this.updateNetworkConditions(agent);
+        if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
+            this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, ...this.#networkAgents);
+        }
+        else {
+            for (const agent of this.#networkAgents) {
+                this.updateNetworkConditions(agent);
+            }
         }
         this.dispatchEventToListeners("ConditionsChanged" /* MultitargetNetworkManager.Events.CONDITIONS_CHANGED */);
     }
@@ -1474,41 +1755,29 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
             }
         }
     }
-    // TODO(allada) Move all request blocking into interception and let view manage blocking.
-    blockedPatterns() {
-        return this.#blockedPatternsSetting.get().slice();
-    }
-    blockingEnabled() {
-        return this.#blockingEnabledSetting.get();
+    get requestConditions() {
+        return this.#requestConditions;
     }
     isBlocking() {
-        return Boolean(this.#effectiveBlockedURLs.length);
+        return this.#isBlocking && this.requestConditions.conditionsEnabled;
     }
-    setBlockedPatterns(patterns) {
-        this.#blockedPatternsSetting.set(patterns);
-    }
+    /**
+     * @deprecated Kept for layout tests
+     * TODO(pfaffe) remove
+     */
     setBlockingEnabled(enabled) {
-        if (this.#blockingEnabledSetting.get() === enabled) {
-            return;
-        }
-        this.#blockingEnabledSetting.set(enabled);
+        this.requestConditions.conditionsEnabled = enabled;
+    }
+    /**
+     * @deprecated Kept for layout tests
+     * TODO(pfaffe) remove
+     */
+    setBlockedPatterns(patterns) {
+        this.requestConditions.clear();
+        this.requestConditions.add(...patterns.map(pattern => RequestCondition.createFromSetting(pattern)));
     }
     updateBlockedPatterns() {
-        const urls = [];
-        if (this.#blockingEnabledSetting.get()) {
-            for (const pattern of this.#blockedPatternsSetting.get()) {
-                if (pattern.enabled) {
-                    urls.push(pattern.url);
-                }
-            }
-        }
-        if (!urls.length && !this.#effectiveBlockedURLs.length) {
-            return;
-        }
-        this.#effectiveBlockedURLs = urls;
-        for (const agent of this.#networkAgents) {
-            void agent.invoke_setBlockedURLs({ urls: this.#effectiveBlockedURLs });
-        }
+        this.#isBlocking = this.#requestConditions.applyConditions(this.isOffline(), this.isThrottling() ? this.#networkConditions : null, ...this.#networkAgents);
     }
     isIntercepting() {
         return Boolean(this.#urlsForRequestInterceptor.size);
@@ -1814,6 +2083,14 @@ class ExtraInfoBuilder {
 }
 SDKModel.register(NetworkManager, { capabilities: 16 /* Capability.NETWORK */, autostart: true });
 export function networkConditionsEqual(first, second) {
+    if ('block' in first || 'block' in second) {
+        if ('block' in first && 'block' in second) {
+            const firstTitle = (typeof first.title === 'function' ? first.title() : first.title);
+            const secondTitle = (typeof second.title === 'function' ? second.title() : second.title);
+            return firstTitle === secondTitle && first.block === second.block;
+        }
+        return false;
+    }
     // Caution: titles might be different function instances, which produce
     // the same value.
     // We prefer to use the i18nTitleKey to prevent against locale changes or
@@ -1843,6 +2120,9 @@ export function getPredefinedCondition(key) {
         return null;
     }
     return THROTTLING_CONDITIONS_LOOKUP.get(key) ?? null;
+}
+export function getPredefinedOrBlockingCondition(key) {
+    return key === "BLOCKING" /* PredefinedThrottlingConditionKey.BLOCKING */ ? BlockingConditions : getPredefinedCondition(key);
 }
 /**
  * For the given Round Trip Time (in MilliSeconds), return the best throttling conditions.

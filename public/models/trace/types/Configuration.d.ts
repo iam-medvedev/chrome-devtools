@@ -49,6 +49,7 @@ export declare const defaults: () => Configuration;
  */
 export declare function configToCacheKey(config: Configuration): string;
 export interface ParseOptions {
+    showAllEvents?: boolean;
     /**
      * If the trace was just recorded on the current page, rather than an imported file.
      * TODO(paulirish): Maybe remove. This is currently unused by the Processor and Handlers

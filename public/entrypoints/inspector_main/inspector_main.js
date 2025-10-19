@@ -367,7 +367,7 @@ var InspectorMainImpl = class _InspectorMainImpl {
   async run() {
     let firstCall = true;
     await SDK.Connections.initMainConnection(async () => {
-      const type = Root.Runtime.Runtime.queryParam("v8only") ? SDK.Target.Type.NODE : Root.Runtime.Runtime.queryParam("targetType") === "tab" ? SDK.Target.Type.TAB : SDK.Target.Type.FRAME;
+      const type = Root.Runtime.Runtime.queryParam("v8only") ? SDK.Target.Type.NODE : Root.Runtime.Runtime.queryParam("targetType") === "tab" || Root.Runtime.Runtime.isTraceApp() ? SDK.Target.Type.TAB : SDK.Target.Type.FRAME;
       const waitForDebuggerInPage = type === SDK.Target.Type.FRAME && Root.Runtime.Runtime.queryParam("panel") === "sources";
       const name = type === SDK.Target.Type.FRAME ? i18nString2(UIStrings2.main) : i18nString2(UIStrings2.tab);
       const target = SDK.TargetManager.TargetManager.instance().createTarget("main", name, type, null, void 0, waitForDebuggerInPage);

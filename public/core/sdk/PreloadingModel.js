@@ -228,15 +228,33 @@ export class PreloadingModel extends SDKModel {
     onPrerenderStatusUpdated(event) {
         const loaderId = event.key.loaderId;
         this.ensureDocumentPreloadingData(loaderId);
-        const attempt = {
-            action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
-            key: event.key,
-            pipelineId: event.pipelineId,
-            status: convertPreloadingStatus(event.status),
-            prerenderStatus: event.prerenderStatus || null,
-            disallowedMojoInterface: event.disallowedMojoInterface || null,
-            mismatchedHeaders: event.mismatchedHeaders || null,
-        };
+        let attempt;
+        switch (event.key.action) {
+            case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
+                attempt = {
+                    action: event.key.action,
+                    key: event.key,
+                    pipelineId: event.pipelineId,
+                    status: convertPreloadingStatus(event.status),
+                    prerenderStatus: event.prerenderStatus || null,
+                    disallowedMojoInterface: event.disallowedMojoInterface || null,
+                    mismatchedHeaders: event.mismatchedHeaders || null,
+                };
+                break;
+            case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+                attempt = {
+                    action: event.key.action,
+                    key: event.key,
+                    pipelineId: event.pipelineId,
+                    status: convertPreloadingStatus(event.status),
+                    prerenderStatus: event.prerenderStatus || null,
+                    disallowedMojoInterface: event.disallowedMojoInterface || null,
+                    mismatchedHeaders: event.mismatchedHeaders || null,
+                };
+                break;
+            default:
+                throw new Error(`unreachable: event.key.action: ${event.key.action}`);
+        }
         this.documents.get(loaderId)?.preloadingAttempts.upsert(attempt);
         this.dispatchEventToListeners("ModelUpdated" /* Events.MODEL_UPDATED */);
     }
@@ -335,6 +353,9 @@ function makePreloadingAttemptId(key) {
         case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
             action = 'Prerender';
             break;
+        case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+            action = 'PrerenderUntilScript';
+            break;
     }
     let targetHint;
     switch (key.targetHint) {
@@ -366,7 +387,7 @@ export class PreloadPipeline {
         return new PreloadPipeline(inner);
     }
     getOriginallyTriggered() {
-        const attempt = this.getPrerender() || this.getPrefetch();
+        const attempt = this.getPrerender() || this.getPrerenderUntilScript() || this.getPrefetch();
         assertNotNullOrUndefined(attempt);
         return attempt;
     }
@@ -376,7 +397,10 @@ export class PreloadPipeline {
     getPrerender() {
         return this.inner.get("Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) || null;
     }
-    // Returns attempts in the order: prefetch < prerender.
+    getPrerenderUntilScript() {
+        return this.inner.get("PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */) || null;
+    }
+    // Returns attempts in the order: prefetch < prerender_until_script < prerender.
     // Currently unused.
     getAttempts() {
         const ret = [];
@@ -387,6 +411,10 @@ export class PreloadPipeline {
         const prerender = this.getPrerender();
         if (prerender !== null) {
             ret.push(prerender);
+        }
+        const prerenderUntilScript = this.getPrerenderUntilScript();
+        if (prerenderUntilScript !== null) {
+            ret.push(prerenderUntilScript);
         }
         if (ret.length === 0) {
             throw new Error('unreachable');
@@ -414,7 +442,9 @@ class PreloadingAttemptRegistry {
     //
     // In some cases, browsers automatically triggers preloads. For example, Chrome triggers prefetch
     // ahead of prerender to prevent multiple fetches in case that the prerender failed due to, e.g.
-    // use of forbidden mojo APIs. Such prefetch and prerender sit in the same preload pipeline.
+    // use of forbidden mojo APIs. Also, a prerender-until-script attempt triggers prefetch as well,
+    // and can upgrade to prerender. Such prefetch, prerender-until-script, and prerender sit in the
+    // same preload pipeline.
     //
     // We regard them as not representative and only show the representative ones to represent
     // pipelines.
@@ -423,9 +453,9 @@ class PreloadingAttemptRegistry {
             switch (action) {
                 case "Prefetch" /* Protocol.Preload.SpeculationAction.Prefetch */:
                     return 0;
-                case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
-                    return 1;
                 case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+                    return 1;
+                case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
                     return 2;
             }
         }
@@ -519,9 +549,19 @@ class PreloadingAttemptRegistry {
                     };
                     break;
                 case "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */:
-                case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
                     attempt = {
                         action: "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */,
+                        key,
+                        pipelineId: null,
+                        status: "NotTriggered" /* PreloadingStatus.NOT_TRIGGERED */,
+                        prerenderStatus: null,
+                        disallowedMojoInterface: null,
+                        mismatchedHeaders: null,
+                    };
+                    break;
+                case "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */:
+                    attempt = {
+                        action: "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */,
                         key,
                         pipelineId: null,
                         status: "NotTriggered" /* PreloadingStatus.NOT_TRIGGERED */,

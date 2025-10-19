@@ -2,6 +2,7 @@
 import * as Common from "./../../core/common/common.js";
 import * as Host from "./../../core/host/host.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as Root from "./../../core/root/root.js";
 import * as SDK from "./../../core/sdk/sdk.js";
 import * as Breakpoints from "./../../models/breakpoints/breakpoints.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
@@ -504,6 +505,7 @@ UI.ViewManager.registerViewExtension({
   title: i18nLazyString(UIStrings.workspace),
   order: 3,
   persistence: "permanent",
+  condition: () => !Root.Runtime.Runtime.isTraceApp(),
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesNavigator.FilesNavigatorView();
@@ -516,6 +518,7 @@ UI.ViewManager.registerViewExtension({
   title: i18nLazyString(UIStrings.snippets),
   order: 6,
   persistence: "permanent",
+  condition: () => !Root.Runtime.Runtime.isTraceApp(),
   async loadView() {
     const Sources = await loadSourcesModule();
     return new Sources.SourcesNavigator.SnippetsNavigatorView();
@@ -1234,18 +1237,17 @@ UI.ActionRegistration.registerActionExtension({
   },
   title: i18nLazyString(UIStrings.createNewSnippet)
 });
-if (!Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode()) {
-  UI.ActionRegistration.registerActionExtension({
-    category: "SOURCES",
-    actionId: "sources.add-folder-to-workspace",
-    async loadActionDelegate() {
-      const Sources = await loadSourcesModule();
-      return new Sources.SourcesNavigator.ActionDelegate();
-    },
-    iconClass: "plus",
-    title: i18nLazyString(UIStrings.addFolderToWorkspace)
-  });
-}
+UI.ActionRegistration.registerActionExtension({
+  category: "SOURCES",
+  actionId: "sources.add-folder-to-workspace",
+  condition: () => !Host.InspectorFrontendHost.InspectorFrontendHostInstance.isHostedMode(),
+  async loadActionDelegate() {
+    const Sources = await loadSourcesModule();
+    return new Sources.SourcesNavigator.ActionDelegate();
+  },
+  iconClass: "plus",
+  title: i18nLazyString(UIStrings.addFolderToWorkspace)
+});
 UI.ActionRegistration.registerActionExtension({
   category: "DEBUGGER",
   actionId: "debugger.previous-call-frame",
@@ -1996,5 +1998,19 @@ QuickOpen.FilteredListWidget.registerProvider({
   helpTitle: i18nLazyString(UIStrings.openFile),
   titlePrefix: i18nLazyString(UIStrings.open),
   titleSuggestion: i18nLazyString(UIStrings.file)
+});
+UI.ContextMenu.registerProvider({
+  contextTypes() {
+    return [
+      Workspace.UISourceCode.UISourceCode,
+      SDK.Resource.Resource,
+      SDK.NetworkRequest.NetworkRequest
+    ];
+  },
+  async loadProvider() {
+    const Sources = await loadSourcesModule();
+    return new Sources.PersistenceActions.ContextMenuProvider();
+  },
+  experiment: void 0
 });
 //# sourceMappingURL=sources-meta.js.map

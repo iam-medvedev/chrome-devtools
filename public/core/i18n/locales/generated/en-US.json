@@ -296,6 +296,9 @@
   "core/sdk/DebuggerModel.ts | withBlock": {
     "message": "With block"
   },
+  "core/sdk/NetworkManager.ts | block": {
+    "message": "Block"
+  },
   "core/sdk/NetworkManager.ts | directSocketStatusAborted": {
     "message": "Aborted"
   },
@@ -1175,6 +1178,9 @@
   "entrypoints/main/MainImpl.ts | dockToRight": {
     "message": "Dock to right"
   },
+  "entrypoints/main/MainImpl.ts | externalRequestReceived": {
+    "message": "DevTools received an external request"
+  },
   "entrypoints/main/MainImpl.ts | focusDebuggee": {
     "message": "Focus page"
   },
@@ -1414,9 +1420,6 @@
   },
   "models/ai_assistance/AiUtils.ts | offline": {
     "message": "This feature is only available with an active internet connection."
-  },
-  "models/ai_assistance/ConversationHandler.ts | externalRequestReceived": {
-    "message": "DevTools received an external request"
   },
   "models/bindings/ContentProviderBasedProject.ts | unknownErrorLoadingFile": {
     "message": "Unknown error loading file"
@@ -1685,18 +1688,6 @@
   "models/network_time_calculator/NetworkTimeCalculator.ts | sLatencySDownloadSTotal": {
     "message": "{PH1} latency, {PH2} download ({PH3} total)"
   },
-  "models/persistence/EditFileSystemView.ts | enterAPath": {
-    "message": "Enter a path"
-  },
-  "models/persistence/EditFileSystemView.ts | enterAUniquePath": {
-    "message": "Enter a unique path"
-  },
-  "models/persistence/EditFileSystemView.ts | excludedFolders": {
-    "message": "Excluded sub-folders"
-  },
-  "models/persistence/EditFileSystemView.ts | url": {
-    "message": "URL"
-  },
   "models/persistence/IsolatedFileSystem.ts | blobCouldNotBeLoaded": {
     "message": "Blob could not be loaded."
   },
@@ -1741,39 +1732,6 @@
   },
   "models/persistence/persistence-meta.ts | rewrite": {
     "message": "rewrite"
-  },
-  "models/persistence/PersistenceActions.ts | openInContainingFolder": {
-    "message": "Open in containing folder"
-  },
-  "models/persistence/PersistenceActions.ts | overrideContent": {
-    "message": "Override content"
-  },
-  "models/persistence/PersistenceActions.ts | overrideSourceMappedFileExplanation": {
-    "message": "‘{PH1}’ is a source mapped file and cannot be overridden."
-  },
-  "models/persistence/PersistenceActions.ts | overrideSourceMappedFileWarning": {
-    "message": "Override ‘{PH1}’ instead?"
-  },
-  "models/persistence/PersistenceActions.ts | saveAs": {
-    "message": "Save as…"
-  },
-  "models/persistence/PersistenceActions.ts | saveFailed": {
-    "message": "Failed to save file to disk."
-  },
-  "models/persistence/PersistenceActions.ts | saveImage": {
-    "message": "Save image"
-  },
-  "models/persistence/PersistenceActions.ts | saveWasmFailed": {
-    "message": "Unable to save WASM module to disk. Most likely the module is too large."
-  },
-  "models/persistence/PersistenceActions.ts | showOverrides": {
-    "message": "Show all overrides"
-  },
-  "models/persistence/PersistenceUtils.ts | linkedToS": {
-    "message": "Linked to {PH1}"
-  },
-  "models/persistence/PersistenceUtils.ts | linkedToSourceMapS": {
-    "message": "Linked to source map: {PH1}"
   },
   "models/persistence/PlatformFileSystem.ts | unableToReadFilesWithThis": {
     "message": "PlatformFileSystem cannot read files."
@@ -6074,6 +6032,12 @@
   "panels/common/GdpSignUpDialog.ts | termsOfService": {
     "message": "Terms of Service"
   },
+  "panels/common/PersistenceUtils.ts | linkedToS": {
+    "message": "Linked to {PH1}"
+  },
+  "panels/common/PersistenceUtils.ts | linkedToSourceMapS": {
+    "message": "Linked to source map: {PH1}"
+  },
   "panels/console_counters/WarningErrorCounter.ts | openConsoleToViewS": {
     "message": "Open Console to view {PH1}"
   },
@@ -6157,6 +6121,9 @@
   },
   "panels/console/console-meta.ts | showConsole": {
     "message": "Show Console"
+  },
+  "panels/console/console-meta.ts | showConsoleInsightTeasers": {
+    "message": "Show AI summaries for console messages"
   },
   "panels/console/console-meta.ts | showCorsErrorsInConsole": {
     "message": "Show CORS errors in console"
@@ -9113,6 +9080,9 @@
   "panels/mobile_throttling/NetworkThrottlingSelector.ts | addS": {
     "message": "Add {PH1}"
   },
+  "panels/mobile_throttling/NetworkThrottlingSelector.ts | blockingGroup": {
+    "message": "Blocking"
+  },
   "panels/mobile_throttling/NetworkThrottlingSelector.ts | custom": {
     "message": "Custom"
   },
@@ -9362,11 +9332,23 @@
   "panels/network/BlockedURLsPane.ts | patternAlreadyExists": {
     "message": "Pattern already exists."
   },
+  "panels/network/BlockedURLsPane.ts | patternFailedToParse": {
+    "message": "This pattern failed to parse as a URLPattern"
+  },
+  "panels/network/BlockedURLsPane.ts | patternFailedWithRegExpGroups": {
+    "message": "RegExp groups are not allowed"
+  },
   "panels/network/BlockedURLsPane.ts | patternInputCannotBeEmpty": {
     "message": "Pattern input cannot be empty."
   },
+  "panels/network/BlockedURLsPane.ts | patternWasUpgraded": {
+    "message": "This pattern was upgraded from \"{PH1}\""
+  },
   "panels/network/BlockedURLsPane.ts | textPatternToBlockMatching": {
     "message": "Text pattern to block matching requests; use * for wildcard"
+  },
+  "panels/network/BlockedURLsPane.ts | textPatternToBlockMatchingURLPatterns": {
+    "message": "Text pattern to block matching requests; use URLPattern syntax."
   },
   "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusAborted": {
     "message": "Aborted"
@@ -9986,6 +9968,9 @@
   "panels/network/NetworkLogView.ts | blockRequestDomain": {
     "message": "Block request domain"
   },
+  "panels/network/NetworkLogView.ts | blockRequests": {
+    "message": "Block requests"
+  },
   "panels/network/NetworkLogView.ts | blockRequestUrl": {
     "message": "Block request URL"
   },
@@ -10214,8 +10199,20 @@
   "panels/network/NetworkLogView.ts | thirdParty": {
     "message": "3rd-party requests"
   },
+  "panels/network/NetworkLogView.ts | throttleRequestDomain": {
+    "message": "Throttle request domain"
+  },
+  "panels/network/NetworkLogView.ts | throttleRequests": {
+    "message": "Throttle requests"
+  },
+  "panels/network/NetworkLogView.ts | throttleRequestUrl": {
+    "message": "Throttle request URL"
+  },
   "panels/network/NetworkLogView.ts | unblockS": {
     "message": "Unblock {PH1}"
+  },
+  "panels/network/NetworkLogView.ts | unthrottleS": {
+    "message": "Stop throttling {PH1}"
   },
   "panels/network/NetworkLogViewColumns.ts | connectionId": {
     "message": "Connection ID"
@@ -11146,6 +11143,9 @@
   },
   "panels/profiler/HeapSnapshotView.ts | objectsRetainedByDetachedDomNodes": {
     "message": "Objects retained by detached DOM nodes"
+  },
+  "panels/profiler/HeapSnapshotView.ts | objectsRetainedByEventHandlers": {
+    "message": "Objects retained by Event Handlers"
   },
   "panels/profiler/HeapSnapshotView.ts | otherJSObjects": {
     "message": "Other JS objects"
@@ -13022,6 +13022,18 @@
   "panels/settings/components/SyncSection.ts | viewProfile": {
     "message": "View profile"
   },
+  "panels/settings/EditFileSystemView.ts | enterAPath": {
+    "message": "Enter a path"
+  },
+  "panels/settings/EditFileSystemView.ts | enterAUniquePath": {
+    "message": "Enter a unique path"
+  },
+  "panels/settings/EditFileSystemView.ts | excludedFolders": {
+    "message": "Excluded sub-folders"
+  },
+  "panels/settings/EditFileSystemView.ts | url": {
+    "message": "URL"
+  },
   "panels/settings/emulation/components/UserAgentClientHintsForm.ts | addBrand": {
     "message": "Add Brand"
   },
@@ -13891,6 +13903,33 @@
   },
   "panels/sources/OutlineQuickOpen.ts | openAJavascriptOrCssFileToSee": {
     "message": "Open a JavaScript or CSS file to see symbols"
+  },
+  "panels/sources/PersistenceActions.ts | openInContainingFolder": {
+    "message": "Open in containing folder"
+  },
+  "panels/sources/PersistenceActions.ts | overrideContent": {
+    "message": "Override content"
+  },
+  "panels/sources/PersistenceActions.ts | overrideSourceMappedFileExplanation": {
+    "message": "‘{PH1}’ is a source mapped file and cannot be overridden."
+  },
+  "panels/sources/PersistenceActions.ts | overrideSourceMappedFileWarning": {
+    "message": "Override ‘{PH1}’ instead?"
+  },
+  "panels/sources/PersistenceActions.ts | saveAs": {
+    "message": "Save as…"
+  },
+  "panels/sources/PersistenceActions.ts | saveFailed": {
+    "message": "Failed to save file to disk."
+  },
+  "panels/sources/PersistenceActions.ts | saveImage": {
+    "message": "Save image"
+  },
+  "panels/sources/PersistenceActions.ts | saveWasmFailed": {
+    "message": "Unable to save WASM module to disk. Most likely the module is too large."
+  },
+  "panels/sources/PersistenceActions.ts | showOverrides": {
+    "message": "Show all overrides"
   },
   "panels/sources/ProfilePlugin.ts | kb": {
     "message": "kB"

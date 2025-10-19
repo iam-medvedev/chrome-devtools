@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
-var _a;
 import '../../../ui/components/icon_button/icon_button.js';
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
@@ -147,7 +146,7 @@ export class NetworkRequestTooltip extends HTMLElement {
         const url = new URL(this.#data.networkRequest.args.data.url);
         const entity = (this.#data.entityMapper) ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
         const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
-        const redirectsHtml = _a.renderRedirects(this.#data.networkRequest);
+        const redirectsHtml = NetworkRequestTooltip.renderRedirects(this.#data.networkRequest);
         // clang-format off
         const output = html `
       <style>${networkRequestTooltipStyles}</style>
@@ -160,12 +159,12 @@ export class NetworkRequestTooltip extends HTMLElement {
           <span class="network-category-chip" style=${Lit.Directives.styleMap(chipStyle)}>
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
-        <div class="priority-row">${i18nString(UIStrings.priority)}: ${_a.renderPriorityValue(this.#data.networkRequest)}</div>
+        <div class="priority-row">${i18nString(UIStrings.priority)}: ${NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
         ${Trace.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ?
             html `<div class="render-blocking"> ${i18nString(UIStrings.renderBlocking)} </div>` : Lit.nothing}
         <div class="divider"></div>
 
-        ${_a.renderTimings(this.#data.networkRequest)}
+        ${NetworkRequestTooltip.renderTimings(this.#data.networkRequest)}
 
         ${redirectsHtml ? html `
           <div class="divider"></div>
@@ -177,6 +176,5 @@ export class NetworkRequestTooltip extends HTMLElement {
         Lit.render(output, this.#shadow, { host: this });
     }
 }
-_a = NetworkRequestTooltip;
 customElements.define('devtools-performance-network-request-tooltip', NetworkRequestTooltip);
 //# sourceMappingURL=NetworkRequestTooltip.js.map
