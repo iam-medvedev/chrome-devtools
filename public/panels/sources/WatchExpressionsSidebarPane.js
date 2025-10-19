@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
-var _a;
 /*
  * Copyright (C) IBM Corp. 2009  All rights reserved.
  *
@@ -303,7 +302,7 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
         }
         return await executionContext.evaluate({
             expression,
-            objectGroup: _a.watchObjectGroupId,
+            objectGroup: WatchExpression.watchObjectGroupId,
             includeCommandLineAPI: false,
             silent: true,
             returnByValue: false,
@@ -508,5 +507,4 @@ export class WatchExpression extends Common.ObjectWrapper.ObjectWrapper {
     }
     static watchObjectGroupId = 'watch-group';
 }
-_a = WatchExpression;
 //# sourceMappingURL=WatchExpressionsSidebarPane.js.map

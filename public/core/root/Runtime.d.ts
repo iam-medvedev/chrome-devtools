@@ -17,6 +17,8 @@ export declare class Runtime {
         forceNew: boolean | null;
     } | undefined): Runtime;
     static removeInstance(): void;
+    static queryParamsObject: URLSearchParams;
+    static getSearchParams(): URLSearchParams;
     static queryParam(name: string): string | null;
     static setQueryParamForTesting(name: string, value: string): void;
     static isNode(): boolean;
@@ -228,6 +230,15 @@ interface DevToolsFlexibleLayout {
 interface DevToolsStartingStyleDebugging {
     enabled: boolean;
 }
+interface AiPromptApi {
+    enabled: boolean;
+}
+interface DevToolsIndividualRequestThrottling {
+    enabled: boolean;
+}
+export interface DevToolsEnableDurableMessages {
+    enabled: boolean;
+}
 /**
  * The host configuration that we expect from the DevTools back-end.
  *
@@ -255,6 +266,7 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsVeLogging: HostConfigVeLogging;
     devToolsWellKnown: HostConfigWellKnown;
     devToolsPrivacyUI: HostConfigPrivacyUI;
+    devToolsIndividualRequestThrottling: DevToolsIndividualRequestThrottling;
     devToolsIpProtectionPanelInDevTools: HostConfigIPProtection;
     /**
      * OffTheRecord here indicates that the user's profile is either incognito,
@@ -274,6 +286,8 @@ export type HostConfig = Platform.TypeScriptUtilities.RecursivePartial<{
     devToolsLiveEdit: LiveEdit;
     devToolsFlexibleLayout: DevToolsFlexibleLayout;
     devToolsStartingStyleDebugging: DevToolsStartingStyleDebugging;
+    devToolsAiPromptApi: AiPromptApi;
+    devToolsEnableDurableMessages: DevToolsEnableDurableMessages;
 }>;
 /**
  * The host configuration for this DevTools instance.

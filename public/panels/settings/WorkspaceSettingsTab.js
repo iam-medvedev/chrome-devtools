@@ -11,6 +11,7 @@ import * as Buttons from '../../ui/components/buttons/buttons.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { html, render } from '../../ui/lit/lit.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
+import { EditFileSystemView } from './EditFileSystemView.js';
 import workspaceSettingsTabStyles from './workspaceSettingsTab.css.js';
 const UIStrings = {
     /**
@@ -57,7 +58,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
           <devtools-card heading=${fileSystem.displayName}>
             <devtools-icon name="folder" slot="heading-prefix"></devtools-icon>
             <div class="mapping-view-container">
-              <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(Persistence.EditFileSystemView.EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
+              <devtools-widget .widgetConfig=${UI.Widget.widgetConfig(EditFileSystemView, { fileSystem: fileSystem.fileSystem })}>
               </devtools-widget>
             </div>
             <devtools-button

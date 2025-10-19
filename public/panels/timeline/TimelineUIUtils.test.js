@@ -140,7 +140,7 @@ describeWithMockConnection('TimelineUIUtils', function () {
                 url: 'https://google.com/test.js',
                 lineNumber: 0,
                 columnNumber: 0,
-                isFreshRecording: true,
+                isFreshOrEnhanced: true,
                 target,
                 linkifier,
             });

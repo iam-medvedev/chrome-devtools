@@ -9678,6 +9678,7 @@ export declare namespace Network {
         Preload = "preload",
         SignedExchange = "SignedExchange",
         Preflight = "preflight",
+        FedCM = "FedCM",
         Other = "other"
     }
     /**
@@ -10234,6 +10235,18 @@ export declare namespace Network {
          */
         packetReordering?: boolean;
     }
+    interface BlockPattern {
+        /**
+         * URL pattern to match. Patterns use the URLPattern constructor string syntax
+         * (https://urlpattern.spec.whatwg.org/) and must be absolute. Example: `*://*:*\/*.css`.
+         */
+        urlPattern: string;
+        /**
+         * Whether or not to block the pattern. If false, a matching request will not be blocked even if it matches a later
+         * `BlockPattern`.
+         */
+        block: boolean;
+    }
     const enum DirectSocketDnsQueryType {
         Ipv4 = "ipv4",
         Ipv6 = "ipv6"
@@ -10745,10 +10758,10 @@ export declare namespace Network {
     }
     interface SetBlockedURLsRequest {
         /**
-         * URL patterns to block. Patterns use the URLPattern constructor string syntax
-         * (https://urlpattern.spec.whatwg.org/) and must be absolute. Example: `*://*:*\/*.css`.
+         * Patterns to match in the order in which they are given. These patterns
+         * also take precedence over any wildcard patterns defined in `urls`.
          */
-        urlPatterns?: string[];
+        urlPatterns?: BlockPattern[];
         /**
          * URL patterns to block. Wildcards ('*') are allowed.
          * @deprecated

@@ -6,6 +6,7 @@ import * as Formatter from "./../../models/formatter/formatter.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as DiffView from "./../../ui/components/diff_view/diff_view.js";
 import { Directives, html } from "./../../ui/lit/lit.js";
+import * as PanelCommon from "./../common/common.js";
 import * as Snippets from "./../snippets/snippets.js";
 var { ref, styleMap, ifDefined } = Directives;
 var UIStrings = {
@@ -160,7 +161,7 @@ var PanelUtils = class _PanelUtils {
     } else if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
       iconType = "snippet";
     }
-    const title = binding ? Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode) : void 0;
+    const title = binding ? PanelCommon.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode) : void 0;
     return html`<devtools-file-source-icon
         name=${iconType} title=${ifDefined(title)} .data=${{
       contentType: uiSourceCode.contentType().name(),

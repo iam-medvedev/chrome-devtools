@@ -1,15 +1,16 @@
 import '../../ui/legacy/legacy.js';
+import '../../ui/components/tooltips/tooltips.js';
 import * as SDK from '../../core/sdk/sdk.js';
 import * as UI from '../../ui/legacy/legacy.js';
 interface ViewInput {
-    list: UI.ListWidget.ListWidget<SDK.NetworkManager.BlockedPattern>;
+    list: UI.ListWidget.ListWidget<SDK.NetworkManager.RequestCondition>;
     enabled: boolean;
     toggleEnabled: () => void;
     addPattern: () => void;
 }
 type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWidget.Delegate<SDK.NetworkManager.BlockedPattern> {
+export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWidget.Delegate<SDK.NetworkManager.RequestCondition> {
     #private;
     private manager;
     private readonly list;
@@ -19,11 +20,11 @@ export declare class BlockedURLsPane extends UI.Widget.VBox implements UI.ListWi
     performUpdate(): void;
     addPattern(): void;
     removeAllPatterns(): void;
-    renderItem(pattern: SDK.NetworkManager.BlockedPattern, editable: boolean): Element;
+    renderItem(condition: SDK.NetworkManager.RequestCondition, editable: boolean, index: number): Element;
     private toggleEnabled;
-    removeItemRequested(_pattern: SDK.NetworkManager.BlockedPattern, index: number): void;
-    beginEdit(pattern: SDK.NetworkManager.BlockedPattern): UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>;
-    commitEdit(item: SDK.NetworkManager.BlockedPattern, editor: UI.ListWidget.Editor<SDK.NetworkManager.BlockedPattern>, isNew: boolean): void;
+    removeItemRequested(condition: SDK.NetworkManager.RequestCondition): void;
+    beginEdit(pattern: SDK.NetworkManager.RequestCondition): UI.ListWidget.Editor<SDK.NetworkManager.RequestCondition>;
+    commitEdit(item: SDK.NetworkManager.RequestCondition, editor: UI.ListWidget.Editor<SDK.NetworkManager.RequestCondition>, isNew: boolean): void;
     private createEditor;
     update(): void;
     private blockedRequestsCount;

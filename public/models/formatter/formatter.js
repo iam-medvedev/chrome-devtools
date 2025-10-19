@@ -25,6 +25,23 @@ var FormatterWorkerPool = class _FormatterWorkerPool {
     }
     return formatterWorkerPoolInstance;
   }
+  dispose() {
+    for (const task of this.taskQueue) {
+      console.error("rejecting task");
+      task.errorCallback(new Event("Worker terminated"));
+    }
+    for (const [worker, task] of this.workerTasks.entries()) {
+      task?.errorCallback(new Event("Worker terminated"));
+      worker.terminate(
+        /* immediately=*/
+        true
+      );
+    }
+  }
+  static removeInstance() {
+    formatterWorkerPoolInstance?.dispose();
+    formatterWorkerPoolInstance = void 0;
+  }
   createWorker() {
     const worker = Common.Worker.WorkerWrapper.fromURL(new URL("../../entrypoints/formatter_worker/formatter_worker-entrypoint.js", import.meta.url));
     worker.onmessage = this.onWorkerMessage.bind(this, worker);

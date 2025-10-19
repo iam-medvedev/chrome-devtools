@@ -48,13 +48,17 @@ describeWithMockConnection('MainMenuItem', () => {
     describe('handleExternalRequest', () => {
         const { handleExternalRequestGenerator } = Main.MainImpl;
         it('calls into the AiAssistanceModel ConversationHandler for LIVE_STYLE_DEBUGGER', async () => {
-            const handler = AiAssistanceModel.ConversationHandler.instance({
+            const handler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({
                 aidaClient: new Host.AidaClient.AidaClient(),
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const spy = sinon.spy(handler, 'handleExternalRequest');
             await handleExternalRequestGenerator({ kind: 'LIVE_STYLE_DEBUGGER', args: { prompt: 'test', selector: '#test' } });
-            sinon.assert.calledOnceWithExactly(spy, { prompt: 'test', conversationType: "freestyler" /* AiAssistanceModel.ConversationType.STYLING */, selector: '#test' });
+            sinon.assert.calledOnceWithExactly(spy, {
+                prompt: 'test',
+                conversationType: "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
+                selector: '#test'
+            });
         });
         it('returns an error for file assistance requests', async () => {
             // @ts-expect-error

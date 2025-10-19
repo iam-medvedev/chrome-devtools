@@ -413,7 +413,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         }
         else if (setting.name === 'ai-assistance-enabled' && !setting.get()) {
             // If the "AI Assistance" is toggled off, we remove all the history entries related to the feature.
-            void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
+            void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
         }
         void this.render();
     }
@@ -479,7 +479,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         if (!settingData) {
             return Lit.nothing;
         }
-        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
+        const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
         const isDisabled = disabledReasons.length > 0;
         const disabledReasonsJoined = disabledReasons.join('\n') || undefined;
         const detailsClasses = {
@@ -564,7 +564,7 @@ export class AISettingsTab extends LegacyWrapper.LegacyWrapper.WrappableComponen
         // clang-format on
     }
     async render() {
-        const disabledReasons = AiAssistanceModel.getDisabledReasons(this.#aidaAvailability);
+        const disabledReasons = AiAssistanceModel.AiUtils.getDisabledReasons(this.#aidaAvailability);
         // Disabled until https://crbug.com/1079231 is fixed.
         // clang-format off
         Lit.render(html `

@@ -8,13 +8,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -28,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "esnext",
     "tsBuildInfoFile": "console-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
     "useUnknownInCatchVariables": false
@@ -37,6 +37,7 @@
     "../../../../../../front_end/panels/console/ConsoleContextSelector.ts",
     "../../../../../../front_end/panels/console/ConsoleFilter.ts",
     "../../../../../../front_end/panels/console/ConsoleFormat.ts",
+    "../../../../../../front_end/panels/console/ConsoleInsightTeaser.ts",
     "../../../../../../front_end/panels/console/ConsolePanel.ts",
     "../../../../../../front_end/panels/console/ConsolePinPane.ts",
     "../../../../../../front_end/panels/console/ConsolePrompt.ts",

@@ -597,11 +597,11 @@ export class PatchWidget extends UI.Widget.Widget {
         // user already had other modified files, the widget will still transition to the
         // success state (displaying all current workspace modifications).
         const hasChanges = this.#modifiedFiles.length > 0;
-        if (response?.type === "answer" /* AiAssistanceModel.ResponseType.ANSWER */ && hasChanges) {
+        if (response?.type === "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */ && hasChanges) {
             this.#patchSuggestionState = PatchSuggestionState.SUCCESS;
         }
-        else if (response?.type === "error" /* AiAssistanceModel.ResponseType.ERROR */ &&
-            response.error === "abort" /* AiAssistanceModel.ErrorType.ABORT */) {
+        else if (response?.type === "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */ &&
+            response.error === "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */) {
             // If this is an abort error, we're returning back to the initial state.
             this.#patchSuggestionState = PatchSuggestionState.INITIAL;
         }
@@ -661,7 +661,7 @@ ${processedFiles.map(filename => `* ${filename}`).join('\n')}`;
             throw new Error('Project does not exist');
         }
         this.#applyPatchAbortController = new AbortController();
-        const agent = new AiAssistanceModel.PatchAgent({
+        const agent = new AiAssistanceModel.PatchAgent.PatchAgent({
             aidaClient: this.#aidaClient,
             serverSideLoggingEnabled: false,
             project: this.#project,
@@ -693,7 +693,7 @@ window.aiAssistanceTestPatchPrompt =
             throw new Error('project not found');
         }
         const aidaClient = new Host.AidaClient.AidaClient();
-        const agent = new AiAssistanceModel.PatchAgent({
+        const agent = new AiAssistanceModel.PatchAgent.PatchAgent({
             aidaClient,
             serverSideLoggingEnabled: false,
             project,
@@ -701,7 +701,7 @@ window.aiAssistanceTestPatchPrompt =
         try {
             const assertionFailures = [];
             const { processedFiles, responses } = await agent.applyChanges(changeSummary);
-            if (responses.at(-1)?.type === "error" /* AiAssistanceModel.ResponseType.ERROR */) {
+            if (responses.at(-1)?.type === "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */) {
                 return {
                     error: 'failed to patch',
                     debugInfo: {

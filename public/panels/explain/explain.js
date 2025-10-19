@@ -1442,11 +1442,14 @@ var ActionDelegate = class {
       case "explain.console-message.context.error":
       case "explain.console-message.context.warning":
       case "explain.console-message.context.other":
+      case "explain.console-message.teaser":
       case "explain.console-message.hover": {
         const consoleViewMessage = context.flavor(Console2.ConsoleViewMessage.ConsoleViewMessage);
         if (consoleViewMessage) {
           if (actionId.startsWith("explain.console-message.context")) {
             Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightRequestedViaContextMenu);
+          } else if (actionId === "explain.console-message.teaser") {
+            Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightRequestedViaTeaser);
           } else if (actionId === "explain.console-message.hover") {
             Host2.userMetrics.actionTaken(Host2.UserMetrics.Action.InsightRequestedViaHoverButton);
           }

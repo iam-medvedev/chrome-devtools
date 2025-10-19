@@ -49,7 +49,6 @@ import checkboxTextLabelStyles from './checkboxTextLabel.css.js';
 import confirmDialogStyles from './confirmDialog.css.js';
 import { Dialog } from './Dialog.js';
 import { GlassPane } from './GlassPane.js';
-import inlineButtonStyles from './inlineButton.css.js';
 import inspectorCommonStyles from './inspectorCommon.css.js';
 import { KeyboardShortcut, Keys } from './KeyboardShortcut.js';
 import smallBubbleStyles from './smallBubble.css.js';
@@ -1505,14 +1504,6 @@ export class ConfirmDialog {
         return result;
     }
 }
-export function createInlineButton(toolbarButton) {
-    const element = document.createElement('span');
-    const shadowRoot = createShadowRootWithCoreStyles(element, { cssFile: inlineButtonStyles });
-    element.classList.add('inline-button');
-    const toolbar = shadowRoot.createChild('devtools-toolbar');
-    toolbar.appendToolbarItem(toolbarButton);
-    return element;
-}
 export class Renderer {
     static async render(object, options) {
         if (!object) {
@@ -1986,6 +1977,17 @@ export class HTMLElementWithLightDOMTemplate extends HTMLElement {
             targetElement = targetElement.children[index];
         }
         return targetElement;
+    }
+}
+/**
+ * @param text Text to copy to clipboard
+ * @param alert Message to send for a11y only required if there
+ * were other UI changes that visually indicated this copy happened.
+ */
+export function copyTextToClipboard(text, alert) {
+    Host.InspectorFrontendHost.InspectorFrontendHostInstance.copyText(text);
+    if (alert) {
+        ARIAUtils.LiveAnnouncer.alert(alert);
     }
 }
 //# sourceMappingURL=UIUtils.js.map

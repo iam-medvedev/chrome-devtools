@@ -4,6 +4,7 @@
 import * as Platform from '../../../core/platform/platform.js';
 import * as Helpers from '../helpers/helpers.js';
 import * as Types from '../types/types.js';
+let config;
 // We track the renderer processes we see in each frame on the way through the trace.
 let rendererProcessesByFrameId = new Map();
 // We will often want to key data by Frame IDs, and commonly we'll care most
@@ -299,7 +300,8 @@ export function handleEvent(event) {
         return;
     }
 }
-export async function finalize() {
+export async function finalize(options) {
+    config = { showAllEvents: Boolean(options?.showAllEvents) };
     // We try to set the minimum time by finding the event with the smallest
     // timestamp. However, if we also got a timestamp from the
     // TracingStartedInBrowser event, we should always use that.
@@ -378,6 +380,7 @@ export async function finalize() {
 }
 export function data() {
     return {
+        config,
         traceBounds,
         browserProcessId,
         browserThreadId,

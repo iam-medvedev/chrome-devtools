@@ -4,6 +4,7 @@ import * as Platform from '../platform/platform.js';
 import type { CallFrame, ScopeChainEntry } from './DebuggerModel.js';
 import type { Script } from './Script.js';
 import { type NamedFunctionRange } from './SourceMapFunctionRanges.js';
+import { type TranslatedFrame } from './SourceMapScopesInfo.js';
 /**
  * Type of the base source map JSON object, which contains the sources and the mappings at the very least, plus
  * some additional fields.
@@ -87,6 +88,7 @@ export declare class SourceMap {
     compiledURL(): Platform.DevToolsPath.UrlString;
     url(): Platform.DevToolsPath.UrlString;
     debugId(): DebugId | null;
+    sourceURLForSourceIndex(index: number): Platform.DevToolsPath.UrlString | undefined;
     sourceURLs(): Platform.DevToolsPath.UrlString[];
     embeddedContentByURL(sourceURL: Platform.DevToolsPath.UrlString): string | null;
     hasScopeInfo(): boolean;
@@ -145,6 +147,9 @@ export declare class SourceMap {
     expandCallFrame(frame: CallFrame): CallFrame[];
     resolveScopeChain(frame: CallFrame): ScopeChainEntry[] | null;
     findOriginalFunctionName(position: ScopesCodec.Position): string | null;
+    isOutlinedFrame(generatedLine: number, generatedColumn: number): boolean;
+    hasInlinedFrames(generatedLine: number, generatedColumn: number): boolean;
+    translateCallSite(generatedLine: number, generatedColumn: number): TranslatedFrame[];
 }
 export declare class TokenIterator {
     #private;

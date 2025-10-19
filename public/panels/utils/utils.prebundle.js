@@ -8,6 +8,7 @@ import * as Formatter from '../../models/formatter/formatter.js';
 import * as Persistence from '../../models/persistence/persistence.js';
 import * as DiffView from '../../ui/components/diff_view/diff_view.js';
 import { Directives, html } from '../../ui/lit/lit.js';
+import * as PanelCommon from '../common/common.js';
 import * as Snippets from '../snippets/snippets.js';
 const { ref, styleMap, ifDefined } = Directives;
 const UIStrings = {
@@ -191,7 +192,7 @@ export class PanelUtils {
         else if (Snippets.ScriptSnippetFileSystem.isSnippetsUISourceCode(uiSourceCode)) {
             iconType = 'snippet';
         }
-        const title = binding ? Persistence.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode) : undefined;
+        const title = binding ? PanelCommon.PersistenceUtils.PersistenceUtils.tooltipForUISourceCode(uiSourceCode) : undefined;
         // clang-format off
         return html `<devtools-file-source-icon
         name=${iconType} title=${ifDefined(title)} .data=${{

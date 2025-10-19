@@ -11,7 +11,7 @@ import * as RenderCoordinator from '../../../ui/components/render_coordinator/re
 import * as Logs from '../../logs/logs.js';
 import * as NetworkTimeCalculator from '../../network_time_calculator/network_time_calculator.js';
 import * as TextUtils from '../../text_utils/text_utils.js';
-import { NetworkAgent, RequestContext, } from '../ai_assistance.js';
+import { NetworkAgent } from '../ai_assistance.js';
 const { urlString } = Platform.DevToolsPath;
 describeWithMockConnection('NetworkAgent', () => {
     function mockHostConfig(modelId, temperature) {
@@ -28,14 +28,14 @@ describeWithMockConnection('NetworkAgent', () => {
     describe('buildRequest', () => {
         it('builds a request with a model id', async () => {
             mockHostConfig('test model');
-            const agent = new NetworkAgent({
+            const agent = new NetworkAgent.NetworkAgent({
                 aidaClient: {},
             });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
-            const agent = new NetworkAgent({
+            const agent = new NetworkAgent.NetworkAgent({
                 aidaClient: {},
             });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
@@ -103,7 +103,7 @@ describeWithMockConnection('NetworkAgent', () => {
             calculator.updateBoundaries(selectedNetworkRequest);
         });
         it('generates an answer', async () => {
-            const agent = new NetworkAgent({
+            const agent = new NetworkAgent.NetworkAgent({
                 aidaClient: mockAidaClient([[{
                             explanation: 'This is the answer',
                             metadata: {
@@ -111,16 +111,16 @@ describeWithMockConnection('NetworkAgent', () => {
                             },
                         }]]),
             });
-            const responses = await Array.fromAsync(agent.run('test', { selected: new RequestContext(selectedNetworkRequest, calculator) }));
+            const responses = await Array.fromAsync(agent.run('test', { selected: new NetworkAgent.RequestContext(selectedNetworkRequest, calculator) }));
             assert.deepEqual(responses, [
                 {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
                     query: 'test',
                     imageInput: undefined,
                     imageId: undefined,
                 },
                 {
-                    type: "context" /* ResponseType.CONTEXT */,
+                    type: "context" /* AiAgent.ResponseType.CONTEXT */,
                     title: 'Analyzing network data',
                     details: [
                         {
@@ -145,10 +145,10 @@ describeWithMockConnection('NetworkAgent', () => {
                     ],
                 },
                 {
-                    type: "querying" /* ResponseType.QUERYING */,
+                    type: "querying" /* AiAgent.ResponseType.QUERYING */,
                 },
                 {
-                    type: "answer" /* ResponseType.ANSWER */,
+                    type: "answer" /* AiAgent.ResponseType.ANSWER */,
                     text: 'This is the answer',
                     complete: true,
                     suggestions: undefined,

@@ -597,7 +597,6 @@ var entryLabelOverlay_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./entryLabelOverlay.css")} */`;
 
 // gen/front_end/panels/timeline/overlays/components/EntryLabelOverlay.js
-var _a;
 var { html: html2, Directives: Directives2 } = Lit;
 var UIStrings2 = {
   /**
@@ -703,7 +702,7 @@ var LabelAnnotationsConsentDialogVisibilityChange = class _LabelAnnotationsConse
     this.isVisible = isVisible;
   }
 };
-var EntryLabelOverlay = class extends HTMLElement {
+var EntryLabelOverlay = class _EntryLabelOverlay extends HTMLElement {
   // The label is angled on the left from the centre of the entry it belongs to.
   // `LABEL_AND_CONNECTOR_SHIFT_LENGTH` specifies how many pixels to the left it is shifted.
   static LABEL_AND_CONNECTOR_SHIFT_LENGTH = 8;
@@ -736,7 +735,7 @@ var EntryLabelOverlay = class extends HTMLElement {
   #callTree = null;
   // Creates or gets the setting if it exists.
   #aiAnnotationsEnabledSetting = Common.Settings.Settings.instance().createSetting("ai-annotations-enabled", false);
-  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent({
+  #agent = new AiAssistanceModels.PerformanceAnnotationsAgent.PerformanceAnnotationsAgent({
     aidaClient: new Host.AidaClient.AidaClient(),
     serverSideLoggingEnabled: isAiAssistanceServerSideLoggingEnabled()
   });
@@ -820,7 +819,7 @@ var EntryLabelOverlay = class extends HTMLElement {
       this.setLabelEditabilityAndRemoveEmptyLabel(false);
       return false;
     }
-    if (this.#inputField.textContent !== null && this.#inputField.textContent.length <= _a.MAX_LABEL_LENGTH) {
+    if (this.#inputField.textContent !== null && this.#inputField.textContent.length <= _EntryLabelOverlay.MAX_LABEL_LENGTH) {
       return true;
     }
     if (allowedKeysAfterReachingLenLimit.includes(event.key)) {
@@ -840,7 +839,7 @@ var EntryLabelOverlay = class extends HTMLElement {
     }
     const pastedText = clipboardData.getData("text").replace(/(\r\n|\n|\r)/gm, "");
     const newText = this.#inputField.textContent + pastedText;
-    const trimmedText = newText.slice(0, _a.MAX_LABEL_LENGTH + 1);
+    const trimmedText = newText.slice(0, _EntryLabelOverlay.MAX_LABEL_LENGTH + 1);
     this.#inputField.textContent = trimmedText;
     this.#placeCursorAtInputEnd();
   }
@@ -859,7 +858,7 @@ var EntryLabelOverlay = class extends HTMLElement {
       return;
     }
     if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
-      const translation = this.#entryLabelVisibleHeight + _a.LABEL_CONNECTOR_HEIGHT;
+      const translation = this.#entryLabelVisibleHeight + _EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT;
       this.#connectorLineContainer.style.transform = `translateY(${translation}px) rotate(180deg)`;
     }
     const connector = this.#connectorLineContainer.querySelector("line");
@@ -868,17 +867,17 @@ var EntryLabelOverlay = class extends HTMLElement {
       console.error("Some entry label elements are missing.");
       return;
     }
-    this.#connectorLineContainer.setAttribute("width", (_a.LABEL_AND_CONNECTOR_SHIFT_LENGTH * 2).toString());
-    this.#connectorLineContainer.setAttribute("height", _a.LABEL_CONNECTOR_HEIGHT.toString());
+    this.#connectorLineContainer.setAttribute("width", (_EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * 2).toString());
+    this.#connectorLineContainer.setAttribute("height", _EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
     connector.setAttribute("x1", "0");
     connector.setAttribute("y1", "0");
-    connector.setAttribute("x2", _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
-    connector.setAttribute("y2", _a.LABEL_CONNECTOR_HEIGHT.toString());
+    connector.setAttribute("x2", _EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
+    connector.setAttribute("y2", _EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT.toString());
     const connectorColor = ThemeSupport3.ThemeSupport.instance().getComputedValue("--color-text-primary");
     connector.setAttribute("stroke", connectorColor);
     connector.setAttribute("stroke-width", "2");
-    circle.setAttribute("cx", _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
-    circle.setAttribute("cy", (_a.LABEL_CONNECTOR_HEIGHT + 1).toString());
+    circle.setAttribute("cx", _EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH.toString());
+    circle.setAttribute("cy", (_EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT + 1).toString());
     circle.setAttribute("r", "3");
     circle.setAttribute("fill", connectorColor);
   }
@@ -893,12 +892,12 @@ var EntryLabelOverlay = class extends HTMLElement {
     let xTranslation = null;
     let yTranslation = null;
     if (this.#shouldDrawBelowEntry) {
-      xTranslation = _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
+      xTranslation = _EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH;
     } else {
-      xTranslation = _a.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
+      xTranslation = _EntryLabelOverlay.LABEL_AND_CONNECTOR_SHIFT_LENGTH * -1;
     }
     if (this.#shouldDrawBelowEntry && this.#entryLabelVisibleHeight) {
-      const verticalTransform = this.#entryLabelVisibleHeight + _a.LABEL_CONNECTOR_HEIGHT * 2 + this.#inputField?.offsetHeight;
+      const verticalTransform = this.#entryLabelVisibleHeight + _EntryLabelOverlay.LABEL_CONNECTOR_HEIGHT * 2 + this.#inputField?.offsetHeight;
       yTranslation = verticalTransform;
     }
     let transformString = "";
@@ -1217,7 +1216,6 @@ var EntryLabelOverlay = class extends HTMLElement {
         </span>`, this.#shadow, { host: this });
   }
 };
-_a = EntryLabelOverlay;
 customElements.define("devtools-entry-label-overlay", EntryLabelOverlay);
 
 // gen/front_end/panels/timeline/overlays/components/TimeRangeOverlay.js

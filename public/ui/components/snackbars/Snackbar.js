@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
-var _a;
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
 import * as UI from '../../legacy/legacy.js';
@@ -126,9 +125,9 @@ export class Snackbar extends HTMLElement {
         }
     }
     static show(properties, container) {
-        const snackbar = new _a(properties, container);
-        _a.snackbarQueue.push(snackbar);
-        if (_a.snackbarQueue.length === 1) {
+        const snackbar = new Snackbar(properties, container);
+        Snackbar.snackbarQueue.push(snackbar);
+        if (Snackbar.snackbarQueue.length === 1) {
             snackbar.#show();
         }
         return snackbar;
@@ -149,9 +148,9 @@ export class Snackbar extends HTMLElement {
             window.clearTimeout(this.#timeout);
         }
         this.remove();
-        _a.snackbarQueue.shift();
-        if (_a.snackbarQueue.length > 0) {
-            const nextSnackbar = _a.snackbarQueue[0];
+        Snackbar.snackbarQueue.shift();
+        if (Snackbar.snackbarQueue.length > 0) {
+            const nextSnackbar = Snackbar.snackbarQueue[0];
             if (nextSnackbar) {
                 nextSnackbar.#show();
             }
@@ -207,6 +206,5 @@ export class Snackbar extends HTMLElement {
         // clang-format on
     }
 }
-_a = Snackbar;
 customElements.define('devtools-snackbar', Snackbar);
 //# sourceMappingURL=Snackbar.js.map

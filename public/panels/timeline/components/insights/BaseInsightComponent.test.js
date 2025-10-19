@@ -306,7 +306,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
         });
         it('sets the context when the user clicks the button', async () => {
             // @ts-expect-error: don't need real data.
-            const focus = new AIAssistance.AgentFocus({});
+            const focus = new AIAssistance.AIContext.AgentFocus({});
             updateHostConfig({
                 aidaAvailability: {
                     enabled: true,
@@ -329,8 +329,8 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 .withArgs(sinon.match(/drjones\.performance-insight-context/))
                 .returns(FAKE_ACTION);
             dispatchClickEvent(button);
-            const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
-            assert.instanceOf(newFocus, AIAssistance.AgentFocus);
+            const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
+            assert.instanceOf(newFocus, AIAssistance.AIContext.AgentFocus);
         });
         it('clears "insight" from the active context when it gets toggled shut', async () => {
             const mockInsight = {
@@ -344,8 +344,8 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 frameId: '123',
             };
             // @ts-expect-error: don't need real data.
-            const focus = new AIAssistance.AgentFocus({ parsedTrace: true, insight: mockInsight });
-            UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
+            const focus = new AIAssistance.AIContext.AgentFocus({ parsedTrace: true, insight: mockInsight });
+            UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
             const component = await renderComponent({ insightHasAISupport: true });
             component.agentFocus = focus;
             component.insightSetKey = 'key';
@@ -353,7 +353,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const header = component.shadowRoot?.querySelector('header');
             assert.isOk(header);
             dispatchClickEvent(header);
-            const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+            const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
             assert.isNull(newFocus?.insight);
             assert.isTrue(newFocus?.parsedTrace);
         });

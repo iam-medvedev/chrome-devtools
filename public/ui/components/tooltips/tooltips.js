@@ -330,11 +330,14 @@ var Tooltip = class _Tooltip extends HTMLElement {
       _Tooltip.lastOpenedTooltipId = this.id;
     }, this.hoverDelay);
   };
+  #containsNode(target) {
+    return target instanceof Node && this.contains(target);
+  }
   hideTooltip = (event) => {
     if (this.#timeout) {
       window.clearTimeout(this.#timeout);
     }
-    if (event && this.variant === "rich" && event.target === this.#anchor && event.relatedTarget instanceof Node && this.contains(event.relatedTarget)) {
+    if (event && this.variant === "rich" && (event.target === this.#anchor || this.#containsNode(event.target)) && this.#containsNode(event.relatedTarget)) {
       return;
     }
     if (event && this.variant === "rich" && (event.relatedTarget === this || event.relatedTarget?.parentElement === this)) {

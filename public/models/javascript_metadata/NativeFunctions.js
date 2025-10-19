@@ -685,7 +685,7 @@ export const NativeFunctions = [
     {
         name: "toJSON",
         signatures: [["?key"]],
-        receivers: ["Date"]
+        receivers: ["Date", "CSPViolationReportBody", "ReportBody", "CoopAccessViolationReportBody", "DeprecationReportBody", "DocumentPolicyViolationReportBody", "IntegrityViolationReportBody", "InterventionReportBody", "PermissionsPolicyViolationReportBody", "TestReportBody"]
     },
     {
         name: "parse",
@@ -2344,7 +2344,7 @@ export const NativeFunctions = [
     {
         name: "clear",
         signatures: [["mask"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "adoptNode",
@@ -3368,12 +3368,12 @@ export const NativeFunctions = [
     {
         name: "disable",
         signatures: [["cap"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "enable",
         signatures: [["cap"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "setHeaderValue",
@@ -4554,7 +4554,7 @@ export const NativeFunctions = [
     {
         name: "bufferData",
         signatures: [["target", "size", "usage"], ["target", "data", "usage"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "bufferData",
@@ -4569,7 +4569,7 @@ export const NativeFunctions = [
     {
         name: "bufferSubData",
         signatures: [["target", "offset", "data"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "bufferSubData",
@@ -4584,7 +4584,7 @@ export const NativeFunctions = [
     {
         name: "compressedTexImage2D",
         signatures: [["target", "level", "internalformat", "width", "height", "border", "data"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "compressedTexImage2D",
@@ -4599,7 +4599,7 @@ export const NativeFunctions = [
     {
         name: "compressedTexSubImage2D",
         signatures: [["target", "level", "xoffset", "yoffset", "width", "height", "format", "data"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "compressedTexSubImage2D",
@@ -4614,7 +4614,7 @@ export const NativeFunctions = [
     {
         name: "readPixels",
         signatures: [["x", "y", "width", "height", "format", "type", "pixels"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "readPixels",
@@ -4634,7 +4634,7 @@ export const NativeFunctions = [
     {
         name: "texImage2D",
         signatures: [["target", "level", "internalformat", "format", "type", "pixels"], ["target", "level", "internalformat", "format", "type", "image"], ["target", "level", "internalformat", "format", "type", "canvas"], ["target", "level", "internalformat", "format", "type", "offscreenCanvas"], ["target", "level", "internalformat", "format", "type", "video"], ["target", "level", "internalformat", "format", "type", "bitmap"], ["target", "level", "internalformat", "format", "type", "frame"], ["target", "level", "internalformat", "width", "height", "border", "format", "type", "pixels"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "texImage2D",
@@ -4654,7 +4654,7 @@ export const NativeFunctions = [
     {
         name: "texSubImage2D",
         signatures: [["target", "level", "xoffset", "yoffset", "format", "type", "pixels"], ["target", "level", "xoffset", "yoffset", "format", "type", "image"], ["target", "level", "xoffset", "yoffset", "format", "type", "canvas"], ["target", "level", "xoffset", "yoffset", "format", "type", "offscreenCanvas"], ["target", "level", "xoffset", "yoffset", "format", "type", "video"], ["target", "level", "xoffset", "yoffset", "format", "type", "bitmap"], ["target", "level", "xoffset", "yoffset", "format", "type", "frame"], ["target", "level", "xoffset", "yoffset", "width", "height", "format", "type", "pixels"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "texSubImage2D",
@@ -4669,7 +4669,7 @@ export const NativeFunctions = [
     {
         name: "uniform1fv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform1fv",
@@ -4684,7 +4684,7 @@ export const NativeFunctions = [
     {
         name: "uniform1iv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform1iv",
@@ -4699,7 +4699,7 @@ export const NativeFunctions = [
     {
         name: "uniform2fv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform2fv",
@@ -4714,7 +4714,7 @@ export const NativeFunctions = [
     {
         name: "uniform2iv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform2iv",
@@ -4729,7 +4729,7 @@ export const NativeFunctions = [
     {
         name: "uniform3fv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform3fv",
@@ -4744,7 +4744,7 @@ export const NativeFunctions = [
     {
         name: "uniform3iv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform3iv",
@@ -4759,7 +4759,7 @@ export const NativeFunctions = [
     {
         name: "uniform4fv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform4fv",
@@ -4774,7 +4774,7 @@ export const NativeFunctions = [
     {
         name: "uniform4iv",
         signatures: [["location", "v"]],
-        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextOverloads", "WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniform4iv",
@@ -4794,7 +4794,7 @@ export const NativeFunctions = [
     {
         name: "uniformMatrix2fv",
         signatures: [["location", "transpose", "array"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniformMatrix2fv",
@@ -4814,7 +4814,7 @@ export const NativeFunctions = [
     {
         name: "uniformMatrix3fv",
         signatures: [["location", "transpose", "array"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniformMatrix3fv",
@@ -4834,7 +4834,7 @@ export const NativeFunctions = [
     {
         name: "uniformMatrix4fv",
         signatures: [["location", "transpose", "array"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "uniformMatrix4fv",
@@ -5037,7 +5037,7 @@ export const NativeFunctions = [
     {
         name: "getParameter",
         signatures: [["pname"]],
-        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextBase", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
+        receivers: ["WebGLRenderingContextWebGPU", "WebGLRenderingContext", "WebGL2RenderingContextWebGPU", "WebGL2RenderingContext"]
     },
     {
         name: "getParameter",
@@ -6039,7 +6039,13 @@ export const NativeFunctions = [
     },
     {
         name: "waitUntil",
-        signatures: [["f"]]
+        signatures: [["f"]],
+        receivers: ["ExtendableEvent"]
+    },
+    {
+        name: "waitUntil",
+        signatures: [["promise"]],
+        receivers: ["ViewTransition"]
     },
     {
         name: "respondWith",
@@ -6081,7 +6087,7 @@ export const NativeFunctions = [
     },
     {
         name: "addAnimation",
-        signatures: [["animation", "action", "behavior"]]
+        signatures: [["animation", "activateBehavior", "?deactivateBehavior"]]
     },
     {
         name: "removeAnimation",
@@ -6603,10 +6609,6 @@ export const NativeFunctions = [
     {
         name: "when",
         signatures: [["type", "?options"]]
-    },
-    {
-        name: "Event",
-        signatures: [["type", "?eventInitDict"]]
     },
     {
         name: "setFormControlRange",
@@ -8440,6 +8442,14 @@ export const NativeFunctions = [
     {
         name: "sendPackets",
         signatures: [["packets"]]
+    },
+    {
+        name: "addRemoteCandidate",
+        signatures: [["candidate"]]
+    },
+    {
+        name: "setRemoteDtlsParameters",
+        signatures: [["params"]]
     },
     {
         name: "revoke",

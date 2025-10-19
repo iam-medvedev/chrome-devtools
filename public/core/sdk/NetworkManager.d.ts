@@ -95,6 +95,7 @@ export interface EventTypes {
  * @see https://docs.google.com/document/d/10lfVdS1iDWCRKQXPfbxEn4Or99D64mvNlugP1AQuFlE/edit for historical context.
  * @see https://crbug.com/342406608#comment10 for context around the addition of 4G presets in June 2024.
  */
+export declare const BlockingConditions: ThrottlingConditions;
 export declare const NoThrottlingConditions: Conditions;
 export declare const OfflineConditions: Conditions;
 export declare const Slow3GConditions: Conditions;
@@ -173,6 +174,92 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     protected createNetworkRequest(requestId: Protocol.Network.RequestId, frameId: Protocol.Page.FrameId, loaderId: Protocol.Network.LoaderId, url: string, documentURL: string, initiator: Protocol.Network.Initiator | null): NetworkRequest;
     private concatHostPort;
 }
+export type RequestConditionsSetting = {
+    url: string;
+    enabled: boolean;
+} | {
+    urlPattern: URLPatternConstructorString;
+    conditions: ThrottlingConditionKey;
+    enabled: boolean;
+};
+declare global {
+    interface URLPattern {
+        hash: string;
+        hostname: string;
+        password: string;
+        pathname: string;
+        port: string;
+        protocol: string;
+        search: string;
+        username: string;
+        hasRegExpGroups: boolean;
+        test(url: string): boolean;
+    }
+    var URLPattern: {
+        prototype: URLPattern;
+        new (input: string): URLPattern;
+    };
+}
+export type URLPatternConstructorString = Platform.Brand.Brand<string, 'URLPatternConstructorString'>;
+export declare const enum RequestURLPatternValidity {
+    VALID = "valid",
+    FAILED_TO_PARSE = "failed-to-parse",
+    HAS_REGEXP_GROUPS = "has-regexp-groups"
+}
+export declare class RequestURLPattern {
+    readonly constructorString: URLPatternConstructorString;
+    readonly pattern: URLPattern;
+    private constructor();
+    static isValidPattern(pattern: string): RequestURLPatternValidity;
+    static create(constructorString: URLPatternConstructorString): RequestURLPattern | null;
+    static upgradeFromWildcard(pattern: string): RequestURLPattern | null;
+}
+export declare class RequestCondition extends Common.ObjectWrapper.ObjectWrapper<RequestCondition.EventTypes> {
+    #private;
+    static createFromSetting(setting: RequestConditionsSetting): RequestCondition;
+    static create(pattern: RequestURLPattern, conditions: ThrottlingConditions): RequestCondition;
+    private constructor();
+    get constructorString(): string | undefined;
+    get wildcardURL(): string | undefined;
+    get constructorStringOrWildcardURL(): string;
+    set pattern(pattern: RequestURLPattern | string);
+    get enabled(): boolean;
+    set enabled(enabled: boolean);
+    get conditions(): ThrottlingConditions;
+    set conditions(conditions: ThrottlingConditions);
+    toSetting(): RequestConditionsSetting;
+    get originalOrUpgradedURLPattern(): URLPattern | undefined;
+}
+export declare namespace RequestCondition {
+    const enum Events {
+        REQUEST_CONDITION_CHANGED = "request-condition-changed"
+    }
+    interface EventTypes {
+        [Events.REQUEST_CONDITION_CHANGED]: void;
+    }
+}
+export declare class RequestConditions extends Common.ObjectWrapper.ObjectWrapper<RequestConditions.EventTypes> {
+    #private;
+    constructor();
+    get count(): number;
+    get conditionsEnabled(): boolean;
+    set conditionsEnabled(enabled: boolean);
+    findCondition(pattern: string): RequestCondition | undefined;
+    has(url: string): boolean;
+    add(...conditions: RequestCondition[]): void;
+    delete(condition: RequestCondition): void;
+    clear(): void;
+    get conditions(): IteratorObject<RequestCondition>;
+    applyConditions(offline: boolean, globalConditions: Conditions | null, ...agents: ProtocolProxyApi.NetworkApi[]): boolean;
+}
+export declare namespace RequestConditions {
+    const enum Events {
+        REQUEST_CONDITIONS_CHANGED = "request-conditions-changed"
+    }
+    interface EventTypes {
+        [Events.REQUEST_CONDITIONS_CHANGED]: void;
+    }
+}
 export declare class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrapper<MultitargetNetworkManager.EventTypes> implements SDKModelObserver<NetworkManager> {
     #private;
     readonly inflightMainResourceRequests: Map<string, NetworkRequest>;
@@ -199,11 +286,18 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
     clearCustomAcceptedEncodingsOverride(): void;
     isAcceptedEncodingOverrideSet(): boolean;
     private updateAcceptedEncodingsOverride;
-    blockedPatterns(): BlockedPattern[];
-    blockingEnabled(): boolean;
+    get requestConditions(): RequestConditions;
     isBlocking(): boolean;
-    setBlockedPatterns(patterns: BlockedPattern[]): void;
-    setBlockingEnabled(enabled: boolean): void;
+    /**
+     * @deprecated Kept for layout tests
+     * TODO(pfaffe) remove
+     */
+    private setBlockingEnabled;
+    /**
+     * @deprecated Kept for layout tests
+     * TODO(pfaffe) remove
+     */
+    private setBlockedPatterns;
     private updateBlockedPatterns;
     isIntercepting(): boolean;
     setInterceptionHandlerForPatterns(patterns: InterceptionPattern[], requestInterceptor: (arg0: InterceptedRequest) => Promise<void>): Promise<void>;
@@ -264,7 +358,7 @@ export declare class InterceptedRequest {
         charset: string | null;
     };
 }
-export declare function networkConditionsEqual(first: Conditions, second: Conditions): boolean;
+export declare function networkConditionsEqual(first: ThrottlingConditions, second: ThrottlingConditions): boolean;
 /**
  * IMPORTANT: this key is used as the value that is persisted so we remember
  * the user's throttling settings
@@ -278,6 +372,7 @@ export declare function networkConditionsEqual(first: Conditions, second: Condit
  * please talk to jacktfranklin@ first.
  */
 export declare const enum PredefinedThrottlingConditionKey {
+    BLOCKING = "BLOCKING",
     NO_THROTTLING = "NO_THROTTLING",
     OFFLINE = "OFFLINE",
     SPEED_3G = "SPEED_3G",
@@ -289,6 +384,12 @@ export type ThrottlingConditionKey = PredefinedThrottlingConditionKey | UserDefi
 export declare const THROTTLING_CONDITIONS_LOOKUP: ReadonlyMap<PredefinedThrottlingConditionKey, Conditions>;
 export declare function keyIsCustomUser(key: ThrottlingConditionKey): key is UserDefinedThrottlingConditionKey;
 export declare function getPredefinedCondition(key: ThrottlingConditionKey): Conditions | null;
+export declare function getPredefinedOrBlockingCondition(key: ThrottlingConditionKey): ThrottlingConditions | null;
+export type ThrottlingConditions = Conditions | {
+    readonly key: ThrottlingConditionKey;
+    block: true;
+    title: string | (() => string);
+};
 export interface Conditions {
     readonly key: ThrottlingConditionKey;
     download: number;
@@ -305,10 +406,6 @@ export interface Conditions {
      * @see https://docs.google.com/document/d/10lfVdS1iDWCRKQXPfbxEn4Or99D64mvNlugP1AQuFlE/edit for historical context.
      */
     targetLatency?: number;
-}
-export interface BlockedPattern {
-    url: string;
-    enabled: boolean;
 }
 export interface Message {
     message: string;

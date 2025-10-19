@@ -55,7 +55,9 @@ export class InspectorMainImpl {
         await SDK.Connections.initMainConnection(async () => {
             const type = Root.Runtime.Runtime.queryParam('v8only') ?
                 SDK.Target.Type.NODE :
-                (Root.Runtime.Runtime.queryParam('targetType') === 'tab' ? SDK.Target.Type.TAB : SDK.Target.Type.FRAME);
+                (Root.Runtime.Runtime.queryParam('targetType') === 'tab' || Root.Runtime.Runtime.isTraceApp() ?
+                    SDK.Target.Type.TAB :
+                    SDK.Target.Type.FRAME);
             // TODO(crbug.com/1348385): support waiting for debugger with tab target.
             const waitForDebuggerInPage = type === SDK.Target.Type.FRAME && Root.Runtime.Runtime.queryParam('panel') === 'sources';
             const name = type === SDK.Target.Type.FRAME ? i18nString(UIStrings.main) : i18nString(UIStrings.tab);

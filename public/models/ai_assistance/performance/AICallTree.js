@@ -1,7 +1,6 @@
 // Copyright 2024 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as Root from '../../../core/root/root.js';
 import * as Trace from '../../../models/trace/trace.js';
 import * as SourceMapsResolver from '../../../models/trace_source_maps_resolver/trace_source_maps_resolver.js';
 /** Iterates from a node down through its descendents. If the callback returns true, the loop stops. */
@@ -122,7 +121,7 @@ export class AICallTree {
         if (!data.Renderer.entryToNode.has(selectedEvent) && !data.Samples.entryToNode.has(selectedEvent)) {
             return null;
         }
-        const allEventsEnabled = Root.Runtime.experiments.isEnabled('timeline-show-all-events');
+        const showAllEvents = parsedTrace.data.Meta.config.showAllEvents;
         const { startTime, endTime } = Trace.Helpers.Timing.eventTimingsMilliSeconds(selectedEvent);
         const selectedEventBounds = Trace.Helpers.Timing.traceWindowFromMicroSeconds(Trace.Helpers.Timing.milliToMicro(startTime), Trace.Helpers.Timing.milliToMicro(endTime));
         let threadEvents = data.Renderer.processes.get(selectedEvent.pid)?.threads.get(selectedEvent.tid)?.entries;
@@ -139,7 +138,7 @@ export class AICallTree {
         // If the "Show all events" experiment is on, we don't filter out any
         // events here, otherwise the generated call tree will not match what the
         // user is seeing.
-        if (!allEventsEnabled) {
+        if (!showAllEvents) {
             filters.push(new Trace.Extras.TraceFilter.VisibleEventsFilter(Trace.Styles.visibleTypes()));
         }
         // Build a tree bounded by the selected event's timestamps, and our other filters applied

@@ -1,6 +1,6 @@
 import * as Platform from '../../core/platform/platform.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
+import * as StackTraceImpl from '../stack_trace/stack_trace_impl.js';
 import * as TextUtils from '../text_utils/text_utils.js';
 import * as Workspace from '../workspace/workspace.js';
 import type { DebuggerSourceMapping, DebuggerWorkspaceBinding } from './DebuggerWorkspaceBinding.js';
@@ -63,7 +63,7 @@ export declare class CompilerScriptMapping implements DebuggerSourceMapping {
      */
     uiLocationToRawLocations(uiSourceCode: Workspace.UISourceCode.UISourceCode, lineNumber: number, columnNumber: number): SDK.DebuggerModel.Location[];
     uiLocationRangeToRawLocationRanges(uiSourceCode: Workspace.UISourceCode.UISourceCode, textRange: TextUtils.TextRange.TextRange): SDK.DebuggerModel.LocationRange[] | null;
-    translateRawFramesStep(_rawFrames: StackTraceImpl.Trie.RawFrame[], _translatedFrames: Awaited<ReturnType<StackTraceImpl.StackTraceModel.TranslateRawFrames>>): boolean;
+    translateRawFramesStep(rawFrames: StackTraceImpl.Trie.RawFrame[], translatedFrames: Awaited<ReturnType<StackTraceImpl.StackTraceModel.TranslateRawFrames>>): boolean;
     /**
      * Computes the set of line numbers which are source-mapped to a script within the
      * given {@link uiSourceCode}.

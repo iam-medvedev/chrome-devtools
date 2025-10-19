@@ -2549,9 +2549,6 @@ var environment = {
   }
 };
 
-// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/generated/version.js
-var packageVersion = "24.23.0";
-
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/assert.js
 var assert = (value, message) => {
   if (!value) {
@@ -2597,6 +2594,9 @@ function mergeUint8Arrays(items) {
   }
   return result;
 }
+
+// gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
+var packageVersion = "24.25.0";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -11763,6 +11763,7 @@ var AXNode = class _AXNode {
   #name;
   #role;
   #ignored;
+  #cachedHasFocusableChild;
   #realm;
   constructor(realm, payload) {
     this.payload = payload;
@@ -11796,6 +11797,18 @@ var AXNode = class _AXNode {
     const role = this.#role;
     return role === "LineBreak" || role === "text" || role === "InlineTextBox" || role === "StaticText";
   }
+  #hasFocusableChild() {
+    if (this.#cachedHasFocusableChild === void 0) {
+      this.#cachedHasFocusableChild = false;
+      for (const child of this.children) {
+        if (child.#focusable || child.#hasFocusableChild()) {
+          this.#cachedHasFocusableChild = true;
+          break;
+        }
+      }
+    }
+    return this.#cachedHasFocusableChild;
+  }
   find(predicate) {
     if (predicate(this)) {
       return this;
@@ -11828,6 +11841,9 @@ var AXNode = class _AXNode {
         return true;
       default:
         break;
+    }
+    if (this.#hasFocusableChild()) {
+      return false;
     }
     if (this.#role === "heading" && this.#name) {
       return true;
@@ -17388,8 +17404,8 @@ var TargetManager = class extends EventEmitter {
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/cdp/Browser.js
 var CdpBrowser = class _CdpBrowser extends Browser {
   protocol = "cdp";
-  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true) {
-    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled);
+  static async _create(connection, contextIds, acceptInsecureCerts, defaultViewport, downloadBehavior, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, handleDevToolsAsPage = false) {
+    const browser = new _CdpBrowser(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets, networkEnabled, handleDevToolsAsPage);
     if (acceptInsecureCerts) {
       await connection.send("Security.setIgnoreCertificateErrors", {
         ignore: true
@@ -17408,7 +17424,8 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   #contexts = /* @__PURE__ */ new Map();
   #networkEnabled = true;
   #targetManager;
-  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true) {
+  #handleDevToolsAsPage = false;
+  constructor(connection, contextIds, defaultViewport, process3, closeCallback, targetFilterCallback, isPageTargetCallback, waitForInitiallyDiscoveredTargets = true, networkEnabled = true, handleDevToolsAsPage = false) {
     super();
     this.#networkEnabled = networkEnabled;
     this.#defaultViewport = defaultViewport;
@@ -17419,6 +17436,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
     this.#targetFilterCallback = targetFilterCallback || (() => {
       return true;
     });
+    this.#handleDevToolsAsPage = handleDevToolsAsPage;
     this.#setIsPageTargetCallback(isPageTargetCallback);
     this.#targetManager = new TargetManager(connection, this.#createTarget, this.#targetFilterCallback, waitForInitiallyDiscoveredTargets);
     this.#defaultContext = new CdpBrowserContext(this.#connection, this);
@@ -17455,7 +17473,7 @@ var CdpBrowser = class _CdpBrowser extends Browser {
   }
   #setIsPageTargetCallback(isPageTargetCallback) {
     this.#isPageTargetCallback = isPageTargetCallback || ((target) => {
-      return target.type() === "page" || target.type() === "background_page" || target.type() === "webview";
+      return target.type() === "page" || target.type() === "background_page" || target.type() === "webview" || this.#handleDevToolsAsPage && target.type() === "other" && target.url().startsWith("devtools://");
     });
   }
   _getIsPageTargetCallback() {
@@ -17638,6 +17656,11 @@ export {
 /**
  * @license
  * Copyright 2024 Google Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/**
+ * @license
+ * Copyright 2025 Google Inc.
  * SPDX-License-Identifier: Apache-2.0
  */
 /**

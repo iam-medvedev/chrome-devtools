@@ -421,16 +421,16 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!this.data.insightSetKey || !this.model) {
       return;
     }
-    const focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+    const focus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
     if (this.#selected) {
       this.dispatchEvent(new InsightDeactivated());
       if (focus) {
-        UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(null));
+        UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus.withInsight(null));
       }
       return;
     }
     if (focus) {
-      UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus.withInsight(this.model));
+      UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus.withInsight(this.model));
     }
     Badges.UserBadges.instance().recordAction(Badges.BadgeAction.PERFORMANCE_INSIGHT_CLICKED);
     this.sharedTableState.selectedRowEl?.classList.remove("selected");
@@ -570,13 +570,13 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
-    let focus = UI.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+    let focus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
     if (focus) {
       focus = focus.withInsight(this.model);
     } else {
       focus = this.#agentFocus;
     }
-    UI.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
+    UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
     const action3 = UI.ActionRegistry.ActionRegistry.instance().getAction(actionId);
     void action3.execute();
   }

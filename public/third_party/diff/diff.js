@@ -723,10 +723,10 @@ var Operation;
     }
     return a.join("").replace(/%20/g, " ");
   };
-  window.diff_match_patch = diff_match_patch2;
-  window.DIFF_DELETE = -1;
-  window.DIFF_INSERT = 1;
-  window.DIFF_EQUAL = 0;
+  globalThis.diff_match_patch = diff_match_patch2;
+  globalThis.DIFF_DELETE = -1;
+  globalThis.DIFF_INSERT = 1;
+  globalThis.DIFF_EQUAL = 0;
 })();
 export {
   DiffWrapper_exports as Diff

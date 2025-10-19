@@ -3,7 +3,7 @@ import type * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as UI from '../../ui/legacy/legacy.js';
 import { ConsoleFilter, type LevelsMask } from './ConsoleFilter.js';
 import type { ConsoleViewMessage } from './ConsoleViewMessage.js';
-declare const enum GroupName {
+export declare const enum GroupName {
     CONSOLE_API = "user message",
     ALL = "message",
     ERROR = "error",
@@ -18,7 +18,7 @@ interface ViewInput {
 }
 export type View = (input: ViewInput, output: object, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-declare class ConsoleFilterGroup {
+export declare class ConsoleFilterGroup {
     #private;
     readonly urlGroups: Map<string | null, {
         filter: ConsoleFilter;

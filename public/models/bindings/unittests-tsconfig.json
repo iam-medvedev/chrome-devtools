@@ -9,13 +9,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -66,7 +66,16 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/root/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../third_party/source-map-scopes-codec/bundle-tsconfig.json"
     },
     {
       "path": "../persistence/bundle-tsconfig.json"

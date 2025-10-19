@@ -72,7 +72,7 @@ export declare const enum PreloadingStatus {
     NOT_SUPPORTED = "NotSupported"
 }
 export type PreloadingAttemptId = string;
-export type PreloadingAttempt = PrefetchAttempt | PrerenderAttempt;
+export type PreloadingAttempt = PrefetchAttempt | PrerenderAttempt | PrerenderUntilScriptAttempt;
 export interface PrefetchAttempt {
     action: Protocol.Preload.SpeculationAction.Prefetch;
     key: Protocol.Preload.PreloadingAttemptKey;
@@ -94,7 +94,18 @@ export interface PrerenderAttempt {
     ruleSetIds: Protocol.Preload.RuleSetId[];
     nodeIds: Protocol.DOM.BackendNodeId[];
 }
-export type PreloadingAttemptInternal = PrefetchAttemptInternal | PrerenderAttemptInternal;
+export interface PrerenderUntilScriptAttempt {
+    action: Protocol.Preload.SpeculationAction.PrerenderUntilScript;
+    key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
+    status: PreloadingStatus;
+    prerenderStatus: Protocol.Preload.PrerenderFinalStatus | null;
+    disallowedMojoInterface: string | null;
+    mismatchedHeaders: Protocol.Preload.PrerenderMismatchedHeaders[] | null;
+    ruleSetIds: Protocol.Preload.RuleSetId[];
+    nodeIds: Protocol.DOM.BackendNodeId[];
+}
+export type PreloadingAttemptInternal = PrefetchAttemptInternal | PrerenderAttemptInternal | PrerenderUntilScriptAttemptInternal;
 export interface PrefetchAttemptInternal {
     action: Protocol.Preload.SpeculationAction.Prefetch;
     key: Protocol.Preload.PreloadingAttemptKey;
@@ -112,6 +123,15 @@ export interface PrerenderAttemptInternal {
     disallowedMojoInterface: string | null;
     mismatchedHeaders: Protocol.Preload.PrerenderMismatchedHeaders[] | null;
 }
+export interface PrerenderUntilScriptAttemptInternal {
+    action: Protocol.Preload.SpeculationAction.PrerenderUntilScript;
+    key: Protocol.Preload.PreloadingAttemptKey;
+    pipelineId: Protocol.Preload.PreloadPipelineId | null;
+    status: PreloadingStatus;
+    prerenderStatus: Protocol.Preload.PrerenderFinalStatus | null;
+    disallowedMojoInterface: string | null;
+    mismatchedHeaders: Protocol.Preload.PrerenderMismatchedHeaders[] | null;
+}
 export declare class PreloadPipeline {
     private inner;
     constructor(inner: Map<Protocol.Preload.SpeculationAction, PreloadingAttempt>);
@@ -119,5 +139,6 @@ export declare class PreloadPipeline {
     getOriginallyTriggered(): PreloadingAttempt;
     getPrefetch(): PreloadingAttempt | null;
     getPrerender(): PreloadingAttempt | null;
+    getPrerenderUntilScript(): PreloadingAttempt | null;
     getAttempts(): PreloadingAttempt[];
 }

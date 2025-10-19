@@ -15,8 +15,9 @@ describeWithEnvironment('AISettingsTab', () => {
     let deleteAiAssistanceHistoryStub;
     let view;
     beforeEach(async () => {
-        deleteAiAssistanceHistoryStub = sinon.stub(AiAssistanceModel.AiHistoryStorage.prototype, 'deleteAll');
-        AiAssistanceModel.AiHistoryStorage.instance({ forceNew: true });
+        deleteAiAssistanceHistoryStub =
+            sinon.stub(AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.prototype, 'deleteAll');
+        AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance({ forceNew: true });
         updateHostConfig({
             devToolsAiGeneratedTimelineLabels: {
                 enabled: true,

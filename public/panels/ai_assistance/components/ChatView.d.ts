@@ -11,7 +11,7 @@ export interface Step {
     output?: string;
     canceled?: boolean;
     sideEffect?: ConfirmSideEffectDialog;
-    contextDetails?: [AiAssistanceModel.ContextDetail, ...AiAssistanceModel.ContextDetail[]];
+    contextDetails?: [AiAssistanceModel.AiAgent.ContextDetail, ...AiAssistanceModel.AiAgent.ContextDetail[]];
 }
 interface ConfirmSideEffectDialog {
     onAnswer: (result: boolean) => void;
@@ -26,7 +26,7 @@ export type ImageInputData = {
     isLoading: false;
     data: string;
     mimeType: string;
-    inputType: AiAssistanceModel.MultimodalInputType;
+    inputType: AiAssistanceModel.AiAgent.MultimodalInputType;
 };
 export interface UserChatMessage {
     entity: ChatMessageEntity.USER;
@@ -38,7 +38,7 @@ export interface ModelChatMessage {
     steps: Step[];
     suggestions?: [string, ...string[]];
     answer?: string;
-    error?: AiAssistanceModel.ErrorType;
+    error?: AiAssistanceModel.AiAgent.ErrorType;
     rpcId?: Host.AidaClient.RpcGlobalId;
 }
 export type ChatMessage = UserChatMessage | ModelChatMessage;
@@ -48,7 +48,7 @@ export declare const enum State {
     EXPLORE_VIEW = "explore-view"
 }
 export interface Props {
-    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part, multimodalInputType?: AiAssistanceModel.MultimodalInputType) => void;
+    onTextSubmit: (text: string, imageInput?: Host.AidaClient.Part, multimodalInputType?: AiAssistanceModel.AiAgent.MultimodalInputType) => void;
     onInspectElementClick: () => void;
     onFeedbackSubmit: (rpcId: Host.AidaClient.RpcGlobalId, rate: Host.AidaClient.Rating, feedback?: string) => void;
     onCancelClick: () => void;
@@ -59,23 +59,23 @@ export interface Props {
     onRemoveImageInput?: () => void;
     onTextInputChange: (input: string) => void;
     onLoadImage?: (file: File) => Promise<void>;
-    changeManager: AiAssistanceModel.ChangeManager;
+    changeManager: AiAssistanceModel.ChangeManager.ChangeManager;
     inspectElementToggled: boolean;
     state: State;
     aidaAvailability: Host.AidaClient.AidaAccessPreconditions;
     messages: ChatMessage[];
-    selectedContext: AiAssistanceModel.ConversationContext<unknown> | null;
+    selectedContext: AiAssistanceModel.AiAgent.ConversationContext<unknown> | null;
     isLoading: boolean;
     canShowFeedbackForm: boolean;
     userInfo: Pick<Host.InspectorFrontendHostAPI.SyncInformation, 'accountImage' | 'accountFullName'>;
-    conversationType?: AiAssistanceModel.ConversationType;
+    conversationType?: AiAssistanceModel.AiHistoryStorage.ConversationType;
     isReadOnly: boolean;
     blockedByCrossOrigin: boolean;
     changeSummary?: string;
     multimodalInputEnabled?: boolean;
     imageInput?: ImageInputData;
     isTextInputDisabled: boolean;
-    emptyStateSuggestions: AiAssistanceModel.ConversationSuggestion[];
+    emptyStateSuggestions: AiAssistanceModel.AiAgent.ConversationSuggestion[];
     inputPlaceholder: Platform.UIString.LocalizedString;
     disclaimerText: Platform.UIString.LocalizedString;
     isTextInputEmpty: boolean;

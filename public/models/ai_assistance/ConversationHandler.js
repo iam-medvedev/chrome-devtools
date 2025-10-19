@@ -7,8 +7,6 @@ import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import * as Snackbars from '../../ui/components/snackbars/snackbars.js';
-import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as NetworkTimeCalculator from '../network_time_calculator/network_time_calculator.js';
 import { FileAgent } from './agents/FileAgent.js';
 import { NetworkAgent, RequestContext } from './agents/NetworkAgent.js';
@@ -16,12 +14,6 @@ import { PerformanceAgent } from './agents/PerformanceAgent.js';
 import { NodeContext, StylingAgent } from './agents/StylingAgent.js';
 import { Conversation, } from './AiHistoryStorage.js';
 import { getDisabledReasons } from './AiUtils.js';
-const UIStrings = {
-    /**
-     * @description Notification shown to the user whenever DevTools receives an external request.
-     */
-    externalRequestReceived: '`DevTools` received an external request',
-};
 /*
 * Strings that don't need to be translated at this time.
 */
@@ -31,8 +23,6 @@ const UIStringsNotTranslate = {
      */
     enableInSettings: 'For AI features to be available, you need to enable AI assistance in DevTools settings.',
 };
-const str_ = i18n.i18n.registerUIStrings('models/ai_assistance/ConversationHandler.ts', UIStrings);
-const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const lockedString = i18n.i18n.lockedString;
 function isAiAssistanceServerSideLoggingEnabled() {
     return !Root.Runtime.hostConfig.aidaAvailability?.disallowLogging;
@@ -72,11 +62,12 @@ async function inspectNetworkRequestByUrl(selector) {
     return request ?? null;
 }
 let conversationHandlerInstance;
-export class ConversationHandler {
+export class ConversationHandler extends Common.ObjectWrapper.ObjectWrapper {
     #aiAssistanceEnabledSetting;
     #aidaClient;
     #aidaAvailability;
     constructor(aidaClient, aidaAvailability) {
+        super();
         this.#aidaClient = aidaClient;
         if (aidaAvailability) {
             this.#aidaAvailability = aidaAvailability;
@@ -120,7 +111,7 @@ export class ConversationHandler {
      */
     async handleExternalRequest(parameters) {
         try {
-            Snackbars.Snackbar.Snackbar.show({ message: i18nString(UIStrings.externalRequestReceived) });
+            this.dispatchEventToListeners("ExternalRequestReceived" /* ConversationHandlerEvents.EXTERNAL_REQUEST_RECEIVED */);
             const disabledReasons = await this.#getDisabledReasons();
             const aiAssistanceSetting = this.#aiAssistanceEnabledSetting?.getIfNotDisabled();
             if (!aiAssistanceSetting) {
@@ -129,7 +120,7 @@ export class ConversationHandler {
             if (disabledReasons.length > 0) {
                 return this.#generateErrorResponse(disabledReasons.join(' '));
             }
-            void VisualLogging.logFunctionCall(`start-conversation-${parameters.conversationType}`, 'external');
+            this.dispatchEventToListeners("ExternalConversationStarted" /* ConversationHandlerEvents.EXTERNAL_CONVERSATION_STARTED */, parameters.conversationType);
             switch (parameters.conversationType) {
                 case "freestyler" /* ConversationType.STYLING */: {
                     return await this.#handleExternalStylingConversation(parameters.prompt, parameters.selector);

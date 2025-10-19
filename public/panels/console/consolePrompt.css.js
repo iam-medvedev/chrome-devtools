@@ -23,13 +23,14 @@ export default `/*
 
 #console-prompt .console-prompt-icon {
   position: absolute;
-  left: -13px;
-  top: 2px;
+  left: -9px;
+  top: 4px;
   user-select: none;
 }
 
 .console-eager-preview {
   padding-bottom: 2px;
+  margin-left: 4px;
   opacity: 60%;
   position: relative;
 }

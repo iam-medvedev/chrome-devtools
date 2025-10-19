@@ -2683,6 +2683,23 @@ devtools-icon.open-in-animations-panel {
   text-decoration: underline dotted var(--sys-color-token-meta);
 }
 
+devtools-icon.bezier-swatch-icon {
+  position: relative;
+  transform: scale(0.7);
+  margin: -5px -2px -3px -4px;
+  user-select: none;
+  color: var(--icon-css);
+  cursor: default;
+
+  &:hover {
+    color: var(--icon-css-hover);
+  }
+}
+
+span.bezier-icon-and-text {
+  white-space: nowrap;
+}
+
 /*# sourceURL=${import.meta.resolve("./stylePropertiesTreeOutline.css")} */`;
 
 // gen/front_end/panels/elements/CSSValueTraceView.js
@@ -2847,7 +2864,6 @@ function getCssDeclarationAsJavascriptProperty(declaration) {
 }
 
 // gen/front_end/panels/elements/StylePropertyTreeElement.js
-var _a;
 var { html: html5, nothing, render: render4, Directives: { classMap: classMap2 } } = Lit4;
 var ASTUtils = SDK6.CSSPropertyParser.ASTUtils;
 var FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
@@ -3750,7 +3766,11 @@ var BezierRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.B
     const bezierText = document.createElement("span");
     bezierText.append(...nodes);
     new BezierPopoverIcon({ treeElement: this.#treeElement, swatchPopoverHelper, swatch: icon, bezierText });
-    return [icon, bezierText];
+    const iconAndTextContainer = document.createElement("span");
+    iconAndTextContainer.classList.add("bezier-icon-and-text");
+    iconAndTextContainer.append(icon);
+    iconAndTextContainer.append(bezierText);
+    return [iconAndTextContainer];
   }
 };
 var AutoBaseRenderer = class extends rendererBase(SDK6.CSSPropertyParserMatchers.AutoBaseMatch) {
@@ -4365,7 +4385,7 @@ function getPropertyRenderers(propertyName, style, stylesPane, matchedStyles, tr
     new AttributeRenderer(stylesPane, treeElement, matchedStyles, computedStyles)
   ];
 }
-var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
+var StylePropertyTreeElement = class _StylePropertyTreeElement extends UI8.TreeOutline.TreeElement {
   style;
   #matchedStyles;
   property;
@@ -4445,7 +4465,7 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
     return this.#matchedStyles;
   }
   getLonghand() {
-    return this.parent instanceof _a && this.parent.isShorthand ? this.parent : null;
+    return this.parent instanceof _StylePropertyTreeElement && this.parent.isShorthand ? this.parent : null;
   }
   editable() {
     const hasSourceData = Boolean(this.style.styleSheetId && this.style.range);
@@ -4610,7 +4630,7 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
       if (leadingProperty) {
         overloaded = true;
       }
-      const item2 = new _a({
+      const item2 = new _StylePropertyTreeElement({
         stylesPane: this.#parentPane,
         section: this.#parentSection,
         matchedStyles: this.#matchedStyles,
@@ -5100,7 +5120,7 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
   }
   #startEditing(context) {
     this.contextForTest = context;
-    if (this.parent instanceof _a && this.parent.isShorthand) {
+    if (this.parent instanceof _StylePropertyTreeElement && this.parent.isShorthand) {
       return;
     }
     const selectedElement = context.isEditingName ? this.nameElement : this.valueElement;
@@ -5249,7 +5269,7 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
     const target = keyboardEvent.target;
     const keyChar = String.fromCharCode(keyboardEvent.charCode);
     const selectionLeftOffset = this.#selectionLeftOffset(target);
-    const isFieldInputTerminated = context.isEditingName ? keyChar === ":" : keyChar === ";" && selectionLeftOffset !== null && _a.shouldCommitValueSemicolon(target.textContent || "", selectionLeftOffset);
+    const isFieldInputTerminated = context.isEditingName ? keyChar === ":" : keyChar === ";" && selectionLeftOffset !== null && _StylePropertyTreeElement.shouldCommitValueSemicolon(target.textContent || "", selectionLeftOffset);
     if (isFieldInputTerminated) {
       event.consume(true);
       void this.editingCommitted(target.textContent || "", context, "forward");
@@ -5341,7 +5361,7 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
     let target = this;
     do {
       const sibling = moveDirection === "forward" ? target.nextSibling : target.previousSibling;
-      target = sibling instanceof _a ? sibling : null;
+      target = sibling instanceof _StylePropertyTreeElement ? sibling : null;
     } while (target?.inherited());
     return target;
   }
@@ -5546,7 +5566,6 @@ var StylePropertyTreeElement = class extends UI8.TreeOutline.TreeElement {
     return event.target === this.expandElement;
   }
 };
-_a = StylePropertyTreeElement;
 
 // gen/front_end/panels/elements/StyleEditorWidget.js
 var instance = null;
@@ -10748,7 +10767,6 @@ import * as Badges4 from "./../../models/badges/badges.js";
 import * as Elements from "./../../models/elements/elements.js";
 import * as IssuesManager2 from "./../../models/issues_manager/issues_manager.js";
 import * as CodeHighlighter3 from "./../../ui/components/code_highlighter/code_highlighter.js";
-import * as CopyToClipboard from "./../../ui/components/copy_to_clipboard/copy_to_clipboard.js";
 import * as IssueCounter from "./../../ui/components/issue_counter/issue_counter.js";
 import * as UI19 from "./../../ui/legacy/legacy.js";
 import { html as html9, nothing as nothing3, render as render6 } from "./../../ui/lit/lit.js";
@@ -14786,7 +14804,7 @@ var ElementsTreeOutline = class _ElementsTreeOutline extends Common13.ObjectWrap
     }
     void node.getOuterHTML(includeShadowRoots).then((outerHTML) => {
       if (outerHTML !== null) {
-        CopyToClipboard.copyTextToClipboard(outerHTML);
+        UI19.UIUtils.copyTextToClipboard(outerHTML);
       }
     });
     this.setClipboardData({ node, isCut });

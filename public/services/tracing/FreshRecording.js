@@ -19,5 +19,8 @@ export class Tracker {
     recordingIsFresh(data) {
         return this.#freshRecordings.has(data);
     }
+    recordingIsFreshOrEnhanced(data) {
+        return this.#freshRecordings.has(data) || data.metadata.enhancedTraceVersion !== undefined;
+    }
 }
 //# sourceMappingURL=FreshRecording.js.map

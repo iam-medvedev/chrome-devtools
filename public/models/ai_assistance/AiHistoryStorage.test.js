@@ -7,39 +7,39 @@ import * as AiAssistance from './ai_assistance.js';
 describe('AiHistoryStorage', () => {
     const agent1 = {
         id: 'id1',
-        type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+        type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
         history: [],
         isExternal: false,
     };
     const agent2 = {
         id: 'id2',
-        type: "drjones-file" /* AiAssistance.ConversationType.FILE */,
+        type: "drjones-file" /* AiAssistance.AiHistoryStorage.ConversationType.FILE */,
         history: [],
         isExternal: false,
     };
     const agent3 = {
         id: 'id3',
-        type: "drjones-network-request" /* AiAssistance.ConversationType.NETWORK */,
+        type: "drjones-network-request" /* AiAssistance.AiHistoryStorage.ConversationType.NETWORK */,
         history: [],
         isExternal: false,
     };
     const agent4 = {
         id: 'id4',
-        type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+        type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
         history: [
             {
-                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                 query: 'text',
                 imageId: 'image-id1',
                 imageInput: undefined,
             },
             {
-                type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                 text: 'answer',
                 complete: true,
             },
             {
-                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                 query: 'text',
                 imageId: 'image-id2',
                 imageInput: undefined,
@@ -82,7 +82,7 @@ describe('AiHistoryStorage', () => {
         });
     });
     function getStorage(maxStorageSize) {
-        return AiAssistance.AiHistoryStorage.instance({ forceNew: true, maxStorageSize });
+        return AiAssistance.AiHistoryStorage.AiHistoryStorage.instance({ forceNew: true, maxStorageSize });
     }
     it('should create and retrieve history entry', async () => {
         const storage = getStorage();
@@ -117,7 +117,7 @@ describe('AiHistoryStorage', () => {
             ...agent1,
             history: [
                 {
-                    type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                     query: 'text',
                 },
             ],
@@ -128,7 +128,7 @@ describe('AiHistoryStorage', () => {
                 type: 'freestyler',
                 history: [
                     {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                     },
                 ],
@@ -148,7 +148,7 @@ describe('AiHistoryStorage', () => {
                 type: 'freestyler',
                 history: [
                     {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                     },
                 ],
@@ -177,7 +177,7 @@ describe('AiHistoryStorage', () => {
                 type: 'freestyler',
                 history: [
                     {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                     },
                 ],
@@ -200,18 +200,18 @@ describe('AiHistoryStorage', () => {
                 type: 'freestyler',
                 history: [
                     {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                         imageId: 'image-id1',
                         imageInput: undefined,
                     },
                     {
-                        type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                        type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                         text: 'answer',
                         complete: true,
                     },
                     {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                         imageId: 'image-id2',
                         imageInput: undefined,
@@ -346,29 +346,27 @@ describe('AiHistoryStorage', () => {
     describe('Conversation', () => {
         describe('title', () => {
             it('should return undefined if there is not USER_QUERY entry in history', () => {
-                const conversation = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, []);
+                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, []);
                 assert.isUndefined(conversation.title);
             });
             it('should return full title if the first USER_QUERY is less than 80 characters', () => {
-                const conversation = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [{
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'this is less than 80',
                     }]);
                 assert.strictEqual(conversation.title, 'this is less than 80');
             });
             it('should return first 80 characters of the title with ellipis if the first USER_QUERY is more than 80 characters', () => {
-                const conversation = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [
-                    {
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [{
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'this is more than 80 characters because I\'m just going to keep typing words and words and words until it\'s really, really long, see?',
-                    }
-                ]);
+                    }]);
                 assert.strictEqual(conversation.title, 'this is more than 80 characters because I\'m just going to keep typing words and …');
             });
         });
         describe('addHistoryItem', () => {
             const historyItem1 = {
-                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                 query: 'text',
                 imageInput: {
                     inlineData: {
@@ -379,7 +377,7 @@ describe('AiHistoryStorage', () => {
                 imageId: 'image-id1',
             };
             const historyItem2 = {
-                type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                 query: 'text',
                 imageInput: {
                     inlineData: {
@@ -391,10 +389,10 @@ describe('AiHistoryStorage', () => {
             };
             it('should store images and text conversation separately', async () => {
                 const storage = getStorage();
-                sinon.stub(AiAssistance.AiHistoryStorage, 'instance').returns(storage);
-                const conversation1 = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [], 'id1', false);
+                sinon.stub(AiAssistance.AiHistoryStorage.AiHistoryStorage, 'instance').returns(storage);
+                const conversation1 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
                 await conversation1.addHistoryItem(historyItem1);
-                const conversation2 = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [], 'id2', false);
+                const conversation2 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
                 await conversation2.addHistoryItem(historyItem2);
                 const imageHistory = storage.getImageHistory();
                 assert.lengthOf(imageHistory, 2);
@@ -412,9 +410,9 @@ describe('AiHistoryStorage', () => {
                 assert.lengthOf(historyWithoutImages, 2);
                 assert.deepEqual(historyWithoutImages[0], {
                     id: 'id1',
-                    type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+                    type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
                     history: [{
-                            type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                            type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                             query: 'text',
                             imageId: 'image-id1',
                         }],
@@ -422,9 +420,9 @@ describe('AiHistoryStorage', () => {
                 });
                 assert.deepEqual(historyWithoutImages[1], {
                     id: 'id2',
-                    type: "freestyler" /* AiAssistance.ConversationType.STYLING */,
+                    type: "freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */,
                     history: [{
-                            type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                            type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                             query: 'text',
                             imageInput: undefined,
                             imageId: 'image-id2',
@@ -435,30 +433,30 @@ describe('AiHistoryStorage', () => {
             it('should have empty image data for image not present in history', async () => {
                 const MAX_STORAGE_SIZE = 1;
                 const storage = getStorage(MAX_STORAGE_SIZE);
-                sinon.stub(AiAssistance.AiHistoryStorage, 'instance').returns(storage);
-                const conversation1 = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [], 'id1', false);
+                sinon.stub(AiAssistance.AiHistoryStorage.AiHistoryStorage, 'instance').returns(storage);
+                const conversation1 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id1', false);
                 await conversation1.addHistoryItem(historyItem1);
-                const conversation2 = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, [], 'id2', false);
+                const conversation2 = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, [], 'id2', false);
                 await conversation2.addHistoryItem(historyItem2);
                 const imageHistory = storage.getImageHistory();
                 assert.lengthOf(imageHistory, 1);
                 const historyWithoutImages = storage.getHistory();
                 assert.lengthOf(historyWithoutImages, 2);
-                const conversationFromHistory = historyWithoutImages.map(item => AiAssistance.Conversation.fromSerializedConversation(item));
+                const conversationFromHistory = historyWithoutImages.map(item => AiAssistance.AiHistoryStorage.Conversation.fromSerializedConversation(item));
                 assert.lengthOf(conversationFromHistory, 2);
                 assert.deepEqual(conversationFromHistory[0].history, [{
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                         imageInput: {
                             inlineData: {
-                                data: AiAssistance.NOT_FOUND_IMAGE_DATA,
+                                data: AiAssistance.AiHistoryStorage.NOT_FOUND_IMAGE_DATA,
                                 mimeType: 'image/jpeg',
                             }
                         },
                         imageId: 'image-id1',
                     }]);
                 assert.deepEqual(conversationFromHistory[1].history, [{
-                        type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'text',
                         imageInput: {
                             inlineData: {
@@ -485,11 +483,11 @@ describe('AiHistoryStorage', () => {
             const clock = sinon.useFakeTimers(fakeTime);
             const history = [
                 {
-                    type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                     query: 'What is the color of the sky?',
                 },
                 {
-                    type: "context" /* AiAssistance.ResponseType.CONTEXT */,
+                    type: "context" /* AiAssistance.AiAgent.ResponseType.CONTEXT */,
                     title: 'Analyzing context',
                     details: [
                         { title: 'Detail 1', text: 'Some detail' },
@@ -497,47 +495,47 @@ describe('AiHistoryStorage', () => {
                     ],
                 },
                 {
-                    type: "title" /* AiAssistance.ResponseType.TITLE */,
+                    type: "title" /* AiAssistance.AiAgent.ResponseType.TITLE */,
                     title: 'Thinking about it',
                 },
                 {
-                    type: "thought" /* AiAssistance.ResponseType.THOUGHT */,
+                    type: "thought" /* AiAssistance.AiAgent.ResponseType.THOUGHT */,
                     thought: 'The user is asking about colors.',
                 },
                 {
-                    type: "action" /* AiAssistance.ResponseType.ACTION */,
+                    type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
                     code: 'console.log("blue")',
                     output: 'blue',
                     canceled: false,
                 },
                 {
-                    type: "action" /* AiAssistance.ResponseType.ACTION */,
+                    type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
                     code: 'console.log("red")',
                     output: 'Error: User denied code execution with side effects',
                     canceled: true,
                 },
                 {
-                    type: "action" /* AiAssistance.ResponseType.ACTION */,
+                    type: "action" /* AiAssistance.AiAgent.ResponseType.ACTION */,
                     code: 'console.log("no output")',
                     canceled: false,
                 },
                 {
-                    type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                    type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                     text: 'The sky is blue.',
                     complete: true,
                 },
                 {
-                    type: "user-query" /* AiAssistance.ResponseType.USER_QUERY */,
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                     query: 'And what about this image?',
                     imageInput: { inlineData: { data: 'test', mimeType: 'image/png' } },
                 },
                 {
-                    type: "answer" /* AiAssistance.ResponseType.ANSWER */,
+                    type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                     text: 'This image contains a red apple.',
                     complete: true,
                 },
             ];
-            const conversation = new AiAssistance.Conversation("freestyler" /* AiAssistance.ConversationType.STYLING */, history);
+            const conversation = new AiAssistance.AiHistoryStorage.Conversation("freestyler" /* AiAssistance.AiHistoryStorage.ConversationType.STYLING */, history);
             const markdown = conversation.getConversationMarkdown();
             snapshotTester.assert(this, markdown);
             clock.restore();

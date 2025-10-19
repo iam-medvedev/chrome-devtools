@@ -24,9 +24,9 @@ function assertSnapshotContent(actual, expected) {
  *
  * Note: karma.conf.ts implements the server logic (see snapshotTesterFactory).
  */
-export class SnapshotTester {
+class BaseSnapshotTester {
     static #updateMode = null;
-    #snapshotPath;
+    snapshotPath;
     #expected = new Map();
     #actual = new Map();
     #anyFailures = false;
@@ -35,24 +35,17 @@ export class SnapshotTester {
         // out/Default/gen/third_party/devtools-frontend/src/front_end/testing/SnapshotTester.test.js?8ee4f2b123e221040a4aa075a28d0e5b41d3d3ed
         // ->
         // front_end/testing/SnapshotTester.snapshot.txt
-        this.#snapshotPath =
+        this.snapshotPath =
             meta.url.substring(meta.url.lastIndexOf('front_end')).replace('.test.js', '.snapshot.txt').split('?')[0];
     }
     async load() {
-        if (SnapshotTester.#updateMode === null) {
-            SnapshotTester.#updateMode = await this.#checkIfUpdateMode();
+        if (BaseSnapshotTester.#updateMode === null) {
+            BaseSnapshotTester.#updateMode = await this.checkIfUpdateMode();
         }
-        const url = new URL('/snapshot', import.meta.url);
-        url.searchParams.set('snapshotPath', this.#snapshotPath);
-        const response = await fetch(url);
-        if (response.status === 404) {
-            console.warn(`Snapshot file not found: ${this.#snapshotPath}. Will create it for you.`);
-            return;
+        const content = await this.loadSnapshot(this.snapshotPath);
+        if (content) {
+            this.#parseSnapshotFileContent(content);
         }
-        if (response.status !== 200) {
-            throw new Error('failed to load snapshot');
-        }
-        this.#parseSnapshotFileContent(await response.text());
     }
     assert(context, actual) {
         const title = context.test?.fullTitle() ?? '';
@@ -67,7 +60,7 @@ export class SnapshotTester {
         const expected = this.#expected.get(title);
         if (expected === undefined) {
             this.#newTests = true;
-            if (SnapshotTester.#updateMode) {
+            if (BaseSnapshotTester.#updateMode) {
                 return;
             }
             this.#anyFailures = true;
@@ -76,18 +69,9 @@ export class SnapshotTester {
         const isDifferent = actual !== expected;
         if (isDifferent) {
             this.#anyFailures = true;
-            if (!SnapshotTester.#updateMode) {
+            if (!BaseSnapshotTester.#updateMode) {
                 assertSnapshotContent(actual, expected);
             }
-        }
-    }
-    async #postUpdate() {
-        const url = new URL('/update-snapshot', import.meta.url);
-        url.searchParams.set('snapshotPath', this.#snapshotPath);
-        const content = this.#serializeSnapshotFileContent();
-        const response = await fetch(url, { method: 'POST', body: content });
-        if (response.status !== 200) {
-            throw new Error(`Unable to update snapshot ${url}`);
         }
     }
     async finish() {
@@ -103,8 +87,8 @@ export class SnapshotTester {
             return;
         }
         // If the update flag is on, post any and all changes (failures, new tests, removals).
-        if (SnapshotTester.#updateMode) {
-            await this.#postUpdate();
+        if (BaseSnapshotTester.#updateMode) {
+            await this.postUpdate();
             return;
         }
         // Note: this does not handle test filtering (.only, --grep). Need a reliable way
@@ -112,19 +96,6 @@ export class SnapshotTester {
         if (didAnyTestNotRun) {
             throw new Error('Snapshots are out of sync (a test was likely deleted or renamed). Run with `--on-diff=update` to fix.');
         }
-    }
-    #serializeSnapshotFileContent() {
-        if (!this.#actual.size) {
-            return '';
-        }
-        const lines = [];
-        for (const [title, result] of this.#actual) {
-            lines.push(`Title: ${title}`);
-            lines.push(`Content:\n${result}`);
-            lines.push('=== end content\n');
-        }
-        lines.push('');
-        return lines.join('\n').trim() + '\n';
     }
     #parseSnapshotFileContent(content) {
         const sections = content.split('=== end content').map(s => s.trim()).filter(Boolean);
@@ -138,10 +109,82 @@ export class SnapshotTester {
             this.#expected.set(title, content);
         }
     }
-    async #checkIfUpdateMode() {
+    serializeSnapshotFileContent() {
+        if (!this.#actual.size) {
+            return '';
+        }
+        const lines = [];
+        for (const [title, result] of this.#actual) {
+            lines.push(`Title: ${title}`);
+            lines.push(`Content:\n${result}`);
+            lines.push('=== end content\n');
+        }
+        lines.push('');
+        return lines.join('\n').trim() + '\n';
+    }
+    async checkIfUpdateMode() {
+        return false;
+    }
+    async postUpdate() {
+        throw new Error(`Not implemented`);
+    }
+    async loadSnapshot(_snapshotPath) {
+        throw new Error('not implemented');
+    }
+}
+class WebSnapshotTester extends BaseSnapshotTester {
+    async checkIfUpdateMode() {
         const response = await fetch('/snapshot-update-mode');
         const data = await response.json();
         return data.updateMode === true;
     }
+    async postUpdate() {
+        const url = new URL('/update-snapshot', import.meta.url);
+        url.searchParams.set('snapshotPath', this.snapshotPath);
+        const content = this.serializeSnapshotFileContent();
+        const response = await fetch(url, { method: 'POST', body: content });
+        if (response.status !== 200) {
+            throw new Error(`Unable to update snapshot ${url}`);
+        }
+    }
+    async loadSnapshot(snapshotPath) {
+        const url = new URL('/snapshot', import.meta.url);
+        url.searchParams.set('snapshotPath', snapshotPath);
+        const response = await fetch(url);
+        if (response.status === 404) {
+            console.warn(`Snapshot file not found: ${snapshotPath}. Will create it for you.`);
+            return;
+        }
+        if (response.status !== 200) {
+            throw new Error('failed to load snapshot');
+        }
+        return await response.text();
+    }
 }
+class NodeSnapshotTester extends BaseSnapshotTester {
+    async checkIfUpdateMode() {
+        // cannot update in node mode yet.
+        return false;
+    }
+    async postUpdate() {
+        const content = this.serializeSnapshotFileContent();
+        // @ts-expect-error no node types here.
+        const fs = await import('node:fs/promises');
+        await fs.writeFile(await this.#getSnapshotPath(this.snapshotPath), content);
+    }
+    async loadSnapshot(snapshotPath) {
+        // @ts-expect-error no node types here.
+        const fs = await import('node:fs/promises');
+        return await fs.readFile(await this.#getSnapshotPath(snapshotPath), 'utf-8');
+    }
+    async #getSnapshotPath(snapshotPath) {
+        // @ts-expect-error no node types here.
+        const path = await import('node:path');
+        // @ts-expect-error no ESM types here.
+        const SOURCE_ROOT = path.join(import.meta.dirname, '..', '..', '..', '..', '..');
+        return path.join(SOURCE_ROOT, snapshotPath);
+    }
+}
+const SnapshotTesterValue = (typeof window === 'undefined') ? NodeSnapshotTester : WebSnapshotTester;
+export { SnapshotTesterValue as SnapshotTester };
 //# sourceMappingURL=SnapshotTester.js.map

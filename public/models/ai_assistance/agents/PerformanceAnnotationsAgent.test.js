@@ -9,7 +9,7 @@ import * as Trace from '../../trace/trace.js';
 import { AICallTree, PerformanceAnnotationsAgent } from '../ai_assistance.js';
 describeWithEnvironment('PerformanceAnnotationsAgent', () => {
     it('generates a label from the response', async function () {
-        const agent = new PerformanceAnnotationsAgent({
+        const agent = new PerformanceAnnotationsAgent.PerformanceAnnotationsAgent({
             aidaClient: mockAidaClient([[{
                         explanation: 'hello world\n',
                     }]]),
@@ -18,7 +18,7 @@ describeWithEnvironment('PerformanceAnnotationsAgent', () => {
         const evalScriptEvent = allThreadEntriesInTrace(parsedTrace)
             .find(event => event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.ts === 122411195649);
         assert.exists(evalScriptEvent);
-        const aiCallTree = AICallTree.fromEvent(evalScriptEvent, parsedTrace);
+        const aiCallTree = AICallTree.AICallTree.fromEvent(evalScriptEvent, parsedTrace);
         assert.isOk(aiCallTree);
         const label = await agent.generateAIEntryLabel(aiCallTree);
         assert.strictEqual(label, 'hello world');

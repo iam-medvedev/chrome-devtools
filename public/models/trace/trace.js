@@ -1095,8 +1095,11 @@ var Model = class _Model extends EventTarget {
    * });
    * void this.traceModel.parse(events);
    **/
-  async parse(traceEvents, config) {
-    const metadata = config?.metadata || {};
+  async parse(traceEvents, config = {}) {
+    if (config.showAllEvents === void 0) {
+      config.showAllEvents = this.#config.showAllEvents;
+    }
+    const metadata = config.metadata || {};
     const onTraceUpdate = (event) => {
       const { data } = event;
       this.dispatchEvent(new ModelUpdateEvent({ type: "PROGRESS_UPDATE", data }));
@@ -1104,7 +1107,7 @@ var Model = class _Model extends EventTarget {
     this.#processor.addEventListener(TraceParseProgressEvent.eventName, onTraceUpdate);
     const syntheticEventsManager = Helpers5.SyntheticEvents.SyntheticEventsManager.createAndActivate(traceEvents);
     try {
-      await this.#processor.parse(traceEvents, config ?? {});
+      await this.#processor.parse(traceEvents, config);
       if (!this.#processor.data) {
         throw new Error("processor did not parse trace");
       }

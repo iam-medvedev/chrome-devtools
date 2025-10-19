@@ -8,13 +8,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -28,7 +28,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "esnext",
     "tsBuildInfoFile": "changes-tsconfig.json.tsbuildinfo",
     "typeRoots": [],
     "useUnknownInCatchVariables": false
@@ -71,9 +71,6 @@
     },
     {
       "path": "../../third_party/diff/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/copy_to_clipboard/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/diff_view/bundle-tsconfig.json"

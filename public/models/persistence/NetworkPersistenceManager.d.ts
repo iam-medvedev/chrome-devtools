@@ -62,12 +62,14 @@ export declare const HEADERS_FILENAME = ".headers";
 export declare const enum Events {
     PROJECT_CHANGED = "ProjectChanged",
     REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED = "RequestsForHeaderOverridesFileChanged",
-    LOCAL_OVERRIDES_PROJECT_UPDATED = "LocalOverridesProjectUpdated"
+    LOCAL_OVERRIDES_PROJECT_UPDATED = "LocalOverridesProjectUpdated",
+    LOCAL_OVERRIDES_REQUESTED = "LocalOverridesRequested"
 }
 export interface EventTypes {
     [Events.PROJECT_CHANGED]: Workspace.Workspace.Project | null;
     [Events.REQUEST_FOR_HEADER_OVERRIDES_FILE_CHANGED]: Workspace.UISourceCode.UISourceCode;
     [Events.LOCAL_OVERRIDES_PROJECT_UPDATED]: boolean;
+    [Events.LOCAL_OVERRIDES_REQUESTED]: () => void;
 }
 export interface HeaderOverride {
     applyTo: string;

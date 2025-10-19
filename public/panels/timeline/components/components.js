@@ -679,7 +679,6 @@ var exportTraceOptions_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./exportTraceOptions.css")} */`;
 
 // gen/front_end/panels/timeline/components/ExportTraceOptions.js
-var _a;
 var { html: html3 } = Lit3;
 var UIStrings4 = {
   /**
@@ -726,7 +725,7 @@ var UIStrings4 = {
 var str_4 = i18n7.i18n.registerUIStrings("panels/timeline/components/ExportTraceOptions.ts", UIStrings4);
 var i18nString4 = i18n7.i18n.getLocalizedString.bind(void 0, str_4);
 var checkboxesWithInfoDialog = /* @__PURE__ */ new Set(["script-content", "script-source-maps"]);
-var ExportTraceOptions = class extends HTMLElement {
+var ExportTraceOptions = class _ExportTraceOptions extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #data = null;
   static #includeAnnotationsSettingString = "export-performance-trace-include-annotations";
@@ -734,25 +733,25 @@ var ExportTraceOptions = class extends HTMLElement {
   static #includeSourceMapsSettingString = "export-performance-trace-include-sourcemaps";
   static #shouldCompressSettingString = "export-performance-trace-should-compress";
   #includeAnnotationsSetting = Common2.Settings.Settings.instance().createSetting(
-    _a.#includeAnnotationsSettingString,
+    _ExportTraceOptions.#includeAnnotationsSettingString,
     true,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #includeScriptContentSetting = Common2.Settings.Settings.instance().createSetting(
-    _a.#includeScriptContentSettingString,
+    _ExportTraceOptions.#includeScriptContentSettingString,
     false,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #includeSourceMapsSetting = Common2.Settings.Settings.instance().createSetting(
-    _a.#includeSourceMapsSettingString,
+    _ExportTraceOptions.#includeSourceMapsSettingString,
     false,
     "Session"
     /* Common.Settings.SettingStorageType.SESSION */
   );
   #shouldCompressSetting = Common2.Settings.Settings.instance().createSetting(
-    _a.#shouldCompressSettingString,
+    _ExportTraceOptions.#shouldCompressSettingString,
     true,
     "Synced"
     /* Common.Settings.SettingStorageType.SYNCED */
@@ -982,7 +981,6 @@ var ExportTraceOptions = class extends HTMLElement {
     });
   }
 };
-_a = ExportTraceOptions;
 customElements.define("devtools-perf-export-trace-options", ExportTraceOptions);
 
 // gen/front_end/panels/timeline/components/FieldSettingsDialog.js
@@ -5865,7 +5863,6 @@ import * as Trace6 from "./../../../models/trace/trace.js";
 import * as PerfUI from "./../../../ui/legacy/components/perf_ui/perf_ui.js";
 import * as Lit13 from "./../../../ui/lit/lit.js";
 import * as TimelineUtils from "./../utils/utils.js";
-var _a2;
 var { html: html13 } = Lit13;
 var MAX_URL_LENGTH2 = 60;
 var UIStrings15 = {
@@ -5904,7 +5901,7 @@ var UIStrings15 = {
 };
 var str_15 = i18n29.i18n.registerUIStrings("panels/timeline/components/NetworkRequestTooltip.ts", UIStrings15);
 var i18nString14 = i18n29.i18n.getLocalizedString.bind(void 0, str_15);
-var NetworkRequestTooltip = class extends HTMLElement {
+var NetworkRequestTooltip = class _NetworkRequestTooltip extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #data = { networkRequest: null, entityMapper: null };
   connectedCallback() {
@@ -5996,7 +5993,7 @@ var NetworkRequestTooltip = class extends HTMLElement {
     const url = new URL(this.#data.networkRequest.args.data.url);
     const entity = this.#data.entityMapper ? this.#data.entityMapper.entityForEvent(this.#data.networkRequest) : null;
     const originWithEntity = TimelineUtils.Helpers.formatOriginWithEntity(url, entity, true);
-    const redirectsHtml = _a2.renderRedirects(this.#data.networkRequest);
+    const redirectsHtml = _NetworkRequestTooltip.renderRedirects(this.#data.networkRequest);
     const output = html13`
       <style>${networkRequestTooltip_css_default}</style>
       <div class="performance-card">
@@ -6008,11 +6005,11 @@ var NetworkRequestTooltip = class extends HTMLElement {
           <span class="network-category-chip" style=${Lit13.Directives.styleMap(chipStyle)}>
           </span>${networkResourceCategory(this.#data.networkRequest)}
         </div>
-        <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_a2.renderPriorityValue(this.#data.networkRequest)}</div>
+        <div class="priority-row">${i18nString14(UIStrings15.priority)}: ${_NetworkRequestTooltip.renderPriorityValue(this.#data.networkRequest)}</div>
         ${Trace6.Helpers.Network.isSyntheticNetworkRequestEventRenderBlocking(this.#data.networkRequest) ? html13`<div class="render-blocking"> ${i18nString14(UIStrings15.renderBlocking)} </div>` : Lit13.nothing}
         <div class="divider"></div>
 
-        ${_a2.renderTimings(this.#data.networkRequest)}
+        ${_NetworkRequestTooltip.renderTimings(this.#data.networkRequest)}
 
         ${redirectsHtml ? html13`
           <div class="divider"></div>
@@ -6023,7 +6020,6 @@ var NetworkRequestTooltip = class extends HTMLElement {
     Lit13.render(output, this.#shadow, { host: this });
   }
 };
-_a2 = NetworkRequestTooltip;
 customElements.define("devtools-performance-network-request-tooltip", NetworkRequestTooltip);
 
 // gen/front_end/panels/timeline/components/NetworkRequestDetails.js
@@ -7221,7 +7217,6 @@ var sidebarSingleInsightSet_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./sidebarSingleInsightSet.css")} */`;
 
 // gen/front_end/panels/timeline/components/SidebarSingleInsightSet.js
-var _a3;
 var { html: html17 } = Lit17.StaticHtml;
 var UIStrings19 = {
   /**
@@ -7290,7 +7285,7 @@ var INSIGHT_NAME_TO_COMPONENT = {
   ThirdParties: Insights4.ThirdParties.ThirdParties,
   Viewport: Insights4.Viewport.Viewport
 };
-var SidebarSingleInsightSet = class extends HTMLElement {
+var SidebarSingleInsightSet = class _SidebarSingleInsightSet extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #activeInsightElement = null;
   #data = {
@@ -7527,13 +7522,13 @@ var SidebarSingleInsightSet = class extends HTMLElement {
       return Lit17.nothing;
     }
     const fieldMetrics = this.#getFieldMetrics(insightSetKey);
-    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _a3.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
+    const { shownInsights: shownInsightsData, passedInsights: passedInsightsData } = _SidebarSingleInsightSet.categorizeInsights(insights, insightSetKey, this.#data.activeCategory);
     const renderInsightComponent = (insightData) => {
       const { componentClass, model } = insightData;
       if (!this.#data.parsedTrace?.insights) {
         return html17``;
       }
-      const agentFocus = AIAssistance.AgentFocus.fromInsight(this.#data.parsedTrace, model);
+      const agentFocus = AIAssistance.AIContext.AgentFocus.fromInsight(this.#data.parsedTrace, model);
       return html17`<div>
         <${componentClass.litTagName}
           .selected=${this.#data.activeInsight?.model === model}
@@ -7579,7 +7574,6 @@ var SidebarSingleInsightSet = class extends HTMLElement {
       `, this.#shadow, { host: this });
   }
 };
-_a3 = SidebarSingleInsightSet;
 customElements.define("devtools-performance-sidebar-single-navigation", SidebarSingleInsightSet);
 
 // gen/front_end/panels/timeline/components/SidebarInsightsTab.js

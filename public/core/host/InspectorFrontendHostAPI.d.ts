@@ -249,8 +249,7 @@ export interface InspectorFrontendHostAPI {
     bringToFront(): void;
     closeWindow(): void;
     /**
-     * Don't use directly - use {@link CopyToClipboard.copyTextToClipboard} instead.
-     * @deprecated Marked to restrict usage.
+     * If you need to alert to the user after copying use {@link UIUtils.copyTextToClipboard}.
      */
     copyText(text: string | null | undefined): void;
     inspectedURLChanged(url: Platform.DevToolsPath.UrlString): void;

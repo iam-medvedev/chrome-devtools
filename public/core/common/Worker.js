@@ -4,9 +4,14 @@
 export class WorkerWrapper {
     #workerPromise;
     #disposed;
+    #rejectWorkerPromise;
     constructor(workerLocation) {
-        this.#workerPromise = new Promise(fulfill => {
+        this.#workerPromise = new Promise((fulfill, reject) => {
+            this.#rejectWorkerPromise = reject;
             const worker = new Worker(workerLocation, { type: 'module' });
+            worker.onerror = event => {
+                console.error(`Failed to load worker for ${workerLocation.href}:`, event);
+            };
             worker.onmessage = (event) => {
                 console.assert(event.data === 'workerReady');
                 worker.onmessage = null;
@@ -28,7 +33,10 @@ export class WorkerWrapper {
         this.#disposed = true;
         void this.#workerPromise.then(worker => worker.terminate());
     }
-    terminate() {
+    terminate(immediately = false) {
+        if (immediately) {
+            this.#rejectWorkerPromise?.(new Error('Worker terminated'));
+        }
         this.dispose();
     }
     set onmessage(listener) {

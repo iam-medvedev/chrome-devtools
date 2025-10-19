@@ -22,15 +22,35 @@ export declare class TimelinePaintProfilerView extends UI.SplitWidget.SplitWidge
     private releaseSnapshot;
     private onWindowChanged;
 }
+export interface TimelinePaintImageViewInput {
+    maskElementHidden: boolean;
+    imageContainerHidden: boolean;
+    imageURL: string;
+    imageContainerWebKitTransform: string;
+    maskElementStyle: {
+        width?: string;
+        height?: string;
+        borderLeftWidth?: string;
+        borderTopWidth?: string;
+        borderRightWidth?: string;
+        borderBottomWidth?: string;
+    };
+}
+export declare const DEFAULT_VIEW: (input: TimelinePaintImageViewInput, output: undefined, target: HTMLElement) => {
+    imageElementNaturalHeight: number;
+    imageElementNaturalWidth: number;
+};
 export declare class TimelinePaintImageView extends UI.Widget.Widget {
-    private imageContainer;
-    private imageElement;
-    private readonly maskElement;
+    #private;
     private transformController;
     private maskRectangle?;
-    constructor();
+    constructor(view?: (input: TimelinePaintImageViewInput, output: undefined, target: HTMLElement) => {
+        imageElementNaturalHeight: number;
+        imageElementNaturalWidth: number;
+    });
     onResize(): void;
     private updateImagePosition;
     showImage(imageURL?: string): void;
     setMask(maskRectangle: Protocol.DOM.Rect | null): void;
+    performUpdate(): void;
 }

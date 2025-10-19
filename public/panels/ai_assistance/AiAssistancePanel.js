@@ -203,25 +203,25 @@ async function getEmptyStateSuggestions(context, conversation) {
         return [];
     }
     switch (conversation.type) {
-        case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
+        case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
             return [
                 { title: 'What can you help me with?', jslogContext: 'styling-default' },
                 { title: 'Why isn’t this element visible?', jslogContext: 'styling-default' },
                 { title: 'How do I center this element?', jslogContext: 'styling-default' },
             ];
-        case "drjones-file" /* AiAssistanceModel.ConversationType.FILE */:
+        case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
             return [
                 { title: 'What does this script do?', jslogContext: 'file-default' },
                 { title: 'Is the script optimized for performance?', jslogContext: 'file-default' },
                 { title: 'Does the script handle user input safely?', jslogContext: 'file-default' },
             ];
-        case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
+        case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
             return [
                 { title: 'Why is this network request taking so long?', jslogContext: 'network-default' },
                 { title: 'Are there any security headers present?', jslogContext: 'network-default' },
                 { title: 'Why is the request failing?', jslogContext: 'network-default' },
             ];
-        case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
+        case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */: {
             return [
                 { title: 'What performance issues exist with my page?', jslogContext: 'performance-default' },
             ];
@@ -231,13 +231,13 @@ async function getEmptyStateSuggestions(context, conversation) {
     }
 }
 function getMarkdownRenderer(context, conversation) {
-    if (context instanceof AiAssistanceModel.PerformanceTraceContext) {
+    if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
         if (!context.external) {
             const focus = context.getItem();
             return new PerformanceAgentMarkdownRenderer(focus.parsedTrace.data.Meta.mainFrameId, focus.lookupEvent.bind(focus));
         }
     }
-    else if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */) {
+    else if (conversation?.type === "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */) {
         // Handle historical conversations (can't linkify anything).
         return new PerformanceAgentMarkdownRenderer();
     }
@@ -339,38 +339,38 @@ function createNodeContext(node) {
     if (!node) {
         return null;
     }
-    return new AiAssistanceModel.NodeContext(node);
+    return new AiAssistanceModel.StylingAgent.NodeContext(node);
 }
 function createFileContext(file) {
     if (!file) {
         return null;
     }
-    return new AiAssistanceModel.FileContext(file);
+    return new AiAssistanceModel.FileAgent.FileContext(file);
 }
 function createRequestContext(request) {
     if (!request) {
         return null;
     }
     const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-    return new AiAssistanceModel.RequestContext(request, calculator);
+    return new AiAssistanceModel.NetworkAgent.RequestContext(request, calculator);
 }
 function createPerformanceTraceContext(focus) {
     if (!focus) {
         return null;
     }
-    return new AiAssistanceModel.PerformanceTraceContext(focus);
+    return new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(focus);
 }
 function agentToConversationType(agent) {
-    if (agent instanceof AiAssistanceModel.StylingAgent) {
-        return "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
+    if (agent instanceof AiAssistanceModel.StylingAgent.StylingAgent) {
+        return "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
     }
-    if (agent instanceof AiAssistanceModel.NetworkAgent) {
-        return "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
+    if (agent instanceof AiAssistanceModel.NetworkAgent.NetworkAgent) {
+        return "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */;
     }
-    if (agent instanceof AiAssistanceModel.FileAgent) {
-        return "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
+    if (agent instanceof AiAssistanceModel.FileAgent.FileAgent) {
+        return "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
     }
-    if (agent instanceof AiAssistanceModel.PerformanceAgent) {
+    if (agent instanceof AiAssistanceModel.PerformanceAgent.PerformanceAgent) {
         return agent.getConversationType();
     }
     throw new Error('Provided agent does not have a corresponding conversation type');
@@ -385,7 +385,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     #viewOutput = {};
     #serverSideLoggingEnabled = isAiAssistanceServerSideLoggingEnabled();
     #aiAssistanceEnabledSetting;
-    #changeManager = new AiAssistanceModel.ChangeManager();
+    #changeManager = new AiAssistanceModel.ChangeManager.ChangeManager();
     #mutex = new Common.Mutex.Mutex();
     #conversationAgent;
     #conversation;
@@ -428,13 +428,12 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             accountImage: syncInfo.accountImage,
             accountFullName: syncInfo.accountFullName,
         };
-        this.#conversationHandler =
-            AiAssistanceModel.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
+        this.#conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance({ aidaClient: this.#aidaClient, aidaAvailability });
         if (UI.ActionRegistry.ActionRegistry.instance().hasAction('elements.toggle-element-search')) {
             this.#toggleSearchElementAction =
                 UI.ActionRegistry.ActionRegistry.instance().getAction('elements.toggle-element-search');
         }
-        AiAssistanceModel.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted" /* AiAssistanceModel.Events.HISTORY_DELETED */, this.#onHistoryDeleted, this);
+        AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().addEventListener("AiHistoryDeleted" /* AiAssistanceModel.AiHistoryStorage.Events.HISTORY_DELETED */, this.#onHistoryDeleted, this);
     }
     #getChatUiState() {
         const blockedByAge = Root.Runtime.hostConfig.aidaAvailability?.blockedByAge === true;
@@ -505,16 +504,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const isPerformancePanelVisible = viewManager.isViewVisible('timeline');
         let targetConversationType = undefined;
         if (isElementsPanelVisible && hostConfig.devToolsFreestyler?.enabled) {
-            targetConversationType = "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
+            targetConversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
         }
         else if (isNetworkPanelVisible && hostConfig.devToolsAiAssistanceNetworkAgent?.enabled) {
-            targetConversationType = "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
+            targetConversationType = "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */;
         }
         else if (isSourcesPanelVisible && hostConfig.devToolsAiAssistanceFileAgent?.enabled) {
-            targetConversationType = "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
+            targetConversationType = "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
         }
         else if (isPerformancePanelVisible && hostConfig.devToolsAiAssistancePerformanceAgent?.enabled) {
-            targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
+            targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
         }
         if (this.#conversation?.type === targetConversationType) {
             // The above if makes sure even if we have an active agent it's empty
@@ -537,7 +536,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             // If we get a new agent we need to
             // create a new conversation along side it
             if (opts?.agent) {
-                this.#conversation = new AiAssistanceModel.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
+                this.#conversation = new AiAssistanceModel.AiHistoryStorage.Conversation(agentToConversationType(opts?.agent), [], opts?.agent.id, false);
             }
         }
         if (!opts?.agent) {
@@ -567,7 +566,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#selectedRequest =
             createRequestContext(UI.Context.Context.instance().flavor(SDK.NetworkRequest.NetworkRequest));
         this.#selectedPerformanceTrace =
-            createPerformanceTraceContext(UI.Context.Context.instance().flavor(AiAssistanceModel.AgentFocus));
+            createPerformanceTraceContext(UI.Context.Context.instance().flavor(AiAssistanceModel.AIContext.AgentFocus));
         this.#selectedFile = createFileContext(UI.Context.Context.instance().flavor(Workspace.UISourceCode.UISourceCode));
         this.#updateConversationState({ agent: this.#conversationAgent });
         this.#aiAssistanceEnabledSetting?.addChangeListener(this.requestUpdate, this);
@@ -575,7 +574,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.addEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+        UI.Context.Context.instance().addFlavorChangeListener(AiAssistanceModel.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().addFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
         UI.ViewManager.ViewManager.instance().addEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         SDK.TargetManager.TargetManager.instance().addModelListener(SDK.DOMModel.DOMModel, SDK.DOMModel.Events.AttrModified, this.#handleDOMNodeAttrChange, this);
@@ -596,7 +595,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#toggleSearchElementAction?.removeEventListener("Toggled" /* UI.ActionRegistration.Events.TOGGLED */, this.requestUpdate, this);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.DOMModel.DOMNode, this.#handleDOMNodeFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(SDK.NetworkRequest.NetworkRequest, this.#handleNetworkRequestFlavorChange);
-        UI.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel.AgentFocus, this.#handlePerformanceTraceFlavorChange);
+        UI.Context.Context.instance().removeFlavorChangeListener(AiAssistanceModel.AIContext.AgentFocus, this.#handlePerformanceTraceFlavorChange);
         UI.Context.Context.instance().removeFlavorChangeListener(Workspace.UISourceCode.UISourceCode, this.#handleUISourceCodeFlavorChange);
         UI.ViewManager.ViewManager.instance().removeEventListener("ViewVisibilityChanged" /* UI.ViewManager.Events.VIEW_VISIBILITY_CHANGED */, this.#selectDefaultAgentIfNeeded, this);
         UI.Context.Context.instance().removeFlavorChangeListener(TimelinePanel.TimelinePanel.TimelinePanel, this.#bindTimelineTraceListener, this);
@@ -640,7 +639,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         if (Boolean(ev.data)) {
             const calculator = NetworkPanel.NetworkPanel.NetworkPanel.instance().networkLogView.timeCalculator();
-            this.#selectedRequest = new AiAssistanceModel.RequestContext(ev.data, calculator);
+            this.#selectedRequest = new AiAssistanceModel.NetworkAgent.RequestContext(ev.data, calculator);
         }
         else {
             this.#selectedRequest = null;
@@ -652,7 +651,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return;
         }
         this.#selectedPerformanceTrace =
-            Boolean(ev.data) ? new AiAssistanceModel.PerformanceTraceContext(ev.data) : null;
+            Boolean(ev.data) ? new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(ev.data) : null;
         this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #handleUISourceCodeFlavorChange = (ev) => {
@@ -663,7 +662,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (this.#selectedFile?.getItem() === newFile) {
             return;
         }
-        this.#selectedFile = new AiAssistanceModel.FileContext(ev.data);
+        this.#selectedFile = new AiAssistanceModel.FileAgent.FileContext(ev.data);
         this.#updateConversationState({ agent: this.#conversationAgent });
     };
     #onPrimaryPageChanged() {
@@ -696,7 +695,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             userInfo: this.#userInfo,
             canShowFeedbackForm: this.#serverSideLoggingEnabled,
             multimodalInputEnabled: isAiAssistanceMultimodalInputEnabled() &&
-                this.#conversation?.type === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                this.#conversation?.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
             imageInput: this.#imageInput,
             showChatActions: this.#shouldShowChatActions(),
             showActiveConversationActions: Boolean(this.#conversation && !this.#conversation.isEmpty),
@@ -707,7 +706,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             isTextInputEmpty: this.#isTextInputEmpty,
             changeManager: this.#changeManager,
             uploadImageInputEnabled: isAiAssistanceMultimodalUploadInputEnabled() &&
-                this.#conversation?.type === "freestyler" /* AiAssistanceModel.ConversationType.STYLING */,
+                this.#conversation?.type === "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */,
             markdownRenderer,
             onNewChatClick: this.#handleNewChatRequest.bind(this),
             populateHistoryMenu: this.#populateHistoryMenu.bind(this),
@@ -797,16 +796,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             return lockedString(UIStringsNotTranslate.crossOriginError);
         }
         switch (this.#conversation.type) {
-            case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
+            case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
                 return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForStyling) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForStylingNoContext);
-            case "drjones-file" /* AiAssistanceModel.ConversationType.FILE */:
+            case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
                 return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForFile) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForFileNoContext);
-            case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
+            case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
                 return this.#selectedContext ? lockedString(UIStringsNotTranslate.inputPlaceholderForNetwork) :
                     lockedString(UIStringsNotTranslate.inputPlaceholderForNetworkNoContext);
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */: {
+            case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */: {
                 const perfPanel = UI.Context.Context.instance().flavor(TimelinePanel.TimelinePanel.TimelinePanel);
                 if (perfPanel?.hasActiveTrace()) {
                     return this.#selectedContext ?
@@ -825,24 +824,24 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         const noLogging = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue ===
             Root.Runtime.GenAiEnterprisePolicyValue.ALLOW_WITHOUT_LOGGING;
         switch (this.#conversation.type) {
-            case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
+            case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForStylingEnterpriseNoLogging);
                 }
                 return lockedString(UIStringsNotTranslate.inputDisclaimerForStyling);
-            case "drjones-file" /* AiAssistanceModel.ConversationType.FILE */:
+            case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForFileEnterpriseNoLogging);
                 }
                 return lockedString(UIStringsNotTranslate.inputDisclaimerForFile);
-            case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
+            case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForNetworkEnterpriseNoLogging);
                 }
                 return lockedString(UIStringsNotTranslate.inputDisclaimerForNetwork);
             // It is deliberate that both Performance agents use the same disclaimer
             // text and this has been approved by Privacy.
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
+            case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */:
                 if (noLogging) {
                     return lockedString(UIStringsNotTranslate.inputDisclaimerForPerformanceEnterpriseNoLogging);
                 }
@@ -865,14 +864,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
     }
     #handleContextClick() {
         const context = this.#selectedContext;
-        if (context instanceof AiAssistanceModel.RequestContext) {
+        if (context instanceof AiAssistanceModel.NetworkAgent.RequestContext) {
             const requestLocation = NetworkForward.UIRequestLocation.UIRequestLocation.tab(context.getItem(), "headers-component" /* NetworkForward.UIRequestLocation.UIRequestTabs.HEADERS_COMPONENT */);
             return Common.Revealer.reveal(requestLocation);
         }
-        if (context instanceof AiAssistanceModel.FileContext) {
+        if (context instanceof AiAssistanceModel.FileAgent.FileContext) {
             return Common.Revealer.reveal(context.getItem().uiLocation(0, 0));
         }
-        if (context instanceof AiAssistanceModel.PerformanceTraceContext) {
+        if (context instanceof AiAssistanceModel.PerformanceAgent.PerformanceTraceContext) {
             const focus = context.getItem();
             if (focus.callTree) {
                 const event = focus.callTree.selectedNode?.event ?? focus.callTree.rootNode.event;
@@ -896,47 +895,47 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         switch (actionId) {
             case 'freestyler.elements-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanelFloatingButton);
-                targetConversationType = "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
+                targetConversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
                 break;
             }
             case 'freestyler.element-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromElementsPanel);
-                targetConversationType = "freestyler" /* AiAssistanceModel.ConversationType.STYLING */;
+                targetConversationType = "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */;
                 break;
             }
             case 'drjones.network-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromNetworkPanelFloatingButton);
-                targetConversationType = "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
+                targetConversationType = "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */;
                 break;
             }
             case 'drjones.network-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromNetworkPanel);
-                targetConversationType = "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */;
+                targetConversationType = "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */;
                 break;
             }
             case 'drjones.performance-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformancePanelCallTree);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.performance-insight-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.performance-panel-full-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceFullButton);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */;
+                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
                 break;
             }
             case 'drjones.sources-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanelFloatingButton);
-                targetConversationType = "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
+                targetConversationType = "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
                 break;
             }
             case 'drjones.sources-panel-context': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanel);
-                targetConversationType = "drjones-file" /* AiAssistanceModel.ConversationType.FILE */;
+                targetConversationType = "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
                 break;
             }
         }
@@ -964,7 +963,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
     }
     #populateHistoryMenu(contextMenu) {
-        const historicalConversations = AiAssistanceModel.AiHistoryStorage.instance().getHistory().map(serializedConversation => AiAssistanceModel.Conversation.fromSerializedConversation(serializedConversation));
+        const historicalConversations = AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().getHistory().map(serializedConversation => AiAssistanceModel.AiHistoryStorage.Conversation.fromSerializedConversation(serializedConversation));
         for (const conversation of historicalConversations.reverse()) {
             if (conversation.isEmpty) {
                 continue;
@@ -975,7 +974,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             }
             contextMenu.defaultSection().appendCheckboxItem(title, () => {
                 void this.#openHistoricConversation(conversation);
-            }, { checked: (this.#conversation === conversation) });
+            }, { checked: (this.#conversation === conversation), jslogContext: 'freestyler.history-item' });
         }
         const historyEmpty = contextMenu.defaultSection().items.length === 0;
         if (historyEmpty) {
@@ -984,7 +983,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             });
         }
         contextMenu.footerSection().appendItem(i18nString(UIStrings.clearChatHistory), () => {
-            void AiAssistanceModel.AiHistoryStorage.instance().deleteAll();
+            void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteAll();
         }, {
             disabled: historyEmpty,
         });
@@ -996,7 +995,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         if (!this.#conversation) {
             return;
         }
-        void AiAssistanceModel.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
+        void AiAssistanceModel.AiHistoryStorage.AiHistoryStorage.instance().deleteHistoryEntry(this.#conversation.id);
         this.#updateConversationState();
         UI.ARIAUtils.LiveAnnouncer.alert(i18nString(UIStrings.chatDeleted));
     }
@@ -1049,7 +1048,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 isLoading: false,
                 data: bytes,
                 mimeType: JPEG_MIME_TYPE,
-                inputType: "screenshot" /* AiAssistanceModel.MultimodalInputType.SCREENSHOT */
+                inputType: "screenshot" /* AiAssistanceModel.AiAgent.MultimodalInputType.SCREENSHOT */
             };
             this.requestUpdate();
             void this.updateComplete.then(() => {
@@ -1120,7 +1119,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             isLoading: false,
             data: bytes,
             mimeType: file.type,
-            inputType: "uploaded-image" /* AiAssistanceModel.MultimodalInputType.UPLOADED_IMAGE */
+            inputType: "uploaded-image" /* AiAssistanceModel.AiAgent.MultimodalInputType.UPLOADED_IMAGE */
         };
         this.requestUpdate();
         void this.updateComplete.then(() => {
@@ -1152,16 +1151,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         let context;
         switch (conversation.type) {
-            case "freestyler" /* AiAssistanceModel.ConversationType.STYLING */:
+            case "freestyler" /* AiAssistanceModel.AiHistoryStorage.ConversationType.STYLING */:
                 context = this.#selectedElement;
                 break;
-            case "drjones-file" /* AiAssistanceModel.ConversationType.FILE */:
+            case "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */:
                 context = this.#selectedFile;
                 break;
-            case "drjones-network-request" /* AiAssistanceModel.ConversationType.NETWORK */:
+            case "drjones-network-request" /* AiAssistanceModel.AiHistoryStorage.ConversationType.NETWORK */:
                 context = this.#selectedRequest;
                 break;
-            case "drjones-performance-full" /* AiAssistanceModel.ConversationType.PERFORMANCE */:
+            case "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */:
                 context = this.#selectedPerformanceTrace;
                 break;
         }
@@ -1224,7 +1223,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
             for await (const data of items) {
                 step.sideEffect = undefined;
                 switch (data.type) {
-                    case "user-query" /* AiAssistanceModel.ResponseType.USER_QUERY */: {
+                    case "user-query" /* AiAssistanceModel.AiAgent.ResponseType.USER_QUERY */: {
                         this.#messages.push({
                             entity: "user" /* ChatMessageEntity.USER */,
                             text: data.query,
@@ -1237,36 +1236,36 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         this.#messages.push(systemMessage);
                         break;
                     }
-                    case "querying" /* AiAssistanceModel.ResponseType.QUERYING */: {
+                    case "querying" /* AiAssistanceModel.AiAgent.ResponseType.QUERYING */: {
                         step = { isLoading: true };
                         if (!systemMessage.steps.length) {
                             systemMessage.steps.push(step);
                         }
                         break;
                     }
-                    case "context" /* AiAssistanceModel.ResponseType.CONTEXT */: {
+                    case "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */: {
                         step.title = data.title;
                         step.contextDetails = data.details;
                         step.isLoading = false;
                         commitStep();
                         break;
                     }
-                    case "title" /* AiAssistanceModel.ResponseType.TITLE */: {
+                    case "title" /* AiAssistanceModel.AiAgent.ResponseType.TITLE */: {
                         step.title = data.title;
                         commitStep();
                         break;
                     }
-                    case "thought" /* AiAssistanceModel.ResponseType.THOUGHT */: {
+                    case "thought" /* AiAssistanceModel.AiAgent.ResponseType.THOUGHT */: {
                         step.isLoading = false;
                         step.thought = data.thought;
                         commitStep();
                         break;
                     }
-                    case "suggestions" /* AiAssistanceModel.ResponseType.SUGGESTIONS */: {
+                    case "suggestions" /* AiAssistanceModel.AiAgent.ResponseType.SUGGESTIONS */: {
                         systemMessage.suggestions = data.suggestions;
                         break;
                     }
-                    case "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */: {
+                    case "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */: {
                         step.isLoading = false;
                         step.code ??= data.code;
                         step.sideEffect = {
@@ -1279,7 +1278,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         commitStep();
                         break;
                     }
-                    case "action" /* AiAssistanceModel.ResponseType.ACTION */: {
+                    case "action" /* AiAssistanceModel.AiAgent.ResponseType.ACTION */: {
                         step.isLoading = false;
                         step.code ??= data.code;
                         step.output ??= data.output;
@@ -1287,7 +1286,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         commitStep();
                         break;
                     }
-                    case "answer" /* AiAssistanceModel.ResponseType.ANSWER */: {
+                    case "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */: {
                         systemMessage.suggestions ??= data.suggestions;
                         systemMessage.answer = data.text;
                         systemMessage.rpcId = data.rpcId;
@@ -1298,13 +1297,13 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                         step.isLoading = false;
                         break;
                     }
-                    case "error" /* AiAssistanceModel.ResponseType.ERROR */: {
+                    case "error" /* AiAssistanceModel.AiAgent.ResponseType.ERROR */: {
                         systemMessage.error = data.error;
                         systemMessage.rpcId = undefined;
                         const lastStep = systemMessage.steps.at(-1);
                         if (lastStep) {
                             // Mark the last step as cancelled to make the UI feel better.
-                            if (data.error === "abort" /* AiAssistanceModel.ErrorType.ABORT */) {
+                            if (data.error === "abort" /* AiAssistanceModel.AiAgent.ErrorType.ABORT */) {
                                 lastStep.canceled = true;
                                 // If error happens while the step is still loading remove it.
                             }
@@ -1312,7 +1311,7 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                                 systemMessage.steps.pop();
                             }
                         }
-                        if (data.error === "block" /* AiAssistanceModel.ErrorType.BLOCK */) {
+                        if (data.error === "block" /* AiAssistanceModel.AiAgent.ErrorType.BLOCK */) {
                             systemMessage.answer = undefined;
                         }
                     }
@@ -1324,8 +1323,8 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     // This handles scrolling to the bottom for live conversations when:
                     // * User submits the query & the context step is shown.
                     // * There is a side effect dialog  shown.
-                    if (data.type === "context" /* AiAssistanceModel.ResponseType.CONTEXT */ ||
-                        data.type === "side-effect" /* AiAssistanceModel.ResponseType.SIDE_EFFECT */) {
+                    if (data.type === "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */ ||
+                        data.type === "side-effect" /* AiAssistanceModel.AiAgent.ResponseType.SIDE_EFFECT */) {
                         this.#viewOutput.chatView?.scrollToBottom();
                     }
                     // Announce as status update to screen readers when:
@@ -1333,10 +1332,10 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                     // * Answer started streaming
                     // * Answer finished streaming
                     switch (data.type) {
-                        case "context" /* AiAssistanceModel.ResponseType.CONTEXT */:
+                        case "context" /* AiAssistanceModel.AiAgent.ResponseType.CONTEXT */:
                             UI.ARIAUtils.LiveAnnouncer.status(data.title);
                             break;
-                        case "answer" /* AiAssistanceModel.ResponseType.ANSWER */: {
+                        case "answer" /* AiAssistanceModel.AiAgent.ResponseType.ANSWER */: {
                             if (!data.complete && !announcedAnswerLoading) {
                                 announcedAnswerLoading = true;
                                 UI.ARIAUtils.LiveAnnouncer.status(lockedString(UIStringsNotTranslate.answerLoading));
@@ -1364,7 +1363,7 @@ export function getResponseMarkdown(message) {
             contentParts.push(`### ${step.title}`);
         }
         if (step.contextDetails) {
-            contentParts.push(AiAssistanceModel.Conversation.generateContextDetailsMarkdown(step.contextDetails));
+            contentParts.push(AiAssistanceModel.AiHistoryStorage.Conversation.generateContextDetailsMarkdown(step.contextDetails));
         }
         if (step.thought) {
             contentParts.push(step.thought);

@@ -780,7 +780,6 @@
       <include file="ui/components/cards/cards.js" name="UI_COMPONENTS_CARDS_CARDS_JS" resource_path="ui/components/cards/cards.js" type="BINDATA" compress="false"/>
       <include file="ui/components/chrome_link/chrome_link.js" name="UI_COMPONENTS_CHROME_LINK_CHROME_LINK_JS" resource_path="ui/components/chrome_link/chrome_link.js" type="BINDATA" compress="false"/>
       <include file="ui/components/code_highlighter/code_highlighter.js" name="UI_COMPONENTS_CODE_HIGHLIGHTER_CODE_HIGHLIGHTER_JS" resource_path="ui/components/code_highlighter/code_highlighter.js" type="BINDATA" compress="false"/>
-      <include file="ui/components/copy_to_clipboard/copy_to_clipboard.js" name="UI_COMPONENTS_COPY_TO_CLIPBOARD_COPY_TO_CLIPBOARD_JS" resource_path="ui/components/copy_to_clipboard/copy_to_clipboard.js" type="BINDATA" compress="false"/>
       <include file="ui/components/dialogs/dialogs.js" name="UI_COMPONENTS_DIALOGS_DIALOGS_JS" resource_path="ui/components/dialogs/dialogs.js" type="BINDATA" compress="false"/>
       <include file="ui/components/diff_view/diff_view.js" name="UI_COMPONENTS_DIFF_VIEW_DIFF_VIEW_JS" resource_path="ui/components/diff_view/diff_view.js" type="BINDATA" compress="false"/>
       <include file="ui/components/expandable_list/expandable_list.js" name="UI_COMPONENTS_EXPANDABLE_LIST_EXPANDABLE_LIST_JS" resource_path="ui/components/expandable_list/expandable_list.js" type="BINDATA" compress="false"/>

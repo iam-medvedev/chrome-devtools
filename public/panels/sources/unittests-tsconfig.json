@@ -9,13 +9,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -29,7 +29,7 @@
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2023",
+    "target": "esnext",
     "tsBuildInfoFile": "unittests-tsconfig.json.tsbuildinfo",
     "typeRoots": [
       "../../../../../../node_modules/@types"
@@ -55,6 +55,7 @@
     "../../../../../../front_end/panels/sources/FilteredUISourceCodeListProvider.test.ts",
     "../../../../../../front_end/panels/sources/NavigatorView.test.ts",
     "../../../../../../front_end/panels/sources/OutlineQuickOpen.test.ts",
+    "../../../../../../front_end/panels/sources/PersistenceAction.test.ts",
     "../../../../../../front_end/panels/sources/ResourceOriginPlugin.test.ts",
     "../../../../../../front_end/panels/sources/SourcesNavigator.test.ts",
     "../../../../../../front_end/panels/sources/SourcesPanel.test.ts",

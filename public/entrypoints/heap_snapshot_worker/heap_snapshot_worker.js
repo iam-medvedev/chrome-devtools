@@ -1333,6 +1333,44 @@ var HeapSnapshot = class _HeapSnapshot {
         }
         return getBit;
       }
+      case "objectsRetainedByEventHandlers": {
+        const node = this.createNode(0);
+        const nodeFieldCount = this.nodeFieldCount;
+        const eventHandlerBitmap = Platform.TypedArrayUtilities.createBitVector(this.nodeCount);
+        for (let i = 0; i < this.nodeCount; ++i) {
+          node.nodeIndex = i * nodeFieldCount;
+          if (node.rawName() === "V8EventListener") {
+            const callbackNode = this.getEdgeTarget(node, "1");
+            if (!callbackNode) {
+              continue;
+            }
+            const callbackOrdinal = callbackNode.nodeIndex / nodeFieldCount;
+            if (this.getEdgeTarget(callbackNode, "code")) {
+              eventHandlerBitmap.setBit(callbackOrdinal);
+              continue;
+            }
+            let foundChildWithCode = false;
+            for (let childEdgeIt = callbackNode.edges(); childEdgeIt.hasNext(); childEdgeIt.next()) {
+              const childNode = childEdgeIt.item().node();
+              if (this.getEdgeTarget(childNode, "code")) {
+                eventHandlerBitmap.setBit(childNode.nodeIndex / nodeFieldCount);
+                foundChildWithCode = true;
+                break;
+              }
+            }
+            if (!foundChildWithCode) {
+              eventHandlerBitmap.setBit(callbackOrdinal);
+            }
+          }
+        }
+        traverse((currentNode, edge) => {
+          const targetNode = edge.node();
+          const targetOrdinal = targetNode.nodeIndex / nodeFieldCount;
+          return !eventHandlerBitmap.getBit(targetOrdinal);
+        });
+        markUnreachableNodes();
+        return (node2) => !getBit(node2);
+      }
     }
     throw new Error("Invalid filter name");
   }
@@ -2056,6 +2094,21 @@ var HeapSnapshot = class _HeapSnapshot {
   addString(string) {
     this.strings.push(string);
     return this.strings.length - 1;
+  }
+  /**
+   * Gets the target node of an edge with the specified name.
+   * @param node The source node to search from
+   * @param edgeName The name of the edge to find
+   * @returns The target node if found, null otherwise
+   */
+  getEdgeTarget(node, edgeName) {
+    for (let edgeIt = node.edges(); edgeIt.hasNext(); edgeIt.next()) {
+      const edge = edgeIt.item();
+      if (edge.name() === edgeName) {
+        return edge.node();
+      }
+    }
+    return null;
   }
   /**
    * The phase propagates whether a node is attached or detached through the

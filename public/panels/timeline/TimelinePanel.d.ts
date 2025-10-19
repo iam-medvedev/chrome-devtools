@@ -80,7 +80,7 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * Exposed for handling external requests.
      */
     get model(): Trace.TraceModel.Model;
-    getOrCreateExternalAIConversationData(): AiAssistanceModel.ExternalPerformanceAIConversationData;
+    getOrCreateExternalAIConversationData(): AiAssistanceModel.ConversationHandler.ExternalPerformanceAIConversationData;
     invalidateExternalAIConversationData(): void;
     /**
      * NOTE: this method only exists to enable some layout tests to be migrated to the new engine.
@@ -187,8 +187,8 @@ export declare class TimelinePanel extends TimelinePanel_base implements Client,
      * 3. Flash the Insight with the highlight colour we use in other panels.
      */
     revealInsight(insightModel: Trace.Insights.Types.InsightModel): void;
-    static handleExternalRecordRequest(): AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>;
-    static handleExternalAnalyzeRequest(prompt: string): Promise<AsyncGenerator<AiAssistanceModel.ExternalRequestResponse, AiAssistanceModel.ExternalRequestResponse>>;
+    static handleExternalRecordRequest(): AsyncGenerator<AiAssistanceModel.AiAgent.ExternalRequestResponse, AiAssistanceModel.AiAgent.ExternalRequestResponse>;
+    static handleExternalAnalyzeRequest(prompt: string): Promise<AsyncGenerator<AiAssistanceModel.AiAgent.ExternalRequestResponse, AiAssistanceModel.AiAgent.ExternalRequestResponse>>;
 }
 export declare const enum State {
     IDLE = "Idle",

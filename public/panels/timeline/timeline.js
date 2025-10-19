@@ -2894,7 +2894,7 @@ import * as TraceBounds13 from "./../../services/trace_bounds/trace_bounds.js";
 import * as Tracing5 from "./../../services/tracing/tracing.js";
 import * as Components3 from "./../../ui/legacy/components/utils/utils.js";
 import * as UI16 from "./../../ui/legacy/legacy.js";
-import { Directives, html as html2, nothing, render as render2 } from "./../../ui/lit/lit.js";
+import { Directives as Directives2, html as html3, nothing, render as render3 } from "./../../ui/lit/lit.js";
 import * as VisualLogging9 from "./../../ui/visual_logging/visual_logging.js";
 import * as TimelineComponents5 from "./components/components.js";
 
@@ -4078,8 +4078,8 @@ var GridNode = class extends DataGrid.SortableDataGrid.SortableDataGridNode {
       const parsedTrace = this.treeView.parsedTrace();
       const target = parsedTrace ? targetForEvent(parsedTrace, event) : null;
       const linkifier = this.treeView.linkifier;
-      const isFreshRecording = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
-      this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshRecording);
+      const isFreshOrEnhanced = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
+      this.linkElement = TimelineUIUtils.linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced);
       if (this.linkElement) {
         container.createChild("div", "activity-link").appendChild(this.linkElement);
       }
@@ -6170,7 +6170,6 @@ var timelineHistoryManager_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./timelineHistoryManager.css")} */`;
 
 // gen/front_end/panels/timeline/TimelineHistoryManager.js
-var _a;
 var LANDING_PAGE_INDEX_DROPDOWN_CHOICE = Infinity;
 var UIStrings16 = {
   /**
@@ -6221,7 +6220,7 @@ var listFormatter = /* @__PURE__ */ function defineFormatter() {
     }
   };
 }();
-var TimelineHistoryManager = class {
+var TimelineHistoryManager = class _TimelineHistoryManager {
   recordings;
   action;
   nextNumberByDomain;
@@ -6286,7 +6285,7 @@ var TimelineHistoryManager = class {
     const modelUsedMoreTimeAgo = this.recordings.reduce((a, b) => lastUsedTime(a.parsedTraceIndex) < lastUsedTime(b.parsedTraceIndex) ? a : b);
     this.recordings.splice(this.recordings.indexOf(modelUsedMoreTimeAgo), 1);
     function lastUsedTime(index) {
-      const data = _a.dataForTraceIndex(index);
+      const data = _TimelineHistoryManager.dataForTraceIndex(index);
       if (!data) {
         throw new Error("Unable to find data for model");
       }
@@ -6366,7 +6365,7 @@ var TimelineHistoryManager = class {
   }
   #setActiveTrace(item) {
     if (item.type === "TRACE_INDEX") {
-      const data = _a.dataForTraceIndex(item.parsedTraceIndex);
+      const data = _TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
       if (!data) {
         throw new Error("Unable to find data for model");
       }
@@ -6382,7 +6381,7 @@ var TimelineHistoryManager = class {
     this.action.setEnabled(this.recordings.length >= 1 && this.enabled);
   }
   static previewElement(parsedTraceIndex) {
-    const data = _a.dataForTraceIndex(parsedTraceIndex);
+    const data = _TimelineHistoryManager.dataForTraceIndex(parsedTraceIndex);
     if (!data) {
       throw new Error("Unable to find data for model");
     }
@@ -6392,7 +6391,7 @@ var TimelineHistoryManager = class {
     if (item.type === "LANDING_PAGE") {
       return this.#landingPageTitle;
     }
-    const data = _a.dataForTraceIndex(item.parsedTraceIndex);
+    const data = _TimelineHistoryManager.dataForTraceIndex(item.parsedTraceIndex);
     if (!data) {
       throw new Error("Unable to find data for model");
     }
@@ -6483,7 +6482,6 @@ var TimelineHistoryManager = class {
     return parsedTraceIndexToPerformancePreviewData.get(index) || null;
   }
 };
-_a = TimelineHistoryManager;
 var maxRecordings = 5;
 var previewWidth = 500;
 var parsedTraceIndexToPerformancePreviewData = /* @__PURE__ */ new Map();
@@ -8603,16 +8601,16 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
   }
   getOrCreateExternalAIConversationData() {
     if (!this.#externalAIConversationData) {
-      const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
-      const focus = AiAssistanceModel.getPerformanceAgentFocusFromModel(this.model);
+      const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
+      const focus = AiAssistanceModel.AIContext.getPerformanceAgentFocusFromModel(this.model);
       if (!focus) {
         throw new Error("could not create performance agent focus");
       }
       const agent = conversationHandler.createAgent(
         "drjones-performance-full"
-        /* AiAssistanceModel.ConversationType.PERFORMANCE */
+        /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */
       );
-      const conversation = new AiAssistanceModel.Conversation(
+      const conversation = new AiAssistanceModel.AiHistoryStorage.Conversation(
         "drjones-performance-full",
         [],
         agent.id,
@@ -8621,7 +8619,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
         /* isExternal */
         true
       );
-      const selected = new AiAssistanceModel.PerformanceTraceContext(focus);
+      const selected = new AiAssistanceModel.PerformanceAgent.PerformanceTraceContext(focus);
       selected.external = true;
       this.#externalAIConversationData = {
         conversationHandler,
@@ -9031,7 +9029,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const isCpuProfile = metadata.dataOrigin === "CPUProfile";
     const { includeScriptContent, includeSourceMaps } = config;
     metadata.enhancedTraceVersion = includeScriptContent ? SDK8.EnhancedTracesParser.EnhancedTracesParser.enhancedTraceVersion : void 0;
-    let fileName = isCpuProfile ? `CPU-${isoDate}.cpuprofile` : includeScriptContent ? `EnhancedTrace-${isoDate}.json` : `Trace-${isoDate}.json`;
+    let fileName = isCpuProfile ? `CPU-${isoDate}.cpuprofile` : `Trace-${isoDate}.json`;
     let blobParts = [];
     if (isCpuProfile) {
       const profile = Trace23.Helpers.SamplesIntegrator.SamplesIntegrator.extractCpuProfileFromFakeTrace(traceEvents);
@@ -9176,6 +9174,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     const url = new URL(window.location.href);
     const pathToEntrypoint = url.pathname.slice(0, url.pathname.lastIndexOf("/"));
     url.pathname = `${pathToEntrypoint}/trace_app.html`;
+    url.search = "";
     pathToLaunch = url.toString();
     const hostWindow = window;
     function onMessageHandler(ev) {
@@ -9562,7 +9561,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
     this.flameChart.getNetworkDataProvider().reset();
     this.flameChart.reset();
     this.#changeView({ mode: "LANDING_PAGE" });
-    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, null);
+    UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, null);
   }
   #hasActiveTrace() {
     return this.#viewMode.mode === "VIEWING_TRACE";
@@ -9693,7 +9692,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       }
     }
     if (parsedTrace.metadata.dataOrigin !== "CPUProfile") {
-      UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AgentFocus, AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace));
+      UI10.Context.Context.instance().setFlavor(AiAssistanceModel.AIContext.AgentFocus, AiAssistanceModel.AIContext.AgentFocus.fromParsedTrace(parsedTrace));
     }
   }
   #onAnnotationModifiedEvent(e) {
@@ -10332,8 +10331,8 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       for (const modelName in insightsForNav.model) {
         const model = modelName;
         const insight = insightsForNav.model[model];
-        const focus = AiAssistanceModel.AgentFocus.fromParsedTrace(parsedTrace);
-        const formatter = new AiAssistanceModel.PerformanceInsightFormatter(focus, insight);
+        const focus = AiAssistanceModel.AIContext.AgentFocus.fromParsedTrace(parsedTrace);
+        const formatter = new AiAssistanceModel.PerformanceInsightFormatter.PerformanceInsightFormatter(focus, insight);
         if (!formatter.insightIsSupported()) {
           continue;
         }
@@ -11007,7 +11006,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
   static isUserFrame(frame) {
     return frame.scriptId !== "0" && !frame.url?.startsWith("native ");
   }
-  static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshRecording = false, parsedTrace) {
+  static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshOrEnhanced = false, parsedTrace) {
     let details = null;
     let detailsText;
     const unsafeEventArgs = event.args;
@@ -11046,7 +11045,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
           lineNumber: callFrame?.lineNumber || 0,
           columnNumber: callFrame?.columnNumber,
           target,
-          isFreshRecording,
+          isFreshOrEnhanced,
           linkifier,
           omitOrigin: true
         });
@@ -11064,7 +11063,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
           lineNumber: 0,
           columnNumber: 0,
           target,
-          isFreshRecording,
+          isFreshOrEnhanced,
           linkifier
         });
         break;
@@ -11081,7 +11080,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
             lineNumber: lineNumber || 0,
             columnNumber: 0,
             target,
-            isFreshRecording,
+            isFreshOrEnhanced,
             linkifier,
             omitOrigin: true
           });
@@ -11098,7 +11097,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
             lineNumber: 0,
             columnNumber: 0,
             target,
-            isFreshRecording,
+            isFreshOrEnhanced,
             linkifier,
             omitOrigin: true
           });
@@ -11109,7 +11108,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         if (Trace24.Helpers.Trace.eventHasCategory(event, Trace24.Types.Events.Categories.Console) || Trace24.Types.Events.isUserTiming(event) || Trace24.Types.Extensions.isSyntheticExtensionEntry(event) || Trace24.Types.Events.isProfileCall(event)) {
           detailsText = null;
         } else {
-          details = this.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) ?? null;
+          details = this.linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced) ?? null;
         }
         break;
       }
@@ -11120,7 +11119,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
     return details;
   }
   static linkifyLocation(linkifyOptions) {
-    const { scriptId, url, lineNumber, columnNumber, isFreshRecording, linkifier, target, omitOrigin } = linkifyOptions;
+    const { scriptId, url, lineNumber, columnNumber, isFreshOrEnhanced, linkifier, target, omitOrigin } = linkifyOptions;
     const options = {
       lineNumber,
       columnNumber,
@@ -11130,12 +11129,12 @@ var TimelineUIUtils = class _TimelineUIUtils {
       tabStop: true,
       omitOrigin
     };
-    if (isFreshRecording) {
+    if (isFreshOrEnhanced) {
       return linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, options);
     }
     return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
   }
-  static linkifyTopCallFrame(event, target, linkifier, isFreshRecording = false) {
+  static linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced = false) {
     let frame = Trace24.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.[0];
     if (Trace24.Types.Events.isProfileCall(event)) {
       frame = event.callFrame;
@@ -11151,7 +11150,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       columnNumber: frame.columnNumber,
       lineNumber: frame.lineNumber
     };
-    if (isFreshRecording) {
+    if (isFreshOrEnhanced) {
       return linkifier.maybeLinkifyConsoleCallFrame(target, frame, { showColumnNumber: true, inlineFrameIndex: 0 });
     }
     return LegacyComponents.Linkifier.Linkifier.linkifyURL(frame.url, options);
@@ -11171,8 +11170,8 @@ var TimelineUIUtils = class _TimelineUIUtils {
       default:
         break;
     }
-    const html3 = UI11.Fragment.html`<div>${UI11.XLink.XLink.create(link, i18nString21(UIStrings21.learnMore), void 0, void 0, "learn-more")} about ${name}.</div>`;
-    return html3;
+    const html4 = UI11.Fragment.html`<div>${UI11.XLink.XLink.create(link, i18nString21(UIStrings21.learnMore), void 0, void 0, "learn-more")} about ${name}.</div>`;
+    return html4;
   }
   static buildConsumeCacheDetails(eventData, contentHelper) {
     if (typeof eventData.consumedCacheSize === "number") {
@@ -11328,7 +11327,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         }
       }
     }
-    const isFreshRecording = Boolean(parsedTrace && Tracing4.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+    const isFreshOrEnhanced = Boolean(parsedTrace && Tracing4.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
     switch (event.name) {
       case "GCEvent":
       case "MajorGC":
@@ -11353,7 +11352,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         break;
       }
       case "FunctionCall": {
-        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
         if (detailsNode) {
           contentHelper.appendElementRow(i18nString21(UIStrings21.function), detailsNode);
           const originWithEntity = this.getOriginWithEntity(entityMapper, parsedTrace, event);
@@ -11649,7 +11648,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         break;
       }
       case "EventTiming": {
-        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
         if (detailsNode) {
           contentHelper.appendElementRow(i18nString21(UIStrings21.details), detailsNode);
         }
@@ -11665,7 +11664,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
         break;
       }
       default: {
-        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+        const detailsNode = await _TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
         if (detailsNode) {
           contentHelper.appendElementRow(i18nString21(UIStrings21.details), detailsNode);
         }
@@ -12850,6 +12849,7 @@ var TimelineLayersView = class extends UI13.SplitWidget.SplitWidget {
 // gen/front_end/panels/timeline/TimelinePaintProfilerView.js
 var TimelinePaintProfilerView_exports = {};
 __export(TimelinePaintProfilerView_exports, {
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
   TimelinePaintImageView: () => TimelinePaintImageView,
   TimelinePaintProfilerView: () => TimelinePaintProfilerView
 });
@@ -12857,6 +12857,7 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Trace27 from "./../../models/trace/trace.js";
 import * as UI14 from "./../../ui/legacy/legacy.js";
+import * as Lit from "./../../ui/lit/lit.js";
 import * as LayerViewer2 from "./../layer_viewer/layer_viewer.js";
 
 // gen/front_end/panels/timeline/timelinePaintProfiler.css.js
@@ -13232,6 +13233,8 @@ async function getPaintProfilerSnapshot(paintProfilerModel, paint) {
 }
 
 // gen/front_end/panels/timeline/TimelinePaintProfilerView.js
+var { html, render } = Lit;
+var { createRef, ref } = Lit.Directives;
 var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
   logAndImageSplitWidget;
   imageView;
@@ -13245,12 +13248,10 @@ var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
   #parsedTrace;
   constructor(parsedTrace) {
     super(false, false);
-    this.element.classList.add("timeline-paint-profiler-view");
     this.setSidebarSize(60);
     this.setResizable(false);
     this.#parsedTrace = parsedTrace;
-    this.logAndImageSplitWidget = new UI14.SplitWidget.SplitWidget(true, false);
-    this.logAndImageSplitWidget.element.classList.add("timeline-paint-profiler-log-split");
+    this.logAndImageSplitWidget = new UI14.SplitWidget.SplitWidget(true, false, "timeline-paint-profiler-log-split");
     this.setMainWidget(this.logAndImageSplitWidget);
     this.imageView = new TimelinePaintImageView();
     this.logAndImageSplitWidget.setMainWidget(this.imageView);
@@ -13380,64 +13381,103 @@ var TimelinePaintProfilerView = class extends UI14.SplitWidget.SplitWidget {
     this.logTreeView.updateWindow(this.paintProfilerView.selectionWindow());
   }
 };
+var DEFAULT_VIEW = (input, output, target) => {
+  const imageElementRef = createRef();
+  render(html`
+  <div class="paint-profiler-image-view fill">
+    <div class="paint-profiler-image-container" style="-webkit-transform: ${input.imageContainerWebKitTransform}">
+      <img src=${input.imageURL} display=${input.imageContainerHidden ? "none" : "block"} ${ref(imageElementRef)}>
+      <div style=${Lit.Directives.styleMap({
+    display: input.maskElementHidden ? "none" : "block",
+    ...input.maskElementStyle
+  })}>
+      </div>
+    </div>
+  </div>`, target);
+  const imageElement = imageElementRef.value;
+  if (!imageElement?.naturalHeight || !imageElement.naturalWidth) {
+    throw new Error("ImageElement were not found in the TimelinePaintImageView.");
+  }
+  return { imageElementNaturalHeight: imageElement.naturalHeight, imageElementNaturalWidth: imageElement.naturalWidth };
+};
 var TimelinePaintImageView = class extends UI14.Widget.Widget {
-  imageContainer;
-  imageElement;
-  maskElement;
   transformController;
   maskRectangle;
-  constructor() {
-    super({ useShadowDom: true });
+  #inputData = {
+    maskElementHidden: true,
+    imageContainerHidden: true,
+    imageURL: "",
+    imageContainerWebKitTransform: "",
+    maskElementStyle: {}
+  };
+  #view;
+  #imageElementDimensions;
+  constructor(view = DEFAULT_VIEW) {
+    super();
     this.registerRequiredCSS(timelinePaintProfiler_css_default);
-    this.contentElement.classList.add("fill", "paint-profiler-image-view");
-    this.imageContainer = this.contentElement.createChild("div", "paint-profiler-image-container");
-    this.imageElement = this.imageContainer.createChild("img");
-    this.maskElement = this.imageContainer.createChild("div");
-    this.imageElement.addEventListener("load", this.updateImagePosition.bind(this), false);
+    this.#view = view;
     this.transformController = new LayerViewer2.TransformController.TransformController(this.contentElement, true);
     this.transformController.addEventListener("TransformChanged", this.updateImagePosition, this);
   }
   onResize() {
-    if (this.imageElement.src) {
-      this.updateImagePosition();
-    }
+    this.requestUpdate();
+    this.updateImagePosition();
   }
   updateImagePosition() {
-    const width = this.imageElement.naturalWidth;
-    const height = this.imageElement.naturalHeight;
+    if (!this.#imageElementDimensions) {
+      return;
+    }
+    const width = this.#imageElementDimensions.naturalWidth;
+    const height = this.#imageElementDimensions.naturalHeight;
     const clientWidth = this.contentElement.clientWidth;
     const clientHeight = this.contentElement.clientHeight;
     const paddingFraction = 0.1;
     const paddingX = clientWidth * paddingFraction;
-    const paddingY = clientHeight * paddingFraction;
-    const scaleX = (clientWidth - paddingX) / width;
-    const scaleY = (clientHeight - paddingY) / height;
-    const scale = Math.min(scaleX, scaleY);
+    const scale = clientHeight / height;
+    const oldMaskStyle = JSON.stringify(this.#inputData.maskElementStyle);
+    let newMaskStyle = {};
     if (this.maskRectangle) {
-      const style = this.maskElement.style;
-      style.width = width + "px";
-      style.height = height + "px";
-      style.borderLeftWidth = this.maskRectangle.x + "px";
-      style.borderTopWidth = this.maskRectangle.y + "px";
-      style.borderRightWidth = width - this.maskRectangle.x - this.maskRectangle.width + "px";
-      style.borderBottomWidth = height - this.maskRectangle.y - this.maskRectangle.height + "px";
+      newMaskStyle = {
+        width: width + "px",
+        height: height + "px",
+        borderLeftWidth: this.maskRectangle.x + "px",
+        borderTopWidth: this.maskRectangle.y + "px",
+        borderRightWidth: width - this.maskRectangle.x - this.maskRectangle.width + "px",
+        borderBottomWidth: height - this.maskRectangle.y - this.maskRectangle.height + "px"
+      };
+    }
+    this.#inputData.maskElementStyle = newMaskStyle;
+    if (!this.transformController) {
+      return;
     }
     this.transformController.setScaleConstraints(0.5, 10 / scale);
     let matrix = new WebKitCSSMatrix().scale(this.transformController.scale(), this.transformController.scale()).translate(clientWidth / 2, clientHeight / 2).scale(scale, scale).translate(-width / 2, -height / 2);
     const bounds = Geometry2.boundsForTransformedPoints(matrix, [0, 0, 0, width, height, 0]);
-    this.transformController.clampOffsets(paddingX - bounds.maxX, clientWidth - paddingX - bounds.minX, paddingY - bounds.maxY, clientHeight - paddingY - bounds.minY);
+    this.transformController.clampOffsets(paddingX - bounds.maxX, clientWidth - paddingX - bounds.minX, 0, 0);
     matrix = new WebKitCSSMatrix().translate(this.transformController.offsetX(), this.transformController.offsetY()).multiply(matrix);
-    this.imageContainer.style.webkitTransform = matrix.toString();
+    const oldTransform = this.#inputData.imageContainerWebKitTransform;
+    const newTransform = matrix.toString();
+    this.#inputData.imageContainerWebKitTransform = newTransform;
+    if (oldTransform !== newTransform || oldMaskStyle !== JSON.stringify(newMaskStyle)) {
+      this.requestUpdate();
+    }
   }
   showImage(imageURL) {
-    this.imageContainer.classList.toggle("hidden", !imageURL);
+    this.#inputData.imageContainerHidden = !imageURL;
     if (imageURL) {
-      this.imageElement.src = imageURL;
+      this.#inputData.imageURL = imageURL;
     }
+    this.requestUpdate();
   }
   setMask(maskRectangle) {
     this.maskRectangle = maskRectangle;
-    this.maskElement.classList.toggle("hidden", !maskRectangle);
+    this.#inputData.maskElementHidden = !maskRectangle;
+    this.requestUpdate();
+  }
+  performUpdate() {
+    const { imageElementNaturalHeight, imageElementNaturalWidth } = this.#view(this.#inputData, void 0, this.contentElement);
+    this.#imageElementDimensions = { naturalHeight: imageElementNaturalHeight, naturalWidth: imageElementNaturalWidth };
+    this.updateImagePosition();
   }
 };
 
@@ -13447,9 +13487,8 @@ import "./../../ui/legacy/components/data_grid/data_grid.js";
 import * as i18n45 from "./../../core/i18n/i18n.js";
 import * as SDK12 from "./../../core/sdk/sdk.js";
 import * as Trace28 from "./../../models/trace/trace.js";
-import * as CopyToClipboard from "./../../ui/components/copy_to_clipboard/copy_to_clipboard.js";
 import * as UI15 from "./../../ui/legacy/legacy.js";
-import { html, render } from "./../../ui/lit/lit.js";
+import { html as html2, render as render2 } from "./../../ui/lit/lit.js";
 import * as VisualLogging8 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/timeline/timelineSelectorStatsView.css.js
@@ -13574,7 +13613,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
   #view;
   #timings = [];
   constructor(parsedTrace, view = (input, _, target) => {
-    render(html`
+    render2(html2`
       <devtools-data-grid striped name=${i18nString23(UIStrings23.selectorStats)}
           @contextmenu=${input.onContextMenu.bind(input)}>
         <table>
@@ -13612,7 +13651,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
       const styleSheetId = timing[SelectorTimingsKey.StyleSheetId];
       const locations = timing.locations;
       const locationMessage = locations ? null : locations === null ? "" : i18nString23(UIStrings23.unableToLinkViaStyleSheetId, { PH1: styleSheetId });
-      return html`<tr>
+      return html2`<tr>
             <td data-value=${timing[SelectorTimingsKey.Elapsed]}>
               ${(timing[SelectorTimingsKey.Elapsed] / 1e3).toFixed(3)}
             </td>
@@ -13627,7 +13666,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
             <td title=${timing[SelectorTimingsKey.Selector]}>
              ${timing[SelectorTimingsKey.Selector]}
             </td>
-            <td data-value=${styleSheetId}>${locations ? html`${locations.map((location, itemIndex) => html`
+            <td data-value=${styleSheetId}>${locations ? html2`${locations.map((location, itemIndex) => html2`
                 <devtools-linkifier .data=${location}></devtools-linkifier
                 >${itemIndex !== locations.length - 1 ? "," : ""}`)}` : locationMessage}
             </td>
@@ -13682,7 +13721,7 @@ var TimelineSelectorStatsView = class extends UI15.Widget.VBox {
         ].join("	"));
       }
       const data = tableData.join("\n");
-      CopyToClipboard.copyTextToClipboard(data, i18nString23(UIStrings23.tableCopiedToClipboard));
+      UI15.UIUtils.copyTextToClipboard(data, i18nString23(UIStrings23.tableCopiedToClipboard));
     });
   }
   performUpdate() {
@@ -14319,9 +14358,9 @@ var Tab;
   Tab2["SelectorStats"] = "selector-stats";
 })(Tab || (Tab = {}));
 var SUMMARY_DEFAULT_VIEW = (input, _output, target) => {
-  render2(html2`
+  render3(html3`
         <style>${timelineDetailsView_css_default}</style>
-        ${Directives.until(renderSelectedEventDetails(input))}
+        ${Directives2.until(renderSelectedEventDetails(input))}
         ${input.selectedRange ? generateRangeSummaryDetails(input) : nothing}
         <devtools-widget data-related-insight-chips .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.RelatedInsightChips.RelatedInsightChips, {
     activeEvent: input.selectedEvent,
@@ -14367,7 +14406,7 @@ function generateRangeSummaryDetails(input) {
   const startOffset = startTime - minBoundsMilli;
   const endOffset = endTime - minBoundsMilli;
   const summaryDetailElem = TimelineUIUtils.generateSummaryDetails(aggregatedStats, startOffset, endOffset, events, thirdPartyTree);
-  return html2`${summaryDetailElem}`;
+  return html3`${summaryDetailElem}`;
 }
 async function renderSelectedEventDetails(input) {
   const { selectedEvent, parsedTrace, linkifier } = input;
@@ -14376,7 +14415,7 @@ async function renderSelectedEventDetails(input) {
   }
   const traceRecordingIsFresh = parsedTrace ? Tracing5.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace) : false;
   if (Trace29.Types.Events.isSyntheticLayoutShift(selectedEvent) || Trace29.Types.Events.isSyntheticLayoutShiftCluster(selectedEvent)) {
-    return html2`
+    return html3`
       <devtools-widget data-layout-shift-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.LayoutShiftDetails.LayoutShiftDetails, {
       event: selectedEvent,
       parsedTrace: input.parsedTrace,
@@ -14385,7 +14424,7 @@ async function renderSelectedEventDetails(input) {
       ></devtools-widget>`;
   }
   if (Trace29.Types.Events.isSyntheticNetworkRequest(selectedEvent)) {
-    return html2`
+    return html3`
       <devtools-widget data-network-request-details .widgetConfig=${UI16.Widget.widgetConfig(TimelineComponents5.NetworkRequestDetails.NetworkRequestDetails, {
       request: selectedEvent,
       entityMapper: input.entityMapper,
@@ -14399,10 +14438,10 @@ async function renderSelectedEventDetails(input) {
   if (Trace29.Types.Events.isLegacyTimelineFrame(selectedEvent) && input.filmStrip) {
     const matchedFilmStripFrame = getFilmStripFrame(input.filmStrip, selectedEvent);
     const content = TimelineUIUtils.generateDetailsContentForFrame(selectedEvent, input.filmStrip, matchedFilmStripFrame);
-    return html2`${content}`;
+    return html3`${content}`;
   }
   const traceEventDetails = await TimelineUIUtils.buildTraceEventDetails(parsedTrace, selectedEvent, linkifier, true, input.entityMapper);
-  return html2`${traceEventDetails}`;
+  return html3`${traceEventDetails}`;
 }
 var filmStripFrameCache = /* @__PURE__ */ new WeakMap();
 function getFilmStripFrame(filmStrip, frame) {
@@ -16449,15 +16488,15 @@ var TimelineFlameChartView = class extends Common15.ObjectWrapper.eventMixin(UI1
         return;
       }
       const event = selectionIsEvent(selection) ? selection.event : null;
-      let focus = UI18.Context.Context.instance().flavor(AIAssistance.AgentFocus);
+      let focus = UI18.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
       if (focus) {
         focus = focus.withEvent(event);
       } else if (event) {
-        focus = AIAssistance.AgentFocus.fromEvent(this.#parsedTrace, event);
+        focus = AIAssistance.AIContext.AgentFocus.fromEvent(this.#parsedTrace, event);
       } else {
         focus = null;
       }
-      UI18.Context.Context.instance().setFlavor(AIAssistance.AgentFocus, focus);
+      UI18.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
     });
   }
   // Only opens the details view of a selection. This is used for Timing Markers. Timing markers replace
@@ -16978,7 +17017,7 @@ var TimelineFlameChartDataProvider = class extends Common16.ObjectWrapper.Object
     }
     const contextMenu = new UI19.ContextMenu.ContextMenu(mouseEvent);
     if (perfAIEntryPointEnabled && this.parsedTrace) {
-      const callTree = AIAssistance2.AICallTree.fromEvent(entry, this.parsedTrace);
+      const callTree = AIAssistance2.AICallTree.AICallTree.fromEvent(entry, this.parsedTrace);
       if (callTree) {
         const action2 = UI19.ActionRegistry.ActionRegistry.instance().getAction(PERF_AI_ACTION_ID);
         if (Root6.Runtime.hostConfig.devToolsAiSubmenuPrompts?.enabled) {

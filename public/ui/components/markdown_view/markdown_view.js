@@ -14,8 +14,8 @@ import "./../../legacy/legacy.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as CodeMirror from "./../../../third_party/codemirror.next/codemirror.next.js";
 import * as Buttons from "./../buttons/buttons.js";
-import * as CopyToClipboard from "./../copy_to_clipboard/copy_to_clipboard.js";
 import * as TextEditor from "./../text_editor/text_editor.js";
+import * as UI from "./../../legacy/legacy.js";
 import * as Lit from "./../../lit/lit.js";
 import * as VisualLogging from "./../../visual_logging/visual_logging.js";
 
@@ -270,7 +270,7 @@ var CodeBlock = class extends HTMLElement {
     this.#citations = citations;
   }
   #onCopy() {
-    CopyToClipboard.copyTextToClipboard(this.#code, i18nString(UIStrings.copied));
+    UI.UIUtils.copyTextToClipboard(this.#code, i18nString(UIStrings.copied));
     this.#copied = true;
     void this.#render();
     clearTimeout(this.#timer);

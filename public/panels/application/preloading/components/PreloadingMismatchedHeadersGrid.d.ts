@@ -6,7 +6,7 @@ export declare const i18nString: (id: string, values?: import("../../../../core/
 export declare class PreloadingMismatchedHeadersGrid extends LegacyWrapper.LegacyWrapper.WrappableComponent<UI.Widget.VBox> {
     #private;
     connectedCallback(): void;
-    set data(data: SDK.PreloadingModel.PrerenderAttempt);
+    set data(data: SDK.PreloadingModel.PrerenderAttempt | SDK.PreloadingModel.PrerenderUntilScriptAttempt);
 }
 declare global {
     interface HTMLElementTagNameMap {

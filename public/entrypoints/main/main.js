@@ -433,6 +433,7 @@ import * as Platform2 from "./../../core/platform/platform.js";
 import * as ProtocolClient from "./../../core/protocol_client/protocol_client.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as AiAssistanceModel from "./../../models/ai_assistance/ai_assistance.js";
 import * as AutofillManager from "./../../models/autofill_manager/autofill_manager.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings from "./../../models/bindings/bindings.js";
@@ -445,6 +446,7 @@ import * as Logs from "./../../models/logs/logs.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as ProjectSettings from "./../../models/project_settings/project_settings.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
+import * as PanelCommon from "./../../panels/common/common.js";
 import * as Snippets from "./../../panels/snippets/snippets.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as Snackbar from "./../../ui/components/snackbars/snackbars.js";
@@ -507,7 +509,11 @@ var UIStrings2 = {
   /**
    * @description Text describing how to navigate the dock side menu
    */
-  dockSideNavigation: "Use left and right arrow keys to navigate the options"
+  dockSideNavigation: "Use left and right arrow keys to navigate the options",
+  /**
+   * @description Notification shown to the user whenever DevTools receives an external request.
+   */
+  externalRequestReceived: "`DevTools` received an external request"
 };
 var str_2 = i18n3.i18n.registerUIStrings("entrypoints/main/MainImpl.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
@@ -750,11 +756,13 @@ var MainImpl = class {
     self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
     new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
     isolatedFileSystemManager.addPlatformFileSystem("snippet://", new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
-    Persistence.Persistence.PersistenceImpl.instance({
+    const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance({
       forceNew: true,
       workspace: Workspace.Workspace.WorkspaceImpl.instance(),
       breakpointManager: Breakpoints.BreakpointManager.BreakpointManager.instance()
     });
+    const linkDecorator = new PanelCommon.PersistenceUtils.LinkDecorator(persistenceImpl);
+    Components.Linkifier.Linkifier.setLinkDecorator(linkDecorator);
     Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance({ forceNew: true, workspace: Workspace.Workspace.WorkspaceImpl.instance() });
     new ExecutionContextSelector(targetManager, UI2.Context.Context.instance());
     const projectSettingsModel = ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.instance({
@@ -777,6 +785,7 @@ var MainImpl = class {
     AutofillManager.AutofillManager.AutofillManager.instance();
     LiveMetrics.LiveMetrics.instance();
     CrUXManager.CrUXManager.instance();
+    void AiAssistanceModel.BuiltInAi.BuiltInAi.instance();
     new PauseListener();
     const actionRegistryInstance = UI2.ActionRegistry.ActionRegistry.instance({ forceNew: true });
     UI2.ShortcutRegistry.ShortcutRegistry.instance({ forceNew: true, actionRegistry: actionRegistryInstance });
@@ -798,6 +807,9 @@ var MainImpl = class {
         void badgeNotification.present(ev.data);
       });
     }
+    const conversationHandler = AiAssistanceModel.ConversationHandler.ConversationHandler.instance();
+    conversationHandler.addEventListener("ExternalRequestReceived", () => Snackbar.Snackbar.Snackbar.show({ message: i18nString2(UIStrings2.externalRequestReceived) }));
+    conversationHandler.addEventListener("ExternalConversationStarted", (event) => void VisualLogging2.logFunctionCall(`start-conversation-${event.data}`, "external"));
     _a.timeEnd("Main._createAppUI");
     const appProvider = Common2.AppProvider.getRegisteredAppProviders()[0];
     if (!appProvider) {
@@ -818,7 +830,11 @@ var MainImpl = class {
       }, this);
     }
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host.InspectorFrontendHostAPI.Events.RevealSourceLine, this.#revealSourceLine, this);
-    await UI2.InspectorView.InspectorView.instance().createToolbars();
+    const inspectorView = UI2.InspectorView.InspectorView.instance();
+    Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().addEventListener("LocalOverridesRequested", (event) => {
+      inspectorView.displaySelectOverrideFolderInfobar(event.data);
+    });
+    await inspectorView.createToolbars();
     Host.InspectorFrontendHost.InspectorFrontendHostInstance.loadCompleted();
     UI2.ARIAUtils.LiveAnnouncer.initializeAnnouncerElements();
     UI2.DockController.DockController.instance().announceDockLocation();
@@ -1277,8 +1293,8 @@ async function handleExternalRequestGenerator(input) {
       return await TimelinePanel.TimelinePanel.TimelinePanel.handleExternalAnalyzeRequest(input.args.prompt);
     }
     case "NETWORK_DEBUGGER": {
-      const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
-      const conversationHandler = await AiAssistanceModel.ConversationHandler.instance();
+      const AiAssistanceModel2 = await import("./../../models/ai_assistance/ai_assistance.js");
+      const conversationHandler = AiAssistanceModel2.ConversationHandler.ConversationHandler.instance();
       return await conversationHandler.handleExternalRequest({
         conversationType: "drjones-network-request",
         prompt: input.args.prompt,
@@ -1286,8 +1302,8 @@ async function handleExternalRequestGenerator(input) {
       });
     }
     case "LIVE_STYLE_DEBUGGER": {
-      const AiAssistanceModel = await import("./../../models/ai_assistance/ai_assistance.js");
-      const conversationHandler = AiAssistanceModel.ConversationHandler.instance();
+      const AiAssistanceModel2 = await import("./../../models/ai_assistance/ai_assistance.js");
+      const conversationHandler = AiAssistanceModel2.ConversationHandler.ConversationHandler.instance();
       return await conversationHandler.handleExternalRequest({
         conversationType: "freestyler",
         prompt: input.args.prompt,

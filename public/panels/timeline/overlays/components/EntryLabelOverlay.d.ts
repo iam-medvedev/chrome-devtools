@@ -44,11 +44,11 @@ export declare class EntryLabelOverlay extends HTMLElement {
     /**
      * So we can provide a mocked agent in tests. Do not call this method outside of a test!
      */
-    overrideAIAgentForTest(agent: AiAssistanceModels.PerformanceAnnotationsAgent): void;
+    overrideAIAgentForTest(agent: AiAssistanceModels.PerformanceAnnotationsAgent.PerformanceAnnotationsAgent): void;
     entryHighlightWrapper(): HTMLElement | null;
     set entryLabelVisibleHeight(entryLabelVisibleHeight: number);
     setLabelEditabilityAndRemoveEmptyLabel(editable: boolean): void;
-    set callTree(callTree: AiAssistanceModels.AICallTree | null);
+    set callTree(callTree: AiAssistanceModels.AICallTree.AICallTree | null);
 }
 declare global {
     interface HTMLElementTagNameMap {

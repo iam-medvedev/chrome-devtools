@@ -8,7 +8,7 @@ import { restoreUserAgentForTesting, setUserAgentForTesting, updateHostConfig, }
 import { describeWithMockConnection } from '../../../testing/MockConnection.js';
 import * as Bindings from '../../bindings/bindings.js';
 import * as Workspace from '../../workspace/workspace.js';
-import { FileAgent, FileContext } from '../ai_assistance.js';
+import { FileAgent } from '../ai_assistance.js';
 describeWithMockConnection('FileAgent', () => {
     function mockHostConfig(modelId, temperature) {
         updateHostConfig({
@@ -33,14 +33,14 @@ describeWithMockConnection('FileAgent', () => {
     describe('buildRequest', () => {
         it('builds a request with a model id', async () => {
             mockHostConfig('test model');
-            const agent = new FileAgent({
+            const agent = new FileAgent.FileAgent({
                 aidaClient: {},
             });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.model_id, 'test model');
         });
         it('builds a request with a temperature', async () => {
             mockHostConfig('test model', 1);
-            const agent = new FileAgent({
+            const agent = new FileAgent.FileAgent({
                 aidaClient: {},
             });
             assert.strictEqual(agent.buildRequest({ text: 'test input' }, Host.AidaClient.Role.USER).options?.temperature, 1);
@@ -48,7 +48,7 @@ describeWithMockConnection('FileAgent', () => {
         it('structure matches the snapshot', async () => {
             mockHostConfig('test model');
             sinon.stub(crypto, 'randomUUID').returns('sessionId');
-            const agent = new FileAgent({
+            const agent = new FileAgent.FileAgent({
                 aidaClient: mockAidaClient([[{ explanation: 'answer' }]]),
                 serverSideLoggingEnabled: true,
             });
@@ -98,7 +98,7 @@ describeWithMockConnection('FileAgent', () => {
         ];
         testArguments.forEach(args => {
             it('generates an answer ' + args.name, async () => {
-                const agent = new FileAgent({
+                const agent = new FileAgent.FileAgent({
                     aidaClient: mockAidaClient([[{
                                 explanation: 'This is the answer',
                                 metadata: {
@@ -110,16 +110,16 @@ describeWithMockConnection('FileAgent', () => {
                     requestContentData: args.requestContentData,
                     content: 'content',
                 });
-                const responses = await Array.fromAsync(agent.run('test', { selected: uiSourceCode ? new FileContext(uiSourceCode) : null }));
+                const responses = await Array.fromAsync(agent.run('test', { selected: uiSourceCode ? new FileAgent.FileContext(uiSourceCode) : null }));
                 assert.deepEqual(responses, [
                     {
-                        type: "user-query" /* ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAgent.ResponseType.USER_QUERY */,
                         query: 'test',
                         imageInput: undefined,
                         imageId: undefined,
                     },
                     {
-                        type: "context" /* ResponseType.CONTEXT */,
+                        type: "context" /* AiAgent.ResponseType.CONTEXT */,
                         title: 'Analyzing file',
                         details: [
                             {
@@ -134,7 +134,7 @@ content
                         ],
                     },
                     {
-                        type: "querying" /* ResponseType.QUERYING */,
+                        type: "querying" /* AiAgent.ResponseType.QUERYING */,
                         //             query: `# Selected file
                         // File name: script.js
                         // URL: http://example.test/script.js
@@ -146,7 +146,7 @@ content
                         // test`,
                     },
                     {
-                        type: "answer" /* ResponseType.ANSWER */,
+                        type: "answer" /* AiAgent.ResponseType.ANSWER */,
                         text: 'This is the answer',
                         complete: true,
                         suggestions: undefined,

@@ -673,16 +673,17 @@ var NetworkPanelIndicator = class {
 var NetworkThrottlingSelector_exports = {};
 __export(NetworkThrottlingSelector_exports, {
   DEFAULT_VIEW: () => DEFAULT_VIEW,
-  NetworkThrottlingSelect: () => NetworkThrottlingSelect
+  NetworkThrottlingSelect: () => NetworkThrottlingSelect,
+  NetworkThrottlingSelectorWidget: () => NetworkThrottlingSelectorWidget
 });
 import * as Common3 from "./../../core/common/common.js";
 import * as i18n9 from "./../../core/i18n/i18n.js";
 import * as Platform from "./../../core/platform/platform.js";
 import * as SDK5 from "./../../core/sdk/sdk.js";
-import * as Badges from "./../../models/badges/badges.js";
+import * as UI3 from "./../../ui/legacy/legacy.js";
 import * as Lit from "./../../ui/lit/lit.js";
 import * as VisualLogging2 from "./../../ui/visual_logging/visual_logging.js";
-var { render, html, Directives } = Lit;
+var { render, html, Directives, nothing } = Lit;
 var UIStrings5 = {
   /**
    * @description Text to indicate something is not enabled
@@ -696,6 +697,10 @@ var UIStrings5 = {
    * @description Text in Network Throttling Selector of the Network panel
    */
   custom: "Custom",
+  /**
+   * @description  Title for a network throttling group containing the request blocking option
+   */
+  blockingGroup: "Blocking",
   /**
    *@description Text with two placeholders separated by a colon
    *@example {Node removed} PH1
@@ -722,9 +727,7 @@ var str_5 = i18n9.i18n.registerUIStrings("panels/mobile_throttling/NetworkThrott
 var i18nString5 = i18n9.i18n.getLocalizedString.bind(void 0, str_5);
 var DEFAULT_VIEW = (input, output, target) => {
   const title = (conditions) => typeof conditions.title === "function" ? conditions.title() : conditions.title;
-  const jslog = (group, condition) => `${VisualLogging2.item(Platform.StringUtilities.toKebabCase(condition.i18nTitleKey || title(condition))).track({
-    click: true
-  })}`;
+  const jslog = (group, condition) => `${VisualLogging2.item(Platform.StringUtilities.toKebabCase("i18nTitleKey" in condition && condition.i18nTitleKey || title(condition))).track({ click: true })}`;
   const optionsMap = /* @__PURE__ */ new WeakMap();
   let selectedConditions = input.selectedConditions;
   function onSelect(event) {
@@ -739,7 +742,9 @@ var DEFAULT_VIEW = (input, output, target) => {
     if (option === element.options[element.options.length - 1]) {
       input.onAddCustomConditions();
       event.consume(true);
-      element.value = title(selectedConditions);
+      if (selectedConditions) {
+        element.value = title(selectedConditions);
+      }
     } else {
       const conditions = optionsMap.get(option);
       if (conditions) {
@@ -751,14 +756,14 @@ var DEFAULT_VIEW = (input, output, target) => {
   render(
     // clang-format off
     html`<select
-      aria-label=${input.title}
+      aria-label=${input.title ?? nothing}
       jslog=${VisualLogging2.dropDown().track({ change: true }).context(input.jslogContext)}
       @change=${onSelect}>
           ${input.throttlingGroups.map((group) => html`<optgroup
             label=${group.title}>
             ${group.items.map((condition) => html`<option
               ${Directives.ref((option) => option && optionsMap.set(option, condition))}
-              ?selected=${SDK5.NetworkManager.networkConditionsEqual(condition, selectedConditions)}
+              ?selected=${selectedConditions ? SDK5.NetworkManager.networkConditionsEqual(condition, selectedConditions) : group === input.throttlingGroups[0]}
               value=${title(condition)}
               aria-label=${i18nString5(UIStrings5.sS, { PH1: group.title, PH2: title(condition) })}
               jslog=${jslog(group, condition)}>
@@ -768,7 +773,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         <optgroup label=${input.customConditionsGroup.title}>
           ${input.customConditionsGroup.items.map((condition) => html`<option
               ${Directives.ref((option) => option && optionsMap.set(option, condition))}
-              ?selected=${SDK5.NetworkManager.networkConditionsEqual(condition, selectedConditions)}
+              ?selected=${selectedConditions && SDK5.NetworkManager.networkConditionsEqual(condition, selectedConditions)}
               value=${title(condition)}
               aria-label=${i18nString5(UIStrings5.sS, { PH1: input.customConditionsGroup.title, PH2: title(condition) })}
               jslog=${VisualLogging2.item("custom-network-throttling-item").track({ click: true })}>
@@ -793,33 +798,59 @@ var NetworkThrottlingSelect = class _NetworkThrottlingSelect extends Common3.Obj
   #currentConditions;
   #title;
   #view;
+  #variant = "global-conditions";
   static createForGlobalConditions(element, title) {
     ThrottlingManager.instance();
-    const select = new _NetworkThrottlingSelect(element, title, SDK5.NetworkManager.activeNetworkThrottlingKeySetting().name, SDK5.NetworkManager.MultitargetNetworkManager.instance().networkConditions());
-    select.addEventListener("conditionsChanged", (ev) => SDK5.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(ev.data));
+    const select = new _NetworkThrottlingSelect(element, {
+      title,
+      jslogContext: SDK5.NetworkManager.activeNetworkThrottlingKeySetting().name,
+      currentConditions: SDK5.NetworkManager.MultitargetNetworkManager.instance().networkConditions()
+    });
+    select.addEventListener("conditionsChanged", (ev) => !("block" in ev.data) && SDK5.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(ev.data));
     SDK5.NetworkManager.MultitargetNetworkManager.instance().addEventListener("ConditionsChanged", () => {
       select.currentConditions = SDK5.NetworkManager.MultitargetNetworkManager.instance().networkConditions();
     });
     return select;
   }
-  constructor(element, title, jslogContext, currentConditions, view = DEFAULT_VIEW) {
+  constructor(element, options = {}, view = DEFAULT_VIEW) {
     super();
     SDK5.NetworkManager.customUserNetworkConditionsSetting().addChangeListener(this.#performUpdate, this);
     this.#element = element;
-    this.#jslogContext = jslogContext;
-    this.#currentConditions = currentConditions;
-    this.#title = title;
+    this.#jslogContext = options.jslogContext;
+    this.#currentConditions = options.currentConditions;
+    this.#title = options.title;
     this.#view = view;
     this.#performUpdate();
+  }
+  get recommendedConditions() {
+    return this.#recommendedConditions;
   }
   set recommendedConditions(recommendedConditions) {
     this.#recommendedConditions = recommendedConditions;
     this.#performUpdate();
   }
+  get currentConditions() {
+    return this.#currentConditions;
+  }
   set currentConditions(currentConditions) {
     this.#currentConditions = currentConditions;
     this.#performUpdate();
   }
+  get jslogContext() {
+    return this.#jslogContext;
+  }
+  set jslogContext(jslogContext) {
+    this.#jslogContext = jslogContext;
+    this.#performUpdate();
+  }
+  get variant() {
+    return this.#variant;
+  }
+  set variant(variant) {
+    this.#variant = variant;
+    this.#performUpdate();
+  }
+  // FIXME Should use requestUpdate once we merge this with the widget
   #performUpdate() {
     const customNetworkConditionsSetting = SDK5.NetworkManager.customUserNetworkConditionsSetting();
     const customNetworkConditions = customNetworkConditionsSetting.get();
@@ -828,12 +859,31 @@ var NetworkThrottlingSelect = class _NetworkThrottlingSelect extends Common3.Obj
     };
     const onSelect = (conditions) => {
       this.dispatchEventToListeners("conditionsChanged", conditions);
-      Badges.UserBadges.instance().recordAction(Badges.BadgeAction.NETWORK_SPEED_THROTTLED);
     };
-    const throttlingGroups = [
-      { title: i18nString5(UIStrings5.disabled), items: [SDK5.NetworkManager.NoThrottlingConditions] },
-      { title: i18nString5(UIStrings5.presets), items: ThrottlingPresets.networkPresets }
-    ];
+    const throttlingGroups = [];
+    switch (this.#variant) {
+      case "global-conditions":
+        throttlingGroups.push({ title: i18nString5(UIStrings5.disabled), items: [SDK5.NetworkManager.NoThrottlingConditions] }, {
+          title: i18nString5(UIStrings5.presets),
+          items: [
+            SDK5.NetworkManager.Fast4GConditions,
+            SDK5.NetworkManager.Slow4GConditions,
+            SDK5.NetworkManager.Slow3GConditions,
+            SDK5.NetworkManager.OfflineConditions
+          ]
+        });
+        break;
+      case "individual-request-conditions":
+        throttlingGroups.push({ title: i18nString5(UIStrings5.blockingGroup), items: [SDK5.NetworkManager.BlockingConditions] }, {
+          title: i18nString5(UIStrings5.presets),
+          items: [
+            SDK5.NetworkManager.Fast4GConditions,
+            SDK5.NetworkManager.Slow4GConditions,
+            SDK5.NetworkManager.Slow3GConditions
+          ]
+        });
+        break;
+    }
     const customConditionsGroup = { title: i18nString5(UIStrings5.custom), items: customNetworkConditions };
     const viewInput = {
       recommendedConditions: this.#recommendedConditions,
@@ -846,6 +896,27 @@ var NetworkThrottlingSelect = class _NetworkThrottlingSelect extends Common3.Obj
       customConditionsGroup
     };
     this.#view(viewInput, {}, this.#element);
+  }
+};
+var NetworkThrottlingSelectorWidget = class extends UI3.Widget.VBox {
+  #select;
+  #conditionsChangedHandler;
+  constructor(element, view = DEFAULT_VIEW) {
+    super(element, { useShadowDom: true });
+    this.#select = new NetworkThrottlingSelect(this.contentElement, {}, view);
+    this.#select.addEventListener("conditionsChanged", ({ data }) => this.#conditionsChangedHandler?.(data));
+  }
+  set variant(variant) {
+    this.#select.variant = variant;
+  }
+  set jslogContext(context) {
+    this.#select.jslogContext = context;
+  }
+  set currentConditions(currentConditions) {
+    this.#select.currentConditions = currentConditions;
+  }
+  set onConditionsChanged(handler) {
+    this.#conditionsChangedHandler = handler;
   }
 };
 
@@ -861,7 +932,7 @@ import * as i18n13 from "./../../core/i18n/i18n.js";
 import * as SDK7 from "./../../core/sdk/sdk.js";
 import * as Buttons from "./../../ui/components/buttons/buttons.js";
 import * as IconButton2 from "./../../ui/components/icon_button/icon_button.js";
-import * as UI3 from "./../../ui/legacy/legacy.js";
+import * as UI4 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging3 from "./../../ui/visual_logging/visual_logging.js";
 
 // gen/front_end/panels/mobile_throttling/CalibrationController.js
@@ -1620,7 +1691,7 @@ function extractCustomSettingIndex(key) {
   }
   return 0;
 }
-var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
+var ThrottlingSettingsTab = class extends UI4.Widget.VBox {
   list;
   customUserConditions;
   editor;
@@ -1655,7 +1726,7 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
     const card = settingsContent.createChild("devtools-card");
     card.heading = i18nString7(UIStrings7.networkThrottlingProfiles);
     const container = card.createChild("div");
-    this.list = new UI3.ListWidget.ListWidget(this);
+    this.list = new UI4.ListWidget.ListWidget(this);
     this.list.element.classList.add("conditions-list");
     this.list.registerRequiredCSS(throttlingSettingsTab_css_default);
     this.list.show(container);
@@ -1708,7 +1779,7 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
     const titleText = title.createChild("div", "conditions-list-title-text");
     const castedTitle = this.retrieveOptionsTitle(conditions);
     titleText.textContent = castedTitle;
-    UI3.Tooltip.Tooltip.install(titleText, castedTitle);
+    UI4.Tooltip.Tooltip.install(titleText, castedTitle);
     element.createChild("div", "conditions-list-separator");
     element.createChild("div", "conditions-list-text").textContent = throughputText(conditions.download);
     element.createChild("div", "conditions-list-separator");
@@ -1820,7 +1891,7 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
         isOptional: false
       }
     ];
-    const editor = new UI3.ListWidget.Editor();
+    const editor = new UI4.ListWidget.Editor();
     this.editor = editor;
     const content = editor.contentElement();
     const settingsContainer = content.createChild("div", "settings-container");
@@ -1831,12 +1902,12 @@ var ThrottlingSettingsTab = class extends UI3.Widget.VBox {
       const inputElement = settingElement.createChild("div");
       const input = editor.createInput(name, inputType, placeholder, validator);
       input.classList.add("input");
-      UI3.ARIAUtils.setLabel(input, labelText);
+      UI4.ARIAUtils.setLabel(input, labelText);
       inputElement.appendChild(input);
       const optionalTextElement = inputElement.createChild("div");
       const optionalStr = i18nString7(UIStrings7.optional);
       optionalTextElement.textContent = optionalStr;
-      UI3.ARIAUtils.setDescription(input, optionalStr);
+      UI4.ARIAUtils.setDescription(input, optionalStr);
       if (!isOptional) {
         optionalTextElement.style.visibility = "hidden";
       }

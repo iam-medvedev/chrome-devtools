@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-lit-render-outside-of-view */
-var _a;
 import '../../../ui/components/tooltips/tooltips.js';
 import '../../../ui/components/buttons/buttons.js';
 import * as Common from '../../../core/common/common.js';
@@ -68,10 +67,10 @@ export class ExportTraceOptions extends HTMLElement {
     static #includeScriptContentSettingString = 'export-performance-trace-include-scripts';
     static #includeSourceMapsSettingString = 'export-performance-trace-include-sourcemaps';
     static #shouldCompressSettingString = 'export-performance-trace-should-compress';
-    #includeAnnotationsSetting = Common.Settings.Settings.instance().createSetting(_a.#includeAnnotationsSettingString, true, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-    #includeScriptContentSetting = Common.Settings.Settings.instance().createSetting(_a.#includeScriptContentSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-    #includeSourceMapsSetting = Common.Settings.Settings.instance().createSetting(_a.#includeSourceMapsSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
-    #shouldCompressSetting = Common.Settings.Settings.instance().createSetting(_a.#shouldCompressSettingString, true, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
+    #includeAnnotationsSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeAnnotationsSettingString, true, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #includeScriptContentSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeScriptContentSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #includeSourceMapsSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#includeSourceMapsSettingString, false, "Session" /* Common.Settings.SettingStorageType.SESSION */);
+    #shouldCompressSetting = Common.Settings.Settings.instance().createSetting(ExportTraceOptions.#shouldCompressSettingString, true, "Synced" /* Common.Settings.SettingStorageType.SYNCED */);
     #state = {
         dialogState: "collapsed" /* Dialogs.Dialog.DialogState.COLLAPSED */,
         includeAnnotations: this.#includeAnnotationsSetting.get(),
@@ -267,6 +266,5 @@ export class ExportTraceOptions extends HTMLElement {
         this.state = Object.assign({}, this.#state, { dialogState: "collapsed" /* Dialogs.Dialog.DialogState.COLLAPSED */ });
     }
 }
-_a = ExportTraceOptions;
 customElements.define('devtools-perf-export-trace-options', ExportTraceOptions);
 //# sourceMappingURL=ExportTraceOptions.js.map

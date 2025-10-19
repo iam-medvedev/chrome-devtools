@@ -12,7 +12,7 @@ interface LinkifyLocationOptions {
     lineNumber: number;
     target: SDK.Target.Target | null;
     linkifier: LegacyComponents.Linkifier.Linkifier;
-    isFreshRecording?: boolean;
+    isFreshOrEnhanced?: boolean;
     columnNumber?: number;
     omitOrigin?: boolean;
 }
@@ -29,9 +29,9 @@ export declare class TimelineUIUtils {
     static eventColor(event: Trace.Types.Events.Event): string;
     static eventTitle(event: Trace.Types.Events.Event): string;
     static isUserFrame(frame: Protocol.Runtime.CallFrame): boolean;
-    static buildDetailsNodeForTraceEvent(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording: boolean | undefined, parsedTrace: Trace.TraceModel.ParsedTrace): Promise<Node | null>;
+    static buildDetailsNodeForTraceEvent(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshOrEnhanced: boolean | undefined, parsedTrace: Trace.TraceModel.ParsedTrace): Promise<Node | null>;
     static linkifyLocation(linkifyOptions: LinkifyLocationOptions): Element | null;
-    static linkifyTopCallFrame(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshRecording?: boolean): Element | null;
+    static linkifyTopCallFrame(event: Trace.Types.Events.Event, target: SDK.Target.Target | null, linkifier: LegacyComponents.Linkifier.Linkifier, isFreshOrEnhanced?: boolean): Element | null;
     static buildDetailsNodeForMarkerEvents(event: Trace.Types.Events.MarkerEvent): HTMLElement;
     static buildConsumeCacheDetails(eventData: {
         consumedCacheSize?: number;

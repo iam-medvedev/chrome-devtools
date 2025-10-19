@@ -248,7 +248,8 @@ export declare enum Action {
     AiCodeCompletionSuggestionAccepted = 187,
     AiCodeCompletionError = 188,
     AttributeLinkClicked = 189,
-    MAX_VALUE = 190
+    InsightRequestedViaTeaser = 190,
+    MAX_VALUE = 191
 }
 export declare enum PanelCodes {
     elements = 1,

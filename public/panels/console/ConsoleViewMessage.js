@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 /* eslint-disable rulesdir/no-imperative-dom-api */
-var _a;
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
 import * as Platform from '../../core/platform/platform.js';
 import * as Root from '../../core/root/root.js';
 import * as SDK from '../../core/sdk/sdk.js';
+import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Logs from '../../models/logs/logs.js';
 import * as TextUtils from '../../models/text_utils/text_utils.js';
@@ -27,6 +27,7 @@ import * as UI from '../../ui/legacy/legacy.js';
 import * as VisualLogging from '../../ui/visual_logging/visual_logging.js';
 import * as Security from '../security/security.js';
 import { format, updateStyle } from './ConsoleFormat.js';
+import { ConsoleInsightTeaser } from './ConsoleInsightTeaser.js';
 import consoleViewStyles from './consoleView.css.js';
 import { augmentErrorStackWithScriptIds, parseSourcePositionsFromErrorStack } from './ErrorStackParser.js';
 const UIStrings = {
@@ -268,6 +269,7 @@ export class ConsoleViewMessage {
     requestResolver;
     issueResolver;
     #adjacentUserCommandResult = false;
+    #teaser = undefined;
     /** Formatting Error#stack is asynchronous. Allow tests to wait for the result */
     #formatErrorStackPromiseForTest = Promise.resolve();
     constructor(consoleMessage, linkifier, requestResolver, issueResolver, onResize) {
@@ -309,19 +311,25 @@ export class ConsoleViewMessage {
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.InsightClosed);
             this.elementInternal?.classList.toggle('has-insight', false);
             this.elementInternal?.removeChild(insight);
+            this.#teaser?.setInactive(false);
         }, { once: true });
+        this.#teaser?.setInactive(true);
     }
     element() {
         return this.toMessageElement();
     }
     wasShown() {
         this.isVisibleInternal = true;
+        if (this.elementInternal) {
+            this.#teaser?.show(this.elementInternal, this.consoleRowWrapper);
+        }
     }
     onResize() {
     }
     willHide() {
         this.isVisibleInternal = false;
         this.cachedHeight = this.element().offsetHeight;
+        this.#teaser?.detach();
     }
     isVisible() {
         return this.isVisibleInternal;
@@ -1166,6 +1174,15 @@ export class ConsoleViewMessage {
         this.updateTimestamp();
         return this.contentElementInternal;
     }
+    #startTeaserGeneration() {
+        if (this.#teaser &&
+            Common.Settings.Settings.instance().moduleSetting('console-insight-teasers-enabled').getIfNotDisabled()) {
+            this.#teaser.maybeGenerateTeaser();
+        }
+    }
+    #abortTeaserGeneration() {
+        this.#teaser?.abortTeaserGeneration();
+    }
     toMessageElement() {
         if (this.elementInternal) {
             return this.elementInternal;
@@ -1173,6 +1190,10 @@ export class ConsoleViewMessage {
         this.elementInternal = document.createElement('div');
         this.elementInternal.tabIndex = -1;
         this.elementInternal.addEventListener('keydown', this.onKeyDown.bind(this));
+        this.elementInternal.addEventListener('mouseenter', this.#startTeaserGeneration.bind(this));
+        this.elementInternal.addEventListener('focusin', this.#startTeaserGeneration.bind(this));
+        this.elementInternal.addEventListener('mouseleave', this.#abortTeaserGeneration.bind(this));
+        this.elementInternal.addEventListener('focusout', this.#abortTeaserGeneration.bind(this));
         this.updateMessageElement();
         this.elementInternal.classList.toggle('console-adjacent-user-command-result', this.#adjacentUserCommandResult);
         return this.elementInternal;
@@ -1189,6 +1210,11 @@ export class ConsoleViewMessage {
         this.elementInternal.removeChildren();
         this.consoleRowWrapper = this.elementInternal.createChild('div');
         this.consoleRowWrapper.classList.add('console-row-wrapper');
+        if (this.shouldShowTeaser()) {
+            const uuid = crypto.randomUUID();
+            this.elementInternal.setAttribute('aria-details', `teaser-${uuid}`);
+            this.#teaser = new ConsoleInsightTeaser(uuid, this);
+        }
         if (this.message.isGroupStartMessage()) {
             this.elementInternal.classList.add('console-group-title');
         }
@@ -1253,6 +1279,20 @@ export class ConsoleViewMessage {
         return this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */ ||
             this.message.level === "warning" /* Protocol.Log.LogEntryLevel.Warning */;
     }
+    shouldShowTeaser() {
+        if (!this.shouldShowInsights()) {
+            return false;
+        }
+        if (!Common.Settings.Settings.instance().moduleSetting('console-insight-teasers-enabled').getIfNotDisabled() ||
+            !AiAssistanceModel.BuiltInAi.BuiltInAi.cachedIsAvailable()) {
+            return false;
+        }
+        const devtoolsLocale = i18n.DevToolsLocale.DevToolsLocale.instance();
+        if (!devtoolsLocale.locale.startsWith('en-')) {
+            return false;
+        }
+        return true;
+    }
     getExplainLabel() {
         if (this.message.level === "error" /* Protocol.Log.LogEntryLevel.Error */) {
             return i18nString(UIStrings.explainThisError);
@@ -1289,7 +1329,7 @@ export class ConsoleViewMessage {
         button.append(icon);
         button.onclick = (event) => {
             event.stopPropagation();
-            UI.Context.Context.instance().setFlavor(_a, this);
+            UI.Context.Context.instance().setFlavor(ConsoleViewMessage, this);
             const action = UI.ActionRegistry.ActionRegistry.instance().getAction(EXPLAIN_HOVER_ACTION_ID);
             void action.execute();
         };
@@ -1605,7 +1645,7 @@ export class ConsoleViewMessage {
             return fragment;
         }
         const container = document.createDocumentFragment();
-        const tokens = _a.tokenizeMessageText(string);
+        const tokens = ConsoleViewMessage.tokenizeMessageText(string);
         let isBlob = false;
         for (const token of tokens) {
             if (!token.text) {
@@ -1665,7 +1705,7 @@ export class ConsoleViewMessage {
         return this.groupKeyInternal;
     }
     groupTitle() {
-        const tokens = _a.tokenizeMessageText(this.message.messageText);
+        const tokens = ConsoleViewMessage.tokenizeMessageText(this.message.messageText);
         const result = tokens.reduce((acc, token) => {
             let text = token.text;
             if (token.type === 'url') {
@@ -1688,7 +1728,6 @@ export class ConsoleViewMessage {
         return result.replace(/[%]o/g, '');
     }
 }
-_a = ConsoleViewMessage;
 let tokenizerRegexes = null;
 let tokenizerTypes = null;
 function getOrCreateTokenizers() {

@@ -619,7 +619,7 @@ export class TimelineUIUtils {
     static isUserFrame(frame) {
         return frame.scriptId !== '0' && !(frame.url?.startsWith('native '));
     }
-    static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshRecording = false, parsedTrace) {
+    static async buildDetailsNodeForTraceEvent(event, target, linkifier, isFreshOrEnhanced = false, parsedTrace) {
         let details = null;
         let detailsText;
         // TODO(40287735): update this code with type-safe data checks.
@@ -663,7 +663,7 @@ export class TimelineUIUtils {
                     lineNumber: callFrame?.lineNumber || 0,
                     columnNumber: callFrame?.columnNumber,
                     target,
-                    isFreshRecording,
+                    isFreshOrEnhanced,
                     linkifier,
                     omitOrigin: true,
                 });
@@ -681,7 +681,7 @@ export class TimelineUIUtils {
                     lineNumber: 0,
                     columnNumber: 0,
                     target,
-                    isFreshRecording,
+                    isFreshOrEnhanced,
                     linkifier,
                 });
                 break;
@@ -698,7 +698,7 @@ export class TimelineUIUtils {
                         lineNumber: lineNumber || 0,
                         columnNumber: 0,
                         target,
-                        isFreshRecording,
+                        isFreshOrEnhanced,
                         linkifier,
                         omitOrigin: true,
                     });
@@ -715,7 +715,7 @@ export class TimelineUIUtils {
                         lineNumber: 0,
                         columnNumber: 0,
                         target,
-                        isFreshRecording,
+                        isFreshOrEnhanced,
                         linkifier,
                         omitOrigin: true,
                     });
@@ -733,7 +733,7 @@ export class TimelineUIUtils {
                     detailsText = null;
                 }
                 else {
-                    details = this.linkifyTopCallFrame(event, target, linkifier, isFreshRecording) ?? null;
+                    details = this.linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced) ?? null;
                 }
                 break;
             }
@@ -744,7 +744,7 @@ export class TimelineUIUtils {
         return details;
     }
     static linkifyLocation(linkifyOptions) {
-        const { scriptId, url, lineNumber, columnNumber, isFreshRecording, linkifier, target, omitOrigin } = linkifyOptions;
+        const { scriptId, url, lineNumber, columnNumber, isFreshOrEnhanced, linkifier, target, omitOrigin } = linkifyOptions;
         const options = {
             lineNumber,
             columnNumber,
@@ -754,12 +754,12 @@ export class TimelineUIUtils {
             tabStop: true,
             omitOrigin,
         };
-        if (isFreshRecording) {
+        if (isFreshOrEnhanced) {
             return linkifier.linkifyScriptLocation(target, scriptId, url, lineNumber, options);
         }
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(url, options);
     }
-    static linkifyTopCallFrame(event, target, linkifier, isFreshRecording = false) {
+    static linkifyTopCallFrame(event, target, linkifier, isFreshOrEnhanced = false) {
         let frame = Trace.Helpers.Trace.getZeroIndexedStackTraceInEventPayload(event)?.[0];
         if (Trace.Types.Events.isProfileCall(event)) {
             frame = event.callFrame;
@@ -775,7 +775,7 @@ export class TimelineUIUtils {
             columnNumber: frame.columnNumber,
             lineNumber: frame.lineNumber,
         };
-        if (isFreshRecording) {
+        if (isFreshOrEnhanced) {
             return linkifier.maybeLinkifyConsoleCallFrame(target, frame, { showColumnNumber: true, inlineFrameIndex: 0 });
         }
         return LegacyComponents.Linkifier.Linkifier.linkifyURL(frame.url, options);
@@ -974,7 +974,7 @@ export class TimelineUIUtils {
                 }
             }
         }
-        const isFreshRecording = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFresh(parsedTrace));
+        const isFreshOrEnhanced = Boolean(parsedTrace && Tracing.FreshRecording.Tracker.instance().recordingIsFreshOrEnhanced(parsedTrace));
         switch (event.name) {
             case "GCEvent" /* Trace.Types.Events.Name.GC */:
             case "MajorGC" /* Trace.Types.Events.Name.MAJOR_GC */:
@@ -1000,7 +1000,7 @@ export class TimelineUIUtils {
                 break;
             }
             case "FunctionCall" /* Trace.Types.Events.Name.FUNCTION_CALL */: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.function), detailsNode);
                     const originWithEntity = this.getOriginWithEntity(entityMapper, parsedTrace, event);
@@ -1304,7 +1304,7 @@ export class TimelineUIUtils {
                 break;
             }
             case "EventTiming" /* Trace.Types.Events.Name.EVENT_TIMING */: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }
@@ -1320,7 +1320,7 @@ export class TimelineUIUtils {
                 break;
             }
             default: {
-                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshRecording, parsedTrace);
+                const detailsNode = await TimelineUIUtils.buildDetailsNodeForTraceEvent(event, targetForEvent(parsedTrace, event), linkifier, isFreshOrEnhanced, parsedTrace);
                 if (detailsNode) {
                     contentHelper.appendElementRow(i18nString(UIStrings.details), detailsNode);
                 }

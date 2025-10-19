@@ -1014,6 +1014,10 @@ export class SourcesPanel extends UI.Panel.Panel {
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
         }
+        if (Root.Runtime.Runtime.isTraceApp()) {
+            this.splitWidget.hideSidebar();
+            return;
+        }
         this.splitWidget.setVertical(!vertically);
         this.splitWidget.element.classList.toggle('sources-split-view-vertical', vertically);
         SourcesPanel.updateResizerAndSidebarButtons(this);

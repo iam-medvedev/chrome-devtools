@@ -7,7 +7,7 @@ import * as AiAssistanceModel from '../ai_assistance/ai_assistance.js';
 describeWithEnvironment('AgentProject', () => {
     async function mockProject(files, options) {
         const { project, uiSourceCode } = createTestFilesystem('file:///path/to/project', files);
-        return { project: new AiAssistanceModel.AgentProject(project, options), uiSourceCode };
+        return { project: new AiAssistanceModel.AgentProject.AgentProject(project, options), uiSourceCode };
     }
     it('can list files', async () => {
         const { project } = await mockProject();
@@ -112,7 +112,7 @@ diff
 -content
 +updated
 \`\`\`\`\``;
-                await project.writeFile('index.html', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.html', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.html'), 'updated');
             });
             it('can write files with multiple changes', async () => {
@@ -137,7 +137,7 @@ diff
 -Line:4
 +LineUpdated:4
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), `LineUpdated:1
 Line:2
 Line:3
@@ -159,7 +159,7 @@ diff
 +Line:1
 +Line:4
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), `Line:1
 Line:4`);
             });
@@ -183,7 +183,7 @@ diff
 +LineUpdated:1
 +LineUpdated:1.5
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), `LineUpdated:1
 LineUpdated:1.5
 Line:2
@@ -211,7 +211,7 @@ diff
 -Line:2
  Line:3
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), `Line:1
 Line:3
 Line:4
@@ -231,7 +231,7 @@ diff
 @@ -817,1 +817,1 @@
 -Line:1
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), '');
             });
             it('can write files with first line next to @@', async () => {
@@ -253,7 +253,7 @@ diff
 -Line:2
  Line:3
 \`\`\`\`\``;
-                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.ReplaceStrategy.UNIFIED_DIFF */);
+                await project.writeFile('index.css', unifiedDiff, "unified" /* AiAssistanceModel.AgentProject.ReplaceStrategy.UNIFIED_DIFF */);
                 assert.deepEqual(await project.readFile('index.css'), `Line:3
 Line:4
 Line:5`);

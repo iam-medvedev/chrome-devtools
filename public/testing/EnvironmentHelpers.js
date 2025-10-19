@@ -10,6 +10,7 @@ import EnUsLocaleData from '../core/i18n/locales/en-US.json' with { type: 'json'
 import * as Root from '../core/root/root.js';
 import * as SDK from '../core/sdk/sdk.js';
 import * as Bindings from '../models/bindings/bindings.js';
+import * as Formatter from '../models/formatter/formatter.js';
 import * as IssuesManager from '../models/issues_manager/issues_manager.js';
 import * as Logs from '../models/logs/logs.js';
 import * as Persistence from '../models/persistence/persistence.js';
@@ -227,6 +228,7 @@ export async function initializeGlobalVars({ reset = true } = {}) {
         createSettingValue("ELEMENTS" /* Common.Settings.SettingCategory.ELEMENTS */, 'global-ai-button-click-count', 0),
         createSettingValue("ACCOUNT" /* Common.Settings.SettingCategory.ACCOUNT */, 'receive-gdp-badges', false),
         createSettingValue("GLOBAL" /* Common.Settings.SettingCategory.GLOBAL */, 'currentDockState', 'right'),
+        createSettingValue("CONSOLE" /* Common.Settings.SettingCategory.CONSOLE */, 'console-insight-teasers-enabled', true, "boolean" /* Common.Settings.SettingType.BOOLEAN */),
     ];
     Common.Settings.registerSettingsForTest(settings, reset);
     // Instantiate the storage.
@@ -268,6 +270,7 @@ export async function deinitializeGlobalVars() {
     IssuesManager.IssuesManager.IssuesManager.removeInstance();
     Persistence.IsolatedFileSystemManager.IsolatedFileSystemManager.removeInstance();
     ProjectSettings.ProjectSettingsModel.ProjectSettingsModel.removeInstance();
+    Formatter.FormatterWorkerPool.FormatterWorkerPool.removeInstance();
     Common.Settings.resetSettings();
     // Protect against the dynamic import not having happened.
     if (UI) {

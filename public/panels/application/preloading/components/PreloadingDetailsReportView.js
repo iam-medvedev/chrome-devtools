@@ -229,6 +229,11 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     `;
         // clang-format on
     }
+    #isPrerenderLike(speculationAction) {
+        return [
+            "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */, "PrerenderUntilScript" /* Protocol.Preload.SpeculationAction.PrerenderUntilScript */
+        ].includes(speculationAction);
+    }
     #action(isFallbackToPrefetch) {
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
@@ -239,7 +244,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
         }
         let maybeInspectButton = Lit.nothing;
         (() => {
-            if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
+            if (!this.#isPrerenderLike(attempt.action)) {
                 return;
             }
             const target = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
@@ -314,7 +319,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     #targetHint() {
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
-        const hasTargetHint = attempt.action === "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */ && attempt.key.targetHint !== undefined;
+        const hasTargetHint = this.#isPrerenderLike(attempt.action) && attempt.key.targetHint !== undefined;
         if (!hasTargetHint) {
             return Lit.nothing;
         }
@@ -328,7 +333,7 @@ export class PreloadingDetailsReportView extends LegacyWrapper.LegacyWrapper.Wra
     #maybePrerenderFailureReason() {
         assertNotNullOrUndefined(this.#data);
         const attempt = this.#data.pipeline.getOriginallyTriggered();
-        if (attempt.action !== "Prerender" /* Protocol.Preload.SpeculationAction.Prerender */) {
+        if (!this.#isPrerenderLike(attempt.action)) {
             return Lit.nothing;
         }
         const failureReason = prerenderFailureReason(attempt);

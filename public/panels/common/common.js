@@ -1,9 +1,15 @@
+var __defProp = Object.defineProperty;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+
 // gen/front_end/panels/common/common.prebundle.js
 import * as Host6 from "./../../core/host/host.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/common/common.css.js
 var common_css_default = `/*
@@ -1711,8 +1717,99 @@ var BadgeNotification = class extends UI6.Widget.Widget {
   }
 };
 
-// gen/front_end/panels/common/common.prebundle.js
+// gen/front_end/panels/common/PersistenceUtils.js
+var PersistenceUtils_exports = {};
+__export(PersistenceUtils_exports, {
+  LinkDecorator: () => LinkDecorator,
+  PersistenceUtils: () => PersistenceUtils
+});
+import * as Common4 from "./../../core/common/common.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as Platform2 from "./../../core/platform/platform.js";
+import * as Persistence from "./../../models/persistence/persistence.js";
+import * as Workspace from "./../../models/workspace/workspace.js";
+import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
+import * as Components from "./../../ui/legacy/components/utils/utils.js";
+import * as UI7 from "./../../ui/legacy/legacy.js";
 var UIStrings4 = {
+  /**
+   * @description Text in Persistence Utils of the Workspace settings in Settings
+   * @example {example.url} PH1
+   */
+  linkedToSourceMapS: "Linked to source map: {PH1}",
+  /**
+   * @description Text to show something is linked to another
+   * @example {example.url} PH1
+   */
+  linkedToS: "Linked to {PH1}"
+};
+var str_4 = i18n13.i18n.registerUIStrings("panels/common/PersistenceUtils.ts", UIStrings4);
+var i18nString4 = i18n13.i18n.getLocalizedString.bind(void 0, str_4);
+var PersistenceUtils = class _PersistenceUtils {
+  static tooltipForUISourceCode(uiSourceCode) {
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
+    if (!binding) {
+      return "";
+    }
+    if (uiSourceCode === binding.network) {
+      return Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.tooltipForUISourceCode(binding.fileSystem);
+    }
+    if (binding.network.contentType().isFromSourceMap()) {
+      return i18nString4(UIStrings4.linkedToSourceMapS, { PH1: Platform2.StringUtilities.trimMiddle(binding.network.url(), 150) });
+    }
+    return i18nString4(UIStrings4.linkedToS, { PH1: Platform2.StringUtilities.trimMiddle(binding.network.url(), 150) });
+  }
+  static iconForUISourceCode(uiSourceCode) {
+    const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
+    if (binding) {
+      if (!Common4.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
+        return null;
+      }
+      const icon2 = new IconButton.Icon.Icon();
+      icon2.name = "document";
+      icon2.classList.add("small");
+      UI7.Tooltip.Tooltip.install(icon2, _PersistenceUtils.tooltipForUISourceCode(binding.network));
+      if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project() === binding.fileSystem.project()) {
+        icon2.classList.add("dot", "purple");
+      } else {
+        icon2.classList.add("dot", "green");
+      }
+      return icon2;
+    }
+    if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem || !Common4.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
+      return null;
+    }
+    if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().isActiveHeaderOverrides(uiSourceCode)) {
+      const icon2 = new IconButton.Icon.Icon();
+      icon2.name = "document";
+      icon2.classList.add("small");
+      icon2.classList.add("dot", "purple");
+      return icon2;
+    }
+    const icon = new IconButton.Icon.Icon();
+    icon.name = "document";
+    icon.classList.add("small");
+    UI7.Tooltip.Tooltip.install(icon, _PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
+    return icon;
+  }
+};
+var LinkDecorator = class extends Common4.ObjectWrapper.ObjectWrapper {
+  constructor(persistence) {
+    super();
+    persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, this.bindingChanged, this);
+    persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, this.bindingChanged, this);
+  }
+  bindingChanged(event) {
+    const binding = event.data;
+    this.dispatchEventToListeners("LinkIconChanged", binding.network);
+  }
+  linkIcon(uiSourceCode) {
+    return PersistenceUtils.iconForUISourceCode(uiSourceCode);
+  }
+};
+
+// gen/front_end/panels/common/common.prebundle.js
+var UIStrings5 = {
   /**
    * @description Text for the cancel button in the dialog.
    */
@@ -1722,18 +1819,18 @@ var UIStrings4 = {
    */
   allow: "Allow"
 };
-var str_4 = i18n13.i18n.registerUIStrings("panels/common/common.ts", UIStrings4);
-var i18nString4 = i18n13.i18n.getLocalizedString.bind(void 0, str_4);
+var str_5 = i18n15.i18n.registerUIStrings("panels/common/common.ts", UIStrings5);
+var i18nString5 = i18n15.i18n.getLocalizedString.bind(void 0, str_5);
 var TypeToAllowDialog = class {
   static async show(options) {
-    const dialog2 = new UI7.Dialog.Dialog(options.jslogContext.dialog);
+    const dialog2 = new UI8.Dialog.Dialog(options.jslogContext.dialog);
     dialog2.setMaxContentSize(new Geometry2.Size(504, 340));
     dialog2.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
     dialog2.setDimmed(true);
-    const shadowRoot = UI7.UIUtils.createShadowRootWithCoreStyles(dialog2.contentElement, { cssFile: common_css_default });
+    const shadowRoot = UI8.UIUtils.createShadowRootWithCoreStyles(dialog2.contentElement, { cssFile: common_css_default });
     const content = shadowRoot.createChild("div", "type-to-allow-dialog");
     const result = await new Promise((resolve) => {
       const header = content.createChild("div", "header");
@@ -1750,12 +1847,12 @@ var TypeToAllowDialog = class {
         /* Buttons.Button.Size.SMALL */
       );
       content.createChild("div", "message").textContent = options.message;
-      const input = UI7.UIUtils.createInput("text-input", "text", options.jslogContext.input);
+      const input = UI8.UIUtils.createInput("text-input", "text", options.jslogContext.input);
       input.placeholder = options.inputPlaceholder;
       content.appendChild(input);
       const buttonsBar = content.createChild("div", "button");
-      const cancelButton = UI7.UIUtils.createTextButton(i18nString4(UIStrings4.cancel), () => resolve(false), { jslogContext: "cancel" });
-      const allowButton = UI7.UIUtils.createTextButton(i18nString4(UIStrings4.allow), () => {
+      const cancelButton = UI8.UIUtils.createTextButton(i18nString5(UIStrings5.cancel), () => resolve(false), { jslogContext: "cancel" });
+      const allowButton = UI8.UIUtils.createTextButton(i18nString5(UIStrings5.allow), () => {
         resolve(input.value === options.typePhrase);
       }, {
         jslogContext: "confirm",
@@ -1788,6 +1885,7 @@ export {
   BadgeNotification,
   FreDialog,
   GdpSignUpDialog,
+  PersistenceUtils_exports as PersistenceUtils,
   TypeToAllowDialog
 };
 //# sourceMappingURL=common.js.map

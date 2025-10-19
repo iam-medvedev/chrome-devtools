@@ -20,6 +20,7 @@ export default `/*
 #sources-panel-sources-view .sources-toolbar {
   display: flex;
   flex: 0 0 auto;
+  min-height: 27px;
   background-color: var(--sys-color-cdt-base-container);
   border-top: 1px solid var(--sys-color-divider);
   overflow: hidden;

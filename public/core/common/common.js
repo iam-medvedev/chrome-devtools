@@ -3847,13 +3847,15 @@ async function compress(str) {
   const buffer = await gzipCodec(encoded, new CompressionStream("gzip"));
   return buffer;
 }
-function gzipCodec(buffer, codecStream) {
-  const { readable, writable } = new TransformStream();
+async function gzipCodec(buffer, codecStream) {
+  const readable = new ReadableStream({
+    start(controller) {
+      controller.enqueue(buffer);
+      controller.close();
+    }
+  });
   const codecReadable = readable.pipeThrough(codecStream);
-  const writer = writable.getWriter();
-  void writer.write(buffer);
-  void writer.close();
-  return new Response(codecReadable).arrayBuffer();
+  return await new Response(codecReadable).arrayBuffer();
 }
 function decompressStream(stream) {
   const ds = new DecompressionStream("gzip");
@@ -6944,9 +6946,14 @@ __export(Worker_exports, {
 var WorkerWrapper = class _WorkerWrapper {
   #workerPromise;
   #disposed;
+  #rejectWorkerPromise;
   constructor(workerLocation) {
-    this.#workerPromise = new Promise((fulfill) => {
+    this.#workerPromise = new Promise((fulfill, reject) => {
+      this.#rejectWorkerPromise = reject;
       const worker = new Worker(workerLocation, { type: "module" });
+      worker.onerror = (event) => {
+        console.error(`Failed to load worker for ${workerLocation.href}:`, event);
+      };
       worker.onmessage = (event) => {
         console.assert(event.data === "workerReady");
         worker.onmessage = null;
@@ -6968,7 +6975,10 @@ var WorkerWrapper = class _WorkerWrapper {
     this.#disposed = true;
     void this.#workerPromise.then((worker) => worker.terminate());
   }
-  terminate() {
+  terminate(immediately = false) {
+    if (immediately) {
+      this.#rejectWorkerPromise?.(new Error("Worker terminated"));
+    }
     this.dispose();
   }
   set onmessage(listener) {

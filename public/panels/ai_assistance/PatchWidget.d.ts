@@ -68,7 +68,7 @@ type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare class PatchWidget extends UI.Widget.Widget {
     #private;
     changeSummary: string;
-    changeManager: AiAssistanceModel.ChangeManager | undefined;
+    changeManager: AiAssistanceModel.ChangeManager.ChangeManager | undefined;
     constructor(element?: HTMLElement, view?: View, opts?: {
         aidaClient: Host.AidaClient.AidaClient;
     });

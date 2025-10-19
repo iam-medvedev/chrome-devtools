@@ -529,9 +529,9 @@
         }
         a[b + 1] = c + encodeURI(this.diffs[b][1]) + "\n";
     } return a.join("").replace(/%20/g, " "); };
-    window.diff_match_patch = diff_match_patch;
-    window.DIFF_DELETE = -1;
-    window.DIFF_INSERT = 1;
-    window.DIFF_EQUAL = 0;
+    globalThis.diff_match_patch = diff_match_patch;
+    globalThis.DIFF_DELETE = -1;
+    globalThis.DIFF_INSERT = 1;
+    globalThis.DIFF_EQUAL = 0;
 })();
 //# sourceMappingURL=diff_match_patch.js.map

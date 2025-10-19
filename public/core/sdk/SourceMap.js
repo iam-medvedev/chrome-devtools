@@ -119,6 +119,9 @@ export class SourceMap {
     debugId() {
         return this.#debugId ?? null;
     }
+    sourceURLForSourceIndex(index) {
+        return this.#sourceInfos[index]?.sourceURL;
+    }
     sourceURLs() {
         return [...this.#sourceInfoByURL.keys()];
     }
@@ -606,6 +609,18 @@ export class SourceMap {
     findOriginalFunctionName(position) {
         this.#ensureSourceMapProcessed();
         return this.#scopesInfo?.findOriginalFunctionName(position) ?? null;
+    }
+    isOutlinedFrame(generatedLine, generatedColumn) {
+        this.#ensureSourceMapProcessed();
+        return this.#scopesInfo?.isOutlinedFrame(generatedLine, generatedColumn) ?? false;
+    }
+    hasInlinedFrames(generatedLine, generatedColumn) {
+        this.#ensureSourceMapProcessed();
+        return this.#scopesInfo?.hasInlinedFrames(generatedLine, generatedColumn) ?? false;
+    }
+    translateCallSite(generatedLine, generatedColumn) {
+        this.#ensureSourceMapProcessed();
+        return this.#scopesInfo?.translateCallSite(generatedLine, generatedColumn) ?? [];
     }
 }
 _a = SourceMap;

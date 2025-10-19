@@ -5,9 +5,8 @@ import * as Host from '../../../core/host/host.js';
 import { mockAidaClient } from '../../../testing/AiAssistanceHelpers.js';
 import { describeWithEnvironment, } from '../../../testing/EnvironmentHelpers.js';
 import * as AiAssistance from '../ai_assistance.js';
-const { AiAgent, ResponseType, ConversationContext, ErrorType } = AiAssistance;
 function mockConversationContext() {
-    return new (class extends ConversationContext {
+    return new (class extends AiAssistance.AiAgent.ConversationContext {
         getOrigin() {
             return 'origin';
         }
@@ -19,7 +18,7 @@ function mockConversationContext() {
         }
     })();
 }
-class AiAgentMock extends AiAgent {
+class AiAgentMock extends AiAssistance.AiAgent.AiAgent {
     preamble = 'preamble';
     // eslint-disable-next-line require-yield
     async *handleContextDetails() {
@@ -138,7 +137,7 @@ describeWithEnvironment('AiAgent', () => {
             assert.isUndefined(request.historical_contexts);
         });
         it('builds a request without preamble', async () => {
-            class AiAgentMockWithoutPreamble extends AiAgent {
+            class AiAgentMockWithoutPreamble extends AiAssistance.AiAgent.AiAgent {
                 preamble = undefined;
                 // eslint-disable-next-line require-yield
                 async *handleContextDetails() {
@@ -247,21 +246,21 @@ describeWithEnvironment('AiAgent', () => {
                 const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
                 assert.deepEqual(responses, [
                     {
-                        type: "user-query" /* ResponseType.USER_QUERY */,
+                        type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                         query: 'query',
                         imageInput: undefined,
                         imageId: undefined,
                     },
                     {
-                        type: "querying" /* ResponseType.QUERYING */,
+                        type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
                     },
                     {
-                        type: "answer" /* ResponseType.ANSWER */,
+                        type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                         complete: false,
                         text: 'Partial ans',
                     },
                     {
-                        type: "answer" /* ResponseType.ANSWER */,
+                        type: "answer" /* AiAssistance.AiAgent.ResponseType.ANSWER */,
                         text: 'Partial answer is now completed',
                         complete: true,
                         rpcId: undefined,
@@ -300,24 +299,24 @@ describeWithEnvironment('AiAgent', () => {
             const responses = await Array.fromAsync(agent.run('query', { selected: mockConversationContext() }));
             assert.deepEqual(responses, [
                 {
-                    type: "user-query" /* ResponseType.USER_QUERY */,
+                    type: "user-query" /* AiAssistance.AiAgent.ResponseType.USER_QUERY */,
                     query: 'query',
                     imageInput: undefined,
                     imageId: undefined,
                 },
                 {
-                    type: "querying" /* ResponseType.QUERYING */,
+                    type: "querying" /* AiAssistance.AiAgent.ResponseType.QUERYING */,
                 },
                 {
-                    type: "error" /* ResponseType.ERROR */,
-                    error: "unknown" /* ErrorType.UNKNOWN */,
+                    type: "error" /* AiAssistance.AiAgent.ResponseType.ERROR */,
+                    error: "unknown" /* AiAssistance.AiAgent.ErrorType.UNKNOWN */,
                 },
             ]);
         });
     });
     describe('ConversationContext', () => {
         function getTestContext(origin) {
-            class TestContext extends ConversationContext {
+            class TestContext extends AiAssistance.AiAgent.ConversationContext {
                 getTitle() {
                     throw new Error('Method not implemented.');
                 }
@@ -369,7 +368,7 @@ describeWithEnvironment('AiAgent', () => {
         });
     });
     describe('functions', () => {
-        class AgentWithFunction extends AiAgent {
+        class AgentWithFunction extends AiAssistance.AiAgent.AiAgent {
             preamble = 'preamble';
             called = 0;
             constructor(opts) {

@@ -1492,7 +1492,6 @@ var coverageView_css_default = `/*
 /*# sourceURL=${import.meta.resolve("./coverageView.css")} */`;
 
 // gen/front_end/panels/coverage/CoverageView.js
-var _a;
 var UIStrings2 = {
   /**
    * @description Tooltip in Coverage List View of the Coverage tab for selecting JavaScript coverage mode
@@ -1707,7 +1706,7 @@ function renderReloadPromptPage(message, className) {
       </span>
     </div>`;
 }
-var CoverageView = class extends UI2.Widget.VBox {
+var CoverageView = class _CoverageView extends UI2.Widget.VBox {
   #model;
   #decorationManager;
   #coverageTypeComboBoxSetting;
@@ -1772,7 +1771,7 @@ var CoverageView = class extends UI2.Widget.VBox {
   }
   static instance() {
     if (!coverageViewInstance) {
-      coverageViewInstance = new _a();
+      coverageViewInstance = new _CoverageView();
     }
     return coverageViewInstance;
   }
@@ -1975,7 +1974,7 @@ var CoverageView = class extends UI2.Widget.VBox {
   }
   #isVisible(coverageInfo) {
     const url = coverageInfo.url;
-    if (url.startsWith(_a.EXTENSION_BINDINGS_URL_PREFIX)) {
+    if (url.startsWith(_CoverageView.EXTENSION_BINDINGS_URL_PREFIX)) {
       return false;
     }
     if (coverageInfo.isContentScript && !this.#showContentScriptsSetting.get()) {
@@ -2008,18 +2007,17 @@ var CoverageView = class extends UI2.Widget.VBox {
   }
   static EXTENSION_BINDINGS_URL_PREFIX = "extensions::";
   wasShown() {
-    UI2.Context.Context.instance().setFlavor(_a, this);
+    UI2.Context.Context.instance().setFlavor(_CoverageView, this);
     super.wasShown();
   }
   willHide() {
     super.willHide();
-    UI2.Context.Context.instance().setFlavor(_a, null);
+    UI2.Context.Context.instance().setFlavor(_CoverageView, null);
   }
   get model() {
     return this.#model;
   }
 };
-_a = CoverageView;
 var ActionDelegate = class {
   handleAction(_context, actionId) {
     const coverageViewId = "coverage";

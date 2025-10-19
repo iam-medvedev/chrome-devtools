@@ -9,13 +9,13 @@
     "forceConsistentCasingInFileNames": true,
     "inlineSources": true,
     "lib": [
+      "dom",
+      "dom.iterable",
       "ES2023",
       "ES2024.Promise",
       "ESNext.Iterator",
       "ESNext.Collection",
-      "ESNext.Array",
-      "dom",
-      "dom.iterable"
+      "ESNext.Array"
     ],
     "module": "esnext",
     "noEmitOnError": true,
@@ -45,6 +45,7 @@
   "files": [
     "../../../../../../front_end/models/ai_assistance/AgentProject.test.ts",
     "../../../../../../front_end/models/ai_assistance/AiHistoryStorage.test.ts",
+    "../../../../../../front_end/models/ai_assistance/BuiltInAi.test.ts",
     "../../../../../../front_end/models/ai_assistance/ChangeManager.test.ts",
     "../../../../../../front_end/models/ai_assistance/ConversationHandler.test.ts",
     "../../../../../../front_end/models/ai_assistance/EvaluateAction.test.ts",
@@ -60,6 +61,7 @@
     "../../../../../../front_end/models/ai_assistance/data_formatters/NetworkRequestFormatter.test.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceInsightFormatter.test.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatter.test.ts",
+    "../../../../../../front_end/models/ai_assistance/data_formatters/PerformanceTraceFormatterBounds.test.ts",
     "../../../../../../front_end/models/ai_assistance/data_formatters/UnitFormatters.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AICallTree.test.ts",
     "../../../../../../front_end/models/ai_assistance/performance/AIQueries.test.ts",
@@ -88,6 +90,9 @@
     },
     {
       "path": "../../testing/testing-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {
       "path": "../bindings/bundle-tsconfig.json"

@@ -76,8 +76,7 @@ var AutocompleteHistory_exports = {};
 __export(AutocompleteHistory_exports, {
   AutocompleteHistory: () => AutocompleteHistory
 });
-var _a;
-var AutocompleteHistory = class {
+var AutocompleteHistory = class _AutocompleteHistory {
   static #historySize = 300;
   #setting;
   /**
@@ -161,10 +160,9 @@ var AutocompleteHistory = class {
     return this.#data[this.#data.length - this.#historyOffset];
   }
   #store() {
-    this.#setting.set(this.#data.slice(-_a.#historySize));
+    this.#setting.set(this.#data.slice(-_AutocompleteHistory.#historySize));
   }
 };
-_a = AutocompleteHistory;
 
 // gen/front_end/ui/components/text_editor/config.js
 var config_exports = {};
@@ -901,7 +899,7 @@ var aiAutoCompleteSuggestion = [
         return;
       }
       const latency = performance.now() - activeSuggestion.startTime;
-      activeSuggestion.onImpression(activeSuggestion.rpcGlobalId, activeSuggestion.sampleId, latency);
+      activeSuggestion.onImpression(activeSuggestion.rpcGlobalId, latency, activeSuggestion.sampleId);
       this.#lastLoggedSuggestion = activeSuggestion;
     }
   }, { decorations: (p) => p.decorations })
@@ -1770,30 +1768,6 @@ import * as WindowBoundsService3 from "./../../../services/window_bounds/window_
 import * as CodeMirror4 from "./../../../third_party/codemirror.next/codemirror.next.js";
 import * as ThemeSupport from "./../../legacy/theme_support/theme_support.js";
 import * as CodeHighlighter3 from "./../code_highlighter/code_highlighter.js";
-
-// gen/front_end/ui/components/text_editor/textEditor.css.js
-var textEditor_css_default = `/*
- * Copyright 2025 The Chromium Authors
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file.
- */
-
-devtools-icon.bezier-swatch-icon {
-  position: relative;
-  transform: scale(0.7);
-  margin: -5px -2px -3px -4px;
-  user-select: none;
-  color: var(--icon-css);
-  cursor: default;
-
-  &:hover {
-    color: var(--icon-css-hover);
-  }
-}
-
-/*# sourceURL=${import.meta.resolve("./textEditor.css")} */`;
-
-// gen/front_end/ui/components/text_editor/TextEditor.js
 var TextEditor = class extends HTMLElement {
   #shadow = this.attachShadow({ mode: "open" });
   #activeEditor = void 0;
@@ -1817,7 +1791,6 @@ var TextEditor = class extends HTMLElement {
     super();
     this.#pendingState = pendingState;
     this.#shadow.createChild("style").textContent = CodeHighlighter3.codeHighlighterStyles;
-    this.#shadow.createChild("style").textContent = textEditor_css_default;
   }
   #createEditor() {
     this.#activeEditor = new CodeMirror4.EditorView({
