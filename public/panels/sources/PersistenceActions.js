@@ -90,7 +90,7 @@ export class ContextMenuProvider {
             const targetObject = contentProvider;
             const contentDataOrError = await targetObject.requestContentData();
             const content = TextUtils.ContentData.ContentData.textOr(contentDataOrError, '');
-            /* eslint-disable-next-line rulesdir/no-imperative-dom-api */
+            /* eslint-disable-next-line @devtools/no-imperative-dom-api */
             const link = document.createElement('a');
             link.download = targetObject.displayName;
             link.href = 'data:' + targetObject.mimeType + ';base64,' + content;

@@ -660,6 +660,10 @@ var consoleInsightTeaser_css_default = `/*
     margin-top: var(--sys-size-2);
   }
 
+  .response-container {
+    height: 85px;
+  }
+
   @keyframes gradient {
     0% { background-position: 100% 0; }
     100% { background-position: -100% 0; }
@@ -700,6 +704,19 @@ var consoleInsightTeaser_css_default = `/*
   h2 {
     font: var(--sys-typescale-body4-bold);
     margin: 0 0 var(--sys-size-3);
+    line-clamp: 1;
+    -webkit-line-clamp: 1;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .main-text {
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   .lightbulb-icon {
@@ -1101,7 +1118,7 @@ var consoleView_css_default = `/* Copyright 2021 The Chromium Authors
   --console-color-lightcyan: #5ff;
   --console-color-white: #fff;
 
-  &.console-selected {
+  &:focus {
     background-color: var(--sys-color-state-focus-highlight);
   }
 }
@@ -2235,7 +2252,9 @@ var ConsoleViewMessage = class _ConsoleViewMessage {
     if (icon) {
       clickableElement.appendChild(icon);
     }
-    clickableElement.tabIndex = -1;
+    if (stackTrace) {
+      clickableElement.tabIndex = -1;
+    }
     clickableElement.appendChild(messageElement);
     const stackTraceElement = contentElement.createChild("div");
     const stackTracePreview = new Components.JSPresentationUtils.StackTracePreviewContent(void 0, target ?? void 0, this.linkifier, { stackTrace, widthConstrained: true });
@@ -3917,48 +3936,6 @@ var DEFAULT_VIEW = (input, _output, target) => {
     return;
   }
   const showPlaceholder = !Boolean(input.mainText);
-  const renderFooter = () => {
-    return html`
-      <div class="tooltip-footer">
-        ${input.hasTellMeMoreButton ? html`
-          <devtools-button
-            title=${lockedString(UIStringsNotTranslate.tellMeMore)}
-            .jslogContext=${"insights-teaser-tell-me-more"},
-            .variant=${"primary"}
-            @click=${input.onTellMeMoreClick}
-          >
-            <devtools-icon class="lightbulb-icon" name="lightbulb-spark"></devtools-icon>
-            ${lockedString(UIStringsNotTranslate.tellMeMore)}
-          </devtools-button>
-        ` : Lit.nothing}
-        ${showPlaceholder ? Lit.nothing : html`
-          <devtools-button
-            .iconName=${"info"}
-            .variant=${"icon"}
-            aria-details=${"teaser-info-tooltip-" + input.uuid}
-            aria-label=${lockedString(UIStringsNotTranslate.learnDataUsage)}
-          ></devtools-button>
-          <devtools-tooltip id=${"teaser-info-tooltip-" + input.uuid} variant="rich">
-            <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
-            <div class="learn-more">
-              <x-link
-                class="devtools-link"
-                title=${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}
-                href=${DATA_USAGE_URL}
-                jslog=${VisualLogging2.link().track({ click: true, keydown: "Enter|Space" }).context("explain.teaser.learn-more")}
-              >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</x-link>
-            </div>
-          </devtools-tooltip>
-        `}
-        <devtools-checkbox
-          aria-label=${lockedString(UIStringsNotTranslate.dontShow)}
-          @change=${input.dontShowChanged}
-          jslog=${VisualLogging2.toggle("explain.teaser.dont-show").track({ change: true })}>
-          ${lockedString(UIStringsNotTranslate.dontShow)}
-        </devtools-checkbox>
-      </div>
-    `;
-  };
   render(html`
     <style>${consoleInsightTeaser_css_default}</style>
     <devtools-tooltip
@@ -3972,28 +3949,67 @@ var DEFAULT_VIEW = (input, _output, target) => {
         ${input.isError ? html`
           <h2>${lockedString(UIStringsNotTranslate.summaryNotAvailable)}</h2>
         ` : showPlaceholder ? html`
-            <h2>${input.isSlowGeneration ? lockedString(UIStringsNotTranslate.summarizingTakesABitLonger) : lockedString(UIStringsNotTranslate.summarizing)}</h2>
-            <div
-              role="presentation"
-              aria-label=${lockedString(UIStringsNotTranslate.loading)}
-              class="loader"
-              style="clip-path: url(${"#clipPath-" + input.uuid});"
-            >
-              <svg width="100%" height="52">
-                <defs>
-                <clipPath id=${"clipPath-" + input.uuid}>
-                  <rect x="0" y="0" width="100%" height="12" rx="8"></rect>
-                  <rect x="0" y="20" width="100%" height="12" rx="8"></rect>
-                  <rect x="0" y="40" width="100%" height="12" rx="8"></rect>
-                </clipPath>
-              </defs>
-              </svg>
+            <div class="response-container">
+              <h2>${input.isSlowGeneration ? lockedString(UIStringsNotTranslate.summarizingTakesABitLonger) : lockedString(UIStringsNotTranslate.summarizing)}</h2>
+              <div
+                role="presentation"
+                aria-label=${lockedString(UIStringsNotTranslate.loading)}
+                class="loader"
+                style="clip-path: url(${"#clipPath-" + input.uuid});"
+              >
+                <svg width="100%" height="58">
+                  <defs>
+                  <clipPath id=${"clipPath-" + input.uuid}>
+                    <rect x="0" y="0" width="100%" height="12" rx="8"></rect>
+                    <rect x="0" y="20" width="100%" height="12" rx="8"></rect>
+                    <rect x="0" y="40" width="100%" height="12" rx="8"></rect>
+                  </clipPath>
+                </defs>
+                </svg>
+              </div>
             </div>
           ` : html`
-            <h2>${input.headerText}</h2>
-            <div>${input.mainText}</div>
+            <div class="response-container">
+              <h2>${input.headerText}</h2>
+              <div class="main-text">${input.mainText}</div>
+            </div>
           `}
-        ${input.isError || input.isSlowGeneration || !showPlaceholder ? renderFooter() : Lit.nothing}
+        <div class="tooltip-footer">
+          ${input.hasTellMeMoreButton ? html`
+            <devtools-button
+              title=${lockedString(UIStringsNotTranslate.tellMeMore)}
+              .jslogContext=${"insights-teaser-tell-me-more"},
+              .variant=${"primary"}
+              @click=${input.onTellMeMoreClick}
+            >
+              <devtools-icon class="lightbulb-icon" name="lightbulb-spark"></devtools-icon>
+              ${lockedString(UIStringsNotTranslate.tellMeMore)}
+            </devtools-button>
+          ` : Lit.nothing}
+          <devtools-button
+            .iconName=${"info"}
+            .variant=${"icon"}
+            aria-details=${"teaser-info-tooltip-" + input.uuid}
+            .accessibleLabel=${lockedString(UIStringsNotTranslate.learnDataUsage)}
+          ></devtools-button>
+          <devtools-tooltip id=${"teaser-info-tooltip-" + input.uuid} variant="rich">
+            <div class="info-tooltip-text">${lockedString(UIStringsNotTranslate.infoTooltipText)}</div>
+            <div class="learn-more">
+              <x-link
+                class="devtools-link"
+                title=${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}
+                href=${DATA_USAGE_URL}
+                jslog=${VisualLogging2.link().track({ click: true, keydown: "Enter|Space" }).context("explain.teaser.learn-more")}
+              >${lockedString(UIStringsNotTranslate.learnMoreAboutAiSummaries)}</x-link>
+            </div>
+          </devtools-tooltip>
+          <devtools-checkbox
+            aria-label=${lockedString(UIStringsNotTranslate.dontShow)}
+            @change=${input.dontShowChanged}
+            jslog=${VisualLogging2.toggle("explain.teaser.dont-show").track({ change: true })}>
+            ${lockedString(UIStringsNotTranslate.dontShow)}
+          </devtools-checkbox>
+        </div>
       </div>
     </devtools-tooltip>
   `, target);
@@ -4012,12 +4028,15 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
   #isSlow = false;
   #timeoutId = null;
   #isError = false;
+  #aidaAvailability;
+  #boundOnAidaAvailabilityChange;
   constructor(uuid, consoleViewMessage, element, view) {
     super(element);
     this.#view = view ?? DEFAULT_VIEW;
     this.#uuid = uuid;
     this.#promptBuilder = new PromptBuilder(consoleViewMessage);
     this.#consoleViewMessage = consoleViewMessage;
+    this.#boundOnAidaAvailabilityChange = this.#onAidaAvailabilityChange.bind(this);
     this.requestUpdate();
   }
   #getConsoleInsightsEnabledSetting() {
@@ -4029,6 +4048,13 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
   }
   #getOnboardingCompletedSetting() {
     return Common5.Settings.Settings.instance().createLocalSetting("console-insights-onboarding-finished", true);
+  }
+  async #onAidaAvailabilityChange() {
+    const currentAidaAvailability = await Host2.AidaClient.AidaClient.checkAccessPreconditions();
+    if (currentAidaAvailability !== this.#aidaAvailability) {
+      this.#aidaAvailability = currentAidaAvailability;
+      this.requestUpdate();
+    }
   }
   #executeConsoleInsightAction() {
     UI3.Context.Context.instance().setFlavor(ConsoleViewMessage, this.#consoleViewMessage);
@@ -4091,6 +4117,9 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     if (this.#abortController) {
       this.#abortController.abort();
     }
+    if (this.#isGenerating) {
+      this.#mainText = "";
+    }
     this.#isGenerating = false;
     if (this.#timeoutId) {
       clearTimeout(this.#timeoutId);
@@ -4108,12 +4137,16 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     this.requestUpdate();
   }
   async #generateTeaserText() {
+    this.#headerText = this.#consoleViewMessage.toMessageTextString().substring(0, 70);
     this.#isGenerating = true;
     this.#timeoutId = setTimeout(this.#setSlow.bind(this), SLOW_GENERATION_CUTOFF_MILLISECONDS);
+    const startTime = performance.now();
     let teaserText = "";
     try {
       for await (const chunk of this.#getOnDeviceInsight()) {
         teaserText += chunk;
+        this.#mainText = teaserText;
+        this.requestUpdate();
       }
     } catch (err) {
       if (err.name !== "AbortError") {
@@ -4126,24 +4159,9 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
       return;
     }
     clearTimeout(this.#timeoutId);
+    Host2.userMetrics.consoleInsightTeaserGenerated(performance.now() - startTime);
     this.#isGenerating = false;
-    let responseObject = {
-      header: null,
-      explanation: null
-    };
-    try {
-      responseObject = JSON.parse(teaserText);
-    } catch (err) {
-      console.error(err.name, err.message);
-      this.#isError = true;
-      this.requestUpdate();
-      return;
-    }
-    this.#headerText = responseObject.header || "";
-    this.#mainText = responseObject.explanation || "";
-    if (!this.#headerText || !this.#mainText) {
-      this.#isError = true;
-    }
+    this.#mainText = teaserText;
     this.requestUpdate();
   }
   async *#getOnDeviceInsight() {
@@ -4173,7 +4191,7 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
     if (Root2.Runtime.hostConfig.aidaAvailability?.blockedByAge || Root2.Runtime.hostConfig.isOffTheRecord) {
       return false;
     }
-    if (false) {
+    if (this.#aidaAvailability !== "available") {
       return false;
     }
     return true;
@@ -4190,6 +4208,15 @@ var ConsoleInsightTeaser = class extends UI3.Widget.Widget {
       isSlowGeneration: this.#isSlow,
       isError: this.#isError
     }, void 0, this.contentElement);
+  }
+  wasShown() {
+    super.wasShown();
+    Host2.AidaClient.HostConfigTracker.instance().addEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
+    void this.#onAidaAvailabilityChange();
+  }
+  willHide() {
+    super.willHide();
+    Host2.AidaClient.HostConfigTracker.instance().removeEventListener("aidaAvailabilityChanged", this.#boundOnAidaAvailabilityChange);
   }
 };
 
@@ -4793,7 +4820,7 @@ var DEFAULT_VIEW2 = (input, output, target) => {
                 ?selected=${group.filter === input.selectedFilter}>
                   <style>${consoleSidebar_css_default}</style>
                   <devtools-icon name=${GROUP_ICONS[group.name].icon}></devtools-icon>
-                  ${/* eslint-disable-next-line rulesdir/l10n-i18nString-call-only-with-uistrings */
+                  ${/* eslint-disable-next-line @devtools/l10n-i18nString-call-only-with-uistrings */
   i18nString4(GROUP_ICONS[group.name].label, {
     n: group.messageCount
   })}

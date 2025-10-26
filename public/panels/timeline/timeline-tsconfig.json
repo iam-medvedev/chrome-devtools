@@ -123,6 +123,9 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../common/bundle-tsconfig.json"
+    },
+    {
       "path": "../coverage/bundle-tsconfig.json"
     },
     {

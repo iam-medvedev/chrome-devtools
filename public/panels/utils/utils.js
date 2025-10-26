@@ -2,6 +2,7 @@
 import "./../../ui/components/icon_button/icon_button.js";
 import * as Common from "./../../core/common/common.js";
 import * as i18n from "./../../core/i18n/i18n.js";
+import * as SDK from "./../../core/sdk/sdk.js";
 import * as Formatter from "./../../models/formatter/formatter.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
 import * as DiffView from "./../../ui/components/diff_view/diff_view.js";
@@ -25,7 +26,13 @@ var UIStrings = {
   /**
    * @description Tooltip to explain why the request has warning icon
    */
-  thirdPartyPhaseout: "Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
+  thirdPartyPhaseout: "Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel.",
+  /**
+   * @description Tooltip to explain that a request was throttled
+   * @example {Image} PH1
+   * @example {3G} PH2
+   */
+  resourceTypeWithThrottling: "{PH1} (throttled to {PH2})"
 };
 var str_ = i18n.i18n.registerUIStrings("panels/utils/utils.ts", UIStrings);
 var i18nString = i18n.i18n.getLocalizedString.bind(void 0, str_);
@@ -94,21 +101,31 @@ var PanelUtils = class _PanelUtils {
     }
     if (type === Common.ResourceType.resourceTypes.Image) {
       return html`<div class="image icon">
-          <img class="image-network-icon-preview" alt=${request.resourceType().title()}
-              ${ref((e) => request.populateImageSource(e))}>
+          <img class="image-network-icon-preview"
+               title=${iconTitleForRequest(request)}
+               alt=${iconTitleForRequest(request)}
+               ${ref((e) => request.populateImageSource(e))}>
         </div>`;
     }
     if (type !== Common.ResourceType.resourceTypes.Manifest && Common.ResourceType.ResourceType.simplifyContentType(request.mimeType) === "application/json") {
       return html`<devtools-icon
-          class="icon" name="file-json" title=${request.resourceType().title()}
+          class="icon" name="file-json" title=${iconTitleForRequest(request)}
           style="color:var(--icon-file-script)">
         </devtools-icon>`;
     }
     const { iconName, color } = _PanelUtils.iconDataForResourceType(type);
     return html`<devtools-icon
-        class="icon" name=${iconName} title=${request.resourceType().title()}
+        class="icon" name=${iconName} title=${iconTitleForRequest(request)}
         style=${styleMap({ color })}>
       </devtools-icon>`;
+    function iconTitleForRequest(request2) {
+      const throttlingConditions = SDK.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(request2);
+      if (!throttlingConditions?.urlPattern) {
+        return request2.resourceType().title();
+      }
+      const title = typeof throttlingConditions?.conditions.title === "string" ? throttlingConditions?.conditions.title : throttlingConditions?.conditions.title();
+      return i18nString(UIStrings.resourceTypeWithThrottling, { PH1: request2.resourceType().title(), PH2: title });
+    }
   }
   static iconDataForResourceType(resourceType) {
     if (resourceType.isDocument()) {

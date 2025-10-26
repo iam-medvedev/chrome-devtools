@@ -30,7 +30,7 @@ export class ForcedReflow extends BaseInsightComponent {
         };
     }
     #linkifyUrl(callFrame) {
-        const style = 'display: flex; gap: 4px; padding: 4px 0; overflow: hidden; white-space: nowrap';
+        const style = 'display: flex; gap: 4px; overflow: hidden; white-space: nowrap';
         if (!callFrame) {
             return html `<div style=${style}>${i18nString(UIStrings.unattributed)}</div>`;
         }
@@ -84,7 +84,7 @@ export class ForcedReflow extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
             insight: this,
-            headers: [i18nString(UIStrings.relatedStackTrace)],
+            headers: [i18nString(UIStrings.reflowCallFrames)],
             rows,
         }}>
         </devtools-performance-table>

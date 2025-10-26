@@ -50,7 +50,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
     });
     it('records commands', async () => {
         protocolMonitor.wasShown();
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 1 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 1 });
         assert.deepEqual((await view.nextInput).messages.map(m => ({ method: m.method, params: m.params, id: m.id })), [
             {
                 method: 'Test.test',
@@ -64,7 +64,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
             params: { test: 'test' },
             requestTime: 0,
             result: { test: 'test' },
-        }, null);
+        });
         assert.deepEqual((await view.nextInput).messages.map(m => ({ method: m.method, params: m.params, id: m.id, result: m.result })), [
             {
                 method: 'Test.test',
@@ -75,9 +75,9 @@ describeWithEnvironment('ProtocolMonitor', () => {
         ]);
     });
     it('only records commands if recording is enabled', async () => {
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 1 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 1 });
         protocolMonitor.wasShown();
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 });
         assert.deepEqual((await view.nextInput).messages.map(m => ({ method: m.method, params: m.params, id: m.id })), [
             {
                 method: 'Test.test',
@@ -86,9 +86,9 @@ describeWithEnvironment('ProtocolMonitor', () => {
             },
         ]);
         view.input.onRecord(false);
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 3 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 3 });
         view.input.onRecord(true);
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 4 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 4 });
         assert.deepEqual((await view.nextInput).messages.map(m => ({ method: m.method, params: m.params, id: m.id })), [
             {
                 method: 'Test.test',
@@ -104,7 +104,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
     });
     it('clears messages', async () => {
         protocolMonitor.wasShown();
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 });
         assert.lengthOf((await view.nextInput).messages, 1);
         view.input.onClear();
         assert.lengthOf((await view.nextInput).messages, 0);
@@ -113,7 +113,7 @@ describeWithEnvironment('ProtocolMonitor', () => {
         const fileManager = stubFileManager();
         const fileManagerCloseCall = expectCall(fileManager.close);
         protocolMonitor.wasShown();
-        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 }, null);
+        InspectorBackend.test.onMessageSent?.({ domain: 'Test', method: 'Test.test', params: { test: 'test' }, id: 2 });
         const TIMESTAMP = 42;
         const clock = sinon.useFakeTimers();
         clock.tick(TIMESTAMP);
@@ -151,8 +151,8 @@ describeWithEnvironment('ProtocolMonitor', () => {
         beforeEach(() => {
             menu = new UI.ContextMenu.ContextMenu(new Event('contextmenu'));
             protocolMonitor.wasShown();
-            InspectorBackend.test.onMessageSent?.(MESSAGES[0], null);
-            InspectorBackend.test.onMessageSent?.(MESSAGES[1], null);
+            InspectorBackend.test.onMessageSent?.(MESSAGES[0]);
+            InspectorBackend.test.onMessageSent?.(MESSAGES[1]);
             triggerContextMenu(MESSAGES[1]);
         });
         it('priovides edit and resend context menu item', async () => {

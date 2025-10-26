@@ -26,7 +26,6 @@ const assertContainerContent = (container, expectedContent) => {
     const nodeText = container.shadowRoot.querySelector('devtools-node-text');
     if (!nodeText?.shadowRoot) {
         assert.fail('node text element and its shadowRoot should exist');
-        return;
     }
     assertNodeTextContent(nodeText, expectedContent);
 };
@@ -60,10 +59,7 @@ describe('QueryContainer', () => {
         };
         assertContainerContent(component, 'named-container');
         const containerLink = component.shadowRoot?.querySelector('a');
-        if (!containerLink) {
-            assert.fail('container link element should exist');
-            return;
-        }
+        assert.exists(containerLink, 'container link element should exist');
         containerLink.click();
         assert.strictEqual(clickListener.callCount, 1, 'container link click listener should be triggered by clicking');
         containerLink.dispatchEvent(new Event('mouseenter'));

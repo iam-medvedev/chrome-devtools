@@ -5,7 +5,7 @@ import type { MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare const lateImportStylesheetLoadingCode: string;
 export declare class StylesheetLoadingIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.StylesheetLoadingIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.StylesheetLoadingIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     sources(): Protocol.Audits.SourceCodeLocation[];
     requests(): Protocol.Audits.AffectedRequest[];
     details(): Protocol.Audits.StylesheetLoadingIssueDetails;
@@ -13,5 +13,5 @@ export declare class StylesheetLoadingIssue extends Issue {
     getDescription(): MarkdownIssueDescription;
     getCategory(): IssueCategory;
     getKind(): IssueKind;
-    static fromInspectorIssue(issueModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): StylesheetLoadingIssue[];
+    static fromInspectorIssue(issueModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): StylesheetLoadingIssue[];
 }

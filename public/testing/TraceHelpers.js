@@ -493,14 +493,13 @@ export async function renderFlameChartWithFakeProvider(provider, options) {
  */
 export function renderWidgetInVbox(widget, opts = {}) {
     const target = document.createElement('div');
-    target.innerHTML = `<style>${UI.inspectorCommonStyles}</style>`;
     target.classList.add('vbox');
     target.classList.toggle('flex-auto', Boolean(opts.flexAuto));
     target.style.width = (opts.width ?? 800) + 'px';
     target.style.height = (opts.height ?? 600) + 'px';
     widget.markAsRoot();
     widget.show(target);
-    renderElementIntoDOM(target);
+    renderElementIntoDOM(target, { includeCommonStyles: true });
 }
 export function getMainThread(data) {
     let mainThread = null;

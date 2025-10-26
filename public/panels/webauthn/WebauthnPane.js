@@ -639,7 +639,7 @@ export class WebauthnPaneImpl extends UI.Panel.Panel {
             pem += credential.privateKey.substring(i, i + 64) + '\n';
         }
         pem += PRIVATE_KEY_FOOTER;
-        /* eslint-disable-next-line rulesdir/no-imperative-dom-api */
+        /* eslint-disable-next-line @devtools/no-imperative-dom-api */
         const link = document.createElement('a');
         link.download = i18nString(UIStrings.privateKeypem);
         link.href = 'data:application/x-pem-file,' + encodeURIComponent(pem);

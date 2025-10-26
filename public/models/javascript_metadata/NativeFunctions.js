@@ -8241,7 +8241,7 @@ export const NativeFunctions = [
     },
     {
         name: "softmax",
-        signatures: [["input", "?options"], ["input", "axis", "?options"]]
+        signatures: [["input", "axis", "?options"]]
     },
     {
         name: "softplus",
@@ -9094,6 +9094,10 @@ export const NativeFunctions = [
         signatures: [["source", "destination", "copySize"]]
     },
     {
+        name: "copyElementImageToTexture",
+        signatures: [["source", "destination"]]
+    },
+    {
         name: "setIndexBuffer",
         signatures: [["buffer", "format", "?offset", "?size"]]
     },
@@ -9328,6 +9332,10 @@ export const NativeFunctions = [
     {
         name: "requestSession",
         signatures: [["mode", "?options"]]
+    },
+    {
+        name: "XRVisibilityMaskChangeEvent",
+        signatures: [["type", "eventInitDict"]]
     },
     {
         name: "XRWebGLLayer",

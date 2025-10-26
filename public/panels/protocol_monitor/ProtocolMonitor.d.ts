@@ -63,13 +63,15 @@ export interface ViewOutput {
 }
 export type View = (input: ViewInput, output: ViewOutput, target: HTMLElement) => void;
 export declare const DEFAULT_VIEW: View;
-export declare class ProtocolMonitorImpl extends UI.Panel.Panel {
+export declare class ProtocolMonitorImpl extends UI.Panel.Panel implements SDK.TargetManager.Observer {
     #private;
     private started;
     private startTime;
     private readonly messageForId;
     private readonly filterParser;
     constructor(view?: View);
+    targetAdded(target: SDK.Target.Target): void;
+    targetRemoved(target: SDK.Target.Target): void;
     performUpdate(): void;
     onCommandSend(command: string, parameters: object, target?: string): void;
     wasShown(): void;

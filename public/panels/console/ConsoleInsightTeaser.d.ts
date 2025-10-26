@@ -21,5 +21,7 @@ export declare class ConsoleInsightTeaser extends UI.Widget.Widget {
     abortTeaserGeneration(): void;
     setInactive(isInactive: boolean): void;
     performUpdate(): Promise<void> | void;
+    wasShown(): void;
+    willHide(): void;
 }
 export {};

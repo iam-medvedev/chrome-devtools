@@ -18,7 +18,7 @@ export const removeElement = (array, element, firstOnly) => {
     array.length = index;
     return true;
 };
-function swap(array, i1, i2) {
+export function swap(array, i1, i2) {
     const temp = array[i1];
     array[i1] = array[i2];
     array[i2] = temp;

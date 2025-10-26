@@ -26,7 +26,7 @@ export declare class ChildTargetManager extends SDKModel<EventTypes> implements 
     detachedFromTarget({ sessionId }: Protocol.Target.DetachedFromTargetEvent): void;
     receivedMessageFromTarget({}: Protocol.Target.ReceivedMessageFromTargetEvent): void;
     createParallelConnection(onMessage: (arg0: Object | string) => void): Promise<{
-        connection: ProtocolClient.InspectorBackend.Connection;
+        connection: ProtocolClient.ConnectionTransport.ConnectionTransport;
         sessionId: string;
     }>;
     private createParallelConnectionAndSessionForTarget;

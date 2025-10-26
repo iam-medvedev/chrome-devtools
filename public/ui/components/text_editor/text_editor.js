@@ -196,7 +196,6 @@ __export(config_exports, {
 import * as Common from "./../../../core/common/common.js";
 import * as i18n from "./../../../core/i18n/i18n.js";
 import * as TextUtils from "./../../../models/text_utils/text_utils.js";
-import * as WindowBoundsService from "./../../../services/window_bounds/window_bounds.js";
 import * as CM3 from "./../../../third_party/codemirror.next/codemirror.next.js";
 import * as UI from "./../../legacy/legacy.js";
 import * as VisualLogging from "./../../visual_logging/visual_logging.js";
@@ -655,7 +654,7 @@ function theme() {
 var sideBarElement = null;
 function getTooltipSpace() {
   if (!sideBarElement) {
-    sideBarElement = WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    sideBarElement = UI.UIUtils.getDevToolsBoundingElement();
   }
   return sideBarElement.getBoundingClientRect();
 }
@@ -1764,8 +1763,8 @@ __export(TextEditor_exports, {
   TextEditor: () => TextEditor
 });
 import * as Common2 from "./../../../core/common/common.js";
-import * as WindowBoundsService3 from "./../../../services/window_bounds/window_bounds.js";
 import * as CodeMirror4 from "./../../../third_party/codemirror.next/codemirror.next.js";
+import * as UI3 from "./../../legacy/legacy.js";
 import * as ThemeSupport from "./../../legacy/theme_support/theme_support.js";
 import * as CodeHighlighter3 from "./../code_highlighter/code_highlighter.js";
 var TextEditor = class extends HTMLElement {
@@ -1896,7 +1895,7 @@ var TextEditor = class extends HTMLElement {
     }
   }
   #startObservingResize() {
-    const devtoolsElement = WindowBoundsService3.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    const devtoolsElement = UI3.UIUtils.getDevToolsBoundingElement();
     if (devtoolsElement) {
       this.#devtoolsResizeObserver.observe(devtoolsElement);
     }

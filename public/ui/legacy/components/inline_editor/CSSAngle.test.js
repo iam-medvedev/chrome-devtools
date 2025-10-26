@@ -13,10 +13,7 @@ const assertPopoverClosed = (root) => {
 };
 const assertAndGetSwatch = (root) => {
     const swatch = root.querySelector('devtools-css-angle-swatch');
-    if (!swatch) {
-        assert.fail('swatch was not rendered');
-        return;
-    }
+    assert.exists(swatch);
     return swatch;
 };
 const togglePopover = (root) => {
@@ -25,10 +22,7 @@ const togglePopover = (root) => {
 };
 const assertNewAngleFromEvent = (angle, event, approximateNewValue) => {
     const newAngle = InlineEditor.CSSAngleUtils.getNewAngleFromEvent(angle, event);
-    if (!newAngle) {
-        assert.fail('should create a new angle');
-        return;
-    }
+    assert.exists(newAngle);
     assert.strictEqual(newAngle.unit, angle.unit);
     assert.approximately(newAngle.value, approximateNewValue, 0.1);
 };
@@ -96,10 +90,7 @@ describe('CSSAngle', () => {
         });
         togglePopover(component);
         const angleContainer = component.querySelector('.css-angle');
-        if (!angleContainer) {
-            assert.fail('angle container was not rendered');
-            return;
-        }
+        assert.exists(angleContainer, 'angle container was not rendered');
         const arrowUp = new KeyboardEvent('keydown', { key: 'ArrowUp' });
         angleContainer.dispatchEvent(arrowUp);
         assert.strictEqual(cssAngleText, '46deg', 'angle value should increase by 1 when ArrowUp is pressed');

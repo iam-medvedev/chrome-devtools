@@ -663,6 +663,7 @@ __export(UIUtils_exports, {
   endBatchUpdate: () => endBatchUpdate,
   formatTimestamp: () => formatTimestamp,
   getApplicableRegisteredRenderers: () => getApplicableRegisteredRenderers,
+  getDevToolsBoundingElement: () => getDevToolsBoundingElement,
   getValueModificationDirection: () => getValueModificationDirection,
   handleElementValueModifications: () => handleElementValueModifications,
   highlightRangesWithStyleClass: () => highlightRangesWithStyleClass,
@@ -15445,6 +15446,9 @@ function copyTextToClipboard(text, alert) {
   if (alert) {
     LiveAnnouncer.alert(alert);
   }
+}
+function getDevToolsBoundingElement() {
+  return InspectorView.maybeGetInspectorViewInstance()?.element || document.body;
 }
 
 // gen/front_end/ui/legacy/GlassPane.js

@@ -1,6 +1,6 @@
 import type * as Platform from '../platform/platform.js';
 import * as ProtocolClient from '../protocol_client/protocol_client.js';
-export declare class MainConnection implements ProtocolClient.InspectorBackend.Connection {
+export declare class MainConnection implements ProtocolClient.ConnectionTransport.ConnectionTransport {
     #private;
     onMessage: ((arg0: Object | string) => void) | null;
     constructor();
@@ -11,7 +11,7 @@ export declare class MainConnection implements ProtocolClient.InspectorBackend.C
     private dispatchMessageChunk;
     disconnect(): Promise<void>;
 }
-export declare class WebSocketConnection implements ProtocolClient.InspectorBackend.Connection {
+export declare class WebSocketConnection implements ProtocolClient.ConnectionTransport.ConnectionTransport {
     #private;
     onMessage: ((arg0: Object | string) => void) | null;
     constructor(url: Platform.DevToolsPath.UrlString, onWebSocketDisconnect: (message: Platform.UIString.LocalizedString) => void);
@@ -24,7 +24,7 @@ export declare class WebSocketConnection implements ProtocolClient.InspectorBack
     sendRawMessage(message: string): void;
     disconnect(): Promise<void>;
 }
-export declare class StubConnection implements ProtocolClient.InspectorBackend.Connection {
+export declare class StubConnection implements ProtocolClient.ConnectionTransport.ConnectionTransport {
     #private;
     onMessage: ((arg0: Object | string) => void) | null;
     setOnMessage(onMessage: (arg0: Object | string) => void): void;
@@ -33,14 +33,14 @@ export declare class StubConnection implements ProtocolClient.InspectorBackend.C
     private respondWithError;
     disconnect(): Promise<void>;
 }
-export interface ParallelConnectionInterface extends ProtocolClient.InspectorBackend.Connection {
+export interface ParallelConnectionInterface extends ProtocolClient.ConnectionTransport.ConnectionTransport {
     getSessionId: () => string;
     getOnDisconnect: () => ((arg0: string) => void) | null;
 }
 export declare class ParallelConnection implements ParallelConnectionInterface {
     #private;
     onMessage: ((arg0: Object) => void) | null;
-    constructor(connection: ProtocolClient.InspectorBackend.Connection, sessionId: string);
+    constructor(connection: ProtocolClient.ConnectionTransport.ConnectionTransport, sessionId: string);
     setOnMessage(onMessage: (arg0: Object) => void): void;
     setOnDisconnect(onDisconnect: (arg0: string) => void): void;
     getOnDisconnect(): ((arg0: string) => void) | null;

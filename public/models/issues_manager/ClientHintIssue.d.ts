@@ -4,12 +4,12 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class ClientHintIssue extends Issue {
     private issueDetails;
-    constructor(issueDetails: Protocol.Audits.ClientHintIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.ClientHintIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     getCategory(): IssueCategory;
     details(): Protocol.Audits.ClientHintIssueDetails;
     getDescription(): MarkdownIssueDescription | null;
     sources(): Iterable<Protocol.Audits.SourceCodeLocation>;
     primaryKey(): string;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): ClientHintIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): ClientHintIssue[];
 }

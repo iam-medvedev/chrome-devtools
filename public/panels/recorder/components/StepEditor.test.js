@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import { dispatchKeyDownEvent, getEventPromise, renderElementIntoDOM, } from '../../../testing/DOMHelpers.js';
-// eslint-disable-next-line rulesdir/es-modules-import
+// eslint-disable-next-line @devtools/es-modules-import
 import * as EnvironmentHelpers from '../../../testing/EnvironmentHelpers.js';
 import * as Models from '../models/models.js';
-// eslint-disable-next-line rulesdir/es-modules-import
+// eslint-disable-next-line @devtools/es-modules-import
 import * as RecorderHelpers from '../testing/RecorderHelpers.js';
 const { describeWithLocale } = EnvironmentHelpers;
 function getStepEditedPromise(editor) {

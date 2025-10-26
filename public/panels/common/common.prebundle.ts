@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -100,4 +100,7 @@ export {GdpSignUpDialog} from './GdpSignUpDialog.js';
 export {AiCodeCompletionDisclaimer} from './AiCodeCompletionDisclaimer.js';
 export {AiCodeCompletionSummaryToolbar} from './AiCodeCompletionSummaryToolbar.js';
 export * from './BadgeNotification.js';
+export * as ExtensionPanel from './ExtensionPanel.js';
+export * as ExtensionServer from './ExtensionServer.js';
+export * as ExtensionView from './ExtensionView.js';
 export * as PersistenceUtils from './PersistenceUtils.js';

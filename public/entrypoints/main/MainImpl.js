@@ -1,8 +1,8 @@
 // Copyright 2021 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 var _a;
 /*
  * Copyright (C) 2006, 2007, 2008 Apple Inc.  All rights reserved.
@@ -46,7 +46,6 @@ import * as Badges from '../../models/badges/badges.js';
 import * as Bindings from '../../models/bindings/bindings.js';
 import * as Breakpoints from '../../models/breakpoints/breakpoints.js';
 import * as CrUXManager from '../../models/crux-manager/crux-manager.js';
-import * as Extensions from '../../models/extensions/extensions.js';
 import * as IssuesManager from '../../models/issues_manager/issues_manager.js';
 import * as LiveMetrics from '../../models/live-metrics/live-metrics.js';
 import * as Logs from '../../models/logs/logs.js';
@@ -281,8 +280,6 @@ export class MainImpl {
         Root.Runtime.experiments.register('timeline-invalidation-tracking', 'Performance panel: invalidation tracking', true);
         Root.Runtime.experiments.register('timeline-show-all-events', 'Performance panel: show all events', true);
         Root.Runtime.experiments.register('timeline-v8-runtime-call-stats', 'Performance panel: V8 runtime call stats', true);
-        Root.Runtime.experiments.register('timeline-enhanced-traces', 'Performance panel: Enable collecting enhanced traces', true);
-        Root.Runtime.experiments.register('timeline-compiled-sources', 'Performance panel: Enable collecting source text for compiled script', true);
         Root.Runtime.experiments.register("timeline-debug-mode" /* Root.Runtime.ExperimentName.TIMELINE_DEBUG_MODE */, 'Performance panel: Enable debug mode (trace event details, etc)', true);
         // Debugging
         Root.Runtime.experiments.register('instrumentation-breakpoints', 'Enable instrumentation breakpoints', true);
@@ -393,7 +390,7 @@ export class MainImpl {
             debuggerWorkspaceBinding: Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance(),
         });
         // @ts-expect-error e2e test global
-        self.Extensions.extensionServer = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
+        self.Extensions.extensionServer = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
         new Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding(isolatedFileSystemManager, Workspace.Workspace.WorkspaceImpl.instance());
         isolatedFileSystemManager.addPlatformFileSystem('snippet://', new Snippets.ScriptSnippetFileSystem.SnippetFileSystem());
         const persistenceImpl = Persistence.Persistence.PersistenceImpl.instance({
@@ -539,7 +536,7 @@ export class MainImpl {
     }
     async #lateInitialization() {
         _a.time('Main._lateInitialization');
-        Extensions.ExtensionServer.ExtensionServer.instance().initializeExtensions();
+        PanelCommon.ExtensionServer.ExtensionServer.instance().initializeExtensions();
         const promises = Common.Runnable.lateInitializationRunnables().map(async (lateInitializationLoader) => {
             const runnable = await lateInitializationLoader();
             return await runnable.run();

@@ -1,10 +1,10 @@
 import '../../ui/legacy/legacy.js';
 import * as Common from '../../core/common/common.js';
 import * as SDK from '../../core/sdk/sdk.js';
-import type * as Extensions from '../../models/extensions/extensions.js';
 import * as NetworkTimeCalculator from '../../models/network_time_calculator/network_time_calculator.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Workspace from '../../models/workspace/workspace.js';
+import type * as PanelCommon from '../../panels/common/common.js';
 import * as NetworkForward from '../../panels/network/forward/forward.js';
 import * as Tracing from '../../services/tracing/tracing.js';
 import * as PerfUI from '../../ui/legacy/components/perf_ui/perf_ui.js';
@@ -96,8 +96,8 @@ export declare class RequestIdRevealer implements Common.Revealer.Revealer<Netwo
     reveal(requestId: NetworkForward.NetworkRequestId.NetworkRequestId): Promise<void>;
 }
 export declare class NetworkLogWithFilterRevealer implements Common.Revealer
-    .Revealer<Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter> {
-    reveal(request: Extensions.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
+    .Revealer<PanelCommon.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter> {
+    reveal(request: PanelCommon.ExtensionServer.RevealableNetworkRequestFilter | NetworkForward.UIFilter.UIRequestFilter): Promise<void>;
 }
 export declare class FilmStripRecorder implements Tracing.TracingManager.TracingManagerClient {
     #private;

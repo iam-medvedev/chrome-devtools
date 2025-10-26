@@ -1,5 +1,6 @@
 import type * as ProtocolProxyApi from '../../generated/protocol-proxy-api.js';
 import type * as Platform from '../platform/platform.js';
+import { ConnectionTransport } from './ConnectionTransport.js';
 export declare const DevToolsStubErrorCode = -32015;
 type MessageParams = Record<string, any>;
 type ProtocolDomainName = ProtocolProxyApi.ProtocolDomainName;
@@ -49,26 +50,17 @@ export declare class InspectorBackend {
     readonly agentPrototypes: Map<keyof ProtocolProxyApi.ProtocolApi, AgentPrototype>;
     readonly typeMap: Map<QualifiedName, CommandParameter[]>;
     readonly enumMap: Map<QualifiedName, Record<string, string>>;
+    constructor();
     private getOrCreateEventParameterNamesForDomain;
     getOrCreateEventParameterNamesForDomainForTesting(domain: ProtocolDomainName): EventParameterNames;
     getEventParameterNames(): ReadonlyMap<ProtocolDomainName, ReadonlyEventParameterNames>;
     static reportProtocolError(error: string, messageObject: Object): void;
     static reportProtocolWarning(error: string, messageObject: Object): void;
-    isInitialized(): boolean;
     private agentPrototype;
     registerCommand(method: QualifiedName, parameters: CommandParameter[], replyArgs: string[], description: string): void;
     registerEnum(type: QualifiedName, values: Record<string, string>): void;
     registerType(method: QualifiedName, parameters: CommandParameter[]): void;
     registerEvent(eventName: QualifiedName, params: string[]): void;
-}
-export declare class Connection {
-    onMessage: ((arg0: Object) => void) | null;
-    setOnMessage(_onMessage: (arg0: Object | string) => void): void;
-    setOnDisconnect(_onDisconnect: (arg0: string) => void): void;
-    sendRawMessage(_message: string): void;
-    disconnect(): Promise<void>;
-    static setFactory(factory: () => Connection): void;
-    static getFactory(): () => Connection;
 }
 type SendRawMessageCallback = (...args: unknown[]) => void;
 export declare const test: {
@@ -100,20 +92,19 @@ export declare const test: {
         params: Object;
         id: number;
         sessionId?: string;
-    }, target: TargetBase | null) => void) | null;
+    }) => void) | null;
     /**
      * Set to get notified about any messages received over protocol.
      */
-    onMessageReceived: ((message: Object, target: TargetBase | null) => void) | null;
+    onMessageReceived: ((message: Object) => void) | null;
 };
 export declare class SessionRouter {
     #private;
-    constructor(connection: Connection);
-    registerSession(target: TargetBase, sessionId: string, proxyConnection?: Connection | null): void;
+    constructor(connection: ConnectionTransport);
+    registerSession(target: TargetBase, sessionId: string, proxyConnection?: ConnectionTransport | null): void;
     unregisterSession(sessionId: string): void;
-    private getTargetBySessionId;
     private nextMessageId;
-    connection(): Connection;
+    connection(): ConnectionTransport;
     sendMessage(sessionId: string, domain: string, method: QualifiedName, params: Object | null, callback: Callback): void;
     private sendRawMessageForTesting;
     private onMessage;
@@ -127,7 +118,7 @@ export declare class TargetBase {
     #private;
     needsNodeJSPatching: boolean;
     readonly sessionId: string;
-    constructor(needsNodeJSPatching: boolean, parentTarget: TargetBase | null, sessionId: string, connection: Connection | null);
+    constructor(needsNodeJSPatching: boolean, parentTarget: TargetBase | null, sessionId: string, connection: ConnectionTransport | null);
     dispatch(eventMessage: EventMessage): void;
     dispose(_reason: string): void;
     isDisposed(): boolean;
@@ -231,7 +222,6 @@ export declare class TargetBase {
  * of the invoke_enable, etc. methods that the front-end uses.
  */
 declare class AgentPrototype {
-    replyArgs: Record<string, string[]>;
     description: string;
     metadata: Record<string, {
         parameters: CommandParameter[];
@@ -242,8 +232,6 @@ declare class AgentPrototype {
     target: TargetBase;
     constructor(domain: string);
     registerCommand(methodName: UnqualifiedName, parameters: CommandParameter[], replyArgs: string[], description: string): void;
-    private prepareParameters;
-    private sendMessageToBackendPromise;
     private invoke;
 }
 export declare const inspectorBackend: InspectorBackend;

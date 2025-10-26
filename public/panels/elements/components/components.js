@@ -1276,6 +1276,7 @@ var gridContainerIcons = /* @__PURE__ */ new Map([
   ["justify-content: start", gridJustifyContentIcon("justify-content-start")],
   ["justify-content: right", gridJustifyContentIcon("justify-content-end")],
   ["justify-content: left", gridJustifyContentIcon("justify-content-start")],
+  ["justify-content: stretch", gridJustifyContentIcon("justify-content-stretch")],
   ["align-items: stretch", gridAlignItemsIcon("align-items-stretch")],
   ["align-items: end", gridAlignItemsIcon("align-items-end")],
   ["align-items: start", gridAlignItemsIcon("align-items-start")],
@@ -2291,6 +2292,8 @@ __export(StylePropertyEditor_exports, {
   FlexboxEditor: () => FlexboxEditor,
   GridEditableProperties: () => GridEditableProperties,
   GridEditor: () => GridEditor,
+  MasonryEditableProperties: () => MasonryEditableProperties,
+  MasonryEditor: () => MasonryEditor,
   PropertyDeselectedEvent: () => PropertyDeselectedEvent,
   PropertySelectedEvent: () => PropertySelectedEvent,
   StylePropertyEditor: () => StylePropertyEditor
@@ -2508,6 +2511,14 @@ var GridEditor = class extends StylePropertyEditor {
   }
 };
 customElements.define("devtools-grid-editor", GridEditor);
+var MasonryEditor = class extends StylePropertyEditor {
+  jslogContext = "cssMasonryEditor";
+  editableProperties = MasonryEditableProperties;
+  findIcon(query, computedProperties) {
+    return findGridContainerIcon(query, computedProperties);
+  }
+};
+customElements.define("devtools-masonry-editor", MasonryEditor);
 var FlexboxEditableProperties = [
   {
     propertyName: "flex-direction",
@@ -2563,6 +2574,8 @@ var GridEditableProperties = [
     propertyName: "align-content",
     propertyValues: [
       "center",
+      "start",
+      "end",
       "space-between",
       "space-around",
       "space-evenly",
@@ -2577,7 +2590,8 @@ var GridEditableProperties = [
       "end",
       "space-between",
       "space-around",
-      "space-evenly"
+      "space-evenly",
+      "stretch"
     ]
   },
   {
@@ -2588,6 +2602,50 @@ var GridEditableProperties = [
       "end",
       "stretch",
       "baseline"
+    ]
+  },
+  {
+    propertyName: "justify-items",
+    propertyValues: [
+      "center",
+      "start",
+      "end",
+      "stretch"
+    ]
+  }
+];
+var MasonryEditableProperties = [
+  {
+    propertyName: "align-content",
+    propertyValues: [
+      "center",
+      "start",
+      "end",
+      "space-between",
+      "space-around",
+      "space-evenly",
+      "stretch"
+    ]
+  },
+  {
+    propertyName: "justify-content",
+    propertyValues: [
+      "center",
+      "start",
+      "end",
+      "space-between",
+      "space-around",
+      "space-evenly",
+      "stretch"
+    ]
+  },
+  {
+    propertyName: "align-items",
+    propertyValues: [
+      "center",
+      "start",
+      "end",
+      "stretch"
     ]
   },
   {

@@ -17,6 +17,7 @@ __export(ArrayUtilities_exports, {
   nearestIndexFromEnd: () => nearestIndexFromEnd,
   removeElement: () => removeElement,
   sortRange: () => sortRange,
+  swap: () => swap,
   upperBound: () => upperBound
 });
 var removeElement = (array, element, firstOnly) => {

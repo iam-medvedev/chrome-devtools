@@ -57,11 +57,25 @@ declare global {
         'devtools-grid-editor': GridEditor;
     }
 }
+export declare class MasonryEditor extends StylePropertyEditor {
+    readonly jslogContext = "cssMasonryEditor";
+    protected readonly editableProperties: EditableProperty[];
+    protected findIcon(query: string, computedProperties: Map<string, string>): IconInfo | null;
+}
+declare global {
+    interface HTMLElementTagNameMap {
+        'devtools-masonry-editor': MasonryEditor;
+    }
+}
 export declare const FlexboxEditableProperties: {
     propertyName: string;
     propertyValues: string[];
 }[];
 export declare const GridEditableProperties: {
+    propertyName: string;
+    propertyValues: string[];
+}[];
+export declare const MasonryEditableProperties: {
     propertyName: string;
     propertyValues: string[];
 }[];

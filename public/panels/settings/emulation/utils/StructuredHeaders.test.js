@@ -9,12 +9,10 @@ function assertItemError(result) {
 function assertItemValue(result, expectedKind, expected) {
     if (result.kind === 0 /* StructuredHeaders.ResultKind.ERROR */) {
         assert.fail('Got error instead of Item containing kind ' + expectedKind);
-        return;
     }
     const bareItem = result.value;
     if (bareItem.kind !== expectedKind) {
         assert.fail('Item type is ' + bareItem.kind + ' instead of ' + expectedKind);
-        return;
     }
     assert.strictEqual(bareItem.value, expected);
 }
@@ -46,7 +44,6 @@ function assertParams(result, expectParams) {
 function assertItemParams(result, expectParams) {
     if (result.kind === 0 /* StructuredHeaders.ResultKind.ERROR */) {
         assert.fail('No params on parse error');
-        return;
     }
     assertParams(result.parameters, expectParams);
 }
@@ -56,14 +53,12 @@ function assertListError(result) {
 function assertListAndGetItems(result) {
     if (result.kind === 0 /* StructuredHeaders.ResultKind.ERROR */) {
         assert.fail('Got error instead of List');
-        return [];
     }
     return result.items;
 }
 function assertListItem(item, expectValue, expectParams) {
     if (item.kind === 12 /* StructuredHeaders.ResultKind.INNER_LIST */) {
         assert.fail('Unexpected inner list when an item expected');
-        return;
     }
     assert.deepEqual(item.value, expectValue, 'List item bare value mismatch, ' + item.value.value + ' vs expected ' + expectValue.value);
     assertItemParams(item, expectParams);
@@ -71,7 +66,6 @@ function assertListItem(item, expectValue, expectParams) {
 function assertInnerListAndGetItems(item, expectParams) {
     if (item.kind !== 12 /* StructuredHeaders.ResultKind.INNER_LIST */) {
         assert.fail('Expected inner list, got:' + item.kind);
-        return [];
     }
     assertParams(item.parameters, expectParams);
     return item.items;
@@ -79,7 +73,6 @@ function assertInnerListAndGetItems(item, expectParams) {
 function assertSerializeResult(result, expected) {
     if (result.kind === 0 /* StructuredHeaders.ResultKind.ERROR */) {
         assert.fail('Got error instead of serialization result');
-        return;
     }
     assert.strictEqual(result.value, expected);
 }

@@ -4218,8 +4218,8 @@ import * as SDK11 from "./../../core/sdk/sdk.js";
 import * as Badges from "./../../models/badges/badges.js";
 import * as Bindings8 from "./../../models/bindings/bindings.js";
 import * as Breakpoints2 from "./../../models/breakpoints/breakpoints.js";
-import * as Extensions2 from "./../../models/extensions/extensions.js";
 import * as Workspace19 from "./../../models/workspace/workspace.js";
+import * as PanelCommon3 from "./../common/common.js";
 import * as ObjectUI from "./../../ui/legacy/components/object_ui/object_ui.js";
 import * as UI18 from "./../../ui/legacy/legacy.js";
 import * as VisualLogging12 from "./../../ui/visual_logging/visual_logging.js";
@@ -4509,6 +4509,7 @@ var SourcesSearchScope = class _SourcesSearchScope {
   }
   projects() {
     const searchInAnonymousAndContentScripts = Common8.Settings.Settings.instance().moduleSetting("search-in-anonymous-and-content-scripts").get();
+    const localOverridesEnabled = Common8.Settings.Settings.instance().moduleSetting("persistence-network-overrides-enabled").get();
     return Workspace7.Workspace.WorkspaceImpl.instance().projects().filter((project) => {
       if (project.type() === Workspace7.Workspace.projectTypes.Service) {
         return false;
@@ -4517,6 +4518,9 @@ var SourcesSearchScope = class _SourcesSearchScope {
         return false;
       }
       if (!searchInAnonymousAndContentScripts && project.type() === Workspace7.Workspace.projectTypes.ContentScripts) {
+        return false;
+      }
+      if (!localOverridesEnabled && project.type() === Workspace7.Workspace.projectTypes.FileSystem) {
         return false;
       }
       return true;
@@ -6697,7 +6701,6 @@ __export(TabbedEditorContainer_exports, {
 import * as Common12 from "./../../core/common/common.js";
 import * as i18n29 from "./../../core/i18n/i18n.js";
 import * as Platform9 from "./../../core/platform/platform.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Persistence9 from "./../../models/persistence/persistence.js";
 import * as TextUtils8 from "./../../models/text_utils/text_utils.js";
 import * as Workspace15 from "./../../models/workspace/workspace.js";
@@ -7904,7 +7907,7 @@ var TabbedEditorContainer = class extends Common12.ObjectWrapper.ObjectWrapper {
       }
       this.previouslyViewedFilesSetting.set(this.history.toObject());
       if (this.#currentFile) {
-        Extensions.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this.#currentFile.url(), range);
+        PanelCommon2.ExtensionServer.ExtensionServer.instance().sourceSelectionChanged(this.#currentFile.url(), range);
       }
     }
   }
@@ -9394,7 +9397,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebugInfoAttached, this.debugInfoAttached, this);
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.DebuggerResumed, (event) => this.debuggerResumed(event.data));
     SDK11.TargetManager.TargetManager.instance().addModelListener(SDK11.DebuggerModel.DebuggerModel, SDK11.DebuggerModel.Events.GlobalObjectCleared, (event) => this.debuggerResumed(event.data));
-    Extensions2.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
+    PanelCommon3.ExtensionServer.ExtensionServer.instance().addEventListener("SidebarPaneAdded", this.extensionSidebarPaneAdded, this);
     SDK11.TargetManager.TargetManager.instance().observeTargets(this);
     this.lastModificationTime = -Infinity;
   }
@@ -9417,10 +9420,12 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     }
     if (!isInWrapper) {
       panel2.#sourcesView.leftToolbar().appendToolbarItem(panel2.toggleNavigatorSidebarButton);
-      if (panel2.splitWidget.isVertical()) {
-        panel2.#sourcesView.rightToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
-      } else {
-        panel2.#sourcesView.bottomToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
+      if (!Root4.Runtime.Runtime.isTraceApp()) {
+        if (panel2.splitWidget.isVertical()) {
+          panel2.#sourcesView.rightToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
+        } else {
+          panel2.#sourcesView.bottomToolbar().appendToolbarItem(panel2.toggleDebuggerSidebarButton);
+        }
       }
     }
   }
@@ -10063,13 +10068,12 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
     if (this.sidebarPaneView) {
       this.sidebarPaneView.detach();
     }
-    if (Root4.Runtime.Runtime.isTraceApp()) {
-      this.splitWidget.hideSidebar();
-      return;
-    }
     this.splitWidget.setVertical(!vertically);
     this.splitWidget.element.classList.toggle("sources-split-view-vertical", vertically);
     _SourcesPanel.updateResizerAndSidebarButtons(this);
+    if (Root4.Runtime.Runtime.isTraceApp()) {
+      return;
+    }
     const vbox = new UI18.Widget.VBox();
     vbox.element.appendChild(this.debugToolbar);
     vbox.element.appendChild(this.debugToolbarDrawer);
@@ -10113,7 +10117,7 @@ var SourcesPanel = class _SourcesPanel extends UI18.Panel.Panel {
       this.sidebarPaneView = splitWidget;
     }
     this.sidebarPaneStack.appendApplicableItems("sources.sidebar-bottom");
-    const extensionSidebarPanes = Extensions2.ExtensionServer.ExtensionServer.instance().sidebarPanes();
+    const extensionSidebarPanes = PanelCommon3.ExtensionServer.ExtensionServer.instance().sidebarPanes();
     for (let i = 0; i < extensionSidebarPanes.length; ++i) {
       this.addExtensionSidebarPane(extensionSidebarPanes[i]);
     }

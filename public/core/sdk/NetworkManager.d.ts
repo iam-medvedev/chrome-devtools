@@ -133,7 +133,7 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     webSocketClosed({ requestId, timestamp: time }: Protocol.Network.WebSocketClosedEvent): void;
     eventSourceMessageReceived({ requestId, timestamp: time, eventName, eventId, data }: Protocol.Network.EventSourceMessageReceivedEvent): void;
     requestIntercepted({}: Protocol.Network.RequestInterceptedEvent): void;
-    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
+    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId }: Protocol.Network.RequestWillBeSentExtraInfoEvent): void;
     responseReceivedEarlyHints({ requestId, headers, }: Protocol.Network.ResponseReceivedEarlyHintsEvent): void;
     responseReceivedExtraInfo({ requestId, blockedCookies, headers, headersText, resourceIPAddressSpace, statusCode, cookiePartitionKey, cookiePartitionKeyOpaque, exemptedCookies, }: Protocol.Network.ResponseReceivedExtraInfoEvent): void;
     private getExtraInfoBuilder;
@@ -159,10 +159,6 @@ export declare class NetworkDispatcher implements ProtocolProxyApi.NetworkDispat
     directUDPSocketChunkSent(event: Protocol.Network.DirectUDPSocketChunkSentEvent): void;
     directUDPSocketChunkReceived(event: Protocol.Network.DirectUDPSocketChunkReceivedEvent): void;
     trustTokenOperationDone(event: Protocol.Network.TrustTokenOperationDoneEvent): void;
-    subresourceWebBundleMetadataReceived(): void;
-    subresourceWebBundleMetadataError(): void;
-    subresourceWebBundleInnerResponseParsed(): void;
-    subresourceWebBundleInnerResponseError(): void;
     reportingApiReportAdded(data: Protocol.Network.ReportingApiReportAddedEvent): void;
     reportingApiReportUpdated(data: Protocol.Network.ReportingApiReportUpdatedEvent): void;
     reportingApiEndpointsChangedForOrigin(data: Protocol.Network.ReportingApiEndpointsChangedForOriginEvent): void;
@@ -182,24 +178,6 @@ export type RequestConditionsSetting = {
     conditions: ThrottlingConditionKey;
     enabled: boolean;
 };
-declare global {
-    interface URLPattern {
-        hash: string;
-        hostname: string;
-        password: string;
-        pathname: string;
-        port: string;
-        protocol: string;
-        search: string;
-        username: string;
-        hasRegExpGroups: boolean;
-        test(url: string): boolean;
-    }
-    var URLPattern: {
-        prototype: URLPattern;
-        new (input: string): URLPattern;
-    };
-}
 export type URLPatternConstructorString = Platform.Brand.Brand<string, 'URLPatternConstructorString'>;
 export declare const enum RequestURLPatternValidity {
     VALID = "valid",
@@ -219,6 +197,8 @@ export declare class RequestCondition extends Common.ObjectWrapper.ObjectWrapper
     static createFromSetting(setting: RequestConditionsSetting): RequestCondition;
     static create(pattern: RequestURLPattern, conditions: ThrottlingConditions): RequestCondition;
     private constructor();
+    get isBlocking(): boolean;
+    get ruleIds(): Set<string>;
     get constructorString(): string | undefined;
     get wildcardURL(): string | undefined;
     get constructorStringOrWildcardURL(): string;
@@ -247,10 +227,17 @@ export declare class RequestConditions extends Common.ObjectWrapper.ObjectWrappe
     findCondition(pattern: string): RequestCondition | undefined;
     has(url: string): boolean;
     add(...conditions: RequestCondition[]): void;
+    decreasePriority(condition: RequestCondition): void;
+    increasePriority(condition: RequestCondition): void;
     delete(condition: RequestCondition): void;
     clear(): void;
     get conditions(): IteratorObject<RequestCondition>;
     applyConditions(offline: boolean, globalConditions: Conditions | null, ...agents: ProtocolProxyApi.NetworkApi[]): boolean;
+    conditionsAppliedForTest(): Promise<unknown>;
+    conditionsForId(appliedNetworkConditionsId: string): {
+        conditions: Conditions;
+        urlPattern?: string;
+    } | undefined;
 }
 export declare namespace RequestConditions {
     const enum Events {
@@ -312,6 +299,10 @@ export declare class MultitargetNetworkManager extends Common.ObjectWrapper.Obje
         content: string;
         errorDescription: Host.ResourceLoader.LoadErrorDescription;
     }>;
+    appliedRequestConditions(requestInternal: NetworkRequest): {
+        conditions: Conditions;
+        urlPattern?: string;
+    } | undefined;
 }
 export declare namespace MultitargetNetworkManager {
     const enum Events {

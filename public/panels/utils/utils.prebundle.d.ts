@@ -1,6 +1,6 @@
 import '../../ui/components/icon_button/icon_button.js';
 import * as Common from '../../core/common/common.js';
-import type * as SDK from '../../core/sdk/sdk.js';
+import * as SDK from '../../core/sdk/sdk.js';
 import type * as Workspace from '../../models/workspace/workspace.js';
 import type * as Diff from '../../third_party/diff/diff.js';
 import { type TemplateResult } from '../../ui/lit/lit.js';

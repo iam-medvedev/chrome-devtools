@@ -1,7 +1,7 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
+/* eslint-disable @devtools/no-imperative-dom-api */
 import * as Common from '../../core/common/common.js';
 import { CSSMetadata, cssMetadata, CubicBezierKeywordValues, } from './CSSMetadata.js';
 import { ASTUtils, matchDeclaration, matcherBase, tokenizeDeclaration } from './CSSPropertyParser.js';
@@ -993,21 +993,22 @@ export class CustomFunctionMatcher extends matcherBase(CustomFunctionMatch) {
         return new CustomFunctionMatch(text, node, callee, args);
     }
 }
-export class FlexGridMatch {
+export class FlexGridMasonryMatch {
     text;
     node;
-    isFlex;
-    constructor(text, node, isFlex) {
+    layoutType;
+    constructor(text, node, layoutType) {
         this.text = text;
         this.node = node;
-        this.isFlex = isFlex;
+        this.layoutType = layoutType;
     }
 }
 // clang-format off
-export class FlexGridMatcher extends matcherBase(FlexGridMatch) {
+export class FlexGridMasonryMatcher extends matcherBase(FlexGridMasonryMatch) {
     // clang-format on
     static FLEX = ['flex', 'inline-flex', 'block flex', 'inline flex'];
     static GRID = ['grid', 'inline-grid', 'block grid', 'inline grid'];
+    static MASONRY = ['masonry', 'inline-masonry', 'block masonry', 'inline masonry'];
     accepts(propertyName) {
         return propertyName === 'display';
     }
@@ -1023,11 +1024,14 @@ export class FlexGridMatcher extends matcherBase(FlexGridMatch) {
             .map(node => matching.getComputedText(node).trim())
             .filter(value => value);
         const text = values.join(' ');
-        if (FlexGridMatcher.FLEX.includes(text)) {
-            return new FlexGridMatch(matching.ast.text(node), node, true);
+        if (FlexGridMasonryMatcher.FLEX.includes(text)) {
+            return new FlexGridMasonryMatch(matching.ast.text(node), node, "flex" /* LayoutType.FLEX */);
         }
-        if (FlexGridMatcher.GRID.includes(text)) {
-            return new FlexGridMatch(matching.ast.text(node), node, false);
+        if (FlexGridMasonryMatcher.GRID.includes(text)) {
+            return new FlexGridMasonryMatch(matching.ast.text(node), node, "grid" /* LayoutType.GRID */);
+        }
+        if (FlexGridMasonryMatcher.MASONRY.includes(text)) {
+            return new FlexGridMasonryMatch(matching.ast.text(node), node, "masonry" /* LayoutType.MASONRY */);
         }
         return null;
     }

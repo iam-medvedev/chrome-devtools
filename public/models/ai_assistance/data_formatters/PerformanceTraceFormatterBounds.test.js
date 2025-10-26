@@ -14,7 +14,8 @@ async function createFormatter(context, name) {
     const formatter = new PerformanceTraceFormatter.PerformanceTraceFormatter(focus);
     return { formatter, parsedTrace };
 }
-describe('PerformanceTraceFormatter', () => {
+describe('PerformanceTraceFormatterBounds', function () {
+    this.timeout(20000);
     let snapshotTester;
     before(async () => {
         snapshotTester = new SnapshotTester(import.meta);

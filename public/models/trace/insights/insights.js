@@ -1639,7 +1639,7 @@ var UIStrings7 = {
   /**
    * @description Title of a list to provide related stack trace data
    */
-  relatedStackTrace: "Stack trace",
+  reflowCallFrames: "Call frames that trigger reflow",
   /**
    * @description Text to describe the top time-consuming function call
    */

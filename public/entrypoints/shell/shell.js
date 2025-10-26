@@ -5931,9 +5931,6 @@ function isNetworkAgentFeatureAvailable(config) {
 function isPerformanceAgentFeatureAvailable(config) {
   return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistancePerformanceAgent?.enabled) === true;
 }
-function isPerformanceInsightsAgentFeatureAvailable(config) {
-  return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistancePerformanceAgent?.enabled && config?.devToolsAiAssistancePerformanceAgent.insightsEnabled) === true;
-}
 function isFileAgentFeatureAvailable(config) {
   return (config?.aidaAvailability?.enabled && config?.devToolsAiAssistanceFileAgent?.enabled) === true;
 }
@@ -6064,36 +6061,6 @@ UI15.ActionRegistration.registerActionExtension({
     return new AiAssistance.ActionDelegate();
   },
   condition: (config) => isPerformanceAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config)
-});
-UI15.ActionRegistration.registerActionExtension({
-  actionId: "drjones.performance-insight-context",
-  contextTypes() {
-    return [];
-  },
-  category: "GLOBAL",
-  title: titleForAiAssistanceActions,
-  async loadActionDelegate() {
-    const AiAssistance = await loadAiAssistanceModule();
-    return new AiAssistance.ActionDelegate();
-  },
-  condition: (config) => {
-    return isPerformanceInsightsAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config);
-  }
-});
-UI15.ActionRegistration.registerActionExtension({
-  actionId: "drjones.performance-panel-full-context",
-  contextTypes() {
-    return [];
-  },
-  category: "GLOBAL",
-  title: titleForAiAssistanceActions,
-  async loadActionDelegate() {
-    const AiAssistance = await loadAiAssistanceModule();
-    return new AiAssistance.ActionDelegate();
-  },
-  condition: (config) => {
-    return isPerformanceAgentFeatureAvailable(config) && !isPolicyRestricted2(config) && !isGeoRestricted2(config);
-  }
 });
 UI15.ActionRegistration.registerActionExtension({
   actionId: "drjones.sources-floating-button",

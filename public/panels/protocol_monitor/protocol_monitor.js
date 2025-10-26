@@ -1480,6 +1480,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
   #selectedMessage;
   #filter = "";
   #editorWidget;
+  #targetsBySessionId = /* @__PURE__ */ new Map();
   constructor(view = DEFAULT_VIEW2) {
     super("protocol-monitor", true);
     this.#view = view;
@@ -1495,6 +1496,13 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
     SDK2.TargetManager.TargetManager.instance().addEventListener("AvailableTargetsChanged", () => {
       this.requestUpdate();
     });
+    SDK2.TargetManager.TargetManager.instance().observeTargets(this);
+  }
+  targetAdded(target) {
+    this.#targetsBySessionId.set(target.sessionId, target);
+  }
+  targetRemoved(target) {
+    this.#targetsBySessionId.delete(target.sessionId);
   }
   #populateToolbarInput() {
     const commandJson = this.#editorWidget.getCommandJson();
@@ -1627,7 +1635,7 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       test.onMessageReceived = null;
     }
   }
-  messageReceived(message, target) {
+  messageReceived(message) {
     if ("id" in message && message.id) {
       const existingMessage = this.messageForId.get(message.id);
       if (!existingMessage) {
@@ -1640,22 +1648,24 @@ var ProtocolMonitorImpl = class extends UI2.Panel.Panel {
       this.requestUpdate();
       return;
     }
+    const target = message.sessionId !== void 0 ? this.#targetsBySessionId.get(message.sessionId) : void 0;
     this.#messages.push({
       method: message.method,
       sessionId: message.sessionId,
-      target: target ?? void 0,
+      target,
       requestTime: Date.now() - this.startTime,
       result: message.params
     });
     this.requestUpdate();
   }
-  messageSent(message, target) {
+  messageSent(message) {
+    const target = message.sessionId !== void 0 ? this.#targetsBySessionId.get(message.sessionId) : void 0;
     const messageRecord = {
       method: message.method,
       params: message.params,
       id: message.id,
       sessionId: message.sessionId,
-      target: target ?? void 0,
+      target,
       requestTime: Date.now() - this.startTime
     };
     this.#messages.push(messageRecord);

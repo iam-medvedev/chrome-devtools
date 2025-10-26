@@ -13,7 +13,7 @@ describeWithMockConnection('CPUThrottlingManager', () => {
     it('can get the current hardwareConcurrency.', async () => {
         setMockConnectionResponseHandler('Runtime.evaluate', ({ expression }) => {
             assert.strictEqual(expression, 'navigator.hardwareConcurrency');
-            return ({ getError: () => undefined, result: { value: 42 } });
+            return { getError: () => undefined, result: { value: 42 } };
         });
         const manager = SDK.CPUThrottlingManager.CPUThrottlingManager.instance();
         const concurrency = await manager.getHardwareConcurrency();

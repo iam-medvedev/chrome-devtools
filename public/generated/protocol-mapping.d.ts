@@ -7,6 +7,9 @@
  * Re-generate with: npm run generate-protocol-resources.
  */
 
+
+import type * as Protocol from './protocol.js'
+
 /**
  * Mappings from protocol event and command names to the types required for them.
  */
@@ -233,6 +236,10 @@ export namespace ProtocolMapping {
      * Fired when debugging target has reloaded after crash
      */
     'Inspector.targetReloadedAfterCrash': [];
+    /**
+     * Fired on worker targets when main worker script and any imported scripts have been evaluated.
+     */
+    'Inspector.workerScriptLoaded': [];
     'LayerTree.layerPainted': [Protocol.LayerTree.LayerPaintedEvent];
     'LayerTree.layerTreeDidChange': [Protocol.LayerTree.LayerTreeDidChangeEvent];
     /**
@@ -423,24 +430,6 @@ export namespace ProtocolMapping {
      * Fired once security policy has been updated.
      */
     'Network.policyUpdated': [];
-    /**
-     * Fired once when parsing the .wbn file has succeeded.
-     * The event contains the information about the web bundle contents.
-     */
-    'Network.subresourceWebBundleMetadataReceived': [Protocol.Network.SubresourceWebBundleMetadataReceivedEvent];
-    /**
-     * Fired once when parsing the .wbn file has failed.
-     */
-    'Network.subresourceWebBundleMetadataError': [Protocol.Network.SubresourceWebBundleMetadataErrorEvent];
-    /**
-     * Fired when handling requests for resources within a .wbn file.
-     * Note: this will only be fired for resources that are requested by the webpage.
-     */
-    'Network.subresourceWebBundleInnerResponseParsed': [Protocol.Network.SubresourceWebBundleInnerResponseParsedEvent];
-    /**
-     * Fired when request for resources within a .wbn file failed.
-     */
-    'Network.subresourceWebBundleInnerResponseError': [Protocol.Network.SubresourceWebBundleInnerResponseErrorEvent];
     /**
      * Is sent whenever a new report is added.
      * And after 'enableReportingApi' for all existing reports.

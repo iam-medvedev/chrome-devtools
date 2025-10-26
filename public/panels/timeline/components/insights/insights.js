@@ -346,7 +346,7 @@ var BaseInsightComponent = class extends HTMLElement {
   shadow = this.attachShadow({ mode: "open" });
   // This flag tracks if the Insights AI feature is enabled within Chrome for
   // the active user.
-  #insightsAskAiEnabled = false;
+  #askAiEnabled = false;
   #selected = false;
   #model = null;
   #agentFocus = null;
@@ -377,7 +377,7 @@ var BaseInsightComponent = class extends HTMLElement {
     this.setAttribute("jslog", `${VisualLogging.section(`timeline.insights.${this.internalName}`)}`);
     this.dataset.insightName = this.internalName;
     const { devToolsAiAssistancePerformanceAgent } = Root.Runtime.hostConfig;
-    this.#insightsAskAiEnabled = Boolean(devToolsAiAssistancePerformanceAgent?.enabled && devToolsAiAssistancePerformanceAgent?.insightsEnabled);
+    this.#askAiEnabled = Boolean(devToolsAiAssistancePerformanceAgent?.enabled);
   }
   set selected(selected) {
     if (!this.#selected && selected) {
@@ -566,7 +566,7 @@ var BaseInsightComponent = class extends HTMLElement {
     if (!this.#agentFocus) {
       return;
     }
-    const actionId = "drjones.performance-insight-context";
+    const actionId = "drjones.performance-panel-context";
     if (!UI.ActionRegistry.ActionRegistry.instance().hasAction(actionId)) {
       return;
     }
@@ -581,7 +581,7 @@ var BaseInsightComponent = class extends HTMLElement {
     void action3.execute();
   }
   #canShowAskAI() {
-    const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root.Runtime.GenAiEnterprisePolicyValue.DISABLE && this.#insightsAskAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
+    const aiAvailable = Root.Runtime.hostConfig.aidaAvailability?.enterprisePolicyValue !== Root.Runtime.GenAiEnterprisePolicyValue.DISABLE && this.#askAiEnabled && Root.Runtime.hostConfig.aidaAvailability?.enabled === true;
     return aiAvailable && this.hasAskAiSupport();
   }
   #renderInsightContent(insightModel) {
@@ -1736,7 +1736,7 @@ var ForcedReflow = class extends BaseInsightComponent {
     };
   }
   #linkifyUrl(callFrame) {
-    const style = "display: flex; gap: 4px; padding: 4px 0; overflow: hidden; white-space: nowrap";
+    const style = "display: flex; gap: 4px; overflow: hidden; white-space: nowrap";
     if (!callFrame) {
       return html13`<div style=${style}>${i18nString9(UIStrings9.unattributed)}</div>`;
     }
@@ -1789,7 +1789,7 @@ var ForcedReflow = class extends BaseInsightComponent {
         <devtools-performance-table
           .data=${{
       insight: this,
-      headers: [i18nString9(UIStrings9.relatedStackTrace)],
+      headers: [i18nString9(UIStrings9.reflowCallFrames)],
       rows
     }}>
         </devtools-performance-table>

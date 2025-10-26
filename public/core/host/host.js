@@ -61,7 +61,7 @@ var Events;
   Events2["FileSystemsLoaded"] = "fileSystemsLoaded";
   Events2["FileSystemRemoved"] = "fileSystemRemoved";
   Events2["FileSystemAdded"] = "fileSystemAdded";
-  Events2["FileSystemFilesChangedAddedRemoved"] = "FileSystemFilesChangedAddedRemoved";
+  Events2["FileSystemFilesChangedAddedRemoved"] = "fileSystemFilesChangedAddedRemoved";
   Events2["IndexingTotalWorkCalculated"] = "indexingTotalWorkCalculated";
   Events2["IndexingWorked"] = "indexingWorked";
   Events2["IndexingDone"] = "indexingDone";
@@ -75,34 +75,34 @@ var Events;
   Events2["ShowPanel"] = "showPanel";
 })(Events || (Events = {}));
 var EventDescriptors = [
-  [Events.AppendedToURL, "appendedToURL", ["url"]],
-  [Events.CanceledSaveURL, "canceledSaveURL", ["url"]],
-  [Events.ColorThemeChanged, "colorThemeChanged", []],
-  [Events.ContextMenuCleared, "contextMenuCleared", []],
-  [Events.ContextMenuItemSelected, "contextMenuItemSelected", ["id"]],
-  [Events.DeviceCountUpdated, "deviceCountUpdated", ["count"]],
-  [Events.DevicesDiscoveryConfigChanged, "devicesDiscoveryConfigChanged", ["config"]],
-  [Events.DevicesPortForwardingStatusChanged, "devicesPortForwardingStatusChanged", ["status"]],
-  [Events.DevicesUpdated, "devicesUpdated", ["devices"]],
-  [Events.DispatchMessage, "dispatchMessage", ["messageObject"]],
-  [Events.DispatchMessageChunk, "dispatchMessageChunk", ["messageChunk", "messageSize"]],
-  [Events.EnterInspectElementMode, "enterInspectElementMode", []],
-  [Events.EyeDropperPickedColor, "eyeDropperPickedColor", ["color"]],
-  [Events.FileSystemsLoaded, "fileSystemsLoaded", ["fileSystems"]],
-  [Events.FileSystemRemoved, "fileSystemRemoved", ["fileSystemPath"]],
-  [Events.FileSystemAdded, "fileSystemAdded", ["errorMessage", "fileSystem"]],
-  [Events.FileSystemFilesChangedAddedRemoved, "fileSystemFilesChangedAddedRemoved", ["changed", "added", "removed"]],
-  [Events.IndexingTotalWorkCalculated, "indexingTotalWorkCalculated", ["requestId", "fileSystemPath", "totalWork"]],
-  [Events.IndexingWorked, "indexingWorked", ["requestId", "fileSystemPath", "worked"]],
-  [Events.IndexingDone, "indexingDone", ["requestId", "fileSystemPath"]],
-  [Events.KeyEventUnhandled, "keyEventUnhandled", ["event"]],
-  [Events.ReloadInspectedPage, "reloadInspectedPage", ["hard"]],
-  [Events.RevealSourceLine, "revealSourceLine", ["url", "lineNumber", "columnNumber"]],
-  [Events.SavedURL, "savedURL", ["url", "fileSystemPath"]],
-  [Events.SearchCompleted, "searchCompleted", ["requestId", "fileSystemPath", "files"]],
-  [Events.SetInspectedTabId, "setInspectedTabId", ["tabId"]],
-  [Events.SetUseSoftMenu, "setUseSoftMenu", ["useSoftMenu"]],
-  [Events.ShowPanel, "showPanel", ["panelName"]]
+  [Events.AppendedToURL, ["url"]],
+  [Events.CanceledSaveURL, ["url"]],
+  [Events.ColorThemeChanged, []],
+  [Events.ContextMenuCleared, []],
+  [Events.ContextMenuItemSelected, ["id"]],
+  [Events.DeviceCountUpdated, ["count"]],
+  [Events.DevicesDiscoveryConfigChanged, ["config"]],
+  [Events.DevicesPortForwardingStatusChanged, ["status"]],
+  [Events.DevicesUpdated, ["devices"]],
+  [Events.DispatchMessage, ["messageObject"]],
+  [Events.DispatchMessageChunk, ["messageChunk", "messageSize"]],
+  [Events.EnterInspectElementMode, []],
+  [Events.EyeDropperPickedColor, ["color"]],
+  [Events.FileSystemsLoaded, ["fileSystems"]],
+  [Events.FileSystemRemoved, ["fileSystemPath"]],
+  [Events.FileSystemAdded, ["errorMessage", "fileSystem"]],
+  [Events.FileSystemFilesChangedAddedRemoved, ["changed", "added", "removed"]],
+  [Events.IndexingTotalWorkCalculated, , ["requestId", "fileSystemPath", "totalWork"]],
+  [Events.IndexingWorked, ["requestId", "fileSystemPath", "worked"]],
+  [Events.IndexingDone, ["requestId", "fileSystemPath"]],
+  [Events.KeyEventUnhandled, ["event"]],
+  [Events.ReloadInspectedPage, ["hard"]],
+  [Events.RevealSourceLine, ["url", "lineNumber", "columnNumber"]],
+  [Events.SavedURL, ["url", "fileSystemPath"]],
+  [Events.SearchCompleted, ["requestId", "fileSystemPath", "files"]],
+  [Events.SetInspectedTabId, ["tabId"]],
+  [Events.SetUseSoftMenu, ["useSoftMenu"]],
+  [Events.ShowPanel, ["panelName"]]
 ];
 
 // gen/front_end/core/host/ResourceLoader.js
@@ -744,7 +744,7 @@ var InspectorFrontendHostInstance = globalThis.InspectorFrontendHost;
 var InspectorFrontendAPIImpl = class {
   constructor() {
     for (const descriptor of EventDescriptors) {
-      this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
+      this[descriptor[0]] = this.dispatch.bind(this, descriptor[0], descriptor[1], descriptor[2]);
     }
   }
   dispatch(name, signature, _runOnceLoaded, ...params) {
@@ -1733,7 +1733,7 @@ var UserMetrics = class {
     InspectorFrontendHostInstance.recordEnumeratedHistogram(
       "DevTools.SwatchActivated",
       swatch,
-      12
+      13
       /* SwatchType.MAX_VALUE */
     );
   }
@@ -1765,6 +1765,17 @@ var UserMetrics = class {
   }
   performanceAIMainThreadActivityResponseSize(bytes) {
     InspectorFrontendHostInstance.recordCountHistogram("DevTools.PerformanceAI.MainThreadActivityResponseSize", bytes, 0, 1e5, 100);
+  }
+  builtInAiAvailability(availability) {
+    InspectorFrontendHostInstance.recordEnumeratedHistogram(
+      "DevTools.BuiltInAiAvailability",
+      availability,
+      10
+      /* BuiltInAiAvailability.MAX_VALUE */
+    );
+  }
+  consoleInsightTeaserGenerated(timeInMilliseconds) {
+    InspectorFrontendHostInstance.recordPerformanceHistogram("DevTools.Insights.TeaserGenerationTime", timeInMilliseconds);
   }
 };
 var Action;
@@ -1947,8 +1958,6 @@ var Action;
   Action2[Action2["AiAssistanceSideEffectConfirmed"] = 179] = "AiAssistanceSideEffectConfirmed";
   Action2[Action2["AiAssistanceSideEffectRejected"] = 180] = "AiAssistanceSideEffectRejected";
   Action2[Action2["AiAssistanceError"] = 181] = "AiAssistanceError";
-  Action2[Action2["AiAssistanceOpenedFromPerformanceInsight"] = 182] = "AiAssistanceOpenedFromPerformanceInsight";
-  Action2[Action2["AiAssistanceOpenedFromPerformanceFullButton"] = 183] = "AiAssistanceOpenedFromPerformanceFullButton";
   Action2[Action2["AiCodeCompletionResponseServedFromCache"] = 184] = "AiCodeCompletionResponseServedFromCache";
   Action2[Action2["AiCodeCompletionRequestTriggered"] = 185] = "AiCodeCompletionRequestTriggered";
   Action2[Action2["AiCodeCompletionSuggestionDisplayed"] = 186] = "AiCodeCompletionSuggestionDisplayed";
@@ -2218,8 +2227,6 @@ var DevtoolsExperiments;
   DevtoolsExperiments2[DevtoolsExperiments2["just-my-code"] = 65] = "just-my-code";
   DevtoolsExperiments2[DevtoolsExperiments2["use-source-map-scopes"] = 76] = "use-source-map-scopes";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-show-postmessage-events"] = 86] = "timeline-show-postmessage-events";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-enhanced-traces"] = 90] = "timeline-enhanced-traces";
-  DevtoolsExperiments2[DevtoolsExperiments2["timeline-compiled-sources"] = 91] = "timeline-compiled-sources";
   DevtoolsExperiments2[DevtoolsExperiments2["timeline-debug-mode"] = 93] = "timeline-debug-mode";
   DevtoolsExperiments2[DevtoolsExperiments2["MAX_VALUE"] = 110] = "MAX_VALUE";
 })(DevtoolsExperiments || (DevtoolsExperiments = {}));

@@ -156,7 +156,7 @@ export class PerformanceTraceContext extends ConversationContext {
     }
     getTitle() {
         const focus = this.#focus;
-        let url = focus.insightSet?.url;
+        let url = focus.primaryInsightSet?.url;
         if (!url) {
             url = new URL(focus.parsedTrace.data.Meta.mainFrameURL);
         }
@@ -190,10 +190,11 @@ export class PerformanceTraceContext extends ConversationContext {
             return new PerformanceInsightFormatter(focus, focus.insight).getSuggestions();
         }
         const suggestions = [{ title: 'What performance issues exist with my page?', jslogContext: 'performance-default' }];
-        if (focus.insightSet) {
-            const lcp = focus.insightSet ? Trace.Insights.Common.getLCP(focus.insightSet) : null;
-            const cls = focus.insightSet ? Trace.Insights.Common.getCLS(focus.insightSet) : null;
-            const inp = focus.insightSet ? Trace.Insights.Common.getINP(focus.insightSet) : null;
+        const insightSet = focus.primaryInsightSet;
+        if (insightSet) {
+            const lcp = insightSet ? Trace.Insights.Common.getLCP(insightSet) : null;
+            const cls = insightSet ? Trace.Insights.Common.getCLS(insightSet) : null;
+            const inp = insightSet ? Trace.Insights.Common.getINP(insightSet) : null;
             const ModelHandlers = Trace.Handlers.ModelHandlers;
             const GOOD = "good" /* Trace.Handlers.ModelHandlers.PageLoadMetrics.ScoreClassification.GOOD */;
             if (lcp && ModelHandlers.PageLoadMetrics.scoreClassificationForLargestContentfulPaint(lcp.value) !== GOOD) {
@@ -206,7 +207,7 @@ export class PerformanceTraceContext extends ConversationContext {
                 suggestions.push({ title: 'How can I improve CLS?', jslogContext: 'performance-default' });
             }
             // Add up to 3 suggestions from the top failing insights.
-            const top3FailingInsightSuggestions = Object.values(focus.insightSet.model)
+            const top3FailingInsightSuggestions = Object.values(insightSet.model)
                 .filter(model => model.state !== 'pass')
                 .map(model => new PerformanceInsightFormatter(focus, model).getSuggestions().at(-1))
                 .filter(suggestion => !!suggestion)
@@ -518,7 +519,8 @@ export class PerformanceAgent extends AiAgent {
     }
     #declareFunctions(context) {
         const focus = context.getItem();
-        const { parsedTrace, insightSet } = focus;
+        const { parsedTrace } = focus;
+        const insightSet = focus.primaryInsightSet;
         this.declareFunction('getInsightDetails', {
             description: 'Returns detailed information about a specific insight. Use this before commenting on any specific issue to get more information.',
             parameters: {

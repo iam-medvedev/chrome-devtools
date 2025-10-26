@@ -387,10 +387,7 @@ describe('NetworkRequestsHandler', function () {
 });
 function assertDataArgsStats(requests, url, stats) {
     const request = requests.find(request => request.args.data.url === url);
-    if (!request) {
-        assert.fail(`Unable to find request for URL ${url}`);
-        return;
-    }
+    assert.exists(request, `Unable to find request for URL ${url}`);
     for (const [name, value] of stats.entries()) {
         if (typeof request.args.data[name] === 'number') {
             const expectedValue = value;
@@ -404,10 +401,7 @@ function assertDataArgsStats(requests, url, stats) {
 }
 function assertDataArgsProcessedDataStats(requests, url, stats) {
     const request = requests.find(request => request.args.data.url === url);
-    if (!request) {
-        assert.fail(`Unable to find request for URL ${url}`);
-        return;
-    }
+    assert.exists(request, `Unable to find request for URL ${url}`);
     for (const [name, value] of stats.entries()) {
         if (typeof request.args.data.syntheticData[name] === 'number') {
             const expectedValue = value;

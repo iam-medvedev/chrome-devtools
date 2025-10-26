@@ -4,10 +4,7 @@
 import { expectCookie } from '../../testing/Cookies.js';
 import * as SDK from './sdk.js';
 function ensureCookiesExistOrFailTest(cookies) {
-    if (!cookies) {
-        assert.fail('expected cookies to exist');
-        return false;
-    }
+    assert.exists(cookies, 'expected cookies to exist');
     return true;
 }
 describe('CookieParser', () => {

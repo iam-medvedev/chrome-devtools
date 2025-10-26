@@ -1,5 +1,6 @@
 export declare const removeElement: <T>(array: T[], element: T, firstOnly?: boolean) => boolean;
 type NumberComparator = (a: number, b: number) => number;
+export declare function swap<T>(array: T[], i1: number, i2: number): void;
 export declare function sortRange(array: number[], comparator: NumberComparator, leftBound: number, rightBound: number, sortWindowLeft: number, sortWindowRight: number): number[];
 export declare const binaryIndexOf: <T, S>(array: T[], value: S, comparator: (a: S, b: T) => number) => number;
 export declare const intersectOrdered: <T>(array1: T[], array2: T[], comparator: (a: T, b: T) => number) => T[];

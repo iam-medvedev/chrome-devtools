@@ -81,9 +81,6 @@
       "path": "../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../ui/legacy/components/quick_open/bundle-tsconfig.json"
-    },
-    {
       "path": "../i18n/bundle-tsconfig.json"
     }
   ]

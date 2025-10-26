@@ -43,7 +43,6 @@
     "useUnknownInCatchVariables": false
   },
   "files": [
-    "../../../../../../front_end/models/extensions/ExtensionServer.test.ts",
     "../../../../../../front_end/models/extensions/HostUrlPattern.test.ts",
     "../../../../../../front_end/models/extensions/LanguageExtensionEndpoint.test.ts",
     "../../../../../../front_end/models/extensions/RecorderPluginManager.test.ts",

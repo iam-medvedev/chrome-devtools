@@ -197,6 +197,7 @@
       <include file="Images/justify-content-space-between.svg" name="IMAGES_JUSTIFY_CONTENT_SPACE_BETWEEN_SVG" resource_path="Images/justify-content-space-between.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-content-space-evenly.svg" name="IMAGES_JUSTIFY_CONTENT_SPACE_EVENLY_SVG" resource_path="Images/justify-content-space-evenly.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-content-start.svg" name="IMAGES_JUSTIFY_CONTENT_START_SVG" resource_path="Images/justify-content-start.svg" type="BINDATA" compress="false"/>
+      <include file="Images/justify-content-stretch.svg" name="IMAGES_JUSTIFY_CONTENT_STRETCH_SVG" resource_path="Images/justify-content-stretch.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-items-center.svg" name="IMAGES_JUSTIFY_ITEMS_CENTER_SVG" resource_path="Images/justify-items-center.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-items-end.svg" name="IMAGES_JUSTIFY_ITEMS_END_SVG" resource_path="Images/justify-items-end.svg" type="BINDATA" compress="false"/>
       <include file="Images/justify-items-start.svg" name="IMAGES_JUSTIFY_ITEMS_START_SVG" resource_path="Images/justify-items-start.svg" type="BINDATA" compress="false"/>
@@ -740,7 +741,6 @@
       <include file="services/puppeteer/puppeteer.js" name="SERVICES_PUPPETEER_PUPPETEER_JS" resource_path="services/puppeteer/puppeteer.js" type="BINDATA" compress="false"/>
       <include file="services/trace_bounds/trace_bounds.js" name="SERVICES_TRACE_BOUNDS_TRACE_BOUNDS_JS" resource_path="services/trace_bounds/trace_bounds.js" type="BINDATA" compress="false"/>
       <include file="services/tracing/tracing.js" name="SERVICES_TRACING_TRACING_JS" resource_path="services/tracing/tracing.js" type="BINDATA" compress="false"/>
-      <include file="services/window_bounds/window_bounds.js" name="SERVICES_WINDOW_BOUNDS_WINDOW_BOUNDS_JS" resource_path="services/window_bounds/window_bounds.js" type="BINDATA" compress="false"/>
       <include file="third_party/acorn/acorn.js" name="THIRD_PARTY_ACORN_ACORN_JS" resource_path="third_party/acorn/acorn.js" type="BINDATA" compress="false"/>
       <include file="third_party/chromium/client-variations/client-variations.js" name="THIRD_PARTY_CHROMIUM_CLIENT_VARIATIONS_CLIENT_VARIATIONS_JS" resource_path="third_party/chromium/client-variations/client-variations.js" type="BINDATA" compress="false"/>
       <include file="third_party/codemirror.next/chunk/angular.js" name="THIRD_PARTY_CODEMIRROR_NEXT_CHUNK_ANGULAR_JS" resource_path="third_party/codemirror.next/chunk/angular.js" type="BINDATA" compress="false"/>

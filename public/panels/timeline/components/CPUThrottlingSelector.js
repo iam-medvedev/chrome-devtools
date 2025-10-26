@@ -58,7 +58,7 @@ export const DEFAULT_VIEW = (input, _output, target) => {
     const hasCalibratedOnce = input.throttling.low || input.throttling.mid;
     const calibrationLabel = hasCalibratedOnce ? i18nString(UIStrings.recalibrate) : i18nString(UIStrings.calibrate);
     // clang-format off
-    /* eslint-disable rulesdir/no-deprecated-component-usages */
+    /* eslint-disable @devtools/no-deprecated-component-usages */
     const template = html `
     <style>${cpuThrottlingSelectorStyles}</style>
     <devtools-select-menu

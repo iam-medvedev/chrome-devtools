@@ -2596,7 +2596,7 @@ function mergeUint8Arrays(items) {
 }
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/util/version.js
-var packageVersion = "24.25.0";
+var packageVersion = "24.26.1";
 
 // gen/front_end/third_party/puppeteer/package/lib/esm/puppeteer/common/Debug.js
 var debugModule = null;
@@ -11878,10 +11878,28 @@ var AXNode = class _AXNode {
         return false;
     }
   }
+  isLandmark() {
+    switch (this.#role) {
+      case "banner":
+      case "complementary":
+      case "contentinfo":
+      case "form":
+      case "main":
+      case "navigation":
+      case "region":
+      case "search":
+        return true;
+      default:
+        return false;
+    }
+  }
   isInteresting(insideControl) {
     const role = this.#role;
     if (role === "Ignored" || this.#hidden || this.#ignored) {
       return false;
+    }
+    if (this.isLandmark()) {
+      return true;
     }
     if (this.#focusable || this.#richlyEditable) {
       return true;
@@ -11934,7 +11952,8 @@ var AXNode = class _AXNode {
       "description",
       "keyshortcuts",
       "roledescription",
-      "valuetext"
+      "valuetext",
+      "url"
     ];
     const getUserStringPropertyValue = (key) => {
       return properties.get(key);
@@ -13377,7 +13396,7 @@ var CdpHTTPRequest = class extends HTTPRequest {
     }
   }
   headers() {
-    return this.#headers;
+    return structuredClone(this.#headers);
   }
   response() {
     return this._response;
@@ -13661,7 +13680,7 @@ var CdpHTTPResponse = class extends HTTPResponse {
           return stringToTypedArray(response.body, response.base64Encoded);
         } catch (error) {
           if (error instanceof ProtocolError && error.originalMessage === "No resource with given identifier found") {
-            throw new ProtocolError("Could not load body for this request. This might happen if the request is a preflight request.");
+            throw new ProtocolError("Could not load response body for this request. This might happen if the request is a preflight request.");
           }
           throw error;
         }

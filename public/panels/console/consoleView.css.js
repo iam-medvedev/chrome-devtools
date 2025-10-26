@@ -225,7 +225,7 @@ export default `/* Copyright 2021 The Chromium Authors
   --console-color-lightcyan: #5ff;
   --console-color-white: #fff;
 
-  &.console-selected {
+  &:focus {
     background-color: var(--sys-color-state-focus-highlight);
   }
 }

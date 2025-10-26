@@ -219,12 +219,12 @@ var BinaryViewObject = class {
   }
 };
 
-// gen/front_end/panels/network/BlockedURLsPane.js
-var BlockedURLsPane_exports = {};
-__export(BlockedURLsPane_exports, {
+// gen/front_end/panels/network/RequestConditionsDrawer.js
+var RequestConditionsDrawer_exports = {};
+__export(RequestConditionsDrawer_exports, {
   ActionDelegate: () => ActionDelegate,
-  BlockedURLsPane: () => BlockedURLsPane,
-  DEFAULT_VIEW: () => DEFAULT_VIEW
+  DEFAULT_VIEW: () => DEFAULT_VIEW,
+  RequestConditionsDrawer: () => RequestConditionsDrawer
 });
 import "./../../ui/legacy/legacy.js";
 import "./../../ui/components/tooltips/tooltips.js";
@@ -239,8 +239,8 @@ import { Directives, html, nothing, render } from "./../../ui/lit/lit.js";
 import * as VisualLogging from "./../../ui/visual_logging/visual_logging.js";
 import * as MobileThrottling from "./../mobile_throttling/mobile_throttling.js";
 
-// gen/front_end/panels/network/blockedURLsPane.css.js
-var blockedURLsPane_css_default = `/*
+// gen/front_end/panels/network/requestConditionsDrawer.css.js
+var requestConditionsDrawer_css_default = `/*
  * Copyright 2015 The Chromium Authors
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file.
@@ -322,15 +322,19 @@ var blockedURLsPane_css_default = `/*
   margin: var(--sys-size-3);
 }
 
-/*# sourceURL=${import.meta.resolve("./blockedURLsPane.css")} */`;
+/*# sourceURL=${import.meta.resolve("./requestConditionsDrawer.css")} */`;
 
-// gen/front_end/panels/network/BlockedURLsPane.js
+// gen/front_end/panels/network/RequestConditionsDrawer.js
 var { ref } = Directives;
 var UIStrings2 = {
   /**
    * @description Text to enable blocking of network requests
    */
   enableNetworkRequestBlocking: "Enable network request blocking",
+  /**
+   * @description Text to enable blocking of network requests
+   */
+  enableBlockingAndThrottling: "Enable blocking and throttling",
   /**
    * @description Tooltip text that appears when hovering over the plus button in the Blocked URLs Pane of the Network panel
    */
@@ -340,14 +344,22 @@ var UIStrings2 = {
    */
   addNetworkRequestBlockingPattern: "Add network request blocking pattern",
   /**
+   * @description Accessible label for the button to add request blocking patterns in the network request blocking tool
+   */
+  addPatternLabel: "Add network request throttling or blocking pattern",
+  /**
    * @description Text that shows in the network request blocking panel if no pattern has yet been added.
    */
   noNetworkRequestsBlocked: "No blocked network requests",
   /**
+   * @description Text that shows in the network request blocking panel if no pattern has yet been added.
+   */
+  noPattern: "No request throttling or blocking patterns",
+  /**
    * @description Text that shows  in the network request blocking panel if no pattern has yet been added.
    * @example {Add pattern} PH1
    */
-  addPatternToBlock: 'Add a pattern to block network requests by clicking on the "{PH1}" button.',
+  addPatternToBlock: 'Add a pattern by clicking on the "{PH1}" button.',
   /**
    * @description Text in Blocked URLs Pane of the Network panel
    * @example {4} PH1
@@ -355,12 +367,17 @@ var UIStrings2 = {
   dBlocked: "{PH1} blocked",
   /**
    * @description Text in Blocked URLs Pane of the Network panel
+   * @example {4} PH1
+   */
+  dAffected: "{PH1} affected",
+  /**
+   * @description Text in Blocked URLs Pane of the Network panel
    */
   textPatternToBlockMatching: "Text pattern to block matching requests; use * for wildcard",
   /**
    * @description Text in Blocked URLs Pane of the Network panel
    */
-  textPatternToBlockMatchingURLPatterns: "Text pattern to block matching requests; use URLPattern syntax.",
+  textEditPattern: "Text pattern to block or throttle matching requests; use URLPattern syntax.",
   /**
    * @description Error text for empty list widget input in Request Blocking tool
    */
@@ -389,31 +406,40 @@ var UIStrings2 = {
   /**
    * @description Message to be announced for a when list item is removed from list widget
    */
-  learnMore: "Learn more"
+  learnMore: "Learn more",
+  /**
+   * @description Aria label on a button moving an entry up
+   */
+  increasePriority: "Increase priority",
+  /**
+   * @description Aria label on a button moving an entry down
+   */
+  decreasePriority: "Decrease priority"
 };
-var str_2 = i18n3.i18n.registerUIStrings("panels/network/BlockedURLsPane.ts", UIStrings2);
+var str_2 = i18n3.i18n.registerUIStrings("panels/network/RequestConditionsDrawer.ts", UIStrings2);
 var i18nString2 = i18n3.i18n.getLocalizedString.bind(void 0, str_2);
 var NETWORK_REQUEST_BLOCKING_EXPLANATION_URL = "https://developer.chrome.com/docs/devtools/network-request-blocking";
 var PATTERN_API_DOCS_URL = "https://developer.mozilla.org/en-US/docs/Web/API/URL_Pattern_API";
 var { bindToAction } = UI2.UIUtils;
 var DEFAULT_VIEW = (input, output, target) => {
+  const individualThrottlingEnabled = Boolean(Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
   render(
     // clang-format off
     html`
-    <style>${blockedURLsPane_css_default}</style>
+    <style>${RequestConditionsDrawer}</style>
     <devtools-toolbar jslog=${VisualLogging.toolbar()}>
       <devtools-checkbox
         ?checked=${input.enabled}
         @click=${input.toggleEnabled}
         .jslogContext=${"network.enable-request-blocking"}>
-        ${i18nString2(UIStrings2.enableNetworkRequestBlocking)}
+        ${individualThrottlingEnabled ? i18nString2(UIStrings2.enableBlockingAndThrottling) : i18nString2(UIStrings2.enableNetworkRequestBlocking)}
       </devtools-checkbox>
       <div class="toolbar-divider"></div>
       <devtools-button ${bindToAction("network.add-network-request-blocking-pattern")}></devtools-button>
       <devtools-button ${bindToAction("network.remove-all-network-request-blocking-patterns")}></devtools-button>
     </devtools-toolbar>
     <div class=empty-state ${ref((e) => input.list.setEmptyPlaceholder(e ?? null))}>
-      <span class=empty-state-header>${i18nString2(UIStrings2.noNetworkRequestsBlocked)}</span>
+      <span class=empty-state-header>${individualThrottlingEnabled ? i18nString2(UIStrings2.noPattern) : i18nString2(UIStrings2.noNetworkRequestsBlocked)}</span>
       <div class=empty-state-description>
         <span>${i18nString2(UIStrings2.addPatternToBlock, { PH1: i18nString2(UIStrings2.addPattern) })}</span>
         <x-link
@@ -428,7 +454,7 @@ var DEFAULT_VIEW = (input, output, target) => {
         @click=${input.addPattern}
         class=add-button
         .jslogContext=${"network.add-network-request-blocking-pattern"}
-        aria-label=${i18nString2(UIStrings2.addNetworkRequestBlockingPattern)}
+        aria-label=${individualThrottlingEnabled ? i18nString2(UIStrings2.addPatternLabel) : i18nString2(UIStrings2.addNetworkRequestBlockingPattern)}
         .variant=${"tonal"}>
           ${i18nString2(UIStrings2.addPattern)}
       </devtools-button>
@@ -448,11 +474,12 @@ function learnMore() {
           ${i18nString2(UIStrings2.learnMore)}
       </x-link>`;
 }
-var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
+var RequestConditionsDrawer = class _RequestConditionsDrawer extends UI2.Widget.VBox {
   manager;
   list;
   editor;
   blockedCountForUrl;
+  #throttledCount = /* @__PURE__ */ new Map();
   #view;
   constructor(target, view = DEFAULT_VIEW) {
     super(target, {
@@ -463,7 +490,7 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     this.manager = SDK.NetworkManager.MultitargetNetworkManager.instance();
     this.manager.addEventListener("BlockedPatternsChanged", this.update, this);
     this.list = new UI2.ListWidget.ListWidget(this);
-    this.list.registerRequiredCSS(blockedURLsPane_css_default);
+    this.list.registerRequiredCSS(requestConditionsDrawer_css_default);
     this.list.element.classList.add("blocked-urls");
     this.editor = null;
     this.blockedCountForUrl = /* @__PURE__ */ new Map();
@@ -490,7 +517,8 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     this.manager.requestConditions.clear();
   }
   renderItem(condition, editable, index) {
-    const count = this.blockedRequestsCount(condition);
+    const blockedCount = this.blockedRequestsCount(condition);
+    const throttledCount = this.#throttledRequestsCount(condition);
     const element = document.createElement("div");
     element.classList.add("blocked-url");
     const toggle2 = (e) => {
@@ -506,6 +534,18 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     };
     const { enabled, originalOrUpgradedURLPattern, constructorStringOrWildcardURL, wildcardURL } = condition;
     if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
+      const moveUp = (e) => {
+        if (this.manager.requestConditions.conditionsEnabled) {
+          e.consume(true);
+          this.manager.requestConditions.increasePriority(condition);
+        }
+      };
+      const moveDown = (e) => {
+        if (this.manager.requestConditions.conditionsEnabled) {
+          e.consume(true);
+          this.manager.requestConditions.decreasePriority(condition);
+        }
+      };
       render(
         // clang-format off
         html`
@@ -515,15 +555,19 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
       ?checked=${enabled}
       ?disabled=${!editable || !originalOrUpgradedURLPattern}
       .jslog=${VisualLogging.toggle().track({ change: true })}>
-    <devtools-widget
-      class=conditions-selector
-      ?disabled=${!editable}
-      .widgetConfig=${UI2.Widget.widgetConfig(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelectorWidget, {
-          variant: "individual-request-conditions",
-          jslogContext: "request-conditions",
-          onConditionsChanged,
-          currentConditions: condition.conditions
-        })}></devtools-widget>
+    <devtools-button
+      .iconName=${"arrow-down"}
+      .variant=${"icon"}
+      .title=${i18nString2(UIStrings2.increasePriority)}
+      .jslogContext=${"increase-priority"}
+      @click=${moveDown}></devtools-button>
+    <devtools-button
+      .iconName=${"arrow-up"}
+      .variant=${"icon"}
+      .title=${i18nString2(UIStrings2.decreasePriority)}
+      .jslogContext=${"decrease-priority"}
+      @click=${moveUp}>
+    </devtools-button>
     ${originalOrUpgradedURLPattern ? html`
       <devtools-tooltip variant=rich jslogcontext=url-pattern id=url-pattern-${index}>
         <div>hash: ${originalOrUpgradedURLPattern.hash}</div>
@@ -557,7 +601,16 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
       aria-details=url-pattern-${index}>
         ${constructorStringOrWildcardURL}
     </div>
-    <div class=blocked-url-count>${i18nString2(UIStrings2.dBlocked, { PH1: count })}</div>`,
+   <devtools-widget
+      class=conditions-selector
+      ?disabled=${!editable}
+      .widgetConfig=${UI2.Widget.widgetConfig(MobileThrottling.NetworkThrottlingSelector.NetworkThrottlingSelectorWidget, {
+          variant: "individual-request-conditions",
+          jslogContext: "request-conditions",
+          onConditionsChanged,
+          currentConditions: condition.conditions
+        })}></devtools-widget>
+    <div class=blocked-url-count>${i18nString2(UIStrings2.dAffected, { PH1: condition.isBlocking ? blockedCount : throttledCount })}</div>`,
         // clang-format on
         element
       );
@@ -572,7 +625,7 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
       ?disabled=${!editable}
       .jslog=${VisualLogging.toggle().track({ change: true })}>
     <div @click=${toggle2} class=blocked-url-label>${wildcardURL}</div>
-    <div class=blocked-url-count>${i18nString2(UIStrings2.dBlocked, { PH1: count })}</div>`,
+    <div class=blocked-url-count>${i18nString2(UIStrings2.dBlocked, { PH1: blockedCount })}</div>`,
         // clang-format on
         element
       );
@@ -612,7 +665,7 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     const titles = content.createChild("div", "blocked-url-edit-row");
     const label = titles.createChild("div");
     if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
-      label.textContent = i18nString2(UIStrings2.textPatternToBlockMatchingURLPatterns);
+      label.textContent = i18nString2(UIStrings2.textEditPattern);
       label.append(UI2.XLink.XLink.create(PATTERN_API_DOCS_URL, i18nString2(UIStrings2.learnMore), void 0, void 0, "learn-more"));
     } else {
       label.textContent = i18nString2(UIStrings2.textPatternToBlockMatching);
@@ -660,6 +713,13 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
     }
     return result;
   }
+  #throttledRequestsCount(condition) {
+    let result = 0;
+    for (const ruleId of condition.ruleIds) {
+      result += this.#throttledCount.get(ruleId) ?? 0;
+    }
+    return result;
+  }
   matches(pattern, url) {
     let pos = 0;
     const parts = pattern.split("*");
@@ -678,38 +738,45 @@ var BlockedURLsPane = class _BlockedURLsPane extends UI2.Widget.VBox {
   }
   onNetworkLogReset(_event) {
     this.blockedCountForUrl.clear();
+    this.#throttledCount.clear();
     this.update();
   }
   onRequestFinished(event) {
     const request = event.data;
+    if (request.appliedNetworkConditionsId) {
+      const count = this.#throttledCount.get(request.appliedNetworkConditionsId) ?? 0;
+      this.#throttledCount.set(request.appliedNetworkConditionsId, count + 1);
+    }
     if (request.wasBlocked()) {
       const count = this.blockedCountForUrl.get(request.url()) || 0;
       this.blockedCountForUrl.set(request.url(), count + 1);
+    }
+    if (request.appliedNetworkConditionsId || request.wasBlocked()) {
       this.update();
     }
   }
   wasShown() {
-    UI2.Context.Context.instance().setFlavor(_BlockedURLsPane, this);
+    UI2.Context.Context.instance().setFlavor(_RequestConditionsDrawer, this);
     super.wasShown();
   }
   willHide() {
     super.willHide();
-    UI2.Context.Context.instance().setFlavor(_BlockedURLsPane, null);
+    UI2.Context.Context.instance().setFlavor(_RequestConditionsDrawer, null);
   }
 };
 var ActionDelegate = class {
   handleAction(context, actionId) {
-    const blockedURLsPane = context.flavor(BlockedURLsPane);
-    if (blockedURLsPane === null) {
+    const drawer = context.flavor(RequestConditionsDrawer);
+    if (drawer === null) {
       return false;
     }
     switch (actionId) {
       case "network.add-network-request-blocking-pattern": {
-        blockedURLsPane.addPattern();
+        drawer.addPattern();
         return true;
       }
       case "network.remove-all-network-request-blocking-patterns": {
-        blockedURLsPane.removeAllPatterns();
+        drawer.removeAllPatterns();
         return true;
       }
     }
@@ -1973,6 +2040,11 @@ var UIStrings5 = {
   servedFromNetwork: "{PH1} transferred over network, resource size: {PH2}",
   /**
    * @description Cell title in Network Data Grid Node of the Network panel
+   * @example {Fast 4G} PH1
+   */
+  wasThrottled: "Request was throttled ({PH1})",
+  /**
+   * @description Cell title in Network Data Grid Node of the Network panel
    * @example {4 B} PH1
    * @example {10 B} PH2
    */
@@ -2552,6 +2624,9 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
   isPrefetch() {
     return this.requestInternal.resourceType() === Common4.ResourceType.resourceTypes.Prefetch;
   }
+  throttlingConditions() {
+    return SDK4.NetworkManager.MultitargetNetworkManager.instance().appliedRequestConditions(this.requestInternal);
+  }
   isWarning() {
     return this.isFailed() && this.isPrefetch();
   }
@@ -2560,6 +2635,7 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
   }
   createCells(element) {
     this.initiatorCell = null;
+    element.classList.toggle("network-throttled-row", Boolean(this.throttlingConditions()?.urlPattern));
     element.classList.toggle("network-warning-row", this.isWarning());
     element.classList.toggle("network-error-row", this.isError());
     element.classList.toggle("network-navigation-row", this.isNavigationRequestInternal);
@@ -3027,6 +3103,13 @@ var NetworkRequestNode = class _NetworkRequestNode extends NetworkNode {
     this.appendSubtitle(cell, resourceSize);
   }
   renderTimeCell(cell) {
+    const throttlingConditions = this.throttlingConditions();
+    if (throttlingConditions?.urlPattern) {
+      const throttlingConditionsTitle = typeof throttlingConditions.conditions.title === "string" ? throttlingConditions.conditions.title : throttlingConditions.conditions.title();
+      const icon = IconButton.Icon.create("watch");
+      icon.title = i18nString5(UIStrings5.wasThrottled, { PH1: throttlingConditionsTitle });
+      cell.append(icon);
+    }
     if (this.requestInternal.duration > 0) {
       this.setTextAndTitle(cell, i18n9.TimeUtilities.secondsToString(this.requestInternal.duration));
       this.appendSubtitle(cell, i18n9.TimeUtilities.secondsToString(this.requestInternal.latency), false, i18nString5(UIStrings5.timeSubtitleTooltipText));
@@ -7037,6 +7120,7 @@ var networkLogView_css_default = `/*
   color: var(--sys-color-error) !important;
 }
 
+.network-throttled-row,
 .network-warning-row,
 .network-warning-row .network-cell-subtitle {
   color: var(--sys-color-yellow);
@@ -7130,6 +7214,29 @@ var networkLogView_css_default = `/*
 .network-log-grid.data-grid .network-error-row.data-grid-data-grid-node.selected img.icon {
   /* This is generated with https://codepen.io/sosuke/pen/Pjoqqp to target var(--color-red) */
   filter: brightness(0) saturate(100%) invert(35%) sepia(76%) saturate(1413%) hue-rotate(338deg) brightness(92%) contrast(103%);
+}
+
+.network-throttled-row {
+  devtools-icon {
+    color: var(--sys-color-yellow);
+    vertical-align: middle;
+    width: 16px;
+    height: 16px;
+  }
+
+  .image.icon::before,
+  devtools-icon.icon::before {
+    background-color: var(--sys-color-yellow);
+    content: var(--image-file-empty);
+    width: 35%;
+    height: 35%;
+    border-radius: 50%;
+    outline: var(--sys-size-1) solid var(--icon-gap-focus-selected);
+    top: 60%;
+    left: 55%;
+    position: absolute;
+    z-index: 1;
+  }
 }
 
 .data-grid-data-grid-node devtools-icon[name="arrow-up-down-circle"],
@@ -12969,7 +13076,6 @@ var SearchNetworkView = class _SearchNetworkView extends Search.SearchView.Searc
 };
 export {
   BinaryResourceView_exports as BinaryResourceView,
-  BlockedURLsPane_exports as BlockedURLsPane,
   EventSourceMessagesView_exports as EventSourceMessagesView,
   NetworkConfigView_exports as NetworkConfigView,
   NetworkDataGridNode_exports as NetworkDataGridNode,
@@ -12982,6 +13088,7 @@ export {
   NetworkPanel_exports as NetworkPanel,
   NetworkSearchScope_exports as NetworkSearchScope,
   NetworkWaterfallColumn_exports as NetworkWaterfallColumn,
+  RequestConditionsDrawer_exports as RequestConditionsDrawer,
   RequestCookiesView_exports as RequestCookiesView,
   RequestHTMLView_exports as RequestHTMLView,
   RequestInitiatorView_exports as RequestInitiatorView,

@@ -1,8 +1,8 @@
 // Copyright 2018 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-imperative-dom-api */
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-imperative-dom-api */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as Common from '../../core/common/common.js';
 import * as Host from '../../core/host/host.js';
 import * as i18n from '../../core/i18n/i18n.js';
@@ -32,6 +32,7 @@ const { html, nothing, render, Directives: { classMap } } = Lit;
 const ASTUtils = SDK.CSSPropertyParser.ASTUtils;
 const FlexboxEditor = ElementsComponents.StylePropertyEditor.FlexboxEditor;
 const GridEditor = ElementsComponents.StylePropertyEditor.GridEditor;
+const MasonryEditor = ElementsComponents.StylePropertyEditor.MasonryEditor;
 const UIStrings = {
     /**
      * @description Text in Color Swatch Popover Icon of the Elements panel
@@ -82,6 +83,10 @@ const UIStrings = {
      * @description Title of the button that opens the CSS Grid editor in the Styles panel.
      */
     gridEditorButton: 'Open `grid` editor',
+    /**
+     * @description Title of the button that opens the CSS Masonry editor in the Styles panel.
+     */
+    masonryEditorButton: 'Open `masonry` editor',
     /**
      * @description A context menu item in Styles panel to copy CSS declaration as JavaScript property.
      */
@@ -158,7 +163,7 @@ export class EnvFunctionRenderer extends rendererBase(SDK.CSSPropertyParserMatch
     }
 }
 // clang-format off
-export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridMatch) {
+export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers.FlexGridMasonryMatch) {
     // clang-format on
     #treeElement;
     #stylesPane;
@@ -173,12 +178,42 @@ export class FlexGridRenderer extends rendererBase(SDK.CSSPropertyParserMatchers
             return children;
         }
         const key = `${this.#treeElement.section().getSectionIdx()}_${this.#treeElement.section().nextEditorTriggerButtonIdx}`;
-        const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), match.isFlex ? FlexboxEditor : GridEditor, match.isFlex ? i18nString(UIStrings.flexboxEditorButton) : i18nString(UIStrings.gridEditorButton), key);
+        function getEditorClass(layoutType) {
+            switch (layoutType) {
+                case "flex" /* SDK.CSSPropertyParserMatchers.LayoutType.FLEX */:
+                    return FlexboxEditor;
+                case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
+                    return GridEditor;
+                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
+                    return MasonryEditor;
+            }
+        }
+        function getButtonTitle(layoutType) {
+            switch (layoutType) {
+                case "flex" /* SDK.CSSPropertyParserMatchers.LayoutType.FLEX */:
+                    return i18nString(UIStrings.flexboxEditorButton);
+                case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
+                    return i18nString(UIStrings.gridEditorButton);
+                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
+                    return i18nString(UIStrings.masonryEditorButton);
+            }
+        }
+        function getSwatchType(layoutType) {
+            switch (layoutType) {
+                case "flex" /* SDK.CSSPropertyParserMatchers.LayoutType.FLEX */:
+                    return 6 /* Host.UserMetrics.SwatchType.FLEX */;
+                case "grid" /* SDK.CSSPropertyParserMatchers.LayoutType.GRID */:
+                    return 5 /* Host.UserMetrics.SwatchType.GRID */;
+                case "masonry" /* SDK.CSSPropertyParserMatchers.LayoutType.MASONRY */:
+                    return 12 /* Host.UserMetrics.SwatchType.MASONRY */;
+            }
+        }
+        const button = StyleEditorWidget.createTriggerButton(this.#stylesPane, this.#treeElement.section(), getEditorClass(match.layoutType), getButtonTitle(match.layoutType), key);
         button.tabIndex = -1;
-        button.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context(match.isFlex ? 'flex' : 'grid')}`);
+        button.setAttribute('jslog', `${VisualLogging.showStyleEditor().track({ click: true }).context(match.layoutType)}`);
         this.#treeElement.section().nextEditorTriggerButtonIdx++;
         button.addEventListener('click', () => {
-            Host.userMetrics.swatchActivated(match.isFlex ? 6 /* Host.UserMetrics.SwatchType.FLEX */ : 5 /* Host.UserMetrics.SwatchType.GRID */);
+            Host.userMetrics.swatchActivated(getSwatchType(match.layoutType));
         });
         const helper = this.#stylesPane.swatchPopoverHelper();
         if (helper.isShowing(StyleEditorWidget.instance()) && StyleEditorWidget.instance().getTriggerKey() === key) {

@@ -824,7 +824,7 @@ export class NetworkDispatcher {
     }
     requestIntercepted({}) {
     }
-    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition }) {
+    requestWillBeSentExtraInfo({ requestId, associatedCookies, headers, clientSecurityState, connectTiming, siteHasCookieInOtherPartition, appliedNetworkConditionsId }) {
         const blockedRequestCookies = [];
         const includedRequestCookies = [];
         for (const { blockedReasons, exemptionReason, cookie } of associatedCookies) {
@@ -842,6 +842,7 @@ export class NetworkDispatcher {
             clientSecurityState,
             connectTiming,
             siteHasCookieInOtherPartition,
+            appliedNetworkConditionsId,
         };
         this.getExtraInfoBuilder(requestId).addRequestExtraInfo(extraRequestInfo);
     }
@@ -1241,18 +1242,6 @@ export class NetworkDispatcher {
         }
         request.setTrustTokenOperationDoneEvent(event);
     }
-    subresourceWebBundleMetadataReceived() {
-        // TODO: remove implementation after deleting this methods from definition in Network.pdl
-    }
-    subresourceWebBundleMetadataError() {
-        // TODO: remove implementation after deleting this methods from definition in Network.pdl
-    }
-    subresourceWebBundleInnerResponseParsed() {
-        // TODO: remove implementation after deleting this methods from definition in Network.pdl
-    }
-    subresourceWebBundleInnerResponseError() {
-        // TODO: remove implementation after deleting this methods from definition in Network.pdl
-    }
     reportingApiReportAdded(data) {
         this.#manager.dispatchEventToListeners(Events.ReportingApiReportAdded, data.report);
     }
@@ -1330,6 +1319,7 @@ export class RequestCondition extends Common.ObjectWrapper.ObjectWrapper {
     #pattern;
     #enabled;
     #conditions;
+    #ruleIds = new Set();
     static createFromSetting(setting) {
         if ('urlPattern' in setting) {
             const pattern = RequestURLPattern.create(setting.urlPattern) ?? {
@@ -1355,6 +1345,12 @@ export class RequestCondition extends Common.ObjectWrapper.ObjectWrapper {
         this.#pattern = pattern;
         this.#enabled = enabled;
         this.#conditions = conditions;
+    }
+    get isBlocking() {
+        return this.conditions === BlockingConditions;
+    }
+    get ruleIds() {
+        return this.#ruleIds;
     }
     get constructorString() {
         return this.#pattern instanceof RequestURLPattern ? this.#pattern.constructorString :
@@ -1396,6 +1392,7 @@ export class RequestCondition extends Common.ObjectWrapper.ObjectWrapper {
     }
     set conditions(conditions) {
         this.#conditions = conditions;
+        this.#ruleIds = new Set();
         this.dispatchEventToListeners("request-condition-changed" /* RequestCondition.Events.REQUEST_CONDITION_CHANGED */);
     }
     toSetting() {
@@ -1416,6 +1413,8 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
     #setting = Common.Settings.Settings.instance().createSetting('network-blocked-patterns', []);
     #conditionsEnabledSetting = Common.Settings.Settings.instance().moduleSetting('request-blocking-enabled');
     #conditions = [];
+    #requestConditionsById = new Map();
+    #conditionsAppliedForTestPromise = Promise.resolve();
     constructor() {
         super();
         for (const condition of this.#setting.get()) {
@@ -1459,6 +1458,22 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
         }
         this.#conditionsChanged();
     }
+    decreasePriority(condition) {
+        const index = this.#conditions.indexOf(condition);
+        if (index < 0 || index >= this.#conditions.length - 1) {
+            return;
+        }
+        Platform.ArrayUtilities.swap(this.#conditions, index, index + 1);
+        this.dispatchEventToListeners("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */);
+    }
+    increasePriority(condition) {
+        const index = this.#conditions.indexOf(condition);
+        if (index <= 0) {
+            return;
+        }
+        Platform.ArrayUtilities.swap(this.#conditions, index - 1, index);
+        this.dispatchEventToListeners("request-conditions-changed" /* RequestConditions.Events.REQUEST_CONDITIONS_CHANGED */);
+    }
     delete(condition) {
         const index = this.#conditions.indexOf(condition);
         if (index < 0) {
@@ -1488,6 +1503,7 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
         }
         if (Root.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled) {
             const urlPatterns = [];
+            // We store all this info out-of-band to prevent races with changing conditions while the promise is still pending
             const matchedNetworkConditions = [];
             if (this.conditionsEnabled) {
                 for (const condition of this.#conditions) {
@@ -1499,41 +1515,51 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
                     const block = !isNonBlockingCondition(conditions);
                     urlPatterns.push({ urlPattern, block });
                     if (!block) {
-                        matchedNetworkConditions.push({
-                            urlPattern,
-                            latency: conditions.latency,
-                            downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
-                            uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
-                            packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
-                            packetQueueLength: conditions.packetQueueLength,
-                            packetReordering: conditions.packetReordering,
-                            connectionType: NetworkManager.connectionType(conditions),
-                        });
+                        const { ruleIds } = condition;
+                        matchedNetworkConditions.push({ ruleIds, urlPattern, conditions });
                     }
                 }
                 if (globalConditions) {
-                    matchedNetworkConditions.push({
-                        urlPattern: '',
-                        latency: globalConditions.latency,
-                        downloadThroughput: globalConditions.download < 0 ? 0 : globalConditions.download,
-                        uploadThroughput: globalConditions.upload < 0 ? 0 : globalConditions.upload,
-                        packetLoss: (globalConditions.packetLoss ?? 0) < 0 ? 0 : globalConditions.packetLoss,
-                        packetQueueLength: globalConditions.packetQueueLength,
-                        packetReordering: globalConditions.packetReordering,
-                        connectionType: NetworkManager.connectionType(globalConditions),
-                    });
+                    matchedNetworkConditions.push({ conditions: globalConditions });
                 }
             }
+            const promises = [];
             for (const agent of agents) {
-                void agent.invoke_setBlockedURLs({ urlPatterns });
-                void agent.invoke_emulateNetworkConditionsByRule({ offline, matchedNetworkConditions });
-                void agent.invoke_overrideNetworkState({
+                promises.push(agent.invoke_setBlockedURLs({ urlPatterns }));
+                promises.push(agent
+                    .invoke_emulateNetworkConditionsByRule({
+                    offline,
+                    matchedNetworkConditions: matchedNetworkConditions.map(({ urlPattern, conditions }) => ({
+                        urlPattern: urlPattern ?? '',
+                        latency: conditions.latency,
+                        downloadThroughput: conditions.download < 0 ? 0 : conditions.download,
+                        uploadThroughput: conditions.upload < 0 ? 0 : conditions.upload,
+                        packetLoss: (conditions.packetLoss ?? 0) < 0 ? 0 : conditions.packetLoss,
+                        packetQueueLength: conditions.packetQueueLength,
+                        packetReordering: conditions.packetReordering,
+                        connectionType: NetworkManager.connectionType(conditions),
+                    }))
+                })
+                    .then(response => {
+                    if (!response.getError()) {
+                        for (let i = 0; i < response.ruleIds.length; ++i) {
+                            const ruleId = response.ruleIds[i];
+                            const { ruleIds, conditions, urlPattern } = matchedNetworkConditions[i];
+                            if (ruleIds) {
+                                this.#requestConditionsById.set(ruleId, { urlPattern, conditions });
+                                matchedNetworkConditions[i].ruleIds?.add(ruleId);
+                            }
+                        }
+                    }
+                }));
+                promises.push(agent.invoke_overrideNetworkState({
                     offline,
                     latency: globalConditions?.latency ?? 0,
                     downloadThroughput: !globalConditions || globalConditions.download < 0 ? 0 : globalConditions.download,
                     uploadThroughput: !globalConditions || globalConditions.upload < 0 ? 0 : globalConditions.upload,
-                });
+                }));
             }
+            this.#conditionsAppliedForTestPromise = this.#conditionsAppliedForTestPromise.then(() => Promise.all(promises));
             return urlPatterns.length > 0;
         }
         const urls = this.conditionsEnabled ?
@@ -1544,6 +1570,12 @@ export class RequestConditions extends Common.ObjectWrapper.ObjectWrapper {
             void agent.invoke_setBlockedURLs({ urls });
         }
         return urls.length > 0;
+    }
+    conditionsAppliedForTest() {
+        return this.#conditionsAppliedForTestPromise;
+    }
+    conditionsForId(appliedNetworkConditionsId) {
+        return this.#requestConditionsById.get(appliedNetworkConditionsId);
     }
 }
 _a = RequestConditions;
@@ -1855,6 +1887,12 @@ export class MultitargetNetworkManager extends Common.ObjectWrapper.ObjectWrappe
         return await new Promise(resolve => Host.ResourceLoader.load(url, headers, (success, _responseHeaders, content, errorDescription) => {
             resolve({ success, content, errorDescription });
         }, allowRemoteFilePaths));
+    }
+    appliedRequestConditions(requestInternal) {
+        if (!requestInternal.appliedNetworkConditionsId) {
+            return undefined;
+        }
+        return this.requestConditions.conditionsForId(requestInternal.appliedNetworkConditionsId);
     }
 }
 export class InterceptedRequest {

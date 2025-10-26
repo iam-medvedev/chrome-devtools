@@ -61,19 +61,15 @@
     "../../../../../front_end/testing/MockIssuesManager.ts",
     "../../../../../front_end/testing/MockIssuesModel.ts",
     "../../../../../front_end/testing/MockNetworkLog.ts",
-    "../../../../../front_end/testing/MockScopeChain.test.ts",
     "../../../../../front_end/testing/MockScopeChain.ts",
     "../../../../../front_end/testing/MockSettingStorage.ts",
-    "../../../../../front_end/testing/MutationHelpers.test.ts",
     "../../../../../front_end/testing/MutationHelpers.ts",
     "../../../../../front_end/testing/NetworkHelpers.ts",
     "../../../../../front_end/testing/OverridesHelpers.ts",
     "../../../../../front_end/testing/PersistenceHelpers.ts",
     "../../../../../front_end/testing/PropertyParser.ts",
     "../../../../../front_end/testing/ResourceTreeHelpers.ts",
-    "../../../../../front_end/testing/SnapshotTester.test.ts",
     "../../../../../front_end/testing/SnapshotTester.ts",
-    "../../../../../front_end/testing/SourceMapEncoder.test.ts",
     "../../../../../front_end/testing/SourceMapEncoder.ts",
     "../../../../../front_end/testing/SourceMapHelpers.ts",
     "../../../../../front_end/testing/StackTraceHelpers.ts",
@@ -152,6 +148,9 @@
     },
     {
       "path": "../models/workspace/bundle-tsconfig.json"
+    },
+    {
+      "path": "../panels/common/bundle-tsconfig.json"
     },
     {
       "path": "../panels/elements/meta-tsconfig.json"

@@ -1247,6 +1247,7 @@ var BottomUpRootNode = class extends Node {
     const root = this;
     const startTime = this.startTime;
     const endTime = this.endTime;
+    const idStack = [];
     const nodeById = /* @__PURE__ */ new Map();
     const selfTimeStack = [endTime - startTime];
     const firstNodeStack = [];
@@ -1292,6 +1293,7 @@ var BottomUpRootNode = class extends Node {
       if (forceGroupIdCallback && eventGroupIdCallback) {
         id = `${id}-${eventGroupIdCallback(e)}`;
       }
+      idStack.push(id);
       const noNodeOnStack = !totalTimeById.has(id);
       if (noNodeOnStack) {
         totalTimeById.set(id, duration);
@@ -1299,9 +1301,9 @@ var BottomUpRootNode = class extends Node {
       firstNodeStack.push(noNodeOnStack);
     }
     function onEndEvent(event) {
-      let id = generateEventID(event);
-      if (forceGroupIdCallback && eventGroupIdCallback) {
-        id = `${id}-${eventGroupIdCallback(event)}`;
+      const id = idStack.pop();
+      if (!id) {
+        return;
       }
       let node = nodeById.get(id);
       if (!node) {

@@ -884,7 +884,14 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         }
         // Node picker is using linkifier.
     }
-    handleAction(actionId, opts) {
+    #canExecuteQuery() {
+        const isBrandedBuild = Boolean(Root.Runtime.hostConfig.aidaAvailability?.enabled);
+        const isBlockedByAge = Boolean(Root.Runtime.hostConfig.aidaAvailability?.blockedByAge);
+        const isAidaAvailable = Boolean(this.#aidaAvailability === "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */);
+        const isUserOptedIn = Boolean(this.#aiAssistanceEnabledSetting?.getIfNotDisabled());
+        return isBrandedBuild && isAidaAvailable && isUserOptedIn && !isBlockedByAge;
+    }
+    async handleAction(actionId, opts) {
         if (this.#isLoading && !opts?.['prompt']) {
             // If running some queries already, and this action doesn't contain a predefined prompt, focus the input with the abort
             // button and do nothing.
@@ -918,16 +925,6 @@ export class AiAssistancePanel extends UI.Panel.Panel {
                 targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
                 break;
             }
-            case 'drjones.performance-insight-context': {
-                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceInsight);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
-                break;
-            }
-            case 'drjones.performance-panel-full-context': {
-                Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromPerformanceFullButton);
-                targetConversationType = "drjones-performance-full" /* AiAssistanceModel.AiHistoryStorage.ConversationType.PERFORMANCE */;
-                break;
-            }
             case 'drjones.sources-floating-button': {
                 Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceOpenedFromSourcesPanelFloatingButton);
                 targetConversationType = "drjones-file" /* AiAssistanceModel.AiHistoryStorage.ConversationType.FILE */;
@@ -950,13 +947,16 @@ export class AiAssistancePanel extends UI.Panel.Panel {
         this.#updateConversationState({ agent });
         const predefinedPrompt = opts?.['prompt'];
         if (predefinedPrompt && typeof predefinedPrompt === 'string') {
+            if (!this.#canExecuteQuery()) {
+                return;
+            }
             this.#imageInput = undefined;
             this.#isTextInputEmpty = true;
             Host.userMetrics.actionTaken(Host.UserMetrics.Action.AiAssistanceQuerySubmitted);
             if (this.#blockedByCrossOrigin) {
                 this.#handleNewChatRequest();
             }
-            void this.#startConversation(predefinedPrompt);
+            await this.#startConversation(predefinedPrompt);
         }
         else {
             this.#viewOutput.chatView?.focusTextInput();
@@ -1388,9 +1388,7 @@ export class ActionDelegate {
             case 'freestyler.main-menu':
             case 'drjones.network-floating-button':
             case 'drjones.network-panel-context':
-            case 'drjones.performance-panel-full-context':
             case 'drjones.performance-panel-context':
-            case 'drjones.performance-insight-context':
             case 'drjones.sources-floating-button':
             case 'drjones.sources-panel-context': {
                 void (async () => {
@@ -1406,7 +1404,7 @@ export class ActionDelegate {
                         UI.InspectorView.InspectorView.instance().setDrawerSize(minDrawerSize);
                     }
                     const widget = (await view.widget());
-                    widget.handleAction(actionId, opts);
+                    void widget.handleAction(actionId, opts);
                 })();
                 return true;
             }

@@ -1,14 +1,14 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-/* eslint-disable rulesdir/no-lit-render-outside-of-view */
+/* eslint-disable @devtools/no-lit-render-outside-of-view */
 import * as i18n from '../../../core/i18n/i18n.js';
 import * as Platform from '../../../core/platform/platform.js';
-import * as WindowBoundsService from '../../../services/window_bounds/window_bounds.js';
 import * as ComponentHelpers from '../../../ui/components/helpers/helpers.js';
 import * as RenderCoordinator from '../../../ui/components/render_coordinator/render_coordinator.js';
 import * as Lit from '../../../ui/lit/lit.js';
 import * as VisualLogging from '../../../ui/visual_logging/visual_logging.js';
+import * as UI from '../../legacy/legacy.js';
 import * as Buttons from '../buttons/buttons.js';
 import dialogStyles from './dialog.css.js';
 const { html } = Lit;
@@ -52,7 +52,6 @@ export class Dialog extends HTMLElement {
         horizontalAlignment: "center" /* DialogHorizontalAlignment.CENTER */,
         getConnectorCustomXPosition: null,
         dialogShownCallback: null,
-        windowBoundsService: WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance(),
         closeOnESC: true,
         closeOnScroll: true,
         closeButton: false,
@@ -80,7 +79,7 @@ export class Dialog extends HTMLElement {
         this.#forceDialogCloseInDevToolsBound();
     });
     #dialogResizeObserver = new ResizeObserver(this.#updateDialogBounds.bind(this));
-    #devToolsBoundingElement = this.windowBoundsService.getDevToolsBoundingElement();
+    #devToolsBoundingElement = UI.UIUtils.getDevToolsBoundingElement();
     // We bind here because we have to listen to keydowns on the entire window,
     // not on the Dialog element itself. This is because if the user has the
     // dialog open, but their focus is elsewhere, and they hit ESC, we should
@@ -111,14 +110,6 @@ export class Dialog extends HTMLElement {
     }
     set horizontalAlignment(alignment) {
         this.#props.horizontalAlignment = alignment;
-        this.#onStateChange();
-    }
-    get windowBoundsService() {
-        return this.#props.windowBoundsService;
-    }
-    set windowBoundsService(windowBoundsService) {
-        this.#props.windowBoundsService = windowBoundsService;
-        this.#devToolsBoundingElement = this.windowBoundsService.getDevToolsBoundingElement();
         this.#onStateChange();
     }
     get bestVerticalPosition() {
@@ -572,6 +563,10 @@ export class Dialog extends HTMLElement {
     `, this.#shadow, { host: this });
         VisualLogging.setMappedParent(this.#getDialog(), this.parentElementOrShadowHost());
         // clang-format on
+    }
+    setBoundingElementForTesting(element) {
+        this.#devToolsBoundingElement = element;
+        this.#onStateChange();
     }
 }
 customElements.define('devtools-dialog', Dialog);

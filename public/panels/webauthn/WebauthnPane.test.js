@@ -18,7 +18,6 @@ describeWithMockConnection('WebAuthn pane', () => {
         const residentKeys = panel.contentElement.querySelector('#resident-key');
         if (!largeBlob || !residentKeys) {
             assert.fail('Required checkbox not found');
-            return;
         }
         // Make sure resident keys is disabled. Large blob should be disabled and
         // unchecked.
@@ -64,7 +63,6 @@ describeWithMockConnection('WebAuthn pane', () => {
             const residentKeys = panel.contentElement.querySelector('#resident-key');
             if (!largeBlob || !residentKeys) {
                 assert.fail('Required checkbox not found');
-                return;
             }
             residentKeys.checked = true;
             residentKeys.dispatchEvent(new Event('change'));
@@ -87,7 +85,6 @@ describeWithMockConnection('WebAuthn pane', () => {
             const residentKeys = panel.contentElement.querySelector('#resident-key');
             if (!largeBlob || !residentKeys) {
                 assert.fail('Required checkbox not found');
-                return;
             }
             residentKeys.checked = true;
             residentKeys.dispatchEvent(new Event('change'));
@@ -118,10 +115,7 @@ describeWithMockConnection('WebAuthn pane', () => {
             await expectCalled(addAuthenticator);
             // Verify a data grid appeared with a single row to show there is no data.
             const dataGrid = panel.contentElement.querySelector('devtools-data-grid tbody');
-            if (!dataGrid) {
-                assert.fail('Expected dataGrid to be truthy');
-                return;
-            }
+            assert.exists(dataGrid);
             assert.include(dataGrid.deepInnerText(), 'No credentials');
             // Add a credential.
             const credential = {
@@ -173,10 +167,7 @@ describeWithMockConnection('WebAuthn pane', () => {
             await panel.updateComplete;
             // Verify the credential appeared.
             const dataGrid = panel.contentElement.querySelector('devtools-data-grid tbody');
-            if (!dataGrid) {
-                assert.fail('Expected dataGrid to be truthy');
-                return;
-            }
+            assert.exists(dataGrid);
             assert.include(dataGrid.deepInnerText(), Object.values(credential).join('\n'));
             // Update the credential.
             const updatedCredential1 = {
@@ -254,10 +245,7 @@ describeWithMockConnection('WebAuthn pane', () => {
             await panel.updateComplete;
             // Verify the credential appeared.
             const dataGrid = panel.contentElement.querySelector('devtools-data-grid tbody');
-            if (!dataGrid) {
-                assert.fail('Expected dataGrid to be truthy');
-                return;
-            }
+            assert.exists(dataGrid);
             assert.include(dataGrid.deepInnerText(), Object.values(credential).join('\n'));
             // Delete a credential with a different ID. This should be ignored.
             model.dispatchEventToListeners("CredentialDeleted" /* SDK.WebAuthnModel.Events.CREDENTIAL_DELETED */, {

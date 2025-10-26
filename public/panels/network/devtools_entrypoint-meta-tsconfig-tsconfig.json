@@ -56,6 +56,9 @@
       "path": "../../models/workspace/bundle-tsconfig.json"
     },
     {
+      "path": "../common/bundle-tsconfig.json"
+    },
+    {
       "path": "../../ui/legacy/bundle-tsconfig.json"
     },
     {

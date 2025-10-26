@@ -61,7 +61,7 @@ export function getMatchedStylesWithProperties(payload) {
     const matchedPayload = [ruleMatch(payload.selector ?? 'div', payload.properties, { range, origin, styleSheetId })];
     return getMatchedStylesWithStylesheet({ styleSheetId, origin, matchedPayload, ...payload });
 }
-export function getMatchedStyles(payload = {}, getEnvironmentVariablesCallback = () => ({})) {
+export function getMatchedStyles(payload = {}, getEnvironmentVariablesCallback = () => ({ environmentVariables: {} })) {
     clearMockConnectionResponseHandler('CSS.getEnvironmentVariables');
     setMockConnectionResponseHandler('CSS.getEnvironmentVariables', getEnvironmentVariablesCallback);
     let node = payload.node;

@@ -22,7 +22,7 @@ export type MockAidaResponse = Omit<Host.AidaClient.DoConversationResponse, 'com
  * Each second-level item of `data` is a chunk of a response.
  * The last chunk sets completed flag to true;
  */
-export declare function mockAidaClient(data?: Array<[MockAidaResponse, ...MockAidaResponse[]]>): Host.AidaClient.AidaClient;
+export declare function mockAidaClient(data?: Array<[MockAidaResponse, ...MockAidaResponse[]]>): sinon.SinonStubbedInstance<Host.AidaClient.AidaClient>;
 export declare function createUISourceCode(options?: {
     content?: string;
     mimeType?: string;

@@ -438,24 +438,30 @@ declare const CustomFunctionMatcher_base: {
 export declare class CustomFunctionMatcher extends CustomFunctionMatcher_base {
     matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): CustomFunctionMatch | null;
 }
-export declare class FlexGridMatch implements Match {
+export declare const enum LayoutType {
+    FLEX = "flex",
+    GRID = "grid",
+    MASONRY = "masonry"
+}
+export declare class FlexGridMasonryMatch implements Match {
     readonly text: string;
     readonly node: CodeMirror.SyntaxNode;
-    readonly isFlex: boolean;
-    constructor(text: string, node: CodeMirror.SyntaxNode, isFlex: boolean);
+    readonly layoutType: LayoutType;
+    constructor(text: string, node: CodeMirror.SyntaxNode, layoutType: LayoutType);
 }
-declare const FlexGridMatcher_base: {
+declare const FlexGridMasonryMatcher_base: {
     new (): {
-        matchType: Platform.Constructor.ConstructorOrAbstract<FlexGridMatch>;
+        matchType: Platform.Constructor.ConstructorOrAbstract<FlexGridMasonryMatch>;
         accepts(_propertyName: string): boolean;
-        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): FlexGridMatch | null;
+        matches(_node: CodeMirror.SyntaxNode, _matching: BottomUpTreeMatching): FlexGridMasonryMatch | null;
     };
 };
-export declare class FlexGridMatcher extends FlexGridMatcher_base {
+export declare class FlexGridMasonryMatcher extends FlexGridMasonryMatcher_base {
     static readonly FLEX: string[];
     static readonly GRID: string[];
+    static readonly MASONRY: string[];
     accepts(propertyName: string): boolean;
-    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): FlexGridMatch | null;
+    matches(node: CodeMirror.SyntaxNode, matching: BottomUpTreeMatching): FlexGridMasonryMatch | null;
 }
 export declare class GridTemplateMatch implements Match {
     readonly text: string;

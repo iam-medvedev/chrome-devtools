@@ -312,7 +312,7 @@ function renderTimelineArea(input, output) {
         // clang-format on
     }
     // clang-format off
-    /* eslint-disable rulesdir/no-deprecated-component-usages */
+    /* eslint-disable @devtools/no-deprecated-component-usages */
     return html `
         <devtools-split-view
           direction="auto"
@@ -371,7 +371,7 @@ function renderTimelineArea(input, output) {
           </div>
         </devtools-split-view>
       `;
-    /* eslint-enable rulesdir/no-deprecated-component-usages */
+    /* eslint-enable @devtools/no-deprecated-component-usages */
     // clang-format on
 }
 function renderTextEditor(input, output) {

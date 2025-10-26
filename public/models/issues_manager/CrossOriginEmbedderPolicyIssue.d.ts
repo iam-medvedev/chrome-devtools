@@ -5,7 +5,7 @@ import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare function isCrossOriginEmbedderPolicyIssue(reason: Protocol.Audits.BlockedByResponseReason): boolean;
 export declare class CrossOriginEmbedderPolicyIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.BlockedByResponseIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.BlockedByResponseIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     primaryKey(): string;
     getBlockedByResponseDetails(): Iterable<Protocol.Audits.BlockedByResponseIssueDetails>;
     requests(): Iterable<Protocol.Audits.AffectedRequest>;

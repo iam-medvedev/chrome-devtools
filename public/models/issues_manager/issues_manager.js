@@ -1919,6 +1919,10 @@ var UIStrings8 = {
    */
   V8SharedArrayBufferConstructedInExtensionWithoutIsolation: "Extensions should opt into cross-origin isolation to continue using `SharedArrayBuffer`. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/.",
   /**
+   * @description This warning occurs when the deprecated `BluetoothRemoteGATTCharacteristic.writeValue()` method is used. Developers should use `writeValueWithResponse()` or `writeValueWithoutResponse()` instead.
+   */
+  WebBluetoothRemoteCharacteristicWriteValue: "`BluetoothRemoteGATTCharacteristic.writeValue()` is deprecated. Use `writeValueWithResponse()` or `writeValueWithoutResponse()` instead.",
+  /**
    * @description Warning displayed to developers that they are using `XMLHttpRequest` API in a way that they expect an unsupported character encoding `UTF-16` could be used in the server reply.
    */
   XHRJSONEncodingDetection: "UTF-16 is not supported by response json in `XMLHttpRequest`",
@@ -2034,6 +2038,9 @@ var DEPRECATIONS_METADATA = {
   },
   "V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "milestone": 96
+  },
+  "WebBluetoothRemoteCharacteristicWriteValue": {
+    "chromeStatusFeature": 5088568590598144
   },
   "XHRJSONEncodingDetection": {
     "milestone": 93

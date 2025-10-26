@@ -38,12 +38,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const relatedInsights = new Map([
             [cssRequest, [{ insightLabel: 'Test insight', activateInsight: () => { }, messages: [] }]],
         ]);
-        await detailsView.setModel({
-            parsedTrace,
-            selectedEvents: null,
-            eventToRelatedInsightsMap: relatedInsights,
-            entityMapper: null
-        });
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: relatedInsights, entityMapper: null });
         await detailsView.setSelection(selection);
         await raf();
         const detailsContentElement = detailsView.getDetailsContentElementForTest();
@@ -53,12 +48,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'web-dev-with-commit.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         renderElementIntoDOM(detailsView);
-        await detailsView.setModel({
-            parsedTrace,
-            selectedEvents: null,
-            eventToRelatedInsightsMap: null,
-            entityMapper: null
-        });
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: null, entityMapper: null });
         const frame = parsedTrace.data.Frames.frames.at(0);
         assert.isOk(frame);
         const selection = Timeline.TimelineSelection.selectionFromEvent(frame);
@@ -76,12 +66,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         renderElementIntoDOM(detailsView);
-        await detailsView.setModel({
-            parsedTrace,
-            selectedEvents: null,
-            eventToRelatedInsightsMap: null,
-            entityMapper: null
-        });
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: null, entityMapper: null });
         const layoutShift = parsedTrace.data.LayoutShifts.clusters.at(0)?.events.at(0);
         assert.isOk(layoutShift);
         const selection = Timeline.TimelineSelection.selectionFromEvent(layoutShift);
@@ -96,12 +81,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
         const parsedTrace = await TraceLoader.traceEngine(this, 'shift-attribution.json.gz');
         const detailsView = new Timeline.TimelineDetailsView.TimelineDetailsPane(mockViewDelegate);
         renderElementIntoDOM(detailsView);
-        await detailsView.setModel({
-            parsedTrace,
-            selectedEvents: null,
-            eventToRelatedInsightsMap: null,
-            entityMapper: null
-        });
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: null, entityMapper: null });
         const layoutShiftCluster = parsedTrace.data.LayoutShifts.clusters.at(0);
         assert.isOk(layoutShiftCluster);
         const selection = Timeline.TimelineSelection.selectionFromEvent(layoutShiftCluster);
@@ -120,12 +100,7 @@ describeWithEnvironment('TimelineDetailsView', function () {
             return event.name === "EvaluateScript" /* Trace.Types.Events.Name.EVALUATE_SCRIPT */ && event.dur && event.dur > 2000;
         });
         assert.isOk(evalScriptEvent);
-        await detailsView.setModel({
-            parsedTrace,
-            selectedEvents: null,
-            eventToRelatedInsightsMap: null,
-            entityMapper: null
-        });
+        await detailsView.setModel({ parsedTrace, selectedEvents: null, eventToRelatedInsightsMap: null, entityMapper: null });
         const selection = Timeline.TimelineSelection.selectionFromEvent(evalScriptEvent);
         await detailsView.setSelection(selection);
         const detailsContentElement = detailsView.getDetailsContentElementForTest();

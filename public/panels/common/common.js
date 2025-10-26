@@ -5,11 +5,11 @@ var __export = (target, all) => {
 };
 
 // gen/front_end/panels/common/common.prebundle.js
-import * as Host6 from "./../../core/host/host.js";
-import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Host7 from "./../../core/host/host.js";
+import * as i18n17 from "./../../core/i18n/i18n.js";
 import * as Geometry2 from "./../../models/geometry/geometry.js";
 import * as Buttons4 from "./../../ui/components/buttons/buttons.js";
-import * as UI8 from "./../../ui/legacy/legacy.js";
+import * as UI11 from "./../../ui/legacy/legacy.js";
 
 // gen/front_end/panels/common/common.css.js
 var common_css_default = `/*
@@ -1356,7 +1356,6 @@ import * as Common3 from "./../../core/common/common.js";
 import * as Host5 from "./../../core/host/host.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Badges2 from "./../../models/badges/badges.js";
-import * as WindowBoundsService from "./../../services/window_bounds/window_bounds.js";
 import * as Buttons3 from "./../../ui/components/buttons/buttons.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as Lit2 from "./../../ui/lit/lit.js";
@@ -1574,7 +1573,7 @@ var BadgeNotification = class extends UI6.Widget.Widget {
   }
   #positionNotification() {
     const boundingRect = this.contentElement.getBoundingClientRect();
-    const container = WindowBoundsService.WindowBoundsService.WindowBoundsServiceImpl.instance().getDevToolsBoundingElement();
+    const container = UI6.UIUtils.getDevToolsBoundingElement();
     this.contentElement.positionAt(LEFT_OFFSET, container.clientHeight - boundingRect.height - BOTTOM_OFFSET, container);
   }
   #show(properties) {
@@ -1717,20 +1716,1616 @@ var BadgeNotification = class extends UI6.Widget.Widget {
   }
 };
 
+// gen/front_end/panels/common/ExtensionPanel.js
+var ExtensionPanel_exports = {};
+__export(ExtensionPanel_exports, {
+  ExtensionButton: () => ExtensionButton,
+  ExtensionPanel: () => ExtensionPanel,
+  ExtensionSidebarPane: () => ExtensionSidebarPane
+});
+import * as Platform2 from "./../../core/platform/platform.js";
+import * as SDK from "./../../core/sdk/sdk.js";
+import * as Extensions from "./../../models/extensions/extensions.js";
+import * as UI8 from "./../../ui/legacy/legacy.js";
+
+// gen/front_end/panels/common/ExtensionView.js
+var ExtensionView_exports = {};
+__export(ExtensionView_exports, {
+  ExtensionNotifierView: () => ExtensionNotifierView,
+  ExtensionView: () => ExtensionView
+});
+import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as Lit3 from "./../../ui/lit/lit.js";
+var { render: render7, html: html7, Directives: { ref } } = Lit3;
+var DEFAULT_VIEW4 = (input, output, target) => {
+  render7(html7`<iframe
+    ${ref((element) => {
+    output.iframe = element;
+  })}
+    src=${input.src}
+    class=${input.className}
+    @load=${input.onLoad}></iframe>`, target);
+};
+var ExtensionView = class extends UI7.Widget.Widget {
+  #server;
+  #id;
+  #src;
+  #className;
+  #iframe;
+  #frameIndex;
+  #view;
+  constructor(server, id, src, className, view = DEFAULT_VIEW4) {
+    super();
+    this.#view = view;
+    this.#server = server;
+    this.#src = src;
+    this.#className = className;
+    this.#id = id;
+    this.setHideOnDetach();
+    void this.performUpdate();
+  }
+  performUpdate() {
+    const output = {};
+    this.#view({
+      src: this.#src,
+      className: this.#className,
+      onLoad: this.onLoad.bind(this)
+    }, output, this.element);
+    if (output.iframe) {
+      this.#iframe = output.iframe;
+    }
+  }
+  wasShown() {
+    super.wasShown();
+    if (typeof this.#frameIndex === "number") {
+      this.#server.notifyViewShown(this.#id, this.#frameIndex);
+    }
+  }
+  willHide() {
+    super.willHide();
+    if (typeof this.#frameIndex === "number") {
+      this.#server.notifyViewHidden(this.#id);
+    }
+  }
+  onLoad() {
+    if (!this.#iframe) {
+      return;
+    }
+    const frames = window.frames;
+    this.#frameIndex = Array.prototype.indexOf.call(frames, this.#iframe.contentWindow);
+    if (this.isShowing()) {
+      this.#server.notifyViewShown(this.#id, this.#frameIndex);
+    }
+  }
+};
+var ExtensionNotifierView = class extends UI7.Widget.VBox {
+  server;
+  id;
+  constructor(server, id) {
+    super();
+    this.server = server;
+    this.id = id;
+  }
+  wasShown() {
+    super.wasShown();
+    this.server.notifyViewShown(this.id);
+  }
+  willHide() {
+    super.willHide();
+    this.server.notifyViewHidden(this.id);
+  }
+};
+
+// gen/front_end/panels/common/ExtensionPanel.js
+var ExtensionPanel = class extends UI8.Panel.Panel {
+  server;
+  id;
+  panelToolbar;
+  #searchableView;
+  constructor(server, panelName, id, pageURL) {
+    super(panelName);
+    this.server = server;
+    this.id = id;
+    this.setHideOnDetach();
+    this.panelToolbar = this.element.createChild("devtools-toolbar", "hidden");
+    this.#searchableView = new UI8.SearchableView.SearchableView(this, null);
+    this.#searchableView.show(this.element);
+    const extensionView = new ExtensionView(server, this.id, pageURL, "extension");
+    extensionView.show(this.#searchableView.element);
+  }
+  addToolbarItem(item2) {
+    this.panelToolbar.classList.remove("hidden");
+    this.panelToolbar.appendToolbarItem(item2);
+  }
+  onSearchCanceled() {
+    this.server.notifySearchAction(
+      this.id,
+      "cancelSearch"
+      /* Extensions.ExtensionAPI.PrivateAPI.Panels.SearchAction.CancelSearch */
+    );
+    this.#searchableView.updateSearchMatchesCount(0);
+  }
+  searchableView() {
+    return this.#searchableView;
+  }
+  performSearch(searchConfig, _shouldJump, _jumpBackwards) {
+    const query = searchConfig.query;
+    this.server.notifySearchAction(this.id, "performSearch", query);
+  }
+  jumpToNextSearchResult() {
+    this.server.notifySearchAction(
+      this.id,
+      "nextSearchResult"
+      /* Extensions.ExtensionAPI.PrivateAPI.Panels.SearchAction.NextSearchResult */
+    );
+  }
+  jumpToPreviousSearchResult() {
+    this.server.notifySearchAction(
+      this.id,
+      "previousSearchResult"
+      /* Extensions.ExtensionAPI.PrivateAPI.Panels.SearchAction.PreviousSearchResult */
+    );
+  }
+  supportsCaseSensitiveSearch() {
+    return false;
+  }
+  supportsWholeWordSearch() {
+    return false;
+  }
+  supportsRegexSearch() {
+    return false;
+  }
+};
+var ExtensionButton = class {
+  id;
+  #toolbarButton;
+  constructor(server, id, iconURL, tooltip, disabled) {
+    this.id = id;
+    this.#toolbarButton = new UI8.Toolbar.ToolbarButton("", "");
+    this.#toolbarButton.addEventListener("Click", server.notifyButtonClicked.bind(server, this.id));
+    this.update(iconURL, tooltip, disabled);
+  }
+  update(iconURL, tooltip, disabled) {
+    if (typeof iconURL === "string") {
+      this.#toolbarButton.setBackgroundImage(iconURL);
+    }
+    if (typeof tooltip === "string") {
+      this.#toolbarButton.setTitle(tooltip);
+    }
+    if (typeof disabled === "boolean") {
+      this.#toolbarButton.setEnabled(!disabled);
+    }
+  }
+  toolbarButton() {
+    return this.#toolbarButton;
+  }
+};
+var ExtensionSidebarPane = class extends UI8.View.SimpleView {
+  #panelName;
+  server;
+  #id;
+  extensionView;
+  objectPropertiesView;
+  constructor(server, panelName, title, id) {
+    const viewId = Platform2.StringUtilities.toKebabCase(title);
+    super({ title, viewId });
+    this.element.classList.add("fill");
+    this.#panelName = panelName;
+    this.server = server;
+    this.#id = id;
+  }
+  id() {
+    return this.#id;
+  }
+  panelName() {
+    return this.#panelName;
+  }
+  setObject(object, title, callback) {
+    this.createObjectPropertiesView();
+    this.#setObject(SDK.RemoteObject.RemoteObject.fromLocalObject(object), title, callback);
+  }
+  setExpression(expression, title, evaluateOptions, securityOrigin, callback) {
+    this.createObjectPropertiesView();
+    this.server.evaluate(expression, true, false, evaluateOptions, securityOrigin, this.onEvaluate.bind(this, title, callback));
+  }
+  setPage(url) {
+    if (this.objectPropertiesView) {
+      this.objectPropertiesView.detach();
+      delete this.objectPropertiesView;
+    }
+    if (this.extensionView) {
+      this.extensionView.detach(true);
+    }
+    this.extensionView = new ExtensionView(this.server, this.#id, url, "extension fill");
+    this.extensionView.show(this.element);
+    if (!this.element.style.height) {
+      this.setHeight("150px");
+    }
+  }
+  setHeight(height) {
+    this.element.style.height = height;
+  }
+  onEvaluate(title, callback, error, result, _wasThrown) {
+    if (error) {
+      callback(error.toString());
+    } else if (!result) {
+      callback();
+    } else {
+      this.#setObject(result, title, callback);
+    }
+  }
+  createObjectPropertiesView() {
+    if (this.objectPropertiesView) {
+      return;
+    }
+    if (this.extensionView) {
+      this.extensionView.detach(true);
+      delete this.extensionView;
+    }
+    this.objectPropertiesView = new ExtensionNotifierView(this.server, this.#id);
+    this.objectPropertiesView.show(this.element);
+  }
+  #setObject(object, title, callback) {
+    const objectPropertiesView = this.objectPropertiesView;
+    if (!objectPropertiesView) {
+      callback("operation cancelled");
+      return;
+    }
+    objectPropertiesView.element.removeChildren();
+    void UI8.UIUtils.Renderer.render(object, { title, editable: false, expand: true }).then((result) => {
+      if (!result) {
+        callback();
+        return;
+      }
+      objectPropertiesView.element.appendChild(result.element);
+      callback();
+    });
+  }
+};
+
+// gen/front_end/panels/common/ExtensionServer.js
+var ExtensionServer_exports = {};
+__export(ExtensionServer_exports, {
+  ExtensionServer: () => ExtensionServer,
+  ExtensionStatus: () => ExtensionStatus,
+  HostsPolicy: () => HostsPolicy,
+  RevealableNetworkRequestFilter: () => RevealableNetworkRequestFilter
+});
+import * as Common4 from "./../../core/common/common.js";
+import * as Host6 from "./../../core/host/host.js";
+import * as i18n13 from "./../../core/i18n/i18n.js";
+import * as Platform3 from "./../../core/platform/platform.js";
+import * as SDK2 from "./../../core/sdk/sdk.js";
+import * as Bindings from "./../../models/bindings/bindings.js";
+import * as Extensions2 from "./../../models/extensions/extensions.js";
+import * as HAR from "./../../models/har/har.js";
+import * as Logs from "./../../models/logs/logs.js";
+import * as TextUtils from "./../../models/text_utils/text_utils.js";
+import * as Workspace from "./../../models/workspace/workspace.js";
+import * as Components from "./../../ui/legacy/components/utils/utils.js";
+import * as UI9 from "./../../ui/legacy/legacy.js";
+import * as ThemeSupport from "./../../ui/legacy/theme_support/theme_support.js";
+var extensionOrigins = /* @__PURE__ */ new WeakMap();
+var kPermittedSchemes = ["http:", "https:", "file:", "data:", "chrome-extension:", "about:"];
+var extensionServerInstance;
+var HostsPolicy = class _HostsPolicy {
+  runtimeAllowedHosts;
+  runtimeBlockedHosts;
+  static create(policy) {
+    const runtimeAllowedHosts = [];
+    const runtimeBlockedHosts = [];
+    if (policy) {
+      for (const pattern of policy.runtimeAllowedHosts) {
+        const parsedPattern = Extensions2.HostUrlPattern.HostUrlPattern.parse(pattern);
+        if (!parsedPattern) {
+          return null;
+        }
+        runtimeAllowedHosts.push(parsedPattern);
+      }
+      for (const pattern of policy.runtimeBlockedHosts) {
+        const parsedPattern = Extensions2.HostUrlPattern.HostUrlPattern.parse(pattern);
+        if (!parsedPattern) {
+          return null;
+        }
+        runtimeBlockedHosts.push(parsedPattern);
+      }
+    }
+    return new _HostsPolicy(runtimeAllowedHosts, runtimeBlockedHosts);
+  }
+  constructor(runtimeAllowedHosts, runtimeBlockedHosts) {
+    this.runtimeAllowedHosts = runtimeAllowedHosts;
+    this.runtimeBlockedHosts = runtimeBlockedHosts;
+  }
+  isAllowedOnURL(inspectedURL) {
+    if (!inspectedURL) {
+      return this.runtimeBlockedHosts.length === 0;
+    }
+    if (this.runtimeBlockedHosts.some((pattern) => pattern.matchesUrl(inspectedURL)) && !this.runtimeAllowedHosts.some((pattern) => pattern.matchesUrl(inspectedURL))) {
+      return false;
+    }
+    return true;
+  }
+};
+var RegisteredExtension = class {
+  name;
+  hostsPolicy;
+  allowFileAccess;
+  openResourceScheme = null;
+  constructor(name, hostsPolicy, allowFileAccess) {
+    this.name = name;
+    this.hostsPolicy = hostsPolicy;
+    this.allowFileAccess = allowFileAccess;
+  }
+  isAllowedOnTarget(inspectedURL) {
+    if (!inspectedURL) {
+      inspectedURL = SDK2.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL();
+    }
+    if (!inspectedURL) {
+      return false;
+    }
+    if (this.openResourceScheme && inspectedURL.startsWith(this.openResourceScheme)) {
+      return true;
+    }
+    if (!ExtensionServer.canInspectURL(inspectedURL)) {
+      return false;
+    }
+    if (!this.hostsPolicy.isAllowedOnURL(inspectedURL)) {
+      return false;
+    }
+    if (!this.allowFileAccess) {
+      let parsedURL;
+      try {
+        parsedURL = new URL(inspectedURL);
+      } catch {
+        return false;
+      }
+      return parsedURL.protocol !== "file:";
+    }
+    return true;
+  }
+};
+var RevealableNetworkRequestFilter = class {
+  filter;
+  constructor(filter) {
+    this.filter = filter;
+  }
+};
+var ExtensionServer = class _ExtensionServer extends Common4.ObjectWrapper.ObjectWrapper {
+  clientObjects;
+  handlers;
+  subscribers;
+  subscriptionStartHandlers;
+  subscriptionStopHandlers;
+  extraHeaders;
+  requests;
+  requestIds;
+  lastRequestId;
+  registeredExtensions;
+  status;
+  #sidebarPanes;
+  extensionsEnabled;
+  inspectedTabId;
+  extensionAPITestHook;
+  themeChangeHandlers = /* @__PURE__ */ new Map();
+  #pendingExtensions = [];
+  constructor() {
+    super();
+    this.clientObjects = /* @__PURE__ */ new Map();
+    this.handlers = /* @__PURE__ */ new Map();
+    this.subscribers = /* @__PURE__ */ new Map();
+    this.subscriptionStartHandlers = /* @__PURE__ */ new Map();
+    this.subscriptionStopHandlers = /* @__PURE__ */ new Map();
+    this.extraHeaders = /* @__PURE__ */ new Map();
+    this.requests = /* @__PURE__ */ new Map();
+    this.requestIds = /* @__PURE__ */ new Map();
+    this.lastRequestId = 0;
+    this.registeredExtensions = /* @__PURE__ */ new Map();
+    this.status = new ExtensionStatus();
+    this.#sidebarPanes = [];
+    this.extensionsEnabled = true;
+    this.registerHandler("addRequestHeaders", this.onAddRequestHeaders.bind(this));
+    this.registerHandler("createPanel", this.onCreatePanel.bind(this));
+    this.registerHandler("createSidebarPane", this.onCreateSidebarPane.bind(this));
+    this.registerHandler("createToolbarButton", this.onCreateToolbarButton.bind(this));
+    this.registerHandler("evaluateOnInspectedPage", this.onEvaluateOnInspectedPage.bind(this));
+    this.registerHandler("_forwardKeyboardEvent", this.onForwardKeyboardEvent.bind(this));
+    this.registerHandler("getHAR", this.onGetHAR.bind(this));
+    this.registerHandler("getPageResources", this.onGetPageResources.bind(this));
+    this.registerHandler("getRequestContent", this.onGetRequestContent.bind(this));
+    this.registerHandler("getResourceContent", this.onGetResourceContent.bind(this));
+    this.registerHandler("Reload", this.onReload.bind(this));
+    this.registerHandler("setOpenResourceHandler", this.onSetOpenResourceHandler.bind(this));
+    this.registerHandler("setThemeChangeHandler", this.onSetThemeChangeHandler.bind(this));
+    this.registerHandler("setResourceContent", this.onSetResourceContent.bind(this));
+    this.registerHandler("attachSourceMapToResource", this.onAttachSourceMapToResource.bind(this));
+    this.registerHandler("setSidebarHeight", this.onSetSidebarHeight.bind(this));
+    this.registerHandler("setSidebarContent", this.onSetSidebarContent.bind(this));
+    this.registerHandler("setSidebarPage", this.onSetSidebarPage.bind(this));
+    this.registerHandler("showPanel", this.onShowPanel.bind(this));
+    this.registerHandler("subscribe", this.onSubscribe.bind(this));
+    this.registerHandler("openResource", this.onOpenResource.bind(this));
+    this.registerHandler("unsubscribe", this.onUnsubscribe.bind(this));
+    this.registerHandler("updateButton", this.onUpdateButton.bind(this));
+    this.registerHandler("registerLanguageExtensionPlugin", this.registerLanguageExtensionEndpoint.bind(this));
+    this.registerHandler("getWasmLinearMemory", this.onGetWasmLinearMemory.bind(this));
+    this.registerHandler("getWasmGlobal", this.onGetWasmGlobal.bind(this));
+    this.registerHandler("getWasmLocal", this.onGetWasmLocal.bind(this));
+    this.registerHandler("getWasmOp", this.onGetWasmOp.bind(this));
+    this.registerHandler("registerRecorderExtensionPlugin", this.registerRecorderExtensionEndpoint.bind(this));
+    this.registerHandler("reportResourceLoad", this.onReportResourceLoad.bind(this));
+    this.registerHandler("setFunctionRangesForScript", this.onSetFunctionRangesForScript.bind(this));
+    this.registerHandler("createRecorderView", this.onCreateRecorderView.bind(this));
+    this.registerHandler("showRecorderView", this.onShowRecorderView.bind(this));
+    this.registerHandler("showNetworkPanel", this.onShowNetworkPanel.bind(this));
+    window.addEventListener("message", this.onWindowMessage, false);
+    const existingTabId = window.DevToolsAPI?.getInspectedTabId?.();
+    if (existingTabId) {
+      this.setInspectedTabId({ data: existingTabId });
+    }
+    Host6.InspectorFrontendHost.InspectorFrontendHostInstance.events.addEventListener(Host6.InspectorFrontendHostAPI.Events.SetInspectedTabId, this.setInspectedTabId, this);
+    this.initExtensions();
+    ThemeSupport.ThemeSupport.instance().addEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
+  }
+  get isEnabledForTest() {
+    return this.extensionsEnabled;
+  }
+  dispose() {
+    ThemeSupport.ThemeSupport.instance().removeEventListener(ThemeSupport.ThemeChangeEvent.eventName, this.#onThemeChange);
+    SDK2.TargetManager.TargetManager.instance().removeEventListener("InspectedURLChanged", this.inspectedURLChanged, this);
+    Host6.InspectorFrontendHost.InspectorFrontendHostInstance.events.removeEventListener(Host6.InspectorFrontendHostAPI.Events.SetInspectedTabId, this.setInspectedTabId, this);
+    window.removeEventListener("message", this.onWindowMessage, false);
+  }
+  #onThemeChange = () => {
+    const themeName = ThemeSupport.ThemeSupport.instance().themeName();
+    for (const port of this.themeChangeHandlers.values()) {
+      port.postMessage({ command: "host-theme-change", themeName });
+    }
+  };
+  static instance(opts = { forceNew: null }) {
+    const { forceNew } = opts;
+    if (!extensionServerInstance || forceNew) {
+      extensionServerInstance?.dispose();
+      extensionServerInstance = new _ExtensionServer();
+    }
+    return extensionServerInstance;
+  }
+  initializeExtensions() {
+    if (this.inspectedTabId !== null) {
+      Host6.InspectorFrontendHost.InspectorFrontendHostInstance.setAddExtensionCallback(this.addExtension.bind(this));
+    }
+  }
+  hasExtensions() {
+    return Boolean(this.registeredExtensions.size);
+  }
+  notifySearchAction(panelId, action3, searchString) {
+    this.postNotification("panel-search-" + panelId, [action3, searchString]);
+  }
+  notifyViewShown(identifier, frameIndex) {
+    this.postNotification("view-shown-" + identifier, [frameIndex]);
+  }
+  notifyViewHidden(identifier) {
+    this.postNotification("view-hidden," + identifier, []);
+  }
+  notifyButtonClicked(identifier) {
+    this.postNotification("button-clicked-" + identifier, []);
+  }
+  profilingStarted() {
+    this.postNotification("profiling-started-", []);
+  }
+  profilingStopped() {
+    this.postNotification("profiling-stopped-", []);
+  }
+  registerLanguageExtensionEndpoint(message, _shared_port) {
+    if (message.command !== "registerLanguageExtensionPlugin") {
+      return this.status.E_BADARG("command", `expected ${"registerLanguageExtensionPlugin"}`);
+    }
+    const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const { pluginName, port, supportedScriptTypes: { language, symbol_types } } = message;
+    const symbol_types_array = Array.isArray(symbol_types) && symbol_types.every((e) => typeof e === "string") ? symbol_types : [];
+    const extensionOrigin = this.getExtensionOrigin(_shared_port);
+    const registration = this.registeredExtensions.get(extensionOrigin);
+    if (!registration) {
+      throw new Error("Received a message from an unregistered extension");
+    }
+    const endpoint = new Extensions2.LanguageExtensionEndpoint.LanguageExtensionEndpoint(registration.allowFileAccess, extensionOrigin, pluginName, { language, symbol_types: symbol_types_array }, port);
+    pluginManager.addPlugin(endpoint);
+    return this.status.OK();
+  }
+  async loadWasmValue(expectValue, convert, expression, stopId) {
+    const { pluginManager } = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const callFrame = pluginManager.callFrameForStopId(stopId);
+    if (!callFrame) {
+      return this.status.E_BADARG("stopId", "Unknown stop id");
+    }
+    const result = await callFrame.debuggerModel.agent.invoke_evaluateOnCallFrame({
+      callFrameId: callFrame.id,
+      expression,
+      silent: true,
+      returnByValue: !expectValue,
+      generatePreview: expectValue,
+      throwOnSideEffect: true
+    });
+    if (!result.exceptionDetails && !result.getError()) {
+      return convert(result.result);
+    }
+    return this.status.E_FAILED("Failed");
+  }
+  async onGetWasmLinearMemory(message) {
+    if (message.command !== "getWasmLinearMemory") {
+      return this.status.E_BADARG("command", `expected ${"getWasmLinearMemory"}`);
+    }
+    return await this.loadWasmValue(false, (result) => result.value, `[].slice.call(new Uint8Array(memories[0].buffer, ${Number(message.offset)}, ${Number(message.length)}))`, message.stopId);
+  }
+  convertWasmValue(valueClass, index) {
+    return (obj) => {
+      if (obj.type === "undefined") {
+        return;
+      }
+      if (obj.type !== "object" || obj.subtype !== "wasmvalue") {
+        return this.status.E_FAILED("Bad object type");
+      }
+      const type = obj?.description;
+      const value = obj.preview?.properties?.find((o) => o.name === "value")?.value ?? "";
+      switch (type) {
+        case "i32":
+        case "f32":
+        case "f64":
+          return { type, value: Number(value) };
+        case "i64":
+          return { type, value: BigInt(value.replace(/n$/, "")) };
+        case "v128":
+          return { type, value };
+        default:
+          return { type: "reftype", valueClass, index };
+      }
+    };
+  }
+  async onGetWasmGlobal(message) {
+    if (message.command !== "getWasmGlobal") {
+      return this.status.E_BADARG("command", `expected ${"getWasmGlobal"}`);
+    }
+    const global = Number(message.global);
+    const result = await this.loadWasmValue(true, this.convertWasmValue("global", global), `globals[${global}]`, message.stopId);
+    return result ?? this.status.E_BADARG("global", `No global with index ${global}`);
+  }
+  async onGetWasmLocal(message) {
+    if (message.command !== "getWasmLocal") {
+      return this.status.E_BADARG("command", `expected ${"getWasmLocal"}`);
+    }
+    const local = Number(message.local);
+    const result = await this.loadWasmValue(true, this.convertWasmValue("local", local), `locals[${local}]`, message.stopId);
+    return result ?? this.status.E_BADARG("local", `No local with index ${local}`);
+  }
+  async onGetWasmOp(message) {
+    if (message.command !== "getWasmOp") {
+      return this.status.E_BADARG("command", `expected ${"getWasmOp"}`);
+    }
+    const op = Number(message.op);
+    const result = await this.loadWasmValue(true, this.convertWasmValue("operand", op), `stack[${op}]`, message.stopId);
+    return result ?? this.status.E_BADARG("op", `No operand with index ${op}`);
+  }
+  registerRecorderExtensionEndpoint(message, _shared_port) {
+    if (message.command !== "registerRecorderExtensionPlugin") {
+      return this.status.E_BADARG("command", `expected ${"registerRecorderExtensionPlugin"}`);
+    }
+    const { pluginName, mediaType, port, capabilities } = message;
+    Extensions2.RecorderPluginManager.RecorderPluginManager.instance().addPlugin(new Extensions2.RecorderExtensionEndpoint.RecorderExtensionEndpoint(pluginName, port, capabilities, mediaType));
+    return this.status.OK();
+  }
+  onReportResourceLoad(message) {
+    if (message.command !== "reportResourceLoad") {
+      return this.status.E_BADARG("command", `expected ${"reportResourceLoad"}`);
+    }
+    const { resourceUrl, extensionId, status } = message;
+    const url = resourceUrl;
+    const initiator = { target: null, frameId: null, initiatorUrl: extensionId, extensionId };
+    const pageResource = {
+      url,
+      initiator,
+      errorMessage: status.errorMessage,
+      success: status.success ?? null,
+      size: status.size ?? null,
+      duration: null
+    };
+    SDK2.PageResourceLoader.PageResourceLoader.instance().resourceLoadedThroughExtension(pageResource);
+    return this.status.OK();
+  }
+  onSetFunctionRangesForScript(message, port) {
+    if (message.command !== "setFunctionRangesForScript") {
+      return this.status.E_BADARG("command", `expected ${"setFunctionRangesForScript"}`);
+    }
+    const { scriptUrl, ranges } = message;
+    if (!scriptUrl || !ranges?.length) {
+      return this.status.E_BADARG("command", "expected valid scriptUrl and non-empty NamedFunctionRanges");
+    }
+    const resource = this.lookupAllowedUISourceCode(scriptUrl, port);
+    if ("error" in resource) {
+      return resource.error;
+    }
+    const { uiSourceCode } = resource;
+    if (!uiSourceCode.contentType().isScript() || !uiSourceCode.contentType().isFromSourceMap()) {
+      return this.status.E_BADARG("command", `expected a source map script resource for url: ${scriptUrl}`);
+    }
+    try {
+      Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().setFunctionRanges(uiSourceCode, ranges);
+    } catch (e) {
+      return this.status.E_FAILED(e);
+    }
+    return this.status.OK();
+  }
+  onShowRecorderView(message) {
+    if (message.command !== "showRecorderView") {
+      return this.status.E_BADARG("command", `expected ${"showRecorderView"}`);
+    }
+    Extensions2.RecorderPluginManager.RecorderPluginManager.instance().showView(message.id);
+    return void 0;
+  }
+  onShowNetworkPanel(message) {
+    if (message.command !== "showNetworkPanel") {
+      return this.status.E_BADARG("command", `expected ${"showNetworkPanel"}`);
+    }
+    void Common4.Revealer.reveal(new RevealableNetworkRequestFilter(message.filter));
+    return this.status.OK();
+  }
+  onCreateRecorderView(message, port) {
+    if (message.command !== "createRecorderView") {
+      return this.status.E_BADARG("command", `expected ${"createRecorderView"}`);
+    }
+    const id = message.id;
+    if (this.clientObjects.has(id)) {
+      return this.status.E_EXISTS(id);
+    }
+    const pagePath = _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.pagePath);
+    if (pagePath === void 0) {
+      return this.status.E_BADARG("pagePath", "Resources paths cannot point to non-extension resources");
+    }
+    const onShown = () => this.notifyViewShown(id);
+    const onHidden = () => this.notifyViewHidden(id);
+    Extensions2.RecorderPluginManager.RecorderPluginManager.instance().registerView({
+      id,
+      pagePath,
+      title: message.title,
+      onShown,
+      onHidden
+    });
+    return this.status.OK();
+  }
+  inspectedURLChanged(event) {
+    if (!_ExtensionServer.canInspectURL(event.data.inspectedURL())) {
+      this.disableExtensions();
+      return;
+    }
+    if (event.data !== SDK2.TargetManager.TargetManager.instance().primaryPageTarget()) {
+      return;
+    }
+    this.requests = /* @__PURE__ */ new Map();
+    this.enableExtensions();
+    const url = event.data.inspectedURL();
+    this.postNotification("inspected-url-changed", [url]);
+    const extensions = this.#pendingExtensions.splice(0);
+    extensions.forEach((e) => this.addExtension(e));
+  }
+  hasSubscribers(type) {
+    return this.subscribers.has(type);
+  }
+  postNotification(type, args, filter) {
+    if (!this.extensionsEnabled) {
+      return;
+    }
+    const subscribers = this.subscribers.get(type);
+    if (!subscribers) {
+      return;
+    }
+    const message = { command: "notify-" + type, arguments: args };
+    for (const subscriber of subscribers) {
+      if (!this.extensionEnabled(subscriber)) {
+        continue;
+      }
+      if (filter) {
+        const origin = extensionOrigins.get(subscriber);
+        const extension = origin && this.registeredExtensions.get(origin);
+        if (!extension || !filter(extension)) {
+          continue;
+        }
+      }
+      subscriber.postMessage(message);
+    }
+  }
+  onSubscribe(message, port) {
+    if (message.command !== "subscribe") {
+      return this.status.E_BADARG("command", `expected ${"subscribe"}`);
+    }
+    const subscribers = this.subscribers.get(message.type);
+    if (subscribers) {
+      subscribers.add(port);
+    } else {
+      this.subscribers.set(message.type, /* @__PURE__ */ new Set([port]));
+      const handler = this.subscriptionStartHandlers.get(message.type);
+      if (handler) {
+        handler();
+      }
+    }
+    return void 0;
+  }
+  onUnsubscribe(message, port) {
+    if (message.command !== "unsubscribe") {
+      return this.status.E_BADARG("command", `expected ${"unsubscribe"}`);
+    }
+    const subscribers = this.subscribers.get(message.type);
+    if (!subscribers) {
+      return;
+    }
+    subscribers.delete(port);
+    if (!subscribers.size) {
+      this.subscribers.delete(message.type);
+      const handler = this.subscriptionStopHandlers.get(message.type);
+      if (handler) {
+        handler();
+      }
+    }
+    return void 0;
+  }
+  onAddRequestHeaders(message) {
+    if (message.command !== "addRequestHeaders") {
+      return this.status.E_BADARG("command", `expected ${"addRequestHeaders"}`);
+    }
+    const id = message.extensionId;
+    if (typeof id !== "string") {
+      return this.status.E_BADARGTYPE("extensionId", typeof id, "string");
+    }
+    let extensionHeaders = this.extraHeaders.get(id);
+    if (!extensionHeaders) {
+      extensionHeaders = /* @__PURE__ */ new Map();
+      this.extraHeaders.set(id, extensionHeaders);
+    }
+    for (const name in message.headers) {
+      extensionHeaders.set(name, message.headers[name]);
+    }
+    const allHeaders = {};
+    for (const headers of this.extraHeaders.values()) {
+      for (const [name, value] of headers) {
+        if (name !== "__proto__" && typeof value === "string") {
+          allHeaders[name] = value;
+        }
+      }
+    }
+    SDK2.NetworkManager.MultitargetNetworkManager.instance().setExtraHTTPHeaders(allHeaders);
+    return void 0;
+  }
+  getExtensionOrigin(port) {
+    const origin = extensionOrigins.get(port);
+    if (!origin) {
+      throw new Error("Received a message from an unregistered extension");
+    }
+    return origin;
+  }
+  onCreatePanel(message, port) {
+    if (message.command !== "createPanel") {
+      return this.status.E_BADARG("command", `expected ${"createPanel"}`);
+    }
+    const id = message.id;
+    if (this.clientObjects.has(id) || UI9.InspectorView.InspectorView.instance().hasPanel(id)) {
+      return this.status.E_EXISTS(id);
+    }
+    const page = _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.page);
+    if (page === void 0) {
+      return this.status.E_BADARG("page", "Resources paths cannot point to non-extension resources");
+    }
+    let persistentId = this.getExtensionOrigin(port) + message.title;
+    persistentId = persistentId.replace(/\s|:\d+/g, "");
+    const panelView = new ExtensionServerPanelView(persistentId, i18n13.i18n.lockedString(message.title), new ExtensionPanel(this, persistentId, id, page));
+    this.clientObjects.set(id, panelView);
+    UI9.InspectorView.InspectorView.instance().addPanel(panelView);
+    return this.status.OK();
+  }
+  onShowPanel(message) {
+    if (message.command !== "showPanel") {
+      return this.status.E_BADARG("command", `expected ${"showPanel"}`);
+    }
+    let panelViewId = message.id;
+    const panelView = this.clientObjects.get(message.id);
+    if (panelView && panelView instanceof ExtensionServerPanelView) {
+      panelViewId = panelView.viewId();
+    }
+    void UI9.InspectorView.InspectorView.instance().showPanel(panelViewId);
+    return void 0;
+  }
+  onCreateToolbarButton(message, port) {
+    if (message.command !== "createToolbarButton") {
+      return this.status.E_BADARG("command", `expected ${"createToolbarButton"}`);
+    }
+    const panelView = this.clientObjects.get(message.panel);
+    if (!panelView || !(panelView instanceof ExtensionServerPanelView)) {
+      return this.status.E_NOTFOUND(message.panel);
+    }
+    const resourcePath = _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.icon);
+    if (resourcePath === void 0) {
+      return this.status.E_BADARG("icon", "Resources paths cannot point to non-extension resources");
+    }
+    const button = new ExtensionButton(this, message.id, resourcePath, message.tooltip, message.disabled);
+    this.clientObjects.set(message.id, button);
+    void panelView.widget().then(appendButton);
+    function appendButton(panel) {
+      panel.addToolbarItem(button.toolbarButton());
+    }
+    return this.status.OK();
+  }
+  onUpdateButton(message, port) {
+    if (message.command !== "updateButton") {
+      return this.status.E_BADARG("command", `expected ${"updateButton"}`);
+    }
+    const button = this.clientObjects.get(message.id);
+    if (!button || !(button instanceof ExtensionButton)) {
+      return this.status.E_NOTFOUND(message.id);
+    }
+    const resourcePath = message.icon && _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.icon);
+    if (message.icon && resourcePath === void 0) {
+      return this.status.E_BADARG("icon", "Resources paths cannot point to non-extension resources");
+    }
+    button.update(resourcePath, message.tooltip, message.disabled);
+    return this.status.OK();
+  }
+  onCreateSidebarPane(message) {
+    if (message.command !== "createSidebarPane") {
+      return this.status.E_BADARG("command", `expected ${"createSidebarPane"}`);
+    }
+    const id = message.id;
+    const sidebar = new ExtensionSidebarPane(this, message.panel, i18n13.i18n.lockedString(message.title), id);
+    this.#sidebarPanes.push(sidebar);
+    this.clientObjects.set(id, sidebar);
+    this.dispatchEventToListeners("SidebarPaneAdded", sidebar);
+    return this.status.OK();
+  }
+  sidebarPanes() {
+    return this.#sidebarPanes;
+  }
+  onSetSidebarHeight(message) {
+    if (message.command !== "setSidebarHeight") {
+      return this.status.E_BADARG("command", `expected ${"setSidebarHeight"}`);
+    }
+    const sidebar = this.clientObjects.get(message.id);
+    if (!sidebar || !(sidebar instanceof ExtensionSidebarPane)) {
+      return this.status.E_NOTFOUND(message.id);
+    }
+    sidebar.setHeight(message.height);
+    return this.status.OK();
+  }
+  onSetSidebarContent(message, port) {
+    if (message.command !== "setSidebarContent") {
+      return this.status.E_BADARG("command", `expected ${"setSidebarContent"}`);
+    }
+    const { requestId, id, rootTitle, expression, evaluateOptions, evaluateOnPage } = message;
+    const sidebar = this.clientObjects.get(id);
+    if (!sidebar || !(sidebar instanceof ExtensionSidebarPane)) {
+      return this.status.E_NOTFOUND(message.id);
+    }
+    function callback(error) {
+      const result = error ? this.status.E_FAILED(error) : this.status.OK();
+      this.dispatchCallback(requestId, port, result);
+    }
+    if (evaluateOnPage) {
+      sidebar.setExpression(expression, rootTitle, evaluateOptions, this.getExtensionOrigin(port), callback.bind(this));
+      return void 0;
+    }
+    sidebar.setObject(message.expression, message.rootTitle, callback.bind(this));
+    return void 0;
+  }
+  onSetSidebarPage(message, port) {
+    if (message.command !== "setSidebarPage") {
+      return this.status.E_BADARG("command", `expected ${"setSidebarPage"}`);
+    }
+    const sidebar = this.clientObjects.get(message.id);
+    if (!sidebar || !(sidebar instanceof ExtensionSidebarPane)) {
+      return this.status.E_NOTFOUND(message.id);
+    }
+    const resourcePath = _ExtensionServer.expandResourcePath(this.getExtensionOrigin(port), message.page);
+    if (resourcePath === void 0) {
+      return this.status.E_BADARG("page", "Resources paths cannot point to non-extension resources");
+    }
+    sidebar.setPage(resourcePath);
+    return void 0;
+  }
+  onOpenResource(message) {
+    if (message.command !== "openResource") {
+      return this.status.E_BADARG("command", `expected ${"openResource"}`);
+    }
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(message.url);
+    if (uiSourceCode) {
+      void Common4.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, message.columnNumber));
+      return this.status.OK();
+    }
+    const resource = Bindings.ResourceUtils.resourceForURL(message.url);
+    if (resource) {
+      void Common4.Revealer.reveal(resource);
+      return this.status.OK();
+    }
+    const request = Logs.NetworkLog.NetworkLog.instance().requestForURL(message.url);
+    if (request) {
+      void Common4.Revealer.reveal(request);
+      return this.status.OK();
+    }
+    return this.status.E_NOTFOUND(message.url);
+  }
+  onSetOpenResourceHandler(message, port) {
+    if (message.command !== "setOpenResourceHandler") {
+      return this.status.E_BADARG("command", `expected ${"setOpenResourceHandler"}`);
+    }
+    const extension = this.registeredExtensions.get(this.getExtensionOrigin(port));
+    if (!extension) {
+      throw new Error("Received a message from an unregistered extension");
+    }
+    if (message.urlScheme) {
+      extension.openResourceScheme = message.urlScheme;
+    }
+    const extensionOrigin = this.getExtensionOrigin(port);
+    const { name } = extension;
+    const registration = {
+      title: name,
+      origin: extensionOrigin,
+      scheme: message.urlScheme,
+      handler: this.handleOpenURL.bind(this, port),
+      shouldHandleOpenResource: (url, schemes) => Components.Linkifier.Linkifier.shouldHandleOpenResource(extension.openResourceScheme, url, schemes)
+    };
+    if (message.handlerPresent) {
+      Components.Linkifier.Linkifier.registerLinkHandler(registration);
+    } else {
+      Components.Linkifier.Linkifier.unregisterLinkHandler(registration);
+    }
+    return void 0;
+  }
+  onSetThemeChangeHandler(message, port) {
+    if (message.command !== "setThemeChangeHandler") {
+      return this.status.E_BADARG("command", `expected ${"setThemeChangeHandler"}`);
+    }
+    const extensionOrigin = this.getExtensionOrigin(port);
+    const extension = this.registeredExtensions.get(extensionOrigin);
+    if (!extension) {
+      throw new Error("Received a message from an unregistered extension");
+    }
+    if (message.handlerPresent) {
+      this.themeChangeHandlers.set(extensionOrigin, port);
+    } else {
+      this.themeChangeHandlers.delete(extensionOrigin);
+    }
+    return void 0;
+  }
+  handleOpenURL(port, contentProviderOrUrl, lineNumber, columnNumber) {
+    let resource;
+    let isAllowed;
+    if (typeof contentProviderOrUrl !== "string") {
+      resource = this.makeResource(contentProviderOrUrl);
+      isAllowed = this.extensionAllowedOnContentProvider(contentProviderOrUrl, port);
+    } else {
+      const url = contentProviderOrUrl;
+      resource = { url, type: Common4.ResourceType.resourceTypes.Other.name() };
+      isAllowed = this.extensionAllowedOnURL(url, port);
+    }
+    if (isAllowed) {
+      port.postMessage({
+        command: "open-resource",
+        resource,
+        lineNumber: lineNumber ? lineNumber + 1 : void 0,
+        columnNumber: columnNumber ? columnNumber + 1 : void 0
+      });
+    }
+  }
+  extensionAllowedOnURL(url, port) {
+    const origin = extensionOrigins.get(port);
+    const extension = origin && this.registeredExtensions.get(origin);
+    return Boolean(extension?.isAllowedOnTarget(url));
+  }
+  /**
+   * Slightly more permissive as {@link extensionAllowedOnURL}: This method also permits
+   * UISourceCodes that originate from a {@link SDK.Script.Script} with a sourceURL magic comment as
+   * long as the corresponding target is permitted.
+   */
+  extensionAllowedOnContentProvider(contentProvider, port) {
+    if (!(contentProvider instanceof Workspace.UISourceCode.UISourceCode)) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    if (contentProvider.contentType() !== Common4.ResourceType.resourceTypes.Script) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    const scripts = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider);
+    if (scripts.length === 0) {
+      return this.extensionAllowedOnURL(contentProvider.contentURL(), port);
+    }
+    return scripts.every((script) => {
+      if (script.hasSourceURL) {
+        return this.extensionAllowedOnTarget(script.target(), port);
+      }
+      return this.extensionAllowedOnURL(script.contentURL(), port);
+    });
+  }
+  /**
+   * This method prefers returning 'Permission denied' errors if restricted resources are not found,
+   * rather then NOTFOUND. This prevents extensions from being able to fish for restricted resources.
+   */
+  lookupAllowedUISourceCode(url, port) {
+    const uiSourceCode = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url);
+    if (!uiSourceCode && !this.extensionAllowedOnURL(url, port)) {
+      return { error: this.status.E_FAILED("Permission denied") };
+    }
+    if (!uiSourceCode) {
+      return { error: this.status.E_NOTFOUND(url) };
+    }
+    if (!this.extensionAllowedOnContentProvider(uiSourceCode, port)) {
+      return { error: this.status.E_FAILED("Permission denied") };
+    }
+    return { uiSourceCode };
+  }
+  extensionAllowedOnTarget(target, port) {
+    return this.extensionAllowedOnURL(target.inspectedURL(), port);
+  }
+  onReload(message, port) {
+    if (message.command !== "Reload") {
+      return this.status.E_BADARG("command", `expected ${"Reload"}`);
+    }
+    const options = message.options || {};
+    SDK2.NetworkManager.MultitargetNetworkManager.instance().setUserAgentOverride(typeof options.userAgent === "string" ? options.userAgent : "", null);
+    let injectedScript;
+    if (options.injectedScript) {
+      injectedScript = "(function(){" + options.injectedScript + "})()";
+    }
+    const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+    if (!target) {
+      return this.status.OK();
+    }
+    const resourceTreeModel = target.model(SDK2.ResourceTreeModel.ResourceTreeModel);
+    if (!this.extensionAllowedOnTarget(target, port)) {
+      return this.status.E_FAILED("Permission denied");
+    }
+    resourceTreeModel?.reloadPage(Boolean(options.ignoreCache), injectedScript);
+    return this.status.OK();
+  }
+  onEvaluateOnInspectedPage(message, port) {
+    if (message.command !== "evaluateOnInspectedPage") {
+      return this.status.E_BADARG("command", `expected ${"evaluateOnInspectedPage"}`);
+    }
+    const { requestId, expression, evaluateOptions } = message;
+    function callback(error, object, wasThrown) {
+      let result;
+      if (error || !object) {
+        result = this.status.E_PROTOCOLERROR(error?.toString());
+      } else if (wasThrown) {
+        result = { isException: true, value: object.description };
+      } else {
+        result = { value: object.value };
+      }
+      this.dispatchCallback(requestId, port, result);
+    }
+    return this.evaluate(expression, true, true, evaluateOptions, this.getExtensionOrigin(port), callback.bind(this));
+  }
+  async onGetHAR(message, port) {
+    if (message.command !== "getHAR") {
+      return this.status.E_BADARG("command", `expected ${"getHAR"}`);
+    }
+    const requests = Logs.NetworkLog.NetworkLog.instance().requests().filter((r) => this.extensionAllowedOnURL(r.url(), port));
+    const harLog = await HAR.Log.Log.build(requests, { sanitize: false });
+    for (let i = 0; i < harLog.entries.length; ++i) {
+      harLog.entries[i]._requestId = this.requestId(requests[i]);
+    }
+    return harLog;
+  }
+  makeResource(contentProvider) {
+    let buildId = void 0;
+    if (contentProvider instanceof Workspace.UISourceCode.UISourceCode) {
+      buildId = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance().scriptsForUISourceCode(contentProvider).find((script) => Boolean(script.buildId))?.buildId ?? void 0;
+    }
+    return { url: contentProvider.contentURL(), type: contentProvider.contentType().name(), buildId };
+  }
+  onGetPageResources(_message, port) {
+    const resources = /* @__PURE__ */ new Map();
+    function pushResourceData(contentProvider) {
+      if (!resources.has(contentProvider.contentURL()) && this.extensionAllowedOnContentProvider(contentProvider, port)) {
+        resources.set(contentProvider.contentURL(), this.makeResource(contentProvider));
+      }
+      return false;
+    }
+    let uiSourceCodes = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.Network);
+    uiSourceCodes = uiSourceCodes.concat(Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodesForProjectType(Workspace.Workspace.projectTypes.ContentScripts));
+    uiSourceCodes.forEach(pushResourceData.bind(this));
+    for (const resourceTreeModel of SDK2.TargetManager.TargetManager.instance().models(SDK2.ResourceTreeModel.ResourceTreeModel)) {
+      if (this.extensionAllowedOnTarget(resourceTreeModel.target(), port)) {
+        resourceTreeModel.forAllResources(pushResourceData.bind(this));
+      }
+    }
+    return [...resources.values()];
+  }
+  async getResourceContent(contentProvider, message, port) {
+    if (!this.extensionAllowedOnContentProvider(contentProvider, port)) {
+      this.dispatchCallback(message.requestId, port, this.status.E_FAILED("Permission denied"));
+      return void 0;
+    }
+    const contentData = await contentProvider.requestContentData();
+    if (TextUtils.ContentData.ContentData.isError(contentData)) {
+      this.dispatchCallback(message.requestId, port, { encoding: "", content: null });
+      return;
+    }
+    const encoding = !contentData.isTextContent ? "base64" : "";
+    const content = contentData.isTextContent ? contentData.text : contentData.base64;
+    this.dispatchCallback(message.requestId, port, { encoding, content });
+  }
+  onGetRequestContent(message, port) {
+    if (message.command !== "getRequestContent") {
+      return this.status.E_BADARG("command", `expected ${"getRequestContent"}`);
+    }
+    const request = this.requestById(message.id);
+    if (!request) {
+      return this.status.E_NOTFOUND(message.id);
+    }
+    void this.getResourceContent(request, message, port);
+    return void 0;
+  }
+  onGetResourceContent(message, port) {
+    if (message.command !== "getResourceContent") {
+      return this.status.E_BADARG("command", `expected ${"getResourceContent"}`);
+    }
+    const url = message.url;
+    const contentProvider = Workspace.Workspace.WorkspaceImpl.instance().uiSourceCodeForURL(url) || Bindings.ResourceUtils.resourceForURL(url);
+    if (!contentProvider) {
+      return this.status.E_NOTFOUND(url);
+    }
+    void this.getResourceContent(contentProvider, message, port);
+    return void 0;
+  }
+  onAttachSourceMapToResource(message, port) {
+    if (message.command !== "attachSourceMapToResource") {
+      return this.status.E_BADARG("command", `expected ${"getResourceContent"}`);
+    }
+    if (!message.sourceMapURL) {
+      return this.status.E_FAILED("Expected a source map URL but got null");
+    }
+    const resource = this.lookupAllowedUISourceCode(message.contentUrl, port);
+    if ("error" in resource) {
+      return resource.error;
+    }
+    const debuggerBindingsInstance = Bindings.DebuggerWorkspaceBinding.DebuggerWorkspaceBinding.instance();
+    const scriptFiles = debuggerBindingsInstance.scriptsForUISourceCode(resource.uiSourceCode);
+    if (scriptFiles.length > 0) {
+      for (const script of scriptFiles) {
+        const resourceFile = debuggerBindingsInstance.scriptFile(resource.uiSourceCode, script.debuggerModel);
+        resourceFile?.addSourceMapURL(message.sourceMapURL);
+      }
+    }
+    return this.status.OK();
+  }
+  onSetResourceContent(message, port) {
+    if (message.command !== "setResourceContent") {
+      return this.status.E_BADARG("command", `expected ${"setResourceContent"}`);
+    }
+    const { url, requestId, content, commit } = message;
+    function callbackWrapper(error) {
+      const response = error ? this.status.E_FAILED(error) : this.status.OK();
+      this.dispatchCallback(requestId, port, response);
+    }
+    const resource = this.lookupAllowedUISourceCode(url, port);
+    if ("error" in resource) {
+      return resource.error;
+    }
+    const { uiSourceCode } = resource;
+    if (!uiSourceCode.contentType().isDocumentOrScriptOrStyleSheet()) {
+      const resource2 = SDK2.ResourceTreeModel.ResourceTreeModel.resourceForURL(url);
+      if (!resource2) {
+        return this.status.E_NOTFOUND(url);
+      }
+      return this.status.E_NOTSUPPORTED("Resource is not editable");
+    }
+    uiSourceCode.setWorkingCopy(content);
+    if (commit) {
+      uiSourceCode.commitWorkingCopy();
+    }
+    callbackWrapper.call(this, null);
+    return void 0;
+  }
+  requestId(request) {
+    const requestId = this.requestIds.get(request);
+    if (requestId === void 0) {
+      const newId = ++this.lastRequestId;
+      this.requestIds.set(request, newId);
+      this.requests.set(newId, request);
+      return newId;
+    }
+    return requestId;
+  }
+  requestById(id) {
+    return this.requests.get(id);
+  }
+  onForwardKeyboardEvent(message) {
+    if (message.command !== "_forwardKeyboardEvent") {
+      return this.status.E_BADARG("command", `expected ${"_forwardKeyboardEvent"}`);
+    }
+    message.entries.forEach(handleEventEntry);
+    function handleEventEntry(entry) {
+      const event = new window.KeyboardEvent(entry.eventType, {
+        key: entry.key,
+        code: entry.code,
+        keyCode: entry.keyCode,
+        location: entry.location,
+        ctrlKey: entry.ctrlKey,
+        altKey: entry.altKey,
+        shiftKey: entry.shiftKey,
+        metaKey: entry.metaKey
+      });
+      event.__keyCode = keyCodeForEntry(entry);
+      document.dispatchEvent(event);
+    }
+    function keyCodeForEntry(entry) {
+      let keyCode = entry.keyCode;
+      if (!keyCode) {
+        if (entry.key === Platform3.KeyboardUtilities.ESCAPE_KEY) {
+          keyCode = 27;
+        }
+      }
+      return keyCode || 0;
+    }
+    return void 0;
+  }
+  dispatchCallback(requestId, port, result) {
+    if (requestId) {
+      port.postMessage({ command: "callback", requestId, result });
+    }
+  }
+  initExtensions() {
+    this.registerAutosubscriptionHandler("resource-added", Workspace.Workspace.WorkspaceImpl.instance(), Workspace.Workspace.Events.UISourceCodeAdded, this.notifyResourceAdded);
+    this.registerAutosubscriptionTargetManagerHandler("network-request-finished", SDK2.NetworkManager.NetworkManager, SDK2.NetworkManager.Events.RequestFinished, this.notifyRequestFinished);
+    function onElementsSubscriptionStarted() {
+      UI9.Context.Context.instance().addFlavorChangeListener(SDK2.DOMModel.DOMNode, this.notifyElementsSelectionChanged, this);
+    }
+    function onElementsSubscriptionStopped() {
+      UI9.Context.Context.instance().removeFlavorChangeListener(SDK2.DOMModel.DOMNode, this.notifyElementsSelectionChanged, this);
+    }
+    this.registerSubscriptionHandler("panel-objectSelected-elements", onElementsSubscriptionStarted.bind(this), onElementsSubscriptionStopped.bind(this));
+    this.registerResourceContentCommittedHandler(this.notifyUISourceCodeContentCommitted);
+    SDK2.TargetManager.TargetManager.instance().addEventListener("InspectedURLChanged", this.inspectedURLChanged, this);
+  }
+  notifyResourceAdded(event) {
+    const uiSourceCode = event.data;
+    this.postNotification("resource-added", [this.makeResource(uiSourceCode)], (extension) => extension.isAllowedOnTarget(uiSourceCode.url()));
+  }
+  notifyUISourceCodeContentCommitted(event) {
+    const { uiSourceCode, content } = event.data;
+    this.postNotification("resource-content-committed", [this.makeResource(uiSourceCode), content], (extension) => extension.isAllowedOnTarget(uiSourceCode.url()));
+  }
+  async notifyRequestFinished(event) {
+    const request = event.data;
+    const entry = await HAR.Log.Entry.build(request, { sanitize: false });
+    this.postNotification("network-request-finished", [this.requestId(request), entry], (extension) => extension.isAllowedOnTarget(entry.request.url));
+  }
+  notifyElementsSelectionChanged() {
+    this.postNotification("panel-objectSelected-elements", []);
+  }
+  sourceSelectionChanged(url, range) {
+    this.postNotification("panel-objectSelected-sources", [{
+      startLine: range.startLine,
+      startColumn: range.startColumn,
+      endLine: range.endLine,
+      endColumn: range.endColumn,
+      url
+    }], (extension) => extension.isAllowedOnTarget(url));
+  }
+  setInspectedTabId(event) {
+    const oldId = this.inspectedTabId;
+    this.inspectedTabId = event.data;
+    if (oldId === null) {
+      this.initializeExtensions();
+    }
+  }
+  addExtensionFrame({ startPage, name }) {
+    const iframe = document.createElement("iframe");
+    iframe.src = startPage;
+    iframe.dataset.devtoolsExtension = name;
+    iframe.style.display = "none";
+    document.body.appendChild(iframe);
+  }
+  addExtension(extensionInfo) {
+    const startPage = extensionInfo.startPage;
+    const inspectedURL = SDK2.TargetManager.TargetManager.instance().primaryPageTarget()?.inspectedURL() ?? "";
+    if (inspectedURL === "") {
+      this.#pendingExtensions.push(extensionInfo);
+      return;
+    }
+    if (!_ExtensionServer.canInspectURL(inspectedURL)) {
+      this.disableExtensions();
+    }
+    if (!this.extensionsEnabled) {
+      this.#pendingExtensions.push(extensionInfo);
+      return;
+    }
+    const hostsPolicy = HostsPolicy.create(extensionInfo.hostsPolicy);
+    if (!hostsPolicy) {
+      return;
+    }
+    try {
+      const startPageURL = new URL(startPage);
+      const extensionOrigin = startPageURL.origin;
+      const name = extensionInfo.name || `Extension ${extensionOrigin}`;
+      const extensionRegistration = new RegisteredExtension(name, hostsPolicy, Boolean(extensionInfo.allowFileAccess));
+      if (!extensionRegistration.isAllowedOnTarget(inspectedURL)) {
+        this.#pendingExtensions.push(extensionInfo);
+        return;
+      }
+      if (!this.registeredExtensions.get(extensionOrigin)) {
+        const injectedAPI = self.buildExtensionAPIInjectedScript(extensionInfo, this.inspectedTabId, ThemeSupport.ThemeSupport.instance().themeName(), UI9.ShortcutRegistry.ShortcutRegistry.instance().globalShortcutKeys(), _ExtensionServer.instance().extensionAPITestHook);
+        Host6.InspectorFrontendHost.InspectorFrontendHostInstance.setInjectedScriptForOrigin(extensionOrigin, injectedAPI);
+        this.registeredExtensions.set(extensionOrigin, extensionRegistration);
+      }
+      this.addExtensionFrame(extensionInfo);
+    } catch (e) {
+      console.error("Failed to initialize extension " + startPage + ":" + e);
+      return false;
+    }
+    return true;
+  }
+  registerExtension(origin, port) {
+    if (!this.registeredExtensions.has(origin)) {
+      if (origin !== window.location.origin) {
+        console.error("Ignoring unauthorized client request from " + origin);
+      }
+      return;
+    }
+    extensionOrigins.set(port, origin);
+    port.addEventListener("message", this.onmessage.bind(this), false);
+    port.start();
+  }
+  onWindowMessage = (event) => {
+    if (event.data === "registerExtension") {
+      this.registerExtension(event.origin, event.ports[0]);
+    }
+  };
+  extensionEnabled(port) {
+    if (!this.extensionsEnabled) {
+      return false;
+    }
+    const origin = extensionOrigins.get(port);
+    if (!origin) {
+      return false;
+    }
+    const extension = this.registeredExtensions.get(origin);
+    if (!extension) {
+      return false;
+    }
+    return extension.isAllowedOnTarget();
+  }
+  async onmessage(event) {
+    const message = event.data;
+    let result;
+    const port = event.currentTarget;
+    const handler = this.handlers.get(message.command);
+    if (!handler) {
+      result = this.status.E_NOTSUPPORTED(message.command);
+    } else if (!this.extensionEnabled(port)) {
+      result = this.status.E_FAILED("Permission denied");
+    } else {
+      result = await handler(message, event.target);
+    }
+    if (result && message.requestId) {
+      this.dispatchCallback(message.requestId, event.target, result);
+    }
+  }
+  registerHandler(command, callback) {
+    console.assert(Boolean(command));
+    this.handlers.set(command, callback);
+  }
+  registerSubscriptionHandler(eventTopic, onSubscribeFirst, onUnsubscribeLast) {
+    this.subscriptionStartHandlers.set(eventTopic, onSubscribeFirst);
+    this.subscriptionStopHandlers.set(eventTopic, onUnsubscribeLast);
+  }
+  registerAutosubscriptionHandler(eventTopic, eventTarget, frontendEventType, handler) {
+    this.registerSubscriptionHandler(eventTopic, () => eventTarget.addEventListener(frontendEventType, handler, this), () => eventTarget.removeEventListener(frontendEventType, handler, this));
+  }
+  registerAutosubscriptionTargetManagerHandler(eventTopic, modelClass, frontendEventType, handler) {
+    this.registerSubscriptionHandler(eventTopic, () => SDK2.TargetManager.TargetManager.instance().addModelListener(modelClass, frontendEventType, handler, this), () => SDK2.TargetManager.TargetManager.instance().removeModelListener(modelClass, frontendEventType, handler, this));
+  }
+  registerResourceContentCommittedHandler(handler) {
+    function addFirstEventListener() {
+      Workspace.Workspace.WorkspaceImpl.instance().addEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
+      Workspace.Workspace.WorkspaceImpl.instance().setHasResourceContentTrackingExtensions(true);
+    }
+    function removeLastEventListener() {
+      Workspace.Workspace.WorkspaceImpl.instance().setHasResourceContentTrackingExtensions(false);
+      Workspace.Workspace.WorkspaceImpl.instance().removeEventListener(Workspace.Workspace.Events.WorkingCopyCommittedByUser, handler, this);
+    }
+    this.registerSubscriptionHandler("resource-content-committed", addFirstEventListener.bind(this), removeLastEventListener.bind(this));
+  }
+  static expandResourcePath(extensionOrigin, resourcePath) {
+    const strippedOrigin = new URL(extensionOrigin).origin;
+    const resourceURL = new URL(Common4.ParsedURL.normalizePath(resourcePath), strippedOrigin);
+    if (resourceURL.origin !== strippedOrigin) {
+      return void 0;
+    }
+    return resourceURL.href;
+  }
+  evaluate(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback) {
+    let context;
+    function resolveURLToFrame(url) {
+      let found = null;
+      function hasMatchingURL(frame2) {
+        found = frame2.url === url ? frame2 : null;
+        return found;
+      }
+      SDK2.ResourceTreeModel.ResourceTreeModel.frames().some(hasMatchingURL);
+      return found;
+    }
+    options = options || {};
+    let frame;
+    if (options.frameURL) {
+      frame = resolveURLToFrame(options.frameURL);
+    } else {
+      const target = SDK2.TargetManager.TargetManager.instance().primaryPageTarget();
+      const resourceTreeModel = target?.model(SDK2.ResourceTreeModel.ResourceTreeModel);
+      frame = resourceTreeModel?.mainFrame;
+    }
+    if (!frame) {
+      if (options.frameURL) {
+        console.warn("evaluate: there is no frame with URL " + options.frameURL);
+      } else {
+        console.warn("evaluate: the main frame is not yet available");
+      }
+      return this.status.E_NOTFOUND(options.frameURL || "<top>");
+    }
+    const extension = this.registeredExtensions.get(securityOrigin);
+    if (!extension?.isAllowedOnTarget(frame.url)) {
+      return this.status.E_FAILED("Permission denied");
+    }
+    let contextSecurityOrigin;
+    if (options.useContentScriptContext) {
+      contextSecurityOrigin = securityOrigin;
+    } else if (options.scriptExecutionContext) {
+      contextSecurityOrigin = options.scriptExecutionContext;
+    }
+    const runtimeModel = frame.resourceTreeModel().target().model(SDK2.RuntimeModel.RuntimeModel);
+    const executionContexts = runtimeModel ? runtimeModel.executionContexts() : [];
+    if (contextSecurityOrigin) {
+      for (let i = 0; i < executionContexts.length; ++i) {
+        const executionContext = executionContexts[i];
+        if (executionContext.frameId === frame.id && executionContext.origin === contextSecurityOrigin && !executionContext.isDefault) {
+          context = executionContext;
+        }
+      }
+      if (!context) {
+        console.warn("The JavaScript context " + contextSecurityOrigin + " was not found in the frame " + frame.url);
+        return this.status.E_NOTFOUND(contextSecurityOrigin);
+      }
+    } else {
+      for (let i = 0; i < executionContexts.length; ++i) {
+        const executionContext = executionContexts[i];
+        if (executionContext.frameId === frame.id && executionContext.isDefault) {
+          context = executionContext;
+        }
+      }
+      if (!context) {
+        return this.status.E_FAILED(frame.url + " has no execution context");
+      }
+    }
+    if (!extension?.isAllowedOnTarget(context.origin)) {
+      return this.status.E_FAILED("Permission denied");
+    }
+    void context.evaluate(
+      {
+        expression,
+        objectGroup: "extension",
+        includeCommandLineAPI: exposeCommandLineAPI,
+        silent: true,
+        returnByValue,
+        generatePreview: false
+      },
+      /* userGesture */
+      false,
+      /* awaitPromise */
+      false
+    ).then(onEvaluate);
+    function onEvaluate(result) {
+      if ("error" in result) {
+        callback(result.error, null, false);
+        return;
+      }
+      callback(null, result.object || null, Boolean(result.exceptionDetails));
+    }
+    return void 0;
+  }
+  static canInspectURL(url) {
+    let parsedURL;
+    try {
+      parsedURL = new URL(url);
+    } catch {
+      return false;
+    }
+    if (!kPermittedSchemes.includes(parsedURL.protocol)) {
+      return false;
+    }
+    if ((window.DevToolsAPI?.getOriginsForbiddenForExtensions?.() || []).includes(parsedURL.origin)) {
+      return false;
+    }
+    if (this.#isUrlFromChromeWebStore(parsedURL)) {
+      return false;
+    }
+    return true;
+  }
+  /**
+   * Tests whether a given URL is from the Chrome web store to prevent the extension server from
+   * being injected. This is treated as separate from the `getOriginsForbiddenForExtensions` API because
+   * DevTools might not be being run from a native origin and we still want to lock down this specific
+   * origin from DevTools extensions.
+   *
+   * @param parsedURL The URL to check
+   * @returns `true` if the URL corresponds to the Chrome web store; otherwise `false`
+   */
+  static #isUrlFromChromeWebStore(parsedURL) {
+    if (parsedURL.protocol.startsWith("http") && parsedURL.hostname.match(/^chrome\.google\.com\.?$/) && parsedURL.pathname.startsWith("/webstore")) {
+      return true;
+    }
+    if (parsedURL.protocol.startsWith("http") && parsedURL.hostname.match(/^chromewebstore\.google\.com\.?$/)) {
+      return true;
+    }
+    return false;
+  }
+  disableExtensions() {
+    this.extensionsEnabled = false;
+  }
+  enableExtensions() {
+    this.extensionsEnabled = true;
+  }
+};
+var ExtensionServerPanelView = class extends UI9.View.SimpleView {
+  name;
+  panel;
+  constructor(name, title, panel) {
+    const viewId = Platform3.StringUtilities.toKebabCase(title);
+    super({ title, viewId });
+    this.name = name;
+    this.panel = panel;
+  }
+  viewId() {
+    return this.name;
+  }
+  widget() {
+    return Promise.resolve(this.panel);
+  }
+};
+var ExtensionStatus = class {
+  OK;
+  E_EXISTS;
+  E_BADARG;
+  E_BADARGTYPE;
+  E_NOTFOUND;
+  E_NOTSUPPORTED;
+  E_PROTOCOLERROR;
+  E_FAILED;
+  constructor() {
+    function makeStatus(code, description, ...details) {
+      const status = { code, description, details };
+      if (code !== "OK") {
+        status.isError = true;
+        console.error("Extension server error: " + Platform3.StringUtilities.sprintf(description, ...details));
+      }
+      return status;
+    }
+    this.OK = makeStatus.bind(null, "OK", "OK");
+    this.E_EXISTS = makeStatus.bind(null, "E_EXISTS", "Object already exists: %s");
+    this.E_BADARG = makeStatus.bind(null, "E_BADARG", "Invalid argument %s: %s");
+    this.E_BADARGTYPE = makeStatus.bind(null, "E_BADARGTYPE", "Invalid type for argument %s: got %s, expected %s");
+    this.E_NOTFOUND = makeStatus.bind(null, "E_NOTFOUND", "Object not found: %s");
+    this.E_NOTSUPPORTED = makeStatus.bind(null, "E_NOTSUPPORTED", "Object does not support requested operation: %s");
+    this.E_PROTOCOLERROR = makeStatus.bind(null, "E_PROTOCOLERROR", "Inspector protocol error: %s");
+    this.E_FAILED = makeStatus.bind(null, "E_FAILED", "Operation failed: %s");
+  }
+};
+
 // gen/front_end/panels/common/PersistenceUtils.js
 var PersistenceUtils_exports = {};
 __export(PersistenceUtils_exports, {
   LinkDecorator: () => LinkDecorator,
   PersistenceUtils: () => PersistenceUtils
 });
-import * as Common4 from "./../../core/common/common.js";
-import * as i18n13 from "./../../core/i18n/i18n.js";
-import * as Platform2 from "./../../core/platform/platform.js";
+import * as Common5 from "./../../core/common/common.js";
+import * as i18n15 from "./../../core/i18n/i18n.js";
+import * as Platform4 from "./../../core/platform/platform.js";
 import * as Persistence from "./../../models/persistence/persistence.js";
-import * as Workspace from "./../../models/workspace/workspace.js";
+import * as Workspace3 from "./../../models/workspace/workspace.js";
 import * as IconButton from "./../../ui/components/icon_button/icon_button.js";
-import * as Components from "./../../ui/legacy/components/utils/utils.js";
-import * as UI7 from "./../../ui/legacy/legacy.js";
+import * as Components2 from "./../../ui/legacy/components/utils/utils.js";
+import * as UI10 from "./../../ui/legacy/legacy.js";
 var UIStrings4 = {
   /**
    * @description Text in Persistence Utils of the Workspace settings in Settings
@@ -1743,8 +3338,8 @@ var UIStrings4 = {
    */
   linkedToS: "Linked to {PH1}"
 };
-var str_4 = i18n13.i18n.registerUIStrings("panels/common/PersistenceUtils.ts", UIStrings4);
-var i18nString4 = i18n13.i18n.getLocalizedString.bind(void 0, str_4);
+var str_4 = i18n15.i18n.registerUIStrings("panels/common/PersistenceUtils.ts", UIStrings4);
+var i18nString4 = i18n15.i18n.getLocalizedString.bind(void 0, str_4);
 var PersistenceUtils = class _PersistenceUtils {
   static tooltipForUISourceCode(uiSourceCode) {
     const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
@@ -1755,20 +3350,20 @@ var PersistenceUtils = class _PersistenceUtils {
       return Persistence.FileSystemWorkspaceBinding.FileSystemWorkspaceBinding.tooltipForUISourceCode(binding.fileSystem);
     }
     if (binding.network.contentType().isFromSourceMap()) {
-      return i18nString4(UIStrings4.linkedToSourceMapS, { PH1: Platform2.StringUtilities.trimMiddle(binding.network.url(), 150) });
+      return i18nString4(UIStrings4.linkedToSourceMapS, { PH1: Platform4.StringUtilities.trimMiddle(binding.network.url(), 150) });
     }
-    return i18nString4(UIStrings4.linkedToS, { PH1: Platform2.StringUtilities.trimMiddle(binding.network.url(), 150) });
+    return i18nString4(UIStrings4.linkedToS, { PH1: Platform4.StringUtilities.trimMiddle(binding.network.url(), 150) });
   }
   static iconForUISourceCode(uiSourceCode) {
     const binding = Persistence.Persistence.PersistenceImpl.instance().binding(uiSourceCode);
     if (binding) {
-      if (!Common4.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
+      if (!Common5.ParsedURL.schemeIs(binding.fileSystem.url(), "file:")) {
         return null;
       }
       const icon2 = new IconButton.Icon.Icon();
       icon2.name = "document";
       icon2.classList.add("small");
-      UI7.Tooltip.Tooltip.install(icon2, _PersistenceUtils.tooltipForUISourceCode(binding.network));
+      UI10.Tooltip.Tooltip.install(icon2, _PersistenceUtils.tooltipForUISourceCode(binding.network));
       if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().project() === binding.fileSystem.project()) {
         icon2.classList.add("dot", "purple");
       } else {
@@ -1776,7 +3371,7 @@ var PersistenceUtils = class _PersistenceUtils {
       }
       return icon2;
     }
-    if (uiSourceCode.project().type() !== Workspace.Workspace.projectTypes.FileSystem || !Common4.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
+    if (uiSourceCode.project().type() !== Workspace3.Workspace.projectTypes.FileSystem || !Common5.ParsedURL.schemeIs(uiSourceCode.url(), "file:")) {
       return null;
     }
     if (Persistence.NetworkPersistenceManager.NetworkPersistenceManager.instance().isActiveHeaderOverrides(uiSourceCode)) {
@@ -1789,11 +3384,11 @@ var PersistenceUtils = class _PersistenceUtils {
     const icon = new IconButton.Icon.Icon();
     icon.name = "document";
     icon.classList.add("small");
-    UI7.Tooltip.Tooltip.install(icon, _PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
+    UI10.Tooltip.Tooltip.install(icon, _PersistenceUtils.tooltipForUISourceCode(uiSourceCode));
     return icon;
   }
 };
-var LinkDecorator = class extends Common4.ObjectWrapper.ObjectWrapper {
+var LinkDecorator = class extends Common5.ObjectWrapper.ObjectWrapper {
   constructor(persistence) {
     super();
     persistence.addEventListener(Persistence.Persistence.Events.BindingCreated, this.bindingChanged, this);
@@ -1819,18 +3414,18 @@ var UIStrings5 = {
    */
   allow: "Allow"
 };
-var str_5 = i18n15.i18n.registerUIStrings("panels/common/common.ts", UIStrings5);
-var i18nString5 = i18n15.i18n.getLocalizedString.bind(void 0, str_5);
+var str_5 = i18n17.i18n.registerUIStrings("panels/common/common.ts", UIStrings5);
+var i18nString5 = i18n17.i18n.getLocalizedString.bind(void 0, str_5);
 var TypeToAllowDialog = class {
   static async show(options) {
-    const dialog2 = new UI8.Dialog.Dialog(options.jslogContext.dialog);
+    const dialog2 = new UI11.Dialog.Dialog(options.jslogContext.dialog);
     dialog2.setMaxContentSize(new Geometry2.Size(504, 340));
     dialog2.setSizeBehavior(
       "SetExactWidthMaxHeight"
       /* UI.GlassPane.SizeBehavior.SET_EXACT_WIDTH_MAX_HEIGHT */
     );
     dialog2.setDimmed(true);
-    const shadowRoot = UI8.UIUtils.createShadowRootWithCoreStyles(dialog2.contentElement, { cssFile: common_css_default });
+    const shadowRoot = UI11.UIUtils.createShadowRootWithCoreStyles(dialog2.contentElement, { cssFile: common_css_default });
     const content = shadowRoot.createChild("div", "type-to-allow-dialog");
     const result = await new Promise((resolve) => {
       const header = content.createChild("div", "header");
@@ -1847,12 +3442,12 @@ var TypeToAllowDialog = class {
         /* Buttons.Button.Size.SMALL */
       );
       content.createChild("div", "message").textContent = options.message;
-      const input = UI8.UIUtils.createInput("text-input", "text", options.jslogContext.input);
+      const input = UI11.UIUtils.createInput("text-input", "text", options.jslogContext.input);
       input.placeholder = options.inputPlaceholder;
       content.appendChild(input);
       const buttonsBar = content.createChild("div", "button");
-      const cancelButton = UI8.UIUtils.createTextButton(i18nString5(UIStrings5.cancel), () => resolve(false), { jslogContext: "cancel" });
-      const allowButton = UI8.UIUtils.createTextButton(i18nString5(UIStrings5.allow), () => {
+      const cancelButton = UI11.UIUtils.createTextButton(i18nString5(UIStrings5.cancel), () => resolve(false), { jslogContext: "cancel" });
+      const allowButton = UI11.UIUtils.createTextButton(i18nString5(UIStrings5.allow), () => {
         resolve(input.value === options.typePhrase);
       }, {
         jslogContext: "confirm",
@@ -1872,7 +3467,7 @@ var TypeToAllowDialog = class {
         resolve(false);
       });
       dialog2.show();
-      Host6.userMetrics.actionTaken(Host6.UserMetrics.Action.SelfXssWarningDialogShown);
+      Host7.userMetrics.actionTaken(Host7.UserMetrics.Action.SelfXssWarningDialogShown);
     });
     dialog2.hide();
     return result;
@@ -1883,6 +3478,9 @@ export {
   AiCodeCompletionSummaryToolbar,
   AiCodeCompletionTeaser,
   BadgeNotification,
+  ExtensionPanel_exports as ExtensionPanel,
+  ExtensionServer_exports as ExtensionServer,
+  ExtensionView_exports as ExtensionView,
   FreDialog,
   GdpSignUpDialog,
   PersistenceUtils_exports as PersistenceUtils,

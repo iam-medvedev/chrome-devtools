@@ -90,7 +90,8 @@ describeWithEnvironment('RequestResponseView', () => {
         assert.deepEqual(component.getMimeTypeForDisplay(), 'application/wasm');
         renderElementIntoDOM(component);
         await component.updateComplete;
-        assert.strictEqual(component.contentElement.querySelector('devtools-widget')?.innerText, 'Nothing to preview\nThis request has no response data available');
+        const element = component.contentElement.querySelector('devtools-widget');
+        assert.strictEqual(element?.innerText, 'Nothing to preview\nThis request has no response data available');
     });
 });
 //# sourceMappingURL=RequestResponseView.test.js.map

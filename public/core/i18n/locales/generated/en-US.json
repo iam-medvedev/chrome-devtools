@@ -1403,6 +1403,9 @@
   "generated/Deprecation.ts | V8SharedArrayBufferConstructedInExtensionWithoutIsolation": {
     "message": "Extensions should opt into cross-origin isolation to continue using SharedArrayBuffer. See https://developer.chrome.com/docs/extensions/mv3/cross-origin-isolation/."
   },
+  "generated/Deprecation.ts | WebBluetoothRemoteCharacteristicWriteValue": {
+    "message": "BluetoothRemoteGATTCharacteristic.writeValue() is deprecated. Use writeValueWithResponse() or writeValueWithoutResponse() instead."
+  },
   "generated/Deprecation.ts | XHRJSONEncodingDetection": {
     "message": "UTF-16 is not supported by response json in XMLHttpRequest"
   },
@@ -1889,8 +1892,8 @@
   "models/trace/insights/ForcedReflow.ts | description": {
     "message": "A forced reflow occurs when JavaScript queries geometric properties (such as offsetWidth) after styles have been invalidated by a change to the DOM state. This can result in poor performance. Learn more about [forced reflows](https://developer.chrome.com/docs/performance/insights/forced-reflow) and possible mitigations."
   },
-  "models/trace/insights/ForcedReflow.ts | relatedStackTrace": {
-    "message": "Stack trace"
+  "models/trace/insights/ForcedReflow.ts | reflowCallFrames": {
+    "message": "Call frames that trigger reflow"
   },
   "models/trace/insights/ForcedReflow.ts | title": {
     "message": "Forced reflow"
@@ -7541,6 +7544,9 @@
   "panels/elements/StylePropertyTreeElement.ts | jumpToAnimationsPanel": {
     "message": "Jump to Animations panel"
   },
+  "panels/elements/StylePropertyTreeElement.ts | masonryEditorButton": {
+    "message": "Open masonry editor"
+  },
   "panels/elements/StylePropertyTreeElement.ts | openColorPickerS": {
     "message": "Open color picker. {PH1}"
   },
@@ -9305,51 +9311,6 @@
   "panels/network/BinaryResourceView.ts | hexViewer": {
     "message": "Hex Viewer"
   },
-  "panels/network/BlockedURLsPane.ts | addNetworkRequestBlockingPattern": {
-    "message": "Add network request blocking pattern"
-  },
-  "panels/network/BlockedURLsPane.ts | addPattern": {
-    "message": "Add pattern"
-  },
-  "panels/network/BlockedURLsPane.ts | addPatternToBlock": {
-    "message": "Add a pattern to block network requests by clicking on the \"{PH1}\" button."
-  },
-  "panels/network/BlockedURLsPane.ts | dBlocked": {
-    "message": "{PH1} blocked"
-  },
-  "panels/network/BlockedURLsPane.ts | enableNetworkRequestBlocking": {
-    "message": "Enable network request blocking"
-  },
-  "panels/network/BlockedURLsPane.ts | itemDeleted": {
-    "message": "Item successfully deleted"
-  },
-  "panels/network/BlockedURLsPane.ts | learnMore": {
-    "message": "Learn more"
-  },
-  "panels/network/BlockedURLsPane.ts | noNetworkRequestsBlocked": {
-    "message": "No blocked network requests"
-  },
-  "panels/network/BlockedURLsPane.ts | patternAlreadyExists": {
-    "message": "Pattern already exists."
-  },
-  "panels/network/BlockedURLsPane.ts | patternFailedToParse": {
-    "message": "This pattern failed to parse as a URLPattern"
-  },
-  "panels/network/BlockedURLsPane.ts | patternFailedWithRegExpGroups": {
-    "message": "RegExp groups are not allowed"
-  },
-  "panels/network/BlockedURLsPane.ts | patternInputCannotBeEmpty": {
-    "message": "Pattern input cannot be empty."
-  },
-  "panels/network/BlockedURLsPane.ts | patternWasUpgraded": {
-    "message": "This pattern was upgraded from \"{PH1}\""
-  },
-  "panels/network/BlockedURLsPane.ts | textPatternToBlockMatching": {
-    "message": "Text pattern to block matching requests; use * for wildcard"
-  },
-  "panels/network/BlockedURLsPane.ts | textPatternToBlockMatchingURLPatterns": {
-    "message": "Text pattern to block matching requests; use URLPattern syntax."
-  },
   "panels/network/components/DirectSocketConnectionView.ts | directSocketStatusAborted": {
     "message": "Aborted"
   },
@@ -9587,6 +9548,9 @@
   "panels/network/EventSourceMessagesView.ts | type": {
     "message": "Type"
   },
+  "panels/network/network-meta.ts | addNetworkRequestBlockingOrThrottlingPattern": {
+    "message": "Add network request blocking or throttling pattern"
+  },
   "panels/network/network-meta.ts | addNetworkRequestBlockingPattern": {
     "message": "Add network request blocking pattern"
   },
@@ -9644,11 +9608,17 @@
   "panels/network/network-meta.ts | networkRequestBlocking": {
     "message": "Network request blocking"
   },
+  "panels/network/network-meta.ts | networkRequestConditions": {
+    "message": "Request conditions"
+  },
   "panels/network/network-meta.ts | networkThrottling": {
     "message": "network throttling"
   },
   "panels/network/network-meta.ts | recordNetworkLog": {
     "message": "Record network log"
+  },
+  "panels/network/network-meta.ts | removeAllNetworkRequestBlockingOrThrottlingPatterns": {
+    "message": "Remove all network request blocking or throttling patterns"
   },
   "panels/network/network-meta.ts | removeAllNetworkRequestBlockingPatterns": {
     "message": "Remove all network request blocking patterns"
@@ -9667,6 +9637,9 @@
   },
   "panels/network/network-meta.ts | showNetworkRequestBlocking": {
     "message": "Show Network request blocking"
+  },
+  "panels/network/network-meta.ts | showRequestConditions": {
+    "message": "Show Request conditions"
   },
   "panels/network/network-meta.ts | showSearch": {
     "message": "Show Search"
@@ -9883,6 +9856,9 @@
   },
   "panels/network/NetworkDataGridNode.ts | unknownExplanation": {
     "message": "The request status cannot be shown here because the page that issued it unloaded while the request was in flight. You can use chrome://net-export to capture a network log and see all request details."
+  },
+  "panels/network/NetworkDataGridNode.ts | wasThrottled": {
+    "message": "Request was throttled ({PH1})"
   },
   "panels/network/NetworkItemView.ts | connectionInfo": {
     "message": "Connection Info"
@@ -10405,6 +10381,69 @@
   },
   "panels/network/NetworkSearchScope.ts | url": {
     "message": "URL"
+  },
+  "panels/network/RequestConditionsDrawer.ts | addNetworkRequestBlockingPattern": {
+    "message": "Add network request blocking pattern"
+  },
+  "panels/network/RequestConditionsDrawer.ts | addPattern": {
+    "message": "Add pattern"
+  },
+  "panels/network/RequestConditionsDrawer.ts | addPatternLabel": {
+    "message": "Add network request throttling or blocking pattern"
+  },
+  "panels/network/RequestConditionsDrawer.ts | addPatternToBlock": {
+    "message": "Add a pattern by clicking on the \"{PH1}\" button."
+  },
+  "panels/network/RequestConditionsDrawer.ts | dAffected": {
+    "message": "{PH1} affected"
+  },
+  "panels/network/RequestConditionsDrawer.ts | dBlocked": {
+    "message": "{PH1} blocked"
+  },
+  "panels/network/RequestConditionsDrawer.ts | decreasePriority": {
+    "message": "Decrease priority"
+  },
+  "panels/network/RequestConditionsDrawer.ts | enableBlockingAndThrottling": {
+    "message": "Enable blocking and throttling"
+  },
+  "panels/network/RequestConditionsDrawer.ts | enableNetworkRequestBlocking": {
+    "message": "Enable network request blocking"
+  },
+  "panels/network/RequestConditionsDrawer.ts | increasePriority": {
+    "message": "Increase priority"
+  },
+  "panels/network/RequestConditionsDrawer.ts | itemDeleted": {
+    "message": "Item successfully deleted"
+  },
+  "panels/network/RequestConditionsDrawer.ts | learnMore": {
+    "message": "Learn more"
+  },
+  "panels/network/RequestConditionsDrawer.ts | noNetworkRequestsBlocked": {
+    "message": "No blocked network requests"
+  },
+  "panels/network/RequestConditionsDrawer.ts | noPattern": {
+    "message": "No request throttling or blocking patterns"
+  },
+  "panels/network/RequestConditionsDrawer.ts | patternAlreadyExists": {
+    "message": "Pattern already exists."
+  },
+  "panels/network/RequestConditionsDrawer.ts | patternFailedToParse": {
+    "message": "This pattern failed to parse as a URLPattern"
+  },
+  "panels/network/RequestConditionsDrawer.ts | patternFailedWithRegExpGroups": {
+    "message": "RegExp groups are not allowed"
+  },
+  "panels/network/RequestConditionsDrawer.ts | patternInputCannotBeEmpty": {
+    "message": "Pattern input cannot be empty."
+  },
+  "panels/network/RequestConditionsDrawer.ts | patternWasUpgraded": {
+    "message": "This pattern was upgraded from \"{PH1}\""
+  },
+  "panels/network/RequestConditionsDrawer.ts | textEditPattern": {
+    "message": "Text pattern to block or throttle matching requests; use URLPattern syntax."
+  },
+  "panels/network/RequestConditionsDrawer.ts | textPatternToBlockMatching": {
+    "message": "Text pattern to block matching requests; use * for wildcard"
   },
   "panels/network/RequestCookiesView.ts | cookiesThatWereReceivedFromThe": {
     "message": "Cookies that were received from the server in the 'set-cookie' header of the response"
@@ -16304,6 +16343,9 @@
   "panels/utils/utils.ts | requestHeadersOverridden": {
     "message": "Request headers are overridden"
   },
+  "panels/utils/utils.ts | resourceTypeWithThrottling": {
+    "message": "{PH1} (throttled to {PH2})"
+  },
   "panels/utils/utils.ts | thirdPartyPhaseout": {
     "message": "Cookies for this request are blocked either because of Chrome flags or browser configuration. Learn more in the Issues panel."
   },
@@ -16730,6 +16772,9 @@
   "ui/legacy/components/cookie_table/CookiesTable.ts | cookies": {
     "message": "Cookies"
   },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | domain": {
+    "message": "Domain"
+  },
   "ui/legacy/components/cookie_table/CookiesTable.ts | editableCookies": {
     "message": "Editable Cookies"
   },
@@ -16741,6 +16786,18 @@
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | opaquePartitionKey": {
     "message": "(opaque)"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | partitionKeySite": {
+    "message": "Partition Key Site"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | path": {
+    "message": "Path"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | priority": {
+    "message": "Priority"
+  },
+  "ui/legacy/components/cookie_table/CookiesTable.ts | secure": {
+    "message": "Secure"
   },
   "ui/legacy/components/cookie_table/CookiesTable.ts | session": {
     "message": "Session"

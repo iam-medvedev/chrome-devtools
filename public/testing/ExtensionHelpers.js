@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 import * as Host from '../core/host/host.js';
-import * as Extensions from '../models/extensions/extensions.js';
+import * as PanelCommon from '../panels/common/common.js';
 import { describeWithEnvironment, setupActionRegistry } from './EnvironmentHelpers.js';
 import { describeWithMockConnection } from './MockConnection.js';
 export function getExtensionOrigin() {
@@ -21,7 +21,7 @@ export function describeWithDevtoolsExtension(title, extension, fn) {
         chrome: {},
     };
     function setup() {
-        const server = Extensions.ExtensionServer.ExtensionServer.instance({ forceNew: true });
+        const server = PanelCommon.ExtensionServer.ExtensionServer.instance({ forceNew: true });
         sinon.stub(server, 'addExtensionFrame');
         sinon.stub(Host.InspectorFrontendHost.InspectorFrontendHostInstance, 'setInjectedScriptForOrigin')
             .callsFake((origin, _script) => {

@@ -633,8 +633,8 @@ import * as Common4 from "./../../core/common/common.js";
 import * as i18n11 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK3 from "./../../core/sdk/sdk.js";
-import * as Extensions from "./../../models/extensions/extensions.js";
 import * as Workspace from "./../../models/workspace/workspace.js";
+import * as PanelCommon from "./../../panels/common/common.js";
 import * as UI6 from "./../../ui/legacy/legacy.js";
 import * as NetworkForward from "./../../panels/network/forward/forward.js";
 var UIStrings6 = {
@@ -651,9 +651,17 @@ var UIStrings6 = {
    */
   showNetworkRequestBlocking: "Show Network request blocking",
   /**
+   * @description Command for showing the 'Network request blocking' tool
+   */
+  showRequestConditions: "Show Request conditions",
+  /**
    * @description Title of the 'Network request blocking' tool in the bottom drawer
    */
   networkRequestBlocking: "Network request blocking",
+  /**
+   * @description Title of the 'Request conditions' tool in the bottom drawer
+   */
+  networkRequestConditions: "Request conditions",
   /**
    * @description Command for showing the 'Network conditions' tool
    */
@@ -747,6 +755,14 @@ var UIStrings6 = {
    */
   removeAllNetworkRequestBlockingPatterns: "Remove all network request blocking patterns",
   /**
+   * @description Title of an action in the Network request blocking panel to add a new URL pattern to the blocklist.
+   */
+  addNetworkRequestBlockingOrThrottlingPattern: "Add network request blocking or throttling pattern",
+  /**
+   * @description Title of an action in the Network request blocking panel to clear all URL patterns.
+   */
+  removeAllNetworkRequestBlockingOrThrottlingPatterns: "Remove all network request blocking or throttling patterns",
+  /**
    * @description Title of an action in the Network panel (and title of a setting in the Network category)
    *              that enables options in the UI to copy or export HAR (not translatable) with sensitive data.
    */
@@ -764,6 +780,7 @@ var UIStrings6 = {
 };
 var str_6 = i18n11.i18n.registerUIStrings("panels/network/network-meta.ts", UIStrings6);
 var i18nLazyString6 = i18n11.i18n.getLazilyComputedLocalizedString.bind(void 0, str_6);
+var i18nString = i18n11.i18n.getLocalizedString.bind(void 0, str_6);
 var loadedNetworkModule;
 var isNode = Root2.Runtime.Runtime.isNode();
 async function loadNetworkModule() {
@@ -790,16 +807,17 @@ UI6.ViewManager.registerViewExtension({
     return Network.NetworkPanel.NetworkPanel.instance();
   }
 });
+var individualThrottlingEnabled = () => Boolean(Root2.Runtime.hostConfig.devToolsIndividualRequestThrottling?.enabled);
 UI6.ViewManager.registerViewExtension({
   location: "drawer-view",
   id: "network.blocked-urls",
-  commandPrompt: i18nLazyString6(UIStrings6.showNetworkRequestBlocking),
-  title: i18nLazyString6(UIStrings6.networkRequestBlocking),
+  commandPrompt: () => individualThrottlingEnabled() ? i18nString(UIStrings6.showRequestConditions) : i18nString(UIStrings6.showNetworkRequestBlocking),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.networkRequestConditions) : i18nString(UIStrings6.networkRequestBlocking),
   persistence: "closeable",
   order: 60,
   async loadView() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.BlockedURLsPane();
+    return new Network.RequestConditionsDrawer.RequestConditionsDrawer();
   }
 });
 UI6.ViewManager.registerViewExtension({
@@ -939,27 +957,27 @@ UI6.ActionRegistration.registerActionExtension({
 UI6.ActionRegistration.registerActionExtension({
   actionId: "network.add-network-request-blocking-pattern",
   category: "NETWORK",
-  title: i18nLazyString6(UIStrings6.addNetworkRequestBlockingPattern),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.addNetworkRequestBlockingOrThrottlingPattern) : i18nString(UIStrings6.addNetworkRequestBlockingPattern),
   iconClass: "plus",
   contextTypes() {
-    return maybeRetrieveContextTypes2((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes2((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 UI6.ActionRegistration.registerActionExtension({
   actionId: "network.remove-all-network-request-blocking-patterns",
   category: "NETWORK",
-  title: i18nLazyString6(UIStrings6.removeAllNetworkRequestBlockingPatterns),
+  title: () => individualThrottlingEnabled() ? i18nString(UIStrings6.removeAllNetworkRequestBlockingOrThrottlingPatterns) : i18nString(UIStrings6.removeAllNetworkRequestBlockingPatterns),
   iconClass: "clear",
   contextTypes() {
-    return maybeRetrieveContextTypes2((Network) => [Network.BlockedURLsPane.BlockedURLsPane]);
+    return maybeRetrieveContextTypes2((Network) => [Network.RequestConditionsDrawer.RequestConditionsDrawer]);
   },
   async loadActionDelegate() {
     const Network = await loadNetworkModule();
-    return new Network.BlockedURLsPane.ActionDelegate();
+    return new Network.RequestConditionsDrawer.ActionDelegate();
   }
 });
 Common4.Settings.registerSettingExtension({
@@ -1089,7 +1107,7 @@ Common4.Revealer.registerRevealer({
 });
 Common4.Revealer.registerRevealer({
   contextTypes() {
-    return [NetworkForward.UIFilter.UIRequestFilter, Extensions.ExtensionServer.RevealableNetworkRequestFilter];
+    return [NetworkForward.UIFilter.UIRequestFilter, PanelCommon.ExtensionServer.RevealableNetworkRequestFilter];
   },
   destination: Common4.Revealer.RevealerDestination.NETWORK_PANEL,
   async loadRevealer() {
@@ -1624,7 +1642,7 @@ var UIStrings9 = {
   main: "Main"
 };
 var str_9 = i18n17.i18n.registerUIStrings("entrypoints/worker_app/WorkerMain.ts", UIStrings9);
-var i18nString = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
+var i18nString2 = i18n17.i18n.getLocalizedString.bind(void 0, str_9);
 var workerMainImplInstance;
 var WorkerMainImpl = class _WorkerMainImpl {
   static instance(opts = { forceNew: null }) {
@@ -1639,7 +1657,7 @@ var WorkerMainImpl = class _WorkerMainImpl {
       if (await SDK6.TargetManager.TargetManager.instance().maybeAttachInitialTarget()) {
         return;
       }
-      SDK6.TargetManager.TargetManager.instance().createTarget("main", i18nString(UIStrings9.main), SDK6.Target.Type.ServiceWorker, null);
+      SDK6.TargetManager.TargetManager.instance().createTarget("main", i18nString2(UIStrings9.main), SDK6.Target.Type.ServiceWorker, null);
     }, Components.TargetDetachedDialog.TargetDetachedDialog.connectionLost);
     new MobileThrottling.NetworkPanelIndicator.NetworkPanelIndicator();
   }

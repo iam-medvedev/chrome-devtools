@@ -36,9 +36,6 @@
   "files": [
     "../../../../../../front_end/models/extensions/ExtensionAPI.ts",
     "../../../../../../front_end/models/extensions/ExtensionEndpoint.ts",
-    "../../../../../../front_end/models/extensions/ExtensionPanel.ts",
-    "../../../../../../front_end/models/extensions/ExtensionServer.ts",
-    "../../../../../../front_end/models/extensions/ExtensionView.ts",
     "../../../../../../front_end/models/extensions/HostUrlPattern.ts",
     "../../../../../../front_end/models/extensions/LanguageExtensionEndpoint.ts",
     "../../../../../../front_end/models/extensions/RecorderExtensionEndpoint.ts",
@@ -86,15 +83,6 @@
     },
     {
       "path": "../workspace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/theme_support/bundle-tsconfig.json"
     }
   ]
 }

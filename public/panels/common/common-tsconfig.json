@@ -38,6 +38,9 @@
     "../../../../../../front_end/panels/common/AiCodeCompletionSummaryToolbar.ts",
     "../../../../../../front_end/panels/common/AiCodeCompletionTeaser.ts",
     "../../../../../../front_end/panels/common/BadgeNotification.ts",
+    "../../../../../../front_end/panels/common/ExtensionPanel.ts",
+    "../../../../../../front_end/panels/common/ExtensionServer.ts",
+    "../../../../../../front_end/panels/common/ExtensionView.ts",
     "../../../../../../front_end/panels/common/FreDialog.ts",
     "../../../../../../front_end/panels/common/GdpSignUpDialog.ts",
     "../../../../../../front_end/panels/common/PersistenceUtils.ts",
@@ -62,13 +65,13 @@
       "path": "../../models/badges/bundle-tsconfig.json"
     },
     {
+      "path": "../../models/extensions/bundle-tsconfig.json"
+    },
+    {
       "path": "../../models/geometry/bundle-tsconfig.json"
     },
     {
       "path": "../../models/persistence/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../services/window_bounds/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/components/buttons/bundle-tsconfig.json"
@@ -90,6 +93,9 @@
     },
     {
       "path": "../../ui/legacy/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
     },
     {
       "path": "../../ui/lit/bundle-tsconfig.json"

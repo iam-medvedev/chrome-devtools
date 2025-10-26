@@ -80,21 +80,6 @@
     },
     {
       "path": "../workspace/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/components/cards/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/data_grid/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/legacy/components/utils/bundle-tsconfig.json"
-    },
-    {
-      "path": "../../ui/lit/bundle-tsconfig.json"
     }
   ]
 }

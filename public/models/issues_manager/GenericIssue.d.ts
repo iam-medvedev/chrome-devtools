@@ -4,14 +4,14 @@ import { Issue, IssueCategory, IssueKind } from './Issue.js';
 import { type MarkdownIssueDescription } from './MarkdownIssueDescription.js';
 export declare class GenericIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.GenericIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel, issueId?: Protocol.Audits.IssueId);
+    constructor(issueDetails: Protocol.Audits.GenericIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null, issueId?: Protocol.Audits.IssueId);
     requests(): Iterable<Protocol.Audits.AffectedRequest>;
     getCategory(): IssueCategory;
     primaryKey(): string;
     getDescription(): MarkdownIssueDescription | null;
     details(): Protocol.Audits.GenericIssueDetails;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): GenericIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): GenericIssue[];
 }
 export declare const genericFormLabelForNameError: {
     file: string;

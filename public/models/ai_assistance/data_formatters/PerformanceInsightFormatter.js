@@ -434,7 +434,7 @@ Duplication grouped by Node modules: ${filesFormatted}`;
             output += 'No top-level functions causing forced reflows were identified.\n';
         }
         if (insight.aggregatedBottomUpData.length > 0) {
-            output += '\n' + Trace.Insights.Models.ForcedReflow.UIStrings.relatedStackTrace + ' (including total time):\n';
+            output += '\n' + Trace.Insights.Models.ForcedReflow.UIStrings.reflowCallFrames + ' (including total time):\n';
             for (const data of insight.aggregatedBottomUpData) {
                 output += `\n - ${this.#formatMicro(data.totalTime)} in ${callFrameToString(data.bottomUpData)}`;
             }

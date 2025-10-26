@@ -15,6 +15,8 @@ export class TargetDetachedDialog extends SDK.SDKModel.SDKModel {
             TargetDetachedDialog.hideCrashedDialog = null;
         }
     }
+    workerScriptLoaded() {
+    }
     detached({ reason }) {
         UI.RemoteDebuggingTerminatedScreen.RemoteDebuggingTerminatedScreen.show(reason);
     }

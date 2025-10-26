@@ -58,13 +58,19 @@
       "path": "../../core/common/bundle-tsconfig.json"
     },
     {
+      "path": "../../core/platform/bundle-tsconfig.json"
+    },
+    {
       "path": "../../core/sdk/bundle-tsconfig.json"
+    },
+    {
+      "path": "../../generated/protocol-tsconfig.json"
     },
     {
       "path": "../../testing/testing-tsconfig.json"
     },
     {
-      "path": "../../ui/legacy/bundle-tsconfig.json"
+      "path": "../text_utils/bundle-tsconfig.json"
     }
   ]
 }

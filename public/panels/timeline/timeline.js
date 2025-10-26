@@ -3137,7 +3137,7 @@ import * as LegacyComponents from "./../../ui/legacy/components/utils/utils.js";
 import * as UI11 from "./../../ui/legacy/legacy.js";
 import * as ThemeSupport19 from "./../../ui/legacy/theme_support/theme_support.js";
 import * as TimelineComponents4 from "./components/components.js";
-import * as Extensions4 from "./extensions/extensions.js";
+import * as Extensions3 from "./extensions/extensions.js";
 
 // gen/front_end/panels/timeline/ThirdPartyTreeView.js
 var ThirdPartyTreeView_exports = {};
@@ -5217,9 +5217,9 @@ import * as i18n27 from "./../../core/i18n/i18n.js";
 import * as Root2 from "./../../core/root/root.js";
 import * as SDK6 from "./../../core/sdk/sdk.js";
 import * as CrUXManager from "./../../models/crux-manager/crux-manager.js";
-import * as Extensions3 from "./../../models/extensions/extensions.js";
 import * as LiveMetrics from "./../../models/live-metrics/live-metrics.js";
 import * as Trace16 from "./../../models/trace/trace.js";
+import * as PanelCommon from "./../common/common.js";
 import * as Tracing2 from "./../../services/tracing/tracing.js";
 
 // gen/front_end/panels/timeline/RecordingMetadata.js
@@ -5447,7 +5447,7 @@ var TimelineController = class {
     this.tracingCompletePromise = Promise.withResolvers();
     const response = await this.tracingManager.start(this, categories2);
     await this.warmupJsProfiler();
-    Extensions3.ExtensionServer.ExtensionServer.instance().profilingStarted();
+    PanelCommon.ExtensionServer.ExtensionServer.instance().profilingStarted();
     return response;
   }
   // CPUProfiler::StartProfiling has a non-trivial cost and we'd prefer it not happen within an
@@ -5475,7 +5475,7 @@ var TimelineController = class {
     this.tracingCompletePromise = null;
   }
   async allSourcesFinished() {
-    Extensions3.ExtensionServer.ExtensionServer.instance().profilingStopped();
+    PanelCommon.ExtensionServer.ExtensionServer.instance().profilingStopped();
     this.client.processingStarted();
     const metadata = await forTrace({
       recordingStartTime: this.#recordingStartTime ?? void 0,
@@ -10104,10 +10104,7 @@ var TimelinePanel = class _TimelinePanel extends Common10.ObjectWrapper.eventMix
       };
     }
     await this.#traceEngineModel.parse(collectedEvents, config);
-    if (isFreshRecording && metadata && Root4.Runtime.experiments.isEnabled(
-      "timeline-enhanced-traces"
-      /* Root.Runtime.ExperimentName.TIMELINE_ENHANCED_TRACES */
-    )) {
+    if (isFreshRecording && metadata) {
       const traceIndex = this.#traceEngineModel.lastTraceIndex();
       const parsedTrace = this.#traceEngineModel.parsedTrace(traceIndex);
       if (parsedTrace) {
@@ -10471,7 +10468,7 @@ var UIStrings21 = {
    * @example {100ms (at 200ms)} PH1
    */
   emptyPlaceholder: "{PH1}",
-  // eslint-disable-line rulesdir/l10n-no-locked-or-placeholder-only-phrase
+  // eslint-disable-line @devtools/l10n-no-locked-or-placeholder-only-phrase
   /**
    * @description Text for timestamps of items
    */
@@ -10967,7 +10964,7 @@ var TimelineUIUtils = class _TimelineUIUtils {
       }
     }
     if (Trace24.Types.Extensions.isSyntheticExtensionEntry(event)) {
-      return Extensions4.ExtensionUI.extensionEntryColor(event);
+      return Extensions3.ExtensionUI.extensionEntryColor(event);
     }
     const themeSupport = ThemeSupport19.ThemeSupport.instance();
     let parsedColor = themeSupport.getComputedValue(_TimelineUIUtils.eventStyle(event).category.cssVariable);
@@ -17924,7 +17921,7 @@ __export(TimingsTrackAppender_exports, {
 import * as i18n56 from "./../../core/i18n/i18n.js";
 import * as Trace34 from "./../../models/trace/trace.js";
 import * as PerfUI18 from "./../../ui/legacy/components/perf_ui/perf_ui.js";
-import * as Extensions5 from "./extensions/extensions.js";
+import * as Extensions4 from "./extensions/extensions.js";
 var UIStrings28 = {
   /**
    * @description Text in Timeline Flame Chart Data Provider of the Performance panel
@@ -17987,15 +17984,13 @@ var TimingsTrackAppender = class {
     const performanceMeasures = this.#parsedTrace.data.UserTimings.performanceMeasures.filter((m) => !Trace34.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInPerformanceTiming(m).devtoolsObj);
     const timestampEvents = this.#parsedTrace.data.UserTimings.timestampEvents.filter((timeStamp) => !Trace34.Handlers.ModelHandlers.ExtensionTraceData.extensionDataInConsoleTimeStamp(timeStamp).devtoolsObj);
     const consoleTimings = this.#parsedTrace.data.UserTimings.consoleTimings;
-    if (extensionMarkersAreEmpty && performanceMarks.length === 0 && performanceMeasures.length === 0 && timestampEvents.length === 0 && consoleTimings.length === 0) {
+    const allTimings = [...performanceMeasures, ...consoleTimings, ...timestampEvents, ...performanceMarks].sort((a, b) => a.ts - b.ts);
+    if (extensionMarkersAreEmpty && allTimings.length === 0) {
       return trackStartLevel;
     }
     this.#appendTrackHeaderAtLevel(trackStartLevel, expanded);
-    let newLevel = this.#appendExtensionsAtLevel(trackStartLevel);
-    newLevel = this.#compatibilityBuilder.appendEventsAtLevel(performanceMarks, newLevel, this);
-    newLevel = this.#compatibilityBuilder.appendEventsAtLevel(performanceMeasures, newLevel, this);
-    newLevel = this.#compatibilityBuilder.appendEventsAtLevel(timestampEvents, newLevel, this);
-    return this.#compatibilityBuilder.appendEventsAtLevel(consoleTimings, newLevel, this);
+    const newLevel = this.#appendExtensionsAtLevel(trackStartLevel);
+    return this.#compatibilityBuilder.appendEventsAtLevel(allTimings, newLevel, this);
   }
   /**
    * Adds into the flame chart data the header corresponding to the
@@ -18097,7 +18092,7 @@ var TimingsTrackAppender = class {
   markerStyleForExtensionMarker(markerEvent) {
     const tallMarkerDashStyle = [6, 4];
     const title = markerEvent.name;
-    const color = Extensions5.ExtensionUI.extensionEntryColor(markerEvent);
+    const color = Extensions4.ExtensionUI.extensionEntryColor(markerEvent);
     return {
       title,
       dashStyle: tallMarkerDashStyle,
@@ -18115,7 +18110,7 @@ var TimingsTrackAppender = class {
       return this.markerStyleForPageLoadEvent(event).color;
     }
     if (Trace34.Types.Extensions.isSyntheticExtensionEntry(event)) {
-      return Extensions5.ExtensionUI.extensionEntryColor(event);
+      return Extensions4.ExtensionUI.extensionEntryColor(event);
     }
     return this.#colorGenerator.colorForID(event.name);
   }

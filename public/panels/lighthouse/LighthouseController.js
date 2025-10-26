@@ -168,13 +168,144 @@ const UIStrings = {
 const str_ = i18n.i18n.registerUIStrings('panels/lighthouse/LighthouseController.ts', UIStrings);
 const i18nString = i18n.i18n.getLocalizedString.bind(undefined, str_);
 const i18nLazyString = i18n.i18n.getLazilyComputedLocalizedString.bind(undefined, str_);
+class LighthouseRun {
+    controller;
+    inspectedURL;
+    categoryIDs;
+    flags;
+    emulationStateBefore;
+    protocolService;
+    #isRunning;
+    #cancelPromise = null;
+    constructor(controller, protocolService, inspectedURL, categoryIDs, flags) {
+        this.controller = controller;
+        this.protocolService = protocolService;
+        this.inspectedURL = inspectedURL;
+        this.categoryIDs = categoryIDs;
+        this.flags = flags;
+        this.#isRunning = false;
+    }
+    isRunning() {
+        return this.#isRunning;
+    }
+    async start() {
+        this.#isRunning = true;
+        try {
+            await this.setupEmulationAndProtocolConnection();
+            if (this.flags.mode === 'timespan') {
+                await this.protocolService.startTimespan({ inspectedURL: this.inspectedURL, categoryIDs: this.categoryIDs, flags: this.flags });
+            }
+        }
+        catch (err) {
+            await this.cancel();
+            throw err;
+        }
+    }
+    async collect() {
+        try {
+            const lighthouseResponse = await this.protocolService.collectLighthouseResults({ inspectedURL: this.inspectedURL, categoryIDs: this.categoryIDs, flags: this.flags });
+            if (!lighthouseResponse) {
+                throw new Error('No Lighthouse response');
+            }
+            if (lighthouseResponse.fatal) {
+                const error = new Error(lighthouseResponse.message);
+                error.stack = lighthouseResponse.stack;
+                throw error;
+            }
+            return lighthouseResponse;
+        }
+        finally {
+            await this.cancel();
+        }
+    }
+    async cancel() {
+        if (!this.#cancelPromise) {
+            this.#isRunning = false;
+            this.#cancelPromise = this.restoreEmulationAndProtocolConnection();
+        }
+        return await this.#cancelPromise;
+    }
+    /**
+     * We set the device emulation on the DevTools-side for two reasons:
+     * 1. To workaround some odd device metrics emulation bugs like occuluding viewports
+     * 2. To get the attractive device outline
+     */
+    async setupEmulationAndProtocolConnection() {
+        const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
+        this.emulationStateBefore = {
+            emulation: {
+                type: emulationModel.type(),
+                enabled: emulationModel.enabledSetting().get(),
+                outlineEnabled: emulationModel.deviceOutlineSetting().get(),
+                toolbarControlsEnabled: emulationModel.toolbarControlsEnabledSetting().get(),
+                scale: emulationModel.scaleSetting().get(),
+                device: emulationModel.device(),
+                mode: emulationModel.mode(),
+            },
+            network: { conditions: SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions() },
+        };
+        emulationModel.toolbarControlsEnabledSetting().set(false);
+        if ('formFactor' in this.flags && this.flags.formFactor === 'desktop') {
+            emulationModel.enabledSetting().set(false);
+            emulationModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        }
+        else if (this.flags.formFactor === 'mobile') {
+            emulationModel.enabledSetting().set(true);
+            emulationModel.deviceOutlineSetting().set(true);
+            for (const device of EmulationModel.EmulatedDevices.EmulatedDevicesList.instance().standard()) {
+                if (device.title === 'Moto G Power') {
+                    emulationModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, device.modes[0], 1);
+                }
+            }
+        }
+        await this.protocolService.attach();
+    }
+    async restoreEmulationAndProtocolConnection() {
+        await this.protocolService.detach();
+        if (this.emulationStateBefore) {
+            const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
+            // Detaching a session after overriding device metrics will prevent other sessions from overriding device metrics in the future.
+            // A workaround is to call "Emulation.clearDeviceMetricOverride" which is the result of the next line.
+            // https://bugs.chromium.org/p/chromium/issues/detail?id=1337089
+            emulationModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+            const { type, enabled, outlineEnabled, toolbarControlsEnabled, scale, device, mode } = this.emulationStateBefore.emulation;
+            emulationModel.enabledSetting().set(enabled);
+            emulationModel.deviceOutlineSetting().set(outlineEnabled);
+            emulationModel.toolbarControlsEnabledSetting().set(toolbarControlsEnabled);
+            // `emulate` will ignore the `scale` parameter for responsive emulation.
+            // In this case we can just set it here.
+            if (type === EmulationModel.DeviceModeModel.Type.Responsive) {
+                emulationModel.scaleSetting().set(scale);
+            }
+            emulationModel.emulate(type, device, mode, scale);
+            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.emulationStateBefore.network.conditions);
+            delete this.emulationStateBefore;
+        }
+        Emulation.InspectedPagePlaceholder.InspectedPagePlaceholder.instance().update(true);
+        const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
+        if (!mainTarget) {
+            return;
+        }
+        const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
+        if (!resourceTreeModel) {
+            return;
+        }
+        // Reload to reset page state after a navigation.
+        // We want to retain page state for timespan and snapshot modes.
+        const mode = this.flags.mode;
+        if (mode === 'navigation') {
+            const inspectedURL = await this.controller.getInspectedURL();
+            await resourceTreeModel.navigate(inspectedURL);
+        }
+    }
+}
 export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
     protocolService;
     manager;
     serviceWorkerListeners;
     inspectedURL;
     currentLighthouseRun;
-    emulationStateBefore;
+    lastAction = null;
     constructor(protocolService) {
         super();
         this.protocolService = protocolService;
@@ -325,7 +456,14 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         return navigationEntry.url;
     }
     getCurrentRun() {
-        return this.currentLighthouseRun;
+        if (!this.currentLighthouseRun?.isRunning()) {
+            return;
+        }
+        return {
+            inspectedURL: this.currentLighthouseRun.inspectedURL,
+            categoryIDs: this.currentLighthouseRun.categoryIDs,
+            flags: this.currentLighthouseRun.flags,
+        };
     }
     getFlags() {
         const flags = {};
@@ -400,128 +538,45 @@ export class LighthouseController extends Common.ObjectWrapper.ObjectWrapper {
         }
     }
     async startLighthouse() {
-        try {
+        if (this.lastAction) {
+            await this.lastAction;
+        }
+        this.lastAction = new Promise(async (resolve) => {
+            if (this.currentLighthouseRun) {
+                await this.currentLighthouseRun.cancel();
+                this.currentLighthouseRun = undefined;
+            }
             const inspectedURL = await this.getInspectedURL({ force: true });
             const categoryIDs = this.getCategoryIDs();
             const flags = this.getFlags();
             this.recordMetrics(flags, categoryIDs);
-            this.currentLighthouseRun = { inspectedURL, categoryIDs, flags };
-            await this.setupEmulationAndProtocolConnection();
-            if (flags.mode === 'timespan') {
-                await this.protocolService.startTimespan(this.currentLighthouseRun);
-            }
-        }
-        catch (err) {
-            await this.restoreEmulationAndProtocolConnection();
-            throw err;
-        }
+            this.currentLighthouseRun = new LighthouseRun(this, this.protocolService, inspectedURL, categoryIDs, flags);
+            await this.currentLighthouseRun.start();
+            resolve();
+        });
+        return await this.lastAction;
     }
     async collectLighthouseResults() {
-        try {
-            if (!this.currentLighthouseRun) {
-                throw new Error('Lighthouse is not started');
-            }
-            const lighthouseResponse = await this.protocolService.collectLighthouseResults(this.currentLighthouseRun);
-            if (!lighthouseResponse) {
-                throw new Error('Auditing failed to produce a result');
-            }
-            if (lighthouseResponse.fatal) {
-                const error = new Error(lighthouseResponse.message);
-                error.stack = lighthouseResponse.stack;
-                throw error;
-            }
-            Host.userMetrics.actionTaken(Host.UserMetrics.Action.LighthouseFinished);
-            await this.restoreEmulationAndProtocolConnection();
-            return lighthouseResponse;
+        if (!this.currentLighthouseRun) {
+            throw new Error('Lighthouse is not started');
         }
-        catch (err) {
-            await this.restoreEmulationAndProtocolConnection();
-            throw err;
-        }
-        finally {
-            this.currentLighthouseRun = undefined;
-        }
+        const lighthouseResponse = await this.currentLighthouseRun.collect();
+        Host.userMetrics.actionTaken(Host.UserMetrics.Action.LighthouseFinished);
+        this.currentLighthouseRun = undefined;
+        return lighthouseResponse;
     }
     async cancelLighthouse() {
-        await this.restoreEmulationAndProtocolConnection();
-        this.currentLighthouseRun = undefined;
-    }
-    /**
-     * We set the device emulation on the DevTools-side for two reasons:
-     * 1. To workaround some odd device metrics emulation bugs like occuluding viewports
-     * 2. To get the attractive device outline
-     */
-    async setupEmulationAndProtocolConnection() {
-        const flags = this.getFlags();
-        const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-        this.emulationStateBefore = {
-            emulation: {
-                type: emulationModel.type(),
-                enabled: emulationModel.enabledSetting().get(),
-                outlineEnabled: emulationModel.deviceOutlineSetting().get(),
-                toolbarControlsEnabled: emulationModel.toolbarControlsEnabledSetting().get(),
-                scale: emulationModel.scaleSetting().get(),
-                device: emulationModel.device(),
-                mode: emulationModel.mode(),
-            },
-            network: { conditions: SDK.NetworkManager.MultitargetNetworkManager.instance().networkConditions() },
-        };
-        emulationModel.toolbarControlsEnabledSetting().set(false);
-        if ('formFactor' in flags && flags.formFactor === 'desktop') {
-            emulationModel.enabledSetting().set(false);
-            emulationModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
+        if (this.lastAction) {
+            await this.lastAction;
         }
-        else if (flags.formFactor === 'mobile') {
-            emulationModel.enabledSetting().set(true);
-            emulationModel.deviceOutlineSetting().set(true);
-            for (const device of EmulationModel.EmulatedDevices.EmulatedDevicesList.instance().standard()) {
-                if (device.title === 'Moto G Power') {
-                    emulationModel.emulate(EmulationModel.DeviceModeModel.Type.Device, device, device.modes[0], 1);
-                }
+        this.lastAction = new Promise(async (resolve) => {
+            if (this.currentLighthouseRun) {
+                await this.currentLighthouseRun.cancel();
+                this.currentLighthouseRun = undefined;
             }
-        }
-        await this.protocolService.attach();
-    }
-    async restoreEmulationAndProtocolConnection() {
-        if (!this.currentLighthouseRun) {
-            return;
-        }
-        await this.protocolService.detach();
-        if (this.emulationStateBefore) {
-            const emulationModel = EmulationModel.DeviceModeModel.DeviceModeModel.instance();
-            // Detaching a session after overriding device metrics will prevent other sessions from overriding device metrics in the future.
-            // A workaround is to call "Emulation.clearDeviceMetricOverride" which is the result of the next line.
-            // https://bugs.chromium.org/p/chromium/issues/detail?id=1337089
-            emulationModel.emulate(EmulationModel.DeviceModeModel.Type.None, null, null);
-            const { type, enabled, outlineEnabled, toolbarControlsEnabled, scale, device, mode } = this.emulationStateBefore.emulation;
-            emulationModel.enabledSetting().set(enabled);
-            emulationModel.deviceOutlineSetting().set(outlineEnabled);
-            emulationModel.toolbarControlsEnabledSetting().set(toolbarControlsEnabled);
-            // `emulate` will ignore the `scale` parameter for responsive emulation.
-            // In this case we can just set it here.
-            if (type === EmulationModel.DeviceModeModel.Type.Responsive) {
-                emulationModel.scaleSetting().set(scale);
-            }
-            emulationModel.emulate(type, device, mode, scale);
-            SDK.NetworkManager.MultitargetNetworkManager.instance().setNetworkConditions(this.emulationStateBefore.network.conditions);
-            delete this.emulationStateBefore;
-        }
-        Emulation.InspectedPagePlaceholder.InspectedPagePlaceholder.instance().update(true);
-        const mainTarget = SDK.TargetManager.TargetManager.instance().primaryPageTarget();
-        if (!mainTarget) {
-            return;
-        }
-        const resourceTreeModel = mainTarget.model(SDK.ResourceTreeModel.ResourceTreeModel);
-        if (!resourceTreeModel) {
-            return;
-        }
-        // Reload to reset page state after a navigation.
-        // We want to retain page state for timespan and snapshot modes.
-        const mode = this.currentLighthouseRun.flags.mode;
-        if (mode === 'navigation') {
-            const inspectedURL = await this.getInspectedURL();
-            await resourceTreeModel.navigate(inspectedURL);
-        }
+            resolve();
+        });
+        return await this.lastAction;
     }
 }
 const STORAGE_TYPE_NAMES = new Map([

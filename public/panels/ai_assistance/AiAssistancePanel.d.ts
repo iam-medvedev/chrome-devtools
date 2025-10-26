@@ -33,7 +33,7 @@ export declare class AiAssistancePanel extends UI.Panel.Panel {
     wasShown(): void;
     willHide(): void;
     performUpdate(): Promise<void>;
-    handleAction(actionId: string, opts?: Record<string, unknown>): void;
+    handleAction(actionId: string, opts?: Record<string, unknown>): Promise<void>;
 }
 export declare function getResponseMarkdown(message: ModelChatMessage): string;
 export declare class ActionDelegate implements UI.ActionRegistration.ActionDelegate {

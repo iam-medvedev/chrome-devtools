@@ -9,7 +9,7 @@ import * as AiAssistanceModel from '../../models/ai_assistance/ai_assistance.js'
 import * as TextUtils from '../../models/text_utils/text_utils.js';
 import * as Trace from '../../models/trace/trace.js';
 import * as Timeline from '../../panels/timeline/timeline.js';
-import { createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
+import { cleanup, createAiAssistancePanel, createNetworkRequest, mockAidaClient, openHistoryContextMenu } from '../../testing/AiAssistanceHelpers.js';
 import { createTarget, registerNoopActions, updateHostConfig } from '../../testing/EnvironmentHelpers.js';
 import { describeWithMockConnection } from '../../testing/MockConnection.js';
 import { createNetworkPanelForMockConnection } from '../../testing/NetworkHelpers.js';
@@ -39,6 +39,7 @@ describeWithMockConnection('ConversationHandler', () => {
             performSearchStub = sinon.stub(target.domAgent(), 'invoke_performSearch')
                 .resolves({ searchId: 'uniqueId', resultCount: 0, getError: () => undefined });
         });
+        afterEach(cleanup);
         describe('can be blocked', () => {
             it('by a setting', async () => {
                 Common.Settings.moduleSetting('ai-assistance-enabled').set(false);
@@ -216,7 +217,7 @@ describeWithMockConnection('ConversationHandler', () => {
                 aidaAvailability: "available" /* Host.AidaClient.AidaAccessPreconditions.AVAILABLE */,
             });
             const { panel, view } = await createAiAssistancePanel({ aidaClient });
-            panel.handleAction('drjones.network-floating-button');
+            void panel.handleAction('drjones.network-floating-button');
             (await view.nextInput).onTextSubmit('User question to DrJones?');
             assert.deepEqual((await view.nextInput).messages, [
                 {

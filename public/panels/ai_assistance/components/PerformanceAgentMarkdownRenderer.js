@@ -42,7 +42,7 @@ export class PerformanceAgentMarkdownRenderer extends MarkdownRendererWithCodeBl
             else {
                 label += ` (${event.name})`;
             }
-            // eslint-disable-next-line rulesdir/no-a-tags-in-lit
+            // eslint-disable-next-line @devtools/no-a-tags-in-lit
             return html `<a href="#" draggable=false .title=${title} @click=${(e) => {
                 e.stopPropagation();
                 void Common.Revealer.reveal(new SDK.TraceObject.RevealableEvent(event));

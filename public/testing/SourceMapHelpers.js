@@ -67,6 +67,7 @@ export async function loadBasicSourceMapExample(target) {
         endColumn: SCRIPT_SOURCE.length - SCRIPT_SOURCE.lastIndexOf('\n') - 1,
         executionContextId: 1,
         hash: '',
+        buildId: '',
         hasSourceURL: false,
         sourceMapURL: SOURCE_MAP_URL,
     });

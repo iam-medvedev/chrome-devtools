@@ -7,14 +7,7 @@ import * as Trace from '../trace.js';
 describe('MetaHandler', function () {
     let baseEvents;
     beforeEach(async function () {
-        let defaultTraceEvents;
-        try {
-            defaultTraceEvents = await TraceLoader.rawEvents(this, 'basic.json.gz');
-        }
-        catch (error) {
-            assert.fail(error);
-            return;
-        }
+        const defaultTraceEvents = await TraceLoader.rawEvents(this, 'basic.json.gz');
         baseEvents = [
             ...defaultTraceEvents,
             {
@@ -111,10 +104,7 @@ describe('MetaHandler', function () {
             assert.strictEqual(data.navigationsByFrameId.size, 1);
             assert.strictEqual(data.navigationsByNavigationId.size, 1);
             const firstNavigation = data.navigationsByNavigationId.get('navigation-1');
-            if (!firstNavigation?.args.data) {
-                assert.fail('Navigation data was expected in trace events');
-                return;
-            }
+            assert.exists(firstNavigation?.args.data, 'Navigation data was expected in trace events');
             assert.strictEqual(firstNavigation.args.data.documentLoaderURL, 'test1');
         });
         it('provides a list of main frame only navigations', async function () {
@@ -208,10 +198,7 @@ describe('MetaHandler', function () {
         const data = Trace.Handlers.ModelHandlers.Meta.data();
         assert.deepEqual([...data.topLevelRendererIds], [3601132]);
         const rendererProcesses = data.rendererProcessesByFrame.get(data.mainFrameId);
-        if (!rendererProcesses) {
-            assert.fail('No renderer processes found');
-            return;
-        }
+        assert.exists(rendererProcesses, 'No renderer processes found');
         assert.deepEqual([...rendererProcesses?.keys()], [3601132]);
         const windowMinTime = 1143381875846;
         assert.deepEqual([...rendererProcesses?.values()], [[{
@@ -241,10 +228,7 @@ describe('MetaHandler', function () {
         const data = Trace.Handlers.ModelHandlers.Meta.data();
         assert.deepEqual([...data.topLevelRendererIds], [78450, 78473, 79194]);
         const rendererProcesses = data.rendererProcessesByFrame.get(data.mainFrameId);
-        if (!rendererProcesses) {
-            assert.fail('No renderer processes found');
-            return;
-        }
+        assert.exists(rendererProcesses, 'No renderer processes found');
         const windowMinTime = 3550807444741;
         assert.deepEqual([...rendererProcesses?.keys()], [78450, 78473, 79194]);
         assert.deepEqual([...rendererProcesses?.values()], [
@@ -294,10 +278,7 @@ describe('MetaHandler', function () {
         const data = Trace.Handlers.ModelHandlers.Meta.data();
         assert.deepEqual([...data.topLevelRendererIds], [2080]);
         const rendererProcesses = data.rendererProcessesByFrame.get(data.mainFrameId);
-        if (!rendererProcesses) {
-            assert.fail('No renderer processes found');
-            return;
-        }
+        assert.exists(rendererProcesses, 'No renderer processes found');
         assert.deepEqual([...rendererProcesses?.keys()], [2080]);
         assert.deepEqual([...rendererProcesses?.values()], [
             [
@@ -378,7 +359,6 @@ describe('MetaHandler', function () {
         }
         catch (error) {
             assert.fail(error);
-            return;
         }
         Trace.Handlers.ModelHandlers.Meta.reset();
         for (const event of traceEvents) {

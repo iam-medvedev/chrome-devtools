@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import * as HAR from '../har/har.js';
+import * as HAR from './har.js';
 const exampleLog = new HAR.HARFormat.HARLog({
     version: '1.2',
     creator: {

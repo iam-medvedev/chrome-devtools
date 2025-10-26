@@ -197,6 +197,7 @@ style.setProperty('--image-file-justify-content-space-around', 'url(\"' + new UR
 style.setProperty('--image-file-justify-content-space-between', 'url(\"' + new URL('./src/justify-content-space-between.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-content-space-evenly', 'url(\"' + new URL('./src/justify-content-space-evenly.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-content-start', 'url(\"' + new URL('./src/justify-content-start.svg', import.meta.url).toString() + '\")');
+style.setProperty('--image-file-justify-content-stretch', 'url(\"' + new URL('./src/justify-content-stretch.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-center', 'url(\"' + new URL('./src/justify-items-center.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-end', 'url(\"' + new URL('./src/justify-items-end.svg', import.meta.url).toString() + '\")');
 style.setProperty('--image-file-justify-items-start', 'url(\"' + new URL('./src/justify-items-start.svg', import.meta.url).toString() + '\")');

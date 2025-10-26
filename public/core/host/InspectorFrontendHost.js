@@ -140,7 +140,7 @@ export class InspectorFrontendHostStub {
                 fileName = url;
             }
         }
-        /* eslint-disable-next-line rulesdir/no-imperative-dom-api */
+        /* eslint-disable-next-line @devtools/no-imperative-dom-api */
         const link = document.createElement('a');
         link.download = fileName;
         let blob;
@@ -439,7 +439,7 @@ class InspectorFrontendAPIImpl {
     constructor() {
         for (const descriptor of EventDescriptors) {
             // @ts-expect-error Dispatcher magic
-            this[descriptor[1]] = this.dispatch.bind(this, descriptor[0], descriptor[2], descriptor[3]);
+            this[descriptor[0]] = this.dispatch.bind(this, descriptor[0], descriptor[1], descriptor[2]);
         }
     }
     dispatch(name, signature, _runOnceLoaded, ...params) {

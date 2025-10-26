@@ -5,7 +5,9 @@ export type ProtocolCommandParams<C extends ProtocolCommand> = ProtocolMapping.C
 export type ProtocolResponse<C extends ProtocolCommand> = ProtocolMapping.Commands[C]['returnType'];
 export type ProtocolCommandHandler<C extends ProtocolCommand> = (...params: ProtocolCommandParams<C>) => Omit<ProtocolResponse<C>, 'getError'> | {
     getError(): string;
-};
+} | PromiseLike<Omit<ProtocolResponse<C>, 'getError'> | {
+    getError(): string;
+}>;
 export type MessageCallback = (result: string | Object) => void;
 export declare function setMockConnectionResponseHandler<C extends ProtocolCommand>(command: C, handler: ProtocolCommandHandler<C>): void;
 export declare function clearMockConnectionResponseHandler(method: ProtocolCommand): void;

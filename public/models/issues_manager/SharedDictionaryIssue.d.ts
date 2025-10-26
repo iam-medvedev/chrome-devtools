@@ -32,12 +32,12 @@ export declare const enum IssueCode {
 }
 export declare class SharedDictionaryIssue extends Issue {
     #private;
-    constructor(issueDetails: Protocol.Audits.SharedDictionaryIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel);
+    constructor(issueDetails: Protocol.Audits.SharedDictionaryIssueDetails, issuesModel: SDK.IssuesModel.IssuesModel | null);
     requests(): Iterable<Protocol.Audits.AffectedRequest>;
     getCategory(): IssueCategory;
     details(): Protocol.Audits.SharedDictionaryIssueDetails;
     getDescription(): MarkdownIssueDescription | null;
     primaryKey(): string;
     getKind(): IssueKind;
-    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel, inspectorIssue: Protocol.Audits.InspectorIssue): SharedDictionaryIssue[];
+    static fromInspectorIssue(issuesModel: SDK.IssuesModel.IssuesModel | null, inspectorIssue: Protocol.Audits.InspectorIssue): SharedDictionaryIssue[];
 }

@@ -241,7 +241,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 }
             });
             const component = await renderComponent({ insightHasAISupport: true });
@@ -253,7 +252,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 }
             });
             const component = await renderComponent({ insightHasAISupport: true });
@@ -268,7 +266,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 }
             });
             const component = await renderComponent({ insightHasAISupport: true });
@@ -281,7 +278,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 },
                 aidaAvailability: {
                     enterprisePolicyValue: Root.Runtime.GenAiEnterprisePolicyValue.DISABLE,
@@ -296,7 +292,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
             updateHostConfig({
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 }
             });
             const component = await renderComponent({ insightHasAISupport: false });
@@ -306,14 +301,13 @@ describeWithEnvironment('BaseInsightComponent', () => {
         });
         it('sets the context when the user clicks the button', async () => {
             // @ts-expect-error: don't need real data.
-            const focus = new AIAssistance.AIContext.AgentFocus({});
+            const focus = new AIAssistance.AIContext.AgentFocus({ parsedTrace: { insights: new Map() } });
             updateHostConfig({
                 aidaAvailability: {
                     enabled: true,
                 },
                 devToolsAiAssistancePerformanceAgent: {
                     enabled: true,
-                    insightsEnabled: true,
                 }
             });
             const component = await renderComponent({ insightHasAISupport: true });
@@ -322,11 +316,11 @@ describeWithEnvironment('BaseInsightComponent', () => {
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isOk(button);
             sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'hasAction')
-                .withArgs(sinon.match(/drjones\.performance-insight-context/))
+                .withArgs(sinon.match(/drjones\.performance-panel-context/))
                 .returns(true);
             const FAKE_ACTION = sinon.createStubInstance(UI.ActionRegistration.Action);
             sinon.stub(UI.ActionRegistry.ActionRegistry.instance(), 'getAction')
-                .withArgs(sinon.match(/drjones\.performance-insight-context/))
+                .withArgs(sinon.match(/drjones\.performance-panel-context/))
                 .returns(FAKE_ACTION);
             dispatchClickEvent(button);
             const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
@@ -344,7 +338,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 frameId: '123',
             };
             // @ts-expect-error: don't need real data.
-            const focus = new AIAssistance.AIContext.AgentFocus({ parsedTrace: true, insight: mockInsight });
+            const focus = new AIAssistance.AIContext.AgentFocus({ parsedTrace: { insights: new Map() }, insight: mockInsight });
             UI.Context.Context.instance().setFlavor(AIAssistance.AIContext.AgentFocus, focus);
             const component = await renderComponent({ insightHasAISupport: true });
             component.agentFocus = focus;
@@ -355,7 +349,7 @@ describeWithEnvironment('BaseInsightComponent', () => {
             dispatchClickEvent(header);
             const newFocus = UI.Context.Context.instance().flavor(AIAssistance.AIContext.AgentFocus);
             assert.isNull(newFocus?.insight);
-            assert.isTrue(newFocus?.parsedTrace);
+            assert.isOk(newFocus?.parsedTrace);
         });
         it('does not render the "Ask AI" button when the perf agent is not enabled', async () => {
             updateHostConfig({
@@ -364,18 +358,6 @@ describeWithEnvironment('BaseInsightComponent', () => {
                 }
             });
             const component = await renderComponent({ insightHasAISupport: true }); // The Insight supports it, but the feature is not enabled
-            assert.isOk(component.shadowRoot);
-            const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
-            assert.isNull(button);
-        });
-        it('does not render the "Ask AI" button when the perf agent is enabled but the insights ai is not', async () => {
-            updateHostConfig({
-                devToolsAiAssistancePerformanceAgent: {
-                    enabled: true,
-                    insightsEnabled: false,
-                }
-            });
-            const component = await renderComponent({ insightHasAISupport: true });
             assert.isOk(component.shadowRoot);
             const button = component.shadowRoot.querySelector('devtools-button[data-insights-ask-ai]');
             assert.isNull(button);
